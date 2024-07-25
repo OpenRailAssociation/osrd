@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::infra_cache::object_cache::SwitchCache;
+use crate::infra_cache::object_cache::TrackNodeCache;
 use crate::infra_cache::InfraCache;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::Identifier;
@@ -10,9 +10,9 @@ pub struct Graph<'a> {
     /// The graph of links between `TrackEndpoint`.
     /// The first key is the source `TrackEndpoint`.
     /// The second key is the group of the link.
-    /// The group is the group of the switch.
+    /// The group is the group of the track_node.
     links: HashMap<&'a TrackEndpoint, HashMap<&'a Identifier, &'a TrackEndpoint>>,
-    switches: HashMap<&'a TrackEndpoint, &'a SwitchCache>,
+    track_nodes: HashMap<&'a TrackEndpoint, &'a TrackNodeCache>,
 }
 
 impl<'a> Graph<'a> {
@@ -25,24 +25,24 @@ impl<'a> Graph<'a> {
     pub fn load(infra_cache: &'a InfraCache) -> Self {
         let mut graph = Self::default();
 
-        for switch in infra_cache.switches().values() {
-            let switch = switch.unwrap_switch();
-            let switch_type = match infra_cache.switch_types().get(&switch.switch_type) {
-                Some(switch_type) => switch_type.unwrap_switch_type(),
+        for track_node in infra_cache.track_nodes().values() {
+            let track_node = track_node.unwrap_track_node();
+            let track_node_type = match infra_cache.track_node_types().get(&track_node.track_node_type) {
+                Some(track_node_type) => track_node_type.unwrap_track_node_type(),
                 None => continue,
             };
-            for (group, connections) in switch_type.groups.iter() {
+            for (group, connections) in track_node_type.groups.iter() {
                 for connection in connections {
-                    let Some(src) = switch.ports.get::<String>(&connection.src) else {
+                    let Some(src) = track_node.ports.get::<String>(&connection.src) else {
                         continue;
                     };
-                    let Some(dst) = switch.ports.get::<String>(&connection.dst) else {
+                    let Some(dst) = track_node.ports.get::<String>(&connection.dst) else {
                         continue;
                     };
                     graph.link(group, src, dst);
                     graph.link(group, dst, src);
-                    graph.switches.insert(src, switch);
-                    graph.switches.insert(dst, switch);
+                    graph.track_nodes.insert(src, track_node);
+                    graph.track_nodes.insert(dst, track_node);
                 }
             }
         }
@@ -54,9 +54,9 @@ impl<'a> Graph<'a> {
         self.links.contains_key(&track_endpoint)
     }
 
-    /// Return the switch linked to the given endpoint.
-    pub fn get_switch(&'a self, track_endpoint: &TrackEndpoint) -> Option<&'a SwitchCache> {
-        self.switches.get(&track_endpoint).copied()
+    /// Return the track_node linked to the given endpoint.
+    pub fn get_track_node(&'a self, track_endpoint: &TrackEndpoint) -> Option<&'a TrackNodeCache> {
+        self.track_nodes.get(&track_endpoint).copied()
     }
 
     /// Given an endpoint and a group retrieve the neighbour endpoint.
@@ -72,7 +72,7 @@ impl<'a> Graph<'a> {
 
     /// Given an endpoint return a list of groups.
     /// If the endpoint has no neightbours return an empty `Vec`.
-    /// Otherwise returns a `Vec` with all the switch groups.
+    /// Otherwise returns a `Vec` with all the track_node groups.
     pub fn get_neighbour_groups(
         &'a self,
         track_endpoint: &'a TrackEndpoint,
@@ -139,19 +139,19 @@ mod tests {
     }
 
     #[test]
-    fn get_switch() {
+    fn get_track_node() {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
 
         let track_b_end = create_track_endpoint(Endpoint::End, "B");
-        let switch = graph.get_switch(&track_b_end).unwrap();
-        assert_eq!(switch.obj_id, "switch".to_string());
+        let track_node = graph.get_track_node(&track_b_end).unwrap();
+        assert_eq!(track_node.obj_id, "track_node".to_string());
 
         let track_a_begin = create_track_endpoint(Endpoint::Begin, "A");
-        assert!(graph.get_switch(&track_a_begin).is_none());
+        assert!(graph.get_track_node(&track_a_begin).is_none());
 
         let track_a_end = create_track_endpoint(Endpoint::End, "A");
-        let link = graph.get_switch(&track_a_end).unwrap();
+        let link = graph.get_track_node(&track_a_end).unwrap();
         assert_eq!(link.obj_id, "link".to_string());
     }
 

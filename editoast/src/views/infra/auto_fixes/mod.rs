@@ -40,7 +40,7 @@ mod operational_point;
 mod route;
 mod signal;
 mod speed_section;
-mod switch;
+mod track_node;
 mod track_section;
 
 const MAX_AUTO_FIXES_ITERATIONS: u8 = 5;
@@ -147,11 +147,11 @@ fn fix_infra(
                     .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
                 detector::fix_detector(detector, errors)
             }
-            ObjectType::Switch => {
-                let switch = infra_cache
-                    .get_switch(&object_ref.obj_id)
+            ObjectType::TrackNode => {
+                let track_node = infra_cache
+                    .get_track_node(&object_ref.obj_id)
                     .map_err(|e| AutoFixesEditoastError::MissingErrorObject { source: e })?;
-                switch::fix_switch(switch, errors)
+                track_node::fix_track_node(track_node, errors)
             }
             ObjectType::BufferStop => {
                 let buffer_stop = infra_cache
@@ -349,7 +349,7 @@ mod tests {
     use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::Slope;
     use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
+    use editoast_schemas::infra::TrackNode;
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::Waypoint;
@@ -448,7 +448,7 @@ mod tests {
         })));
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: "PA0".to_string(),
-            obj_type: ObjectType::Switch,
+            obj_type: ObjectType::TrackNode,
         })));
     }
 
@@ -686,7 +686,7 @@ mod tests {
     }
 
     #[rstest::rstest]
-    async fn invalid_switch_ports() {
+    async fn invalid_track_node_ports() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
@@ -697,19 +697,20 @@ mod tests {
             ("B1".into(), TrackEndpoint::new("TA3", Endpoint::Begin)),
             ("B2".into(), TrackEndpoint::new("TA4", Endpoint::Begin)),
         ]);
-        let invalid_switch = Switch {
-            switch_type: "point_switch".into(),
+        let invalid_track_node = TrackNode {
+            track_node_type: "point_switch".into(),
             ports,
             ..Default::default()
         };
-        // Create an invalid switch
+        
+        // Create an invalid track_node
         apply_create_operation(
-            &invalid_switch.clone().into(),
+            &invalid_track_node.clone().into(),
             small_infra_id,
             db_pool.get_ok().deref_mut(),
         )
         .await
-        .expect("Failed to create invalid_switch object");
+        .expect("Failed to create invalid_track_node object");
 
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(small_infra_id))
@@ -717,8 +718,8 @@ mod tests {
             .json_into();
 
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: invalid_switch.get_id().to_string(),
-            obj_type: ObjectType::Switch,
+            obj_id: invalid_track_node.get_id().to_string(),
+            obj_type: ObjectType::TrackNode,
         })));
     }
 
@@ -729,7 +730,7 @@ mod tests {
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
         let empty_infra_id = empty_infra.id;
 
-        // Create an odd buffer stops (to a track endpoint linked by a switch)
+        // Create an odd buffer stops (to a track endpoint linked by a track_node)
         let track: InfraObject = TrackSection {
             id: "test_track".into(),
             length: 1_000.0,

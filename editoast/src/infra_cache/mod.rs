@@ -32,7 +32,7 @@ use editoast_schemas::infra::Route;
 use editoast_schemas::infra::RoutePath;
 use editoast_schemas::infra::SingleSlipSwitch;
 use editoast_schemas::infra::SpeedSection;
-use editoast_schemas::infra::SwitchType;
+use editoast_schemas::infra::TrackNodeType;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::infra::Waypoint;
 use editoast_schemas::primitives::OSRDIdentified;
@@ -50,7 +50,7 @@ use crate::infra_cache::object_cache::BufferStopCache;
 use crate::infra_cache::object_cache::DetectorCache;
 use crate::infra_cache::object_cache::OperationalPointCache;
 use crate::infra_cache::object_cache::SignalCache;
-use crate::infra_cache::object_cache::SwitchCache;
+use crate::infra_cache::object_cache::TrackNodeCache;
 use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::modelsv2::railjson::find_all_schemas;
@@ -83,12 +83,12 @@ pub enum ObjectCache {
     TrackSection(TrackSectionCache),
     Signal(SignalCache),
     SpeedSection(SpeedSection),
-    Switch(SwitchCache),
+    TrackNode(TrackNodeCache),
     Detector(DetectorCache),
     BufferStop(BufferStopCache),
     Route(Route),
     OperationalPoint(OperationalPointCache),
-    SwitchType(SwitchType),
+    TrackNodeType(TrackNodeType),
     Electrification(Electrification),
     NeutralSection(NeutralSection),
 }
@@ -100,8 +100,8 @@ impl From<InfraObject> for ObjectCache {
             InfraObject::Signal { railjson } => ObjectCache::Signal(railjson.into()),
             InfraObject::NeutralSection { railjson } => ObjectCache::NeutralSection(railjson),
             InfraObject::SpeedSection { railjson } => ObjectCache::SpeedSection(railjson),
-            InfraObject::Switch { railjson } => ObjectCache::Switch(railjson.into()),
-            InfraObject::SwitchType { railjson } => ObjectCache::SwitchType(railjson),
+            InfraObject::TrackNode { railjson } => ObjectCache::TrackNode(railjson.into()),
+            InfraObject::TrackNodeType { railjson } => ObjectCache::TrackNodeType(railjson),
             InfraObject::Detector { railjson } => ObjectCache::Detector(railjson.into()),
             InfraObject::BufferStop { railjson } => ObjectCache::BufferStop(railjson.into()),
             InfraObject::Route { railjson } => ObjectCache::Route(railjson),
@@ -125,12 +125,12 @@ impl OSRDIdentified for ObjectCache {
             ObjectCache::TrackSection(obj) => obj.get_id(),
             ObjectCache::Signal(obj) => obj.get_id(),
             ObjectCache::SpeedSection(obj) => obj.get_id(),
-            ObjectCache::Switch(obj) => obj.get_id(),
+            ObjectCache::TrackNode(obj) => obj.get_id(),
             ObjectCache::Detector(obj) => obj.get_id(),
             ObjectCache::BufferStop(obj) => obj.get_id(),
             ObjectCache::Route(obj) => obj.get_id(),
             ObjectCache::OperationalPoint(obj) => obj.get_id(),
-            ObjectCache::SwitchType(obj) => obj.get_id(),
+            ObjectCache::TrackNodeType(obj) => obj.get_id(),
             ObjectCache::Electrification(obj) => obj.get_id(),
             ObjectCache::NeutralSection(obj) => obj.get_id(),
         }
@@ -143,12 +143,12 @@ impl OSRDObject for ObjectCache {
             ObjectCache::TrackSection(_) => ObjectType::TrackSection,
             ObjectCache::Signal(_) => ObjectType::Signal,
             ObjectCache::SpeedSection(_) => ObjectType::SpeedSection,
-            ObjectCache::Switch(_) => ObjectType::Switch,
+            ObjectCache::TrackNode(_) => ObjectType::TrackNode,
             ObjectCache::Detector(_) => ObjectType::Detector,
             ObjectCache::BufferStop(_) => ObjectType::BufferStop,
             ObjectCache::Route(_) => ObjectType::Route,
             ObjectCache::OperationalPoint(_) => ObjectType::OperationalPoint,
-            ObjectCache::SwitchType(_) => ObjectType::SwitchType,
+            ObjectCache::TrackNodeType(_) => ObjectType::TrackNodeType,
             ObjectCache::Electrification(_) => ObjectType::Electrification,
             ObjectCache::NeutralSection(_) => ObjectType::NeutralSection,
         }
@@ -161,12 +161,12 @@ impl ObjectCache {
             ObjectCache::TrackSection(track) => track.get_track_referenced_id(),
             ObjectCache::Signal(signal) => signal.get_track_referenced_id(),
             ObjectCache::SpeedSection(speed) => speed.get_track_referenced_id(),
-            ObjectCache::Switch(switch) => switch.get_track_referenced_id(),
+            ObjectCache::TrackNode(track_node) => track_node.get_track_referenced_id(),
             ObjectCache::Detector(detector) => detector.get_track_referenced_id(),
             ObjectCache::BufferStop(buffer_stop) => buffer_stop.get_track_referenced_id(),
             ObjectCache::Route(route) => route.get_track_referenced_id(),
             ObjectCache::OperationalPoint(op) => op.get_track_referenced_id(),
-            ObjectCache::SwitchType(switch_type) => switch_type.get_track_referenced_id(),
+            ObjectCache::TrackNodeType(track_node_type) => track_node_type.get_track_referenced_id(),
             ObjectCache::Electrification(electrification) => {
                 electrification.get_track_referenced_id()
             }
@@ -200,11 +200,11 @@ impl ObjectCache {
         }
     }
 
-    /// Unwrap a switch from the object cache
-    pub fn unwrap_switch(&self) -> &SwitchCache {
+    /// Unwrap a track_node from the object cache
+    pub fn unwrap_track_node(&self) -> &TrackNodeCache {
         match self {
-            ObjectCache::Switch(switch) => switch,
-            _ => panic!("ObjectCache is not a Switch"),
+            ObjectCache::TrackNode(track_node) => track_node,
+            _ => panic!("ObjectCache is not a TrackNode"),
         }
     }
 
@@ -240,11 +240,11 @@ impl ObjectCache {
         }
     }
 
-    /// Unwrap a switch type from the object cache
-    pub fn unwrap_switch_type(&self) -> &SwitchType {
+    /// Unwrap a track_node type from the object cache
+    pub fn unwrap_track_node_type(&self) -> &TrackNodeType {
         match self {
-            ObjectCache::SwitchType(switch_type) => switch_type,
-            _ => panic!("ObjectCache is not a SwitchType"),
+            ObjectCache::TrackNodeType(track_node_type) => track_node_type,
+            _ => panic!("ObjectCache is not a TrackNodeType"),
         }
     }
 
@@ -298,21 +298,21 @@ impl From<TrackQueryable> for TrackSectionCache {
 }
 
 #[derive(QueryableByName, Debug, Clone)]
-pub struct SwitchQueryable {
+pub struct TrackNodeQueryable {
     #[diesel(sql_type = Text)]
     pub obj_id: String,
     #[diesel(sql_type = Text)]
-    pub switch_type: String,
+    pub track_node_type: String,
     #[diesel(sql_type = Text)]
     pub ports: String,
 }
 
-impl From<SwitchQueryable> for SwitchCache {
-    fn from(switch: SwitchQueryable) -> Self {
+impl From<TrackNodeQueryable> for TrackNodeCache {
+    fn from(track_node: TrackNodeQueryable) -> Self {
         Self {
-            obj_id: switch.obj_id,
-            switch_type: switch.switch_type,
-            ports: serde_json::from_str(&switch.ports).unwrap(),
+            obj_id: track_node.obj_id,
+            track_node_type: track_node.track_node_type,
+            ports: serde_json::from_str(&track_node.ports).unwrap(),
         }
     }
 }
@@ -395,14 +395,14 @@ impl InfraCache {
         &self.objects[ObjectType::Route]
     }
 
-    /// Retrieve the cache of switches
-    pub fn switches(&self) -> &HashMap<String, ObjectCache> {
-        &self.objects[ObjectType::Switch]
+    /// Retrieve the cache of track_nodes
+    pub fn track_nodes(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::TrackNode]
     }
 
-    /// Retrieve the cache of switch types
-    pub fn switch_types(&self) -> &HashMap<String, ObjectCache> {
-        &self.objects[ObjectType::SwitchType]
+    /// Retrieve the cache of track_node types
+    pub fn track_node_types(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::TrackNodeType]
     }
 
     /// Retrieve the cache of operational points
@@ -475,26 +475,26 @@ impl InfraCache {
             infra_cache.add::<OperationalPointCache>(op.into())
         )?;
 
-        // Load switch tracks references
+        // Load track_node tracks references
         sql_query(
-            "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM infra_object_switch WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track_node_type' AS track_node_type, data->>'ports' AS ports FROM infra_object_track_node WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<SwitchQueryable>(conn).await?.into_iter().try_for_each(|switch|
-            infra_cache.add::<SwitchCache>(switch.into())
+        .load::<TrackNodeQueryable>(conn).await?.into_iter().try_for_each(|track_node|
+            infra_cache.add::<TrackNodeCache>(track_node.into())
         )?;
 
-        // Load switch types references
-        find_all_schemas::<_, Vec<SwitchType>>(conn, infra_id)
+        // Load track_node types references
+        find_all_schemas::<_, Vec<TrackNodeType>>(conn, infra_id)
             .await?
             .into_iter()
-            .try_for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type))?;
+            .try_for_each(|track_node_type| infra_cache.add::<TrackNodeType>(track_node_type))?;
 
-        // Add builtin switch nodes
-        infra_cache.add::<SwitchType>(Link.into())?;
-        infra_cache.add::<SwitchType>(PointSwitch.into())?;
-        infra_cache.add::<SwitchType>(Crossing.into())?;
-        infra_cache.add::<SwitchType>(SingleSlipSwitch.into())?;
-        infra_cache.add::<SwitchType>(DoubleSlipSwitch.into())?;
+        // Add builtin track_node nodes
+        infra_cache.add::<TrackNodeType>(Link.into())?;
+        infra_cache.add::<TrackNodeType>(PointSwitch.into())?;
+        infra_cache.add::<TrackNodeType>(Crossing.into())?;
+        infra_cache.add::<TrackNodeType>(SingleSlipSwitch.into())?;
+        infra_cache.add::<TrackNodeType>(DoubleSlipSwitch.into())?;
 
         // Load detector tracks references
         sql_query(
@@ -602,8 +602,8 @@ impl InfraCache {
             }
             ObjectCache::Signal(signal) => self.add::<SignalCache>(signal)?,
             ObjectCache::SpeedSection(speed_section) => self.add(speed_section)?,
-            ObjectCache::Switch(switch) => self.add::<SwitchCache>(switch)?,
-            ObjectCache::SwitchType(switch_type) => self.add::<SwitchType>(switch_type)?,
+            ObjectCache::TrackNode(track_node) => self.add::<TrackNodeCache>(track_node)?,
+            ObjectCache::TrackNodeType(track_node_type) => self.add::<TrackNodeType>(track_node_type)?,
             ObjectCache::Detector(detector) => self.add::<DetectorCache>(detector)?,
             ObjectCache::BufferStop(buffer_stop) => self.add::<BufferStopCache>(buffer_stop)?,
             ObjectCache::Route(route) => self.add::<Route>(route)?,
@@ -687,26 +687,26 @@ impl InfraCache {
             .unwrap_detector())
     }
 
-    pub fn get_switch(&self, switch_id: &str) -> Result<&SwitchCache> {
+    pub fn get_track_node(&self, track_node_id: &str) -> Result<&TrackNodeCache> {
         Ok(self
-            .switches()
-            .get(switch_id)
+            .track_nodes()
+            .get(track_node_id)
             .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
-                obj_type: ObjectType::Switch.to_string(),
-                obj_id: switch_id.to_string(),
+                obj_type: ObjectType::TrackNode.to_string(),
+                obj_id: track_node_id.to_string(),
             })?
-            .unwrap_switch())
+            .unwrap_track_node())
     }
 
-    pub fn get_switch_type(&self, switch_type_id: &str) -> Result<&SwitchType> {
+    pub fn get_track_node_type(&self, track_node_type_id: &str) -> Result<&TrackNodeType> {
         Ok(self
-            .switch_types()
-            .get(switch_type_id)
+            .track_node_types()
+            .get(track_node_type_id)
             .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
-                obj_type: ObjectType::SwitchType.to_string(),
-                obj_id: switch_type_id.to_string(),
+                obj_type: ObjectType::TrackNodeType.to_string(),
+                obj_id: track_node_type_id.to_string(),
             })?
-            .unwrap_switch_type())
+            .unwrap_track_node_type())
     }
 
     pub fn get_buffer_stop(&self, buffer_stop_id: &str) -> Result<&BufferStopCache> {
@@ -786,9 +786,9 @@ impl InfraCache {
         // Check that the track exists
         let mut cur_track = self.track_sections().get(cur_track)?.unwrap_track_section();
 
-        // Save track ranges and used switches
+        // Save track ranges and used track_nodes
         let mut track_ranges = vec![];
-        let mut used_switches = vec![];
+        let mut used_track_nodes = vec![];
 
         // Check path validity
         loop {
@@ -827,17 +827,17 @@ impl InfraCache {
                 return None;
             }
 
-            let switch = graph.get_switch(&endpoint)?;
-            let switch_id = switch.get_id();
-            let switch_type = self.get_switch_type(&switch.switch_type).ok()?;
-            let group = if switch_type.groups.len() == 1 {
-                // Check if switch has one group
-                switch_type.groups.keys().next()?
+            let track_node = graph.get_track_node(&endpoint)?;
+            let track_node_id = track_node.get_id();
+            let track_node_type = self.get_track_node_type(&track_node.track_node_type).ok()?;
+            let group = if track_node_type.groups.len() == 1 {
+                // Check if track_node has one group
+                track_node_type.groups.keys().next()?
             } else {
-                // Check we found the switch in the route
-                route.switches_directions.get(&switch_id.clone().into())?
+                // Check we found the track_node in the route
+                route.track_nodes_directions.get(&track_node_id.clone().into())?
             };
-            used_switches.push((switch_id.clone().into(), group.clone()));
+            used_track_nodes.push((track_node_id.clone().into(), group.clone()));
             let next_endpoint = graph.get_neighbour(&endpoint, group)?;
 
             // Update current track section, offset and direction
@@ -852,7 +852,7 @@ impl InfraCache {
         }
         Some(RoutePath {
             track_ranges,
-            switches_directions: used_switches,
+            track_nodes_directions: used_track_nodes,
         })
     }
 }
@@ -894,7 +894,7 @@ pub mod tests {
     use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::object_cache::TrackSectionCache;
     use crate::infra_cache::InfraCache;
-    use crate::infra_cache::SwitchCache;
+    use crate::infra_cache::TrackNodeCache;
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::fixtures::create_infra_object;
     use editoast_models::DbConnectionPoolV2;
@@ -907,9 +907,9 @@ pub mod tests {
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::SwitchPortConnection;
-    use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::infra::TrackNode;
+    use editoast_schemas::infra::TrackNodePortConnection;
+    use editoast_schemas::infra::TrackNodeType;
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::primitives::BoundingBox;
@@ -1009,13 +1009,13 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn load_switch() {
+    async fn load_track_node() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let switch = create_infra_object(
+        let track_node = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
-            Switch {
+            TrackNode {
                 ports: HashMap::from([("port".into(), Default::default())]),
                 ..Default::default()
             },
@@ -1025,24 +1025,24 @@ pub mod tests {
             .await
             .unwrap();
 
-        assert!(infra_cache.switches().contains_key(switch.get_id()));
+        assert!(infra_cache.track_nodes().contains_key(track_node.get_id()));
     }
 
     #[rstest]
-    async fn load_switch_type() {
+    async fn load_track_node_type() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
         let s_type = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
-            SwitchType::default(),
+            TrackNodeType::default(),
         )
         .await;
         let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
             .await
             .unwrap();
 
-        assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
+        assert!(infra_cache.track_node_types().contains_key(s_type.get_id()));
     }
 
     #[rstest]
@@ -1216,7 +1216,7 @@ pub mod tests {
         entry_point_direction: Direction,
         exit_point: Waypoint,
         release_detectors: Vec<Identifier>,
-        switches_directions: HashMap<Identifier, Identifier>,
+        track_nodes_directions: HashMap<Identifier, Identifier>,
     ) -> Route {
         Route {
             id: id.as_ref().into(),
@@ -1224,58 +1224,58 @@ pub mod tests {
             entry_point_direction,
             exit_point,
             release_detectors,
-            switches_directions,
+            track_nodes_directions,
         }
     }
 
-    pub fn create_switch_connection<T: AsRef<str>>(src: T, dst: T) -> SwitchPortConnection {
-        SwitchPortConnection {
+    pub fn create_track_node_connection<T: AsRef<str>>(src: T, dst: T) -> TrackNodePortConnection {
+        TrackNodePortConnection {
             src: src.as_ref().into(),
             dst: dst.as_ref().into(),
         }
     }
 
-    pub fn create_switch_type_cache<T: AsRef<str>>(
+    pub fn create_track_node_type_cache<T: AsRef<str>>(
         id: T,
         ports: Vec<Identifier>,
-        groups: HashMap<Identifier, Vec<SwitchPortConnection>>,
-    ) -> SwitchType {
-        SwitchType {
+        groups: HashMap<Identifier, Vec<TrackNodePortConnection>>,
+    ) -> TrackNodeType {
+        TrackNodeType {
             id: id.as_ref().into(),
             ports,
             groups,
         }
     }
 
-    pub fn create_switch_cache_point(
+    pub fn create_track_node_cache_point(
         obj_id: String,
         base: (&str, TrackEndpoint),
         left: (&str, TrackEndpoint),
         right: (&str, TrackEndpoint),
-        switch_type: String,
-    ) -> SwitchCache {
+        track_node_type: String,
+    ) -> TrackNodeCache {
         let ports_list = [base, left, right];
         let ports: HashMap<String, TrackEndpoint> =
             ports_list.into_iter().map(|(s, t)| (s.into(), t)).collect();
-        SwitchCache {
+        TrackNodeCache {
             obj_id,
-            switch_type,
+            track_node_type,
             ports,
         }
     }
 
-    pub fn create_switch_cache_link(
+    pub fn create_track_node_cache_link(
         obj_id: String,
         source: (&str, TrackEndpoint),
         destination: (&str, TrackEndpoint),
-        switch_type: String,
-    ) -> SwitchCache {
+        track_node_type: String,
+    ) -> TrackNodeCache {
         let ports_list = [source, destination];
         let ports: HashMap<String, TrackEndpoint> =
             ports_list.into_iter().map(|(s, t)| (s.into(), t)).collect();
-        SwitchCache {
+        TrackNodeCache {
             obj_id,
-            switch_type,
+            track_node_type,
             ports,
         }
     }
@@ -1331,7 +1331,7 @@ pub mod tests {
                 Direction::StartToStop,
                 Waypoint::new_buffer_stop("BF2"),
                 vec![],
-                [("switch".into(), "A_B1".into())].into(),
+                [("track_node".into(), "A_B1".into())].into(),
             ))
             .unwrap();
         infra_cache
@@ -1341,19 +1341,19 @@ pub mod tests {
                 Direction::StartToStop,
                 Waypoint::new_buffer_stop("BF3"),
                 vec![],
-                [("switch".into(), "A_B2".into())].into(),
+                [("track_node".into(), "A_B2".into())].into(),
             ))
             .unwrap();
 
         infra_cache
-            .add(create_switch_type_cache(
+            .add(create_track_node_type_cache(
                 "link",
                 vec!["A".into(), "B".into()],
-                HashMap::from([("LINK".into(), vec![create_switch_connection("A", "B")])]),
+                HashMap::from([("LINK".into(), vec![create_track_node_connection("A", "B")])]),
             ))
             .unwrap();
 
-        let link = create_switch_cache_link(
+        let link = create_track_node_cache_link(
             "link".into(),
             ("A", create_track_endpoint(Endpoint::End, "A")),
             ("B", create_track_endpoint(Endpoint::Begin, "B")),
@@ -1362,24 +1362,24 @@ pub mod tests {
         infra_cache.add(link).unwrap();
 
         infra_cache
-            .add(create_switch_type_cache(
+            .add(create_track_node_type_cache(
                 "point_switch",
                 vec!["A".into(), "B1".into(), "B2".into()],
                 HashMap::from([
-                    ("A_B1".into(), vec![create_switch_connection("A", "B1")]),
-                    ("A_B2".into(), vec![create_switch_connection("A", "B2")]),
+                    ("A_B1".into(), vec![create_track_node_connection("A", "B1")]),
+                    ("A_B2".into(), vec![create_track_node_connection("A", "B2")]),
                 ]),
             ))
             .unwrap();
 
-        let switch = create_switch_cache_point(
-            "switch".into(),
+        let track_node = create_track_node_cache_point(
+            "track_node".into(),
             ("A", create_track_endpoint(Endpoint::End, "B")),
             ("B1", create_track_endpoint(Endpoint::Begin, "C")),
             ("B2", create_track_endpoint(Endpoint::Begin, "D")),
             "point_switch".into(),
         );
-        infra_cache.add(switch).unwrap();
+        infra_cache.add(track_node).unwrap();
 
         infra_cache
     }
@@ -1425,8 +1425,8 @@ pub mod tests {
         use crate::infra_cache::tests::create_route_cache;
         use crate::infra_cache::tests::create_signal_cache;
         use crate::infra_cache::tests::create_speed_section_cache;
-        use crate::infra_cache::tests::create_switch_cache_point;
-        use crate::infra_cache::tests::create_switch_type_cache;
+        use crate::infra_cache::tests::create_track_node_cache_point;
+        use crate::infra_cache::tests::create_track_node_type_cache;
         use crate::infra_cache::InfraCache;
         use crate::infra_cache::InfraCacheEditoastError;
         use editoast_schemas::infra::Direction::StartToStop;
@@ -1513,48 +1513,48 @@ pub mod tests {
         }
 
         #[test]
-        fn switch() {
-            const ID: &str = "switch_id";
+        fn track_node() {
+            const ID: &str = "track_node_id";
 
             let mut infra_cache = InfraCache::default();
 
             assert_eq!(
-                infra_cache.get_switch(ID).unwrap_err(),
+                infra_cache.get_track_node(ID).unwrap_err(),
                 InfraCacheEditoastError::ObjectNotFound {
-                    obj_type: ObjectType::Switch.to_string(),
+                    obj_type: ObjectType::TrackNode.to_string(),
                     obj_id: ID.to_string()
                 }
                 .into()
             );
-            let switch = create_switch_cache_point(
+            let track_node = create_track_node_cache_point(
                 ID.to_string(),
                 ("track_section_1_id", TrackEndpoint::default()),
                 ("track_section_2_id", TrackEndpoint::default()),
                 ("track_section_3_id", TrackEndpoint::default()),
-                "switch_type_id".to_string(),
+                "track_node_type_id".to_string(),
             );
 
-            infra_cache.add(switch.clone()).unwrap();
-            assert_eq!(infra_cache.get_switch(ID).unwrap(), &switch);
+            infra_cache.add(track_node.clone()).unwrap();
+            assert_eq!(infra_cache.get_track_node(ID).unwrap(), &track_node);
         }
 
         #[test]
-        fn switch_type() {
-            const ID: &str = "switch_type_id";
+        fn track_node_type() {
+            const ID: &str = "track_node_type_id";
 
             let mut infra_cache = InfraCache::default();
 
             assert_eq!(
-                infra_cache.get_switch_type(ID).unwrap_err(),
+                infra_cache.get_track_node_type(ID).unwrap_err(),
                 InfraCacheEditoastError::ObjectNotFound {
-                    obj_type: ObjectType::SwitchType.to_string(),
+                    obj_type: ObjectType::TrackNodeType.to_string(),
                     obj_id: ID.to_string()
                 }
                 .into()
             );
-            let switch_type = create_switch_type_cache(ID, vec![], HashMap::default());
-            infra_cache.add(switch_type.clone()).unwrap();
-            assert_eq!(infra_cache.get_switch_type(ID).unwrap(), &switch_type);
+            let track_node_type = create_track_node_type_cache(ID, vec![], HashMap::default());
+            infra_cache.add(track_node_type.clone()).unwrap();
+            assert_eq!(infra_cache.get_track_node_type(ID).unwrap(), &track_node_type);
         }
 
         #[test]

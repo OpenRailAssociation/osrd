@@ -43,8 +43,8 @@ pub mod tests {
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::infra::TrackNode;
+    use editoast_schemas::infra::TrackNodeType;
     use editoast_schemas::infra::TrackSection;
     use std::ops::DerefMut;
 
@@ -68,12 +68,12 @@ pub mod tests {
     test_create_object!(TrackSection);
     test_create_object!(Signal);
     test_create_object!(SpeedSection);
-    test_create_object!(Switch);
+    test_create_object!(TrackNode);
     test_create_object!(Detector);
     test_create_object!(BufferStop);
     test_create_object!(Route);
     test_create_object!(OperationalPoint);
-    test_create_object!(SwitchType);
+    test_create_object!(TrackNodeType);
     test_create_object!(Electrification);
     test_create_object!(NeutralSection);
 }

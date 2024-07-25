@@ -93,8 +93,8 @@ async fn get_railjson(
             "signals": {signals},
             "speed_sections": {speed_sections},
             "detectors": {detectors},
-            "switches": {switches},
-            "extended_switch_types": {switch_types},
+            "track_nodes": {track_nodes},
+            "extended_track_node_types": {track_node_types},
             "buffer_stops": {buffer_stops},
             "routes": {routes},
             "operational_points": {operational_points},
@@ -106,8 +106,8 @@ async fn get_railjson(
         signals = res[ObjectType::Signal],
         speed_sections = res[ObjectType::SpeedSection],
         detectors = res[ObjectType::Detector],
-        switches = res[ObjectType::Switch],
-        switch_types = res[ObjectType::SwitchType],
+        track_nodes = res[ObjectType::TrackNode],
+        track_node_types = res[ObjectType::TrackNodeType],
         buffer_stops = res[ObjectType::BufferStop],
         routes = res[ObjectType::Route],
         operational_points = res[ObjectType::OperationalPoint],
@@ -196,7 +196,7 @@ mod tests {
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::infra::TrackNodeType;
 
     #[rstest]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
@@ -207,19 +207,19 @@ mod tests {
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         apply_create_operation(
-            &SwitchType::default().into(),
+            &TrackNodeType::default().into(),
             empty_infra.id,
             db_pool.get_ok().deref_mut(),
         )
         .await
-        .expect("Failed to create SwitchType object");
+        .expect("Failed to create TrackNodeType object");
 
         let request = app.get(&format!("/infra/{}/railjson", empty_infra.id));
 
         let railjson: RailJson = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(railjson.version, RAILJSON_VERSION);
-        assert_eq!(railjson.extended_switch_types.len(), 1);
+        assert_eq!(railjson.extended_track_node_types.len(), 1);
     }
 
     #[rstest]
@@ -232,8 +232,8 @@ mod tests {
         let railjson = RailJson {
             buffer_stops: (0..10).map(|_| Default::default()).collect(),
             routes: (0..10).map(|_| Default::default()).collect(),
-            extended_switch_types: (0..10).map(|_| Default::default()).collect(),
-            switches: (0..10).map(|_| Default::default()).collect(),
+            extended_track_node_types: (0..10).map(|_| Default::default()).collect(),
+            track_nodes: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
             electrifications: (0..10).map(|_| Default::default()).collect(),

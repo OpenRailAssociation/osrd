@@ -16,7 +16,7 @@ use editoast_schemas::infra::SignalExtensions;
 use editoast_schemas::infra::SignalSncfExtension;
 use editoast_schemas::infra::Speed;
 use editoast_schemas::infra::SpeedSection;
-use editoast_schemas::infra::Switch;
+use editoast_schemas::infra::TrackNode;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::Identifier;
 use geo_types::Coord;
@@ -94,7 +94,7 @@ fn track_section(n: NodeId, edge: &Edge) -> TrackEndpoint {
 }
 
 // When building the network topology, most things happen around a Node (in the OpenStreetMap sense)
-// That’s where buffer stops, and switches happen
+// That’s where buffer stops, and track_nodes happen
 // To do that, we count how many edges are adjacent to that node and how many branches go through that node
 #[derive(Default)]
 pub struct NodeAdjacencies<'a> {
@@ -102,20 +102,20 @@ pub struct NodeAdjacencies<'a> {
     pub branches: Vec<Branch>,
 }
 
-pub fn link_switch(node: NodeId, branches: &[Branch]) -> Switch {
+pub fn link_track_node(node: NodeId, branches: &[Branch]) -> TrackNode {
     let mut ports = HashMap::new();
     ports.insert("A".into(), branches[0].0.clone());
     ports.insert("B".into(), branches[0].1.clone());
-    Switch {
+    TrackNode {
         id: node.0.to_string().into(),
-        switch_type: "link".into(),
+        track_node_type: "link".into(),
         ports,
         group_change_delay: 0.,
         ..Default::default()
     }
 }
 
-pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
+pub fn point_switch(node: NodeId, branches: &[Branch]) -> TrackNode {
     let mut endpoint_count = HashMap::<&TrackEndpoint, u64>::new();
     for (src, dst) in branches {
         *endpoint_count.entry(src).or_default() += 1;
@@ -129,25 +129,25 @@ pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
     ports.insert("B1".into(), sorted_endpoint[1].0.clone());
     ports.insert("B2".into(), sorted_endpoint[2].0.clone());
 
-    Switch {
+    TrackNode {
         id: node.0.to_string().into(),
-        switch_type: "point_switch".into(),
+        track_node_type: "point_switch".into(),
         ports,
         group_change_delay: 4.,
         ..Default::default()
     }
 }
 
-pub fn cross_switch(node: NodeId, branches: &[Branch]) -> Switch {
+pub fn cross_switch(node: NodeId, branches: &[Branch]) -> TrackNode {
     let mut ports = HashMap::new();
     ports.insert("A1".into(), branches[0].0.clone());
     ports.insert("B1".into(), branches[0].1.clone());
     ports.insert("B2".into(), branches[1].0.clone());
     ports.insert("A2".into(), branches[1].1.clone());
 
-    Switch {
+    TrackNode {
         id: node.0.to_string().into(),
-        switch_type: "crossing".into(),
+        track_node_type: "crossing".into(),
         ports,
         group_change_delay: 4.,
         ..Default::default()
@@ -158,7 +158,7 @@ fn different_branches(a: &Branch, b: &Branch) -> bool {
     a.0 != b.0 && a.0 != b.1 && a.1 != b.0 && a.1 != b.1
 }
 
-pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
+pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> TrackNode {
     let (north1, south1) = &branches[0];
     let (north2, south2) = branches
         .iter()
@@ -171,9 +171,9 @@ pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
     ports.insert("A2".into(), north2.clone());
     ports.insert("B2".into(), south2.clone());
 
-    Switch {
+    TrackNode {
         id: node.0.to_string().into(),
-        switch_type: "double_slip_switch".into(),
+        track_node_type: "double_slip_switch".into(),
         ports,
         group_change_delay: 4.,
         ..Default::default()

@@ -33,9 +33,9 @@ pub async fn persist_railjson(
         operational_points,
         routes,
         signals,
-        switches,
+        track_nodes,
         speed_sections,
-        extended_switch_types,
+        extended_track_node_types,
         neutral_sections,
     } = railjson;
 
@@ -46,7 +46,6 @@ pub async fn persist_railjson(
         }
         .into());
     }
-
     connection
         .transaction(|conn| {
             Box::pin(async {
@@ -92,9 +91,9 @@ pub async fn persist_railjson(
                 )
                 .await?;
 
-                let _ = SwitchModel::create_batch::<_, Vec<_>>(
+                let _ = TrackNodeModel::create_batch::<_, Vec<_>>(
                     conn,
-                    SwitchModel::from_infra_schemas(infra_id, switches),
+                    TrackNodeModel::from_infra_schemas(infra_id, track_nodes),
                 )
                 .await?;
 
@@ -104,9 +103,9 @@ pub async fn persist_railjson(
                 )
                 .await?;
 
-                let _ = SwitchTypeModel::create_batch::<_, Vec<_>>(
+                let _ = TrackNodeTypeModel::create_batch::<_, Vec<_>>(
                     conn,
-                    SwitchTypeModel::from_infra_schemas(infra_id, extended_switch_types),
+                    TrackNodeTypeModel::from_infra_schemas(infra_id, extended_track_node_types),
                 )
                 .await?;
 

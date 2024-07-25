@@ -190,7 +190,7 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_layer_switch (id) {
+    infra_layer_track_node (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -255,7 +255,7 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_object_extended_switch_type (id) {
+    infra_object_extended_track_node_type (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -333,7 +333,7 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    infra_object_switch (id) {
+    infra_object_track_node (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -735,18 +735,18 @@ diesel::joinable!(infra_layer_operational_point -> infra (infra_id));
 diesel::joinable!(infra_layer_psl_sign -> infra (infra_id));
 diesel::joinable!(infra_layer_signal -> infra (infra_id));
 diesel::joinable!(infra_layer_speed_section -> infra (infra_id));
-diesel::joinable!(infra_layer_switch -> infra (infra_id));
+diesel::joinable!(infra_layer_track_node -> infra (infra_id));
 diesel::joinable!(infra_layer_track_section -> infra (infra_id));
 diesel::joinable!(infra_object_buffer_stop -> infra (infra_id));
 diesel::joinable!(infra_object_detector -> infra (infra_id));
 diesel::joinable!(infra_object_electrification -> infra (infra_id));
-diesel::joinable!(infra_object_extended_switch_type -> infra (infra_id));
+diesel::joinable!(infra_object_extended_track_node_type -> infra (infra_id));
 diesel::joinable!(infra_object_neutral_section -> infra (infra_id));
 diesel::joinable!(infra_object_operational_point -> infra (infra_id));
 diesel::joinable!(infra_object_route -> infra (infra_id));
 diesel::joinable!(infra_object_signal -> infra (infra_id));
 diesel::joinable!(infra_object_speed_section -> infra (infra_id));
-diesel::joinable!(infra_object_switch -> infra (infra_id));
+diesel::joinable!(infra_object_track_node -> infra (infra_id));
 diesel::joinable!(infra_object_track_section -> infra (infra_id));
 diesel::joinable!(pathfinding -> infra (infra_id));
 diesel::joinable!(project -> document (image_id));
@@ -789,18 +789,18 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_layer_psl_sign,
     infra_layer_signal,
     infra_layer_speed_section,
-    infra_layer_switch,
+    infra_layer_track_node,
     infra_layer_track_section,
     infra_object_buffer_stop,
     infra_object_detector,
     infra_object_electrification,
-    infra_object_extended_switch_type,
+    infra_object_extended_track_node_type,
     infra_object_neutral_section,
     infra_object_operational_point,
     infra_object_route,
     infra_object_signal,
     infra_object_speed_section,
-    infra_object_switch,
+    infra_object_track_node,
     infra_object_track_section,
     pathfinding,
     project,

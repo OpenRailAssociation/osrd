@@ -13,45 +13,45 @@ use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
 
 editoast_common::schemas! {
-    Switch,
+    TrackNode,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
-pub struct Switch {
+pub struct TrackNode {
     #[schema(inline)]
     pub id: Identifier,
     #[schema(inline)]
-    pub switch_type: Identifier,
+    pub track_node_type: Identifier,
     pub group_change_delay: f64,
     pub ports: HashMap<Identifier, TrackEndpoint>,
     #[serde(default)]
     #[schema(inline)]
-    pub extensions: SwitchExtensions,
+    pub extensions: TrackNodeExtensions,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
-pub struct SwitchExtensions {
+pub struct TrackNodeExtensions {
     #[schema(inline)]
-    sncf: Option<SwitchSncfExtension>,
+    sncf: Option<TrackNodeSncfExtension>,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
-pub struct SwitchSncfExtension {
+pub struct TrackNodeSncfExtension {
     #[schema(inline)]
     pub label: NonBlankString,
 }
 
-impl OSRDTyped for Switch {
+impl OSRDTyped for TrackNode {
     fn get_type() -> ObjectType {
-        ObjectType::Switch
+        ObjectType::TrackNode
     }
 }
 
-impl OSRDIdentified for Switch {
+impl OSRDIdentified for TrackNode {
     fn get_id(&self) -> &String {
         &self.id
     }

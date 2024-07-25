@@ -17,8 +17,8 @@ type NodePorts = &'static [&'static str];
 type NodeGroups = &'static [&'static [StaticMap]];
 
 editoast_common::schemas! {
-    SwitchType,
-    SwitchPortConnection,
+    TrackNodeType,
+    TrackNodePortConnection,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
@@ -34,21 +34,21 @@ editoast_common::schemas! {
         }
     }
 ))]
-pub struct SwitchType {
+pub struct TrackNodeType {
     #[schema(inline)]
     pub id: Identifier,
     #[schema(inline)]
     pub ports: Vec<Identifier>,
-    pub groups: HashMap<Identifier, Vec<SwitchPortConnection>>,
+    pub groups: HashMap<Identifier, Vec<TrackNodePortConnection>>,
 }
 
-impl OSRDTyped for SwitchType {
+impl OSRDTyped for TrackNodeType {
     fn get_type() -> ObjectType {
-        ObjectType::SwitchType
+        ObjectType::TrackNodeType
     }
 }
 
-impl OSRDIdentified for SwitchType {
+impl OSRDIdentified for TrackNodeType {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -57,14 +57,14 @@ impl OSRDIdentified for SwitchType {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
-pub struct SwitchPortConnection {
+pub struct TrackNodePortConnection {
     #[schema(inline)]
     pub src: Identifier,
     #[schema(inline)]
     pub dst: Identifier,
 }
 
-impl From<&StaticPortConnection> for SwitchPortConnection {
+impl From<&StaticPortConnection> for TrackNodePortConnection {
     fn from(connections: &StaticPortConnection) -> Self {
         Self {
             src: connections.0.into(),
@@ -172,12 +172,12 @@ impl BuiltinType for DoubleSlipSwitch {
     ];
 }
 
-impl<T: BuiltinType> From<T> for SwitchType {
+impl<T: BuiltinType> From<T> for TrackNodeType {
     fn from(_: T) -> Self {
-        let mut groups: HashMap<Identifier, Vec<SwitchPortConnection>> = HashMap::new();
+        let mut groups: HashMap<Identifier, Vec<TrackNodePortConnection>> = HashMap::new();
         for group in T::GROUPS {
             let group_name = group[0].0.into();
-            let mut vector: Vec<SwitchPortConnection> = vec![];
+            let mut vector: Vec<TrackNodePortConnection> = vec![];
             for el in group[0].1 {
                 vector.append(&mut vec![el.into()])
             }
@@ -193,7 +193,7 @@ impl<T: BuiltinType> From<T> for SwitchType {
     }
 }
 
-pub fn builtin_node_types_list() -> Vec<SwitchType> {
+pub fn builtin_node_types_list() -> Vec<TrackNodeType> {
     vec![
         Link.into(),
         PointSwitch.into(),

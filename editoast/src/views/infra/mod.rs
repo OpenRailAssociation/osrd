@@ -40,7 +40,7 @@ use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
 use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::infra::SwitchType;
+use editoast_schemas::infra::TrackNodeType;
 
 crate::routes! {
     "/infra" => {
@@ -58,7 +58,6 @@ crate::routes! {
             &attached,
             &edition,
             &errors,
-
             get,
             "/load" => load,
             delete,
@@ -68,7 +67,7 @@ crate::routes! {
             "/unlock" => unlock,
             "/speed_limit_tags" => get_speed_limit_tags,
             "/voltages" => get_voltages,
-            "/switch_types" => get_switch_types,
+            "/track_node_types" => get_track_node_types,
         },
     },
 }
@@ -416,22 +415,24 @@ async fn put(
     Ok(Json(infra))
 }
 
-/// Return the railjson list of switch types
+/// Return the railjson list of track_node types
 #[utoipa::path(
     get, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
-        (status = 200, description = "A list of switch types", body = Vec<SwitchType>),
+        (status = 200, description = "A list of track_node types", body = Vec<TrackNodeType>),
         (status = 404, description = "The infra was not found"),
     )
 )]
-async fn get_switch_types(
+
+async fn get_track_node_types(
     app_state: State<AppState>,
     Path(infra): Path<InfraIdParam>,
-) -> Result<Json<Vec<SwitchType>>> {
+) -> Result<Json<Vec<TrackNodeType>>> {
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
+
 
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
         InfraApiError::NotFound {
@@ -444,9 +445,9 @@ async fn get_switch_types(
         InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra).await?;
     Ok(Json(
         infra
-            .switch_types()
+            .track_node_types()
             .values()
-            .map(ObjectCache::unwrap_switch_type)
+            .map(ObjectCache::unwrap_track_node_type)
             .cloned()
             .collect(),
     ))
@@ -653,7 +654,7 @@ pub mod tests {
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Speed;
     use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::infra::TrackNodeType;
     use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::primitives::ObjectType;
 
@@ -702,14 +703,14 @@ pub mod tests {
             .await
             .unwrap();
 
-        let switch_type = SwitchType {
-            id: "test_switch_type".into(),
+        let track_node_type = TrackNodeType {
+            id: "test_track_node_type".into(),
             ..Default::default()
         }
         .into();
-        apply_create_operation(&switch_type, small_infra_id, db_pool.get_ok().deref_mut())
+        apply_create_operation(&track_node_type, small_infra_id, db_pool.get_ok().deref_mut())
             .await
-            .expect("Failed to create switch_type object");
+            .expect("Failed to create track_node_type object");
 
         let req_clone =
             app.post(format!("/infra/{}/clone/?name=cloned_infra", small_infra_id).as_str());
@@ -1013,17 +1014,17 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get_switch_types() {
+    async fn infra_get_track_node_types() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = app.get(format!("/infra/{}/switch_types/", empty_infra.id).as_str());
+        let req = app.get(format!("/infra/{}/track_node_types/", empty_infra.id).as_str());
 
-        let switch_types: Vec<SwitchType> =
+        let track_node_types: Vec<TrackNodeType> =
             app.fetch(req).assert_status(StatusCode::OK).json_into();
 
-        assert_eq!(switch_types.len(), 5);
+        assert_eq!(track_node_types.len(), 5);
     }
 
     #[rstest]

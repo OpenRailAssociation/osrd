@@ -101,7 +101,7 @@ async fn get_routes_from_waypoint(
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields, tag = "type")]
 enum RouteTrackRangesResult {
-    /// RoutePath contains N track ranges with the N-1 switches found inbetween, in the order they appear on the route
+    /// RoutePath contains N track ranges with the N-1 track_nodes found inbetween, in the order they appear on the route
     Computed(RoutePath),
     NotFound,
     CantComputePath,
@@ -132,7 +132,7 @@ struct RoutesFromNodesPositions {
         (
             status = 200,
             body = inline(Vec<RouteTrackRangesResult>),
-            description = "Foreach route, either tracks_ranges + switches found on the route, or an error"
+            description = "Foreach route, either tracks_ranges + track_nodes found on the route, or an error"
         )
     ),
 )]
@@ -164,7 +164,7 @@ async fn get_routes_track_ranges(
                 if let Some(route_path) = route_path {
                     RouteTrackRangesResult::Computed(RoutePath {
                         track_ranges: route_path.track_ranges,
-                        switches_directions: route_path.switches_directions,
+                        track_nodes_directions: route_path.track_nodes_directions,
                     })
                 } else {
                     RouteTrackRangesResult::CantComputePath
@@ -215,10 +215,10 @@ async fn get_routes_nodes(
         .values()
         .map(|object_cache| object_cache.unwrap_route())
         // We're only interested in routes that depend on specific node positions
-        .filter(|route| !route.switches_directions.is_empty())
+        .filter(|route| !route.track_nodes_directions.is_empty())
         .filter(|route| {
             node_states.iter().all(|(node_id, node_state)| {
-                match route.switches_directions.get(&node_id.as_str().into()) {
+                match route.track_nodes_directions.get(&node_id.as_str().into()) {
                     // The route crosses the requested node
                     Some(node_state_in_route) => {
                         if let Some(required_state) = node_state {
@@ -240,7 +240,7 @@ async fn get_routes_nodes(
             .fold(HashMap::new(), |mut acc, route| {
                 for (node_id, _) in node_states.iter() {
                     let node_direction = route
-                        .switches_directions
+                        .track_nodes_directions
                         .get(&node_id.clone().into())
                         .unwrap()
                         .to_string();

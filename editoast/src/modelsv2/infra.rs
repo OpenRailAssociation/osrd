@@ -301,8 +301,8 @@ pub mod tests {
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::infra::TrackNode;
+    use editoast_schemas::infra::TrackNodeType;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::primitives::OSRDIdentified;
@@ -382,8 +382,8 @@ pub mod tests {
         let railjson = RailJson {
             buffer_stops: (0..10).map(|_| Default::default()).collect(),
             routes: (0..10).map(|_| Default::default()).collect(),
-            extended_switch_types: (0..10).map(|_| Default::default()).collect(),
-            switches: (0..10).map(|_| Default::default()).collect(),
+            extended_track_node_types: (0..10).map(|_| Default::default()).collect(),
+            track_nodes: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
             neutral_sections: (0..10).map(|_| Default::default()).collect(),
@@ -429,20 +429,20 @@ pub mod tests {
             sort(railjson.routes)
         );
         assert_eq!(
-            sort::<SwitchType>(
+            sort::<TrackNodeType>(
                 find_all_schemas(db_pool.get_ok().deref_mut(), id)
                     .await
                     .unwrap()
             ),
-            sort(railjson.extended_switch_types)
+            sort(railjson.extended_track_node_types)
         );
         assert_eq!(
-            sort::<Switch>(
+            sort::<TrackNode>(
                 find_all_schemas(db_pool.get_ok().deref_mut(), id)
                     .await
                     .unwrap()
             ),
-            sort(railjson.switches)
+            sort(railjson.track_nodes)
         );
         assert_eq!(
             sort::<TrackSection>(

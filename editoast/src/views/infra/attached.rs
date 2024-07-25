@@ -24,7 +24,7 @@ const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
     ObjectType::Signal,
     ObjectType::SpeedSection,
     ObjectType::Detector,
-    ObjectType::Switch,
+    ObjectType::TrackNode,
     ObjectType::BufferStop,
     ObjectType::OperationalPoint,
     ObjectType::Electrification,
