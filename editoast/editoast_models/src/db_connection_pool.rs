@@ -1,3 +1,5 @@
+mod tracing_instrumentation;
+
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::sync::Arc;
@@ -160,7 +162,10 @@ impl DbConnectionPoolV2 {
 
     #[cfg(not(feature = "testing"))]
     async fn get_connection(&self) -> Result<DbConnection, DatabasePoolError> {
-        let connection = self.pool.get().await?;
+        use diesel_async::AsyncConnection as _;
+
+        let mut connection = self.pool.get().await?;
+        connection.set_instrumentation(tracing_instrumentation::TracingInstrumentation::default());
         Ok(DbConnection::new(Arc::new(RwLock::new(connection))))
     }
 
@@ -357,17 +362,20 @@ impl DbConnectionPoolV2 {
 
     #[cfg(feature = "testing")]
     pub async fn from_pool_test(pool: Arc<Pool<AsyncPgConnection>>, transaction: bool) -> Self {
-        use diesel_async::AsyncConnection;
-        let mut conn = pool
+        use diesel_async::AsyncConnection as _;
+
+        let mut connection = pool
             .get()
             .await
             .expect("cannot acquire a connection in the test pool");
+        connection.set_instrumentation(tracing_instrumentation::TracingInstrumentation::default());
         if transaction {
-            conn.begin_test_transaction()
+            connection
+                .begin_test_transaction()
                 .await
                 .expect("cannot begin a test transaction");
         }
-        let test_connection = Some(DbConnection::new(Arc::new(RwLock::new(conn))));
+        let test_connection = Some(DbConnection::new(Arc::new(RwLock::new(connection))));
 
         Self {
             pool,
