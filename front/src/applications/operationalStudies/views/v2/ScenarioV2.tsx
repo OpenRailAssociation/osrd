@@ -264,6 +264,7 @@ const ScenarioV2 = () => {
                           setTrainResultsToFetch={setTrainResultsToFetch}
                           trainIdToEdit={trainIdToEdit}
                           setTrainIdToEdit={setTrainIdToEdit}
+                          infraState={infra.state}
                         />
                       )}
                     {infra && (
