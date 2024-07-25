@@ -39,13 +39,6 @@ const TimesStops = ({
 }: TimesStopsProps) => {
   const isInputTable = tableType === TableType.Input;
   const { t } = useTranslation('timesStops');
-  if (!allWaypoints) {
-    return (
-      <div className="d-flex justify-content-center align-items-center h-100">
-        <p className="pt-1 px-5">{t('noPathLoaded')}</p>
-      </div>
-    );
-  }
 
   const dispatch = useAppDispatch();
   const { upsertViaFromSuggestedOP } = useOsrdConfActions();
@@ -53,17 +46,27 @@ const TimesStops = ({
   const [rows, setRows] = useState<PathWaypointRow[]>([]);
 
   useEffect(() => {
-    const suggestedOPs = formatSuggestedViasToRowVias(
-      allWaypoints,
-      pathSteps,
-      t,
-      startTime,
-      tableType
-    );
-    setRows(suggestedOPs);
+    if (allWaypoints) {
+      const suggestedOPs = formatSuggestedViasToRowVias(
+        allWaypoints,
+        pathSteps,
+        t,
+        startTime,
+        tableType
+      );
+      setRows(suggestedOPs);
+    }
   }, [allWaypoints, pathSteps, startTime]);
 
   const columns = useTimeStopsColumns(tableType, allWaypoints);
+
+  if (!allWaypoints) {
+    return (
+      <div className="d-flex justify-content-center align-items-center h-100">
+        <p className="pt-1 px-5">{t('noPathLoaded')}</p>
+      </div>
+    );
+  }
 
   return (
     <DynamicDataSheetGrid

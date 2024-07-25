@@ -23,7 +23,7 @@ const timeColumn: Partial<Column<string | null | undefined, string, string>> = {
 
 const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
 
-export const useTimeStopsColumns = (tableType: TableType, allWaypoints: SuggestedOP[]) => {
+export const useTimeStopsColumns = (tableType: TableType, allWaypoints: SuggestedOP[] = []) => {
   const { t } = useTranslation('timesStops');
   const columns = useMemo<Column<PathWaypointRow>[]>(() => {
     const isOutputTable = tableType === TableType.Output;
