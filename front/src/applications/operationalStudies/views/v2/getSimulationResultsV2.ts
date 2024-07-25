@@ -9,6 +9,7 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { store } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
+import { convertIsoUtcToLocalTime } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
 export const selectProjectionV2 = (
@@ -81,13 +82,15 @@ export const getSpaceTimeChartData = async (
           // For each key (train id) in projectPathTrainResult, we either add it or update it in the state
           Object.keys(projectPathTrainResult).forEach((trainId) => {
             const currentProjectedTrain = projectPathTrainResult[trainId];
-
             const matchingTrain = trainSchedules.find((train) => train.id === +trainId);
 
             const formattedProjectedPathTrainResult = {
               ...currentProjectedTrain,
               id: +trainId,
               trainName: matchingTrain?.train_name || 'Train name not found',
+              departure_time:
+                `${convertIsoUtcToLocalTime(currentProjectedTrain.departure_time).slice(0, -6)}Z` ||
+                '',
             };
 
             const foundTrainIndex = newSpaceTimeData.findIndex(
@@ -104,7 +107,7 @@ export const getSpaceTimeChartData = async (
             }
           });
 
-          return newSpaceTimeData;
+          return newSpaceTimeData.filter((train) => train.space_time_curves.length > 0);
         });
       }
     } catch (e) {

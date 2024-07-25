@@ -10,12 +10,12 @@ import { Rnd } from 'react-rnd';
 
 import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import type { ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { getScaleDomainFromValuesV2 } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SimulationResultsMapV2 from 'modules/simulationResult/components/SimulationResultsMapV2';
 import SpaceCurvesSlopesV2 from 'modules/simulationResult/components/SpaceCurvesSlopes/SpaceCurvesSlopesV2';
+import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import { useStoreDataForSpaceTimeChartV2 } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
@@ -28,7 +28,6 @@ import { updateViewport, type Viewport } from 'reducers/map';
 import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
 // TIMELINE DISABLED // import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
 import { useAppDispatch } from 'store';
-import { convertIsoUtcToLocalTime } from 'utils/date';
 
 const MAP_MIN_HEIGHT = 450;
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
@@ -46,7 +45,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
   const dispatch = useAppDispatch();
   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const isUpdating = useSelector(getIsUpdating);
-  const { infraId } = useStoreDataForSpaceTimeChartV2();
+  const { infraId, trainIdUsedForProjection } = useStoreDataForSpaceTimeChartV2();
 
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
@@ -81,14 +80,9 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
     infraId
   );
 
-  const manchetteSpaceTimeData: ProjectPathTrainResult[] = useMemo(
-    () =>
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      spaceTimeData.map(({ id, trainName, departure_time, ...rest }) => ({
-        ...rest,
-        departure_time: `${convertIsoUtcToLocalTime(departure_time).slice(0, -6)}Z` || '',
-      })),
-    [spaceTimeData]
+  const projectedOperationalPoints = useGetProjectedTrainOperationalPoints(
+    trainIdUsedForProjection,
+    infraId
   );
 
   const trainUsedForProjectionSpaceTimeData = useMemo(
@@ -156,7 +150,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
       */}
 
       {/* SIMULATION : SPACE TIME CHART */}
-      {manchetteSpaceTimeData.length > 0 && pathProperties && (
+      {spaceTimeData.length > 0 && pathProperties && (
         <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
           <button
             type="button"
@@ -172,8 +166,8 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
           <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
             <div className="chart-container">
               <SpaceTimeChartWithManchette
-                operationalPoints={pathProperties.operationalPoints}
-                projectPathTrainResult={manchetteSpaceTimeData}
+                operationalPoints={projectedOperationalPoints}
+                projectPathTrainResult={spaceTimeData}
               />
             </div>
           </div>
