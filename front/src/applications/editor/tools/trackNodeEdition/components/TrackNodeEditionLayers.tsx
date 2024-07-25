@@ -13,20 +13,20 @@ import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import type {
-  SwitchEditionState,
-  SwitchEntity,
-} from 'applications/editor/tools/switchEdition/types';
-import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
+  TrackNodeEditionState,
+  TrackNodeEntity,
+} from 'applications/editor/tools/trackNodeEdition/types';
+import useTrackNode from 'applications/editor/tools/trackNodeEdition/useTrackNode';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
-import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+import { getTrackNodesLayerProps, getTrackNodesNameLayerProps } from 'common/Map/Layers/TrackNodes';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 
-const SwitchEditionLayers = () => {
+const TrackNodeEditionLayers = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
@@ -35,21 +35,21 @@ const SwitchEditionLayers = () => {
     state,
     setState,
     editorState: { editorLayers },
-  } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
+  } = useContext(EditorContext) as ExtendedEditorContextType<TrackNodeEditionState>;
   const { entity, hovered, portEditionState, mousePosition } = state;
 
-  const { switchType } = useSwitch();
+  const { trackNodeType } = useTrackNode();
   const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
   const layerProps = useMemo(
     () =>
-      getSwitchesLayerProps({
+      getTrackNodesLayerProps({
         colors: colors[mapStyle],
       }),
     [mapStyle]
   );
   const nameLayerProps = useMemo(
     () =>
-      getSwitchesNameLayerProps({
+      getTrackNodesNameLayerProps({
         colors: colors[mapStyle],
       }),
     [mapStyle]
@@ -114,20 +114,20 @@ const SwitchEditionLayers = () => {
           trackSectionId: hoveredTrack.properties.id,
           trackSectionName:
             hoveredTrack.properties?.extensions?.sncf?.track_name ||
-            t('Editor.tools.switch-edition.untitled-track'),
+            t('Editor.tools.track-node-edition.untitled-track'),
         },
       },
     });
   }, [trackStatus, mousePosition, t]);
 
   const [geometryState, setGeometryState] = useState<
-    { type: 'loading'; entity?: undefined } | { type: 'ready'; entity?: SwitchEntity }
+    { type: 'loading'; entity?: undefined } | { type: 'ready'; entity?: TrackNodeEntity }
   >({ type: 'ready' });
 
   useEffect(() => {
     const port =
-      entity.properties?.ports && switchType
-        ? entity.properties.ports[switchType.ports[0]]
+      entity.properties?.ports && trackNodeType
+        ? entity.properties.ports[trackNodeType.ports[0]]
         : undefined;
 
     if (!port?.track) {
@@ -145,7 +145,7 @@ const SwitchEditionLayers = () => {
           setGeometryState({
             type: 'ready',
             entity: {
-              ...(entity as SwitchEntity),
+              ...(entity as TrackNodeEntity),
               type: 'Feature',
               geometry: {
                 type: 'Point',
@@ -156,7 +156,7 @@ const SwitchEditionLayers = () => {
         }
       );
     }
-  }, [entity?.properties?.ports, infraID, switchType]);
+  }, [entity?.properties?.ports, infraID, trackNodeType]);
 
   return (
     <>
@@ -189,7 +189,7 @@ const SwitchEditionLayers = () => {
           longitude={geometryState.entity.geometry.coordinates[0]}
           latitude={geometryState.entity.geometry.coordinates[1]}
         >
-          <EntitySumUp entity={entity as SwitchEntity} status="edited" />
+          <EntitySumUp entity={entity as TrackNodeEntity} status="edited" />
         </Popup>
       )}
 
@@ -216,4 +216,4 @@ const SwitchEditionLayers = () => {
   );
 };
 
-export default SwitchEditionLayers;
+export default TrackNodeEditionLayers;

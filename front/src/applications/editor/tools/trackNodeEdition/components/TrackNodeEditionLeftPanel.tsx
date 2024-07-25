@@ -8,15 +8,15 @@ import EditorForm from 'applications/editor/components/EditorForm';
 import EntityError from 'applications/editor/components/EntityError';
 import EditorContext from 'applications/editor/context';
 import type {
-  SwitchEditionState,
-  SwitchEntity,
-} from 'applications/editor/tools/switchEdition/types';
-import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
+  TrackNodeEditionState,
+  TrackNodeEntity,
+} from 'applications/editor/tools/trackNodeEdition/types';
+import useTrackNode from 'applications/editor/tools/trackNodeEdition/useTrackNode';
 import {
-  type FlatSwitchEntity,
-  flatSwitchToSwitch,
-  getNewSwitch,
-} from 'applications/editor/tools/switchEdition/utils';
+  type FlatTrackNodeEntity,
+  flatTrackNodeToTrackNode,
+  getNewTrackNode,
+} from 'applications/editor/tools/trackNodeEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor/thunkActions';
@@ -24,26 +24,26 @@ import { useAppDispatch } from 'store';
 
 import CustomSchemaField from './CustomSchemaField';
 
-const SwitchEditionLeftPanel = () => {
+const TrackNodeEditionLeftPanel = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
   const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
     EditorContext
-  ) as ExtendedEditorContextType<SwitchEditionState>;
+  ) as ExtendedEditorContextType<TrackNodeEditionState>;
   const submitBtnRef = useRef<HTMLButtonElement>(null);
 
   // Retrieve proper data
   const {
-    switchEntity,
-    flatSwitchEntity,
-    switchType,
-    switchTypeOptions,
-    switchTypeOptionsDict,
-    switchTypesDict,
-    switchTypeJSONSchema,
+    trackNodeEntity,
+    flatTrackNodeEntity,
+    trackNodeType,
+    trackNodeTypeOptions,
+    trackNodeTypeOptionsDict,
+    trackNodeTypesDict,
+    trackNodeTypeJSONSchema,
     isNew,
-  } = useSwitch();
+  } = useTrackNode();
 
   // Hack to be able to launch the submit event from the rjsf form by using
   // the toolbar button instead of the form one.
@@ -55,16 +55,16 @@ const SwitchEditionLeftPanel = () => {
     }
   }, [isFormSubmited]);
 
-  if (!switchType || !flatSwitchEntity) return null;
+  if (!trackNodeType || !flatTrackNodeEntity) return null;
   return (
     <div>
       <legend>{t('Editor.tools.switch-edition.switch-type')}</legend>
       <Select
-        options={switchTypeOptions}
-        value={switchTypeOptionsDict[switchType.id]}
+        options={trackNodeTypeOptions}
+        value={trackNodeTypeOptionsDict[trackNodeType.id]}
         onChange={(o) => {
-          if (o && o.value !== switchType.id) {
-            const newEntity = getNewSwitch(switchTypesDict[o.value]);
+          if (o && o.value !== trackNodeType.id) {
+            const newEntity = getNewTrackNode(trackNodeTypesDict[o.value]);
             // keep track of the common props when switching types
             setState({
               ...state,
@@ -84,14 +84,14 @@ const SwitchEditionLeftPanel = () => {
       />
       <hr />
       <EditorForm
-        key={switchType.id}
-        data={flatSwitchEntity}
-        overrideSchema={switchTypeJSONSchema}
+        key={trackNodeType.id}
+        data={flatTrackNodeEntity}
+        overrideSchema={trackNodeTypeJSONSchema}
         overrideFields={{
           SchemaField: CustomSchemaField,
         }}
-        onSubmit={async (flatSwitch) => {
-          const entityToSave = flatSwitchToSwitch(switchType, flatSwitch as FlatSwitchEntity);
+        onSubmit={async (flatTrackNode) => {
+          const entityToSave = flatTrackNodeToTrackNode(trackNodeType, flatTrackNode as FlatTrackNodeEntity);
 
           const res = await dispatch(
             save(
@@ -100,7 +100,7 @@ const SwitchEditionLeftPanel = () => {
                 ? {
                     update: [
                       {
-                        source: state.initialEntity as SwitchEntity,
+                        source: state.initialEntity as TrackNodeEntity,
                         target: entityToSave,
                       },
                     ],
@@ -124,13 +124,13 @@ const SwitchEditionLeftPanel = () => {
           }
         }}
         onChange={debounce((entity) => {
-          const flatSwitch = entity as FlatSwitchEntity;
+          const flatTrackNode = entity as FlatTrackNodeEntity;
           setState({
             ...state,
             portEditionState: { type: 'idle' },
             entity: {
-              ...flatSwitchToSwitch(switchType, flatSwitch),
-              geometry: flatSwitch.geometry,
+              ...flatTrackNodeToTrackNode(trackNodeType, flatTrackNode),
+              geometry: flatTrackNode.geometry,
             },
           });
         }, 200)}
@@ -142,9 +142,9 @@ const SwitchEditionLeftPanel = () => {
           </button>
         </div>
       </EditorForm>
-      {!isNew && <EntityError className="mt-1" entity={switchEntity} />}
+      {!isNew && <EntityError className="mt-1" entity={trackNodeEntity} />}
     </div>
   );
 };
 
-export default SwitchEditionLeftPanel;
+export default TrackNodeEditionLeftPanel;

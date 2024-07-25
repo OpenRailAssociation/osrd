@@ -6,16 +6,16 @@ import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 export const ENDPOINTS = ['BEGIN', 'END'] as const;
 export type EndPoint = (typeof ENDPOINTS)[number];
 
-type SwitchPortConnection = {
+type TrackNodePortConnection = {
   src: string;
   dst: string;
 };
 
-// TODO : Would be better and safer if editoast was sending this type in the getSwitchTypes endpoint so we can remove all related types
-export type SwitchType = {
+// TODO : Would be better and safer if editoast was sending this type in the getTrackNodeTypes endpoint so we can remove all related types
+export type TrackNodeType = {
   id: TrackNodeTypeId;
   ports: string[];
-  groups: Record<string, SwitchPortConnection[]>;
+  groups: Record<string, TrackNodePortConnection[]>;
 };
 
 export type TrackNodeTypeId =
@@ -30,10 +30,10 @@ export type TrackEndpoint = {
   track: string;
 };
 
-export type SwitchEntity = EditorEntity<
+export type TrackNodeEntity = EditorEntity<
   Point,
   {
-    switch_type: string;
+    track_node_type: string;
     ports: Record<string, TrackEndpoint>;
     extensions?: {
       sncf: {
@@ -42,7 +42,7 @@ export type SwitchEntity = EditorEntity<
     };
   }
 > & {
-  objType: 'Switch';
+  objType: 'TrackNode';
 };
 
 export type PortEndPointCandidate = {
@@ -52,9 +52,9 @@ export type PortEndPointCandidate = {
   trackSectionName: string;
 };
 
-export type SwitchEditionState = CommonToolState & {
-  initialEntity: Partial<SwitchEntity>;
-  entity: Partial<SwitchEntity>;
+export type TrackNodeEditionState = CommonToolState & {
+  initialEntity: Partial<TrackNodeEntity>;
+  entity: Partial<TrackNodeEntity>;
 
   portEditionState:
     | { type: 'idle' }

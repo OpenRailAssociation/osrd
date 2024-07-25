@@ -1060,14 +1060,14 @@
                     "title": "Release Detectors",
                     "type": "array"
                 },
-                "switches_directions": {
+                "track_nodes_directions": {
                     "additionalProperties": {
                         "maxLength": 255,
                         "minLength": 1,
                         "type": "string"
                     },
-                    "description": "Switches position part of the route",
-                    "title": "Switches Directions",
+                    "description": "TrackNodes position part of the route",
+                    "title": "TrackNodes Directions",
                     "type": "object"
                 }
             },
@@ -1077,7 +1077,7 @@
                 "entry_point_direction",
                 "exit_point",
                 "release_detectors",
-                "switches_directions"
+                "track_nodes_directions"
             ],
             "title": "Route",
             "type": "object"
@@ -1423,7 +1423,7 @@
             "type": "object"
         },
         "Switch": {
-            "description": "Switches are devices used for track changes.",
+            "description": "TrackNodes are devices used for track changes.",
             "properties": {
                 "extensions": {
                     "allOf": [
@@ -1454,7 +1454,7 @@
                     "title": "Ports",
                     "type": "object"
                 },
-                "switch_type": {
+                "track_node_type": {
                     "description": "Identifier and type of the switch type",
                     "maxLength": 255,
                     "minLength": 1,
@@ -1464,7 +1464,7 @@
             },
             "required": [
                 "id",
-                "switch_type",
+                "track_node_type",
                 "group_change_delay",
                 "ports"
             ],
@@ -1525,7 +1525,7 @@
             "title": "SwitchSncfExtension",
             "type": "object"
         },
-        "SwitchType": {
+        "TrackNodeType": {
             "description": "Switch types are used to define what kind of switch is used in the infrastructure.\nA switch type is defined by a list of ports and groups which are the possible configurations of the switch.",
             "properties": {
                 "groups": {
@@ -1547,7 +1547,7 @@
                     "type": "string"
                 },
                 "ports": {
-                    "description": "List of ports. Ports map to the ends of switches",
+                    "description": "List of ports. Ports map to the ends of track_nodes",
                     "items": {
                         "maxLength": 255,
                         "minLength": 1,
@@ -1563,7 +1563,7 @@
                 "ports",
                 "groups"
             ],
-            "title": "SwitchType",
+            "title": "TrackNodeType",
             "type": "object"
         },
         "TrackEndpoint": {
@@ -1915,7 +1915,7 @@
             "type": "object"
         },
         "__main____BaprSystem__Parameters": {
-            "properties": {},
+            "properties": { },
             "title": "Parameters",
             "type": "object"
         },
@@ -1971,7 +1971,7 @@
             "type": "object"
         },
         "__main____Tvm300System__Parameters": {
-            "properties": {},
+            "properties": { },
             "title": "Parameters",
             "type": "object"
         },
@@ -2018,7 +2018,7 @@
             "type": "object"
         },
         "__main____Tvm430System__Parameters": {
-            "properties": {},
+            "properties": { },
             "title": "Parameters",
             "type": "object"
         },
@@ -2066,11 +2066,11 @@
             "title": "Electrifications",
             "type": "array"
         },
-        "extended_switch_types": {
-            "default": [],
+        "extended_track_node_types": {
+            "default": [ ],
             "description": "Switch types of the infra that can be added by the user",
             "items": {
-                "$ref": "#/$defs/SwitchType"
+                "$ref": "#/$defs/TrackNodeType"
             },
             "title": "Extended Switch Types",
             "type": "array"
@@ -2115,12 +2115,12 @@
             "title": "Speed Sections",
             "type": "array"
         },
-        "switches": {
-            "description": "Switches of the infra",
+        "track_nodes": {
+            "description": "TrackNodes of the infra",
             "items": {
                 "$ref": "#/$defs/Switch"
             },
-            "title": "Switches",
+            "title": "TrackNodes",
             "type": "array"
         },
         "track_sections": {
@@ -2141,7 +2141,7 @@
     "required": [
         "operational_points",
         "routes",
-        "switches",
+        "track_nodes",
         "track_sections",
         "speed_sections",
         "electrifications",

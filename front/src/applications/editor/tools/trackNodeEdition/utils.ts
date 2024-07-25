@@ -8,21 +8,21 @@ import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
-import type { SwitchEntity, SwitchType, TrackEndpoint } from './types';
+import type { TrackNodeEntity, TrackNodeType, TrackEndpoint } from './types';
 
-export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
+export function getNewTrackNode(type: TrackNodeType): Partial<TrackNodeEntity> {
   return {
     type: 'Feature',
-    objType: 'Switch',
+    objType: 'TrackNode',
     properties: {
       ports: {},
-      switch_type: type.id as string,
+      track_node_type: type.id as string,
       id: NEW_ENTITY_ID,
     },
   };
 }
 
-export function isSwitchValid(entity: Partial<SwitchEntity>, type: SwitchType): boolean {
+export function isTrackNodeValid(entity: Partial<TrackNodeEntity>, type: TrackNodeType): boolean {
   return type.ports.every((port) => !!entity.properties?.ports[port]);
 }
 
@@ -31,24 +31,24 @@ export function isSwitchValid(entity: Partial<SwitchEntity>, type: SwitchType): 
  */
 export const FLAT_SWITCH_PORTS_PREFIX = 'port::' as const;
 
-export type FlatSwitchEntity = Omit<
+export type FlatTrackNodeEntity = Omit<
   EditorEntity<Point, { [key: `${typeof FLAT_SWITCH_PORTS_PREFIX}${string}`]: TrackEndpoint }>,
   'objType'
 > & {
-  objType: 'FlatSwitch';
+  objType: 'FlatTrackNode';
 };
 
 export const GROUP_CHANGE_DELAY = 'group_change_delay' as const;
 
-export function getSwitchTypeJSONSchema(
+export function getTrackNodeTypeJSONSchema(
   baseSchema: JSONSchema7,
-  switchType: SwitchType
+  trackNodeType: TrackNodeType
 ): JSONSchema7 {
   return {
     ...baseSchema,
     properties: {
-      ...omit(baseSchema.properties, 'ports', 'switch_type'),
-      ...switchType.ports.reduce(
+      ...omit(baseSchema.properties, 'ports', 'track_node_type'),
+      ...trackNodeType.ports.reduce(
         (iter, port) => ({
           ...iter,
           [`${FLAT_SWITCH_PORTS_PREFIX}${port}`]: {
@@ -60,28 +60,28 @@ export function getSwitchTypeJSONSchema(
       ),
     },
     required: [
-      ...without(baseSchema.required || [], 'ports', 'switch_type'),
-      ...switchType.ports.map((port) => `${FLAT_SWITCH_PORTS_PREFIX}${port}`),
+      ...without(baseSchema.required || [], 'ports', 'track_node_type'),
+      ...trackNodeType.ports.map((port) => `${FLAT_SWITCH_PORTS_PREFIX}${port}`),
     ],
   };
 }
 
-export function flatSwitchToSwitch(
-  switchType: SwitchType,
-  flatSwitch: FlatSwitchEntity
-): SwitchEntity {
+export function flatTrackNodeToTrackNode(
+  trackNodeType: TrackNodeType,
+  flatTrackNode: FlatTrackNodeEntity
+): TrackNodeEntity {
   return {
-    ...flatSwitch,
-    objType: 'Switch',
+    ...flatTrackNode,
+    objType: 'TrackNode',
     properties: {
-      ...omitBy(flatSwitch.properties, (_, key) => key.indexOf(FLAT_SWITCH_PORTS_PREFIX) === 0),
-      id: flatSwitch.properties.id,
-      switch_type: switchType.id as string,
+      ...omitBy(flatTrackNode.properties, (_, key) => key.indexOf(FLAT_SWITCH_PORTS_PREFIX) === 0),
+      id: flatTrackNode.properties.id,
+      track_node_type: trackNodeType.id as string,
       ports: {
-        ...switchType.ports.reduce(
+        ...trackNodeType.ports.reduce(
           (iter, port) => ({
             ...iter,
-            [port]: flatSwitch.properties[`${FLAT_SWITCH_PORTS_PREFIX}${port}`],
+            [port]: flatTrackNode.properties[`${FLAT_SWITCH_PORTS_PREFIX}${port}`],
           }),
           {}
         ),
@@ -90,19 +90,19 @@ export function flatSwitchToSwitch(
   };
 }
 
-export function switchToFlatSwitch(
-  switchType: SwitchType,
-  inputSwitch: SwitchEntity
-): FlatSwitchEntity {
+export function trackNodeToFlatTrackNode(
+  trackNodeType: TrackNodeType,
+  inputTrackNode: TrackNodeEntity
+): FlatTrackNodeEntity {
   return {
-    ...inputSwitch,
-    objType: 'FlatSwitch',
+    ...inputTrackNode,
+    objType: 'FlatTrackNode',
     properties: {
-      ...omit(inputSwitch.properties, 'ports', 'switch_type'),
-      ...switchType.ports.reduce(
+      ...omit(inputTrackNode.properties, 'ports', 'track_node_type'),
+      ...trackNodeType.ports.reduce(
         (iter, port) => ({
           ...iter,
-          [`${FLAT_SWITCH_PORTS_PREFIX}${port}`]: inputSwitch.properties.ports[port],
+          [`${FLAT_SWITCH_PORTS_PREFIX}${port}`]: inputTrackNode.properties.ports[port],
         }),
         {}
       ),
@@ -119,10 +119,10 @@ const trackNodeTypeOrder = [
   'double_slip_switch',
 ];
 
-export function useSwitchTypes(infraID: number | undefined) {
-  const [data, setData] = useState<SwitchType[]>([]);
-  const [getInfraSwitchTypes, { isLoading, error }] =
-    osrdEditoastApi.endpoints.getInfraByInfraIdSwitchTypes.useLazyQuery({});
+export function useTrackNodeTypes(infraID: number | undefined) {
+  const [data, setData] = useState<TrackNodeType[]>([]);
+  const [getInfraTrackNodeTypes, { isLoading, error }] =
+    osrdEditoastApi.endpoints.getInfraByInfraIdTrackNodeTypes.useLazyQuery({});
 
   const fetch = useCallback(
     async (infraId?: number) => {
@@ -130,10 +130,10 @@ export function useSwitchTypes(infraID: number | undefined) {
       setData([]);
       try {
         if (!isNil(infraId)) {
-          const resp = getInfraSwitchTypes({ infraId });
+          const resp = getInfraTrackNodeTypes({ infraId });
           const result = await resp.unwrap();
           if (result) {
-            const orderedData = [...result] as SwitchType[];
+            const orderedData = [...result] as TrackNodeType[];
             orderedData.sort(
               (a, b) => trackNodeTypeOrder.indexOf(a.id) - trackNodeTypeOrder.indexOf(b.id)
             );
@@ -147,7 +147,7 @@ export function useSwitchTypes(infraID: number | undefined) {
         console.error(e);
       }
     },
-    [getInfraSwitchTypes]
+    [getInfraTrackNodeTypes]
   );
 
   useEffect(() => {

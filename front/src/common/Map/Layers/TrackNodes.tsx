@@ -10,7 +10,7 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { RootState } from 'reducers';
 import type { Theme, OmitLayer } from 'types';
 
-export function getSwitchesLayerProps(params: {
+export function getTrackNodesLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
 }): OmitLayer<CircleLayer> {
@@ -18,7 +18,7 @@ export function getSwitchesLayerProps(params: {
     type: 'circle',
     minzoom: 8,
     paint: {
-      'circle-stroke-color': params.colors.switches.circle,
+      'circle-stroke-color': params.colors.track_nodes.circle,
       'circle-stroke-width': 2,
       'circle-color': 'rgba(255, 255, 255, 0)',
       'circle-radius': 3,
@@ -29,7 +29,7 @@ export function getSwitchesLayerProps(params: {
   return res;
 }
 
-export function getSwitchesNameLayerProps(params: {
+export function getTrackNodesNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
 }): OmitLayer<SymbolLayer> {
@@ -47,9 +47,9 @@ export function getSwitchesNameLayerProps(params: {
       visibility: 'visible',
     },
     paint: {
-      'text-color': params.colors.switches.text,
+      'text-color': params.colors.track_nodes.text,
       'text-halo-width': 2,
-      'text-halo-color': params.colors.switches.halo,
+      'text-halo-color': params.colors.track_nodes.halo,
       'text-halo-blur': 1,
     },
   };
@@ -58,29 +58,29 @@ export function getSwitchesNameLayerProps(params: {
   return res;
 }
 
-interface SwitchesProps {
+interface TrackNodesProps {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
 }
 
-const Switches = ({ colors, layerOrder, infraID }: SwitchesProps) => {
+const TrackNodes = ({ colors, layerOrder, infraID }: TrackNodesProps) => {
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
-  const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
-  const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });
+  const layerPoint = getTrackNodesLayerProps({ colors, sourceTable: 'track_nodes' });
+  const layerName = getTrackNodesNameLayerProps({ colors, sourceTable: 'track_nodes' });
 
-  if (!layersSettings.switches || isNil(infraID)) return null;
+  if (!layersSettings.track_nodes || isNil(infraID)) return null;
   return (
     <Source
-      id="osrd_switches_geo"
+      id="osrd_track_nodes_geo"
       type="vector"
-      url={`${MAP_URL}/layer/switches/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/track_nodes/mvt/geo/?infra=${infraID}`}
     >
-      <OrderedLayer {...layerPoint} id="chartis/osrd_switches/geo" layerOrder={layerOrder} />
-      <OrderedLayer {...layerName} id="chartis/osrd_switches_name/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...layerPoint} id="chartis/osrd_track_nodes/geo" layerOrder={layerOrder} />
+      <OrderedLayer {...layerName} id="chartis/osrd_track_nodes_name/geo" layerOrder={layerOrder} />
     </Source>
   );
 };
 
-export default Switches;
+export default TrackNodes;

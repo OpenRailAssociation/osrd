@@ -321,7 +321,7 @@
         "description": "Détecteur autorisant la libération des ressources réservées depuis le début de l’itinéraire",
         "title": "Détecteurs de libération"
       },
-      "switches_directions": {
+      "track_nodes_directions": {
         "description": "Liste des directions des aiguilles sur l’itinéraire.",
         "title": "Directions des aiguilles"
       }
@@ -472,7 +472,7 @@
     },
     "title": "Extensions spécifiques à la SNCF"
   },
-  "Switch": {
+  "TrackNode": {
     "description": "Les aiguilles sont des appareils permettant de changer de voies.",
     "properties": {
       "group_change_delay": {
@@ -490,7 +490,7 @@
     },
     "title": "Aiguille"
   },
-  "SwitchPortConnection": {
+  "TrackNodePortConnection": {
     "description": "Connexion entre chaque branche d’un type d’aiguille. Elle est toujours bidirectionnelle.",
     "properties": {
       "dst": {
@@ -504,7 +504,7 @@
     },
     "title": "Connexion des branches de l’aiguille"
   },
-  "SwitchSncfExtension": {
+  "TrackNodeSncfExtension": {
     "properties": {
       "label": {
         "description": "Identifiant de l’aiguille",
@@ -513,7 +513,7 @@
     },
     "title": "Extension spécifique à la SNCF"
   },
-  "SwitchType": {
+  "TrackNodeType": {
     "description": "Liste de branches et groupes pouvant servir à configurer une aiguille.",
     "properties": {
       "groups": {
@@ -690,7 +690,7 @@
       "description": "Types d’aiguille de l’infrastructure",
       "title": "Types d’aiguille"
     },
-    "switches": {
+    "track_nodes": {
       "description": "Aiguilles de l’infrastructure",
       "title": "Aiguilles"
     },

@@ -207,7 +207,7 @@ function getRangeEditionTool<T extends EditorRange>({
       if (hoveredItem) return 'pointer';
       return 'default';
     },
-    onClickMap(e, { setState, state: { entity, interactionState, selectedTrackNodees } }) {
+    onClickMap(e, { setState, state: { entity, interactionState, selectedTrackNodes } }) {
       const feature = (e.features || [])[0];
 
       if (interactionState.type === 'selectTrackNode') {

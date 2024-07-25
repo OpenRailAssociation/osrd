@@ -1,6 +1,6 @@
 import type { Feature } from 'geojson';
 
-import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
+import type { TrackNodeType } from 'applications/editor/tools/trackNodeEdition/types';
 import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { Allowance, PathResponse, RangedValue } from 'common/api/osrdEditoastApi';
@@ -39,7 +39,7 @@ export default function commonConfBuilder() {
         minutes: 3,
       },
     }),
-    buildSwitchType: (): SwitchType => ({
+    buildTrackNodeType: (): TrackNodeType => ({
       id: 'point_switch',
       ports: ['A', 'B1', 'B2'],
       groups: {

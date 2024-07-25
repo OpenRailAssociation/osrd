@@ -43,7 +43,7 @@ const parseData = (
   };
 };
 
-function LegendComfortSwitches(props: {
+function LegendComfortTrackNodes(props: {
   curvesComfortList: RollingStockComfortType[];
   comfortsStates: { [key: string]: boolean };
   onComfortsStatesChange: (comfort: string) => void;
@@ -57,7 +57,7 @@ function LegendComfortSwitches(props: {
           className={cx('curves-chart-legend-comfort-button', {
             active: comfortsStates[comfort],
           })}
-          key={`comfortSwitch-${comfort}`}
+          key={`comfortTrackNode-${comfort}`}
           role="button"
           tabIndex={0}
           onClick={() => onComfortsStatesChange(comfort)}
@@ -316,7 +316,7 @@ export default function RollingStockCurve({
   return (
     <div className="rollingstock-curves">
       <div className="curves-chart-legend">
-        <LegendComfortSwitches
+        <LegendComfortTrackNodes
           curvesComfortList={isOnEditionMode ? [curvesComfortList[0]] : curvesComfortList}
           comfortsStates={comfortsStates}
           onComfortsStatesChange={changeComfortState}

@@ -6,7 +6,7 @@ import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import EyeToggle from 'common/EyeToggle/EyeToggle';
 
 type RouteListProps = {
-  switchesRouteCandidates: string[];
+  track_nodesRouteCandidates: string[];
   onRouteHighlight: (routeId: string) => Promise<void>;
   selectedRoutes: string[];
   onRouteSelect: (routeId: string) => Promise<void>;
@@ -14,7 +14,7 @@ type RouteListProps = {
 };
 
 function RouteList({
-  switchesRouteCandidates,
+  track_nodesRouteCandidates,
   onRouteSelect,
   selectedRoutes,
   onRouteHighlight,
@@ -25,7 +25,7 @@ function RouteList({
   return (
     <div className="my-3 w-100">
       <h4 className="pb-0">{t('Editor.tools.speed-edition.select-route')}</h4>
-      {switchesRouteCandidates.map((route) => (
+      {track_nodesRouteCandidates.map((route) => (
         <div key={route} className="d-flex align-items-center justify-content-between w-75">
           {route}
           <div className="d-flex">

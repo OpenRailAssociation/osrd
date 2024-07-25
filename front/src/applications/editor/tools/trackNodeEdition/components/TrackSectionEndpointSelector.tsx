@@ -11,9 +11,9 @@ import { getEntity } from 'applications/editor/data/api';
 import {
   ENDPOINTS,
   type PortEndPointCandidate,
-  type SwitchEditionState,
-} from 'applications/editor/tools/switchEdition/types';
-import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEdition/utils';
+  type TrackNodeEditionState,
+} from 'applications/editor/tools/trackNodeEdition/types';
+import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/trackNodeEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
@@ -30,7 +30,7 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
   const dispatch = useAppDispatch();
   const { state, setState } = useContext(
     EditorContext
-  ) as ExtendedEditorContextType<SwitchEditionState>;
+  ) as ExtendedEditorContextType<TrackNodeEditionState>;
 
   const duplicateWith = useMemo(() => {
     const allPorts = Object.entries(state.entity.properties?.ports ?? {});

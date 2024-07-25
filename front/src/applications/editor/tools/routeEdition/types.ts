@@ -4,7 +4,7 @@ import type {
   BufferStopEntity,
   DetectorEntity,
 } from 'applications/editor/tools/pointEdition/types';
-import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
+import type { EndPoint } from 'applications/editor/tools/trackNodeEdition/types';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { Direction, DirectionalTrackRange } from 'common/api/osrdEditoastApi';
@@ -24,7 +24,7 @@ export type RouteEntity = EditorEntity<
     entry_point: WayPoint;
     entry_point_direction: Direction;
     exit_point: WayPoint;
-    switches_directions: Record<string, string>;
+    track_nodes_directions: Record<string, string>;
     release_detectors: string[];
   }
 > & {
@@ -34,7 +34,7 @@ export type RouteEntity = EditorEntity<
 export type RouteCandidate = {
   track_ranges: Required<DirectionalTrackRange>[];
   detectors: string[];
-  switches_directions: Record<string, string>;
+  track_nodes_directions: Record<string, string>;
 };
 
 export enum EndPointKeys {

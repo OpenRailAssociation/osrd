@@ -10,7 +10,7 @@ import type {
   WayPointEntity,
   RouteEditionState,
 } from 'applications/editor/tools/routeEdition/types';
-import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
+import type { EndPoint } from 'applications/editor/tools/trackNodeEdition/types';
 
 import WayPointInput from './WayPointInput';
 
@@ -18,7 +18,7 @@ export const Endpoints: FC<{
   entity: RouteEditionState['entity'];
   onExtremityChange: (waypoint: WayPointEntity | null, endPoint: EndPoint) => void;
   onExtremitiesSiwtch: () => void;
-}> = ({ entity, onExtremityChange, onExtremitiesSiwtch: onExtremitiesSwitch }) => {
+}> = ({ entity, onExtremityChange, onExtremitiesSiwtch: onExtremitiesTrackNode }) => {
   const { t } = useTranslation();
 
   const entryPoint = useMemo(
@@ -49,9 +49,9 @@ export const Endpoints: FC<{
           type="button"
           className="btn btn-secondary btn-sm"
           disabled={!entity || !entity.properties.entry_point || !entity.properties.exit_point}
-          onClick={onExtremitiesSwitch}
+          onClick={onExtremitiesTrackNode}
         >
-          <HiSwitchVertical /> {t('Editor.tools.routes-edition.swap-endpoints')}
+          <HiTrackNodeVertical /> {t('Editor.tools.routes-edition.swap-endpoints')}
         </button>
       </div>
       <h5 className="mt-4">

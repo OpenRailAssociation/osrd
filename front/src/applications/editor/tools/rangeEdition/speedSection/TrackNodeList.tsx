@@ -9,46 +9,46 @@ import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { useInfraID } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 
-import useSwitchTypes from '../../switchEdition/useSwitchTypes';
+import useTrackNodeTypes from '../../trackNodeEdition/useTrackNodeTypes';
 import type {
-  AvailableSwitchPositions,
+  AvailableTrackNodePositions,
   RangeEditionState,
   SpeedSectionEntity,
-  SwitchSelection,
+  TrackNodeSelection,
 } from '../types';
 
-type SwitchListProps = {
-  selectedSwitches: SwitchSelection;
-  unselectSwitch: (swId: string) => () => void;
-  setSwitchSelection: (
+type TrackNodeListProps = {
+  selectedTrackNodes: TrackNodeSelection;
+  unselectTrackNode: (swId: string) => () => void;
+  setTrackNodeSelection: (
     stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
   ) => void;
-  availableSwitchesPositions: AvailableSwitchPositions;
+  availableTrackNodesPositions: AvailableTrackNodePositions;
 };
 
-const SwitchList: React.FC<SwitchListProps> = ({
-  selectedSwitches,
-  unselectSwitch,
-  setSwitchSelection,
+const TrackNodeList: React.FC<TrackNodeListProps> = ({
+  selectedTrackNodes,
+  unselectTrackNode,
+  setTrackNodeSelection,
   /** possible positions based on the routes found */
-  availableSwitchesPositions,
+  availableTrackNodesPositions,
 }) => {
   const infraID = useInfraID();
-  const { data: switchTypes } = useSwitchTypes(infraID);
+  const { data: trackNodeTypes } = useTrackNodeTypes(infraID);
 
-  /** Switch positions ordered by type for the current infra */
-  const switchPositionsByType = switchTypes.reduce<AvailableSwitchPositions>(
-    (acc, switchType) => ({
+  /** TrackNode positions ordered by type for the current infra */
+  const trackNodePositionsByType = trackNodeTypes.reduce<AvailableTrackNodePositions>(
+    (acc, trackNodeType) => ({
       ...acc,
-      [switchType.id]: ['Any', ...Object.keys(switchType.groups).sort()],
+      [trackNodeType.id]: ['Any', ...Object.keys(trackNodeType.groups).sort()],
     }),
     {}
   );
 
   return (
-    <div className="mt-3 switch-list">
-      {Object.keys(selectedSwitches).map((swId, index) => {
-        const { position, type } = selectedSwitches[swId];
+    <div className="mt-3 track-node-list">
+      {Object.keys(selectedTrackNodes).map((swId, index) => {
+        const { position, type } = selectedTrackNodes[swId];
         return (
           <div className="d-flex mb-3" key={index}>
             <div className="d-flex">
@@ -57,20 +57,21 @@ const SwitchList: React.FC<SwitchListProps> = ({
                 className="align-self-end btn btn-primary btn-sm px-2 mr-2"
                 aria-label={t('common.delete')}
                 title={t('common.delete')}
-                onClick={unselectSwitch(swId)}
+                onClick={unselectTrackNode(swId)}
               >
                 <FaTimes />
               </button>
-              <span className="align-self-end">{`${t('Editor.obj-types.Switch')} ${swId}`}</span>
+              <span className="align-self-end">{`${t('Editor.obj-types.TrackNode')} ${swId}`}</span>
             </div>
             <div className="d-flex ml-4">
-              {switchPositionsByType[type]?.map((optPosition, posIndex) => {
+
+              {trackNodePositionsByType[type]?.map((optPosition, posIndex) => {
                 const isPositionNull = optPosition === 'Any';
                 const isButtonIncompatible =
-                  Object.keys(selectedSwitches).length > 1 &&
-                  !!Object.keys(availableSwitchesPositions).length &&
+                  Object.keys(selectedTrackNodes).length > 1 &&
+                  !!Object.keys(availableTrackNodesPositions).length &&
                   !isPositionNull &&
-                  !(availableSwitchesPositions[swId] || []).includes(optPosition);
+                  !(availableTrackNodesPositions[swId] || []).includes(optPosition);
                 const isButtonChecked =
                   (position === null && isPositionNull) || position === optPosition;
 
@@ -87,19 +88,19 @@ const SwitchList: React.FC<SwitchListProps> = ({
                     <Tipped disableTooltip={!isButtonIncompatible}>
                       <CheckboxRadioSNCF
                         containerClassName={cx({
-                          'incompatible-configuration-switch': isButtonIncompatible,
+                          'incompatible-configuration-track-node': isButtonIncompatible,
                         })}
                         type="radio"
                         label=""
                         id={`${swId}-${optPosition}`}
                         name={swId}
                         onChange={() => {
-                          setSwitchSelection((prev) => ({
+                          setTrackNodeSelection((prev) => ({
                             ...prev,
-                            selectedSwitches: {
-                              ...selectedSwitches,
+                            selectedTrackNodes: {
+                              ...selectedTrackNodes,
                               [swId]: {
-                                ...prev.selectedSwitches[swId],
+                                ...prev.selectedTrackNodes[swId],
                                 position: isPositionNull ? null : optPosition,
                               },
                             },
@@ -108,7 +109,7 @@ const SwitchList: React.FC<SwitchListProps> = ({
                         checked={isButtonChecked}
                       />
                       <div className="incompatible-tooltip">
-                        {t('Editor.tools.speed-edition.incompatible-switch')}
+                        {t('Editor.tools.speed-edition.incompatible-track-node')}
                       </div>
                     </Tipped>
                   </div>
@@ -122,4 +123,4 @@ const SwitchList: React.FC<SwitchListProps> = ({
   );
 };
 
-export default SwitchList;
+export default TrackNodeList;

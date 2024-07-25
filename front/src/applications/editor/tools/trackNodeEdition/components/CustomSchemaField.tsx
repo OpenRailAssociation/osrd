@@ -3,11 +3,11 @@ import React, { type FC, Suspense, lazy } from 'react';
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
 import type { FieldProps } from '@rjsf/utils';
 
-import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
+import useTrackNode from 'applications/editor/tools/trackNodeEdition/useTrackNode';
 import {
   FLAT_SWITCH_PORTS_PREFIX,
   GROUP_CHANGE_DELAY,
-} from 'applications/editor/tools/switchEdition/utils';
+} from 'applications/editor/tools/trackNodeEdition/utils';
 import { Loader } from 'common/Loaders';
 
 import TrackSectionEndpointSelector from './TrackSectionEndpointSelector';
@@ -16,15 +16,15 @@ const TrackNodeTypeDiagram = lazy(() => import('./TrackNodeTypeDiagram'));
 
 const CustomSchemaField: FC<FieldProps> = (props) => {
   const { name = '' } = props;
-  const { switchType } = useSwitch();
+  const { trackNodeType } = useTrackNode();
   if (name === GROUP_CHANGE_DELAY)
     return (
       <div>
         <SchemaField {...props} />
-        {switchType && (
+        {trackNodeType && (
           <div className="mt-5">
             <Suspense fallback={<Loader />}>
-              <TrackNodeTypeDiagram trackNodeType={switchType.id} />
+              <TrackNodeTypeDiagram trackNodeType={trackNodeType.id} />
             </Suspense>
           </div>
         )}

@@ -43,7 +43,7 @@ function getEmptyRoute(): RouteEntity {
       entry_point: { type: 'Detector', id: NEW_ENTITY_ID },
       entry_point_direction: 'START_TO_STOP',
       exit_point: { type: 'Detector', id: NEW_ENTITY_ID },
-      switches_directions: {},
+      track_nodes_directions: {},
       release_detectors: [],
     },
   };

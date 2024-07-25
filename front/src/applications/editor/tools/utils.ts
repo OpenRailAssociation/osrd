@@ -26,7 +26,7 @@ import type {
 } from 'applications/editor/tools/rangeEdition/types';
 import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
 import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
-import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types';
+import type { TrackNodeEntity } from 'applications/editor/tools/trackNodeEdition/types';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { EditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
@@ -133,7 +133,7 @@ export function selectEntities(
   }
 ): void {
   const { switchTool, dispatch, editorState } = context;
-  // call the switch tool
+  // call the trackNode tool
   switchTool({
     toolType: TOOL_NAMES.SELECTION,
     toolState: { selection: entities },
@@ -204,17 +204,17 @@ export function openEntityEditionPanel(
         },
       });
       break;
-    case 'Switch':
-      switchTool({
+    case 'TrackNode':
+      trackNodeTool({
         toolType: TOOL_NAMES.SWITCH_EDITION,
         toolState: {
-          initialEntity: entity as SwitchEntity,
-          entity: entity as SwitchEntity,
+          initialEntity: entity as TrackNodeEntity,
+          entity: entity as TrackNodeEntity,
         },
       });
       break;
     case 'SpeedSection':
-      switchTool({
+      trackNodePropsPropsTool({
         toolType: TOOL_NAMES.SPEED_SECTION_EDITION,
         toolState: {
           initialEntity: entity as SpeedSectionEntity,
@@ -223,7 +223,7 @@ export function openEntityEditionPanel(
       });
       break;
     case 'Electrification':
-      switchTool({
+      trackNodePropsPropsTool({
         toolType: TOOL_NAMES.ELECTRIFICATION_EDITION,
         toolState: {
           initialEntity: entity as ElectrificationEntity,
@@ -232,7 +232,7 @@ export function openEntityEditionPanel(
       });
       break;
     case 'Route':
-      switchTool({
+      trackNodePropsPropsTool({
         toolType: TOOL_NAMES.ROUTE_EDITION,
         toolState: getRouteEditionState(entity as RouteEntity),
       });

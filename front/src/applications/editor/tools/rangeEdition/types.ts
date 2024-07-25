@@ -36,7 +36,7 @@ export type ApplicableTrackRange = {
 export type RouteElements = {
   [key: string]: {
     trackRanges: ApplicableTrackRange[];
-    switches: string[];
+    track_nodes: string[];
   };
 };
 
@@ -166,7 +166,7 @@ export type InteractionState =
   | { type: 'idle' }
   | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
   | ({ type: 'moveSign' } & PslSignInformation)
-  | { type: 'selectSwitch' };
+  | { type: 'selectTrackNode' };
 
 export type RangeEditionState<E extends EditorRange> = CommonToolState & {
   error?: string;
@@ -175,22 +175,22 @@ export type RangeEditionState<E extends EditorRange> = CommonToolState & {
   hoveredItem: HoveredItem;
   interactionState: InteractionState;
   trackSectionsCache: Record<string, TrackState>;
-  selectedSwitches: SwitchSelection;
+  selectedTrackNodes: TrackNodeSelection;
   optionsState?: OptionsStateType;
   highlightedRoutes: string[];
   routeElements: RouteElements;
   routeExtra?: RouteExtra;
 };
 
-export type SwitchPosition = {
+export type TrackNodePosition = {
   [key: string]: string | null;
 };
 
-export type AvailableSwitchPositions = {
+export type AvailableTrackNodePositions = {
   [key: string]: string[];
 };
 
-export type SwitchSelection = {
+export type TrackNodeSelection = {
   [key: string]: {
     position: string | null;
     type: string;

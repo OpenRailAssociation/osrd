@@ -19,7 +19,7 @@ import {
   getRouteGeometries,
   routeHasExtremities,
 } from 'applications/editor/tools/routeEdition/utils';
-import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
+import type { EndPoint } from 'applications/editor/tools/trackNodeEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
@@ -208,7 +208,7 @@ const RouteEditionPanel: FC = () => {
             ...(!isCurrentSelection
               ? {
                   entry_point_direction: candidate.data.track_ranges[0].direction,
-                  switches_directions: candidate.data.switches_directions,
+                  track_nodes_directions: candidate.data.track_nodes_directions,
                   release_detectors: candidate.data.detectors,
                 }
               : {}),
@@ -265,7 +265,7 @@ const RouteEditionPanel: FC = () => {
   /**
    * Function to switch extremities
    */
-  const extremetiesSwitch = useCallback(() => {
+  const extremetiesTrackNode = useCallback(() => {
     setState((prev) => ({
       ...prev,
       entity: {
@@ -310,7 +310,7 @@ const RouteEditionPanel: FC = () => {
       <Endpoints
         entity={state.entity}
         onExtremityChange={extremetyUpdate}
-        onExtremitiesSiwtch={extremetiesSwitch}
+        onExtremitiesSiwtch={extremetiesTrackNode}
       />
 
       <hr />

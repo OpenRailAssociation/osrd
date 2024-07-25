@@ -20,7 +20,7 @@ import track_nodesIcon from 'assets/pictures/layersicons/track_nodes.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
+import MapSettingsBackgroundTrackNodees from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import { useInfraID } from 'common/osrdContext';

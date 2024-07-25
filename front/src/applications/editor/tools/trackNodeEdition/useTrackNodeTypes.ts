@@ -4,7 +4,7 @@ import { isNil } from 'lodash';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
-import type { SwitchType } from './types';
+import type { TrackNodeType } from './types';
 
 // Client preferred order
 const trackNodeTypeOrder = [
@@ -15,17 +15,17 @@ const trackNodeTypeOrder = [
   'double_slip_switch',
 ];
 
-let switchTypesCache: Record<number, SwitchType[]> = {};
+let trackNodeTypesCache: Record<number, TrackNodeType[]> = {};
 
-export default function useSwitchTypes(infraID: number | undefined) {
-  const [data, setData] = useState<SwitchType[]>(
-    !isNil(infraID) ? switchTypesCache[infraID] || [] : []
+export default function useTrackNodeTypes(infraID: number | undefined) {
+  const [data, setData] = useState<TrackNodeType[]>(
+    !isNil(infraID) ? trackNodeTypesCache[infraID] || [] : []
   );
-  const [getInfraSwitchTypes, { isLoading, error }] =
-    osrdEditoastApi.endpoints.getInfraByInfraIdSwitchTypes.useLazyQuery({});
+  const [getInfraTrackNodeTypes, { isLoading, error }] =
+    osrdEditoastApi.endpoints.getInfraByInfraIdTrackNodeTypes.useLazyQuery({});
   const invalidateCache = useCallback(() => {
-    switchTypesCache = {};
-  }, [switchTypesCache]);
+    trackNodeTypesCache = {};
+  }, [trackNodeTypesCache]);
 
   const fetch = useCallback(
     async (infraId?: number) => {
@@ -37,21 +37,21 @@ export default function useSwitchTypes(infraID: number | undefined) {
       }
 
       // Check cache first:
-      if (switchTypesCache[infraId]) {
-        setData(switchTypesCache[infraId]);
+      if (trackNodeTypesCache[infraId]) {
+        setData(trackNodeTypesCache[infraId]);
         return;
       }
 
       try {
-        const resp = getInfraSwitchTypes({ infraId }, true);
+        const resp = getInfraTrackNodeTypes({ infraId }, true);
         const result = await resp.unwrap();
         if (result) {
-          const orderedData = [...result] as SwitchType[];
+          const orderedData = [...result] as TrackNodeType[];
           orderedData.sort(
             (a, b) => trackNodeTypeOrder.indexOf(a.id) - trackNodeTypeOrder.indexOf(b.id)
           );
           setData(orderedData);
-          switchTypesCache[infraId] = orderedData;
+          trackNodeTypesCache[infraId] = orderedData;
         } else {
           setData([]);
         }
@@ -60,7 +60,7 @@ export default function useSwitchTypes(infraID: number | undefined) {
         console.error(e);
       }
     },
-    [getInfraSwitchTypes]
+    [getInfraTrackNodeTypes]
   );
 
   useEffect(() => {

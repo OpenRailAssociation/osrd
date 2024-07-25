@@ -2,7 +2,7 @@ import React, { type FC, type InputHTMLAttributes } from 'react';
 
 import cx from 'classnames';
 
-export const SWITCH_TYPES = {
+export const switch_types = {
   inline: 'inline',
   options: 'options',
   radio: 'radio',
@@ -33,7 +33,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
   disabled,
 }) => {
   switch (type) {
-    case SWITCH_TYPES.radio:
+    case switch_types.radio:
       return (
         <>
           {options.map((option) => {
@@ -58,7 +58,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
           })}
         </>
       );
-    case SWITCH_TYPES.switch:
+    case switch_types.switch:
       return (
         <label htmlFor={id} className="switch-control">
           <span className="sr-only">On/Off switch</span>
@@ -73,7 +73,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
           <span data-testid={name} className="switch-control-slider" />
         </label>
       );
-    case SWITCH_TYPES.options:
+    case switch_types.options:
       return (
         <div className={cx('options-control', { warning })}>
           {options.map((option) => {
@@ -98,7 +98,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
           })}
         </div>
       );
-    case SWITCH_TYPES.inline:
+    case switch_types.inline:
       return (
         <>
           {options.map((option) => {

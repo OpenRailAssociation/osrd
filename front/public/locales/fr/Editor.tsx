@@ -16,7 +16,7 @@ import Map from 'applications/editor/Map';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
 import TOOLS from 'applications/editor/tools/constsTools';
 import useTrackNodeTypes from 'applications/editor/tools/trackNodeEdition/useTrackNodeTypes';
-import type { switchProps } from 'applications/editor/tools/switchProps';
+import type { switchProps } from 'applications/editor/tools/switchPropsProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
@@ -69,8 +69,8 @@ const Editor = () => {
   const { data: infra } = useInfra(infraID);
   const { updateInfra } = useInfraActions();
 
-  const switchTool = useCallback(
-    ({ toolType, toolState }: switchProps) => {
+  const switchPropsTool = useCallback(
+    ({ toolType, toolState }: switchPropsProps) => {
       const tool = TOOLS[toolType];
       const state = {
         ...tool.getInitialState({ infraID, trackNodeTypes }),
@@ -98,9 +98,9 @@ const Editor = () => {
   );
 
   const resetState = useCallback(() => {
-    switchTool({ toolType: TOOL_NAMES.SELECTION, toolState: {} });
+    switchPropsTool({ toolType: TOOL_NAMES.SELECTION, toolState: {} });
     forceRender();
-  }, [switchTool, forceRender]);
+  }, [switchPropsTool, forceRender]);
 
   const { mapStyle, viewport } = useSelector(
     (state: { map: { mapStyle: string; viewport: Viewport } }) => state.map
@@ -129,7 +129,7 @@ const Editor = () => {
       activeTool: toolAndState.tool,
       state: toolAndState.state,
       setState: setToolState,
-      switchTool,
+      switchPropsTool,
       forceRender,
       renderingFingerprint,
     }),
@@ -239,7 +239,7 @@ const Editor = () => {
               const entitiesRecord = await getMixedEntities(+urlInfra, entitiesInfos, dispatch);
               entities = Object.values(entitiesRecord);
             }
-            selectEntities(entities, { switchTool, dispatch, editorState });
+            selectEntities(entities, { switchPropsTool, dispatch, editorState });
 
             if (mapRef.current) centerMapOnObject(+urlInfra, entities, dispatch, mapRef.current);
           } catch (e) {
@@ -347,7 +347,7 @@ const Editor = () => {
                       if (tool.onClick) {
                         tool.onClick(extendedContext);
                       } else {
-                        switchTool({ toolType, toolState: {} });
+                        switchPropsTool({ toolType, toolState: {} });
                       }
                     }}
                   >
@@ -448,7 +448,7 @@ const Editor = () => {
                 editorState.editorLayers.has('errors') &&
                 editorState.issues.total > 0 && (
                   <div className="error-box">
-                    <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
+                    <InfraErrorMapControl mapRef={mapRef.current} switchPropsTool={switchPropsTool} />
                     <InfraErrorCorrector />
                   </div>
                 )}

@@ -294,7 +294,7 @@ const DEFAULT_MULTIPLIER = 1 / 2;
 const POINT_FEATURES_DISTANCE_MULTIPLIERS: Partial<Record<Layer, number>> = {
   detectors: 1 / 20, // Most boosted, because smallest on screen
   buffer_stops: 1 / 5,
-  switches: 1 / 5,
+  track_nodes: 1 / 5,
   signals: 1 / 2, // The signals display make them easier to select
 };
 

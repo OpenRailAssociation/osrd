@@ -9,8 +9,8 @@ import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
 import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
 import SignalsSVGFile from 'assets/pictures/layersicons/layer_signal.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
-import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import TrackNodesSVGFile from 'assets/pictures/layersicons/track_nodes.svg';
+import SwitchSNCF, { switch_types } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import type { RootState } from 'reducers';
 import { updateLayersSettings } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
@@ -18,13 +18,13 @@ import { useAppDispatch } from 'store';
 
 type LayerSettings = RootState['map']['layersSettings'];
 
-interface FormatSwitchProps {
+interface FormatTrackNodeProps {
   name: keyof Omit<LayerSettings, 'speedlimittag'>;
   icon: ReactNode;
   color?: string;
   disabled?: boolean;
 }
-export const FormatSwitch: FC<FormatSwitchProps> = ({ name, icon, color, disabled }) => {
+export const FormatTrackNode: FC<FormatTrackNodeProps> = ({ name, icon, color, disabled }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector(getMap);
@@ -45,7 +45,7 @@ export const FormatSwitch: FC<FormatSwitchProps> = ({ name, icon, color, disable
     <div className="d-flex align-items-center mt-1">
       <SwitchSNCF
         id={`${name}-switch`}
-        type={SWITCH_TYPES.switch}
+        type={switch_types.switch}
         name={`${name}-switch`}
         onChange={() => setLayerSettings(name)}
         checked={layersSettings[name]}
@@ -69,40 +69,40 @@ export const Icon2SVG: FC<{
 const MapSettingsLayers: FC<unknown> = () => (
   <div className="row mt-2">
     <div className="col-md-6">
-      <FormatSwitch name="signals" icon={<Icon2SVG file={SignalsSVGFile} altName="Signal svg" />} />
+      <FormatTrackNode name="signals" icon={<Icon2SVG file={SignalsSVGFile} altName="Signal svg" />} />
     </div>
     <div className="col-md-6">
-      <FormatSwitch name="electrifications" icon={<GiElectric />} />
+      <FormatTrackNode name="electrifications" icon={<GiElectric />} />
     </div>
     <div className="col-md-6">
-      <FormatSwitch name="neutral_sections" icon={<GiUnplugged />} />
+      <FormatTrackNode name="neutral_sections" icon={<GiUnplugged />} />
     </div>
     <div className="col-md-6">
-      <FormatSwitch
+      <FormatTrackNode
         name="operationalpoints"
         icon={<Icon2SVG file={OPsSVGFile} altName="Operationnal points svg" />}
       />
     </div>
     <div className="col-md-6">
-      <FormatSwitch
-        name="switches"
-        icon={<Icon2SVG file={SwitchesSVGFile} altName="Switches icon svg" />}
+      <FormatTrackNode
+        name="track_nodes"
+        icon={<Icon2SVG file={TrackNodesSVGFile} altName="TrackNodes icon svg" />}
       />
     </div>
     <div className="col-md-6">
-      <FormatSwitch
+      <FormatTrackNode
         name="bufferstops"
         icon={<Icon2SVG file={BufferStopSVGFile} altName="Buffer stop svg" />}
       />
     </div>
     <div className="col-md-6">
-      <FormatSwitch
+      <FormatTrackNode
         name="detectors"
         icon={<Icon2SVG file={DetectorsSVGFile} altName="Detectors circles svg" />}
       />
     </div>
     <div className="col-md-6">
-      <FormatSwitch name="platforms" icon={<TbRectangleVerticalFilled />} />
+      <FormatTrackNode name="platforms" icon={<TbRectangleVerticalFilled />} />
     </div>
   </div>
 );

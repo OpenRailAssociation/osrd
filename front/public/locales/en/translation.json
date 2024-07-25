@@ -86,8 +86,8 @@
       "error-type": {
         "all": "All",
         "duplicated_group": {
-          "name": "Duplicated switch pattern",
-          "description": "Switch type « {{obj_id}} » contains a duplicate configuration « {{original_group_path}} »"
+          "name": "Duplicated track node pattern",
+          "description": "Track node type « {{obj_id}} » contains a duplicate configuration « {{original_group_path}} »"
         },
         "empty_object": {
           "name": "Empty object",
@@ -95,7 +95,7 @@
         },
         "invalid_group": {
           "name": "Position de l'aiguille invalide",
-          "description": "The switch « {{obj_id}} » of the route « {{group}} » is in the configuration « {{switch_type}} » which does not exist"
+          "description": "The track node « {{obj_id}} » of the route « {{group}} » is in the configuration « {{track node_type}} » which does not exist"
         },
         "invalid_reference": {
           "name": "Invalid reference",
@@ -105,9 +105,9 @@
           "name": "Invalid route",
           "description": "Route « {{obj_id}} » is invalid, requested path is not consistent"
         },
-        "invalid_switch_ports": {
-          "name": "Invalid switch pattern",
-          "description": "Switch « {{obj_id}} » has a branch which is not compatible with its type"
+        "invalid_track_node_ports": {
+          "name": "Invalid track node pattern",
+          "description": "Track node « {{obj_id}} » has a branch which is not compatible with its type"
         },
         "missing_route": {
           "name": "Missing route",
@@ -133,9 +133,9 @@
           "name": "Overlapping of speed limits",
           "description": "Speed limit « {{obj_id}} » overlaps « {{reference.obj_id}} »"
         },
-        "overlapping_switches": {
-          "name": "Overlapping of switches",
-          "description": "Switches « {{obj_id}} » and « {{reference.obj_id}} » have the same extremeties"
+        "overlapping_track_nodes": {
+          "name": "Overlapping of track nodes",
+          "description": "Track node « {{obj_id}} » and « {{reference.obj_id}} » have the same extremeties"
         },
         "overlapping_electrifications": {
           "name": "Overlapping of electrifications",
@@ -143,11 +143,11 @@
         },
         "unknown_port_name": {
           "name": "Unknown branch name",
-          "description": "Switch « {{obj_id}} » has the branch « {{port_name}} » which does not exist"
+          "description": "Track Node « {{obj_id}} » has the branch « {{port_name}} » which does not exist"
         },
         "unused_port": {
           "name": "Unused branch",
-          "description": "Branch « {{port_name}} » of switch type « {{obj_id}} » is nerver used"
+          "description": "Branch « {{port_name}} » of track node type « {{obj_id}} » is nerver used"
         },
         "node_endpoints_not_unique": {
           "name": "Node endpoints not unique",
@@ -196,7 +196,7 @@
       "psl-psl_signs": "Permanent speed limits",
       "routes": "Routes",
       "signals": "Signals",
-      "switches": "Switches",
+      "track_nodes": "Track nodes",
       "track_sections": "Track sections",
       "speed_sections": "Speed limits",
       "platforms": "Platforms",
@@ -237,7 +237,7 @@
       "Detector": "Detector",
       "Route": "Route",
       "Signal": "Signal",
-      "Switch": "Switch",
+      "TrackNode": "Track node",
       "TrackSection": "Track section",
       "SpeedSection": "Speed limit"
     },
@@ -425,7 +425,7 @@
         "add-track-range": "Click to link to:",
         "additional-speed-limit": "Additional speed limits",
         "hovered-sign": "Sign {{signType}}",
-        "incompatible-switch": "This switch position is not compatible with the other switches positions",
+        "incompatible-track-node": "This track node position is not compatible with the other track nodes positions",
         "label": "Speed section tool",
         "main-speed-limit": "Default speed limit",
         "move-range-extremity": "Click to move the end:",
@@ -433,7 +433,7 @@
         "ralen-30-60": "Speed restriction",
         "search-routes": "Search for compatible routes",
         "select-route": "Select a route",
-        "select-switches-to-get-route": "Select switches and their positions to search for routes",
+        "select-track-nodes-to-get-route": "Select track nodes and their positions to search for routes",
         "sign-direction": "Direction",
         "sign-category": "Sign(s) {{signType}}",
         "sign-kp": "Kilometric point of the sign",
@@ -450,24 +450,24 @@
         "toggle-psl": "Permanent speed limit",
         "toggle-psl-help": "Click on a track section first to be able to activate this option"
       },
-      "switch-edition": {
+      "track-node-edition": {
         "actions": {
-          "confirm-delete-switch": "Are you sure you want to remove the switch?",
-          "delete-switch": "Delete the switch",
-          "new-switch": "Create a new switch",
+          "confirm-delete-track-node": "Are you sure you want to remove the track node?",
+          "delete-track-node": "Delete the track node",
+          "new-track-node": "Create a new track node",
           "pick-track": "Track selection tool on the map",
           "pick-track-cancel": "Undo line selection",
-          "save-switch": "Save the switch"
+          "save-track-node": "Save the track node"
         },
         "duplicate-errors": "The track {{track}} is already used by the port {{port}}",
         "endpoint": "Endpoint:",
         "help": {
-          "no-move": "Switches cannot be moved, and are automatically placed on their first port.",
+          "no-move": "Track nodes cannot be moved, and are automatically placed on their first port.",
           "select-track": "Select a line on the map"
         },
-        "label": "Switch tool",
+        "label": "track node tool",
         "no-track-picked-yet": "No line selected yet",
-        "switch-type": "Switch type",
+        "track-node-type": "Track node type",
         "untitled-track": "Untitled track"
       },
       "track-edition": {
