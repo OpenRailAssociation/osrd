@@ -68,7 +68,7 @@ fun runStandaloneSimulation(
             rollingStock.basePowerClass,
             powerRestrictionsLegacyMap,
             rollingStock.powerRestrictions,
-            useElectricalProfiles
+            !useElectricalProfiles
         )
     val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
     val electrificationRanges =
