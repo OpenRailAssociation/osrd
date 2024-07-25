@@ -58,7 +58,7 @@ interface ReservationInfra : LocationInfra {
     fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode>
     /** The movable element configs in the same order as movable elements */
     fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): StaticIdxList<TrackNodeConfig>
-    /** The distances from the beginning of the zone path to its switches, in encounter order */
+    /** The distances from the beginning of the zone path to its track nodes, in encounter order */
     fun getZonePathMovableElementsPositions(zonePath: ZonePathId): OffsetList<ZonePath>
     /** Returns the list of track chunks on the zone path */
     fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk>

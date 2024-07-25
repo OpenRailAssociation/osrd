@@ -57,7 +57,7 @@ fun parseRoutingRequirements(
                         it.zone,
                         it.entryDetector,
                         it.exitDetector,
-                        it.switches,
+                        it.trackNodes,
                         (it.endTime + timeToAdd).seconds
                     )
                 }

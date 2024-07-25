@@ -139,7 +139,7 @@ public class ConflictDetectionTest {
         {
             var conflicts = ConflictsKt.detectConflicts(List.of(
                     convertRequirements(0L, 0.0, simResultA.train),
-                    // give enough time for switches to move (the default move time is 5)
+                    // give enough time for track nodes to move (the default move time is 5)
                     convertRequirements(1L, simResultA.envelope.getTotalTime() + 5.1, simResultB.train)));
             assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
             assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
@@ -451,7 +451,7 @@ public class ConflictDetectionTest {
                         zoneReq.zone,
                         zoneReq.entryDetector,
                         zoneReq.exitDetector,
-                        zoneReq.switches,
+                        zoneReq.trackNodes,
                         zoneReq.endTime + offset));
             routingRequirements.add(new ResultTrain.RoutingRequirement(req.route, offset + req.beginTime, zoneReqs));
         }

@@ -60,7 +60,7 @@ class TrackSectionBuilder(val name: String, val length: Double) {
 interface TrackNodeBuilder {
     val name: String
 
-    fun build(defaultSwitchDelay: Double?): RJSSwitch
+    fun build(defaultTrackNodeDelay: Double?): RJSTrackNode
 }
 
 class GenericTrackNodeBuilder(
@@ -74,8 +74,8 @@ class GenericTrackNodeBuilder(
         connections[port] = endpoint
     }
 
-    override fun build(defaultSwitchDelay: Double?): RJSSwitch {
-        return RJSSwitch(name, type, connections, groupChangeDelay ?: defaultSwitchDelay!!)
+    override fun build(defaultTrackNodeDelay: Double?): RJSTrackNode {
+        return RJSTrackNode(name, type, connections, groupChangeDelay ?: defaultTrackNodeDelay!!)
     }
 }
 
@@ -84,8 +84,8 @@ class TrackLinkBuilder(
     private val a: TrackSectionEndpoint,
     private val b: TrackSectionEndpoint
 ) : TrackNodeBuilder {
-    override fun build(defaultSwitchDelay: Double?): RJSSwitch {
-        return RJSSwitch(name, "link", mapOf("A" to a.build(), "B" to b.build()), 0.0)
+    override fun build(defaultTrackNodeDelay: Double?): RJSTrackNode {
+        return RJSTrackNode(name, "link", mapOf("A" to a.build(), "B" to b.build()), 0.0)
     }
 }
 
@@ -96,10 +96,10 @@ class PointSwitchBuilder(
     private val b2: TrackSectionEndpoint,
     val groupChangeDelay: Double? = null
 ) : TrackNodeBuilder {
-    override fun build(defaultSwitchDelay: Double?): RJSSwitch {
+    override fun build(defaultTrackNodeDelay: Double?): RJSTrackNode {
         val connections = mapOf("A" to a, "B1" to b1, "B2" to b2)
-        val delay = groupChangeDelay ?: defaultSwitchDelay!!
-        return RJSSwitch(name, "point_switch", connections.mapValues { it.value.build() }, delay)
+        val delay = groupChangeDelay ?: defaultTrackNodeDelay!!
+        return RJSTrackNode(name, "point_switch", connections.mapValues { it.value.build() }, delay)
     }
 }
 
@@ -137,23 +137,23 @@ class RouteBuilder(
     val entryDir: EdgeDirection,
     val exit: WaypointBuilder,
     releaseDetectors: List<TrainDetectorBuilder>? = null,
-    switchesDirections: Map<TrackNodeBuilder, String>? = null,
+    trackNodesDirections: Map<TrackNodeBuilder, String>? = null,
 ) {
     val releaseDetectors = releaseDetectors?.toMutableList() ?: mutableListOf()
-    val switchesDirections = switchesDirections?.toMutableMap() ?: mutableMapOf()
+    val trackNodesDirections = trackNodesDirections?.toMutableMap() ?: mutableMapOf()
 
     fun addReleaseDetector(detector: TrainDetectorBuilder) {
         releaseDetectors.add(detector)
     }
 
-    fun addSwitchDirection(switch: TrackNodeBuilder, direction: String) {
-        switchesDirections[switch] = direction
+    fun addTrackNodeDirection(switch: TrackNodeBuilder, direction: String) {
+        trackNodesDirections[switch] = direction
     }
 
     fun build(): RJSRoute {
         val res = RJSRoute(name, entry.waypointRef, entryDir, exit.waypointRef)
         res.releaseDetectors = releaseDetectors.map { it.name }
-        res.switchesDirections = switchesDirections.mapKeys { it.key.name }
+        res.trackNodesDirections = trackNodesDirections.mapKeys { it.key.name }
         return res
     }
 }
@@ -234,7 +234,7 @@ class PhysicalSignalBuilder(
 }
 
 class RJSInfraBuilder {
-    var defaultSwitchDelay: Double? = null
+    var defaultTrackNodeDelay: Double? = null
     var defaultSightDistance: Double? = null
 
     private val trackSections = mutableListOf<TrackSectionBuilder>()
@@ -324,11 +324,11 @@ class RJSInfraBuilder {
         entryDir: EdgeDirection,
         exit: WaypointBuilder,
         releaseDetectors: List<TrainDetectorBuilder>? = null,
-        switchesDirections: Map<TrackNodeBuilder, String>? = null,
+        trackNodesDirections: Map<TrackNodeBuilder, String>? = null,
         init: RouteBuilder.() -> Unit = {},
     ): RouteBuilder {
         val builder =
-            RouteBuilder(name, entry, entryDir, exit, releaseDetectors, switchesDirections)
+            RouteBuilder(name, entry, entryDir, exit, releaseDetectors, trackNodesDirections)
         routes.add(builder)
         builder.init()
         return builder
@@ -342,7 +342,7 @@ class RJSInfraBuilder {
         rjsInfra.neutralSections = listOf()
         rjsInfra.operationalPoints = listOf()
         rjsInfra.trackSections = trackSections.map { it.build() }
-        rjsInfra.switches = nodes.map { it.build(defaultSwitchDelay) }
+        rjsInfra.trackNodes = nodes.map { it.build(defaultTrackNodeDelay) }
         rjsInfra.bufferStops = bufferStops.map { it.build() }
         rjsInfra.detectors = detectors.map { it.build() }
         rjsInfra.signals = signals.map { it.build(defaultSightDistance) }

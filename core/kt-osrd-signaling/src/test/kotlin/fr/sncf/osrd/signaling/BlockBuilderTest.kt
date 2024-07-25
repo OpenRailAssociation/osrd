@@ -31,7 +31,7 @@ class BlockBuilderTest {
             val lowerLeftTrack = trackSection("lower_left", 15.0)
             val upperLeftTrack = trackSection("upper_left", 15.0)
             val rightTrack = trackSection("right", 15.0)
-            val switch =
+            val trackNode =
                 pointSwitch("S", rightTrack.begin, lowerLeftTrack.begin, upperLeftTrack.begin, 0.01)
             val detU = bufferStop("U", upperLeftTrack.end)
             detector("V", upperLeftTrack.at(5.0))
@@ -56,23 +56,23 @@ class BlockBuilderTest {
                 logicalSignal(logicalSignalTemplate)
             }
 
-            route("U-Z", detU, STOP_TO_START, detZ) { addSwitchDirection(switch, "A_B2") }
+            route("U-Z", detU, STOP_TO_START, detZ) { addTrackNodeDirection(trackNode, "A_B2") }
             route("W-Z", detW, STOP_TO_START, detZ) {
                 addReleaseDetector(detY)
-                addSwitchDirection(switch, "A_B1")
+                addTrackNodeDirection(trackNode, "A_B1")
             }
         }
 
         val signals = infra.physicalSignals.associateBy { infra.getPhysicalSignalName(it) }
         val signalX = signals["X"]!!
         val signalV = signals["V"]!!
-        val switch = infra.trackNodes[0]
-        val switchConfigs =
-            infra.getTrackNodeConfigs(switch).associateBy {
-                infra.getTrackNodeConfigName(switch, it)
+        val trackNode = infra.trackNodes[0]
+        val trackNodeConfigs =
+            infra.getTrackNodeConfigs(trackNode).associateBy {
+                infra.getTrackNodeConfigName(trackNode, it)
             }
-        val switchLower = switchConfigs["A_B1"]!!
-        val switchUpper = switchConfigs["A_B2"]!!
+        val trackNodeLower = trackNodeConfigs["A_B1"]!!
+        val trackNodeUpper = trackNodeConfigs["A_B2"]!!
         val detectors = infra.detectors.associateBy { infra.getDetectorName(it) }
         val detU = detectors["U"]!!
         val detV = detectors["V"]!!
@@ -87,15 +87,15 @@ class BlockBuilderTest {
             infra.findZonePath(
                 detV.decreasing,
                 detY.increasing,
-                mutableStaticIdxArrayListOf(switch),
-                mutableStaticIdxArrayListOf(switchUpper)
+                mutableStaticIdxArrayListOf(trackNode),
+                mutableStaticIdxArrayListOf(trackNodeUpper)
             )!!
         val zonePathXY =
             infra.findZonePath(
                 detX.decreasing,
                 detY.increasing,
-                mutableStaticIdxArrayListOf(switch),
-                mutableStaticIdxArrayListOf(switchLower)
+                mutableStaticIdxArrayListOf(trackNode),
+                mutableStaticIdxArrayListOf(trackNodeLower)
             )!!
 
         val simulator =

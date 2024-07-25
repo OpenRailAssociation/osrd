@@ -25,11 +25,11 @@ public class RJSRoute implements Identified {
     @Json(name = "release_detectors")
     public List<String> releaseDetectors;
 
-    @Json(name = "switches_directions")
-    public Map<String, String> switchesDirections;
+    @Json(name = "track_nodes_directions")
+    public Map<String, String> trackNodesDirections;
 
     /**
-     * Routes are described as a list of TVD Sections, Switches in specific positions, and an entry
+     * Routes are described as a list of TVD Sections, Track nodes in specific positions, and an entry
      * point
      */
     public RJSRoute(
@@ -42,7 +42,7 @@ public class RJSRoute implements Identified {
         this.exitPoint = exitPoint;
         this.entryPointDirection = entryPointDirection;
         this.releaseDetectors = new ArrayList<>();
-        this.switchesDirections = new HashMap<>();
+        this.trackNodesDirections = new HashMap<>();
     }
 
     @Override

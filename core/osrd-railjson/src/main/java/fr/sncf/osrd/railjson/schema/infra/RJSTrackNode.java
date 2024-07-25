@@ -6,14 +6,14 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 import java.util.Map;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class RJSSwitch implements Identified {
+public class RJSTrackNode implements Identified {
     public String id;
 
     /** The type of the switch */
-    @Json(name = "switch_type")
-    public String switchType;
+    @Json(name = "track_node_type")
+    public String trackNodeType;
 
-    /** The track sections connected to the ports of the switch */
+    /** The track sections connected to the ports of the track node */
     public Map<String, RJSTrackEndpoint> ports;
 
     @Json(name = "group_change_delay")
@@ -23,13 +23,13 @@ public class RJSSwitch implements Identified {
      * Create a new serialized switch
      *
      * @param id the switch ID
-     * @param switchType the type of the switch
+     * @param trackNodeType the type of the switch
      * @param ports the track sections connected to the ports
      * @param groupChangeDelay the delay when changing the position in seconds
      */
-    public RJSSwitch(String id, String switchType, Map<String, RJSTrackEndpoint> ports, double groupChangeDelay) {
+    public RJSTrackNode(String id, String trackNodeType, Map<String, RJSTrackEndpoint> ports, double groupChangeDelay) {
         this.id = id;
-        this.switchType = switchType;
+        this.trackNodeType = trackNodeType;
         this.ports = ports;
         this.groupChangeDelay = groupChangeDelay;
     }

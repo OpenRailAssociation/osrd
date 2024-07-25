@@ -52,8 +52,8 @@ public enum ErrorType {
             "invalid_infra:track_slope_invalid_range", "Track has a slope with an invalid range", ErrorCause.USER),
     InvalidInfraTrackCurveWithInvalidRange(
             "invalid_infra:track_curve_invalid_range", "Track has a curve with an invalid range", ErrorCause.USER),
-    InvalidInfraWrongSwitchPorts(
-            "invalid_infra:wrong_switch_ports", "Switch doesn't have the right ports for this type", ErrorCause.USER),
+    InvalidInfraWrongTrackNodePorts(
+            "invalid_infra:wrong_switch_ports", "Track node doesn't have the right ports for this type", ErrorCause.USER),
     SignalizationError("signalization", "Infinite loop in signal dependency updates", ErrorCause.USER),
     InvalidRollingStockMajorVersionMismatch(
             "invalid_rolling_stock:major_version_mismatch",

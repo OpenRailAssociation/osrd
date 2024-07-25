@@ -180,12 +180,12 @@ private fun buildBlockName(
     block: BlockId,
     blockPool: StaticPool<Block, BlockDescriptor>
 ): String {
-    // Two different blocks must differ in *either* detectors, signal / signaling system, or switch
+    // Two different blocks must differ in *either* detectors, signal / signaling system, or track node
     // config.
     // We must include all 3 in the ID to make sure there's no collision.
     // Detectors are encoded as "detectorId", the direction isn't necessary
     // Signals are encoded as "signalId-signalingSystem".
-    // Switch configs are encoded as "nodeId-configName"
+    // Track node configs are encoded as "nodeId-configName"
     // It is fairly heavyweight for an ID, but there's no way around it without making this ID
     // part of the railjson file format and stable during the import process.
     val descriptor = blockPool[block]

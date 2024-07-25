@@ -56,11 +56,11 @@ class TestBALtoBAL {
             }
 
             route("U-Z", detU, EdgeDirection.STOP_TO_START, detZ) {
-                addSwitchDirection(switch, "A_B2")
+                addTrackNodeDirection(switch, "A_B2")
             }
             route("W-Z", detW, EdgeDirection.STOP_TO_START, detZ) {
                 addReleaseDetector(detY)
-                addSwitchDirection(switch, "A_B1")
+                addTrackNodeDirection(switch, "A_B1")
             }
         }
 

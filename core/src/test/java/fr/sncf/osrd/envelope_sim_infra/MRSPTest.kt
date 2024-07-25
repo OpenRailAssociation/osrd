@@ -35,7 +35,7 @@ class MRSPTest {
     private var path30: PathProperties? = null
     private var path60: PathProperties? = null
 
-    // Nested_switches paths
+    // Nested_track_nodes paths
     private var pathTo1: TestPath? = null
     private var pathTo1NoRoutes: TestPath? = null
     private var pathTo2: TestPath? = null
@@ -86,7 +86,7 @@ class MRSPTest {
                 EdgeDirection.START_TO_STOP,
                 RJSWaypointRef("DC0", RJSWaypointRef.RJSWaypointType.DETECTOR)
             )
-        route1.switchesDirections["PC0"] = "A_B1"
+        route1.trackNodesDirections["PC0"] = "A_B1"
         val route2 =
             RJSRoute(
                 "DA5->DC1",
@@ -94,7 +94,7 @@ class MRSPTest {
                 EdgeDirection.START_TO_STOP,
                 RJSWaypointRef("DC1", RJSWaypointRef.RJSWaypointType.DETECTOR)
             )
-        route2.switchesDirections["PC0"] = "A_B2"
+        route2.trackNodesDirections["PC0"] = "A_B2"
         val da5 = rjsInfra.detectors.first { d -> d.id == "DA5" }
         val dc0 = rjsInfra.detectors.first { d -> d.id == "DC0" }
         val dc1 = rjsInfra.detectors.first { d -> d.id == "DC1" }
@@ -156,8 +156,8 @@ class MRSPTest {
         path60 = makePathProps(blockInfra, infra.rawInfra, block60, routes = listOf(route2.id))
     }
 
-    private fun setUpOnNestedSwitches() {
-        val rjsInfra = getExampleInfra("nested_switches/infra.json")
+    private fun setUpOnNestedTrackNodes() {
+        val rjsInfra = getExampleInfra("nested_track_nodes/infra.json")
         val infra = fullInfraFromRJS(rjsInfra)
 
         fun routeLen(route: String): Double {
@@ -207,7 +207,7 @@ class MRSPTest {
     @Throws(IOException::class, URISyntaxException::class)
     fun setUp() {
         setUpOnSmallInfra()
-        setUpOnNestedSwitches()
+        setUpOnNestedTrackNodes()
     }
 
     @ParameterizedTest
@@ -363,7 +363,7 @@ class MRSPTest {
         private const val TRAIN_TAG1 = "Hello there"
         private const val TRAIN_TAG2 = "General Kenobi"
 
-        // On nested_switches
+        // On nested_track_nodes
         private val ROUTES = listOf("1 -> 1'", "1 -> 2", "1 -> 3", "1 -> 4", "1 -> 4'")
 
         private data class TestPath(val path: PathProperties, val envelope: Envelope) {
