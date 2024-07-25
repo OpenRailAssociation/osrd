@@ -23,12 +23,8 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
 import kotlin.math.max
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 object STDCMStandardAllowance
-
-val logger: Logger = LoggerFactory.getLogger(STDCMStandardAllowance::class.java)
 
 private data class FixedTimePoint(
     val time: Double,

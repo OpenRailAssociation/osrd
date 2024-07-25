@@ -84,7 +84,9 @@ class STDCMHeuristicBuilder(
             steps.first().locations.minOfOrNull {
                 remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
             } ?: Double.POSITIVE_INFINITY
-        logger.info("STDCM heuristic built, best theoretical travel time = $bestTravelTime seconds")
+        logger.info(
+            "STDCM heuristic built, best theoretical travel time = ${bestTravelTime.toInt()} seconds"
+        )
 
         val heuristic: STDCMAStarHeuristic = res@{ edge, offset, nPassedSteps ->
             if (nPassedSteps >= steps.size - 1) return@res 0.0

@@ -29,6 +29,7 @@ import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.findPath
+import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
@@ -59,6 +60,9 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
             val request =
                 stdcmRequestAdapter.fromJson(body)
                     ?: return RsWithStatus(RsText("missing request body"), 400)
+            logger.info(
+                "Request received: start=${request.startTime}, max duration=${request.maximumRunTime}"
+            )
 
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)

@@ -10,6 +10,7 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.stdcm.ProgressLogger
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
@@ -22,6 +23,8 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import kotlin.collections.HashSet
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 data class EdgeLocation(val edge: STDCMEdge, val offset: Offset<STDCMEdge>)
 
@@ -29,6 +32,8 @@ data class Result(
     val edges: List<STDCMEdge>, // Full path as a list of edges
     val waypoints: List<EdgeLocation>
 )
+
+val logger: Logger = LoggerFactory.getLogger("STDCM")
 
 /**
  * Find a path for a new train that exclusively uses tracks at times when they're available.
@@ -112,28 +117,37 @@ class STDCMPathfinding(
         starts = getStartNodes(stops, listOf(constraints))
         val path = findPathImpl()
         if (path == null) {
-            graph.logger.info("Failed to find a path")
+            logger.info("Failed to find a path")
             return null
         }
-        graph.logger.info("Path found")
+        logger.info("Path found, start preprocessing")
 
-        return STDCMPostProcessing(graph)
-            .makeResult(
-                fullInfra.rawInfra,
-                path,
-                startTime,
-                graph.standardAllowance,
-                rollingStock,
-                timeStep,
-                comfort,
-                maxRunTime,
-                blockAvailability,
-                graph.tag
-            )
+        val res =
+            STDCMPostProcessing(graph)
+                .makeResult(
+                    fullInfra.rawInfra,
+                    path,
+                    startTime,
+                    graph.standardAllowance,
+                    rollingStock,
+                    timeStep,
+                    comfort,
+                    maxRunTime,
+                    blockAvailability,
+                    graph.tag
+                ) ?: return null
+        logger.info(
+            "departure time = ${res.departureTime.toInt()}s, " +
+                "total travel time = ${res.envelope.totalTime.toInt()}s"
+        )
+        return res
     }
 
     private fun findPathImpl(): Result? {
         val queue = PriorityQueue<STDCMNode>()
+
+        val progressLogger = ProgressLogger(graph)
+
         for (location in starts) {
             queue.add(location)
         }
@@ -142,6 +156,7 @@ class STDCMPathfinding(
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val endNode = queue.poll() ?: return null
+            progressLogger.processNode(endNode)
             if (endNode.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
                 return null
             if (endNode.waypointIndex >= graph.steps.size - 1) {

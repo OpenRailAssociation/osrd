@@ -225,7 +225,6 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         for (var rangeIndex : rangeOrder) {
             try {
                 var range = ranges.get(rangeIndex);
-                logger.debug("computing range n°{}", rangeIndex + 1);
                 var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
                 var imposedBeginSpeed = imposedTransitionSpeeds[rangeIndex];
                 var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
@@ -305,7 +304,6 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var imposedBeginSpeed = sectionBeginPos == rangeBeginPos ? imposedRangeBeginSpeed : NaN;
             var imposedEndSpeed = sectionEndPos == rangeEndPos ? imposedRangeEndSpeed : NaN;
 
-            logger.debug("  computing section n°{}", i + 1);
             var distributedTolerance = tolerance * sectionRatio;
             var allowanceSection = computeAllowanceSection(
                     section, context, targetTime, imposedBeginSpeed, imposedEndSpeed, distributedTolerance);
@@ -335,17 +333,14 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         Envelope res = null;
         OSRDError lastError = null;
         var search = new DoubleBinarySearch(initialLowBound, initialHighBound, targetTime, tolerance, true);
-        logger.debug("  target time = {}", targetTime);
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var input = search.getInput();
-            logger.debug("    starting attempt {}", i);
             try {
                 res = computeIteration(envelopeSection, context, input, imposedBeginSpeed, imposedEndSpeed);
                 var regionTime = res.getTotalTime();
-                logger.debug("    envelope time {}", regionTime);
                 search.feedback(regionTime);
             } catch (OSRDError allowanceError) {
-                logger.debug("    couldn't build an envelope ({})", allowanceError);
+                logger.debug("    couldn't build an envelope ({})", allowanceError.toString());
                 lastError = allowanceError;
                 if (allowanceError.osrdErrorType.equals(ErrorType.AllowanceConvergenceTooMuchTime))
                     // Can't go slow enough to even build a valid envelope: we need to go faster
