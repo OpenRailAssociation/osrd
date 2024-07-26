@@ -3,7 +3,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.67-rust-latest AS chef
+FROM lukemathwalker/cargo-chef:0.1.67-rust-1.79.0 AS chef
 WORKDIR /gateway
 
 #######################
