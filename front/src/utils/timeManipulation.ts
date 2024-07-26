@@ -97,5 +97,5 @@ export function secToHoursString(sec: number | null, withSeconds = false): TimeS
     return '';
   }
   const format = withSeconds ? '%H:%M:%S' : '%H:%M';
-  return d3.timeFormat(format)(new Date(sec * 1000));
+  return d3.utcFormat(format)(new Date(sec * 1000));
 }
