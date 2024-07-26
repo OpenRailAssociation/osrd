@@ -68,7 +68,7 @@ const usePowerRestrictionSelector = (
       getPowerRestrictionsWarningsData({
         pathSteps,
         rollingStockPowerRestrictions,
-        pathElectrificationRanges: voltageRanges,
+        voltageRanges,
         rollingStockModes,
         powerRestrictionRanges,
       }),
