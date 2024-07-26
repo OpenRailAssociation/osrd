@@ -9,6 +9,7 @@ import { isVia } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { time2sec } from 'utils/timeManipulation';
 
 import { marginRegExValidation } from './consts';
 import { formatSuggestedViasToRowVias } from './helpers/utils';
@@ -73,11 +74,20 @@ const TimesStops = ({
       className="time-stops-datasheet"
       columns={columns}
       value={rows}
-      onChange={(row, [op]) => {
+      onChange={(row: PathWaypointRow[], [op]) => {
         if (!isInputTable) {
           return;
         }
-        const rowData = row[op.fromRowIndex];
+        const rowData = { ...row[op.fromRowIndex] };
+        const previousRowData = rows[op.fromRowIndex];
+        if (
+          rowData.departure &&
+          rowData.arrival &&
+          (rowData.arrival !== previousRowData.arrival ||
+            rowData.departure !== previousRowData.departure)
+        ) {
+          rowData.stopFor = String(time2sec(rowData.departure) - time2sec(rowData.arrival));
+        }
         if (!rowData.stopFor && op.fromRowIndex !== allWaypoints.length - 1) {
           rowData.onStopSignal = false;
         }
