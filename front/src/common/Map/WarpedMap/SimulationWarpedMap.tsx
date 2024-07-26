@@ -24,13 +24,8 @@ import { useInfraID } from 'common/osrdContext';
 import { useChartSynchronizer } from 'modules/simulationResult/components/ChartSynchronizer';
 import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
 import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
-import {
-  getOsrdSimulation,
-  getSelectedProjection,
-  getSelectedTrain,
-} from 'reducers/osrdsimulation/selectors';
+import { getOsrdSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import type { PositionsSpeedTimes, Train } from 'reducers/osrdsimulation/types';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { clip } from 'utils/mapHelper';
 import type { AsyncMemoState } from 'utils/useAsyncMemo';
@@ -86,9 +81,6 @@ const SimulationWarpedMap = ({
       } & PathStatePayload &
         DataStatePayload)
   >({ type: 'idle' });
-
-  const pathfindingID = useSelector(getSelectedProjection)?.path as number;
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const [getPath] = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useLazyQuery();
   const layers = useMemo(() => new Set<Layer>(['track_sections']), []);
@@ -268,25 +260,8 @@ const SimulationWarpedMap = ({
    */
   useEffect(() => {
     setState({ type: 'loading' });
-
-    // V2
-    if (trainScheduleV2Activated) {
-      if (pathProperties) updateWarpedMapState(pathProperties.geometry.coordinates);
-    } else {
-      // TODO DROP V1: remove this condition
-      getPath({ pathfindingId: pathfindingID })
-        .then(({ data, isError, error }) => {
-          if (isError) {
-            setState({ type: 'error', message: error as string });
-          } else if (!data?.geographic?.coordinates) {
-            setState({ type: 'error', message: 'No coordinates' });
-          } else {
-            updateWarpedMapState(data?.geographic?.coordinates);
-          }
-        })
-        .catch((error) => setState({ type: 'error', message: error }));
-    }
-  }, [pathfindingID]);
+    if (pathProperties) updateWarpedMapState(pathProperties.geometry.coordinates);
+  }, [pathProperties]);
 
   /**
    * This effect tries to gradually improve the quality of the OSRD data.

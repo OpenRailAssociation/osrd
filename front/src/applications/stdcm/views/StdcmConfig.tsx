@@ -8,12 +8,10 @@ import type { ManageTrainSchedulePathProperties } from 'applications/operational
 import RunningTime from 'applications/stdcm/components/RunningTime';
 import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import type { StdcmV2Results } from 'applications/stdcm/types';
-import StdcmResults from 'applications/stdcm/views/StdcmResults';
-import { osrdEditoastApi, type PostStdcmApiResponse } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
-import Itinerary from 'modules/pathfinding/components/Itinerary/Itinerary';
 import ItineraryV2 from 'modules/pathfinding/components/Itinerary/ItineraryV2';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
@@ -21,14 +19,12 @@ import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 
 import StdcmResultsV2 from './StdcmResultsV2';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
   launchStdcmRequest: () => Promise<void>;
-  stdcmResults?: PostStdcmApiResponse;
   stdcmV2Results?: StdcmV2Results | null;
   pathProperties?: ManageTrainSchedulePathProperties;
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
@@ -37,7 +33,6 @@ type OSRDStdcmConfigProps = {
 const StdcmConfig = ({
   currentStdcmRequestStatus,
   launchStdcmRequest,
-  stdcmResults,
   stdcmV2Results,
   pathProperties,
   setPathProperties,
@@ -55,7 +50,6 @@ const StdcmConfig = ({
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
   const timetableID = useSelector(getTimetableID);
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
   const originV2 = useSelector(getOriginV2);
   const destinationV2 = useSelector(getDestinationV2);
   const infraID = useInfraID();
@@ -83,12 +77,9 @@ const StdcmConfig = ({
   );
 
   const disabledApplyButton = useMemo(() => {
-    if (trainScheduleV2Activated) {
-      if (!originV2 || !destinationV2 || !osrdconf.originDate || !osrdconf.destinationDate)
-        return true;
-    } else if (!osrdconf.origin || !osrdconf.destination) {
+    if (!originV2 || !destinationV2 || !osrdconf.originDate || !osrdconf.destinationDate)
       return true;
-    }
+
     return (
       infra?.state !== 'CACHED' ||
       !(osrdconf.originTime || osrdconf.destinationTime) ||
@@ -138,15 +129,13 @@ const StdcmConfig = ({
                 speedLimitsByTags={speedLimitsByTags}
                 dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
               />
-              {trainScheduleV2Activated ? (
-                <ItineraryV2
-                  pathProperties={pathProperties}
-                  setPathProperties={setPathProperties}
-                  shouldManageStopDuration
-                />
-              ) : (
-                <Itinerary />
-              )}
+
+              <ItineraryV2
+                pathProperties={pathProperties}
+                setPathProperties={setPathProperties}
+                shouldManageStopDuration
+              />
+
               <RunningTime />
               <StdcmAllowances />
               <div className="osrd-config-stdcm-apply">
@@ -195,15 +184,8 @@ const StdcmConfig = ({
                 )}
               </div>
             </div>
-            {!trainScheduleV2Activated && rollingStock && stdcmResults && (
-              <StdcmResults
-                mapCanvas={mapCanvas}
-                stdcmResults={stdcmResults}
-                rollingStockData={rollingStock}
-                speedLimitByTag={speedLimitByTag}
-              />
-            )}
-            {trainScheduleV2Activated && rollingStock && stdcmV2Results && (
+
+            {rollingStock && stdcmV2Results && (
               <StdcmResultsV2
                 mapCanvas={mapCanvas}
                 stdcmV2Results={stdcmV2Results}

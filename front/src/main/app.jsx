@@ -6,8 +6,8 @@ import 'i18n';
 import HomeEditor from 'applications/editor/Home';
 import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import Project from 'applications/operationalStudies/views/Project';
-import Scenario from 'applications/operationalStudies/views/Scenario';
 import Study from 'applications/operationalStudies/views/Study';
+import ScenarioV2 from 'applications/operationalStudies/views/v2/ScenarioV2';
 import HomeMap from 'applications/referenceMap/Home';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
 import HomeStdcm from 'applications/stdcm/Home';
@@ -101,7 +101,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'projects/:projectId/studies/:studyId/scenarios/:scenarioId',
-        element: <Scenario />,
+        element: <ScenarioV2 />,
       },
     ],
   },

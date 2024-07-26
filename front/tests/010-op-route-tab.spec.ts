@@ -40,7 +40,6 @@ test.beforeEach(async ({ page }) => {
   const homePage = new HomePage(page);
   await homePage.goToHomePage();
   selectedLanguage = await homePage.getOSRDLanguage();
-  await homePage.toggleTSV2();
 
   // Navigate to the created scenario page
   await page.goto(

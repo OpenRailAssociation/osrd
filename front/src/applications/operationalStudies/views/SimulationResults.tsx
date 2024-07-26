@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
 
-import { osrdEditoastApi, type SimulationReport } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
@@ -143,9 +143,7 @@ export default function SimulationResults({
         })}
       >
         <div className="row">
-          <div className="col-xl-4">
-            {selectedTrain && <TimeButtons selectedTrain={selectedTrain as SimulationReport} />}
-          </div>
+          <div className="col-xl-4">{selectedTrain && <TimeButtons />}</div>
           <div className="col-xl-8 d-flex justify-content-end mt-2 mt-xl-0">
             <TrainDetails />
           </div>

@@ -15,12 +15,8 @@ import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import {
-  setPointIti,
-  setPointItiV2,
-} from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
+import { setPointItiV2 } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
 import type { PathStep } from 'reducers/osrdconf/types';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 
 type FeatureInfoClickType = {
   displayPopup: boolean;
@@ -37,7 +33,6 @@ function RenderPopup({ pathProperties }: RenderPopupProps) {
   const osrdConfActions = useOsrdConfActions();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const featureInfoClick: FeatureInfoClickType = useSelector(getFeatureInfoClick);
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
   const infraId = useSelector(getInfraID);
 
   const [trackOffset, setTrackOffset] = useState(0);
@@ -74,7 +69,7 @@ function RenderPopup({ pathProperties }: RenderPopupProps) {
       setTrackOffset(offset);
     };
 
-    if (trainScheduleV2Activated && featureInfoClick.displayPopup) {
+    if (featureInfoClick.displayPopup) {
       calculateOffset();
     }
   }, [featureInfoClick]);
@@ -87,13 +82,6 @@ function RenderPopup({ pathProperties }: RenderPopupProps) {
   )
     return null;
 
-  const properties = {
-    ...featureInfoClick.feature.properties,
-    coordinates: featureInfoClick.coordinates.slice(0, 2),
-  };
-
-  // TS2 section
-  // TODO TS2: if !pathProperties, return null
   const { properties: trackProperties } = featureInfoClick.feature;
   const coordinates = featureInfoClick.coordinates.slice(0, 2);
 
@@ -128,67 +116,35 @@ function RenderPopup({ pathProperties }: RenderPopupProps) {
           {featureInfoClick.feature.properties.extensions_sncf_line_name}
         </div>
       </div>
-      {trainScheduleV2Activated ? (
-        <div className="actions">
-          <button
-            data-testid="map-origin-button"
-            className="btn btn-sm btn-success"
-            type="button"
-            onClick={() => setPointItiV2('origin', pathStepProperties, osrdConfActions)}
-          >
-            <RiMapPin2Fill />
-            <span className="d-none">{t('origin')}</span>
-          </button>
-          <button
-            className="btn btn-sm btn-info"
-            type="button"
-            onClick={() =>
-              setPointItiV2('via', pathStepProperties, osrdConfActions, pathProperties)
-            }
-          >
-            <RiMapPin3Fill />
-            <span className="d-none">{t('via')}</span>
-          </button>
-          <button
-            data-testid="map-destination-button"
-            className="btn btn-sm btn-warning"
-            type="button"
-            onClick={() => setPointItiV2('destination', pathStepProperties, osrdConfActions)}
-          >
-            <IoFlag />
-            <span className="d-none">{t('destination')}</span>
-          </button>
-        </div>
-      ) : (
-        <div className="actions">
-          <button
-            data-testid="map-origin-button"
-            className="btn btn-sm btn-success"
-            type="button"
-            onClick={() => setPointIti('start', properties, osrdConfActions)}
-          >
-            <RiMapPin2Fill />
-            <span className="d-none">{t('origin')}</span>
-          </button>
-          <button
-            className="btn btn-sm btn-info"
-            type="button"
-            onClick={() => setPointIti('via', properties, osrdConfActions)}
-          >
-            <RiMapPin3Fill />
-            <span className="d-none">{t('via')}</span>
-          </button>
-          <button
-            data-testid="map-destination-button"
-            className="btn btn-sm btn-warning"
-            type="button"
-            onClick={() => setPointIti('end', properties, osrdConfActions)}
-          >
-            <IoFlag />
-            <span className="d-none">{t('destination')}</span>
-          </button>
-        </div>
-      )}
+
+      <div className="actions">
+        <button
+          data-testid="map-origin-button"
+          className="btn btn-sm btn-success"
+          type="button"
+          onClick={() => setPointItiV2('origin', pathStepProperties, osrdConfActions)}
+        >
+          <RiMapPin2Fill />
+          <span className="d-none">{t('origin')}</span>
+        </button>
+        <button
+          className="btn btn-sm btn-info"
+          type="button"
+          onClick={() => setPointItiV2('via', pathStepProperties, osrdConfActions, pathProperties)}
+        >
+          <RiMapPin3Fill />
+          <span className="d-none">{t('via')}</span>
+        </button>
+        <button
+          data-testid="map-destination-button"
+          className="btn btn-sm btn-warning"
+          type="button"
+          onClick={() => setPointItiV2('destination', pathStepProperties, osrdConfActions)}
+        >
+          <IoFlag />
+          <span className="d-none">{t('destination')}</span>
+        </button>
+      </div>
     </Popup>
   );
 }
