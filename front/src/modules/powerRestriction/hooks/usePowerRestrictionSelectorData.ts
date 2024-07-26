@@ -43,8 +43,8 @@ const usePowerRestrictionSelector = (
   const compatibleVoltageRanges = useMemo(() => {
     const handledModes = Object.keys(rollingStockModes);
     return voltageRanges.map(({ begin, end, value: mode }) => ({
-      begin,
-      end,
+      begin: mmToM(begin),
+      end: mmToM(end),
       value: handledModes.includes(mode) ? mode : '',
     }));
   }, [voltageRanges]);
