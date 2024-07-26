@@ -4,11 +4,7 @@ import { BiLockAlt } from 'react-icons/bi';
 import { ImFire } from 'react-icons/im';
 import { IoIosSnow } from 'react-icons/io';
 
-import type {
-  LightRollingStock,
-  RollingStockComfortType,
-  RollingStock,
-} from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, RollingStock, Comfort } from 'common/api/osrdEditoastApi';
 
 const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) => {
   if (unit && unit !== 'US') {
@@ -73,9 +69,9 @@ export const RollingStockInfo = ({
   );
 };
 
-export function comfort2pictogram(comfort: RollingStockComfortType | undefined) {
+export function comfort2pictogram(comfort: Comfort | undefined) {
   switch (comfort) {
-    case 'AC':
+    case 'AIR_CONDITIONING':
       return (
         <span className="comfort-AC">
           <IoIosSnow />

@@ -11,7 +11,6 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
-import HomePage from './pages/home-page-model';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page';
 import ScenarioPage from './pages/scenario-page-model';
@@ -51,10 +50,6 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
     const operationalStudiesPage = new OperationalStudiesPage(page);
     const scenarioPage = new ScenarioPage(page);
     const rollingStockSelector = new RollingStockSelectorPage(page);
-
-    // TODO: DROP TSV1: remove this part
-    const homePage = new HomePage(page);
-    await homePage.goToHomePage();
 
     // Navigate to the created scenario page
     await page.goto(

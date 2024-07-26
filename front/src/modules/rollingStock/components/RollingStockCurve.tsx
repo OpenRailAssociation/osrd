@@ -50,9 +50,15 @@ function LegendComfortSwitches(props: {
 }) {
   const { curvesComfortList, comfortsStates, onComfortsStatesChange } = props;
 
-  return curvesComfortList.length > 1 ? (
+  // TODO: remove this condition when getRollingStock endpoint returns comfort
+  // with type Comfort instead of RollingStockComfortType */
+  const curvesComfortListV2 = curvesComfortList.map((comfort) =>
+    comfort === 'AC' ? 'AIR_CONDITIONING' : comfort
+  );
+
+  return curvesComfortListV2.length > 1 ? (
     <span className="d-flex">
-      {curvesComfortList.map((comfort) => (
+      {curvesComfortListV2.map((comfort) => (
         <span
           className={cx('curves-chart-legend-comfort-button', {
             active: comfortsStates[comfort],
@@ -68,7 +74,7 @@ function LegendComfortSwitches(props: {
     </span>
   ) : (
     <span className="curves-chart-legend-comfort-button active">
-      {comfort2pictogram(curvesComfortList[0])}
+      {comfort2pictogram(curvesComfortListV2[0])}
     </span>
   );
 }
@@ -102,9 +108,11 @@ function Legend(props: {
           {isOnEditionMode && showPowerRestriction && curve.power_restriction}
           {isOnEditionMode && !showPowerRestriction && curve.electrical_profile_level}
           {!isOnEditionMode && !showPowerRestriction && curve.mode}
+          {/* TODO: remove this condition when getRollingStock endpoint returns comfort 
+                with type Comfort instead of RollingStockComfortType */}
           {curve.comfort !== STANDARD_COMFORT_LEVEL &&
             !isOnEditionMode &&
-            comfort2pictogram(curve.comfort)}
+            comfort2pictogram(curve.comfort === 'AC' ? 'AIR_CONDITIONING' : curve.comfort)}
         </span>
       ))}
     </span>
@@ -216,13 +224,14 @@ export default function RollingStockCurve({
   const [curvesVisibility, setCurvesVisibility] = useState(setupCurvesVisibility(transformedData));
 
   const formatTooltip = (tooltip: PointTooltipProps) => {
+    const transformedCurve = transformedData[tooltip.point.serieId];
     const editionModeTooltipLabel =
       isOnEditionMode && showPowerRestriction
-        ? geti18nKeyForNull(transformedData[tooltip.point.serieId]?.powerRestriction)
-        : geti18nKeyForNull(transformedData[tooltip.point.serieId]?.electricalProfile);
+        ? geti18nKeyForNull(transformedCurve?.powerRestriction)
+        : geti18nKeyForNull(transformedCurve?.electricalProfile);
     return (
       <div className="curves-chart-tooltip" style={{ borderColor: tooltip.point.color }}>
-        {transformedData[tooltip.point.serieId] && (
+        {transformedCurve && (
           <div
             className="curves-chart-tooltip-head"
             style={{
@@ -231,13 +240,15 @@ export default function RollingStockCurve({
               borderColor: tooltip.point.color,
             }}
           >
-            {isOnEditionMode
-              ? editionModeTooltipLabel
-              : transformedData[tooltip.point.serieId].mode}
+            {isOnEditionMode ? editionModeTooltipLabel : transformedCurve.mode}
             <span className="ml-1" />
-            {transformedData[tooltip.point.serieId].comfort !== STANDARD_COMFORT_LEVEL && (
+            {transformedCurve.comfort !== STANDARD_COMFORT_LEVEL && (
               <span className="curves-chart-tooltip-comfort">
-                {comfort2pictogram(transformedData[tooltip.point.serieId].comfort)}
+                {/* TODO: remove this condition when getRollingStock endpoint returns comfort 
+                with type Comfort instead of RollingStockComfortType */}
+                {comfort2pictogram(
+                  transformedCurve.comfort === 'AC' ? 'AIR_CONDITIONING' : transformedCurve.comfort
+                )}
               </span>
             )}
           </div>

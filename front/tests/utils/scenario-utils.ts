@@ -7,6 +7,7 @@ import HomePage from '../pages/home-page-model';
 import RollingStockSelectorPage from '../pages/rollingstock-selector-page';
 import ScenarioPage from '../pages/scenario-page-model';
 
+// TODO : Check if this util can be reutilized in other tests
 // Scenario creation
 export default async function createCompleteScenario(
   page: Page,
@@ -20,7 +21,7 @@ export default async function createCompleteScenario(
   const rollingStock = await getRollingStock();
 
   const scenario = await postApiRequest(
-    `/api/projects/${project.id}/studies/${study.id}/scenarios`,
+    `/api/v2/projects/${project.id}/studies/${study.id}/scenarios`,
     {
       ...scenarioData,
       name: `${scenarioData.name} ${uuidv4()}`,

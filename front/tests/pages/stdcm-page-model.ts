@@ -3,7 +3,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import SimulationConfPage from './simulation-conf-page';
 
 class StdcmPage extends SimulationConfPage {
-  readonly missingParams: Locator;
+  readonly pathfindingNoState: Locator;
 
   // Scenario Explorator
   private scenarioExplorerButton: Locator;
@@ -18,7 +18,7 @@ class StdcmPage extends SimulationConfPage {
   constructor(page: Page) {
     super(page);
 
-    this.missingParams = page.locator('.missing-params');
+    this.pathfindingNoState = page.getByTestId('pathfinding-no-state');
 
     // Scenario Explorator
     this.scenarioExplorerButton = page.getByTestId('scenario-explorator');

@@ -6,9 +6,9 @@ import type {
   RollingStockComfortType,
   PathResponse,
   AllowanceValue,
-  TrainScheduleBase,
   Distribution,
   PathfindingInputV2,
+  Comfort,
 } from 'common/api/osrdEditoastApi';
 import type { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 import type { InfraState } from 'reducers/infra';
@@ -54,7 +54,7 @@ export interface OsrdConfState extends InfraState {
   trainScheduleIDsToModify: number[];
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   pathSteps: (PathStep | null)[];
-  rollingStockComfortV2?: TrainScheduleBase['comfort'];
+  rollingStockComfortV2: Comfort;
   // Format ISO 8601
   startTime: string;
 }
