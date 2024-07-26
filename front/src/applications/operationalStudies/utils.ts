@@ -69,6 +69,7 @@ export const transformBoundariesDataToRangesData = <
   boundariesData: ElectricalBoundariesData<T>,
   pathLength: number
 ): ElectricalRangesData<T>[] => {
+  // TODO DROP V1 : remove electrical profiles
   const formatedData = boundariesData.boundaries.map((boundary, index) => ({
     start: index === 0 ? 0 : mmToM(boundariesData.boundaries[index - 1]),
     stop: mmToM(boundary),
