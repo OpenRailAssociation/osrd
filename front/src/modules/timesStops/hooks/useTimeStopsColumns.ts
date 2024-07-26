@@ -79,6 +79,14 @@ export const useTimeStopsColumns = (tableType: TableType, allWaypoints: Suggeste
         maxWidth: isOutputTable ? 90 : undefined,
       },
       {
+        ...keyColumn('departure', isOutputTable ? createTextColumn() : timeColumn),
+        title: t('departureTime'),
+
+        // We should not be able to edit the departure time of the origin
+        disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
+        maxWidth: isOutputTable ? 90 : undefined,
+      },
+      {
         ...keyColumn(
           'stopFor',
           createTextColumn({

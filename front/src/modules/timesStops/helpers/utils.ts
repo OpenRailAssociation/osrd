@@ -8,6 +8,7 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 import type { PathStep } from 'reducers/osrdconf/types';
 import { extractHHMMSS } from 'utils/date';
 import { NO_BREAK_SPACE } from 'utils/strings';
+import { secToHoursString, time2sec } from 'utils/timeManipulation';
 
 import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType } from '../types';
@@ -55,11 +56,13 @@ export const formatSuggestedViasToRowVias = (
     const { arrival, onStopSignal, stopFor, theoreticalMargin } = objectToUse || {};
 
     const isMarginValid = theoreticalMargin ? marginRegExValidation.test(theoreticalMargin) : true;
-
+    const departure =
+      stopFor && arrival ? secToHoursString(time2sec(arrival) + Number(stopFor), true) : undefined;
     return {
       ...op,
       isMarginValid,
       arrival: i === 0 ? extractHHMMSS(startTime) : arrival,
+      departure,
       onStopSignal: onStopSignal || false,
       name: name || t('waypoint', { id: op.opId }),
       stopFor,
