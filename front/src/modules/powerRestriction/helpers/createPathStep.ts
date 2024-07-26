@@ -27,16 +27,19 @@ const findTrackSection = (
   return index !== -1 ? pathProperties.trackSectionRanges[index] : null;
 };
 
+/** Return the offset on the track section in mm*/
 const calculateOffset = (
   trackSectionRange: TrackRange,
   position: number, // in mm
   tracksLengthCumulativeSums: number[] // in meters
 ) => {
   const index = findTrackSectionIndex(position, tracksLengthCumulativeSums);
-  const inferiorSum = tracksLengthCumulativeSums[index];
-  return trackSectionRange.direction === 'START_TO_STOP'
-    ? inferiorSum - position
-    : position - inferiorSum;
+  const inferiorSum = index > 0 ? tracksLengthCumulativeSums[index - 1] : 0;
+  const offsetOnTrackRange =
+    trackSectionRange.direction === 'START_TO_STOP'
+      ? inferiorSum - position
+      : position - inferiorSum;
+  return trackSectionRange.begin + offsetOnTrackRange;
 };
 
 const createPathStep = (
