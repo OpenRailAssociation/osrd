@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import icon from 'assets/pictures/components/train.svg';
-import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import {
@@ -15,7 +15,7 @@ import RollingStockModal from 'modules/rollingStock/components/RollingStockSelec
 type RollingStockProps = {
   condensed?: boolean;
   rollingStockSelected?: RollingStockWithLiveries;
-  rollingStockComfort: RollingStockComfortType;
+  rollingStockComfort: Comfort;
   image?: JSX.Element;
 };
 

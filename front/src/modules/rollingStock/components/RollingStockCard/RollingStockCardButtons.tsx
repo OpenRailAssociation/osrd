@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { Comfort } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
@@ -26,20 +26,16 @@ const RollingStockCardButtons = ({
   const { t } = useTranslation(['rollingstock']);
   const { closeModal } = useContext(ModalContext);
 
-  const { getRollingStockComfort } = useOsrdConfSelectors();
-  const currentComfortInStore = useSelector(getRollingStockComfort);
-  const [comfort, setComfort] = useState('STANDARD');
+  const { getRollingStockComfortV2 } = useOsrdConfSelectors();
+  const currentComfortInStore = useSelector(getRollingStockComfortV2);
+  const [comfort, setComfort] = useState(currentComfortInStore as string);
 
   const { updateRollingStockComfortV2, updateRollingStockID } = useOsrdConfActions();
 
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
     dispatch(updateRollingStockID(id));
-    dispatch(
-      updateRollingStockComfortV2(
-        comfort !== 'AC' ? (comfort as TrainScheduleBase['comfort']) : 'AIR_CONDITIONING'
-      )
-    );
+    dispatch(updateRollingStockComfortV2(comfort as Comfort));
     closeModal();
   };
 
@@ -60,10 +56,10 @@ const RollingStockCardButtons = ({
     }
     if (curvesComfortList.includes('AC')) {
       options.push({
-        value: 'AC',
+        value: 'AIR_CONDITIONING',
         label: (
           <span data-testid="comfort-ac-button" className="rollingstock-footer-button-with-picto">
-            {comfort2pictogram('AC')} {t('comfortTypes.AC')}
+            {comfort2pictogram('AIR_CONDITIONING')} {t('comfortTypes.AIR_CONDITIONING')}
           </span>
         ),
       });

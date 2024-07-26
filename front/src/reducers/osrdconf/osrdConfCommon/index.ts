@@ -61,7 +61,7 @@ export const defaultCommonConf: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
   // Corresponds to origin and destination not defined
   pathSteps: [null, null],
-  rollingStockComfortV2: 'STANDARD',
+  rollingStockComfortV2: 'STANDARD' as const,
   startTime: new Date().toISOString(),
 };
 

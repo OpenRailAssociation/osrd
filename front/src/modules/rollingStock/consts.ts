@@ -1,4 +1,4 @@
-import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import type { Comfort, RollingStockComfortType } from 'common/api/osrdEditoastApi';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import type {
   ElectricalProfileByMode,
@@ -303,9 +303,9 @@ export const CONVERSION_FACTORS_SCHEMA: Partial<
   'kN/(km/h)²': { 'N/(m/s)²': 1000 * 3.6 ** 2, 'N/(km/h)²': 1000 },
 };
 
-const ComfortLevels = {
+export const ComfortLevels: Record<Comfort, Comfort> = {
   STANDARD: 'STANDARD',
-  AC: 'AC',
+  AIR_CONDITIONING: 'AIR_CONDITIONING',
   HEATING: 'HEATING',
 };
 

@@ -4,9 +4,9 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 
 export const useStoreDataForRollingStockSelector = () => {
-  const { getRollingStockID, getRollingStockComfort } = useOsrdConfSelectors();
+  const { getRollingStockID, getRollingStockComfortV2 } = useOsrdConfSelectors();
   const rollingStockId = useSelector(getRollingStockID);
-  const rollingStockComfort = useSelector(getRollingStockComfort);
+  const rollingStockComfort = useSelector(getRollingStockComfortV2);
 
   const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
     {

@@ -1,6 +1,7 @@
 import fs from 'fs';
 
 import { test as setup } from '@playwright/test';
+import { v4 as uuidv4 } from 'uuid';
 
 import type {
   Infra,
@@ -60,9 +61,16 @@ async function createDataForTests() {
     budget: 1234567890,
   } as StudyCreateForm);
 
-  await postApiRequest(`/api/projects/${project.id}/studies/${study.id}/scenarios`, {
+  const timetable = await postApiRequest(`/api/v2/timetable/`, {
+    electrical_profile_set_id: null,
+  });
+
+  await postApiRequest(`/api/v2/projects/${project.id}/studies/${study.id}/scenarios`, {
     ...scenarioData,
+    name: `${scenarioData.name} ${uuidv4()}`,
+    study_id: study.id,
     infra_id: smallInfra.id,
+    timetable_id: timetable.id,
   });
 }
 

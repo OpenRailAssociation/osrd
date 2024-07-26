@@ -12,7 +12,7 @@ const studyName = study.name;
 const scenarioName = scenario.name;
 const rollingStockName = 'rollingstock_1500_25000_test_e2e';
 
-const rollingStockTranslation = manageTrainScheduleTranslation.rollingstock;
+const emptyRouteTranslation = manageTrainScheduleTranslation.pathfindingNoState;
 
 test.describe('STDCM page', () => {
   test('should configure and launch a stdcm', async ({ page }) => {
@@ -33,17 +33,16 @@ test.describe('STDCM page', () => {
     await stdcmPage.selectMiniCard(studyName);
     await stdcmPage.selectMiniCard(scenarioName);
 
-    // Check no rollingstock is selected and "rollingstock" is in the missing information
-    await expect(stdcmPage.missingParams).toContainText(rollingStockTranslation);
+    // Check no route is selected
+    await expect(stdcmPage.pathfindingNoState).toContainText(emptyRouteTranslation);
 
     // Select a rolling stock
     await stdcmPage.openRollingstockModal();
     await expect(stdcmPage.rollingStockSelectorModal).toBeVisible();
     await stdcmPage.selectRollingStock(rollingStockName);
 
-    // Check that the rollingstock is selected and "rollingstock" is not in the missing information anymore
+    // Check that the rollingstock is selected
     await expect(stdcmPage.rollingStockSelectorModal).not.toBeVisible();
-    await expect(stdcmPage.missingParams).not.toContainText(rollingStockTranslation);
 
     await stdcmPage.selectPathByTrigram('MWS', 'NES');
     await stdcmPage.checkPathfindingDistance('34.000 km');
