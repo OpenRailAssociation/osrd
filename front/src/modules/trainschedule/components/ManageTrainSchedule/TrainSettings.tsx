@@ -10,7 +10,6 @@ import { isInvalidName } from 'applications/operationalStudies/utils';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { dateTimeToIso } from 'utils/date';
 import { useDebounce } from 'utils/helpers';
@@ -28,7 +27,6 @@ export default function TrainSettings() {
   const initialSpeedFromStore = useSelector(getInitialSpeed);
   const departureTimeFromStore = useSelector(getDepartureTime);
   const startTimeFromStore = useSelector(getStartTime);
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const [name, setName] = useState<string>(nameFromStore);
   // TODO TS2 : remove departureTime when drop v1
@@ -102,40 +100,22 @@ export default function TrainSettings() {
         />
       </div>
       <div className="col-xl-4 col-lg-5 pr-2">
-        {trainScheduleV2Activated ? (
-          <InputSNCF
-            type="datetime-local"
-            label={
-              <>
-                <MdOutlineAccessTime />
-                {/* TOSO TS2 : rename trainScheduleDepartureTime key to trainScheduleStartTime everywhere */}
-                <small className="text-nowrap">{t('trainScheduleDepartureTime')}</small>
-              </>
-            }
-            id="trainSchedule-startTime"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
-            value={startTime}
-            isInvalid={!startTime}
-            errorMsg={t('errorMessages.mandatoryField')}
-            noMargin
-          />
-        ) : (
-          <InputSNCF
-            type="time"
-            label={
-              <>
-                <MdOutlineAccessTime />
-                <small className="text-nowrap">{t('trainScheduleDepartureTime')}</small>
-              </>
-            }
-            id="trainSchedule-departureTime"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDepartureTime(e.target.value)}
-            value={departureTime}
-            isInvalid={!departureTime}
-            errorMsg={t('errorMessages.mandatoryField')}
-            noMargin
-          />
-        )}
+        <InputSNCF
+          type="datetime-local"
+          label={
+            <>
+              <MdOutlineAccessTime />
+              {/* TODO TS2 : rename trainScheduleDepartureTime key to trainScheduleStartTime everywhere */}
+              <small className="text-nowrap">{t('trainScheduleDepartureTime')}</small>
+            </>
+          }
+          id="trainSchedule-startTime"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
+          value={startTime}
+          isInvalid={!startTime}
+          errorMsg={t('errorMessages.mandatoryField')}
+          noMargin
+        />
       </div>
       <div className="col-xl-2 col-lg-3 pr-xl-2">
         <InputSNCF

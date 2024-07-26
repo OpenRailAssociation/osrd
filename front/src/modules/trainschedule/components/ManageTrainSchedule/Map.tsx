@@ -43,13 +43,10 @@ import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
-import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/Itinerary';
-import ItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 import RenderPopup from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderPopup';
 import { updateViewport } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
@@ -74,7 +71,6 @@ const Map = ({
   const infraID = useInfraID();
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
   const [showLayers, setShowLayers] = useState(true);
@@ -376,22 +372,16 @@ const Map = ({
           </>
         )}
         <RenderPopup pathProperties={pathProperties} />
-        {mapIsLoaded &&
-          (trainScheduleV2Activated ? (
-            <>
-              <ItineraryLayer
-                layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
-                geometry={pathProperties?.geometry}
-                hideItineraryLine={hideItinerary}
-              />
-              {mapRef.current && <ItineraryMarkersV2 map={mapRef.current.getMap()} />}
-            </>
-          ) : (
-            <>
-              <Itinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
-              {mapRef.current && <ItineraryMarkers map={mapRef.current.getMap()} />}
-            </>
-          ))}
+        {mapIsLoaded && (
+          <>
+            <ItineraryLayer
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
+              geometry={pathProperties?.geometry}
+              hideItineraryLine={hideItinerary}
+            />
+            {mapRef.current && <ItineraryMarkersV2 map={mapRef.current.getMap()} />}
+          </>
+        )}
         {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
         {snappedPoint !== undefined && <SnappedMarker geojson={snappedPoint} />}
       </ReactMapGL>

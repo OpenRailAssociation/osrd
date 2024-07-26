@@ -7,14 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
-import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import {
-  type ScenarioCreateForm,
-  type ScenarioPatchForm,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { type ScenarioPatchForm, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -27,7 +22,6 @@ import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import { setFailure, setSuccess } from 'reducers/main';
-import { getStdcmV2Activated, getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
@@ -73,9 +67,6 @@ export default function AddOrEditScenarioModal({
   const navigate = useNavigate();
   const infraID = useInfraID();
   const { updateScenarioID } = useOsrdConfActions();
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
-  const stdcmV2Activated = useSelector(getStdcmV2Activated);
-  const useTrainScheduleV2 = trainScheduleV2Activated || stdcmV2Activated;
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
 
@@ -93,19 +84,6 @@ export default function AddOrEditScenarioModal({
     [urlStudyId, urlProjectId]
   );
 
-  // V1 endpoints
-  const [deleteScenarioV1] =
-    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
-      {}
-    );
-  const [patchScenarioV1] =
-    osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
-      {}
-    );
-  const [postScenarioV1] =
-    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenarios.useMutation({});
-
-  // v2 endpoints
   const [postTimetableV2] = osrdEditoastApi.endpoints.postV2Timetable.useMutation({});
   const [postScenarioV2] =
     osrdEditoastApi.endpoints.postV2ProjectsByProjectIdStudiesAndStudyIdScenarios.useMutation({});
@@ -181,30 +159,21 @@ export default function AddOrEditScenarioModal({
     if (!currentScenario.infra_id || hasErrors) {
       setDisplayErrors(true);
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
-      let postScenarioRequest;
       const ids = { projectId, studyId };
-      if (useTrainScheduleV2) {
-        const timetable = await postTimetableV2({
-          timetableForm: { electrical_profile_set_id: currentScenario.electrical_profile_set_id },
-        }).unwrap();
-        postScenarioRequest = postScenarioV2({
-          ...ids,
-          scenarioCreateFormV2: {
-            description: currentScenario.description || '',
-            infra_id: currentScenario.infra_id,
-            name: currentScenario.name,
-            tags: currentScenario.tags || [],
-            timetable_id: timetable.id,
-          },
-        });
-      } else {
-        postScenarioRequest = postScenarioV1({
-          ...ids,
-          scenarioCreateForm: currentScenario as ScenarioCreateForm,
-        });
-      }
+      const timetable = await postTimetableV2({
+        timetableForm: { electrical_profile_set_id: currentScenario.electrical_profile_set_id },
+      }).unwrap();
 
-      postScenarioRequest
+      postScenarioV2({
+        ...ids,
+        scenarioCreateFormV2: {
+          description: currentScenario.description || '',
+          infra_id: currentScenario.infra_id,
+          name: currentScenario.name,
+          tags: currentScenario.tags || [],
+          timetable_id: timetable.id,
+        },
+      })
         .unwrap()
         .then(({ id }) => {
           dispatch(updateScenarioID(id));
@@ -224,22 +193,15 @@ export default function AddOrEditScenarioModal({
     } else if (scenario && projectId && studyId && scenario.id) {
       const ids = { projectId, studyId, scenarioId: scenario.id };
 
-      const patchScenarioRequest = useTrainScheduleV2
-        ? patchScenarioV2({
-            ...ids,
-            scenarioPatchFormV2: {
-              description: currentScenario.description,
-              infra_id: currentScenario.infra_id,
-              name: currentScenario.name,
-              tags: currentScenario.tags,
-            },
-          })
-        : patchScenarioV1({
-            ...ids,
-            scenarioPatchForm: currentScenario,
-          });
-
-      patchScenarioRequest
+      patchScenarioV2({
+        ...ids,
+        scenarioPatchFormV2: {
+          description: currentScenario.description,
+          infra_id: currentScenario.infra_id,
+          name: currentScenario.name,
+          tags: currentScenario.tags,
+        },
+      })
         .unwrap()
         .then(() => {
           dispatch(
@@ -257,9 +219,8 @@ export default function AddOrEditScenarioModal({
   };
 
   const removeScenario = () => {
-    const deleteScenario = useTrainScheduleV2 ? deleteScenarioV2 : deleteScenarioV1;
     if (projectId && studyId && scenario?.id) {
-      deleteScenario({ projectId, studyId, scenarioId: scenario.id })
+      deleteScenarioV2({ projectId, studyId, scenarioId: scenario.id })
         .unwrap()
         .then(() => {
           dispatch(updateScenarioID(undefined));

@@ -116,16 +116,6 @@ class HomePage {
     return this.translation[key];
   }
 
-  // TODO : Delete after drop V1
-  // Check TS Version
-  async toggleTSV2() {
-    await this.dropDown.click();
-    await this.userSettings.click();
-    if (!(await this.TSV2Switch.isChecked()) && (await this.TSV2Switch.isVisible())) {
-      await this.TSV2Switch.click();
-    }
-  }
-
   // Check Stdcm Version
   async toggleStdcmV1() {
     await this.dropDown.click();

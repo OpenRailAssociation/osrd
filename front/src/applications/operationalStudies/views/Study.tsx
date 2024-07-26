@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
@@ -23,7 +22,6 @@ import { Loader, Spinner } from 'common/Loaders';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
-import { getStdcmV2Activated, getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { budgetFormat } from 'utils/numbers';
 
 type SortOptions =
@@ -43,9 +41,6 @@ export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
   const { openModal } = useModal();
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
-  const stdcmV2Activated = useSelector(getStdcmV2Activated);
-  const useTrainScheduleV2 = trainScheduleV2Activated || stdcmV2Activated;
 
   const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>([]);
   const [filter, setFilter] = useState('');
@@ -76,17 +71,6 @@ export default function Study() {
   );
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
-
-  const { data: scenariosV1 } =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
-      {
-        projectId: projectId!,
-        studyId: studyId!,
-        ordering: sortOption,
-        pageSize: 1000,
-      },
-      { skip: !projectId || !studyId }
-    );
 
   const { data: scenariosV2 } =
     osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
@@ -156,8 +140,7 @@ export default function Study() {
           console.error(error);
         }
       } else {
-        const scenarios = useTrainScheduleV2 ? scenariosV2?.results : scenariosV1?.results;
-        setScenariosList(scenarios || []);
+        setScenariosList(scenariosV2?.results || []);
       }
       setIsLoading(false);
     }
@@ -188,7 +171,7 @@ export default function Study() {
 
   useEffect(() => {
     getScenarioList();
-  }, [sortOption, filter, scenariosV1, scenariosV2, useTrainScheduleV2]);
+  }, [sortOption, filter, scenariosV2]);
 
   return (
     <>

@@ -12,7 +12,6 @@ const StdcmViewV1 = () => {
   const dispatch = useAppDispatch();
 
   const {
-    stdcmResults,
     stdcmV2Results,
     launchStdcmRequest,
     currentStdcmRequestStatus,
@@ -34,7 +33,6 @@ const StdcmViewV1 = () => {
       <StdcmConfig
         currentStdcmRequestStatus={currentStdcmRequestStatus}
         launchStdcmRequest={launchStdcmRequest}
-        stdcmResults={stdcmResults}
         stdcmV2Results={stdcmV2Results}
         pathProperties={pathProperties}
         setPathProperties={setPathProperties}

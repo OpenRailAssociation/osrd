@@ -55,7 +55,6 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
     // TODO: DROP TSV1: remove this part
     const homePage = new HomePage(page);
     await homePage.goToHomePage();
-    await homePage.toggleTSV2();
 
     // Navigate to the created scenario page
     await page.goto(
@@ -101,11 +100,6 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
     const operationalStudiesPage = new OperationalStudiesPage(page);
     const scenarioPage = new ScenarioPage(page);
     const rollingStockSelector = new RollingStockSelectorPage(page);
-
-    // TODO: DROP TSV1: remove this part
-    const homePage = new HomePage(page);
-    await homePage.goToHomePage();
-    await homePage.toggleTSV2();
 
     // Navigate to the created scenario page
     await page.goto(

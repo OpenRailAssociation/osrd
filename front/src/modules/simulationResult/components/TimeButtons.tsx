@@ -2,13 +2,10 @@ import React, { useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
 
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
-import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
 
@@ -22,14 +19,12 @@ const factor2ms = (factor: number) => {
 };
 
 type TimeButtonsProps = {
-  selectedTrain?: SimulationReport;
   departureTime?: string;
 };
 
-const TimeButtons = ({ selectedTrain, departureTime }: TimeButtonsProps) => {
+const TimeButtons = ({ departureTime }: TimeButtonsProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('simulation');
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const [playInterval, setPlayInterval] = useState<NodeJS.Timeout | undefined>(undefined);
   const [playReverse, setPlayReverse] = useState(false);
@@ -57,12 +52,8 @@ const TimeButtons = ({ selectedTrain, departureTime }: TimeButtonsProps) => {
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
-    if (trainScheduleV2Activated) {
-      if (departureTime)
-        updateTimePositionV2(sec2datetime(convertDepartureTimeIntoSec(departureTime)));
-    } else if (selectedTrain) {
-      updateTimePosition(sec2datetime(selectedTrain.base.stops[0].time));
-    }
+    if (departureTime)
+      updateTimePositionV2(sec2datetime(convertDepartureTimeIntoSec(departureTime)));
 
     dispatch(updateIsPlaying(false));
   };
@@ -84,11 +75,7 @@ const TimeButtons = ({ selectedTrain, departureTime }: TimeButtonsProps) => {
       } else {
         i += factor.steps;
       }
-      if (trainScheduleV2Activated) {
-        updateTimePositionV2(new Date(i * 1000));
-      } else {
-        updateTimePosition(new Date(i * 1000));
-      }
+      updateTimePositionV2(new Date(i * 1000));
     }, factor.ms);
     setPlayInterval(playIntervalLocal);
     dispatch(updateIsPlaying(true));

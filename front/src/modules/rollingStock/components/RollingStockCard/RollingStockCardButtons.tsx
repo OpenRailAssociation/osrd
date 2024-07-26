@@ -3,13 +3,12 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { RollingStockComfortType, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 
 interface RollingStockCardButtonsProps {
@@ -29,29 +28,18 @@ const RollingStockCardButtons = ({
 
   const { getRollingStockComfort } = useOsrdConfSelectors();
   const currentComfortInStore = useSelector(getRollingStockComfort);
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
   const [comfort, setComfort] = useState('STANDARD');
 
-  const {
-    updatePathfindingID,
-    updateRollingStockComfort,
-    updateRollingStockComfortV2,
-    updateRollingStockID,
-  } = useOsrdConfActions();
+  const { updateRollingStockComfortV2, updateRollingStockID } = useOsrdConfActions();
 
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
-    dispatch(updateRollingStockComfort(comfort as RollingStockComfortType));
     dispatch(updateRollingStockID(id));
-    dispatch(updatePathfindingID(undefined));
-    // TODO TS2 : when dropping v1, change comfort type to TrainScheduleBase['comfort']
-    // and verify that i18n keys are properly set for air conditioning
-    if (trainScheduleV2Activated)
-      dispatch(
-        updateRollingStockComfortV2(
-          comfort !== 'AC' ? (comfort as TrainScheduleBase['comfort']) : 'AIR_CONDITIONING'
-        )
-      );
+    dispatch(
+      updateRollingStockComfortV2(
+        comfort !== 'AC' ? (comfort as TrainScheduleBase['comfort']) : 'AIR_CONDITIONING'
+      )
+    );
     closeModal();
   };
 
