@@ -133,6 +133,8 @@ describe('getProfileValue', () => {
 
 describe('formatElectricalProfiles', () => {
   it('should format electrical profiles', () => {
+    const lastPosition = 3;
+
     const electrifications: LayerData<ElectrificationValues>[] = [
       {
         position: {
@@ -159,7 +161,7 @@ describe('formatElectricalProfiles', () => {
       {
         position: {
           start: 2,
-          end: 3,
+          end: lastPosition,
         },
         value: {
           type: 'electrification',
@@ -194,7 +196,7 @@ describe('formatElectricalProfiles', () => {
       {
         position: {
           start: 2,
-          end: 3,
+          end: lastPosition,
         },
         value: {
           electricalProfile: 'B',
@@ -204,6 +206,8 @@ describe('formatElectricalProfiles', () => {
       },
     ];
 
-    expect(formatElectricalProfiles(simulation, electrifications)).toEqual(expected);
+    expect(
+      formatElectricalProfiles(simulation.electrical_profiles, electrifications, lastPosition)
+    ).toEqual(expected);
   });
 });

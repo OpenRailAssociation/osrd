@@ -98,25 +98,26 @@ export const getProfileValue = (
 };
 
 export const formatElectricalProfiles = (
-  simulation: SimulationResponseSuccess,
-  electrifications: Data['electrifications']
+  electricalProfiles: SimulationResponseSuccess['electrical_profiles'],
+  electrifications: Data['electrifications'],
+  pathLength: number
 ) => {
-  if (simulation.electrical_profiles.values.length === 0) return undefined;
-  return simulation.electrical_profiles.values.map((values, index) => {
+  if (electricalProfiles.values.length === 0) return undefined;
+  const { boundaries, values } = electricalProfiles;
+  return values.map((value, index) => {
     const electrification = electrifications.find(
       (electrificationValue) =>
-        electrificationValue.position.start >=
-          (index === 0 ? 0 : mmToKm(simulation.electrical_profiles.boundaries[index - 1])) &&
+        electrificationValue.position.start >= (index === 0 ? 0 : mmToKm(boundaries[index - 1])) &&
         electrificationValue.position.end! <=
-          mmToKm(simulation.electrical_profiles.boundaries[index])
+          mmToKm(index === boundaries.length ? pathLength : boundaries[index])
     );
 
     return {
       position: {
-        start: mmToKm(index === 0 ? 0 : simulation.electrical_profiles.boundaries[index - 1]),
-        end: mmToKm(simulation.electrical_profiles.boundaries[index]),
+        start: mmToKm(index === 0 ? 0 : boundaries[index - 1]),
+        end: mmToKm(index === boundaries.length ? pathLength : boundaries[index]),
       },
-      value: getProfileValue(values, electrification?.value.voltage),
+      value: getProfileValue(value, electrification?.value.voltage),
     };
   });
 };
@@ -126,6 +127,7 @@ export const formatData = (
   selectedTrainPowerRestrictions?: LayerData<PowerRestrictionValues>[],
   pathProperties?: PathPropertiesFormatted
 ) => {
+  const pathLength = simulation.base.positions[simulation.base.positions.length - 1];
   const speeds: LayerData<number>[] = formatSpeeds(simulation.base);
   const ecoSpeeds: LayerData<number>[] = formatSpeeds(simulation.final_output);
   const stops: LayerData<string>[] = formatStops(pathProperties!.operationalPoints);
@@ -136,7 +138,7 @@ export const formatData = (
   const powerRestrictions: LayerData<PowerRestrictionValues>[] | undefined =
     selectedTrainPowerRestrictions;
   const electricalProfiles: LayerData<ElectricalPofilelValues>[] | undefined =
-    formatElectricalProfiles(simulation, electrifications);
+    formatElectricalProfiles(simulation.electrical_profiles, electrifications, pathLength);
   const speedLimitTags: LayerData<SpeedLimitTagValues>[] | undefined = undefined;
 
   return {
