@@ -17,3 +17,9 @@ type TrainSchedulePathStep = ArrayElement<TrainScheduleBase['path']>;
 export type TrainScheduleBasePathWithUic = Extract<TrainSchedulePathStep, { uic: number }>;
 
 export type ScheduleEntry = ArrayElement<TrainScheduleResult['schedule']>;
+
+export type ComputedScheduleEntry = {
+  arrival: number | null;
+  departure: number | null;
+  stopFor: number | null;
+};

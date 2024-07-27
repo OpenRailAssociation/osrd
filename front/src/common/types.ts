@@ -10,4 +10,7 @@ export const DATA_TYPES = {
   percent: 'PERCENT',
 };
 
-export type TimeString = string; // hh:mm:ss or hh:mm
+/**
+ * A string with the format HH:MM:SS or HH:MM
+ */
+export type TimeString = string;

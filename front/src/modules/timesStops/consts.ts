@@ -5,3 +5,5 @@ export const MarginUnit = {
   minPer100km: 'min/100km',
   second: 's',
 } as const;
+
+export const ARRIVAL_TIME_ACCEPTABLE_ERROR_MS = 1000;
