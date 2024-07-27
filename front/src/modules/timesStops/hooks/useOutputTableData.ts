@@ -12,8 +12,9 @@ import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/com
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { secToHoursString } from 'utils/timeManipulation';
 
+import { checkAndFormatCalculatedArrival } from '../helpers/arrivalTime';
 import computeMargins from '../helpers/computeMargins';
-import formatScheduleData from '../helpers/formatScheduleData';
+import { computeScheduleData, formatScheduleData } from '../helpers/scheduleData';
 import { findNextScheduledOpPoint } from '../helpers/utils';
 import type { TrainScheduleBasePathWithUic, ScheduleEntry } from '../types';
 
@@ -81,7 +82,8 @@ function useOutputTableData(
         if (pathStepKey in pathStepsByUic && nextOpPoint) {
           const pathStepId = pathStepsByUic[pathStepKey].id || '';
           const schedule = scheduleByAt[pathStepId];
-          const scheduleData = formatScheduleData(schedule, selectedTrainSchedule.start_time);
+          const scheduleData = computeScheduleData(schedule, selectedTrainSchedule.start_time);
+          const formattedScheduleData = formatScheduleData(scheduleData);
           const marginsData = computeMargins(
             simulatedTrain,
             opPoint,
@@ -89,11 +91,13 @@ function useOutputTableData(
             selectedTrainSchedule,
             pathStepId
           );
+          const calculatedArrival = checkAndFormatCalculatedArrival(scheduleData, opPoint.time);
+
           return {
             ...sugOpPoint,
-            ...scheduleData,
+            ...formattedScheduleData,
             onStopSignal: schedule?.on_stop_signal || '',
-            calculatedArrival: secToHoursString(opPoint.time, true),
+            calculatedArrival,
             calculatedDeparture:
               opPoint.duration > 0 ? secToHoursString(opPoint.time + opPoint.duration, true) : '',
             ...marginsData,
