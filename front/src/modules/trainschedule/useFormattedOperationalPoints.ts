@@ -7,7 +7,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 
-import { BaseOrEco } from './components/DriverTrainSchedule/consts';
+import { BaseOrEco, type BaseOrEcoType } from './components/DriverTrainSchedule/consts';
 import type { OperationalPointWithTimeAndSpeed } from './components/DriverTrainScheduleV2/types';
 import { formatOperationalPoints, isEco } from './components/DriverTrainScheduleV2/utils';
 
@@ -24,10 +24,12 @@ export const useFormattedOperationalPoints = (
     []
   );
   const [loading, setLoading] = useState(false);
+  const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(
+    train && isEco(train) ? BaseOrEco.eco : BaseOrEco.base
+  );
 
   useEffect(() => {
     if (train && simulatedTrain && pathProperties && infraId) {
-      const baseOrEco = isEco(train) ? BaseOrEco.eco : BaseOrEco.base;
       const selectedTrainRegime =
         baseOrEco === BaseOrEco.eco ? simulatedTrain.final_output : simulatedTrain.base;
       const fetchOperationalPoints = async () => {
@@ -43,7 +45,7 @@ export const useFormattedOperationalPoints = (
       };
       fetchOperationalPoints();
     }
-  }, [train, simulatedTrain, pathProperties, infraId]);
+  }, [train, simulatedTrain, pathProperties, infraId, baseOrEco]);
 
-  return { operationalPoints, loading };
+  return { operationalPoints, loading, baseOrEco, setBaseOrEco };
 };
