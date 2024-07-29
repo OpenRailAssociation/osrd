@@ -103,12 +103,10 @@
   }
 
   .infra-locked {
-    width: 32.25rem;
-    overflow-y: auto;
-    height: auto;
+    flex-shrink: 0;
   }
 
-  .panel-box {
+  .panel-container {
     width: 32.25rem;
     height: 100%;
     overflow-y: auto;
