@@ -57,8 +57,10 @@ interface IncrementalConflictDetector {
         routingRequirements: List<RoutingRequirement>
     ): List<Conflict>
 
+    /** Only check the given new spacing requirement against the scheduled requirements */
     fun checkSpacingRequirement(req: SpacingRequirement): List<Conflict>
 
+    /** Only check the given new routing requirement against the scheduled requirements */
     fun checkRoutingRequirement(req: RoutingRequirement): List<Conflict>
 
     fun minDelayWithoutConflicts(
@@ -210,19 +212,16 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
     }
 
     override fun checkSpacingRequirement(req: SpacingRequirement): List<Conflict> {
-        val requirements = (spacingZoneRequirements[req.zone!!] ?: return listOf()).toMutableList()
-        requirements.add(SpacingZoneRequirement(-1, req.beginTime, req.endTime))
+        val requirements = spacingZoneRequirements[req.zone] ?: return listOf()
 
         val res = mutableListOf<Conflict>()
-        for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
-            if (conflictGroup.none { it.trainId == -1L })
-                continue // don't report timetable conflicts to STDCM
-            val filteredConflictGroup = conflictGroup.filter { it.trainId != -1L }
-            val trains = filteredConflictGroup.map { it.trainId }
-            val beginTime =
-                max(req.beginTime, filteredConflictGroup.minBy { it.beginTime }.beginTime)
-            val endTime = min(req.endTime, filteredConflictGroup.maxBy { it.endTime }.endTime)
-            res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
+        for (otherReq in requirements) {
+            val beginTime = max(req.beginTime, otherReq.beginTime)
+            val endTime = min(req.endTime, otherReq.endTime)
+            if (beginTime < endTime)
+                res.add(
+                    Conflict(listOf(otherReq.trainId), beginTime, endTime, ConflictType.SPACING)
+                )
         }
 
         return res
@@ -231,31 +230,18 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
     override fun checkRoutingRequirement(req: RoutingRequirement): List<Conflict> {
         val res = mutableListOf<Conflict>()
         for (zoneReq in req.zones) {
-            val requirements = (routingZoneRequirements[zoneReq.zone!!] ?: continue).toMutableList()
-            requirements.add(
-                RoutingZoneRequirement(
-                    -1,
-                    req.route,
-                    req.beginTime,
-                    zoneReq.endTime,
-                    RoutingZoneConfig(
-                        zoneReq.entryDetector,
-                        zoneReq.exitDetector,
-                        zoneReq.switches!!
-                    )
-                )
-            )
+            val zoneReqConfig =
+                RoutingZoneConfig(zoneReq.entryDetector, zoneReq.exitDetector, zoneReq.switches!!)
+            val requirements = routingZoneRequirements[zoneReq.zone!!] ?: continue
 
-            for (conflictGroup in
-                detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
-                if (conflictGroup.none { it.trainId == -1L })
-                    continue // don't report timetable conflicts to STDCM
-                val filteredConflictGroup = conflictGroup.filter { it.trainId != -1L }
-                val trains = filteredConflictGroup.map { it.trainId }
-                val beginTime =
-                    max(req.beginTime, filteredConflictGroup.minBy { it.beginTime }.beginTime)
-                val endTime = filteredConflictGroup.maxBy { it.endTime }.endTime
-                res.add(Conflict(trains, beginTime, endTime, ConflictType.ROUTING))
+            for (otherReq in requirements) {
+                if (otherReq.config == zoneReqConfig) continue
+                val beginTime = max(req.beginTime, otherReq.beginTime)
+                val endTime = min(zoneReq.endTime, otherReq.endTime)
+                if (beginTime < endTime)
+                    res.add(
+                        Conflict(listOf(otherReq.trainId), beginTime, endTime, ConflictType.ROUTING)
+                    )
             }
         }
         return res
