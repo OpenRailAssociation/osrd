@@ -21,6 +21,7 @@ import { useAppDispatch } from 'store';
 import { addDurationToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { getPointCoordinates } from 'utils/geometry';
+import { mmToM } from 'utils/physics';
 import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
 import type { ManageTrainSchedulePathProperties } from '../types';
@@ -116,6 +117,11 @@ const useSetupItineraryForTrainUpdate = (
           } = correspondingSchedule || {};
 
           const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
+
+          // TODO DROP V1: we should store the offset in mm in the store
+          if ('track' in stepWithoutSecondaryCode) {
+            stepWithoutSecondaryCode.offset = mmToM(stepWithoutSecondaryCode.offset!);
+          }
 
           return {
             ...stepWithoutSecondaryCode,
