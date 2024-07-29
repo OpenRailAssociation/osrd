@@ -3,7 +3,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.67-rust-1.79.0 AS chef
+FROM lukemathwalker/cargo-chef:0.1.67-rust-1.79.0-alpine AS chef
 WORKDIR /osrdyne
 
 #######################
@@ -44,17 +44,10 @@ COPY . .
 #######################
 # Running env : build #
 #######################
-FROM debian:bookworm-slim as running_env
-RUN apt update -yqq && \
-    apt install -yqq --no-install-recommends curl ca-certificates libjemalloc2 jq && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY --from=run_builder /usr/local/cargo/bin/osrdyne /usr/local/bin/osrdyne
+FROM scratch
+COPY --from=run_builder /usr/local/cargo/bin/osrdyne /osrdyne
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
-# We use jemalloc to reduce allocation fragmentation
-ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libjemalloc.so.2"
 
-CMD ["/usr/local/bin/osrdyne"]
+CMD ["/osrdyne"]
