@@ -12,6 +12,7 @@ import {
   DEFAULT_SIGNALING_SYSTEMS,
   RollingStockEditorMetadata,
   RollingStockEditorParameter,
+  RS_REQUIRED_FIELDS,
 } from 'modules/rollingStock/consts';
 import { handleUnitValue, splitRollingStockProperties } from 'modules/rollingStock/helpers/utils';
 import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
@@ -36,7 +37,6 @@ const RollingStockEditorMetadataFormColumn = ({
   setRollingStockValues,
 }: RollingStockMetadataFormProps & { propertiesList: SchemaProperty[] }) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
-
   return (
     <>
       {propertiesList.map((property, index) => (
@@ -44,7 +44,9 @@ const RollingStockEditorMetadataFormColumn = ({
           containerClass="col-6 px-0"
           id={property.title}
           name={property.title}
-          label={t(property.title)}
+          label={
+            property.title in RS_REQUIRED_FIELDS ? `${t(property.title)} *` : t(property.title)
+          }
           type={property.type}
           value={rollingStockValues[property.title] as string | number}
           onChange={(e) =>
@@ -218,7 +220,9 @@ const RollingStockEditorParameterFormColumn = ({
             noMargin={isLast}
             id={property.title}
             name={property.title}
-            label={t(property.title)}
+            label={
+              property.title in RS_REQUIRED_FIELDS ? `${t(property.title)} *` : t(property.title)
+            }
             type={property.type}
             step="any"
             min={property.min}
