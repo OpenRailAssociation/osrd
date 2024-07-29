@@ -57,7 +57,7 @@ docker exec osrd-postgres psql -f //tmp/init.sql > /dev/null
 
 # Clear Redis Cache
 echo "Deleting redis cache..."
-docker exec osrd-redis redis-cli DEL * &> /dev/null || docker volume rm -f osrd_redis_data > /dev/null
+docker exec osrd-redis redis-cli FLUSHALL &> /dev/null || docker volume rm -f osrd_redis_data > /dev/null
 
 echo "Cleanup done!\n"
 echo "You may want to apply migrations if you don't load a backup:"
