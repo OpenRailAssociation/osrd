@@ -47,7 +47,8 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
 
   const { rollingStock } = useStoreDataForRollingStockSelector();
 
-  const { filters, searchRollingStock, filteredRollingStockList } = useFilterRollingStock();
+  const { filters, searchRollingStock, searchRollingStockById, filteredRollingStockList } =
+    useFilterRollingStock();
 
   const getLabel = (rs: LightRollingStockWithLiveries) => {
     let res = '';
@@ -64,6 +65,12 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
     }
     if (name) res += ` -- ${name}`;
     return res;
+  };
+
+  const onInputClick = () => {
+    if (rollingStock?.id !== undefined) {
+      searchRollingStockById(rollingStock.id);
+    }
   };
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,6 +115,7 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
             id="tractionEngine"
             label={t('consist.tractionEngine')}
             value={filters.text.toUpperCase()}
+            onClick={onInputClick}
             onChange={onInputChange}
             onBlur={onInputOnBlur}
             disabled={disabled}
