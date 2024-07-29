@@ -73,7 +73,12 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
     pathProperties,
     pathLength,
   } = useSimulationResults();
-  const { operationalPoints, loading: formattedOpPointsLoading } = useFormattedOperationalPoints(
+  const {
+    operationalPoints,
+    loading: formattedOpPointsLoading,
+    baseOrEco,
+    setBaseOrEco,
+  } = useFormattedOperationalPoints(
     selectedTrainSchedule,
     trainSimulation,
     pathProperties,
@@ -287,6 +292,8 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
               rollingStock={selectedTrainRollingStock}
               operationalPoints={operationalPoints}
               formattedOpPointsLoading={formattedOpPointsLoading}
+              baseOrEco={baseOrEco}
+              setBaseOrEco={setBaseOrEco}
             />
           </div>
         )}

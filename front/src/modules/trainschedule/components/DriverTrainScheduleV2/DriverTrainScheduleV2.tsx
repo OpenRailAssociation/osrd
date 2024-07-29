@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import type {
   PathPropertiesFormatted,
@@ -10,7 +10,6 @@ import { Loader } from 'common/Loaders';
 import DriverTrainScheduleHeaderV2 from './DriverTrainScheduleHeaderV2';
 import DriverTrainScheduleStopListV2 from './DriverTrainScheduleStopListV2';
 import type { OperationalPointWithTimeAndSpeed } from './types';
-import { isEco } from './utils';
 import { BaseOrEco, type BaseOrEcoType } from '../DriverTrainSchedule/consts';
 
 type DriverTrainScheduleV2Props = {
@@ -20,6 +19,8 @@ type DriverTrainScheduleV2Props = {
   rollingStock: LightRollingStock;
   operationalPoints: OperationalPointWithTimeAndSpeed[];
   formattedOpPointsLoading: boolean;
+  baseOrEco: BaseOrEcoType;
+  setBaseOrEco: (baseOrEco: BaseOrEcoType) => void;
 };
 
 const DriverTrainScheduleV2 = ({
@@ -29,15 +30,9 @@ const DriverTrainScheduleV2 = ({
   rollingStock,
   operationalPoints,
   formattedOpPointsLoading,
+  baseOrEco,
+  setBaseOrEco,
 }: DriverTrainScheduleV2Props) => {
-  const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(
-    isEco(train) ? BaseOrEco.eco : BaseOrEco.base
-  );
-
-  useEffect(() => {
-    setBaseOrEco(isEco(train) ? BaseOrEco.eco : BaseOrEco.base);
-  }, [simulatedTrain]);
-
   const selectedTrainRegime = useMemo(
     () => (baseOrEco === BaseOrEco.eco ? simulatedTrain.final_output : simulatedTrain.base),
     [baseOrEco, simulatedTrain]
