@@ -63,6 +63,7 @@ export const newRollingStockValues: RollingStockParametersValues = {
 };
 
 export const RS_REQUIRED_FIELDS = Object.freeze({
+  name: '',
   length: 1,
   mass: newRollingStockValues.mass,
   maxSpeed: newRollingStockValues.maxSpeed,
