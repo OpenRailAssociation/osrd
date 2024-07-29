@@ -43,143 +43,141 @@ const useSetupItineraryForTrainUpdate = (
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
   useEffect(() => {
     const setupItineraryForTrainUpdate = async () => {
+      if (!infraId) {
+        return;
+      }
       const trainSchedule = await getTrainScheduleById({
         id: trainIdToEdit,
       }).unwrap();
-      if (infraId) {
-        const rollingStock = await getRollingStockByName({
-          rollingStockName: trainSchedule.rolling_stock_name,
-        }).unwrap();
-        // TODO TS2 : Next part might not be needed (except to updePathSteps), we need inly trainSchedulePath and
-        // rolling stock infos to relaunch the pathfinding. Check for that in simulation results issue
-        const params: PostV2InfraByInfraIdPathfindingBlocksApiArg = {
-          infraId,
-          pathfindingInputV2: {
-            path_items: trainSchedule.path.map((item) =>
-              omit(item, ['id', 'deleted'])
-            ) as PathItemLocation[],
-            rolling_stock_is_thermal: isThermal(rollingStock.effort_curves.modes),
-            rolling_stock_loading_gauge: rollingStock.loading_gauge,
-            rolling_stock_supported_electrifications: getSupportedElectrification(
-              rollingStock.effort_curves.modes
-            ),
-            rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems,
-          },
-        };
-        try {
-          const pathfindingResult = await postPathfindingBlocks(params).unwrap();
-          if (pathfindingResult.status === 'success') {
-            const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
-              infraId,
-              props: ['electrifications', 'geometry', 'operational_points'],
-              pathPropertiesInput: {
-                track_section_ranges: pathfindingResult.track_section_ranges,
-              },
+      const rollingStock = await getRollingStockByName({
+        rollingStockName: trainSchedule.rolling_stock_name,
+      }).unwrap();
+      // TODO TS2 : Next part might not be needed (except to updePathSteps), we need inly trainSchedulePath and
+      // rolling stock infos to relaunch the pathfinding. Check for that in simulation results issue
+      const params: PostV2InfraByInfraIdPathfindingBlocksApiArg = {
+        infraId,
+        pathfindingInputV2: {
+          path_items: trainSchedule.path.map((item) =>
+            omit(item, ['id', 'deleted'])
+          ) as PathItemLocation[],
+          rolling_stock_is_thermal: isThermal(rollingStock.effort_curves.modes),
+          rolling_stock_loading_gauge: rollingStock.loading_gauge,
+          rolling_stock_supported_electrifications: getSupportedElectrification(
+            rollingStock.effort_curves.modes
+          ),
+          rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems,
+        },
+      };
+      try {
+        const pathfindingResult = await postPathfindingBlocks(params).unwrap();
+        if (pathfindingResult.status === 'success') {
+          const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
+            infraId,
+            props: ['electrifications', 'geometry', 'operational_points'],
+            pathPropertiesInput: {
+              track_section_ranges: pathfindingResult.track_section_ranges,
+            },
+          };
+          const { electrifications, geometry, operational_points } =
+            await postPathProperties(pathPropertiesParams).unwrap();
+          if (electrifications && geometry && operational_points) {
+            const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
+              getPointCoordinates(geometry, pathfindingResult.length, position)
+            );
+            const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
+              operational_points,
+              geometry,
+              pathfindingResult.length
+            );
+
+            const updatedPathSteps: PathStep[] = trainSchedule.path.map((step, i) => {
+              const correspondingOp = suggestedOperationalPoints.find(
+                (suggestedOp) =>
+                  'uic' in step &&
+                  suggestedOp.uic === step.uic &&
+                  suggestedOp.ch === step.secondary_code
+              );
+
+              const correspondingSchedule = trainSchedule.schedule?.find(
+                (schedule) => schedule.at === step.id
+              );
+
+              const { kp, name, ch } = correspondingOp || {};
+
+              const {
+                arrival,
+                stop_for: stopFor,
+                locked,
+                on_stop_signal: onStopSignal,
+              } = correspondingSchedule || {};
+
+              const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
+
+              return {
+                ...stepWithoutSecondaryCode,
+                ch,
+                kp,
+                name,
+                positionOnPath: pathfindingResult.path_item_positions[i],
+                arrival: arrival
+                  ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
+                  : arrival,
+                stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
+                locked,
+                onStopSignal,
+                coordinates: stepsCoordinates[i],
+              } as PathStep;
+            });
+
+            const findCorrespondingMargin = (
+              stepId: string,
+              stepIndex: number,
+              margins: { boundaries: string[]; values: string[] }
+            ) => {
+              // The first pathStep will never have its id in boundaries
+              if (stepIndex === 0)
+                return margins.values[0] === 'none' ? undefined : margins.values[0];
+
+              const marginIndex = margins.boundaries.findIndex(
+                (boundaryId) => boundaryId === stepId
+              );
+
+              return marginIndex !== -1 ? margins.values[marginIndex + 1] : undefined;
             };
-            const { electrifications, geometry, operational_points } =
-              await postPathProperties(pathPropertiesParams).unwrap();
-            if (electrifications && geometry && operational_points) {
-              const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
-                getPointCoordinates(geometry, pathfindingResult.length, position)
-              );
-              const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
-                operational_points,
-                geometry,
-                pathfindingResult.length
-              );
 
-              const updatedPathSteps: PathStep[] = trainSchedule.path.map((step, i) => {
-                const correspondingOp = suggestedOperationalPoints.find(
-                  (suggestedOp) =>
-                    'uic' in step &&
-                    suggestedOp.uic === step.uic &&
-                    suggestedOp.ch === step.secondary_code
+            if (trainSchedule.margins) {
+              updatedPathSteps.forEach((step, index) => {
+                step.theoreticalMargin = findCorrespondingMargin(
+                  step.id,
+                  index,
+                  trainSchedule.margins!
                 );
-
-                const correspondingSchedule = trainSchedule.schedule?.find(
-                  (schedule) => schedule.at === step.id
-                );
-
-                const { kp, name, ch } = correspondingOp || {};
-
-                const {
-                  arrival,
-                  stop_for: stopFor,
-                  locked,
-                  on_stop_signal: onStopSignal,
-                } = correspondingSchedule || {};
-
-                const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
-
-                return {
-                  ...stepWithoutSecondaryCode,
-                  ch,
-                  kp,
-                  name,
-                  positionOnPath: pathfindingResult.path_item_positions[i],
-                  arrival: arrival
-                    ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
-                    : arrival,
-                  stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
-                  locked,
-                  onStopSignal,
-                  coordinates: stepsCoordinates[i],
-                } as PathStep;
               });
-
-              const findCorrespondingMargin = (
-                stepId: string,
-                stepIndex: number,
-                margins: { boundaries: string[]; values: string[] }
-              ) => {
-                // The first pathStep will never have its id in boundaries
-                if (stepIndex === 0)
-                  return margins.values[0] === 'none' ? undefined : margins.values[0];
-
-                const marginIndex = margins.boundaries.findIndex(
-                  (boundaryId) => boundaryId === stepId
-                );
-
-                return marginIndex !== -1 ? margins.values[marginIndex + 1] : undefined;
-              };
-
-              if (trainSchedule.margins) {
-                updatedPathSteps.forEach((step, index) => {
-                  step.theoreticalMargin = findCorrespondingMargin(
-                    step.id,
-                    index,
-                    trainSchedule.margins!
-                  );
-                });
-              }
-
-              const allWaypoints = upsertPathStepsInOPs(
-                suggestedOperationalPoints,
-                updatedPathSteps
-              );
-
-              setPathProperties({
-                electrifications,
-                geometry,
-                suggestedOperationalPoints,
-                allWaypoints,
-                length: pathfindingResult.length,
-                trackSectionRanges: pathfindingResult.track_section_ranges,
-              });
-              adjustConfWithTrainToModifyV2(
-                trainSchedule,
-                updatedPathSteps,
-                rollingStock.id,
-                dispatch,
-                usingElectricalProfiles,
-                osrdActions
-              );
             }
+
+            const allWaypoints = upsertPathStepsInOPs(suggestedOperationalPoints, updatedPathSteps);
+
+            setPathProperties({
+              electrifications,
+              geometry,
+              suggestedOperationalPoints,
+              allWaypoints,
+              length: pathfindingResult.length,
+              trackSectionRanges: pathfindingResult.track_section_ranges,
+            });
+            adjustConfWithTrainToModifyV2(
+              trainSchedule,
+              updatedPathSteps,
+              rollingStock.id,
+              dispatch,
+              usingElectricalProfiles,
+              osrdActions
+            );
           }
-          // TODO TS2 : test errors display after core / editoast connexion for pathProperties
-        } catch (e) {
-          dispatch(setFailure(castErrorToFailure(e)));
         }
+        // TODO TS2 : test errors display after core / editoast connexion for pathProperties
+      } catch (e) {
+        dispatch(setFailure(castErrorToFailure(e)));
       }
     };
     setupItineraryForTrainUpdate();
