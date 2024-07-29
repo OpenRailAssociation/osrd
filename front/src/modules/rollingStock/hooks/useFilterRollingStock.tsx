@@ -7,6 +7,7 @@ import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 /**
+ * - id: the rolling stock id
  * - text: a string to search in the rolling stock name, detail, reference, series, type, grouping
  * - elec: true if the rolling stock has an electric mode
  * - thermal: true if the rolling stock has a thermal mode
@@ -14,6 +15,7 @@ import { castErrorToFailure } from 'utils/error';
  * - notLocked: true if the rolling stock is created by the user, can be updated/deleted
  */
 export interface RollingStockFilters {
+  id?: number;
   text: string;
   elec: boolean;
   thermal: boolean;
@@ -87,7 +89,12 @@ function filterRollingStocks(
 ) {
   if (filters === initialFilters) return rollingStockList;
   return rollingStockList.filter((rollingStock) => {
-    const { name, metadata, effort_curves: effortCurves, locked } = rollingStock;
+    const { id, name, metadata, effort_curves: effortCurves, locked } = rollingStock;
+
+    if (filters.id !== undefined) {
+      return id === filters.id;
+    }
+
     const passSearchedStringFilter = rollingStockPassesSearchedStringFilter(
       name,
       metadata,
@@ -142,7 +149,12 @@ export default function useFilterRollingStock() {
     useState<LightRollingStockWithLiveries[]>(allRollingStocks);
 
   const searchRollingStock = (value: string) => {
-    setFilters({ ...filters, text: value });
+    setFilters({ ...filters, id: undefined, text: value });
+    setSearchIsLoading(true);
+  };
+
+  const searchRollingStockById = (id?: number) => {
+    setFilters({ ...filters, id });
     setSearchIsLoading(true);
   };
 
@@ -181,6 +193,7 @@ export default function useFilterRollingStock() {
     searchIsLoading,
     resetFilters,
     searchRollingStock,
+    searchRollingStockById,
     toggleFilter,
   };
 }
