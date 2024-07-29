@@ -88,14 +88,15 @@ impl CoreClient {
         url: String,
     ) -> InternalError {
         // We try to deserialize the response as an StandardCoreError in order to retain the context of the core error
-        if let Ok(mut core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
-            core_error.context.insert("url".to_owned(), url.into());
-            let mut internal_error: InternalError = core_error.into();
-            internal_error.set_status(StatusCode::from_u16(status.as_u16()).unwrap());
-            return internal_error;
-        }
-
-        CoreError::UnparsableErrorOutput.into()
+        let mut internal_error: InternalError =
+            if let Ok(core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
+                core_error.into()
+            } else {
+                CoreError::UnparsableErrorOutput.into()
+            };
+        internal_error.context.insert("url".to_owned(), url.into());
+        internal_error.set_status(StatusCode::from_u16(status.as_u16()).unwrap());
+        internal_error
     }
 
     #[tracing::instrument(
