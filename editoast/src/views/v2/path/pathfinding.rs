@@ -177,7 +177,12 @@ async fn pathfinding_blocks_batch(
     let computed_paths: Vec<_> = futures::future::join_all(futures)
         .await
         .into_iter()
-        .collect::<Result<_>>()?;
+        .map(|res| match res {
+            Ok(pathfinding_result) => pathfinding_result,
+            // TODO: only make HTTP status code errors non-fatal
+            Err(core_error) => PathfindingResult::PathfindingFailed { core_error },
+        })
+        .collect();
 
     for (index, computed_path) in computed_paths.into_iter().enumerate() {
         let path_index = pathfinding_requests_index[index];
