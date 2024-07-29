@@ -7,6 +7,122 @@ info:
     url: https://www.gnu.org/licenses/lgpl-3.0.html
   version: 0.1.0
 paths:
+  /authz/list_roles:
+    get:
+      tags:
+      - authz
+      responses:
+        '200':
+          description: List of supported application roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+              - admin
+              - dev
+  /authz/roles/me:
+    get:
+      tags:
+      - authz
+      responses:
+        '200':
+          description: List the roles of the issuer of the request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - builtin
+                properties:
+                  builtin:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BuiltinRole'
+                    uniqueItems: true
+  /authz/roles/{user_id}:
+    get:
+      tags:
+      - authz
+      parameters:
+      - name: user_id
+        in: path
+        description: A user ID (not to be mistaken for its identity, cf. editoast user model documentation)
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: List the roles of a user
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - builtin
+                properties:
+                  builtin:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BuiltinRole'
+                    uniqueItems: true
+    post:
+      tags:
+      - authz
+      parameters:
+      - name: user_id
+        in: path
+        description: A user ID (not to be mistaken for its identity, cf. editoast user model documentation)
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - roles
+              properties:
+                roles:
+                  type: array
+                  items:
+                    type: string
+        required: true
+      responses:
+        '204':
+          description: The roles have been granted sucessfully
+    delete:
+      tags:
+      - authz
+      parameters:
+      - name: user_id
+        in: path
+        description: A user ID (not to be mistaken for its identity, cf. editoast user model documentation)
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - roles
+              properties:
+                roles:
+                  type: array
+                  items:
+                    type: string
+        required: true
+      responses:
+        '204':
+          description: The roles have been removed sucessfully
   /documents:
     post:
       tags:
@@ -2961,6 +3077,28 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
+    BuiltinRole:
+      type: string
+      enum:
+      - OpsWrite
+      - OpsRead
+      - InfraRead
+      - InfraWrite
+      - RollingStockCollectionRead
+      - RollingStockCollectionWrite
+      - WorkScheduleWrite
+      - WorkScheduleRead
+      - MapRead
+      - Stdcm
+      - StdcmAdmin
+      - TimetableRead
+      - TimetableWrite
+      - DocumentRead
+      - DocumentWrite
+      - SubjectRead
+      - SubjectWrite
+      - RoleRead
+      - RoleWrite
     Comfort:
       type: string
       enum:
@@ -3315,7 +3453,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authorization:AuthError
+          - editoast:authz:AuthError
     EditoastAuthorizationErrorUnauthenticated:
       type: object
       required:
@@ -3334,7 +3472,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:authorization:Unauthenticated
+          - editoast:authz:Unauthenticated
     EditoastAuthorizationErrorUnauthorized:
       type: object
       required:
@@ -3349,11 +3487,49 @@ components:
         status:
           type: integer
           enum:
-          - 401
+          - 403
         type:
           type: string
           enum:
-          - editoast:authorization:Unauthorized
+          - editoast:authz:Unauthorized
+    EditoastAuthzErrorAuthz:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:authz:Authz
+    EditoastAuthzErrorDriver:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:authz:Driver
     EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject:
       type: object
       required:
@@ -3810,6 +3986,8 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorAuthError'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthorized'
+      - $ref: '#/components/schemas/EditoastAuthzErrorAuthz'
+      - $ref: '#/components/schemas/EditoastAuthzErrorDriver'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorFixTrialFailure'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMaximumIterationReached'
@@ -3840,11 +4018,13 @@ components:
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
       - $ref: '#/components/schemas/EditoastInfraCacheEditoastErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastInfraStateErrorFetchError'
+      - $ref: '#/components/schemas/EditoastInvalidRoleTagInvalid'
       - $ref: '#/components/schemas/EditoastLayersErrorLayerNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorViewNotFound'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastListErrorsRailjsonWrongRailjsonVersionProvided'
+      - $ref: '#/components/schemas/EditoastNoSuchUserErrorNoSuchUser'
       - $ref: '#/components/schemas/EditoastOperationErrorEmptyId'
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
       - $ref: '#/components/schemas/EditoastOperationErrorModifyId'
@@ -4124,6 +4304,25 @@ components:
           type: string
           enum:
           - editoast:infra_state:FetchError
+    EditoastInvalidRoleTagInvalid:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:authz:role:Invalid
     EditoastLayersErrorLayerNotFound:
       type: object
       required:
@@ -4240,6 +4439,30 @@ components:
           type: string
           enum:
           - editoast:infra:railjson:WrongRailjsonVersionProvided
+    EditoastNoSuchUserErrorNoSuchUser:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - user_id
+          properties:
+            user_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:authz:NoSuchUser
     EditoastOperationErrorEmptyId:
       type: object
       required:

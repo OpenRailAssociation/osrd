@@ -1,3 +1,4 @@
+mod authz;
 mod documents;
 pub mod electrical_profiles;
 pub mod infra;
@@ -66,6 +67,7 @@ crate::routes! {
     "/version" => version,
     "/version/core" => core_version,
 
+    &authz,
     &documents,
     &electrical_profiles,
     &infra,
@@ -90,10 +92,12 @@ editoast_common::schemas! {
     editoast_schemas::schemas(),
     models::schemas(),
     core::schemas(),
+    generated_data::schemas(),
+
+    authz::schemas(),
     documents::schemas(),
     electrical_profiles::schemas(),
     error::schemas(),
-    generated_data::schemas(),
     infra::schemas(),
     operation::schemas(),
     operational_studies::schemas(),
@@ -159,13 +163,13 @@ pub async fn authorizer_middleware(
 }
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "authorization")]
+#[editoast_error(base_id = "authz")]
 pub enum AuthorizationError {
     #[error("Unauthenticated")]
     #[editoast_error(status = 401)]
     Unauthenticated,
     #[error("Unauthorized")]
-    #[editoast_error(status = 401)]
+    #[editoast_error(status = 403)]
     Unauthorized,
     #[error(transparent)]
     #[editoast_error(status = 500)]

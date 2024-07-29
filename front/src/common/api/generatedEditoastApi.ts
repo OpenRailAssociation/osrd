@@ -1,6 +1,7 @@
 import { baseEditoastApi as api } from './baseGeneratedApis';
 
 export const addTagTypes = [
+  'authz',
   'documents',
   'electrical_profiles',
   'infra',
@@ -27,6 +28,43 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      getAuthzListRoles: build.query<GetAuthzListRolesApiResponse, GetAuthzListRolesApiArg>({
+        query: () => ({ url: `/authz/list_roles` }),
+        providesTags: ['authz'],
+      }),
+      getAuthzRolesMe: build.query<GetAuthzRolesMeApiResponse, GetAuthzRolesMeApiArg>({
+        query: () => ({ url: `/authz/roles/me` }),
+        providesTags: ['authz'],
+      }),
+      getAuthzRolesByUserId: build.query<
+        GetAuthzRolesByUserIdApiResponse,
+        GetAuthzRolesByUserIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/authz/roles/${queryArg.userId}` }),
+        providesTags: ['authz'],
+      }),
+      postAuthzRolesByUserId: build.mutation<
+        PostAuthzRolesByUserIdApiResponse,
+        PostAuthzRolesByUserIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/authz/roles/${queryArg.userId}`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['authz'],
+      }),
+      deleteAuthzRolesByUserId: build.mutation<
+        DeleteAuthzRolesByUserIdApiResponse,
+        DeleteAuthzRolesByUserIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/authz/roles/${queryArg.userId}`,
+          method: 'DELETE',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['authz'],
+      }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
         query: (queryArg) => ({
           url: `/documents`,
@@ -826,6 +864,37 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as generatedEditoastApi };
+export type GetAuthzListRolesApiResponse =
+  /** status 200 List of supported application roles */ string[];
+export type GetAuthzListRolesApiArg = void;
+export type GetAuthzRolesMeApiResponse =
+  /** status 200 List the roles of the issuer of the request */ {
+    builtin: BuiltinRole[];
+  };
+export type GetAuthzRolesMeApiArg = void;
+export type GetAuthzRolesByUserIdApiResponse = /** status 200 List the roles of a user */ {
+  builtin: BuiltinRole[];
+};
+export type GetAuthzRolesByUserIdApiArg = {
+  /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
+  userId: number;
+};
+export type PostAuthzRolesByUserIdApiResponse = unknown;
+export type PostAuthzRolesByUserIdApiArg = {
+  /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
+  userId: number;
+  body: {
+    roles: string[];
+  };
+};
+export type DeleteAuthzRolesByUserIdApiResponse = unknown;
+export type DeleteAuthzRolesByUserIdApiArg = {
+  /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
+  userId: number;
+  body: {
+    roles: string[];
+  };
+};
 export type PostDocumentsApiResponse =
   /** status 201 The document was created */ NewDocumentResponse;
 export type PostDocumentsApiArg = {
@@ -1508,6 +1577,26 @@ export type PostWorkSchedulesProjectPathApiArg = {
     work_schedule_group_id: number;
   };
 };
+export type BuiltinRole =
+  | 'OpsWrite'
+  | 'OpsRead'
+  | 'InfraRead'
+  | 'InfraWrite'
+  | 'RollingStockCollectionRead'
+  | 'RollingStockCollectionWrite'
+  | 'WorkScheduleWrite'
+  | 'WorkScheduleRead'
+  | 'MapRead'
+  | 'Stdcm'
+  | 'StdcmAdmin'
+  | 'TimetableRead'
+  | 'TimetableWrite'
+  | 'DocumentRead'
+  | 'DocumentWrite'
+  | 'SubjectRead'
+  | 'SubjectWrite'
+  | 'RoleRead'
+  | 'RoleWrite';
 export type NewDocumentResponse = {
   document_key: number;
 };

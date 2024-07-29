@@ -8,6 +8,7 @@ edition.workspace = true
 fixtures = []
 
 [dependencies]
+itertools.workspace = true
 serde = { workspace = true, features = ["derive"] }
 strum.workspace = true
 thiserror.workspace = true
@@ -16,6 +17,7 @@ toml_edit = { version = "0.22.16", default-features = false, features = [
   "serde",
 ] }
 tracing.workspace = true
+utoipa.workspace = true
 
 [dev-dependencies]
 pretty_assertions.workspace = true

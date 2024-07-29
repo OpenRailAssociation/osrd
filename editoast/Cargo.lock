@@ -1387,6 +1387,7 @@ dependencies = [
 name = "editoast_authz"
 version = "0.1.0"
 dependencies = [
+ "itertools 0.13.0",
  "pretty_assertions",
  "serde",
  "strum",
@@ -1394,6 +1395,7 @@ dependencies = [
  "tokio",
  "toml_edit",
  "tracing",
+ "utoipa",
 ]
 
 [[package]]

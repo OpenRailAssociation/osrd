@@ -9,9 +9,10 @@ use editoast_authz::{
     roles::{BuiltinRoleSet, RoleConfig},
 };
 use editoast_models::DbConnectionPoolV2;
-use itertools::Itertools;
 
 use editoast_models::tables::*;
+use itertools::Itertools as _;
+use tracing::Level;
 
 #[derive(Clone)]
 pub struct PgAuthDriver<B: BuiltinRoleSet + Send + Sync> {
@@ -40,20 +41,44 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
     type BuiltinRole = B;
     type Error = AuthDriverError;
 
-    #[tracing::instrument(skip_all, fields(%user), ret, err)]
+    #[tracing::instrument(skip_all, fields(%user_info), ret(level = Level::DEBUG), err)]
+    async fn get_user_id(&self, user_info: &UserInfo) -> Result<Option<i64>, Self::Error> {
+        let conn = self.pool.get().await?;
+        let id = authn_user::table
+            .select(authn_user::id)
+            .filter(authn_user::identity_id.eq(&user_info.identity))
+            .first::<i64>(conn.write().await.deref_mut())
+            .await
+            .optional()?;
+        Ok(id)
+    }
+
+    #[tracing::instrument(skip_all, fields(%user_id), ret(level = Level::DEBUG), err)]
+    async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
+        let conn = self.pool.get().await?;
+        let info = authn_user::table
+            .select((authn_user::identity_id, authn_user::name))
+            .filter(authn_user::id.eq(user_id))
+            .first::<(String, Option<String>)>(conn.write().await.deref_mut())
+            .await
+            .optional()
+            .map(|res| {
+                res.map(|(identity, name)| UserInfo {
+                    identity,
+                    name: name.unwrap_or_default(), // FIXME: make the column non-nullable
+                })
+            })?;
+        Ok(info)
+    }
+
+    #[tracing::instrument(skip_all, fields(%user), ret(level = Level::DEBUG), err)]
     async fn ensure_user(&self, user: &UserInfo) -> Result<i64, Self::Error> {
         self.pool
             .get()
             .await?
             .transaction(|conn| {
                 async move {
-                    let user_id = authn_user::table
-                        .select(authn_user::id)
-                        .filter(authn_user::identity_id.eq(&user.identity))
-                        .first::<i64>(conn.write().await.deref_mut())
-                        .await
-                        .optional()?;
-
+                    let user_id = self.get_user_id(user).await?;
                     match user_id {
                         Some(user_id) => {
                             tracing::debug!("user already exists in db");
@@ -87,7 +112,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
             .await
     }
 
-    #[tracing::instrument(skip_all, fields(%subject_id, %roles_config), ret, err)]
+    #[tracing::instrument(skip_all, fields(%subject_id, %roles_config), ret(level = Level::DEBUG), err)]
     async fn fetch_subject_roles(
         &self,
         subject_id: i64,
@@ -144,7 +169,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(%subject_id, %roles_config, ?roles), ret, err)]
+    #[tracing::instrument(skip_all, fields(%subject_id, %roles_config, ?roles), ret(level = Level::DEBUG), err)]
     async fn remove_subject_roles(
         &self,
         subject_id: i64,

@@ -1,10 +1,14 @@
+use serde::Serialize;
 use strum::AsRefStr;
 use strum::Display;
 use strum::EnumString;
+use utoipa::ToSchema;
 
 use crate::roles::BuiltinRoleSet;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, AsRefStr, Display)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, EnumString, AsRefStr, Display, ToSchema,
+)]
 #[strum(serialize_all = "snake_case")]
 pub enum BuiltinRole {
     #[strum(serialize = "operational_studies:write")]
@@ -45,6 +49,15 @@ pub enum BuiltinRole {
     #[strum(serialize = "document:write")]
     DocumentWrite,
 
+    #[strum(serialize = "subject:read")]
+    SubjectRead,
+    #[strum(serialize = "subject:write")]
+    SubjectWrite,
+
+    #[strum(serialize = "role:read")]
+    RoleRead,
+    #[strum(serialize = "role:write")]
+    RoleWrite,
 }
 
 impl BuiltinRoleSet for BuiltinRole {}

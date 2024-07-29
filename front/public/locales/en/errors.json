@@ -16,10 +16,17 @@
     "attached": {
       "TrackNotFound": "Track {{track_id}} not found"
     },
-    "authorization": {
+    "authz": {
       "AuthError": "Authentication/authorization internal error, try again or contact support",
+      "Authz": "Authentication/authorization internal error, try again or contact support",
+      "DbError": "Database access fatal error",
+      "Driver": "Authentication/authorization internal error, try again or contact support",
+      "NoSuchUser": "Unknown user",
       "Unauthenticated": "Unauthenticated user",
-      "Unauthorized": "Access denied"
+      "Unauthorized": "Access denied",
+      "role": {
+        "Invalid": "Invalid role tag"
+      }
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Conflicting fixes for the same object on the same fix-iteration",
