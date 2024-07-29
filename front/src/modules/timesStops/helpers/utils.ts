@@ -25,7 +25,9 @@ export const formatSuggestedViasToRowVias = (
   // If the origin is in the ops and isn't the first operational point, we need
   // to move it to the first position
   const origin = pathSteps[0];
-  const originIndexInOps = operationalPoints.findIndex((op) => matchPathStepAndOp(origin, op));
+  const originIndexInOps = origin
+    ? operationalPoints.findIndex((op) => matchPathStepAndOp(origin, op))
+    : -1;
   if (originIndexInOps !== -1) {
     [formattedOps[0], formattedOps[originIndexInOps]] = [
       formattedOps[originIndexInOps],
@@ -35,7 +37,9 @@ export const formatSuggestedViasToRowVias = (
 
   // Ditto: destination should be last
   const dest = pathSteps[pathSteps.length - 1];
-  const destIndexInOps = operationalPoints.findIndex((op) => matchPathStepAndOp(dest, op));
+  const destIndexInOps = dest
+    ? operationalPoints.findIndex((op) => matchPathStepAndOp(dest, op))
+    : -1;
   if (destIndexInOps !== -1) {
     const lastOpIndex = formattedOps.length - 1;
     [formattedOps[lastOpIndex], formattedOps[destIndexInOps]] = [
