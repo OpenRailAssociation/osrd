@@ -97,7 +97,12 @@ const StcdmResults = ({
           )}
         </div>
         <div className="osrd-config-item-container osrd-config-item-container-map map-results">
-          <Map hideAttribution setMapCanvas={setMapCanvas} pathProperties={pathProperties} />
+          <Map
+            hideAttribution
+            preventPointSelection
+            setMapCanvas={setMapCanvas}
+            pathProperties={pathProperties}
+          />
         </div>
       </div>
     </main>
