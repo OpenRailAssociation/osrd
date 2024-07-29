@@ -16,10 +16,17 @@
     "attached": {
       "TrackNotFound": "Section de voie {{track_id}} non trouvée"
     },
-    "authorization": {
+    "authz": {
       "AuthError": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
+      "Authz": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
+      "DbError": "Erreur interne de base de données, veuillez réessayer ou contacter le support",
+      "Driver": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
+      "NoSuchUser": "Utilisateur inconnu",
       "Unauthenticated": "Utilisateur non authentifié",
-      "Unauthorized": "Accès refusé"
+      "Unauthorized": "Accès refusé",
+      "role": {
+        "Invalid": "Libellé de rôle inconnu"
+      }
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",

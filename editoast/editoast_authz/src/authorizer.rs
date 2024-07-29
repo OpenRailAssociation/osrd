@@ -1,9 +1,10 @@
+use itertools::Itertools as _;
 use std::{collections::HashSet, future::Future, sync::Arc};
 
 use tracing::debug;
 use tracing::Level;
 
-use crate::roles::{BuiltinRoleSet, RoleConfig};
+use crate::roles::{BuiltinRoleSet, RoleConfig, RoleIdentifier};
 
 pub type UserIdentity = String;
 pub type UserName = String;
@@ -27,6 +28,16 @@ pub struct Authorizer<S: StorageDriver> {
 pub trait StorageDriver: Clone {
     type BuiltinRole: BuiltinRoleSet + std::fmt::Debug;
     type Error: std::error::Error;
+
+    fn get_user_id(
+        &self,
+        user_info: &UserInfo,
+    ) -> impl Future<Output = Result<Option<i64>, Self::Error>> + Send;
+
+    fn get_user_info(
+        &self,
+        user_id: i64,
+    ) -> impl Future<Output = Result<Option<UserInfo>, Self::Error>> + Send;
 
     fn ensure_user(&self, user: &UserInfo)
         -> impl Future<Output = Result<i64, Self::Error>> + Send;
@@ -90,8 +101,21 @@ impl<S: StorageDriver> Authorizer<S> {
         }
     }
 
+    pub fn user_id(&self) -> i64 {
+        self.user_id
+    }
+
     pub fn is_superuser(&self) -> bool {
         self.roles_config.is_superuser()
+    }
+
+    /// Returns whether a user with some id exists
+    #[tracing::instrument(skip_all, fields(user_id = %user_id), ret(level = Level::DEBUG), err)]
+    pub async fn user_exists(&self, user_id: i64) -> Result<bool, S::Error> {
+        self.storage
+            .get_user_info(user_id)
+            .await
+            .map(|x| x.is_some())
     }
 
     /// Check that the user has all the required builting roles
@@ -106,6 +130,71 @@ impl<S: StorageDriver> Authorizer<S> {
         }
 
         Ok(required_roles.is_subset(&self.user_roles))
+    }
+
+    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, user_roles = ?self.user_roles), ret(level = Level::DEBUG), err)]
+    pub async fn infer_application_roles(
+        &self,
+        user_id: i64,
+    ) -> Result<Vec<RoleIdentifier>, S::Error> {
+        if self.is_superuser() {
+            return Ok(self.roles_config.application_roles().cloned().collect_vec());
+        }
+
+        let resolved_roles = &self.roles_config.resolved_roles;
+        let user_roles = self
+            .storage
+            .fetch_subject_roles(user_id, &self.roles_config)
+            .await?;
+
+        let app_roles = resolved_roles
+            .iter()
+            .filter(|(_, builtins)| user_roles.is_superset(builtins))
+            .map(|(app_role, _)| app_role)
+            .cloned()
+            .collect_vec();
+
+        Ok(app_roles)
+    }
+
+    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, user_roles = ?self.user_roles), ret(level = Level::DEBUG), err)]
+    pub async fn user_builtin_roles(
+        &self,
+        user_id: i64,
+    ) -> Result<HashSet<S::BuiltinRole>, S::Error> {
+        let user_roles = self
+            .storage
+            .fetch_subject_roles(user_id, &self.roles_config)
+            .await?;
+        Ok(user_roles.clone())
+    }
+
+    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, ?roles, role_config = ?self.roles_config), ret(level = Level::DEBUG), err)]
+    pub async fn grant_roles(
+        &mut self,
+        user_id: i64,
+        roles: HashSet<S::BuiltinRole>,
+    ) -> Result<(), S::Error> {
+        self.storage
+            .ensure_subject_roles(user_id, &self.roles_config, roles.clone())
+            .await?;
+        self.user_roles.extend(roles);
+        Ok(())
+    }
+
+    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, ?roles, role_config = ?self.roles_config), ret(level = Level::DEBUG), err)]
+    pub async fn strip_roles(
+        &mut self,
+        user_id: i64,
+        roles: HashSet<S::BuiltinRole>,
+    ) -> Result<(), S::Error> {
+        let removed_roles = self
+            .storage
+            .remove_subject_roles(user_id, &self.roles_config, roles.clone())
+            .await?;
+        tracing::debug!(?removed_roles, "removed roles");
+        self.user_roles.retain(|r| !roles.contains(r));
+        Ok(())
     }
 }
 
@@ -277,6 +366,22 @@ mod tests {
                 .cloned()
                 .collect();
             Ok(removed_roles)
+        }
+
+        async fn get_user_id(&self, user_info: &UserInfo) -> Result<Option<i64>, Self::Error> {
+            Ok(self.users.lock().unwrap().get(&user_info.identity).copied())
+        }
+
+        async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
+            let users = self.users.lock().unwrap();
+            let user_info = users
+                .iter()
+                .find(|(_, id)| **id == user_id)
+                .map(|(identity, _)| UserInfo {
+                    identity: identity.clone(),
+                    name: "Mocked User".to_owned(),
+                });
+            Ok(user_info)
         }
     }
 }

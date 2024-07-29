@@ -1,2 +1,40 @@
 [roles.operational_studies]
-implies = ["operational_studies_write"]
+implies = [
+  "document:read",
+  "document:write",
+  "infra:read",
+  "infra:write",
+  "map:read",
+  "operational_studies:read",
+  "operational_studies:write",
+  "rolling_stock_collection:read",
+  "rolling_stock_collection:write",
+  "timetable:read",
+  "timetable:write",
+  "work_schedule:read",
+  "work_schedule:write",
+]
+
+[roles.stdcm_client]
+implies = [
+  "infra:read",
+  "infra:write",
+  "map:read",
+  "rolling_stock_collection:read",
+  "rolling_stock_collection:write",
+  "stdcm",
+  "work_schedule:read",
+  "work_schedule:write",
+]
+
+[roles.admin]
+implies = [
+  "role:read",
+  "role:write",
+  "stdcm:admin",
+  "subject:read",
+  "subject:write",
+]
+
+[roles.dev]
+implies = ["admin", "operational_studies", "stdcm"]

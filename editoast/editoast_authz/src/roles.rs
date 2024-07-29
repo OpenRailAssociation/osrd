@@ -39,14 +39,13 @@ impl<B: BuiltinRoleSet> RoleConfig<B> {
         self.superuser
     }
 
-    pub fn resolve<'r>(
-        &self,
-        app_roles: impl Iterator<Item = &'r RoleIdentifier>,
-    ) -> Result<HashSet<B>, &'r RoleIdentifier> {
+    pub fn resolve<'r>(&self, roles: impl Iterator<Item = &'r str>) -> Result<HashSet<B>, &'r str> {
         let mut resolved = HashSet::new();
-        for role in app_roles {
+        for role in roles {
             if let Some(role) = self.resolved_roles.get(role) {
                 resolved.extend(role.iter().cloned());
+            } else if let Ok(builtin) = B::from_str(role) {
+                resolved.insert(builtin);
             } else {
                 return Err(role);
             }
@@ -125,6 +124,10 @@ impl<B: BuiltinRoleSet> RoleConfig<B> {
             config.resolved_roles.insert(role.to_owned(), resolved);
         }
         Ok(config)
+    }
+
+    pub fn application_roles(&self) -> impl Iterator<Item = &RoleIdentifier> {
+        self.resolved_roles.keys()
     }
 }
 
