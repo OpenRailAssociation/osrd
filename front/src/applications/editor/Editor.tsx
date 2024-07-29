@@ -403,7 +403,7 @@ const Editor = () => {
                 : actions;
             })}
           </div>
-          <div>
+          <div className="panel-container">
             {isLocked && (
               <div className="infra-locked bg-yellow">{t('Editor.infra-errors.infra-locked')}</div>
             )}
