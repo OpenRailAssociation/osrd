@@ -61,6 +61,7 @@ type MapProps = {
   setMapCanvas?: (mapCanvas: string) => void;
   hideAttribution?: boolean;
   hideItinerary?: boolean;
+  preventPointSelection?: boolean;
 };
 
 const Map = ({
@@ -68,6 +69,7 @@ const Map = ({
   setMapCanvas,
   hideAttribution = false,
   hideItinerary = false,
+  preventPointSelection = false,
 }: MapProps) => {
   const mapBlankStyle = useMapBlankStyle();
 
@@ -119,6 +121,8 @@ const Map = ({
   };
 
   const onFeatureClick = (e: MapLayerMouseEvent) => {
+    if (preventPointSelection) return;
+
     const result = getMapMouseEventNearestFeature(e, { layersId: ['chartis/tracks-geo/main'] });
     if (
       result &&
@@ -145,6 +149,8 @@ const Map = ({
   };
 
   const onMoveGetFeature = (e: MapLayerMouseEvent) => {
+    if (preventPointSelection) return;
+
     const result = getMapMouseEventNearestFeature(e, { layersId: ['chartis/tracks-geo/main'] });
     if (
       result &&
@@ -237,7 +243,7 @@ const Map = ({
         ref={mapRef}
         {...viewport}
         style={{ width: '100%', height: '100%' }}
-        cursor="pointer"
+        cursor={preventPointSelection ? 'default' : 'pointer'}
         mapStyle={mapBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
         onMouseMove={onMoveGetFeature}
