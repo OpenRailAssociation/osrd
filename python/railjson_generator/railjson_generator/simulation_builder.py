@@ -29,9 +29,11 @@ class SimulationBuilder:
         if len(locations) < 2:
             raise ValueError(f"Expected at least 2 locations, got {len(locations)}")
         directed_locations = [
-            [loc]
-            if isinstance(loc, DirectedLocation)
-            else [DirectedLocation.from_location(loc, direction) for direction in Direction]
+            (
+                [loc]
+                if isinstance(loc, DirectedLocation)
+                else [DirectedLocation.from_location(loc, direction) for direction in Direction]
+            )
             for loc in locations
         ]
         train_schedule_group = TrainScheduleGroup(list(train_schedules), directed_locations)
