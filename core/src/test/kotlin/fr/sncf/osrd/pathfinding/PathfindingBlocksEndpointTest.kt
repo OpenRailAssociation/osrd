@@ -6,14 +6,17 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.stream.Stream
+import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions
-import org.assertj.core.api.AssertionsForClassTypes
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -44,11 +47,11 @@ class PathfindingBlocksEndpointTest {
     fun findWaypointBlocks_throws_givenIncoherentWaypoint() {
         val incoherentWaypoint =
             PathfindingWaypoint("TA3", 100000000.0, EdgeDirection.START_TO_STOP)
-        AssertionsForClassTypes.assertThatThrownBy {
+        val exception =
+            assertThrows(OSRDError::class.java) {
                 findWaypointBlocks(smallInfra!!, incoherentWaypoint)
             }
-            .isExactlyInstanceOf(RuntimeException::class.java)
-            .hasMessage("The waypoint is not located on the track section TA3")
+        assertEquals(ErrorType.InvalidWaypointLocation, exception.osrdErrorType)
     }
 
     companion object {
