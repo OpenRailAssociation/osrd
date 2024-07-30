@@ -1,10 +1,15 @@
-import type { PathProperties } from 'common/api/osrdEditoastApi';
+import type {
+  PathProperties,
+  SimulationSummaryResult,
+  TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
-import { mmToM } from 'utils/physics';
+import { mmToM, sToMs } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
-import { ms2sec } from 'utils/timeManipulation';
+import { ISO8601Duration2sec, ms2sec } from 'utils/timeManipulation';
 
+import { TOLERANCES } from './consts';
 import type {
   BoundariesData,
   ElectricalBoundariesData,

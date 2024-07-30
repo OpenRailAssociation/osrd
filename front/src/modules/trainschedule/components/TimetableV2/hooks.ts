@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { uniq } from 'lodash';
 import { useSelector } from 'react-redux';
 
+import { isToofast, isScheduledPointsNotHonored } from 'applications/operationalStudies/utils';
 import type { SimulationSummaryResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
@@ -12,7 +13,7 @@ import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
 import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
-import type { TrainScheduleWithDetails } from './types';
+import type { ScheduledPointsHonoredFilter, TrainScheduleWithDetails } from './types';
 import { extractTagCode, keepTrain } from './utils';
 
 /**
@@ -31,7 +32,7 @@ const useTrainSchedulesDetails = (
   debouncedFilter: string,
   debouncedRollingstockFilter: string,
   validityFilter: string,
-  scheduledPointsHonoredFilter: string,
+  scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter,
   selectedTags: Set<string | null>
 ) => {
   const infraId = useInfraID();
@@ -88,15 +89,14 @@ const useTrainSchedulesDetails = (
 
         // Apply scheduled points honored filter
         if (scheduledPointsHonoredFilter !== 'both') {
-          if (trainSummary.status === 'success') {
-            const isHonored = trainSummary.scheduled_points_honored;
-            if (
-              (scheduledPointsHonoredFilter === 'honored' && !isHonored) ||
-              (scheduledPointsHonoredFilter === 'notHonored' && isHonored)
-            ) {
-              return false;
-            }
-          } else {
+          if (trainSummary.status !== 'success') return false;
+
+          const isHonored = isScheduledPointsNotHonored(trainSchedule, trainSummary);
+
+          if (
+            (scheduledPointsHonoredFilter === 'honored' && !isHonored) ||
+            (scheduledPointsHonoredFilter === 'notHonored' && isHonored)
+          ) {
             return false;
           }
         }
@@ -161,6 +161,16 @@ const useTrainSchedulesDetails = (
           const trainSummary = trainSchedulesSummary[trainSchedule.id];
           const formattedStartTimeMs = isoDateToMs(trainSchedule.start_time);
 
+          let notHonoredReason: TrainScheduleWithDetails['notHonoredReason'];
+
+          if (trainSummary.status !== 'success') {
+            notHonoredReason = undefined;
+          } else if (isScheduledPointsNotHonored(trainSchedule, trainSummary)) {
+            notHonoredReason = 'scheduleNotHonored';
+          } else if (isToofast(trainSchedule, trainSummary)) {
+            notHonoredReason = 'trainTooFast';
+          }
+
           const otherProps =
             trainSummary.status === 'success'
               ? {
@@ -168,7 +178,7 @@ const useTrainSchedulesDetails = (
                   duration: trainSummary.time,
                   pathLength: formatKmValue(trainSummary.length, 'millimeters', 1),
                   mechanicalEnergyConsumed: jouleToKwh(trainSummary.energy_consumption, true),
-                  scheduledPointsNotHonored: !trainSummary.scheduled_points_honored,
+                  notHonoredReason,
                 }
               : {
                   arrivalTime: '',
@@ -205,6 +215,8 @@ const useTrainSchedulesDetails = (
     debouncedRollingstockFilter,
     validityFilter,
     scheduledPointsHonoredFilter,
+
+    // retour si margin non respecté ou si tolerance non respecté
     selectedTags,
   ]);
 

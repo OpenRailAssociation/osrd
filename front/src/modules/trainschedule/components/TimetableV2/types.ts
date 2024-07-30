@@ -23,7 +23,7 @@ export type TrainScheduleWithDetails = {
   speedLimitTag: string | null;
   labels: string[];
   invalidReason?: InvalidReason;
-  scheduledPointsNotHonored?: boolean;
+  notHonoredReason?: 'scheduleNotHonored' | 'trainTooFast';
 };
 
 export type InvalidReason = Exclude<SimulationSummaryResult['status'], 'success'>;

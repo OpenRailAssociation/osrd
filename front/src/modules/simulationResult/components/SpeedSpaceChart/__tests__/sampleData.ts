@@ -6,7 +6,9 @@ export const simulation: SimulationResponseSuccess = {
     positions: [0, 1000000, 2000000, 3000000],
     speeds: [0, 10, 20],
     energy_consumption: 0,
-    scheduled_points_honored: false,
+    // TODO: insert correct data in path_item_times
+    // before path_item_times, we used scheduled_points_honored
+    path_item_times: [],
     times: [0, 10, 20],
   },
   electrical_profiles: {
@@ -20,7 +22,8 @@ export const simulation: SimulationResponseSuccess = {
   final_output: {
     energy_consumption: 0,
     positions: [0, 1000000, 2000000, 3000000],
-    scheduled_points_honored: false,
+    // TODO: insert correct data in path_item_times
+    path_item_times: [],
     speeds: [0, 10, 20],
     times: [0, 10, 20],
     routing_requirements: [
@@ -64,7 +67,8 @@ export const simulation: SimulationResponseSuccess = {
     positions: [0, 1000000, 2000000, 3000000],
     speeds: [0, 10, 20],
     energy_consumption: 0,
-    scheduled_points_honored: true,
+    // TODO: insert correct data in path_item_times
+    path_item_times: [],
     times: [0, 10, 20],
   },
   status: 'success',
