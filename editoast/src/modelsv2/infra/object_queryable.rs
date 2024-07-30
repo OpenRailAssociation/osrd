@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
@@ -6,6 +8,7 @@ use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
 use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
 use editoast_schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
@@ -14,7 +17,6 @@ use super::Infra;
 use crate::error::Result;
 use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
-use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     ObjectQueryable,
@@ -66,7 +68,7 @@ impl Infra {
         let objects = sql_query(query)
             .bind::<BigInt, _>(self.id)
             .bind::<Array<Text>, _>(object_ids)
-            .load::<ObjectQueryable>(conn)
+            .load::<ObjectQueryable>(conn.write().await.deref_mut())
             .await?;
         Ok(objects)
     }

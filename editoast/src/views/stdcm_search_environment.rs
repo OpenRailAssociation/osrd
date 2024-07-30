@@ -160,7 +160,6 @@ pub mod test {
     use chrono::NaiveDate;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use super::*;
     use crate::modelsv2::stdcm_search_environment::test::stdcm_search_env_fixtures;
@@ -174,7 +173,7 @@ pub mod test {
         let pool = app.db_pool();
 
         let (infra, timetable, work_schedule_group, electrical_profile_set) =
-            stdcm_search_env_fixtures(pool.get_ok().deref_mut()).await;
+            stdcm_search_env_fixtures(&mut pool.get_ok()).await;
 
         let form = StdcmSearchEnvironmentCreateForm {
             infra_id: infra.id,
@@ -195,7 +194,7 @@ pub mod test {
 
         // THEN
         let stdcm_search_env_in_db =
-            StdcmSearchEnvironment::retrieve(pool.get_ok().deref_mut(), stdcm_search_env.id)
+            StdcmSearchEnvironment::retrieve(&mut pool.get_ok(), stdcm_search_env.id)
                 .await
                 .expect("Failed to retrieve stdcm search environment")
                 .expect("Stdcm search environment not found");
@@ -208,12 +207,12 @@ pub mod test {
         let app = TestAppBuilder::default_app();
 
         let pool = app.db_pool();
-        StdcmSearchEnvironment::delete_all(pool.get_ok().deref_mut())
+        StdcmSearchEnvironment::delete_all(&mut pool.get_ok())
             .await
             .expect("failed to delete envs");
 
         let (infra, timetable, work_schedule_group, electrical_profile_set) =
-            stdcm_search_env_fixtures(pool.get_ok().deref_mut()).await;
+            stdcm_search_env_fixtures(&mut pool.get_ok()).await;
 
         let begin = NaiveDate::from_ymd_opt(2024, 1, 1).unwrap().into();
         let end = NaiveDate::from_ymd_opt(2024, 1, 15).unwrap().into();
@@ -225,7 +224,7 @@ pub mod test {
             .timetable_id(timetable.id)
             .search_window_begin(begin)
             .search_window_end(end)
-            .create(pool.get_ok().deref_mut())
+            .create(&mut pool.get_ok())
             .await
             .expect("Failed to create stdcm search environment");
 
@@ -257,7 +256,7 @@ pub mod test {
         // GIVEN
         let app = TestAppBuilder::default_app();
 
-        let _ = StdcmSearchEnvironment::delete_all(app.db_pool().get_ok().deref_mut()).await;
+        let _ = StdcmSearchEnvironment::delete_all(&mut app.db_pool().get_ok()).await;
 
         let request = app.get("/stdcm/search_environment");
 

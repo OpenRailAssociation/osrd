@@ -90,7 +90,6 @@ mod test {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
-    use std::ops::DerefMut;
     use std::str::FromStr;
 
     use crate::infra_cache::operation::create::apply_create_operation;
@@ -104,7 +103,7 @@ mod test {
     async fn returns_correct_bbox_for_existing_line_code() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let line_code = 1234;
         let geometry_json = json!({
@@ -125,7 +124,7 @@ mod test {
             ..Default::default()
         }
         .into();
-        apply_create_operation(&track_section, empty_infra.id, db_pool.get_ok().deref_mut())
+        apply_create_operation(&track_section, empty_infra.id, &mut db_pool.get_ok())
             .await
             .expect("Failed to create track section object");
 
@@ -140,7 +139,7 @@ mod test {
     async fn returns_bad_request_when_line_code_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let not_existing_line_code = 123456789;
         let request = app.get(

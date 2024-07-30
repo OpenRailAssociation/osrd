@@ -1,3 +1,5 @@
+use std::ops::Deref;
+use std::ops::DerefMut;
 use std::sync::Arc;
 
 use diesel::sql_query;
@@ -7,6 +9,8 @@ use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
+use diesel_async::scoped_futures::ScopedBoxFuture;
+use diesel_async::AsyncConnection;
 use diesel_async::AsyncPgConnection;
 use diesel_async::RunQueryDsl;
 use futures::future::BoxFuture;
@@ -17,21 +21,87 @@ use openssl::ssl::SslMethod;
 use openssl::ssl::SslVerifyMode;
 use url::Url;
 
-#[cfg(feature = "testing")]
 use tokio::sync::OwnedRwLockWriteGuard;
-#[cfg(feature = "testing")]
 use tokio::sync::RwLock;
 
-use super::DbConnection;
 use super::DbConnectionPool;
+use super::DieselConnection;
 
 pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 
-#[cfg(feature = "testing")]
-pub type DbConnectionV2 = OwnedRwLockWriteGuard<Object<AsyncPgConnection>>;
+#[derive(Clone)]
+pub struct DbConnection {
+    inner: Arc<RwLock<Object<AsyncPgConnection>>>,
+}
 
-#[cfg(not(feature = "testing"))]
-pub type DbConnectionV2 = Object<AsyncPgConnection>;
+pub struct WriteHandle {
+    guard: OwnedRwLockWriteGuard<Object<AsyncPgConnection>>,
+}
+
+impl DbConnection {
+    pub fn new(inner: Arc<RwLock<Object<AsyncPgConnection>>>) -> Self {
+        Self { inner }
+    }
+
+    pub async fn write(&self) -> WriteHandle {
+        WriteHandle {
+            guard: self.inner.clone().write_owned().await,
+        }
+    }
+
+    // Implementation of this function is taking a strong inspiration from
+    // https://docs.rs/diesel/2.1.6/src/diesel/connection/transaction_manager.rs.html#50-71
+    // Sadly, this function is private so we can't use it.
+    //
+    // :WARNING: If you ever need to modify this function, please take a look at the
+    // original `diesel` function, they probably do it right more than us.
+    pub async fn transaction<'a, R, E, F>(self, callback: F) -> std::result::Result<R, E>
+    where
+        F: FnOnce(Self) -> ScopedBoxFuture<'a, 'a, std::result::Result<R, E>> + Send + 'a,
+        E: From<diesel::result::Error> + Send + 'a,
+        R: Send + 'a,
+    {
+        use diesel_async::TransactionManager as _;
+
+        type TxManager = <AsyncPgConnection as AsyncConnection>::TransactionManager;
+
+        {
+            let mut handle = self.write().await;
+            TxManager::begin_transaction(handle.deref_mut()).await?;
+        }
+
+        match callback(self.clone()).await {
+            Ok(result) => {
+                let mut handle = self.write().await;
+                TxManager::commit_transaction(handle.deref_mut()).await?;
+                Ok(result)
+            }
+            Err(callback_error) => {
+                let mut handle = self.write().await;
+                match TxManager::rollback_transaction(handle.deref_mut()).await {
+                    Ok(()) | Err(diesel::result::Error::BrokenTransactionManager) => {
+                        Err(callback_error)
+                    }
+                    Err(rollback_error) => Err(rollback_error.into()),
+                }
+            }
+        }
+    }
+}
+
+impl Deref for WriteHandle {
+    type Target = AsyncPgConnection;
+
+    fn deref(&self) -> &Self::Target {
+        self.guard.deref()
+    }
+}
+
+impl DerefMut for WriteHandle {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.guard.deref_mut()
+    }
+}
 
 /// Wrapper for connection pooling with support for test connections on `cfg(test)`
 ///
@@ -46,7 +116,7 @@ pub type DbConnectionV2 = Object<AsyncPgConnection>;
 pub struct DbConnectionPoolV2 {
     pool: Arc<Pool<AsyncPgConnection>>,
     #[cfg(feature = "testing")]
-    test_connection: Option<Arc<RwLock<Object<AsyncPgConnection>>>>,
+    test_connection: Option<DbConnection>,
 }
 
 #[cfg(feature = "testing")]
@@ -79,20 +149,18 @@ impl DbConnectionPoolV2 {
     }
 
     #[cfg(feature = "testing")]
-    async fn get_connection(&self) -> Result<DbConnectionV2, DatabasePoolError> {
-        let Some(test_connection) = &self.test_connection else {
-            panic!(
-                "Test connection not initialized in test DatabasePool -- was `for_tests` called?"
-            );
-        };
-        let connection = test_connection.clone().write_owned().await;
-        Ok(connection)
+    async fn get_connection(&self) -> Result<DbConnection, DatabasePoolError> {
+        Ok(self
+            .test_connection
+            .as_ref()
+            .expect("should already exist")
+            .clone())
     }
 
     #[cfg(not(feature = "testing"))]
-    async fn get_connection(&self) -> Result<DbConnectionV2, DatabasePoolError> {
+    async fn get_connection(&self) -> Result<DbConnection, DatabasePoolError> {
         let connection = self.pool.get().await?;
-        Ok(connection)
+        Ok(DbConnection::new(Arc::new(RwLock::new(connection))))
     }
 
     /// Get a connection from the pool
@@ -159,7 +227,7 @@ impl DbConnectionPoolV2 {
     /// - Don't declare a variable for a single-use connection:
     ///
     /// ```
-    /// # async fn my_function_using_conn(conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) {
+    /// # async fn my_function_using_conn(conn: &mut editoast_models::DbConnection) {
     /// #   // Do something with the connection
     /// # }
     /// #
@@ -167,10 +235,10 @@ impl DbConnectionPoolV2 {
     /// # async fn main() -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
     /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// // do
-    /// my_function_using_conn(pool.get().await?).await;
+    /// my_function_using_conn(&mut pool.get().await?).await;
     /// // instead of
-    /// let conn = pool.get().await?;
-    /// my_function_using_conn(conn).await;
+    /// let mut conn = pool.get().await?;
+    /// my_function_using_conn(&mut conn).await;
     /// # Ok(())
     /// # }
     /// ```
@@ -178,10 +246,10 @@ impl DbConnectionPoolV2 {
     /// - If a connection is used repeatedly, prefer using explicit scoping:
     ///
     /// ```
-    /// # async fn foo(conn: &mut tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> u8 {
+    /// # async fn foo(conn: &mut editoast_models::DbConnection) -> u8 {
     /// #   0
     /// # }
-    /// # async fn bar(conn: &mut tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> u8 {
+    /// # async fn bar(conn: &mut editoast_models::DbConnection) -> u8 {
     /// #   42
     /// # }
     /// # #[tokio::main]
@@ -202,7 +270,7 @@ impl DbConnectionPoolV2 {
     ///
     /// ```
     /// # trait DoSomething: Sized {
-    /// #   async fn do_something(self, conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
+    /// #   async fn do_something(self, conn: &mut editoast_models::DbConnection) -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
     /// #     // Do something with the connection
     /// #     Ok(())
     /// #   }
@@ -216,15 +284,15 @@ impl DbConnectionPoolV2 {
     ///     items.into_iter()
     ///         .zip(pool.iter_conn())
     ///         .map(|(item, conn)| async move {
-    ///             let conn = conn.await?; // note the await here
-    ///             item.do_something(conn).await
+    ///             let mut conn = conn.await?; // note the await here
+    ///             item.do_something(&mut conn).await
     ///         });
     /// let results = futures::future::try_join_all(operations).await?;
     /// // you may acquire a new connection afterwards
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn get(&self) -> Result<DbConnectionV2, DatabasePoolError> {
+    pub async fn get(&self) -> Result<DbConnection, DatabasePoolError> {
         self.get_connection().await
     }
 
@@ -235,7 +303,7 @@ impl DbConnectionPoolV2 {
     /// See [DbConnectionPoolV2::get] for more information on how connections should be used
     /// in tests.
     #[cfg(feature = "testing")]
-    pub fn get_ok(&self) -> DbConnectionV2 {
+    pub fn get_ok(&self) -> DbConnection {
         futures::executor::block_on(self.get()).expect("Failed to get test connection")
     }
 
@@ -247,7 +315,7 @@ impl DbConnectionPoolV2 {
     ///
     /// ```
     /// # trait DoSomething: Sized {
-    /// #   async fn do_something(self, conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
+    /// #   async fn do_something(self, conn: &mut editoast_models::DbConnection) -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
     /// #     // Do something with the connection
     /// #     Ok(())
     /// #   }
@@ -261,8 +329,8 @@ impl DbConnectionPoolV2 {
     ///     items.into_iter()
     ///         .zip(pool.iter_conn())
     ///         .map(|(item, conn)| async move {
-    ///             let conn = conn.await?; // note the await here
-    ///             item.do_something(conn).await
+    ///             let mut conn = conn.await?; // note the await here
+    ///             item.do_something(&mut conn).await
     ///         });
     /// let results = futures::future::try_join_all(operations).await?;
     /// // you may acquire a new connection afterwards
@@ -271,7 +339,7 @@ impl DbConnectionPoolV2 {
     /// ```
     pub fn iter_conn(
         &self,
-    ) -> impl Iterator<Item = impl Future<Output = Result<DbConnectionV2, DatabasePoolError>> + '_>
+    ) -> impl Iterator<Item = impl Future<Output = Result<DbConnection, DatabasePoolError>> + '_>
     {
         std::iter::repeat_with(|| self.get())
     }
@@ -298,11 +366,11 @@ impl DbConnectionPoolV2 {
                 .await
                 .expect("cannot begin a test transaction");
         }
-        let test_connection = Arc::new(RwLock::new(conn));
+        let test_connection = Some(DbConnection::new(Arc::new(RwLock::new(conn))));
 
         Self {
             pool,
-            test_connection: Some(test_connection),
+            test_connection,
         }
     }
 
@@ -312,7 +380,7 @@ impl DbConnectionPoolV2 {
             .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
         let url = Url::parse(&url).expect("Failed to parse postgresql url");
         let pool =
-            create_connection_pool(url, 1).expect("Failed to initialize test connection pool");
+            create_connection_pool(url, 2).expect("Failed to initialize test connection pool");
         futures::executor::block_on(Self::from_pool_test(Arc::new(pool), transaction))
     }
 
@@ -339,7 +407,9 @@ impl DbConnectionPoolV2 {
 pub struct PingError(#[from] diesel::result::Error);
 
 pub async fn ping_database(conn: &mut DbConnection) -> Result<(), PingError> {
-    sql_query("SELECT 1").execute(conn).await?;
+    sql_query("SELECT 1")
+        .execute(conn.write().await.deref_mut())
+        .await?;
     Ok(())
 }
 
@@ -353,7 +423,7 @@ pub fn create_connection_pool(
     Ok(Pool::builder(manager).max_size(max_size).build()?)
 }
 
-fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DbConnection>> {
+fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DieselConnection>> {
     let fut = async {
         let mut connector_builder = SslConnector::builder(SslMethod::tls()).unwrap();
         connector_builder.set_verify(SslVerifyMode::NONE);
@@ -368,7 +438,7 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DbConnection
                 tracing::error!("connection error: {}", e);
             }
         });
-        DbConnection::try_from(client).await
+        DieselConnection::try_from(client).await
     };
     fut.boxed()
 }

@@ -138,7 +138,6 @@ pub(in crate::views) async fn query_errors(
 mod tests {
     use axum::http::StatusCode;
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
@@ -147,7 +146,7 @@ mod tests {
     async fn list_errors_get() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let error_type = "overlapping_electrifications";
         let level = "warnings";

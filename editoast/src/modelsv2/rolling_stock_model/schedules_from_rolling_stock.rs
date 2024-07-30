@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
@@ -8,8 +10,8 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_model::RollingStockModel;
-use editoast_models::db_connection_pool::DbConnectionV2;
 use editoast_models::tables::{project, rolling_stock, scenario, study, train_schedule};
+use editoast_models::DbConnection;
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Eq, PartialOrd, Ord, Deserialize))]
@@ -39,7 +41,7 @@ impl From<SchedulesFromRollingStock> for ScenarioReference {
 type SchedulesFromRollingStock = (i64, String, i64, String, i64, String);
 
 impl RollingStockModel {
-    pub async fn get_usage(&self, conn: &mut DbConnectionV2) -> Result<Vec<ScenarioReference>> {
+    pub async fn get_usage(&self, conn: &mut DbConnection) -> Result<Vec<ScenarioReference>> {
         let schedules: Vec<_> = train_schedule::table
             .inner_join(
                 rolling_stock::table.on(train_schedule::rolling_stock_name.eq(rolling_stock::name)),
@@ -58,7 +60,7 @@ impl RollingStockModel {
             ))
             .filter(rolling_stock::id.eq(self.id))
             .filter(train_schedule::id.is_not_null())
-            .load::<SchedulesFromRollingStock>(conn)
+            .load::<SchedulesFromRollingStock>(conn.write().await.deref_mut())
             .await?;
         let schedules = schedules.into_iter().map_into().collect();
         Ok(schedules)

@@ -40,11 +40,12 @@ impl ToTokens for UpdateImpl {
                 ) -> crate::error::Result<Option<#model>> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
+                    use std::ops::DerefMut;
                     use #table_mod::dsl;
                     tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     diesel::update(dsl::#table_name.#(filter(#eqs)).*)
                         .set(&self)
-                        .get_result::<#row>(conn)
+                        .get_result::<#row>(conn.write().await.deref_mut())
                         .await
                         .map(Into::into)
                         .optional()

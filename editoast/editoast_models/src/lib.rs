@@ -1,12 +1,14 @@
-use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection};
+use diesel_async::pooled_connection::deadpool::Pool;
+use diesel_async::AsyncPgConnection;
 
 pub mod db_connection_pool;
 pub mod tables;
 
+pub use db_connection_pool::DbConnection;
 pub use db_connection_pool::DbConnectionPoolV2;
 
-pub type DbConnection = AsyncPgConnection;
-pub type DbConnectionPool = Pool<DbConnection>;
+type DieselConnection = AsyncPgConnection;
+pub type DbConnectionPool = Pool<DieselConnection>;
 
 /// Generic error type to forward errors from the database
 ///

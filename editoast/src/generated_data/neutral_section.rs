@@ -1,13 +1,15 @@
+use std::ops::DerefMut;
+
 use async_trait::async_trait;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
 
 use super::GeneratedData;
 use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
-use editoast_models::DbConnection;
 
 pub struct NeutralSectionLayer;
 
@@ -20,7 +22,7 @@ impl GeneratedData for NeutralSectionLayer {
     async fn generate(conn: &mut DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
         sql_query(include_str!("sql/generate_neutral_section_layer.sql"))
             .bind::<BigInt, _>(infra)
-            .execute(conn)
+            .execute(conn.write().await.deref_mut())
             .await?;
         Ok(())
     }

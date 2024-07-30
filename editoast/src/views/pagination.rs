@@ -1,4 +1,5 @@
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -10,7 +11,6 @@ use crate::error::Result;
 use crate::ListAndCount;
 use crate::Model;
 use crate::SelectionSettings;
-use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     PaginationStats,

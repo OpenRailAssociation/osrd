@@ -115,7 +115,6 @@ mod tests {
     use std::collections::HashMap;
 
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::modelsv2::prelude::*;
@@ -135,13 +134,13 @@ mod tests {
         let empty_infra = Infra::changeset()
             .name("test_infra".to_owned())
             .last_railjson_version()
-            .create(pool.get_ok().deref_mut())
+            .create(&mut pool.get_ok())
             .await
             .expect("Failed to create infra");
 
         // Create a track and a detector on it
         let track = TrackSection::default().into();
-        apply_create_operation(&track, empty_infra.id, pool.get_ok().deref_mut())
+        apply_create_operation(&track, empty_infra.id, &mut pool.get_ok())
             .await
             .expect("Failed to create track object");
 
@@ -150,7 +149,7 @@ mod tests {
             ..Default::default()
         }
         .into();
-        apply_create_operation(&detector, empty_infra.id, pool.get_ok().deref_mut())
+        apply_create_operation(&detector, empty_infra.id, &mut pool.get_ok())
             .await
             .expect("Failed to create detector object");
 

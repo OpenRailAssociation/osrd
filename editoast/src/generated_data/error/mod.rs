@@ -22,11 +22,15 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
+use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::primitives::ObjectType;
 use futures_util::Future;
 use itertools::Itertools;
 use serde_json::to_value;
 use sha1::Digest;
 use sha1::Sha1;
+use std::ops::DerefMut;
 use tracing::warn;
 
 use super::GeneratedData;
@@ -36,9 +40,6 @@ use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use editoast_models::DbConnection;
-use editoast_schemas::primitives::OSRDObject;
-use editoast_schemas::primitives::ObjectType;
 
 editoast_common::schemas! {
     infra_error::schemas(),
@@ -308,7 +309,7 @@ async fn retrieve_current_errors_hash(
     Ok(dsl::infra_layer_error
         .filter(dsl::infra_id.eq(infra_id))
         .select(dsl::info_hash)
-        .load(conn)
+        .load(conn.write().await.deref_mut())
         .await?)
 }
 
@@ -324,7 +325,7 @@ async fn remove_errors_from_hashes(
             .filter(dsl::infra_id.eq(infra_id))
             .filter(dsl::info_hash.eq_any(errors_hash)),
     )
-    .execute(conn)
+    .execute(conn.write().await.deref_mut())
     .await?;
     debug_assert_eq!(nb_deleted, errors_hash.len());
     Ok(())
@@ -349,7 +350,7 @@ async fn create_errors(
             .bind::<BigInt, _>(infra_id)
             .bind::<Array<Json>, _>(&errors_information)
             .bind::<Array<Text>, _>(&errors_hash)
-            .execute(conn)
+            .execute(conn.write().await.deref_mut())
             .await?;
         assert_eq!(count, errors_hash.len());
     }

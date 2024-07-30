@@ -4,6 +4,7 @@ use diesel::sql_types::{BigInt, Untyped};
 use diesel::{QueryResult, QueryableByName};
 use diesel_async::RunQueryDsl;
 use editoast_models::DbConnection;
+use std::ops::DerefMut;
 
 use crate::error::Result;
 
@@ -40,7 +41,9 @@ where
         offset: ((page - 1) * page_size) as i64,
     };
 
-    let results = query.load::<RowWithCount<T>>(conn).await?;
+    let results = query
+        .load::<RowWithCount<T>>(conn.write().await.deref_mut())
+        .await?;
 
     if results.is_empty() {
         return Ok((vec![], 0));

@@ -35,10 +35,11 @@ impl ToTokens for DeleteStaticImpl {
                 ) -> crate::error::Result<bool> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
+                    use std::ops::DerefMut;
                     use #table_mod::dsl;
                     tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     diesel::delete(dsl::#table_name.#(filter(#eqs)).*)
-                        .execute(conn)
+                        .execute(conn.write().await.deref_mut())
                         .await
                         .map(|n| n == 1)
                         .map_err(Into::into)

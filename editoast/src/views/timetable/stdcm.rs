@@ -7,6 +7,9 @@ use chrono::Utc;
 use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::primitives::PositiveDuration;
 use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::{Comfort, Margins, PathItem};
 use editoast_schemas::train_schedule::{MarginValue, ScheduleItem};
@@ -14,7 +17,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
 use std::collections::HashMap;
-use std::ops::DerefMut;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -44,9 +46,6 @@ use crate::AppState;
 use crate::RedisClient;
 use crate::Retrieve;
 use crate::RetrieveBatch;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::primitives::PositiveDuration;
 
 crate::routes! {
     "/stdcm" => stdcm,
@@ -164,39 +163,35 @@ async fn stdcm(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
+    let conn = &mut db_pool.get().await?;
+
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
     let timetable_id = id;
     let infra_id = query.infra;
 
     // 1. Retrieve Timetable / Infra / Trains / Simulation / Rolling Stock
-    let timetable_trains = TimetableWithTrains::retrieve_or_fail(
-        db_pool.get().await?.deref_mut(),
-        timetable_id,
-        || STDCMError::TimetableNotFound { timetable_id },
-    )
-    .await?;
-
-    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
-        STDCMError::InfraNotFound { infra_id }
+    let timetable_trains = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
+        STDCMError::TimetableNotFound { timetable_id }
     })
     .await?;
 
-    let (trains, _): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(db_pool.get().await?.deref_mut(), timetable_trains.train_ids)
-            .await?;
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || STDCMError::InfraNotFound { infra_id }).await?;
 
-    let rolling_stock = RollingStockModel::retrieve_or_fail(
-        db_pool.get().await?.deref_mut(),
-        stdcm_request.rolling_stock_id,
-        || STDCMError::RollingStockNotFound {
-            rolling_stock_id: stdcm_request.rolling_stock_id,
-        },
-    )
-    .await?;
+    let (trains, _): (Vec<_>, _) =
+        TrainSchedule::retrieve_batch(conn, timetable_trains.train_ids).await?;
+
+    let rolling_stock =
+        RollingStockModel::retrieve_or_fail(conn, stdcm_request.rolling_stock_id, || {
+            STDCMError::RollingStockNotFound {
+                rolling_stock_id: stdcm_request.rolling_stock_id,
+            }
+        })
+        .await?;
 
     let simulations = train_simulation_batch(
-        db_pool.get().await?.deref_mut(),
+        conn,
         redis_client.clone(),
         core_client.clone(),
         &trains,
@@ -247,8 +242,7 @@ async fn stdcm(
         build_train_requirements(trains, simulations, departure_time, latest_simulation_end);
 
     // 4. Parse stdcm path items
-    let path_items =
-        parse_stdcm_steps(db_pool.get().await?.deref_mut(), &stdcm_request, &infra).await?;
+    let path_items = parse_stdcm_steps(conn, &stdcm_request, &infra).await?;
 
     // 5. Build STDCM request
     let stdcm_response = STDCMRequest {
@@ -273,7 +267,7 @@ async fn stdcm(
         work_schedules: match stdcm_request.work_schedule_group_id {
             Some(work_schedule_group_id) => {
                 build_work_schedules(
-                    db_pool.get().await?.deref_mut(),
+                    conn,
                     departure_time,
                     maximum_departure_delay,
                     maximum_run_time,
@@ -488,7 +482,7 @@ async fn get_simulation_run_time(
     };
 
     let (sim_result, _) = train_simulation(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         redis_client,
         core_client,
         train_schedule,

@@ -1,5 +1,3 @@
-use std::ops::DerefMut;
-
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -201,6 +199,7 @@ async fn list(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
+
     let ordering = ordering_params.ordering;
     let settings = pagination_params
         .validate(1000)?
@@ -208,14 +207,15 @@ async fn list(
         .into_selection_settings()
         .order_by(move || ordering.as_project_ordering());
 
-    let (projects, stats) =
-        Project::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+    let conn = &mut db_pool.get().await?;
+
+    let (projects, stats) = Project::list_paginated(conn, settings).await?;
 
     let results = projects
         .into_iter()
         .zip(db_pool.iter_conn())
         .map(|(project, conn)| async move {
-            ProjectWithStudyCount::try_fetch(conn.await?.deref_mut(), project).await
+            ProjectWithStudyCount::try_fetch(&mut conn.await?, project).await
         });
     let results = futures::future::try_join_all(results).await?;
     Ok(Json(ProjectWithStudyCountList { results, stats }))
@@ -360,7 +360,6 @@ async fn patch(
 pub mod test {
     use std::collections::HashMap;
     use std::collections::HashSet;
-    use std::ops::DerefMut;
 
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
@@ -391,7 +390,7 @@ pub mod test {
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let project = Project::retrieve(pool.get_ok().deref_mut(), response.project.id)
+        let project = Project::retrieve(&mut pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -427,8 +426,7 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         let request = app.get("/projects/");
 
@@ -449,8 +447,7 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         let request = app.get(format!("/projects/{}", created_project.id).as_str());
 
@@ -465,14 +462,13 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         let request = app.delete(format!("/projects/{}", created_project.id).as_str());
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let exists = Project::exists(db_pool.get_ok().deref_mut(), created_project.id)
+        let exists = Project::exists(&mut db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to check if project exists");
 
@@ -484,8 +480,7 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         let updated_name = "rename_test";
         let updated_budget = 20000;
@@ -502,7 +497,7 @@ pub mod test {
 
         assert_eq!(response.project, response.project);
 
-        let project = Project::retrieve(db_pool.get_ok().deref_mut(), response.project.id)
+        let project = Project::retrieve(&mut db_pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");

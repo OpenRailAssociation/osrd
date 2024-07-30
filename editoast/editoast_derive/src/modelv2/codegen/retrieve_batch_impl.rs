@@ -46,6 +46,7 @@ impl ToTokens for RetrieveBatchImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    use std::ops::DerefMut;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok(crate::chunked_for_libpq! {
@@ -62,7 +63,7 @@ impl ToTokens for RetrieveBatchImpl {
                                 query = query.or_filter(#filters);
                             }
                             query
-                                .load_stream::<#row>(conn)
+                                .load_stream::<#row>(conn.write().await.deref_mut())
                                 .await
                                 .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
                                 .await?
@@ -84,6 +85,7 @@ impl ToTokens for RetrieveBatchImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    use std::ops::DerefMut;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok(crate::chunked_for_libpq! {
@@ -97,7 +99,7 @@ impl ToTokens for RetrieveBatchImpl {
                                 query = query.or_filter(#filters);
                             }
                             query
-                                .load_stream::<#row>(conn)
+                                .load_stream::<#row>(conn.write().await.deref_mut())
                                 .await
                                 .map(|s| {
                                     s.map_ok(|row| {

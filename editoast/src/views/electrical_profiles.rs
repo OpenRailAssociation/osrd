@@ -225,7 +225,6 @@ mod tests {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use super::*;
     use crate::modelsv2::fixtures::create_electrical_profile_set;
@@ -239,8 +238,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let _set_1 = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
-        let _set_2 = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+        let _set_1 = create_electrical_profile_set(&mut pool.get_ok()).await;
+        let _set_2 = create_electrical_profile_set(&mut pool.get_ok()).await;
 
         let response = app.get("/electrical_profile_set").await;
         response.assert_status(StatusCode::OK);
@@ -262,7 +261,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+        let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
         let response = app
             .get(&format!(
@@ -286,7 +285,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+        let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
         let response = app
             .get(&format!(
@@ -316,7 +315,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+        let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
 
         let response = app
             .delete(&format!(
@@ -326,10 +325,9 @@ mod tests {
             .await;
         response.assert_status(StatusCode::NO_CONTENT);
 
-        let exists =
-            ElectricalProfileSet::exists(pool.get_ok().deref_mut(), electrical_profile_set.id)
-                .await
-                .expect("Failed to check if electrical profile set exists");
+        let exists = ElectricalProfileSet::exists(&mut pool.get_ok(), electrical_profile_set.id)
+            .await
+            .expect("Failed to check if electrical profile set exists");
 
         assert!(!exists);
     }
@@ -355,7 +353,7 @@ mod tests {
         response.assert_status(StatusCode::OK);
         let created_ep: ElectricalProfileSet = response.json();
 
-        let created_ep = ElectricalProfileSet::retrieve(pool.get_ok().deref_mut(), created_ep.id)
+        let created_ep = ElectricalProfileSet::retrieve(&mut pool.get_ok(), created_ep.id)
             .await
             .expect("Failed to retrieve created electrical profile set")
             .expect("Electrical profile set not found");

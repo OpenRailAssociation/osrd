@@ -35,10 +35,11 @@ impl ToTokens for ExistsImpl {
                 ) -> crate::error::Result<bool> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
+                    use std::ops::DerefMut;
                     use #table_mod::dsl;
                     tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     diesel::select(diesel::dsl::exists(dsl::#table_name.#(filter(#eqs)).*))
-                        .get_result(conn)
+                        .get_result(conn.write().await.deref_mut())
                         .await
                         .map_err(Into::into)
                 }
