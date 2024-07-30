@@ -30,4 +30,12 @@ data class PlannedTimingData(
             else -> timeDiff
         }
     }
+
+    /**
+     * Get time difference between the time at which the train passes through the node and the
+     * planned time at which it should have arrived at the node.
+     */
+    fun getTimeDiff(time: Double): Double {
+        return time - this.arrivalTime.seconds
+    }
 }

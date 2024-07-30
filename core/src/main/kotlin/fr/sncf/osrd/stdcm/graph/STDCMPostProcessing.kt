@@ -25,6 +25,8 @@ import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.min
 
 /**
  * This class contains all the static methods used to turn the raw pathfinding result into a full
@@ -120,106 +122,142 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopPositions.toDoubleArray(), mrsp)
         return MaxEffortEnvelope.from(context, 0.0, maxSpeedEnvelope)
     }
-}
 
-/** Creates the list of waypoints on the path */
-private fun makeBlockWaypoints(path: Result): List<PathfindingEdgeLocationId<Block>> {
-    val res = ArrayList<PathfindingEdgeLocationId<Block>>()
-    for (waypoint in path.waypoints) {
-        val blockOffset = waypoint.edge.blockOffsetFromEdge(waypoint.offset)
-        res.add(EdgeLocation(waypoint.edge.block, blockOffset))
+    /** Creates the list of waypoints on the path */
+    private fun makeBlockWaypoints(path: Result): List<PathfindingEdgeLocationId<Block>> {
+        val res = ArrayList<PathfindingEdgeLocationId<Block>>()
+        for (waypoint in path.waypoints) {
+            val blockOffset = waypoint.edge.blockOffsetFromEdge(waypoint.offset)
+            res.add(EdgeLocation(waypoint.edge.block, blockOffset))
+        }
+        return res
     }
-    return res
-}
 
-/** Computes the departure time, made of the sum of all delays added over the path */
-fun computeDepartureTime(edges: List<STDCMEdge>, startTime: Double): Double {
-    var mutStartTime = startTime
-    for (edge in edges) mutStartTime += edge.addedDelay
-    return mutStartTime
-}
+    /** Computes the departure time, made of the sum of all delays added over the path */
+    private fun computeDepartureTime(edges: List<STDCMEdge>, startTime: Double): Double {
+        var addedDelay = 0.0
+        for (edge in edges) addedDelay += edge.addedDelay
+        val totalAddedDelay = addDelayForPlannedNodes(edges, addedDelay)
+        return startTime + totalAddedDelay
+    }
 
-/** Builds the list of stops from the edges */
-private fun makeStops(edges: List<STDCMEdge>): List<TrainStop> {
-    val res = ArrayList<TrainStop>()
-    var offset = 0.meters
-    for (edge in edges) {
-        val prevNode = edge.previousNode
-        // Ignore first path node and last node (we aren't checking lastEdge.getEdgeEnd())
-        if (
-            prevNode.previousEdge != null &&
-                prevNode.stopDuration != null &&
-                prevNode.stopDuration >= 0
-        )
-            res.add(
-                TrainStop(
-                    offset.meters,
-                    prevNode.stopDuration,
-                    // TODO: forward and use onStopSignal param from request
-                    isTimeStrictlyPositive(prevNode.stopDuration)
-                )
+    /** Add delay needed to minimize the relative time diff with planned timing data */
+    private fun addDelayForPlannedNodes(edges: List<STDCMEdge>, addedDelay: Double): Double {
+        var delayForPlannedNodes = 0.0
+        val nodes = getNodes(edges)
+        val maxNodeDelay = getMaxNodeDelay(nodes)
+        val firstPlannedNode = getPlannedNodes(nodes).firstOrNull()
+        if (firstPlannedNode != null) {
+            val realTime = firstPlannedNode.getRealTime(addedDelay)
+            val timeDiff = firstPlannedNode.plannedTimingData!!.getTimeDiff(realTime)
+            // Train passes before planned node: adding delay can make the train pass closer to
+            // planned arrival time
+            if (timeDiff < 0.0) {
+                delayForPlannedNodes = abs(timeDiff)
+            }
+        }
+        // Total delay added shouldn't be higher than the maximum delay that can possibly be added
+        // to the nodes.
+        return min(addedDelay + delayForPlannedNodes, maxNodeDelay)
+    }
+
+    private fun getNodes(edges: List<STDCMEdge>): List<STDCMNode> {
+        val nodes = edges.map { it.previousNode }.toMutableList()
+        nodes.add(edges.last().getEdgeEnd(graph))
+        return nodes
+    }
+
+    private fun getPlannedNodes(nodes: List<STDCMNode>): List<STDCMNode> {
+        return nodes.filter { it.plannedTimingData != null }
+    }
+
+    private fun getMaxNodeDelay(nodes: List<STDCMNode>): Double {
+        return nodes.minOfOrNull { it.maximumAddedDelay + it.totalPrevAddedDelay }!!
+    }
+
+    /** Builds the list of stops from the edges */
+    private fun makeStops(edges: List<STDCMEdge>): List<TrainStop> {
+        val res = ArrayList<TrainStop>()
+        var offset = 0.meters
+        for (edge in edges) {
+            val prevNode = edge.previousNode
+            // Ignore first path node and last node (we aren't checking lastEdge.getEdgeEnd())
+            if (
+                prevNode.previousEdge != null &&
+                    prevNode.stopDuration != null &&
+                    prevNode.stopDuration >= 0
             )
-        offset += edge.length.distance
+                res.add(
+                    TrainStop(
+                        offset.meters,
+                        prevNode.stopDuration,
+                        // TODO: forward and use onStopSignal param from request
+                        isTimeStrictlyPositive(prevNode.stopDuration)
+                    )
+                )
+            offset += edge.length.distance
+        }
+        return res
     }
-    return res
-}
 
-/** Builds the list of block ranges, merging the ranges on the same block */
-private fun makeBlockRanges(edges: List<STDCMEdge>): List<PathfindingEdgeRangeId<Block>> {
-    val res = ArrayList<PathfindingEdgeRangeId<Block>>()
-    var i = 0
-    while (i < edges.size) {
-        val edge = edges[i]
-        val start = edge.envelopeStartOffset
-        var length = edge.length
-        while (i + 1 < edges.size) {
-            val nextEdge = edges[i + 1]
-            if (edge.block != nextEdge.block) break
-            length += nextEdge.length.distance
+    /** Builds the list of block ranges, merging the ranges on the same block */
+    private fun makeBlockRanges(edges: List<STDCMEdge>): List<PathfindingEdgeRangeId<Block>> {
+        val res = ArrayList<PathfindingEdgeRangeId<Block>>()
+        var i = 0
+        while (i < edges.size) {
+            val edge = edges[i]
+            val start = edge.envelopeStartOffset
+            var length = edge.length
+            while (i + 1 < edges.size) {
+                val nextEdge = edges[i + 1]
+                if (edge.block != nextEdge.block) break
+                length += nextEdge.length.distance
+                i++
+            }
+            val end = start + length.distance
+            res.add(EdgeRange(edge.block, start, end))
             i++
         }
-        val end = start + length.distance
-        res.add(EdgeRange(edge.block, start, end))
-        i++
+        return res
     }
-    return res
-}
 
-/** Builds the list of stops from OP */
-private fun makeOpStops(infra: RawSignalingInfra, trainPath: PathProperties): List<TrainStop> {
-    val operationalPoints = makeOperationalPoints(infra, trainPath)
-    val res = ArrayList<TrainStop>()
-    for (op in operationalPoints) {
-        res.add(TrainStop(op.pathOffset, 0.0, false))
-    }
-    return res
-}
-
-/** Sorts the stops on the path. When stops overlap, the user-defined one is kept. */
-private fun sortAndMergeStopsDuplicates(stops: List<TrainStop>): List<TrainStop> {
-    val sorted = stops.sortedBy { st: TrainStop -> st.position }
-    val res = ArrayList<TrainStop>()
-    var last: TrainStop? = null
-    for (stop in sorted) {
-        if (last != null && arePositionsEqual(last.position, stop.position))
-            last.position = stop.position
-        else {
-            last = stop
-            res.add(last)
+    /** Builds the list of stops from OP */
+    private fun makeOpStops(infra: RawSignalingInfra, trainPath: PathProperties): List<TrainStop> {
+        val operationalPoints = makeOperationalPoints(infra, trainPath)
+        val res = ArrayList<TrainStop>()
+        for (op in operationalPoints) {
+            res.add(TrainStop(op.pathOffset, 0.0, false))
         }
+        return res
     }
-    return res
-}
 
-/**
- * Make the path's ordered list of stops, in order. Both user-defined stops and operational points.
- */
-private fun makePathStops(
-    stops: List<TrainStop>,
-    infra: RawSignalingInfra,
-    trainPath: PathProperties
-): List<TrainStop> {
-    val mutStops = stops.toMutableList()
-    mutStops.addAll(makeOpStops(infra, trainPath))
-    return sortAndMergeStopsDuplicates(mutStops)
+    /** Sorts the stops on the path. When stops overlap, the user-defined one is kept. */
+    private fun sortAndMergeStopsDuplicates(stops: List<TrainStop>): List<TrainStop> {
+        val sorted = stops.sortedBy { st: TrainStop -> st.position }
+        val res = ArrayList<TrainStop>()
+        var last: TrainStop? = null
+        for (stop in sorted) {
+            if (last != null && arePositionsEqual(last.position, stop.position))
+                last.position = stop.position
+            else {
+                last = stop
+                res.add(last)
+            }
+        }
+        return res
+    }
+
+    /**
+     * Make the path's ordered list of stops, in order. Both user-defined stops and operational
+     * points.
+     */
+    private fun makePathStops(
+        stops: List<TrainStop>,
+        infra: RawSignalingInfra,
+        trainPath: PathProperties
+    ): List<TrainStop> {
+        val mutStops = stops.toMutableList()
+        mutStops.addAll(makeOpStops(infra, trainPath))
+        return sortAndMergeStopsDuplicates(mutStops)
+    }
 }

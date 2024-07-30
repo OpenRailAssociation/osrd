@@ -106,16 +106,17 @@ data class STDCMNode(
         // ------------[-----|-----------|----------------|----------]------------
         //               currentTime            currentTimeWithMaxDelay
         if (plannedTimingData != null) {
-            val timeDiff =
-                getRealTime(currentTotalAddedDelay) - plannedTimingData.arrivalTime.seconds
+            val realTime = getRealTime(currentTotalAddedDelay)
+            val timeDiff = plannedTimingData.getTimeDiff(realTime)
             val relativeTimeDiff = plannedTimingData.getBeforeOrAfterRelativeTimeDiff(timeDiff)
             // If time diff is positive, adding delay won't decrease relative time diff: return
             // relativeTimeDiff
             if (timeDiff >= 0) return relativeTimeDiff
 
+            val maxTime = getRealTime(currentMaximumDelay)
             val maxTimeDiff =
                 min(
-                    getRealTime(currentMaximumDelay) - plannedTimingData.arrivalTime.seconds,
+                    plannedTimingData.getTimeDiff(maxTime),
                     plannedTimingData.arrivalTimeToleranceAfter.seconds
                 )
             val relativeMaxTimeDiff =
@@ -134,7 +135,7 @@ data class STDCMNode(
      * Takes into account the real current departure time shift to return the real current time at
      * which the train arrives at this node.
      */
-    private fun getRealTime(currentTotalAddedDelay: Double): Double {
+    fun getRealTime(currentTotalAddedDelay: Double): Double {
         assert(currentTotalAddedDelay >= totalPrevAddedDelay)
         return time + (currentTotalAddedDelay - totalPrevAddedDelay)
     }

@@ -542,21 +542,21 @@ class STDCMPathfindingTests {
     }
 
     /**
-     * Path arrives at end at either 28s (before occupancy) with a departure time at 0.0 and a
-     * maximum delay of 6s, or 47s (after occupancy) with a departure time of 19.0. End has planned
-     * timing data working for both ends. Three test cases:
-     * - arrival closer to first path end -> first path
-     * - arrival closer to second path end -> second path
+     * Path arrives at end at either 28s (before occupancy) with a departure time at 0.0 +
+     * delayForPlannedNode and a maximum delay of 6s, or 47s (after occupancy) with a departure time
+     * of 19.0. End has planned timing data working for both ends. Three test cases:
+     * - arrival closer to first path end -> first path, departure time < 19.0
+     * - arrival closer to second path end -> second path, departure time = 19.0
      * - arrival closer to second path end, but even closer to first path end + maximum delay = 34s
-     *   -> first path
+     *   -> first path, departure time < 19.0
      */
     @ParameterizedTest
-    @CsvSource("30, 20, 20, 0.0", "45, 20, 20, 19.0", "40, 20, 20, 0.0")
+    @CsvSource("30, 20, 20, true", "45, 20, 20, false", "40, 20, 20, true")
     fun testReturnPathClosestToPlannedStepWithSameLeftRightTolerances(
         arrivalTime: Double,
         toleranceBefore: Double,
         toleranceAfter: Double,
-        departureTime: Double
+        isFirstPath: Boolean
     ) {
         /*
         a --> b
@@ -586,14 +586,14 @@ class STDCMPathfindingTests {
                 )
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        assertEquals(departureTime, res.departureTime)
+        assertEquals(isFirstPath, res.departureTime < 19.0)
     }
 
     /**
      * Same set up as previous test: first path ends at 28s, with a maximum delay of 6s, second path
      * ends at 47s. First path ends before and farther from planned arrival ; second path ends after
      * and closer to planned arrival ; however, tolerance before is much higher than tolerance after
-     * -> resulting closest path is the first one.
+     * -> resulting closest path is the first one, with a departure time < 19.0.
      */
     @Test
     fun testReturnPathClosestToPlannedStepWithDifferentLeftRightTolerances() {
@@ -626,7 +626,7 @@ class STDCMPathfindingTests {
                 )
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        assertEquals(0.0, res.departureTime)
+        assertTrue(res.departureTime < 19.0)
     }
 
     /**
@@ -671,5 +671,134 @@ class STDCMPathfindingTests {
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
         assertEquals(departureTime, res.departureTime)
+    }
+
+    /**
+     * Train goes through start window without added delay, but before planned arrival time: check
+     * that 10s are added to departure time to make train pass in planned step at planned arrival =
+     * 10s.
+     */
+    @Test
+    fun testDelayAddedWhenTrainPassesBeforePlannedStepArrivalTime() {
+        val infra = DummyInfra()
+        val blocks = listOf(infra.addBlock("a", "b"))
+        val plannedStepArrivalTime = 10.0
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(0.meters))),
+                    PlannedTimingData(plannedStepArrivalTime.seconds, 10.seconds, 10.seconds)
+                )
+                .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
+                .run()!!
+        assertEquals(plannedStepArrivalTime, res.departureTime)
+    }
+
+    /**
+     * Train goes through start window without added delay, before planned arrival time, but an
+     * occupancy starts at 5s, with an internal margin of 2s: check that 5s - 2s are added to
+     * departure time to make train pass in planned step closer to planned arrival = 10s.
+     */
+    @Test
+    fun testMaxPossibleDelayAddedWhenTrainPassesBeforePlannedStepArrivalTime() {
+        val infra = DummyInfra()
+        val blocks = listOf(infra.addBlock("a", "b"))
+        val plannedStepArrivalTime = 10.0
+        val startOccupancy = 5.0
+        val internalMargin = 2.0
+        val maxPossibleDelay = startOccupancy - internalMargin
+        val occupancyGraph =
+            ImmutableMultimap.of(
+                blocks[0],
+                OccupancySegment(startOccupancy, 10_000.0, 0.meters, 0.meters)
+            )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(0.meters))),
+                    PlannedTimingData(plannedStepArrivalTime.seconds, 10.seconds, 10.seconds)
+                )
+                .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
+                .setUnavailableTimes(occupancyGraph)
+                .run()!!
+        assertEquals(maxPossibleDelay, res.departureTime)
+    }
+
+    /**
+     * Train goes through start window without added delay, after planned arrival time: no delay
+     * should be added.
+     */
+    @Test
+    fun noDelayAddedWhenTrainPassesAfterPlannedArrivalTime() {
+        val infra = DummyInfra()
+        val blocks = listOf(infra.addBlock("a", "b"))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(0.meters))),
+                    PlannedTimingData((-10).seconds, 20.seconds, 0.0.seconds)
+                )
+                .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
+                .run()!!
+        assertEquals(0.0, res.departureTime)
+    }
+
+    /**
+     * Train goes through start time after planned arrival time, then goes through end time before
+     * arrival time: no delay should be added.
+     */
+    @Test
+    fun noDelayAddedWhenTrainPassesAfterPlannedArrivalTimeThenBeforePlannedArrivalTime() {
+        val infra = DummyInfra()
+        val blocks = listOf(infra.addBlock("a", "b"))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(0.meters))),
+                    PlannedTimingData((-10).seconds, 20.seconds, 0.0.seconds)
+                )
+                .setEndLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(100.meters))),
+                    PlannedTimingData(60.seconds, 60.seconds, 0.seconds)
+                )
+                .run()!!
+        assertEquals(0.0, res.departureTime)
+    }
+
+    /**
+     * Train goes through start with added delay due to occupancy, and before planned arrival time:
+     * planned delay should be added to existing delay.
+     */
+    @Test
+    fun plannedDelayAddedToExistingDelay() {
+        val infra = DummyInfra()
+        val blocks = listOf(infra.addBlock("a", "b"))
+        val occupancyDelay = 5.0
+        val internalMargin = 2.0
+        val addedDelay = occupancyDelay + 2 * internalMargin
+        val plannedDelay = 10.0
+        val totalDelay = addedDelay + plannedDelay
+
+        val occupancyGraph =
+            ImmutableMultimap.of(
+                blocks[0],
+                OccupancySegment(0.0, occupancyDelay, 0.meters, 0.meters)
+            )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(0.meters))),
+                    PlannedTimingData(totalDelay.seconds, totalDelay.seconds, 5.0.seconds)
+                )
+                .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
+                .setUnavailableTimes(occupancyGraph)
+                .run()!!
+
+        assertEquals(totalDelay, res.departureTime)
     }
 }
