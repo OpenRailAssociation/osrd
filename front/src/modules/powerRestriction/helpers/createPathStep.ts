@@ -5,7 +5,7 @@ import type { TrackRange } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getPointCoordinates } from 'utils/geometry';
-import { mToKm, mToMm } from 'utils/physics';
+import { mmToM, mToMm } from 'utils/physics';
 
 import { NO_POWER_RESTRICTION } from '../consts';
 
@@ -18,28 +18,28 @@ const findTrackSectionIndex = (position: number, tracksLengthCumulativeSums: num
   return -1;
 };
 
-const findTrackSection = (
-  position: number, // in mm
-  tracksLengthCumulativeSums: number[],
-  pathProperties: ManageTrainSchedulePathProperties
+/**
+ * Return the track offset corresponding to the given position on path, composed of the track section id
+ * and the offet on this track section in mm
+ */
+export const findTrackSectionOffset = (
+  positionOnPath: number, // in mm
+  tracksLengthCumulativeSums: number[], // in mm
+  trackRangesOnPath: TrackRange[]
 ) => {
-  const index = findTrackSectionIndex(position, tracksLengthCumulativeSums);
-  return index !== -1 ? pathProperties.trackSectionRanges[index] : null;
-};
+  const index = findTrackSectionIndex(positionOnPath, tracksLengthCumulativeSums);
+  const trackRange = trackRangesOnPath[index];
+  if (!trackRange) return null;
 
-/** Return the offset on the track section in mm*/
-const calculateOffset = (
-  trackSectionRange: TrackRange,
-  position: number, // in mm
-  tracksLengthCumulativeSums: number[] // in meters
-) => {
-  const index = findTrackSectionIndex(position, tracksLengthCumulativeSums);
+  // compute offset
   const inferiorSum = index > 0 ? tracksLengthCumulativeSums[index - 1] : 0;
-  const offsetOnTrackRange =
-    trackSectionRange.direction === 'START_TO_STOP'
-      ? inferiorSum - position
-      : position - inferiorSum;
-  return trackSectionRange.begin + offsetOnTrackRange;
+  const offsetOnTrackRange = positionOnPath - inferiorSum;
+  const offsetOnTrackSection =
+    trackRange.direction === 'START_TO_STOP'
+      ? trackRange.begin + offsetOnTrackRange
+      : trackRange.begin - offsetOnTrackRange;
+
+  return { track: trackRange.track_section, offset: offsetOnTrackSection };
 };
 
 const createPathStep = (
@@ -55,14 +55,12 @@ const createPathStep = (
   )
     return undefined;
 
-  const trackSectionRange = findTrackSection(
+  const trackOffset = findTrackSectionOffset(
     positionOnPath,
     tracksLengthCumulativeSums,
-    pathProperties
+    pathProperties.trackSectionRanges
   );
-  if (!trackSectionRange) return undefined;
-
-  const offset = calculateOffset(trackSectionRange, positionOnPath, tracksLengthCumulativeSums);
+  if (!trackOffset) return undefined;
 
   const coordinates = getPointCoordinates(
     pathProperties.geometry,
@@ -74,8 +72,9 @@ const createPathStep = (
     id: nextId(),
     positionOnPath,
     coordinates,
-    track: trackSectionRange.track_section,
-    offset: mToKm(offset),
+    ...trackOffset,
+    // TODO: we should return the offset in mm once it is stored in mm in the store
+    offset: mmToM(trackOffset.offset),
   };
 };
 
@@ -108,19 +107,14 @@ export const createCutAtPathStep = (
   }
 
   const cutAtPosition = mToMm(cutAtPositionInM);
-  const trackSectionRangeAtCut = findTrackSection(
+  const trackOffset = findTrackSectionOffset(
     cutAtPosition,
     tracksLengthCumulativeSums,
-    pathProperties
+    pathProperties.trackSectionRanges
   );
 
-  if (!trackSectionRangeAtCut) return null;
+  if (!trackOffset) return null;
 
-  const offsetAtCut = calculateOffset(
-    trackSectionRangeAtCut,
-    cutAtPosition,
-    tracksLengthCumulativeSums
-  );
   const coordinatesAtCut = getPointCoordinates(
     pathProperties.geometry,
     pathProperties.length,
@@ -130,8 +124,9 @@ export const createCutAtPathStep = (
     id: nextId(),
     positionOnPath: cutAtPosition,
     coordinates: coordinatesAtCut,
-    track: trackSectionRangeAtCut.track_section,
-    offset: offsetAtCut,
+    ...trackOffset,
+    // TODO: we should return the offset in mm once it is stored in mm in the store
+    offset: mmToM(trackOffset.offset),
   };
 };
 
