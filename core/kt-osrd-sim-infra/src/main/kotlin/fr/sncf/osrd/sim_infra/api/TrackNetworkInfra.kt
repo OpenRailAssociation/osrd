@@ -5,13 +5,13 @@ import fr.sncf.osrd.utils.Endpoint
 import fr.sncf.osrd.utils.indexing.*
 import kotlin.time.Duration
 
-/** A track section is a real-life section of track, which cannot be interrupted by switches. */
+/** A track section is a real-life section of track, which cannot be interrupted by track nodes. */
 sealed interface TrackSection
 
 typealias TrackSectionId = StaticIdx<TrackSection>
 
 /**
- * Track nodes connect track sections together. Each node corresponds to either a railway switch, or
+ * Track nodes connect track sections together. Each node corresponds to either a railway track node, or
  * an abstract boundary.
  */
 sealed interface TrackNode
@@ -24,7 +24,7 @@ sealed interface TrackNodePort
 typealias TrackNodePortId = StaticIdx<TrackNodePort>
 
 /**
- * A possible track node config. Each switch has its own config id space. Abstract boundary nodes
+ * A possible track node config. Each track node has its own config id space. Abstract boundary nodes
  * (sometimes called track section links) have a single config.
  */
 sealed interface TrackNodeConfig
@@ -50,7 +50,7 @@ interface TrackNetworkInfra {
      */
     fun getTrackNodeConfigs(trackNode: TrackNodeId): StaticIdxSpace<TrackNodeConfig>
     /**
-     * Returns the number of ports for this node. Abstract nodes have two ports, and switches have
+     * Returns the number of ports for this node. Abstract nodes have two ports, and track nodes have
      * at least 3.
      */
     fun getTrackNodePorts(trackNode: TrackNodeId): StaticIdxSpace<TrackNodePort>

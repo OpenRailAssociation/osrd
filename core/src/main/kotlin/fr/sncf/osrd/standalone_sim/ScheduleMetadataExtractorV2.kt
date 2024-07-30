@@ -178,7 +178,7 @@ fun runScheduleMetadataExtractor(
                         req.zone,
                         req.entryDetector,
                         req.exitDetector,
-                        req.switches,
+                        req.trackNodes,
                         req.endTime.seconds
                     )
                 }

@@ -35,9 +35,9 @@ mod test {
         assert_eq!(path.track_ranges[1].track, "B".into());
         assert_eq!(path.track_ranges[1].begin, 0.);
         assert_eq!(path.track_ranges[1].end, 250.);
-        assert_eq!(path.switches_directions.len(), 1);
+        assert_eq!(path.track_nodes_directions.len(), 1);
         assert!(path
-            .switches_directions
+            .track_nodes_directions
             .iter()
             .any(|(k, _)| k == &"link".into()));
     }
@@ -57,10 +57,10 @@ mod test {
         assert_eq!(path.track_ranges[1].track, "C".into());
         assert_eq!(path.track_ranges[1].begin, 0.);
         assert_eq!(path.track_ranges[1].end, 480.);
-        assert_eq!(path.switches_directions.len(), 1);
+        assert_eq!(path.track_nodes_directions.len(), 1);
         assert!(path
-            .switches_directions
+            .track_nodes_directions
             .iter()
-            .any(|(k, _)| k == &"switch".into()));
+            .any(|(k, _)| k == &"track_node".into()));
     }
 }

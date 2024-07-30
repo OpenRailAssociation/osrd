@@ -130,17 +130,17 @@ public class ResultTrain {
         @Json(name = "exit_detector")
         public String exitDetector;
 
-        public Map<String, String> switches;
+        public Map<String, String> trackNodes;
 
         @Json(name = "end_time")
         public double endTime;
 
         public RoutingZoneRequirement(
-                String zone, String entryDetector, String exitDetector, Map<String, String> switches, double endTime) {
+                String zone, String entryDetector, String exitDetector, Map<String, String> trackNodes, double endTime) {
             this.zone = zone;
             this.entryDetector = entryDetector;
             this.exitDetector = exitDetector;
-            this.switches = switches;
+            this.trackNodes = trackNodes;
             this.endTime = endTime;
         }
     }
@@ -148,7 +148,7 @@ public class ResultTrain {
     /**
      * A routing represents a requirement for a zone to be in the compatible configuration between
      * the given times in order for the train to process unimpeded. The tuple (entry_detector,
-     * exit_detector, switches) is the zone configuration.
+     * exit_detector, track nodes) is the zone configuration.
      */
     public static class RoutingRequirement {
         public String route;

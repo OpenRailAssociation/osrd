@@ -34,7 +34,7 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import Switches from 'common/Map/Layers/Switches';
+import TrackNodes from 'common/Map/Layers/TrackNodes';
 import Terrain from 'common/Map/Layers/Terrain';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
@@ -346,7 +346,7 @@ const Map = ({
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
               infraID={infraID}
             />
-            <Switches
+            <TrackNodes
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
               infraID={infraID}

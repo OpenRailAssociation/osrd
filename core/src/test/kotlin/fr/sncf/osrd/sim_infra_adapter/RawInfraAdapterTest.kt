@@ -64,8 +64,8 @@ class RawInfraAdapterTest {
             route("route", bufferStopBegin, START_TO_STOP, bufferStopEnd) {
                 // FIXME: the parser shouldn't require configurations for nodes which have a
                 // single config
-                addSwitchDirection(linkAb, "STATIC")
-                addSwitchDirection(linkBc, "STATIC")
+                addTrackNodeDirection(linkAb, "STATIC")
+                addTrackNodeDirection(linkBc, "STATIC")
             }
         }
 
@@ -119,7 +119,7 @@ class RawInfraAdapterTest {
                 START_TO_STOP,
                 RJSWaypointRef("det_end_new_route", RJSWaypointRef.RJSWaypointType.DETECTOR),
             )
-        newRoute.switchesDirections["PA0"] = "A_B1"
+        newRoute.trackNodesDirections["PA0"] = "A_B1"
         rjsInfra.routes = listOf(newRoute)
         parseRJSInfra(rjsInfra)
     }

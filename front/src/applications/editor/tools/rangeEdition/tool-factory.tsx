@@ -75,7 +75,7 @@ function getRangeEditionTool<T extends EditorRange>({
       interactionState: { type: 'idle' } as InteractionState,
       trackSectionsCache: {},
       optionsState: { type: 'idle' } as OptionsStateType,
-      selectedSwitches: {},
+      selectedTrackNodes: {},
       highlightedRoutes: [],
       routeElements: {},
     };
@@ -90,7 +90,7 @@ function getRangeEditionTool<T extends EditorRange>({
     labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.label`,
     requiredLayers: new Set(
       layersEntity.objType === 'SpeedSection'
-        ? ['speed_sections', 'psl', 'psl_signs', 'switches']
+        ? ['speed_sections', 'psl', 'psl_signs', 'track_nodes']
         : ['electrifications']
     ),
     getInitialState,
@@ -207,24 +207,24 @@ function getRangeEditionTool<T extends EditorRange>({
       if (hoveredItem) return 'pointer';
       return 'default';
     },
-    onClickMap(e, { setState, state: { entity, interactionState, selectedSwitches } }) {
+    onClickMap(e, { setState, state: { entity, interactionState, selectedTrackNodees } }) {
       const feature = (e.features || [])[0];
 
-      if (interactionState.type === 'selectSwitch') {
-        if (feature && feature.sourceLayer === 'switches') {
-          if (Object.keys(selectedSwitches).includes(feature.properties.id)) {
+      if (interactionState.type === 'selectTrackNode') {
+        if (feature && feature.sourceLayer === 'track_nodes') {
+          if (Object.keys(selectedTrackNodes).includes(feature.properties.id)) {
             setState({
-              selectedSwitches: Object.fromEntries(
-                Object.entries(selectedSwitches).filter(([key]) => key !== feature.properties.id)
+              selectedTrackNodes: Object.fromEntries(
+                Object.entries(selectedTrackNodes).filter(([key]) => key !== feature.properties.id)
               ),
             });
           } else
             setState({
-              selectedSwitches: {
-                ...selectedSwitches,
+              selectedTrackNodes: {
+                ...selectedTrackNodes,
                 [feature.properties.id]: {
                   position: null,
-                  type: feature.properties.switch_type,
+                  type: feature.properties.track_node_type,
                 },
               },
             });
@@ -313,7 +313,7 @@ function getRangeEditionTool<T extends EditorRange>({
         return;
       }
       // Handle hovering custom elements:
-      if (interactionState.type === 'selectSwitch') {
+      if (interactionState.type === 'selectTrackNode') {
         if (feature.sourceLayer && LAYERS_SET.has(feature.sourceLayer)) {
           const newHoveredItem = {
             id: feature.properties?.id as string,
@@ -321,7 +321,7 @@ function getRangeEditionTool<T extends EditorRange>({
             renderedEntity: feature,
           };
           if (!isEqual(newHoveredItem, hoveredItem)) {
-            if (feature.sourceLayer === 'switches') {
+            if (feature.sourceLayer === 'track_nodes') {
               setState({
                 hovered: {
                   id: feature.properties?.id as string,

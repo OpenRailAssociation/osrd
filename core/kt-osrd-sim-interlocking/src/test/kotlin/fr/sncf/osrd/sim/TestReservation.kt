@@ -56,7 +56,7 @@ class TestReservation {
                 val detZ = bufferStop("Z", rightTrack.end)
 
                 route("U-Z", detU, EdgeDirection.STOP_TO_START, detZ) {
-                    addSwitchDirection(switch, "A_B2")
+                    addTrackNodeDirection(switch, "A_B2")
                 }
             }
 

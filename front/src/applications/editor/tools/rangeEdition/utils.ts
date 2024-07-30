@@ -365,12 +365,12 @@ export const isNew = (entity: SpeedSectionEntity | ElectrificationEntity) =>
 export const DEFAULT_EXTRA_TRACK_RANGE_LENGTH = 10;
 export const makeSpeedRestrictionTrackRanges = (
   trackRanges: ApplicableTrackRange[],
-  switches: string[],
-  selectedSwitches: Record<string, object>,
+  track_nodes: string[],
+  selectedTrackNodes: Record<string, object>,
   extraMeters?: boolean
 ) => {
-  const indices = Object.keys(selectedSwitches).map(
-    (selectedSwitch) => switches.findIndex((s) => s === selectedSwitch) + 1
+  const indices = Object.keys(selectedTrackNodes).map(
+    (selectedTrackNode) => track_nodes.findIndex((s) => s === selectedTrackNode) + 1
   );
   const lowerBound = Math.min(...indices);
   const upperBound = Math.max(...indices);
@@ -411,12 +411,12 @@ export const makeRouteElements = (
   trackRangesResults.reduce((acc, cur, index) => {
     if (cur.type === 'Computed') {
       const trackRanges = cur.track_ranges.map((trackRange) => renameDirection(trackRange));
-      const switches = cur.switches_directions.map((sw) => sw[0]);
+      const track_nodes = cur.track_nodes_directions.map((sw) => sw[0]);
       return {
         ...acc,
         [routes[index]]: {
           trackRanges,
-          switches,
+          track_nodes,
         },
       };
     }

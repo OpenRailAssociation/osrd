@@ -41,13 +41,13 @@ pub enum InfraErrorType {
     EmptyObject,
     InvalidGroup {
         group: String,
-        switch_type: String,
+        track_node_type: String,
     },
     InvalidReference {
         reference: ObjectRef,
     },
     InvalidRoute,
-    InvalidSwitchPorts,
+    InvalidTrackNodePorts,
     MissingRoute,
     MissingBufferStop {
         endpoint: Endpoint,
@@ -67,7 +67,7 @@ pub enum InfraErrorType {
     OverlappingSpeedSections {
         reference: ObjectRef,
     },
-    OverlappingSwitches {
+    OverlappingTrackNodes {
         reference: ObjectRef,
     },
     UnknownPortName {
@@ -155,10 +155,10 @@ impl InfraError {
         }
     }
 
-    pub fn new_node_endpoint_not_unique<T: AsRef<str>>(switch_id: &T) -> Self {
+    pub fn new_node_endpoint_not_unique<T: AsRef<str>>(track_node_id: &T) -> Self {
         Self {
-            obj_id: switch_id.as_ref().into(),
-            obj_type: ObjectType::Switch,
+            obj_id: track_node_id.as_ref().into(),
+            obj_type: ObjectType::TrackNode,
             field: Default::default(),
             is_warning: false,
             sub_type: InfraErrorType::NodeEndpointsNotUnique,
@@ -180,13 +180,13 @@ impl InfraError {
         }
     }
 
-    pub fn new_invalid_switch_ports<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
+    pub fn new_invalid_track_node_ports<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
             field: Some(field.as_ref().into()),
             is_warning: false,
-            sub_type: InfraErrorType::InvalidSwitchPorts,
+            sub_type: InfraErrorType::InvalidTrackNodePorts,
         }
     }
 
@@ -226,7 +226,7 @@ impl InfraError {
         obj: &O,
         field: T,
         group: TT,
-        switch_type: TTT,
+        track_node_type: TTT,
     ) -> Self {
         Self {
             obj_id: obj.get_id().clone(),
@@ -235,7 +235,7 @@ impl InfraError {
             is_warning: false,
             sub_type: InfraErrorType::InvalidGroup {
                 group: group.as_ref().into(),
-                switch_type: switch_type.as_ref().into(),
+                track_node_type: track_node_type.as_ref().into(),
             },
         }
     }
@@ -298,14 +298,14 @@ impl InfraError {
         }
     }
 
-    pub fn new_overlapping_switches<O: OSRDObject, T: AsRef<str>>(obj: &O, other: T) -> Self {
-        let reference = ObjectRef::new(ObjectType::Switch, other);
+    pub fn new_overlapping_track_nodes<O: OSRDObject, T: AsRef<str>>(obj: &O, other: T) -> Self {
+        let reference = ObjectRef::new(ObjectType::TrackNode, other);
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
             field: Default::default(),
             is_warning: false,
-            sub_type: InfraErrorType::OverlappingSwitches { reference },
+            sub_type: InfraErrorType::OverlappingTrackNodes { reference },
         }
     }
 

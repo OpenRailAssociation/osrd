@@ -8,10 +8,10 @@ import { useSelector } from 'react-redux';
 import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import SwitchSNCF, { switch_types } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import {
-  FormatSwitch as SimpleFormatSwitch,
+  FormatTrackNode as SimpleFormatTrackNode,
   Icon2SVG,
 } from 'common/Map/Settings/MapSettingsLayers';
 import { useInfraID } from 'common/osrdContext';
@@ -22,14 +22,14 @@ import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-type FormatSwitchProps = {
+type FormatTrackNodeProps = {
   name: keyof MapState['layersSettings'];
   icon: IconType;
   color?: string;
   disabled?: boolean;
 };
 
-const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: FormatSwitchProps) => {
+const FormatTrackNode = ({ name, icon: IconComponent, color = '', disabled }: FormatTrackNodeProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule', 'map-settings']);
   const { layersSettings } = useSelector(getMap);
@@ -89,7 +89,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
         <div className="d-flex align-items-center mt-2">
           <SwitchSNCF
             id={`${name}-switch`}
-            type={SWITCH_TYPES.switch}
+            type={switch_types.switch}
             name={`${name}-switch`}
             onChange={() => setLayerSettings(name)}
             checked={!!layersSettings[name]}
@@ -123,9 +123,9 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
 export default function MapSettingsLayers() {
   return (
     <div className="row">
-      <FormatSwitch name="speedlimits" icon={IoMdSpeedometer} />
+      <FormatTrackNode name="speedlimits" icon={IoMdSpeedometer} />
       <div className="col-lg-6">
-        <SimpleFormatSwitch
+        <SimpleFormatTrackNode
           name="sncf_psl"
           icon={<Icon2SVG file={TIVsSVGFile} altName="SNCF PSL TIV icon svg" />}
         />

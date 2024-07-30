@@ -122,7 +122,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
     data class RoutingZoneConfig(
         val entryDet: String,
         val exitDet: String,
-        val switches: Map<String, String>
+        val trackNodes: Map<String, String>
     )
 
     data class RoutingZoneRequirement(
@@ -141,14 +141,14 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
                 val route = routeRequirements.route!!
                 var beginTime = routeRequirements.beginTime
                 // TODO: make it a parameter
-                if (routeRequirements.zones.any { it.switches.isNotEmpty() }) beginTime -= 5.0
+                if (routeRequirements.zones.any { it.trackNodes.isNotEmpty() }) beginTime -= 5.0
                 for (zoneRequirement in routeRequirements.zones) {
                     val endTime = zoneRequirement.endTime
                     val config =
                         RoutingZoneConfig(
                             zoneRequirement.entryDetector,
                             zoneRequirement.exitDetector,
-                            zoneRequirement.switches!!
+                            zoneRequirement.trackNodes!!
                         )
                     val requirement =
                         RoutingZoneRequirement(trainId, route, beginTime, endTime, config)
@@ -231,7 +231,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         val res = mutableListOf<Conflict>()
         for (zoneReq in req.zones) {
             val zoneReqConfig =
-                RoutingZoneConfig(zoneReq.entryDetector, zoneReq.exitDetector, zoneReq.switches!!)
+                RoutingZoneConfig(zoneReq.entryDetector, zoneReq.exitDetector, zoneReq.zoneReq.trackNodes!!)
             val requirements = routingZoneRequirements[zoneReq.zone!!] ?: continue
 
             for (otherReq in requirements) {
@@ -277,7 +277,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
                             RoutingZoneConfig(
                                 zoneReq.entryDetector,
                                 zoneReq.exitDetector,
-                                zoneReq.switches!!
+                                zoneReq.trackNodes!!
                             )
                         for (requirement in routingZoneRequirements[zoneReq.zone!!]!!) {
                             if (endTime <= requirement.beginTime && config != requirement.config) {
@@ -319,7 +319,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
                             RoutingZoneConfig(
                                 zoneReq.entryDetector,
                                 zoneReq.exitDetector,
-                                zoneReq.switches!!
+                                zoneReq.trackNodes!!
                             )
                         val conflictingRequirements =
                             routingZoneRequirements[zoneReq.zone!!]!!.filter {

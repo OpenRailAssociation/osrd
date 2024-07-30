@@ -21,7 +21,7 @@ import Tipped from 'common/Tipped';
 import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
-import type { EndPoint } from '../../switchEdition/types';
+import type { EndPoint } from '../../trackNodeEdition/types';
 
 interface WayPointInputProps {
   endPoint: EndPoint;

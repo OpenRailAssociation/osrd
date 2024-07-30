@@ -111,13 +111,13 @@ private fun findSignalDelimiters(
         val endDetector = rawSignalingInfra.getZonePathExit(zonePath)
         val signals = rawSignalingInfra.getSignals(zonePath)
         val signalsPositions = rawSignalingInfra.getSignalPositions(zonePath)
-        val switchesPositions = rawSignalingInfra.getZonePathMovableElementsPositions(zonePath)
+        val trackNodesPositions = rawSignalingInfra.getZonePathMovableElementsPositions(zonePath)
         val zonePathLen = rawSignalingInfra.getZonePathLength(zonePath)
 
-        // we only take into account signals after the last switch of the zone path
+        // we only take into account signals after the last track node of the zone path
         val cutoffOffset =
-            if (switchesPositions.size == 0) Offset(Distance.ZERO)
-            else switchesPositions[switchesPositions.size - 1]
+            if (trackNodesPositions.size == 0) Offset(Distance.ZERO)
+            else trackNodesPositions[trackNodesPositions.size - 1]
 
         for (physicalSignalIndex in 0 until signals.size) {
             val signalPos = signalsPositions[physicalSignalIndex]

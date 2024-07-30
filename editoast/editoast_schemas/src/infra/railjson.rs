@@ -11,8 +11,8 @@ use super::OperationalPoint;
 use super::Route;
 use super::Signal;
 use super::SpeedSection;
-use super::Switch;
-use super::SwitchType;
+use super::TrackNode;
+use super::TrackNodeType;
 use super::TrackSection;
 
 pub const RAILJSON_VERSION: &str = "3.4.12";
@@ -33,11 +33,11 @@ pub struct RailJson {
     pub operational_points: Vec<OperationalPoint>,
     /// A `Route` is an itinerary in the infrastructure. A train path is a sequence of routes. Routes are used to reserve section of path with the interlocking.
     pub routes: Vec<Route>,
-    /// These define the types of switches available for route management.
-    pub extended_switch_types: Vec<SwitchType>,
-    /// `Switches` allow for route control and redirection of trains.
-    pub switches: Vec<Switch>,
-    /// `TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.
+    /// These define the types of track nodes available for route management.
+    pub extended_track_node_types: Vec<TrackNodeType>,
+    /// `TrackNodes` allow for route control and redirection of trains.
+    pub track_nodes: Vec<TrackNode>,
+    /// `TrackSection`` is a segment of rail between track_nodes that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.
     pub track_sections: Vec<TrackSection>,
     /// The `SpeedSections` represent speed limits (in meters per second) that are applied on some parts of the tracks. One `SpeedSection` can span on several track sections, and do not necessarily cover the whole track sections. Speed sections can overlap.
     pub speed_sections: Vec<SpeedSection>,

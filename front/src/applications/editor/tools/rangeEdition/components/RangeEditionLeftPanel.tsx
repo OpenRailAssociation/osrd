@@ -13,8 +13,8 @@ import type {
   RangeEditionState,
   SpeedSectionEntity,
   SpeedSectionPslEntity,
-  AvailableSwitchPositions,
-  SwitchPosition,
+  AvailableTrackNodePositions,
+  TrackNodePosition,
   ApplicableTrackRange,
 } from 'applications/editor/tools/rangeEdition/types';
 import {
@@ -31,7 +31,7 @@ import { isEmptyArray, toggleElement } from 'utils/array';
 
 import RouteList from './RouteList';
 import TrackRangesList from './TrackRangeList';
-import SwitchList from '../speedSection/SwitchList';
+import TrackNodeList from '../speedSection/TrackNodeList';
 
 const RangeEditionLeftPanel = () => {
   const { t } = useTranslation();
@@ -41,22 +41,22 @@ const RangeEditionLeftPanel = () => {
       entity,
       initialEntity,
       trackSectionsCache,
-      selectedSwitches,
+      selectedTrackNodes,
       highlightedRoutes,
       routeElements,
       routeExtra,
     },
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
 
-  const [getRoutesFromSwitch] =
+  const [getRoutesFromTrackNode] =
     osrdEditoastApi.endpoints.postInfraByInfraIdRoutesNodes.useMutation();
 
   const [getTrackRangesByRoutes] =
     osrdEditoastApi.endpoints.getInfraByInfraIdRoutesTrackRanges.useLazyQuery();
 
-  const [switchesRouteCandidates, setSwitchesRouteCandidates] = useState<string[]>([]);
-  const [availableSwitchesPositions, setAvailableSwitchesPositions] =
-    useState<AvailableSwitchPositions>({});
+  const [track_nodesRouteCandidates, setTrackNodesRouteCandidates] = useState<string[]>([]);
+  const [availableTrackNodesPositions, setAvailableTrackNodesPositions] =
+    useState<AvailableTrackNodePositions>({});
 
   // The 2 main checkboxes
   const isPermanentSpeedLimit = speedSectionIsPsl(entity as SpeedSectionEntity);
@@ -66,21 +66,21 @@ const RangeEditionLeftPanel = () => {
   const infraID = useInfraID();
   const entityIsSpeedSection = entity.objType === 'SpeedSection';
 
-  /** Reset both highlighted and selected track_ranges, route ids and switches lists */
+  /** Reset both highlighted and selected track_ranges, route ids and track_nodes lists */
   const resetSpeedRestrictionSelections = () => {
     const newEntity = cloneDeep(entity) as SpeedSectionEntity;
     newEntity.properties.on_routes = [];
     newEntity.properties.track_ranges = [];
     setState({
       entity: newEntity,
-      selectedSwitches: {},
+      selectedTrackNodes: {},
       routeElements: {},
       highlightedRoutes: [],
     });
   };
 
   const toggleSpeedRestriction = () => {
-    const selectiontype = isSpeedRestriction ? 'idle' : 'selectSwitch';
+    const selectiontype = isSpeedRestriction ? 'idle' : 'selectTrackNode';
     const newEntity = cloneDeep(entity) as SpeedSectionEntity;
     newEntity.properties.extensions = undefined;
     newEntity.properties.track_ranges = [];
@@ -93,7 +93,7 @@ const RangeEditionLeftPanel = () => {
       entity: newEntity,
       interactionState: { type: selectiontype },
       ...(isSpeedRestriction && {
-        selectedSwitches: {},
+        selectedTrackNodes: {},
         routeElements: {},
         highlightedRoutes: [],
       }),
@@ -125,13 +125,13 @@ const RangeEditionLeftPanel = () => {
     });
   };
 
-  const unselectSwitch = (swId: string) => () => {
-    const filteredSelectedSwitches = Object.fromEntries(
-      Object.entries(selectedSwitches).filter(([key]) => key !== swId)
+  const unselectTrackNode = (swId: string) => () => {
+    const filteredSelectedTrackNodes = Object.fromEntries(
+      Object.entries(selectedTrackNodes).filter(([key]) => key !== swId)
     );
-    if (isEmptyArray(Object.keys(filteredSelectedSwitches))) resetSpeedRestrictionSelections();
+    if (isEmptyArray(Object.keys(filteredSelectedTrackNodes))) resetSpeedRestrictionSelections();
     setState({
-      selectedSwitches: filteredSelectedSwitches,
+      selectedTrackNodes: filteredSelectedTrackNodes,
     });
   };
 
@@ -145,11 +145,11 @@ const RangeEditionLeftPanel = () => {
       properties.on_routes = toggleElement(properties.on_routes || [], routeId);
       const newRouteExtra = { ...routeExtra };
       const selectedRoutes = pick(routeElements, properties.on_routes);
-      const trackRangesBetweenSwitches = Object.values(selectedRoutes).flatMap((els) => {
+      const trackRangesBetweenTrackNodes = Object.values(selectedRoutes).flatMap((els) => {
         const { trackRangesWithBothDirections, returnedExtra } = makeSpeedRestrictionTrackRanges(
           els.trackRanges,
-          els.switches,
-          selectedSwitches,
+          els.track_nodes,
+          selectedTrackNodes,
           true
         );
         if (returnedExtra) {
@@ -157,7 +157,7 @@ const RangeEditionLeftPanel = () => {
         }
         return trackRangesWithBothDirections;
       });
-      properties.track_ranges = uniqWith(trackRangesBetweenSwitches, (a, b) => isEqual(a, b));
+      properties.track_ranges = uniqWith(trackRangesBetweenTrackNodes, (a, b) => isEqual(a, b));
       setState({
         optionsState: { type: 'idle' },
         routeExtra: newRouteExtra,
@@ -175,16 +175,16 @@ const RangeEditionLeftPanel = () => {
     }
   };
 
-  const searchRoutesFromSwitch = async () => {
-    const body = Object.keys(selectedSwitches).reduce<SwitchPosition>(
-      (acc, switchId) => ({ ...acc, [switchId]: selectedSwitches[switchId].position }),
+  const searchRoutesFromTrackNode = async () => {
+    const body = Object.keys(selectedTrackNodes).reduce<TrackNodePosition>(
+      (acc, trackNodeId) => ({ ...acc, [trackNodeId]: selectedTrackNodes[trackNodeId].position }),
       {}
     );
 
     setState({
       optionsState: { type: 'loading' },
     });
-    const routesAndNodesPositions = await getRoutesFromSwitch({
+    const routesAndNodesPositions = await getRoutesFromTrackNode({
       infraId: infraID as number,
       body,
     }).unwrap();
@@ -198,8 +198,8 @@ const RangeEditionLeftPanel = () => {
       entity: newEntity,
     });
 
-    setSwitchesRouteCandidates(routes);
-    setAvailableSwitchesPositions(available_node_positions);
+    setTrackNodesRouteCandidates(routes);
+    setAvailableTrackNodesPositions(available_node_positions);
     const trackRangesResults = await getTrackRangesByRoutes({
       infraId: infraID as number,
       routes: routes.join(','),
@@ -213,16 +213,16 @@ const RangeEditionLeftPanel = () => {
   };
 
   useEffect(() => {
-    if (switchesRouteCandidates.length) {
-      handleRouteClicked(true)(switchesRouteCandidates[0]);
+    if (track_nodesRouteCandidates.length) {
+      handleRouteClicked(true)(track_nodesRouteCandidates[0]);
     }
   }, [routeElements]);
 
   useEffect(() => {
-    if (isSpeedRestriction && !isEmpty(selectedSwitches)) {
-      searchRoutesFromSwitch();
+    if (isSpeedRestriction && !isEmpty(selectedTrackNodes)) {
+      searchRoutesFromTrackNode();
     }
-  }, [selectedSwitches]);
+  }, [selectedTrackNodes]);
 
   // The 2 main checkboxes
   const permanentSpeedLimitCheckbox = !isSpeedRestriction && (
@@ -266,8 +266,8 @@ const RangeEditionLeftPanel = () => {
     <div className="d-flex">
       <CheckboxRadioSNCF
         type="checkbox"
-        id="get-route-from-switch"
-        name="get-route-from-switch"
+        id="get-route-from-track-node"
+        name="get-route-from-track-node"
         checked={isSpeedRestriction}
         label={t('Editor.tools.speed-edition.ralen-30-60')}
         onChange={toggleSpeedRestriction}
@@ -303,16 +303,16 @@ const RangeEditionLeftPanel = () => {
         <hr />
         {isSpeedRestriction && (
           <>
-            {t('Editor.tools.speed-edition.select-switches-to-get-route')}
-            {Object.keys(selectedSwitches).length > 0 && (
+            {t('Editor.tools.speed-edition.select-track_nodes-to-get-route')}
+            {Object.keys(selectedTrackNodes).length > 0 && (
               <>
-                <SwitchList
-                  selectedSwitches={selectedSwitches}
-                  unselectSwitch={unselectSwitch}
-                  setSwitchSelection={setState}
-                  availableSwitchesPositions={availableSwitchesPositions}
+                <TrackNodeList
+                  selectedTrackNodes={selectedTrackNodes}
+                  unselectTrackNode={unselectTrackNode}
+                  setTrackNodeSelection={setState}
+                  availableTrackNodesPositions={availableTrackNodesPositions}
                 />
-                {switchesRouteCandidates.length === 0 && (
+                {track_nodesRouteCandidates.length === 0 && (
                   <p className="text-muted">{t('Editor.tools.routes-edition.routes_zero')}</p>
                 )}
               </>
@@ -320,9 +320,9 @@ const RangeEditionLeftPanel = () => {
             <hr />
           </>
         )}
-        {switchesRouteCandidates.length > 0 && (
+        {track_nodesRouteCandidates.length > 0 && (
           <RouteList
-            switchesRouteCandidates={switchesRouteCandidates}
+            track_nodesRouteCandidates={track_nodesRouteCandidates}
             onRouteSelect={handleRouteClicked(true)}
             selectedRoutes={entity.properties.on_routes || []}
             onRouteHighlight={handleRouteClicked(false)}

@@ -10,7 +10,7 @@ import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
 import type { Layer } from 'applications/editor/consts';
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
-import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTypes';
+import useTrackNodeTypes from 'applications/editor/tools/trackNodeEdition/useTrackNodeTypes';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applications/editor/types';
 import type { InfraError } from 'common/api/osrdEditoastApi';
@@ -76,7 +76,7 @@ const MapUnplugged = ({
     isHovering: false,
   });
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
-  const { data: switchTypes } = useSwitchTypes(infraID);
+  const { data: trackNodeTypes } = useTrackNodeTypes(infraID);
   const editorState = useSelector(getEditorState);
   const showOSM = useSelector(getShowOSM);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
@@ -87,13 +87,13 @@ const MapUnplugged = ({
       dispatch,
       editorState,
       infraID,
-      switchTypes,
+      trackNodeTypes,
       mapState: {
         viewport,
         mapStyle,
       },
     }),
-    [context, dispatch, editorState, mapStyle, infraID, switchTypes, viewport]
+    [context, dispatch, editorState, mapStyle, infraID, trackNodeTypes, viewport]
   );
   const interactiveLayerIDs = useMemo(
     () => (activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []),

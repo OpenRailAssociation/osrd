@@ -41,7 +41,7 @@ impl Infra {
         object_ids: &Vec<String>,
     ) -> Result<Vec<ObjectQueryable>> {
         // Prepare query
-        let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&object_type) {
+        let query = if [ObjectType::TrackNodeType, ObjectType::Route].contains(&object_type) {
             format!(
                 "SELECT obj_id as obj_id, data as railjson, NULL as geographic
                 FROM {} WHERE infra_id = $1 AND obj_id = ANY($2)",

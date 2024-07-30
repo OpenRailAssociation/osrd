@@ -881,7 +881,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Foreach route, either tracks_ranges + switches found on the route, or an error
+          description: Foreach route, either tracks_ranges + track_nodes found on the route, or an error
           content:
             application/json:
               schema:
@@ -1016,11 +1016,11 @@ paths:
                 type: array
                 items:
                   type: string
-  /infra/{infra_id}/switch_types:
+  /infra/{infra_id}/track_node_types:
     get:
       tags:
       - infra
-      summary: Return the railjson list of switch types
+      summary: Return the railjson list of track_node types
       parameters:
       - name: infra_id
         in: path
@@ -1031,13 +1031,13 @@ paths:
           format: int64
       responses:
         '200':
-          description: A list of switch types
+          description: A list of track_node types
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SwitchType'
+                  $ref: '#/components/schemas/TrackNodeType'
         '404':
           description: The infra was not found
   /infra/{infra_id}/unlock:
@@ -6763,7 +6763,7 @@ components:
       - type: object
         required:
         - group
-        - switch_type
+        - track_node_type
         - error_type
         properties:
           error_type:
@@ -6772,7 +6772,7 @@ components:
             - invalid_group
           group:
             type: string
-          switch_type:
+          track_node_type:
             type: string
       - type: object
         required:
@@ -6800,7 +6800,7 @@ components:
           error_type:
             type: string
             enum:
-            - invalid_switch_ports
+            - invalid_track_node_ports
       - type: object
         required:
         - error_type
@@ -6895,7 +6895,7 @@ components:
           error_type:
             type: string
             enum:
-            - overlapping_switches
+            - overlapping_track_nodes
           reference:
             $ref: '#/components/schemas/ObjectRef'
       - type: object
@@ -6929,7 +6929,7 @@ components:
       - invalid_group
       - invalid_reference
       - invalid_route
-      - invalid_switch_ports
+      - invalid_track_node_ports
       - missing_route
       - missing_buffer_stop
       - node_endpoints_not_unique
@@ -6938,7 +6938,7 @@ components:
       - out_of_range
       - overlapping_electrifications
       - overlapping_speed_sections
-      - overlapping_switches
+      - overlapping_track_nodes
       - unknown_port_name
       - unused_port
     InfraIdQueryParam:
@@ -7003,9 +7003,9 @@ components:
           obj_type:
             type: string
             enum:
-            - Switch
+            - TrackNode
           railjson:
-            $ref: '#/components/schemas/Switch'
+            $ref: '#/components/schemas/TrackNode'
       - type: object
         required:
         - railjson
@@ -7014,9 +7014,9 @@ components:
           obj_type:
             type: string
             enum:
-            - SwitchType
+            - TrackNodeType
           railjson:
-            $ref: '#/components/schemas/SwitchType'
+            $ref: '#/components/schemas/TrackNodeType'
       - type: object
         required:
         - railjson
@@ -7469,8 +7469,8 @@ components:
       - SpeedSection
       - Detector
       - NeutralSection
-      - Switch
-      - SwitchType
+      - TrackNode
+      - TrackNodeType
       - BufferStop
       - Route
       - OperationalPoint
@@ -8173,7 +8173,7 @@ components:
       required:
       - track_ranges
       - detectors
-      - switches_directions
+      - track_nodes_directions
       properties:
         detectors:
           type: array
@@ -8181,7 +8181,7 @@ components:
             type: string
             maxLength: 255
             minLength: 1
-        switches_directions:
+        track_nodes_directions:
           type: object
           additionalProperties:
             type: string
@@ -8862,8 +8862,8 @@ components:
       - version
       - operational_points
       - routes
-      - extended_switch_types
-      - switches
+      - extended_track_node_types
+      - track_nodes
       - track_sections
       - speed_sections
       - neutral_sections
@@ -8887,11 +8887,11 @@ components:
           items:
             $ref: '#/components/schemas/Electrification'
           description: To allow electric trains to run on our infrastructure, we need to specify which parts of the infrastructure is electrified.
-        extended_switch_types:
+        extended_track_node_types:
           type: array
           items:
-            $ref: '#/components/schemas/SwitchType'
-          description: These define the types of switches available for route management.
+            $ref: '#/components/schemas/TrackNodeType'
+          description: These define the types of track nodes available for route management.
         neutral_sections:
           type: array
           items:
@@ -8917,16 +8917,16 @@ components:
           items:
             $ref: '#/components/schemas/SpeedSection'
           description: The `SpeedSections` represent speed limits (in meters per second) that are applied on some parts of the tracks. One `SpeedSection` can span on several track sections, and do not necessarily cover the whole track sections. Speed sections can overlap.
-        switches:
+        track_nodes:
           type: array
           items:
-            $ref: '#/components/schemas/Switch'
-          description: '`Switches` allow for route control and redirection of trains.'
+            $ref: '#/components/schemas/TrackNode'
+          description: '`TrackNodes` allow for route control and redirection of trains.'
         track_sections:
           type: array
           items:
             $ref: '#/components/schemas/TrackSection'
-          description: '`TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.'
+          description: '`TrackSection`` is a segment of rail between track_nodes that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.'
         version:
           type: string
           description: The version of the RailJSON format. Defaults to the current version.
@@ -9693,7 +9693,7 @@ components:
       - entry_point_direction
       - exit_point
       - release_detectors
-      - switches_directions
+      - track_nodes_directions
       properties:
         entry_point:
           $ref: '#/components/schemas/Waypoint'
@@ -9711,7 +9711,7 @@ components:
             type: string
             maxLength: 255
             minLength: 1
-        switches_directions:
+        track_nodes_directions:
           type: object
           additionalProperties:
             type: string
@@ -9722,9 +9722,9 @@ components:
       type: object
       required:
       - track_ranges
-      - switches_directions
+      - track_nodes_directions
       properties:
-        switches_directions:
+        track_nodes_directions:
           type: array
           items:
             type: array
@@ -9758,7 +9758,7 @@ components:
       - zone
       - entry_detector
       - exit_detector
-      - switches
+      - track_nodes
       - end_time
       properties:
         end_time:
@@ -9768,7 +9768,7 @@ components:
           type: string
         exit_detector:
           type: string
-        switches:
+        track_nodes:
           type: object
           additionalProperties:
             type: string
@@ -11285,97 +11285,6 @@ components:
             type: integer
             format: int64
             minimum: 0
-    Switch:
-      type: object
-      required:
-      - id
-      - switch_type
-      - group_change_delay
-      - ports
-      properties:
-        extensions:
-          type: object
-          properties:
-            sncf:
-              allOf:
-              - type: object
-                required:
-                - label
-                properties:
-                  label:
-                    type: string
-                    minLength: 1
-                additionalProperties: false
-              nullable: true
-          additionalProperties: false
-        group_change_delay:
-          type: number
-          format: double
-        id:
-          type: string
-          maxLength: 255
-          minLength: 1
-        ports:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/TrackEndpoint'
-        switch_type:
-          type: string
-          maxLength: 255
-          minLength: 1
-      additionalProperties: false
-    SwitchPortConnection:
-      type: object
-      required:
-      - src
-      - dst
-      properties:
-        dst:
-          type: string
-          maxLength: 255
-          minLength: 1
-        src:
-          type: string
-          maxLength: 255
-          minLength: 1
-      additionalProperties: false
-    SwitchType:
-      type: object
-      required:
-      - id
-      - ports
-      - groups
-      properties:
-        groups:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/SwitchPortConnection'
-        id:
-          type: string
-          maxLength: 255
-          minLength: 1
-        ports:
-          type: array
-          items:
-            type: string
-            maxLength: 255
-            minLength: 1
-      additionalProperties: false
-      example:
-        groups:
-          LEFT:
-            dst: LEFT
-            src: BASE
-          RIGHT:
-            dst: RIGHT
-            src: BASE
-        id: Point
-        ports:
-        - LEFT
-        - RIGHT
-        - BASE
     Tags:
       type: array
       items:
@@ -11645,6 +11554,97 @@ components:
           type: string
           maxLength: 255
           minLength: 1
+    TrackNode:
+      type: object
+      required:
+      - id
+      - track_node_type
+      - group_change_delay
+      - ports
+      properties:
+        extensions:
+          type: object
+          properties:
+            sncf:
+              allOf:
+              - type: object
+                required:
+                - label
+                properties:
+                  label:
+                    type: string
+                    minLength: 1
+                additionalProperties: false
+              nullable: true
+          additionalProperties: false
+        group_change_delay:
+          type: number
+          format: double
+        id:
+          type: string
+          maxLength: 255
+          minLength: 1
+        ports:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TrackEndpoint'
+        track_node_type:
+          type: string
+          maxLength: 255
+          minLength: 1
+      additionalProperties: false
+    TrackNodePortConnection:
+      type: object
+      required:
+      - src
+      - dst
+      properties:
+        dst:
+          type: string
+          maxLength: 255
+          minLength: 1
+        src:
+          type: string
+          maxLength: 255
+          minLength: 1
+      additionalProperties: false
+    TrackNodeType:
+      type: object
+      required:
+      - id
+      - ports
+      - groups
+      properties:
+        groups:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/TrackNodePortConnection'
+        id:
+          type: string
+          maxLength: 255
+          minLength: 1
+        ports:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+            minLength: 1
+      additionalProperties: false
+      example:
+        groups:
+          LEFT:
+            dst: LEFT
+            src: BASE
+          RIGHT:
+            dst: RIGHT
+            src: BASE
+        id: Point
+        ports:
+        - LEFT
+        - RIGHT
+        - BASE
     TrackOffset:
       type: object
       required:

@@ -370,7 +370,7 @@ class RawInfraImpl(
                             // skip signals which are at position zero. This hack is related to the
                             // other hack
                             // below, and can also be removed once detectors / signals are not
-                            // allowed to be on switches,
+                            // allowed to be on track nodes,
                             // and merging of track sections connected by links is implemented.
                             assert(signalZonePathOffset >= Offset(0.meters))
                             if (signalZonePathOffset.distance.millimeters == 0L) continue
@@ -381,10 +381,10 @@ class RawInfraImpl(
                     zonePathLength += chunkLength.distance
                 }
 
-                // if the zone path switches to a new track section, then ends with a detector at
+                // if the zone path track nodes to a new track section, then ends with a detector at
                 // the exact start of this track section, fetch signals on the starting chunk
                 // aligned with the zone path.
-                // This hack is required while detectors / signals are allowed to be on switches,
+                // This hack is required while detectors / signals are allowed to be on track nodes,
                 // and merging of track sections connected by links is unimplemented.
                 val lastChunkTrackSection =
                     trackChunkPool[it.chunks[it.chunks.size - 1].value].track

@@ -6,7 +6,7 @@ enum TOOL_NAMES {
   TRACK_SPLIT = 'track-split',
   SPEED_SECTION_EDITION = 'speed-edition',
   ELECTRIFICATION_EDITION = 'electrification',
-  SWITCH_EDITION = 'switch-edition',
+  SWITCH_EDITION = 'trackNode-edition',
   SIGNAL_EDITION = 'signal-edition',
   DETECTOR_EDITION = 'detector-edition',
   BUFFER_STOP_EDITION = 'buffer-stop-edition',

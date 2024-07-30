@@ -6,8 +6,8 @@ pub mod operational_points;
 pub mod routes;
 pub mod signals;
 pub mod speed_sections;
-pub mod switch_types;
-pub mod switches;
+pub mod track_node_types;
+pub mod track_nodes;
 pub mod track_sections;
 
 use std::collections::HashMap;
@@ -217,10 +217,10 @@ pub async fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> 
             &routes::GLOBAL_GENERATORS,
         )),
         Box::pin(generate_errors(
-            ObjectType::SwitchType,
+            ObjectType::TrackNodeType,
             infra_cache,
             &graph,
-            &switch_types::OBJECT_GENERATORS,
+            &track_node_types::OBJECT_GENERATORS,
             &[],
         )),
         Box::pin(generate_errors(
@@ -245,10 +245,10 @@ pub async fn generate_infra_errors(infra_cache: &InfraCache) -> Vec<InfraError> 
             &[],
         )),
         Box::pin(generate_errors(
-            ObjectType::Switch,
+            ObjectType::TrackNode,
             infra_cache,
             &graph,
-            &switches::OBJECT_GENERATORS,
+            &track_nodes::OBJECT_GENERATORS,
             &[],
         )),
         Box::pin(generate_errors(
@@ -276,8 +276,8 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
         ObjectType::NeutralSection => include_str!("sql/neutral_sections_insert_errors.sql"),
         ObjectType::SpeedSection => include_str!("sql/speed_sections_insert_errors.sql"),
         ObjectType::Detector => include_str!("sql/detectors_insert_errors.sql"),
-        ObjectType::Switch => include_str!("sql/switches_insert_errors.sql"),
-        ObjectType::SwitchType => include_str!("sql/switch_types_insert_errors.sql"),
+        ObjectType::TrackNode => include_str!("sql/track_nodes_insert_errors.sql"),
+        ObjectType::TrackNodeType => include_str!("sql/track_node_types_insert_errors.sql"),
         ObjectType::BufferStop => include_str!("sql/buffer_stops_insert_errors.sql"),
         ObjectType::Route => include_str!("sql/routes_insert_errors.sql"),
         ObjectType::OperationalPoint => include_str!("sql/operational_points_insert_errors.sql"),
@@ -439,8 +439,8 @@ mod test {
     use super::routes;
     use super::signals;
     use super::speed_sections;
-    use super::switch_types;
-    use super::switches;
+    use super::track_node_types;
+    use super::track_nodes;
     use super::track_sections;
     use super::Graph;
     use crate::infra_cache::tests::create_buffer_stop_cache;
@@ -482,10 +482,10 @@ mod test {
         .await
         .is_empty());
         assert!(generate_errors(
-            ObjectType::SwitchType,
+            ObjectType::TrackNodeType,
             &small_infra_cache,
             &graph,
-            &switch_types::OBJECT_GENERATORS,
+            &track_node_types::OBJECT_GENERATORS,
             &[],
         )
         .await
@@ -527,10 +527,10 @@ mod test {
         .await
         .is_empty());
         assert!(generate_errors(
-            ObjectType::Switch,
+            ObjectType::TrackNode,
             &small_infra_cache,
             &graph,
-            &switches::OBJECT_GENERATORS,
+            &track_nodes::OBJECT_GENERATORS,
             &[],
         )
         .await

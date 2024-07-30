@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import SwitchSNCF, { switch_types } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { operationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
 import { stdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import {
@@ -93,7 +93,7 @@ const UserSettings = () => {
           <div className="d-flex align-items-center mt-3">
             <SwitchSNCF
               id="train-schedule-version-switch"
-              type={SWITCH_TYPES.switch}
+              type={switch_types.switch}
               name="train-schedule-version-switch"
               onChange={() => {
                 dispatch(switchTrainScheduleV2Activated());
@@ -108,7 +108,7 @@ const UserSettings = () => {
           <div className="d-flex align-items-center mt-3">
             <SwitchSNCF
               id="stdcm-version-switch"
-              type={SWITCH_TYPES.switch}
+              type={switch_types.switch}
               name="stdcm-version-switch"
               onChange={() => {
                 dispatch(switchStdcmV2Activated());

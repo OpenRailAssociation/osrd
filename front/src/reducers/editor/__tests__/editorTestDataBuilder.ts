@@ -7,7 +7,7 @@ export default function editorTestDataBuilder() {
     buildEditorSchema: (): EditorState['editorSchema'] => [
       { layer: 'layerA', objType: 'BufferStop', schema: {} },
       { layer: 'layerA', objType: 'Route', schema: {} },
-      { layer: 'layerA', objType: 'SwitchType', schema: {} },
+      { layer: 'layerA', objType: 'TrackNodeType', schema: {} },
     ],
     buildTotalIssue: (
       total: EditorState['issues']['total'],

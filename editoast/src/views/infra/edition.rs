@@ -7,7 +7,7 @@ use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::Sign;
-use editoast_schemas::infra::Switch;
+use editoast_schemas::infra::TrackNode;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::infra::TrackSection;
@@ -270,12 +270,12 @@ pub async fn split_track_section<'a>(
             endpoint: Endpoint::Begin,
         },
     );
-    let track_link = Switch {
+    let track_link = TrackNode {
         id: Identifier::from(Uuid::new_v4()),
-        switch_type: Identifier::from("link"),
+        track_node_type: Identifier::from("link"),
         group_change_delay: 0.0,
         ports,
-        ..Switch::default()
+        ..TrackNode::default()
     };
 
     // Compute operations
@@ -288,7 +288,7 @@ pub async fn split_track_section<'a>(
         Operation::Create(Box::new(InfraObject::TrackSection {
             railjson: right_tracksection,
         })),
-        Operation::Create(Box::new(InfraObject::Switch {
+        Operation::Create(Box::new(InfraObject::TrackNode {
             railjson: track_link,
         })),
     ]
@@ -338,7 +338,7 @@ pub async fn split_track_section<'a>(
 /// It compute the impacted list of operations in the DB to do, following the split of the tracksection.
 ///
 /// # Example
-/// * On Switch, we change the ports ref
+/// * On TrackNode, we change the ports ref
 /// * On electrification, we change the track ranges
 /// * On Detector, BufferStop : we change the track and possibly its position
 /// * ....
@@ -439,11 +439,11 @@ fn get_split_operations_for_impacted(
                     ]),
                 }));
             }
-            ObjectType::Switch => {
-                let switch = infra_cache.get_switch(&obj.obj_id).unwrap();
+            ObjectType::TrackNode => {
+                let track_node = infra_cache.get_track_node(&obj.obj_id).unwrap();
                 let mut patch_operations: Vec<PatchOperation> = Vec::<PatchOperation>::new();
                 // Check ports ref
-                for (key, value) in switch.ports.iter() {
+                for (key, value) in track_node.ports.iter() {
                     if value.track == tracksection.id {
                         patch_operations.push(PatchOperation::Replace(ReplaceOperation {
                             path: format!("/ports/{}/track", key).parse().unwrap(),
@@ -623,8 +623,8 @@ fn get_split_operations_for_impacted(
             ObjectType::Route => (),
             // TrackSection doesn't depend on track
             ObjectType::TrackSection => (),
-            // Switch type doesn't depend on track
-            ObjectType::SwitchType => (),
+            // TrackNode type doesn't depend on track
+            ObjectType::TrackNodeType => (),
         }
     }
     operations

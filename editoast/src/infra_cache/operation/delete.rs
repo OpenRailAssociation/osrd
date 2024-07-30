@@ -73,7 +73,7 @@ mod tests {
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
+    use editoast_schemas::infra::TrackNode;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::OSRDObject;
@@ -122,7 +122,7 @@ mod tests {
     test_delete_object!(TrackSection);
     test_delete_object!(Signal);
     test_delete_object!(SpeedSection);
-    test_delete_object!(Switch);
+    test_delete_object!(TrackNode);
     test_delete_object!(Detector);
     test_delete_object!(BufferStop);
     test_delete_object!(Route);

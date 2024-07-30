@@ -115,8 +115,8 @@ mod tests {
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::views::infra::objects::ObjectQueryable;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::infra::TrackNode;
+    use editoast_schemas::infra::TrackNodeType;
     use editoast_schemas::primitives::OSRDIdentified;
 
     #[rstest]
@@ -146,47 +146,47 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_objects_should_return_switch() {
+    async fn get_objects_should_return_track_node() {
         // GIVEN
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let switch = Switch {
-            id: "switch_001".into(),
-            switch_type: "switch_type_001".into(),
+        let track_node = TrackNode {
+            id: "track_node_001".into(),
+            track_node_type: "track_node_type_001".into(),
             ..Default::default()
         };
         apply_create_operation(
-            &switch.clone().into(),
+            &track_node.clone().into(),
             empty_infra.id,
             db_pool.get_ok().deref_mut(),
         )
         .await
-        .expect("Failed to create switch object");
+        .expect("Failed to create track_node object");
 
         // WHEN
         let request = app
-            .post(format!("/infra/{}/objects/Switch", empty_infra.id).as_str())
-            .json(&vec!["switch_001"]);
+            .post(format!("/infra/{}/objects/TrackNode", empty_infra.id).as_str())
+            .json(&vec!["track_node_001"]);
 
         // THEN
-        let switch_object: Vec<ObjectQueryable> =
+        let track_node_object: Vec<ObjectQueryable> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-        let expected_switch_object = vec![ObjectQueryable {
-            obj_id: switch.get_id().to_string(),
+        let expected_track_node_object = vec![ObjectQueryable {
+            obj_id: track_node.get_id().to_string(),
             railjson: json!({
                 "extensions": {
                     "sncf": JsonValue::Null
                 },
                 "group_change_delay": 0.0,
-                "id": switch.get_id().to_string(),
+                "id": track_node.get_id().to_string(),
                 "ports": {},
-                "switch_type": switch.switch_type
+                "track_node_type": track_node.track_node_type
             }),
             geographic: None,
         }];
-        assert_eq!(switch_object, expected_switch_object);
+        assert_eq!(track_node_object, expected_track_node_object);
     }
 
     #[rstest]
@@ -203,36 +203,36 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_switch_types() {
+    async fn get_track_node_types() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        // Add a switch type
-        let switch_type = SwitchType::default();
+        // Add a track_node type
+        let track_node_type = TrackNodeType::default();
         apply_create_operation(
-            &switch_type.clone().into(),
+            &track_node_type.clone().into(),
             empty_infra.id,
             db_pool.get_ok().deref_mut(),
         )
         .await
-        .expect("Failed to create switch type object");
+        .expect("Failed to create track_node type object");
 
         let request = app
-            .post(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
-            .json(&vec![switch_type.id.clone()]);
+            .post(format!("/infra/{}/objects/TrackNodeType", empty_infra.id).as_str())
+            .json(&vec![track_node_type.id.clone()]);
 
-        let switch_type_object: Vec<ObjectQueryable> =
+        let track_node_type_object: Vec<ObjectQueryable> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-        let expected_switch_type_object = vec![ObjectQueryable {
-            obj_id: switch_type.get_id().to_string(),
+        let expected_track_node_type_object = vec![ObjectQueryable {
+            obj_id: track_node_type.get_id().to_string(),
             railjson: json!({
-                "id": switch_type.get_id().to_string(),
+                "id": track_node_type.get_id().to_string(),
                 "ports": [],
                 "groups": {}
             }),
             geographic: None,
         }];
-        assert_eq!(switch_type_object, expected_switch_type_object);
+        assert_eq!(track_node_type_object, expected_track_node_type_object);
     }
 }

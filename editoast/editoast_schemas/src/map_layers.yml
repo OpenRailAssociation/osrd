@@ -1,0 +1,142 @@
+layers:
+  track_sections:
+    table_name: infra_layer_track_section
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: track_section.data
+        exclude_fields: [geo]
+        joins:
+          - inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
+
+  signals:
+    table_name: infra_layer_signal
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: signal.data - 'logical_signals' || jsonb_build_object('angle', layer.angle_geo, 'signaling_system', layer.signaling_system, 'sprite', layer.sprite)
+        joins:
+          - inner join infra_object_signal signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
+
+  speed_sections:
+    table_name: infra_layer_speed_section
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: speed_section.data
+        joins:
+          - inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+        where:
+          - not (speed_section.data @? '$.extensions.psl_sncf.z')
+
+  psl:
+    table_name: infra_layer_speed_section
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: speed_section.data
+        joins:
+          - inner join infra_object_speed_section speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+        where:
+          - speed_section.data @? '$.extensions.psl_sncf.z'
+
+  track_nodes:
+    table_name: infra_layer_track_node
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: track_nodes.data
+        joins:
+          - inner join infra_object_track_node track_nodes on track_nodes.obj_id = layer.obj_id and track_nodes.infra_id = layer.infra_id
+
+  detectors:
+    table_name: infra_layer_detector
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: detector.data
+        joins:
+          - inner join infra_object_detector detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
+
+  buffer_stops:
+    table_name: infra_layer_buffer_stop
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: buffer_stop.data
+        joins:
+          - inner join infra_object_buffer_stop buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
+
+  operational_points:
+    table_name: infra_layer_operational_point
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: operational_point.data - 'parts' || jsonb_build_object('kp', layer.kp)
+        joins:
+          - inner join infra_object_operational_point operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
+
+  electrifications:
+    table_name: infra_layer_electrification
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: electrification.data
+        joins:
+          - inner join infra_object_electrification electrification on electrification.obj_id = layer.obj_id and electrification.infra_id = layer.infra_id
+
+  psl_signs:
+    table_name: infra_layer_psl_sign
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: layer.data || jsonb_build_object('angle', layer.angle_geo)
+
+  neutral_signs:
+    table_name: infra_layer_neutral_sign
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: layer.data - 'value' || jsonb_build_object('angle', layer.angle_geo)
+
+  neutral_sections:
+    table_name: infra_layer_neutral_section
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: neutral_section.data
+        joins:
+          - inner join infra_object_neutral_section neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
+
+  errors:
+    table_name: infra_layer_error
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: layer.information

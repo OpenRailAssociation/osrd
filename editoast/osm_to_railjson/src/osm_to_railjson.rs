@@ -59,7 +59,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
     let nodes_tracks = NodeToTrack::from_edges(&edges);
     let signals = signals(&osm_pbf_in, &nodes_tracks, &adjacencies);
     let mut railjson = RailJson {
-        extended_switch_types: vec![],
+        extended_track_node_types: vec![],
         detectors: signals.iter().map(detector).collect(),
         signals,
         speed_sections: rail_edges.clone().flat_map(speed_sections).collect(),
@@ -110,11 +110,11 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
                     .buffer_stops
                     .push(edge_to_buffer(&node, adj.edges[1], 1));
             }
-            (2, 1) => railjson.switches.push(link_switch(node, &adj.branches)),
-            (3, 2) => railjson.switches.push(point_switch(node, &adj.branches)),
-            (4, 2) => railjson.switches.push(cross_switch(node, &adj.branches)),
+            (2, 1) => railjson.track_nodes.push(link_track_node(node, &adj.branches)),
+            (3, 2) => railjson.track_nodes.push(point_switch(node, &adj.branches)),
+            (4, 2) => railjson.track_nodes.push(cross_switch(node, &adj.branches)),
             (4, 4) => railjson
-                .switches
+                .track_nodes
                 .push(double_slip_switch(node, &adj.branches)),
             _ => debug!("node {id} with {edges_count} edges and {branches_count} branches"),
         }
@@ -150,35 +150,35 @@ mod tests {
     }
 
     #[test]
-    fn parse_switches() {
+    fn parse_track_nodes() {
         fn port_eq(ports: &HashMap<Identifier, TrackEndpoint>, name: &str, expected: &str) -> bool {
             ports.get(&name.into()).unwrap().track.0 == expected
         }
-        let mut railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
-        assert_eq!(4, railjson.switches.len());
+        let mut railjson = parse_osm("src/tests/track_nodes.osm.pbf".into()).unwrap();
+        assert_eq!(4, railjson.track_nodes.len());
         assert_eq!(18, railjson.buffer_stops.len());
 
-        // Switches can be in a random order, we sort them to be sure to extract the expected ones
+        // TrackNodes can be in a random order, we sort them to be sure to extract the expected ones
         railjson
-            .switches
-            .sort_by(|a, b| a.switch_type.as_str().cmp(b.switch_type.as_str()));
+            .track_nodes
+            .sort_by(|a, b| a.track_node_type.as_str().cmp(b.track_node_type.as_str()));
 
-        let switch = &railjson.switches[2];
-        assert_eq!("link", switch.switch_type.as_str());
-        assert_eq!(2, switch.ports.len());
+        let track_node = &railjson.track_nodes[2];
+        assert_eq!("link", track_node.track_node_type.as_str());
+        assert_eq!(2, track_node.ports.len());
 
-        let switch = &railjson.switches[3];
-        assert_eq!("point_switch", switch.switch_type.as_str());
-        assert_eq!(3, switch.ports.len());
-        assert!(port_eq(&switch.ports, "A", "-103478-0"));
+        let track_node = &railjson.track_nodes[3];
+        assert_eq!("point_switch", track_node.track_node_type.as_str());
+        assert_eq!(3, track_node.ports.len());
+        assert!(port_eq(&track_node.ports, "A", "-103478-0"));
         let a =
-            port_eq(&switch.ports, "B1", "-103478-1") && port_eq(&switch.ports, "B2", "-103477-0");
+            port_eq(&track_node.ports, "B1", "-103478-1") && port_eq(&track_node.ports, "B2", "-103477-0");
         let b =
-            port_eq(&switch.ports, "B1", "-103477-0") && port_eq(&switch.ports, "B2", "-103478-1");
+            port_eq(&track_node.ports, "B1", "-103477-0") && port_eq(&track_node.ports, "B2", "-103478-1");
         assert!(a || b);
 
-        let cross = &railjson.switches[0];
-        assert_eq!("crossing", cross.switch_type.as_str());
+        let cross = &railjson.track_nodes[0];
+        assert_eq!("crossing", cross.track_node_type.as_str());
         assert_eq!(4, cross.ports.len());
         let a =
             port_eq(&cross.ports, "A1", "-103476-0") && port_eq(&cross.ports, "B1", "-103476-1");
@@ -188,8 +188,8 @@ mod tests {
         let d = port_eq(&cross.ports, "A1", "103475-1") && port_eq(&cross.ports, "B1", "103475-0");
         assert!(a || b || c || d);
 
-        let double = &railjson.switches[1];
-        assert_eq!("double_slip_switch", double.switch_type.as_str());
+        let double = &railjson.track_nodes[1];
+        assert_eq!("double_slip_switch", double.track_node_type.as_str());
         assert_eq!(4, double.ports.len());
         let a = ["-103474-0", "-103474-1"]
             .iter()

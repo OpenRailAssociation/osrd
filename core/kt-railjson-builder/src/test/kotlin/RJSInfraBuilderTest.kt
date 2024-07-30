@@ -8,7 +8,7 @@ class RJSInfraBuilderTest {
     @Test
     fun sample() {
         rjsInfra {
-            defaultSwitchDelay = 42.0
+            defaultTrackNodeDelay = 42.0
             defaultSightDistance = 50.0
             val trackA = trackSection("a", 10.0)
             val trackB = trackSection("b", 10.0)
@@ -20,7 +20,7 @@ class RJSInfraBuilderTest {
             val detU = detector("U", trackA.at(5.0))
             val detV = detector("V", trackB.at(5.0))
             route("u_b", detU, START_TO_STOP, bsB) {
-                addSwitchDirection(switchS, "A_B1")
+                addTrackNodeDirection(switchS, "A_B1")
                 addReleaseDetector(detV)
             }
 

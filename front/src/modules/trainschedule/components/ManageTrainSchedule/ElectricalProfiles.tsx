@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import electricalProfilesIcon from 'assets/pictures/components/electricalProfiles.svg';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import SwitchSNCF, { switch_types } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 
@@ -22,7 +22,7 @@ export default function ElectricalProfiles() {
       <span className="ml-auto mt-1">
         <SwitchSNCF
           id="usingElectricalProfiles"
-          type={SWITCH_TYPES.switch}
+          type={switch_types.track_node}
           name="usingElectricalProfiles"
           onChange={() => dispatch(toggleUsingElectricalProfiles())}
           checked={usingElectricalProfiles}

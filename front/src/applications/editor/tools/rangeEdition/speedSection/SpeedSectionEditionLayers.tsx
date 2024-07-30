@@ -49,7 +49,7 @@ export const SpeedSectionEditionLayers = () => {
       interactionState,
       mousePosition,
       hovered,
-      selectedSwitches,
+      selectedTrackNodes,
       routeElements,
       highlightedRoutes,
     },
@@ -70,12 +70,12 @@ export const SpeedSectionEditionLayers = () => {
     // Custom hovered element:
     else if (hoveredItem?.itemType) {
       res.push(hoveredItem.track.properties.id);
-    } else if (interactionState.type === 'selectSwitch') {
-      res.push(...Object.keys(selectedSwitches));
+    } else if (interactionState.type === 'selectTrackNode') {
+      res.push(...Object.keys(selectedTrackNodes));
     }
 
     return res;
-  }, [interactionState, hoveredItem, entity, selectedSwitches]);
+  }, [interactionState, hoveredItem, entity, selectedTrackNodes]);
 
   const extractTrackRangeFeatures = (
     flatEntity: EditorEntity,

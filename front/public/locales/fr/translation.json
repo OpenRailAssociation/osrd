@@ -90,7 +90,7 @@
         },
         "invalid_group": {
           "name": "Position de l'aiguille invalide",
-          "description": "L’aiguille « {{obj_id}} » de la route « {{group}} » est dans la configuration « {{switch_type}} » qui n’existe pas"
+          "description": "L’aiguille « {{obj_id}} » de la route « {{group}} » est dans la configuration « {{track_node_type}} » qui n’existe pas"
         },
         "invalid_reference": {
           "name": "Référence invalide",
@@ -100,7 +100,7 @@
           "name": "Itinéraire invalide",
           "description": "La route « {{obj_id}} » est invalide, le chemin demandé n’est pas consistant"
         },
-        "invalid_switch_ports": {
+        "invalid_track_node_ports": {
           "name": "Branche d’aiguille ou de nœud invalide",
           "description": "L’aiguille/le nœud « {{obj_id}} » présente une branche qui n’est pas compatible avec son type d’aiguille/nœud (qui n’existe pas dans son type d’aiguille/nœud)"
         },
@@ -128,7 +128,7 @@
           "name": "Superposition de limites de vitesse",
           "description": "La limite « {{obj_id}} » se superpose à la limite « {{reference.obj_id}} »"
         },
-        "overlapping_switches": {
+        "overlapping_track_nodes": {
           "name": "Superposition d’aiguilles/nœuds",
           "description": "L’aiguille/le noeud « {{obj_id}} » et l’aiguille/le noeud « {{reference.obj_id}} » connectent les mêmes extrémités des voies"
         },
@@ -189,7 +189,7 @@
       "psl-psl_signs": "Limites permanentes de vitesse",
       "routes": "Itinéraires",
       "signals": "Signaux",
-      "switches": "Aiguillages",
+      "track_nodes": "Aiguillages",
       "track_sections": "Sections de lignes",
       "speed_sections": "Vitesses limites",
       "platforms": "Quais",
@@ -225,7 +225,7 @@
       "Detector": "Détecteur",
       "Route": "Itinéraire",
       "Signal": "Signal",
-      "Switch": "Aiguillage",
+      "Track node": "Noeud",
       "TrackSection": "Tronçon d'itinéraire de voie",
       "SpeedSection": "Vitesse limite"
     },
@@ -408,7 +408,7 @@
         "add-track-range": "Cliquer pour lier à :",
         "additional-speed-limit": "Limitation de vitesse additionnelles",
         "hovered-sign": "Panneau {{signType}}",
-        "incompatible-switch": "Cette position d’aiguille n’est pas compatible avec la position des autres aiguilles",
+        "incompatible-track-node": "Cette position d’aiguille n’est pas compatible avec la position des autres aiguilles",
         "label": "Outil \"Vitesse limite\"",
         "main-speed-limit": "Limitation de vitesse par défaut",
         "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
@@ -416,7 +416,7 @@
         "ralen-30-60": "Ralentissements 30-60",
         "search-routes": "Rechercher des itinéraires compatibles",
         "select-route": "Sélectionner un itinéraire",
-        "select-switches-to-get-route": "Sélectionner des aiguillages et leur positions pour rechercher les itinéraires",
+        "select-track_nodes-to-get-route": "Sélectionner des aiguillages et leur positions pour rechercher les itinéraires",
         "sign-direction": "Direction",
         "sign-category": "Panneau(x) {{signType}}",
         "sign-kp": "Point kilométrique",
@@ -433,14 +433,14 @@
         "toggle-psl": "Limite permanente de vitesse",
         "toggle-psl-help": "Cliquez d'abord sur un tronçon d'itinéraire pour pouvoir activer cette option"
       },
-      "switch-edition": {
+      "track-node-edition": {
         "actions": {
-          "confirm-delete-switch": "Êtes-vous sûr(e) de vouloir supprimer l'aiguillage ?",
-          "delete-switch": "Supprimer l'aiguillage",
-          "new-switch": "Créer un nouvel aiguillage",
+          "confirm-delete-track-node": "Êtes-vous sûr(e) de vouloir supprimer l'aiguillage ?",
+          "delete-track-node": "Supprimer l'aiguillage",
+          "new-track-node": "Créer un nouvel aiguillage",
           "pick-track": "Outil de sélection d'une ligne sur la carte",
           "pick-track-cancel": "Annuler la sélection d'une ligne",
-          "save-switch": "Sauvegarder l'aiguillage"
+          "save-track-node": "Sauvegarder l'aiguillage"
         },
         "duplicate-errors": "La voie {{track}} est déjà utilisée par le port {{port}}",
         "endpoint": "Extrémité :",
@@ -450,7 +450,7 @@
         },
         "label": "Outil \"Aiguillage\"",
         "no-track-picked-yet": "Aucune ligne n'a encore été sélectionnée",
-        "switch-type": "Type d'aiguillage",
+        "track-node-type": "Type d'aiguillage",
         "untitled-track": "Ligne sans nom"
       },
       "track-edition": {

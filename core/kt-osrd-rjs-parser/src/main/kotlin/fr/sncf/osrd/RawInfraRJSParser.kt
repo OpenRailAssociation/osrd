@@ -8,8 +8,8 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitch
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackNode
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackNodeType
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
@@ -597,8 +597,8 @@ fun parseSpeedSection(builder: RawInfraBuilder, speedSection: RJSSpeedSection) {
 
 fun parseTrackNode(
     builder: RawInfraBuilder,
-    switchTypeMap: Map<String, RJSSwitchType>,
-    rjsNode: RJSSwitch
+    trackNodeTypeMap: Map<String, RJSTrackNodeType>,
+    rjsNode: RJSTrackNode
 ) {
     val ports = StaticPool<TrackNodePort, EndpointTrackSectionId>()
     val portMap = mutableMapOf<String, TrackNodePortId>()
@@ -608,22 +608,22 @@ fun parseTrackNode(
                 builder.getTrackSectionEndpointIdx(rjsPort.track, rjsPort.endpoint.toEndpoint())
             )
     }
-    val switchType =
-        switchTypeMap[rjsNode.switchType]
+    val trackNodeType =
+        trackNodeTypeMap[rjsNode.trackNodeType]
             ?: throw OSRDError.newInfraLoadingError(
                 ErrorType.InfraHardLoadingError,
-                "Node ${rjsNode.id} references unknown switch-type ${rjsNode.switchType}"
+                "Node ${rjsNode.id} references unknown track-node-type ${rjsNode.trackNodeType}"
             )
-    if (rjsNode.ports.size != switchType.ports.size || portMap.keys != switchType.ports.toSet()) {
-        throw OSRDError.newWrongSwitchPortsError(
+    if (rjsNode.ports.size != trackNodeType.ports.size || portMap.keys != trackNodeType.ports.toSet()) {
+        throw OSRDError.newWrongTrackNodePortsError(
             rjsNode.id,
-            switchType.id,
-            switchType.ports,
+            trackNodeType.id,
+            trackNodeType.ports,
             portMap.keys
         )
     }
     val configs = StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>()
-    for (group in switchType.groups) {
+    for (group in trackNodeType.groups) {
         configs.add(
             TrackNodeConfigDescriptor(
                 group.key,
@@ -667,7 +667,7 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
 
     // parse route node configs
     val routeNodes = mutableMapOf<TrackNodeId, TrackNodeConfigId>()
-    for (rjsRouteNode in rjsRoute.switchesDirections) {
+    for (rjsRouteNode in rjsRoute.trackNodesDirections) {
         val node =
             builder.getTrackNodeByName(rjsRouteNode.key)
                 ?: throw OSRDError.newInfraLoadingError(
@@ -884,10 +884,10 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
     }
 
     // parse nodes
-    val switchTypes = (rjsInfra.switchTypes ?: listOf()) + RJSSwitchType.BUILTIN_NODE_TYPES_LIST
-    val switchTypeMap = switchTypes.associateBy { it.id }
-    for (rjsNode in rjsInfra.switches) {
-        parseTrackNode(builder, switchTypeMap, rjsNode)
+    val trackNodeTypes = (rjsInfra.trackNodeTypes ?: listOf()) + RJSTrackNodeType.BUILTIN_NODE_TYPES_LIST
+    val trackNodeTypeMap = trackNodeTypes.associateBy { it.id }
+    for (rjsNode in rjsInfra.trackNodes) {
+        parseTrackNode(builder, trackNodeTypeMap, rjsNode)
     }
 
     // process detection zones

@@ -44,15 +44,15 @@ layers:
         where:
           - speed_section.data @? '$.extensions.psl_sncf.z'
 
-  switches:
-    table_name: infra_layer_switch
+  track_nodes:
+    table_name: infra_layer_track_node
     id_field: id
     views:
       geo:
         on_field: geographic
-        data_expr: switch.data
+        data_expr: track_nodes.data
         joins:
-          - inner join infra_object_switch switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
+          - inner join infra_object_track_node track_node on track_node.obj_id = layer.obj_id and track_node.infra_id = layer.infra_id
 
   detectors:
     table_name: infra_layer_detector

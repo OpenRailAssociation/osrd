@@ -19,8 +19,8 @@ mod sign;
 mod signal;
 mod slope;
 mod speed_section;
-mod switch;
-mod switch_type;
+mod track_node;
+mod track_node_type;
 mod track_endpoint;
 mod track_location;
 mod track_offset;
@@ -64,15 +64,15 @@ pub use signal::SignalSncfExtension;
 pub use slope::Slope;
 pub use speed_section::Speed;
 pub use speed_section::SpeedSection;
-pub use switch::Switch;
-pub use switch_type::builtin_node_types_list;
-pub use switch_type::Crossing;
-pub use switch_type::DoubleSlipSwitch;
-pub use switch_type::Link;
-pub use switch_type::PointSwitch;
-pub use switch_type::SingleSlipSwitch;
-pub use switch_type::SwitchPortConnection;
-pub use switch_type::SwitchType;
+pub use track_node::TrackNode;
+pub use track_node_type::builtin_node_types_list;
+pub use track_node_type::Crossing;
+pub use track_node_type::DoubleSlipSwitch;
+pub use track_node_type::Link;
+pub use track_node_type::PointSwitch;
+pub use track_node_type::SingleSlipSwitch;
+pub use track_node_type::TrackNodePortConnection;
+pub use track_node_type::TrackNodeType;
 pub use track_endpoint::TrackEndpoint;
 pub use track_location::TrackLocation;
 pub use track_offset::TrackOffset;
@@ -103,8 +103,8 @@ editoast_common::schemas! {
     sign::schemas(),
     signal::schemas(),
     speed_section::schemas(),
-    switch::schemas(),
-    switch_type::schemas(),
+    track_node::schemas(),
+    track_node_type::schemas(),
     track_endpoint::schemas(),
     track_location::schemas(),
     track_offset::schemas(),

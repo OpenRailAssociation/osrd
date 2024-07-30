@@ -250,7 +250,7 @@ pub enum TrackLocationFromPath {
     /// Used when a position is at the beginning or at the end of a path
     /// The two locations correspond to 2 extremities of 2 track sections on which the desired position is located
     /// This variant might be returned by [PathProjection::get_location]
-    /// if the requested location exactly lands between two track sections (i.e. a switch).
+    /// if the requested location exactly lands between two track sections (i.e. a track_node).
     Two(TrackOffset, TrackOffset),
 }
 

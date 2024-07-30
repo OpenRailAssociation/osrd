@@ -6,8 +6,8 @@ use super::OperationalPoint;
 use super::Route;
 use super::Signal;
 use super::SpeedSection;
-use super::Switch;
-use super::SwitchType;
+use super::TrackNode;
+use super::TrackNodeType;
 use super::TrackSection;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDObject;
@@ -24,8 +24,8 @@ pub enum InfraObject {
     Signal { railjson: Signal },
     NeutralSection { railjson: NeutralSection },
     SpeedSection { railjson: SpeedSection },
-    Switch { railjson: Switch },
-    SwitchType { railjson: SwitchType },
+    TrackNode { railjson: TrackNode },
+    TrackNodeType { railjson: TrackNodeType },
     Detector { railjson: Detector },
     BufferStop { railjson: BufferStop },
     Route { railjson: Route },
@@ -40,8 +40,8 @@ impl InfraObject {
             InfraObject::Signal { railjson: obj } => obj,
             InfraObject::NeutralSection { railjson: obj } => obj,
             InfraObject::SpeedSection { railjson: obj } => obj,
-            InfraObject::Switch { railjson: obj } => obj,
-            InfraObject::SwitchType { railjson: obj } => obj,
+            InfraObject::TrackNode { railjson: obj } => obj,
+            InfraObject::TrackNodeType { railjson: obj } => obj,
             InfraObject::Detector { railjson: obj } => obj,
             InfraObject::BufferStop { railjson: obj } => obj,
             InfraObject::Route { railjson: obj } => obj,
@@ -56,8 +56,8 @@ impl InfraObject {
             InfraObject::Signal { railjson: obj } => serde_json::to_value(obj),
             InfraObject::SpeedSection { railjson: obj } => serde_json::to_value(obj),
             InfraObject::NeutralSection { railjson: obj } => serde_json::to_value(obj),
-            InfraObject::Switch { railjson: obj } => serde_json::to_value(obj),
-            InfraObject::SwitchType { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::TrackNode { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::TrackNodeType { railjson: obj } => serde_json::to_value(obj),
             InfraObject::Detector { railjson: obj } => serde_json::to_value(obj),
             InfraObject::BufferStop { railjson: obj } => serde_json::to_value(obj),
             InfraObject::Route { railjson: obj } => serde_json::to_value(obj),
@@ -116,16 +116,16 @@ impl From<NeutralSection> for InfraObject {
     }
 }
 
-impl From<Switch> for InfraObject {
-    fn from(switch: Switch) -> Self {
-        InfraObject::Switch { railjson: switch }
+impl From<TrackNode> for InfraObject {
+    fn from(track_node: TrackNode) -> Self {
+        InfraObject::TrackNode { railjson: track_node }
     }
 }
 
-impl From<SwitchType> for InfraObject {
-    fn from(switchtype: SwitchType) -> Self {
-        InfraObject::SwitchType {
-            railjson: switchtype,
+impl From<TrackNodeType> for InfraObject {
+    fn from(tracknodetype: TrackNodeType) -> Self {
+        InfraObject::TrackNodeType {
+            railjson: tracknodetype,
         }
     }
 }

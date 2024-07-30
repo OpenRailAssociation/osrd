@@ -304,11 +304,11 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra'],
       }),
-      getInfraByInfraIdSwitchTypes: build.query<
-        GetInfraByInfraIdSwitchTypesApiResponse,
-        GetInfraByInfraIdSwitchTypesApiArg
+      getInfraByInfraIdTrackNodeTypes: build.query<
+        GetInfraByInfraIdTrackNodeTypesApiResponse,
+        GetInfraByInfraIdTrackNodeTypesApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/switch_types` }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/track_node_types` }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdUnlock: build.mutation<
@@ -1213,7 +1213,7 @@ export type PostInfraByInfraIdRoutesNodesApiArg = {
   };
 };
 export type GetInfraByInfraIdRoutesTrackRangesApiResponse =
-  /** status 200 Foreach route, either tracks_ranges + switches found on the route, or an error */ (
+  /** status 200 Foreach route, either tracks_ranges + track_nodes found on the route, or an error */ (
     | (RoutePath & {
         type: 'Computed';
       })
@@ -1256,9 +1256,9 @@ export type PostInfraByInfraIdSplitTrackSectionApiArg = {
   infraId: number;
   trackOffset: TrackOffset;
 };
-export type GetInfraByInfraIdSwitchTypesApiResponse =
-  /** status 200 A list of switch types */ SwitchType[];
-export type GetInfraByInfraIdSwitchTypesApiArg = {
+export type GetInfraByInfraIdTrackNodeTypesApiResponse =
+  /** status 200 A list of track_node types */ TrackNodeType[];
+export type GetInfraByInfraIdTrackNodeTypesApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
@@ -1960,13 +1960,13 @@ export type Electrification = {
   track_ranges: ApplicableDirectionsTrackRange[];
   voltage: string;
 };
-export type SwitchPortConnection = {
+export type TrackNodePortConnection = {
   dst: string;
   src: string;
 };
-export type SwitchType = {
+export type TrackNodeType = {
   groups: {
-    [key: string]: SwitchPortConnection[];
+    [key: string]: TrackNodePortConnection[];
   };
   id: string;
   ports: string[];
@@ -2046,7 +2046,7 @@ export type Route = {
   exit_point: Waypoint;
   id: string;
   release_detectors: string[];
-  switches_directions: {
+  track_nodes_directions: {
     [key: string]: string;
   };
 };
@@ -2101,7 +2101,7 @@ export type TrackEndpoint = {
   endpoint: Endpoint;
   track: string;
 };
-export type Switch = {
+export type TrackNode = {
   extensions?: {
     sncf?: {
       label: string;
@@ -2112,7 +2112,7 @@ export type Switch = {
   ports: {
     [key: string]: TrackEndpoint;
   };
-  switch_type: string;
+  track_node_type: string;
 };
 export type Curve = {
   position: number;
@@ -2170,8 +2170,8 @@ export type RailJson = {
   detectors: Detector[];
   /** To allow electric trains to run on our infrastructure, we need to specify which parts of the infrastructure is electrified. */
   electrifications: Electrification[];
-  /** These define the types of switches available for route management. */
-  extended_switch_types: SwitchType[];
+  /** These define the types of track nodes available for route management. */
+  extended_track_node_types: TrackNodeType[];
   /** `NeutralSections` are designated areas of rail infrastructure where train drivers are instructed to cut the power supply to the train, primarily for safety reasons. */
   neutral_sections: NeutralSection[];
   /** Operational point is also known in French as "Point Remarquable" (PR). One `OperationalPoint` is a **collection** of points (`OperationalPointParts`) of interest. */
@@ -2182,9 +2182,9 @@ export type RailJson = {
   signals: Signal[];
   /** The `SpeedSections` represent speed limits (in meters per second) that are applied on some parts of the tracks. One `SpeedSection` can span on several track sections, and do not necessarily cover the whole track sections. Speed sections can overlap. */
   speed_sections: SpeedSection[];
-  /** `Switches` allow for route control and redirection of trains. */
-  switches: Switch[];
-  /** `TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure. */
+  /** `TrackNodes` allow for route control and redirection of trains. */
+  track_nodes: TrackNode[];
+  /** `TrackSection`` is a segment of rail between track_nodes that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure. */
   track_sections: TrackSection[];
   /** The version of the RailJSON format. Defaults to the current version. */
   version: string;
@@ -2207,12 +2207,12 @@ export type InfraObject =
       railjson: SpeedSection;
     }
   | {
-      obj_type: 'Switch';
-      railjson: Switch;
+      obj_type: 'TrackNode';
+      railjson: TrackNode;
     }
   | {
-      obj_type: 'SwitchType';
-      railjson: SwitchType;
+      obj_type: 'TrackNodeType';
+      railjson: TrackNodeType;
     }
   | {
       obj_type: 'Detector';
@@ -2240,8 +2240,8 @@ export type ObjectType =
   | 'SpeedSection'
   | 'Detector'
   | 'NeutralSection'
-  | 'Switch'
-  | 'SwitchType'
+  | 'TrackNode'
+  | 'TrackNodeType'
   | 'BufferStop'
   | 'Route'
   | 'OperationalPoint'
@@ -2340,7 +2340,7 @@ export type InfraErrorType =
   | {
       error_type: 'invalid_group';
       group: string;
-      switch_type: string;
+      track_node_type: string;
     }
   | {
       error_type: 'invalid_reference';
@@ -2350,7 +2350,7 @@ export type InfraErrorType =
       error_type: 'invalid_route';
     }
   | {
-      error_type: 'invalid_switch_ports';
+      error_type: 'invalid_track_node_ports';
     }
   | {
       error_type: 'missing_route';
@@ -2383,7 +2383,7 @@ export type InfraErrorType =
       reference: ObjectRef;
     }
   | {
-      error_type: 'overlapping_switches';
+      error_type: 'overlapping_track_nodes';
       reference: ObjectRef;
     }
   | {
@@ -2406,7 +2406,7 @@ export type InfraErrorTypeLabel =
   | 'invalid_group'
   | 'invalid_reference'
   | 'invalid_route'
-  | 'invalid_switch_ports'
+  | 'invalid_track_node_ports'
   | 'missing_route'
   | 'missing_buffer_stop'
   | 'node_endpoints_not_unique'
@@ -2415,7 +2415,7 @@ export type InfraErrorTypeLabel =
   | 'out_of_range'
   | 'overlapping_electrifications'
   | 'overlapping_speed_sections'
-  | 'overlapping_switches'
+  | 'overlapping_track_nodes'
   | 'unknown_port_name'
   | 'unused_port';
 export type BoundingBox = (number & number)[][];
@@ -2457,7 +2457,7 @@ export type InfraObjectWithGeometry = {
 };
 export type PathfindingOutput = {
   detectors: string[];
-  switches_directions: {
+  track_nodes_directions: {
     [key: string]: string;
   };
   track_ranges: DirectionalTrackRange[];
@@ -2471,7 +2471,7 @@ export type PathfindingInput = {
   starting: PathfindingTrackLocationInput;
 };
 export type RoutePath = {
-  switches_directions: (string & string)[][];
+  track_nodes_directions: (string & string)[][];
   track_ranges: DirectionalTrackRange[];
 };
 export type TrackOffset = {
@@ -2992,7 +2992,7 @@ export type RoutingZoneRequirement = {
   end_time: number;
   entry_detector: string;
   exit_detector: string;
-  switches: {
+  track_nodes: {
     [key: string]: string;
   };
   zone: string;

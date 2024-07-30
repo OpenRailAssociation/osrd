@@ -195,7 +195,7 @@ pub struct RoutingZoneRequirement {
     pub zone: String,
     pub entry_detector: String,
     pub exit_detector: String,
-    pub switches: HashMap<String, String>,
+    pub track_nodes: HashMap<String, String>,
     /// Time in ms
     pub end_time: u64,
 }

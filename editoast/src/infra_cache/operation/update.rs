@@ -126,7 +126,7 @@ mod tests {
     use diesel_async::RunQueryDsl;
     use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
+    use editoast_schemas::infra::TrackNode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::from_str;
@@ -254,35 +254,35 @@ mod tests {
     }
 
     #[rstest]
-    async fn valid_update_switch_extension() {
+    async fn valid_update_track_node_extension() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let switch =
-            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Switch::default()).await;
-        let update_switch = UpdateOperation {
-                obj_id: switch.get_id().clone(),
-                obj_type: ObjectType::Switch,
+        let track_node =
+            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, TrackNode::default()).await;
+        let update_track_node = UpdateOperation {
+                obj_id: track_node.get_id().clone(),
+                obj_type: ObjectType::TrackNode,
                 railjson_patch: from_str(
                     r#"[
-                        { "op": "add", "path": "/extensions/sncf", "value": {"label": "Switch Label"} }
+                        { "op": "add", "path": "/extensions/sncf", "value": {"label": "TrackNode Label"} }
                   ]"#,
                 )
                 .unwrap(),
             };
 
-        assert!(update_switch
+        assert!(update_track_node
             .apply(infra.id, db_pool.get_ok().deref_mut())
             .await
             .is_ok());
 
         let updated_comment = sql_query(format!(
-                "SELECT (data->'extensions'->'sncf'->>'label') as label FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
-                switch.get_id(),
+                "SELECT (data->'extensions'->'sncf'->>'label') as label FROM infra_object_track_node WHERE obj_id = '{}' AND infra_id = {}",
+                track_node.get_id(),
                 infra.id
             ))
             .get_result::<Label>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-        assert_eq!(updated_comment.label, "Switch Label");
+        assert_eq!(updated_comment.label, "TrackNode Label");
     }
 
     #[rstest]

@@ -48,10 +48,10 @@ export type LoginRedirect = {
 };
 export type LoginResponse =
   | ({
-      type: 'success';
+      type: 'LoginSuccess';
     } & LoginSuccess)
   | ({
-      type: 'redirect';
+      type: 'LoginRedirect';
     } & LoginRedirect);
 export type LogoutResponse = {
   type: 'success';

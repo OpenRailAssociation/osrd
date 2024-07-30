@@ -18,7 +18,7 @@ pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
     ObjectErrorGenerator::new(1, check_entry_point_ref),
     ObjectErrorGenerator::new(1, check_exit_point_ref),
     ObjectErrorGenerator::new(1, check_release_detectors_ref),
-    ObjectErrorGenerator::new(1, check_switches_directions_ref),
+    ObjectErrorGenerator::new(1, check_track_nodes_directions_ref),
     ObjectErrorGenerator::new_ctx(2, check_path),
 ];
 
@@ -96,36 +96,36 @@ fn check_release_detectors_ref(
 }
 
 /// Check if a route release detectors are valid references
-fn check_switches_directions_ref(
+fn check_track_nodes_directions_ref(
     route: &ObjectCache,
     infra_cache: &InfraCache,
     _: &Graph,
 ) -> Vec<InfraError> {
     let route = route.unwrap_route();
     let mut res = vec![];
-    for (switch_id, direction) in route.switches_directions.iter() {
-        if !infra_cache.switches().contains_key::<String>(switch_id) {
+    for (track_node_id, direction) in route.track_nodes_directions.iter() {
+        if !infra_cache.track_nodes().contains_key::<String>(track_node_id) {
             res.push(InfraError::new_invalid_reference(
                 route,
-                format!("switches_directions.{switch_id}"),
-                ObjectRef::new(ObjectType::Switch, switch_id),
+                format!("track_nodes_directions.{track_node_id}"),
+                ObjectRef::new(ObjectType::TrackNode, track_node_id),
             ));
             continue;
         }
-        let switch_type = &infra_cache
-            .switches()
-            .get::<String>(switch_id)
+        let track_node_type = &infra_cache
+            .track_nodes()
+            .get::<String>(track_node_id)
             .unwrap()
-            .unwrap_switch()
-            .switch_type;
-        if let Some(switch_type) = infra_cache.switch_types().get(switch_type) {
-            let switch_type = switch_type.unwrap_switch_type();
-            if !switch_type.groups.contains_key(direction) {
+            .unwrap_track_node()
+            .track_node_type;
+        if let Some(track_node_type) = infra_cache.track_node_types().get(track_node_type) {
+            let track_node_type = track_node_type.unwrap_track_node_type();
+            if !track_node_type.groups.contains_key(direction) {
                 res.push(InfraError::new_invalid_group(
                     route,
-                    format!("switches_directions.{switch_id}"),
+                    format!("track_nodes_directions.{track_node_id}"),
                     direction,
-                    switch_type.get_id(),
+                    track_node_type.get_id(),
                 ))
             }
         }
@@ -155,20 +155,20 @@ fn check_path(
         .map(|track| (*track.track).clone());
     context.tracks_on_routes.extend(tracks_on_route);
 
-    let switches_hashset: HashSet<Identifier> = HashSet::from_iter(
+    let track_nodes_hashset: HashSet<Identifier> = HashSet::from_iter(
         route_path
-            .switches_directions
+            .track_nodes_directions
             .iter()
             .map(|(k, _)| k.clone()),
     );
-    // Search for switches out of the path
+    // Search for track_nodes out of the path
     let mut res = vec![];
-    for switch in route.switches_directions.keys() {
-        if !switches_hashset.contains(switch) {
+    for track_node in route.track_nodes_directions.keys() {
+        if !track_nodes_hashset.contains(track_node) {
             res.push(InfraError::new_object_out_of_path(
                 route,
-                format!("switches_directions.{switch}"),
-                ObjectRef::new(ObjectType::Switch, switch),
+                format!("track_nodes_directions.{track_node}"),
+                ObjectRef::new(ObjectType::TrackNode, track_node),
             ));
         }
     }
@@ -226,7 +226,7 @@ mod tests {
     use crate::generated_data::error::routes::check_missing;
     use crate::generated_data::error::routes::check_path;
     use crate::generated_data::error::routes::check_release_detectors_ref;
-    use crate::generated_data::error::routes::check_switches_directions_ref;
+    use crate::generated_data::error::routes::check_track_nodes_directions_ref;
     use crate::infra_cache::tests::create_detector_cache;
     use crate::infra_cache::tests::create_route_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
@@ -298,7 +298,7 @@ mod tests {
     }
 
     #[test]
-    fn invalid_switch_ref() {
+    fn invalid_track_node_ref() {
         let mut infra_cache = create_small_infra_cache();
         let route = create_route_cache(
             "ErrorRoute",
@@ -306,20 +306,20 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec![],
-            [("no_switch".into(), "A_B1".into())].into(),
+            [("no_track_node".into(), "A_B1".into())].into(),
         );
         infra_cache.add(route.clone()).unwrap();
         let graph = Graph::load(&infra_cache);
-        let errors = check_switches_directions_ref(&route.clone().into(), &infra_cache, &graph);
+        let errors = check_track_nodes_directions_ref(&route.clone().into(), &infra_cache, &graph);
         assert_eq!(1, errors.len());
-        let obj_ref = ObjectRef::new(ObjectType::Switch, "no_switch");
+        let obj_ref = ObjectRef::new(ObjectType::TrackNode, "no_track_node");
         let infra_error =
-            InfraError::new_invalid_reference(&route, "switches_directions.no_switch", obj_ref);
+            InfraError::new_invalid_reference(&route, "track_nodes_directions.no_track_node", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
-    fn invalid_switch_group() {
+    fn invalid_track_node_group() {
         let mut infra_cache = create_small_infra_cache();
         let route = create_route_cache(
             "ErrorRoute",
@@ -327,15 +327,15 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec![],
-            [("switch".into(), "NO_GROUP".into())].into(),
+            [("track_node".into(), "NO_GROUP".into())].into(),
         );
         infra_cache.add(route.clone()).unwrap();
         let graph = Graph::load(&infra_cache);
-        let errors = check_switches_directions_ref(&route.clone().into(), &infra_cache, &graph);
+        let errors = check_track_nodes_directions_ref(&route.clone().into(), &infra_cache, &graph);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_invalid_group(
             &route,
-            "switches_directions.switch",
+            "track_nodes_directions.track_node",
             "NO_GROUP",
             "point_switch",
         );
@@ -351,7 +351,7 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_buffer_stop("BF3"),
             vec![],
-            [("switch".into(), "A_B1".into())].into(), // Wrong direction
+            [("track_node".into(), "A_B1".into())].into(), // Wrong direction
         );
         infra_cache.add(route.clone()).unwrap();
         let graph = Graph::load(&infra_cache);
@@ -371,7 +371,7 @@ mod tests {
             Direction::StopToStart, // Wrong direction
             Waypoint::new_buffer_stop("BF3"),
             vec![],
-            [("switch".into(), "A_B2".into())].into(),
+            [("track_node".into(), "A_B2".into())].into(),
         );
         infra_cache.add(route.clone()).unwrap();
         let graph = Graph::load(&infra_cache);
@@ -391,7 +391,7 @@ mod tests {
             Direction::StartToStop,
             Waypoint::new_buffer_stop("BF2"), // Wrong exit point
             vec![],
-            [("switch".into(), "A_B2".into())].into(),
+            [("track_node".into(), "A_B2".into())].into(),
         );
         infra_cache.add(route.clone()).unwrap();
         let graph = Graph::load(&infra_cache);
@@ -446,7 +446,7 @@ mod tests {
     }
 
     #[test]
-    fn switch_out_of_path() {
+    fn track_node_out_of_path() {
         let mut infra_cache = create_small_infra_cache();
         let route = create_route_cache(
             "ErrorRoute",
@@ -456,7 +456,7 @@ mod tests {
             vec![],
             [
                 ("link".into(), "LINK".into()),
-                ("switch".into(), "A_B2".into()),
+                ("track_node".into(), "A_B2".into()),
             ]
             .into(),
         );
@@ -467,8 +467,8 @@ mod tests {
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_object_out_of_path(
             &route,
-            "switches_directions.switch",
-            ObjectRef::new(ObjectType::Switch, "switch"),
+            "track_nodes_directions.track_node",
+            ObjectRef::new(ObjectType::TrackNode, "track_node"),
         );
         assert_eq!(infra_error, errors[0]);
     }

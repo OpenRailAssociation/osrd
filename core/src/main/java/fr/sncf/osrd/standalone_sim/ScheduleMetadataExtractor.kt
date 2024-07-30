@@ -441,16 +441,16 @@ private fun routingZoneRequirement(
     val zoneName = rawInfra.getZoneName(rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!)
     val zoneEntry = rawInfra.getZonePathEntry(zonePath)
     val zoneExit = rawInfra.getZonePathExit(zonePath)
-    val resSwitches = mutableMapOf<String, String>()
-    val switches = rawInfra.getZonePathMovableElements(zonePath)
+    val resTrackNodes = mutableMapOf<String, String>()
+    val trackNodes = rawInfra.getZonePathMovableElements(zonePath)
     val switchConfigs = rawInfra.getZonePathMovableElementsConfigs(zonePath)
-    for ((switch, config) in switches zip switchConfigs) resSwitches[
+    for ((switch, config) in trackNodes zip switchConfigs) resTrackNodes[
         rawInfra.getTrackNodeName(switch)] = rawInfra.getTrackNodeConfigName(switch, config)
     return RoutingZoneRequirement(
         zoneName,
         "${zoneEntry.direction.name}:${rawInfra.getDetectorName(zoneEntry.value)}",
         "${zoneExit.direction.name}:${rawInfra.getDetectorName(zoneExit.value)}",
-        resSwitches,
+        resTrackNodes,
         endTime,
     )
 }

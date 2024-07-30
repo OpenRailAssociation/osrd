@@ -40,7 +40,7 @@ import {
   getSpeedSectionsPointLayerProps,
   getSpeedSectionsTextLayerProps,
 } from 'common/Map/Layers/SpeedLimits';
-import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+import { getTrackNodesLayerProps, getTrackNodesNameLayerProps } from 'common/Map/Layers/TrackNodes';
 import type { LayerContext } from 'common/Map/Layers/types';
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { RootState } from 'reducers';
@@ -328,15 +328,15 @@ function getPSLLayers(context: LayerContext, prefix: string): LayerProps[] {
   ];
 }
 
-function getSwitchesLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getTrackNodesLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
-      ...getSwitchesLayerProps(context),
+      ...getTrackNodesLayerProps(context),
       id: `${prefix}geo/switch-main`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
     {
-      ...getSwitchesNameLayerProps(context),
+      ...getTrackNodesNameLayerProps(context),
       id: `${prefix}geo/switch-name`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
@@ -395,7 +395,7 @@ const SOURCES_DEFINITION: {
   { entityType: 'signals', getLayers: getSignalLayers },
   { entityType: 'buffer_stops', getLayers: getBufferStopsLayers },
   { entityType: 'detectors', getLayers: getDetectorsLayers },
-  { entityType: 'switches', getLayers: getSwitchesLayers },
+  { entityType: 'track_nodes', getLayers: getTrackNodesLayers },
   { entityType: 'speed_sections', getLayers: getSpeedSectionLayers },
   { entityType: 'psl', getLayers: getPSLLayers },
   { entityType: 'psl_signs', getLayers: getPSLSignsLayers },

@@ -51,7 +51,7 @@ class RoutingZoneRequirement(
     val zone: String,
     @Json(name = "entry_detector") val entryDetector: String,
     @Json(name = "exit_detector") val exitDetector: String,
-    val switches: Map<String, String>,
+    val trackNodes: Map<String, String>,
     @Json(name = "end_time") val endTime: TimeDelta,
 )
 

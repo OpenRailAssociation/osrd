@@ -52,15 +52,15 @@ const RouteEditionLayers = () => {
       ? state.optionsState.options![selectedRouteIndex].data.detectors
       : [];
 
-  const selectedRouteSwitches =
+  const selectedRouteTrackNodes =
     selectedRouteIndex !== undefined
-      ? Object.keys(state.optionsState.options![selectedRouteIndex].data.switches_directions)
+      ? Object.keys(state.optionsState.options![selectedRouteIndex].data.track_nodes_directions)
       : [];
 
   const selectionList = compact([
     state.entity?.properties.entry_point.id,
     state.entity?.properties.exit_point?.id,
-  ]).concat(selectedRouteDetectors, selectedRouteSwitches);
+  ]).concat(selectedRouteDetectors, selectedRouteTrackNodes);
 
   const { t } = useTranslation();
   const dispatch = useAppDispatch();

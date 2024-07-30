@@ -16,7 +16,7 @@ import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
-import switchesIcon from 'assets/pictures/layersicons/switches.svg';
+import track_nodesIcon from 'assets/pictures/layersicons/track_nodes.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
@@ -34,7 +34,7 @@ export const LAYERS: Array<{ layers: Layer[]; icon: string | JSX.Element }> = [
   { layers: ['signals'], icon: signalsIcon },
   { layers: ['buffer_stops'], icon: bufferStopIcon },
   { layers: ['detectors'], icon: detectorsIcon },
-  { layers: ['switches'], icon: switchesIcon },
+  { layers: ['track_nodes'], icon: track_nodesIcon },
   { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
   { layers: ['psl', 'psl_signs'], icon: pslsIcon },
   { layers: ['electrifications'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },
@@ -144,7 +144,7 @@ const LayersModal: FC<LayersModalProps> = ({
               <div className="col-lg-6" key={`${layerKey}-${count}-${disabled}`}>
                 <div className="d-flex align-items-center mt-2">
                   <SwitchSNCF
-                    type="switch"
+                    type="trackNode"
                     onChange={() => {
                       const newSelectedLayersList = layers.reduce((result, layer) => {
                         if (result.has(layer)) result.delete(layer);

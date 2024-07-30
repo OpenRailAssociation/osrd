@@ -31,7 +31,7 @@ pub struct Route {
     #[schema(inline)]
     pub release_detectors: Vec<Identifier>,
     #[schema(inline)]
-    pub switches_directions: HashMap<Identifier, Identifier>,
+    pub track_nodes_directions: HashMap<Identifier, Identifier>,
 }
 
 impl OSRDTyped for Route {
@@ -52,5 +52,5 @@ pub struct RoutePath {
     // ToSchema isn’t derived correctly with tuples (inline doesn’t work)
     // so we need to specify the value_type
     #[schema(inline, value_type = Vec<(String, String)>)]
-    pub switches_directions: Vec<(Identifier, Identifier)>,
+    pub track_nodes_directions: Vec<(Identifier, Identifier)>,
 }

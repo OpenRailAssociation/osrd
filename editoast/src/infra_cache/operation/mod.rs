@@ -172,8 +172,8 @@ pub fn patch_infra_object(infra_object: &InfraObject, json_patch: &Patch) -> Res
         InfraObject::Signal { railjson } => serde_json::to_value(railjson)?,
         InfraObject::NeutralSection { railjson } => serde_json::to_value(railjson)?,
         InfraObject::SpeedSection { railjson } => serde_json::to_value(railjson)?,
-        InfraObject::Switch { railjson } => serde_json::to_value(railjson)?,
-        InfraObject::SwitchType { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::TrackNode { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::TrackNodeType { railjson } => serde_json::to_value(railjson)?,
         InfraObject::Detector { railjson } => serde_json::to_value(railjson)?,
         InfraObject::BufferStop { railjson } => serde_json::to_value(railjson)?,
         InfraObject::Route { railjson } => serde_json::to_value(railjson)?,
@@ -197,10 +197,10 @@ pub fn patch_infra_object(infra_object: &InfraObject, json_patch: &Patch) -> Res
         ObjectType::NeutralSection => InfraObject::NeutralSection {
             railjson: serde_json::from_value(value)?,
         },
-        ObjectType::Switch => InfraObject::Switch {
+        ObjectType::TrackNode => InfraObject::TrackNode {
             railjson: serde_json::from_value(value)?,
         },
-        ObjectType::SwitchType => InfraObject::SwitchType {
+        ObjectType::TrackNodeType => InfraObject::TrackNodeType {
             railjson: serde_json::from_value(value)?,
         },
         ObjectType::BufferStop => InfraObject::BufferStop {

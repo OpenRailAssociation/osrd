@@ -27,8 +27,8 @@ public class RJSInfra {
     @Json(name = "track_sections")
     public Collection<RJSTrackSection> trackSections;
 
-    /** Switches are at the ends of track sections, and link those together. */
-    public Collection<RJSSwitch> switches;
+    /** Track nodees are at the ends of track sections, and link those together. */
+    public Collection<RJSTrackNode> trackNodes;
 
     /** The list of all operational points. Finding reverse dependencies is up to the user. */
     @Json(name = "operational_points")
@@ -39,7 +39,7 @@ public class RJSInfra {
 
     /** The map of switch types */
     @Json(name = "extended_switch_types")
-    public List<RJSSwitchType> switchTypes;
+    public List<RJSTrackNodeType> trackNodeTypes;
 
     public List<RJSSignal> signals;
 

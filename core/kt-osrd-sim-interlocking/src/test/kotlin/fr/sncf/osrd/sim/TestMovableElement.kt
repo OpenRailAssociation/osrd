@@ -18,7 +18,7 @@ class TestMovableElements {
     fun lockMoveTest() = runTest {
         // setup test data
         val infra = buildParseRJSInfra {
-            defaultSwitchDelay = 0.042
+            defaultTrackNodeDelay = 0.042
             val trackA = trackSection("a", 10.0)
             val trackB = trackSection("b", 10.0)
             val trackC = trackSection("c", 10.0)
