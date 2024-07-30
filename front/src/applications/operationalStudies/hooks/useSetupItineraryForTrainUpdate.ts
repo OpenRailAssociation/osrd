@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import {
   osrdEditoastApi,
+  type PathItemLocation,
   type PostV2InfraByInfraIdPathPropertiesApiArg,
   type PostV2InfraByInfraIdPathfindingBlocksApiArg,
 } from 'common/api/osrdEditoastApi';
@@ -15,7 +16,7 @@ import { adjustConfWithTrainToModifyV2 } from 'modules/trainschedule/components/
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
-import type { PathItem, PathStep } from 'reducers/osrdconf/types';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addDurationToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
@@ -56,7 +57,7 @@ const useSetupItineraryForTrainUpdate = (
           pathfindingInputV2: {
             path_items: trainSchedule.path.map((item) =>
               omit(item, ['id', 'deleted'])
-            ) as PathItem[],
+            ) as PathItemLocation[],
             rolling_stock_is_thermal: isThermal(rollingStock.effort_curves.modes),
             rolling_stock_loading_gauge: rollingStock.loading_gauge,
             rolling_stock_supported_electrifications: getSupportedElectrification(
