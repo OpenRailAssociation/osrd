@@ -106,6 +106,7 @@ editoast_common::schemas! {
     rolling_stocks::schemas(),
     search::schemas(),
     single_simulation::schemas(),
+    stdcm::stdcm_search_environment::schemas(),
     timetable::schemas(),
     train_schedule::schemas(),
     v2::schemas(),

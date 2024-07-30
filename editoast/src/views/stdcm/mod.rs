@@ -1,3 +1,5 @@
+pub mod stdcm_search_environment;
+
 use std::ops::DerefMut;
 use std::sync::Arc;
 
@@ -42,7 +44,10 @@ use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
-    "/stdcm" => create,
+    "/stdcm" => {
+        create,
+        &stdcm_search_environment,
+    },
 }
 
 /// An STDCM request

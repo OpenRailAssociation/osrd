@@ -597,6 +597,21 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    stdcm_search_environment (id) {
+        id -> Int8,
+        infra_id -> Int8,
+        electrical_profile_set_id -> Nullable<Int8>,
+        work_schedule_group_id -> Nullable<Int8>,
+        timetable_id -> Int8,
+        search_window_begin -> Timestamptz,
+        search_window_end -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     study (id) {
         id -> Int8,
         #[max_length = 128]
@@ -767,6 +782,10 @@ diesel::joinable!(search_scenario -> scenario (id));
 diesel::joinable!(search_signal -> infra_object_signal (id));
 diesel::joinable!(search_study -> study (id));
 diesel::joinable!(simulation_output -> train_schedule (train_schedule_id));
+diesel::joinable!(stdcm_search_environment -> electrical_profile_set (electrical_profile_set_id));
+diesel::joinable!(stdcm_search_environment -> infra (infra_id));
+diesel::joinable!(stdcm_search_environment -> timetable_v2 (timetable_id));
+diesel::joinable!(stdcm_search_environment -> work_schedule_group (work_schedule_group_id));
 diesel::joinable!(study -> project (project_id));
 diesel::joinable!(timetable_v2 -> electrical_profile_set (electrical_profile_set_id));
 diesel::joinable!(train_schedule -> pathfinding (path_id));
@@ -816,6 +835,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     search_study,
     search_track,
     simulation_output,
+    stdcm_search_environment,
     study,
     timetable,
     timetable_v2,
