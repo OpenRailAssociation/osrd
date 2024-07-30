@@ -2347,6 +2347,35 @@ paths:
                     $ref: '#/components/schemas/PathfindingPayload'
                   simulation:
                     $ref: '#/components/schemas/SimulationReport'
+  /stdcm/search_environment:
+    get:
+      tags:
+      - stdcm_search_environment
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StdcmSearchEnvironment'
+        '204':
+          description: No search environment was created
+    post:
+      tags:
+      - stdcm_search_environment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StdcmSearchEnvironmentCreateForm'
+        required: true
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StdcmSearchEnvironment'
   /timetable/{id}:
     get:
       tags:
@@ -11127,6 +11156,64 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RangeAllowance'
+    StdcmSearchEnvironment:
+      type: object
+      required:
+      - id
+      - infra_id
+      - timetable_id
+      - search_window_begin
+      - search_window_end
+      properties:
+        electrical_profile_set_id:
+          type: integer
+          format: int64
+        id:
+          type: integer
+          format: int64
+        infra_id:
+          type: integer
+          format: int64
+        search_window_begin:
+          type: string
+          format: date-time
+        search_window_end:
+          type: string
+          format: date-time
+        timetable_id:
+          type: integer
+          format: int64
+        work_schedule_group_id:
+          type: integer
+          format: int64
+    StdcmSearchEnvironmentCreateForm:
+      type: object
+      required:
+      - infra_id
+      - timetable_id
+      - search_window_begin
+      - search_window_end
+      properties:
+        electrical_profile_set_id:
+          type: integer
+          format: int64
+          nullable: true
+        infra_id:
+          type: integer
+          format: int64
+        search_window_begin:
+          type: string
+          format: date-time
+        search_window_end:
+          type: string
+          format: date-time
+        timetable_id:
+          type: integer
+          format: int64
+        work_schedule_group_id:
+          type: integer
+          format: int64
+          nullable: true
     StepTimingData:
       type: object
       required:

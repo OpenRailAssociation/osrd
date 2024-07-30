@@ -29,6 +29,7 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
+use crate::modelsv2::work_schedules::WorkScheduleGroup;
 use crate::modelsv2::Document;
 use crate::modelsv2::ElectricalProfileSet;
 use crate::modelsv2::Infra;
@@ -491,4 +492,13 @@ pub async fn create_simulation_output(
         ..Default::default()
     };
     simulation_output.create_conn(conn).await.unwrap().into()
+}
+
+pub async fn create_work_schedule_group(conn: &mut DbConnection) -> WorkScheduleGroup {
+    WorkScheduleGroup::changeset()
+        .name("Empty work schedule group".to_string())
+        .creation_date(Utc::now().naive_utc())
+        .create(conn)
+        .await
+        .expect("Failed to create empty work schedule group")
 }

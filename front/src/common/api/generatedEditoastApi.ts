@@ -16,6 +16,7 @@ export const addTagTypes = [
   'speed_limit_tags',
   'sprites',
   'stdcm',
+  'stdcm_search_environment',
   'timetable',
   'train_schedule',
   'pathfindingv2',
@@ -693,6 +694,24 @@ const injectedRtkApi = api
       postStdcm: build.mutation<PostStdcmApiResponse, PostStdcmApiArg>({
         query: (queryArg) => ({ url: `/stdcm`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['stdcm'],
+      }),
+      getStdcmSearchEnvironment: build.query<
+        GetStdcmSearchEnvironmentApiResponse,
+        GetStdcmSearchEnvironmentApiArg
+      >({
+        query: () => ({ url: `/stdcm/search_environment` }),
+        providesTags: ['stdcm_search_environment'],
+      }),
+      postStdcmSearchEnvironment: build.mutation<
+        PostStdcmSearchEnvironmentApiResponse,
+        PostStdcmSearchEnvironmentApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/stdcm/search_environment`,
+          method: 'POST',
+          body: queryArg.stdcmSearchEnvironmentCreateForm,
+        }),
+        invalidatesTags: ['stdcm_search_environment'],
       }),
       getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
         query: (queryArg) => ({ url: `/timetable/${queryArg.id}` }),
@@ -1555,6 +1574,13 @@ export type PostStdcmApiArg = {
     steps: PathfindingStep[];
     timetable_id: number;
   };
+};
+export type GetStdcmSearchEnvironmentApiResponse =
+  /** status 200  */ StdcmSearchEnvironment | /** status 204 No search environment was created */ void;
+export type GetStdcmSearchEnvironmentApiArg = void;
+export type PostStdcmSearchEnvironmentApiResponse = /** status 201  */ StdcmSearchEnvironment;
+export type PostStdcmSearchEnvironmentApiArg = {
+  stdcmSearchEnvironmentCreateForm: StdcmSearchEnvironmentCreateForm;
 };
 export type GetTimetableByIdApiResponse =
   /** status 200 Timetable with schedules */ TimetableWithSchedulesDetails;
@@ -3198,6 +3224,23 @@ export type SimulationReport = {
   slopes: Slope[];
   speed_limit_tags: string | null;
   vmax: Mrsp;
+};
+export type StdcmSearchEnvironment = {
+  electrical_profile_set_id?: number;
+  id: number;
+  infra_id: number;
+  search_window_begin: string;
+  search_window_end: string;
+  timetable_id: number;
+  work_schedule_group_id?: number;
+};
+export type StdcmSearchEnvironmentCreateForm = {
+  electrical_profile_set_id?: number | null;
+  infra_id: number;
+  search_window_begin: string;
+  search_window_end: string;
+  timetable_id: number;
+  work_schedule_group_id?: number | null;
 };
 export type Timetable = {
   id: number;
