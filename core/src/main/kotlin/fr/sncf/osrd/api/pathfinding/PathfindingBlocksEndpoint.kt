@@ -397,12 +397,9 @@ private fun getTrackSectionChunkOnWaypoint(
         val endChunk = startChunk + rawInfra.getTrackChunkLength(chunk).distance
         waypointOffset >= startChunk.distance && waypointOffset <= endChunk.distance
     }
-        ?: throw RuntimeException(
-            String.format(
-                "The waypoint is not located on the track section %s",
-                rawInfra.getTrackSectionName(trackSectionId)
-            )
-        )
+        ?: throw OSRDError(ErrorType.InvalidWaypointLocation)
+            .withContext("track", rawInfra.getTrackSectionName(trackSectionId))
+            .withContext("offset", waypointOffset)
 }
 
 private fun getBlockOffset(

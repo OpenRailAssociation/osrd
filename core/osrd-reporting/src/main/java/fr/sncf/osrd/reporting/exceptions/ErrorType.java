@@ -95,6 +95,8 @@ public enum ErrorType {
             "invalid_schedule", "invalid scheduled point: position greater that path length", ErrorCause.USER),
     InvalidTrackRangeInvalidTrackSectionOffset(
             "invalid_track_range", "Offset %s is not contained in the track ranges view", ErrorCause.USER),
+    InvalidWaypointLocation(
+            "invalid_waypoint_location", "Waypoint track offset is not included in [0; track length]", ErrorCause.USER),
     UnknownRollingStock("unknown_stock", "unknown rolling stock", ErrorCause.USER),
     UnknownTrackSection("unknown_track_section", "unknown track section", ErrorCause.USER),
     UnknownAspect("unknown_aspect", "unknown aspect: %s", ErrorCause.USER),

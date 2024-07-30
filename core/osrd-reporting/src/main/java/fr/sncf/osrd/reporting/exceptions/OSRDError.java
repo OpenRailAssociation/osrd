@@ -65,6 +65,12 @@ public final class OSRDError extends RuntimeException {
         this.osrdErrorType = errorType;
     }
 
+    /** Add the given context element to the error */
+    public OSRDError withContext(String key, Object value) {
+        this.context.put(key, value);
+        return this;
+    }
+
     /**
      * Creates a new OSRDError for a diagnostic error.
      *
