@@ -8,11 +8,16 @@ import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-fronten
 import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/vendor.js?url';
 /* eslint-enable import/extensions, import/no-unresolved */
 
-import type { NetzgrafikDto } from './types';
+import type { NetzgrafikDto, NGETrainrunEvent } from './types';
 
 interface NGEElement extends HTMLElement {
   netzgrafikDto: NetzgrafikDto;
 }
+
+type NGEProps = {
+  dto?: NetzgrafikDto;
+  onOperation?: (op: NGETrainrunEvent, netzgrafikDto: NetzgrafikDto) => void;
+};
 
 const frameSrc = `
 <!DOCTYPE html>
@@ -29,10 +34,11 @@ const frameSrc = `
 </html>
 `;
 
-const NGE = ({ dto }: { dto?: NetzgrafikDto }) => {
+const NGE = ({ dto, onOperation }: NGEProps) => {
   const frameRef = useRef<HTMLIFrameElement>(null);
 
   const [ngeRootElement, setNgeRootElement] = useState<NGEElement | null>(null);
+
   useEffect(() => {
     const frame = frameRef.current!;
 
@@ -42,9 +48,12 @@ const NGE = ({ dto }: { dto?: NetzgrafikDto }) => {
       setNgeRootElement(ngeRoot);
 
       // listens to create, update and delete operations
-      // ngeRoot.addEventListener('operation', (event: Event) => {
-      //   console.log('Operation received', (event as CustomEvent).detail);
-      // });
+      ngeRoot.addEventListener('operation', (event: Event) => {
+        const customEvent = event as CustomEvent;
+        const op = customEvent.detail as NGETrainrunEvent;
+
+        if (onOperation) onOperation(op, ngeRoot.netzgrafikDto);
+      });
     };
 
     frame.addEventListener('load', handleFrameLoad);
