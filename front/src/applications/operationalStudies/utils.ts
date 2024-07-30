@@ -78,7 +78,10 @@ export const transformBoundariesDataToRangesData = <
   }));
 
   formatedData.push({
-    start: mmToM(boundariesData.boundaries[boundariesData.boundaries.length - 1]),
+    start:
+      boundariesData.boundaries.length === 0
+        ? 0
+        : mmToM(boundariesData.boundaries[boundariesData.boundaries.length - 1]),
     stop: mmToM(pathLength),
     values: boundariesData.values[boundariesData.values.length - 1],
   });
