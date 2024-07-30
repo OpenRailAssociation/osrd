@@ -92,8 +92,7 @@ export const formatElectrificationRanges = (
 ): ElectrificationRangeV2[] =>
   // Electrifications can be of three types, electricalProfiles only two, so we know electrifications
   // will always be at least as long as electricalProfiles so we can use it as the main array
-  electrifications.reduce((acc: ElectrificationRangeV2[], curr, index) => {
-    const currentElectrification = curr;
+  electrifications.map((currentElectrification, index) => {
     const currentProfile = electricalProfiles[index];
 
     // currentProfile is defined as long as we didn't reach the end of electricalProfiles array
@@ -103,50 +102,48 @@ export const formatElectrificationRanges = (
         currentElectrification.start === currentProfile.start &&
         currentElectrification.stop === currentProfile.stop
       ) {
-        acc.push({
+        return {
           electrificationUsage: {
             ...currentElectrification.values,
             ...currentProfile.values,
           },
           start: currentElectrification.start,
           stop: currentElectrification.stop,
-        });
-      } else {
-        // Find the profile matching the current electrification range
-        // We know we will find one because currentProfile is still defined
-        const associatedProfile = electricalProfiles.find(
-          (profile) => profile.stop >= currentElectrification.stop
-        ) as ElectricalRangesData<ElectricalProfileValue>;
-
-        acc.push({
-          electrificationUsage: {
-            ...currentElectrification.values,
-            ...associatedProfile.values,
-          },
-          start: currentElectrification.start,
-          stop: currentElectrification.stop,
-        });
+        };
       }
-      // If we reached the end of the electricalProfiles array, we use its last value for the profile
-    } else {
+
       // Find the profile matching the current electrification range
-      // We know we will find one because theirs last stops are the same
+      // We know we will find one because currentProfile is still defined
       const associatedProfile = electricalProfiles.find(
         (profile) => profile.stop >= currentElectrification.stop
       ) as ElectricalRangesData<ElectricalProfileValue>;
 
-      acc.push({
+      return {
         electrificationUsage: {
           ...currentElectrification.values,
           ...associatedProfile.values,
         },
         start: currentElectrification.start,
         stop: currentElectrification.stop,
-      });
+      };
     }
 
-    return acc;
-  }, []);
+    // If we reached the end of the electricalProfiles array, we use its last value for the profile
+    // Find the profile matching the current electrification range
+    // We know we will find one because theirs last stops are the same
+    const associatedProfile = electricalProfiles.find(
+      (profile) => profile.stop >= currentElectrification.stop
+    ) as ElectricalRangesData<ElectricalProfileValue>;
+
+    return {
+      electrificationUsage: {
+        ...currentElectrification.values,
+        ...associatedProfile.values,
+      },
+      start: currentElectrification.start,
+      stop: currentElectrification.stop,
+    };
+  });
 
 /**
  * Format path propreties data to be used in simulation results charts
