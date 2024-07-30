@@ -116,7 +116,10 @@ data class STDCMEdge(
         while (currentEdge != null) {
             val previousPlannedNode = currentEdge.previousNode
             if (previousPlannedNode.plannedTimingData != null) {
-                return previousPlannedNode.getRelativeTimeDiff(totalDepartureTimeShift)
+                return previousPlannedNode.getRelativeTimeDiff(
+                    totalDepartureTimeShift,
+                    maximumAddedDelayAfter
+                )
             }
             currentEdge = previousPlannedNode.previousEdge
         }
