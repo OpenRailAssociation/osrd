@@ -81,7 +81,11 @@
     "react/prefer-stateless-function": "off",
     "react/static-property-placement": 0,
     // disable vitest/prefer-to-be because it does not authorize toEqual for the floats
-    "vitest/prefer-to-be": "off"
+    "vitest/prefer-to-be": "off",
+    "no-restricted-imports": ["error", {
+      "name": "common/api/generatedEditoastApi",
+      "message": "Please use common/api/osrdEditoastApi instead"
+    }]
   },
   "settings": {
     "import/resolver": {
