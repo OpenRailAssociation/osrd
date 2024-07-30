@@ -3,16 +3,15 @@ import type { Feature, Position } from 'geojson';
 import type { PowerRestrictionRange, PointOnMap } from 'applications/operationalStudies/consts';
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
 import type {
-  RollingStockComfortType,
-  PathResponse,
   AllowanceValue,
-  Distribution,
-  PathfindingInputV2,
   Comfort,
+  Distribution,
+  PathItemLocation,
+  PathResponse,
+  RollingStockComfortType,
 } from 'common/api/osrdEditoastApi';
 import type { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 import type { InfraState } from 'reducers/infra';
-import type { ArrayElement } from 'utils/types';
 
 export interface OsrdConfState extends InfraState {
   constraintDistribution: Distribution;
@@ -69,9 +68,7 @@ export interface OsrdStdcmConfState extends OsrdConfState {
   standardStdcmAllowance?: StandardAllowance;
 }
 
-export type PathItem = ArrayElement<PathfindingInputV2['path_items']>;
-
-export type PathStep = PathItem & {
+export type PathStep = PathItemLocation & {
   id: string;
   /** Metadata given to mark a point as wishing to be deleted by the user.
         It's useful for soft deleting the point (waiting to fix / remove all references)
