@@ -14,7 +14,7 @@ import scenarioData from './assets/operationStudies/scenario.json';
 import HomePage from './pages/home-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page';
 import ScenarioPage from './pages/scenario-page-model';
-import { getInfra, getProject, getRollingStock, getStudy, postApiRequest } from './utils/index';
+import { getProject, getStudy, getRollingStock, postApiRequest, getInfra } from './utils/api-setup';
 
 let smallInfra: Infra;
 let project: Project;

@@ -1,4 +1,4 @@
-import fs from 'fs';
+/* eslint-disable no-restricted-syntax, no-await-in-loop */
 import path from 'path';
 
 import { test, expect } from '@playwright/test';
@@ -6,11 +6,12 @@ import { test, expect } from '@playwright/test';
 import RollingstockEditorPage from './pages/rollingstock-editor-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page';
 import {
-  findAndDeleteRollingStocks,
   generateUniqueName,
   verifyAndCheckInputById,
   fillAndCheckInputById,
+  readJsonFile,
 } from './utils/index';
+import { findAndDeleteRollingStocks } from './utils/rollingStock-utils';
 
 // Correct path to load rolling stock details from JSON
 const rollingstockDetailsPath = path.resolve(
@@ -18,7 +19,7 @@ const rollingstockDetailsPath = path.resolve(
   '../tests/assets/rollingStock/rollingstockDetails.json'
 );
 
-const rollingstockDetails = JSON.parse(fs.readFileSync(rollingstockDetailsPath, 'utf-8'));
+const rollingstockDetails = readJsonFile(rollingstockDetailsPath);
 const dualModeRollingStockName = 'dual-mode_rollingstock_test_e2e';
 const electricRollingStockName = 'rollingstock_1500_25000_test_e2e';
 

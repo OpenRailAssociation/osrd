@@ -175,6 +175,7 @@ const TimetableTrainCardV2 = ({
   return (
     <div className="scenario-timetable-train-with-right-bar">
       <div
+        data-testid="scenario-timetable-train"
         className={cx(
           'scenario-timetable-train with-colored-border',
           `colored-border-${intervalPosition}`,
@@ -195,6 +196,7 @@ const TimetableTrainCardV2 = ({
           />
         )}
         <div
+          data-testid="scenario-timetable-train-button"
           className="scenario-timetable-train-container"
           role="button"
           tabIndex={0}

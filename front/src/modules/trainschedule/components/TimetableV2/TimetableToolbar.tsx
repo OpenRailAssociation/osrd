@@ -180,7 +180,7 @@ const TimetableToolbar = ({
             </>
           )}
         </div>
-        <div>
+        <div data-testid="train-count">
           {multiSelectOn && <span>{selectedTrainIds.length} / </span>}
           {t('trainCount', {
             count: trainSchedulesDetails.length,
@@ -199,6 +199,7 @@ const TimetableToolbar = ({
           )}
 
           <button
+            data-testid="timetable-filter-button"
             aria-label={t('timetable.toggleFilters')}
             onClick={toggleFilterPanel}
             type="button"

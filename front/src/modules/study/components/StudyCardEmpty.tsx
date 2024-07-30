@@ -12,7 +12,7 @@ export default function StudyCard() {
 
   return (
     <div
-      data-testid="addStudy"
+      data-testid="add-study-button"
       className="study-card empty"
       role="button"
       tabIndex={0}
