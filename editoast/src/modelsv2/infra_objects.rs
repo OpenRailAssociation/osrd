@@ -78,7 +78,7 @@ macro_rules! infra_model {
                 use $table::dsl;
                 Ok($table::table
                     .filter(dsl::infra_id.eq(infra_id))
-                    .load_stream(conn)
+                    .load_stream(conn.write().await.deref_mut())
                     .await?
                     .map_ok(Self::from_row)
                     .try_collect::<C>()
@@ -263,7 +263,7 @@ impl OperationalPointModel {
         Ok(sql_query(query)
             .bind::<BigInt, _>(infra_id)
             .bind::<Array<BigInt>, _>(uic)
-            .load(conn)
+            .load(conn.write().await.deref_mut())
             .await?
             .into_iter()
             .map(Self::from_row)
@@ -288,7 +288,7 @@ impl OperationalPointModel {
         Ok(sql_query(query)
             .bind::<BigInt, _>(infra_id)
             .bind::<Array<Text>, _>(trigrams)
-            .load(conn)
+            .load(conn.write().await.deref_mut())
             .await?
             .into_iter()
             .map(Self::from_row)
@@ -306,10 +306,10 @@ mod tests_persist {
                 #[rstest::rstest]
                 async fn [<test_persist_ $obj:snake>]() {
                     let db_pool =  editoast_models::DbConnectionPoolV2::for_tests();
-                    let infra =  crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
+                    let infra =  crate::modelsv2::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
                     let schemas = (0..10).map(|_| Default::default());
                     let changesets = $obj::from_infra_schemas(infra.id, schemas);
-                    assert!($obj::create_batch::<_, Vec<_>>(db_pool.get_ok().deref_mut(), changesets).await.is_ok());
+                    assert!($obj::create_batch::<_, Vec<_>>(&mut db_pool.get_ok(), changesets).await.is_ok());
                 }
             }
         };
@@ -340,11 +340,11 @@ mod tests_retrieve {
     #[rstest]
     async fn from_trigrams() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let trigrams = vec!["MES".to_string(), "WS".to_string()];
         let res = OperationalPointModel::retrieve_from_trigrams(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             small_infra.id,
             &trigrams,
         )
@@ -357,15 +357,12 @@ mod tests_retrieve {
     #[rstest]
     async fn from_uic() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let uic = vec![1, 2];
-        let res = OperationalPointModel::retrieve_from_uic(
-            db_pool.get_ok().deref_mut(),
-            small_infra.id,
-            &uic,
-        )
-        .await
-        .expect("Failed to retrieve operational points");
+        let res =
+            OperationalPointModel::retrieve_from_uic(&mut db_pool.get_ok(), small_infra.id, &uic)
+                .await
+                .expect("Failed to retrieve operational points");
 
         assert_eq!(res.len(), 2);
     }

@@ -3,6 +3,7 @@ use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
+use std::ops::DerefMut;
 
 use crate::error::Result;
 use crate::models::Identifiable;
@@ -23,7 +24,7 @@ impl Timetable {
     pub async fn create(conn: &mut DbConnection) -> Result<Self> {
         diesel::insert_into(editoast_models::tables::timetable::table)
             .default_values()
-            .get_result::<Timetable>(conn)
+            .get_result::<Timetable>(conn.write().await.deref_mut())
             .await
             .map(Into::into)
             .map_err(Into::into)
@@ -36,7 +37,7 @@ impl DeleteStatic<i64> for Timetable {
     #[tracing::instrument(name = "model:delete_static<Timetable>", skip_all, ret, err)]
     async fn delete_static(conn: &mut DbConnection, id: i64) -> Result<bool> {
         diesel::delete(dsl::timetable.filter(dsl::id.eq(id)))
-            .execute(conn)
+            .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
             .map_err(Into::into)
@@ -53,7 +54,7 @@ impl Retrieve<i64> for Timetable {
     ) -> crate::error::Result<Option<Timetable>> {
         dsl::timetable
             .filter(dsl::id.eq(id))
-            .first::<Timetable>(conn)
+            .first::<Timetable>(conn.write().await.deref_mut())
             .await
             .optional()
             .map_err(Into::into)
@@ -99,7 +100,7 @@ impl Retrieve<i64> for TimetableWithTrains {
         GROUP BY timetable.id",
         )
         .bind::<BigInt, _>(timetable_id)
-        .get_result::<TimetableWithTrains>(conn)
+        .get_result::<TimetableWithTrains>(conn.write().await.deref_mut())
         .await;
         match result {
             Ok(result) => Ok(Some(result)),

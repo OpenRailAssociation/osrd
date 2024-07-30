@@ -10,7 +10,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::ops::DerefMut;
 use strum::Display;
 use utoipa::ToSchema;
 
@@ -79,19 +78,15 @@ async fn get_routes_from_waypoint(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), path.infra_id, || {
-        InfraApiError::NotFound {
-            infra_id: path.infra_id,
-        }
+    let conn = &mut db_pool.get().await?;
+
+    let infra = Infra::retrieve_or_fail(conn, path.infra_id, || InfraApiError::NotFound {
+        infra_id: path.infra_id,
     })
     .await?;
 
     let routes = infra
-        .get_routes_from_waypoint(
-            db_pool.get().await?.deref_mut(),
-            &path.waypoint_id,
-            path.waypoint_type.to_string(),
-        )
+        .get_routes_from_waypoint(conn, &path.waypoint_id, path.waypoint_type.to_string())
         .await?;
 
     // Split routes depending if they are entry or exit points
@@ -166,13 +161,13 @@ async fn get_routes_track_ranges(
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
     let infra_id = infra;
-    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
 
     let infra_cache =
-        InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra).await?;
+        InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
     let graph = Graph::load(&infra_cache);
     let routes_cache = infra_cache.routes();
     let result = params
@@ -227,7 +222,7 @@ async fn get_routes_nodes(
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
 
-    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), params.infra_id, || {
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, params.infra_id, || {
         InfraApiError::NotFound {
             infra_id: params.infra_id,
         }
@@ -239,7 +234,7 @@ async fn get_routes_nodes(
     }
 
     let infra_cache =
-        InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra).await?;
+        InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
     let routes_cache = infra_cache.routes();
 
     let filtered_routes = routes_cache
@@ -314,7 +309,6 @@ mod tests {
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::Waypoint;
-    use std::ops::DerefMut;
 
     #[rstest]
     async fn get_routes_nodes() {
@@ -385,7 +379,7 @@ mod tests {
 
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         fn compare_result(got: RoutesFromNodesPositions, expected: RoutesFromNodesPositions) {
             let mut got_routes = got.routes;
@@ -437,7 +431,7 @@ mod tests {
     async fn get_routes_should_return_routes_from_buffer_stop_and_detector() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
 
         let track = TrackSection {
@@ -482,7 +476,7 @@ mod tests {
         }
         .into();
         for obj in [track, detector, bs_start, bs_stop, route_1, route_2] {
-            apply_create_operation(&obj, empty_infra_id, db_pool.get_ok().deref_mut())
+            apply_create_operation(&obj, empty_infra_id, &mut db_pool.get_ok())
                 .await
                 .expect("Failed to create track object");
         }
@@ -522,7 +516,7 @@ mod tests {
     async fn get_routes_should_return_empty_response() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let waypoint_type = WaypointType::Detector;
         let request = app.get(

@@ -28,9 +28,10 @@ impl ToTokens for CreateImpl {
                     conn: &mut editoast_models::DbConnection,
                 ) -> crate::error::Result<#model> {
                     use diesel_async::RunQueryDsl;
+                    use std::ops::DerefMut;
                     diesel::insert_into(#table_mod::table)
                         .values(&self)
-                        .get_result::<#row>(conn)
+                        .get_result::<#row>(conn.write().await.deref_mut())
                         .await
                         .map(Into::into)
                         .map_err(Into::into)

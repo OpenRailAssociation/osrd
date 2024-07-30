@@ -197,6 +197,8 @@
 
 // TODO: the documentation of this file needs to be updated (no more search.yml)
 
+use std::ops::DerefMut;
+
 use axum::extract::Json;
 use axum::extract::Query;
 use axum::extract::State;
@@ -220,7 +222,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json::value::Value as JsonValue;
 use std::collections::HashSet;
-use std::ops::DerefMut;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -382,7 +383,7 @@ async fn search(
     }
 
     let objects = query
-        .load::<SearchDBResult>(db_pool.get().await?.deref_mut())
+        .load::<SearchDBResult>(&mut db_pool.get().await?.write().await.deref_mut())
         .await?;
     let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
     Ok(Json(serde_json::to_value(results).unwrap()))

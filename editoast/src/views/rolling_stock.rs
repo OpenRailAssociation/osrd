@@ -4,7 +4,6 @@ pub mod light;
 pub use form::RollingStockForm;
 
 use std::io::Cursor;
-use std::ops::DerefMut;
 
 use axum::extract::Json;
 use axum::extract::Multipart;
@@ -221,13 +220,12 @@ async fn get(
         return Err(AuthorizationError::Unauthorized.into());
     }
     let rolling_stock = retrieve_existing_rolling_stock(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         RollingStockKey::Id(rolling_stock_id),
     )
     .await?;
     let rolling_stock_with_liveries =
-        RollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), rolling_stock)
-            .await?;
+        RollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(rolling_stock_with_liveries))
 }
 
@@ -254,13 +252,12 @@ async fn get_by_name(
     }
 
     let rolling_stock = retrieve_existing_rolling_stock(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         RollingStockKey::Name(rolling_stock_name),
     )
     .await?;
     let rolling_stock_with_liveries =
-        RollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), rolling_stock)
-            .await?;
+        RollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(rolling_stock_with_liveries))
 }
 
@@ -364,18 +361,17 @@ async fn update(
     rolling_stock_form.validate()?;
     let name = rolling_stock_form.name.clone();
 
-    let previous_rolling_stock = RollingStockModel::retrieve_or_fail(
-        db_pool.get().await?.deref_mut(),
-        rolling_stock_id,
-        || RollingStockError::KeyNotFound {
-            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-        },
-    )
-    .await?;
+    let previous_rolling_stock =
+        RollingStockModel::retrieve_or_fail(&mut db_pool.get().await?, rolling_stock_id, || {
+            RollingStockError::KeyNotFound {
+                rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+            }
+        })
+        .await?;
     assert_rolling_stock_unlocked(&previous_rolling_stock)?;
 
     let mut new_rolling_stock = Into::<Changeset<RollingStockModel>>::into(rolling_stock_form)
-        .update(db_pool.get().await?.deref_mut(), rolling_stock_id)
+        .update(&mut db_pool.get().await?, rolling_stock_id)
         .await
         .map_err(|e| map_diesel_error(e, name.clone()))?
         .ok_or(RollingStockError::KeyNotFound {
@@ -385,14 +381,13 @@ async fn update(
     if new_rolling_stock != previous_rolling_stock {
         new_rolling_stock.version += 1;
         new_rolling_stock
-            .save(db_pool.get().await?.deref_mut())
+            .save(&mut db_pool.get().await?)
             .await
             .map_err(|err| map_diesel_error(err, name))?;
     }
 
     let new_rolling_stock_with_liveries =
-        RollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), new_rolling_stock)
-            .await?;
+        RollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, new_rolling_stock).await?;
 
     Ok(Json(new_rolling_stock_with_liveries))
 }
@@ -769,8 +764,6 @@ async fn create_compound_image(
 
 #[cfg(test)]
 pub mod tests {
-    use std::ops::DerefMut;
-
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -826,7 +819,7 @@ pub mod tests {
 
         // THEN
         // Check if the rolling stock was created in the database
-        let rolling_stock = RollingStockModel::retrieve(db_pool.get_ok().deref_mut(), response.id)
+        let rolling_stock = RollingStockModel::retrieve(&mut db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
@@ -857,7 +850,7 @@ pub mod tests {
 
         // THEN
         // Check if the rolling stock was created in the database with locked = true
-        let rolling_stock = RollingStockModel::retrieve(db_pool.get_ok().deref_mut(), response.id)
+        let rolling_stock = RollingStockModel::retrieve(&mut db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
@@ -872,7 +865,7 @@ pub mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let _ = create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+        let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
         let new_fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
 
         let request = app.rolling_stock_create_request(&new_fast_rolling_stock_form);
@@ -914,19 +907,18 @@ pub mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        let project =
-            create_project(db_pool.get_ok().deref_mut(), &Uuid::new_v4().to_string()).await;
+        let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
         let study = create_study(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             &Uuid::new_v4().to_string(),
             project.id,
         )
         .await;
-        let timetable_1 = create_timetable(db_pool.get_ok().deref_mut()).await;
-        let timetable_2 = create_timetable(db_pool.get_ok().deref_mut()).await;
-        let infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let timetable_1 = create_timetable(&mut db_pool.get_ok()).await;
+        let timetable_2 = create_timetable(&mut db_pool.get_ok()).await;
+        let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let scenario_1 = create_scenario(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             &Uuid::new_v4().to_string(),
             study.id,
             timetable_1.id,
@@ -934,7 +926,7 @@ pub mod tests {
         )
         .await;
         let scenario_2 = create_scenario(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             &Uuid::new_v4().to_string(),
             study.id,
             timetable_2.id,
@@ -951,12 +943,12 @@ pub mod tests {
         schedule_form_2.train_schedule.rolling_stock_name = rolling_stock.name;
         let train_schedule_1: Changeset<TrainSchedule> = schedule_form_1.into();
         let _ = train_schedule_1
-            .create(db_pool.get_ok().deref_mut())
+            .create(&mut db_pool.get_ok())
             .await
             .unwrap();
         let train_schedule_2: Changeset<TrainSchedule> = schedule_form_2.into();
         let _ = train_schedule_2
-            .create(db_pool.get_ok().deref_mut())
+            .create(&mut db_pool.get_ok())
             .await
             .unwrap();
 
@@ -988,7 +980,7 @@ pub mod tests {
     async fn get_invalid_rolling_stock_id_returns_404_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let _ = RollingStockModel::delete_static(db_pool.get_ok().deref_mut(), 1).await;
+        let _ = RollingStockModel::delete_static(&mut db_pool.get_ok(), 1).await;
 
         let request = app.get("/rolling_stock/1/usage");
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
@@ -1043,8 +1035,7 @@ pub mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         let request = app.rolling_stock_get_by_id_request(fast_rolling_stock.id);
 
@@ -1063,8 +1054,7 @@ pub mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         let request = app.get(format!("/rolling_stock/name/{rs_name}").as_str());
 
@@ -1102,8 +1092,7 @@ pub mod tests {
 
         let rs_name = "fast_rolling_stock_name";
 
-        let fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
         let updated_rs_name = "updated_fast_rolling_stock_name";
@@ -1119,7 +1108,7 @@ pub mod tests {
         // THEN
 
         let updated_rolling_stock: RollingStockModel =
-            RollingStockModel::retrieve(db_pool.get_ok().deref_mut(), fast_rolling_stock.id)
+            RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1139,12 +1128,11 @@ pub mod tests {
 
         let first_rs_name = "first_fast_rolling_stock_name";
         let first_fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), first_rs_name).await;
+            create_fast_rolling_stock(&mut db_pool.get_ok(), first_rs_name).await;
 
         let second_rs_name = "second_fast_rolling_stock_name";
         let second_fast_rolling_stock =
-            create_rolling_stock_with_energy_sources(db_pool.get_ok().deref_mut(), second_rs_name)
-                .await;
+            create_rolling_stock_with_energy_sources(&mut db_pool.get_ok(), second_rs_name).await;
 
         let second_fast_rolling_stock_form: RollingStockForm = second_fast_rolling_stock.into();
 
@@ -1176,7 +1164,7 @@ pub mod tests {
         let locked_fast_rolling_stock_changeset =
             fast_rolling_stock_changeset(locked_rs_name).locked(true);
         let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
-            .create(db_pool.get_ok().deref_mut())
+            .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create rolling stock");
 
@@ -1206,8 +1194,7 @@ pub mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         assert!(!fast_rolling_stock.locked);
 
@@ -1218,7 +1205,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let fast_rolling_stock: RollingStockModel =
-            RollingStockModel::retrieve(db_pool.get_ok().deref_mut(), fast_rolling_stock.id)
+            RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1236,7 +1223,7 @@ pub mod tests {
         let locked_fast_rolling_stock_changeset =
             fast_rolling_stock_changeset(locked_rs_name).locked(true);
         let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
-            .create(db_pool.get_ok().deref_mut())
+            .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create rolling stock");
         assert!(locked_fast_rolling_stock.locked);
@@ -1248,7 +1235,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let fast_rolling_stock: RollingStockModel =
-            RollingStockModel::retrieve(db_pool.get_ok().deref_mut(), locked_fast_rolling_stock.id)
+            RollingStockModel::retrieve(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1263,8 +1250,7 @@ pub mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
         let power_restrictions = fast_rolling_stock.power_restrictions.clone();
 
         let request = app.get("/rolling_stock/power_restrictions");
@@ -1292,7 +1278,7 @@ pub mod tests {
         let locked_fast_rolling_stock_changeset =
             fast_rolling_stock_changeset(locked_rs_name).locked(true);
         let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
-            .create(db_pool.get_ok().deref_mut())
+            .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create rolling stock");
 
@@ -1312,7 +1298,7 @@ pub mod tests {
         );
 
         let rolling_stock_exists =
-            RollingStockModel::exists(db_pool.get_ok().deref_mut(), locked_fast_rolling_stock.id)
+            RollingStockModel::exists(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
                 .await
                 .expect("Failed to check if rolling stock exists");
 

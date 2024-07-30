@@ -16,7 +16,6 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
-use diesel_async::AsyncConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
@@ -98,7 +97,7 @@ impl InfraChangeset {
 impl Infra {
     pub async fn all(conn: &mut DbConnection) -> Vec<Infra> {
         dsl::infra
-            .load(conn)
+            .load(conn.write().await.deref_mut())
             .await
             .expect("List infra query failed")
             .into_iter()
@@ -122,20 +121,20 @@ impl Infra {
     }
 
     pub async fn clone(&self, conn: &mut DbConnection, new_name: String) -> Result<Infra> {
-        conn.transaction(|conn| Box::pin(async {
+        conn.clone().transaction(|conn| Box::pin(async move {
             // Duplicate infra shell
             let cloned_infra = <Self as Clone>::clone(self)
                 .into_changeset()
                 .name(new_name)
                 .created(Utc::now().naive_utc())
                 .modified(Utc::now().naive_utc())
-                .create(conn)
+                .create(&mut conn.clone())
                 .await?;
 
             // Disable triggers to speed up the cloning
-            sql_query("ALTER TABLE infra_object_signal DISABLE TRIGGER search_signal__ins_trig").execute(conn).await?;
-            sql_query("ALTER TABLE infra_object_track_section DISABLE TRIGGER search_track__ins_trig").execute(conn).await?;
-            sql_query("ALTER TABLE infra_object_operational_point DISABLE TRIGGER search_operational_point__ins_trig").execute(conn).await?;
+            sql_query("ALTER TABLE infra_object_signal DISABLE TRIGGER search_signal__ins_trig").execute(conn.write().await.deref_mut()).await?;
+            sql_query("ALTER TABLE infra_object_track_section DISABLE TRIGGER search_track__ins_trig").execute(conn.write().await.deref_mut()).await?;
+            sql_query("ALTER TABLE infra_object_operational_point DISABLE TRIGGER search_operational_point__ins_trig").execute(conn.write().await.deref_mut()).await?;
 
             // Fill cloned infra with data
             for object in ObjectType::iter() {
@@ -145,7 +144,7 @@ impl Infra {
                 ))
                 .bind::<BigInt, _>(cloned_infra.id)
                 .bind::<BigInt, _>(self.id)
-                .execute(conn).await?;
+                .execute(conn.write().await.deref_mut()).await?;
 
                 if let Some(layer_table) = get_geometry_layer_table(&object) {
                     let layer_table = layer_table.to_string();
@@ -159,15 +158,15 @@ impl Infra {
                     sql_query(sql)
                         .bind::<BigInt, _>(cloned_infra.id)
                         .bind::<BigInt, _>(self.id)
-                        .execute(conn)
+                        .execute(conn.write().await.deref_mut())
                         .await?;
                 }
             }
 
             // Re-enable triggers to speed up the cloning
-            sql_query("ALTER TABLE infra_object_signal ENABLE TRIGGER search_signal__ins_trig").execute(conn).await?;
-            sql_query("ALTER TABLE infra_object_track_section ENABLE TRIGGER search_track__ins_trig").execute(conn).await?;
-            sql_query("ALTER TABLE infra_object_operational_point ENABLE TRIGGER search_operational_point__ins_trig").execute(conn).await?;
+            sql_query("ALTER TABLE infra_object_signal ENABLE TRIGGER search_signal__ins_trig").execute(conn.write().await.deref_mut()).await?;
+            sql_query("ALTER TABLE infra_object_track_section ENABLE TRIGGER search_track__ins_trig").execute(conn.write().await.deref_mut()).await?;
+            sql_query("ALTER TABLE infra_object_operational_point ENABLE TRIGGER search_operational_point__ins_trig").execute(conn.write().await.deref_mut()).await?;
 
             // Fill search tables
             sql_query("INSERT INTO search_signal(id, label, line_name, infra_id, obj_id, signaling_systems, settings, line_code)
@@ -176,12 +175,12 @@ impl Infra {
                         WHERE search_signal.infra_id = $2")
                 .bind::<BigInt, _>(cloned_infra.id)
                 .bind::<BigInt, _>(self.id)
-                .execute(conn).await?;
+                .execute(conn.write().await.deref_mut()).await?;
 
             sql_query("INSERT INTO search_track(infra_id, line_code, line_name, unprocessed_line_name) SELECT $1, line_code, line_name, unprocessed_line_name FROM search_track WHERE infra_id = $2")
                 .bind::<BigInt, _>(cloned_infra.id)
                 .bind::<BigInt, _>(self.id)
-                .execute(conn).await?;
+                .execute(conn.write().await.deref_mut()).await?;
 
             sql_query("INSERT INTO search_operational_point(id, infra_id, obj_id, uic, trigram, ci, ch, name)
                         SELECT op.id, $1, op.obj_id, uic, trigram, ci, ch, name FROM search_operational_point
@@ -189,20 +188,20 @@ impl Infra {
                         WHERE search_operational_point.infra_id = $2")
                 .bind::<BigInt, _>(cloned_infra.id)
                 .bind::<BigInt, _>(self.id)
-                .execute(conn).await?;
+                .execute(conn.write().await.deref_mut()).await?;
 
             // Add error layers
             sql_query("INSERT INTO infra_layer_error(geographic, information, infra_id, info_hash) SELECT geographic, information, $1, info_hash FROM infra_layer_error WHERE infra_id = $2")
                 .bind::<BigInt, _>(cloned_infra.id)
                 .bind::<BigInt, _>(self.id)
-                .execute(conn).await?;
+                .execute(conn.write().await.deref_mut()).await?;
 
             // Add sign layers
             for layer_table in ["infra_layer_psl_sign", "infra_layer_neutral_sign"] {
                 sql_query(format!("INSERT INTO {layer_table}(obj_id, geographic, data, infra_id, angle_geo) SELECT obj_id, geographic, data, $1, angle_geo FROM {layer_table} WHERE infra_id = $2"))
                     .bind::<BigInt, _>(cloned_infra.id)
                     .bind::<BigInt, _>(self.id)
-                    .execute(conn).await?;
+                    .execute(conn.write().await.deref_mut()).await?;
             }
 
             Ok(cloned_infra)
@@ -232,7 +231,7 @@ impl Infra {
         generated_data::refresh_all(db_pool.clone(), self.id, infra_cache).await?;
 
         // Update generated infra version
-        self.bump_generated_version(db_pool.get().await?.deref_mut())
+        self.bump_generated_version(&mut db_pool.get().await?)
             .await?;
 
         Ok(true)
@@ -252,42 +251,48 @@ impl Infra {
     /// This disable some triggers to speed up the deletion.
     ///
     /// Note: Everything is done in one transaction for consistency.
-    pub async fn fast_delete_static(conn: &mut DbConnection, infra_id: i64) -> Result<bool> {
+    pub async fn fast_delete_static(conn: DbConnection, infra_id: i64) -> Result<bool> {
         use editoast_models::tables::infra_object_track_section::dsl as track_section_dsl;
         use editoast_models::tables::search_track::dsl as search_track_dsl;
 
-        conn.build_transaction()
-            .run(|conn| Box::pin(async {
+        conn.transaction(|conn| {
+            Box::pin(async move {
                 // Disable the trigger to speed up the deletion
-                sql_query("ALTER TABLE infra_object_track_section DISABLE TRIGGER search_track__del_trig")
-                    .execute(conn)
-                    .await?;
+                sql_query(
+                    "ALTER TABLE infra_object_track_section DISABLE TRIGGER search_track__del_trig",
+                )
+                .execute(conn.write().await.deref_mut())
+                .await?;
                 // Delete the track sections
                 delete(
                     track_section_dsl::infra_object_track_section
                         .filter(track_section_dsl::infra_id.eq(infra_id)),
                 )
-                .execute(conn)
+                .execute(conn.write().await.deref_mut())
                 .await
                 .expect("Failed to delete from infra_object_track_section");
                 // Delete search track
                 delete(
-                    search_track_dsl::search_track.filter(search_track_dsl::infra_id.eq(infra_id as i32)),
+                    search_track_dsl::search_track
+                        .filter(search_track_dsl::infra_id.eq(infra_id as i32)),
                 )
-                .execute(conn)
+                .execute(conn.write().await.deref_mut())
                 .await
                 .expect("Failed to delete from search_track");
 
                 // Re-Enable the trigger to speed up the deletion
-                sql_query("ALTER TABLE infra_object_track_section ENABLE TRIGGER search_track__del_trig")
-                    .execute(conn)
-                    .await
-                    .expect("Failed to enable trigger");
+                sql_query(
+                    "ALTER TABLE infra_object_track_section ENABLE TRIGGER search_track__del_trig",
+                )
+                .execute(conn.write().await.deref_mut())
+                .await
+                .expect("Failed to enable trigger");
 
                 // Delete the rest of the infra
-                Self::delete_static(conn, infra_id).await
-            }))
-            .await
+                Self::delete_static(&mut conn.clone(), infra_id).await
+            })
+        })
+        .await
     }
 }
 
@@ -309,7 +314,6 @@ pub mod tests {
     use editoast_schemas::primitives::OSRDIdentified;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use std::ops::DerefMut;
     use uuid::Uuid;
 
     use super::Infra;
@@ -324,7 +328,7 @@ pub mod tests {
     #[rstest]
     async fn create_infra() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         assert_eq!(infra.owner, Uuid::nil());
         assert_eq!(infra.railjson_version, RAILJSON_VERSION);
@@ -339,12 +343,12 @@ pub mod tests {
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_new_name = "clone_infra_with_new_name_returns_new_cloned_infra".to_string();
 
         // WHEN
         let result = empty_infra
-            .clone(db_pool.get_ok().deref_mut(), infra_new_name.clone())
+            .clone(&mut db_pool.get_ok(), infra_new_name.clone())
             .await
             .expect("could not clone infra");
 
@@ -363,7 +367,7 @@ pub mod tests {
         let res = Infra::changeset()
             .name("test".to_owned())
             .last_railjson_version()
-            .persist(railjson_with_invalid_version, db_pool.get_ok().deref_mut())
+            .persist(railjson_with_invalid_version, &mut db_pool.get_ok())
             .await;
         assert!(res.is_err());
         let expected_error = RailJsonError::UnsupportedVersion {
@@ -399,7 +403,7 @@ pub mod tests {
         let infra = Infra::changeset()
             .name("persist_railjson_ok_infra".to_owned())
             .last_railjson_version()
-            .persist(railjson.clone(), db_pool.get_ok().deref_mut())
+            .persist(railjson.clone(), &mut db_pool.get_ok())
             .await
             .expect("could not persist infra");
 
@@ -414,91 +418,47 @@ pub mod tests {
         let id = infra.id;
 
         assert_eq!(
-            sort::<BufferStop>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<BufferStop>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.buffer_stops)
         );
         assert_eq!(
-            sort::<Route>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<Route>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.routes)
         );
         assert_eq!(
-            sort::<SwitchType>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<SwitchType>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.extended_switch_types)
         );
         assert_eq!(
-            sort::<Switch>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<Switch>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.switches)
         );
         assert_eq!(
-            sort::<TrackSection>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<TrackSection>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.track_sections)
         );
         assert_eq!(
-            sort::<SpeedSection>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<SpeedSection>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.speed_sections)
         );
         assert_eq!(
-            sort::<NeutralSection>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<NeutralSection>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.neutral_sections)
         );
         assert_eq!(
-            sort::<Electrification>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<Electrification>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.electrifications)
         );
         assert_eq!(
-            sort::<Signal>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<Signal>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.signals)
         );
         assert_eq!(
-            sort::<Detector>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<Detector>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.detectors)
         );
         assert_eq!(
-            sort::<OperationalPoint>(
-                find_all_schemas(db_pool.get_ok().deref_mut(), id)
-                    .await
-                    .unwrap()
-            ),
+            sort::<OperationalPoint>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.operational_points)
         );
     }

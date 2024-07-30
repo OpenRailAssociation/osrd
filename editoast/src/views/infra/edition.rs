@@ -2,7 +2,6 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::Extension;
-use diesel_async::AsyncConnection;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
@@ -20,7 +19,6 @@ use itertools::Itertools;
 use json_patch::{AddOperation, Patch, PatchOperation, RemoveOperation, ReplaceOperation};
 use serde_json::json;
 use std::collections::HashMap;
-use std::ops::DerefMut;
 use thiserror::Error;
 use tracing::error;
 use tracing::info;
@@ -91,15 +89,14 @@ async fn edit<'a>(
     }
 
     // TODO: lock for update
-    let mut infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+    let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
     let mut infra_cache =
-        InfraCache::get_or_load_mut(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
-            .await?;
+        InfraCache::get_or_load_mut(&mut db_pool.get().await?, &infra_caches, &infra).await?;
     let operation_results = apply_edit(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         &mut infra,
         &operations,
         &mut infra_cache,
@@ -153,13 +150,12 @@ pub async fn split_track_section<'a>(
     );
 
     // Check the infra
-    let mut infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+    let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
     let mut infra_cache =
-        InfraCache::get_or_load_mut(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
-            .await?;
+        InfraCache::get_or_load_mut(&mut db_pool.get().await?, &infra_caches, &infra).await?;
 
     // Get tracks cache if it exists
     let tracksection_cached = infra_cache.get_track_section(&payload.track)?.clone();
@@ -179,7 +175,7 @@ pub async fn split_track_section<'a>(
     // Calling the DB to get the full object and also the split geo
     let result = infra
         .get_split_track_section_with_data(
-            db_pool.get().await?.deref_mut(),
+            &mut db_pool.get().await?,
             payload.track.clone(),
             distance_fraction,
         )
@@ -332,7 +328,7 @@ pub async fn split_track_section<'a>(
 
     // Apply operations
     apply_edit(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         &mut infra,
         &operations,
         &mut infra_cache,
@@ -854,12 +850,13 @@ async fn apply_edit(
 
     // Apply modifications in one transaction
     connection
+        .clone()
         .transaction(|conn| {
-            Box::pin(async {
+            Box::pin(async move {
                 let mut railjsons = vec![];
                 let mut cache_operations = vec![];
                 for operation in operations {
-                    let railjson = operation.apply(infra_id, conn).await?;
+                    let railjson = operation.apply(infra_id, &mut conn.clone()).await?;
                     match (operation, railjson) {
                         (Operation::Create(_), Some(railjson)) => {
                             railjsons.push(railjson.clone());
@@ -880,17 +877,22 @@ async fn apply_edit(
                 }
 
                 // Bump version
-                infra.bump_version(conn).await?;
+                infra.bump_version(&mut conn.clone()).await?;
                 // Apply operations to infra cache
                 infra_cache.apply_operations(&cache_operations)?;
 
                 // Refresh layers if needed
-                generated_data::update_all(conn, infra_id, &cache_operations, infra_cache)
-                    .await
-                    .expect("Update generated data failed");
+                generated_data::update_all(
+                    &mut conn.clone(),
+                    infra_id,
+                    &cache_operations,
+                    infra_cache,
+                )
+                .await
+                .expect("Update generated data failed");
 
                 // Bump infra generated version to the infra version
-                infra.bump_generated_version(conn).await?;
+                infra.bump_generated_version(&mut conn.clone()).await?;
 
                 Ok(railjsons)
             })
@@ -949,7 +951,7 @@ pub mod tests {
         // Init
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         // Make a call with a bad ID
         let request = app
@@ -968,7 +970,7 @@ pub mod tests {
         // Init
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         // Make a call with a bad distance
         let request = app
@@ -989,7 +991,7 @@ pub mod tests {
         // Init
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         // Refresh the infra to get the good number of infra errors
         let req_refresh =
@@ -997,7 +999,7 @@ pub mod tests {
         app.fetch(req_refresh).assert_status(StatusCode::OK);
 
         // Get infra errors
-        let (init_errors, _) = query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
+        let (init_errors, _) = query_errors(&mut db_pool.get_ok(), &small_infra).await;
 
         // Make a call to split the track section
         let request = app
@@ -1012,7 +1014,7 @@ pub mod tests {
         assert_eq!(res.len(), 2);
 
         // Check that infra errors has not increased with the split (omit route error for now)
-        let (errors, _) = query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
+        let (errors, _) = query_errors(&mut db_pool.get_ok(), &small_infra).await;
         let errors_without_routes: Vec<InfraError> = errors
             .into_iter()
             .filter(|e| {
@@ -1031,8 +1033,11 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let conn = &mut db_pool.get().await.unwrap();
-        let mut small_infra = create_small_infra(conn).await;
-        let mut infra_cache = InfraCache::load(conn, &small_infra).await.unwrap();
+
+        let mut small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let mut infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+            .await
+            .unwrap();
 
         // Calling "apply_edit" with a OK operation
         let operations: Vec<Operation> = [

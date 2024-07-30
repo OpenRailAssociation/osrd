@@ -1,14 +1,16 @@
+use std::ops::DerefMut;
+
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::RollingStockModel;
 use crate::error::Result;
-use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     TrainScheduleScenarioStudyProject,
@@ -41,7 +43,7 @@ impl RollingStockModel {
     ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
         let result = sql_query(include_str!("sql/get_train_schedules_with_scenario.sql"))
             .bind::<BigInt, _>(self.id)
-            .load::<TrainScheduleScenarioStudyProject>(conn)
+            .load::<TrainScheduleScenarioStudyProject>(conn.write().await.deref_mut())
             .await?;
         Ok(result)
     }

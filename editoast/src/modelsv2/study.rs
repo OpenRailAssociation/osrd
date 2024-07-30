@@ -3,6 +3,7 @@ use chrono::NaiveDateTime;
 use chrono::Utc;
 
 use editoast_derive::ModelV2;
+use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -11,7 +12,6 @@ use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Scenario;
-use editoast_models::DbConnection;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = editoast_models::tables::study)]
@@ -76,7 +76,6 @@ fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) ->
 pub mod test {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use super::*;
     use crate::modelsv2::fixtures::create_project;
@@ -86,15 +85,14 @@ pub mod test {
     #[rstest]
     async fn study_retrieve() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         let study_name = "test_study_name";
         let created_study =
-            create_study(db_pool.get_ok().deref_mut(), study_name, created_project.id).await;
+            create_study(&mut db_pool.get_ok(), study_name, created_project.id).await;
 
         // Retrieve a study
-        let study = Study::retrieve(db_pool.get_ok().deref_mut(), created_study.id)
+        let study = Study::retrieve(&mut db_pool.get_ok(), created_study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");
@@ -106,25 +104,24 @@ pub mod test {
     async fn sort_study() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         let _created_study_1 = create_study(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             "test_study_name_1",
             created_project.id,
         )
         .await;
 
         let _created_study_2 = create_study(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             "test_study_name_2",
             created_project.id,
         )
         .await;
 
         let studies = Study::list(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             SelectionSettings::new().order_by(|| Study::NAME.desc()),
         )
         .await

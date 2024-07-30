@@ -18,7 +18,6 @@ use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use itertools::Itertools;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::ops::DerefMut;
 use utoipa::ToSchema;
 
 use super::RollingStockError;
@@ -123,11 +122,11 @@ async fn list(
         .into_selection_settings()
         .order_by(|| RollingStockModel::ID.asc());
     let (rolling_stocks, stats) =
-        RollingStockModel::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+        RollingStockModel::list_paginated(&mut db_pool.get().await?, settings).await?;
 
     let results = rolling_stocks.into_iter().zip(db_pool.iter_conn()).map(
         |(rolling_stock, conn)| async move {
-            LightRollingStockWithLiveries::try_fetch(conn.await?.deref_mut(), rolling_stock).await
+            LightRollingStockWithLiveries::try_fetch(&mut conn.await?, rolling_stock).await
         },
     );
 
@@ -161,7 +160,7 @@ async fn get(
         return Err(AuthorizationError::Unauthorized.into());
     }
     let rolling_stock = RollingStockModel::retrieve_or_fail(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         light_rolling_stock_id,
         || RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(light_rolling_stock_id),
@@ -169,8 +168,7 @@ async fn get(
     )
     .await?;
     let light_rolling_stock_with_liveries =
-        LightRollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), rolling_stock)
-            .await?;
+        LightRollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(light_rolling_stock_with_liveries))
 }
 
@@ -196,7 +194,7 @@ async fn get_by_name(
         return Err(AuthorizationError::Unauthorized.into());
     }
     let rolling_stock = RollingStockModel::retrieve_or_fail(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         light_rolling_stock_name.clone(),
         || RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Name(light_rolling_stock_name),
@@ -204,8 +202,7 @@ async fn get_by_name(
     )
     .await?;
     let light_rolling_stock_with_liveries =
-        LightRollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), rolling_stock)
-            .await?;
+        LightRollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, rolling_stock).await?;
     Ok(Json(light_rolling_stock_with_liveries))
 }
 
@@ -329,7 +326,6 @@ impl From<ModeEffortCurves> for LightModeEffortCurves {
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
-    use std::ops::DerefMut;
 
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
@@ -364,8 +360,7 @@ mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         let request = app.get(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str());
 
@@ -384,8 +379,7 @@ mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         let request = app.get(format!("/light_rolling_stock/name/{}", rs_name).as_str());
 
@@ -416,7 +410,7 @@ mod tests {
             .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
             .map(|(rs_id, conn)| async move {
                 let fixtures = create_rolling_stock_livery_fixture(
-                    conn.await.unwrap().deref_mut(),
+                    &mut conn.await.unwrap(),
                     &format!("rs_name_{}", rs_id),
                 )
                 .await;

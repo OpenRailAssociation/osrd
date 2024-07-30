@@ -43,6 +43,7 @@ impl ToTokens for CreateBatchWithKeyImpl {
                 ) -> crate::error::Result<C> {
                     use crate::models::Identifiable;
                     use crate::modelsv2::Model;
+                    use std::ops::DerefMut;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
@@ -56,7 +57,7 @@ impl ToTokens for CreateBatchWithKeyImpl {
                         chunk => {
                             diesel::insert_into(dsl::#table_name)
                                 .values(chunk)
-                                .load_stream::<#row>(conn)
+                                .load_stream::<#row>(conn.write().await.deref_mut())
                                 .await
                                 .map(|s| {
                                     s.map_ok(|row| {

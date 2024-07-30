@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::ops::DerefMut;
 
 use axum::extract::Json;
 use axum::extract::Path;
@@ -76,13 +75,13 @@ async fn get_objects(
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
     }
 
-    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
     let objects = infra
         .get_objects(
-            db_pool.get().await?.deref_mut(),
+            &mut db_pool.get().await?,
             object_type_param.object_type,
             &obj_ids,
         )
@@ -122,7 +121,6 @@ mod tests {
     use rstest::rstest;
     use serde_json::json;
     use serde_json::Value as JsonValue;
-    use std::ops::DerefMut;
 
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::modelsv2::fixtures::create_empty_infra;
@@ -136,7 +134,7 @@ mod tests {
     async fn check_invalid_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let request = app
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
@@ -149,7 +147,7 @@ mod tests {
     async fn get_objects_no_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let request = app
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
@@ -163,7 +161,7 @@ mod tests {
         // GIVEN
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let switch = Switch {
             id: "switch_001".into(),
@@ -173,7 +171,7 @@ mod tests {
         apply_create_operation(
             &switch.clone().into(),
             empty_infra.id,
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
         )
         .await
         .expect("Failed to create switch object");
@@ -206,7 +204,7 @@ mod tests {
     async fn get_objects_duplicate_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let request = app
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
@@ -219,14 +217,14 @@ mod tests {
     async fn get_switch_types() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         // Add a switch type
         let switch_type = SwitchType::default();
         apply_create_operation(
             &switch_type.clone().into(),
             empty_infra.id,
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
         )
         .await
         .expect("Failed to create switch type object");

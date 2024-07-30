@@ -38,6 +38,7 @@ impl ToTokens for DeleteBatchImpl {
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
+                    use std::ops::DerefMut;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     let counts = crate::chunked_for_libpq! {
@@ -49,7 +50,7 @@ impl ToTokens for DeleteBatchImpl {
                             for #id_ident in chunk.into_iter() {
                                 query = query.or_filter(#filters);
                             }
-                            query.execute(conn).await?
+                            query.execute(conn.write().await.deref_mut()).await?
                         }
                     };
                     Ok(counts.into_iter().sum())

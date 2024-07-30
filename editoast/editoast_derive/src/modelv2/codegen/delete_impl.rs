@@ -28,9 +28,10 @@ impl ToTokens for DeleteImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
+                    use std::ops::DerefMut;
                     let id = self.#primary_key;
                     diesel::delete(#table_mod::table.find(id))
-                        .execute(conn)
+                        .execute(conn.write().await.deref_mut())
                         .await
                         .map(|n| n == 1)
                         .map_err(Into::into)

@@ -28,6 +28,7 @@ impl ToTokens for CountImpl {
                     use diesel::QueryDsl;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    use std::ops::DerefMut;
 
                     let mut query = #table_mod::table.select(diesel::dsl::count_star()).into_boxed();
 
@@ -48,7 +49,7 @@ impl ToTokens for CountImpl {
                         }
                     }
 
-                    Ok(query.get_result::<i64>(conn).await? as u64)
+                    Ok(query.get_result::<i64>(conn.write().await.deref_mut()).await? as u64)
                 }
             }
 

@@ -120,7 +120,6 @@ impl Project {
 pub mod test {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use super::*;
     use crate::modelsv2::fixtures::create_project;
@@ -132,18 +131,17 @@ pub mod test {
     async fn project_creation() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let project_name = "test_project_name";
-        let created_project = create_project(db_pool.get_ok().deref_mut(), project_name).await;
+        let created_project = create_project(&mut db_pool.get_ok(), project_name).await;
         assert_eq!(created_project.name, project_name);
     }
 
     #[rstest]
     async fn project_retrieve() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         // Get a project
-        let project = Project::retrieve(db_pool.get_ok().deref_mut(), created_project.id)
+        let project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -154,8 +152,7 @@ pub mod test {
     #[rstest]
     async fn project_update() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let mut created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let mut created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         let project_name = "update_name";
         let project_budget = Some(1000);
@@ -165,11 +162,11 @@ pub mod test {
             .patch()
             .name(project_name.to_owned())
             .budget(project_budget)
-            .apply(db_pool.get_ok().deref_mut())
+            .apply(&mut db_pool.get_ok())
             .await
             .expect("Failed to update project");
 
-        let project = Project::retrieve(db_pool.get_ok().deref_mut(), created_project.id)
+        let project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -181,13 +178,11 @@ pub mod test {
     #[rstest]
     async fn sort_project() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let _created_project_1 =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name_1").await;
-        let _created_project_2 =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name_2").await;
+        let _created_project_1 = create_project(&mut db_pool.get_ok(), "test_project_name_1").await;
+        let _created_project_2 = create_project(&mut db_pool.get_ok(), "test_project_name_2").await;
 
         let projects = Project::list(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             SelectionSettings::new().order_by(|| Project::NAME.desc()),
         )
         .await

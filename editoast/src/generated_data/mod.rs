@@ -59,7 +59,7 @@ pub trait GeneratedData {
             Self::table_name()
         ))
         .bind::<BigInt, _>(infra)
-        .execute(conn)
+        .execute(conn.write().await.deref_mut())
         .await?;
         Ok(())
     }
@@ -74,7 +74,7 @@ pub trait GeneratedData {
         infra: i64,
         infra_cache: &InfraCache,
     ) -> Result<()> {
-        Self::refresh(pool.get().await?.deref_mut(), infra, infra_cache).await
+        Self::refresh(&mut pool.get().await?, infra, infra_cache).await
     }
 
     /// Search and update all objects that needs to be refreshed given a list of operation.
@@ -101,7 +101,7 @@ pub async fn refresh_all(
     // It doesn’t seem to make a different when the generation step is ran separately
     // It isn’t clear why without analyze the Postgres server seems to run at 100% without halting
     sql_query("analyze")
-        .execute(db_pool.get().await?.deref_mut())
+        .execute(&mut db_pool.get().await?.write().await.deref_mut())
         .await?;
     debug!("⚙️ Infra {infra_id}: database analyzed");
     futures::try_join!(
@@ -165,7 +165,6 @@ pub async fn update_all(
 #[cfg(test)]
 pub mod tests {
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use crate::generated_data::clear_all;
     use crate::generated_data::refresh_all;
@@ -179,7 +178,7 @@ pub mod tests {
     #[serial_test::serial]
     async fn refresh_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         assert!(refresh_all(db_pool.into(), infra.id, &Default::default())
             .await
             .is_ok());
@@ -188,23 +187,18 @@ pub mod tests {
     #[rstest]
     async fn update_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        assert!(update_all(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            &[],
-            &Default::default()
-        )
-        .await
-        .is_ok());
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        assert!(
+            update_all(&mut db_pool.get_ok(), infra.id, &[], &Default::default())
+                .await
+                .is_ok()
+        );
     }
 
     #[rstest]
     async fn clear_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        assert!(clear_all(db_pool.get_ok().deref_mut(), infra.id)
-            .await
-            .is_ok());
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        assert!(clear_all(&mut db_pool.get_ok(), infra.id).await.is_ok());
     }
 }
