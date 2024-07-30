@@ -175,7 +175,9 @@ const TimetableV2 = ({
         {timetableHasInvalidTrain(displayedTrainSchedules) && (
           <div className="invalid-trains">
             <Alert size="lg" variant="fill" />
-            <span className="flex-grow-1">{t('timetable.invalidTrains')}</span>
+            <span data-testid="invalid-trains-message" className="flex-grow-1">
+              {t('timetable.invalidTrains')}
+            </span>
           </div>
         )}
         {conflicts && (

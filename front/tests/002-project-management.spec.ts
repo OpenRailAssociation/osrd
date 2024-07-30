@@ -7,7 +7,7 @@ import projectData from './assets/operationStudies/project.json';
 import CommonPage from './pages/common-page-model';
 import HomePage from './pages/home-page-model';
 import ProjectPage from './pages/project-page-model';
-import { deleteApiRequest, getApiRequest, postApiRequest } from './utils/index';
+import { deleteApiRequest, getApiRequest, postApiRequest } from './utils/api-setup';
 
 let project: Project;
 

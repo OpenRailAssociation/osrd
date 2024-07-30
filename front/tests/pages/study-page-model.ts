@@ -67,7 +67,7 @@ class StudyPage {
     this.getStudyTags = page.locator('.study-details-tags');
     this.getBackToProject = page.getByRole('heading', { name: 'Test e2e projet' });
     this.translation = study;
-    this.getAddStudyBtn = page.getByTestId('addStudy');
+    this.getAddStudyBtn = page.getByTestId('add-study-button');
     this.getStudyUpdateBtn = page.locator('.study-details-modify-button');
     this.getStudyInputName = page.locator('#studyInputName');
     this.getStudyTypeSelect = page.locator('.input-group').first();
@@ -87,7 +87,7 @@ class StudyPage {
 
   // Assert that the breadcrumb project link is displayed on the page
   async getDisplayLinks() {
-    expect(this.getBackToProject).toBeVisible();
+    await expect(this.getBackToProject).toBeVisible();
   }
 
   getTranslations(key: keyof typeof study) {

@@ -13,7 +13,7 @@ import scenarioData from './assets/operationStudies/scenario.json';
 import HomePage from './pages/home-page-model';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
 import ScenarioPage from './pages/scenario-page-model';
-import { getInfra, getProject, getStudy, postApiRequest } from './utils/index';
+import { getProject, getStudy, postApiRequest, getInfra } from './utils/api-setup';
 
 let smallInfra: Infra;
 let project: Project;
