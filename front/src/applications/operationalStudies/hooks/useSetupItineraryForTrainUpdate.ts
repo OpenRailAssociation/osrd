@@ -100,7 +100,8 @@ const useSetupItineraryForTrainUpdate = (
             (suggestedOp) =>
               'uic' in step &&
               suggestedOp.uic === step.uic &&
-              suggestedOp.ch === step.secondary_code
+              // When importing train from open data or from files, secondary_code might not always exist
+              (!step.secondary_code || suggestedOp.ch === step.secondary_code)
           );
 
           const correspondingSchedule = trainSchedule.schedule?.find(
