@@ -7,7 +7,7 @@ import studyData from './assets/operationStudies/study.json';
 import CommonPage from './pages/common-page-model';
 import HomePage from './pages/home-page-model';
 import StudyPage from './pages/study-page-model';
-import { getProject, postApiRequest } from './utils/index';
+import { getProject, postApiRequest } from './utils/api-setup';
 
 let project: Project;
 let study: Study;
@@ -33,7 +33,7 @@ test.describe('Test if operationnal study: study creation workflow is working pr
 
     await page.goto(`/operational-studies/projects/${project.id}`);
 
-    expect(studyPage.getAddStudyBtn).toBeVisible();
+    await expect(studyPage.getAddStudyBtn).toBeVisible();
     await studyPage.openStudyCreationModal();
 
     const studyName = `${studyData.name} ${uuidv4()}`;

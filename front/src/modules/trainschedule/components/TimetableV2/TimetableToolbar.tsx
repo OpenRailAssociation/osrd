@@ -179,7 +179,7 @@ const TimetableToolbar = ({
             </>
           )}
         </div>
-        <div>
+        <div data-testid="train-count">
           {trainSchedules.length > 0
             ? t(
                 'trainCount',
@@ -208,6 +208,7 @@ const TimetableToolbar = ({
           )}
 
           <button
+            data-testid="timetable-filter-button"
             aria-label={t('timetable.toggleFilters')}
             onClick={toggleFilterPanel}
             type="button"

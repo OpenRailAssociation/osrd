@@ -1,6 +1,6 @@
-// TODO: Dispatch the functions in differents files
+import fs from 'fs';
 
-import { type Page, request, expect } from '@playwright/test';
+import { type APIResponse, type Page, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Project, ScenarioV2, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
@@ -136,4 +136,16 @@ export const generateUniqueName = async (baseName: string) => {
 export async function extractNumberFromString(input: string): Promise<number> {
   const match = input.match(/\d+/);
   return match ? parseInt(match[0], 10) : 0;
+}
+// Utility function to read JSON files
+export const readJsonFile = (path: string) => JSON.parse(fs.readFileSync(path, 'utf8'));
+
+// Helper function to handle API error responses
+export async function handleApiResponse(
+  response: APIResponse,
+  errorMessage: string
+): Promise<void> {
+  if (!response.ok()) {
+    throw new Error(`${errorMessage}: ${response.status()} ${response.statusText()}`);
+  }
 }
