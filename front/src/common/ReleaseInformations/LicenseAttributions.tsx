@@ -22,7 +22,7 @@ const LicenseAttributions = () => {
     publisher: 'Marc Le Gad',
     copyright: '',
     version: '',
-    name: 'MGL Traffic',
+    name: 'MLG Traffic',
     url: 'http://www.mlgtraffic.net',
   };
 
