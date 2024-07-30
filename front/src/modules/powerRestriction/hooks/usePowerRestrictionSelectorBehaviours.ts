@@ -46,11 +46,11 @@ const usePowerRestrictionSelectorBehaviours = ({
     resizeSegmentBeginInput,
   } = useOsrdConfActions() as OperationalStudiesConfSliceActions;
 
-  /** Cumulative sums of the trackSections' length on path (in meters) */
+  /** Cumulative sums of the trackSections' length on path (in mm) */
   const tracksLengthCumulativeSums = useMemo(
     () =>
       pathProperties.trackSectionRanges.reduce((acc, range, index) => {
-        const rangeLength = range.end - range.begin;
+        const rangeLength = Math.abs(range.end - range.begin);
         if (index === 0) {
           acc.push(rangeLength);
         } else {
