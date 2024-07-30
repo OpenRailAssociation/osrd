@@ -56,8 +56,9 @@ data class STDCMNode(
     override fun compareTo(other: STDCMNode): Int {
         val runTimeEstimation = timeSinceDeparture + remainingTimeEstimation
         val otherRunTimeEstimation = other.timeSinceDeparture + other.remainingTimeEstimation
-        val plannedRelativeTimeDiff = getRelativeTimeDiff()
-        val otherPlannedRelativeTimeDiff = other.getRelativeTimeDiff()
+        val plannedRelativeTimeDiff = getRelativeTimeDiff(totalPrevAddedDelay, maximumAddedDelay)
+        val otherPlannedRelativeTimeDiff =
+            other.getRelativeTimeDiff(other.totalPrevAddedDelay, other.maximumAddedDelay)
         // Firstly, minimize the total run time: highest priority node takes the least time to
         // complete the path
         return if (!areTimesEqual(runTimeEstimation, otherRunTimeEstimation))
@@ -97,23 +98,34 @@ data class STDCMNode(
     /**
      * Returns the relative time difference between the real arrival time at node and the planned
      * arrival time at node, taking into account the tolerance on either side. It takes the lowest
-     * value between the relative time diff at the current time and the relative time diff at the
-     * maximum time at which the train can pass on the node.
+     * value in the window made of [currentTime; currentTimeWithMaxDelayAdded].
      */
-    fun getRelativeTimeDiff(currentTotalAddedDelay: Double = totalPrevAddedDelay): Double? {
+    fun getRelativeTimeDiff(currentTotalAddedDelay: Double, currentMaximumDelay: Double): Double? {
+        // Ex: here, minimum time diff possible is 0.0 => minimum relative time diff will be 0.0.
+        //          before         plannedArrival                  after
+        // ------------[-----|-----------|----------------|----------]------------
+        //               currentTime            currentTimeWithMaxDelay
         if (plannedTimingData != null) {
             val timeDiff =
                 getRealTime(currentTotalAddedDelay) - plannedTimingData.arrivalTime.seconds
             val relativeTimeDiff = plannedTimingData.getBeforeOrAfterRelativeTimeDiff(timeDiff)
+            // If time diff is positive, adding delay won't decrease relative time diff: return
+            // relativeTimeDiff
+            if (timeDiff >= 0) return relativeTimeDiff
+
             val maxTimeDiff =
                 min(
-                    getRealTime(maximumAddedDelay) - plannedTimingData.arrivalTime.seconds,
+                    getRealTime(currentMaximumDelay) - plannedTimingData.arrivalTime.seconds,
                     plannedTimingData.arrivalTimeToleranceAfter.seconds
                 )
             val relativeMaxTimeDiff =
                 plannedTimingData.getBeforeOrAfterRelativeTimeDiff(maxTimeDiff)
-            val minRelativeTimeDiff = min(relativeTimeDiff, relativeMaxTimeDiff)
-            return minRelativeTimeDiff
+            // If time diff < 0.0 and maxTimeDiff >= 0.0, then we can add delay to make the node
+            // arrive at planned arrival time: return 0.0
+            if (maxTimeDiff >= 0.0) return 0.0
+
+            // Else, both are < 0.0: return the lowest relative time diff, i.e., relativeMaxTimeDiff
+            return relativeMaxTimeDiff
         }
         return null
     }
