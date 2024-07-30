@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alert, Pencil, Trash, Clock } from '@osrd-project/ui-icons';
+import { Alert, Pencil, Trash, Clock, Flame } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -228,12 +228,18 @@ const TimetableTrainCardV2 = ({
             </div>
             <div
               className={cx('scenario-timetable-train-times V2', {
-                'not-honored': train.scheduledPointsNotHonored,
+                'not-honored': train.notHonoredReason === 'scheduleNotHonored',
+                'too-fast': train.notHonoredReason === 'trainTooFast',
               })}
             >
-              {train.scheduledPointsNotHonored && (
+              {train.notHonoredReason === 'scheduleNotHonored' && (
                 <div className="ml-1">
                   <Clock size="lg" />
+                </div>
+              )}
+              {train.notHonoredReason === 'trainTooFast' && (
+                <div className="ml-1">
+                  <Flame size="lg" />
                 </div>
               )}
               <div>
