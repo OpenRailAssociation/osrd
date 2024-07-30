@@ -8,7 +8,13 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
+import handleOperation from 'applications/operationalStudies/components/MacroEditor/export';
+import importTimetableToNGE from 'applications/operationalStudies/components/MacroEditor/import';
 import NGE from 'applications/operationalStudies/components/MacroEditor/NGE';
+import type {
+  NetzgrafikDto,
+  NGETrainrunEvent,
+} from 'applications/operationalStudies/components/MacroEditor/types';
 import MicroMacroSwitch from 'applications/operationalStudies/components/MicroMacroSwitch';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
@@ -32,8 +38,6 @@ import { getSpaceTimeChartData, selectProjectionV2 } from './getSimulationResult
 import ImportTrainScheduleV2 from './ImportTrainScheduleV2';
 import ManageTrainScheduleV2 from './ManageTrainScheduleV2';
 import SimulationResultsV2 from './SimulationResultsV2';
-import importTimetableToNGE from '../../components/MacroEditor/import';
-import type { NetzgrafikDto } from '../../components/MacroEditor/types';
 
 type SimulationParams = {
   projectId: string;
@@ -164,6 +168,9 @@ const ScenarioV2 = () => {
     setIsMacro(isMacroMode);
     setCollapsedTimetable(isMacroMode);
   };
+
+  const handleNGEOperation = (event: NGETrainrunEvent, netzgrafikDto: NetzgrafikDto) =>
+    handleOperation({ event, dispatch, timeTableId: timetableId!, netzgrafikDto });
 
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto | undefined>(undefined);
   useEffect(() => {
@@ -355,7 +362,7 @@ const ScenarioV2 = () => {
                 )}
                 {isMacro ? (
                   <div className={cx(collapsedTimetable ? 'macro-container' : 'h-100')}>
-                    <NGE dto={ngeDto} />
+                    <NGE dto={ngeDto} onOperation={handleNGEOperation} />
                   </div>
                 ) : (
                   isInfraLoaded &&

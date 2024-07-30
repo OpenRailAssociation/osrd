@@ -153,3 +153,9 @@ export type NetzgrafikDto = {
     filterSettings: unknown[];
   };
 };
+
+export type NGETrainrunEvent = {
+  type: 'create' | 'delete' | 'update';
+  objectType: 'trainrun';
+  trainrun: Trainrun;
+};
