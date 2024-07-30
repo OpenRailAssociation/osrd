@@ -1,5 +1,5 @@
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
-import type { TrainScheduleResult } from 'common/api/generatedEditoastApi';
+import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 
 import testData from './computeMargins.json';
 import computeMargins from '../computeMargins';

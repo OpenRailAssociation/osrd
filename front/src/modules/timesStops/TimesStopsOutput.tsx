@@ -6,7 +6,7 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { TrainScheduleResult } from 'common/api/generatedEditoastApi';
+import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainScheduleV2/types';
 import type { PathStep } from 'reducers/osrdconf/types';

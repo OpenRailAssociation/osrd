@@ -1,7 +1,7 @@
 import type {
   RollingStockWithLiveries,
   PostV2TimetableByIdStdcmApiResponse,
-} from 'common/api/generatedEditoastApi';
+} from 'common/api/osrdEditoastApi';
 import type { PathStep } from 'reducers/osrdconf/types';
 
 export type StdcmSimulationResult = {

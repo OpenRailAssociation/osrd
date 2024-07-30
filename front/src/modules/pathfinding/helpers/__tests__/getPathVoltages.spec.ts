@@ -1,4 +1,4 @@
-import type { PathProperties } from 'common/api/generatedEditoastApi';
+import type { PathProperties } from 'common/api/osrdEditoastApi';
 
 import getPathVoltages from '../getPathVoltages';
 

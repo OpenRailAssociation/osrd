@@ -1,4 +1,4 @@
-import type { ProjectPathTrainResult } from 'common/api/generatedEditoastApi';
+import type { ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 
 import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmV2SuccessResponse } from '../types';

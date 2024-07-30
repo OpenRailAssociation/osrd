@@ -1,5 +1,5 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import type { ProjectPathTrainResult, TrainScheduleResult } from 'common/api/generatedEditoastApi';
+import type { ProjectPathTrainResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 
 const formatTrainsIntoSpaceTimeData = (
   projectedTrains: Record<string, ProjectPathTrainResult>,
