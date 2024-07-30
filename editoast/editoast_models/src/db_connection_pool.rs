@@ -1,3 +1,5 @@
+use std::ops::Deref;
+use std::ops::DerefMut;
 use std::sync::Arc;
 
 use diesel::sql_query;
@@ -7,6 +9,8 @@ use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
+use diesel_async::scoped_futures::ScopedBoxFuture;
+use diesel_async::AsyncConnection;
 use diesel_async::AsyncPgConnection;
 use diesel_async::RunQueryDsl;
 use futures::future::BoxFuture;
@@ -17,13 +21,12 @@ use openssl::ssl::SslMethod;
 use openssl::ssl::SslVerifyMode;
 use url::Url;
 
-#[cfg(feature = "testing")]
 use tokio::sync::OwnedRwLockWriteGuard;
-#[cfg(feature = "testing")]
 use tokio::sync::RwLock;
 
 use super::DbConnection;
 use super::DbConnectionPool;
+use super::DieselConnection;
 
 pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 
@@ -32,6 +35,84 @@ pub type DbConnectionV2 = OwnedRwLockWriteGuard<Object<AsyncPgConnection>>;
 
 #[cfg(not(feature = "testing"))]
 pub type DbConnectionV2 = Object<AsyncPgConnection>;
+
+#[derive(Clone)]
+pub struct DbConnectionV3 {
+    inner: Arc<RwLock<Object<AsyncPgConnection>>>,
+}
+
+pub struct WriteHandle {
+    guard: OwnedRwLockWriteGuard<Object<AsyncPgConnection>>,
+}
+
+impl DbConnectionV3 {
+    pub fn new(inner: Arc<RwLock<Object<AsyncPgConnection>>>) -> Self {
+        Self { inner }
+    }
+
+    pub async fn write(&self) -> WriteHandle {
+        WriteHandle {
+            guard: self.inner.clone().write_owned().await,
+        }
+    }
+
+    pub async fn transaction<'a, R, E, F>(self, callback: F) -> std::result::Result<R, E>
+    where
+        F: FnOnce(Self) -> ScopedBoxFuture<'a, 'a, std::result::Result<R, E>> + Send + 'a,
+        E: From<diesel::result::Error> + Send + 'a,
+        R: Send + 'a,
+    {
+        use diesel_async::TransactionManager as _;
+
+        type TxManager = <AsyncPgConnection as AsyncConnection>::TransactionManager;
+
+        {
+            let mut handle = self.write().await;
+            TxManager::begin_transaction(
+                handle.deref_mut(),
+            )
+            .await?;
+        }
+
+        match callback(self.clone()).await {
+            Ok(result) => {
+                let mut handle = self.write().await;
+                TxManager::commit_transaction(
+                    handle.deref_mut(),
+                )
+                .await?;
+                Ok(result)
+            }
+            Err(callback_error) => {
+                let mut handle = self.write().await;
+                match TxManager::rollback_transaction(
+                    handle.deref_mut(),
+                )
+                .await
+                {
+                    Ok(()) | Err(diesel::result::Error::BrokenTransactionManager) => {
+                        Err(callback_error)
+                    }
+                    Err(rollback_error) => Err(rollback_error.into()),
+                }
+            }
+        }
+    }
+}
+
+impl Deref for WriteHandle {
+    type Target = AsyncPgConnection;
+
+    fn deref(&self) -> &Self::Target {
+        self.guard.deref()
+    }
+}
+
+impl DerefMut for WriteHandle {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.guard.deref_mut()
+    }
+}
 
 /// Wrapper for connection pooling with support for test connections on `cfg(test)`
 ///
@@ -47,6 +128,8 @@ pub struct DbConnectionPoolV2 {
     pool: Arc<Pool<AsyncPgConnection>>,
     #[cfg(feature = "testing")]
     test_connection: Option<Arc<RwLock<Object<AsyncPgConnection>>>>,
+    #[cfg(feature = "testing")]
+    test_connection_v3: Option<DbConnectionV3>,
 }
 
 #[cfg(feature = "testing")]
@@ -61,8 +144,20 @@ impl Default for DbConnectionPoolV2 {
 pub struct DatabasePoolBuildError(#[from] diesel_async::pooled_connection::deadpool::BuildError);
 
 #[derive(Debug, thiserror::Error)]
-#[error("an error occurred while getting a connection from the database pool: '{0}'")]
-pub struct DatabasePoolError(#[from] diesel_async::pooled_connection::deadpool::PoolError);
+pub enum DatabasePoolError {
+    #[error("an error occurred while getting a connection from the database pool: '{0}'")]
+    Pool(#[from] diesel_async::pooled_connection::deadpool::PoolError),
+    #[error("an error occured while querying the database: {0}")]
+    DieselError(#[from] diesel::result::Error),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum DatabaseTransactionError {
+    #[error("an error occurred while getting a connection from the database pool: '{0}'")]
+    Pool(#[from] DatabasePoolError),
+    #[error("an error occured while querying the database: {0}")]
+    DieselError(#[from] diesel::result::Error),
+}
 
 impl DbConnectionPoolV2 {
     /// Get inner pool for retro compatibility
@@ -89,10 +184,25 @@ impl DbConnectionPoolV2 {
         Ok(connection)
     }
 
+    #[cfg(feature = "testing")]
+    async fn get_connection_v3(&self) -> Result<DbConnectionV3, DatabasePoolError> {
+        Ok(self
+            .test_connection_v3
+            .as_ref()
+            .expect("should already exist")
+            .clone())
+    }
+
     #[cfg(not(feature = "testing"))]
     async fn get_connection(&self) -> Result<DbConnectionV2, DatabasePoolError> {
         let connection = self.pool.get().await?;
         Ok(connection)
+    }
+
+    #[cfg(not(feature = "testing"))]
+    async fn get_connection_v3(&self) -> Result<DbConnectionV3, DatabasePoolError> {
+        let connection = self.pool.get().await?;
+        Ok(DbConnectionV3::new(Arc::new(RwLock::new(connection))))
     }
 
     /// Get a connection from the pool
@@ -228,6 +338,15 @@ impl DbConnectionPoolV2 {
         self.get_connection().await
     }
 
+    pub async fn get_v3(&self) -> Result<DbConnectionV3, DatabasePoolError> {
+        self.get_connection_v3().await
+    }
+
+    #[cfg(feature = "testing")]
+    pub fn get_ok_v3(&self) -> DbConnectionV3 {
+        futures::executor::block_on(self.get_v3()).expect("Failed to get test connection")
+    }
+
     /// Gets a test connection from the pool synchronously, failing if the connection is not available
     ///
     /// In unit tests, this is the preferred way to get a connection
@@ -300,9 +419,23 @@ impl DbConnectionPoolV2 {
         }
         let test_connection = Arc::new(RwLock::new(conn));
 
+        // Conn v3
+        let mut conn_v3 = pool
+            .get()
+            .await
+            .expect("cannot acquire a connection in the test pool");
+        if transaction {
+            conn_v3
+                .begin_test_transaction()
+                .await
+                .expect("cannot begin a test transaction");
+        }
+        let test_connection_v3 = Some(DbConnectionV3::new(Arc::new(RwLock::new(conn_v3))));
+
         Self {
             pool,
             test_connection: Some(test_connection),
+            test_connection_v3,
         }
     }
 
@@ -312,7 +445,7 @@ impl DbConnectionPoolV2 {
             .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
         let url = Url::parse(&url).expect("Failed to parse postgresql url");
         let pool =
-            create_connection_pool(url, 1).expect("Failed to initialize test connection pool");
+            create_connection_pool(url, 2).expect("Failed to initialize test connection pool");
         futures::executor::block_on(Self::from_pool_test(Arc::new(pool), transaction))
     }
 
@@ -353,7 +486,7 @@ pub fn create_connection_pool(
     Ok(Pool::builder(manager).max_size(max_size).build()?)
 }
 
-fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DbConnection>> {
+fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DieselConnection>> {
     let fut = async {
         let mut connector_builder = SslConnector::builder(SslMethod::tls()).unwrap();
         connector_builder.set_verify(SslVerifyMode::NONE);
@@ -368,7 +501,7 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DbConnection
                 tracing::error!("connection error: {}", e);
             }
         });
-        DbConnection::try_from(client).await
+        DieselConnection::try_from(client).await
     };
     fut.boxed()
 }

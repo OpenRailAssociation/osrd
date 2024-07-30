@@ -1,6 +1,6 @@
+use editoast_models::DbConnection;
 use crate::error::EditoastError;
 use crate::error::Result;
-use editoast_models::DbConnection;
 
 /// Describes how a [Model](super::Model) can be deleted from the database
 ///
