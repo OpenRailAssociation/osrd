@@ -13,7 +13,7 @@ import type {
   PositionData,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { ReportTrainV2 } from 'common/api/generatedEditoastApi';
+import type { ReportTrainV2 } from 'common/api/osrdEditoastApi';
 import { mmToKm, msToKmh, mToKm } from 'utils/physics';
 
 import { electricalProfilesDesignValues } from './consts';

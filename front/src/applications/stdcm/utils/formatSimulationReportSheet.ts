@@ -1,4 +1,4 @@
-import type { SimulationResponse } from 'common/api/generatedEditoastApi';
+import type { SimulationResponse } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 
 import type { StdcmResultsOperationalPointsList } from '../types';

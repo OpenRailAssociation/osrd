@@ -6,7 +6,7 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { TrainScheduleResult } from 'common/api/generatedEditoastApi';
+import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainScheduleV2/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';

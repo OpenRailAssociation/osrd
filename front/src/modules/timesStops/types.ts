@@ -1,4 +1,4 @@
-import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/generatedEditoastApi';
+import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { ArrayElement } from 'utils/types';
 

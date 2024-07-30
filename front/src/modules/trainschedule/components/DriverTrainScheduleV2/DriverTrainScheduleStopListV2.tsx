@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
-import type { ReportTrainV2 } from 'common/api/generatedEditoastApi';
+import type { ReportTrainV2 } from 'common/api/osrdEditoastApi';
 import type { PositionSpeedTime } from 'reducers/osrdsimulation/types';
 import { mmToM } from 'utils/physics';
 

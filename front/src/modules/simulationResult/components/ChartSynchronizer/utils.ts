@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
-import type { RollingStock } from 'common/api/generatedEditoastApi';
+import type { RollingStock } from 'common/api/osrdEditoastApi';
 import { isoDateWithTimezoneToSec } from 'utils/date';
 import { mmToM } from 'utils/physics';
 
