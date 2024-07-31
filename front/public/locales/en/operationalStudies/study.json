@@ -10,6 +10,9 @@
     "realend": "Real end",
     "start": "Started"
   },
+  "deleteScenarios": "Delete",
+  "deleteItems": "Delete",
+  "deleteSelection": "Delete selected scenarios",
   "description": "description",
   "errorHappened": "An error has occurred",
   "filesAndLinks": "Files & links",
@@ -24,11 +27,24 @@
   "scenariosCount_one": "1 scenario",
   "scenariosCount_other": "{{count}} scenarios",
   "scenariosCount_zero": "No scenario",
+  "scenarioDeleted": "Scenario deleted",
+  "scenarioDeleted_one": "Scenario deleted",
+  "scenarioDeleted_other": "Scenarios deleted",
+  "scenarioDeletedError": "Failed to delete",
+  "scenarioDeletedErrorMessage": "Scenario deletion failed",
+  "scenarioDeletedMulti_one": "{{count}} scenario have been deleted.",
+  "scenarioDeletedMulti_other": "{{count}} scenarios have been deleted.",
   "scenariosList": "Scenarios",
+  "selectedScenarios_one": "{{count}} selected scenario",
+  "selectedScenarios_other": "{{count}} selected scenarios",
+
   "sortOptions": {
     "byName": "Sort by name",
     "byRecentDate": "Latest"
   },
+  "confirmDeleteMessage": "Do you really want to delete the scenario?",
+  "confirmDeleteMessage_one": "Do you really want to delete {{count}} scenario?",
+  "confirmDeleteMessage_other": "Do you really want to delete the {{count}} scenarios?",
   "studyBudget": "Budget",
   "studyBudgetInvalid": "The budget for the study must not exceed 2147483647",
   "studyBusinessCode": "Business code",
@@ -74,5 +90,7 @@
   },
   "studyUpdated": "Successful update!",
   "studyUpdatedDetails": "The {{ name }} study has been updated.",
-  "unableToRetrieveStudyState": "Failed to retrieve study types"
+  "toggleMultiSelection": "Toggle multiselection",
+  "unableToRetrieveStudyState": "Failed to retrieve study types",
+  "unselectAll": "Deselect"
 }

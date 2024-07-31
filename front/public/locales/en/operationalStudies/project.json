@@ -4,9 +4,13 @@
   "budget": "Budget",
   "createdOn": "Created on ",
   "createStudy": "Create a study",
+  "deleteItems": "Delete",
+  "deleteStudies": "Delete",
   "description": "description",
   "error": {
+    "unableToDelete": "Unable to delete",
     "unableToDeleteProject": "Unable to delete project",
+    "unableToDeleteStudy": "Unable to delete study",
     "unableToPostDocumentTitle": "Failure to upload the picture",
     "unableToPostDocument": "Unable to load the picture",
     "unableToUpdateProjectTitle": "Failure to update the project",
@@ -59,10 +63,20 @@
     "byName": "Sort by name",
     "byRecentDate": "Latest"
   },
+  "confirmDeleteMessage": "Do you really want to delete the project?",
+  "confirmDeleteMessage_one": "Do you really want to delete {{count}} study?",
+  "confirmDeleteMessage_other": "Do you really want to delete the {{count}} studies?",
+  "selectedStudies_one": "{{count}} study selected",
+  "selectedStudies_other": "{{count}} studies selected",
   "studies": "Studies",
   "studiesCount_one": "1 study",
   "studiesCount_other": "{{count}} studies",
   "studiesCount_zero": "No study",
+  "studyDeleted": "Study deleted",
+  "studyDeleted_one": "A study has been deleted",
+  "studyDeleted_other": "{{count}} studies have been deleted",
+  "toggleMultiSelection": "Toggle multiselection",
   "totalBudget": "Total budget",
-  "uploadImage": "Upload an image"
+  "uploadImage": "Upload an image",
+  "unselectAll": "Deselect"
 }

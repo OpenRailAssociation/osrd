@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Calendar, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
+import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
@@ -15,9 +16,16 @@ import { budgetFormat } from 'utils/numbers';
 type StudyCardProps = {
   setFilterChips: (filterChips: string) => void;
   study: StudyWithScenarios;
+  isSelected: boolean;
+  toggleSelect: (id: number) => void;
 };
 
-export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
+export default function StudyCard({
+  setFilterChips,
+  study,
+  isSelected,
+  toggleSelect,
+}: StudyCardProps) {
   const { t } = useTranslation(['operationalStudies/project', 'operationalStudies/study']);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -30,9 +38,18 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
   };
 
   return (
-    <div className="study-card">
-      <div className="study-card-name" data-testid={study.name}>
+    <div
+      className={cx('study-card', isSelected && 'selected')}
+      data-testid={study.name}
+      onClick={() => toggleSelect(study.id)}
+      role="button"
+      tabIndex={0}
+    >
+      <div className={cx('study-card-name')} data-testid={study.name}>
         <span className="mr-2">
+          <span className="selected-mark">
+            <CheckCircle variant="fill" size="lg" />
+          </span>
           <img className="study-card-img" src={studyLogo} alt="study logo" />
         </span>
         <span className="study-card-name-text" title={study.name}>

@@ -4,21 +4,19 @@ import { useTranslation } from 'react-i18next';
 
 import { ModalBodySNCF, ModalFooterSNCF, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
-export default function DeleteProjectsModal({
-  handleDeleteProjects,
-  projectCount,
+export default function DeleteItemsModal({
+  handleDeleteItems,
+  translationKey,
 }: {
-  handleDeleteProjects: () => void;
-  projectCount: number;
+  handleDeleteItems: () => void;
+  translationKey: string;
 }) {
   const { t } = useTranslation(['translation', 'operationalStudies/home']);
   const { closeModal } = useModal();
   return (
     <>
       <ModalBodySNCF>
-        <div className="lead my-4 w-100 text-center">
-          {t('operationalStudies/home:confirmDeleteMessage', { count: projectCount })}
-        </div>
+        <div className="lead my-4 w-100 text-center">{translationKey}</div>
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="d-flex align-items-center">
@@ -30,7 +28,7 @@ export default function DeleteProjectsModal({
             className="btn btn-danger flex-grow-1 ml-1"
             type="button"
             onClick={() => {
-              handleDeleteProjects();
+              handleDeleteItems();
               closeModal();
             }}
           >

@@ -13,11 +13,13 @@ import {
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loaders';
+import SelectionToolbar from 'common/SelectionToolbar';
 import ProjectCard from 'modules/project/components/ProjectCard';
 import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
-import ProjectSelectionToolbar from 'modules/project/components/ProjectSelectionToolbar';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { getLogo } from 'utils/logo';
+
+import useMultiSelection from './hooks/useMultiSelection';
 
 type SortOptions =
   | 'NameAsc'
@@ -31,12 +33,25 @@ export default function HomeOperationalStudies() {
   const { t } = useTranslation('operationalStudies/home');
   const safeWord = useSelector(getUserSafeWord);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const [projectsList, setProjectsList] = useState<
-    Array<ProjectWithStudies | SearchResultItemProject>
-  >([]);
-  const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
+  const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
+
+  const {
+    selectedItemIds: selectedProjectIds,
+    setSelectedItemIds: setSelectedProjectIds,
+    items: projectsList,
+    setItems: setProjectsList,
+    toggleSelection: toggleProjectSelection,
+    deleteItems,
+  } = useMultiSelection<ProjectWithStudies | SearchResultItemProject>((projectId) => {
+    deleteProject({ projectId });
+  });
+  const handleDeleteProjects = () => {
+    if (selectedProjectIds.length > 0) {
+      deleteItems();
+    }
+  };
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
   const { data: allProjects } = osrdEditoastApi.endpoints.getProjects.useQuery({
@@ -98,16 +113,6 @@ export default function HomeOperationalStudies() {
     setSortOption(e.target.value as SortOptions);
   };
 
-  const toggleProjectSelection = (id?: number) => {
-    if (id !== undefined) {
-      setSelectedProjectIds(
-        selectedProjectIds.indexOf(id) !== -1
-          ? selectedProjectIds.filter((projectId) => projectId !== id)
-          : selectedProjectIds.concat([id])
-      );
-    }
-  };
-
   function displayCards() {
     return !isLoading ? (
       <div className="projects-list row">
@@ -165,12 +170,18 @@ export default function HomeOperationalStudies() {
               options={sortOptions}
             />
           </div>
-          <ProjectSelectionToolbar
-            selectedProjectIds={selectedProjectIds}
-            setSelectedProjectIds={setSelectedProjectIds}
-            setProjectsList={setProjectsList}
-            projectsList={projectsList}
-          />
+
+          {selectedProjectIds.length > 0 && (
+            <SelectionToolbar
+              selectedItemCount={selectedProjectIds.length}
+              onDeselectAll={() => setSelectedProjectIds([])}
+              onDelete={handleDeleteProjects}
+              translationKey="selectedProjects"
+              translationNameSpace="operationalStudies/home"
+              dataTestId="deleteProjects"
+            />
+          )}
+
           {useMemo(() => displayCards(), [projectsList, selectedProjectIds])}
         </div>
       </main>

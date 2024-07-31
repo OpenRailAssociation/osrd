@@ -10,12 +10,19 @@
   border: 2px solid var(--coolgray3);
   transition: 0.4s;
   height: 17rem;
+  z-index: 1;
   &:hover,
   &:focus,
   &:active {
     border-color: var(--primary);
     button {
       opacity: 1 !important;
+    }
+  }
+  &.selected {
+    border-color: var(--purple);
+    .selected-mark {
+      display: block;
     }
   }
   &.empty {
@@ -56,6 +63,15 @@
     opacity: 0;
     margin-left: auto;
   }
+  .selected-mark {
+    display: none;
+    position: absolute;
+    z-index: 3;
+    color: var(--purple);
+    font-size: 2rem;
+    top: -1.6rem;
+    left: -0.8rem;
+  }
   .study-card-name {
     display: flex;
     transition: 0.4s;
@@ -69,6 +85,7 @@
       text-overflow: ellipsis;
     }
   }
+
   .study-card-type {
     overflow: hidden;
     white-space: nowrap;
