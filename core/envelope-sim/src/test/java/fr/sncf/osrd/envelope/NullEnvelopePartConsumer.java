@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import fr.sncf.osrd.envelope.part.EnvelopePartConsumer;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 
 public class NullEnvelopePartConsumer implements EnvelopePartConsumer {
     @Override
@@ -13,8 +14,8 @@ public class NullEnvelopePartConsumer implements EnvelopePartConsumer {
     public void addStep(double position, double speed, double timeDelta) {}
 
     @Override
-    public <T extends EnvelopeAttr> void setAttr(T attr) {}
+    public <T extends SelfTypeHolder> void setAttr(T attr) {}
 
     @Override
-    public void setAttrs(Iterable<EnvelopeAttr> attrs) {}
+    public void setAttrs(Iterable<SelfTypeHolder> attrs) {}
 }

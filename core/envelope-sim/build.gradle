@@ -1,8 +1,8 @@
 plugins {
+    alias(libs.plugins.kotlin.jvm)
     id 'java'
     id 'java-test-fixtures'
     id 'jacoco'
-    id 'org.jetbrains.kotlin.jvm'
 }
 
 repositories {
@@ -19,6 +19,7 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
 
     implementation project(':osrd-reporting')
+    api project(":kt-osrd-utils")
     implementation libs.guava
     implementation libs.slf4j
 

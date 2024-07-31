@@ -10,7 +10,6 @@ import static java.lang.Math.abs;
 import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopeBuilder;
 import fr.sncf.osrd.envelope.EnvelopeSpeedCap;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
@@ -29,10 +28,12 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,11 +68,11 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
     protected abstract double computeInitialLowBound(Envelope envelopeSection);
 
-    public static final class CapacitySpeedLimit implements EnvelopeAttr {
+    public static final class CapacitySpeedLimit implements SelfTypeHolder {
         private CapacitySpeedLimit() {}
 
         @Override
-        public Class<? extends EnvelopeAttr> getAttrType() {
+        public @NotNull Class<? extends SelfTypeHolder> getSelfType() {
             return CapacitySpeedLimit.class;
         }
     }

@@ -1,9 +1,8 @@
 package fr.sncf.osrd.stdcm
 
-import fr.sncf.osrd.envelope.EnvelopeAttr
+import fr.sncf.osrd.utils.SelfTypeHolder
 
-class BacktrackingEnvelopeAttr : EnvelopeAttr {
-    override fun getAttrType(): Class<out EnvelopeAttr?> {
-        return BacktrackingEnvelopeAttr::class.java
-    }
+class BacktrackingSelfTypeHolder : SelfTypeHolder {
+    override val selfType: Class<out SelfTypeHolder>
+        get() = BacktrackingSelfTypeHolder::class.java
 }

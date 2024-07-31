@@ -2,7 +2,6 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.envelope.EnvelopeAttr
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePart
@@ -22,10 +21,11 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr
+import fr.sncf.osrd.stdcm.BacktrackingSelfTypeHolder
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
+import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -129,7 +129,7 @@ fun simulateBlock(
 private fun makeSinglePointEnvelope(speed: Double): Envelope {
     return Envelope.make(
         EnvelopePart(
-            mapOf<Class<out EnvelopeAttr>, EnvelopeAttr>(
+            mapOf<Class<out SelfTypeHolder>, SelfTypeHolder>(
                 Pair(EnvelopeProfile::class.java, EnvelopeProfile.CONSTANT_SPEED)
             ),
             doubleArrayOf(0.0),
@@ -153,7 +153,7 @@ fun simulateBackwards(
     val context = build(graph.rollingStock, envelopePath, graph.timeStep, graph.comfort)
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)
-    partBuilder.setAttr(BacktrackingEnvelopeAttr())
+    partBuilder.setAttr(BacktrackingSelfTypeHolder())
     val overlayBuilder =
         ConstrainedEnvelopePartBuilder(
             partBuilder,

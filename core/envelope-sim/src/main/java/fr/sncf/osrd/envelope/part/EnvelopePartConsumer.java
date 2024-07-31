@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope.part;
 
-import fr.sncf.osrd.envelope.EnvelopeAttr;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 
 public interface EnvelopePartConsumer {
     /** Initializes the envelope part */
@@ -17,8 +17,8 @@ public interface EnvelopePartConsumer {
     void addStep(double position, double speed, double timeDelta);
 
     /** Sets an envelope part attribute */
-    <T extends EnvelopeAttr> void setAttr(T attr);
+    <T extends SelfTypeHolder> void setAttr(T attr);
 
     /** Sets envelope part attributes */
-    void setAttrs(Iterable<EnvelopeAttr> attrs);
+    void setAttrs(Iterable<SelfTypeHolder> attrs);
 }

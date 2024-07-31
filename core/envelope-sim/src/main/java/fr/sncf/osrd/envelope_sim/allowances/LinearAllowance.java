@@ -6,6 +6,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 import java.util.*;
 
 public class LinearAllowance extends AbstractAllowanceWithRanges {
@@ -50,7 +51,7 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
         var speeds = part.cloneSpeeds();
         var scaledSpeeds = Arrays.stream(speeds).map(x -> x * ratio).toArray();
         var attr = part.getAttr(EnvelopeProfile.class);
-        var attrs = List.<EnvelopeAttr>of();
+        var attrs = List.<SelfTypeHolder>of();
         if (attr != null) attrs = List.of(attr);
         return EnvelopePart.generateTimes(attrs, positions, scaledSpeeds);
     }
