@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { ChevronLeft, ChevronRight, Eye, EyeClosed, Pencil } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import NGE from 'applications/operationalStudies/components/MacroEditor/NGE';
@@ -18,179 +17,118 @@ import type {
 import MicroMacroSwitch from 'applications/operationalStudies/components/MicroMacroSwitch';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import infraLogo from 'assets/pictures/components/tracks.svg';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainScheduleV2 from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainScheduleV2';
 import TimetableV2 from 'modules/trainschedule/components/TimetableV2/TimetableV2';
 import type { RootState } from 'reducers';
-import { updateTrainIdUsedForProjection } from 'reducers/osrdsimulation/actions';
-import { getSelectedTrainId, getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
+import { concatMap, mapBy } from 'utils/types';
 
-import { getSpaceTimeChartData, selectProjectionV2 } from './getSimulationResultsV2';
 import ImportTrainScheduleV2 from './ImportTrainScheduleV2';
 import ManageTrainScheduleV2 from './ManageTrainScheduleV2';
 import SimulationResultsV2 from './SimulationResultsV2';
-
-type SimulationParams = {
-  projectId: string;
-  studyId: string;
-  scenarioId: string;
-};
+import useScenarioData from '../../hooks/useScenarioData';
 
 const ScenarioV2 = () => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
+  const dispatch = useAppDispatch();
+  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
+
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
   const [trainsWithDetails, setTrainsWithDetails] = useState(false);
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
-  const [trainSpaceTimeData, setTrainSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
-  const [trainResultsToFetch, setTrainResultsToFetch] = useState<number[]>();
   const [trainIdToEdit, setTrainIdToEdit] = useState<number>();
-  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
   const [isMacro, setIsMacro] = useState(false);
 
   const { openModal } = useModal();
 
-  const { infra, isInfraLoaded, reloadCount } = useInfraStatus();
-
-  const {
-    projectId: urlProjectId,
-    studyId: urlStudyId,
-    scenarioId: urlScenarioId,
-  } = useParams() as SimulationParams;
-  const { projectId, studyId, scenarioId } = useMemo(
-    () => ({
-      projectId: !Number.isNaN(+urlProjectId) ? +urlProjectId : undefined,
-      studyId: !Number.isNaN(+urlStudyId) ? +urlStudyId : undefined,
-      scenarioId: !Number.isNaN(+urlScenarioId) ? +urlScenarioId : undefined,
-    }),
-    [urlStudyId, urlProjectId, urlScenarioId]
-  );
-
-  const { getTimetableID } = useOsrdConfSelectors();
-  const infraId = useInfraID();
-  const timetableId = useSelector(getTimetableID);
-  const selectedTrainId = useSelector(getSelectedTrainId);
-  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
-
-  const {
-    data: scenario,
-    isError: isScenarioError,
-    error: errorScenario,
-  } = osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
-    {
-      projectId: projectId!,
-      studyId: studyId!,
-      scenarioId: scenarioId!,
-    },
-    {
-      skip: !projectId || !studyId || !scenarioId,
-    }
-  );
-
-  useEffect(() => {
-    if (isScenarioError && errorScenario) throw errorScenario;
-  }, [isScenarioError, errorScenario]);
-
-  const { updateInfraID, updateTimetableID, updateElectricalProfileSetId } = useOsrdConfActions();
-
-  useEffect(() => {
-    if (scenario) {
-      dispatch(updateTimetableID(scenario.timetable_id));
-      dispatch(updateInfraID(scenario.infra_id));
-      dispatch(updateElectricalProfileSetId(scenario.electrical_profile_set_id));
-    }
-  }, [scenario]);
-
-  const { data: timetable } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
-    { id: timetableId! },
-    {
-      skip: !timetableId,
-    }
-  );
-
-  const { data: conflicts } = osrdEditoastApi.endpoints.getV2TimetableByIdConflicts.useQuery(
-    {
-      id: scenario?.timetable_id as number,
-      infraId: scenario?.infra_id as number,
-      electricalProfileSetId: scenario?.electrical_profile_set_id,
-    },
-    { skip: !scenario }
-  );
-
-  useEffect(() => {
-    if (timetable && infra?.state === 'CACHED' && timetable.train_ids.length > 0) {
-      selectProjectionV2(timetable.train_ids, trainIdUsedForProjection, selectedTrainId);
-    }
-  }, [timetable, infra]);
-
-  useEffect(() => {
-    if (timetable && infra?.state === 'CACHED' && trainIdUsedForProjection && infraId) {
-      // If trainResultsToFetch is undefined that means it's the first load of the scenario
-      // and we want to get all timetable trains results
-      getSpaceTimeChartData(
-        trainResultsToFetch ?? timetable.train_ids,
-        trainIdUsedForProjection,
-        infraId,
-        setTrainSpaceTimeData,
-        scenario?.electrical_profile_set_id ?? undefined
-      );
-    }
-  }, [timetable, trainIdUsedForProjection, infra]);
-
-  useEffect(() => {
-    if (!projectId || !studyId || !scenarioId) {
-      throw new Error('Missing projectId, studyId or scenarioId');
-    }
-  }, [projectId, studyId, scenarioId]);
-
-  useEffect(
-    () => () => {
-      dispatch(updateTimetableID(undefined));
-      dispatch(updateInfraID(undefined));
-      dispatch(updateElectricalProfileSetId(undefined));
-      dispatch(updateTrainIdUsedForProjection(undefined));
-    },
-    []
-  );
+  const scenarioData = useScenarioData();
 
   const toggleMicroMacroButton = (isMacroMode: boolean) => {
     setIsMacro(isMacroMode);
     setCollapsedTimetable(isMacroMode);
   };
 
-  const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) =>
-    handleOperation({ event, dispatch, timeTableId: timetableId!, netzgrafikDto });
+  const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
+  const [ngeUpsertedTrainSchedules, setNgeUpsertedTrainSchedules] = useState<
+    Map<number, TrainScheduleResult>
+  >(new Map());
+  const [ngeDeletedTrainIds, setNgeDeletedTrainIds] = useState<number[]>([]);
 
-  const [ngeDto, setNgeDto] = useState<NetzgrafikDto | undefined>(undefined);
   useEffect(() => {
-    if (!infraId || !timetableId || !isMacro) {
+    if (!scenarioData || !isMacro || (isMacro && ngeDto)) {
       return;
     }
+
+    const { scenario } = scenarioData;
     const doImport = async () => {
-      const dto = await importTimetableToNGE(infraId, timetableId, dispatch);
+      const dto = await importTimetableToNGE(scenario.infra_id, scenario.timetable_id, dispatch);
       setNgeDto(dto);
     };
     doImport();
-  }, [infraId, timetableId, isMacro]);
+  }, [scenarioData, isMacro]);
 
-  if (!scenario || !infraId || !timetableId || !timetable) return null;
+  useEffect(() => {
+    if (isMacro) {
+      return;
+    }
+
+    if (ngeDto) {
+      setNgeDto(undefined);
+    }
+    if (scenarioData) {
+      const { upsertTrainSchedules, removeTrains } = scenarioData;
+      upsertTrainSchedules(Array.from(ngeUpsertedTrainSchedules.values()));
+      removeTrains(ngeDeletedTrainIds);
+    }
+  }, [isMacro]);
+
+  if (!scenarioData) return null;
+
+  const {
+    scenario,
+    timetable,
+    infraId,
+    selectedTrainId,
+    infra: { infra, isInfraLoaded, reloadCount },
+    trainScheduleSummaries,
+    trainSchedules,
+    trainIdUsedForProjection,
+    projectedTrains,
+    simulationResults,
+    conflicts,
+    upsertTrainSchedules,
+    removeTrains,
+  } = scenarioData;
+
+  const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) =>
+    handleOperation({
+      event,
+      dispatch,
+      timeTableId: scenarioData!.scenario.timetable_id,
+      netzgrafikDto,
+      addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResult[]) => {
+        setNgeUpsertedTrainSchedules((prev) =>
+          concatMap(prev, mapBy(upsertedTrainSchedules, 'id'))
+        );
+      },
+      addDeletedTrainIds: (trainIds: number[]) => {
+        setNgeDeletedTrainIds((prev) => [...prev, ...trainIds]);
+      },
+    });
 
   return (
     <>
       <NavBarSNCF
         appName={
-          <BreadCrumbs project={scenario?.project} study={scenario?.study} scenario={scenario} />
+          <BreadCrumbs project={scenario.project} study={scenario.study} scenario={scenario} />
         }
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
@@ -289,7 +227,7 @@ const ScenarioV2 = () => {
                         <TimetableManageTrainScheduleV2
                           displayTrainScheduleManagement={displayTrainScheduleManagement}
                           setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                          setTrainResultsToFetch={setTrainResultsToFetch}
+                          upsertTrainSchedules={upsertTrainSchedules}
                           trainIdToEdit={trainIdToEdit}
                           setTrainIdToEdit={setTrainIdToEdit}
                           infraState={infra.state}
@@ -303,10 +241,12 @@ const ScenarioV2 = () => {
                         trainIds={timetable.train_ids}
                         selectedTrainId={selectedTrainId}
                         conflicts={conflicts}
-                        setTrainResultsToFetch={setTrainResultsToFetch}
-                        setSpaceTimeData={setTrainSpaceTimeData}
+                        upsertTrainSchedules={upsertTrainSchedules}
+                        removeTrains={removeTrains}
                         setTrainIdToEdit={setTrainIdToEdit}
                         trainIdToEdit={trainIdToEdit}
+                        trainSchedules={trainSchedules}
+                        trainSchedulesWithDetails={trainScheduleSummaries}
                       />
                     )}
                   </>
@@ -328,7 +268,7 @@ const ScenarioV2 = () => {
               )}
               {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
                 <div className="scenario-managetrainschedule">
-                  <ImportTrainScheduleV2 timetableId={timetableId} />
+                  <ImportTrainScheduleV2 timetableId={scenario.timetable_id} />
                 </div>
               )}
               <div className="scenario-results">
@@ -369,7 +309,11 @@ const ScenarioV2 = () => {
                   infra && (
                     <SimulationResultsV2
                       collapsedTimetable={collapsedTimetable}
-                      spaceTimeData={trainSpaceTimeData}
+                      spaceTimeData={projectedTrains}
+                      simulationResults={simulationResults}
+                      trainIdUsedForProjection={trainIdUsedForProjection}
+                      infraId={infraId}
+                      timetableTrainNb={timetable.train_ids.length}
                     />
                   )
                 )}

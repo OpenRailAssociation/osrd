@@ -5,7 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraState, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type {
+  InfraState,
+  TrainScheduleBase,
+  TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
@@ -21,13 +25,13 @@ import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
 type SubmitConfAddTrainScheduleProps = {
   infraState?: InfraState;
   setIsWorking: (isWorking: boolean) => void;
-  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
 };
 
 const AddTrainScheduleV2Button = ({
   infraState,
   setIsWorking,
-  setTrainResultsToFetch,
+  upsertTrainSchedules,
 }: SubmitConfAddTrainScheduleProps) => {
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
@@ -69,7 +73,7 @@ const AddTrainScheduleV2Button = ({
       }
 
       try {
-        const newTrain = await postTrainSchedule({
+        const newTrainSchedules = await postTrainSchedule({
           id: timetableId,
           body: trainScheduleParams,
         }).unwrap();
@@ -81,7 +85,7 @@ const AddTrainScheduleV2Button = ({
           })
         );
         setIsWorking(false);
-        setTrainResultsToFetch(newTrain.map((train) => train.id));
+        upsertTrainSchedules(newTrainSchedules);
       } catch (e) {
         setIsWorking(false);
         dispatch(setFailure(castErrorToFailure(e)));

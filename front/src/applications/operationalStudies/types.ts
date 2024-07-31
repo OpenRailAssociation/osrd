@@ -1,11 +1,18 @@
 import type {
+  LayerData,
+  PowerRestrictionValues,
+} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+
+import type {
   IncompatibleConstraints,
   PathProperties,
   PathfindingResultSuccess,
   ProjectPathTrainResult,
   RangedValue,
+  RollingStockWithLiveries,
   SimulationResponse,
   TrainScheduleBase,
+  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { ArrayElement } from 'utils/types';
@@ -122,4 +129,14 @@ export type SimulationResponseSuccess = Extract<SimulationResponse, { status: 's
 export type ElectrificationVoltage = {
   type: string;
   voltage?: string;
+};
+
+export type SimulationResults = {
+  selectedTrainSchedule?: TrainScheduleResult;
+  selectedTrainRollingStock?: RollingStockWithLiveries;
+  selectedTrainPowerRestrictions: LayerData<PowerRestrictionValues>[];
+  trainSimulation?: SimulationResponseSuccess;
+  pathProperties?: PathPropertiesFormatted;
+  pathLength?: number;
+  path?: PathfindingResultSuccess;
 };

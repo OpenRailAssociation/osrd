@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import checkCurrentConfig from 'modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig';
@@ -18,7 +18,7 @@ import formatTrainSchedulePayload from '../helpers/formatTrainSchedulePayload';
 const useUpdateTrainSchedule = (
   setIsWorking: (isWorking: boolean) => void,
   setDisplayTrainScheduleManagement: (type: string) => void,
-  setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void,
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void,
   setTrainIdToEdit: (trainIdToEdit?: number) => void,
   trainIdToEdit?: number
 ) => {
@@ -47,12 +47,12 @@ const useUpdateTrainSchedule = (
         startTime
       );
       try {
-        await putV2TrainScheduleById({
+        const trainScheduleResult = await putV2TrainScheduleById({
           id: trainIdToEdit,
           trainScheduleForm: trainSchedule,
         }).unwrap();
 
-        setTrainResultsToFetch([trainIdToEdit]);
+        upsertTrainSchedules([trainScheduleResult]);
         dispatch(
           setSuccess({
             title: t('trainUpdated'),

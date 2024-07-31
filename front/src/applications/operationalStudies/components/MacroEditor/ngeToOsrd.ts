@@ -1,4 +1,8 @@
-import { osrdEditoastApi, type TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type TrainScheduleBase,
+  type TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
 import nodeStore from './nodeStore';
@@ -61,12 +65,16 @@ const handleTrainrunOperation = async ({
   dispatch,
   timeTableId,
   netzgrafikDto,
+  addUpsertedTrainSchedules,
+  addDeletedTrainIds,
 }: {
   type: NGEEvent['type'];
   trainrun: Trainrun;
   dispatch: AppDispatch;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+  addDeletedTrainIds: (trainIds: number[]) => void;
 }) => {
   const { trainrunSections, nodes } = netzgrafikDto;
   const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(
@@ -87,6 +95,7 @@ const handleTrainrunOperation = async ({
         })
       ).unwrap();
       createdTrainrun.set(trainrun.id, newTrainSchedules[0].id);
+      addUpsertedTrainSchedules(newTrainSchedules);
       break;
     }
     case 'delete': {
@@ -97,6 +106,7 @@ const handleTrainrunOperation = async ({
         })
       ).unwrap();
       createdTrainrun.delete(trainrun.id);
+      addDeletedTrainIds([trainrunIdToDelete]);
       break;
     }
     case 'update': {
@@ -106,7 +116,7 @@ const handleTrainrunOperation = async ({
           id: trainrunIdToUpdate,
         })
       ).unwrap();
-      await dispatch(
+      const newTrainSchedule = await dispatch(
         osrdEditoastApi.endpoints.putV2TrainScheduleById.initiate({
           id: trainrunIdToUpdate,
           trainScheduleForm: {
@@ -117,6 +127,7 @@ const handleTrainrunOperation = async ({
           },
         })
       ).unwrap();
+      addUpsertedTrainSchedules([newTrainSchedule]);
       break;
     }
     default:
@@ -158,11 +169,15 @@ const handleOperation = async ({
   dispatch,
   timeTableId,
   netzgrafikDto,
+  addUpsertedTrainSchedules,
+  addDeletedTrainIds,
 }: {
   event: NGEEvent;
   dispatch: AppDispatch;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+  addDeletedTrainIds: (trainIds: number[]) => void;
 }) => {
   const { type } = event;
   switch (event.objectType) {
@@ -176,6 +191,8 @@ const handleOperation = async ({
         dispatch,
         timeTableId,
         netzgrafikDto,
+        addUpsertedTrainSchedules,
+        addDeletedTrainIds,
       });
       break;
     default:

@@ -13,8 +13,7 @@
     "used": "utilisé"
   },
   "errorMessages": {
-    "errorLoadingInfra": "Erreur de chargement de l'infrastructure",
-    "unableToRetrieveTrainSchedule": "Impossible de réaliser le calcul de marche"
+    "errorLoadingInfra": "Erreur de chargement de l'infrastructure"
   },
   "infraLoading": "Infrastructure en cours de chargement",
   "isUpdating": "Mise à jour...",
@@ -34,6 +33,7 @@
     "incompatible": "Restriction de puissance incompatible",
     "used": "utilisée"
   },
+  "projectionInProgress": "Projection en cours: {{ count }}/{{ total }} trains",
   "reset": "Réinitialiser le graphique",
   "resetTimer": "Réinitialiser le compteur",
   "rotate": "Pivoter le graphique",

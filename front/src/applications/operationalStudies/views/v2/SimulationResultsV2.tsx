@@ -8,15 +8,14 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
 
-import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import type { SimulationResults, TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { getScaleDomainFromValuesV2 } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SimulationResultsMapV2 from 'modules/simulationResult/components/SimulationResultsMapV2';
 import SpaceCurvesSlopesV2 from 'modules/simulationResult/components/SpaceCurvesSlopes/SpaceCurvesSlopesV2';
+import ProjectionLoadingMessage from 'modules/simulationResult/components/SpaceTimeChart/ProjectionLoadingMessage';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
-import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetailsV2 from 'modules/simulationResult/components/TrainDetailsV2';
@@ -35,17 +34,34 @@ const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
 type SimulationResultsV2Props = {
   collapsedTimetable: boolean;
-  spaceTimeData: TrainSpaceTimeData[];
+  spaceTimeData?: TrainSpaceTimeData[];
+  infraId?: number;
+  trainIdUsedForProjection?: number;
+  simulationResults: SimulationResults;
+  timetableTrainNb: number;
 };
 
-const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationResultsV2Props) => {
+const SimulationResultsV2 = ({
+  collapsedTimetable,
+  spaceTimeData,
+  infraId,
+  trainIdUsedForProjection,
+  simulationResults: {
+    selectedTrainSchedule,
+    selectedTrainRollingStock,
+    selectedTrainPowerRestrictions,
+    trainSimulation,
+    pathProperties,
+    pathLength,
+  },
+  timetableTrainNb,
+}: SimulationResultsV2Props) => {
   const { t } = useTranslation('simulation');
   const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
   const dispatch = useAppDispatch();
   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const isUpdating = useSelector(getIsUpdating);
-  const { infraId, trainIdUsedForProjection } = useStoreDataForSpaceTimeChart();
 
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
@@ -66,14 +82,6 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
   });
 
   const {
-    selectedTrainSchedule,
-    selectedTrainRollingStock,
-    selectedTrainPowerRestrictions,
-    trainSimulation,
-    pathProperties,
-    pathLength,
-  } = useSimulationResults();
-  const {
     operationalPoints,
     loading: formattedOpPointsLoading,
     baseOrEco,
@@ -92,7 +100,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
 
   const trainUsedForProjectionSpaceTimeData = useMemo(
     () =>
-      selectedTrainSchedule
+      selectedTrainSchedule && spaceTimeData
         ? spaceTimeData.find((_train) => _train.id === selectedTrainSchedule.id)
         : undefined,
     [selectedTrainSchedule, spaceTimeData]
@@ -119,7 +127,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
     }
   }, [trainSimulation]);
 
-  if (!trainSimulation || spaceTimeData.length === 0) return null;
+  if (!trainSimulation) return null;
 
   if (trainSimulation.status !== 'success' && !isUpdating) return null;
 
@@ -155,30 +163,40 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
       */}
 
       {/* SIMULATION : SPACE TIME CHART */}
-      {spaceTimeData.length > 0 && pathProperties && (
-        <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
-          <button
-            type="button"
-            className="show-warped-map-button my-3 ml-3 mr-1"
-            aria-label={t('toggleWarpedMap')}
-            title={t('toggleWarpedMap')}
-            onClick={() => setShowWarpedMap(!showWarpedMap)}
-          >
-            {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
-          </button>
-          <SimulationWarpedMap collapsed={!showWarpedMap} pathProperties={pathProperties} />
 
-          <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
-            <div className="chart-container">
-              <SpaceTimeChartWithManchette
-                operationalPoints={projectedOperationalPoints}
-                projectPathTrainResult={spaceTimeData}
-                selectedProjection={selectedTrainSchedule?.id}
-              />
+      <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
+        {spaceTimeData && spaceTimeData.length > 0 && pathProperties && (
+          <>
+            <button
+              type="button"
+              className="show-warped-map-button my-3 ml-3 mr-1"
+              aria-label={t('toggleWarpedMap')}
+              title={t('toggleWarpedMap')}
+              onClick={() => setShowWarpedMap(!showWarpedMap)}
+            >
+              {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
+            </button>
+            <SimulationWarpedMap collapsed={!showWarpedMap} pathProperties={pathProperties} />
+
+            <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
+              <div className="chart-container">
+                {spaceTimeData.length !== timetableTrainNb && (
+                  <ProjectionLoadingMessage
+                    projectedTrainsNb={spaceTimeData.length}
+                    totalTrains={timetableTrainNb}
+                  />
+                )}
+                <SpaceTimeChartWithManchette
+                  operationalPoints={projectedOperationalPoints}
+                  projectPathTrainResult={spaceTimeData.filter(
+                    (train) => train.space_time_curves.length > 0
+                  )}
+                />
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       {/* TRAIN : SPACE SPEED CHART */}
       {selectedTrainRollingStock && trainSimulation && pathProperties && selectedTrainSchedule && (

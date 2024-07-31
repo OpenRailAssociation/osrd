@@ -7,8 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { BiSelectMultiple } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
 
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -19,35 +18,35 @@ import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
 
 import FilterPanel from './FilterPanel';
-import useTrainSchedulesDetails from './hooks';
 import type {
   ScheduledPointsHonoredFilter,
   TrainScheduleWithDetails,
   ValidityFilter,
 } from './types';
+import useFilterTrainSchedules from './useFilterTrainSchedules';
 
 type TimetableToolbarProps = {
-  trainIds: number[];
-  trainSchedulesDetails: TrainScheduleWithDetails[];
-  setTrainSchedulesDetails: (trainSchedulesDetails: TrainScheduleWithDetails[]) => void;
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
+  displayedTrainSchedules: TrainScheduleWithDetails[];
+  setDisplayedTrainSchedules: (trainSchedulesDetails: TrainScheduleWithDetails[]) => void;
   selectedTrainIds: number[];
   setSelectedTrainIds: (selectedTrainIds: number[]) => void;
   multiSelectOn: boolean;
   setMultiSelectOn: (multiSelectOn: boolean) => void;
-  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
-  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
+  removeTrains: (trainIds: number[]) => void;
+  trainSchedules: TrainScheduleResult[];
 };
 
 const TimetableToolbar = ({
-  trainIds,
-  trainSchedulesDetails,
-  setTrainSchedulesDetails,
+  trainSchedulesWithDetails,
+  displayedTrainSchedules,
+  setDisplayedTrainSchedules,
   selectedTrainIds,
   setSelectedTrainIds,
   multiSelectOn,
   setMultiSelectOn,
-  setTrainResultsToFetch,
-  setSpaceTimeData,
+  removeTrains,
+  trainSchedules,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
   const dispatch = useAppDispatch();
@@ -70,14 +69,15 @@ const TimetableToolbar = ({
 
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
 
-  const { uniqueTags, trainSchedules } = useTrainSchedulesDetails(
-    trainIds,
-    setTrainSchedulesDetails,
+  // TODO: move this hook in Timetable
+  const { uniqueTags } = useFilterTrainSchedules(
+    trainSchedulesWithDetails,
     debouncedFilter,
     debouncedRollingstockFilter,
     validityFilter,
     scheduledPointsHonoredFilter,
-    selectedTags
+    selectedTags,
+    setDisplayedTrainSchedules
   );
 
   const toggleFilterPanel = () => {
@@ -85,10 +85,10 @@ const TimetableToolbar = ({
   };
 
   const toggleAllTrainsSelecton = () => {
-    if (trainSchedulesDetails.length === selectedTrainIds.length) {
+    if (displayedTrainSchedules.length === selectedTrainIds.length) {
       setSelectedTrainIds([]);
     } else {
-      setSelectedTrainIds(trainSchedulesDetails.map((train) => train.id));
+      setSelectedTrainIds(displayedTrainSchedules.map((train) => train.id));
     }
   };
 
@@ -104,8 +104,7 @@ const TimetableToolbar = ({
     await deleteTrainSchedules({ body: { ids: selectedTrainIds } })
       .unwrap()
       .then(() => {
-        setTrainResultsToFetch([]); // We don't want to fetch space time data again
-        setSpaceTimeData((prev) => prev.filter((train) => !selectedTrainIds.includes(train.id)));
+        removeTrains(selectedTrainIds);
         dispatch(
           setSuccess({
             title: t('timetable.trainsSelectionDeletedCount', { count: trainsCount }),
@@ -148,7 +147,7 @@ const TimetableToolbar = ({
               <input
                 type="checkbox"
                 className="mr-2"
-                checked={selectedTrainIds.length === trainSchedulesDetails.length}
+                checked={selectedTrainIds.length === trainSchedulesWithDetails.length}
                 onChange={() => toggleAllTrainsSelecton()}
               />
               <button
@@ -181,13 +180,23 @@ const TimetableToolbar = ({
           )}
         </div>
         <div>
-          {multiSelectOn && <span>{selectedTrainIds.length} / </span>}
-          {t('trainCount', {
-            count: trainSchedulesDetails.length,
-          })}
+          {trainSchedules.length > 0
+            ? t(
+                'trainCount',
+                multiSelectOn
+                  ? {
+                      count: selectedTrainIds.length,
+                      totalCount: displayedTrainSchedules.length,
+                    }
+                  : {
+                      count: displayedTrainSchedules.length,
+                      totalCount: trainSchedules.length,
+                    }
+              )
+            : t('timetable.noTrain')}
         </div>
         <div className="d-flex">
-          {!isEmpty(trainSchedulesDetails) && (
+          {!isEmpty(trainSchedulesWithDetails) && (
             <button
               aria-label={t('timetable.toggleMultiSelection')}
               type="button"

@@ -7,8 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import type { ConflictV2, InfraState } from 'common/api/osrdEditoastApi';
+import type { ConflictV2, InfraState, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import ConflictsListV2 from 'modules/conflict/components/ConflictsListV2';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
@@ -27,10 +26,12 @@ type TimetableV2Props = {
   trainIds: number[];
   selectedTrainId?: number;
   conflicts?: ConflictV2[];
-  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   setTrainIdToEdit: (trainId?: number) => void;
-  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
+  removeTrains: (trainIds: number[]) => void;
   trainIdToEdit?: number;
+  trainSchedules?: TrainScheduleResult[];
+  trainSchedulesWithDetails: TrainScheduleWithDetails[];
 };
 
 const TimetableV2 = ({
@@ -40,18 +41,20 @@ const TimetableV2 = ({
   trainIds,
   selectedTrainId,
   conflicts,
-  setTrainResultsToFetch,
-  setSpaceTimeData,
+  upsertTrainSchedules,
+  removeTrains,
   setTrainIdToEdit,
   trainIdToEdit,
+  trainSchedules = [],
+  trainSchedulesWithDetails,
 }: TimetableV2Props) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
-  const [trainSchedulesDetails, setTrainSchedulesDetails] = useState<TrainScheduleWithDetails[]>(
-    []
-  );
+  const [displayedTrainSchedules, setDisplayedTrainSchedules] = useState<
+    TrainScheduleWithDetails[]
+  >([]);
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
   const [multiselectOn, setMultiselectOn] = useState(false);
   const [selectedTrainIds, setSelectedTrainIds] = useState<number[]>([]);
@@ -60,12 +63,12 @@ const TimetableV2 = ({
 
   const trainsDurationsIntervals = useMemo(
     () =>
-      trainSchedulesDetails.length > 0
+      displayedTrainSchedules.length > 0
         ? distributedIntervalsFromArrayOfValues(
-            compact(trainSchedulesDetails.map((train) => train.duration))
+            compact(displayedTrainSchedules.map((train) => train.duration))
           )
         : [],
-    [trainSchedulesDetails]
+    [displayedTrainSchedules]
   );
 
   useEffect(() => {
@@ -129,15 +132,15 @@ const TimetableV2 = ({
         </button>
       </div>
       <TimetableToolbar
-        trainIds={trainIds}
-        trainSchedulesDetails={trainSchedulesDetails}
-        setTrainSchedulesDetails={setTrainSchedulesDetails}
+        trainSchedulesWithDetails={trainSchedulesWithDetails}
+        displayedTrainSchedules={displayedTrainSchedules}
+        setDisplayedTrainSchedules={setDisplayedTrainSchedules}
         selectedTrainIds={selectedTrainIds}
         setSelectedTrainIds={setSelectedTrainIds}
         multiSelectOn={multiselectOn}
         setMultiSelectOn={setMultiselectOn}
-        setTrainResultsToFetch={setTrainResultsToFetch}
-        setSpaceTimeData={setSpaceTimeData}
+        removeTrains={removeTrains}
+        trainSchedules={trainSchedules}
       />
 
       <div
@@ -147,7 +150,7 @@ const TimetableV2 = ({
         })}
       >
         {trainsDurationsIntervals &&
-          trainSchedulesDetails.map((train: TrainScheduleWithDetails, idx: number) => (
+          displayedTrainSchedules.map((train: TrainScheduleWithDetails, idx: number) => (
             <TimetableTrainCardV2
               idx={idx}
               isSelectable={multiselectOn}
@@ -162,14 +165,14 @@ const TimetableV2 = ({
                 infraState === 'CACHED' && trainIdUsedForProjection === train.id
               }
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-              setTrainResultsToFetch={setTrainResultsToFetch}
+              upsertTrainSchedules={upsertTrainSchedules}
               setTrainIdToEdit={setTrainIdToEdit}
-              setSpaceTimeData={setSpaceTimeData}
+              removeTrains={removeTrains}
             />
           ))}
       </div>
       <div className="scenario-timetable-warnings">
-        {timetableHasInvalidTrain(trainSchedulesDetails) && (
+        {timetableHasInvalidTrain(displayedTrainSchedules) && (
           <div className="invalid-trains">
             <Alert size="lg" variant="fill" />
             <span className="flex-grow-1">{t('timetable.invalidTrains')}</span>
@@ -180,7 +183,7 @@ const TimetableV2 = ({
             conflicts={conflicts}
             expanded={conflictsListExpanded}
             toggleConflictsList={toggleConflictsListExpanded}
-            trainSchedulesDetails={trainSchedulesDetails}
+            trainSchedulesDetails={displayedTrainSchedules}
             onConflictClick={handleConflictClick}
           />
         )}

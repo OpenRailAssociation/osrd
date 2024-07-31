@@ -9,11 +9,10 @@ import { MdAvTimer, MdContentCopy } from 'react-icons/md';
 import nextId from 'react-id-generator';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
 import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -44,9 +43,9 @@ type TimetableTrainCardProps = {
   idx: number;
   handleSelectTrain: (trainId: number) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
-  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   setTrainIdToEdit: (trainIdToEdit?: number) => void;
-  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
+  removeTrains: (trainIds: number[]) => void;
 };
 
 const TimetableTrainCardV2 = ({
@@ -60,9 +59,9 @@ const TimetableTrainCardV2 = ({
   idx,
   setDisplayTrainScheduleManagement,
   handleSelectTrain,
-  setTrainResultsToFetch,
+  upsertTrainSchedules,
   setTrainIdToEdit,
-  setSpaceTimeData,
+  removeTrains,
 }: TimetableTrainCardProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
@@ -87,13 +86,10 @@ const TimetableTrainCardV2 = ({
       dispatch(updateSelectedTrainId(undefined));
     }
 
-    if (projectionPathIsUsed) dispatch(updateTrainIdUsedForProjection(undefined));
-
     deleteTrainSchedule({ body: { ids: [train.id] } })
       .unwrap()
       .then(() => {
-        setTrainResultsToFetch([]); // We don't want to fetch space time data again
-        setSpaceTimeData((prev) => prev.filter((trainData) => trainData.id !== train.id));
+        removeTrains([train.id]);
         dispatch(
           setSuccess({
             title: t('timetable.trainDeleted', { name: train.trainName }),
@@ -133,11 +129,11 @@ const TimetableTrainCardV2 = ({
       };
 
       try {
-        const trainScheduleResult = await postTrainSchedule({
+        const [trainScheduleResult] = await postTrainSchedule({
           id: trainDetail.timetable_id,
           body: [newTrain],
         }).unwrap();
-        setTrainResultsToFetch([trainScheduleResult[0].id]);
+        upsertTrainSchedules([trainScheduleResult]);
         dispatch(
           setSuccess({
             title: t('timetable.trainAdded'),
@@ -151,8 +147,6 @@ const TimetableTrainCardV2 = ({
   };
 
   const selectPathProjection = async () => {
-    // We want to refetch all train space time data
-    setTrainResultsToFetch(undefined);
     dispatch(updateTrainIdUsedForProjection(train.id));
   };
 

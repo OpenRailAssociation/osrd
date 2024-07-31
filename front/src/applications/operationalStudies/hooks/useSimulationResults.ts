@@ -5,10 +5,12 @@ import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 
+import type { SimulationResults } from '../types';
+
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = () => {
+const useSimulationResults = (): SimulationResults => {
   const infraId = useInfraID();
   const { getElectricalProfileSetId } = useOsrdConfSelectors();
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
@@ -21,14 +23,14 @@ const useSimulationResults = () => {
     { skip: !selectedTrainId }
   );
 
-  const { data: path } = osrdEditoastApi.endpoints.getV2TrainScheduleByIdPath.useQuery(
+  const { data: rawPath } = osrdEditoastApi.endpoints.getV2TrainScheduleByIdPath.useQuery(
     {
       id: selectedTrainId as number,
       infraId: infraId as number,
     },
     { skip: !selectedTrainId || !infraId }
   );
-  const pathfindingResultSuccess = path?.status === 'success' ? path : undefined;
+  const path = selectedTrainId && rawPath?.status === 'success' ? rawPath : undefined;
 
   const { data: trainSimulation } =
     osrdEditoastApi.endpoints.getV2TrainScheduleByIdSimulation.useQuery(
@@ -37,11 +39,16 @@ const useSimulationResults = () => {
     );
 
   const speedSpaceChart = useSpeedSpaceChart(
-    selectedTrainSchedule,
-    pathfindingResultSuccess,
-    trainSimulation,
-    selectedTrainSchedule?.start_time
+    (selectedTrainId && selectedTrainSchedule) || undefined,
+    path,
+    (selectedTrainId && trainSimulation) || undefined,
+    (selectedTrainId && selectedTrainSchedule?.start_time) || undefined
   );
+
+  if (!selectedTrainId)
+    return {
+      selectedTrainPowerRestrictions: [],
+    };
 
   return {
     selectedTrainSchedule,
@@ -49,7 +56,8 @@ const useSimulationResults = () => {
     selectedTrainPowerRestrictions: speedSpaceChart?.formattedPowerRestrictions || [],
     trainSimulation: speedSpaceChart?.simulation,
     pathProperties: speedSpaceChart?.formattedPathProperties,
-    pathLength: pathfindingResultSuccess?.length,
+    pathLength: path?.length,
+    path,
   };
 };
 

@@ -12,9 +12,7 @@ export type TrainScheduleWithDetails = {
   trainName: string;
   startTime: string;
   arrivalTime: string;
-  /**
-   * in ms
-   */
+  /** in ms */
   duration: number;
   stopsCount: number;
   pathLength: string;
@@ -24,6 +22,8 @@ export type TrainScheduleWithDetails = {
   labels: string[];
   invalidReason?: InvalidReason;
   notHonoredReason?: 'scheduleNotHonored' | 'trainTooFast';
+  scheduledPointsNotHonored?: boolean;
+  isValid: boolean;
 };
 
 export type InvalidReason = Exclude<SimulationSummaryResult['status'], 'success'>;
