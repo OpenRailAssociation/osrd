@@ -19,29 +19,6 @@ export function generateCodeNumber(): string {
   return `${month}${year}-${randomPart1}-${randomPart2}`;
 }
 
-// TODO DROP STDCM V1
-export function formatCreationDate(date: string) {
-  const creationDate = new Date(date);
-  const day = creationDate.getDate();
-  const month = creationDate.getMonth() + 1;
-  const year = creationDate.getFullYear();
-  const hours = creationDate.getHours();
-  const minutes = creationDate.getMinutes();
-
-  const formattedDay = day < 10 ? `0${day}` : day;
-  const formattedMonth = month < 10 ? `0${month}` : month;
-  const formattedHours = hours < 10 ? `0${hours}` : hours;
-  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-
-  return {
-    day: formattedDay,
-    month: formattedMonth,
-    year,
-    hours: formattedHours,
-    minutes: formattedMinutes,
-  };
-}
-
 export function getStopDurationTime(sec: number) {
   const timeInMilliseconds = sec * 1000;
   const time = new Date(timeInMilliseconds);

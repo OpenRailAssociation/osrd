@@ -16,7 +16,7 @@ import { getScaleDomainFromValuesV2 } from 'modules/simulationResult/components/
 import SimulationResultsMapV2 from 'modules/simulationResult/components/SimulationResultsMapV2';
 import SpaceCurvesSlopesV2 from 'modules/simulationResult/components/SpaceCurvesSlopes/SpaceCurvesSlopesV2';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
-import { useStoreDataForSpaceTimeChartV2 } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
+import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetailsV2 from 'modules/simulationResult/components/TrainDetailsV2';
@@ -45,7 +45,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
   const dispatch = useAppDispatch();
   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const isUpdating = useSelector(getIsUpdating);
-  const { infraId, trainIdUsedForProjection } = useStoreDataForSpaceTimeChartV2();
+  const { infraId, trainIdUsedForProjection } = useStoreDataForSpaceTimeChart();
 
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);

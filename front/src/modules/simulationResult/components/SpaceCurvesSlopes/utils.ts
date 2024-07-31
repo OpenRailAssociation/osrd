@@ -1,11 +1,19 @@
+import * as d3 from 'd3';
+
 import type { PositionData } from 'applications/operationalStudies/types';
 import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
 import type { SpaceCurvesSlopesDataV2 } from 'modules/simulationResult/types';
-import type { Chart, HeightPosition, SpeedSpaceChart, Train } from 'reducers/osrdsimulation/types';
+import type {
+  Chart,
+  GradientPosition,
+  HeightPosition,
+  RadiusPosition,
+  SpeedSpaceChart,
+} from 'reducers/osrdsimulation/types';
 
 export const drawAxisTitle = (
   chart: Chart,
-  slopes?: SpaceCurvesSlopesDataV2['slopesHistogram'] | Train['slopes']
+  slopes?: SpaceCurvesSlopesDataV2['slopesHistogram']
 ) => {
   chart.drawZone
     .append('text')
@@ -56,4 +64,64 @@ export const drawSpaceCurvesSlopesChartCurve = <
     ['position', yAxisValue],
     curveName
   );
+};
+
+const calculateReferentialHeight = (data: number[]) => {
+  const maxRef = d3.max(data);
+  const minRef = d3.min(data);
+  let refHeight = 0;
+  if (maxRef !== undefined && minRef !== undefined) {
+    refHeight = maxRef - minRef;
+  }
+  return refHeight;
+};
+
+export const createCurveCurve = (
+  curves: RadiusPosition[] | PositionData<'radius'>[], // TODO DROPV1 : remove RadiusPosition type
+  speeds: number[]
+): RadiusPosition[] => {
+  const referentialHeight = calculateReferentialHeight(speeds);
+  const maxRadius = d3.max(curves.map((step) => step.radius));
+  const minRadius = d3.min(curves.map((step) => step.radius));
+  let dataHeight = 0;
+  if (maxRadius !== undefined && minRadius !== undefined) {
+    dataHeight = maxRadius - minRadius;
+  }
+  return curves.map((step) => ({
+    ...step,
+    radius: step.radius > 0 ? (step.radius * referentialHeight) / dataHeight : 0,
+  }));
+};
+
+/**
+ * Create the altitude curve based from the slopes data
+ */
+export const createSlopeCurve = (
+  slopes: GradientPosition[] | PositionData<'gradient'>[],
+  gradients: number[]
+): HeightPosition[] => {
+  const slopesCurve: HeightPosition[] = [];
+  slopes.forEach((step, idx) => {
+    if (idx % 2 === 0 && slopes[idx + 1]) {
+      if (idx === 0) {
+        slopesCurve.push({ height: 0, position: step.position });
+      } else {
+        const distance = step.position - slopesCurve[slopesCurve.length - 1].position;
+        const height =
+          (distance * slopes[idx - 2].gradient) / 1000 + slopesCurve[slopesCurve.length - 1].height;
+        slopesCurve.push({ height, position: step.position });
+      }
+    }
+  });
+  const referentialHeight = calculateReferentialHeight(gradients);
+  const maxRadius = d3.max(slopesCurve.map((step) => step.height));
+  const minRadius = d3.min(slopesCurve.map((step) => step.height));
+  let dataHeight = 0;
+  if (maxRadius !== undefined && minRadius !== undefined) {
+    dataHeight = maxRadius - minRadius;
+  }
+  return slopesCurve.map((step) => ({
+    ...step,
+    height: (step.height * referentialHeight) / dataHeight,
+  }));
 };

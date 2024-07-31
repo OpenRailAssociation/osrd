@@ -6,13 +6,11 @@ import {
   gridX,
   gridY,
   gridY2,
-  isSpaceSlopesCurves,
-  isSpaceTimeChart,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import svgDefs from 'modules/simulationResult/components/ChartHelpers/svgDefs';
-import type { ChartAxes } from 'modules/simulationResult/consts';
 import type { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
 
+// TODO: remove this when spaceCurvesSlopes chart will be deleted
 // keyValues ['position', 'gradient']
 const defineChart = (
   svgWidth: number,
@@ -21,7 +19,6 @@ const defineChart = (
   defineY: SimulationD3Scale,
   ref: React.MutableRefObject<HTMLDivElement> | React.RefObject<HTMLDivElement>,
   rotate: boolean,
-  keyValues: ChartAxes,
   id: string,
   defineY2?: SimulationD3Scale
 ): Chart => {
@@ -59,10 +56,7 @@ const defineChart = (
 
   // Add X axis
   const x = defineX.range([0, width]) as SimulationD3Scale;
-  const axisBottomX =
-    !rotate && isSpaceTimeChart(keyValues)
-      ? d3.axisBottom<Date>(x as d3.ScaleTime<number, number>).tickFormat(d3.timeFormat('%H:%M:%S'))
-      : d3.axisBottom(x as d3.ScaleLinear<number, number>);
+  const axisBottomX = d3.axisBottom(x as d3.ScaleLinear<number, number>);
   const xAxis = svg.append('g').attr('transform', `translate(0,${height})`).call(axisBottomX);
   const xAxisGrid = svg
     .append('g')
@@ -73,10 +67,7 @@ const defineChart = (
 
   // Add Y axis
   const y = defineY.range([height, 0]) as SimulationD3Scale;
-  const axisLeftY =
-    rotate && isSpaceTimeChart(keyValues)
-      ? d3.axisLeft<Date>(y as d3.ScaleTime<number, number>).tickFormat(d3.timeFormat('%H:%M:%S'))
-      : d3.axisLeft(y);
+  const axisLeftY = d3.axisLeft(y);
   const yAxis = svg.append('g').call(axisLeftY);
   const yAxisGrid = svg.append('g').attr('class', 'grid').call(gridY(y, width));
   const originalScaleY = y; // We need to keep a ref on that to not double translation
@@ -84,7 +75,7 @@ const defineChart = (
   // Add Y axis on the right
   let rightAxis;
 
-  if (defineY2 && isSpaceSlopesCurves(keyValues)) {
+  if (defineY2) {
     const y2 = defineY2.range([height, 0]) as SimulationD3Scale;
     const axisRightY = d3.axisRight(y2);
 

@@ -1,5 +1,6 @@
 import type { Chart } from 'reducers/osrdsimulation/types';
 
+// TODO: remove this when enableInteractivity will be deleted
 const drawGuideLines = (chart: Chart) => {
   chart.svg.selectAll('.guideLines').remove();
 

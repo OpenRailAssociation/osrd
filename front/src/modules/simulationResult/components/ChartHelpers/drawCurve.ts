@@ -7,10 +7,9 @@ import type { ArrayElement } from 'utils/types';
 import { getAxis } from './ChartHelpers';
 import type { GevPreparedData } from '../SpeedSpaceChart/types';
 
+// TODO: remove this when spaceCurvesSlopes chart will be deleted
 const drawCurve = <
-  T extends
-    | ArrayElement<GevPreparedData[keyof GevPreparedData]> // TODO DROP V1: remove this line
-    | ConsolidatedPosition,
+  T extends ArrayElement<GevPreparedData[keyof GevPreparedData]> | ConsolidatedPosition,
 >(
   chart: Chart,
   classes: string,

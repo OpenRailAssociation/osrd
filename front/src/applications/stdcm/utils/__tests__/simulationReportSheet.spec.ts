@@ -1,6 +1,5 @@
 import {
   generateCodeNumber,
-  formatCreationDate,
   getStopDurationTime,
   extractSpeedLimit,
   computeStopDepartureTime,
@@ -12,21 +11,6 @@ describe('generateCodeNumber', () => {
   it('should return a formatted string', () => {
     const codeNumber = generateCodeNumber();
     expect(codeNumber).toMatch(/^\d{2}\d{2}-\d{3}-\d{3}$/);
-  });
-});
-
-// TODO DROP STDCM V1
-describe('formatCreationDate', () => {
-  it('should format the date correctly', () => {
-    const departure_time = '2024-07-08T10:20:30Z';
-    const formattedDate = formatCreationDate(departure_time);
-    expect(formattedDate).toEqual({
-      day: '08',
-      month: '07',
-      year: 2024,
-      hours: 10,
-      minutes: 20,
-    });
   });
 });
 

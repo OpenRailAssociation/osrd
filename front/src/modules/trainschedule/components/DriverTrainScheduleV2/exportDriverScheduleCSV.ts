@@ -11,9 +11,9 @@ import { timestampToHHMMSS } from 'utils/date';
 import { mmToM } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
 
+import { BaseOrEco, type BaseOrEcoType } from './consts';
 import type { OperationalPointWithTimeAndSpeed } from './types';
 import { interpolateValue } from './utils';
-import { BaseOrEco, type BaseOrEcoType } from '../DriverTrainSchedule/consts';
 
 /**
  * CSV Export of trainschedule

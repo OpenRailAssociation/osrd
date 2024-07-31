@@ -7,18 +7,12 @@ import {
   gridX,
   gridY,
   gridY2,
-  interpolateOnPosition,
   interpolateOnTime,
   getAxis,
-  isSpaceTimeChart,
   interpolateOnPositionV2,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import drawGuideLines from 'modules/simulationResult/components/ChartHelpers/drawGuideLines';
-import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/SpaceCurvesSlopes';
-import type {
-  AreaBlock,
-  GevPreparedData,
-} from 'modules/simulationResult/components/SpeedSpaceChart/types';
+import type { AreaBlock } from 'modules/simulationResult/components/SpeedSpaceChart/types';
 import { CHART_AXES, LIST_VALUES, type ChartAxes } from 'modules/simulationResult/consts';
 import type { PositionScaleDomain, SpaceCurvesSlopesDataV2 } from 'modules/simulationResult/types';
 import type {
@@ -112,18 +106,8 @@ const updateChart = <
   }
 
   // update axes with these new boundaries
-  const axisBottomX =
-    !rotate && isSpaceTimeChart(keyValues)
-      ? d3
-          .axisBottom<Date>(newX as d3.ScaleTime<number, number>)
-          .tickFormat(d3.timeFormat('%H:%M:%S'))
-      : d3.axisBottom(newX);
-  const axisLeftY =
-    rotate && isSpaceTimeChart(keyValues)
-      ? d3
-          .axisLeft<Date>(newY as d3.ScaleTime<number, number>)
-          .tickFormat(d3.timeFormat('%H:%M:%S'))
-      : d3.axisLeft(newY);
+  const axisBottomX = d3.axisBottom(newX);
+  const axisLeftY = d3.axisLeft(newY);
 
   chart.xAxis.call(axisBottomX);
   chart.yAxis.call(axisLeftY);
@@ -177,13 +161,13 @@ const updateChart = <
         .y((d) => newY(d.position))
         .x0((d) => newX(d.value0))
         .x1((d) => newX(d.value1))
-        .curve(isSpaceTimeChart(keyValues) ? d3.curveStepAfter : d3.curveLinear)
+        .curve(d3.curveLinear)
     : d3
         .area<AreaBlock>()
         .x((d) => newX(d.position))
         .y0((d) => newY(d.value0))
         .y1((d) => newY(d.value1))
-        .curve(isSpaceTimeChart(keyValues) ? d3.curveStepAfter : d3.curveLinear);
+        .curve(d3.curveLinear);
 
   chart.drawZone.selectAll<SVGPathElement, AreaBlock[]>('.area').attr('d', newAreaData);
 
@@ -235,14 +219,10 @@ export const traceVerticalLine = (
   chart: Chart | undefined,
   keyValues: ChartAxes,
   positionValues: PositionsSpeedTimes<Date>,
-  timePosition: Date,
   rotate = false
 ) => {
   if (chart !== undefined) {
-    const linePosition =
-      !isSpaceTimeChart(keyValues) && positionValues.speed
-        ? positionValues.speed.position
-        : timePosition;
+    const linePosition = positionValues.speed.position;
     displayGuide(chart, 1);
     if (rotate) {
       chart.svg
@@ -275,128 +255,6 @@ function wheelDelta(event: WheelEvent) {
 
   return -event.deltaY * factor;
 }
-
-export const enableInteractivity = <
-  T extends Chart | SpeedSpaceChart,
-  Data extends SimulationTrain<Date> | GevPreparedData | SpaceCurvesSlopesData,
->(
-  chart: T | undefined,
-  selectedTrainData: Data,
-  keyValues: ChartAxes,
-  rotate: boolean,
-  setChart: React.Dispatch<React.SetStateAction<T | undefined>>,
-  simulationIsPlaying: boolean,
-  updateTimePosition: (newTimePositionValues: Date) => void,
-  chartDimensions: [Date, Date],
-  setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>,
-  additionalValues: ChartAxes[] = [] // more values to display on the same chart
-) => {
-  if (!chart) return;
-  const zoom = d3zoom<SVGGElement, unknown>()
-    .scaleExtent([0.3, 20]) // This controls how much you can unzoom (x0.3) and zoom (x20)
-    .extent([
-      [0, 0],
-      [chart.width, chart.height],
-    ])
-    .wheelDelta(wheelDelta)
-    // Allows evenements to be triggered on zoom and drag interactions for all graphs
-    .on('zoom', (event) => {
-      event.sourceEvent.preventDefault();
-      const updatedAxis = updateChart(chart, keyValues, additionalValues, rotate, event);
-      // Overide axis with new ones from updated chart
-      const newChart = {
-        ...chart,
-        x: updatedAxis.newX,
-        y: updatedAxis.newY,
-        y2: updatedAxis.newY2,
-      };
-      // Synchronization between SpeedSpaceChart and SpaceCurveSlopes interactions
-      if (setSharedXScaleDomain)
-        setSharedXScaleDomain((prevState) => ({
-          ...prevState,
-          current: newChart.x.domain() as number[],
-          source: keyValues === CHART_AXES.SPACE_SPEED ? 'SpeedSpaceChart' : 'SpaceCurvesSlopes',
-        }));
-      setChart(newChart);
-    })
-    .filter(
-      (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
-    );
-
-  // Updates in real time the position of the pointer and the vertical/horizontal guidelines
-  const mousemove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!simulationIsPlaying) {
-      let immediatePositionsValuesForPointer: ReturnType<ReturnType<typeof interpolateOnTime>>;
-      let timePositionLocal: Date | null;
-      if (isSpaceTimeChart(keyValues)) {
-        // SpaceTimeChart
-        timePositionLocal = (
-          rotate
-            ? chart.y.invert(pointer(event, event.currentTarget)[1])
-            : chart.x.invert(pointer(event, event.currentTarget)[0])
-        ) as Date;
-
-        immediatePositionsValuesForPointer = interpolateOnTime(
-          selectedTrainData,
-          keyValues,
-          LIST_VALUES.SPACE_TIME
-        )(timePositionLocal);
-      } else {
-        // SpeedSpaceChart or SpaceCurvesSlopesChart
-        const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
-        timePositionLocal = interpolateOnPosition(
-          selectedTrainData as { speed: PositionSpeedTime[] },
-          positionLocal
-        );
-
-        if (!timePositionLocal) {
-          console.error('Interpolation failed');
-          return;
-        }
-
-        immediatePositionsValuesForPointer = interpolateOnTime(
-          selectedTrainData,
-          keyValues,
-          LIST_VALUES.SPACE_SPEED
-        )(timePositionLocal);
-
-        // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenient pointer update
-        LIST_VALUES.SPACE_SPEED.forEach((name) => {
-          if (
-            immediatePositionsValuesForPointer[name] &&
-            !Number.isNaN(immediatePositionsValuesForPointer[name].speed)
-          ) {
-            immediatePositionsValuesForPointer[name].speed /= 3.6;
-          }
-        });
-      }
-
-      updateTimePosition(timePositionLocal);
-
-      if (chart.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
-        const verticalMark = pointer(event, event.currentTarget)[0];
-        const horizontalMark = pointer(event, event.currentTarget)[1];
-        chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);
-        chart.svg
-          .selectAll('#horizontal-line')
-          .attr('y1', horizontalMark)
-          .attr('y2', horizontalMark);
-      }
-    }
-  };
-
-  chart.svg
-    .on('mouseover', () => displayGuide(chart, 1))
-    .on('mousemove', mousemove)
-    .on('wheel', (event) => {
-      if (event.ctrlKey || event.shiftKey) {
-        event.preventDefault();
-      }
-    })
-    .call(zoom);
-
-  drawGuideLines(chart);
-};
 
 export const enableInteractivityV2 = <
   T extends Chart | SpeedSpaceChart,
@@ -450,45 +308,34 @@ export const enableInteractivityV2 = <
   // Updates in real time the position of the pointer and the vertical/horizontal guidelines
   const mousemove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (!simulationIsPlaying) {
-      let immediatePositionsValuesForPointer: ReturnType<ReturnType<typeof interpolateOnTime>>;
-      let timePositionLocal: Date | null;
-      if (isSpaceTimeChart(keyValues)) {
-        // SpaceTimeChart
-        timePositionLocal = (
-          rotate
-            ? chart.y.invert(pointer(event, event.currentTarget)[1])
-            : chart.x.invert(pointer(event, event.currentTarget)[0])
-        ) as Date;
-      } else {
-        // SpeedSpaceChart or SpaceCurvesSlopesChart
-        const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
-        timePositionLocal = interpolateOnPositionV2(
-          selectedTrainData as { speed: PositionSpeedTime[] },
-          Math.max(positionLocal, 0),
-          isoDateWithTimezoneToSec(selectedTrainDepartureDate)
-        );
+      // SpaceCurvesSlopesChart
+      const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
+      const timePositionLocal = interpolateOnPositionV2(
+        selectedTrainData as { speed: PositionSpeedTime[] },
+        Math.max(positionLocal, 0),
+        isoDateWithTimezoneToSec(selectedTrainDepartureDate)
+      );
 
-        if (!timePositionLocal) {
-          console.error('Interpolation failed');
-          return;
-        }
-
-        immediatePositionsValuesForPointer = interpolateOnTime(
-          selectedTrainData,
-          keyValues,
-          LIST_VALUES.SPACE_SPEED
-        )(timePositionLocal);
-
-        // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenient pointer update
-        LIST_VALUES.SPACE_SPEED.forEach((name) => {
-          if (
-            immediatePositionsValuesForPointer[name] &&
-            !Number.isNaN(immediatePositionsValuesForPointer[name].speed)
-          ) {
-            immediatePositionsValuesForPointer[name].speed /= 3.6;
-          }
-        });
+      if (!timePositionLocal) {
+        console.error('Interpolation failed');
+        return;
       }
+
+      const immediatePositionsValuesForPointer = interpolateOnTime(
+        selectedTrainData,
+        keyValues,
+        LIST_VALUES.SPACE_SPEED
+      )(timePositionLocal);
+
+      // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenient pointer update
+      LIST_VALUES.SPACE_SPEED.forEach((name) => {
+        if (
+          immediatePositionsValuesForPointer[name] &&
+          !Number.isNaN(immediatePositionsValuesForPointer[name].speed)
+        ) {
+          immediatePositionsValuesForPointer[name].speed /= 3.6;
+        }
+      });
 
       if (!deactivateChartSynchronization) {
         updateTimePosition(timePositionLocal);

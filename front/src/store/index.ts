@@ -5,7 +5,6 @@ import { persistStore, getStoredState } from 'redux-persist';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
-import { ChartSynchronizer } from 'modules/simulationResult/components/ChartSynchronizer';
 import persistedReducer, {
   rootReducer,
   rootInitialState,
@@ -38,19 +37,10 @@ const store = configureStore({
       // this check is not really necessary since Immer has already ensured the store immutability.
       // Disabling this feature improve performance. https://github.com/reduxjs/redux-toolkit/issues/415
       immutableCheck: false,
-      thunk: {
-        extraArgument: ChartSynchronizer.getInstance(),
-      },
     })
       .prepend(listenerMiddleware.middleware)
       .concat(...middlewares),
 });
-
-// workaround for the dependency cycle
-// thunk needs chart sychronizer for side effects
-// chart synchronizer needs store
-// store needs thunk
-ChartSynchronizer.getInstance().setReduxStore(store);
 
 export type AppDispatch = typeof store.dispatch;
 export type GetState = typeof store.getState;

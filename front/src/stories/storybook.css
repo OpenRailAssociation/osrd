@@ -702,58 +702,6 @@ select.sm {
   height: 100%;
   color: var(--coolgray7);
 }
-.simulation-results .chart-container .speedspace-chart {
-  display: flex;
-  background-color: white;
-  border-radius: 4px;
-  position: relative;
-}
-.simulation-results .chart-container .speedspace-chart .showSettings {
-  overflow: hidden;
-  transition: 0.3s;
-}
-.simulation-results .chart-container .speedspace-chart .btn-rotate {
-  position: absolute;
-  right: 2rem;
-  top: 1rem;
-}
-.simulation-results .chart-container .speedspace-chart .area.speed {
-  fill: rgba(48, 51, 131, 0.2);
-}
-.simulation-results .chart-container .speedspace-chart .area.slopes {
-  fill: var(--cyan);
-}
-.simulation-results .chart-container .speedspace-chart .speed {
-  stroke: var(--blue);
-  stroke-width: 1;
-}
-.simulation-results .chart-container .speedspace-chart .speed.pointer {
-  fill: var(--blue);
-}
-.simulation-results .chart-container .speedspace-chart .speed.pointer.allowances {
-  fill: var(--orange);
-}
-.simulation-results .chart-container .speedspace-chart .speed.pointer.eco {
-  fill: var(--green);
-}
-.simulation-results .chart-container .speedspace-chart .speed.allowances {
-  stroke: var(--orange);
-}
-.simulation-results .chart-container .speedspace-chart .speed.eco {
-  stroke: var(--green);
-}
-.simulation-results .chart-container .speedspace-chart .speed.vmax {
-  stroke-width: 2;
-  stroke: var(--purple);
-}
-.simulation-results .chart-container .speedspace-chart .speed.slopes {
-  stroke-width: 2;
-  stroke: var(--orange);
-}
-.simulation-results .chart-container .speedspace-chart .speed.slopesHistogram {
-  stroke-width: 1;
-  stroke: var(--cyan);
-}
 .simulation-results .elecProf-modal {
   position: absolute;
   z-index: 0;

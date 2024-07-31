@@ -11,15 +11,9 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
-import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
-import { CHART_AXES } from 'modules/simulationResult/consts';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
-import {
-  updateConsolidatedSimulation,
-  updateSelectedTrainId,
-  updateSimulation,
-} from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -114,11 +108,6 @@ const useStdcm = () => {
 
     controller.abort();
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
-
-    const emptySimulation = { trains: [] };
-    const consolidatedSimulation = createTrain(CHART_AXES.SPACE_TIME, emptySimulation.trains);
-    dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-    dispatch(updateSimulation(emptySimulation));
   };
 
   const isPending = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending;

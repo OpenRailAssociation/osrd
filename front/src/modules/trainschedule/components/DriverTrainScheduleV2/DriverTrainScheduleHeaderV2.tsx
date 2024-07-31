@@ -12,10 +12,10 @@ import type { LightRollingStock, TrainScheduleBase } from 'common/api/osrdEditoa
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { jouleToKwh } from 'utils/physics';
 
+import { BaseOrEco, BASE_OR_ECO_OPTIONS, type BaseOrEcoType } from './consts';
 import exportTrainCSV from './exportDriverScheduleCSV';
 import type { OperationalPointWithTimeAndSpeed } from './types';
 import { isEco, massWithOneDecimal } from './utils';
-import { BaseOrEco, BASE_OR_ECO_OPTIONS, type BaseOrEcoType } from '../DriverTrainSchedule/consts';
 
 type DriverTrainScheduleHeaderV2Props = {
   simulatedTrain: SimulationResponseSuccess;
