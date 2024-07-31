@@ -25,10 +25,7 @@ export default function SpeedLimitByTagSelector({
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const speedLimitsTagsList = useMemo(
-    () =>
-      !isEmpty(speedLimitsByTags)
-        ? [t('noSpeedLimitByTag'), ...Object.values(speedLimitsByTags)]
-        : [],
+    () => (!isEmpty(speedLimitsByTags) ? speedLimitsByTags : []),
     [speedLimitsByTags]
   );
 

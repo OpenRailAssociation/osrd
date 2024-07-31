@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
+import { compact, concat, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -13,6 +14,8 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
+  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('noSpeedLimitByTag'), [t]);
+
   const { getSpeedLimitByTag } = useOsrdConfSelectors();
   const speedLimitByTag = useSelector(getSpeedLimitByTag);
   const infraID = useInfraID();
@@ -22,14 +25,15 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
     dispatch(updateSpeedLimitByTag(newTag));
   };
 
-  const { data: speedLimitsByTags = [], error } =
+  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
+
+  const { data: speedLimitsTagsByInfraId = [], error } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
       {
         infraId: infraID as number,
       },
       { skip: !infraID }
     );
-
   useEffect(() => {
     // Update the document title using the browser API
     if (error) {
@@ -38,6 +42,11 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
       );
     }
   }, [error]);
+
+  let speedLimitsByTags = compact(uniq(concat(speedLimitTags, speedLimitsTagsByInfraId)));
+  const speedLimitsByTagsOrdered = useMemo(() => speedLimitsByTags.sort(), [speedLimitsByTags]);
+
+  speedLimitsByTags = [DEFAULT_SPEED_LIMIT_TAG, ...speedLimitsByTagsOrdered];
 
   return { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag };
 };
