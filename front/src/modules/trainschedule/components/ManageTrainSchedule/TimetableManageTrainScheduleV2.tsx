@@ -4,7 +4,7 @@ import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { InfraState } from 'common/api/osrdEditoastApi';
+import type { InfraState, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
 
@@ -15,7 +15,7 @@ type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
   trainIdToEdit?: number;
   setDisplayTrainScheduleManagement: (type: string) => void;
-  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   infraState?: InfraState;
   setTrainIdToEdit: (trainIdToEdit?: number) => void;
 };
@@ -23,7 +23,7 @@ type TimetableManageTrainScheduleProps = {
 const TimetableManageTrainScheduleV2 = ({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
-  setTrainResultsToFetch,
+  upsertTrainSchedules,
   infraState,
   trainIdToEdit,
   setTrainIdToEdit,
@@ -39,7 +39,7 @@ const TimetableManageTrainScheduleV2 = ({
   const updateTrainSchedule = useUpdateTrainSchedule(
     setIsWorking,
     setDisplayTrainScheduleManagement,
-    setTrainResultsToFetch,
+    upsertTrainSchedules,
     setTrainIdToEdit,
     trainIdToEdit
   );
@@ -76,7 +76,7 @@ const TimetableManageTrainScheduleV2 = ({
               <AddTrainScheduleV2Button
                 infraState={infraState}
                 setIsWorking={setIsWorking}
-                setTrainResultsToFetch={setTrainResultsToFetch}
+                upsertTrainSchedules={upsertTrainSchedules}
               />
             )}
             <TrainAddingSettings />

@@ -13,8 +13,7 @@
     "used": "used"
   },
   "errorMessages": {
-    "errorLoadingInfra": "Infrastructure loading error",
-    "unableToRetrieveTrainSchedule": "Impossible to compute running time"
+    "errorLoadingInfra": "Infrastructure loading error"
   },
   "infraLoading": "Infrastructure is loading",
   "isUpdating": "Updating...",
@@ -34,6 +33,7 @@
     "incompatible": "Incompatible power restriction ",
     "used": "used"
   },
+  "projectionInProgress": "Projection in progress: {{ count }}/{{ total }} trains",
   "reset": "Reset the chart",
   "resetTimer": "Reset timer",
   "rotate": "Rotate the chart",

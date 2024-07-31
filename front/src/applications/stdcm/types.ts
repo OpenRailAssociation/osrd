@@ -58,5 +58,5 @@ export type StdcmV2Results = {
     formattedPathProperties: PathPropertiesFormatted;
     departureTime: string;
   } | null;
-  spaceTimeData: TrainSpaceTimeData[];
+  spaceTimeData: TrainSpaceTimeData[] | null;
 };

@@ -4,21 +4,22 @@ import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmV2SuccessResponse } from '../types';
 
 const formatStdcmTrainIntoSpaceTimeData = (
-  stdcmSimulation: StdcmV2SuccessResponse['simulation'],
-  stdcmDepartureTime: string,
-  stdcmRollingStockLength: number
-): ProjectPathTrainResult & { id: number; name: string } => ({
-  id: STDCM_TRAIN_ID,
-  name: 'stdcm',
-  space_time_curves: [
-    {
-      times: stdcmSimulation.final_output.times,
-      positions: stdcmSimulation.final_output.positions,
-    },
-  ],
-  signal_updates: [],
-  rolling_stock_length: stdcmRollingStockLength,
-  departure_time: stdcmDepartureTime,
-});
+  stdcmResponse: StdcmV2SuccessResponse
+): ProjectPathTrainResult & { id: number; name: string } => {
+  const { simulation, rollingStock, departure_time } = stdcmResponse;
+  return {
+    id: STDCM_TRAIN_ID,
+    name: 'stdcm',
+    space_time_curves: [
+      {
+        times: simulation.final_output.times,
+        positions: simulation.final_output.positions,
+      },
+    ],
+    signal_updates: [],
+    rolling_stock_length: rollingStock.length,
+    departure_time,
+  };
+};
 
 export default formatStdcmTrainIntoSpaceTimeData;

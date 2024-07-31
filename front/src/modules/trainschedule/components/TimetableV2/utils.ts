@@ -1,14 +1,10 @@
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
-
 import { specialCodeDictionary } from './consts';
 import type { TrainScheduleWithDetails } from './types';
 
-/**
- * Filter train schedules by their names and labels
- */
-export const keepTrain = (train: TrainScheduleBase, searchString: string): boolean => {
+/** Filter train schedules by their names and labels */
+export const keepTrain = (train: TrainScheduleWithDetails, searchString: string): boolean => {
   if (searchString) {
-    const searchStringInName = train.train_name.toLowerCase().includes(searchString.toLowerCase());
+    const searchStringInName = train.trainName.toLowerCase().includes(searchString.toLowerCase());
     const searchStringInTags = train.labels
       ? train.labels.join('').toLowerCase().includes(searchString.toLowerCase())
       : false;

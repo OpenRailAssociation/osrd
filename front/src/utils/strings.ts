@@ -47,12 +47,18 @@ export function geti18nKeyForNull(str: string | null): string {
   return str || `N/C`;
 }
 
+/** Given a string, return a number or undefined */
+export function parseNumber(str: string) {
+  const number = Number(str);
+  return !Number.isNaN(number) ? number : undefined;
+}
+
 /**
  * Given a string, return a number or 0
  * Useful for number input
  */
 export function convertInputStringToNumber(str: string) {
-  return str !== '' && !Number.isNaN(str) ? +str : 0;
+  return parseNumber(str) || 0;
 }
 
 /**

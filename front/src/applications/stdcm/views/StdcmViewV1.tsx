@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 // TODO TS2: rename ManageTrainSchedulePathProperties and move it to /modules/pathfinding
 import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
@@ -7,6 +7,9 @@ import StdcmConfig from 'applications/stdcm/views/StdcmConfig';
 import StdcmRequestModal from 'applications/stdcm/views/StdcmRequestModal';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
+
+import useProjectedTrainsForStdcm from '../hooks/useProjectedTrainsForStdcm';
+import type { StdcmV2Results } from '../types';
 
 const StdcmViewV1 = () => {
   const dispatch = useAppDispatch();
@@ -20,6 +23,13 @@ const StdcmViewV1 = () => {
     setPathProperties,
   } = useStdcm();
 
+  const spaceTimeData = useProjectedTrainsForStdcm(stdcmV2Results?.stdcmResponse);
+
+  const stdcmResult: StdcmV2Results | null = useMemo(
+    () => (stdcmV2Results ? { ...stdcmV2Results, spaceTimeData } : null),
+    [stdcmV2Results, spaceTimeData]
+  );
+
   useEffect(
     () => () => {
       dispatch(updateSelectedTrainId(undefined));
@@ -32,7 +42,7 @@ const StdcmViewV1 = () => {
       <StdcmConfig
         currentStdcmRequestStatus={currentStdcmRequestStatus}
         launchStdcmRequest={launchStdcmRequest}
-        stdcmV2Results={stdcmV2Results}
+        stdcmV2Results={stdcmResult}
         pathProperties={pathProperties}
         setPathProperties={setPathProperties}
       />

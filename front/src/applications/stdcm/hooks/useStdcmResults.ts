@@ -1,13 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
-import { compact, keyBy } from 'lodash';
+import { compact } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import type {
-  ManageTrainSchedulePathProperties,
-  TrainSpaceTimeData,
-} from 'applications/operationalStudies/types';
-import type { StdcmV2Results, StdcmV2SuccessResponse } from 'applications/stdcm/types';
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
 import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
@@ -21,33 +18,19 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 
 import { STDCM_TRAIN_ID } from '../consts';
-import formatTrainsIntoSpaceTimeData from '../utils/formatSpaceTimeData';
-import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
 
 const useStdcmResults = (
   stdcmResponse: StdcmV2SuccessResponse | undefined,
   stdcmTrainResult: TrainScheduleResult | undefined,
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void
-): StdcmV2Results | null => {
+) => {
   const infraId = useInfraID();
-  const { getPathSteps, getTimetableID } = useOsrdConfSelectors();
+  const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
-  const timetableId = useSelector(getTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
-
-  const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
-
-  const speedSpaceChartData = useSpeedSpaceChart(
-    stdcmTrainResult,
-    stdcmResponse?.path,
-    stdcmResponse?.simulation,
-    stdcmResponse?.departure_time
-  );
 
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
-  const [projectTrainSchedules] =
-    osrdEditoastApi.endpoints.postV2TrainScheduleProjectPath.useLazyQuery();
 
   const { data: otherSelectedTrainSchedule } =
     osrdEditoastApi.endpoints.getV2TrainScheduleById.useQuery(
@@ -57,30 +40,19 @@ const useStdcmResults = (
       { skip: !selectedTrainId || selectedTrainId === STDCM_TRAIN_ID }
     );
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
-    { id: timetableId! },
-    {
-      skip: !timetableId,
-    }
-  );
-
-  const { currentData: trainSchedules } = osrdEditoastApi.endpoints.postV2TrainSchedule.useQuery(
-    {
-      body: {
-        ids: timetable?.train_ids as number[],
-      },
-    },
-    {
-      skip: !timetable || !timetable.train_ids.length,
-    }
-  );
-
   const selectedTrainSchedule = useMemo(
     () =>
       selectedTrainId !== STDCM_TRAIN_ID && otherSelectedTrainSchedule
         ? otherSelectedTrainSchedule
         : stdcmTrainResult,
     [selectedTrainId, stdcmTrainResult, otherSelectedTrainSchedule]
+  );
+
+  const speedSpaceChartData = useSpeedSpaceChart(
+    stdcmTrainResult,
+    stdcmResponse?.path,
+    stdcmResponse?.simulation,
+    stdcmResponse?.departure_time
   );
 
   useEffect(() => {
@@ -130,57 +102,10 @@ const useStdcmResults = (
     }
   }, [stdcmResponse]);
 
-  useEffect(() => {
-    const getSpaceTimeChartData = async (
-      _infraId: number,
-      path: PathfindingResultSuccess,
-      trainSchedulesIds: number[],
-      stdcmSimulation: StdcmV2SuccessResponse['simulation'],
-      stdcmDepartureTime: string,
-      stdcmRollingStockLength: number
-    ) => {
-      const { blocks, routes, track_section_ranges } = path;
-      const projectPathTrainResult = await projectTrainSchedules({
-        projectPathForm: {
-          infra_id: _infraId,
-          ids: trainSchedulesIds,
-          path: { blocks, routes, track_section_ranges },
-        },
-      }).unwrap();
-
-      const newSpaceTimeData = formatTrainsIntoSpaceTimeData(
-        projectPathTrainResult,
-        keyBy(trainSchedules, 'id')
-      );
-
-      const stdcmProjectedTrain = formatStdcmTrainIntoSpaceTimeData(
-        stdcmSimulation,
-        stdcmDepartureTime,
-        stdcmRollingStockLength
-      );
-
-      newSpaceTimeData.push(stdcmProjectedTrain);
-      setSpaceTimeData(newSpaceTimeData);
-    };
-
-    if (infraId && stdcmResponse && timetable) {
-      const { path } = stdcmResponse;
-      getSpaceTimeChartData(
-        infraId,
-        path,
-        timetable.train_ids,
-        stdcmResponse.simulation,
-        stdcmResponse.departure_time,
-        stdcmResponse.rollingStock.length
-      );
-    }
-  }, [stdcmResponse, infraId, timetable, projectTrainSchedules]);
-
   if (!infraId || !stdcmResponse || !selectedTrainSchedule) return null;
 
   return {
     stdcmResponse,
-    spaceTimeData,
     speedSpaceChartData,
   };
 };

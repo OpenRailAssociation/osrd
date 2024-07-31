@@ -51,7 +51,8 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
         <div className="osrd-simulation-container mb-2">
           <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('spaceTimeGraphic')}</p>
           <div className="chart-container mt-2">
-            {spaceTimeData.length > 0 &&
+            {spaceTimeData &&
+            spaceTimeData.length > 0 &&
             pathProperties &&
             pathProperties.manchetteOperationalPoints ? (
               <SpaceTimeChartWithManchette
