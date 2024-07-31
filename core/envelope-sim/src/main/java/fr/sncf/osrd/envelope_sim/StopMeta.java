@@ -1,8 +1,9 @@
 package fr.sncf.osrd.envelope_sim;
 
-import fr.sncf.osrd.envelope.EnvelopeAttr;
+import fr.sncf.osrd.utils.SelfTypeHolder;
+import org.jetbrains.annotations.NotNull;
 
-public final class StopMeta implements EnvelopeAttr {
+public final class StopMeta implements SelfTypeHolder {
     public final int stopIndex;
 
     public StopMeta(int stopIndex) {
@@ -10,7 +11,7 @@ public final class StopMeta implements EnvelopeAttr {
     }
 
     @Override
-    public Class<? extends EnvelopeAttr> getAttrType() {
+    public @NotNull Class<? extends SelfTypeHolder> getSelfType() {
         return StopMeta.class;
     }
 }

@@ -2,8 +2,8 @@ package fr.sncf.osrd.envelope.part;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +11,7 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
     private final DoubleArrayList positions;
     private final DoubleArrayList speeds;
     private final DoubleArrayList times;
-    private final Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs;
+    private final Map<Class<? extends SelfTypeHolder>, SelfTypeHolder> attrs;
     private double direction;
 
     private double lastPos;
@@ -72,14 +72,14 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
     }
 
     @Override
-    public <T extends EnvelopeAttr> void setAttr(T attr) {
+    public <T extends SelfTypeHolder> void setAttr(T attr) {
         assert attr != null : "called setAttr with attr == null";
-        attrs.put(attr.getAttrType(), attr);
+        attrs.put(attr.getSelfType(), attr);
     }
 
     @Override
-    public void setAttrs(Iterable<EnvelopeAttr> newAttrs) {
-        for (var attr : newAttrs) attrs.put(attr.getAttrType(), attr);
+    public void setAttrs(Iterable<SelfTypeHolder> newAttrs) {
+        for (var attr : newAttrs) attrs.put(attr.getSelfType(), attr);
     }
 
     private static void reverse(double[] arr) {

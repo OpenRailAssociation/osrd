@@ -3,11 +3,11 @@ package fr.sncf.osrd.envelope.part;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
 import fr.sncf.osrd.envelope.EnvelopePoint;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope_utils.DoubleUtils;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 
 public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelopePartConsumer {
     public EnvelopePartConstraint[] constraints;
@@ -114,12 +114,12 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
     }
 
     @Override
-    public <T extends EnvelopeAttr> void setAttr(T attr) {
+    public <T extends SelfTypeHolder> void setAttr(T attr) {
         sink.setAttr(attr);
     }
 
     @Override
-    public void setAttrs(Iterable<EnvelopeAttr> attrs) {
+    public void setAttrs(Iterable<SelfTypeHolder> attrs) {
         sink.setAttrs(attrs);
     }
 }

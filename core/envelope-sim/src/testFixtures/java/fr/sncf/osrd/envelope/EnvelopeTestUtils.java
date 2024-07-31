@@ -10,26 +10,28 @@ import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 import java.util.Collections;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 
 public class EnvelopeTestUtils {
-    public enum TestAttr implements EnvelopeAttr {
+    public enum TestAttr implements SelfTypeHolder {
         A,
         B,
         C,
         ;
 
         @Override
-        public Class<? extends EnvelopeAttr> getAttrType() {
+        public @NotNull Class<? extends SelfTypeHolder> getSelfType() {
             return TestAttr.class;
         }
     }
 
     static EnvelopePart buildContinuous(
             EnvelopeCursor cursor,
-            Iterable<EnvelopeAttr> attrs,
+            Iterable<SelfTypeHolder> attrs,
             double[] positions,
             double[] speeds,
             boolean isBackward) {
@@ -91,13 +93,13 @@ public class EnvelopeTestUtils {
     }
 
     /** Creates a flat envelope part */
-    public static EnvelopePart makeFlatPart(EnvelopeAttr attr, double beginPos, double endPos, double speed) {
+    public static EnvelopePart makeFlatPart(SelfTypeHolder attr, double beginPos, double endPos, double speed) {
         return makeFlatPart(List.of(attr, EnvelopeProfile.CONSTANT_SPEED), beginPos, endPos, speed);
     }
 
     /** Creates a flat envelope part */
     public static EnvelopePart makeFlatPart(
-            Iterable<EnvelopeAttr> attrs, double beginPos, double endPos, double speed) {
+            Iterable<SelfTypeHolder> attrs, double beginPos, double endPos, double speed) {
         return EnvelopePart.generateTimes(attrs, new double[] {beginPos, endPos}, new double[] {speed, speed});
     }
 

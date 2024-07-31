@@ -10,7 +10,9 @@ import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.AcceleratingSlopeCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.BrakingPhaseCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingOpportunity;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 import java.util.*;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Applies the allowance while maximizing the energy saved. The algorithm and formulas are described
@@ -24,11 +26,11 @@ public final class MarecoAllowance extends AbstractAllowanceWithRanges {
         assert capacitySpeedLimit >= 1 : "capacity speed limit can't be lower than 1m/s for mareco allowances";
     }
 
-    public static final class MarecoSpeedLimit implements EnvelopeAttr {
+    public static final class MarecoSpeedLimit implements SelfTypeHolder {
         private MarecoSpeedLimit() {}
 
         @Override
-        public Class<? extends EnvelopeAttr> getAttrType() {
+        public @NotNull Class<? extends SelfTypeHolder> getSelfType() {
             return MarecoSpeedLimit.class;
         }
     }

@@ -4,11 +4,11 @@ import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
 import fr.sncf.osrd.envelope.SearchableEnvelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_utils.ExcludeFromGeneratedCodeCoverage;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,8 +27,11 @@ import java.util.stream.Collectors;
 public final class EnvelopePart implements SearchableEnvelope {
     // region INTRINSIC DATA FIELDS
 
-    /** Metadata about this envelope part */
-    private final Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs;
+    /** Metadata about this envelope part
+     * Attributes are stored and looked up by attribute type.
+     * An envelope part thus cannot have two attributes of the same type
+     */
+    private final Map<Class<? extends SelfTypeHolder>, SelfTypeHolder> attrs;
 
     /* !!! These arrays must stay private, as even public final arrays are mutable !!! */
 
@@ -72,7 +75,7 @@ public final class EnvelopePart implements SearchableEnvelope {
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     @ExcludeFromGeneratedCodeCoverage
     public EnvelopePart(
-            Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs,
+            Map<Class<? extends SelfTypeHolder>, SelfTypeHolder> attrs,
             double[] positions,
             double[] speeds,
             double[] timeDeltas) {
@@ -87,12 +90,12 @@ public final class EnvelopePart implements SearchableEnvelope {
     /** Creates an EnvelopePart */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     @ExcludeFromGeneratedCodeCoverage
-    public EnvelopePart(Iterable<EnvelopeAttr> attrs, double[] positions, double[] speeds, double[] timeDeltas) {
+    public EnvelopePart(Iterable<SelfTypeHolder> attrs, double[] positions, double[] speeds, double[] timeDeltas) {
         this(makeAttrs(attrs), positions, speeds, timeDeltas);
     }
 
     /** Creates an envelope part by generating step times from speeds and positions */
-    public static EnvelopePart generateTimes(Iterable<EnvelopeAttr> attrs, double[] positions, double[] speeds) {
+    public static EnvelopePart generateTimes(Iterable<SelfTypeHolder> attrs, double[] positions, double[] speeds) {
         return new EnvelopePart(attrs, positions, speeds, computeTimes(positions, speeds));
     }
 
@@ -101,20 +104,20 @@ public final class EnvelopePart implements SearchableEnvelope {
     // region ATTRS
 
     /** Create an attribute map from the given attributes */
-    public static Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> makeAttrs(Iterable<EnvelopeAttr> attrs) {
-        var res = new HashMap<Class<? extends EnvelopeAttr>, EnvelopeAttr>();
-        for (var attr : attrs) res.put(attr.getAttrType(), attr);
+    public static Map<Class<? extends SelfTypeHolder>, SelfTypeHolder> makeAttrs(Iterable<SelfTypeHolder> attrs) {
+        var res = new HashMap<Class<? extends SelfTypeHolder>, SelfTypeHolder>();
+        for (var attr : attrs) res.put(attr.getSelfType(), attr);
         return res;
     }
 
     /** Return the given metadata attribute */
     @SuppressWarnings({"unchecked"})
-    public <T extends EnvelopeAttr> T getAttr(Class<T> attrType) {
+    public <T extends SelfTypeHolder> T getAttr(Class<T> attrType) {
         return (T) attrs.get(attrType);
     }
 
     /** Returns whether this envelope part has a given attribute */
-    public boolean hasAttr(Class<? extends EnvelopeAttr> attrType) {
+    public boolean hasAttr(Class<? extends SelfTypeHolder> attrType) {
         return attrs.containsKey(attrType);
     }
 
@@ -122,12 +125,12 @@ public final class EnvelopePart implements SearchableEnvelope {
      * Returns whether the envelope has the given attribute value. Usually, we can't deduce the
      * attribute type from the attribute value, but we can for enums.
      */
-    public <T extends EnvelopeAttr> boolean hasAttr(T attr) {
-        return attrs.get(attr.getAttrType()) == attr;
+    public <T extends SelfTypeHolder> boolean hasAttr(T attr) {
+        return attrs.get(attr.getSelfType()) == attr;
     }
 
     /** Returns a view of the envelope part attributes */
-    public Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> getAttrs() {
+    public Map<Class<? extends SelfTypeHolder>, SelfTypeHolder> getAttrs() {
         return Collections.unmodifiableMap(attrs);
     }
 

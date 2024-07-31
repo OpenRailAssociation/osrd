@@ -6,8 +6,10 @@ import static fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.EnvelopeChangeType.END;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
+import fr.sncf.osrd.utils.SelfTypeHolder;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.jetbrains.annotations.NotNull;
 
 /** Given a set of overlapping envelope parts, this structure finds the minimum speed envelope. */
 public final class MRSPEnvelopeBuilder {
@@ -34,13 +36,13 @@ public final class MRSPEnvelopeBuilder {
         }
     }
 
-    public enum LimitKind implements EnvelopeAttr {
+    public enum LimitKind implements SelfTypeHolder {
         SPEED_LIMIT,
         TRAIN_LIMIT,
         ;
 
         @Override
-        public Class<? extends EnvelopeAttr> getAttrType() {
+        public @NotNull Class<? extends SelfTypeHolder> getSelfType() {
             return LimitKind.class;
         }
     }
