@@ -10,6 +10,12 @@
     "realend": "Fin réelle",
     "start": "Début"
   },
+  "confirmDeleteMessage": "Voulez-vous supprimer le scénario ?",
+  "confirmDeleteMessage_one": "Voulez-vous supprimer {{count}} scénario ?",
+  "confirmDeleteMessage_other": "Voulez-vous supprimer les {{ count }} scénarios ?",
+  "deleteItems": "Supprimer",
+  "deleteScenarios": "Supprimer",
+  "deleteSelection": "Supprimer les scénarios sélectionnés",
   "description": "description",
   "errorHappened": "Une erreur est survenue",
   "filesAndLinks": "Documents & liens",
@@ -24,7 +30,15 @@
   "scenariosCount_one": "1 scénario",
   "scenariosCount_other": "{{count}} scénarios",
   "scenariosCount_zero": "Aucun scénario",
+  "scenarioDeleted_one": "Scénario supprimé",
+  "scenarioDeleted_other": "Scénarios supprimés",
+  "scenarioDeletedError": "Échec de la suppression",
+  "scenarioDeletedErrorMessage": "La suppression du scénario a échoué",
+  "scenarioDeletedMulti_one": "{{count}} scénario a été supprimé.",
+  "scenarioDeletedMulti_other": "{{count}} scénarios ont été supprimés.",
   "scenariosList": "Scénarios",
+  "selectedScenarios_one": "{{count}} scénario sélectionné",
+  "selectedScenarios_other": "{{count}} scénarios sélectionnés",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"
@@ -74,5 +88,7 @@
   },
   "studyUpdated": "Mise à jour réussie !",
   "studyUpdatedDetails": "L'étude {{ name }} a bien été mise à jour.",
-  "unableToRetrieveStudyState": "Echec de la récupération des types d'étude"
+  "toggleMultiSelection": "Basculer la sélection multiple",
+  "unableToRetrieveStudyState": "Echec de la récupération des types d'étude",
+  "unselectAll": "Tout désélectionner"
 }

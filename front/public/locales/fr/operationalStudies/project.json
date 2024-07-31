@@ -4,9 +4,12 @@
   "budget": "Budget",
   "createdOn": "Créée le",
   "createStudy": "Créer une étude",
+  "deleteItems": "Supprimer",
   "description": "description",
   "error": {
+    "unableToDelete": "Impossible de supprimer",
     "unableToDeleteProject": "Impossible de supprimer le projet",
+    "unableToDeleteStudy": "Impossible de supprimer l'étude",
     "unableToPostDocumentTitle": "Echec de l'upload de l'image",
     "unableToPostDocument": "Impossible de charger l'image",
     "unableToUpdateProjectTitle": "Echec de la mise à jour du projet",
@@ -59,10 +62,20 @@
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"
   },
+  "confirmDeleteMessage": "Voulez-vous supprimer une étude ?",
+  "confirmDeleteMessage_one": "Voulez-vous supprimer {{count}} étude ?",
+  "confirmDeleteMessage_other": "Voulez-vous supprimer les {{ count }} études ?",
+  "selectedStudies_one": "{{count}} étude sélectionnée",
+  "selectedStudies_other": "{{count}} études sélectionnées",
   "studies": "Études",
   "studiesCount_one": "1 étude",
   "studiesCount_other": "{{count}} études",
   "studiesCount_zero": "Aucune étude",
+  "studyDeleted": "Suppression réussie",
+  "studyDeleted_one": "Une étude a été supprimée",
+  "studyDeleted_other": "{{count}} études ont été supprimées",
   "totalBudget": "Budget total",
-  "uploadImage": "Importer une image"
+  "uploadImage": "Importer une image",
+  "toggleMultiSelection": "Basculer le mode multisélection",
+  "unselectAll": "Désélectionner"
 }

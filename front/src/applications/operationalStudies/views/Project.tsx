@@ -20,10 +20,13 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
+import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import StudyCard from 'modules/study/components/StudyCard';
 import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
 import { budgetFormat } from 'utils/numbers';
+
+import useMultiSelection from '../hooks/useMultiSelection';
 
 type SortOptions =
   | 'NameAsc'
@@ -36,17 +39,20 @@ type SortOptions =
 type ProjectParams = {
   projectId: string;
 };
+
 export default function Project() {
-  const { t } = useTranslation('operationalStudies/project');
+  const { t } = useTranslation(['operationalStudies/project']);
   const { openModal } = useModal();
-  const [studiesList, setStudiesList] = useState<StudyWithScenarios[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [imageUrl, setImageUrl] = useState('');
-  const { projectId: urlProjectId } = useParams() as ProjectParams;
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [isLoading, setIsLoading] = useState(true);
+
+  const { projectId: urlProjectId } = useParams() as ProjectParams;
+  const [deleteStudyV2] =
+    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyId.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
   const { projectId } = useMemo(
     () => ({
@@ -55,6 +61,22 @@ export default function Project() {
     [urlProjectId]
   );
 
+  const {
+    selectedItemIds: selectedStudyIds,
+    setSelectedItemIds: setSelectedStudyIds,
+    items: studiesList,
+    setItems: setStudiesList,
+    toggleSelection: toggleStudySelection,
+    deleteItems,
+  } = useMultiSelection<StudyWithScenarios>((studyId) => {
+    deleteStudyV2({ projectId: projectId!, studyId });
+  });
+
+  const handleDeleteStudy = () => {
+    if (selectedStudyIds.length > 0 && projectId) {
+      deleteItems();
+    }
+  };
   const sortOptions = [
     {
       label: t('sortOptions.byName'),
@@ -135,7 +157,7 @@ export default function Project() {
 
   function displayStudiesList() {
     return !isLoading ? (
-      <div className="row no-gutters">
+      <div className="row no-gutters mt-2">
         <div className="col-hdp-3 col-hd-4 col-lg-6">
           <StudyCardEmpty />
         </div>
@@ -144,7 +166,12 @@ export default function Project() {
             className="col-hdp-3 col-hd-4 col-lg-6"
             key={`project-displayStudiesList-${study.id}`}
           >
-            <StudyCard study={study} setFilterChips={setFilterChips} />
+            <StudyCard
+              setFilterChips={setFilterChips}
+              study={study}
+              isSelected={study.id !== undefined && selectedStudyIds.includes(study.id)}
+              toggleSelect={toggleStudySelection}
+            />
           </div>
         ))}
       </div>
@@ -178,6 +205,7 @@ export default function Project() {
   return (
     <>
       <NavBarSNCF appName={<BreadCrumbs project={project} />} />
+
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3 project-view">
           {project ? (
@@ -277,6 +305,7 @@ export default function Project() {
                 id="studies-filter"
               />
             </div>
+
             <OptionsSNCF
               name="projects-sort-filter"
               onChange={handleSortOptions}
@@ -284,8 +313,19 @@ export default function Project() {
               options={sortOptions}
             />
           </div>
-
-          <div className="studies-list">{useMemo(() => displayStudiesList(), [studiesList])}</div>
+          {selectedStudyIds.length > 0 && (
+            <SelectionToolbar
+              selectedItemCount={selectedStudyIds.length}
+              onDeselectAll={() => setSelectedStudyIds([])}
+              onDelete={handleDeleteStudy}
+              translationKey="selectedStudies"
+              translationNameSpace="operationalStudies/project"
+              dataTestId="deleteStudies"
+            />
+          )}
+          <div className="studies-list">
+            {useMemo(() => displayStudiesList(), [studiesList, selectedStudyIds])}
+          </div>
         </div>
       </main>
     </>

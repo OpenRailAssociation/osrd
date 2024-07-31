@@ -19,10 +19,13 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
+import SelectionToolbar from 'common/SelectionToolbar';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import { budgetFormat } from 'utils/numbers';
+
+import useMultiSelection from '../hooks/useMultiSelection';
 
 type SortOptions =
   | 'NameAsc'
@@ -38,11 +41,10 @@ type studyParams = {
 };
 
 export default function Study() {
-  const { t } = useTranslation('operationalStudies/study');
+  const { t } = useTranslation(['operationalStudies/study']);
   const { openModal } = useModal();
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
 
-  const [scenariosList, setScenariosList] = useState<ScenarioWithDetails[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
@@ -71,6 +73,10 @@ export default function Study() {
   );
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [deleteScenarioV2] =
+    osrdEditoastApi.endpoints.deleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
+      {}
+    );
 
   const { data: scenariosV2 } =
     osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
@@ -83,6 +89,21 @@ export default function Study() {
       { skip: !projectId || !studyId }
     );
 
+  const {
+    selectedItemIds: selectedScenarioIds,
+    setSelectedItemIds: setSelectedScenarioIds,
+    items: scenariosList,
+    setItems: setScenariosList,
+    toggleSelection: toggleScenarioSelection,
+    deleteItems,
+  } = useMultiSelection<ScenarioWithDetails>((scenarioId) => {
+    deleteScenarioV2({ projectId: projectId!, studyId: studyId!, scenarioId });
+  });
+  const handleDeleteScenario = () => {
+    if (selectedScenarioIds.length > 0 && studyId && projectId) {
+      deleteItems();
+    }
+  };
   useEffect(() => {
     if (!projectId || !studyId) throw new Error('Missing projectId or studyId in url');
   }, [projectId, studyId]);
@@ -158,7 +179,12 @@ export default function Study() {
             className="col-hdp-3 col-hd-4 col-lg-6"
             key={`study-displayScenariosList-${scenario.id}`}
           >
-            <ScenarioCard scenario={scenario} setFilterChips={setFilterChips} />
+            <ScenarioCard
+              setFilterChips={setFilterChips}
+              scenario={scenario}
+              isSelected={scenario.id !== undefined && selectedScenarioIds.includes(scenario.id)}
+              toggleSelect={toggleScenarioSelection}
+            />
           </div>
         ))}
       </div>
@@ -310,6 +336,7 @@ export default function Study() {
                 sm
               />
             </div>
+
             <OptionsSNCF
               name="projects-sort-filter"
               onChange={handleSortOptions}
@@ -318,9 +345,19 @@ export default function Study() {
               sm
             />
           </div>
+          {selectedScenarioIds.length > 0 && (
+            <SelectionToolbar
+              selectedItemCount={selectedScenarioIds.length}
+              onDeselectAll={() => setSelectedScenarioIds([])}
+              onDelete={handleDeleteScenario}
+              translationKey="selectedScenarios"
+              translationNameSpace="operationalStudies/study"
+              dataTestId="deleteScenarios"
+            />
+          )}
 
           <div className="scenarios-list">
-            {useMemo(() => displayScenariosList(), [scenariosList])}
+            {useMemo(() => displayScenariosList(), [scenariosList, selectedScenarioIds])}
           </div>
         </div>
       </main>

@@ -1,4 +1,8 @@
 {
   "trains_one": "{{count}} train",
-  "trains_other": "{{count}} trains"
+  "trains_other": "{{count}} trains",
+  "scenarios_one": "{{count}} scénario",
+  "scenarios_other": "{{count}} scénarios",
+  "studies_one": "{{count}} étude",
+  "studies_other": "{{count}} études"
 }

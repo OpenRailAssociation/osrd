@@ -17,7 +17,7 @@ type Props = {
   setFilterChips: (filterChips: string) => void;
   project: ProjectWithStudies | SearchResultItemProject;
   isSelected: boolean;
-  toggleSelect: (id?: number) => void;
+  toggleSelect: (id: number) => void;
 };
 
 export default function ProjectCard({ setFilterChips, project, isSelected, toggleSelect }: Props) {

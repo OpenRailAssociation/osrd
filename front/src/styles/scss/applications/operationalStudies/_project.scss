@@ -1,4 +1,35 @@
 .project-view {
+  .filter-selector {
+    background-color: transparent;
+    border: none;
+    color: var(--secondary);
+    transition: 0.2s;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    &.on {
+      color: white;
+      background-color: var(--secondary);
+    }
+    &:hover {
+      background-color: var(--secondary);
+      color: var(--white);
+      .scenario-details-modify-button-text {
+        opacity: 1;
+      }
+    }
+  }
+
+  .multiselect-delete {
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border-color: transparent;
+    background-color: rgba(var(--red-rgb), 0.75);
+    color: var(--white);
+    &.disabled {
+      background-color: rgba(var(--secondary-rgb), 0.5);
+    }
+  }
   .project-details {
     .project-details-title {
       display: flex;
@@ -142,7 +173,7 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
-    padding: 1rem 0 1rem;
+    padding: 1rem 0.5rem 1rem 0.5rem;
     margin-top: 2rem;
   }
 
@@ -151,5 +182,8 @@
     max-height: 50vh;
     margin-left: -0.5rem;
     margin-right: -0.5rem;
+    padding-top: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }

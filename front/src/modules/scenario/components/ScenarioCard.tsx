@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Calendar, FileDirectoryOpen } from '@osrd-project/ui-icons';
+import { Calendar, CheckCircle, FileDirectoryOpen } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
 import { RiFolderChartLine } from 'react-icons/ri';
@@ -17,9 +18,16 @@ import { dateTimeFormatting } from 'utils/date';
 type ScenarioCardProps = {
   setFilterChips: (filterChips: string) => void;
   scenario: ScenarioWithDetails;
+  isSelected: boolean;
+  toggleSelect: (id: number) => void;
 };
 
-export default function ScenarioCard({ setFilterChips, scenario }: ScenarioCardProps) {
+export default function ScenarioCard({
+  setFilterChips,
+  scenario,
+  isSelected,
+  toggleSelect,
+}: ScenarioCardProps) {
   const { t } = useTranslation('operationalStudies/study');
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -32,9 +40,18 @@ export default function ScenarioCard({ setFilterChips, scenario }: ScenarioCardP
   };
 
   return (
-    <div data-testid={`scenario-card-${scenario.name}`} className="scenario-card">
-      <div className="scenario-card-name" data-testid={scenario.name}>
+    <div
+      className={cx('scenario-card', isSelected && 'selected')}
+      data-testid={`scenario-card-${scenario.name}`}
+      onClick={() => toggleSelect(scenario.id)}
+      role="button"
+      tabIndex={0}
+    >
+      <div className={cx('scenario-card-name')} data-testid={scenario.name}>
         <span className="mr-2">
+          <span className="selected-mark">
+            <CheckCircle variant="fill" size="lg" />
+          </span>
           <RiFolderChartLine />
         </span>
         <span className="scenario-card-name-text" title={scenario.name}>

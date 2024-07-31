@@ -1,8 +1,9 @@
 {
-  "confirmDeleteMessage_one": "Voulez-vous réellement supprimer le projet ?",
+  "confirmDeleteMessage": "Voulez-vous réellement supprimer le projet ?",
+  "confirmDeleteMessage_one": "Voulez-vous réellement supprimer {{count}} projet ?",
   "confirmDeleteMessage_other": "Voulez-vous réellement supprimer les {{ count }} projets ?",
   "createProject": "Créer un projet",
-  "deleteProjects": "Supprimer",
+  "deleteItems": "Supprimer",
   "filterPlaceholder": "Rechercher…",
   "openProject": "Ouvrir",
   "projects": "Projets",
@@ -19,5 +20,5 @@
   "studiesCount_one": "1 étude",
   "studiesCount_other": "{{count}} études",
   "studiesCount_zero": "Aucune étude",
-  "unselectAllProjects": "Déselectionner"
+  "unselectAll": "Déselectionner"
 }

@@ -1,8 +1,10 @@
 {
-  "confirmDeleteMessage_one": "Do you really want to delete the project?",
+  "confirmDeleteMessage": "Do you really want to delete the project?",
+  "confirmDeleteMessage_one": "Do you really want to delete {{count}} project?",
   "confirmDeleteMessage_other": "Do you really want to delete the {{ count }} projects?",
   "createProject": "Create a project",
   "deleteProjects": "Delete",
+  "deleteItems": "Delete",
   "filterPlaceholder": "Search...",
   "openProject": "Open",
   "projects": "Projects",
@@ -10,7 +12,7 @@
   "projectsCount_other": "{{count}} projects",
   "projectsCount_zero": "No project",
   "safeWordActivated": "Safe mode activated",
-  "selectedProjects_one": "1 projet selected",
+  "selectedProjects_one": "1 project selected",
   "selectedProjects_other": "{{ count }} projects selected",
   "sortOptions": {
     "byName": "Sort by name",
@@ -19,5 +21,5 @@
   "studiesCount_one": "1 study",
   "studiesCount_other": "{{count}} studies",
   "studiesCount_zero": "No study",
-  "unselectAllProjects": "Deselect"
+  "unselectAll": "Deselect"
 }
