@@ -1,6 +1,17 @@
 import React, { type FC, useEffect, useMemo, useState } from 'react';
 
-import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq, isNil } from 'lodash';
+import {
+  groupBy,
+  mapKeys,
+  mapValues,
+  sum,
+  isString,
+  isArray,
+  uniq,
+  isNil,
+  concat,
+  compact,
+} from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
@@ -69,13 +80,19 @@ const LayersModal: FC<LayersModalProps> = ({
   const { t } = useTranslation();
   const { layersSettings } = useSelector(getMap);
   const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);
+
   const infraID = useInfraID();
 
-  const { data: speedLimitTags } =
+  const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
       { infraId: infraID as number },
       { skip: isNil(infraID) }
     );
+  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
+
+  const allSpeedLimitTags = compact(concat(speedLimitTags, speedLimitTagsByInfraId));
+  const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
+
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);
   const selectionCounts = useMemo(
     () =>
@@ -125,8 +142,8 @@ const LayersModal: FC<LayersModalProps> = ({
   );
 
   const speedLimitOptions = useMemo(
-    () => uniq([DEFAULT_SPEED_LIMIT_TAG, ...(speedLimitTags || [])]),
-    [speedLimitTags]
+    () => uniq([DEFAULT_SPEED_LIMIT_TAG, ...allSpeedLimitTagsOrdered]),
+    [allSpeedLimitTagsOrdered]
   );
 
   return (
@@ -193,7 +210,7 @@ const LayersModal: FC<LayersModalProps> = ({
             id="speedLimitTag"
             className="form-control"
             value={layersSettings.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
-            disabled={!isArray(speedLimitTags) || !selectedLayers.has('speed_sections')}
+            disabled={!isArray(allSpeedLimitTags) || !selectedLayers.has('speed_sections')}
             onChange={(e) => {
               const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;
               dispatch(

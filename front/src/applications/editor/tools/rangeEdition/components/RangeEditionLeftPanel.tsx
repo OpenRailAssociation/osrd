@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 
-import { cloneDeep, isEmpty, isEqual, last, pick, uniqWith } from 'lodash';
+import { cloneDeep, compact, concat, isEmpty, isEqual, last, pick, uniq, uniqWith } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EntityError from 'applications/editor/components/EntityError';
@@ -107,13 +107,18 @@ const RangeEditionLeftPanel = () => {
     { skip: !infraID }
   );
 
-  const { data: speedLimitTags } =
+  const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
       {
         infraId: infraID as number,
       },
       { skip: !infraID }
     );
+
+  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
+
+  const allSpeedLimitTags = uniq(concat(speedLimitTags, speedLimitTagsByInfraId));
+  const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
   const updateSpeedSectionExtensions = (
     extensions: SpeedSectionEntity['properties']['extensions']
@@ -280,7 +285,7 @@ const RangeEditionLeftPanel = () => {
     return (
       <div className="speed-section">
         <legend className="mb-4">{t(`Editor.obj-types.SpeedSection`)}</legend>
-        {speedLimitTags && <SpeedSectionMetadataForm speedLimitTags={speedLimitTags} />}
+        <SpeedSectionMetadataForm speedLimitTags={compact(allSpeedLimitTagsOrdered)} />
         <hr />
         <div>
           {permanentSpeedLimitCheckbox}
