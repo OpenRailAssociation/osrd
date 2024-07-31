@@ -31,9 +31,6 @@ use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Infra;
-use crate::views::pagination::PaginatedList;
-use crate::views::pagination::PaginationQueryParam;
-use crate::views::pagination::PaginationStats;
 use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::views::v2::train_schedule::TrainScheduleForm;
 use crate::views::v2::train_schedule::TrainScheduleResult;
@@ -44,11 +41,9 @@ use editoast_models::DbConnectionPoolV2;
 crate::routes! {
     "/v2/timetable" => {
         post,
-        list,
         "/{id}" => {
             delete,
             get,
-            put,
             "/conflicts" => conflicts,
             "/train_schedule" => train_schedule,
             &stdcm,
@@ -57,7 +52,6 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    TimetableForm,
     TimetableResult,
     TimetableDetailedResult,
     stdcm::schemas(),
@@ -74,46 +68,33 @@ enum TimetableError {
     InfraNotFound { infra_id: i64 },
 }
 
-/// Creation form for a Timetable
-#[derive(Serialize, Deserialize, Derivative, ToSchema)]
-#[derivative(Default)]
-struct TimetableForm {
-    #[serde(default)]
-    pub electrical_profile_set_id: Option<i64>,
-}
-
-/// Creation form for a Timetable
+/// Creation result for a Timetable
 #[derive(Debug, Default, Serialize, Deserialize, Derivative, ToSchema)]
+#[cfg_attr(test, derive(PartialEq))]
 struct TimetableResult {
-    pub id: i64,
-    pub electrical_profile_set_id: Option<i64>,
+    pub timetable_id: i64,
 }
 
 impl From<Timetable> for TimetableResult {
     fn from(timetable: Timetable) -> Self {
         Self {
-            id: timetable.id,
-            electrical_profile_set_id: timetable.electrical_profile_set_id,
+            timetable_id: timetable.id,
         }
     }
 }
 
-/// Creation form for a Timetable
+/// Creation result for a Timetable
 #[derive(Debug, Default, Serialize, Deserialize, Derivative, ToSchema)]
+#[cfg_attr(test, derive(PartialEq))]
 struct TimetableDetailedResult {
-    #[serde(flatten)]
-    #[schema(inline)]
-    pub timetable: TimetableResult,
+    pub timetable_id: i64,
     pub train_ids: Vec<i64>,
 }
 
 impl From<TimetableWithTrains> for TimetableDetailedResult {
     fn from(val: TimetableWithTrains) -> Self {
         Self {
-            timetable: TimetableResult {
-                id: val.id,
-                electrical_profile_set_id: val.electrical_profile_set_id,
-            },
+            timetable_id: val.id,
             train_ids: val.train_ids,
         }
     }
@@ -151,92 +132,20 @@ async fn get(
     Ok(Json(timetable.into()))
 }
 
-#[derive(Serialize, ToSchema)]
-struct ListTimetablesResponse {
-    #[serde(flatten)]
-    stats: PaginationStats,
-    results: Vec<TimetableResult>,
-}
-
-/// Retrieve paginated timetables
-#[utoipa::path(
-    get, path = "",
-    tag = "timetablev2",
-    params(PaginationQueryParam),
-    responses(
-        (status = 200, description = "List timetables", body = inline(ListTimetablesResponse)),
-    ),
-)]
-async fn list(
-    db_pool: State<DbConnectionPoolV2>,
-    Query(pagination_params): Query<PaginationQueryParam>,
-) -> Result<Json<ListTimetablesResponse>> {
-    let settings = pagination_params
-        .validate(1000)?
-        .warn_page_size(100)
-        .into_selection_settings();
-    let (timetables, stats) =
-        Timetable::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
-    Ok(Json(ListTimetablesResponse {
-        stats,
-        results: timetables.into_iter().map_into().collect(),
-    }))
-}
-
 /// Create a timetable
 #[utoipa::path(
     post, path = "",
     tag = "timetablev2",
-    request_body = TimetableForm,
     responses(
         (status = 200, description = "Timetable with train schedules ids", body = TimetableResult),
         (status = 404, description = "Timetable not found"),
     ),
 )]
-async fn post(
-    db_pool: State<DbConnectionPoolV2>,
-    Json(data): Json<TimetableForm>,
-) -> Result<Json<TimetableResult>> {
+async fn post(db_pool: State<DbConnectionPoolV2>) -> Result<Json<TimetableResult>> {
     let conn = &mut db_pool.get().await?;
 
-    let elec_profile_set = data.electrical_profile_set_id;
-    let changeset = Timetable::changeset().electrical_profile_set_id(elec_profile_set);
-    let timetable = changeset.create(conn).await?;
+    let timetable = Timetable::create(conn).await?;
 
-    Ok(Json(timetable.into()))
-}
-
-/// Update a specific timetable
-#[utoipa::path(
-    put, path = "",
-    tag = "timetablev2",
-    params(TimetableIdParam),
-    request_body = TimetableForm,
-    responses(
-        (status = 200, description = "Timetable with train schedules ids", body = TimetableDetailedResult),
-        (status = 404, description = "Timetable not found"),
-    ),
-)]
-async fn put(
-    db_pool: State<DbConnectionPoolV2>,
-    timetable_id: Path<TimetableIdParam>,
-    data: Json<TimetableForm>,
-) -> Result<Json<TimetableDetailedResult>> {
-    let timetable_id = timetable_id.id;
-    let conn = &mut db_pool.get().await?;
-
-    let elec_profile_set = data.electrical_profile_set_id;
-    let changeset = Timetable::changeset().electrical_profile_set_id(elec_profile_set);
-    changeset
-        .update_or_fail(conn, timetable_id, || TimetableError::NotFound {
-            timetable_id,
-        })
-        .await?;
-
-    let timetable = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
-        TimetableError::NotFound { timetable_id }
-    })
-    .await?;
     Ok(Json(timetable.into()))
 }
 
@@ -306,11 +215,17 @@ pub struct InfraIdQueryParam {
     infra_id: i64,
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
+pub struct ElectricalProfileSetIdQueryParam {
+    electrical_profile_set_id: Option<i64>,
+}
+
 /// Retrieve the list of conflict of the timetable (invalid trains are ignored)
 #[utoipa::path(
     get, path = "",
     tag = "timetablev2",
-    params(TimetableIdParam, InfraIdQueryParam),
+    params(TimetableIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
         (status = 200, description = "List of conflict", body = Vec<ConflictV2>),
     ),
@@ -318,14 +233,16 @@ pub struct InfraIdQueryParam {
 async fn conflicts(
     app_state: State<AppState>,
     Path(timetable_id): Path<TimetableIdParam>,
-    Query(query): Query<InfraIdQueryParam>,
+    Query(infra_id_query): Query<InfraIdQueryParam>,
+    Query(electrical_profile_set_id_query): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
     let db_pool = app_state.db_pool_v2.clone();
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
 
     let timetable_id = timetable_id.id;
-    let infra_id = query.infra_id;
+    let infra_id = infra_id_query.infra_id;
+    let electrical_profile_set_id = electrical_profile_set_id_query.electrical_profile_set_id;
 
     // 1. Retrieve Timetable / Infra / Trains / Simultion
     let timetable_trains = TimetableWithTrains::retrieve_or_fail(
@@ -350,6 +267,7 @@ async fn conflicts(
         core_client.clone(),
         &trains,
         &infra,
+        electrical_profile_set_id,
     )
     .await?;
 
@@ -385,7 +303,6 @@ mod tests {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use serde_json::json;
 
     use super::*;
     use crate::modelsv2::fixtures::create_timetable;
@@ -400,10 +317,16 @@ mod tests {
 
         let request = app.get(&format!("/v2/timetable/{}", timetable.id));
 
-        let timetable_from_response: Timetable =
+        let timetable_from_response: TimetableDetailedResult =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        assert_eq!(timetable_from_response, timetable);
+        assert_eq!(
+            timetable_from_response,
+            TimetableDetailedResult {
+                timetable_id: timetable.id,
+                train_ids: vec![],
+            }
+        );
     }
 
     #[rstest]
@@ -414,37 +337,23 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_timetable_list() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        create_timetable(pool.get_ok().deref_mut()).await;
-
-        let request = app.get("/v2/timetable/");
-
-        app.fetch(request).assert_status(StatusCode::OK);
-    }
-
-    #[rstest]
     async fn timetable_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
         // Insert timetable
-        let request = app
-            .post("/v2/timetable")
-            .json(&json!({ "electrical_profil_set_id": None::<i64>}));
+        let request = app.post("/v2/timetable");
 
-        let created_timetable: Timetable =
+        let created_timetable: TimetableResult =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let retrieved_timetable =
-            Timetable::retrieve(pool.get_ok().deref_mut(), created_timetable.id)
+            Timetable::retrieve(pool.get_ok().deref_mut(), created_timetable.timetable_id)
                 .await
                 .expect("Failed to retrieve timetable")
                 .expect("Timetable not found");
 
-        assert_eq!(created_timetable, retrieved_timetable);
+        assert_eq!(created_timetable, retrieved_timetable.into());
     }
 
     #[rstest]

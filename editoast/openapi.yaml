@@ -2010,7 +2010,7 @@ paths:
           format: int64
       - name: force
         in: query
-        description: force the deletion even if it’s used
+        description: force the deletion even if it's used
         required: false
         schema:
           type: boolean
@@ -2862,54 +2862,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalError'
   /v2/timetable:
-    get:
-      tags:
-      - timetablev2
-      summary: Retrieve paginated timetables
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 1
-          minimum: 1
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 25
-          nullable: true
-          minimum: 1
-      responses:
-        '200':
-          description: List timetables
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/PaginationStats'
-                - type: object
-                  required:
-                  - results
-                  properties:
-                    results:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/TimetableResult'
     post:
       tags:
       - timetablev2
       summary: Create a timetable
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TimetableForm'
-        required: true
       responses:
         '200':
           description: Timetable with train schedules ids
@@ -2932,33 +2888,6 @@ paths:
         schema:
           type: integer
           format: int64
-      responses:
-        '200':
-          description: Timetable with train schedules ids
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TimetableDetailedResult'
-        '404':
-          description: Timetable not found
-    put:
-      tags:
-      - timetablev2
-      summary: Update a specific timetable
-      parameters:
-      - name: id
-        in: path
-        description: A timetable ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TimetableForm'
-        required: true
       responses:
         '200':
           description: Timetable with train schedules ids
@@ -3004,6 +2933,13 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: electrical_profile_set_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          nullable: true
       responses:
         '200':
           description: List of conflict
@@ -3269,6 +3205,10 @@ paths:
               - infra_id
               - ids
               properties:
+                electrical_profile_set_id:
+                  type: integer
+                  format: int64
+                  nullable: true
                 ids:
                   type: array
                   items:
@@ -3379,6 +3319,12 @@ paths:
       - name: infra_id
         in: query
         required: true
+        schema:
+          type: integer
+          format: int64
+      - name: electrical_profile_set_id
+        in: query
+        required: false
         schema:
           type: integer
           format: int64
@@ -3751,7 +3697,7 @@ components:
       properties:
         force:
           type: boolean
-          description: force the deletion even if it’s used
+          description: force the deletion even if it's used
     Detector:
       type: object
       required:
@@ -6293,6 +6239,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ElectricalProfile'
+    ElectricalProfileSetIdQueryParam:
+      type: object
+      properties:
+        electrical_profile_set_id:
+          type: integer
+          format: int64
+          nullable: true
     Electrification:
       type: object
       required:
@@ -8700,6 +8653,10 @@ components:
       - ids
       - path
       properties:
+        electrical_profile_set_id:
+          type: integer
+          format: int64
+          nullable: true
         ids:
           type: array
           items:
@@ -9915,6 +9872,10 @@ components:
       properties:
         description:
           type: string
+        electrical_profile_set_id:
+          type: integer
+          format: int64
+          nullable: true
         infra_id:
           type: integer
           format: int64
@@ -9946,6 +9907,10 @@ components:
       properties:
         description:
           type: string
+          nullable: true
+        electrical_profile_set_id:
+          type: integer
+          format: int64
           nullable: true
         infra_id:
           type: integer
@@ -10022,6 +9987,9 @@ components:
           format: date-time
         description:
           type: string
+        electrical_profile_set_id:
+          type: integer
+          format: int64
         id:
           type: integer
           format: int64
@@ -11406,37 +11374,20 @@ components:
         name:
           type: string
     TimetableDetailedResult:
-      allOf:
-      - type: object
-        description: Creation form for a Timetable
-        required:
-        - id
-        properties:
-          electrical_profile_set_id:
-            type: integer
-            format: int64
-            nullable: true
-          id:
-            type: integer
-            format: int64
-      - type: object
-        required:
-        - train_ids
-        properties:
-          train_ids:
-            type: array
-            items:
-              type: integer
-              format: int64
-      description: Creation form for a Timetable
-    TimetableForm:
       type: object
-      description: Creation form for a Timetable
+      description: Creation result for a Timetable
+      required:
+      - timetable_id
+      - train_ids
       properties:
-        electrical_profile_set_id:
+        timetable_id:
           type: integer
           format: int64
-          nullable: true
+        train_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
     TimetableImportError:
       oneOf:
       - type: object
@@ -11595,15 +11546,11 @@ components:
           example: '7015'
     TimetableResult:
       type: object
-      description: Creation form for a Timetable
+      description: Creation result for a Timetable
       required:
-      - id
+      - timetable_id
       properties:
-        electrical_profile_set_id:
-          type: integer
-          format: int64
-          nullable: true
-        id:
+        timetable_id:
           type: integer
           format: int64
     TimetableWithSchedulesDetails:

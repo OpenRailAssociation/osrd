@@ -364,11 +364,12 @@ pub mod tests {
 
     #[fixture]
     pub async fn timetable_v2(db_pool: Arc<DbConnectionPool>) -> TestFixture<TimetableV2> {
-        TestFixture::create(
-            TimetableV2::changeset().electrical_profile_set_id(None),
+        TestFixture::new(
+            TimetableV2::create(db_pool.get().await.unwrap().deref_mut())
+                .await
+                .expect("Unable to create timetable"),
             db_pool,
         )
-        .await
     }
 
     pub struct ScenarioV2FixtureSet {

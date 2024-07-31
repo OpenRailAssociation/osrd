@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional
+from typing import Dict, Iterable, Iterator, List, Optional
 
 import pytest
 import requests
@@ -10,7 +10,6 @@ from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import EDITOAST_URL
 from tests.test_e2e import FAST_ROLLING_STOCK_JSON_PATH, TestRollingStock
-from tests.timetable_v2 import TimetableV2
 from tests.utils.timetable import create_scenario, create_scenario_v2
 
 
@@ -127,7 +126,7 @@ def create_fast_rolling_stocks(test_rolling_stocks: Optional[List[TestRollingSto
 
 
 @pytest.fixture
-def fast_rolling_stocks(request: Any) -> Iterator[Iterable[int]]:
+def fast_rolling_stocks(request: pytest.FixtureRequest) -> Iterator[Iterable[int]]:
     ids = create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
     yield ids
     for id in ids:
@@ -242,13 +241,8 @@ def west_to_south_east_simulations(
 
 
 @pytest.fixture
-def timetable_v2() -> TimetableV2:
-    timetable_payload = {}
-    r = requests.post(
-        f"{EDITOAST_URL}v2/timetable/",
-        json=timetable_payload,
-    )
-    if r.status_code // 100 != 2:
-        err = f"Error creating timetable {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
-        raise RuntimeError(err)
-    return TimetableV2(**r.json())
+def timetable_v2_id() -> int:
+    r = requests.post(f"{EDITOAST_URL}v2/timetable/")
+    if not r.ok:
+        raise RuntimeError(f"Error creating timetable {r.status_code}: {r.content}")
+    return r.json()["timetable_id"]

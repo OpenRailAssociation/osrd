@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
 import type {
@@ -7,21 +7,21 @@ import type {
   RollingStock,
   Scenario,
   Study,
-  Timetable,
+  TimetableResult,
 } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
 import HomePage from './pages/home-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page';
 import ScenarioPage from './pages/scenario-page-model';
-import { getProject, getStudy, getRollingStock, postApiRequest, getInfra } from './utils/index';
+import { getInfra, getProject, getRollingStock, getStudy, postApiRequest } from './utils/index';
 
 let smallInfra: Infra;
 let project: Project;
 let study: Study;
 let scenario: Scenario;
 let rollingStock: RollingStock;
-let timetable: Timetable;
+let timetableResult: TimetableResult;
 
 test.beforeAll(async () => {
   smallInfra = (await getInfra()) as Infra;
@@ -31,15 +31,14 @@ test.beforeAll(async () => {
 });
 
 test.beforeEach(async () => {
-  timetable = await postApiRequest(`/api/v2/timetable/`, {
-    electrical_profile_set_id: null,
-  });
+  timetableResult = await postApiRequest(`/api/v2/timetable/`);
   scenario = await postApiRequest(`/api/v2/projects/${project.id}/studies/${study.id}/scenarios`, {
     ...scenarioData,
     name: `${scenarioData.name} ${uuidv4()}`,
     study_id: study.id,
     infra_id: smallInfra.id,
-    timetable_id: timetable.id,
+    timetable_id: timetableResult.timetable_id,
+    electrical_profile_set_id: null,
   });
 });
 

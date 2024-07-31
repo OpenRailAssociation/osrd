@@ -39,7 +39,6 @@ use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::views::v2::path::pathfinding::pathfinding_from_train;
@@ -74,6 +73,7 @@ editoast_common::schemas! {
     TrainScheduleResult,
     SimulationSummaryResult,
     InfraIdQueryParam,
+    ElectricalProfileSetIdQueryParam,
     projection::schemas(),
 }
 
@@ -273,11 +273,23 @@ async fn put(
     Ok(Json(ts_result.into()))
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
+pub struct InfraIdQueryParam {
+    infra_id: i64,
+}
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
+pub struct ElectricalProfileSetIdQueryParam {
+    #[param(nullable = false)]
+    electrical_profile_set_id: Option<i64>,
+}
+
 /// Retrieve the space, speed and time curve of a given train
 #[utoipa::path(
     get, path = "",
     tag = "train_schedulev2",
-    params(TrainScheduleIdParam, InfraIdQueryParam),
+    params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
         (status = 200, description = "Simulation Output", body = SimulationResponse),
     ),
@@ -285,13 +297,15 @@ async fn put(
 async fn simulation(
     app_state: State<AppState>,
     Path(train_schedule_id): Path<TrainScheduleIdParam>,
-    Query(query): Query<InfraIdQueryParam>,
+    Query(infra_id_query): Query<InfraIdQueryParam>,
+    Query(electrical_profile_set_id_query): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<SimulationResponse>> {
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
     let db_pool = app_state.db_pool_v2.clone();
 
-    let infra_id = query.infra_id;
+    let infra_id = infra_id_query.infra_id;
+    let electrical_profile_set_id = electrical_profile_set_id_query.electrical_profile_set_id;
     let train_schedule_id = train_schedule_id.id;
 
     // Retrieve infra or fail
@@ -315,6 +329,7 @@ async fn simulation(
             core_client,
             train_schedule,
             &infra,
+            electrical_profile_set_id,
         )
         .await?
         .0,
@@ -328,13 +343,19 @@ pub async fn train_simulation(
     core: Arc<CoreClient>,
     train_schedule: TrainSchedule,
     infra: &Infra,
+    electrical_profile_set_id: Option<i64>,
 ) -> Result<(SimulationResponse, PathfindingResult)> {
-    Ok(
-        train_simulation_batch(conn, redis_client, core, &[train_schedule], infra)
-            .await?
-            .pop()
-            .unwrap(),
+    Ok(train_simulation_batch(
+        conn,
+        redis_client,
+        core,
+        &[train_schedule],
+        infra,
+        electrical_profile_set_id,
     )
+    .await?
+    .pop()
+    .unwrap())
 }
 
 /// Compute in batch the simulation of a list of train schedule
@@ -346,6 +367,7 @@ pub async fn train_simulation_batch(
     core: Arc<CoreClient>,
     train_schedules: &[TrainSchedule],
     infra: &Infra,
+    electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
     let mut redis_conn = redis_client.get_connection().await?;
     // Compute path
@@ -359,18 +381,6 @@ pub async fn train_simulation_batch(
     let rolling_stocks: HashMap<_, _> = rolling_stocks
         .into_iter()
         .map(|rs| (rs.name.clone(), rs))
-        .collect();
-    let (timetables, _): (Vec<_>, _) = Timetable::retrieve_batch(
-        conn,
-        train_schedules
-            .iter()
-            .map(|t| t.timetable_id)
-            .collect::<HashSet<_>>(),
-    )
-    .await?;
-    let timetables: HashMap<_, _> = timetables
-        .into_iter()
-        .map(|timetable| (timetable.id, timetable))
         .collect();
     let pathfinding_results = pathfinding_from_train_batch(
         conn,
@@ -412,14 +422,13 @@ pub async fn train_simulation_batch(
 
         // Build simulation request
         let rolling_stock = rolling_stocks[&train_schedule.rolling_stock_name].clone();
-        let timetable = timetables[&train_schedule.timetable_id].clone();
         let simulation_request = build_simulation_request(
             infra,
             train_schedule,
             path_item_positions,
             path,
             rolling_stock,
-            timetable,
+            electrical_profile_set_id,
         );
 
         // Compute unique hash of the simulation input
@@ -475,7 +484,7 @@ fn build_simulation_request(
     path_item_positions: &[u64],
     path: SimulationPath,
     rolling_stock: RollingStockModel,
-    timetable: Timetable,
+    electrical_profile_set_id: Option<i64>,
 ) -> SimulationRequest {
     assert_eq!(path_item_positions.len(), train_schedule.path.len());
     // Project path items to path offset
@@ -536,7 +545,7 @@ fn build_simulation_request(
         power_restrictions,
         options: train_schedule.options.clone(),
         rolling_stock: rolling_stock.into(),
-        electrical_profile_set_id: timetable.electrical_profile_set_id,
+        electrical_profile_set_id,
     }
 }
 
@@ -556,6 +565,7 @@ fn train_simulation_input_hash(
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 struct SimulationBatchForm {
     infra_id: i64,
+    electrical_profile_set_id: Option<i64>,
     ids: HashSet<i64>,
 }
 
@@ -603,6 +613,7 @@ async fn simulation_summary(
 
     let SimulationBatchForm {
         infra_id,
+        electrical_profile_set_id,
         ids: train_ids,
     } = data;
 
@@ -625,6 +636,7 @@ async fn simulation_summary(
         core,
         &trains,
         &infra,
+        electrical_profile_set_id,
     )
     .await?;
 
@@ -665,12 +677,6 @@ async fn simulation_summary(
     }
 
     Ok(Json(simulation_summaries))
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-#[into_params(parameter_in = Query)]
-pub struct InfraIdQueryParam {
-    infra_id: i64,
 }
 
 /// Get a path from a trainschedule given an infrastructure id and a train schedule id

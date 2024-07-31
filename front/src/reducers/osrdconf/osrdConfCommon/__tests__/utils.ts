@@ -168,6 +168,20 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     expect(state.timetableID).toBe(newTimetableID);
   });
 
+  it('should handle updateElectricalProfileSetId with number', () => {
+    const newElectricalProfileSetId = 1;
+    defaultStore.dispatch(slice.actions.updateElectricalProfileSetId(newElectricalProfileSetId));
+    const state = defaultStore.getState()[slice.name];
+    expect(state.electricalProfileSetId).toBe(newElectricalProfileSetId);
+  });
+
+  it('should handle updateElectricalProfileSetId with undefined', () => {
+    const newElectricalProfileSetId = undefined;
+    defaultStore.dispatch(slice.actions.updateElectricalProfileSetId(newElectricalProfileSetId));
+    const state = defaultStore.getState()[slice.name];
+    expect(state.electricalProfileSetId).toBe(undefined);
+  });
+
   it('should handle updateRollingStockID', () => {
     const newRollingStockID = 1;
     defaultStore.dispatch(slice.actions.updateRollingStockID(newRollingStockID));

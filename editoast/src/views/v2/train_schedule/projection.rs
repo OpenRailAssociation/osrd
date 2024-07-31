@@ -53,6 +53,7 @@ crate::routes! {
 #[derive(Debug, Deserialize, ToSchema)]
 struct ProjectPathForm {
     infra_id: i64,
+    electrical_profile_set_id: Option<i64>,
     ids: HashSet<i64>,
     #[schema(inline)]
     path: ProjectPathInput,
@@ -132,6 +133,7 @@ async fn project_path(
         infra_id,
         ids: train_ids,
         path,
+        electrical_profile_set_id,
     } = data;
     let ProjectPathInput {
         track_section_ranges: path_track_ranges,
@@ -169,6 +171,7 @@ async fn project_path(
         core_client.clone(),
         &trains,
         &infra,
+        electrical_profile_set_id,
     )
     .await?;
 

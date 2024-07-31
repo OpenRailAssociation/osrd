@@ -489,6 +489,7 @@ diesel::table! {
         tags -> Array<Nullable<Text>>,
         timetable_id -> Int8,
         study_id -> Int8,
+        electrical_profile_set_id -> Nullable<Int8>,
     }
 }
 
@@ -639,7 +640,6 @@ diesel::table! {
 
     timetable_v2 (id) {
         id -> Int8,
-        electrical_profile_set_id -> Nullable<Int8>,
     }
 }
 
@@ -758,6 +758,7 @@ diesel::joinable!(scenario -> electrical_profile_set (electrical_profile_set_id)
 diesel::joinable!(scenario -> infra (infra_id));
 diesel::joinable!(scenario -> study (study_id));
 diesel::joinable!(scenario -> timetable (timetable_id));
+diesel::joinable!(scenario_v2 -> electrical_profile_set (electrical_profile_set_id));
 diesel::joinable!(scenario_v2 -> infra (infra_id));
 diesel::joinable!(scenario_v2 -> study (study_id));
 diesel::joinable!(scenario_v2 -> timetable_v2 (timetable_id));
@@ -768,7 +769,6 @@ diesel::joinable!(search_signal -> infra_object_signal (id));
 diesel::joinable!(search_study -> study (id));
 diesel::joinable!(simulation_output -> train_schedule (train_schedule_id));
 diesel::joinable!(study -> project (project_id));
-diesel::joinable!(timetable_v2 -> electrical_profile_set (electrical_profile_set_id));
 diesel::joinable!(train_schedule -> pathfinding (path_id));
 diesel::joinable!(train_schedule -> rolling_stock (rolling_stock_id));
 diesel::joinable!(train_schedule -> timetable (timetable_id));

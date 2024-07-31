@@ -79,9 +79,7 @@ pub async fn create_study(conn: &mut DbConnection, name: &str, project_id: i64) 
 }
 
 pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
-    Timetable::changeset()
-        .electrical_profile_set_id(None)
-        .create(conn)
+    Timetable::create(conn)
         .await
         .expect("Failed to create timetable")
 }

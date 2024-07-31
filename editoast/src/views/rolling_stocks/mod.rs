@@ -350,7 +350,7 @@ async fn update(
 #[derive(Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 struct DeleteRollingStockQueryParams {
-    /// force the deletion even if it’s used
+    /// force the deletion even if it's used
     #[serde(default)]
     force: bool,
 }

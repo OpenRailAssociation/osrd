@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
+import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 
@@ -10,6 +10,8 @@ import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
  */
 const useSimulationResults = () => {
   const infraId = useInfraID();
+  const { getElectricalProfileSetId } = useOsrdConfSelectors();
+  const electricalProfileSetId = useSelector(getElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getV2TrainScheduleById.useQuery(
@@ -30,7 +32,7 @@ const useSimulationResults = () => {
 
   const { data: trainSimulation } =
     osrdEditoastApi.endpoints.getV2TrainScheduleByIdSimulation.useQuery(
-      { id: selectedTrainId as number, infraId: infraId as number },
+      { id: selectedTrainId as number, infraId: infraId as number, electricalProfileSetId },
       { skip: !selectedTrainId || !infraId }
     );
 
