@@ -3,18 +3,15 @@ import requests
 
 from .infra import Infra
 from .services import EDITOAST_URL
-from .timetable_v2 import TimetableV2
 
 
 def test_get_timetable_v2(
-    timetable_v2: TimetableV2,
+    timetable_v2_id: int,
 ):
-    timetable_id = timetable_v2.id
-
-    response = requests.get(f"{EDITOAST_URL}/v2/timetable/{timetable_id}/")
+    response = requests.get(f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/")
     assert response.status_code == 200
     json = response.json()
-    assert "id" in json
+    assert "timetable_id" in json
     assert "train_ids" in json
 
 
@@ -23,7 +20,7 @@ def test_get_timetable_v2(
 )
 def test_conflicts(
     small_infra: Infra,
-    timetable_v2: TimetableV2,
+    timetable_v2_id: int,
     fast_rolling_stock: int,
     on_stop_signal: bool,
     expected_conflict_types: set[str],
@@ -58,7 +55,7 @@ def test_conflicts(
         }
     ]
     response = requests.post(
-        f"{EDITOAST_URL}/v2/timetable/{timetable_v2.id}/train_schedule", json=train_schedule_payload
+        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/train_schedule", json=train_schedule_payload
     )
     train_schedule_payload = [
         {
@@ -87,9 +84,9 @@ def test_conflicts(
         }
     ]
     response = requests.post(
-        f"{EDITOAST_URL}/v2/timetable/{timetable_v2.id}/train_schedule", json=train_schedule_payload
+        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/train_schedule", json=train_schedule_payload
     )
-    response = requests.get(f"{EDITOAST_URL}/v2/timetable/{timetable_v2.id}/conflicts/?infra_id={small_infra.id}")
+    response = requests.get(f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/conflicts/?infra_id={small_infra.id}")
     assert response.status_code == 200
     actual_conflicts = {conflict["conflict_type"] for conflict in response.json()}
     assert actual_conflicts == expected_conflict_types
@@ -97,7 +94,7 @@ def test_conflicts(
 
 def test_scheduled_points_with_incompatible_margins(
     small_infra: Infra,
-    timetable_v2: TimetableV2,
+    timetable_v2_id: int,
     fast_rolling_stock: int,
 ):
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
@@ -130,7 +127,7 @@ def test_scheduled_points_with_incompatible_margins(
         }
     ]
     response = requests.post(
-        f"{EDITOAST_URL}/v2/timetable/{timetable_v2.id}/train_schedule", json=train_schedule_payload
+        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/train_schedule", json=train_schedule_payload
     )
     response.raise_for_status()
     train_id = response.json()[0]["id"]

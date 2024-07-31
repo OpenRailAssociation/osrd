@@ -160,10 +160,7 @@ export default function AddOrEditScenarioModal({
       setDisplayErrors(true);
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
       const ids = { projectId, studyId };
-      const timetable = await postTimetableV2({
-        timetableForm: { electrical_profile_set_id: currentScenario.electrical_profile_set_id },
-      }).unwrap();
-
+      const timetable = await postTimetableV2().unwrap();
       postScenarioV2({
         ...ids,
         scenarioCreateFormV2: {
@@ -171,7 +168,8 @@ export default function AddOrEditScenarioModal({
           infra_id: currentScenario.infra_id,
           name: currentScenario.name,
           tags: currentScenario.tags || [],
-          timetable_id: timetable.id,
+          timetable_id: timetable.timetable_id,
+          electrical_profile_set_id: currentScenario.electrical_profile_set_id,
         },
       })
         .unwrap()

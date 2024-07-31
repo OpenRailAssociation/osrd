@@ -4,8 +4,8 @@ import i18n from 'i18n';
 import { setFailure } from 'reducers/main';
 import {
   updateIsUpdating,
-  updateTrainIdUsedForProjection,
   updateSelectedTrainId,
+  updateTrainIdUsedForProjection,
 } from 'reducers/osrdsimulation/actions';
 import { store } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
@@ -45,7 +45,8 @@ export const getSpaceTimeChartData = async (
   trainSchedulesIDs: number[],
   trainIdUsedForProjection: number,
   infraId: number,
-  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>
+  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>,
+  electricalProfileSetId?: number
 ) => {
   if (trainSchedulesIDs.length > 0) {
     store.dispatch(updateIsUpdating(true));
@@ -71,6 +72,7 @@ export const getSpaceTimeChartData = async (
                 infra_id: infraId,
                 ids: trainSchedulesIDs,
                 path: { blocks, routes, track_section_ranges },
+                electrical_profile_set_id: electricalProfileSetId,
               },
             })
           )

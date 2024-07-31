@@ -78,6 +78,7 @@ struct ScenarioCreateForm {
     pub timetable_id: i64,
     #[serde(default)]
     pub tags: Tags,
+    pub electrical_profile_set_id: Option<i64>,
 }
 
 impl From<ScenarioCreateForm> for Changeset<Scenario> {
@@ -90,6 +91,7 @@ impl From<ScenarioCreateForm> for Changeset<Scenario> {
             .infra_id(scenario.infra_id)
             .timetable_id(scenario.timetable_id)
             .tags(scenario.tags)
+            .electrical_profile_set_id(scenario.electrical_profile_set_id)
     }
 }
 
@@ -297,6 +299,7 @@ struct ScenarioPatchForm {
     pub description: Option<String>,
     pub tags: Option<Tags>,
     pub infra_id: Option<i64>,
+    pub electrical_profile_set_id: Option<Option<i64>>,
 }
 
 impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset {
@@ -306,6 +309,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset
             .flat_description(scenario.description)
             .flat_tags(scenario.tags)
             .flat_infra_id(scenario.infra_id)
+            .flat_electrical_profile_set_id(scenario.electrical_profile_set_id)
             .last_modification(Utc::now().naive_utc())
     }
 }

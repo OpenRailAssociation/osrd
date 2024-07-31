@@ -297,10 +297,7 @@ async fn trains_import(
                 return Err(Box::new(error));
             }
         },
-        None => {
-            let changeset = Timetable::changeset();
-            changeset.create(db_pool.get().await?.deref_mut()).await?
-        }
+        None => Timetable::create(db_pool.get().await?.deref_mut()).await?,
     };
 
     let train_schedules: Vec<TrainScheduleBase> =
@@ -903,9 +900,7 @@ mod tests {
     async fn import_export_timetable_schedule_v2() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let changeset = Timetable::changeset();
-        let timetable = changeset
-            .create(db_pool.get_ok().deref_mut())
+        let timetable = Timetable::create(db_pool.get_ok().deref_mut())
             .await
             .unwrap();
 

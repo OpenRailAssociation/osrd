@@ -1,6 +1,6 @@
 import type { Feature, Position } from 'geojson';
 
-import type { PowerRestrictionRange, PointOnMap } from 'applications/operationalStudies/consts';
+import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
 import type {
   AllowanceValue,
@@ -28,6 +28,7 @@ export interface OsrdConfState extends InfraState {
   scenarioID?: number;
   pathfindingID?: number;
   timetableID?: number;
+  electricalProfileSetId?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
   // TODO: update the call to the api, to rename the fields begin & end -> begin_position & end_position

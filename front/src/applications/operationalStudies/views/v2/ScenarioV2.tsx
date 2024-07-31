@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { Pencil, Eye, EyeClosed, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import { ChevronLeft, ChevronRight, Eye, EyeClosed, Pencil } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
@@ -25,7 +25,7 @@ import TimetableManageTrainScheduleV2 from 'modules/trainschedule/components/Man
 import TimetableV2 from 'modules/trainschedule/components/TimetableV2/TimetableV2';
 import type { RootState } from 'reducers';
 import { updateTrainIdUsedForProjection } from 'reducers/osrdsimulation/actions';
-import { getTrainIdUsedForProjection, getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
+import { getSelectedTrainId, getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 
 import { getSpaceTimeChartData, selectProjectionV2 } from './getSimulationResultsV2';
@@ -96,12 +96,13 @@ const ScenarioV2 = () => {
     if (isScenarioError && errorScenario) throw errorScenario;
   }, [isScenarioError, errorScenario]);
 
-  const { updateInfraID, updateTimetableID } = useOsrdConfActions();
+  const { updateInfraID, updateTimetableID, updateElectricalProfileSetId } = useOsrdConfActions();
 
   useEffect(() => {
     if (scenario) {
       dispatch(updateTimetableID(scenario.timetable_id));
       dispatch(updateInfraID(scenario.infra_id));
+      dispatch(updateElectricalProfileSetId(scenario.electrical_profile_set_id));
     }
   }, [scenario]);
 
@@ -113,8 +114,12 @@ const ScenarioV2 = () => {
   );
 
   const { data: conflicts } = osrdEditoastApi.endpoints.getV2TimetableByIdConflicts.useQuery(
-    { id: timetable?.id as number, infraId: infraId! },
-    { skip: !timetable || !infraId }
+    {
+      id: scenario?.timetable_id as number,
+      infraId: scenario?.infra_id as number,
+      electricalProfileSetId: scenario?.electrical_profile_set_id,
+    },
+    { skip: !scenario }
   );
 
   useEffect(() => {
@@ -131,7 +136,8 @@ const ScenarioV2 = () => {
         trainResultsToFetch ?? timetable.train_ids,
         trainIdUsedForProjection,
         infraId,
-        setTrainSpaceTimeData
+        setTrainSpaceTimeData,
+        scenario?.electrical_profile_set_id ?? undefined
       );
     }
   }, [timetable, trainIdUsedForProjection, infra]);
@@ -146,6 +152,7 @@ const ScenarioV2 = () => {
     () => () => {
       dispatch(updateTimetableID(undefined));
       dispatch(updateInfraID(undefined));
+      dispatch(updateElectricalProfileSetId(undefined));
       dispatch(updateTrainIdUsedForProjection(undefined));
     },
     []
@@ -228,8 +235,8 @@ const ScenarioV2 = () => {
                           <span className="mr-2">
                             <GiElectric />
                           </span>
-                          {timetable.electrical_profile_set_id
-                            ? timetable.electrical_profile_set_id
+                          {scenario.electrical_profile_set_id
+                            ? scenario.electrical_profile_set_id
                             : t('noElectricalProfileSet')}
                         </div>
                       </div>
@@ -324,8 +331,8 @@ const ScenarioV2 = () => {
                         <span className="mr-1">
                           <GiElectric />
                         </span>
-                        {timetable.electrical_profile_set_id
-                          ? timetable.electrical_profile_set_id
+                        {scenario.electrical_profile_set_id
+                          ? scenario.electrical_profile_set_id
                           : t('noElectricalProfileSet')}
                       </div>
                     </div>

@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { uniq } from 'lodash';
+import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SimulationSummaryResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
-import { isoDateToMs, formatToIsoDate } from 'utils/date';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
+import { formatToIsoDate, isoDateToMs } from 'utils/date';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
 import { ISO8601Duration2sec } from 'utils/timeManipulation';
@@ -34,6 +35,8 @@ const useTrainSchedulesDetails = (
   selectedTags: Set<string | null>
 ) => {
   const infraId = useInfraID();
+  const { getElectricalProfileSetId } = useOsrdConfSelectors();
+  const electricalProfileSetId = useSelector(getElectricalProfileSetId);
 
   const [uniqueTags, setUniqueTags] = useState<string[]>([]);
 
@@ -43,6 +46,7 @@ const useTrainSchedulesDetails = (
         body: {
           infra_id: infraId as number,
           ids: trainIds,
+          electrical_profile_set_id: electricalProfileSetId,
         },
       },
       {

@@ -26,6 +26,9 @@ pub struct Scenario {
     pub tags: Tags,
     pub timetable_id: i64,
     pub study_id: i64,
+    #[schema(nullable = false)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub electrical_profile_set_id: Option<i64>,
 }
 
 impl Scenario {

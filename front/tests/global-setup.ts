@@ -61,16 +61,15 @@ async function createDataForTests() {
     budget: 1234567890,
   } as StudyCreateForm);
 
-  const timetable = await postApiRequest(`/api/v2/timetable/`, {
-    electrical_profile_set_id: null,
-  });
+  const timetableResult = await postApiRequest(`/api/v2/timetable/`);
 
   await postApiRequest(`/api/v2/projects/${project.id}/studies/${study.id}/scenarios`, {
     ...scenarioData,
     name: `${scenarioData.name} ${uuidv4()}`,
     study_id: study.id,
     infra_id: smallInfra.id,
-    timetable_id: timetable.id,
+    timetable_id: timetableResult.timetable_id,
+    electrical_profile_set_id: null,
   });
 }
 

@@ -848,32 +848,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenariosv2'],
       }),
-      getV2Timetable: build.query<GetV2TimetableApiResponse, GetV2TimetableApiArg>({
-        query: (queryArg) => ({
-          url: `/v2/timetable`,
-          params: { page: queryArg.page, page_size: queryArg.pageSize },
-        }),
-        providesTags: ['timetablev2'],
-      }),
       postV2Timetable: build.mutation<PostV2TimetableApiResponse, PostV2TimetableApiArg>({
-        query: (queryArg) => ({
-          url: `/v2/timetable`,
-          method: 'POST',
-          body: queryArg.timetableForm,
-        }),
+        query: () => ({ url: `/v2/timetable`, method: 'POST' }),
         invalidatesTags: ['timetablev2'],
       }),
       getV2TimetableById: build.query<GetV2TimetableByIdApiResponse, GetV2TimetableByIdApiArg>({
         query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}` }),
         providesTags: ['timetablev2'],
-      }),
-      putV2TimetableById: build.mutation<PutV2TimetableByIdApiResponse, PutV2TimetableByIdApiArg>({
-        query: (queryArg) => ({
-          url: `/v2/timetable/${queryArg.id}`,
-          method: 'PUT',
-          body: queryArg.timetableForm,
-        }),
-        invalidatesTags: ['timetablev2'],
       }),
       deleteV2TimetableById: build.mutation<
         DeleteV2TimetableByIdApiResponse,
@@ -888,7 +869,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/v2/timetable/${queryArg.id}/conflicts`,
-          params: { infra_id: queryArg.infraId },
+          params: {
+            infra_id: queryArg.infraId,
+            electrical_profile_set_id: queryArg.electricalProfileSetId,
+          },
         }),
         providesTags: ['timetablev2'],
       }),
@@ -982,7 +966,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/v2/train_schedule/${queryArg.id}/simulation`,
-          params: { infra_id: queryArg.infraId },
+          params: {
+            infra_id: queryArg.infraId,
+            electrical_profile_set_id: queryArg.electricalProfileSetId,
+          },
         }),
         providesTags: ['train_schedulev2'],
       }),
@@ -1491,7 +1478,7 @@ export type DeleteRollingStockByRollingStockIdApiResponse =
   /** status 204 The rolling stock was deleted successfully */ void;
 export type DeleteRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
-  /** force the deletion even if it’s used */
+  /** force the deletion even if it's used */
   force?: boolean;
 };
 export type PatchRollingStockByRollingStockIdApiResponse =
@@ -1695,30 +1682,14 @@ export type PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
   scenarioId: number;
   scenarioPatchFormV2: ScenarioPatchFormV2;
 };
-export type GetV2TimetableApiResponse = /** status 200 List timetables */ PaginationStats & {
-  results: TimetableResult[];
-};
-export type GetV2TimetableApiArg = {
-  page?: number;
-  pageSize?: number | null;
-};
 export type PostV2TimetableApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableResult;
-export type PostV2TimetableApiArg = {
-  timetableForm: TimetableForm;
-};
+export type PostV2TimetableApiArg = void;
 export type GetV2TimetableByIdApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableDetailedResult;
 export type GetV2TimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
-};
-export type PutV2TimetableByIdApiResponse =
-  /** status 200 Timetable with train schedules ids */ TimetableDetailedResult;
-export type PutV2TimetableByIdApiArg = {
-  /** A timetable ID */
-  id: number;
-  timetableForm: TimetableForm;
 };
 export type DeleteV2TimetableByIdApiResponse = unknown;
 export type DeleteV2TimetableByIdApiArg = {
@@ -1731,6 +1702,7 @@ export type GetV2TimetableByIdConflictsApiArg = {
   /** A timetable ID */
   id: number;
   infraId: number;
+  electricalProfileSetId?: number | null;
 };
 export type PostV2TimetableByIdStdcmApiResponse = /** status 201 The simulation result */
   | {
@@ -1810,6 +1782,7 @@ export type PostV2TrainScheduleSimulationSummaryApiResponse =
   };
 export type PostV2TrainScheduleSimulationSummaryApiArg = {
   body: {
+    electrical_profile_set_id?: number | null;
     ids: number[];
     infra_id: number;
   };
@@ -1839,6 +1812,7 @@ export type GetV2TrainScheduleByIdSimulationApiArg = {
   /** A train schedule ID */
   id: number;
   infraId: number;
+  electricalProfileSetId?: number;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -3537,6 +3511,7 @@ export type ScenarioWithDetails = Scenario & {
 export type ScenarioV2 = {
   creation_date: string;
   description: string;
+  electrical_profile_set_id?: number;
   id: number;
   infra_id: number;
   last_modification: string;
@@ -3553,6 +3528,7 @@ export type ScenarioResponseV2 = ScenarioV2 & {
 };
 export type ScenarioCreateFormV2 = {
   description?: string;
+  electrical_profile_set_id?: number | null;
   infra_id: number;
   name: string;
   tags?: Tags;
@@ -3560,21 +3536,16 @@ export type ScenarioCreateFormV2 = {
 };
 export type ScenarioPatchFormV2 = {
   description?: string | null;
+  electrical_profile_set_id?: number | null;
   infra_id?: number | null;
   name?: string | null;
   tags?: Tags | null;
 };
 export type TimetableResult = {
-  electrical_profile_set_id?: number | null;
-  id: number;
-};
-export type TimetableForm = {
-  electrical_profile_set_id?: number | null;
+  timetable_id: number;
 };
 export type TimetableDetailedResult = {
-  electrical_profile_set_id?: number | null;
-  id: number;
-} & {
+  timetable_id: number;
   train_ids: number[];
 };
 export type ConflictV2 = {
@@ -3738,6 +3709,7 @@ export type ProjectPathTrainResult = {
   rolling_stock_length: number;
 };
 export type ProjectPathForm = {
+  electrical_profile_set_id?: number | null;
   ids: number[];
   infra_id: number;
   /** Project path input is described by a list of routes and a list of track range */

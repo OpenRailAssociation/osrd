@@ -14,12 +14,12 @@ import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
 import { dateTimeFormatting } from 'utils/date';
 
-type StudyCardProps = {
+type ScenarioCardProps = {
   setFilterChips: (filterChips: string) => void;
   scenario: ScenarioWithCountTrains;
 };
 
-export default function StudyCard({ setFilterChips, scenario }: StudyCardProps) {
+export default function ScenarioCard({ setFilterChips, scenario }: ScenarioCardProps) {
   const { t } = useTranslation('operationalStudies/study');
   const navigate = useNavigate();
   const dispatch = useAppDispatch();

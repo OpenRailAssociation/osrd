@@ -190,6 +190,7 @@ async fn stdcm(
         core_client.clone(),
         &trains,
         &infra,
+        None,
     )
     .await?;
 
@@ -414,6 +415,7 @@ async fn get_maximum_run_time(
         core_client,
         train_schedule,
         infra,
+        None,
     )
     .await?;
 
