@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /* eslint-disable import/extensions, import/no-unresolved */
 import ngeMain from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/main.js?url';
@@ -7,6 +7,12 @@ import ngeRuntime from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-fronte
 import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/styles.css?url';
 import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/vendor.js?url';
 /* eslint-enable import/extensions, import/no-unresolved */
+
+import type { NetzgrafikDto } from './types';
+
+interface NGEElement extends HTMLElement {
+  netzgrafikDto: NetzgrafikDto;
+}
 
 const frameSrc = `
 <!DOCTYPE html>
@@ -22,29 +28,24 @@ const frameSrc = `
 </html>
 `;
 
-const NGE = () => {
+const NGE = ({ dto }: { dto?: NetzgrafikDto }) => {
   const frameRef = useRef<HTMLIFrameElement>(null);
 
+  const [ngeRootElement, setNgeRootElement] = useState<NGEElement | null>(null);
   useEffect(() => {
     const frame = frameRef.current!;
 
     const handleFrameLoad = () => {
       frame.removeEventListener('load', handleFrameLoad);
 
-      const ngeRoot = frame.contentDocument!.createElement('sbb-root');
+      const ngeRoot = frame.contentDocument!.createElement('sbb-root') as NGEElement;
       frame.contentDocument!.body.appendChild(ngeRoot);
+      setNgeRootElement(ngeRoot);
 
       // listens to create, update and delete operations
       // ngeRoot.addEventListener('operation', (event: Event) => {
       //   console.log('Operation received', (event as CustomEvent).detail);
       // });
-
-      // get netzgrafik model from NGE
-      // let netzgrafikDto = ngeRoot.netzgrafikDto;
-
-      // // set new netzgrafik model with new nodes
-      // netzgrafikDto.nodes = testNodesDto;
-      // ngeRoot.netzgrafikDto = netzgrafikDto;
     };
 
     frame.addEventListener('load', handleFrameLoad);
@@ -53,6 +54,12 @@ const NGE = () => {
       frame.removeEventListener('load', handleFrameLoad);
     };
   }, []);
+
+  useEffect(() => {
+    if (ngeRootElement && dto) {
+      ngeRootElement.netzgrafikDto = dto;
+    }
+  }, [dto, ngeRootElement]);
 
   return <iframe ref={frameRef} srcDoc={frameSrc} title="NGE" className="nge-iframe-container" />;
 };
