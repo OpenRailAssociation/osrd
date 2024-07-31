@@ -1,13 +1,8 @@
 import { produce } from 'immer';
 import type { AnyAction } from 'redux';
 
-import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
-import { SIGNAL_BASE_DEFAULT, CHART_AXES } from 'modules/simulationResult/consts';
-import {
-  SPEED_SPACE_SETTINGS_KEYS,
-  type OsrdSimulationState,
-  type Train,
-} from 'reducers/osrdsimulation/types';
+import { SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/consts';
+import { SPEED_SPACE_SETTINGS_KEYS, type OsrdSimulationState } from 'reducers/osrdsimulation/types';
 
 // TODO: Dependency cycle will be removed during the refactoring of store
 // eslint-disable-next-line import/no-cycle
@@ -88,10 +83,6 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case REDO_SIMULATION:
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
-        draft.consolidatedSimulation = createTrain(
-          CHART_AXES.SPACE_TIME,
-          draft.simulation.present.trains as Train[] // TODO: remove Train interface
-        );
 
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:

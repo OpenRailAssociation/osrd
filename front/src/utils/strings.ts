@@ -44,11 +44,6 @@ export function geti18nKeyForNull(str: string | null): string {
   return str || `N/C`;
 }
 
-/** Filter non digit characters */
-export function onlyDigit(str: string): string {
-  return str.replace(/[^0-9.]/g, '');
-}
-
 /**
  * Given a string, return a number or 0
  * Useful for number input

@@ -20,10 +20,6 @@ import {
   enableInteractivityV2,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
 import type { ReportTrainData } from 'modules/simulationResult/components/SpeedSpaceChart/types';
-import {
-  createCurveCurve,
-  createSlopeCurve,
-} from 'modules/simulationResult/components/SpeedSpaceChart/utils';
 import { CHART_AXES } from 'modules/simulationResult/consts';
 import type { PositionScaleDomain, SpaceCurvesSlopesDataV2 } from 'modules/simulationResult/types';
 import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
@@ -31,7 +27,12 @@ import type { Chart, SpeedSpaceChart } from 'reducers/osrdsimulation/types';
 import { dateIsInRange, isoDateWithTimezoneToSec } from 'utils/date';
 import { mmToM } from 'utils/physics';
 
-import { drawAxisTitle, drawSpaceCurvesSlopesChartCurve } from './utils';
+import {
+  createCurveCurve,
+  createSlopeCurve,
+  drawAxisTitle,
+  drawSpaceCurvesSlopesChartCurve,
+} from './utils';
 import { useChartSynchronizerV2 } from '../ChartSynchronizer';
 
 const CHART_ID = 'SpaceCurvesSlopes';
@@ -103,7 +104,7 @@ const SpaceCurvesSlopesV2 = ({
   const { updateTimePosition } = useChartSynchronizerV2(
     (timePosition, positionValues) => {
       if (dateIsInRange(timePosition, timeScaleRange)) {
-        traceVerticalLine(chart, CHART_AXES.SPACE_GRADIENT, positionValues, timePosition);
+        traceVerticalLine(chart, CHART_AXES.SPACE_GRADIENT, positionValues);
       }
     },
     'space-curve',
@@ -141,7 +142,6 @@ const SpaceCurvesSlopesV2 = ({
       defineY,
       ref as React.MutableRefObject<HTMLDivElement>,
       false,
-      ['position', 'gradient'],
       CHART_ID,
       defineY2
     ) as SpeedSpaceChart;
@@ -187,7 +187,6 @@ const SpaceCurvesSlopesV2 = ({
       'gradient',
       'slopesHistogram'
     );
-    // TODO : figure out a more precise name for future refacto
     drawArea(
       chartLocal,
       'area slopes',

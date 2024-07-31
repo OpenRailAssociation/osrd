@@ -9,7 +9,7 @@ import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
 
-import { useChartSynchronizer, useChartSynchronizerV2 } from './ChartSynchronizer';
+import { useChartSynchronizerV2 } from './ChartSynchronizer';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
 const factor2ms = (factor: number) => {
@@ -32,14 +32,6 @@ const TimeButtons = ({ departureTime }: TimeButtonsProps) => {
   const [simulationSpeed, setSimulationSpeed] = useState<number | null>(1);
 
   const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
-
-  const { updateTimePosition } = useChartSynchronizer(
-    (timePosition) => {
-      setLocalTimePosition(timePosition);
-    },
-    'time-buttons',
-    []
-  );
 
   const { updateTimePosition: updateTimePositionV2 } = useChartSynchronizerV2(
     (timePosition) => {
@@ -109,7 +101,7 @@ const TimeButtons = ({ departureTime }: TimeButtonsProps) => {
   const changeTimePosition = (newTimePosition: string) => {
     const newTimePositionDate = time2datetime(newTimePosition);
     if (newTimePositionDate) {
-      updateTimePosition(newTimePositionDate);
+      updateTimePositionV2(newTimePositionDate);
     }
   };
 

@@ -4,8 +4,9 @@ import type { Chart } from 'reducers/osrdsimulation/types';
 
 import type { AreaBlock } from '../SpeedSpaceChart/types';
 
+// TODO: remove this when spaceCurvesSlopes chart will be deleted
 /**
- * Draw area for the SpeedSpaceChart or the SpaceCurvesSlopesChart
+ * Draw area for the SpaceCurvesSlopesChart
  */
 const drawArea = (
   chart: Chart,

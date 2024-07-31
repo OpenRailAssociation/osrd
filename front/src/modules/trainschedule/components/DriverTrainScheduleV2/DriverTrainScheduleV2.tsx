@@ -7,10 +7,10 @@ import type {
 import type { LightRollingStock, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 
+import { BaseOrEco, type BaseOrEcoType } from './consts';
 import DriverTrainScheduleHeaderV2 from './DriverTrainScheduleHeaderV2';
 import DriverTrainScheduleStopListV2 from './DriverTrainScheduleStopListV2';
 import type { OperationalPointWithTimeAndSpeed } from './types';
-import { BaseOrEco, type BaseOrEcoType } from '../DriverTrainSchedule/consts';
 
 type DriverTrainScheduleV2Props = {
   train: TrainScheduleBase;

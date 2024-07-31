@@ -1,8 +1,5 @@
 import type { Dispatch } from 'redux';
 
-import type { ChartSynchronizer } from 'modules/simulationResult/components/ChartSynchronizer';
-import type { GetState } from 'store';
-
 import type { SimulationSnapshot, OsrdSimulationState } from './types';
 
 // Action Types
@@ -67,8 +64,7 @@ export function updateSelectedProjection(
 }
 
 export function updateSelectedTrainId(selectedTrainId: OsrdSimulationState['selectedTrainId']) {
-  return (dispatch: Dispatch, _: GetState, chartSynchronizer: ChartSynchronizer) => {
-    chartSynchronizer.computePositionValues(selectedTrainId);
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SELECTED_TRAIN_ID,
       selectedTrainId,

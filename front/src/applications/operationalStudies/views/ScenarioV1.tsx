@@ -7,16 +7,13 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import getSimulationResults, {
-  selectProjection,
-} from 'applications/operationalStudies/components/Scenario/getSimulationResults';
+import { selectProjection } from 'applications/operationalStudies/components/Scenario/getSimulationResults';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTrainSchedule';
 import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
-import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
 import infraLogo from 'assets/pictures/components/tracks.svg';
-import { type SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
@@ -27,7 +24,6 @@ import TimetableManageTrainSchedule from 'modules/trainschedule/components/Timet
 import type { RootState } from 'reducers';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 import {
-  getAllowancesSettings,
   getPresentSimulation,
   getSelectedProjection,
   getSelectedTrainId,
@@ -50,7 +46,7 @@ const ScenarioV1 = () => {
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);
   const [reloadCount, setReloadCount] = useState(1);
-  const [trainResultsToFetch, setTrainResultsToFetch] = useState<number[] | undefined>();
+  const [, setTrainResultsToFetch] = useState<number[] | undefined>();
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
 
   const { openModal } = useModal();
@@ -66,7 +62,6 @@ const ScenarioV1 = () => {
   const timetableId = useSelector(getTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const selectedProjection = useSelector(getSelectedProjection);
-  const allowancesSettings = useSelector(getAllowancesSettings);
   const simulation = useSelector(getPresentSimulation);
 
   const { projectId, studyId, scenarioId } = useMemo(
@@ -170,24 +165,6 @@ const ScenarioV1 = () => {
       selectProjection(timetable.train_schedule_summaries, selectedProjection, selectedTrainId);
     }
   }, [timetable, infra]);
-
-  useEffect(() => {
-    if (timetable && infra?.state === 'CACHED' && selectedProjection) {
-      // If trainResultsToFetch is undefined that means it's the first load of the scenario
-      // and we want to get all timetable trains results
-      if (trainResultsToFetch) {
-        getSimulationResults(
-          trainResultsToFetch,
-          selectedProjection,
-          allowancesSettings,
-          simulation.trains as SimulationReport[]
-        );
-      } else {
-        const trainScheduleIds = timetable.train_schedule_summaries.map((train) => train.id);
-        getSimulationResults(trainScheduleIds, selectedProjection, allowancesSettings);
-      }
-    }
-  }, [timetable, infra, selectedProjection]);
 
   useEffect(() => {
     if (!projectId || !studyId || !scenarioId) {
@@ -367,12 +344,6 @@ const ScenarioV1 = () => {
                         : t('noElectricalProfileSet')}
                     </div>
                   </div>
-                )}
-                {isInfraLoaded && infra && (
-                  <SimulationResults
-                    collapsedTimetable={collapsedTimetable}
-                    setTrainResultsToFetch={setTrainResultsToFetch}
-                  />
                 )}
               </div>
             </div>

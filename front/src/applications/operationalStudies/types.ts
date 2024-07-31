@@ -118,7 +118,7 @@ export type ElectrificationRangeV2 = {
   stop: number;
 };
 
-export type ElectrificationUsageV2 = ElectrificationValue &
+type ElectrificationUsageV2 = ElectrificationValue &
   SimulationResponseSuccess['electrical_profiles']['values'][number];
 
 export type BoundariesData = {
