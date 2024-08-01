@@ -26,17 +26,6 @@ pub struct OperationalStudiesOrderingParam {
 }
 
 impl Ordering {
-    pub fn to_sql(&self) -> &str {
-        match *self {
-            Ordering::NameAsc => "LOWER(t.name) ASC",
-            Ordering::NameDesc => " LOWER(t.name) DESC",
-            Ordering::CreationDateAsc => "creation_date",
-            Ordering::CreationDateDesc => "creation_date DESC",
-            Ordering::LastModifiedAsc => "last_modification",
-            Ordering::LastModifiedDesc => "last_modification DESC",
-        }
-    }
-
     pub fn as_project_ordering(&self) -> SortSetting<Project> {
         match *self {
             Ordering::NameAsc => Project::NAME.asc(),

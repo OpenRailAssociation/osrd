@@ -3,8 +3,6 @@ use diesel::query_builder::*;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Untyped;
 use diesel::QueryResult;
-use diesel::QueryableByName;
-use diesel_async::methods::LoadQuery;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -229,9 +227,6 @@ impl<M: Model + 'static> From<PaginationQueryParam> for SelectionSettings<M> {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pagination")]
 pub enum PaginationError {
-    #[error("Invalid page number ({page})")]
-    #[editoast_error(status = 404)]
-    InvalidPage { page: i64 },
     #[error("Invalid page size ({provided_page_size}), expected an integer 0 < page_size <= {max_page_size}")]
     #[editoast_error(status = 400)]
     InvalidPageSize {
@@ -240,93 +235,11 @@ pub enum PaginationError {
     },
 }
 
-pub trait Paginate: Sized {
-    fn paginate(self, page: i64, page_size: i64) -> Paginated<Self>;
-}
-
-impl<T> Paginate for T {
-    fn paginate(self, page: i64, page_size: i64) -> Paginated<Self> {
-        Paginated {
-            query: self,
-            page_size,
-            page,
-            offset: (page - 1) * page_size,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Copy, QueryId)]
 pub struct Paginated<T> {
     query: T,
-    page: i64,
     page_size: i64,
     offset: i64,
-}
-
-#[derive(QueryableByName, Debug)]
-pub struct InternalPaginatedResult<T: QueryableByName<Pg>> {
-    #[diesel(sql_type = BigInt)]
-    count: i64,
-    #[diesel(embed)]
-    item: T,
-}
-
-impl<T> Paginated<T> {
-    pub async fn load_and_count<'a, R>(
-        self,
-        conn: &mut DbConnection,
-    ) -> Result<PaginatedResponse<R>>
-    where
-        Self: LoadQuery<'a, DbConnection, InternalPaginatedResult<R>>,
-        R: QueryableByName<Pg> + Send + 'static,
-        T: Send + 'static,
-    {
-        let page_size = self.page_size;
-        let page = self.page;
-        if page < 1 {
-            return Err(PaginationError::InvalidPage { page }.into());
-        } else if page_size < 1 {
-            return Err(PaginationError::InvalidPageSize {
-                provided_page_size: page,
-                max_page_size: 1000,
-            }
-            .into());
-        }
-
-        let results = {
-            use diesel_async::RunQueryDsl;
-            self.load::<InternalPaginatedResult<R>>(conn).await?
-        };
-
-        // Check when no results
-        if results.is_empty() {
-            if page > 1 {
-                return Err(PaginationError::InvalidPage { page }.into());
-            } else {
-                return Ok(PaginatedResponse {
-                    count: 0,
-                    previous: None,
-                    next: None,
-                    results: vec![],
-                });
-            }
-        }
-
-        let count = results.first().unwrap().count;
-        let previous = if page > 1 { Some(page - 1) } else { None };
-        let next = if count > page * page_size {
-            Some(page + 1)
-        } else {
-            None
-        };
-        let results = results.into_iter().map(|r| r.item).collect();
-        Ok(PaginatedResponse {
-            count,
-            previous,
-            next,
-            results,
-        })
-    }
 }
 
 impl<T> QueryFragment<Pg> for Paginated<T>

@@ -52,7 +52,6 @@ use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 use colored::*;
 use diesel::sql_query;
 use diesel_async::RunQueryDsl;
-use diesel_json::Json as DieselJson;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::RailJson;
 use editoast_search::{SearchConfig, SearchConfigStore};

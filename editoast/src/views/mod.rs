@@ -7,18 +7,13 @@ mod openapi;
 pub mod operational_studies;
 pub mod pagination;
 pub mod params;
-pub mod pathfinding;
 pub mod projects;
 pub mod rolling_stocks;
-pub mod scenario;
 pub mod search;
-mod single_simulation;
 pub mod speed_limit_tags;
 pub mod sprites;
-pub mod stdcm;
+pub mod stdcm_search_environment;
 pub mod study;
-pub mod timetable;
-pub mod train_schedule;
 pub mod v2;
 pub mod work_schedules;
 
@@ -76,16 +71,12 @@ crate::routes! {
     &infra,
     &layers,
     &light_rolling_stocks,
-    &pathfinding,
     &projects,
     &rolling_stocks,
     &search,
-    &single_simulation,
     &speed_limit_tags,
     &sprites,
-    &stdcm,
-    &timetable,
-    &train_schedule,
+    &stdcm_search_environment,
     &v2,
     &work_schedules,
 }
@@ -98,7 +89,6 @@ editoast_common::schemas! {
     models::schemas(),
     modelsv2::schemas(),
     core::schemas(),
-
     documents::schemas(),
     electrical_profiles::schemas(),
     error::schemas(),
@@ -108,14 +98,10 @@ editoast_common::schemas! {
     operation::schemas(),
     operational_studies::schemas(),
     pagination::schemas(),
-    pathfinding::schemas(),
     projects::schemas(),
     rolling_stocks::schemas(),
     search::schemas(),
-    single_simulation::schemas(),
-    stdcm::stdcm_search_environment::schemas(),
-    timetable::schemas(),
-    train_schedule::schemas(),
+    stdcm_search_environment::schemas(),
     v2::schemas(),
     work_schedules::schemas(),
 }
