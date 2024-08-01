@@ -23,6 +23,11 @@ use std::hash::Hash;
 
 editoast_common::schemas! {
     CompleteReportTrain,
+    RoutingRequirement,
+    SignalSighting,
+    SpacingRequirement,
+    RoutingZoneRequirement,
+    ZoneUpdate,
     ReportTrain,
     SimulationResponse,
 }
@@ -85,7 +90,7 @@ impl From<RollingStockModel> for PhysicsRollingStock {
     }
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ZoneUpdate {
     pub zone: String,
     // Time in ms
@@ -166,7 +171,7 @@ pub struct CompleteReportTrain {
     pub routing_requirements: Vec<RoutingRequirement>,
 }
 
-#[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, ToSchema)]
 pub struct SignalSighting {
     pub signal: String,
     /// Time in ms

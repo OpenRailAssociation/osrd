@@ -1,13 +1,9 @@
-pub mod conflicts;
 mod http_client;
 pub mod infra_loading;
 pub mod infra_state;
 #[cfg(test)]
 pub mod mocking;
 pub mod mq_client;
-pub mod pathfinding;
-pub mod simulation;
-pub mod stdcm;
 pub mod v2;
 pub mod version;
 
@@ -40,7 +36,6 @@ use crate::error::Result;
 pub use mq_client::RabbitMQClient;
 
 editoast_common::schemas! {
-    simulation::schemas(),
     v2::simulation::schemas(),
     v2::pathfinding::schemas(),
     v2::conflict_detection::schemas(),
