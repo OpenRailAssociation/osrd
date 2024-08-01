@@ -10,6 +10,7 @@ import type { AppDispatch } from 'store';
 import type {
   Node,
   Port,
+  TimeLock,
   Trainrun,
   TrainrunSection,
   TrainrunCategory,
@@ -18,7 +19,7 @@ import type {
   NetzgrafikDto,
 } from './types';
 import { PortAlignment } from './types';
-import { findOpFromPathItem } from './utils';
+import { findOpFromPathItem, addDurationToDate } from './utils';
 
 // TODO: make this optional in NGE since it's SBB-specific
 const TRAINRUN_CATEGORY_HALTEZEITEN = {
@@ -81,6 +82,14 @@ const DEFAULT_DTO: NetzgrafikDto = {
   filterData: {
     filterSettings: [],
   },
+};
+
+const DEFAULT_TIME_LOCK: TimeLock = {
+  time: 0,
+  consecutiveTime: null,
+  lock: false,
+  warning: null,
+  timeFormatter: null,
 };
 
 /**
@@ -328,20 +337,22 @@ const importTimetable = async (
         return node.id;
       });
 
+      const startTime = new Date(trainSchedule.start_time);
+      const createTimeLock = (time: Date): TimeLock => ({
+        time: time.getMinutes(),
+        // getTime() is in milliseconds, consecutiveTime is in minutes
+        consecutiveTime: (time.getTime() - startTime.getTime()) / (60 * 1000),
+        lock: false,
+        warning: null,
+        timeFormatter: null,
+      });
+
       // OSRD describes the path in terms of nodes, NGE describes it in terms
       // of sections between nodes. Iterate over path items two-by-two to
       // convert them.
       let prevPort: Port | null = null;
       return pathNodeIds.slice(0, -1).map((sourceNodeId, i) => {
         const targetNodeId = pathNodeIds[i + 1]!;
-
-        const timeLockStub = {
-          time: 0,
-          consecutiveTime: null,
-          lock: false,
-          warning: null,
-          timeFormatter: null,
-        };
 
         const sourcePort = createPort(trainrunSectionId);
         const targetPort = createPort(trainrunSectionId);
@@ -351,13 +362,43 @@ const importTimetable = async (
         sourceNode.ports.push(sourcePort);
         targetNode.ports.push(targetPort);
 
+        const sourceScheduleEntry = trainSchedule.schedule!.find(
+          (entry) => entry.at === trainSchedule.path[i].id
+        );
+        const targetScheduleEntry = trainSchedule.schedule!.find(
+          (entry) => entry.at === trainSchedule.path[i + 1].id
+        );
+
         // Create a transition between the previous section and the one we're
         // creating
         if (prevPort) {
           const transition = createTransition(prevPort.id, sourcePort.id);
+          transition.isNonStopTransit = !sourceScheduleEntry?.stop_for;
           sourceNode.transitions.push(transition);
         }
         prevPort = targetPort;
+
+        let sourceDeparture = { ...DEFAULT_TIME_LOCK };
+        if (i === 0) {
+          sourceDeparture = createTimeLock(startTime);
+        } else if (sourceScheduleEntry && sourceScheduleEntry.arrival) {
+          sourceDeparture = createTimeLock(
+            addDurationToDate(
+              addDurationToDate(startTime, sourceScheduleEntry.arrival),
+              sourceScheduleEntry.stop_for || 'P0D'
+            )
+          );
+        }
+
+        let targetArrival = { ...DEFAULT_TIME_LOCK };
+        if (targetScheduleEntry && targetScheduleEntry.arrival) {
+          targetArrival = createTimeLock(addDurationToDate(startTime, targetScheduleEntry.arrival));
+        }
+
+        const travelTime = { ...DEFAULT_TIME_LOCK };
+        if (targetArrival.time && sourceDeparture.time) {
+          travelTime.time = (targetArrival.time - sourceDeparture.time + 60) % 60;
+        }
 
         const trainrunSection = {
           id: trainrunSectionId,
@@ -365,11 +406,11 @@ const importTimetable = async (
           sourcePortId: sourcePort.id,
           targetNodeId,
           targetPortId: targetPort.id,
-          travelTime: { ...timeLockStub },
-          sourceDeparture: { ...timeLockStub },
-          sourceArrival: { ...timeLockStub },
-          targetDeparture: { ...timeLockStub },
-          targetArrival: { ...timeLockStub },
+          travelTime,
+          sourceDeparture,
+          sourceArrival: { ...DEFAULT_TIME_LOCK },
+          targetDeparture: { ...DEFAULT_TIME_LOCK },
+          targetArrival,
           numberOfStops: 0,
           trainrunId: trainSchedule.id,
           resourceId: resource.id,
