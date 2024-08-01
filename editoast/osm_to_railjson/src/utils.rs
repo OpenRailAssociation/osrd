@@ -256,6 +256,9 @@ pub fn signals(
                 let mut settings = HashMap::new();
                 settings.insert("Nf".into(), "true".into());
 
+                let mut default_parameters = HashMap::new();
+                default_parameters.insert("jaune_cli".into(), "false".into());
+
                 Some(Signal {
                     id: node.id.0.to_string().into(),
                     direction: direction(&node),
@@ -265,6 +268,7 @@ pub fn signals(
                     logical_signals: vec![LogicalSignal {
                         signaling_system: "BAL".to_string(),
                         settings,
+                        default_parameters,
                         ..Default::default()
                     }],
                     extensions: SignalExtensions {
