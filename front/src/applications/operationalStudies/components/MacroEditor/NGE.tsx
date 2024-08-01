@@ -36,8 +36,6 @@ const NGE = ({ dto }: { dto?: NetzgrafikDto }) => {
     const frame = frameRef.current!;
 
     const handleFrameLoad = () => {
-      frame.removeEventListener('load', handleFrameLoad);
-
       const ngeRoot = frame.contentDocument!.createElement('sbb-root') as NGEElement;
       frame.contentDocument!.body.appendChild(ngeRoot);
       setNgeRootElement(ngeRoot);
