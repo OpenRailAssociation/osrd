@@ -10,18 +10,15 @@ export const addTagTypes = [
   'layers',
   'projects',
   'studies',
-  'scenarios',
   'rolling_stock_livery',
   'search',
   'speed_limit_tags',
   'sprites',
-  'stdcm',
   'stdcm_search_environment',
-  'timetable',
-  'train_schedule',
   'pathfindingv2',
   'scenariosv2',
   'timetablev2',
+  'stdcm',
   'train_schedulev2',
   'work_schedules',
 ] as const;
@@ -373,59 +370,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.rollingStockId}` }),
         providesTags: ['rolling_stock'],
       }),
-      postPathfinding: build.mutation<PostPathfindingApiResponse, PostPathfindingApiArg>({
-        query: (queryArg) => ({
-          url: `/pathfinding`,
-          method: 'POST',
-          body: queryArg.pathfindingRequest,
-        }),
-        invalidatesTags: ['pathfinding'],
-      }),
-      getPathfindingByPathfindingId: build.query<
-        GetPathfindingByPathfindingIdApiResponse,
-        GetPathfindingByPathfindingIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}` }),
-        providesTags: ['pathfinding'],
-      }),
-      putPathfindingByPathfindingId: build.mutation<
-        PutPathfindingByPathfindingIdApiResponse,
-        PutPathfindingByPathfindingIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/pathfinding/${queryArg.pathfindingId}`,
-          method: 'PUT',
-          body: queryArg.pathfindingRequest,
-        }),
-        invalidatesTags: ['pathfinding'],
-      }),
-      deletePathfindingByPathfindingId: build.mutation<
-        DeletePathfindingByPathfindingIdApiResponse,
-        DeletePathfindingByPathfindingIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}`, method: 'DELETE' }),
-        invalidatesTags: ['pathfinding'],
-      }),
-      getPathfindingByPathfindingIdElectricalProfiles: build.query<
-        GetPathfindingByPathfindingIdElectricalProfilesApiResponse,
-        GetPathfindingByPathfindingIdElectricalProfilesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/pathfinding/${queryArg.pathfindingId}/electrical_profiles`,
-          params: {
-            rolling_stock_id: queryArg.rollingStockId,
-            electrical_profile_set_id: queryArg.electricalProfileSetId,
-          },
-        }),
-        providesTags: ['electrical_profiles'],
-      }),
-      getPathfindingByPathfindingIdElectrifications: build.query<
-        GetPathfindingByPathfindingIdElectrificationsApiResponse,
-        GetPathfindingByPathfindingIdElectrificationsApiArg
-      >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/electrifications` }),
-        providesTags: ['infra'],
-      }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
         query: (queryArg) => ({
           url: `/projects`,
@@ -525,61 +469,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['studies'],
       }),
-      getProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-            ordering: queryArg.ordering,
-          },
-        }),
-        providesTags: ['scenarios'],
-      }),
-      postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
-        PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-        PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
-          method: 'POST',
-          body: queryArg.scenarioCreateForm,
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-        }),
-        providesTags: ['scenarios'],
-      }),
-      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
-        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
-        PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-          method: 'PATCH',
-          body: queryArg.scenarioPatchForm,
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
           url: `/rolling_stock`,
@@ -663,16 +552,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['search'],
       }),
-      postSingleSimulation: build.mutation<
-        PostSingleSimulationApiResponse,
-        PostSingleSimulationApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/single_simulation`,
-          method: 'POST',
-          body: queryArg.singleSimulationRequest,
-        }),
-      }),
       getSpeedLimitTags: build.query<GetSpeedLimitTagsApiResponse, GetSpeedLimitTagsApiArg>({
         query: () => ({ url: `/speed_limit_tags` }),
         providesTags: ['speed_limit_tags'],
@@ -691,10 +570,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/sprites/${queryArg.signalingSystem}/${queryArg.fileName}` }),
         providesTags: ['sprites'],
       }),
-      postStdcm: build.mutation<PostStdcmApiResponse, PostStdcmApiArg>({
-        query: (queryArg) => ({ url: `/stdcm`, method: 'POST', body: queryArg.body }),
-        invalidatesTags: ['stdcm'],
-      }),
       getStdcmSearchEnvironment: build.query<
         GetStdcmSearchEnvironmentApiResponse,
         GetStdcmSearchEnvironmentApiArg
@@ -712,82 +587,6 @@ const injectedRtkApi = api
           body: queryArg.stdcmSearchEnvironmentCreateForm,
         }),
         invalidatesTags: ['stdcm_search_environment'],
-      }),
-      getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
-        query: (queryArg) => ({ url: `/timetable/${queryArg.id}` }),
-        providesTags: ['timetable'],
-      }),
-      postTimetableById: build.mutation<PostTimetableByIdApiResponse, PostTimetableByIdApiArg>({
-        query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['timetable'],
-      }),
-      getTimetableByIdConflicts: build.query<
-        GetTimetableByIdConflictsApiResponse,
-        GetTimetableByIdConflictsApiArg
-      >({
-        query: (queryArg) => ({ url: `/timetable/${queryArg.id}/conflicts` }),
-        providesTags: ['timetable'],
-      }),
-      deleteTrainSchedule: build.mutation<
-        DeleteTrainScheduleApiResponse,
-        DeleteTrainScheduleApiArg
-      >({
-        query: (queryArg) => ({ url: `/train_schedule`, method: 'DELETE', body: queryArg.body }),
-        invalidatesTags: ['train_schedule', 'timetable'],
-      }),
-      patchTrainSchedule: build.mutation<PatchTrainScheduleApiResponse, PatchTrainScheduleApiArg>({
-        query: (queryArg) => ({ url: `/train_schedule`, method: 'PATCH', body: queryArg.body }),
-        invalidatesTags: ['train_schedule', 'timetable'],
-      }),
-      postTrainScheduleResults: build.mutation<
-        PostTrainScheduleResultsApiResponse,
-        PostTrainScheduleResultsApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/results`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['train_schedule'],
-      }),
-      postTrainScheduleStandaloneSimulation: build.mutation<
-        PostTrainScheduleStandaloneSimulationApiResponse,
-        PostTrainScheduleStandaloneSimulationApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/standalone_simulation`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['train_schedule'],
-      }),
-      getTrainScheduleById: build.query<
-        GetTrainScheduleByIdApiResponse,
-        GetTrainScheduleByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}` }),
-        providesTags: ['train_schedule'],
-      }),
-      deleteTrainScheduleById: build.mutation<
-        DeleteTrainScheduleByIdApiResponse,
-        DeleteTrainScheduleByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}`, method: 'DELETE' }),
-        invalidatesTags: ['train_schedule', 'timetable'],
-      }),
-      getTrainScheduleByIdResult: build.query<
-        GetTrainScheduleByIdResultApiResponse,
-        GetTrainScheduleByIdResultApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/train_schedule/${queryArg.id}/result`,
-          params: { path_id: queryArg.pathId },
-        }),
-        providesTags: ['train_schedule'],
       }),
       postV2InfraByInfraIdPathProperties: build.mutation<
         PostV2InfraByInfraIdPathPropertiesApiResponse,
@@ -1323,42 +1122,6 @@ export type GetLightRollingStockByRollingStockIdApiResponse =
 export type GetLightRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
 };
-export type PostPathfindingApiResponse = /** status 201 The created path */ PathResponse;
-export type PostPathfindingApiArg = {
-  pathfindingRequest: PathfindingRequest;
-};
-export type GetPathfindingByPathfindingIdApiResponse =
-  /** status 200 The requested path */ PathResponse;
-export type GetPathfindingByPathfindingIdApiArg = {
-  /** A stored path ID */
-  pathfindingId: number;
-};
-export type PutPathfindingByPathfindingIdApiResponse =
-  /** status 200 The updated path */ PathResponse;
-export type PutPathfindingByPathfindingIdApiArg = {
-  /** A stored path ID */
-  pathfindingId: number;
-  pathfindingRequest: PathfindingRequest;
-};
-export type DeletePathfindingByPathfindingIdApiResponse = unknown;
-export type DeletePathfindingByPathfindingIdApiArg = {
-  /** A stored path ID */
-  pathfindingId: number;
-};
-export type GetPathfindingByPathfindingIdElectricalProfilesApiResponse =
-  /** status 200  */ ProfilesOnPathResponse;
-export type GetPathfindingByPathfindingIdElectricalProfilesApiArg = {
-  /** A stored path ID */
-  pathfindingId: number;
-  rollingStockId: number;
-  electricalProfileSetId: number;
-};
-export type GetPathfindingByPathfindingIdElectrificationsApiResponse =
-  /** status 200  */ ElectrificationsOnPathResponse;
-export type GetPathfindingByPathfindingIdElectrificationsApiArg = {
-  /** A stored path ID */
-  pathfindingId: number;
-};
 export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
   results: ProjectWithStudies[];
 };
@@ -1432,49 +1195,6 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** The fields to update */
   studyPatchForm: StudyPatchForm;
 };
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 200 The list of scenarios */ PaginatedResponseOfScenarioWithCountTrains;
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  page?: number;
-  pageSize?: number | null;
-  ordering?: Ordering;
-};
-export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 201 The created scenario */ ScenarioResponse;
-export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioCreateForm: ScenarioCreateForm;
-};
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The requested scenario */ ScenarioResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-};
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was deleted successfully */ void;
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-};
-export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was updated successfully */ ScenarioResponse;
-export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  scenarioPatchForm: ScenarioPatchForm;
-};
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
   locked?: boolean;
@@ -1524,11 +1244,6 @@ export type PostSearchApiArg = {
   pageSize?: number | null;
   searchPayload: SearchPayload;
 };
-export type PostSingleSimulationApiResponse =
-  /** status 200 Data about the simulation produced */ SingleSimulationResponse;
-export type PostSingleSimulationApiArg = {
-  singleSimulationRequest: SingleSimulationRequest;
-};
 export type GetSpeedLimitTagsApiResponse =
   /** status 200 List of configured speed-limit tags */ string[];
 export type GetSpeedLimitTagsApiArg = void;
@@ -1542,110 +1257,12 @@ export type GetSpritesBySignalingSystemAndFileNameApiArg = {
   /** File name (json, png or svg) */
   fileName: string;
 };
-export type PostStdcmApiResponse = /** status 201 The simulation result */ {
-  path: PathResponse;
-  path_payload: PathfindingPayload;
-  simulation: SimulationReport;
-};
-export type PostStdcmApiArg = {
-  body: {
-    comfort: RollingStockComfortType;
-    end_time?: number | null;
-    infra_id: number;
-    /** Margin after the train passage in seconds
-        
-        Enforces that the path used by the train should be free and
-        available at least that many seconds after its passage. */
-    margin_after?: number;
-    /** Margin before the train passage in seconds
-        
-        Enforces that the path used by the train should be free and
-        available at least that many seconds before its passage. */
-    margin_before?: number;
-    /** By how long we can shift the departure time in seconds */
-    maximum_departure_delay?: number;
-    /** Specifies how long the total run time can be in seconds */
-    maximum_run_time?: number;
-    rolling_stock_id: number;
-    /** Train categories for speed limits */
-    speed_limit_tags?: string | null;
-    standard_allowance?: AllowanceValue | null;
-    start_time?: number | null;
-    steps: PathfindingStep[];
-    timetable_id: number;
-  };
-};
 export type GetStdcmSearchEnvironmentApiResponse =
   /** status 200  */ StdcmSearchEnvironment | /** status 204 No search environment was created */ void;
 export type GetStdcmSearchEnvironmentApiArg = void;
 export type PostStdcmSearchEnvironmentApiResponse = /** status 201  */ StdcmSearchEnvironment;
 export type PostStdcmSearchEnvironmentApiArg = {
   stdcmSearchEnvironmentCreateForm: StdcmSearchEnvironmentCreateForm;
-};
-export type GetTimetableByIdApiResponse =
-  /** status 200 Timetable with schedules */ TimetableWithSchedulesDetails;
-export type GetTimetableByIdApiArg = {
-  /** Timetable id */
-  id: number;
-};
-export type PostTimetableByIdApiResponse = /** status 200 Import report */ {
-  [key: string]: TrainImportReport;
-};
-export type PostTimetableByIdApiArg = {
-  /** Timetable id */
-  id: number;
-  body: TimetableImportItem[];
-};
-export type GetTimetableByIdConflictsApiResponse = /** status 200 Spacing conflicts */ Conflict[];
-export type GetTimetableByIdConflictsApiArg = {
-  /** Timetable id */
-  id: number;
-};
-export type DeleteTrainScheduleApiResponse = unknown;
-export type DeleteTrainScheduleApiArg = {
-  body: {
-    ids: number[];
-  };
-};
-export type PatchTrainScheduleApiResponse = unknown;
-export type PatchTrainScheduleApiArg = {
-  body: TrainSchedulePatch[];
-};
-export type PostTrainScheduleResultsApiResponse =
-  /** status 200 The train schedule simulations results and a list of invalid train_ids */ TrainSimulationResponse;
-export type PostTrainScheduleResultsApiArg = {
-  body: {
-    /** A path ID to project the simulation results onto. If not provided, the path of the first train will be used. */
-    path_id?: number | null;
-    /** The IDs of the trains to simulate */
-    train_ids: number[];
-  };
-};
-export type PostTrainScheduleStandaloneSimulationApiResponse =
-  /** status 200 The ids of the train_schedules created */ number[];
-export type PostTrainScheduleStandaloneSimulationApiArg = {
-  body: {
-    path: number;
-    schedules: TrainScheduleBatchItem[];
-    timetable: number;
-  };
-};
-export type GetTrainScheduleByIdApiResponse = /** status 200 The train schedule */ TrainSchedule;
-export type GetTrainScheduleByIdApiArg = {
-  /** A train schedule ID */
-  id: number;
-};
-export type DeleteTrainScheduleByIdApiResponse = unknown;
-export type DeleteTrainScheduleByIdApiArg = {
-  /** A train schedule ID */
-  id: number;
-};
-export type GetTrainScheduleByIdResultApiResponse =
-  /** status 200 The train schedule result */ SimulationReport;
-export type GetTrainScheduleByIdResultApiArg = {
-  pathId?: number | null;
-  /** A train schedule ID */
-  id: number;
 };
 export type PostV2InfraByInfraIdPathPropertiesApiResponse =
   /** status 200 Path properties */ PathProperties;
@@ -2029,19 +1646,15 @@ export type OperationalPoint = {
   id: string;
   parts: OperationalPointPart[];
 };
-export type WaypointLocation =
+export type Waypoint =
   | {
-      /** Offset in meters from the start of the waypoint's track section */
-      offset: number;
+      id: string;
+      type: 'BufferStop';
     }
   | {
-      /** A geographic coordinate (lon, lat)/WGS84 that will be projected onto the waypoint's track section */
-      geo_coordinate: (number & number)[];
+      id: string;
+      type: 'Detector';
     };
-export type Waypoint = WaypointLocation & {
-  /** A track section UUID */
-  track_section: string;
-};
 export type Route = {
   entry_point: Waypoint;
   entry_point_direction: Direction;
@@ -2117,7 +1730,8 @@ export type Switch = {
   switch_type: string;
 };
 export type Curve = {
-  position: number;
+  begin: number;
+  end: number;
   radius: number;
 };
 export type GeoJsonPointValue = number[];
@@ -2142,8 +1756,9 @@ export type LoadingGaugeLimit = {
   end: number;
 };
 export type Slope = {
+  begin: number;
+  end: number;
   gradient: number;
-  position: number;
 };
 export type TrackSection = {
   curves: Curve[];
@@ -2581,54 +2196,6 @@ export type RollingStockLivery = {
 export type LightRollingStockWithLiveries = LightRollingStock & {
   liveries: RollingStockLivery[];
 };
-export type TrackLocation = {
-  /** The offset on the track section in meters */
-  offset: number;
-  track_section: string;
-};
-export type PathWaypoint = {
-  ch: string | null;
-  duration: number;
-  geo: GeoJsonPoint;
-  id: string | null;
-  location: TrackLocation;
-  name: string | null;
-  path_offset: number;
-  suggestion: boolean;
-  uic: number | null;
-};
-export type PathResponse = {
-  created: string;
-  curves: Curve[];
-  geographic: GeoJsonLineString;
-  id: number;
-  length: number;
-  owner: string;
-  slopes: Slope[];
-  steps: PathWaypoint[];
-};
-export type PathfindingStep = {
-  duration: number;
-  waypoints: Waypoint[];
-};
-export type PathfindingRequest = {
-  infra: number;
-  rolling_stocks?: number[];
-  steps: PathfindingStep[];
-};
-export type RangedValue = {
-  begin: number;
-  end: number;
-  value: string;
-};
-export type ProfilesOnPathResponse = {
-  electrical_profile_ranges: RangedValue[];
-  warnings: InternalError[];
-};
-export type ElectrificationsOnPathResponse = {
-  electrification_ranges: RangedValue[];
-  warnings: InternalError[];
-};
 export type Tags = string[];
 export type Project = {
   budget?: number | null;
@@ -2721,58 +2288,6 @@ export type StudyPatchForm = {
   state?: string | null;
   study_type?: string | null;
   tags?: Tags | null;
-};
-export type Scenario = {
-  creation_date: string;
-  description: string;
-  electrical_profile_set_id?: number | null;
-  id: number;
-  infra_id: number;
-  last_modification: string;
-  name: string;
-  study_id: number;
-  tags: string[];
-  timetable_id: number;
-};
-export type ScenarioWithCountTrains = Scenario & {
-  infra_name: string;
-  trains_count: number;
-};
-export type PaginatedResponseOfScenarioWithCountTrains = {
-  /** The total number of items */
-  count: number;
-  /** The next page number */
-  next: number | null;
-  /** The previous page number */
-  previous: number | null;
-  /** The list of results */
-  results: ScenarioWithCountTrains[];
-};
-export type LightTrainSchedule = {
-  departure_time: number;
-  id: number;
-  train_name: string;
-  train_path: number;
-};
-export type ScenarioResponse = Scenario & {
-  electrical_profile_set_name?: string | null;
-  infra_name: string;
-  project: Project;
-  study: Study;
-  train_schedules: LightTrainSchedule[];
-  trains_count: number;
-};
-export type ScenarioCreateForm = {
-  description?: string;
-  electrical_profile_set_id?: number | null;
-  infra_id: number;
-  name: string;
-  tags?: string[];
-};
-export type ScenarioPatchForm = {
-  description?: string | null;
-  name?: string | null;
-  tags?: string[] | null;
 };
 export type RollingStockComfortType = 'STANDARD' | 'AC' | 'HEATING';
 export type EffortCurveConditions = {
@@ -2984,249 +2499,6 @@ export type SearchPayload = {
   object: string;
   query: SearchQuery;
 };
-export type ResultPosition = {
-  offset: number;
-  path_offset: number;
-  time: number;
-  track_section: string;
-};
-export type RoutingZoneRequirement = {
-  end_time: number;
-  entry_detector: string;
-  exit_detector: string;
-  switches: {
-    [key: string]: string;
-  };
-  zone: string;
-};
-export type RoutingRequirement = {
-  begin_time: number;
-  route: string;
-  zones: RoutingZoneRequirement[];
-};
-export type SignalSighting = {
-  offset: number;
-  signal: string;
-  state: string;
-  time: number;
-};
-export type SpacingRequirement = {
-  begin_time: number;
-  end_time: number;
-  zone: string;
-};
-export type ResultSpeed = {
-  position: number;
-  speed: number;
-  time: number;
-};
-export type ResultStops = {
-  ch: string | null;
-  duration: number;
-  position: number;
-  time: number;
-};
-export type ZoneUpdate = {
-  isEntry: boolean;
-  offset: number;
-  time: number;
-  zone: string;
-};
-export type ResultTrain = {
-  head_positions: ResultPosition[];
-  mechanical_energy_consumed: number;
-  routing_requirements: RoutingRequirement[];
-  signal_sightings: SignalSighting[];
-  spacing_requirements: SpacingRequirement[];
-  speeds: ResultSpeed[];
-  stops: ResultStops[];
-  zone_updates: ZoneUpdate[];
-};
-export type ElectrificationUsage =
-  | {
-      mode: string;
-      mode_handled: boolean;
-      object_type: 'Electrified';
-      profile?: string | null;
-      profile_handled: boolean;
-    }
-  | {
-      lower_pantograph: boolean;
-      object_type: 'Neutral';
-    }
-  | {
-      object_type: 'NonElectrified';
-    };
-export type ElectrificationRange = {
-  electrificationUsage: ElectrificationUsage;
-  start: number;
-  stop: number;
-};
-export type SimulationPowerRestrictionRange = {
-  code: string;
-  handled: boolean;
-  start: number;
-  stop: number;
-};
-export type MrspPoint = {
-  /** Relative position of the point on its track section (in meters) */
-  position: number;
-  /** Speed limit at this point (in m/s) */
-  speed: number;
-};
-export type Mrsp = MrspPoint[];
-export type SingleSimulationResponse = {
-  base_simulation: ResultTrain;
-  eco_simulation?: ResultTrain | null;
-  electrification_ranges: ElectrificationRange[];
-  power_restriction_ranges: SimulationPowerRestrictionRange[];
-  speed_limits: Mrsp;
-  warnings: string[];
-};
-export type AllowanceValue =
-  | {
-      minutes: number;
-      value_type: 'time_per_distance';
-    }
-  | {
-      seconds: number;
-      value_type: 'time';
-    }
-  | {
-      percentage: number;
-      value_type: 'percentage';
-    };
-export type RangeAllowance = {
-  begin_position: number;
-  end_position: number;
-  value: AllowanceValue;
-};
-export type AllowanceDistribution = 'MARECO' | 'LINEAR';
-export type EngineeringAllowance = RangeAllowance & {
-  capacity_speed_limit?: number;
-  distribution: AllowanceDistribution;
-};
-export type StandardAllowance = {
-  capacity_speed_limit?: number;
-  default_value: AllowanceValue;
-  distribution: AllowanceDistribution;
-  ranges: RangeAllowance[];
-};
-export type Allowance =
-  | (EngineeringAllowance & {
-      allowance_type: 'engineering';
-    })
-  | (StandardAllowance & {
-      allowance_type: 'standard';
-    });
-export type TrainScheduleOptions = {
-  /** Whether to ignore the electrical profile of the train for simulation */
-  ignore_electrical_profiles?: boolean | null;
-};
-export type RjsPowerRestrictionRange = {
-  /** Offset from the start of the path, in meters. */
-  begin_position: number;
-  /** Offset from the start of the path, in meters. */
-  end_position: number;
-  /** The power restriction code to apply. */
-  power_restriction_code: string;
-};
-export type ScheduledPoint = {
-  /** Offset in meters from the start of the path at which the train must be */
-  path_offset: number;
-  /** Time in seconds (elapsed since the train's departure) at which the train must be */
-  time: number;
-};
-export type TrainStop = {
-  duration: number;
-  location: TrackLocation | null;
-  on_stop_signal: boolean;
-  position: number | null;
-};
-export type SingleSimulationRequest = {
-  allowances?: Allowance[];
-  comfort?: RollingStockComfortType;
-  initial_speed?: number;
-  options?: TrainScheduleOptions | null;
-  power_restriction_ranges?: RjsPowerRestrictionRange[] | null;
-  scheduled_points?: ScheduledPoint[];
-  stops?: TrainStop[];
-  tag?: string | null;
-} & {
-  electrical_profile_set_id?: number | null;
-  path_id: number;
-  rolling_stock_id: number;
-};
-export type PathfindingPayload = {
-  path_waypoints: PathWaypoint[];
-  route_paths: {
-    route: string;
-    signaling_type: string;
-    track_sections: DirectionalTrackRange[];
-  }[];
-};
-export type GetCurvePoint = {
-  position: number;
-  time: number;
-};
-export type SignalUpdate = {
-  /** The labels of the new aspect */
-  aspect_label: string;
-  /** Whether the signal is blinking */
-  blinking: boolean;
-  /** The color of the aspect
-    
-    (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue) */
-  color: number;
-  /** The route ends at this position on the train path */
-  position_end: number | null;
-  /** The route starts at this position on the train path */
-  position_start: number;
-  /** The id of the updated signal */
-  signal_id: string;
-  /** The aspects stop being displayed at this time (number of seconds since 1970-01-01T00:00:00) */
-  time_end: number | null;
-  /** The aspects start being displayed at this time (number of seconds since 1970-01-01T00:00:00) */
-  time_start: number;
-  track: string;
-  track_offset: number | null;
-};
-export type FullResultStops = ResultStops & {
-  /** The id of the operational point, null if not applicable */
-  id: string | null;
-  line_code: number | null;
-  line_name: string | null;
-  /** The name of the operational point, null if not applicable */
-  name: string | null;
-  track_name: string | null;
-  track_number: number | null;
-};
-export type ReportTrain = {
-  head_positions: GetCurvePoint[][];
-  mechanical_energy_consumed: number;
-  route_aspects: SignalUpdate[];
-  speeds: ResultSpeed[];
-  stops: FullResultStops[];
-  tail_positions: GetCurvePoint[][];
-};
-export type SimulationReport = {
-  base: ReportTrain;
-  curves: Curve[];
-  eco?: ReportTrain | null;
-  /** A list of ranges which should be contiguous and which describe the
-    electrification on the path and if it is handled by the train */
-  electrification_ranges: ElectrificationRange[];
-  id: number;
-  labels: string[];
-  name: string;
-  /** The id of the path used for projection */
-  path: number;
-  /** The list of ranges where power restrictions are applied */
-  power_restriction_ranges: SimulationPowerRestrictionRange[];
-  slopes: Slope[];
-  speed_limit_tags: string | null;
-  vmax: Mrsp;
-};
 export type StdcmSearchEnvironment = {
   electrical_profile_set_id?: number;
   id: number;
@@ -3243,147 +2515,6 @@ export type StdcmSearchEnvironmentCreateForm = {
   search_window_end: string;
   timetable_id: number;
   work_schedule_group_id?: number | null;
-};
-export type Timetable = {
-  id: number;
-  name: string;
-};
-export type TrainSchedule = {
-  allowances: Allowance[];
-  comfort: RollingStockComfortType;
-  departure_time: number;
-  id: number;
-  initial_speed: number;
-  labels: string[];
-  options: TrainScheduleOptions | null;
-  path_id: number;
-  power_restriction_ranges: RjsPowerRestrictionRange[] | null;
-  rolling_stock_id: number;
-  scheduled_points: ScheduledPoint[];
-  speed_limit_tags: string | null;
-  timetable_id: number;
-  train_name: string;
-};
-export type TrainScheduleValidation = 'NewerRollingStock' | 'NewerInfra';
-export type MechanicalEnergyConsumedBaseEco = {
-  base: number;
-  eco?: number | null;
-};
-export type TrainScheduleSummary = TrainSchedule & {
-  arrival_time: number;
-  invalid_reasons: TrainScheduleValidation[];
-  mechanical_energy_consumed: MechanicalEnergyConsumedBaseEco;
-  path_length: number;
-  stops_count: number;
-};
-export type TimetableWithSchedulesDetails = Timetable & {
-  train_schedule_summaries: TrainScheduleSummary[];
-};
-export type TimetableImportError =
-  | {
-      RollingStockNotFound: {
-        name: string;
-      };
-    }
-  | {
-      OperationalPointNotFound: {
-        missing_ids: string[];
-        missing_uics: number[];
-      };
-    }
-  | {
-      PathfindingError: {
-        cause: InternalError;
-      };
-    }
-  | {
-      SimulationError: {
-        cause: InternalError;
-      };
-    };
-export type ImportTimings = {
-  pathfinding?: number | null;
-  simulation?: number | null;
-};
-export type TrainImportReport = {
-  error?: TimetableImportError | null;
-  timings: ImportTimings;
-};
-export type TimetableImportPathLocation =
-  | {
-      offset: number;
-      track_section: string;
-      type: 'track_offset';
-    }
-  | {
-      type: 'operational_point';
-      uic: number;
-    }
-  | {
-      id: string;
-      type: 'operational_point_id';
-    };
-export type TimetableImportPathSchedule = {
-  arrival_time: string;
-  departure_time: string;
-};
-export type TimetableImportPathStep = {
-  location: TimetableImportPathLocation;
-  schedule?: {
-    [key: string]: TimetableImportPathSchedule;
-  };
-};
-export type TimetableImportTrain = {
-  departure_time: string;
-  name: string;
-};
-export type TimetableImportItem = {
-  path: TimetableImportPathStep[];
-  pathfinding_timeout?: number | null;
-  rolling_stock: string;
-  trains: TimetableImportTrain[];
-};
-export type ConflictType = 'Spacing' | 'Routing';
-export type Conflict = {
-  conflict_type: ConflictType;
-  end_time: number;
-  start_time: number;
-  train_ids: number[];
-  train_names: string[];
-};
-export type TrainSchedulePatch = {
-  allowances?: Allowance[] | null;
-  comfort?: RollingStockComfortType | null;
-  departure_time?: number | null;
-  id: number;
-  initial_speed?: number | null;
-  labels?: string[] | null;
-  options?: TrainScheduleOptions | null;
-  path_id?: number | null;
-  power_restriction_ranges?: RjsPowerRestrictionRange[] | null;
-  rolling_stock_id?: number | null;
-  scheduled_points?: ScheduledPoint[] | null;
-  speed_limit_tags?: string | null;
-  train_name?: string | null;
-};
-export type TrainSimulationResponse = {
-  /** Requested trains that are invalid and thus not simulated */
-  invalid_trains: number[];
-  /** The simulation results */
-  simulations: SimulationReport[];
-};
-export type TrainScheduleBatchItem = {
-  allowances?: Allowance[];
-  comfort?: RollingStockComfortType;
-  departure_time: number;
-  initial_speed: number;
-  labels?: string[];
-  options?: TrainScheduleOptions | null;
-  power_restriction_ranges?: RjsPowerRestrictionRange[] | null;
-  rolling_stock_id: number;
-  scheduled_points?: ScheduledPoint[];
-  speed_limit_tags?: string | null;
-  train_name: string;
 };
 export type OperationalPointExtensions = {
   identifier?: {
@@ -3544,12 +2675,6 @@ export type PathfindingInputV2 = {
   /** List of supported signaling systems */
   rolling_stock_supported_signaling_systems: string[];
 };
-export type ScenarioWithDetails = Scenario & {
-  electrical_profile_set_name?: string | null;
-  infra_name: string;
-  train_schedules: LightTrainSchedule[];
-  trains_count: number;
-};
 export type ScenarioV2 = {
   creation_date: string;
   description: string;
@@ -3561,6 +2686,10 @@ export type ScenarioV2 = {
   study_id: number;
   tags: Tags;
   timetable_id: number;
+};
+export type ScenarioWithDetails = ScenarioV2 & {
+  infra_name: string;
+  trains_count: number;
 };
 export type ScenarioResponseV2 = ScenarioV2 & {
   infra_name: string;
@@ -3611,6 +2740,41 @@ export type ReportTrainV2 = {
   /** List of speeds associated to a position */
   speeds: number[];
   times: number[];
+};
+export type RoutingZoneRequirement = {
+  /** Time in ms */
+  end_time: number;
+  entry_detector: string;
+  exit_detector: string;
+  switches: {
+    [key: string]: string;
+  };
+  zone: string;
+};
+export type RoutingRequirement = {
+  /** Time in ms */
+  begin_time: number;
+  route: string;
+  zones: RoutingZoneRequirement[];
+};
+export type SignalSighting = {
+  /** Position in mm */
+  position: number;
+  signal: string;
+  state: string;
+  /** Time in ms */
+  time: number;
+};
+export type SpacingRequirement = {
+  begin_time: number;
+  end_time: number;
+  zone: string;
+};
+export type ZoneUpdate = {
+  is_entry: boolean;
+  position: number;
+  time: number;
+  zone: string;
 };
 export type SimulationResponse =
   | {

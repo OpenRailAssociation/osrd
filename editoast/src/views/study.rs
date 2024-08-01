@@ -19,7 +19,6 @@ use utoipa::ToSchema;
 
 use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginationStats;
-use super::scenario;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
@@ -42,7 +41,6 @@ crate::routes! {
             get,
             delete,
             patch,
-            &scenario,
         },
     },
 }
@@ -53,7 +51,6 @@ editoast_common::schemas! {
     StudyPatchForm,
     StudyWithScenarioCount,
     StudyResponse,
-    scenario::schemas(),
 }
 
 #[derive(Debug, Error, EditoastError)]
