@@ -203,12 +203,13 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
       {selectedTrainSchedule &&
         trainSimulation.status === 'success' &&
         pathProperties &&
+        operationalPoints &&
         infraId && (
           <div className="osrd-simulation-container mb-2">
             <TimesStopsOutput
               simulatedTrain={trainSimulation}
               pathProperties={pathProperties}
-              operationalPoints={operationalPoints}
+              operationalPoints={operationalPoints.finalOutput}
               selectedTrainSchedule={selectedTrainSchedule}
               pathSteps={compact(pathSteps)}
               pathLength={pathLength}
@@ -283,6 +284,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
         trainSimulation &&
         pathProperties &&
         selectedTrainRollingStock &&
+        operationalPoints &&
         infraId && (
           <div className="osrd-simulation-container mb-2">
             <DriverTrainScheduleV2
