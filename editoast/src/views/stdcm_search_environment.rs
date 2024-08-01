@@ -19,7 +19,7 @@ use crate::AppState;
 use crate::Model;
 
 crate::routes! {
-    "/search_environment" => {
+    "/stdcm/search_environment" => {
         overwrite,
         retrieve_latest,
     },

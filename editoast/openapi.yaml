@@ -1287,136 +1287,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LightRollingStockWithLiveries'
-  /pathfinding:
-    post:
-      tags:
-      - pathfinding
-      summary: Run a pathfinding between waypoints and store the resulting path in the DB
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PathfindingRequest'
-        required: true
-      responses:
-        '201':
-          description: The created path
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PathResponse'
-  /pathfinding/{pathfinding_id}:
-    get:
-      tags:
-      - pathfinding
-      summary: Retrieves a stored path
-      parameters:
-      - name: pathfinding_id
-        in: path
-        description: A stored path ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: The requested path
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PathResponse'
-    put:
-      tags:
-      - pathfinding
-      summary: Updates an existing path with the result of a new pathfinding run
-      parameters:
-      - name: pathfinding_id
-        in: path
-        description: A stored path ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PathfindingRequest'
-        required: true
-      responses:
-        '200':
-          description: The updated path
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PathResponse'
-    delete:
-      tags:
-      - pathfinding
-      summary: Deletes a stored path
-      parameters:
-      - name: pathfinding_id
-        in: path
-        description: A stored path ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '204':
-          description: The path was deleted
-  /pathfinding/{pathfinding_id}/electrical_profiles:
-    get:
-      tags:
-      - electrical_profiles
-      summary: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
-      parameters:
-      - name: pathfinding_id
-        in: path
-        description: A stored path ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: rolling_stock_id
-        in: query
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: electrical_profile_set_id
-        in: query
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfilesOnPathResponse'
-  /pathfinding/{pathfinding_id}/electrifications:
-    get:
-      tags:
-      - infra
-      summary: Retrieve the electrification modes along a path, as seen by the rolling stock specified
-      parameters:
-      - name: pathfinding_id
-        in: path
-        description: A stored path ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ElectrificationsOnPathResponse'
   /projects:
     get:
       tags:
@@ -1729,199 +1599,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
-  /projects/{project_id}/studies/{study_id}/scenarios:
-    get:
-      tags:
-      - scenarios
-      summary: Return a list of scenarios
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 1
-          minimum: 1
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 25
-          nullable: true
-          minimum: 1
-      - name: ordering
-        in: query
-        required: false
-        schema:
-          $ref: '#/components/schemas/Ordering'
-      responses:
-        '200':
-          description: The list of scenarios
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedResponseOfScenarioWithCountTrains'
-    post:
-      tags:
-      - scenarios
-      summary: Create a scenario
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScenarioCreateForm'
-        required: true
-      responses:
-        '201':
-          description: The created scenario
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioResponse'
-  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}:
-    get:
-      tags:
-      - scenarios
-      summary: Return a specific scenario
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: scenario_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: The requested scenario
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioResponse'
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
-    delete:
-      tags:
-      - scenarios
-      summary: Delete a scenario
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: scenario_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '204':
-          description: The scenario was deleted successfully
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
-    patch:
-      tags:
-      - scenarios
-      summary: Update a scenario
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: scenario_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScenarioPatchForm'
-        required: true
-      responses:
-        '204':
-          description: The scenario was updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioResponse'
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
   /rolling_stock:
     post:
       tags:
@@ -2180,22 +1857,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResultItem'
-  /single_simulation:
-    post:
-      summary: Runs a simulation with a single train, does not write anything to the database
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SingleSimulationRequest'
-        required: true
-      responses:
-        '200':
-          description: Data about the simulation produced
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SingleSimulationResponse'
   /speed_limit_tags:
     get:
       tags:
@@ -2252,101 +1913,6 @@ paths:
           description: Atlas image of config
         '404':
           description: Signaling system not found
-  /stdcm:
-    post:
-      tags:
-      - stdcm
-      summary: Compute a STDCM and return the simulation result
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              description: An STDCM request
-              required:
-              - infra_id
-              - timetable_id
-              - steps
-              - rolling_stock_id
-              - comfort
-              properties:
-                comfort:
-                  $ref: '#/components/schemas/RollingStockComfortType'
-                end_time:
-                  type: number
-                  format: double
-                  nullable: true
-                infra_id:
-                  type: integer
-                  format: int64
-                margin_after:
-                  type: number
-                  format: double
-                  description: |-
-                    Margin after the train passage in seconds
-
-                    Enforces that the path used by the train should be free and
-                    available at least that many seconds after its passage.
-                margin_before:
-                  type: number
-                  format: double
-                  description: |-
-                    Margin before the train passage in seconds
-
-                    Enforces that the path used by the train should be free and
-                    available at least that many seconds before its passage.
-                maximum_departure_delay:
-                  type: number
-                  format: double
-                  description: By how long we can shift the departure time in seconds
-                  default: 7200.0
-                maximum_run_time:
-                  type: number
-                  format: double
-                  description: Specifies how long the total run time can be in seconds
-                  default: 43200.0
-                rolling_stock_id:
-                  type: integer
-                  format: int64
-                speed_limit_tags:
-                  type: string
-                  description: Train categories for speed limits
-                  nullable: true
-                standard_allowance:
-                  allOf:
-                  - $ref: '#/components/schemas/AllowanceValue'
-                  nullable: true
-                start_time:
-                  type: number
-                  format: double
-                  nullable: true
-                steps:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/PathfindingStep'
-                timetable_id:
-                  type: integer
-                  format: int64
-        required: true
-      responses:
-        '201':
-          description: The simulation result
-          content:
-            application/json:
-              schema:
-                type: object
-                description: The response issued after an STDCM calculation
-                required:
-                - path
-                - path_payload
-                - simulation
-                properties:
-                  path:
-                    $ref: '#/components/schemas/PathResponse'
-                  path_payload:
-                    $ref: '#/components/schemas/PathfindingPayload'
-                  simulation:
-                    $ref: '#/components/schemas/SimulationReport'
   /stdcm/search_environment:
     get:
       tags:
@@ -2376,256 +1942,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StdcmSearchEnvironment'
-  /timetable/{id}:
-    get:
-      tags:
-      - timetable
-      summary: Return a specific timetable with its associated schedules
-      parameters:
-      - name: id
-        in: path
-        description: Timetable id
-        required: true
-        schema:
-          type: integer
-          format: int64
-          minimum: 0
-      responses:
-        '200':
-          description: Timetable with schedules
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TimetableWithSchedulesDetails'
-        '404':
-          description: Timetable not found
-    post:
-      tags:
-      - timetable
-      summary: Import a timetable
-      description: Returns data about the import for each train imported
-      parameters:
-      - name: id
-        in: path
-        description: Timetable id
-        required: true
-        schema:
-          type: integer
-          format: int64
-          minimum: 0
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/TimetableImportItem'
-        required: true
-      responses:
-        '200':
-          description: Import report
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/TrainImportReport'
-  /timetable/{id}/conflicts:
-    get:
-      tags:
-      - timetable
-      summary: Compute spacing conflicts for a given timetable
-      description: 'TODO: This should compute itinary conflicts too'
-      parameters:
-      - name: id
-        in: path
-        description: Timetable id
-        required: true
-        schema:
-          type: integer
-          format: int64
-          minimum: 0
-      responses:
-        '200':
-          description: Spacing conflicts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Conflict'
-  /train_schedule:
-    delete:
-      tags:
-      - train_schedule
-      - timetable
-      summary: Delete multiple train schedules at once
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - ids
-              properties:
-                ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-        required: true
-      responses:
-        '204':
-          description: The train schedules have been deleted
-    patch:
-      tags:
-      - train_schedule
-      - timetable
-      summary: Update multiple train schedules at once and re-run simulations accordingly
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/TrainSchedulePatch'
-        required: true
-      responses:
-        '204':
-          description: The train schedules have been updated
-  /train_schedule/results:
-    post:
-      tags:
-      - train_schedule
-      summary: Retrieve the simulation result of multiple train schedules
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - train_ids
-              properties:
-                path_id:
-                  type: integer
-                  format: int64
-                  description: A path ID to project the simulation results onto. If not provided, the path of the first train will be used.
-                  nullable: true
-                train_ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                  description: The IDs of the trains to simulate
-        required: true
-      responses:
-        '200':
-          description: The train schedule simulations results and a list of invalid train_ids
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrainSimulationResponse'
-  /train_schedule/standalone_simulation:
-    post:
-      tags:
-      - train_schedule
-      summary: Create a batch of train schedule and run simulations accordingly
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              description: The list of train schedules to simulate
-              required:
-              - timetable
-              - path
-              - schedules
-              properties:
-                path:
-                  type: integer
-                  format: int64
-                schedules:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/TrainScheduleBatchItem'
-                  minItems: 1
-                timetable:
-                  type: integer
-                  format: int64
-        required: true
-      responses:
-        '200':
-          description: The ids of the train_schedules created
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-  /train_schedule/{id}:
-    get:
-      tags:
-      - train_schedule
-      summary: Return a specific timetable with its associated schedules
-      parameters:
-      - name: id
-        in: path
-        description: A train schedule ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: The train schedule
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TrainSchedule'
-    delete:
-      tags:
-      - train_schedule
-      - timetable
-      summary: Delete a train schedule and its result
-      parameters:
-      - name: id
-        in: path
-        description: A train schedule ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '204':
-          description: The train schedule has been deleted
-  /train_schedule/{id}/result:
-    get:
-      tags:
-      - train_schedule
-      summary: Retrieve a simulation result
-      parameters:
-      - name: path_id
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          nullable: true
-      - name: id
-        in: path
-        description: A train schedule ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: The train schedule result
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimulationReport'
   /v2/infra/{infra_id}/path_properties:
     post:
       tags:
@@ -3607,34 +2923,6 @@ components:
         curve:
           $ref: '#/components/schemas/EffortCurve'
       additionalProperties: false
-    Conflict:
-      type: object
-      required:
-      - train_ids
-      - train_names
-      - start_time
-      - end_time
-      - conflict_type
-      properties:
-        conflict_type:
-          $ref: '#/components/schemas/ConflictType'
-        end_time:
-          type: integer
-          format: int64
-          minimum: 0
-        start_time:
-          type: integer
-          format: int64
-          minimum: 0
-        train_ids:
-          type: array
-          items:
-            type: integer
-            format: int64
-        train_names:
-          type: array
-          items:
-            type: string
     ConflictDetectionResponse:
       type: object
       required:
@@ -3670,11 +2958,6 @@ components:
                   format: int64
                 description: List of train ids involved in the conflict
           description: List of conflicts detected
-    ConflictType:
-      type: string
-      enum:
-      - Spacing
-      - Routing
     ConflictV2:
       type: object
       required:
@@ -3723,14 +3006,19 @@ components:
       type: object
       required:
       - radius
-      - position
+      - begin
+      - end
       properties:
-        position:
+        begin:
+          type: number
+          format: double
+        end:
           type: number
           format: double
         radius:
           type: number
           format: double
+      additionalProperties: false
     DeleteRollingStockQueryParams:
       type: object
       properties:
@@ -4433,16 +3721,8 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
       - $ref: '#/components/schemas/EditoastOperationErrorModifyId'
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
-      - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPage'
       - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPageSize'
-      - $ref: '#/components/schemas/EditoastPathfindingErrorElectricalProfilesOverlap'
-      - $ref: '#/components/schemas/EditoastPathfindingErrorElectrificationOverlap'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingErrorNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingErrorOperationalPointsNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingErrorRollingStockNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingErrorTrackSectionsNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsInvalidNumberOfPaths'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsStartingTrackLocationNotFound'
@@ -4465,32 +3745,15 @@ components:
       - $ref: '#/components/schemas/EditoastSTDCMErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
-      - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastSearchApiErrorObjectType'
       - $ref: '#/components/schemas/EditoastSearchApiErrorSearchEngineError'
-      - $ref: '#/components/schemas/EditoastSingleSimulationErrorElectricalProfileSetNotFound'
-      - $ref: '#/components/schemas/EditoastSingleSimulationErrorPathNotFound'
-      - $ref: '#/components/schemas/EditoastSingleSimulationErrorRollingStockNotFound'
-      - $ref: '#/components/schemas/EditoastSingleSimulationErrorWrongCoreResponseFormat'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
-      - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
-      - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotLoaded'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
-      - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchShouldHaveSameTimetable'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorNoSimulation'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorNoTrainSchedules'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorPathNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorRollingStockNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorTimetableNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorUnsimulatedTrainSchedule'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
@@ -4919,30 +4182,6 @@ components:
           type: string
           enum:
           - editoast:operation:ObjectNotFound
-    EditoastPaginationErrorInvalidPage:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - page
-          properties:
-            page:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:pagination:InvalidPage
     EditoastPaginationErrorInvalidPageSize:
       type: object
       required:
@@ -4970,57 +4209,6 @@ components:
           type: string
           enum:
           - editoast:pagination:InvalidPageSize
-    EditoastPathfindingErrorElectricalProfilesOverlap:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - overlapping_ranges
-          properties:
-            overlapping_ranges:
-              type: array
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:pathfinding:ElectricalProfilesOverlap
-    EditoastPathfindingErrorElectrificationOverlap:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - electrification_id
-          - overlapping_ranges
-          properties:
-            electrification_id:
-              type: string
-            overlapping_ranges:
-              type: array
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:pathfinding:ElectrificationOverlap
     EditoastPathfindingErrorInfraNotFound:
       type: object
       required:
@@ -5045,102 +4233,6 @@ components:
           type: string
           enum:
           - editoast:pathfinding:InfraNotFound
-    EditoastPathfindingErrorNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - pathfinding_id
-          properties:
-            pathfinding_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:pathfinding:NotFound
-    EditoastPathfindingErrorOperationalPointsNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - operational_points
-          properties:
-            operational_points:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:pathfinding:OperationalPointsNotFound
-    EditoastPathfindingErrorRollingStockNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - rolling_stock_id
-          properties:
-            rolling_stock_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:pathfinding:RollingStockNotFound
-    EditoastPathfindingErrorTrackSectionsNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - track_sections
-          properties:
-            track_sections:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:pathfinding:TrackSectionsNotFound
     EditoastPathfindingViewErrorsEndingTrackLocationNotFound:
       type: object
       required:
@@ -5718,97 +4810,6 @@ components:
           type: string
           enum:
           - editoast:search:SearchEngineError
-    EditoastSingleSimulationErrorElectricalProfileSetNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - electrical_profile_set_id
-          properties:
-            electrical_profile_set_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:single_simulation:ElectricalProfileSetNotFound
-    EditoastSingleSimulationErrorPathNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - path_id
-          properties:
-            path_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:single_simulation:PathNotFound
-    EditoastSingleSimulationErrorRollingStockNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - rolling_stock_id
-          properties:
-            rolling_stock_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:single_simulation:RollingStockNotFound
-    EditoastSingleSimulationErrorWrongCoreResponseFormat:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:single_simulation:WrongCoreResponseFormat
     EditoastSpriteErrorsFileNotFound:
       type: object
       required:
@@ -5857,30 +4858,6 @@ components:
           type: string
           enum:
           - editoast:sprites:UnknownSignalingSystem
-    EditoastStdcmErrorInfraNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - infra_id
-          properties:
-            infra_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:stdcm:InfraNotFound
     EditoastStudyErrorNotFound:
       type: object
       required:
@@ -5948,30 +4925,6 @@ components:
           type: string
           enum:
           - editoast:timetable:InfraNotFound
-    EditoastTimetableErrorInfraNotLoaded:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - infra_id
-          properties:
-            infra_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:timetable:InfraNotLoaded
     EditoastTimetableErrorNotFound:
       type: object
       required:
@@ -5996,25 +4949,6 @@ components:
           type: string
           enum:
           - editoast:timetable:NotFound
-    EditoastTrainScheduleErrorBatchShouldHaveSameTimetable:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule:BatchShouldHaveSameTimetable
     EditoastTrainScheduleErrorBatchTrainScheduleNotFound:
       type: object
       required:
@@ -6063,44 +4997,6 @@ components:
           type: string
           enum:
           - editoast:train_schedule_v2:InfraNotFound
-    EditoastTrainScheduleErrorNoSimulation:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule:NoSimulation
-    EditoastTrainScheduleErrorNoTrainSchedules:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule:NoTrainSchedules
     EditoastTrainScheduleErrorNotFound:
       type: object
       required:
@@ -6125,102 +5021,6 @@ components:
           type: string
           enum:
           - editoast:train_schedule_v2:NotFound
-    EditoastTrainScheduleErrorPathNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - path_id
-          properties:
-            path_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule:PathNotFound
-    EditoastTrainScheduleErrorRollingStockNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - rolling_stock_id
-          properties:
-            rolling_stock_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule:RollingStockNotFound
-    EditoastTrainScheduleErrorTimetableNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - timetable_id
-          properties:
-            timetable_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule:TimetableNotFound
-    EditoastTrainScheduleErrorUnsimulatedTrainSchedule:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - train_schedule_id
-          properties:
-            train_schedule_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule:UnsimulatedTrainSchedule
     EditoastWorkScheduleErrorNameAlreadyUsed:
       type: object
       required:
@@ -6374,79 +5174,6 @@ components:
           type: string
           minLength: 1
       additionalProperties: false
-    ElectrificationRange:
-      type: object
-      required:
-      - start
-      - stop
-      - electrificationUsage
-      properties:
-        electrificationUsage:
-          $ref: '#/components/schemas/ElectrificationUsage'
-        start:
-          type: number
-          format: double
-        stop:
-          type: number
-          format: double
-    ElectrificationUsage:
-      oneOf:
-      - type: object
-        required:
-        - mode
-        - mode_handled
-        - profile_handled
-        - object_type
-        properties:
-          mode:
-            type: string
-          mode_handled:
-            type: boolean
-          object_type:
-            type: string
-            enum:
-            - Electrified
-          profile:
-            type: string
-            nullable: true
-          profile_handled:
-            type: boolean
-      - type: object
-        required:
-        - lower_pantograph
-        - object_type
-        properties:
-          lower_pantograph:
-            type: boolean
-          object_type:
-            type: string
-            enum:
-            - Neutral
-      - type: object
-        required:
-        - object_type
-        properties:
-          object_type:
-            type: string
-            enum:
-            - NonElectrified
-    ElectrificationsOnPathResponse:
-      type: object
-      description: |-
-        A list of ranges associated to electrification modes. When a profile overlapping another is found,
-        a warning is added to the list
-      required:
-      - electrification_ranges
-      - warnings
-      properties:
-        electrification_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/RangedValue'
-        warnings:
-          type: array
-          items:
-            $ref: '#/components/schemas/InternalError'
     Endpoint:
       type: string
       enum:
@@ -6569,40 +5296,6 @@ components:
             default: -1.0
           distribution:
             $ref: '#/components/schemas/AllowanceDistribution'
-    FullResultStops:
-      allOf:
-      - $ref: '#/components/schemas/ResultStops'
-      - type: object
-        required:
-        - id
-        - name
-        - line_code
-        - track_number
-        - line_name
-        - track_name
-        properties:
-          id:
-            type: string
-            description: The id of the operational point, null if not applicable
-            nullable: true
-          line_code:
-            type: integer
-            format: int32
-            nullable: true
-          line_name:
-            type: string
-            nullable: true
-          name:
-            type: string
-            description: The name of the operational point, null if not applicable
-            nullable: true
-          track_name:
-            type: string
-            nullable: true
-          track_number:
-            type: integer
-            format: int32
-            nullable: true
     Gamma:
       type: object
       required:
@@ -6727,29 +5420,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/GeoJsonLineStringValue'
-    GetCurvePoint:
-      type: object
-      required:
-      - time
-      - position
-      properties:
-        position:
-          type: number
-          format: double
-        time:
-          type: number
-          format: double
-    ImportTimings:
-      type: object
-      properties:
-        pathfinding:
-          type: number
-          format: double
-          nullable: true
-        simulation:
-          type: number
-          format: double
-          nullable: true
     IncompatibleConstraints:
       type: object
       required:
@@ -7347,26 +6017,6 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/RollingStockLivery'
-    LightTrainSchedule:
-      type: object
-      description: Returns the timetable with the main information about a train
-      required:
-      - id
-      - train_name
-      - departure_time
-      - train_path
-      properties:
-        departure_time:
-          type: number
-          format: double
-        id:
-          type: integer
-          format: int64
-        train_name:
-          type: string
-        train_path:
-          type: integer
-          format: int64
     LoadingGaugeLimit:
       type: object
       required:
@@ -7417,18 +6067,6 @@ components:
           - 5%
           - 2min/100km
       additionalProperties: false
-    MechanicalEnergyConsumedBaseEco:
-      type: object
-      required:
-      - base
-      properties:
-        base:
-          type: number
-          format: double
-        eco:
-          type: number
-          format: double
-          nullable: true
     ModeEffortCurves:
       type: object
       required:
@@ -7462,26 +6100,6 @@ components:
           description: |-
             JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
             within the target document where the operation is performed.
-    Mrsp:
-      type: array
-      items:
-        $ref: '#/components/schemas/MrspPoint'
-      description: A MRSP computation result (Most Restrictive Speed Profile)
-    MrspPoint:
-      type: object
-      description: An MRSP point
-      required:
-      - position
-      - speed
-      properties:
-        position:
-          type: number
-          format: double
-          description: Relative position of the point on its track section (in meters)
-        speed:
-          type: number
-          format: double
-          description: Speed limit at this point (in m/s)
     NeutralSection:
       type: object
       description: |-
@@ -7784,34 +6402,6 @@ components:
       - CreationDateDesc
       - LastModifiedDesc
       - LastModifiedAsc
-    PaginatedResponseOfScenarioWithCountTrains:
-      type: object
-      description: A paginated response
-      required:
-      - count
-      - previous
-      - next
-      - results
-      properties:
-        count:
-          type: integer
-          format: int64
-          description: The total number of items
-        next:
-          type: integer
-          format: int64
-          description: The next page number
-          nullable: true
-        previous:
-          type: integer
-          format: int64
-          description: The previous page number
-          nullable: true
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScenarioWithCountTrains'
-          description: The list of results
     PaginationStats:
       type: object
       description: |-
@@ -8143,82 +6733,6 @@ components:
           items:
             $ref: '#/components/schemas/TrackRange'
           description: List of track sections
-    PathResponse:
-      type: object
-      required:
-      - id
-      - owner
-      - length
-      - created
-      - slopes
-      - curves
-      - geographic
-      - steps
-      properties:
-        created:
-          type: string
-          format: date-time
-        curves:
-          type: array
-          items:
-            $ref: '#/components/schemas/Curve'
-        geographic:
-          $ref: '#/components/schemas/GeoJsonLineString'
-        id:
-          type: integer
-          format: int64
-        length:
-          type: number
-          format: double
-        owner:
-          type: string
-          format: uuid
-        slopes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Slope'
-        steps:
-          type: array
-          items:
-            $ref: '#/components/schemas/PathWaypoint'
-    PathWaypoint:
-      type: object
-      required:
-      - id
-      - name
-      - location
-      - duration
-      - path_offset
-      - suggestion
-      - geo
-      - uic
-      - ch
-      properties:
-        ch:
-          type: string
-          nullable: true
-        duration:
-          type: number
-          format: double
-        geo:
-          $ref: '#/components/schemas/GeoJsonPoint'
-        id:
-          type: string
-          nullable: true
-        location:
-          $ref: '#/components/schemas/TrackLocation'
-        name:
-          type: string
-          nullable: true
-        path_offset:
-          type: number
-          format: double
-        suggestion:
-          type: boolean
-        uic:
-          type: integer
-          format: int64
-          nullable: true
     PathfindingInput:
       type: object
       required:
@@ -8313,58 +6827,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DirectionalTrackRange'
-    PathfindingPayload:
-      type: object
-      description: |-
-        The "payload" of a path
-
-        It contains the route paths and the path waypoints that the simulation returned,
-        but enhanced using data from the infra. Notably, path waypoints are reprojected
-        onto their track section to obtain their geographic representations
-        back.
-      required:
-      - route_paths
-      - path_waypoints
-      properties:
-        path_waypoints:
-          type: array
-          items:
-            $ref: '#/components/schemas/PathWaypoint'
-        route_paths:
-          type: array
-          items:
-            type: object
-            required:
-            - route
-            - signaling_type
-            - track_sections
-            properties:
-              route:
-                type: string
-              signaling_type:
-                type: string
-              track_sections:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DirectionalTrackRange'
-    PathfindingRequest:
-      type: object
-      required:
-      - infra
-      - steps
-      properties:
-        infra:
-          type: integer
-          format: int64
-        rolling_stocks:
-          type: array
-          items:
-            type: integer
-            format: int64
-        steps:
-          type: array
-          items:
-            $ref: '#/components/schemas/PathfindingStep'
     PathfindingResult:
       oneOf:
       - allOf:
@@ -8523,19 +6985,6 @@ components:
           items:
             $ref: '#/components/schemas/TrackRange'
           description: Path description as track ranges
-    PathfindingStep:
-      type: object
-      required:
-      - duration
-      - waypoints
-      properties:
-        duration:
-          type: number
-          format: double
-        waypoints:
-          type: array
-          items:
-            $ref: '#/components/schemas/Waypoint'
     PathfindingTrackLocationInput:
       type: object
       required:
@@ -8573,23 +7022,6 @@ components:
         value:
           type: string
       additionalProperties: false
-    ProfilesOnPathResponse:
-      type: object
-      description: |-
-        A list of ranges associated to electrical profile values. When a profile overlapping another is found,
-        a warning is added to the list
-      required:
-      - electrical_profile_ranges
-      - warnings
-      properties:
-        electrical_profile_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/RangedValue'
-        warnings:
-          type: array
-          items:
-            $ref: '#/components/schemas/InternalError'
     Project:
       type: object
       required:
@@ -8951,25 +7383,6 @@ components:
           format: double
         value:
           $ref: '#/components/schemas/AllowanceValue'
-    RangedValue:
-      type: object
-      description: A struct to represent range maps in responses
-      required:
-      - begin
-      - end
-      - value
-      properties:
-        begin:
-          type: number
-          format: double
-          example: 0.0
-        end:
-          type: number
-          format: double
-          example: 10.0
-        value:
-          type: string
-          example: '25000'
     RefillLaw:
       type: object
       description: physical law defining how the storage can be refilled
@@ -9012,43 +7425,6 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to replace with.
-    ReportTrain:
-      type: object
-      required:
-      - head_positions
-      - tail_positions
-      - speeds
-      - stops
-      - route_aspects
-      - mechanical_energy_consumed
-      properties:
-        head_positions:
-          type: array
-          items:
-            type: array
-            items:
-              $ref: '#/components/schemas/GetCurvePoint'
-        mechanical_energy_consumed:
-          type: number
-          format: double
-        route_aspects:
-          type: array
-          items:
-            $ref: '#/components/schemas/SignalUpdate'
-        speeds:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResultSpeed'
-        stops:
-          type: array
-          items:
-            $ref: '#/components/schemas/FullResultStops'
-        tail_positions:
-          type: array
-          items:
-            type: array
-            items:
-              $ref: '#/components/schemas/GetCurvePoint'
     ReportTrainV2:
       type: object
       required:
@@ -9092,107 +7468,6 @@ components:
             type: integer
             format: int64
             minimum: 0
-    ResultPosition:
-      type: object
-      required:
-      - time
-      - track_section
-      - offset
-      - path_offset
-      properties:
-        offset:
-          type: number
-          format: double
-        path_offset:
-          type: number
-          format: double
-        time:
-          type: number
-          format: double
-        track_section:
-          type: string
-    ResultSpeed:
-      type: object
-      required:
-      - time
-      - position
-      - speed
-      properties:
-        position:
-          type: number
-          format: double
-        speed:
-          type: number
-          format: double
-        time:
-          type: number
-          format: double
-    ResultStops:
-      type: object
-      required:
-      - time
-      - position
-      - duration
-      - ch
-      properties:
-        ch:
-          type: string
-          nullable: true
-        duration:
-          type: number
-          format: double
-        position:
-          type: number
-          format: double
-        time:
-          type: number
-          format: double
-    ResultTrain:
-      type: object
-      required:
-      - speeds
-      - head_positions
-      - stops
-      - mechanical_energy_consumed
-      - signal_sightings
-      - zone_updates
-      - spacing_requirements
-      - routing_requirements
-      properties:
-        head_positions:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResultPosition'
-          minItems: 1
-        mechanical_energy_consumed:
-          type: number
-          format: double
-        routing_requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoutingRequirement'
-        signal_sightings:
-          type: array
-          items:
-            $ref: '#/components/schemas/SignalSighting'
-        spacing_requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpacingRequirement'
-        speeds:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResultSpeed'
-          minItems: 1
-        stops:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResultStops'
-          minItems: 1
-        zone_updates:
-          type: array
-          items:
-            $ref: '#/components/schemas/ZoneUpdate'
     RjsPowerRestrictionRange:
       type: object
       description: A range along the train path where a power restriction is applied.
@@ -9755,8 +8030,10 @@ components:
       - zones
       properties:
         begin_time:
-          type: number
-          format: double
+          type: integer
+          format: int64
+          description: Time in ms
+          minimum: 0
         route:
           type: string
         zones:
@@ -9773,8 +8050,10 @@ components:
       - end_time
       properties:
         end_time:
-          type: number
-          format: double
+          type: integer
+          format: int64
+          description: Time in ms
+          minimum: 0
         entry_detector:
           type: string
         exit_detector:
@@ -9860,72 +8139,6 @@ components:
           type: integer
           format: int64
           nullable: true
-    Scenario:
-      type: object
-      required:
-      - id
-      - name
-      - description
-      - creation_date
-      - last_modification
-      - tags
-      - infra_id
-      - timetable_id
-      - study_id
-      properties:
-        creation_date:
-          type: string
-          format: date-time
-        description:
-          type: string
-        electrical_profile_set_id:
-          type: integer
-          format: int64
-          nullable: true
-        id:
-          type: integer
-          format: int64
-        infra_id:
-          type: integer
-          format: int64
-        last_modification:
-          type: string
-          format: date-time
-        name:
-          type: string
-        study_id:
-          type: integer
-          format: int64
-        tags:
-          type: array
-          items:
-            type: string
-        timetable_id:
-          type: integer
-          format: int64
-      additionalProperties: false
-    ScenarioCreateForm:
-      type: object
-      description: This structure is used by the post endpoint to create a scenario
-      required:
-      - name
-      - infra_id
-      properties:
-        description:
-          type: string
-        electrical_profile_set_id:
-          type: integer
-          format: int64
-          nullable: true
-        infra_id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
     ScenarioCreateFormV2:
       type: object
       description: This structure is used by the post endpoint to create a scenario
@@ -9950,21 +8163,6 @@ components:
         timetable_id:
           type: integer
           format: int64
-    ScenarioPatchForm:
-      type: object
-      description: This structure is used by the patch endpoint to patch a study
-      properties:
-        description:
-          type: string
-          nullable: true
-        name:
-          type: string
-          nullable: true
-        tags:
-          type: array
-          items:
-            type: string
-          nullable: true
     ScenarioPatchFormV2:
       type: object
       description: This structure is used by the patch endpoint to patch a scenario
@@ -9987,33 +8185,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/Tags'
           nullable: true
-    ScenarioResponse:
-      allOf:
-      - $ref: '#/components/schemas/Scenario'
-      - type: object
-        required:
-        - infra_name
-        - train_schedules
-        - trains_count
-        - project
-        - study
-        properties:
-          electrical_profile_set_name:
-            type: string
-            nullable: true
-          infra_name:
-            type: string
-          project:
-            $ref: '#/components/schemas/Project'
-          study:
-            $ref: '#/components/schemas/Study'
-          train_schedules:
-            type: array
-            items:
-              $ref: '#/components/schemas/LightTrainSchedule'
-          trains_count:
-            type: integer
-            format: int64
     ScenarioResponseV2:
       allOf:
       - $ref: '#/components/schemas/ScenarioV2'
@@ -10073,41 +8244,7 @@ components:
         timetable_id:
           type: integer
           format: int64
-    ScenarioWithCountTrains:
-      allOf:
-      - $ref: '#/components/schemas/Scenario'
-      - type: object
-        required:
-        - trains_count
-        - infra_name
-        properties:
-          infra_name:
-            type: string
-          trains_count:
-            type: integer
-            format: int64
     ScenarioWithDetails:
-      allOf:
-      - $ref: '#/components/schemas/Scenario'
-      - type: object
-        required:
-        - infra_name
-        - train_schedules
-        - trains_count
-        properties:
-          electrical_profile_set_name:
-            type: string
-            nullable: true
-          infra_name:
-            type: string
-          train_schedules:
-            type: array
-            items:
-              $ref: '#/components/schemas/LightTrainSchedule'
-          trains_count:
-            type: integer
-            format: int64
-    ScenarioWithDetailsV2:
       allOf:
       - $ref: '#/components/schemas/ScenarioV2'
       - type: object
@@ -10150,20 +8287,6 @@ components:
             `Some("PT0S")` means the train stops for 0 seconds.
           nullable: true
       additionalProperties: false
-    ScheduledPoint:
-      type: object
-      required:
-      - path_offset
-      - time
-      properties:
-        path_offset:
-          type: number
-          format: double
-          description: Offset in meters from the start of the path at which the train must be
-        time:
-          type: number
-          format: double
-          description: Time in seconds (elapsed since the train's departure) at which the train must be
     SearchPayload:
       type: object
       description: The payload of a search request
@@ -10587,150 +8710,23 @@ components:
       required:
       - signal
       - time
-      - offset
+      - position
       - state
       properties:
-        offset:
-          type: number
-          format: double
+        position:
+          type: integer
+          format: int64
+          description: Position in mm
+          minimum: 0
         signal:
           type: string
         state:
           type: string
         time:
-          type: number
-          format: double
-    SignalUpdate:
-      type: object
-      required:
-      - signal_id
-      - time_start
-      - time_end
-      - position_start
-      - position_end
-      - color
-      - blinking
-      - aspect_label
-      - track
-      - track_offset
-      properties:
-        aspect_label:
-          type: string
-          description: The labels of the new aspect
-        blinking:
-          type: boolean
-          description: Whether the signal is blinking
-        color:
-          type: integer
-          format: int32
-          description: |-
-            The color of the aspect
-
-            (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
-        position_end:
-          type: number
-          format: double
-          description: The route ends at this position on the train path
-          nullable: true
-        position_start:
-          type: number
-          format: double
-          description: The route starts at this position on the train path
-        signal_id:
-          type: string
-          description: The id of the updated signal
-        time_end:
-          type: number
-          format: double
-          description: The aspects stop being displayed at this time (number of seconds since 1970-01-01T00:00:00)
-          nullable: true
-        time_start:
-          type: number
-          format: double
-          description: The aspects start being displayed at this time (number of seconds since 1970-01-01T00:00:00)
-        track:
-          type: string
-        track_offset:
-          type: number
-          format: double
-          nullable: true
-    SimulationPowerRestrictionRange:
-      type: object
-      required:
-      - start
-      - stop
-      - code
-      - handled
-      properties:
-        code:
-          type: string
-        handled:
-          type: boolean
-        start:
-          type: number
-          format: double
-        stop:
-          type: number
-          format: double
-    SimulationReport:
-      type: object
-      required:
-      - id
-      - labels
-      - path
-      - name
-      - vmax
-      - slopes
-      - curves
-      - base
-      - speed_limit_tags
-      - electrification_ranges
-      - power_restriction_ranges
-      properties:
-        base:
-          $ref: '#/components/schemas/ReportTrain'
-        curves:
-          type: array
-          items:
-            $ref: '#/components/schemas/Curve'
-        eco:
-          allOf:
-          - $ref: '#/components/schemas/ReportTrain'
-          nullable: true
-        electrification_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/ElectrificationRange'
-          description: |-
-            A list of ranges which should be contiguous and which describe the
-            electrification on the path and if it is handled by the train
-        id:
           type: integer
           format: int64
-        labels:
-          type: array
-          items:
-            type: string
-        name:
-          type: string
-        path:
-          type: integer
-          format: int64
-          description: The id of the path used for projection
-        power_restriction_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/SimulationPowerRestrictionRange'
-          description: The list of ranges where power restrictions are applied
-        slopes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Slope'
-        speed_limit_tags:
-          type: string
-          nullable: true
-        vmax:
-          $ref: '#/components/schemas/Mrsp'
+          description: Time in ms
+          minimum: 0
     SimulationResponse:
       oneOf:
       - type: object
@@ -10960,95 +8956,23 @@ components:
             type: string
             enum:
             - rolling_stock_not_found
-    SingleSimulationRequest:
-      allOf:
-      - type: object
-        properties:
-          allowances:
-            type: array
-            items:
-              $ref: '#/components/schemas/Allowance'
-          comfort:
-            $ref: '#/components/schemas/RollingStockComfortType'
-          initial_speed:
-            type: number
-            format: double
-          options:
-            allOf:
-            - $ref: '#/components/schemas/TrainScheduleOptions'
-            nullable: true
-          power_restriction_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/RjsPowerRestrictionRange'
-            nullable: true
-          scheduled_points:
-            type: array
-            items:
-              $ref: '#/components/schemas/ScheduledPoint'
-          stops:
-            type: array
-            items:
-              $ref: '#/components/schemas/TrainStop'
-          tag:
-            type: string
-            nullable: true
-      - type: object
-        required:
-        - rolling_stock_id
-        - path_id
-        properties:
-          electrical_profile_set_id:
-            type: integer
-            format: int64
-            nullable: true
-          path_id:
-            type: integer
-            format: int64
-          rolling_stock_id:
-            type: integer
-            format: int64
-    SingleSimulationResponse:
-      type: object
-      required:
-      - base_simulation
-      - speed_limits
-      - warnings
-      - electrification_ranges
-      - power_restriction_ranges
-      properties:
-        base_simulation:
-          $ref: '#/components/schemas/ResultTrain'
-        eco_simulation:
-          allOf:
-          - $ref: '#/components/schemas/ResultTrain'
-          nullable: true
-        electrification_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/ElectrificationRange'
-        power_restriction_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/SimulationPowerRestrictionRange'
-        speed_limits:
-          $ref: '#/components/schemas/Mrsp'
-        warnings:
-          type: array
-          items:
-            type: string
     Slope:
       type: object
       required:
       - gradient
-      - position
+      - begin
+      - end
       properties:
+        begin:
+          type: number
+          format: double
+        end:
+          type: number
+          format: double
         gradient:
           type: number
           format: double
-        position:
-          type: number
-          format: double
+      additionalProperties: false
     SpacingRequirement:
       type: object
       required:
@@ -11057,11 +8981,13 @@ components:
       - end_time
       properties:
         begin_time:
-          type: number
-          format: double
+          type: integer
+          format: int64
+          minimum: 0
         end_time:
-          type: number
-          format: double
+          type: integer
+          format: int64
+          minimum: 0
         zone:
           type: string
     SpeedDependantPower:
@@ -11510,17 +9436,6 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to test against.
-    Timetable:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
     TimetableDetailedResult:
       type: object
       description: Creation result for a Timetable
@@ -11536,162 +9451,6 @@ components:
           items:
             type: integer
             format: int64
-    TimetableImportError:
-      oneOf:
-      - type: object
-        required:
-        - RollingStockNotFound
-        properties:
-          RollingStockNotFound:
-            type: object
-            required:
-            - name
-            properties:
-              name:
-                type: string
-      - type: object
-        required:
-        - OperationalPointNotFound
-        properties:
-          OperationalPointNotFound:
-            type: object
-            required:
-            - missing_uics
-            - missing_ids
-            properties:
-              missing_ids:
-                type: array
-                items:
-                  type: string
-              missing_uics:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-      - type: object
-        required:
-        - PathfindingError
-        properties:
-          PathfindingError:
-            type: object
-            required:
-            - cause
-            properties:
-              cause:
-                $ref: '#/components/schemas/InternalError'
-      - type: object
-        required:
-        - SimulationError
-        properties:
-          SimulationError:
-            type: object
-            required:
-            - cause
-            properties:
-              cause:
-                $ref: '#/components/schemas/InternalError'
-    TimetableImportItem:
-      type: object
-      required:
-      - rolling_stock
-      - path
-      - trains
-      properties:
-        path:
-          type: array
-          items:
-            $ref: '#/components/schemas/TimetableImportPathStep'
-        pathfinding_timeout:
-          type: number
-          format: double
-          nullable: true
-        rolling_stock:
-          type: string
-          example: 2TGV2N2
-        trains:
-          type: array
-          items:
-            $ref: '#/components/schemas/TimetableImportTrain'
-    TimetableImportPathLocation:
-      oneOf:
-      - type: object
-        required:
-        - track_section
-        - offset
-        - type
-        properties:
-          offset:
-            type: number
-            format: double
-          track_section:
-            type: string
-          type:
-            type: string
-            enum:
-            - track_offset
-      - type: object
-        required:
-        - uic
-        - type
-        properties:
-          type:
-            type: string
-            enum:
-            - operational_point
-          uic:
-            type: integer
-            format: int64
-      - type: object
-        required:
-        - id
-        - type
-        properties:
-          id:
-            type: string
-          type:
-            type: string
-            enum:
-            - operational_point_id
-    TimetableImportPathSchedule:
-      type: object
-      required:
-      - arrival_time
-      - departure_time
-      properties:
-        arrival_time:
-          type: string
-          format: date-time
-        departure_time:
-          type: string
-          format: date-time
-    TimetableImportPathStep:
-      type: object
-      required:
-      - location
-      properties:
-        location:
-          $ref: '#/components/schemas/TimetableImportPathLocation'
-        schedule:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/TimetableImportPathSchedule'
-          example:
-            '7015':
-              arrival_time: 2023-08-17T09:46:00+02:00
-              departure_time: 2023-08-17T09:56:00+02:00
-    TimetableImportTrain:
-      type: object
-      required:
-      - name
-      - departure_time
-      properties:
-        departure_time:
-          type: string
-          format: date-time
-          example: 2023-08-17T08:46:00+02:00
-        name:
-          type: string
-          example: '7015'
     TimetableResult:
       type: object
       description: Creation result for a Timetable
@@ -11701,17 +9460,6 @@ components:
         timetable_id:
           type: integer
           format: int64
-    TimetableWithSchedulesDetails:
-      allOf:
-      - $ref: '#/components/schemas/Timetable'
-      - type: object
-        required:
-        - train_schedule_summaries
-        properties:
-          train_schedule_summaries:
-            type: array
-            items:
-              $ref: '#/components/schemas/TrainScheduleSummary'
     TrackEndpoint:
       type: object
       required:
@@ -11855,81 +9603,6 @@ components:
           items:
             $ref: '#/components/schemas/Slope'
       additionalProperties: false
-    TrainImportReport:
-      type: object
-      required:
-      - timings
-      properties:
-        error:
-          allOf:
-          - $ref: '#/components/schemas/TimetableImportError'
-          nullable: true
-        timings:
-          $ref: '#/components/schemas/ImportTimings'
-    TrainSchedule:
-      type: object
-      required:
-      - id
-      - train_name
-      - labels
-      - departure_time
-      - initial_speed
-      - allowances
-      - comfort
-      - speed_limit_tags
-      - power_restriction_ranges
-      - options
-      - path_id
-      - rolling_stock_id
-      - timetable_id
-      - scheduled_points
-      properties:
-        allowances:
-          type: array
-          items:
-            $ref: '#/components/schemas/Allowance'
-        comfort:
-          $ref: '#/components/schemas/RollingStockComfortType'
-        departure_time:
-          type: number
-          format: double
-        id:
-          type: integer
-          format: int64
-        initial_speed:
-          type: number
-          format: double
-        labels:
-          type: array
-          items:
-            type: string
-        options:
-          allOf:
-          - $ref: '#/components/schemas/TrainScheduleOptions'
-          nullable: true
-        path_id:
-          type: integer
-          format: int64
-        power_restriction_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/RjsPowerRestrictionRange'
-          nullable: true
-        rolling_stock_id:
-          type: integer
-          format: int64
-        scheduled_points:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScheduledPoint'
-        speed_limit_tags:
-          type: string
-          nullable: true
-        timetable_id:
-          type: integer
-          format: int64
-        train_name:
-          type: string
     TrainScheduleBase:
       type: object
       required:
@@ -12063,51 +9736,6 @@ components:
           format: date-time
         train_name:
           type: string
-    TrainScheduleBatchItem:
-      type: object
-      required:
-      - train_name
-      - departure_time
-      - initial_speed
-      - rolling_stock_id
-      properties:
-        allowances:
-          type: array
-          items:
-            $ref: '#/components/schemas/Allowance'
-        comfort:
-          $ref: '#/components/schemas/RollingStockComfortType'
-        departure_time:
-          type: number
-          format: double
-        initial_speed:
-          type: number
-          format: double
-        labels:
-          type: array
-          items:
-            type: string
-        options:
-          allOf:
-          - $ref: '#/components/schemas/TrainScheduleOptions'
-          nullable: true
-        power_restriction_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/RjsPowerRestrictionRange'
-          nullable: true
-        rolling_stock_id:
-          type: integer
-          format: int64
-        scheduled_points:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScheduledPoint'
-        speed_limit_tags:
-          type: string
-          nullable: true
-        train_name:
-          type: string
     TrainScheduleForm:
       allOf:
       - $ref: '#/components/schemas/TrainScheduleBase'
@@ -12118,79 +9746,12 @@ components:
             format: int64
             description: Timetable attached to the train schedule
             nullable: true
-    TrainScheduleOptions:
-      type: object
-      description: Options for the standalone simulation
-      properties:
-        ignore_electrical_profiles:
-          type: boolean
-          description: Whether to ignore the electrical profile of the train for simulation
-          nullable: true
     TrainScheduleOptionsV2:
       type: object
       properties:
         use_electrical_profiles:
           type: boolean
       additionalProperties: false
-    TrainSchedulePatch:
-      type: object
-      description: A patch of a train schedule
-      required:
-      - id
-      properties:
-        allowances:
-          type: array
-          items:
-            $ref: '#/components/schemas/Allowance'
-          nullable: true
-        comfort:
-          allOf:
-          - $ref: '#/components/schemas/RollingStockComfortType'
-          nullable: true
-        departure_time:
-          type: number
-          format: double
-          nullable: true
-        id:
-          type: integer
-          format: int64
-        initial_speed:
-          type: number
-          format: double
-          nullable: true
-        labels:
-          type: array
-          items:
-            type: string
-          nullable: true
-        options:
-          allOf:
-          - $ref: '#/components/schemas/TrainScheduleOptions'
-          nullable: true
-        path_id:
-          type: integer
-          format: int64
-          nullable: true
-        power_restriction_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/RjsPowerRestrictionRange'
-          nullable: true
-        rolling_stock_id:
-          type: integer
-          format: int64
-          nullable: true
-        scheduled_points:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScheduledPoint'
-          nullable: true
-        speed_limit_tags:
-          type: string
-          nullable: true
-        train_name:
-          type: string
-          nullable: true
     TrainScheduleResult:
       allOf:
       - $ref: '#/components/schemas/TrainScheduleBase'
@@ -12237,77 +9798,6 @@ components:
         train_schedule_id:
           type: integer
           format: int64
-    TrainScheduleSummary:
-      allOf:
-      - $ref: '#/components/schemas/TrainSchedule'
-      - type: object
-        required:
-        - arrival_time
-        - mechanical_energy_consumed
-        - stops_count
-        - path_length
-        - invalid_reasons
-        properties:
-          arrival_time:
-            type: number
-            format: double
-          invalid_reasons:
-            type: array
-            items:
-              $ref: '#/components/schemas/TrainScheduleValidation'
-          mechanical_energy_consumed:
-            $ref: '#/components/schemas/MechanicalEnergyConsumedBaseEco'
-          path_length:
-            type: number
-            format: double
-          stops_count:
-            type: integer
-            format: int64
-      description: Returns the timetable with the train's important route information (distance travelled, arrival time, etc.)
-    TrainScheduleValidation:
-      type: string
-      enum:
-      - NewerRollingStock
-      - NewerInfra
-    TrainSimulationResponse:
-      type: object
-      required:
-      - simulations
-      - invalid_trains
-      properties:
-        invalid_trains:
-          type: array
-          items:
-            type: integer
-            format: int64
-          description: Requested trains that are invalid and thus not simulated
-        simulations:
-          type: array
-          items:
-            $ref: '#/components/schemas/SimulationReport'
-          description: The simulation results
-    TrainStop:
-      type: object
-      description: One must be specified between `position` and `location`.
-      required:
-      - position
-      - location
-      - duration
-      - on_stop_signal
-      properties:
-        duration:
-          type: number
-          format: double
-        location:
-          allOf:
-          - $ref: '#/components/schemas/TrackLocation'
-          nullable: true
-        on_stop_signal:
-          type: boolean
-        position:
-          type: number
-          format: double
-          nullable: true
     Version:
       type: object
       required:
@@ -12317,38 +9807,33 @@ components:
           type: string
           nullable: true
     Waypoint:
-      allOf:
-      - $ref: '#/components/schemas/WaypointLocation'
-      - type: object
-        required:
-        - track_section
-        properties:
-          track_section:
-            type: string
-            description: A track section UUID
-    WaypointLocation:
       oneOf:
       - type: object
         required:
-        - offset
+        - id
+        - type
         properties:
-          offset:
-            type: number
-            format: double
-            description: Offset in meters from the start of the waypoint's track section
+          id:
+            type: string
+            maxLength: 255
+            minLength: 1
+          type:
+            type: string
+            enum:
+            - BufferStop
       - type: object
         required:
-        - geo_coordinate
+        - id
+        - type
         properties:
-          geo_coordinate:
-            type: array
-            items:
-              allOf:
-              - type: number
-                format: double
-              - type: number
-                format: double
-            description: A geographic coordinate (lon, lat)/WGS84 that will be projected onto the waypoint's track section
+          id:
+            type: string
+            maxLength: 255
+            minLength: 1
+          type:
+            type: string
+            enum:
+            - Detector
     WorkScheduleCreateForm:
       type: object
       description: This structure is used by the post endpoint to create a work schedule
@@ -12401,16 +9886,18 @@ components:
       required:
       - zone
       - time
-      - offset
-      - isEntry
+      - position
+      - is_entry
       properties:
-        isEntry:
+        is_entry:
           type: boolean
-        offset:
-          type: number
-          format: double
+        position:
+          type: integer
+          format: int64
+          minimum: 0
         time:
-          type: number
-          format: double
+          type: integer
+          format: int64
+          minimum: 0
         zone:
           type: string

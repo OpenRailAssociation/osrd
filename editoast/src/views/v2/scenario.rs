@@ -22,7 +22,6 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::train_schedule::LightTrainSchedule;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::scenario::Scenario;
 use crate::modelsv2::timetable::Timetable;
@@ -36,7 +35,6 @@ use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
 use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
-use crate::views::scenario::ScenarioIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
 use crate::views::AuthorizationError;
@@ -60,13 +58,18 @@ editoast_common::schemas! {
     ScenarioWithDetails,
     ScenarioResponse,
     ScenarioCreateForm,
-    LightTrainSchedule, // TODO: remove from here once train schedule is migrated
 }
 
 #[derive(IntoParams, Deserialize)]
 struct ScenarioPathParam {
     project_id: i64,
     study_id: i64,
+    scenario_id: i64,
+}
+
+#[derive(IntoParams)]
+#[allow(unused)]
+pub struct ScenarioIdParam {
     scenario_id: i64,
 }
 
@@ -136,7 +139,6 @@ pub enum ScenarioError {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-#[schema(as = ScenarioWithDetailsV2)]
 pub struct ScenarioWithDetails {
     #[serde(flatten)]
     #[schema(value_type = ScenarioV2)]
