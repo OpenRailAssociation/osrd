@@ -729,9 +729,13 @@ mod tests {
     use serde_json::json;
 
     use super::*;
+    use crate::core::mocking::MockingClient;
+    use crate::modelsv2::fixtures::create_fast_rolling_stock;
     use crate::modelsv2::fixtures::create_simple_train_schedule;
+    use crate::modelsv2::fixtures::create_small_infra;
     use crate::modelsv2::fixtures::create_timetable;
     use crate::modelsv2::fixtures::simple_train_schedule_base;
+    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
@@ -845,5 +849,117 @@ mod tests {
             response.train_schedule.rolling_stock_name,
             update_train_schedule_form.train_schedule.rolling_stock_name
         )
+    }
+
+    async fn app_infra_id_train_schedule_id_for_simulation_tests() -> (TestApp, i64, i64) {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(
+                r#"{
+                "blocks":[],
+                "routes": [],
+                "track_section_ranges": [],
+                "path_item_positions": [0,1,2,3],
+                "length": 0,
+                "status": "success"
+                }"#,
+            )
+            .finish();
+        core.stub("/v2/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(
+                r#"{
+                    "status": "success",
+                    "base": {
+                        "positions": [],
+                        "times": [],
+                        "speeds": [],
+                        "energy_consumption": 0.0,
+                        "scheduled_points_honored": true
+                    },
+                    "provisional": {
+                        "positions": [],
+                        "times": [],
+                        "speeds": [],
+                        "energy_consumption": 0.0,
+                        "scheduled_points_honored": false
+                    },
+                    "final_output": {
+                        "positions": [0],
+                        "times": [0],
+                        "speeds": [],
+                        "energy_consumption": 0.0,
+                        "scheduled_points_honored": false,
+                        "signal_sightings": [],
+                        "zone_updates": [],
+                        "spacing_requirements": [],
+                        "routing_requirements": []
+                    },
+                    "mrsp": {
+                        "positions": [],
+                        "speeds": []
+                    },
+                    "electrical_profiles": {
+                        "boundaries": [],
+                        "values": []
+                    }
+                }"#,
+            )
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), "simulation_rolling_stock")
+                .await;
+        let timetable = create_timetable(db_pool.get_ok().deref_mut()).await;
+        let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
+            rolling_stock_name: rolling_stock.name.clone(),
+            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
+                .expect("Unable to parse")
+        };
+        let train_schedule: Changeset<TrainSchedule> = TrainScheduleForm {
+            timetable_id: Some(timetable.id),
+            train_schedule: train_schedule_base,
+        }
+        .into();
+        let train_schedule = train_schedule
+            .create(db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create train schedule");
+        (app, small_infra.id, train_schedule.id)
+    }
+
+    #[rstest]
+    async fn train_schedule_simulation() {
+        let (app, infra_id, train_schedule_id) =
+            app_infra_id_train_schedule_id_for_simulation_tests().await;
+        let request = app.get(
+            format!(
+                "/v2/train_schedule/{}/simulation/?infra_id={}",
+                train_schedule_id, infra_id
+            )
+            .as_str(),
+        );
+        app.fetch(request).assert_status(StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn train_schedule_simulation_summary() {
+        let (app, infra_id, train_schedule_id) =
+            app_infra_id_train_schedule_id_for_simulation_tests().await;
+        let request = app
+            .post("/v2/train_schedule/simulation_summary")
+            .json(&json!({
+                "infra_id": infra_id,
+                "ids": vec![train_schedule_id],
+            }));
+        app.fetch(request).assert_status(StatusCode::OK);
     }
 }
