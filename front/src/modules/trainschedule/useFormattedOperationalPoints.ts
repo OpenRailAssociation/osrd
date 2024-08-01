@@ -20,9 +20,10 @@ export const useFormattedOperationalPoints = (
   pathProperties?: PathPropertiesFormatted,
   infraId?: number
 ) => {
-  const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>(
-    []
-  );
+  const [operationalPoints, setOperationalPoints] = useState<{
+    base: OperationalPointWithTimeAndSpeed[];
+    finalOutput: OperationalPointWithTimeAndSpeed[];
+  }>();
   const [loading, setLoading] = useState(false);
   const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(
     train && isEco(train) ? BaseOrEco.eco : BaseOrEco.base
@@ -30,13 +31,11 @@ export const useFormattedOperationalPoints = (
 
   useEffect(() => {
     if (train && simulatedTrain && pathProperties && infraId) {
-      const selectedTrainRegime =
-        baseOrEco === BaseOrEco.eco ? simulatedTrain.final_output : simulatedTrain.base;
       const fetchOperationalPoints = async () => {
         setLoading(true);
         const formattedOperationalPoints = await formatOperationalPoints(
           pathProperties.operationalPoints,
-          selectedTrainRegime,
+          simulatedTrain,
           train,
           infraId
         );
@@ -45,7 +44,7 @@ export const useFormattedOperationalPoints = (
       };
       fetchOperationalPoints();
     }
-  }, [train, simulatedTrain, pathProperties, infraId, baseOrEco]);
+  }, [train, simulatedTrain, pathProperties, infraId]);
 
   return { operationalPoints, loading, baseOrEco, setBaseOrEco };
 };

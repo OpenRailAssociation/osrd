@@ -17,7 +17,10 @@ type DriverTrainScheduleV2Props = {
   simulatedTrain: SimulationResponseSuccess;
   pathProperties: PathPropertiesFormatted;
   rollingStock: LightRollingStock;
-  operationalPoints: OperationalPointWithTimeAndSpeed[];
+  operationalPoints: {
+    base: OperationalPointWithTimeAndSpeed[];
+    finalOutput: OperationalPointWithTimeAndSpeed[];
+  };
   formattedOpPointsLoading: boolean;
   baseOrEco: BaseOrEcoType;
   setBaseOrEco: (baseOrEco: BaseOrEcoType) => void;
@@ -38,32 +41,33 @@ const DriverTrainScheduleV2 = ({
     [baseOrEco, simulatedTrain]
   );
 
+  const operationPointsToUse = useMemo(
+    () => (baseOrEco === BaseOrEco.eco ? operationalPoints.finalOutput : operationalPoints.base),
+    [baseOrEco, operationalPoints]
+  );
+
   return (
     <div className="simulation-driver-train-schedule">
-      {operationalPoints.length > 0 && (
-        <>
-          <DriverTrainScheduleHeaderV2
-            simulatedTrain={simulatedTrain}
-            train={train}
-            operationalPoints={operationalPoints}
-            electrificationRanges={pathProperties.electrifications}
-            rollingStock={rollingStock}
-            baseOrEco={baseOrEco}
-            setBaseOrEco={setBaseOrEco}
-          />
-          {formattedOpPointsLoading ? (
-            // Prevent the screen from resizing during loading
-            <div style={{ height: '50vh' }}>
-              <Loader />
-            </div>
-          ) : (
-            <DriverTrainScheduleStopListV2
-              trainRegime={selectedTrainRegime}
-              mrsp={simulatedTrain.mrsp}
-              operationalPoints={operationalPoints}
-            />
-          )}
-        </>
+      <DriverTrainScheduleHeaderV2
+        simulatedTrain={simulatedTrain}
+        train={train}
+        operationalPoints={operationPointsToUse}
+        electrificationRanges={pathProperties.electrifications}
+        rollingStock={rollingStock}
+        baseOrEco={baseOrEco}
+        setBaseOrEco={setBaseOrEco}
+      />
+      {formattedOpPointsLoading ? (
+        // Prevent the screen from resizing during loading
+        <div style={{ height: '50vh' }}>
+          <Loader />
+        </div>
+      ) : (
+        <DriverTrainScheduleStopListV2
+          trainRegime={selectedTrainRegime}
+          mrsp={simulatedTrain.mrsp}
+          operationalPoints={operationPointsToUse}
+        />
       )}
     </div>
   );

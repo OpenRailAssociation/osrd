@@ -2,7 +2,10 @@ import * as d3 from 'd3';
 import { uniq } from 'lodash';
 
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
+import type {
+  PathPropertiesFormatted,
+  SimulationResponseSuccess,
+} from 'applications/operationalStudies/types';
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
@@ -191,16 +194,42 @@ export const interpolateValue = (
   return leftValue + (totalDifference * distance) / totalDistance;
 };
 
+const getTimeAndSpeed = (
+  simulationReport: ReportTrainV2,
+  op: PathPropertiesFormatted['operationalPoints'][number]
+) => {
+  const matchingReportTrainIndex = simulationReport.positions.findIndex(
+    (position) => position === op.position
+  );
+
+  let time = 0;
+  let speed = 0;
+
+  if (matchingReportTrainIndex === -1) {
+    time = interpolateValue(simulationReport, op.position, 'times');
+    speed = interpolateValue(simulationReport, op.position, 'speeds');
+  } else {
+    time = simulationReport.times[matchingReportTrainIndex];
+    speed = simulationReport.speeds[matchingReportTrainIndex];
+  }
+
+  return { time, speed };
+};
+
 /**
  * Associate each operational point with a time by comparing it to a report train based
  * on their positions if they match or interpolate its time if they don't
+ * @returns the computed operational points for each simulation (base and finalOutput)
  */
 export const formatOperationalPoints = async (
   operationalPoints: PathPropertiesFormatted['operationalPoints'],
-  reportTrain: ReportTrainV2,
+  simulatedTrain: SimulationResponseSuccess,
   train: TrainScheduleBase,
   infraId: number
-): Promise<OperationalPointWithTimeAndSpeed[]> => {
+): Promise<{
+  base: OperationalPointWithTimeAndSpeed[];
+  finalOutput: OperationalPointWithTimeAndSpeed[];
+}> => {
   // Get operational points metadata
   const trackIds = uniq(operationalPoints.map((op) => op.part.track));
   const trackSections = await store
@@ -214,22 +243,17 @@ export const formatOperationalPoints = async (
     .unwrap();
 
   // Format operational points
-  const formattedStops: OperationalPointWithTimeAndSpeed[] = [];
-  operationalPoints.forEach((op) => {
-    const matchingReportTrainIndex = reportTrain.positions.findIndex(
-      (position) => position === op.position
-    );
+  const formattedStops: {
+    base: OperationalPointWithTimeAndSpeed[];
+    finalOutput: OperationalPointWithTimeAndSpeed[];
+  } = { base: [], finalOutput: [] };
 
-    let time = 0;
-    let speed = 0;
-    // Get time
-    if (matchingReportTrainIndex !== -1) {
-      time = reportTrain.times[matchingReportTrainIndex];
-      speed = reportTrain.speeds[matchingReportTrainIndex];
-    } else {
-      time = interpolateValue(reportTrain, op.position, 'times');
-      speed = interpolateValue(reportTrain, op.position, 'speeds');
-    }
+  const { base, final_output } = simulatedTrain;
+
+  operationalPoints.forEach((op) => {
+    const { time: baseTime, speed: baseSpeed } = getTimeAndSpeed(base, op);
+
+    const { time: finalOutputTime, speed: finalOutputSpeed } = getTimeAndSpeed(final_output, op);
 
     // Get duration
     let stepDuration = 0;
@@ -258,12 +282,9 @@ export const formatOperationalPoints = async (
         ?.sncf;
     }
 
-    formattedStops.push({
+    const opCommonProp = {
       id: op.id,
       name: op.extensions?.identifier?.name || null,
-      // time refers to the time elapsed since departure so we need to add it to the start time
-      time: convertDepartureTimeIntoSec(train.start_time) + ms2sec(time),
-      speed,
       duration: stepDuration,
       position: mmToM(op.position),
       line_code: metadata?.line_code || null,
@@ -271,6 +292,19 @@ export const formatOperationalPoints = async (
       line_name: metadata?.line_name || null,
       track_name: metadata?.track_name || null,
       ch: op.extensions?.sncf?.ch || null,
+    };
+
+    formattedStops.base.push({
+      // time refers to the time elapsed since departure so we need to add it to the start time
+      time: convertDepartureTimeIntoSec(train.start_time) + ms2sec(baseTime),
+      speed: baseSpeed,
+      ...opCommonProp,
+    });
+
+    formattedStops.finalOutput.push({
+      time: convertDepartureTimeIntoSec(train.start_time) + ms2sec(finalOutputTime),
+      speed: finalOutputSpeed,
+      ...opCommonProp,
     });
   });
   return formattedStops;
