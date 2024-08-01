@@ -1,7 +1,8 @@
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Curve {
     pub radius: f64,

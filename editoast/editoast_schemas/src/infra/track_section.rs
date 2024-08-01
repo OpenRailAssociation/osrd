@@ -17,6 +17,8 @@ use crate::primitives::ObjectType;
 
 editoast_common::schemas! {
     TrackSection,
+    Slope,
+    Curve,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
