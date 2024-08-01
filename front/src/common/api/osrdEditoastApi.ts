@@ -33,21 +33,11 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
       }),
     },
     deleteV2TrainSchedule: {
-      query: (queryArg) => ({
-        url: `/v2/train_schedule/`,
-        method: 'DELETE',
-        body: queryArg.body,
-      }),
       // As we always use all get trainschedule v2 endpoints after updating the timetable,
       // we don't want to invalidate the trainschedulev2 tag here to prevent multiple calls
       invalidatesTags: ['timetablev2', 'scenariosv2'],
     },
     postV2TimetableByIdTrainSchedule: {
-      query: (queryArg) => ({
-        url: `/v2/timetable/${queryArg.id}/train_schedule/`,
-        method: 'POST',
-        body: queryArg.body,
-      }),
       // As we always use all get trainschedule v2 endpoints after updating the timetable,
       // we don't want to invalidate the trainschedulev2 tag here to prevent multiple calls
       invalidatesTags: ['timetablev2', 'scenariosv2'],
