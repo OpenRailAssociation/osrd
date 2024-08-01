@@ -8,6 +8,8 @@ edition.workspace = true
 fixtures = []
 
 [dependencies]
+chrono.workspace = true
+futures.workspace = true
 serde = { workspace = true, features = ["derive"] }
 strum.workspace = true
 thiserror.workspace = true

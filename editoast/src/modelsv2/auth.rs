@@ -4,6 +4,7 @@ use diesel::{dsl, prelude::*};
 use diesel_async::{scoped_futures::ScopedFutureExt, AsyncConnection, RunQueryDsl};
 use editoast_authz::{
     authorizer::{StorageDriver, UserInfo},
+    perms::{GrantPrivLvl, ResourceType},
     roles::{BuiltinRoleSet, RoleConfig},
 };
 use editoast_models::DbConnectionPoolV2;
@@ -169,6 +170,42 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         .collect();
 
         Ok(deleted_roles)
+    }
+
+    async fn all_grants(
+        &self,
+        resource_type: editoast_authz::perms::ResourceType,
+        resource_id: i64,
+    ) -> Result<Vec<editoast_authz::perms::Grant>, Self::Error> {
+        todo!()
+    }
+
+    async fn applicable_grants(
+        &self,
+        resource_type: editoast_authz::perms::ResourceType,
+        resource_id: i64,
+        subject_ids: &[i64],
+    ) -> Result<Vec<editoast_authz::perms::Grant>, Self::Error> {
+        todo!()
+    }
+
+    async fn revoke_grant(
+        &self,
+        resource_type: editoast_authz::perms::ResourceType,
+        grant_id: i64,
+    ) -> Result<(), Self::Error> {
+        todo!()
+    }
+
+    async fn ensure_grant(
+        &self,
+        resource_type: ResourceType,
+        resource_id: i64,
+        subject_id: i64,
+        privlvl: GrantPrivLvl,
+        granted_by: i64,
+    ) -> Result<(), Self::Error> {
+        todo!()
     }
 }
 

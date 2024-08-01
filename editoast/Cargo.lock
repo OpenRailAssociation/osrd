@@ -1173,6 +1173,8 @@ dependencies = [
 name = "editoast_authz"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "futures 0.3.30",
  "pretty_assertions",
  "serde",
  "strum",
