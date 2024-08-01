@@ -68,7 +68,7 @@ public final class ApiServerCommand implements CliCommand {
         var editoastUrl = getEditoastUrl();
         var httpClient =
                 new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
-        var infraManager = new InfraManager(editoastUrl, editoastAuthorization, httpClient, false);
+        var infraManager = new InfraManager(editoastUrl, editoastAuthorization, httpClient);
         var electricalProfileSetManager =
                 new ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient);
 

@@ -32,7 +32,6 @@ public enum ErrorType {
     InfraLoadingInvalidStatusException("infra_loading:invalid_status", "Status doesn’t exist", ErrorCause.INTERNAL),
     InfraInvalidStatusWhileWaitingStable(
             "infra_loading:invalid_status_waiting_stable", "invalid status after waitUntilStable", ErrorCause.INTERNAL),
-    InfraNotLoadedException("infra:not_loaded", "Infra not loaded", ErrorCause.USER, false),
     InfraInvalidVersionException("infra:invalid_version", "Invalid infra version", ErrorCause.USER),
     PathfindingGenericError("no_path_found", "No path could be found", ErrorCause.USER),
     PathfindingGaugeError("no_path_found:gauge", "No path could be found with compatible Gauge", ErrorCause.USER),

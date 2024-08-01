@@ -23,7 +23,6 @@ public class InfraManager extends APIClient {
 
     private final ConcurrentHashMap<String, InfraCacheEntry> infraCache = new ConcurrentHashMap<>();
     private final SignalingSimulator signalingSimulator = makeSignalingSimulator();
-    private final boolean loadIfMissing;
 
     public void forEach(BiConsumer<String, InfraCacheEntry> action) {
         infraCache.forEach(action);
@@ -88,9 +87,8 @@ public class InfraManager extends APIClient {
         }
     }
 
-    public InfraManager(String baseUrl, String authorizationToken, OkHttpClient httpClient, boolean loadIfMissing) {
+    public InfraManager(String baseUrl, String authorizationToken, OkHttpClient httpClient) {
         super(baseUrl, authorizationToken, httpClient);
-        this.loadIfMissing = loadIfMissing;
     }
 
     @ExcludeFromGeneratedCodeCoverage
@@ -197,10 +195,8 @@ public class InfraManager extends APIClient {
         try {
             var cacheEntry = infraCache.get(infraId);
             if (cacheEntry == null || !cacheEntry.status.isStable) {
-                if (loadIfMissing) {
-                    // download the infra for tests
-                    return load(infraId, expectedVersion, diagnosticRecorder);
-                } else throw new OSRDError(ErrorType.InfraNotLoadedException);
+                // download the infra
+                return load(infraId, expectedVersion, diagnosticRecorder);
             }
             var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.version);
             if (obsoleteVersion) {
