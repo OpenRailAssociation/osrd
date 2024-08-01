@@ -460,12 +460,7 @@ pub async fn train_simulation_batch(
     let simulated: Vec<_> = futures::future::join_all(futures)
         .await
         .into_iter()
-        .map(|res| match res {
-            Ok(sim) => sim,
-            // TODO: only make HTTP status code errors non-fatal
-            Err(core_error) => SimulationResponse::SimulationFailed { core_error },
-        })
-        .collect();
+        .collect::<Result<_>>()?;
 
     let mut to_cache = Vec::with_capacity(simulated.len());
     for (&(train_index, _), sim_res) in futures_index_hash.iter().zip(simulated) {
