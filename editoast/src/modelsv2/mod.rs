@@ -27,7 +27,6 @@ pub mod work_schedules;
 pub use prelude::*;
 
 pub use documents::Document;
-pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
 pub use infra_objects::*;
 pub use light_rolling_stock::LightRollingStockModel;

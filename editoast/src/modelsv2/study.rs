@@ -48,17 +48,7 @@ impl Study {
             SelectionSettings::new().filter(move || Scenario::STUDY_ID.eq(study_id)),
         )
         .await?;
-        // Remove this when train schedule V1 support is dropped
-        let count_tsv1 = {
-            use diesel::prelude::*;
-            use diesel_async::RunQueryDsl;
-            crate::tables::scenario::table
-                .count()
-                .filter(crate::tables::scenario::study_id.eq(study_id))
-                .get_result::<i64>(conn)
-                .await?
-        };
-        Ok(count + count_tsv1 as u64)
+        Ok(count)
     }
 
     pub fn validate(study_changeset: &Changeset<Self>) -> Result<()> {
