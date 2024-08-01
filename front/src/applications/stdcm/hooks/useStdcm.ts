@@ -14,6 +14,7 @@ import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSe
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import { getStdcmV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -42,6 +43,7 @@ const useStdcm = (showFailureNotification: boolean = true) => {
   const { getConf, getTimetableID } = useOsrdConfSelectors();
   const osrdconf = useSelector(getConf);
   const timetableId = useSelector(getTimetableID);
+  const stdcmV2Activated = useSelector(getStdcmV2Activated);
 
   const stdcmV2Results = useStdcmResults(stdcmV2Response, stdcmTrainResult, setPathProperties);
 
@@ -72,9 +74,14 @@ const useStdcm = (showFailureNotification: boolean = true) => {
     setIsStdcmResultsEmpty(false);
     setStdcmV2Response(undefined);
 
-    const validConfig = checkStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
+    const validConfig = checkStdcmConf(
+      dispatch,
+      t,
+      osrdconf as OsrdStdcmConfState,
+      stdcmV2Activated
+    );
     if (validConfig) {
-      const payload = formatStdcmPayload(validConfig);
+      const payload = formatStdcmPayload(validConfig, stdcmV2Activated);
       try {
         const response = await postV2TimetableByIdStdcm(payload).unwrap();
         if (
@@ -107,13 +114,15 @@ const useStdcm = (showFailureNotification: boolean = true) => {
           setIsStdcmResultsEmpty(response.status === 'path_not_found');
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
           triggerShowFailureNotification({
-            name: t('stdcm:stdcmError'),
+            name: t('stdcm:stdcmErrors.requestFailed'),
             message: t('translation:common.error'),
           });
         }
       } catch (e) {
         setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-        triggerShowFailureNotification(castErrorToFailure(e, { name: t('stdcm:stdcmError') }));
+        triggerShowFailureNotification(
+          castErrorToFailure(e, { name: t('stdcm:stdcmErrors.requestFailed') })
+        );
       }
     } else {
       setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);

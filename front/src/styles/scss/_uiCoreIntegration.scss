@@ -27,3 +27,44 @@ img {
   background-color: rgb(239, 239, 239);
   color: black;
 }
+
+// __________________ Calendar Picker  __________________
+.date-picker .calendar-picker {
+  top: auto !important;
+  left: auto !important;
+  z-index: 1;
+}
+
+// __________________ Time Picker  __________________
+.time-picker {
+  .modal-content {
+    left: -12.4rem !important;
+    .time-picker-container {
+      max-width: 20.2rem;
+    }
+  }
+}
+
+// __________________ Common Time/Tolerance Picker  __________________
+
+.time-picker,
+.tolerance-picker {
+  .modal-overlay {
+    position: relative !important;
+  }
+  .modal-content {
+    top: auto !important;
+    width: auto;
+    z-index: 1;
+  }
+}
+
+// __________________ Tolerance Picker  __________________
+.tolerance-picker {
+  .modal-content {
+    left: -23.5rem !important;
+    .tolerance-grid {
+      grid-auto-rows: 2rem !important;
+    }
+  }
+}

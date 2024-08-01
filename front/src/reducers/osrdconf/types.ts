@@ -1,6 +1,7 @@
 import type { Feature, Position } from 'geojson';
 
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
+import type { ArrivalTimeTypes } from 'applications/stdcmV2/types';
 import type {
   AllowanceValue,
   Comfort,
@@ -59,6 +60,9 @@ export type PathStep = PathItemLocation & {
         If true, the train schedule is consider as invalid and must be edited */
   deleted?: boolean;
   arrival?: string | null;
+  arrivalType?: ArrivalTimeTypes;
+  arrivalToleranceBefore?: number;
+  arrivalToleranceAfter?: number;
   locked?: boolean;
   stopFor?: string | null;
   theoreticalMargin?: string;

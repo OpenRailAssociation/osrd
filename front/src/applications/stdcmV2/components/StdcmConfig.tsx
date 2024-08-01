@@ -1,16 +1,17 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import { useOsrdConfActions } from 'common/osrdContext';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { usePathfindingV2 } from 'modules/pathfinding/hooks/usePathfinding';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
+import { extractHHMM } from 'utils/date';
 
 import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
@@ -18,7 +19,10 @@ import StdcmLoader from './StdcmLoader';
 import StdcmOrigin from './StdcmOrigin';
 import StdcmStatusBanner from './StdcmStatusBanner';
 import StdcmVias from './StdcmVias';
-import type { StdcmSimulation, StdcmSimulationInputs } from '../types';
+import StdcmWarningBox from './StdcmWarningBox';
+import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../types';
+import type { StdcmConfigErrors, StdcmSimulation, StdcmSimulationInputs } from '../types';
+import checkStdcmConfigErrors from '../utils/checkStdcmConfigErrors';
 
 /**
  * Inputs in different cards inside the StdcmConfig component come from the stdcm redux store.
@@ -55,10 +59,21 @@ const StdcmConfig = ({
   const loaderRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useAppDispatch();
-  const { updateGridMarginAfter, updateGridMarginBefore, updateStdcmStandardAllowance } =
-    useOsrdConfActions() as StdcmConfSliceActions;
+  const {
+    updateGridMarginAfter,
+    updateGridMarginBefore,
+    updateStdcmStandardAllowance,
+    updateOriginArrivalType,
+    updateDestinationArrivalType,
+  } = useOsrdConfActions() as StdcmConfSliceActions;
+
+  const { getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
+  const origin = useSelector(getOriginV2);
+  const destination = useSelector(getDestinationV2);
 
   const { pathfindingState } = usePathfindingV2(undefined, pathProperties);
+
+  const [formErrors, setFormErrors] = useState<StdcmConfigErrors | undefined>(undefined);
 
   const inputsProps = {
     disabled: isPending || retainedSimulationIndex > -1,
@@ -67,9 +82,16 @@ const StdcmConfig = ({
   };
 
   const startSimulation = () => {
-    if (pathfindingState.done) {
+    if (pathfindingState.done && !formErrors) {
       launchStdcmRequest();
     }
+  };
+
+  const removeOriginArrivalTime = () => {
+    dispatch(updateOriginArrivalType(ArrivalTimeTypes.ASAP));
+  };
+  const removeDestinationArrivalTime = () => {
+    dispatch(updateDestinationArrivalType(ArrivalTimeTypes.ASAP));
   };
 
   useEffect(() => {
@@ -77,6 +99,25 @@ const StdcmConfig = ({
       loaderRef?.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [isPending]);
+
+  useEffect(() => {
+    const isPathfindingFailed = pathfindingState.error !== '';
+    let formErrorsStatus = checkStdcmConfigErrors(isPathfindingFailed, origin, destination);
+    if (formErrorsStatus?.errorType === StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED) {
+      formErrorsStatus = {
+        ...formErrorsStatus,
+        errorDetails: {
+          originTime: origin?.arrival
+            ? t('leaveAt', { time: extractHHMM(origin.arrival) })
+            : t('departureTime'),
+          destinationTime: destination?.arrival
+            ? t('arriveAt', { time: extractHHMM(destination.arrival) })
+            : t('destinationTime'),
+        },
+      };
+    }
+    setFormErrors(formErrorsStatus);
+  }, [origin, destination, pathfindingState.error]);
 
   // TODO: DROP STDCMV1: set those values by default in the store when <StdcmAllowances/> is not used anymore.
   useEffect(() => {
@@ -95,27 +136,25 @@ const StdcmConfig = ({
         <div className="stdcm-v2-simulation-itinerary">
           {/* //TODO: use them when we implement this feature #403 */}
           {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
-          <StdcmOrigin {...inputsProps} />
+          <StdcmOrigin {...inputsProps} origin={origin} />
           <StdcmVias {...inputsProps} />
-          <StdcmDestination {...inputsProps} />
+          <StdcmDestination {...inputsProps} destination={destination} />
           {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
-          {/* //TODO: replace .wizz-effect once we have the definitive one */}
           <div
             className={cx('stdcm-v2-launch-request', {
-              'wizz-effect': !pathfindingState.done,
+              'wizz-effect': !pathfindingState.done || formErrors,
               'pb-5': !pathfindingState.error,
             })}
           >
             {showBtnToLaunchSimulation && (
               <Button label={t('simulation.getSimulation')} onClick={startSimulation} />
             )}
-            {pathfindingState.error && (
-              <div className="warning-box">
-                <span>
-                  <Alert variant="fill" />
-                </span>
-                <p className="mb-0">{t('pathfindingFailed')}</p>
-              </div>
+            {formErrors && (
+              <StdcmWarningBox
+                errorInfos={formErrors}
+                removeOriginArrivalTime={removeOriginArrivalTime}
+                removeDestinationArrivalTime={removeDestinationArrivalTime}
+              />
             )}
           </div>
           {isPending && <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />}

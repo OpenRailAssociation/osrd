@@ -4,10 +4,16 @@ import { compact, omit } from 'lodash';
 import nextId from 'react-id-generator';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
 import { isVia } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
-import { computeLinkedOriginTimes, insertViaFromMap } from 'reducers/osrdconf/helpers';
+import {
+  computeLinkedOriginTimes,
+  insertViaFromMap,
+  updateDestinationPathStep,
+  updateOriginPathStep,
+} from 'reducers/osrdconf/helpers';
 import type {
   OperationalStudiesConfSlice,
   OperationalStudiesConfSliceActions,
@@ -81,8 +87,6 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
     S,
     PayloadAction<{ pathSteps: S['pathSteps']; resetPowerRestrictions?: boolean }>
   >;
-  ['updateOriginV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
-  ['updateDestinationV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
   ['deleteItineraryV2']: CaseReducer<S>;
   ['clearViasV2']: CaseReducer<S>;
   ['deleteViaV2']: CaseReducer<S, PayloadAction<number>>;
@@ -97,6 +101,8 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['upsertViaFromSuggestedOP']: CaseReducer<S, PayloadAction<SuggestedOP>>;
   ['updateRollingStockComfortV2']: CaseReducer<S, PayloadAction<S['rollingStockComfortV2']>>;
   ['updateStartTime']: CaseReducer<S, PayloadAction<S['startTime']>>;
+  ['updateOriginV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
+  ['updateDestinationV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
 }
 
 export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducers<S> {
@@ -244,16 +250,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         state.powerRestrictionV2 = [];
       }
     },
-    updateOriginV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
-      state.pathSteps = replaceElementAtIndex(state.pathSteps, 0, action.payload);
-    },
-    updateDestinationV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
-      state.pathSteps = replaceElementAtIndex(
-        state.pathSteps,
-        state.pathSteps.length - 1,
-        action.payload
-      );
-    },
     deleteItineraryV2(state: Draft<S>) {
       state.pathSteps = [null, null];
     },
@@ -351,6 +347,24 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     updateStartTime(state: Draft<S>, action: PayloadAction<S['startTime']>) {
       state.startTime = action.payload;
+    },
+    updateOriginV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
+      const newPoint = action.payload
+        ? {
+            ...action.payload,
+            arrivalType: ArrivalTimeTypes.PRECISE_TIME,
+          }
+        : null;
+      state.pathSteps = updateOriginPathStep(state.pathSteps, newPoint, true);
+    },
+    updateDestinationV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
+      const newPoint = action.payload
+        ? {
+            ...action.payload,
+            arrivalType: ArrivalTimeTypes.ASAP,
+          }
+        : null;
+      state.pathSteps = updateDestinationPathStep(state.pathSteps, newPoint, true);
     },
   };
 }

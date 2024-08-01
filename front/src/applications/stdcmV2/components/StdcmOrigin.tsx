@@ -1,67 +1,74 @@
 import React, { useEffect, useMemo } from 'react';
 
-import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import OriginIcon from 'assets/pictures/stdcmV2/start.svg';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useOsrdConfSelectors, useOsrdConfActions } from 'common/osrdContext';
+import { useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
-import { dateTimeFormatting } from 'utils/date';
+import { extractDateAndTimefromISO } from 'utils/date';
 
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
-import type { StdcmConfigCardProps } from '../types';
+import StdcmOpSchedule from './StdcmOpSchedule';
+import { ArrivalTimeTypes, type StdcmConfigCardProps } from '../types';
 
-const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConfigCardProps) => {
+const StdcmOrigin = ({
+  setCurrentSimulationInputs,
+  disabled = false,
+  origin,
+}: StdcmConfigCardProps & {
+  origin: PathStep | null;
+}) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
-  const { getOriginV2, getOriginDate, getOriginTime, getSearchDatetimeWindow } =
-    useOsrdConfSelectors();
-  const { updateOriginV2, updateOriginDate, updateOriginTime } =
-    useOsrdConfActions() as StdcmConfSliceActions;
-  const origin = useSelector(getOriginV2);
-  const originDate = useSelector(getOriginDate);
-  const originTime = useSelector(getOriginTime);
-  const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 
-  const updateOriginV2Point = (pathStep: PathStep | null) => {
-    dispatch(updateOriginV2(pathStep));
-  };
+  const { updateOriginV2, updateOriginArrival, updateOriginArrivalType, updateOriginTolerances } =
+    useOsrdConfActions() as StdcmConfSliceActions;
+
+  const { originArrival, originToleranceValues } = useMemo(
+    () => ({
+      originArrival: origin?.arrival ? extractDateAndTimefromISO(origin.arrival) : undefined,
+      originToleranceValues: {
+        arrivalToleranceBefore: origin?.arrivalToleranceBefore || 0,
+        arrivalToleranceAfter: origin?.arrivalToleranceAfter || 0,
+      },
+    }),
+    [origin]
+  );
 
   useEffect(() => {
     setCurrentSimulationInputs((prevState) => ({
       ...prevState,
       pathSteps: replaceElementAtIndex(prevState?.pathSteps, 0, origin),
-      departureDate: originDate,
-      departureTime: originTime,
+      departureDate: originArrival?.arrivalDate,
+      departureTime: originArrival?.arrivalTime,
     }));
-  }, [origin, originDate, originTime]);
+  }, [origin]);
 
-  const onOriginDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(updateOriginDate(e.target.value));
+  const updateOriginV2Point = (pathStep: PathStep | null) => {
+    dispatch(updateOriginV2(pathStep));
   };
 
-  const onOriginTimeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(updateOriginTime(e.target.value));
+  const onOriginArrivalChange = (arrival: string) => {
+    dispatch(updateOriginArrival(arrival));
   };
 
-  const error = useMemo(() => {
-    if (originDate && searchDatetimeWindow) {
-      const datetime = new Date(`${originDate} ${originTime || '00:00'}`);
-      if (datetime < searchDatetimeWindow.begin || searchDatetimeWindow.end < datetime) {
-        return t('datetimeOutsideWindow', {
-          low: dateTimeFormatting(searchDatetimeWindow.begin),
-          high: dateTimeFormatting(searchDatetimeWindow.end),
-        });
-      }
-    }
-    return null;
-  }, [originDate, originTime, searchDatetimeWindow]);
+  const onOriginArrivalTypeChange = (arrivalType: ArrivalTimeTypes) => {
+    dispatch(updateOriginArrivalType(arrivalType));
+  };
+
+  const onOriginToleranceChange = ({
+    toleranceBefore,
+    toleranceAfter,
+  }: {
+    toleranceBefore: number;
+    toleranceAfter: number;
+  }) => {
+    dispatch(updateOriginTolerances({ toleranceBefore, toleranceAfter }));
+  };
 
   return (
     <StdcmCard
@@ -70,42 +77,25 @@ const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConf
       disabled={disabled}
       hasTip
     >
-      <div className="stdcm-v2-origin">
+      <div className="stdcm-v2-origin__parameters">
         <StdcmOperationalPoint
           updatePoint={updateOriginV2Point}
           point={origin}
+          opPointId={origin?.id || 'origin'}
           disabled={disabled}
         />
-        <div className="stdcm-v2-origin__parameters row">
-          <div className="col-6">
-            <InputSNCF
-              id="dateOrigin"
-              label={t('trainPath.date')}
-              type="date"
-              name="dateOrigin"
-              onChange={onOriginDateInputChange}
-              isInvalid={!isNil(error)}
-              value={originDate}
-              disabled={disabled}
-            />
-          </div>
-          <div className="col-6">
-            <InputSNCF
-              type="time"
-              label={t('trainPath.time')}
-              id="originTime"
-              onChange={onOriginTimeInputChange}
-              isInvalid={!isNil(error)}
-              value={originTime}
-              disabled={disabled}
-            />
-          </div>
-          {error && (
-            <div className="col-12 text-danger text-center">
-              <p>{error}</p>
-            </div>
-          )}
-        </div>
+        {origin && (
+          <StdcmOpSchedule
+            onArrivalChange={onOriginArrivalChange}
+            onArrivalTypeChange={onOriginArrivalTypeChange}
+            onArrivalToleranceChange={onOriginToleranceChange}
+            opTimingData={originArrival}
+            opToleranceValues={originToleranceValues}
+            opScheduleTimeType={origin?.arrivalType || ArrivalTimeTypes.PRECISE_TIME}
+            disabled={disabled}
+            opId="origin-arrival"
+          />
+        )}
       </div>
     </StdcmCard>
   );

@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 
+import { Select } from '@osrd-project/ui-core';
+import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
 import type { PathStep } from 'reducers/osrdconf/types';
 
@@ -13,6 +14,7 @@ import StdcmSuggestions from './StdcmSuggestions';
 type StdcmOperationalPointProps = {
   updatePoint: (pathStep: PathStep | null) => void;
   point: PathStep | null;
+  opPointId: string;
   disabled?: boolean;
 };
 
@@ -20,7 +22,12 @@ function formatChCode(chCode: string) {
   return chCode === '' ? 'BV' : chCode;
 }
 
-const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationalPointProps) => {
+const StdcmOperationalPoint = ({
+  updatePoint,
+  point,
+  opPointId,
+  disabled,
+}: StdcmOperationalPointProps) => {
   const { t } = useTranslation('stdcm');
 
   const {
@@ -68,6 +75,7 @@ const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationa
   );
 
   const dispatchNewPoint = (p?: SearchResultItemOperationalPoint) => {
+    if (p && isEqual(p.geographic.coordinates, point?.coordinates)) return;
     const newPoint = p
       ? {
           name: p.name,
@@ -138,7 +146,7 @@ const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationa
       <div className="suggestions col-9">
         {/* Those components will be replaced by their ui-core versions when they're ready (#7712) */}
         <StdcmSuggestions
-          id="ci"
+          id={`${opPointId}-ci`}
           label={t('trainPath.ci')}
           value={searchTerm}
           onChange={onInputChange}
@@ -148,13 +156,15 @@ const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationa
           disabled={disabled}
         />
       </div>
-      <div className="suggestions stdcm-v2-ch-selector w-100 py-2 col-3">
-        <SelectSNCF
+      <div className="suggestions stdcm-v2-ch-selector w-100 px-1 pb-2 col-3">
+        <Select
           label={t('trainPath.ch')}
-          id="ch"
-          value={chCodeFilter ? { id: chCodeFilter, label: formatChCode(chCodeFilter) } : undefined}
+          id={`${opPointId}-ch`}
+          value={chCodeFilter ? { label: formatChCode(chCodeFilter), id: chCodeFilter } : undefined}
           options={sortedChOptions}
-          onChange={onSelectChCodeFilter}
+          onChange={(e) => onSelectChCodeFilter(e)}
+          getOptionLabel={(option) => option?.label ?? ''}
+          getOptionValue={(option) => option?.id ?? ''}
           disabled={disabled}
         />
       </div>

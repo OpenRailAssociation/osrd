@@ -23,6 +23,17 @@ export function extractHHMMSS(dateTimeString?: string) {
   return dateTimeString.substring(11, 19);
 }
 
+/**
+ * @param dateTimeString date string in ISO format
+ * @returns string "HH:MM"
+ */
+export function extractHHMM(dateTimeString?: string) {
+  if (!dateTimeString) {
+    return '';
+  }
+  return dateTimeString.substring(11, 16);
+}
+
 export function timestampToHHMMSS(timestamp: number) {
   const date = new Date(timestamp * 1000);
   return extractHHMMSS(date.toISOString());
@@ -74,6 +85,13 @@ export const formatToIsoDate = (date: number | string, formatDate: boolean = fal
   const format = formatDate ? 'D/MM/YYYY HH:mm:ss' : '';
   return dayjs.tz(date, userTimeZone).format(format);
 };
+
+/**
+ * Transform a locale date to an ISO 8601 date
+ * @param date Date we want to transform to ISO 8601
+ * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00)
+ */
+export const formatLocaleDateToIsoDate = (date: Date) => dayjs.tz(date).format();
 
 /**
  * Transform a date format ISO 8601 to a milliseconds date (elapsed from January 1st 1970)
@@ -184,5 +202,35 @@ export function serializeDateTimeWithoutYear(date: Date): string {
   return dayjsDate.format('DD/MM HH:mm:ss');
 }
 
-export const isoUtcStringToLocaleDateString = (isoUtcString: string) =>
-  dayjs(isoUtcString).local().format();
+/**
+ * Convert an ISO date into a string formatted as 'DD/MM/YYYY' and extract the numeric values for hours and minutes.
+ * @param {string} arrivalTime - Arrival time at which the train should arrive at the location. (Format: 'YYYY-MM-DDTHH:mm:ss+HH:mm')
+ * @returns {object} An object containing the parsed date and time.
+ */
+export function extractDateAndTimefromISO(arrivalTime: string) {
+  const dayjsDate = dayjs(arrivalTime);
+  return {
+    arrivalDate: dayjsDate.format('YYYY-MM-DD'), // ISO date part
+    arrivalTime: dayjsDate.format('HH:mm'), // ISO time part
+    arrivalTimehours: dayjsDate.hour(),
+    arrivalTimeMinutes: dayjsDate.minute(),
+  };
+}
+
+/**
+ * Checks if the given arrival date falls within the specified search time window.
+ *
+ * @param {string} arrivalTime - The arrival time as a string, which will be parsed into a Date object.
+ * @param {{ begin: Date; end: Date } | undefined} searchDatetimeWindow - An object containing the start and end dates of the search window. If undefined, the function will return true.
+ * @returns {boolean} - Returns true if the arrival date is within the search time window, or if the search time window is undefined. Returns false otherwise.
+ */
+export function isArrivalDateInSearchTimeWindow(
+  arrivalTime: string,
+  searchDatetimeWindow?: { begin: Date; end: Date }
+) {
+  if (!searchDatetimeWindow) {
+    return true;
+  }
+  const arrivalDate = new Date(arrivalTime);
+  return arrivalDate >= searchDatetimeWindow.begin && arrivalDate <= searchDatetimeWindow.end;
+}

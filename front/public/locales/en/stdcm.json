@@ -1,18 +1,21 @@
 {
   "apply": "Apply",
+  "arriveAt": "Arrive at {{ time }}",
   "cancelRequest": "Cancel request",
   "consist": {
     "consist": "Consist",
     "tractionEngine": "Traction engine"
   },
   "datetimeOutsideWindow": "Date must be between {{low}} and {{high}}",
+  "departureTime": "Departure time",
+  "destinationTime": "Destination time",
+  "leaveAt": "Leave at {{ time }}",
   "loaderImageLegend": "The TGV Nord line",
   "noConfigurationFound": {
     "title": "A configuration problem prevents you from performing a search",
     "text": "Please contact the maintenance team so they can get you back on track."
   },
   "notificationTitle": "Phase 1: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
-  "pathfindingFailed": "No path have been found for these waypoints.",
   "pleaseWait": "Please wait…",
   "simulation": {
     "averageRequestTime": "For your request, the time required is generally 90 seconds.",
@@ -54,21 +57,28 @@
   "spaceTimeGraphic": "Space-Time graph",
   "speedSpaceChart": "Speed Space Chart",
   "stdcmComputation": "Search for a train path",
-  "stdcmError": "Calculation error for last minute train path.",
-  "stdcmErrorNoPaths": "Incompatibility with other train paths.",
-  "stdcmNoResults": "No path found",
+  "stdcmErrors": {
+    "bothOriginAndDestinationScheduled": "The calculation cannot take into account both an origin and a destination schedule. You have to choose one or the other:",
+    "noPaths": "Incompatibility with other train paths.",
+    "noResults": "No path found",
+    "noScheduledPoint": "The calculation requires either the origin or destination schedule.",
+    "pathfindingFailed": "No path have been found for these waypoints.",
+    "requestFailed": "Calculation error for last minute train path"
+  },
   "stdcmResults": "Results",
   "stdcmSimulationReport": "Path simulation report",
   "trainPath": {
     "addVia": "Add intermediate OP",
-    "asSoonAsPossible": "As soon as possible",
+    "asSoonAsPossible": "as soon as possible",
     "ch": "CH",
     "ci": "CI",
     "date": "Date",
     "destination": "Destination",
     "origin": "Origin",
+    "preciseTime": "precise time",
     "stopFor": "Minimum stop time",
     "time": "Time",
+    "tolerance": "Tolerance",
     "vias": "Intermediate OP"
   }
 }

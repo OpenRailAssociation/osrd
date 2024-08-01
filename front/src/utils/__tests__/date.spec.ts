@@ -4,6 +4,8 @@ import {
   formatToIsoDate,
   serializeDateTimeWithoutYear,
   parseDateTime,
+  extractDateAndTimefromISO,
+  isArrivalDateInSearchTimeWindow,
 } from 'utils/date';
 
 describe('dateTimeToIso', () => {
@@ -79,5 +81,56 @@ describe('serializeDateTimeWithoutYear', () => {
     const inputDate = new Date(NaN);
     const result = serializeDateTimeWithoutYear(inputDate);
     expect(result).toEqual('Invalid Date');
+  });
+});
+
+describe('extractDateAndTimefromISO', () => {
+  it('should correctly parse the date and time from an ISO string', () => {
+    const arrivalTime = '2024-10-05T14:30:00+00:00';
+    const result = extractDateAndTimefromISO(arrivalTime);
+
+    expect(result).toEqual({
+      arrivalDate: '2024-10-05',
+      arrivalTime: '14:30',
+      arrivalTimehours: 14,
+      arrivalTimeMinutes: 30,
+    });
+  });
+
+  it('should handle single digit hours and minutes correctly', () => {
+    const arrivalTime = '2024-10-05T09:05:00+00:00';
+    const result = extractDateAndTimefromISO(arrivalTime);
+
+    expect(result).toEqual({
+      arrivalDate: '2024-10-05',
+      arrivalTime: '09:05',
+      arrivalTimehours: 9,
+      arrivalTimeMinutes: 5,
+    });
+  });
+});
+
+describe('isArrivalDateInSearchTimeWindow', () => {
+  it('should return true if searchDatetimeWindow is undefined', () => {
+    const result = isArrivalDateInSearchTimeWindow('2024-08-01T10:00:00Z', undefined);
+    expect(result).toBe(true);
+  });
+
+  it('should return true if arrivalTime is within the searchDatetimeWindow', () => {
+    const searchDatetimeWindow = {
+      begin: new Date('2024-08-01T00:00:00Z'),
+      end: new Date('2024-08-02T00:00:00Z'),
+    };
+    const result = isArrivalDateInSearchTimeWindow('2024-08-01T10:00:00Z', searchDatetimeWindow);
+    expect(result).toBe(true);
+  });
+
+  it('should return false if arrivalTime is outside the searchDatetimeWindow', () => {
+    const searchDatetimeWindow = {
+      begin: new Date('2024-08-01T00:00:00Z'),
+      end: new Date('2024-08-02T00:00:00Z'),
+    };
+    const result = isArrivalDateInSearchTimeWindow('2024-07-30T23:59:59Z', searchDatetimeWindow);
+    expect(result).toBe(false);
   });
 });

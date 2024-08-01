@@ -62,7 +62,7 @@
 
     .suggestions.stdcm-v2-ch-selector {
       label {
-        margin: 0.2rem 0 0.15rem 0;
+        margin: 0 0 0.15rem;
       }
       select {
         min-height: 2.55rem;
@@ -87,6 +87,9 @@
     .stdcm-v2-default-card-button {
       color: rgba(24, 68, 239, 1);
       line-height: 24px;
+    }
+    button:focus {
+      outline: none;
     }
   }
 

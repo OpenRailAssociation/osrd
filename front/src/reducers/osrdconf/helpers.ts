@@ -3,7 +3,7 @@ import { last } from 'lodash';
 
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import { addElementAtIndex } from 'utils/array';
+import { addElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 
@@ -113,3 +113,32 @@ export const insertViaFromMap = (
 
   return addElementAtIndex(pathSteps, newViaIndex, newStep);
 };
+
+export const updatePathStepAtIndex = (
+  pathSteps: OsrdConfState['pathSteps'],
+  index: number,
+  updates: Partial<PathStep> | null,
+  replaceCompletely: boolean = false
+) => {
+  if (replaceCompletely) {
+    return replaceElementAtIndex(pathSteps, index, updates as PathStep);
+  }
+  const element = pathSteps[index];
+  if (element) {
+    const updatedElement = { ...element, ...updates };
+    return replaceElementAtIndex(pathSteps, index, updatedElement);
+  }
+  return pathSteps;
+};
+
+export const updateOriginPathStep = (
+  pathSteps: OsrdConfState['pathSteps'],
+  origin: Partial<PathStep> | null,
+  replaceCompletely: boolean = false
+) => updatePathStepAtIndex(pathSteps, 0, origin, replaceCompletely);
+
+export const updateDestinationPathStep = (
+  pathSteps: OsrdConfState['pathSteps'],
+  destination: Partial<PathStep> | null,
+  replaceCompletely: boolean = false
+) => updatePathStepAtIndex(pathSteps, pathSteps.length - 1, destination, replaceCompletely);

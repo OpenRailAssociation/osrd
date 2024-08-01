@@ -10,7 +10,7 @@ import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainScheduleV2/types';
 import type { PathStep } from 'reducers/osrdconf/types';
-import { isoUtcStringToLocaleDateString } from 'utils/date';
+import { convertIsoUtcToLocalTime } from 'utils/date';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
 import useOutputTableData from './hooks/useOutputTableData';
@@ -36,7 +36,7 @@ const TimesStopsOutput = ({
   pathLength,
   dataIsLoading,
 }: TimesStopsOutputProps) => {
-  const startTime = isoUtcStringToLocaleDateString(selectedTrainSchedule.start_time);
+  const startTime = convertIsoUtcToLocalTime(selectedTrainSchedule.start_time);
   const enrichedOperationalPoints = useOutputTableData(
     simulatedTrain,
     pathProperties,

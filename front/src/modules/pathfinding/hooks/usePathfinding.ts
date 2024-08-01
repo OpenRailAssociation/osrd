@@ -212,7 +212,7 @@ export const usePathfindingV2 = (
         },
       });
     }
-  }, [origin, destination, rollingStock]);
+  }, [origin?.id, destination?.id, rollingStock]);
 
   useEffect(() => {
     const startPathFinding = async () => {
