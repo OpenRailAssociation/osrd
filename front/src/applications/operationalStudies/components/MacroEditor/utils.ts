@@ -2,8 +2,8 @@ import type {
   PathItemLocation,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
+import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
-// eslint-disable-next-line import/prefer-default-export
 export const findOpFromPathItem = (
   pathItem: PathItemLocation,
   searchResults: SearchResultItemOperationalPoint[]
@@ -22,3 +22,6 @@ export const findOpFromPathItem = (
     }
     return false;
   });
+
+export const addDurationToDate = (date: Date, duration: string) =>
+  new Date(date.getTime() + ISO8601Duration2sec(duration) * 1000);
