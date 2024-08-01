@@ -34,6 +34,7 @@
     "noTrainCountInput": "Must be > 0",
     "noTrainStep": "The increment step of the train must be greater than zero",
     "noTrainStepInput": "Must be > 0",
+    "originTimeOutsideWindow": "Departure date must be between {{low}} and {{high}}",
     "requiredField": "Required field.",
     "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
     "The requested train couldn't reach its destination": "The train cannot reach its destination",

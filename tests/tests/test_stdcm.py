@@ -117,7 +117,7 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
     requests.post(EDITOAST_URL + f"infra/{small_scenario_v2.infra}/load")
     start_time = datetime.datetime(2024, 1, 1, 14, 0, 0)
     end_time = start_time + datetime.timedelta(days=4)
-    requests.post(
+    work_schedules_r = requests.post(
         EDITOAST_URL + "work_schedules/",
         json={
             "work_schedule_group_name": "generic_group",
@@ -132,6 +132,8 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
             ],
         },
     )
+    work_schedules_response = work_schedules_r.json()
+
     payload = {
         "rolling_stock_id": fast_rolling_stock,
         "start_time": "2024-01-05T13:00:00+00:00",
@@ -145,6 +147,7 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
         ],
         "comfort": "STANDARD",
         "margin": "0%",
+        "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
     }
     url = f"{EDITOAST_URL}v2/timetable/{small_scenario_v2.timetable}/stdcm/?infra={small_scenario_v2.infra}"
     r = requests.post(url, json=payload)

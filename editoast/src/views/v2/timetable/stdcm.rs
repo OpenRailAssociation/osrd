@@ -42,6 +42,8 @@ use crate::RetrieveBatch;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 
+use super::SelectionSettings;
+
 crate::routes! {
     "/stdcm" => stdcm,
 }
@@ -76,6 +78,8 @@ pub struct STDCMRequestPayload {
     start_time: Option<DateTime<Utc>>,
     steps: Vec<PathfindingItem>,
     rolling_stock_id: i64,
+    electrical_profile_set_id: Option<i64>,
+    work_schedule_group_id: Option<i64>,
     comfort: Comfort,
     /// By how long we can shift the departure time in milliseconds
     /// Deprecated, first step data should be used instead
@@ -190,7 +194,7 @@ async fn stdcm(
         core_client.clone(),
         &trains,
         &infra,
-        None,
+        data.electrical_profile_set_id,
     )
     .await?;
 
@@ -245,13 +249,19 @@ async fn stdcm(
         time_gap_after: data.time_gap_after,
         margin: data.margin,
         time_step: Some(2000),
-        work_schedules: build_work_schedules(
-            db_pool.get().await?.deref_mut(),
-            departure_time,
-            data.maximum_departure_delay,
-            maximum_run_time,
-        )
-        .await?,
+        work_schedules: match data.work_schedule_group_id {
+            Some(work_schedule_group_id) => {
+                build_work_schedules(
+                    db_pool.get().await?.deref_mut(),
+                    departure_time,
+                    data.maximum_departure_delay,
+                    maximum_run_time,
+                    work_schedule_group_id,
+                )
+                .await?
+            }
+            None => vec![],
+        },
     }
     .fetch(core_client.as_ref())
     .await?;
@@ -468,9 +478,12 @@ async fn build_work_schedules(
     time: DateTime<Utc>,
     maximum_departure_delay: u64,
     maximum_run_time: u64,
+    work_schedule_group_id: i64,
 ) -> Result<Vec<STDCMWorkSchedule>> {
     let maximum_simulation_time = maximum_run_time + maximum_departure_delay;
-    let res = Ok(WorkSchedule::list(conn, Default::default())
+    let selection_setting: SelectionSettings<WorkSchedule> = SelectionSettings::new()
+        .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(work_schedule_group_id));
+    let res = Ok(WorkSchedule::list(conn, selection_setting)
         .await?
         .iter()
         .map(|ws| {

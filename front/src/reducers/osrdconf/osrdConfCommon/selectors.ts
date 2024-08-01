@@ -39,6 +39,7 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
     getScenarioID: makeOsrdConfSelector('scenarioID'),
     getTimetableID: makeOsrdConfSelector('timetableID'),
     getElectricalProfileSetId: makeOsrdConfSelector('electricalProfileSetId'),
+    getSearchDatetimeWindow: makeOsrdConfSelector('searchDatetimeWindow'),
     getRollingStockID: makeOsrdConfSelector('rollingStockID'),
     getSpeedLimitByTag: makeOsrdConfSelector('speedLimitByTag'),
     getInitialSpeed: makeOsrdConfSelector('initialSpeed'),

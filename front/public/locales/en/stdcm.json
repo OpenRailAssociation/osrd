@@ -5,7 +5,12 @@
     "consist": "Consist",
     "tractionEngine": "Traction engine"
   },
+  "datetimeOutsideWindow": "Date must be between {{low}} and {{high}}",
   "loaderImageLegend": "The TGV Nord line",
+  "noConfigurationFound": {
+    "title": "A configuration problem prevents you from performing a search",
+    "text": "Please contact the maintenance team so they can get you back on track."
+  },
   "notificationTitle": "Phase 1: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
   "pathfindingFailed": "No path have been found for these waypoints.",
   "pleaseWait": "Please wait…",

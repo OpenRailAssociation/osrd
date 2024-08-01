@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 
-import { isEqual } from 'lodash';
-import { useSelector } from 'react-redux';
+import { isEqual, isNil } from 'lodash';
 
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
-import { useOsrdConfSelectors, useOsrdConfActions } from 'common/osrdContext';
+import { LoaderFill } from 'common/Loaders';
+import { useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
 
 import StdcmConfig from '../components/StdcmConfig';
+import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
 import StdcmHeader from '../components/StdcmHeader';
 import StdcmResults from '../components/StdcmResults';
+import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';
 import type { StdcmSimulation, StdcmSimulationInputs } from '../types';
 
 const StdcmViewV2 = () => {
+  const { loading, error } = useStdcmEnvironment();
   // TODO : refacto. state useStdcm. Maybe we can merge some state together in order to reduce the number of refresh
   const {
     launchStdcmRequest,
@@ -24,8 +27,6 @@ const StdcmViewV2 = () => {
     stdcmV2Results,
     pathProperties,
   } = useStdcm(false);
-  const { getScenarioID } = useOsrdConfSelectors();
-  const scenarioID = useSelector(getScenarioID);
   const [currentSimulationInputs, setCurrentSimulationInputs] = useState<StdcmSimulationInputs>({
     pathSteps: [null, null], // origin and destination are not set yet. We use the same logic as in the store.
   });
@@ -120,11 +121,18 @@ const StdcmViewV2 = () => {
     }
   }, [simulationsList]);
 
+  // If we've got an error during the loading of the stdcm env which is not the "no config error" message,
+  // we let the error boundary manage it
+  if (error && error.message !== NO_CONFIG_FOUND_MSG) throw error;
+
   return (
     <div role="button" tabIndex={0} className="stdcm-v2" onClick={() => setShowStatusBanner(false)}>
       <StdcmHeader />
-      <div>
-        {scenarioID && (
+
+      {!isNil(error) ? (
+        <StdcmEmptyConfigError />
+      ) : (
+        <div>
           <StdcmConfig
             selectedSimulation={selectedSimulation}
             currentSimulationInputs={currentSimulationInputs}
@@ -138,25 +146,26 @@ const StdcmViewV2 = () => {
             cancelStdcmRequest={cancelStdcmRequest}
             setCurrentSimulationInputs={setCurrentSimulationInputs}
           />
-        )}
 
-        {showResults && (
-          <div className="stdcm-v2-results">
-            {selectedSimulationIndex > -1 && (
-              <StdcmResults
-                simulationsList={simulationsList}
-                selectedSimulationIndex={selectedSimulationIndex}
-                retainedSimulationIndex={retainedSimulationIndex}
-                showStatusBanner={showStatusBanner}
-                isCalculationFailed={isCalculationFailed}
-                onRetainSimulation={handleRetainSimulation}
-                onSelectSimulation={handleSelectSimulation}
-                onStartNewQuery={handleStartNewQuery}
-              />
-            )}
-          </div>
-        )}
-      </div>
+          {showResults && (
+            <div className="stdcm-v2-results">
+              {selectedSimulationIndex > -1 && (
+                <StdcmResults
+                  simulationsList={simulationsList}
+                  selectedSimulationIndex={selectedSimulationIndex}
+                  retainedSimulationIndex={retainedSimulationIndex}
+                  showStatusBanner={showStatusBanner}
+                  isCalculationFailed={isCalculationFailed}
+                  onRetainSimulation={handleRetainSimulation}
+                  onSelectSimulation={handleSelectSimulation}
+                  onStartNewQuery={handleStartNewQuery}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      {loading && <LoaderFill />}
     </div>
   );
 };

@@ -5,7 +5,12 @@
     "consist": "Convoi",
     "tractionEngine": "Engin de traction"
   },
+  "datetimeOutsideWindow": "La date et l'heure doivent être comprises entre le {{low}} et le {{high}}",
   "loaderImageLegend": "La ligne TGV Nord",
+  "noConfigurationFound": {
+    "title": "Un problème de configuration vous empêche de faire une recherche",
+    "text": "Veuillez contacter l'équipe de maintenance pour qu'elle puisse vous remettre sur les rails."
+  },
   "notificationTitle": "Phase 1 : de J-7 à J-1 17h, sur l’axe Perrigny—Miramas.",
   "pathfindingFailed": "Aucun chemin n'a été trouvé pour ces points de jalonnement.",
   "pleaseWait": "Veuillez patientez…",

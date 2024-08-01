@@ -3011,6 +3011,10 @@ paths:
               properties:
                 comfort:
                   $ref: '#/components/schemas/Comfort'
+                electrical_profile_set_id:
+                  type: integer
+                  format: int64
+                  nullable: true
                 margin:
                   type: string
                   description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km`
@@ -3066,6 +3070,10 @@ paths:
                     Enforces that the path used by the train should be free and
                     available at least that many milliseconds before its passage.
                   minimum: 0
+                work_schedule_group_id:
+                  type: integer
+                  format: int64
+                  nullable: true
         required: true
       responses:
         '201':
@@ -9755,6 +9763,10 @@ components:
       properties:
         comfort:
           $ref: '#/components/schemas/Comfort'
+        electrical_profile_set_id:
+          type: integer
+          format: int64
+          nullable: true
         margin:
           type: string
           description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km`
@@ -9810,6 +9822,10 @@ components:
             Enforces that the path used by the train should be free and
             available at least that many milliseconds before its passage.
           minimum: 0
+        work_schedule_group_id:
+          type: integer
+          format: int64
+          nullable: true
     Scenario:
       type: object
       required:
