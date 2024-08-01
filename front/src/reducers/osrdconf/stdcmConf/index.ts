@@ -1,8 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
+import type { ArrivalTimeTypes } from 'applications/stdcmV2/types';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
+
+import { updateOriginPathStep, updateDestinationPathStep } from '../helpers';
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   maximumRunTime: 43200,
@@ -67,6 +70,48 @@ export const stdcmConfSlice = createSlice({
       state.electricalProfileSetId = action.payload.electricalProfileSetId;
       state.workScheduleGroupId = action.payload.workScheduleGroupId;
       state.searchDatetimeWindow = action.payload.searchDatetimeWindow;
+    },
+    updateOriginArrival(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<string | undefined>
+    ) {
+      state.pathSteps = updateOriginPathStep(state.pathSteps, { arrival: action.payload });
+    },
+    updateDestinationArrival(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<string | undefined>
+    ) {
+      state.pathSteps = updateDestinationPathStep(state.pathSteps, { arrival: action.payload });
+    },
+    updateOriginArrivalType(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<ArrivalTimeTypes>
+    ) {
+      state.pathSteps = updateOriginPathStep(state.pathSteps, { arrivalType: action.payload });
+    },
+    updateDestinationArrivalType(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<ArrivalTimeTypes>
+    ) {
+      state.pathSteps = updateDestinationPathStep(state.pathSteps, { arrivalType: action.payload });
+    },
+    updateOriginTolerances(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<{ toleranceBefore: number; toleranceAfter: number }>
+    ) {
+      state.pathSteps = updateOriginPathStep(state.pathSteps, {
+        arrivalToleranceBefore: action.payload.toleranceBefore,
+        arrivalToleranceAfter: action.payload.toleranceAfter,
+      });
+    },
+    updateDestinationTolerances(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<{ toleranceBefore: number; toleranceAfter: number }>
+    ) {
+      state.pathSteps = updateDestinationPathStep(state.pathSteps, {
+        arrivalToleranceBefore: action.payload.toleranceBefore,
+        arrivalToleranceAfter: action.payload.toleranceAfter,
+      });
     },
   },
 });

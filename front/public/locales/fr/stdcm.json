@@ -1,18 +1,21 @@
 {
   "apply": "Appliquer",
+  "arriveAt": "Arriver à {{ time }}",
   "cancelRequest": "Annuler la requête",
   "consist": {
     "consist": "Convoi",
     "tractionEngine": "Engin de traction"
   },
   "datetimeOutsideWindow": "La date et l'heure doivent être comprises entre le {{low}} et le {{high}}",
+  "departureTime": "Horaire de départ",
+  "destinationTime": "Horaire de destination",
+  "leaveAt": "Partir à {{ time }}",
   "loaderImageLegend": "La ligne TGV Nord",
   "noConfigurationFound": {
     "title": "Un problème de configuration vous empêche de faire une recherche",
     "text": "Veuillez contacter l'équipe de maintenance pour qu'elle puisse vous remettre sur les rails."
   },
   "notificationTitle": "Phase 1 : de J-7 à J-1 17h, sur l’axe Perrigny—Miramas.",
-  "pathfindingFailed": "Aucun chemin n'a été trouvé pour ces points de jalonnement.",
   "pleaseWait": "Veuillez patientez…",
   "simulation": {
     "averageRequestTime": "Pour votre demande, le temps nécessaire est généralement de 90 secondes.",
@@ -54,21 +57,28 @@
   "spaceTimeGraphic": "Graphique Espace-Temps",
   "speedSpaceChart": "Graphique Espace Vitesse",
   "stdcmComputation": "Recherche de sillon",
-  "stdcmError": "Erreur de calcul Sillon de dernière minute",
-  "stdcmErrorNoPaths": "Incompatibilité avec d'autres sillons.",
-  "stdcmNoResults": "Aucun sillon trouvé",
+  "stdcmErrors": {
+    "bothPointAreScheduled": "Le calcul ne peut pas prendre en compte à la fois un horaire d'origine et un horaire de destination. Il faut choisir l'un ou l'autre :",
+    "noPaths": "Incompatibilité avec d'autres sillons.",
+    "noResults": "Aucun sillon trouvé",
+    "noScheduledPoint": "Le calcul a besoin de l'horaire d'origine ou de celui de la destination.",
+    "pathfindingFailed": "Aucun chemin n'a été trouvé pour ces points de jalonnement.",
+    "requestFailed": "Erreur de calcul Sillon de dernière minute"
+  },
   "stdcmResults": "Résultats",
   "stdcmSimulationReport": "Fiche simulation",
   "trainPath": {
     "addVia": "Ajouter un PR intermédiaire",
-    "asSoonAsPossible": "Dès que possible",
+    "asSoonAsPossible": "dès que possible",
     "ch": "CH",
     "ci": "CI",
     "date": "Date",
     "destination": "Destination",
     "origin": "Origine",
+    "preciseTime": "horaire précis",
     "stopFor": "Temps d'arrêt minimum",
     "time": "Heure",
+    "tolerance": "Tolérance",
     "vias": "PR intermédiaire"
   }
 }

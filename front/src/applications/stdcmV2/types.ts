@@ -30,3 +30,19 @@ export type StdcmConfigCardProps = {
   setCurrentSimulationInputs: React.Dispatch<React.SetStateAction<StdcmSimulationInputs>>;
   disabled?: boolean;
 };
+
+export enum ArrivalTimeTypes {
+  PRECISE_TIME = 'preciseTime',
+  ASAP = 'asSoonAsPossible',
+}
+
+export enum StdcmConfigErrorTypes {
+  PATHFINDING_FAILED = 'pathfindingFailed',
+  BOTH_POINT_SCHEDULED = 'bothPointAreScheduled',
+  NO_SCHEDULED_POINT = 'noScheduledPoint',
+}
+
+export type StdcmConfigErrors = {
+  errorType: StdcmConfigErrorTypes;
+  errorDetails?: { originTime: string; destinationTime: string };
+};

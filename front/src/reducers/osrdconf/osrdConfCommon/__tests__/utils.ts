@@ -1,5 +1,6 @@
 import { compact, last, omit } from 'lodash';
 
+import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
 import type { Distribution, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
@@ -377,14 +378,18 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
   });
 
   it('should handle updateOriginV2', () => {
-    const newOrigin = testDataBuilder.buildPathSteps()[0];
+    const newOrigin = {
+      ...testDataBuilder.buildPathSteps()[0],
+      arrivalType: ArrivalTimeTypes.PRECISE_TIME,
+    };
     defaultStore.dispatch(slice.actions.updateOriginV2(newOrigin));
     const state = defaultStore.getState()[slice.name];
     expect(state.pathSteps[0]).toEqual(newOrigin);
   });
 
   it('should handle updateDestinationV2', () => {
-    const newDestination = testDataBuilder.buildPathSteps()[2];
+    const lastPathStep = last(testDataBuilder.buildPathSteps());
+    const newDestination = { ...lastPathStep!, arrivalType: ArrivalTimeTypes.ASAP };
     defaultStore.dispatch(slice.actions.updateDestinationV2(newDestination));
     const state = defaultStore.getState()[slice.name];
     expect(last(state.pathSteps)).toEqual(newDestination);

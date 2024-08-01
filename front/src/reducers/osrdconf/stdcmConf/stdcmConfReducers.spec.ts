@@ -1,5 +1,7 @@
+import { last } from 'lodash';
 import { describe, expect } from 'vitest';
 
+import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
@@ -109,6 +111,109 @@ describe('stdcmConfReducers', () => {
     expect(state.originDate).toBe('2024-07-25');
     expect(state.originTime).toBe('13:00');
     expect(state.speedLimitByTag).toBe('new-tag');
+  });
+
+  describe('Origin updates', () => {
+    const store = createStore(initialStateSTDCMConfig);
+    const newOrigin = {
+      ...paris,
+      arrivalType: ArrivalTimeTypes.PRECISE_TIME,
+    };
+
+    it('should handle updateOriginArrival', () => {
+      store.dispatch(stdcmConfSliceActions.updateOriginV2(newOrigin));
+      store.dispatch(stdcmConfSliceActions.updateOriginArrival('2024-08-12T15:45:00.000+02:00'));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.pathSteps[0]).toEqual({
+        ...newOrigin,
+        arrival: '2024-08-12T15:45:00.000+02:00',
+      });
+    });
+
+    it('should handle updateOriginArrival with undefined', () => {
+      store.dispatch(stdcmConfSliceActions.updateOriginArrival(undefined));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.pathSteps[0]).toEqual({
+        ...newOrigin,
+        arrival: undefined,
+      });
+    });
+
+    it('should handle updateOriginArrivalType', () => {
+      store.dispatch(stdcmConfSliceActions.updateOriginArrivalType(ArrivalTimeTypes.PRECISE_TIME));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.pathSteps[0]).toEqual({
+        ...newOrigin,
+      });
+    });
+
+    it('should handle updateOriginTolerances', () => {
+      store.dispatch(
+        stdcmConfSliceActions.updateOriginTolerances({ toleranceBefore: 300, toleranceAfter: 300 })
+      );
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.pathSteps[0]).toEqual({
+        ...newOrigin,
+        arrivalToleranceBefore: 300,
+        arrivalToleranceAfter: 300,
+      });
+    });
+  });
+
+  describe('Destination updates', () => {
+    const store = createStore(initialStateSTDCMConfig);
+    const newDestination = {
+      ...brest,
+      arrivalType: ArrivalTimeTypes.ASAP,
+    };
+
+    it('should handle updateDestinationArrival', () => {
+      store.dispatch(stdcmConfSliceActions.updateDestinationV2(newDestination));
+      store.dispatch(
+        stdcmConfSliceActions.updateDestinationArrival('2024-08-12T15:45:00.000+02:00')
+      );
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(last(state.pathSteps)).toEqual({
+        ...newDestination,
+        arrival: '2024-08-12T15:45:00.000+02:00',
+      });
+    });
+
+    it('should handle updateDestinationArrival with undefined', () => {
+      store.dispatch(stdcmConfSliceActions.updateDestinationArrival(undefined));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(last(state.pathSteps)).toEqual({
+        ...newDestination,
+        arrival: undefined,
+      });
+    });
+
+    it('should handle updateDestinationArrivalType', () => {
+      store.dispatch(
+        stdcmConfSliceActions.updateDestinationArrivalType(ArrivalTimeTypes.PRECISE_TIME)
+      );
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(last(state.pathSteps)).toEqual({
+        ...newDestination,
+        arrivalType: ArrivalTimeTypes.PRECISE_TIME,
+      });
+    });
+
+    it('should handle updateDestinationTolerances', () => {
+      store.dispatch(
+        stdcmConfSliceActions.updateDestinationTolerances({
+          toleranceBefore: 300,
+          toleranceAfter: 300,
+        })
+      );
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(last(state.pathSteps)).toEqual({
+        ...newDestination,
+        arrivalType: ArrivalTimeTypes.PRECISE_TIME,
+        arrivalToleranceBefore: 300,
+        arrivalToleranceAfter: 300,
+      });
+    });
   });
 
   testCommonConfReducers(stdcmConfSlice);
