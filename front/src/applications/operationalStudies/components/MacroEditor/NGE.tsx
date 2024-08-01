@@ -1,17 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 
 /* eslint-disable import/extensions, import/no-unresolved */
-import ngeMain from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/main.js?url';
-import ngePolyfills from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/polyfills.js?url';
-import ngeRuntime from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/runtime.js?url';
-import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/styles.css?url';
-import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/vendor.js?url';
+import ngeMain from 'netzgrafik-frontend/dist/netzgrafik-frontend/main.js?url';
+import ngePolyfills from 'netzgrafik-frontend/dist/netzgrafik-frontend/polyfills.js?url';
+import ngeRuntime from 'netzgrafik-frontend/dist/netzgrafik-frontend/runtime.js?url';
+import ngeStyles from 'netzgrafik-frontend/dist/netzgrafik-frontend/styles.css?url';
+import ngeVendor from 'netzgrafik-frontend/dist/netzgrafik-frontend/vendor.js?url';
 /* eslint-enable import/extensions, import/no-unresolved */
 
 const frameSrc = `
 <!DOCTYPE html>
-<html class="sbb-lean sbb-light">
+<html class="sbb-lean">
   <head>
+    <base href="/netzgrafik-frontend/">
     <link rel="stylesheet" href="${ngeStyles}"></link>
     <script type="module" src="${ngeRuntime}"></script>
     <script type="module" src="${ngePolyfills}"></script>
