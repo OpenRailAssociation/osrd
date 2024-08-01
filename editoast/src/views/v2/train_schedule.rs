@@ -468,9 +468,12 @@ pub async fn train_simulation_batch(
         .collect();
 
     let mut to_cache = Vec::with_capacity(simulated.len());
-    for ((train_index, train_hash), sim_res) in futures_index_hash.into_iter().zip(simulated) {
-        simulation_results[train_index] = sim_res.clone();
-        to_cache.push((train_hash, sim_res));
+    for (&(train_index, _), sim_res) in futures_index_hash.iter().zip(simulated) {
+        simulation_results[train_index] = sim_res;
+    }
+
+    for (train_index, train_hash) in futures_index_hash.into_iter() {
+        to_cache.push((train_hash, &simulation_results[train_index]));
     }
 
     // Cache the simulation response
