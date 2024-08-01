@@ -5,12 +5,24 @@ use serde::Serialize;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDObject;
 use crate::primitives::ObjectType;
+use utoipa::ToSchema;
 
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+editoast_common::schemas! {
+    Waypoint,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
 #[serde(tag = "type", deny_unknown_fields)]
 pub enum Waypoint {
-    BufferStop { id: Identifier },
-    Detector { id: Identifier },
+    BufferStop {
+        #[schema(inline)]
+        id: Identifier,
+    },
+
+    Detector {
+        #[schema(inline)]
+        id: Identifier,
+    },
 }
 
 impl Waypoint {

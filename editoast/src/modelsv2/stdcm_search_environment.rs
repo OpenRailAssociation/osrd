@@ -66,13 +66,13 @@ pub mod test {
     use std::ops::DerefMut;
 
     use super::*;
+    use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
     use crate::modelsv2::fixtures::{
         create_electrical_profile_set, create_empty_infra, create_timetable,
         create_work_schedule_group,
     };
     use crate::modelsv2::timetable::Timetable;
     use crate::modelsv2::work_schedules::WorkScheduleGroup;
-    use crate::modelsv2::ElectricalProfileSet;
     use crate::modelsv2::Infra;
     use crate::modelsv2::{Count, Model, SelectionSettings};
     use editoast_models::DbConnectionPoolV2;

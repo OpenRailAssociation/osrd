@@ -16,6 +16,7 @@ use crate::primitives::ObjectType;
 editoast_common::schemas! {
     Route,
     RoutePath,
+    Waypoint,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
