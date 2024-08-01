@@ -317,19 +317,23 @@ const importTimetable = async (
   let trainrunSectionId = 0;
   const trainrunSections: TrainrunSection[] = trainSchedules
     .map((trainSchedule) => {
-      const ops = trainSchedule.path.map((pathItem) => findOpFromPathItem(pathItem, searchResults));
-      const foundAllOps = ops.every((op) => op);
-      if (!foundAllOps) {
-        return [];
-      }
+      // Figure out the node ID for each path item
+      const pathNodeIds = trainSchedule.path.map((pathItem) => {
+        const op = findOpFromPathItem(pathItem, searchResults);
+        if (op) {
+          return op.obj_id;
+        }
+
+        const node = createNode({ trigram: 'trigram' in pathItem ? pathItem.trigram : undefined });
+        return node.id;
+      });
 
       // OSRD describes the path in terms of nodes, NGE describes it in terms
       // of sections between nodes. Iterate over path items two-by-two to
       // convert them.
       let prevPort: Port | null = null;
-      return ops.slice(0, -1).map((sourceOp, i) => {
-        const sourceNodeId = sourceOp!.obj_id;
-        const targetNodeId = ops[i + 1]!.obj_id;
+      return pathNodeIds.slice(0, -1).map((sourceNodeId, i) => {
+        const targetNodeId = pathNodeIds[i + 1]!;
 
         const timeLockStub = {
           time: 0,
