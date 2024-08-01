@@ -11,7 +11,7 @@ import type {
 import type { InfraState } from 'reducers/infra';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
-import { dateTimeToIso } from 'utils/date';
+import { dateTimeFormatting, dateTimeToIso } from 'utils/date';
 import { mToMm } from 'utils/physics';
 import { ISO8601Duration2sec, sec2ms, time2sec } from 'utils/timeManipulation';
 
@@ -31,6 +31,8 @@ type ValidStdcmConfig = {
   margin?: StandardAllowance;
   gridMarginBefore?: number;
   gridMarginAfter?: number;
+  workScheduleGroupId?: number;
+  electricalProfileSetId?: number;
 };
 
 export const checkStdcmConf = (
@@ -52,6 +54,9 @@ export const checkStdcmConf = (
     originUpperBoundTime,
     originDate,
     originTime,
+    searchDatetimeWindow,
+    workScheduleGroupId,
+    electricalProfileSetId,
   } = osrdconf;
   let error = false;
   if (pathSteps[0] === null) {
@@ -117,6 +122,23 @@ export const checkStdcmConf = (
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noOriginTime'),
       })
     );
+  } else if (searchDatetimeWindow) {
+    const startDatetime = new Date(startTime);
+    if (startDatetime < searchDatetimeWindow.begin || searchDatetimeWindow.end < startDatetime) {
+      error = true;
+      dispatch(
+        setFailure({
+          name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
+          message: t(
+            'operationalStudies/manageTrainSchedule:errorMessages.originTimeOutsideWindow',
+            {
+              low: dateTimeFormatting(searchDatetimeWindow.begin),
+              high: dateTimeFormatting(searchDatetimeWindow.end),
+            }
+          ),
+        })
+      );
+    }
   }
 
   if (error) return null;
@@ -167,6 +189,8 @@ export const checkStdcmConf = (
     gridMarginBefore,
     gridMarginAfter,
     lastestStartTime: originUpperBoundTime!,
+    workScheduleGroupId,
+    electricalProfileSetId,
   };
 };
 
@@ -194,6 +218,8 @@ export const formatStdcmPayload = (
       steps: validConfig.path,
       time_gap_after: toMsOrUndefined(validConfig.gridMarginBefore),
       time_gap_before: toMsOrUndefined(validConfig.gridMarginAfter),
+      work_schedule_group_id: validConfig.workScheduleGroupId,
+      electrical_profile_set_id: validConfig.electricalProfileSetId,
     },
   };
 };

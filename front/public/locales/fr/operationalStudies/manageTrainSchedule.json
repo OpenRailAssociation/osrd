@@ -34,6 +34,7 @@
     "noTrainCountInput": "Doit être > 0",
     "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
     "noTrainStepInput": "Doit être > 0",
+    "originTimeOutsideWindow": "La date de départ doit être comprise entre le {{low}} et le {{high}}",
     "requiredField": "Champ obligatoire.",
     "softErrorInfra": "L'application est indisponible, une erreur serveur est survenue, veuillez réessayer ultérieurement.",
     "The requested train couldn't reach its destination": "Le train ne peut pas atteindre sa destination",

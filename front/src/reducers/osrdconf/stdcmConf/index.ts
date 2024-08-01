@@ -49,6 +49,25 @@ export const stdcmConfSlice = createSlice({
     ) {
       state.standardStdcmAllowance = action.payload;
     },
+    updateStdcmEnvironment(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<
+        Pick<
+          OsrdStdcmConfState,
+          | 'infraID'
+          | 'timetableID'
+          | 'electricalProfileSetId'
+          | 'workScheduleGroupId'
+          | 'searchDatetimeWindow'
+        >
+      >
+    ) {
+      state.infraID = action.payload.infraID;
+      state.timetableID = action.payload.timetableID;
+      state.electricalProfileSetId = action.payload.electricalProfileSetId;
+      state.workScheduleGroupId = action.payload.workScheduleGroupId;
+      state.searchDatetimeWindow = action.payload.searchDatetimeWindow;
+    },
   },
 });
 

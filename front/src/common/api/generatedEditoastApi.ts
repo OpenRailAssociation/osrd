@@ -1751,6 +1751,7 @@ export type PostV2TimetableByIdStdcmApiArg = {
   id: number;
   body: {
     comfort: Comfort;
+    electrical_profile_set_id?: number | null;
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
     margin?: string | null;
     /** By how long we can shift the departure time in milliseconds
@@ -1774,6 +1775,7 @@ export type PostV2TimetableByIdStdcmApiArg = {
         Enforces that the path used by the train should be free and
         available at least that many milliseconds before its passage. */
     time_gap_before?: number;
+    work_schedule_group_id?: number | null;
   };
 };
 export type PostV2TimetableByIdTrainScheduleApiResponse =

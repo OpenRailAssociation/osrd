@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
+import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -10,6 +11,7 @@ import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
+import { dateTimeFormatting } from 'utils/date';
 
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
@@ -18,12 +20,14 @@ import type { StdcmConfigCardProps } from '../types';
 const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
-  const { getOriginV2, getOriginDate, getOriginTime } = useOsrdConfSelectors();
+  const { getOriginV2, getOriginDate, getOriginTime, getSearchDatetimeWindow } =
+    useOsrdConfSelectors();
   const { updateOriginV2, updateOriginDate, updateOriginTime } =
     useOsrdConfActions() as StdcmConfSliceActions;
   const origin = useSelector(getOriginV2);
   const originDate = useSelector(getOriginDate);
   const originTime = useSelector(getOriginTime);
+  const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 
   const updateOriginV2Point = (pathStep: PathStep | null) => {
     dispatch(updateOriginV2(pathStep));
@@ -46,6 +50,19 @@ const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConf
     dispatch(updateOriginTime(e.target.value));
   };
 
+  const error = useMemo(() => {
+    if (originDate && searchDatetimeWindow) {
+      const datetime = new Date(`${originDate} ${originTime || '00:00'}`);
+      if (datetime < searchDatetimeWindow.begin || searchDatetimeWindow.end < datetime) {
+        return t('datetimeOutsideWindow', {
+          low: dateTimeFormatting(searchDatetimeWindow.begin),
+          high: dateTimeFormatting(searchDatetimeWindow.end),
+        });
+      }
+    }
+    return null;
+  }, [originDate, originTime, searchDatetimeWindow]);
+
   return (
     <StdcmCard
       name={t('trainPath.origin')}
@@ -59,7 +76,7 @@ const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConf
           point={origin}
           disabled={disabled}
         />
-        <div className="stdcm-v2-origin__parameters d-flex">
+        <div className="stdcm-v2-origin__parameters row">
           <div className="col-6">
             <InputSNCF
               id="dateOrigin"
@@ -67,6 +84,7 @@ const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConf
               type="date"
               name="dateOrigin"
               onChange={onOriginDateInputChange}
+              isInvalid={!isNil(error)}
               value={originDate}
               disabled={disabled}
             />
@@ -77,10 +95,16 @@ const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConf
               label={t('trainPath.time')}
               id="originTime"
               onChange={onOriginTimeInputChange}
+              isInvalid={!isNil(error)}
               value={originTime}
               disabled={disabled}
             />
           </div>
+          {error && (
+            <div className="col-12 text-danger text-center">
+              <p>{error}</p>
+            </div>
+          )}
         </div>
       </div>
     </StdcmCard>
