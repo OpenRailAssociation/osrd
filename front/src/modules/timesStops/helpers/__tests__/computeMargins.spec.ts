@@ -12,8 +12,6 @@ describe('computeMargins', () => {
 
     expect(
       computeMargins(
-        // TODO: insert correct data in path_item_times (delete scheduled_points_honored
-        // and insert path_item_times in computeMargins.json)
         trainsSimulation as SimulationResponseSuccess,
         opPoint,
         nextOpPoint,
@@ -33,8 +31,6 @@ describe('computeMargins', () => {
 
     expect(
       computeMargins(
-        // TODO: insert correct data in path_item_times (delete scheduled_points_honored
-        // and insert path_item_times in computeMargins.json)
         trainsSimulation as SimulationResponseSuccess,
         opPoint,
         nextOpPoint,
