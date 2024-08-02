@@ -7,6 +7,7 @@ import type {
   ElectrificationValue,
   PositionData,
 } from 'applications/operationalStudies/types';
+import type { SimulationSummaryResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 
 export const pathLength = 4000;
 
@@ -344,3 +345,191 @@ export const electrificationRangesLarge: ElectrificationRangeV2[] = [
     },
   },
 ];
+
+export const trainScheduleTooFast: TrainScheduleResult = {
+  id: 98,
+  timetable_id: 10,
+  train_name: 'tooFast',
+  labels: [],
+  rolling_stock_name: 'TC64700',
+  start_time: '2024-08-02T12:00:00Z',
+  path: [
+    {
+      id: 'id440',
+      deleted: false,
+      track: 'TA0',
+      offset: 1299000,
+    },
+    {
+      id: 'id935',
+      deleted: false,
+      uic: 4,
+      secondary_code: 'BV',
+    },
+    {
+      id: 'id916',
+      deleted: false,
+      track: 'TH1',
+      offset: 4095000,
+    },
+  ],
+  schedule: [
+    {
+      at: 'id935',
+      arrival: 'PT1740S',
+      stop_for: 'P0D',
+      on_stop_signal: false,
+      locked: false,
+    },
+    {
+      at: 'id916',
+      arrival: null,
+      stop_for: 'P0D',
+      on_stop_signal: false,
+      locked: false,
+    },
+  ],
+  margins: {
+    boundaries: ['id916'],
+    values: ['27%', '0%'],
+  },
+  initial_speed: 0,
+  comfort: 'STANDARD',
+  constraint_distribution: 'MARECO',
+  speed_limit_tag: null,
+  power_restrictions: [],
+  options: {
+    use_electrical_profiles: true,
+  },
+};
+
+export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'success' }> = {
+  status: 'success',
+  length: 44796000,
+  time: 3069187,
+  energy_consumption: 144436155.68742153,
+  path_item_times_final: [0, 1739394, 3069187],
+  path_item_times_provisional: [0, 1834414, 3164206],
+  path_item_times_base: [0, 1444453, 2491479],
+};
+
+export const trainScheduleNotHonored: TrainScheduleResult = {
+  id: 96,
+  timetable_id: 10,
+  train_name: 'notHonored',
+  labels: [],
+  rolling_stock_name: 'TC64700',
+  start_time: '2024-08-02T12:00:00Z',
+  path: [
+    {
+      id: 'id440',
+      deleted: false,
+      track: 'TA0',
+      offset: 1299000,
+    },
+    {
+      id: 'id584',
+      deleted: false,
+      uic: 4,
+      secondary_code: 'BV',
+    },
+    {
+      id: 'id450',
+      deleted: false,
+      track: 'TG1',
+      offset: 644000,
+    },
+  ],
+  schedule: [
+    {
+      at: 'id584',
+      arrival: 'PT300S',
+      stop_for: null,
+      on_stop_signal: false,
+      locked: false,
+    },
+    {
+      at: 'id450',
+      arrival: null,
+      stop_for: 'P0D',
+      on_stop_signal: false,
+      locked: false,
+    },
+  ],
+  margins: {
+    boundaries: [],
+    values: ['0%'],
+  },
+  initial_speed: 0,
+  comfort: 'STANDARD',
+  constraint_distribution: 'MARECO',
+  speed_limit_tag: null,
+  power_restrictions: [],
+  options: {
+    use_electrical_profiles: true,
+  },
+};
+
+export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 'success' }> = {
+  status: 'success',
+  length: 40345000,
+  time: 2186885,
+  energy_consumption: 173566209.50249535,
+  path_item_times_final: [0, 1425534, 2186885],
+  path_item_times_provisional: [0, 1425534, 2186885],
+  path_item_times_base: [0, 1425534, 2186885],
+};
+
+export const trainScheduleHonored: TrainScheduleResult = {
+  id: 95,
+  timetable_id: 10,
+  train_name: 'normal',
+  labels: [],
+  rolling_stock_name: 'TC64700',
+  start_time: '2024-08-02T12:00:00Z',
+  path: [
+    {
+      id: 'id440',
+      deleted: false,
+      track: 'TA0',
+      offset: 1299000,
+    },
+    {
+      id: 'id450',
+      deleted: false,
+      track: 'TG1',
+      offset: 644000,
+    },
+  ],
+  schedule: [
+    {
+      at: 'id450',
+      arrival: null,
+      stop_for: 'P0D',
+      on_stop_signal: false,
+      locked: false,
+    },
+  ],
+  margins: {
+    boundaries: [],
+    values: ['0%'],
+  },
+  initial_speed: 0,
+  comfort: 'STANDARD',
+  constraint_distribution: 'MARECO',
+  speed_limit_tag: null,
+  power_restrictions: [],
+  options: {
+    use_electrical_profiles: true,
+  },
+};
+
+export const trainSummaryHonored: Extract<SimulationSummaryResult, { status: 'success' }> = {
+  status: 'success',
+  length: 40345000,
+  time: 2186885,
+  energy_consumption: 173566210.50249535,
+  path_item_times_final: [0, 2186885],
+  path_item_times_provisional: [0, 2186885],
+  path_item_times_base: [0, 2186885],
+};

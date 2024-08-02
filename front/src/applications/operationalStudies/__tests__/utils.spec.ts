@@ -1,5 +1,7 @@
 import {
   formatElectrificationRanges,
+  isScheduledPointsNotHonored,
+  isTooFast,
   transformBoundariesDataToPositionDataArray,
   transformBoundariesDataToRangesData,
 } from 'applications/operationalStudies/utils';
@@ -16,6 +18,12 @@ import {
   electrificationRangesLarge,
   getExpectedResultDataNumber,
   pathLength,
+  trainScheduleHonored,
+  trainScheduleNotHonored,
+  trainScheduleTooFast,
+  trainSummaryHonored,
+  trainSummaryNotHonored,
+  trainSummaryTooFast,
 } from './sampleData';
 
 describe('transformBoundariesDataToPositionDataArray', () => {
@@ -77,5 +85,29 @@ describe('formatElectrificationRanges', () => {
     );
 
     expect(result).toEqual(electrificationRangesLarge);
+  });
+});
+
+describe('isTooFast', () => {
+  it('should return true if the train is too fast', () => {
+    const result = isTooFast(trainScheduleTooFast, trainSummaryTooFast);
+    expect(result).toBe(true);
+  });
+
+  it('should return false if the train is not too fast', () => {
+    const result = isTooFast(trainScheduleHonored, trainSummaryHonored);
+    expect(result).toBe(false);
+  });
+});
+
+describe('isScheduledPointsNotHonored', () => {
+  it('should return true if the train schedule is not honored', () => {
+    const result = isScheduledPointsNotHonored(trainScheduleNotHonored, trainSummaryNotHonored);
+    expect(result).toBe(true);
+  });
+
+  it('should return false if the train schedule is honored', () => {
+    const result = isScheduledPointsNotHonored(trainScheduleHonored, trainSummaryHonored);
+    expect(result).toBe(false);
   });
 });
