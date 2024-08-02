@@ -15,6 +15,9 @@ members = [
   "osm_to_railjson",
 ]
 
+[workspace.lints.rust]
+dependency_on_unit_never_type_fallback = "allow" # this is caused by tracing, we can't do anything about it
+
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
@@ -153,3 +156,6 @@ pretty_assertions.workspace = true
 rstest.workspace = true
 serial_test = "3.1.1"
 tempfile.workspace = true
+
+[lints]
+workspace = true

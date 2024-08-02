@@ -19,3 +19,6 @@ proc-macro = true
 
 [dev-dependencies]
 pretty_assertions = "1.4.0"
+
+[lints]
+workspace = true
