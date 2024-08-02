@@ -23,7 +23,7 @@ use crate::{
 use axum_test::TestRequest;
 use axum_test::TestServer;
 
-use super::Roles;
+use super::{authorizer_middleware, Roles};
 
 /// A builder interface for [TestApp]
 ///
@@ -144,6 +144,10 @@ impl TestAppBuilder {
         // Configure the axum router
         let router: Router<()> = axum::Router::<AppState>::new()
             .merge(crate::views::router())
+            .route_layer(axum::middleware::from_fn_with_state(
+                app_state.clone(),
+                authorizer_middleware,
+            ))
             .layer(OtelInResponseLayer)
             .layer(OtelAxumLayer::default())
             .layer(TraceLayer::new_for_http())

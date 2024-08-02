@@ -78,7 +78,7 @@ use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _
 use validator::ValidationErrorsKind;
 use views::infra::InfraApiError;
 use views::search::SearchConfigFinder;
-use views::Roles;
+use views::{authorizer_middleware, Roles};
 
 /// The mode editoast is running in
 ///
@@ -430,6 +430,10 @@ async fn runserver(
     // Configure the axum router
     let router: Router<()> = axum::Router::<AppState>::new()
         .merge(views::router())
+        .route_layer(axum::middleware::from_fn_with_state(
+            app_state.clone(),
+            authorizer_middleware,
+        ))
         .layer(OtelInResponseLayer)
         .layer(OtelAxumLayer::default())
         .layer(request_payload_limit)
