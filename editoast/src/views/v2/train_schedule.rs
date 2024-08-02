@@ -208,14 +208,14 @@ async fn get_batch(
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
     let train_ids = data.ids;
-    let trains: Vec<TrainSchedule> =
+    let train_schedules: Vec<TrainSchedule> =
         TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
             }
         })
         .await?;
-    Ok(Json(trains.into_iter().map_into().collect()))
+    Ok(Json(train_schedules.into_iter().map_into().collect()))
 }
 
 /// Delete a train schedule and its result
@@ -235,8 +235,8 @@ async fn delete(
 
     use crate::modelsv2::DeleteBatch;
     let conn = &mut db_pool.get().await?;
-    let train_ids = data.ids;
-    TrainSchedule::delete_batch_or_fail(conn, train_ids, |number| {
+    let train_schedule_ids = data.ids;
+    TrainSchedule::delete_batch_or_fail(conn, train_schedule_ids, |number| {
         TrainScheduleError::BatchTrainScheduleNotFound { number }
     })
     .await?;
@@ -261,12 +261,12 @@ async fn put(
 ) -> Result<Json<TrainScheduleResult>> {
     let conn = &mut db_pool.get().await?;
 
-    let train_id = train_schedule_id.id;
+    let train_schedule_id = train_schedule_id.id;
     let ts_changeset: TrainScheduleChangeset = data.into();
 
     let ts_result = ts_changeset
-        .update_or_fail(conn, train_id, || TrainScheduleError::NotFound {
-            train_schedule_id: train_id,
+        .update_or_fail(conn, train_schedule_id, || TrainScheduleError::NotFound {
+            train_schedule_id,
         })
         .await?;
 
@@ -617,16 +617,16 @@ async fn simulation_summary(
     let SimulationBatchForm {
         infra_id,
         electrical_profile_set_id,
-        ids: train_ids,
+        ids: train_schedule_ids,
     } = data;
 
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
-    let trains: Vec<TrainSchedule> = TrainSchedule::retrieve_batch_or_fail(
+    let train_schedules: Vec<TrainSchedule> = TrainSchedule::retrieve_batch_or_fail(
         db_pool.get().await?.deref_mut(),
-        train_ids,
+        train_schedule_ids,
         |missing| TrainScheduleError::BatchTrainScheduleNotFound {
             number: missing.len(),
         },
@@ -637,7 +637,7 @@ async fn simulation_summary(
         db_pool.get().await?.deref_mut(),
         redis_client,
         core,
-        &trains,
+        &train_schedules,
         &infra,
         electrical_profile_set_id,
     )
@@ -645,7 +645,7 @@ async fn simulation_summary(
 
     // Transform simulations to simulation summary
     let mut simulation_summaries = HashMap::new();
-    for (train, sim) in trains.iter().zip(simulations) {
+    for (train_schedule, sim) in train_schedules.iter().zip(simulations) {
         let (sim, _) = sim;
         let simulation_summary_result = match sim {
             SimulationResponse::Success { final_output, .. } => {
@@ -676,7 +676,7 @@ async fn simulation_summary(
                 }
             }
         };
-        simulation_summaries.insert(train.id, simulation_summary_result);
+        simulation_summaries.insert(train_schedule.id, simulation_summary_result);
     }
 
     Ok(Json(simulation_summaries))
