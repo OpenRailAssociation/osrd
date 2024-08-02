@@ -84,19 +84,28 @@ async function getAdditionalEntities(
     }
     case 'Route': {
       const route = entity as RouteEntity;
-      const entryPoint = await getEntity(
-        infra,
-        route.properties.entry_point.id,
-        route.properties.entry_point.type,
-        dispatch
-      );
-      const exitPoint = await getEntity(
-        infra,
-        route.properties.exit_point.id,
-        route.properties.exit_point.type,
-        dispatch
-      );
-      return { entryPoint, exitPoint };
+      const results: Record<string, EditorEntity> = {};
+      try {
+        results.entryPoint = await getEntity(
+          infra,
+          route.properties.entry_point.id,
+          route.properties.entry_point.type,
+          dispatch
+        );
+      } catch (e) {
+        // ignore error
+      }
+      try {
+        results.exitPoint = await getEntity(
+          infra,
+          route.properties.exit_point.id,
+          route.properties.exit_point.type,
+          dispatch
+        );
+      } catch (e) {
+        // ignore error
+      }
+      return results;
     }
     default:
       return {};
