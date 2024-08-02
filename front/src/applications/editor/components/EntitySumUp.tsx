@@ -324,31 +324,37 @@ const EntitySumUp: FC<
       return;
     }
 
-    setState({ type: 'loading' });
+    const fetchEntities = async () => {
+      setState({ type: 'loading' });
 
-    if (entity) {
-      getAdditionalEntities(infraID as number, entity, dispatch).then((additionalEntities) => {
+      if (entity) {
+        const additionalEntities = await getAdditionalEntities(infraID as number, entity, dispatch);
         setState({
           type: 'ready',
           entity,
           additionalEntities,
         });
-      });
-    } else {
-      getEntity(infraID as number, id as string, objType as EditoastType, dispatch).then(
-        (fetchedEntity) => {
-          getAdditionalEntities(infraID as number, fetchedEntity, dispatch).then(
-            (additionalEntities) => {
-              setState({
-                type: 'ready',
-                entity: fetchedEntity,
-                additionalEntities,
-              });
-            }
-          );
-        }
-      );
-    }
+      } else {
+        const fetchedEntity = await getEntity(
+          infraID as number,
+          id as string,
+          objType as EditoastType,
+          dispatch
+        );
+        const additionalEntities = await getAdditionalEntities(
+          infraID as number,
+          fetchedEntity,
+          dispatch
+        );
+        setState({
+          type: 'ready',
+          entity: fetchedEntity,
+          additionalEntities,
+        });
+      }
+    };
+
+    fetchEntities();
   }, [entity, id, objType, infraID, state.type]);
 
   if (state.type === 'loading' || state.type === 'idle') return <LoaderFill displayDelay={500} />;
