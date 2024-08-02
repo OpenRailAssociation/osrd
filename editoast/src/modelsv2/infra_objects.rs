@@ -329,32 +329,43 @@ mod tests_persist {
 
 #[cfg(test)]
 mod tests_retrieve {
-    use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::small_infra;
+    use editoast_models::DbConnectionPoolV2;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
 
-    #[rstest::rstest]
+    use super::*;
+    use crate::modelsv2::fixtures::create_small_infra;
+
+    #[rstest]
     async fn from_trigrams() {
-        let pg_db_pool = db_pool();
-        let small_infra = small_infra(pg_db_pool.clone()).await;
-        let mut conn = pg_db_pool.get().await.unwrap();
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+
         let trigrams = vec!["MES".to_string(), "WS".to_string()];
-        let res =
-            OperationalPointModel::retrieve_from_trigrams(&mut conn, small_infra.id, &trigrams)
-                .await
-                .expect("Failed to retrieve operational points");
+        let res = OperationalPointModel::retrieve_from_trigrams(
+            db_pool.get_ok().deref_mut(),
+            small_infra.id,
+            &trigrams,
+        )
+        .await
+        .expect("Failed to retrieve operational points");
+
         assert_eq!(res.len(), 2);
     }
 
-    #[rstest::rstest]
+    #[rstest]
     async fn from_uic() {
-        let pg_db_pool = db_pool();
-        let small_infra = small_infra(pg_db_pool.clone()).await;
-        let mut conn = pg_db_pool.get().await.unwrap();
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
         let uic = vec![1, 2];
-        let res = OperationalPointModel::retrieve_from_uic(&mut conn, small_infra.id, &uic)
-            .await
-            .expect("Failed to retrieve operational points");
+        let res = OperationalPointModel::retrieve_from_uic(
+            db_pool.get_ok().deref_mut(),
+            small_infra.id,
+            &uic,
+        )
+        .await
+        .expect("Failed to retrieve operational points");
+
         assert_eq!(res.len(), 2);
     }
 }
