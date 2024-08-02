@@ -552,7 +552,7 @@ jobs:
           docker run --name=editoast-test --net=host -v $PWD/output:/output \
             -e DATABASE_URL="postgres://osrd:password@localhost:5432/osrd" \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
-            /bin/bash -c "diesel migration run --locked-schema && cargo test --workspace --verbose -- --test-threads=4 && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+            /bin/bash -c "diesel migration run --locked-schema && RUST_BACKTRACE=1 cargo test --workspace --verbose -- --test-threads=4 && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
 
           exit $(docker wait editoast-test)
 
