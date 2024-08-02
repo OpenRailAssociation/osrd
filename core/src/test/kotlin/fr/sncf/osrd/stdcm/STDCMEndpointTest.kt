@@ -1,10 +1,6 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.api.ApiTest
-import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
-import fr.sncf.osrd.api.stdcm.STDCMEndpoint
-import fr.sncf.osrd.api.stdcm.STDCMRequest
-import fr.sncf.osrd.api.stdcm.STDCMResponse
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
 import fr.sncf.osrd.utils.Helpers.getExampleRollingStock

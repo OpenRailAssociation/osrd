@@ -1,6 +1,5 @@
 package fr.sncf.osrd.pathfinding
 
-import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.api.pathfinding.runPathfinding
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection

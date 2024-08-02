@@ -4,8 +4,9 @@ import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.api_v2.TrackLocation
+import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator
 import fr.sncf.osrd.api.pathfinding.constraints.*
-import fr.sncf.osrd.api.pathfinding.makeHeuristics
+import fr.sncf.osrd.api.pathfinding.minDistanceBetweenSteps
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
@@ -123,6 +124,49 @@ private fun initConstraintsFromRSProps(
         }
     res.add(SignalingSystemConstraints(infra.blockInfra, listOf(sigSystemIds)))
     return res
+}
+
+/** Initialize the heuristics */
+fun makeHeuristics(
+    infra: FullInfra,
+    waypoints: List<Collection<PathfindingEdgeLocationId<Block>>>,
+    rollingStockMaxSpeed: Double,
+): ArrayList<AStarHeuristicId<Block>> {
+    // Compute the minimum distance between steps
+    val stepMinDistance = Array(waypoints.size - 1) { 0.meters }
+    for (i in 0 until waypoints.size - 2) {
+        stepMinDistance[i] =
+            minDistanceBetweenSteps(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                waypoints[i + 2]
+            )
+    }
+
+    // Reversed cumulative sum
+    for (i in stepMinDistance.size - 2 downTo 0) {
+        stepMinDistance[i] += stepMinDistance[i + 1]
+    }
+
+    // Setup estimators foreach intermediate steps
+    val remainingDistanceEstimators = ArrayList<AStarHeuristicId<Block>>()
+    for (i in 0 until waypoints.size - 1) {
+        val remainingDistanceEstimator =
+            RemainingDistanceEstimator(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                stepMinDistance[i]
+            )
+
+        // Now that the cost function is an approximation of the remaining time,
+        // we need to return the smallest possible remaining time here
+        remainingDistanceEstimators.add { index, element ->
+            remainingDistanceEstimator.apply(index, element).meters / rollingStockMaxSpeed
+        }
+    }
+    return remainingDistanceEstimators
 }
 
 @Throws(OSRDError::class)
@@ -303,7 +347,7 @@ private fun getBlockOffset(
     )
 }
 
-fun validatePathfindingResponse(
+private fun validatePathfindingResponse(
     infra: FullInfra,
     req: PathfindingBlockRequest,
     res: PathfindingBlockResponse

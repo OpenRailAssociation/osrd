@@ -4,20 +4,19 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.ConflictDetectionEndpoint
+import fr.sncf.osrd.conflicts.ConflictType
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.ZonedDateTime
 
 class ConflictDetectionResponse(
-    val conflicts: Collection<Conflict>,
+    val conflicts: Collection<ConflictResponse>,
 )
 
-class Conflict(
+class ConflictResponse(
     @Json(name = "train_ids") val trainIds: Collection<Long>,
     @Json(name = "start_time") val startTime: ZonedDateTime,
     @Json(name = "end_time") val endTime: ZonedDateTime,
-    @Json(name = "conflict_type")
-    val conflictType: ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType,
+    @Json(name = "conflict_type") val conflictType: ConflictType,
 )
 
 val conflictResponseAdapter: JsonAdapter<ConflictDetectionResponse> =

@@ -11,7 +11,6 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
-import fr.sncf.osrd.standalone_sim.StandaloneSim
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.graph.simulateBlock
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
