@@ -320,32 +320,34 @@ const EntitySumUp: FC<
   >({ type: 'idle' });
 
   useEffect(() => {
-    if (state.type === 'idle') {
-      setState({ type: 'loading' });
+    if (state.type !== 'idle') {
+      return;
+    }
 
-      if (entity) {
-        getAdditionalEntities(infraID as number, entity, dispatch).then((additionalEntities) => {
-          setState({
-            type: 'ready',
-            entity,
-            additionalEntities,
-          });
+    setState({ type: 'loading' });
+
+    if (entity) {
+      getAdditionalEntities(infraID as number, entity, dispatch).then((additionalEntities) => {
+        setState({
+          type: 'ready',
+          entity,
+          additionalEntities,
         });
-      } else {
-        getEntity(infraID as number, id as string, objType as EditoastType, dispatch).then(
-          (fetchedEntity) => {
-            getAdditionalEntities(infraID as number, fetchedEntity, dispatch).then(
-              (additionalEntities) => {
-                setState({
-                  type: 'ready',
-                  entity: fetchedEntity,
-                  additionalEntities,
-                });
-              }
-            );
-          }
-        );
-      }
+      });
+    } else {
+      getEntity(infraID as number, id as string, objType as EditoastType, dispatch).then(
+        (fetchedEntity) => {
+          getAdditionalEntities(infraID as number, fetchedEntity, dispatch).then(
+            (additionalEntities) => {
+              setState({
+                type: 'ready',
+                entity: fetchedEntity,
+                additionalEntities,
+              });
+            }
+          );
+        }
+      );
     }
   }, [entity, id, objType, infraID, state.type]);
 
