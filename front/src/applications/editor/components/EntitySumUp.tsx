@@ -327,31 +327,21 @@ const EntitySumUp: FC<
     const fetchEntities = async () => {
       setState({ type: 'loading' });
 
-      if (entity) {
-        const additionalEntities = await getAdditionalEntities(infraID as number, entity, dispatch);
-        setState({
-          type: 'ready',
-          entity,
-          additionalEntities,
-        });
-      } else {
-        const fetchedEntity = await getEntity(
+      if (!entity) {
+        entity = await getEntity(
           infraID as number,
           id as string,
           objType as EditoastType,
           dispatch
         );
-        const additionalEntities = await getAdditionalEntities(
-          infraID as number,
-          fetchedEntity,
-          dispatch
-        );
-        setState({
-          type: 'ready',
-          entity: fetchedEntity,
-          additionalEntities,
-        });
       }
+
+      const additionalEntities = await getAdditionalEntities(infraID as number, entity, dispatch);
+      setState({
+        type: 'ready',
+        entity,
+        additionalEntities,
+      });
     };
 
     fetchEntities();
