@@ -203,7 +203,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         resource_id: i64,
         subject_id: i64,
         privlvl: GrantPrivLvl,
-        granted_by: i64,
+        granted_by: Option<i64>,
     ) -> Result<(), Self::Error> {
         todo!()
     }

@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ResourceType {
@@ -61,7 +61,7 @@ pub enum Grant {
         resource_id: i64,
         privlvl: EffectivePrivLvl,
         granted_by: Option<i64>,
-        granted_at: Utc,
+        granted_at: DateTime<Utc>,
     },
     Implicit {
         subject_id: i64,

@@ -232,7 +232,6 @@ mod tests {
     use chrono::Utc;
     use pretty_assertions::assert_eq;
     use std::{
-        borrow::BorrowMut,
         collections::HashMap,
         convert::Infallible,
         sync::{Arc, Mutex},
@@ -498,7 +497,11 @@ mod tests {
                 .lock()
                 .unwrap()
                 .iter()
-                .filter(|((_, rtype, rid, _), grant)| rtype == resource_type && rid == resource_id)
+                .filter(|((_, rtype, rid, _), grant)| {
+                    *rtype == resource_type && *rid == resource_id
+                })
+                .map(|(_, grant)| grant)
+                .cloned()
                 .collect();
             Ok(grants)
         }
@@ -514,9 +517,11 @@ mod tests {
                 .lock()
                 .unwrap()
                 .iter()
-                .filter(|((sid, rtype, rid, _), grant)| {
-                    rtype == resource_type && rdi == resource_id && subject_ids.contains(sid)
+                .filter(|((sid, rtype, rid, _), _)| {
+                    *rtype == resource_type && *rid == resource_id && subject_ids.contains(sid)
                 })
+                .map(|(_, grant)| grant)
+                .cloned()
                 .collect();
             Ok(grants)
         }
@@ -527,12 +532,12 @@ mod tests {
             grant_id: i64,
         ) -> Result<(), Self::Error> {
             let mut grants = self.grants.lock().unwrap();
-            grants.retain(|(_, rtype, rid, _), grant| {
+            grants.retain(|(_, rtype, _, _), _| {
                 let id = match grant {
                     Grant::Explict { grant_id, .. } => *grant_id,
                     _ => unreachable!(),
                 };
-                rtype != resource_type || rid != grant_id
+                *rtype != resource_type || id != grant_id
             });
             Ok(())
         }
