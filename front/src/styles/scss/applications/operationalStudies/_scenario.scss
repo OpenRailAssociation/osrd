@@ -6,7 +6,7 @@
   .scenario-container {
     margin: 0;
   }
-  
+
   @keyframes fadein {
     from {
       opacity: 0;
@@ -260,27 +260,27 @@
                 }
               }
             }
-            
+
             .scenario-timetable-train-container {
               max-width: 100%;
               cursor: pointer;
               transition: border-color 0.2s;
               flex-grow: 1;
               .scenario-timetable-train-header {
-                border-radius: 4px;
+                border-radius: 0.25rem;
                 display: flex;
                 align-items: center;
                 background-color: var(--coolgray3);
                 transition: background-color 0.2s;
-                height: 28px;
+                height: 1.75rem;
                 .scenario-timetable-train-name {
-                  padding-right: 20px;
+                  padding-right: 1.25rem;
                   position: relative;
                   display: flex;
                   align-items: center;
                   overflow: hidden;
                   padding-left: 0.25rem;
-                  height: 28px;
+                  height: 1.75rem;
                   .train-name {
                     width: 8rem;
                     white-space: nowrap;
@@ -334,7 +334,7 @@
                   text-align: right;
                   line-height: 0.8rem;
                   padding-right: 0.25rem;
-                  height: 28px;
+                  height: 1.75rem;
                   .scenario-timetable-train-departure {
                     font-weight: 600;
                     font-size: 0.9rem;
@@ -350,13 +350,13 @@
                 .not-honored {
                   background-color: #eaa72b;
                   justify-content: space-between;
-                  border-radius: 0 4px 4px 0;
+                  border-radius: 0 0.25rem 0.25rem 0;
                 }
                 .too-fast {
                   background: linear-gradient(rgba(#eaa72b, 0.3), rgba(#eaa72b, 0.3)),
-                     linear-gradient(white, white); 
+                    linear-gradient(white, white);
                   justify-content: space-between;
-                    border-radius: 0 4px 4px 0;
+                  border-radius: 0 0.25rem 0.25rem 0;
                 }
               }
               .scenario-timetable-train-body {
@@ -427,7 +427,7 @@
             }
             &:hover:not(.modified) {
               .scenario-timetable-train-buttons {
-                height: 28px;
+                height: 1.75rem;
                 display: flex;
               }
             }
@@ -439,11 +439,13 @@
                 border-color: var(--secondary);
                 .scenario-timetable-train-header {
                   background-color: var(--secondary);
+                  border-radius: 0.25rem 0px 0px 0.25rem;
                   color: var(--white);
-                  border-radius: 4px 0px 0px 4px;
-                   .not-honored, .too-fast {
+                  .not-honored,
+                  .too-fast {
                     min-width: 50%;
-                    border-radius: 0 ;
+                    border-radius: 0;
+                    color: var(--secondary);
                   }
                 }
               }

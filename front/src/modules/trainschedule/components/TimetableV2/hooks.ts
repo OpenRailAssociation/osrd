@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { uniq } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import { isToofast, isScheduledPointsNotHonored } from 'applications/operationalStudies/utils';
+import { isScheduledPointsNotHonored, isTooFast } from 'applications/operationalStudies/utils';
 import type { SimulationSummaryResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
@@ -91,11 +91,11 @@ const useTrainSchedulesDetails = (
         if (scheduledPointsHonoredFilter !== 'both') {
           if (trainSummary.status !== 'success') return false;
 
-          const isHonored = isScheduledPointsNotHonored(trainSchedule, trainSummary);
+          const isNotHonored = isScheduledPointsNotHonored(trainSchedule, trainSummary);
 
           if (
-            (scheduledPointsHonoredFilter === 'honored' && !isHonored) ||
-            (scheduledPointsHonoredFilter === 'notHonored' && isHonored)
+            (scheduledPointsHonoredFilter === 'honored' && isNotHonored) ||
+            (scheduledPointsHonoredFilter === 'notHonored' && !isNotHonored)
           ) {
             return false;
           }
@@ -163,12 +163,11 @@ const useTrainSchedulesDetails = (
 
           let notHonoredReason: TrainScheduleWithDetails['notHonoredReason'];
 
-          if (trainSummary.status !== 'success') {
-            notHonoredReason = undefined;
-          } else if (isScheduledPointsNotHonored(trainSchedule, trainSummary)) {
-            notHonoredReason = 'scheduleNotHonored';
-          } else if (isToofast(trainSchedule, trainSummary)) {
-            notHonoredReason = 'trainTooFast';
+          if (trainSummary.status === 'success') {
+            if (isTooFast(trainSchedule, trainSummary)) notHonoredReason = 'trainTooFast';
+
+            if (isScheduledPointsNotHonored(trainSchedule, trainSummary))
+              notHonoredReason = 'scheduleNotHonored';
           }
 
           const otherProps =
@@ -215,8 +214,6 @@ const useTrainSchedulesDetails = (
     debouncedRollingstockFilter,
     validityFilter,
     scheduledPointsHonoredFilter,
-
-    // retour si margin non respecté ou si tolerance non respecté
     selectedTags,
   ]);
 
