@@ -29,6 +29,9 @@ use std::ops::DerefMut as _;
 use std::sync::Arc;
 use std::time::Duration;
 
+use axum::extract::Request;
+use axum::middleware::Next;
+use axum::response::Response;
 use editoast_authz::authorizer::Authorizer;
 use editoast_authz::authorizer::UserInfo;
 use editoast_authz::BuiltinRole;
@@ -118,13 +121,13 @@ editoast_common::schemas! {
 }
 
 pub type Roles = editoast_authz::roles::RoleConfig<BuiltinRole>;
+pub type AuthorizerExt = axum::extract::Extension<Arc<Authorizer<PgAuthDriver<BuiltinRole>>>>;
 
-// This function will become a middleware once we switch to axum
-async fn make_authorizer<'config>(
+async fn make_authorizer(
     headers: &axum::http::HeaderMap,
-    roles: &'config Roles,
+    roles: Arc<Roles>,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<Authorizer<'config, PgAuthDriver<BuiltinRole>>, AuthorizationError> {
+) -> Result<Authorizer<PgAuthDriver<BuiltinRole>>, AuthorizationError> {
     if roles.is_superuser() {
         return Ok(Authorizer::new_superuser(
             roles,
@@ -149,6 +152,22 @@ async fn make_authorizer<'config>(
     )
     .await?;
     Ok(authorizer)
+}
+
+pub async fn authorizer_middleware(
+    State(AppState {
+        db_pool_v2: db_pool,
+        role_config,
+        ..
+    }): State<AppState>,
+    mut req: Request,
+    next: Next,
+) -> Result<Response> {
+    let headers = req.headers();
+    let authorizer = make_authorizer(headers, role_config.clone(), db_pool).await?;
+    let authorizer = Arc::new(authorizer);
+    req.extensions_mut().insert(authorizer);
+    Ok(next.run(req).await)
 }
 
 #[derive(Debug, Error, EditoastError)]

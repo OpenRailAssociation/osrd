@@ -5,6 +5,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use axum::Extension;
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_authz::BuiltinRole;
@@ -20,6 +21,7 @@ use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationStats;
 use super::study;
+use super::AuthorizerExt;
 use crate::error::Result;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
@@ -28,10 +30,8 @@ use crate::modelsv2::Document;
 use crate::modelsv2::Model;
 use crate::modelsv2::Project;
 use crate::modelsv2::Retrieve;
-use crate::views::make_authorizer;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::AuthorizationError;
-use crate::AppState;
 use editoast_models::DbConnection;
 
 crate::routes! {
@@ -148,15 +148,10 @@ impl ProjectWithStudyCount {
     )
 )]
 async fn create(
-    headers: axum::http::HeaderMap,
-    State(AppState {
-        db_pool_v2: db_pool,
-        role_config,
-        ..
-    }): State<AppState>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
-    let mut authorizer = make_authorizer(&headers, role_config.as_ref(), db_pool.clone()).await?;
     let authorized = authorizer
         .check_roles([BuiltinRole::OpsWrite].into())
         .await

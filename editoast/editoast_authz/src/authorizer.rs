@@ -1,4 +1,4 @@
-use std::{collections::HashSet, future::Future};
+use std::{collections::HashSet, future::Future, sync::Arc};
 
 use tracing::debug;
 
@@ -13,11 +13,12 @@ pub struct UserInfo {
     pub name: UserName,
 }
 
-pub struct Authorizer<'config, S: StorageDriver> {
+pub struct Authorizer<S: StorageDriver> {
     user: UserInfo,
     user_id: i64,
-    roles_config: &'config RoleConfig<S::BuiltinRole>,
-    user_roles: Option<HashSet<S::BuiltinRole>>,
+    roles_config: Arc<RoleConfig<S::BuiltinRole>>,
+    user_roles: HashSet<S::BuiltinRole>,
+    #[allow(unused)] // will be used soon
     storage: S,
 }
 
@@ -49,27 +50,28 @@ pub trait StorageDriver {
     ) -> impl Future<Output = Result<HashSet<Self::BuiltinRole>, Self::Error>> + Send;
 }
 
-impl<'config, S: StorageDriver> Authorizer<'config, S> {
+impl<S: StorageDriver> Authorizer<S> {
+    #[tracing::instrument(skip_all, fields(%user, roles_config = %roles_config.as_ref()), err)]
     pub async fn try_initialize(
         user: UserInfo,
-        roles_config: &'config RoleConfig<S::BuiltinRole>,
+        roles_config: Arc<RoleConfig<S::BuiltinRole>>,
         storage_driver: S,
     ) -> Result<Self, S::Error> {
         let user_id = storage_driver.ensure_user(&user).await?;
         debug!(%user, %user_id, "user authenticated");
+        let user_roles = storage_driver
+            .fetch_subject_roles(user_id, roles_config.as_ref())
+            .await?;
         Ok(Self {
             user,
             user_id,
             roles_config,
-            user_roles: None,
+            user_roles,
             storage: storage_driver,
         })
     }
 
-    pub fn new_superuser(
-        roles_config: &'config RoleConfig<S::BuiltinRole>,
-        storage_driver: S,
-    ) -> Self {
+    pub fn new_superuser(roles_config: Arc<RoleConfig<S::BuiltinRole>>, storage_driver: S) -> Self {
         debug_assert!(
             roles_config.is_superuser(),
             "Authorizer::new_superuser requires a superuser role config"
@@ -81,7 +83,7 @@ impl<'config, S: StorageDriver> Authorizer<'config, S> {
             },
             user_id: -1,
             roles_config,
-            user_roles: None,
+            user_roles: Default::default(),
             storage: storage_driver,
         }
     }
@@ -93,7 +95,7 @@ impl<'config, S: StorageDriver> Authorizer<'config, S> {
     /// Check that the user has all the required builting roles
     #[tracing::instrument(skip_all, fields(user = %self.user, user_roles = ?self.user_roles, ?required_roles), ret, err)]
     pub async fn check_roles(
-        &mut self,
+        &self,
         required_roles: HashSet<S::BuiltinRole>,
     ) -> Result<bool, S::Error> {
         if self.is_superuser() {
@@ -101,27 +103,11 @@ impl<'config, S: StorageDriver> Authorizer<'config, S> {
             return Ok(true);
         }
 
-        let user_roles = self.get_user_roles().await?;
-        Ok(required_roles.is_subset(user_roles))
-    }
-
-    async fn get_user_roles(&mut self) -> Result<&HashSet<S::BuiltinRole>, S::Error> {
-        match self.user_roles {
-            None => {
-                tracing::info!("fetching user roles");
-                let user_roles = self
-                    .storage
-                    .fetch_subject_roles(self.user_id, self.roles_config)
-                    .await?;
-                tracing::debug!(roles = ?user_roles, "caching user roles");
-                Ok(self.user_roles.insert(user_roles))
-            }
-            Some(ref user_roles) => Ok(user_roles),
-        }
+        Ok(required_roles.is_subset(&self.user_roles))
     }
 }
 
-impl<'config, S: StorageDriver> std::fmt::Debug for Authorizer<'config, S> {
+impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Authorizer")
             .field("user", &self.user)
@@ -144,7 +130,6 @@ mod tests {
     use crate::fixtures::*;
     use pretty_assertions::assert_eq;
     use std::{
-        borrow::BorrowMut,
         collections::HashMap,
         convert::Infallible,
         sync::{Arc, Mutex},
@@ -160,7 +145,7 @@ mod tests {
     async fn superuser() {
         let config = RoleConfig::new_superuser();
         let storage = MockStorageDriver::default();
-        let mut authorizer = Authorizer::new_superuser(&config, storage);
+        let authorizer = Authorizer::new_superuser(config.into(), storage);
         assert!(authorizer.is_superuser());
         // Check that the superuser has any role even if not explicitely granted
         assert_eq!(
@@ -175,12 +160,26 @@ mod tests {
     async fn check_roles() {
         let config = default_test_config();
         let storage = MockStorageDriver::default();
-        let mut authorizer = Authorizer::try_initialize(
+
+        // insert some mocked roles
+        {
+            let mut user_roles = storage.user_roles.lock().unwrap();
+            user_roles.insert(
+                0,
+                HashSet::from([
+                    TestBuiltinRole::DocRead,
+                    TestBuiltinRole::UserAdd,
+                    TestBuiltinRole::UserBan,
+                ]),
+            );
+        }
+
+        let authorizer = Authorizer::try_initialize(
             UserInfo {
                 identity: "toto".to_owned(),
                 name: "Sir Toto, the One and Only".to_owned(),
             },
-            &config,
+            config.into(),
             storage,
         )
         .await
@@ -192,19 +191,6 @@ mod tests {
                 users.iter().next(),
                 Some((&"toto".to_owned(), &0)),
                 "new user should have been created"
-            );
-        }
-
-        // insert some mocked roles
-        {
-            let mut user_roles = authorizer.storage.user_roles.lock().unwrap();
-            user_roles.insert(
-                0,
-                HashSet::from([
-                    TestBuiltinRole::DocRead,
-                    TestBuiltinRole::UserAdd,
-                    TestBuiltinRole::UserBan,
-                ]),
             );
         }
 
