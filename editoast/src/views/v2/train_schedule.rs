@@ -460,16 +460,22 @@ pub async fn train_simulation_batch(
     let simulated: Vec<_> = futures::future::join_all(futures)
         .await
         .into_iter()
-        .collect::<Result<_>>()?;
+        .collect();
 
-    let mut to_cache = Vec::with_capacity(simulated.len());
+    let mut is_cacheable = vec![false; train_schedules.len()];
     for (&(train_index, _), sim_res) in futures_index_hash.iter().zip(simulated) {
-        simulation_results[train_index] = sim_res;
+        (simulation_results[train_index], is_cacheable[train_index]) = match sim_res {
+            Ok(sim) => (sim, true),
+            // TODO: only make HTTP status code errors non-fatal
+            Err(core_error) => (SimulationResponse::SimulationFailed { core_error }, false),
+        }
     }
 
-    for (train_index, train_hash) in futures_index_hash.into_iter() {
-        to_cache.push((train_hash, &simulation_results[train_index]));
-    }
+    let to_cache: Vec<_> = futures_index_hash
+        .into_iter()
+        .filter(|&(train_index, _)| is_cacheable[train_index])
+        .map(|(train_index, train_hash)| (train_hash, &simulation_results[train_index]))
+        .collect();
 
     // Cache the simulation response
     redis_conn.json_set_bulk(&to_cache).await?;

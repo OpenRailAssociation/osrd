@@ -177,12 +177,19 @@ async fn pathfinding_blocks_batch(
     let computed_paths: Vec<_> = futures::future::join_all(futures)
         .await
         .into_iter()
-        .collect::<Result<_>>()?;
+        .collect();
 
-    for (index, computed_path) in computed_paths.into_iter().enumerate() {
+    for (index, path_result) in computed_paths.into_iter().enumerate() {
         let path_index = pathfinding_requests_index[index];
-        to_cache.push((&hashes[path_index], computed_path.clone()));
-        pathfinding_results[path_index] = Some(computed_path);
+        let path = match path_result {
+            Ok(path) => {
+                to_cache.push((&hashes[path_index], path.clone()));
+                path
+            }
+            // TODO: only make HTTP status code errors non-fatal
+            Err(core_error) => PathfindingResult::PathfindingFailed { core_error },
+        };
+        pathfinding_results[path_index] = Some(path);
     }
 
     debug!(nb_results = to_cache.len(), "Caching pathfinding response");
