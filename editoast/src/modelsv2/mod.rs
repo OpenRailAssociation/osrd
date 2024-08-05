@@ -48,13 +48,15 @@ editoast_common::schemas! {
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
+    use std::ops::DerefMut;
 
     use editoast_derive::ModelV2;
+    use editoast_models::DbConnectionPoolV2;
     use itertools::Itertools;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
 
     use super::prelude::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::TestFixture;
 
     #[derive(Debug, Default, Clone, ModelV2, PartialEq, Eq)]
     #[model(table = crate::tables::document)]
@@ -64,30 +66,29 @@ mod tests {
         data: Vec<u8>,
     }
 
-    #[rstest::rstest]
+    #[rstest]
     async fn test_batch() {
-        let pool = db_pool();
-        let mut conn = pool.get().await.unwrap();
+        let pool = DbConnectionPoolV2::for_tests();
+
         let changesets = (0..5).map(|i| {
             Document::changeset()
                 .content_type(String::from("text/plain"))
                 .data(vec![i])
         });
-        let docs = Document::create_batch::<_, Vec<_>>(&mut conn, changesets)
+
+        let docs = Document::create_batch::<_, Vec<_>>(pool.get_ok().deref_mut(), changesets)
             .await
-            .unwrap()
-            .into_iter()
-            .map(|d| TestFixture::new(d, pool.clone()))
-            .collect::<Vec<_>>();
+            .expect("Failed to create documents");
         assert_eq!(docs.len(), 5);
 
-        let mut ids = docs.iter().map(|d| d.model.id).collect::<Vec<_>>();
+        let mut ids = docs.iter().map(|d| d.id).collect::<Vec<_>>();
         ids.push(123456789);
 
         let (docs, missing): (Vec<_>, _) =
-            Document::retrieve_batch(&mut pool.get().await.unwrap(), ids.clone())
+            Document::retrieve_batch(pool.get_ok().deref_mut(), ids.clone())
                 .await
                 .unwrap();
+
         assert_eq!(missing.into_iter().collect_vec(), vec![123456789]);
         assert_eq!(docs.len(), 5);
         assert_eq!(
@@ -106,17 +107,17 @@ mod tests {
         let new_ct = String::from("I like trains");
         let (updated_docs, missing): (Vec<_>, _) = Document::changeset()
             .content_type(new_ct.clone())
-            .update_batch(&mut pool.get().await.unwrap(), ids.iter().cloned().take(2))
+            .update_batch(pool.get_ok().deref_mut(), ids.iter().cloned().take(2))
             .await
-            .unwrap();
+            .expect("Failed to update documents");
         assert!(missing.is_empty());
         assert!(updated_docs.iter().all(|d| d.content_type == new_ct));
         assert_eq!(updated_docs.len(), 2);
 
         let (docs, _): (Vec<_>, _) =
-            Document::retrieve_batch(&mut pool.get().await.unwrap(), ids.clone())
+            Document::retrieve_batch(pool.get_ok().deref_mut(), ids.clone())
                 .await
-                .unwrap();
+                .expect("Failed to retrieve documents");
         assert_eq!(
             docs.iter()
                 .map(|d| d.content_type.clone())
@@ -125,19 +126,19 @@ mod tests {
         );
 
         let not_deleted = ids.remove(0);
-        let count = Document::delete_batch(&mut pool.get().await.unwrap(), ids)
+        let count = Document::delete_batch(pool.get_ok().deref_mut(), ids)
             .await
-            .unwrap();
+            .expect("Failed to delete documents");
         assert_eq!(count, 4);
 
-        assert!(
-            Document::exists(&mut pool.get().await.unwrap(), not_deleted)
-                .await
-                .unwrap()
-        );
+        let exists = Document::exists(pool.get_ok().deref_mut(), not_deleted)
+            .await
+            .expect("Failed to check if document exists");
+
+        assert!(exists);
     }
 
-    #[rstest::rstest]
+    #[rstest]
     async fn test_remote() {
         #[derive(Debug, Clone, PartialEq)]
         enum Data {
@@ -173,10 +174,9 @@ mod tests {
             data: Data,
         }
 
-        let pool = db_pool();
-        let mut conn = pool.get().await.unwrap();
+        let pool = DbConnectionPoolV2::for_tests();
         let docs = Document::create_batch::<_, Vec<_>>(
-            &mut conn,
+            pool.get_ok().deref_mut(),
             [
                 Document::changeset()
                     .content_type(String::from("text/plain"))
@@ -187,76 +187,75 @@ mod tests {
             ],
         )
         .await
-        .unwrap()
+        .expect("Failed to create documents")
         .into_iter()
-        .map(|d| TestFixture::new(d, pool.clone()))
         .collect::<Vec<_>>();
         assert_eq!(docs.len(), 2);
 
-        let ids = docs.iter().map(|d| d.model.id).collect::<Vec<_>>();
+        let ids = docs.iter().map(|d| d.id).collect::<Vec<_>>();
         assert_eq!(
-            Document::retrieve(&mut conn, ids[0])
+            Document::retrieve(pool.get_ok().deref_mut(), ids[0])
                 .await
-                .unwrap()
-                .unwrap()
+                .expect("Failed to retrieve document")
+                .expect("Document not found")
                 .data,
             Data::Prefixed(0x43)
         );
         assert_eq!(
-            Document::retrieve(&mut conn, ids[1])
+            Document::retrieve(pool.get_ok().deref_mut(), ids[1])
                 .await
-                .unwrap()
-                .unwrap()
+                .expect("Failed to retrieve document")
+                .expect("Document not found")
                 .data,
             Data::Raw(0, 1)
         );
     }
 
-    #[rstest::rstest]
+    #[rstest]
     async fn test_list() {
         // GIVEN
+        let pool = DbConnectionPoolV2::for_tests();
+
         let (multiple_ct, unique_ct) = ("models_test_list/multiple", "models_test_list/unique");
-        let pool = db_pool();
-        let conn = &mut pool.get().await.unwrap();
         let changesets = (0..20).map(|i| {
             Document::changeset()
                 .content_type(multiple_ct.to_string())
                 .data(vec![i])
         });
-        let mut documents = Document::create_batch::<_, Vec<_>>(conn, changesets)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(|d| TestFixture::new(d, pool.clone()))
-            .collect::<Vec<_>>();
+        let mut documents =
+            Document::create_batch::<_, Vec<_>>(pool.get_ok().deref_mut(), changesets)
+                .await
+                .expect("Failed to create documents batch");
         let unique_doc_idx = 10;
+
         documents[unique_doc_idx]
             .patch()
             .content_type(unique_ct.to_string())
-            .apply(conn)
+            .apply(pool.get_ok().deref_mut())
             .await
-            .unwrap();
+            .expect("Failed to update document");
 
         // WHEN
         let (list, multiple_count) = Document::list_and_count(
-            conn,
+            pool.get_ok().deref_mut(),
             SelectionSettings::new()
                 .filter(move || Document::CONTENT_TYPE.eq(multiple_ct.to_string()))
                 .order_by(|| Document::ID.desc())
                 .limit(10),
         )
         .await
-        .unwrap();
+        .expect("Failed to list documents with multiple content type");
+
         let (past_unique_ct_index, unique_count) = Document::list_and_count(
-            conn,
+            pool.get_ok().deref_mut(),
             SelectionSettings::new()
                 .filter(move || Document::CONTENT_TYPE.eq(unique_ct.to_string()))
                 .offset(15),
         )
         .await
-        .unwrap();
+        .expect("Failed to list documents with unique content type");
         let (with_unique, unique_count_bis) = Document::list_and_count(
-            conn,
+            pool.get_ok().deref_mut(),
             SelectionSettings::new()
                 .filter(move || Document::CONTENT_TYPE.eq(unique_ct.to_string())),
         )
@@ -271,7 +270,6 @@ mod tests {
             documents[9..20]
                 .iter()
                 .filter(|&f| f.id != documents[unique_doc_idx].id)
-                .map(|f| &f.model)
                 .rev()
                 .collect::<Vec<&Document>>()
         );
@@ -279,6 +277,6 @@ mod tests {
         assert!(past_unique_ct_index.is_empty());
         assert_eq!(unique_count_bis, 1);
         assert_eq!(with_unique.len(), 1);
-        assert_eq!(with_unique[0], documents[unique_doc_idx].model);
+        assert_eq!(with_unique[0], documents[unique_doc_idx]);
     }
 }
