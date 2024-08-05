@@ -5,7 +5,7 @@ import type { TFunction } from 'i18next';
 import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { TrainScheduleV2 } from 'applications/operationalStudies/types';
+import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import {
   osrdEditoastApi,
   type LightRollingStockWithLiveries,
@@ -29,7 +29,7 @@ function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction
 }
 
 type ImportTrainScheduleTrainsListProps = {
-  trainsList: TrainScheduleV2[];
+  trainsList: ImportedTrainSchedule[];
   rollingStocks: LightRollingStockWithLiveries[];
   isLoading: boolean;
   timetableId: number;

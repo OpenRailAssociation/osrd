@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 
 import type {
   ImportedTrainSchedule,
-  TrainScheduleV2,
   TrainScheduleImportConfig,
 } from 'applications/operationalStudies/types';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
@@ -21,7 +20,7 @@ import { useAppDispatch } from 'store';
 import { formatIsoDate } from 'utils/date';
 
 interface ImportTrainScheduleConfigProps {
-  setTrainsList: (trainsList: TrainScheduleV2[]) => void;
+  setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TrainScheduleBase[]) => void;
 }
