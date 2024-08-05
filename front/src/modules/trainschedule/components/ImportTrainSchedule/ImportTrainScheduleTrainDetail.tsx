@@ -4,21 +4,25 @@ import cx from 'classnames';
 import nextId from 'react-id-generator';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
-import type { TrainSchedule, TrainScheduleV2 } from 'applications/operationalStudies/types';
+import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import type {
   LightRollingStockWithLiveries,
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import { seconds2hhmmss } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
+import { secToHoursString } from 'utils/timeManipulation';
 
-type Props = {
-  trainData: TrainSchedule | TrainScheduleV2;
+type ImportTrainScheduleTrainDetailProps = {
+  trainData: ImportedTrainSchedule;
   idx: number;
   rollingStock?: LightRollingStockWithLiveries | RollingStockWithLiveries;
 };
 
-export default function ImportTrainScheduleTrainDetail({ trainData, idx, rollingStock }: Props) {
+export default function ImportTrainScheduleTrainDetail({
+  trainData,
+  idx,
+  rollingStock,
+}: ImportTrainScheduleTrainDetailProps) {
   const [isOpened, setIsOpened] = useState(false);
 
   const openCard = () => {
@@ -31,7 +35,7 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
     const durationInSecond = Math.round(
       (new Date(arrivalTime).getTime() - new Date(departureTime).getTime()) / 1000
     );
-    return seconds2hhmmss(durationInSecond);
+    return secToHoursString(durationInSecond, true);
   };
   return (
     <div

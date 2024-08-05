@@ -1,6 +1,3 @@
-export const isFirstOrLastElement = <T>(array: T[], element: T) =>
-  array[0] === element || array[array.length - 1] === element;
-
 export const isEmptyArray = <T>(array: T[]) => array.length === 0;
 
 /**

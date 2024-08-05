@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import type { TrainScheduleV2 } from 'applications/operationalStudies/types';
+import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
@@ -14,7 +14,7 @@ import { useAppDispatch } from 'store';
 const ImportTrainScheduleV2 = ({ timetableId }: { timetableId: number }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock']);
-  const [trainsList, setTrainsList] = useState<TrainScheduleV2[]>([]);
+  const [trainsList, setTrainsList] = useState<ImportedTrainSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [trainsJsonData, setTrainsJsonData] = useState<TrainScheduleBase[]>([]);
 
