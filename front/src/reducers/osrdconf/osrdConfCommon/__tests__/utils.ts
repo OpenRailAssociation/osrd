@@ -1,10 +1,7 @@
 import { compact, last, omit } from 'lodash';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
-import type { Allowance, Distribution, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
-import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
-import displayPowerRestrictionIntervals from 'modules/powerRestriction/helpers/displayPowerRestrictionIntervals';
-import mergePowerRestrictionRanges from 'modules/trainschedule/components/ManageTrainSchedule/helpers/mergePowerRestrictionRanges';
+import type { Distribution, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';
@@ -78,17 +75,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
 
     const state = defaultStore.getState()[slice.name];
     expect(state.trainStep).toBe(newTrainStep);
-  });
-
-  it('should handle updateAllowances', () => {
-    const newAllowances: Allowance[] = [
-      testDataBuilder.buildEngineeringAllowance(),
-      testDataBuilder.buildStandardAllowance(),
-    ];
-    defaultStore.dispatch(slice.actions.updateAllowances(newAllowances));
-
-    const state = defaultStore.getState()[slice.name];
-    expect(state.allowances).toBe(newAllowances);
   });
 
   it('should handle toggleUsingElectricalProfiles', () => {
@@ -598,34 +584,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     defaultStore.dispatch(slice.actions.updateGridMarginAfter(newGridMarginAfter));
     const state = defaultStore.getState()[slice.name];
     expect(state.gridMarginAfter).toStrictEqual(newGridMarginAfter);
-  });
-
-  it('should handle updatePowerRestrictionRanges', () => {
-    const newPowerRestrictionRanges = testDataBuilder.buildPowerRestrictionRanges();
-    defaultStore.dispatch(slice.actions.updatePowerRestrictionRanges(newPowerRestrictionRanges));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.powerRestrictionRanges).toStrictEqual(newPowerRestrictionRanges);
-  });
-
-  describe('Testing updated intervals on power restriction selection', () => {
-    it('should correctly handle intervals cuts in relation to electrifications and power restrictions', () => {
-      const formattedPathElectrificationRanges =
-        testDataBuilder.buildFormattedPathElectrificationRanges();
-      const powerRestrictionRanges = testDataBuilder.buildFormattedPowerRestrictionRanges();
-      const formattedIntervals = displayPowerRestrictionIntervals(
-        formattedPathElectrificationRanges,
-        powerRestrictionRanges
-      );
-      const expectedIntervals = testDataBuilder.buildExpectedIntervals();
-      expect(formattedIntervals).toEqual(expectedIntervals);
-    });
-    it('should fuse intervals correctly, and match powerRestrictionRanges', () => {
-      const powerRestrictionRanges = testDataBuilder.buildIntervals();
-      const expectedIntervals = [
-        { begin_position: 0, end_position: 25, power_restriction_code: NO_POWER_RESTRICTION },
-      ];
-      expect(expectedIntervals).toEqual(mergePowerRestrictionRanges(powerRestrictionRanges));
-    });
   });
 
   it('should handle updateTrainScheduleIDsToModify', () => {

@@ -11,7 +11,6 @@ import { selectProjection } from 'applications/operationalStudies/components/Sce
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTrainSchedule';
-import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -308,12 +307,7 @@ const ScenarioV1 = () => {
                 displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
                   <ScenarioLoaderMessage infraState={infra?.state} />
                 )}
-              {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
-                displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
-                <div className="scenario-managetrainschedule">
-                  <ManageTrainSchedule />
-                </div>
-              )}
+
               {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
                 <div className="scenario-managetrainschedule">
                   <ImportTrainSchedule infraId={infraId} timetableId={timetableId} />

@@ -17,27 +17,21 @@ import { useDebounce } from 'utils/helpers';
 export default function TrainSettings() {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
-  const { getLabels, getDepartureTime, getInitialSpeed, getName, getStartTime } =
-    useOsrdConfSelectors();
-  const { updateLabels, updateDepartureTime, updateInitialSpeed, updateName, updateStartTime } =
-    useOsrdConfActions();
+  const { getLabels, getInitialSpeed, getName, getStartTime } = useOsrdConfSelectors();
+  const { updateLabels, updateInitialSpeed, updateName, updateStartTime } = useOsrdConfActions();
 
   const labels = useSelector(getLabels);
   const nameFromStore = useSelector(getName);
   const initialSpeedFromStore = useSelector(getInitialSpeed);
-  const departureTimeFromStore = useSelector(getDepartureTime);
   const startTimeFromStore = useSelector(getStartTime);
 
   const [name, setName] = useState<string>(nameFromStore);
-  // TODO TS2 : remove departureTime when drop v1
-  const [departureTime, setDepartureTime] = useState<string>(departureTimeFromStore);
   const [startTime, setStartTime] = useState(startTimeFromStore.substring(0, 19));
   const [initialSpeed, setInitialSpeed] = useState<number | undefined>(initialSpeedFromStore);
   const dispatch = useAppDispatch();
 
   const debouncedName = useDebounce(name, 500);
   const debouncedInitialSpeed = useDebounce(initialSpeed!, 500);
-  const debouncedDepartureTime = useDebounce(departureTime, 500);
   const debouncedStartTime = useDebounce(startTime, 500);
 
   const removeTag = (idx: number) => {
@@ -57,10 +51,6 @@ export default function TrainSettings() {
   }, [debouncedName]);
 
   useEffect(() => {
-    dispatch(updateDepartureTime(debouncedDepartureTime));
-  }, [debouncedDepartureTime]);
-
-  useEffect(() => {
     const formatedStartTime = dateTimeToIso(debouncedStartTime);
     if (formatedStartTime) dispatch(updateStartTime(formatedStartTime));
   }, [debouncedStartTime]);
@@ -71,10 +61,9 @@ export default function TrainSettings() {
 
   useEffect(() => {
     setName(nameFromStore);
-    setDepartureTime(departureTimeFromStore);
     setInitialSpeed(initialSpeedFromStore);
     setStartTime(startTimeFromStore.substring(0, 19));
-  }, [nameFromStore, departureTimeFromStore, initialSpeedFromStore]);
+  }, [nameFromStore, initialSpeedFromStore, startTimeFromStore]);
 
   const isInvalidTrainScheduleName = isInvalidName(name);
 

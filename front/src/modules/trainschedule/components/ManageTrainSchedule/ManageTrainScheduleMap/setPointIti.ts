@@ -1,28 +1,8 @@
-import type { PointOnMap } from 'applications/operationalStudies/consts';
+/* eslint-disable import/prefer-default-export */
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { store } from 'store';
-
-export function setPointIti(pointType: string, data: PointOnMap, actions: ConfSliceActions) {
-  const { updateOrigin, updateDestination, addVias, updateFeatureInfoClick } = actions;
-  const point: PointOnMap = {
-    ...data,
-    location: { track_section: data.id, geo_coordinates: data.coordinates },
-  };
-
-  switch (pointType) {
-    case 'start':
-      store.dispatch(updateOrigin(point));
-      break;
-    case 'end':
-      store.dispatch(updateDestination(point));
-      break;
-    default:
-      store.dispatch(addVias(point));
-  }
-  store.dispatch(updateFeatureInfoClick({ displayPopup: false }));
-}
 
 export function setPointItiV2(
   pointType: 'origin' | 'destination' | 'via',

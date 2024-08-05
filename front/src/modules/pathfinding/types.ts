@@ -1,4 +1,3 @@
-import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import type { PathStep } from 'reducers/osrdconf/types';
 
@@ -10,18 +9,6 @@ export type PathfindingState = {
   mustBeLaunched: boolean;
   mustBeLaunchedManually: boolean;
   cancelled: boolean;
-};
-
-export type PathfindingAction = {
-  type: string;
-  message?: string;
-  params?: {
-    origin?: Partial<PointOnMap>;
-    destination?: Partial<PointOnMap>;
-    rollingStockID?: number;
-    vias?: Partial<PointOnMap>[];
-    pathfindingId?: number;
-  };
 };
 
 export type PathfindingActionV2 = {

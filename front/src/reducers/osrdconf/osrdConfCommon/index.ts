@@ -27,7 +27,6 @@ export const defaultCommonConf: OsrdConfState = {
   trainCount: 1,
   trainDelta: 15,
   trainStep: 2,
-  allowances: [],
   usingElectricalProfiles: true,
   labels: [],
   projectID: undefined,
@@ -38,7 +37,6 @@ export const defaultCommonConf: OsrdConfState = {
   electricalProfileSetId: undefined,
   rollingStockID: undefined,
   rollingStockComfort: 'STANDARD' as const,
-  powerRestrictionRanges: [],
   powerRestrictionV2: [],
   speedLimitByTag: undefined,
   origin: undefined,
@@ -72,7 +70,6 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updateTrainCount']: CaseReducer<S, PayloadAction<S['trainCount']>>;
   ['updateTrainDelta']: CaseReducer<S, PayloadAction<OsrdConfState['trainDelta']>>;
   ['updateTrainStep']: CaseReducer<S, PayloadAction<S['trainStep']>>;
-  ['updateAllowances']: CaseReducer<S, PayloadAction<S['allowances']>>;
   ['toggleUsingElectricalProfiles']: CaseReducer<S>;
   ['updateLabels']: CaseReducer<S, PayloadAction<S['labels']>>;
   ['updateProjectID']: CaseReducer<S, PayloadAction<S['projectID']>>;
@@ -113,7 +110,6 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updateItinerary']: CaseReducer<S, PayloadAction<S['geojson']>>;
   ['updateGridMarginBefore']: CaseReducer<S, PayloadAction<S['gridMarginBefore']>>;
   ['updateGridMarginAfter']: CaseReducer<S, PayloadAction<S['gridMarginAfter']>>;
-  ['updatePowerRestrictionRanges']: CaseReducer<S, PayloadAction<S['powerRestrictionRanges']>>;
   ['updateTrainScheduleIDsToModify']: CaseReducer<S, PayloadAction<S['trainScheduleIDsToModify']>>;
   ['updateFeatureInfoClick']: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
   ['updatePathSteps']: CaseReducer<
@@ -158,9 +154,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     updateTrainStep(state: Draft<S>, action: PayloadAction<S['trainStep']>) {
       state.trainStep = action.payload;
-    },
-    updateAllowances(state: Draft<S>, action: PayloadAction<S['allowances']>) {
-      state.allowances = action.payload;
     },
     toggleUsingElectricalProfiles(state: Draft<S>) {
       state.usingElectricalProfiles = !state.usingElectricalProfiles;
@@ -343,12 +336,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     updateGridMarginAfter(state: Draft<S>, action: PayloadAction<S['gridMarginAfter']>) {
       state.gridMarginAfter = action.payload;
-    },
-    updatePowerRestrictionRanges(
-      state: Draft<S>,
-      action: PayloadAction<S['powerRestrictionRanges']>
-    ) {
-      state.powerRestrictionRanges = action.payload;
     },
     updateTrainScheduleIDsToModify(
       state: Draft<S>,

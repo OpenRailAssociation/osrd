@@ -1,6 +1,6 @@
 import type { Feature, Position } from 'geojson';
 
-import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
+import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
 import type {
   AllowanceValue,
@@ -10,7 +10,6 @@ import type {
   PathResponse,
   RollingStockComfortType,
 } from 'common/api/osrdEditoastApi';
-import type { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 import type { InfraState } from 'reducers/infra';
 
 export interface OsrdConfState extends InfraState {
@@ -20,7 +19,6 @@ export interface OsrdConfState extends InfraState {
   trainCount: number;
   trainStep: number;
   trainDelta: number;
-  allowances: AllowanceForm[];
   usingElectricalProfiles: boolean;
   labels: string[];
   projectID?: number;
@@ -31,8 +29,6 @@ export interface OsrdConfState extends InfraState {
   electricalProfileSetId?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
-  // TODO: update the call to the api, to rename the fields begin & end -> begin_position & end_position
-  powerRestrictionRanges: PowerRestrictionRange[];
   powerRestrictionV2: PowerRestrictionV2[];
   origin?: PointOnMap;
   initialSpeed?: number;

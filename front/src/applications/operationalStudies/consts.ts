@@ -1,7 +1,5 @@
 import type { Position } from 'geojson';
 
-import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
-
 export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   none: 'NONE',
   add: 'ADD',
@@ -58,5 +56,3 @@ export const STUDY_TYPES = [
 ] as const;
 
 export type StudyType = typeof STUDY_TYPES;
-
-export type PowerRestrictionRange = LinearMetadataItem<{ value: string }>;
