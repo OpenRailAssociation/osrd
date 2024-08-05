@@ -16,6 +16,7 @@
     "allowance_convergence": "We could not go slow enough in this setting to match the given allowance time",
     "error": "An error has occurred",
     "hardErrorInfra": "The infrastructure contains errors and cannot be used without first being corrected.",
+    "invalidInitialSpeed": "The initial speed must be rounded to the nearest tenth",
     "mandatoryField": "Required field",
     "nameLengthLimit": "The name must not exceed 128 characters",
     "noDelta": "The headway between two trains has to be at least one minute.",

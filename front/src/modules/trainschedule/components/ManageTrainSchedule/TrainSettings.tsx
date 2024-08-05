@@ -13,6 +13,7 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 import { dateTimeToIso } from 'utils/date';
 import { useDebounce } from 'utils/helpers';
+import { isInvalidFloatNumber } from 'utils/numbers';
 
 export default function TrainSettings() {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
@@ -118,9 +119,12 @@ export default function TrainSettings() {
           id="trainSchedule-initialSpeed"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInitialSpeed(+e.target.value)}
           value={initialSpeed}
+          min={0}
           noMargin
           unit="km/h"
           textRight
+          isInvalid={isInvalidFloatNumber(initialSpeed as number, 1)}
+          errorMsg={t('errorMessages.invalidInitialSpeed')}
         />
       </div>
       <div className="col-xl-4 col-lg-12 mt-xl-0 mt-lg-3">

@@ -5,6 +5,7 @@ import type { Dispatch } from 'redux';
 import type { ValidConfig } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { OsrdConfState } from 'reducers/osrdconf/types';
+import { isInvalidFloatNumber } from 'utils/numbers';
 import { kmhToMs, mToMm } from 'utils/physics';
 
 import formatMargin from './formatMargin';
@@ -86,6 +87,16 @@ const checkCurrentConfig = (
       setFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noTimetable'),
+      })
+    );
+  }
+
+  if (isInvalidFloatNumber(initialSpeed as number, 1)) {
+    error = true;
+    dispatch(
+      setFailure({
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.invalidInitialSpeed'),
       })
     );
   }

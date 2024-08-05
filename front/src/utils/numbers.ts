@@ -63,3 +63,15 @@ export function stripDecimalDigits(value: number, decimalPlaces: number): number
   const result = Number(`${parts[0]}.${stripedDecimal}`);
   return result;
 }
+
+/**
+ * Checks if a floating-point number has more decimal places than specified.
+ * @param value the floating-point number to check.
+ * @param numberOfDecimal the maximum allowed number of decimal places.
+ * @returns true if the number has more decimal places than allowed
+ */
+export const isInvalidFloatNumber = (value: number, numberOfDecimal: number): boolean => {
+  if (!isFloat(value)) return false;
+  const stringifyValue = value.toString();
+  return stringifyValue.split('.')[1].length > numberOfDecimal;
+};
