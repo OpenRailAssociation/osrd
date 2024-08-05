@@ -3,11 +3,8 @@ import nextId from 'react-id-generator';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
-import {
-  calculateTimeDifferenceInSeconds,
-  formatDurationAsISO8601,
-  formatToISO8601,
-} from 'utils/timeManipulation';
+import { formatToIsoDate } from 'utils/date';
+import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils/timeManipulation';
 
 export function generateV2TrainSchedulesPayloads(
   trains: ImportedTrainSchedule[]
@@ -43,7 +40,7 @@ export function generateV2TrainSchedulesPayloads(
       rolling_stock_name: train.rollingStock || '',
       constraint_distribution: 'MARECO',
       schedule,
-      start_time: formatToISO8601(train.departureTime),
+      start_time: formatToIsoDate(train.departureTime),
     };
   });
 }

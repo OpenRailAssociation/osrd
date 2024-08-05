@@ -56,19 +56,6 @@ export function durationInSeconds(start: number, end: number) {
   return end > start ? end - start : end + 86400 - start;
 }
 
-export function formatToISO8601(dateTimeStr: string) {
-  const date = new Date(dateTimeStr);
-
-  // Get the timezone offset in minutes and convert it to hh:mm format
-  const offset = date.getTimezoneOffset();
-  const offsetHours = Math.abs(Math.floor(offset / 60));
-  const offsetMinutes = Math.abs(offset % 60);
-  const timezoneFormatted = `${offset > 0 ? '-' : '+'}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes.toString().padStart(2, '0')}`;
-
-  // Format the date to ISO string without 'Z' (UTC) and add the timezone
-  return `${date.toISOString().replace('Z', '')}${timezoneFormatted}`;
-}
-
 export function calculateTimeDifferenceInSeconds(time1: string, time2: string) {
   const date1 = new Date(time1);
   const date2 = new Date(time2);
