@@ -7,7 +7,7 @@ import { jsonKeyPathList } from 'json-key-path-list';
 import vfs from 'vinyl-fs';
 
 const IGNORE_MISSING: RegExp[] = [
-  // key used by a t function in modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf.ts
+  // key used by a t function in modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig.ts
   /translation:errorMessages\..*/,
   /translation:error/,
   /translation:default/,

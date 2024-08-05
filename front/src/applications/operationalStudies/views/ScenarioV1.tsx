@@ -18,7 +18,6 @@ import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osr
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
-import TimetableManageTrainSchedule from 'modules/trainschedule/components/Timetable/TimetableManageTrainSchedule';
 import type { RootState } from 'reducers';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 import {
@@ -152,11 +151,10 @@ const ScenarioV1 = () => {
       }
     );
 
-  const { data: conflicts = [], refetch: refetchConflicts } =
-    osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-      { id: timetable?.id as number },
-      { skip: !timetable }
-    );
+  const { data: conflicts = [] } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
+    { id: timetable?.id as number },
+    { skip: !timetable }
+  );
 
   useEffect(() => {
     if (timetable && infra?.state === 'CACHED' && timetable.train_schedule_summaries.length > 0) {
@@ -275,16 +273,7 @@ const ScenarioV1 = () => {
                     <div className="scenario-details-description">{scenario.description}</div>
                   </div>
                 )}
-                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && infra && (
-                  <TimetableManageTrainSchedule
-                    displayTrainScheduleManagement={displayTrainScheduleManagement}
-                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    setTrainResultsToFetch={setTrainResultsToFetch}
-                    infraState={infra.state}
-                    refetchTimetable={refetchTimetable}
-                    refetchConflicts={refetchConflicts}
-                  />
-                )}
+
                 {infra && (
                   <Timetable
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
