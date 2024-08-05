@@ -1,62 +1,12 @@
 import type { Feature } from 'geojson';
 
-import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
-import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
+import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { Allowance, PathResponse, RangedValue } from 'common/api/osrdEditoastApi';
-import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
+import type { PathResponse } from 'common/api/osrdEditoastApi';
 import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 
 export default function commonConfBuilder() {
   return {
-    buildEngineeringAllowance: (): Allowance => ({
-      allowance_type: 'engineering',
-      capacity_speed_limit: 5,
-      distribution: 'MARECO',
-      begin_position: 2,
-      end_position: 4,
-      value: {
-        value_type: 'time_per_distance',
-        minutes: 3,
-      },
-    }),
-    buildStandardAllowance: (): Allowance => ({
-      allowance_type: 'standard',
-      capacity_speed_limit: 5,
-      distribution: 'LINEAR',
-      ranges: [
-        {
-          begin_position: 1,
-          end_position: 2,
-          value: {
-            value_type: 'time',
-            seconds: 10,
-          },
-        },
-      ],
-      default_value: {
-        value_type: 'time_per_distance',
-        minutes: 3,
-      },
-    }),
-    buildSwitchType: (): SwitchType => ({
-      id: 'point_switch',
-      ports: ['A', 'B1', 'B2'],
-      groups: {
-        A_B1: [
-          {
-            src: 'A',
-            dst: 'B1',
-          },
-        ],
-        A_B2: [
-          {
-            src: 'A',
-            dst: 'B2',
-          },
-        ],
-      },
-    }),
     buildPointOnMap: (fields?: Partial<PointOnMap>): PointOnMap => ({
       id: 'test',
       name: 'point',
@@ -101,43 +51,6 @@ export default function commonConfBuilder() {
         },
       ],
     }),
-
-    buildPowerRestrictionRanges: (): PowerRestrictionRange[] => [
-      {
-        value: 'test',
-        begin: 1,
-        end: 2,
-      },
-    ],
-
-    buildFormattedPathElectrificationRanges: (): RangedValue[] => [
-      { begin: 0, end: 10, value: '1500V' },
-      { begin: 10, end: 20, value: '25000V' },
-      { begin: 20, end: 25, value: '1500V' },
-    ],
-
-    buildFormattedPowerRestrictionRanges: (): PowerRestrictionRange[] => [
-      { begin: 0, end: 10, value: NO_POWER_RESTRICTION },
-      { begin: 10, end: 12, value: 'C1US' },
-      { begin: 12, end: 22, value: 'C2US' },
-      { begin: 22, end: 25, value: NO_POWER_RESTRICTION },
-    ],
-
-    buildExpectedIntervals: (): PowerRestrictionRange[] => [
-      { begin: 0, end: 10, value: NO_POWER_RESTRICTION },
-      { begin: 10, end: 12, value: 'C1US' },
-      { begin: 12, end: 20, value: 'C2US' },
-      { begin: 20, end: 22, value: 'C2US' },
-      { begin: 22, end: 25, value: NO_POWER_RESTRICTION },
-    ],
-
-    buildIntervals: (): PowerRestrictionRange[] => [
-      { begin: 0, end: 10, value: NO_POWER_RESTRICTION },
-      { begin: 10, end: 12, value: NO_POWER_RESTRICTION },
-      { begin: 12, end: 17, value: NO_POWER_RESTRICTION },
-      { begin: 17, end: 20, value: NO_POWER_RESTRICTION },
-      { begin: 20, end: 25, value: NO_POWER_RESTRICTION },
-    ],
 
     buildFeatureInfoClick: (
       featureInfoClickFields?: Partial<OsrdConfState['featureInfoClick']>

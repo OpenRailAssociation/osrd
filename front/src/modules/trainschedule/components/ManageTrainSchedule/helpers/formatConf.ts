@@ -1,12 +1,9 @@
 import type { Dispatch } from 'redux';
 
-import { formatAllowances } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/helpers';
 import { setFailure } from 'reducers/main';
 import type { OsrdConfState } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
 import { time2sec } from 'utils/timeManipulation';
-
-import mergePowerRestrictionRanges from './mergePowerRestrictionRanges';
 
 export default function formatConf(
   dispatch: Dispatch,
@@ -106,12 +103,10 @@ export default function formatConf(
       train_name: osrdconf.name,
       labels: osrdconf.labels,
       departure_time: time2sec(osrdconf.departureTime),
-      allowances: formatAllowances(osrdconf.allowances),
       initial_speed: osrdconf.initialSpeed ? kmhToMs(osrdconf.initialSpeed) : 0,
       rolling_stock_id: osrdconf.rollingStockID as number,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,
-      power_restriction_ranges: mergePowerRestrictionRanges(osrdconf.powerRestrictionRanges),
       options: {
         ignore_electrical_profiles: !osrdconf.usingElectricalProfiles,
       },
