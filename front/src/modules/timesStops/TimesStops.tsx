@@ -12,7 +12,7 @@ import { useAppDispatch } from 'store';
 import { time2sec } from 'utils/timeManipulation';
 
 import { marginRegExValidation } from './consts';
-import { formatSuggestedViasToRowVias } from './helpers/utils';
+import { formatSuggestedViasToRowVias, transformRowDataOnChange } from './helpers/utils';
 import { useTimeStopsColumns } from './hooks/useTimeStopsColumns';
 import { TableType } from './types';
 import type { PathWaypointRow } from './types';
@@ -78,31 +78,11 @@ const TimesStops = ({
         if (!isInputTable) {
           return;
         }
-        const rowData = { ...row[op.fromRowIndex] };
-        const previousRowData = rows[op.fromRowIndex];
-        if (
-          rowData.departure &&
-          rowData.arrival &&
-          (rowData.arrival !== previousRowData.arrival ||
-            rowData.departure !== previousRowData.departure)
-        ) {
-          rowData.stopFor = String(time2sec(rowData.departure) - time2sec(rowData.arrival));
-        }
-        if (!rowData.stopFor && op.fromRowIndex !== allWaypoints.length - 1) {
-          rowData.onStopSignal = false;
-        }
-        if (rowData.theoreticalMargin && !marginRegExValidation.test(rowData.theoreticalMargin)) {
-          rowData.isMarginValid = false;
+        const newRowData = transformRowDataOnChange(row[op.fromRowIndex], rows[op.fromRowIndex], op, allWaypoints.length);
+        if (!newRowData.isMarginValid) {
           setRows(row);
         } else {
-          rowData.isMarginValid = true;
-          if (op.fromRowIndex === 0) {
-            rowData.arrival = null;
-            // As we put 0% by default for origin's margin, if the user removes a margin without
-            // replacing it to 0% (undefined), we change it to 0%
-            if (!rowData.theoreticalMargin) rowData.theoreticalMargin = '0%';
-          }
-          dispatch(upsertViaFromSuggestedOP(rowData as SuggestedOP));
+          dispatch(upsertViaFromSuggestedOP(newRowData as SuggestedOP));
         }
       }}
       stickyRightColumn={stickyRightColumn}

@@ -125,3 +125,33 @@ export function disabledTextColumn(
     disabled: true,
   };
 }
+
+export function transformRowDataOnChange(
+    rowData: PathWaypointRow, 
+    previousRowData: PathWaypointRow, 
+    op: { fromRowIndex: number }, 
+    allWaypointsLength: number,
+  ) {
+  const newRowData = { ...rowData };
+  if (
+    newRowData.departure &&
+    newRowData.arrival &&
+    (newRowData.arrival !== previousRowData.arrival ||
+      newRowData.departure !== previousRowData.departure)
+  ) {
+    newRowData.stopFor = String(time2sec(newRowData.departure) - time2sec(newRowData.arrival));
+  }
+  if (!newRowData.stopFor && op.fromRowIndex !== allWaypointsLength - 1) {
+    newRowData.onStopSignal = false;
+  }
+  newRowData.isMarginValid = !(newRowData.theoreticalMargin && !marginRegExValidation.test(newRowData.theoreticalMargin));
+  if (newRowData.isMarginValid && op.fromRowIndex === 0) {
+    newRowData.arrival = null;
+    // As we put 0% by default for origin's margin, if the user removes a margin without
+    // replacing it to 0% (undefined), we change it to 0%
+    if (!newRowData.theoreticalMargin) {
+      newRowData.theoreticalMargin = '0%';
+    }
+  } 
+  return newRowData;
+}
