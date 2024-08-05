@@ -16,6 +16,7 @@
     "allowance_convergence": "Impossible d'aller suffisamment lentement afin de respecter les marges demandées",
     "error": "Une erreur est survenue",
     "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
+    "invalidInitialSpeed": "La vitesse initiale doit être arrondie au dixième",
     "mandatoryField": "Champ obligatoire",
     "nameLengthLimit": "Le nom ne doit pas dépasser 128 caractères",
     "noDelta": "L'intervalle entre deux trains doit être d'au moins une minute",

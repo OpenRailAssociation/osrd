@@ -41,7 +41,8 @@ export function adjustConfWithTrainToModifyV2(
   dispatch(updateName(train_name));
   dispatch(updateStartTime(convertIsoUtcToLocalTime(start_time)));
   dispatch(updatePathSteps({ pathSteps, resetPowerRestrictions: true }));
-  dispatch(updateInitialSpeed(initial_speed ? msToKmh(initial_speed) : 0));
+  const convertedInitialSpeed = initial_speed ? Math.floor(msToKmh(initial_speed) * 10) / 10 : 0;
+  dispatch(updateInitialSpeed(convertedInitialSpeed));
 
   const trainUsingElectricalProfiles = options?.use_electrical_profiles ?? true;
   if (trainUsingElectricalProfiles !== usingElectricalProfiles)

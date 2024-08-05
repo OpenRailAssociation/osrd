@@ -1,4 +1,4 @@
-import { budgetFormat, isFloat, stripDecimalDigits } from 'utils/numbers';
+import { budgetFormat, isFloat, isInvalidFloatNumber, stripDecimalDigits } from 'utils/numbers';
 import { NARROW_NO_BREAK_SPACE, NO_BREAK_SPACE } from 'utils/strings';
 
 describe('budgetFormat', () => {
@@ -78,5 +78,31 @@ describe('isFloat', () => {
 
   it('should return false if the number is NaN', () => {
     expect(isFloat(NaN)).toBe(false);
+  });
+});
+
+describe('isInvalidFloatNumber', () => {
+  it('should return true if the number has more decimal places than allowed', () => {
+    expect(isInvalidFloatNumber(17.12345, 1)).toBe(true);
+  });
+
+  it('should return false if the number has the same number of decimal places than allowed', () => {
+    expect(isInvalidFloatNumber(17.1, 1)).toBe(false);
+  });
+
+  it('should return false if the number has less decimal places than allowed', () => {
+    expect(isInvalidFloatNumber(17.1, 2)).toBe(false);
+  });
+
+  it('should return false if the number is NaN', () => {
+    expect(isInvalidFloatNumber(NaN, 1)).toBe(false);
+  });
+
+  it('should return false if the number is a float and decimal number is NaN', () => {
+    expect(isInvalidFloatNumber(10.5, NaN)).toBe(false);
+  });
+
+  it('should return false if the number is NaN and decimal number is NaN', () => {
+    expect(isInvalidFloatNumber(NaN, NaN)).toBe(false);
   });
 });
