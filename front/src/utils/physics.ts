@@ -55,10 +55,6 @@ export function msToKmh(v: number) {
   return v * 3.6;
 }
 
-export function mToKmOneDecimal(m: number) {
-  return Math.round(m / 100) / 10;
-}
-
 /**
  * @return the margin in min/100km
  * @param timeLost in seconds
