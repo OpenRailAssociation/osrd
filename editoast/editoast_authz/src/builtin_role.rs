@@ -18,7 +18,7 @@ impl BuiltinRoleSet for BuiltinRole {
     fn implies_iter(&self) -> impl IntoIterator<Item = Self> {
         use BuiltinRole::*;
         match self {
-            OpsWrite => vec![],
+            OpsWrite => vec![InfraRead],
             InfraRead => vec![],
             InfraWrite => vec![InfraRead],
         }
