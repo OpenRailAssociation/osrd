@@ -25,13 +25,6 @@ public final class LineString {
         this.cumulativeLengths = cumulativeLengths;
     }
 
-    /** Compute the distance between two points */
-    static double computeDistance(double x1, double y1, double x2, double y2) {
-        var dx2 = (x1 - x2) * (x1 - x2);
-        var dy2 = (y1 - y2) * (y1 - y2);
-        return Math.sqrt(dx2 + dy2);
-    }
-
     /**
      * Create a LineString from the coordinates buffers (no need to give lengths and
      * cumulativeLength)
@@ -44,7 +37,8 @@ public final class LineString {
         var cumulativeLengths = new double[bufferX.length - 1];
         double cumulativeLength = 0;
         for (int i = 0; i < bufferX.length - 1; i++) {
-            cumulativeLength += computeDistance(bufferX[i], bufferY[i], bufferX[i + 1], bufferY[i + 1]);
+            cumulativeLength +=
+                    new Point(bufferX[i], bufferY[i]).distanceAsMeters(new Point(bufferX[i + 1], bufferY[i + 1]));
             cumulativeLengths[i] = cumulativeLength;
         }
         return new LineString(bufferX, bufferY, cumulativeLengths);
@@ -115,11 +109,8 @@ public final class LineString {
 
         for (var lineString : lineStringList) {
             if (!newBufferX.isEmpty()) {
-                var distance = computeDistance(
-                        newBufferX.get(newBufferX.size() - 1),
-                        newBufferY.get(newBufferY.size() - 1),
-                        lineString.bufferX[0],
-                        lineString.bufferY[0]);
+                var distance = new Point(newBufferX.get(newBufferX.size() - 1), newBufferY.get(newBufferY.size() - 1))
+                        .distanceAsMeters(new Point(lineString.bufferX[0], lineString.bufferY[0]));
 
                 if (distance < 1e-5) {
                     newBufferX.remove(newBufferX.size() - 1);
@@ -182,6 +173,8 @@ public final class LineString {
 
         var bX = bufferX[intervalIndex + 1];
         var bY = bufferY[intervalIndex + 1];
+
+        // FIXME: we can't just do a linear interpolation here
         return new Point(aX + ratio * (bX - aX), aY + ratio * (bY - aY));
     }
 

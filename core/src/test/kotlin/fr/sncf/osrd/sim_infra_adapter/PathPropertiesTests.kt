@@ -301,7 +301,7 @@ class PathPropertiesTests {
                 doubleArrayOf(0.0, 0.0, 1.0, 1.0, 1.5)
             ),
             geoForward,
-            1e-5
+            1e-3
         )
 
         val pathBackward =
@@ -316,7 +316,7 @@ class PathPropertiesTests {
         assertLinestringEqual(
             LineString.make(doubleArrayOf(2.0, 1.0, 1.0), doubleArrayOf(1.0, 1.0, 0.0)),
             geoBackward,
-            1e-5
+            1e-3
         )
     }
 
@@ -591,7 +591,7 @@ class PathPropertiesTests {
         fun aligned(p1: Point, p2: Point, p3: Point): Boolean {
             val triangleArea =
                 (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)).absoluteValue
-            return triangleArea < 1e-5
+            return triangleArea < 1e-3
         }
 
         val xs = arrayListOf<Double>()
