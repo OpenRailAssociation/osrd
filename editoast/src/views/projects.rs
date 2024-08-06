@@ -326,6 +326,8 @@ async fn patch(
 
 #[cfg(test)]
 pub mod test {
+    use std::collections::HashMap;
+    use std::collections::HashSet;
     use std::ops::DerefMut;
 
     use axum::http::StatusCode;
@@ -334,9 +336,11 @@ pub mod test {
     use serde_json::json;
 
     use super::*;
+    use crate::core::CoreClient;
     use crate::modelsv2::fixtures::create_project;
     use crate::modelsv2::prelude::*;
     use crate::views::test_app::TestAppBuilder;
+    use crate::views::Roles;
 
     #[rstest]
     async fn project_post() {
@@ -361,6 +365,29 @@ pub mod test {
             .expect("Project not found");
 
         assert_eq!(project.name, project_name);
+    }
+
+    #[rstest]
+    async fn project_post_returns_unauthenticated() {
+        let pool = DbConnectionPoolV2::for_tests();
+        let core_client = CoreClient::default();
+        let resolved_roles: HashMap<String, HashSet<BuiltinRole>> =
+            HashMap::from([("Unauthenticated".to_string(), HashSet::new())]);
+        let roles = Roles::new(resolved_roles);
+        let app = TestAppBuilder::new()
+            .db_pool(pool)
+            .core_client(core_client)
+            .roles(roles)
+            .build();
+
+        let request = app.post("/projects").json(&json!({
+            "name": "test_project",
+            "description": "",
+            "objectives": "",
+            "funders": "",
+        }));
+
+        app.fetch(request).assert_status(StatusCode::UNAUTHORIZED);
     }
 
     #[rstest]
