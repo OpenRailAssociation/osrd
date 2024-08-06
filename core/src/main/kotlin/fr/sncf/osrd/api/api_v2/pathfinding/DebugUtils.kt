@@ -24,7 +24,7 @@ fun exportPathGeo(infra: FullInfra, res: PathfindingBlockSuccess) {
         out.println("index;x;y")
         for ((i, item) in res.pathItemPositions.withIndex()) {
             val geo = lineString.interpolateNormalized(item.distance / fullPath.getLength())
-            out.println("$i;${geo.x};${geo.y}")
+            out.println("$i;${geo.lon};${geo.lat}")
         }
     }
 }

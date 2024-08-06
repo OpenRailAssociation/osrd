@@ -5,6 +5,6 @@ import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 
 fun toRJSLineString(lineString: LineString): RJSLineString {
     val coordinates = ArrayList<List<Double>>()
-    for (p in lineString.points) coordinates.add(listOf(p.x, p.y))
+    for (p in lineString.points) coordinates.add(listOf(p.lon, p.lat))
     return RJSLineString("LineString", coordinates)
 }
