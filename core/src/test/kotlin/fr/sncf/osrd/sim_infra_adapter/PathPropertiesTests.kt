@@ -581,8 +581,8 @@ class PathPropertiesTests {
         val simplified = simplifyLineString(actual)
         assertEquals(expected.points.size, simplified.points.size)
         for ((expectedPoint, actualPoint) in expected.points zip simplified.points) {
-            assertEquals(expectedPoint.x, actualPoint.x, tolerance)
-            assertEquals(expectedPoint.y, actualPoint.y, tolerance)
+            assertEquals(expectedPoint.lon, actualPoint.lon, tolerance)
+            assertEquals(expectedPoint.lat, actualPoint.lat, tolerance)
         }
     }
 
@@ -590,7 +590,10 @@ class PathPropertiesTests {
     private fun simplifyLineString(l: LineString): LineString {
         fun aligned(p1: Point, p2: Point, p3: Point): Boolean {
             val triangleArea =
-                (p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y)).absoluteValue
+                (p1.lon * (p2.lat - p3.lat) +
+                        p2.lon * (p3.lat - p1.lat) +
+                        p3.lon * (p1.lat - p2.lat))
+                    .absoluteValue
             return triangleArea < 1e-3
         }
 
@@ -600,8 +603,8 @@ class PathPropertiesTests {
             val p = l.points[i]
             if (i > 0 && i < l.points.size - 1 && aligned(p, l.points[i - 1], l.points[i + 1]))
                 continue
-            xs.add(p.x)
-            ys.add(p.y)
+            xs.add(p.lon)
+            ys.add(p.lat)
         }
         return LineString.make(xs.toDoubleArray(), ys.toDoubleArray())
     }
