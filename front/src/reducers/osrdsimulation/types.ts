@@ -4,7 +4,6 @@ import type {
   ElectrificationRange,
   SimulationPowerRestrictionRange,
   SimulationReport,
-  TrainScheduleSummary,
 } from 'common/api/osrdEditoastApi';
 import type { AllListValues, SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/consts';
 
@@ -126,10 +125,6 @@ export interface Regime {
 export type MechanicalEnergyConsumedBaseEco = {
   base?: number;
   eco?: number | null;
-};
-
-export type ScheduledTrain = TrainScheduleSummary & {
-  duration?: number;
 };
 
 export interface GradientPosition {
