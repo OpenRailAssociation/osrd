@@ -297,8 +297,8 @@ class PathPropertiesTests {
         val geoForward = path.getGeo()
         assertLinestringEqual(
             LineString.make(
-                doubleArrayOf(0.5, 1.0, 1.0, 2.0, 2.0),
-                doubleArrayOf(0.0, 0.0, 1.0, 1.0, 1.5)
+                doubleArrayOf(0.0, 0.0, 1.0, 1.0, 1.5),
+                doubleArrayOf(0.5, 1.0, 1.0, 2.0, 2.0)
             ),
             geoForward,
             1e-3
@@ -314,7 +314,7 @@ class PathPropertiesTests {
             )
         val geoBackward = pathBackward.getGeo()
         assertLinestringEqual(
-            LineString.make(doubleArrayOf(2.0, 1.0, 1.0), doubleArrayOf(1.0, 1.0, 0.0)),
+            LineString.make(doubleArrayOf(1.0, 1.0, 0.0), doubleArrayOf(2.0, 1.0, 1.0)),
             geoBackward,
             1e-3
         )
@@ -597,15 +597,15 @@ class PathPropertiesTests {
             return triangleArea < 1e-3
         }
 
-        val xs = arrayListOf<Double>()
-        val ys = arrayListOf<Double>()
+        val longitudes = arrayListOf<Double>()
+        val latitudes = arrayListOf<Double>()
         for (i in 0 until l.points.size) {
             val p = l.points[i]
             if (i > 0 && i < l.points.size - 1 && aligned(p, l.points[i - 1], l.points[i + 1]))
                 continue
-            xs.add(p.lon)
-            ys.add(p.lat)
+            longitudes.add(p.lon)
+            latitudes.add(p.lat)
         }
-        return LineString.make(xs.toDoubleArray(), ys.toDoubleArray())
+        return LineString.make(latitudes.toDoubleArray(), longitudes.toDoubleArray())
     }
 }

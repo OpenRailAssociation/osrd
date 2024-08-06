@@ -94,7 +94,7 @@ private fun parseLineString(rjsLineString: RJSLineString?): LineString? {
         xs.add(p[0])
         ys.add(p[1])
     }
-    return LineString.make(Doubles.toArray(xs), Doubles.toArray(ys))
+    return LineString.make(Doubles.toArray(ys), Doubles.toArray(xs))
 }
 
 /** Computes the slopes RangeMap of a track section. */
