@@ -14,6 +14,8 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -25,6 +27,7 @@ use utoipa::ToSchema;
 
 use super::pagination::PaginationStats;
 use super::params::List;
+use super::AuthorizerExt;
 use crate::core::infra_loading::InfraLoadRequest;
 use crate::core::infra_state::InfraStateResponse;
 use crate::core::AsCoreRequest;
@@ -37,6 +40,7 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::AuthorizationError;
 use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::SwitchType;
@@ -118,8 +122,17 @@ struct RefreshResponse {
 )]
 async fn refresh(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Query(query_params): Query<RefreshQueryParams>,
 ) -> Result<Json<RefreshResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let redis_client = app_state.redis.clone();
     let infra_caches = app_state.infra_caches.clone();
@@ -188,8 +201,16 @@ struct InfraListResponse {
 )]
 async fn list(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<InfraListResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let db_pool = app_state.db_pool_v2.clone();
 
     let settings = pagination_params
@@ -262,8 +283,17 @@ struct InfraIdParam {
 )]
 async fn get(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<InfraWithState>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let core_client = app_state.core_client.clone();
 
@@ -304,8 +334,17 @@ impl From<InfraCreateForm> for Changeset<Infra> {
 )]
 async fn create(
     db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Json(data): Json<InfraCreateForm>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let infra: Changeset<Infra> = data.into();
     let infra = infra.create(db_pool.get().await?.deref_mut()).await?;
     Ok((StatusCode::CREATED, Json(infra)))
@@ -329,10 +368,19 @@ struct CloneQuery {
     ),
 )]
 async fn clone(
+    Extension(authorizer): AuthorizerExt,
     Path(params): Path<InfraIdParam>,
     db_pool: State<DbConnectionPoolV2>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), params.infra_id, || {
         InfraApiError::NotFound {
             infra_id: params.infra_id,
@@ -363,8 +411,17 @@ async fn clone(
 )]
 async fn delete(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     infra: Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
     let infra_id = infra.infra_id;
@@ -401,9 +458,18 @@ impl From<InfraPatchForm> for Changeset<Infra> {
 )]
 async fn put(
     db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let infra_cs: Changeset<Infra> = patch.into();
     let infra = infra_cs
         .update_or_fail(db_pool.get().await?.deref_mut(), infra, || {
@@ -425,8 +491,17 @@ async fn put(
 )]
 async fn get_switch_types(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
 
@@ -460,9 +535,18 @@ async fn get_switch_types(
     )
 )]
 async fn get_speed_limit_tags(
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<InfraIdParam>,
     db_pool: State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
         InfraApiError::NotFound {
             infra_id: infra.infra_id,
@@ -496,10 +580,19 @@ struct GetVoltagesQueryParams {
     )
 )]
 async fn get_voltages(
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<InfraIdParam>,
     Query(param): Query<GetVoltagesQueryParams>,
     db_pool: State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
         InfraApiError::NotFound {
@@ -525,7 +618,18 @@ async fn get_voltages(
         (status = 404, description = "The infra was not found",),
     )
 )]
-async fn get_all_voltages(db_pool: State<DbConnectionPoolV2>) -> Result<Json<Vec<String>>> {
+async fn get_all_voltages(
+    db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
+) -> Result<Json<Vec<String>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let voltages = Infra::get_all_voltages(db_pool.get().await?.deref_mut()).await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
@@ -550,9 +654,18 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) ->
     )
 )]
 async fn lock(
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     set_locked(infra.infra_id, true, db_pool).await?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -568,9 +681,18 @@ async fn lock(
     )
 )]
 async fn unlock(
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     set_locked(infra.infra_id, false, db_pool).await?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -587,8 +709,17 @@ async fn unlock(
 )]
 async fn load(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(path): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let core_client = app_state.core_client.clone();
 
