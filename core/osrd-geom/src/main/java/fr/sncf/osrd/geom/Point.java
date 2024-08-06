@@ -4,9 +4,9 @@ import static java.lang.Math.*;
 
 public record Point(
         // Longitude
-        double lon,
+        double lat,
         // Latitude
-        double lat) {
+        double lon) {
 
     /**
      * Returns the distance between this point and another in meters. Uses equirectangular distance approximation (very fast but not 100% accurate)

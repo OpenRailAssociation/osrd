@@ -197,7 +197,7 @@ class PerformanceTests {
         for (i in 0 until height) {
             for (j in 0 until width) {
                 val id = String.format("%d,%d", i, j)
-                infra.detectorGeoPoint[id] = Point(0.01 * i, 0.01 * j)
+                infra.detectorGeoPoint[id] = Point(0.01 * j, 0.01 * i)
             }
         }
         for (i in 0 until height) {

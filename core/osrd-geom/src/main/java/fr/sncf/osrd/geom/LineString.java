@@ -16,7 +16,7 @@ public final class LineString {
     /** A cumulative list of N-1 distances between coordinates */
     private final double[] cumulativeLengths;
 
-    private LineString(double[] bufferLon, double[] bufferLat, double[] cumulativeLengths) {
+    private LineString(double[] bufferLat, double[] bufferLon, double[] cumulativeLengths) {
         assert bufferLon.length == bufferLat.length : "Expected the same length";
         assert bufferLon.length >= 2 : "LineString should contain at least 2 points";
         assert cumulativeLengths.length == bufferLon.length - 1;
@@ -29,24 +29,24 @@ public final class LineString {
      * Create a LineString from the coordinates buffers (no need to give lengths and
      * cumulativeLength)
      *
-     * @param bufferLon a double array with longitude coordinates
      * @param bufferLat a double array with latitude coordinates
+     * @param bufferLon a double array with longitude coordinates
      * @return a new LineString
      */
-    public static LineString make(double[] bufferLon, double[] bufferLat) {
+    public static LineString make(double[] bufferLat, double[] bufferLon) {
         var cumulativeLengths = new double[bufferLon.length - 1];
         double cumulativeLength = 0;
         for (int i = 0; i < bufferLon.length - 1; i++) {
-            cumulativeLength += new Point(bufferLon[i], bufferLat[i])
-                    .distanceAsMeters(new Point(bufferLon[i + 1], bufferLat[i + 1]));
+            cumulativeLength += new Point(bufferLat[i], bufferLon[i])
+                    .distanceAsMeters(new Point(bufferLat[i + 1], bufferLon[i + 1]));
             cumulativeLengths[i] = cumulativeLength;
         }
-        return new LineString(bufferLon, bufferLat, cumulativeLengths);
+        return new LineString(bufferLat, bufferLon, cumulativeLengths);
     }
 
     /** Create a LineString from two points */
     public static LineString make(Point start, Point end) {
-        return make(new double[] {start.lon(), end.lon()}, new double[] {start.lat(), end.lat()});
+        return make(new double[] {start.lat(), end.lat()}, new double[] {start.lon(), end.lon()});
     }
 
     public double getLength() {
@@ -61,7 +61,7 @@ public final class LineString {
     public ArrayList<Point> getPoints() {
         var points = new ArrayList<Point>();
         for (int i = 0; i < bufferLon.length; i++) {
-            points.add(new Point(bufferLon[i], bufferLat[i]));
+            points.add(new Point(bufferLat[i], bufferLon[i]));
         }
         return points;
     }
@@ -91,7 +91,7 @@ public final class LineString {
         newCumulativeLength += cumulativeLengths[0];
         newCumulativeLengths[newCumulativeLengths.length - 1] = newCumulativeLength;
 
-        return new LineString(newBufferLon, newBufferLat, newCumulativeLengths);
+        return new LineString(newBufferLat, newBufferLon, newCumulativeLengths);
     }
 
     /**
@@ -110,8 +110,8 @@ public final class LineString {
         for (var lineString : lineStringList) {
             if (!newBufferLon.isEmpty()) {
                 var distance = new Point(
-                                newBufferLon.get(newBufferLon.size() - 1), newBufferLat.get(newBufferLat.size() - 1))
-                        .distanceAsMeters(new Point(lineString.bufferLon[0], lineString.bufferLat[0]));
+                                newBufferLat.get(newBufferLat.size() - 1), newBufferLon.get(newBufferLon.size() - 1))
+                        .distanceAsMeters(new Point(lineString.bufferLat[0], lineString.bufferLon[0]));
 
                 if (distance < 1e-5) {
                     newBufferLon.remove(newBufferLon.size() - 1);
@@ -130,7 +130,7 @@ public final class LineString {
             for (var cumLength : lineString.cumulativeLengths)
                 newCumulativeLengths.add(cumLength + lastCumulativeLength);
         }
-        return new LineString(newBufferLon.toArray(), newBufferLat.toArray(), newCumulativeLengths.toArray());
+        return new LineString(newBufferLat.toArray(), newBufferLon.toArray(), newCumulativeLengths.toArray());
     }
 
     /**
@@ -144,12 +144,12 @@ public final class LineString {
         assert distance <= cumulativeLengths[cumulativeLengths.length - 1];
 
         // if we're at the first point
-        if (distance == 0.) return new Point(bufferLon[0], bufferLat[0]);
+        if (distance == 0.) return new Point(bufferLat[0], bufferLon[0]);
 
         var intervalIndex = Arrays.binarySearch(cumulativeLengths, distance);
 
         // if we're exactly on any other point
-        if (intervalIndex >= 0) return new Point(bufferLon[intervalIndex + 1], bufferLat[intervalIndex + 1]);
+        if (intervalIndex >= 0) return new Point(bufferLat[intervalIndex + 1], bufferLon[intervalIndex + 1]);
 
         // if we're in-between points
         intervalIndex = -intervalIndex - 1;
@@ -166,7 +166,7 @@ public final class LineString {
         var aLat = bufferLat[intervalIndex];
 
         // if ratio is undefined, A and B are the same point
-        if (Double.isNaN(ratio)) return new Point(aLon, aLat);
+        if (Double.isNaN(ratio)) return new Point(aLat, aLon);
 
         // clamp the linear interpolation ratio
         if (ratio < 0.) ratio = 0.;
@@ -176,7 +176,7 @@ public final class LineString {
         var bLat = bufferLat[intervalIndex + 1];
 
         // FIXME: we can't just do a linear interpolation here
-        return new Point(aLon + ratio * (bLon - aLon), aLat + ratio * (bLat - aLat));
+        return new Point(aLat + ratio * (bLat - aLat), aLon + ratio * (bLon - aLon));
     }
 
     /**
@@ -235,7 +235,7 @@ public final class LineString {
         newBufferLon.add(lastPoint.lon());
         newBufferLat.add(lastPoint.lat());
 
-        return LineString.make(newBufferLon.toArray(), newBufferLat.toArray());
+        return LineString.make(newBufferLat.toArray(), newBufferLon.toArray());
     }
 
     @Override
