@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 /* eslint-disable import/extensions, import/no-unresolved */
-import ngeMain from 'netzgrafik-frontend/dist/netzgrafik-frontend/main.js?url';
-import ngePolyfills from 'netzgrafik-frontend/dist/netzgrafik-frontend/polyfills.js?url';
-import ngeRuntime from 'netzgrafik-frontend/dist/netzgrafik-frontend/runtime.js?url';
-import ngeStyles from 'netzgrafik-frontend/dist/netzgrafik-frontend/styles.css?url';
-import ngeVendor from 'netzgrafik-frontend/dist/netzgrafik-frontend/vendor.js?url';
+import ngeMain from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/main.js?url';
+import ngePolyfills from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/polyfills.js?url';
+import ngeRuntime from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/runtime.js?url';
+import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/styles.css?url';
+import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/vendor.js?url';
 /* eslint-enable import/extensions, import/no-unresolved */
 
 import type { NetzgrafikDto } from './types';
