@@ -2072,6 +2072,11 @@
     openapi-typescript "^5.4.1"
     yargs "^17.7.2"
 
+"@osrd-project/netzgrafik-frontend@0.0.0-snapshot.b5ca2e546ba2695c5a999c8e150775230b4152ce":
+  version "0.0.0-snapshot.b5ca2e546ba2695c5a999c8e150775230b4152ce"
+  resolved "https://registry.yarnpkg.com/@osrd-project/netzgrafik-frontend/-/netzgrafik-frontend-0.0.0-snapshot.b5ca2e546ba2695c5a999c8e150775230b4152ce.tgz#ec4bcfa99abd602641fc20916699c2783dff28d5"
+  integrity sha512-BUGtCdSqpWtmTV5yO2FriLYGyK+Q89dNWxidoqAZws8v03X2k1yr+DrUar/UuOqZuh4MH6qMF8/Y/wj3ak855A==
+
 "@osrd-project/ui-core@^0.0.30":
   version "0.0.30"
   resolved "https://registry.yarnpkg.com/@osrd-project/ui-core/-/ui-core-0.0.30.tgz#ea3d89bc47f2f1de57200b4bd2333d6beb231dfb"
@@ -11283,11 +11288,6 @@ neo-async@^2.5.0, neo-async@^2.6.2:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
-
-netzgrafik-frontend@^2.7.0:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/netzgrafik-frontend/-/netzgrafik-frontend-2.7.0.tgz#adcae00ed509686321ebced3a917cdc58a2f2e00"
-  integrity sha512-/xB47rVt6pm2wmtJQiRX97JXCyKvvEl9VZTrJMavx9zDjAjH/kz89jRM3HPAFoAgKFFnXaPC8WKlqmablE0h5A==
 
 nice-try@^1.0.4:
   version "1.0.5"

@@ -10,7 +10,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const require = createRequire(import.meta.url);
 const ngeBase = path.dirname(
-  require.resolve('netzgrafik-frontend/dist/netzgrafik-frontend/index.html')
+  require.resolve('@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/index.html')
 );
 
 // https://vitejs.dev/config/
