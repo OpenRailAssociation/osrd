@@ -4,6 +4,8 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
@@ -19,6 +21,8 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use editoast_models::DbConnectionPoolV2;
 
 use super::InfraApiError;
@@ -68,6 +72,7 @@ pub(in crate::views) struct InfraErrorResponse {
  )]
 async fn list_errors(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(ErrorListQueryParams {
@@ -76,6 +81,14 @@ async fn list_errors(
         object_id,
     }): Query<ErrorListQueryParams>,
 ) -> Result<Json<ErrorListResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let (page, page_size) = pagination_params
         .validate(100)?
         .warn_page_size(100)
