@@ -5,6 +5,8 @@ use std::ops::DerefMut;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
@@ -15,6 +17,8 @@ use super::InfraIdParam;
 use crate::error::Result;
 use crate::modelsv2::infra::ObjectQueryable;
 use crate::modelsv2::Infra;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::Retrieve;
 
 crate::routes! {
@@ -56,8 +60,17 @@ async fn get_objects(
     Path(infra_id_param): Path<InfraIdParam>,
     Path(object_type_param): Path<ObjectTypeParam>,
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Json(obj_ids): Json<Vec<String>>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let infra_id = infra_id_param.infra_id;
     if !has_unique_ids(&obj_ids) {
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
