@@ -2,6 +2,9 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::RoutePath;
 use serde::Deserialize;
 use serde::Serialize;
@@ -19,8 +22,9 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
-use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/routes" => {
@@ -65,7 +69,16 @@ struct RoutesResponse {
 async fn get_routes_from_waypoint(
     Path(path): Path<RoutesFromWaypointParams>,
     db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<RoutesResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), path.infra_id, || {
         InfraApiError::NotFound {
             infra_id: path.infra_id,
@@ -138,9 +151,18 @@ struct RoutesFromNodesPositions {
 )]
 async fn get_routes_track_ranges(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<i64>,
     Query(params): Query<RouteTrackRangesParams>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
     let infra_id = infra;
@@ -190,9 +212,18 @@ async fn get_routes_track_ranges(
 )]
 async fn get_routes_nodes(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(params): Path<InfraIdParam>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
 
