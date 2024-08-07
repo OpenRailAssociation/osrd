@@ -1,7 +1,9 @@
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::Extension;
 use diesel_async::AsyncConnection;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::DirectionalTrackRange;
@@ -38,6 +40,8 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
@@ -75,8 +79,17 @@ async fn edit<'a>(
         map_layers,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(operations): Json<Vec<Operation>>,
 ) -> Result<Json<Vec<InfraObject>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     // TODO: lock for update
     let mut infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -122,8 +135,17 @@ pub async fn split_track_section<'a>(
         map_layers,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(payload): Json<TrackOffset>,
 ) -> Result<Json<Vec<String>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     info!(
         track_id = payload.track.as_str(),
         offset = payload.offset,
