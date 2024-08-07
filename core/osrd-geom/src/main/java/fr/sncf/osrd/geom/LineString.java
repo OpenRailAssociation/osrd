@@ -175,8 +175,9 @@ public final class LineString {
         var bLon = bufferLon[intervalIndex + 1];
         var bLat = bufferLat[intervalIndex + 1];
 
-        // FIXME: we can't just do a linear interpolation here
-        return new Point(aLat + ratio * (bLat - aLat), aLon + ratio * (bLon - aLon));
+        var a = new Point(aLat, aLon);
+        var b = new Point(bLat, bLon);
+        return WGS84Interpolator.interpolate(a, b, ratio);
     }
 
     /**
