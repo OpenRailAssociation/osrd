@@ -123,7 +123,6 @@ test.describe('Verifying that all elements in the route tab are loaded correctly
   });
 
   test('should correctly reverse and delete waypoints in a route for operational study', async ({
-    browserName,
     page,
   }) => {
     const operationalStudiesPage = new OperationalStudiesPage(page);
@@ -139,16 +138,13 @@ test.describe('Verifying that all elements in the route tab are loaded correctly
     await scenarioPage.openTabByDataId('tab-pathfinding');
     await operationalStudiesPage.performPathfindingByTrigram('WS', 'SES', 'MWS');
     const expectedMapMarkersValues = ['West_station', 'South_East_station', 'Mid_West_station'];
-    if (browserName === 'chromium') {
-      await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
-    }
+    await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
 
     // Reverse the itinerary and verify the map markers
     await operationalStudiesPage.clickOnReverseItinerary();
-    if (browserName === 'chromium') {
-      const reversedMapMarkersValues = [...expectedMapMarkersValues].reverse();
-      await operationalStudiesPage.verifyMapMarkers(...reversedMapMarkersValues);
-    }
+
+    const reversedMapMarkersValues = [...expectedMapMarkersValues].reverse();
+    await operationalStudiesPage.verifyMapMarkers(...reversedMapMarkersValues);
 
     // Delete operational points and verify no selected route
     await operationalStudiesPage.clickOnDeleteOPButtons(selectedLanguage);
@@ -156,9 +152,8 @@ test.describe('Verifying that all elements in the route tab are loaded correctly
 
     // Search by trigram and verify map markers
     await operationalStudiesPage.clickSearchByTrigramSubmitButton();
-    if (browserName === 'chromium') {
-      await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
-    }
+
+    await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
 
     // Delete itinerary and verify no selected route
     await operationalStudiesPage.clickDeleteItineraryButton();

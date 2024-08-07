@@ -30,6 +30,8 @@ export default defineConfig({
   retries: process.env.CI ? 3 : 0,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
+    headless: true, // Run tests in headless mode
+    viewport: { width: 1280, height: 720 }, // Set the viewport size
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -60,6 +62,34 @@ export default defineConfig({
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
+        headless: false, // Enable GPU acceleration by running in headful mode
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-web-security',
+            '--disable-popup-blocking',
+            '--disable-features=IsolateOrigins,site-per-process',
+            '--disable-infobars',
+            '--start-maximized',
+            '--no-default-browser-check',
+            '--disable-gpu', // Ensure GPU is not disabled
+          ],
+          firefoxUserPrefs: {
+            'pdfjs.disabled': false, // Enable PDF viewer
+            'dom.popup_allowed_events': 'click dblclick mousedown pointerdown', // Allow pop-ups
+            'dom.webnotifications.enabled': true, // Enable web notifications
+            'permissions.default.geo': 1, // Enable geolocation
+          },
+        },
+      },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'webkit',
+      use: {
+        browserName: 'webkit',
       },
       dependencies: ['setup'],
     },
