@@ -5,6 +5,8 @@ use axum::extract::State;
 use axum::http::header;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
@@ -24,6 +26,8 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
@@ -53,7 +57,16 @@ enum ListErrorsRailjson {
 async fn get_railjson(
     Path(infra): Path<InfraIdParam>,
     db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let infra_id = infra.infra_id;
     let infra_meta = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -157,9 +170,18 @@ struct PostRailjsonResponse {
 )]
 async fn post_railjson(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Query(params): Query<PostRailjsonQueryParams>,
     Json(railjson): Json<RailJson>,
 ) -> Result<Json<PostRailjsonResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
     if railjson.version != RAILJSON_VERSION {
