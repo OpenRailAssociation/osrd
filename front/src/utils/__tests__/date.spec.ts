@@ -55,6 +55,12 @@ describe('parseDateTime', () => {
     expect(result).toBeInstanceOf(Date);
   });
 
+  it('should parse a valid date-time string with a single-digit day', () => {
+    const input = '1/07/2024 03:16:30';
+    const result = parseDateTime(input);
+    expect(result).toBeInstanceOf(Date);
+  });
+
   it('should return null for an invalid date-time string', () => {
     const input = 'invalid date';
     const result = parseDateTime(input);
