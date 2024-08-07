@@ -16,7 +16,7 @@ interface NGEElement extends HTMLElement {
 
 const frameSrc = `
 <!DOCTYPE html>
-<html class="sbb-lean">
+<html class="sbb-lean sbb-light">
   <head>
     <base href="/netzgrafik-frontend/">
     <link rel="stylesheet" href="${ngeStyles}"></link>
