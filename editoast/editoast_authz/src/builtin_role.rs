@@ -5,14 +5,22 @@ use crate::roles::BuiltinRoleSet;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, AsRefStr)]
 #[strum(serialize_all = "snake_case")]
 pub enum BuiltinRole {
-    #[strum(serialize = "operational_studies_write")]
+    #[strum(serialize = "operational_studies:write")]
     OpsWrite,
+
+    #[strum(serialize = "infra:read")]
+    InfraRead,
+    #[strum(serialize = "infra:write")]
+    InfraWrite,
 }
 
 impl BuiltinRoleSet for BuiltinRole {
     fn implies_iter(&self) -> impl IntoIterator<Item = Self> {
+        use BuiltinRole::*;
         match self {
-            Self::OpsWrite => vec![],
+            OpsWrite => vec![],
+            InfraRead => vec![],
+            InfraWrite => vec![InfraRead],
         }
     }
 }
