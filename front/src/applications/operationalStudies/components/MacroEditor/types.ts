@@ -58,7 +58,7 @@ export type Trainrun = {
 };
 
 export type TimeLock = {
-  time: number;
+  time: number | null;
   consecutiveTime: number | null;
   lock: boolean;
   warning: null;

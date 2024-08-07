@@ -85,7 +85,7 @@ const DEFAULT_DTO: NetzgrafikDto = {
 };
 
 const DEFAULT_TIME_LOCK: TimeLock = {
-  time: 0,
+  time: null,
   consecutiveTime: null,
   lock: false,
   warning: null,
