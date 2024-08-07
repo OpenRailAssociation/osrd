@@ -169,7 +169,7 @@ export function addDurationToIsoDate(startTime: string, duration: string) {
  * @returns {Date | null} The parsed Date object, or null if the input is invalid.
  */
 export function parseDateTime(dateTime: string): Date | null {
-  const date = dayjs(dateTime, 'DD/MM/YYYY HH:mm:ss');
+  const date = dayjs(dateTime, ['DD/MM/YYYY HH:mm:ss', 'D/MM/YYYY HH:mm:ss']);
   if (!date.isValid()) return null;
   return date.toDate();
 }
