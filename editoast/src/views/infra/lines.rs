@@ -1,6 +1,8 @@
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::BoundingBox;
 use thiserror::Error;
@@ -12,6 +14,8 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 
 crate::routes! {
@@ -44,7 +48,16 @@ async fn get_line_bbox(
         db_pool_v2: db_pool,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<BoundingBox>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let line_code: i32 = line_code.try_into().unwrap();
 
     let conn = &mut db_pool.get().await?;
