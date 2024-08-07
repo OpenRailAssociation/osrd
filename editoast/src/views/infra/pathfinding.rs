@@ -4,7 +4,9 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::Extension;
 use derivative::Derivative;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use pathfinding::prelude::yen;
 use serde::Deserialize;
@@ -21,6 +23,8 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
@@ -94,10 +98,19 @@ struct QueryParam {
 )]
 async fn pathfinding_view(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(infra): Path<InfraIdParam>,
     Query(params): Query<QueryParam>,
     Json(input): Json<PathfindingInput>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
 
