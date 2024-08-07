@@ -49,7 +49,8 @@ test.describe('Rollingstock editor page', () => {
     ]);
   });
 
-  test('should correctly create a new rolling stock', async ({ page }) => {
+  test('should correctly create a new rolling stock', async ({ page, browserName }) => {
+    test.slow(browserName === 'webkit', 'This test is slow on safari');
     const rollingStockEditorPage = new RollingstockEditorPage(page);
     // Navigate to the page
     await rollingStockEditorPage.navigateToPage();
@@ -120,7 +121,8 @@ test.describe('Rollingstock editor page', () => {
     );
   });
 
-  test('should correctly duplicate and modify a rolling stock', async ({ page }) => {
+  test('should correctly duplicate and modify a rolling stock', async ({ page, browserName }) => {
+    test.slow(browserName === 'webkit', 'This test is slow on safari');
     const rollingStockEditorPage = new RollingstockEditorPage(page);
 
     await rollingStockEditorPage.navigateToPage();

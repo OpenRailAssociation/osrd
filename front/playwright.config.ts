@@ -36,9 +36,9 @@ export default defineConfig({
     baseURL: process.env.BASE_URL || 'http://localhost:4000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+    video: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
     locale: 'fr',
-    video: 'retain-on-failure',
   },
   reporter: process.env.CI ? 'github' : [['line'], ['html']],
 
@@ -60,6 +60,16 @@ export default defineConfig({
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
+      },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'webkit',
+      use: {
+        browserName: 'webkit',
+        launchOptions: {
+          slowMo: 500, // Slows down WebKit interactions by 500 milliseconds
+        },
       },
       dependencies: ['setup'],
     },
