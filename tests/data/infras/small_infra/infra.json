@@ -2927,7 +2927,7 @@
             "id": "speed_section.0",
             "speed_limit": 83.33333333333333,
             "speed_limit_by_tag": {
-                "Divers - Haut le pied": 69.44444444444444
+                "HLP": 69.44444444444444
             },
             "track_ranges": [
                 {
@@ -3123,7 +3123,7 @@
             "id": "speed_section.1",
             "speed_limit": 39.44444444444444,
             "speed_limit_by_tag": {
-                "Voyageurs - Automoteurs - E32C": 27.77777777777778
+                "E32C": 27.77777777777778
             },
             "track_ranges": [
                 {
@@ -3145,7 +3145,7 @@
             "id": "speed_section.2",
             "speed_limit": 31.11111111111111,
             "speed_limit_by_tag": {
-                "Marchandise - MA100": 22.22222222222222
+                "MA100": 22.22222222222222
             },
             "track_ranges": [
                 {

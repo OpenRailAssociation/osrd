@@ -8,7 +8,7 @@ import { formatDateToString, formatDay } from 'utils/date';
 
 import styles from './SimulationReportStyleSheet';
 import type { SimulationReportSheetProps } from '../types';
-import { extractSpeedLimit, getStopDurationTime } from '../utils/formatSimulationReportSheet';
+import { getStopDurationTime } from '../utils/formatSimulationReportSheet';
 
 const SimulationReportSheet = ({
   stdcmData,
@@ -82,9 +82,7 @@ const SimulationReportSheet = ({
             <View style={styles.convoyAndRoute.convoyInfo}>
               <View style={styles.convoyAndRoute.convoyInfoBox1}>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('speedLimitByTag')}</Text>
-                <Text style={styles.convoyAndRoute.convoyInfoData}>
-                  {(speedLimitByTag && extractSpeedLimit(speedLimitByTag)) || '-'}
-                </Text>
+                <Text style={styles.convoyAndRoute.convoyInfoData}>{speedLimitByTag || '-'}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('towedMaterial')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>-</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxSpeed')}</Text>

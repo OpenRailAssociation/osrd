@@ -434,8 +434,8 @@ class RawInfraBuilder {
         return physicalSignalPool.add(builder.build())
     }
 
-    fun speedLimitTag(tagDescriptor: SpeedLimitTagDescriptor) {
-        speedLimitTagPool[tagDescriptor.id] = tagDescriptor
+    fun speedLimitTag(tagId: String, tagDescriptor: SpeedLimitTagDescriptor) {
+        speedLimitTagPool[tagId] = tagDescriptor
     }
 
     fun trackSection(name: String, chunks: StaticIdxList<TrackChunk>): TrackSectionId {

@@ -6,11 +6,7 @@ import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
-import fr.sncf.osrd.railjson.schema.infra.RJSInfra
-import fr.sncf.osrd.railjson.schema.infra.RJSRoute
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitch
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
+import fr.sncf.osrd.railjson.schema.infra.*
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
@@ -20,57 +16,13 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Detector
-import fr.sncf.osrd.sim_infra.api.DetectorId
-import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
-import fr.sncf.osrd.sim_infra.api.EndpointTrackSectionId
-import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint
-import fr.sncf.osrd.sim_infra.api.LoadingGaugeType
-import fr.sncf.osrd.sim_infra.api.NeutralSection
-import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.api.RawSignalParameters
-import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
-import fr.sncf.osrd.sim_infra.api.TrackNodeId
-import fr.sncf.osrd.sim_infra.api.TrackNodePort
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.api.TrackSection
-import fr.sncf.osrd.sim_infra.api.ZoneId
-import fr.sncf.osrd.sim_infra.api.decreasing
-import fr.sncf.osrd.sim_infra.api.increasing
-import fr.sncf.osrd.sim_infra.impl.BuildRouteError
-import fr.sncf.osrd.sim_infra.impl.MissingNodeConfig
-import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
-import fr.sncf.osrd.sim_infra.impl.ReachedNodeDeadEnd
-import fr.sncf.osrd.sim_infra.impl.ReachedTrackDeadEnd
-import fr.sncf.osrd.sim_infra.impl.SpeedLimitTagDescriptor
-import fr.sncf.osrd.sim_infra.impl.SpeedSection
-import fr.sncf.osrd.sim_infra.impl.TrackChunkDescriptor
-import fr.sncf.osrd.sim_infra.impl.TrackNodeConfigDescriptor
-import fr.sncf.osrd.sim_infra.impl.route
-import fr.sncf.osrd.utils.Direction
+import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.impl.*
+import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.Direction.DECREASING
 import fr.sncf.osrd.utils.Direction.INCREASING
-import fr.sncf.osrd.utils.DirectionalMap
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeMapImpl
-import fr.sncf.osrd.utils.Endpoint
-import fr.sncf.osrd.utils.UnionFind
-import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.indexing.DirStaticIdx
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArraySet
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticPool
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArraySetOf
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.Speed
-import fr.sncf.osrd.utils.units.meters
-import fr.sncf.osrd.utils.units.metersPerSecond
-import fr.sncf.osrd.utils.units.mutableOffsetArrayListOf
+import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.units.*
 import java.io.IOException
 import java.util.*
 import kotlin.collections.set
@@ -766,9 +718,7 @@ fun EdgeEndpoint.toEndpoint(): Endpoint {
 
 @Serializable
 data class YamlSpeedLimitTagDescriptor(
-    val name: String,
     @SerialName("fallback_list") val fallbackList: List<String>,
-    @SerialName("default_speed") val defaultSpeed: Double?,
 )
 
 fun parseSpeedLimitTags(builder: RawInfraBuilder) {
@@ -784,16 +734,10 @@ fun parseSpeedLimitTags(builder: RawInfraBuilder) {
         )
 
     for ((tagCode, tagDescriptor) in speedLimitTagDescriptors.entries) {
-        val defaultSpeed =
-            if (tagDescriptor.defaultSpeed != null)
-                Speed.fromMetersPerSecond(tagDescriptor.defaultSpeed)
-            else null
         builder.speedLimitTag(
+            tagCode,
             SpeedLimitTagDescriptor(
-                tagCode,
-                tagDescriptor.name,
                 tagDescriptor.fallbackList,
-                defaultSpeed
             )
         )
     }

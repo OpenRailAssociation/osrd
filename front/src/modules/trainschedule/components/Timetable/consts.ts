@@ -1,7 +1,6 @@
 import type { InvalidReason } from './types';
 
 export const specialCodeDictionary: { [key: string]: string } = {
-  'Divers - Haut le pied': 'HLP',
   '': 'NO CODE',
 };
 
