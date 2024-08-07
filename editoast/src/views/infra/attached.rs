@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use serde_derive::Deserialize;
 use thiserror::Error;
@@ -12,6 +14,8 @@ use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_schemas::primitives::ObjectType;
 
@@ -66,7 +70,16 @@ async fn attached(
         db_pool_v2: db_pool,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let mut conn = db_pool.get().await?;
     // TODO: lock for share
     let infra =
