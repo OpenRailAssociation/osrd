@@ -576,16 +576,16 @@ south_east.add_part(th1, 4400)
 # ================================
 #  Speed sections
 # ================================
-speed_0 = builder.add_speed_section(300 / 3.6, speed_limit_by_tag={"Divers - Haut le pied": 250 / 3.6})
+speed_0 = builder.add_speed_section(300 / 3.6, speed_limit_by_tag={"HLP": 250 / 3.6})
 for track_section in builder.infra.track_sections:
     speed_0.add_track_range(track_section, 0, track_section.length, ApplicableDirection.BOTH)
 
 
-speed_1 = builder.add_speed_section(142 / 3.6, speed_limit_by_tag={"Voyageurs - Automoteurs - E32C": 100 / 3.6})
+speed_1 = builder.add_speed_section(142 / 3.6, speed_limit_by_tag={"E32C": 100 / 3.6})
 speed_1.add_track_range(th0, 500, 1000, ApplicableDirection.BOTH)
 speed_1.add_track_range(th1, 0, 4000, ApplicableDirection.BOTH)
 
-speed_2 = builder.add_speed_section(112 / 3.6, speed_limit_by_tag={"Marchandise - MA100": 80 / 3.6})
+speed_2 = builder.add_speed_section(112 / 3.6, speed_limit_by_tag={"MA100": 80 / 3.6})
 speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 
 # ================================

@@ -1,7 +1,6 @@
 import {
   generateCodeNumber,
   getStopDurationTime,
-  extractSpeedLimit,
   computeStopDepartureTime,
   addMinutesToTime,
   getStopDurationBetweenTwoPositions,
@@ -18,15 +17,6 @@ describe('getStopDurationTime', () => {
   it('should return correct time format', () => {
     expect(getStopDurationTime(30)).toBe('30 sec');
     expect(getStopDurationTime(120)).toBe('2 min');
-  });
-});
-
-describe('extractSpeedLimit', () => {
-  it('should extract the speed limit correctly', () => {
-    const speedLimitByTag1 = 'Voyageurs 100 - MA100';
-    const speedLimitByTag2 = 'Voyageurs';
-    expect(extractSpeedLimit(speedLimitByTag1)).toBe('MA100');
-    expect(extractSpeedLimit(speedLimitByTag2)).toBe('Voyageurs');
   });
 });
 

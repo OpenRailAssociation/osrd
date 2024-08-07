@@ -67,7 +67,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Divers - Haut le pied",
+    "speed_limit_tag": "HLP",
     "power_restrictions": [],
     "options": { "use_electrical_profiles": false }
   },
@@ -85,7 +85,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Marchandise - MA100",
+    "speed_limit_tag": "MA100",
     "power_restrictions": [{ "from": "id7838", "to": "id7839", "value": "C1" }],
     "options": { "use_electrical_profiles": true }
   },
@@ -118,7 +118,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Marchandise - MA100",
+    "speed_limit_tag": "MA100",
     "power_restrictions": [],
     "options": { "use_electrical_profiles": true }
   },
@@ -144,7 +144,7 @@
     "initial_speed": 16.666666666666668,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Marchandise - MA100",
+    "speed_limit_tag": "MA100",
     "power_restrictions": [],
     "options": { "use_electrical_profiles": true }
   },
@@ -235,7 +235,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Marchandise - MA100",
+    "speed_limit_tag": "MA100",
     "power_restrictions": [],
     "options": { "use_electrical_profiles": true }
   },
@@ -296,7 +296,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Divers - Haut le pied",
+    "speed_limit_tag": "HLP",
     "power_restrictions": [],
     "options": { "use_electrical_profiles": false }
   },
@@ -322,7 +322,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Marchandise - MA100",
+    "speed_limit_tag": "MA100",
     "power_restrictions": [],
     "options": { "use_electrical_profiles": true }
   },
@@ -349,7 +349,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Divers - Haut le pied",
+    "speed_limit_tag": "HLP",
     "power_restrictions": [],
     "options": { "use_electrical_profiles": true }
   },
@@ -427,7 +427,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Voyageurs - Automoteurs - E32C",
+    "speed_limit_tag": "E32C",
     "power_restrictions": [{ "from": "id933", "to": "id884", "value": "C1" }],
     "options": { "use_electrical_profiles": true }
   },
@@ -517,7 +517,7 @@
     "initial_speed": 33.333333333333336,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Marchandise - MA100",
+    "speed_limit_tag": "MA100",
     "power_restrictions": [{ "from": "id353", "to": "id339", "value": "C2" }],
     "options": { "use_electrical_profiles": true }
   },
@@ -559,7 +559,7 @@
     "initial_speed": 0,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
-    "speed_limit_tag": "Marchandise - MA100",
+    "speed_limit_tag": "MA100",
     "power_restrictions": [],
     "options": { "use_electrical_profiles": true }
   }

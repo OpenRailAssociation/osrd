@@ -29,11 +29,6 @@ export function getStopDurationTime(sec: number) {
   return `${time.getUTCMinutes()} min`;
 }
 
-export function extractSpeedLimit(speedLimitByTag: string): string {
-  const parts = speedLimitByTag.split(' - ');
-  return parts[parts.length - 1];
-}
-
 function secondsToTimeString(duration: number): string {
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;

@@ -48,10 +48,7 @@ data class SpeedSection(
 }
 
 data class SpeedLimitTagDescriptor(
-    val id: String, // short name
-    val name: String, // long name
-    val fallbackList: List<String>, // order of the list matters for fallback
-    val defaultSpeed: Speed?
+    val fallbackList: List<String>, // order of the list matters for fallback (when equal speed)
 )
 
 class TrackNodeConfigDescriptor(
@@ -232,9 +229,6 @@ class RawInfraImpl(
             }
             bounds.immutableCopyOf()
         }
-    // TODO remove once long names are unused
-    private val speedLimitTagNameToIdMap =
-        speedLimitTagPool.values.associate { Pair(it.name, it.id) }
     private val chunkToZoneMap =
         zonePathPool
             .flatMap { zonePathId ->
@@ -531,25 +525,12 @@ class RawInfraImpl(
     ): DistanceRangeMap<SpeedLimitProperty> {
         val res = distanceRangeMapOf<SpeedLimitProperty>()
 
-        var trainTagId = trainTag
-        // TODO remove once long names are unused
-        if (speedLimitTagNameToIdMap.contains(trainTagId)) {
-            trainTagId = speedLimitTagNameToIdMap[trainTagId]
-        }
-        val trainSpeedLimitTagDescriptor = speedLimitTagPool[trainTagId]
-
-        // TODO remove once long names are unused
-        val trainTagName = trainSpeedLimitTagDescriptor?.name
+        val trainSpeedLimitTagDescriptor = speedLimitTagPool[trainTag]
 
         for (entry in trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)) {
             val speedSection = entry.value
             val infraTagSpeedAndSource =
-                getInfraTagSpeedAndSource(
-                    speedSection,
-                    trainTagId,
-                    trainTagName,
-                    trainSpeedLimitTagDescriptor
-                )
+                getInfraTagSpeedAndSource(speedSection, trainTag, trainSpeedLimitTagDescriptor)
 
             /* Route handling */
             val speedFromRoute = speedSection.speedByRoute[route]
@@ -584,31 +565,22 @@ class RawInfraImpl(
 
     private fun getInfraTagSpeedAndSource(
         speedSection: SpeedSection,
-        trainTagId: String?,
-        trainTagName: String?,
+        trainTag: String?,
         trainSpeedLimitTagDescriptor: SpeedLimitTagDescriptor?
     ): Pair<Speed?, SpeedLimitSource?> {
-        if (trainTagId == null) {
+        if (trainTag == null) {
             return Pair(null, null)
         }
 
         /* SpeedLimitTag handling */
-        var infraTagSpeed = speedSection.speedByTrainTag[trainTagId]
-        // TODO remove once long names are unused
-        if (infraTagSpeed == null && trainTagName != null) {
-            infraTagSpeed = speedSection.speedByTrainTag[trainTagName]
-        }
+        var infraTagSpeed = speedSection.speedByTrainTag[trainTag]
 
         var infraSpeedSource: SpeedLimitSource? =
-            if (infraTagSpeed != null) SpeedLimitSource.GivenTrainTag(trainTagId) else null
+            if (infraTagSpeed != null) SpeedLimitSource.GivenTrainTag(trainTag) else null
 
         if (infraTagSpeed == null && trainSpeedLimitTagDescriptor != null) {
             for (fallbackTagId in trainSpeedLimitTagDescriptor.fallbackList) {
-                val fallbackSpeed =
-                    speedSection.speedByTrainTag[fallbackTagId]
-                        // TODO remove once long names are unused and move method to
-                        //   SpeedLimitTagDescriptor
-                        ?: speedSection.speedByTrainTag[speedLimitTagPool[fallbackTagId]?.name]
+                val fallbackSpeed = speedSection.speedByTrainTag[fallbackTagId]
 
                 if (fallbackSpeed != null) {
                     if (infraTagSpeed == null || fallbackSpeed > infraTagSpeed) {

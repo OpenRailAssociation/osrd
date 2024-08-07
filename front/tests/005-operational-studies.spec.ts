@@ -99,12 +99,8 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await expect(scenarioPage.getSpeedLimitSelector).toBeVisible();
     await scenarioPage.getSpeedLimitSelector.click();
     await scenarioPage.getSpeedLimitSelector.locator('input').fill('32');
-    await scenarioPage.getSpeedLimitSelector
-      .getByRole('button', { name: 'Voyageurs - Automoteurs - E32C' })
-      .click();
-    expect(await scenarioPage.getSpeedLimitSelector.textContent()).toMatch(
-      /Voyageurs - Automoteurs - E32C/i
-    );
+    await scenarioPage.getSpeedLimitSelector.getByRole('button', { name: 'E32C' }).click();
+    expect(await scenarioPage.getSpeedLimitSelector.textContent()).toMatch(/E32C/i);
 
     // ***************** Test Add Train Schedule *****************
     await scenarioPage.addTrainSchedule();
