@@ -32,8 +32,3 @@ export const LIST_VALUES = {
 
 export type ListValues = ValueOf<typeof LIST_VALUES>;
 export type AllListValues = ArrayElement<ListValues>;
-
-// Signal Base is the Signaling system chosen for results display
-export const SIGNAL_BASE_DEFAULT = 'BAL3';
-
-export const LIST_VALUES_SIGNAL_BASE = ['BAL3'];

@@ -1,6 +1,5 @@
 import { compact, last, omit } from 'lodash';
 
-import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { Distribution, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
@@ -140,13 +139,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     });
   });
 
-  it('should handle updatePathfindingID', () => {
-    const newPathfindingID = 1;
-    defaultStore.dispatch(slice.actions.updatePathfindingID(newPathfindingID));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.pathfindingID).toBe(newPathfindingID);
-  });
-
   it('should handle updateTimetableID', () => {
     const newTimetableID = 1;
     defaultStore.dispatch(slice.actions.updateTimetableID(newTimetableID));
@@ -175,13 +167,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     expect(state.rollingStockID).toBe(newRollingStockID);
   });
 
-  it('should handle updateRollingStockComfort', () => {
-    const newRollingStockComfort = 'AC';
-    defaultStore.dispatch(slice.actions.updateRollingStockComfort(newRollingStockComfort));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.rollingStockComfort).toBe(newRollingStockComfort);
-  });
-
   describe('should handle updateSpeedLimitByTag', () => {
     it('should update speedLimitByTag with a non-null value', () => {
       const newSpeedLimitByTag = 'test-tag';
@@ -196,25 +181,11 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     });
   });
 
-  it('should handle updateOrigin', () => {
-    const newOrigin = testDataBuilder.buildPointOnMap();
-    defaultStore.dispatch(slice.actions.updateOrigin(newOrigin));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.origin).toBe(newOrigin);
-  });
-
   it('should handle updateInitialSpeed', () => {
     const newInitialSpeed = 50;
     defaultStore.dispatch(slice.actions.updateInitialSpeed(newInitialSpeed));
     const state = defaultStore.getState()[slice.name];
     expect(state.initialSpeed).toBe(newInitialSpeed);
-  });
-
-  it('should handle updateDepartureTime', () => {
-    const newDepartureTime = '09:00:00';
-    defaultStore.dispatch(slice.actions.updateDepartureTime(newDepartureTime));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.departureTime).toBe(newDepartureTime);
   });
 
   describe('should handle updateOriginTime', () => {
@@ -363,98 +334,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     expect(state.originUpperBoundDate).toBe(newOriginUpperBoundDate);
   });
 
-  it('should handle replaceVias', () => {
-    const newVias: PointOnMap[] = [testDataBuilder.buildPointOnMap()];
-    defaultStore.dispatch(slice.actions.replaceVias(newVias));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.vias).toBe(newVias);
-  });
-
-  describe('should handle addVias', () => {
-    const brest = testDataBuilder.buildPointOnMap({
-      id: 'brest',
-      coordinates: [48.390394, -4.486076],
-    });
-    const rennes = testDataBuilder.buildPointOnMap({
-      id: 'rennes',
-      coordinates: [48.117266, -1.6777926],
-    });
-    const mans = testDataBuilder.buildPointOnMap({
-      id: 'mans',
-      coordinates: [48.00611, 0.199556],
-    });
-    const paris = testDataBuilder.buildPointOnMap({
-      id: 'paris',
-      coordinates: [48.8566, 2.3522],
-    });
-    const strasbourg = testDataBuilder.buildPointOnMap({
-      id: 'paris',
-      coordinates: [7.750713, 48.583148],
-    });
-
-    it('should handle insertion for a route with no existing via', () => {
-      const store = createStore(slice, {
-        origin: brest,
-        destination: strasbourg,
-        vias: [],
-      });
-
-      store.dispatch(slice.actions.addVias(mans));
-      const state = store.getState()[slice.name];
-      expect(state.vias).toStrictEqual([mans]);
-    });
-
-    it('should correctly append a new via point when the existing via is closer to the origin', () => {
-      const store = createStore(slice, {
-        origin: brest,
-        destination: strasbourg,
-        vias: [mans],
-      });
-
-      store.dispatch(slice.actions.addVias(rennes));
-      const state = store.getState()[slice.name];
-      expect(state.vias).toStrictEqual([rennes, mans]);
-    });
-
-    it('should insert a via between two existing ones based on distance from origin', () => {
-      const store = createStore(slice, {
-        origin: brest,
-        destination: strasbourg,
-        vias: [rennes, paris],
-      });
-
-      store.dispatch(slice.actions.addVias(mans));
-      const state = store.getState()[slice.name];
-      expect(state.vias).toStrictEqual([rennes, mans, paris]);
-    });
-
-    it('should insert a via at the end of the route', () => {
-      const store = createStore(slice, {
-        origin: brest,
-        destination: strasbourg,
-        vias: [rennes, mans],
-      });
-
-      store.dispatch(slice.actions.addVias(paris));
-      const state = store.getState()[slice.name];
-      expect(state.vias).toStrictEqual([rennes, mans, paris]);
-    });
-  });
-
-  it('should handle updateViaStopTime', () => {
-    const via1 = testDataBuilder.buildPointOnMap({ id: 'via-1' });
-    const via2 = testDataBuilder.buildPointOnMap({ id: 'via-2' });
-    const vias = [via1, via2];
-    const store = createStore(slice, { vias });
-
-    store.dispatch(slice.actions.updateViaStopTime(vias, 0, 5));
-    const state = store.getState()[slice.name];
-    expect(state.vias).toStrictEqual([
-      { id: 'via-1', name: 'point', duration: 5 },
-      { id: 'via-2', name: 'point' },
-    ] as PointOnMap[]);
-  });
-
   it('should handle updateViaStopTimeV2', () => {
     const pathSteps = testDataBuilder.buildPathSteps();
     const via = pathSteps[1];
@@ -465,102 +344,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     store.dispatch(slice.actions.updateViaStopTimeV2({ via, duration: 'PT60S' }));
     const state = store.getState()[slice.name];
     expect(state.pathSteps[1]?.stopFor).toEqual('PT60S');
-  });
-
-  it('should handle permuteVias', () => {
-    const via1 = testDataBuilder.buildPointOnMap({ id: 'via-1' });
-    const via2 = testDataBuilder.buildPointOnMap({ id: 'via-2' });
-    const vias = [via1, via2];
-    const store = createStore(slice, { vias });
-
-    store.dispatch(slice.actions.permuteVias(vias, 0, 1));
-    const state = store.getState()[slice.name];
-    expect(state.vias).toStrictEqual([
-      { id: 'via-2', name: 'point' },
-      { id: 'via-1', name: 'point' },
-    ] as PointOnMap[]);
-  });
-
-  it('should handle updateSuggeredVias', () => {
-    const via1 = testDataBuilder.buildPointOnMap({ id: 'via-1' });
-    const via2 = testDataBuilder.buildPointOnMap({ id: 'via-2' });
-    const vias = [via1, via2];
-    defaultStore.dispatch(slice.actions.updateSuggeredVias(vias));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.suggeredVias).toStrictEqual(vias);
-  });
-
-  it('should handle clearVias', () => {
-    const via1 = testDataBuilder.buildPointOnMap({ id: 'via-1' });
-    const via2 = testDataBuilder.buildPointOnMap({ id: 'via-2' });
-    const vias = [via1, via2];
-    const store = createStore(slice, { vias });
-    store.dispatch(slice.actions.clearVias());
-    const state = store.getState()[slice.name];
-    expect(state.vias).toStrictEqual([]);
-  });
-
-  it('should handle deleteVias', () => {
-    const via1 = testDataBuilder.buildPointOnMap({ id: 'via-1' });
-    const via2 = testDataBuilder.buildPointOnMap({ id: 'via-2' });
-    const vias = [via1, via2];
-    const store = createStore(slice, { vias });
-
-    store.dispatch(slice.actions.deleteVias(0));
-    const state = store.getState()[slice.name];
-    expect(state.vias).toStrictEqual([via2]);
-  });
-
-  it('should handle deleteItinerary', () => {
-    const via1 = testDataBuilder.buildPointOnMap({ id: 'via-1' });
-    const via2 = testDataBuilder.buildPointOnMap({ id: 'via-2' });
-    const vias = [via1, via2];
-
-    const store = createStore(slice, {
-      origin: via1,
-      vias,
-      destination: via2,
-      geojson: testDataBuilder.buildGeoJson(),
-      originTime: '08:00:00',
-      pathfindingID: 1,
-    });
-
-    store.dispatch(slice.actions.deleteItinerary());
-    const state = store.getState()[slice.name];
-    expect(state.origin).toBe(undefined);
-    expect(state.vias).toStrictEqual([]);
-    expect(state.destination).toBe(undefined);
-    expect(state.geojson).toBe(undefined);
-    expect(state.originTime).toBe(undefined);
-    expect(state.pathfindingID).toBe(undefined);
-  });
-
-  it('should handle destination', () => {
-    const newDestination = testDataBuilder.buildPointOnMap({ id: 'via-2' });
-    defaultStore.dispatch(slice.actions.updateDestination(newDestination));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.destination).toBe(newDestination);
-  });
-
-  it('should handle updateDestinationDate', () => {
-    const newDestinationDate = '10/10/2023';
-    defaultStore.dispatch(slice.actions.updateDestinationDate(newDestinationDate));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.destinationDate).toBe(newDestinationDate);
-  });
-
-  it('should handle updateDestinationTime', () => {
-    const newDestinationTime = '10:10:30';
-    defaultStore.dispatch(slice.actions.updateDestinationTime(newDestinationTime));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.destinationTime).toBe(newDestinationTime);
-  });
-
-  it('should handle updateItinerary', () => {
-    const newItinerary = testDataBuilder.buildGeoJson();
-    defaultStore.dispatch(slice.actions.updateItinerary(newItinerary));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.geojson).toBe(newItinerary);
   });
 
   it('should handle updateFeatureInfoClick', () => {
@@ -584,15 +367,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     defaultStore.dispatch(slice.actions.updateGridMarginAfter(newGridMarginAfter));
     const state = defaultStore.getState()[slice.name];
     expect(state.gridMarginAfter).toStrictEqual(newGridMarginAfter);
-  });
-
-  it('should handle updateTrainScheduleIDsToModify', () => {
-    const newTrainScheduleIDsToModify = [10, 2];
-    defaultStore.dispatch(
-      slice.actions.updateTrainScheduleIDsToModify(newTrainScheduleIDsToModify)
-    );
-    const state = defaultStore.getState()[slice.name];
-    expect(state.trainScheduleIDsToModify).toStrictEqual(newTrainScheduleIDsToModify);
   });
 
   it('should handle updatePathSteps', () => {

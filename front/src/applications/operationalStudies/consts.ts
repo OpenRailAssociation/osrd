@@ -1,37 +1,9 @@
-import type { Position } from 'geojson';
-
 export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   none: 'NONE',
   add: 'ADD',
   edit: 'EDIT',
   import: 'IMPORT',
 });
-
-export interface PointOnMap {
-  id?: string;
-  name?: string;
-  curves?: string;
-  length?: number;
-  slopes?: string;
-  extensions_sncf_line_code?: number;
-  extensions_sncf_line_name?: string;
-  extensions_sncf_track_name?: string;
-  extensions_sncf_track_number?: number;
-  loading_gauge_limits?: string;
-  coordinates?: Position | number[];
-  duration?: number;
-  track?: string;
-  position?: number;
-  path_offset?: number;
-  uic?: number | null;
-  ch?: string | null;
-  ci?: number | null;
-  location?: {
-    track_section?: string;
-    offset?: number;
-    geo_coordinates?: Position | number[];
-  };
-}
 
 export const STUDY_STATES = {
   started: 'started',

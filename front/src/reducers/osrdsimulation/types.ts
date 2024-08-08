@@ -5,7 +5,7 @@ import type {
   SimulationPowerRestrictionRange,
   SimulationReport,
 } from 'common/api/osrdEditoastApi';
-import type { AllListValues, SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/consts';
+import type { AllListValues } from 'modules/simulationResult/consts';
 
 export type MergedDataPoint<T = number> = {
   [key: string]: number | T;
@@ -200,38 +200,13 @@ export interface SimulationTrain<DateType = Date> {
   eco_speed?: ConsolidatedPositionSpeedTime[];
 }
 
-export enum SPEED_SPACE_SETTINGS_KEYS {
-  ALTITUDE = 'altitude',
-  CURVES = 'curves',
-  MAX_SPEED = 'maxSpeed',
-  SLOPES = 'slopes',
-  ELECTRICAL_PROFILES = 'electricalProfiles',
-  POWER_RESTRICTION = 'powerRestriction',
-}
-export type SpeedSpaceSettingKey =
-  | SPEED_SPACE_SETTINGS_KEYS.ALTITUDE
-  | SPEED_SPACE_SETTINGS_KEYS.CURVES
-  | SPEED_SPACE_SETTINGS_KEYS.MAX_SPEED
-  | SPEED_SPACE_SETTINGS_KEYS.SLOPES
-  | SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES
-  | SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION;
-
-export type SpeedSpaceSettingsType = { [key in SpeedSpaceSettingKey]: boolean };
-
 export interface OsrdSimulationState {
   redirectToGraph?: boolean;
   chart?: Chart;
   isPlaying: boolean;
   isUpdating: boolean;
   allowancesSettings?: AllowancesSettings;
-  mustRedraw: boolean;
-  selectedProjection?: Projection;
   selectedTrainId?: number;
-  speedSpaceSettings: {
-    [key in SpeedSpaceSettingKey]: boolean;
-  };
-  signalBase: typeof SIGNAL_BASE_DEFAULT;
-  consolidatedSimulation: SimulationTrain[];
   simulation: {
     past: SimulationHistory;
     present: SimulationSnapshot;

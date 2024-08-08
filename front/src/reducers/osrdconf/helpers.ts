@@ -1,13 +1,10 @@
-import { feature, lineString, point } from '@turf/helpers';
-import length from '@turf/length';
+import { feature, point } from '@turf/helpers';
 import { last } from 'lodash';
 
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
-import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { addElementAtIndex } from 'utils/array';
 import { formatIsoDate } from 'utils/date';
-import { nearestPointOnLine } from 'utils/geometry';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 
 import type { OsrdConfState, PathStep } from './types';
@@ -79,35 +76,6 @@ export const computeLinkedOriginTimes = (
       originUpperBoundDate
     ),
   };
-};
-
-export const insertVia = (
-  vias: PointOnMap[],
-  origin: PointOnMap,
-  destination: PointOnMap,
-  newVia: PointOnMap
-): PointOnMap[] => {
-  const updatedVias = [...vias];
-  const fullRouteCoordinates = [
-    origin.coordinates!,
-    ...vias.map((v) => v.coordinates!),
-    destination.coordinates!,
-  ];
-  const newViaPoint = point(newVia.coordinates!);
-
-  const nearestPointOnPath = nearestPointOnLine(lineString(fullRouteCoordinates), newViaPoint);
-
-  const insertIndex = fullRouteCoordinates.findIndex((_, index) => {
-    if (index === 0) return false;
-    if (index === fullRouteCoordinates.length - 1) return true;
-    // Makes the function imperfect as insert might fail in a curvy path
-    const segmentToPoint = lineString(fullRouteCoordinates.slice(0, index + 1));
-    return nearestPointOnPath.properties.location! <= length(segmentToPoint);
-  });
-
-  const adjustedIndex = Math.max(0, insertIndex - 1);
-  updatedVias.splice(adjustedIndex, 0, newVia);
-  return updatedVias;
 };
 
 export const insertViaFromMap = (

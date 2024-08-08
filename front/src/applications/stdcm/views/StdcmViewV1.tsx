@@ -5,7 +5,7 @@ import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import StdcmConfig from 'applications/stdcm/views/StdcmConfig';
 import StdcmRequestModal from 'applications/stdcm/views/StdcmRequestModal';
-import { updateSelectedTrainId, updateSelectedProjection } from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
 
 const StdcmViewV1 = () => {
@@ -23,7 +23,6 @@ const StdcmViewV1 = () => {
   useEffect(
     () => () => {
       dispatch(updateSelectedTrainId(undefined));
-      dispatch(updateSelectedProjection(undefined));
     },
     []
   );

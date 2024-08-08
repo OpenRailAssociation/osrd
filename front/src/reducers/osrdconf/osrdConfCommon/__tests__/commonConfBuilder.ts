@@ -1,57 +1,10 @@
 import type { Feature } from 'geojson';
 
-import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { PathResponse } from 'common/api/osrdEditoastApi';
 import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 
 export default function commonConfBuilder() {
   return {
-    buildPointOnMap: (fields?: Partial<PointOnMap>): PointOnMap => ({
-      id: 'test',
-      name: 'point',
-      ...fields,
-    }),
-    buildGeoJson: (): PathResponse => ({
-      created: '10/10/2023',
-      curves: [{ position: 10, radius: 2 }],
-      geographic: {
-        coordinates: [
-          [1, 2],
-          [3, 4],
-        ],
-        type: 'LineString',
-      },
-      id: 1,
-      length: 10,
-      owner: 'test',
-      slopes: [
-        {
-          gradient: 5,
-          position: 2,
-        },
-      ],
-      steps: [
-        {
-          duration: 2,
-          geo: {
-            coordinates: [1, 2],
-            type: 'Point',
-          },
-          id: 'toto',
-          location: {
-            offset: 12,
-            track_section: 'iti',
-          },
-          name: 'test',
-          path_offset: 42,
-          suggestion: true,
-          ch: null,
-          uic: null,
-        },
-      ],
-    }),
-
     buildFeatureInfoClick: (
       featureInfoClickFields?: Partial<OsrdConfState['featureInfoClick']>
     ): OsrdConfState['featureInfoClick'] => ({
