@@ -2072,10 +2072,10 @@
     openapi-typescript "^5.4.1"
     yargs "^17.7.2"
 
-"@osrd-project/netzgrafik-frontend@0.0.0-snapshot.b5ca2e546ba2695c5a999c8e150775230b4152ce":
-  version "0.0.0-snapshot.b5ca2e546ba2695c5a999c8e150775230b4152ce"
-  resolved "https://registry.yarnpkg.com/@osrd-project/netzgrafik-frontend/-/netzgrafik-frontend-0.0.0-snapshot.b5ca2e546ba2695c5a999c8e150775230b4152ce.tgz#ec4bcfa99abd602641fc20916699c2783dff28d5"
-  integrity sha512-BUGtCdSqpWtmTV5yO2FriLYGyK+Q89dNWxidoqAZws8v03X2k1yr+DrUar/UuOqZuh4MH6qMF8/Y/wj3ak855A==
+"@osrd-project/netzgrafik-frontend@0.0.0-snapshot.d8b7083bd0d2c21a7922f80a8bb60c2197afb005":
+  version "0.0.0-snapshot.d8b7083bd0d2c21a7922f80a8bb60c2197afb005"
+  resolved "https://registry.yarnpkg.com/@osrd-project/netzgrafik-frontend/-/netzgrafik-frontend-0.0.0-snapshot.d8b7083bd0d2c21a7922f80a8bb60c2197afb005.tgz#8e13fdbb2b98f5c514257a3bfd689a13e0370922"
+  integrity sha512-WRcom1DSfD2IEoducDcohtZKL1CnOuZHolljNwRsvrezfYn1YxiPoUVYpy7NGIVmAi6+leImdVAaY8EMUtnMsA==
 
 "@osrd-project/ui-core@^0.0.31":
   version "0.0.31"
