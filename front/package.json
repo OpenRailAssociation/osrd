@@ -83,7 +83,7 @@
     "lodash": "^4.17.21",
     "maplibre-gl": "^4.0.0",
     "match-sorter": "^6.3.3",
-    "@osrd-project/netzgrafik-frontend": "0.0.0-snapshot.b5ca2e546ba2695c5a999c8e150775230b4152ce",
+    "@osrd-project/netzgrafik-frontend": "0.0.0-snapshot.d8b7083bd0d2c21a7922f80a8bb60c2197afb005",
     "openapi-typescript-codegen": "^0.27.0",
     "party-js": "^2.2.0",
     "prop-types": "^15.8.1",
