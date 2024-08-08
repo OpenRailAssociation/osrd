@@ -5,7 +5,9 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.api_v2.UndirectedTrackRange
 import fr.sncf.osrd.api.api_v2.stdcm.WorkSchedule
 import fr.sncf.osrd.api.stdcm.makeTrainSchedule
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.standalone_sim.run
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
@@ -18,10 +20,17 @@ import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
 import java.io.IOException
 import java.net.URISyntaxException
-import org.junit.jupiter.api.Assertions
+import java.util.stream.Stream
+import kotlin.math.round
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FullSTDCMTests {
     /**
      * Simple test on tiny infra with no occupancy. This is the same test as the one testing the
@@ -104,23 +113,34 @@ class FullSTDCMTests {
     @Test
     @Throws(IOException::class, URISyntaxException::class)
     fun testSmallInfraSmallOpening() {
-        val infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"))
         val start =
-            setOf(Helpers.convertRouteLocation(infra, "rt.buffer_stop.3->DB0", Offset(1590.meters)))
+            setOf(
+                Helpers.convertRouteLocation(
+                    smallInfra,
+                    "rt.buffer_stop.3->DB0",
+                    Offset(1590.meters)
+                )
+            )
         val end =
-            setOf(Helpers.convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(5000.meters)))
-        val requirements = makeRequirementsFromPath(infra, start, end, 0.0).toMutableList()
-        requirements.addAll(makeRequirementsFromPath(infra, start, end, 600.0))
+            setOf(
+                Helpers.convertRouteLocation(
+                    smallInfra,
+                    "rt.DH2->buffer_stop.7",
+                    Offset(5000.meters)
+                )
+            )
+        val requirements = makeRequirementsFromPath(smallInfra, start, end, 0.0).toMutableList()
+        requirements.addAll(makeRequirementsFromPath(smallInfra, start, end, 600.0))
         val res =
             STDCMPathfindingBuilder()
-                .setInfra(infra)
+                .setInfra(smallInfra)
                 .setStartTime(300.0)
                 .setStartLocations(start)
                 .setEndLocations(end)
-                .setBlockAvailability(makeBlockAvailability(infra, requirements))
+                .setBlockAvailability(makeBlockAvailability(smallInfra, requirements))
                 .setMaxDepartureDelay(600.0)
                 .run()!!
-        checkNoConflict(infra, requirements, res)
+        checkNoConflict(smallInfra, requirements, res)
     }
 
     /**
@@ -130,22 +150,33 @@ class FullSTDCMTests {
     @Test
     @Throws(IOException::class, URISyntaxException::class)
     fun testSmallInfraImpossibleOpening() {
-        val infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"))
         val start =
-            setOf(Helpers.convertRouteLocation(infra, "rt.buffer_stop.3->DB0", Offset(1590.meters)))
+            setOf(
+                Helpers.convertRouteLocation(
+                    smallInfra,
+                    "rt.buffer_stop.3->DB0",
+                    Offset(1590.meters)
+                )
+            )
         val end =
-            setOf(Helpers.convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(5000.meters)))
-        val requirements = makeRequirementsFromPath(infra, start, end, 0.0).toMutableList()
+            setOf(
+                Helpers.convertRouteLocation(
+                    smallInfra,
+                    "rt.DH2->buffer_stop.7",
+                    Offset(5000.meters)
+                )
+            )
+        val requirements = makeRequirementsFromPath(smallInfra, start, end, 0.0).toMutableList()
         val minDelay = getMaxOccupancyDuration(requirements)
-        requirements.addAll(makeRequirementsFromPath(infra, start, end, minDelay * 0.95))
+        requirements.addAll(makeRequirementsFromPath(smallInfra, start, end, minDelay * 0.95))
         val res =
             STDCMPathfindingBuilder()
-                .setInfra(infra)
+                .setInfra(smallInfra)
                 .setStartLocations(start)
                 .setEndLocations(end)
-                .setBlockAvailability(makeBlockAvailability(infra, requirements))
+                .setBlockAvailability(makeBlockAvailability(smallInfra, requirements))
                 .run()!!
-        checkNoConflict(infra, requirements, res)
+        checkNoConflict(smallInfra, requirements, res)
     }
 
     /** Test that we properly account for work schedules */
@@ -166,19 +197,56 @@ class FullSTDCMTests {
                     )
                 )
             )
-        val infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"))
         val start =
-            setOf(Helpers.convertRouteLocation(infra, "rt.buffer_stop.3->DB0", Offset(0.meters)))
+            setOf(
+                Helpers.convertRouteLocation(smallInfra, "rt.buffer_stop.3->DB0", Offset(0.meters))
+            )
         val end =
-            setOf(Helpers.convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(0.meters)))
+            setOf(
+                Helpers.convertRouteLocation(smallInfra, "rt.DH2->buffer_stop.7", Offset(0.meters))
+            )
         val res =
             STDCMPathfindingBuilder()
-                .setInfra(infra)
+                .setInfra(smallInfra)
                 .setStartLocations(start)
                 .setEndLocations(end)
                 .setBlockAvailability(blockAvailability)
                 .run()!!
         assertTrue(res.departureTime >= 3600)
+    }
+
+    /** Test that we properly account for start or end scheduled step. */
+    @ParameterizedTest
+    @MethodSource("plannedTimingDataArg")
+    fun testScheduledStartOrEnd(
+        start: Set<PathfindingEdgeLocationId<Block>>,
+        end: Set<PathfindingEdgeLocationId<Block>>,
+        startPlannedTimingData: PlannedTimingData?,
+        endPlannedTimingData: PlannedTimingData?,
+        expectedPassageTime: Double
+    ) {
+        val blockAvailability =
+            makeBlockAvailability(
+                smallInfra,
+                listOf(),
+                listOf(),
+                listOf(
+                    STDCMStep(start, 0.0, true, startPlannedTimingData),
+                    STDCMStep(end, 0.0, true, endPlannedTimingData)
+                )
+            )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(smallInfra)
+                .setStartLocations(start, startPlannedTimingData)
+                .setEndLocations(end, endPlannedTimingData)
+                .setBlockAvailability(blockAvailability)
+                .run()!!
+        if (startPlannedTimingData != null) {
+            assertEquals(expectedPassageTime, res.departureTime)
+        } else {
+            assertEquals(expectedPassageTime, round(res.departureTime + res.envelope.totalTime))
+        }
     }
 
     /** Check that the result we find doesn't cause a conflict */
@@ -208,11 +276,52 @@ class FullSTDCMTests {
         for (requirement in newRequirements) {
             val shifted = requirement.withAddedTime(res.departureTime)
             for (existingRequirement in requirementMap[requirement.zone]) {
-                Assertions.assertTrue(
+                assertTrue(
                     shifted.beginTime >= existingRequirement.endTime ||
                         shifted.endTime <= existingRequirement.beginTime
                 )
             }
         }
+    }
+
+    private fun plannedTimingDataArg(): Stream<Arguments> {
+        val start =
+            setOf(
+                Helpers.convertRouteLocation(smallInfra, "rt.buffer_stop.3->DB0", Offset(0.meters))
+            )
+        val end =
+            setOf(
+                Helpers.convertRouteLocation(smallInfra, "rt.DH2->buffer_stop.7", Offset(0.meters))
+            )
+        return Stream.of(
+            Arguments.of(
+                start,
+                end,
+                PlannedTimingData(300.seconds, 100.seconds, 100.seconds),
+                null,
+                300.0
+            ),
+            Arguments.of(
+                start,
+                end,
+                PlannedTimingData(300.seconds, 0.seconds, 0.seconds),
+                null,
+                300.0
+            ),
+            Arguments.of(
+                start,
+                end,
+                null,
+                PlannedTimingData(800.seconds, 100.seconds, 100.seconds),
+                800.0
+            ),
+            Arguments.of(
+                start,
+                end,
+                null,
+                PlannedTimingData(800.seconds, 0.seconds, 0.seconds),
+                800.0
+            )
+        )
     }
 }

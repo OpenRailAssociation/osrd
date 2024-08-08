@@ -91,9 +91,10 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                         workSchedules = request.workSchedules,
                         steps,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
-                        gridMarginAfterTrain = request.timeGapAfter.seconds
+                        gridMarginAfterTrain = request.timeGapAfter.seconds,
+                        timeStep = request.timeStep!!.seconds
                     ),
-                    request.timeStep!!.seconds,
+                    request.timeStep.seconds,
                     request.maximumDepartureDelay!!.seconds,
                     request.maximumRunTime.seconds,
                     request.speedLimitTag,

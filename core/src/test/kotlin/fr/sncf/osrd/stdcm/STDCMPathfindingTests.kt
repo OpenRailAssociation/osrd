@@ -544,14 +544,15 @@ class STDCMPathfindingTests {
     /**
      * Path arrives at end at either 28s (before occupancy) with a departure time at 0.0 +
      * delayForPlannedNode and a maximum delay of 6s, or 47s (after occupancy) with a departure time
-     * of 19.0. End has planned timing data working for both ends. Three test cases:
-     * - arrival closer to first path end -> first path, departure time < 19.0
-     * - arrival closer to second path end -> second path, departure time = 19.0
+     * at occupancy end (15s) + 2s taking internal margin into account. End has planned timing data
+     * working for both ends. Three test cases:
+     * - arrival closer to first path end -> first path, departure time < 17.0
+     * - arrival closer to second path end -> second path, departure time = 17.0
      * - arrival closer to second path end, but even closer to first path end + maximum delay = 34s
-     *   -> first path, departure time < 19.0
+     *   -> first path, departure time < 17.0
      */
     @ParameterizedTest
-    @CsvSource("30, 20, 20, true", "45, 20, 20, false", "40, 20, 20, true")
+    @CsvSource("30, 20, 20, true", "45, 20, 20, false", "35, 15, 15, true")
     fun testReturnPathClosestToPlannedStepWithSameLeftRightTolerances(
         arrivalTime: Double,
         toleranceBefore: Double,
@@ -586,7 +587,11 @@ class STDCMPathfindingTests {
                 )
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        assertEquals(isFirstPath, res.departureTime < 19.0)
+        if (isFirstPath) {
+            assertTrue(res.departureTime < 17.0)
+        } else {
+            assertEquals(17.0, res.departureTime)
+        }
     }
 
     /**
@@ -631,11 +636,12 @@ class STDCMPathfindingTests {
 
     /**
      * Path arrives at end before occupancy with a departure time at 0.0, or after occupancy with a
-     * departure time of 19.0. Start has planned timing data working for both starts. Tweak its
-     * values to show the closest path to previous planned time is taken.
+     * departure time of 15.0 + 2.0, taking internal margin into account. Start has planned timing
+     * data working for both starts. Tweak its values to show the closest path to previous planned
+     * time is taken.
      */
     @ParameterizedTest
-    @CsvSource("0.0, 0.0, 20.0, 0.0", "15.0, 15.0, 15.0, 19.0")
+    @CsvSource("0.0, 0.0, 20.0, 0.0", "15.0, 15.0, 15.0, 17.0")
     fun testReturnThePathClosestToPreviousPlannedStep(
         arrivalTime: Double,
         toleranceBefore: Double,

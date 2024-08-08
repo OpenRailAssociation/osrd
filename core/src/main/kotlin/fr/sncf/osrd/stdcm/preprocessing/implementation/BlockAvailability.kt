@@ -28,6 +28,7 @@ data class BlockAvailability(
     val plannedSteps: List<STDCMStep>,
     val gridMarginBeforeTrain: Double,
     val gridMarginAfterTrain: Double,
+    val internalMarginForSteps: Double,
 ) : BlockAvailabilityInterface {
 
     override fun getAvailability(
@@ -81,13 +82,14 @@ data class BlockAvailability(
     }
 
     /**
-     * Check that the planned step timing data is respected, and return the corresponding
-     * availability.
-     * - If some steps are not respected, find the minimumDelayToBecomeAvailable and return
-     *   Unavailable(minimumDelayToBecomeAvailable, ...). In case this delay fails other steps,
-     *   return Unavailable(Infinity, ...).
-     * - If all steps are respected, find the maximumDelayToStayAvailable and return
-     *   Available(maximumDelayToStayAvailable, ...).
+     * Check that the planned step timing data is respected, i.e. time in
+     * [arrivalTime - toleranceBefore - internalMargin, arrivalTime + toleranceAfter + internalMargin].
+     * Return the corresponding availability.
+     * - If some steps are not respected, find the minimumDelayToBecomeAvailable (subtracting the
+     *   internal margin) and return Unavailable(minimumDelayToBecomeAvailable, ...). In case this
+     *   delay fails other steps, return Unavailable(Infinity, ...).
+     * - If all steps are respected, find the maximumDelayToStayAvailable (adding the internal
+     *   margin) and return Available(maximumDelayToStayAvailable, ...).
      */
     private fun getStepAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
@@ -173,15 +175,15 @@ data class BlockAvailability(
                         val plannedMinTimeAtStep =
                             (step.plannedTimingData!!.arrivalTime -
                                     step.plannedTimingData.arrivalTimeToleranceBefore)
-                                .seconds
+                                .seconds - internalMarginForSteps
                         val plannedMaxTimeAtStep =
                             (step.plannedTimingData.arrivalTime +
                                     step.plannedTimingData.arrivalTimeToleranceAfter)
-                                .seconds
+                                .seconds + internalMarginForSteps
                         if (plannedMinTimeAtStep > timeAtStep) {
                             // Train passes through planned timing data before it is available
                             return AvailabilityProperties(
-                                plannedMinTimeAtStep - timeAtStep,
+                                max(plannedMinTimeAtStep - timeAtStep, 0.0),
                                 incrementalPath.toTravelledPath(stepOffsetOnPath),
                                 0.0,
                                 0.0
@@ -201,7 +203,7 @@ data class BlockAvailability(
                             0.0,
                             Offset(0.meters),
                             plannedMaxTimeAtStep - timeAtStep,
-                            plannedMinTimeAtStep
+                            plannedMaxTimeAtStep
                         )
                     }
                 }
@@ -340,6 +342,7 @@ fun makeBlockAvailability(
     steps: List<STDCMStep> = listOf(),
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
+    timeStep: Double = 2.0,
 ): BlockAvailabilityInterface {
     // Merge work schedules into train requirements
     val convertedWorkSchedules = convertWorkSchedules(infra.rawInfra, workSchedules)
@@ -365,6 +368,7 @@ fun makeBlockAvailability(
         plannedSteps,
         gridMarginBeforeTrain,
         gridMarginAfterTrain,
+        timeStep
     )
 }
 

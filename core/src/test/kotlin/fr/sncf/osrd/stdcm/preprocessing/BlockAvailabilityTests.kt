@@ -13,6 +13,7 @@ import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailability
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -652,7 +653,8 @@ class BlockAvailabilityTests {
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds)
                 )
             )
-        val availability = makeBlockAvailability(infra, listOf(), listOf(), steps)
+        val availability =
+            makeBlockAvailability(infra, listOf(), listOf(), steps) as BlockAvailability
         val res =
             availability.getAvailability(
                 explorer,
@@ -660,7 +662,10 @@ class BlockAvailabilityTests {
                 explorer.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Available
-        assertEquals(timeAtZoneEnd.seconds.seconds, res.maximumDelay)
+        assertEquals(
+            timeAtZoneEnd.seconds.seconds + availability.internalMarginForSteps,
+            res.maximumDelay
+        )
     }
 
     @Test
@@ -717,7 +722,6 @@ class BlockAvailabilityTests {
                 )
             )
         val lastAvailableTime = (stepMaximumTolerance / 2) + 30.0
-        val stepMaximumDelay = lastAvailableTime - timeAtStep
 
         val timeAtZoneEnd = explorer.interpolateDepartureFromClamp(explorer.getSimulatedLength())
         val requirements =
@@ -730,7 +734,9 @@ class BlockAvailabilityTests {
                 )
             )
 
-        val availability = makeBlockAvailability(infra, requirements, listOf(), steps)
+        val availability =
+            makeBlockAvailability(infra, requirements, listOf(), steps) as BlockAvailability
+        val stepMaximumDelay = lastAvailableTime - timeAtStep + availability.internalMarginForSteps
         val res =
             availability.getAvailability(
                 explorer,
@@ -835,7 +841,8 @@ class BlockAvailabilityTests {
                     PlannedTimingData(minDelay.seconds, 0.seconds, 10.seconds)
                 )
             )
-        val availability = makeBlockAvailability(infra, listOf(), listOf(), steps)
+        val availability =
+            makeBlockAvailability(infra, listOf(), listOf(), steps) as BlockAvailability
         val res =
             availability.getAvailability(
                 explorer,
@@ -843,7 +850,7 @@ class BlockAvailabilityTests {
                 explorer.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Unavailable
-        assertEquals(minDelay, res.duration)
+        assertEquals(minDelay - availability.internalMarginForSteps, res.duration)
         assertEquals(plannedStepOffset.distance, res.firstConflictOffset.distance)
     }
 
@@ -857,16 +864,21 @@ class BlockAvailabilityTests {
         val plannedStepOffset = Offset<Block>(0.meters)
         val secondPlannedStepOffset = Offset<Block>(100.meters)
         val timeAtZoneEnd = explorer.interpolateDepartureFromClamp(explorer.getSimulatedLength())
+        val internalMarginForSteps = 2.0
         val steps =
             listOf(
-                // We need to add delay = timeAtZoneEnd
+                // We need to add delay = timeAtZoneEnd + internal margin
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[0], plannedStepOffset)),
                     null,
                     false,
-                    PlannedTimingData(timeAtZoneEnd.seconds, 0.seconds, 0.seconds)
+                    PlannedTimingData(
+                        (timeAtZoneEnd + internalMarginForSteps).seconds,
+                        0.seconds,
+                        0.seconds
+                    )
                 ),
-                // If we add delay = timeAtZoneEnd, this step is not respected
+                // If we add delay = timeAtZoneEnd + internal margin, this step is not respected
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[0], secondPlannedStepOffset)),
                     null,
@@ -874,7 +886,9 @@ class BlockAvailabilityTests {
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds)
                 )
             )
-        val availability = makeBlockAvailability(infra, listOf(), listOf(), steps)
+        val availability =
+            makeBlockAvailability(infra, listOf(), listOf(), steps) as BlockAvailability
+        assertEquals(internalMarginForSteps, availability.internalMarginForSteps)
         val res =
             availability.getAvailability(
                 explorer,

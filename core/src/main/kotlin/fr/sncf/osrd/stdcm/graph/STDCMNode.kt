@@ -100,20 +100,23 @@ data class STDCMNode(
      * arrival time at node, taking into account the tolerance on either side. It takes the lowest
      * value in the window made of [currentTime; currentTimeWithMaxDelayAdded].
      */
-    fun getRelativeTimeDiff(currentTotalAddedDelay: Double, currentMaximumDelay: Double): Double? {
+    fun getRelativeTimeDiff(
+        currentTotalPrevAddedDelay: Double,
+        currentMaximumAddedDelay: Double
+    ): Double? {
         // Ex: here, minimum time diff possible is 0.0 => minimum relative time diff will be 0.0.
         //          before         plannedArrival                  after
         // ------------[-----|-----------|----------------|----------]------------
         //               currentTime            currentTimeWithMaxDelay
         if (plannedTimingData != null) {
-            val realTime = getRealTime(currentTotalAddedDelay)
+            val realTime = getRealTime(currentTotalPrevAddedDelay)
             val timeDiff = plannedTimingData.getTimeDiff(realTime)
             val relativeTimeDiff = plannedTimingData.getBeforeOrAfterRelativeTimeDiff(timeDiff)
             // If time diff is positive, adding delay won't decrease relative time diff: return
             // relativeTimeDiff
             if (timeDiff >= 0) return relativeTimeDiff
 
-            val maxTime = getRealTime(currentMaximumDelay)
+            val maxTime = getRealTime(currentTotalPrevAddedDelay + currentMaximumAddedDelay)
             val maxTimeDiff =
                 min(
                     plannedTimingData.getTimeDiff(maxTime),

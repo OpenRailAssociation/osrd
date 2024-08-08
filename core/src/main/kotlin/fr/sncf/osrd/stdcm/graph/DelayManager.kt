@@ -50,7 +50,7 @@ internal constructor(
                         availability.maximumDelay + internalMargin
                     }
                     is BlockAvailabilityInterface.Unavailable -> {
-                        availability.duration + internalMargin * 2
+                        availability.duration + internalMargin
                     }
                 }
         }
