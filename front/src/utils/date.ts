@@ -183,6 +183,3 @@ export function serializeDateTimeWithoutYear(date: Date): string {
   const dayjsDate = dayjs(date);
   return dayjsDate.format('DD/MM HH:mm:ss');
 }
-
-export const isoUtcStringToLocaleDateString = (isoUtcString: string) =>
-  dayjs(isoUtcString).local().format();

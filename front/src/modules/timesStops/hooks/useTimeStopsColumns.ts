@@ -5,12 +5,11 @@ import { keyColumn, type Column, checkboxColumn, createTextColumn } from 'react-
 import type { CellComponent } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-
 import { marginRegExValidation } from '../consts';
 import { disabledTextColumn } from '../helpers/utils';
 import TimeInput from '../TimeInput';
-import { TableType, type PathWaypointRow } from '../types';
+import { TableType } from '../types';
+import type { TimeStopsRow } from '../TimesStops';
 
 const timeColumn: Partial<Column<string | null | undefined, string, string>> = {
   component: TimeInput as CellComponent<string | null | undefined, string>,
@@ -23,9 +22,10 @@ const timeColumn: Partial<Column<string | null | undefined, string, string>> = {
 
 const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
 
-export const useTimeStopsColumns = (tableType: TableType, allWaypoints: SuggestedOP[] = []) => {
+export const useTimeStopsColumns = <T extends TimeStopsRow>(tableType: TableType, allWaypoints: T[] = []) => {
   const { t } = useTranslation('timesStops');
-  const columns = useMemo<Column<PathWaypointRow>[]>(() => {
+
+  const columns = useMemo<Column<T>[]>(() => {
     const isOutputTable = tableType === TableType.Output;
     const extraOutputColumns = (
       isOutputTable
@@ -56,7 +56,7 @@ export const useTimeStopsColumns = (tableType: TableType, allWaypoints: Suggeste
             },
           ]
         : []
-    ) as Column<PathWaypointRow>[];
+    ) as Column<T>[];
     return [
       {
         ...keyColumn('name', createTextColumn()),
@@ -132,8 +132,9 @@ export const useTimeStopsColumns = (tableType: TableType, allWaypoints: Suggeste
         ...fixedWidth(110),
       },
       ...extraOutputColumns,
-    ] as Column<PathWaypointRow>[];
+    ] as Column<T>[];
   }, [tableType, t, allWaypoints.length]);
+
   return columns;
 };
 

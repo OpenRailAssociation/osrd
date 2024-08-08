@@ -73,6 +73,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
     pathProperties,
     pathLength,
   } = useSimulationResults();
+
   const {
     operationalPoints,
     loading: formattedOpPointsLoading,
@@ -211,7 +212,6 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
               pathProperties={pathProperties}
               operationalPoints={operationalPoints.finalOutput}
               selectedTrainSchedule={selectedTrainSchedule}
-              pathSteps={compact(pathSteps)}
               pathLength={pathLength}
               dataIsLoading={formattedOpPointsLoading}
             />

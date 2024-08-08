@@ -17,14 +17,15 @@ import computeMargins from '../helpers/computeMargins';
 import { computeScheduleData, formatScheduleData } from '../helpers/scheduleData';
 import { findNextScheduledOpPoint } from '../helpers/utils';
 import type { TrainScheduleBasePathWithUic, ScheduleEntry } from '../types';
+import type { TimeStopsRow } from '../TimesStops';
 
-function useOutputTableData(
+const useOutputTableData = (
   simulatedTrain: SimulationResponseSuccess,
   pathProperties: PathPropertiesFormatted,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
   selectedTrainSchedule: TrainScheduleResult,
   pathLength?: number
-) {
+) => {
   const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrainSchedule.schedule, 'at');
   const suggestedOperationalPoints: SuggestedOP[] = useMemo(
     () =>
@@ -65,7 +66,7 @@ function useOutputTableData(
     (opPoint) => `${opPoint.name}-${opPoint.ch}`
   );
 
-  const outputTableData = useMemo(
+  const outputTableData: TimeStopsRow[] = useMemo(
     () =>
       suggestedOperationalPoints.map((sugOpPoint, sugOpIndex) => {
         const opPoint = operationPointsByNameCh[`${sugOpPoint.name}-${sugOpPoint.ch}`];
@@ -96,18 +97,24 @@ function useOutputTableData(
           return {
             ...sugOpPoint,
             ...formattedScheduleData,
-            onStopSignal: schedule?.on_stop_signal || '',
+            onStopSignal: schedule?.on_stop_signal || undefined,
             calculatedArrival,
             calculatedDeparture:
               opPoint.duration > 0 ? secToHoursString(opPoint.time + opPoint.duration, true) : '',
             ...marginsData,
-          } as SuggestedOP;
+            isVia: sugOpIndex !== 0 && sugOpIndex !== suggestedOperationalPoints.length - 1,
+          };
         }
 
-        return { ...sugOpPoint, calculatedArrival: secToHoursString(opPoint.time, true) };
+        return {
+          ...sugOpPoint,
+          calculatedArrival: secToHoursString(opPoint.time, true),
+        };
       }),
     [simulatedTrain, pathProperties, operationalPoints, selectedTrainSchedule, pathLength]
   );
+
   return outputTableData;
-}
+};
+
 export default useOutputTableData;

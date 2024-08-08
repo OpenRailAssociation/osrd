@@ -12,7 +12,7 @@ import { secToHoursString, time2sec } from 'utils/timeManipulation';
 
 import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType } from '../types';
-import type { PathStepOpPointCorrespondance, PathWaypointRow } from '../types';
+import type { PathStepOpPointCorrespondance } from '../types';
 
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
@@ -20,7 +20,7 @@ export const formatSuggestedViasToRowVias = (
   t: TFunction<'timesStops', undefined>,
   startTime?: string,
   tableType?: TableType
-): PathWaypointRow[] => {
+) => {
   const formattedOps = [...operationalPoints];
 
   // If the origin is in the ops and isn't the first operational point, we need
@@ -67,6 +67,7 @@ export const formatSuggestedViasToRowVias = (
       name: name || t('waypoint', { id: op.opId }),
       stopFor,
       theoreticalMargin,
+      isVia: !!pathStep && i !== 0 && i !== formattedOps.length - 1,
     };
   });
 };
