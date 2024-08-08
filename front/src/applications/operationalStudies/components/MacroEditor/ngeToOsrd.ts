@@ -1,7 +1,8 @@
 import { osrdEditoastApi, type TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
-import type { NetzgrafikDto, NGETrainrunEvent, TrainrunSection, Node, Trainrun } from './types';
+import nodeStore from './nodeStore';
+import type { NetzgrafikDto, NGEEvent, TrainrunSection, Node, Trainrun } from './types';
 
 const createdTrainrun = new Map<number, number>();
 
@@ -54,19 +55,19 @@ const createTrainSchedulePayload = (
   };
 };
 
-const handleOperation = async ({
-  event,
+const handleTrainrunOperation = async ({
+  type,
+  trainrun,
   dispatch,
   timeTableId,
   netzgrafikDto,
 }: {
-  event: NGETrainrunEvent;
+  type: NGEEvent['type'];
+  trainrun: Trainrun;
   dispatch: AppDispatch;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
 }) => {
-  if (event.objectType !== 'trainrun') return;
-  const { trainrun, type } = event;
   const { trainrunSections, nodes } = netzgrafikDto;
   const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(
     trainrunSections,
@@ -118,6 +119,61 @@ const handleOperation = async ({
       ).unwrap();
       break;
     }
+    default:
+      break;
+  }
+};
+
+const handleNodeOperation = ({
+  type,
+  node,
+  timeTableId,
+}: {
+  type: NGEEvent['type'];
+  node: Node;
+  timeTableId: number;
+}) => {
+  const { betriebspunktName: trigram, positionX, positionY } = node;
+  switch (type) {
+    case 'create':
+    case 'update': {
+      nodeStore.set(timeTableId, { trigram, positionX, positionY });
+      break;
+    }
+    case 'delete': {
+      nodeStore.delete(timeTableId, trigram);
+      break;
+    }
+    default:
+      break;
+  }
+};
+
+const handleOperation = async ({
+  event,
+  dispatch,
+  timeTableId,
+  netzgrafikDto,
+}: {
+  event: NGEEvent;
+  dispatch: AppDispatch;
+  timeTableId: number;
+  netzgrafikDto: NetzgrafikDto;
+}) => {
+  const { type } = event;
+  switch (event.objectType) {
+    case 'node':
+      handleNodeOperation({ type, node: event.node!, timeTableId });
+      break;
+    case 'trainrun':
+      await handleTrainrunOperation({
+        type,
+        trainrun: event.trainrun!,
+        dispatch,
+        timeTableId,
+        netzgrafikDto,
+      });
+      break;
     default:
       break;
   }

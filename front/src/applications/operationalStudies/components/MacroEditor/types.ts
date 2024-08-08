@@ -154,8 +154,9 @@ export type NetzgrafikDto = {
   };
 };
 
-export type NGETrainrunEvent = {
+export type NGEEvent = {
   type: 'create' | 'delete' | 'update';
-  objectType: 'trainrun';
-  trainrun: Trainrun;
+  objectType: 'node' | 'trainrun';
+  trainrun?: Trainrun;
+  node?: Node;
 };

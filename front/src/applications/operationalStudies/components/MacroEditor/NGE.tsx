@@ -8,7 +8,7 @@ import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-fronten
 import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/vendor.js?url';
 /* eslint-enable import/extensions, import/no-unresolved */
 
-import type { NetzgrafikDto, NGETrainrunEvent } from './types';
+import type { NetzgrafikDto, NGEEvent } from './types';
 
 interface NGEElement extends HTMLElement {
   netzgrafikDto: NetzgrafikDto;
@@ -16,7 +16,7 @@ interface NGEElement extends HTMLElement {
 
 type NGEProps = {
   dto?: NetzgrafikDto;
-  onOperation?: (op: NGETrainrunEvent, netzgrafikDto: NetzgrafikDto) => void;
+  onOperation?: (op: NGEEvent, netzgrafikDto: NetzgrafikDto) => void;
 };
 
 const frameSrc = `
@@ -50,7 +50,7 @@ const NGE = ({ dto, onOperation }: NGEProps) => {
       // listens to create, update and delete operations
       ngeRoot.addEventListener('operation', (event: Event) => {
         const customEvent = event as CustomEvent;
-        const op = customEvent.detail as NGETrainrunEvent;
+        const op = customEvent.detail as NGEEvent;
 
         if (onOperation) onOperation(op, ngeRoot.netzgrafikDto);
       });
