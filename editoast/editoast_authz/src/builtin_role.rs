@@ -17,6 +17,8 @@ pub enum BuiltinRole {
 
     #[strum(serialize = "rolling_stock_collection:read")]
     RollingStockCollectionRead,
+    #[strum(serialize = "rolling_stock_collection:write")]
+    RollingStockCollectionWrite,
 
     #[strum(serialize = "work_schedule:write")]
     WorkScheduleWrite,
@@ -42,6 +44,7 @@ impl BuiltinRoleSet for BuiltinRole {
             InfraRead => vec![],
             InfraWrite => vec![InfraRead],
             RollingStockCollectionRead => vec![],
+            RollingStockCollectionWrite => vec![RollingStockCollectionRead],
             WorkScheduleWrite => vec![],
             MapRead => vec![],
             Stdcm => vec![MapRead],
