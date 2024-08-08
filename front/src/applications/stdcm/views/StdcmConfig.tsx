@@ -77,12 +77,11 @@ const StdcmConfig = ({
   );
 
   const disabledApplyButton = useMemo(() => {
-    if (!originV2 || !destinationV2 || !osrdconf.originDate || !osrdconf.destinationDate)
-      return true;
+    if (!originV2 || !destinationV2 || !osrdconf.originDate) return true;
 
     return (
       infra?.state !== 'CACHED' ||
-      !(osrdconf.originTime || osrdconf.destinationTime) ||
+      !osrdconf.originTime ||
       (osrdconf.originTime &&
         osrdconf.originUpperBoundTime &&
         osrdconf.originTime > osrdconf.originUpperBoundTime) ||

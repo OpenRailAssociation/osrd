@@ -1,20 +1,16 @@
 import type { Feature, Position } from 'geojson';
 
-import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
 import type {
   AllowanceValue,
   Comfort,
   Distribution,
   PathItemLocation,
-  PathResponse,
-  RollingStockComfortType,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
 
 export interface OsrdConfState extends InfraState {
   constraintDistribution: Distribution;
-  rollingStockComfort: RollingStockComfortType;
   name: string;
   trainCount: number;
   trainStep: number;
@@ -24,30 +20,19 @@ export interface OsrdConfState extends InfraState {
   projectID?: number;
   studyID?: number;
   scenarioID?: number;
-  pathfindingID?: number;
   timetableID?: number;
   electricalProfileSetId?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
   powerRestrictionV2: PowerRestrictionV2[];
-  origin?: PointOnMap;
   initialSpeed?: number;
-  // TODO TS2 : remove this property from store when drop v1
-  departureTime: string;
-  destination?: PointOnMap;
-  vias: PointOnMap[];
-  suggeredVias: PathResponse['steps'] | PointOnMap[];
-  geojson?: PathResponse;
   originDate?: string;
   originTime?: string;
   originUpperBoundDate?: string;
   originUpperBoundTime?: string;
   originLinkedBounds: boolean;
-  destinationDate?: string;
-  destinationTime?: string;
   gridMarginBefore?: number;
   gridMarginAfter?: number;
-  trainScheduleIDsToModify: number[];
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   pathSteps: (PathStep | null)[];
   rollingStockComfortV2: Comfort;

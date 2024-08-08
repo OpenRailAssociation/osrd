@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import type { ScenarioWithCountTrains } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
+import { updateTrainIdUsedForProjection } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
 import { dateTimeFormatting } from 'utils/date';
 
@@ -27,7 +27,7 @@ export default function ScenarioCard({ setFilterChips, scenario }: ScenarioCardP
 
   const handleClick = () => {
     dispatch(updateScenarioID(scenario.id));
-    dispatch(updateSelectedProjection(undefined));
+    dispatch(updateTrainIdUsedForProjection(undefined));
     navigate(`scenarios/${scenario.id}`);
   };
 
