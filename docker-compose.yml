@@ -63,7 +63,7 @@ services:
       additional_contexts:
         test_data: tests/data
         static_assets: assets
-    restart: no
+    restart: "no"
     command: "true"
 
   front:
