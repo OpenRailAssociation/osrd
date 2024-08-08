@@ -10,9 +10,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.math.min
-import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
 
 /*
  * ```
@@ -98,7 +96,7 @@ class SpacingRequirementAutomaton(
                         signalPathOffset >= incrementalPath.travelledPathEnd
                 )
                     continue
-                pendingSignals.addLast(PathSignal(signal, signalPathOffset, blockIndex))
+                pendingSignals.addLast(PathSignal(signal, incrementalPath.toTravelledPath(signalPathOffset), blockIndex))
             }
 
             val blockEndOffset = incrementalPath.getBlockEndOffset(blockIndex)
@@ -341,7 +339,7 @@ class SpacingRequirementAutomaton(
             val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
 
             // figure out when the signal is first seen
-            val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
+            val signalOffset = pathSignal.pathOffset
             val sightOffset = signalOffset - rawInfra.getSignalSightDistance(physicalSignal)
             // If the train's simulation hasn't reached the point where the signal is seen, bail out
             if (callbacks.currentPathOffset <= sightOffset) {
@@ -354,7 +352,7 @@ class SpacingRequirementAutomaton(
             // complete path.
             val nextSignalOffset =
                 if (pendingSignals.size > 1) {
-                    incrementalPath.toTravelledPath(pendingSignals[1].pathOffset)
+                    pendingSignals[1].pathOffset
                 } else if (incrementalPath.pathComplete) {
                     incrementalPath.toTravelledPath(incrementalPath.travelledPathEnd)
                 } else {

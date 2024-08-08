@@ -1,7 +1,6 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
-import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.api.pathfinding.runPathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.reporting.exceptions.ErrorType

@@ -1,8 +1,8 @@
 package fr.sncf.osrd.api.api_v2.conflicts
 
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.api_v2.parseRawTrainsRequirements
+import fr.sncf.osrd.conflicts.Conflict
 import fr.sncf.osrd.conflicts.detectConflicts
 import java.time.Duration
 import java.time.ZonedDateTime
@@ -43,12 +43,12 @@ class ConflictDetectionEndpointV2 : Take {
 }
 
 private fun makeConflictDetectionResponse(
-    conflicts: Collection<ConflictDetectionResult.Conflict>,
+    conflicts: Collection<Conflict>,
     startTime: ZonedDateTime
 ): ConflictDetectionResponse {
     return ConflictDetectionResponse(
         conflicts.map {
-            Conflict(
+            ConflictResponse(
                 it.trainIds,
                 startTime.plus(Duration.ofMillis((it.startTime * 1000).toLong())),
                 startTime.plus(Duration.ofMillis((it.endTime * 1000).toLong())),

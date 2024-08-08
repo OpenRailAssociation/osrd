@@ -2,52 +2,10 @@ package fr.sncf.osrd.conflicts
 
 import com.carrotsearch.hppc.IntArrayList
 import com.squareup.moshi.Json
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import kotlin.math.max
 import kotlin.math.min
-
-interface SpacingTrainRequirement {
-    val trainId: Long
-    val spacingRequirements: Collection<SpacingRequirement>
-}
-
-interface RoutingTrainRequirement {
-    val trainId: Long
-    val routingRequirements: Collection<RoutingRequirement>
-}
-
-interface ResourceRequirement {
-    val beginTime: Double
-    val endTime: Double
-}
-
-class TrainRequirements(
-    @Json(name = "train_id")
-    override val trainId: Long, // Not the usual RJS ids, but an actual DB id
-    @Json(name = "spacing_requirements")
-    override val spacingRequirements: Collection<SpacingRequirement>,
-    @Json(name = "routing_requirements")
-    override val routingRequirements: Collection<RoutingRequirement>,
-) : SpacingTrainRequirement, RoutingTrainRequirement
-
-data class ConflictProperties(
-    // If there are conflicts, minimum delay that should be added to the train so that there are no
-    // conflicts anymore
-    val minDelayWithoutConflicts: Double,
-    // If there are no conflicts, maximum delay that can be added to the train without creating any
-    // conflict
-    val maxDelayWithoutConflicts: Double,
-    // If there are no conflicts, minimum begin time of the next requirement that could conflict
-    val timeOfNextConflict: Double
-)
-
-fun detectConflicts(trainRequirements: List<TrainRequirements>): List<Conflict> {
-    val res = incrementalConflictDetector(trainRequirements).checkConflicts()
-    return mergeConflicts(res)
-}
 
 interface IncrementalConflictDetector {
     fun checkConflicts(): List<Conflict>
@@ -84,11 +42,63 @@ interface IncrementalConflictDetector {
     ): ConflictProperties
 }
 
+fun detectConflicts(trainRequirements: List<TrainRequirements>): List<Conflict> {
+    val res = incrementalConflictDetector(trainRequirements).checkConflicts()
+    return mergeConflicts(res)
+}
+
 fun incrementalConflictDetector(
     trainRequirements: List<TrainRequirements>
 ): IncrementalConflictDetector {
     return IncrementalConflictDetectorImpl(trainRequirements)
 }
+
+interface SpacingTrainRequirement {
+    val trainId: Long
+    val spacingRequirements: Collection<SpacingRequirement>
+}
+
+interface RoutingTrainRequirement {
+    val trainId: Long
+    val routingRequirements: Collection<RoutingRequirement>
+}
+
+interface ResourceRequirement {
+    val beginTime: Double
+    val endTime: Double
+}
+
+class TrainRequirements(
+    @Json(name = "train_id")
+    override val trainId: Long, // Not the usual RJS ids, but an actual DB id
+    @Json(name = "spacing_requirements")
+    override val spacingRequirements: Collection<SpacingRequirement>,
+    @Json(name = "routing_requirements")
+    override val routingRequirements: Collection<RoutingRequirement>,
+) : SpacingTrainRequirement, RoutingTrainRequirement
+
+data class Conflict(
+    val trainIds: Collection<Long>,
+    val startTime: Double,
+    val endTime: Double,
+    val conflictType: ConflictType
+)
+
+enum class ConflictType {
+    SPACING,
+    ROUTING,
+}
+
+data class ConflictProperties(
+    // If there are conflicts, minimum delay that should be added to the train so that there are no
+    // conflicts anymore
+    val minDelayWithoutConflicts: Double,
+    // If there are no conflicts, maximum delay that can be added to the train without creating any
+    // conflict
+    val maxDelayWithoutConflicts: Double,
+    // If there are no conflicts, minimum begin time of the next requirement that could conflict
+    val timeOfNextConflict: Double
+)
 
 class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>) :
     IncrementalConflictDetector {

@@ -9,8 +9,6 @@ import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2;
 import fr.sncf.osrd.api.api_v2.project_signals.SignalProjectionEndpointV2;
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint;
 import fr.sncf.osrd.api.api_v2.stdcm.STDCMEndpointV2;
-import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
-import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
@@ -78,22 +76,15 @@ public final class ApiServerCommand implements CliCommand {
             // the list of endpoints
             var routes = new TkFork(
                     new FkRegex("/health", ""),
-                    new FkRegex("/pathfinding/routes", new PathfindingBlocksEndpoint(infraManager)),
                     new FkRegex("/v2/pathfinding/blocks", new PathfindingBlocksEndpointV2(infraManager)),
                     new FkRegex("/v2/path_properties", new PathPropEndpoint(infraManager)),
                     new FkRegex(
-                            "/standalone_simulation",
-                            new StandaloneSimulationEndpoint(infraManager, electricalProfileSetManager)),
-                    new FkRegex(
                             "/v2/standalone_simulation",
                             new SimulationEndpoint(infraManager, electricalProfileSetManager)),
-                    new FkRegex("/project_signals", new SignalProjectionEndpoint(infraManager)),
                     new FkRegex("/v2/signal_projection", new SignalProjectionEndpointV2(infraManager)),
-                    new FkRegex("/detect_conflicts", new ConflictDetectionEndpoint()),
                     new FkRegex("/v2/conflict_detection", new ConflictDetectionEndpointV2()),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),
                     new FkRegex("/version", new VersionEndpoint()),
-                    new FkRegex("/stdcm", new STDCMEndpoint(infraManager)),
                     new FkRegex("/v2/stdcm", new STDCMEndpointV2(infraManager)),
                     new FkRegex("/infra_load", new InfraLoadEndpoint(infraManager)));
             var monitoringType = System.getenv("CORE_MONITOR_TYPE");
