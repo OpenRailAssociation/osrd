@@ -110,8 +110,10 @@ impl WorkerDriver for KubernetesDriver {
             }
 
             let new_id = Uuid::new_v4();
-            let worker_deployment_name =
-                format!("{}-{}", self.options.deployment_prefix, worker_key);
+            let worker_deployment_name = format!(
+                "{}-{}-{}",
+                self.options.deployment_prefix, self.pool_id, worker_key
+            );
             let final_env = {
                 let mut env = self
                     .options
