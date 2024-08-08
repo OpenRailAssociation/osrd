@@ -50,6 +50,17 @@ const useSetupItineraryForTrainUpdate = (
       const trainSchedule = await getTrainScheduleById({
         id: trainIdToEdit,
       }).unwrap();
+      if (!trainSchedule.rolling_stock_name) {
+        adjustConfWithTrainToModifyV2(
+          trainSchedule,
+          [],
+          undefined,
+          dispatch,
+          usingElectricalProfiles,
+          osrdActions
+        );
+        return;
+      }
       const rollingStock = await getRollingStockByName({
         rollingStockName: trainSchedule.rolling_stock_name,
       }).unwrap();

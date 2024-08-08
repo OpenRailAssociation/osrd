@@ -9,8 +9,8 @@ import { msToKmh } from 'utils/physics';
 
 export function adjustConfWithTrainToModifyV2(
   trainSchedule: TrainScheduleResult,
-  pathSteps: PathStep[],
-  rollingStockId: number,
+  pathSteps: (PathStep | null)[],
+  rollingStockId: number | undefined,
   dispatch: Dispatch,
   usingElectricalProfiles: boolean,
   osrdActions: OperationalStudiesConfSliceActions
