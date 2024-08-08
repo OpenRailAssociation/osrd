@@ -174,6 +174,8 @@ impl WorkerDriver for KubernetesDriver {
                                 image: Some(self.options.container_image.clone()),
                                 env: Some(final_env),
                                 command: Some(self.options.start_command.clone()),
+                                resources: self.options.kube_deployment_options.resources.clone(),
+                                image_pull_policy: Some("Always".to_string()),
                                 ..Default::default()
                             }],
                             node_selector: self
