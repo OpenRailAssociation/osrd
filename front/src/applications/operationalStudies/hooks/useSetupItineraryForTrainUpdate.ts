@@ -8,6 +8,7 @@ import {
   type PathItemLocation,
   type PostV2InfraByInfraIdPathPropertiesApiArg,
   type PostV2InfraByInfraIdPathfindingBlocksApiArg,
+  type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/pathfinding/utils';
@@ -26,6 +27,12 @@ import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
 import type { ManageTrainSchedulePathProperties } from '../types';
 
+type ItineraryForTrainUpdate = {
+  pathSteps: (PathStep | null)[];
+  rollingStockId: number;
+  pathProperties: ManageTrainSchedulePathProperties;
+};
+
 const useSetupItineraryForTrainUpdate = (
   setPathProperties: (pathProperties: ManageTrainSchedulePathProperties) => void,
   trainIdToEdit: number
@@ -43,23 +50,14 @@ const useSetupItineraryForTrainUpdate = (
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
   useEffect(() => {
-    const setupItineraryForTrainUpdate = async () => {
+    const computeItineraryForTrainUpdate = async (
+      trainSchedule: TrainScheduleResult
+    ): Promise<ItineraryForTrainUpdate | null> => {
       if (!infraId) {
-        return;
+        return null;
       }
-      const trainSchedule = await getTrainScheduleById({
-        id: trainIdToEdit,
-      }).unwrap();
       if (!trainSchedule.rolling_stock_name) {
-        adjustConfWithTrainToModifyV2(
-          trainSchedule,
-          [],
-          undefined,
-          dispatch,
-          usingElectricalProfiles,
-          osrdActions
-        );
-        return;
+        return null;
       }
       const rollingStock = await getRollingStockByName({
         rollingStockName: trainSchedule.rolling_stock_name,
@@ -83,7 +81,7 @@ const useSetupItineraryForTrainUpdate = (
       try {
         const pathfindingResult = await postPathfindingBlocks(params).unwrap();
         if (pathfindingResult.status !== 'success') {
-          return;
+          return null;
         }
         const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
           infraId,
@@ -95,7 +93,7 @@ const useSetupItineraryForTrainUpdate = (
         const { electrifications, geometry, operational_points } =
           await postPathProperties(pathPropertiesParams).unwrap();
         if (!electrifications || !geometry || !operational_points) {
-          return;
+          return null;
         }
         const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
           getPointCoordinates(geometry, pathfindingResult.length, position)
@@ -176,27 +174,47 @@ const useSetupItineraryForTrainUpdate = (
 
         const allWaypoints = upsertPathStepsInOPs(suggestedOperationalPoints, updatedPathSteps);
 
-        setPathProperties({
-          electrifications,
-          geometry,
-          suggestedOperationalPoints,
-          allWaypoints,
-          length: pathfindingResult.length,
-          trackSectionRanges: pathfindingResult.track_section_ranges,
-        });
-        adjustConfWithTrainToModifyV2(
-          trainSchedule,
-          updatedPathSteps,
-          rollingStock.id,
-          dispatch,
-          usingElectricalProfiles,
-          osrdActions
-        );
+        return {
+          pathProperties: {
+            electrifications,
+            geometry,
+            suggestedOperationalPoints,
+            allWaypoints,
+            length: pathfindingResult.length,
+            trackSectionRanges: pathfindingResult.track_section_ranges,
+          },
+          pathSteps: updatedPathSteps,
+          rollingStockId: rollingStock.id,
+        };
         // TODO TS2 : test errors display after core / editoast connexion for pathProperties
       } catch (e) {
         dispatch(setFailure(castErrorToFailure(e)));
+        return null;
       }
     };
+
+    const setupItineraryForTrainUpdate = async () => {
+      if (!infraId) {
+        return;
+      }
+      const trainSchedule = await getTrainScheduleById({
+        id: trainIdToEdit,
+      }).unwrap();
+      const itinerary = await computeItineraryForTrainUpdate(trainSchedule);
+      const { pathSteps, rollingStockId, pathProperties } = itinerary || {};
+      adjustConfWithTrainToModifyV2(
+        trainSchedule,
+        pathSteps || [],
+        rollingStockId,
+        dispatch,
+        usingElectricalProfiles,
+        osrdActions
+      );
+      if (pathProperties) {
+        setPathProperties(pathProperties);
+      }
+    };
+
     setupItineraryForTrainUpdate();
   }, [trainIdToEdit]);
 };
