@@ -2,6 +2,8 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::rolling_stock::RollingStockLivery;
@@ -27,6 +29,9 @@ use crate::SelectionSettings;
 
 #[cfg(test)]
 use serde::Deserialize;
+
+use super::AuthorizationError;
+use super::AuthorizerExt;
 
 crate::routes! {
     "/light_rolling_stock" => {
@@ -91,8 +96,16 @@ struct LightRollingStockWithLiveriesCountList {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Query(page_settings): Query<PaginationQueryParam>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let settings = page_settings
         .validate(1000)?
         .warn_page_size(100)
@@ -128,8 +141,16 @@ async fn list(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(light_rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let light_rolling_stock = LightRollingStockModel::retrieve_or_fail(
         db_pool.get().await?.deref_mut(),
         light_rolling_stock_id,
@@ -157,8 +178,16 @@ async fn get(
 )]
 async fn get_by_name(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(light_rolling_stock_name): Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let light_rolling_stock = LightRollingStockModel::retrieve_or_fail(
         db_pool.get().await?.deref_mut(),
         light_rolling_stock_name.clone(),

@@ -11,7 +11,11 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::rolling_stock::RollingStockLivery;
 use image::DynamicImage;
 use image::GenericImage;
@@ -35,8 +39,8 @@ use crate::modelsv2::rolling_stock_model::TrainScheduleScenarioStudyProject;
 use crate::modelsv2::Document;
 use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::RollingStockSeparatedImageModel;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 
 crate::routes! {
     "/rolling_stock" => {
@@ -201,8 +205,16 @@ pub struct RollingStockNameParam {
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let rolling_stock = retrieve_existing_rolling_stock(
         db_pool.get().await?.deref_mut(),
         RollingStockKey::Id(rolling_stock_id),
@@ -225,8 +237,17 @@ async fn get(
 )]
 async fn get_by_name(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let rolling_stock = retrieve_existing_rolling_stock(
         db_pool.get().await?.deref_mut(),
         RollingStockKey::Name(rolling_stock_name),
@@ -248,7 +269,15 @@ async fn get_by_name(
 )]
 async fn get_power_restrictions(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<Vec<String>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     let power_restrictions = RollingStockModel::get_power_restrictions(conn).await?;
     Ok(Json(
@@ -278,9 +307,17 @@ struct PostRollingStockQueryParams {
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Query(query_params): Query<PostRollingStockQueryParams>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockModel>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     rolling_stock_form.validate()?;
     let conn = &mut db_pool.get().await?;
     let rolling_stock_name = rolling_stock_form.name.clone();
@@ -308,9 +345,17 @@ async fn create(
 )]
 async fn update(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(rolling_stock_id): Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     rolling_stock_form.validate()?;
     let name = rolling_stock_form.name.clone();
 
@@ -369,9 +414,17 @@ struct DeleteRollingStockQueryParams {
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(rolling_stock_id): Path<i64>,
     Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     assert_rolling_stock_unlocked(
         &retrieve_existing_rolling_stock(conn, RollingStockKey::Id(rolling_stock_id)).await?,
@@ -423,9 +476,18 @@ struct RollingStockLockedUpdateForm {
 )]
 async fn update_locked(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(rolling_stock_id): Path<i64>,
     Json(RollingStockLockedUpdateForm { locked }): Json<RollingStockLockedUpdateForm>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let conn = &mut db_pool.get().await?;
 
     // FIXME: check that the rolling stock exists (the Option<RollingSrtockModel> is ignored here)
@@ -509,9 +571,17 @@ async fn parse_multipart_content(
 )]
 async fn create_livery(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
 ) -> Result<Json<RollingStockLivery>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
 
     let (name, images) = parse_multipart_content(form)
