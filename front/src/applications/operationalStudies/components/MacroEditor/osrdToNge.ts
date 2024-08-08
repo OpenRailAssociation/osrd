@@ -189,8 +189,8 @@ const convertGeoCoords = (nodes: Node[]) => {
   const padding = 0.1;
 
   return nodes.map((node) => {
-    const normalizedX = (node.positionX - minX) / width;
-    const normalizedY = 1 - (node.positionY - minY) / height;
+    const normalizedX = (node.positionX - minX) / (width || 1);
+    const normalizedY = 1 - (node.positionY - minY) / (height || 1);
     const paddedX = normalizedX * (1 - 2 * padding) + padding;
     const paddedY = normalizedY * (1 - 2 * padding) + padding;
     return {
