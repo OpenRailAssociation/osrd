@@ -33,6 +33,48 @@ type ItineraryForTrainUpdate = {
   pathProperties: ManageTrainSchedulePathProperties;
 };
 
+const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
+  trainSchedule.path.map((step) => {
+    const correspondingSchedule = trainSchedule.schedule?.find(
+      (schedule) => schedule.at === step.id
+    );
+
+    const {
+      arrival,
+      stop_for: stopFor,
+      locked,
+      on_stop_signal: onStopSignal,
+    } = correspondingSchedule || {};
+
+    const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
+
+    // TODO DROP V1: we should store the offset in mm in the store
+    if ('track' in stepWithoutSecondaryCode) {
+      stepWithoutSecondaryCode.offset = mmToM(stepWithoutSecondaryCode.offset!);
+    }
+
+    let name;
+    if ('trigram' in step) {
+      name = step.trigram + (step.secondary_code ? `/${step.secondary_code}` : '');
+    } else if ('uic' in step) {
+      name = step.uic.toString();
+    } else if ('operational_point' in step) {
+      name = step.operational_point;
+    }
+
+    return {
+      ...stepWithoutSecondaryCode,
+      ch: 'secondary_code' in step ? step.secondary_code : undefined,
+      name,
+      arrival: arrival
+        ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
+        : arrival,
+      stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
+      locked,
+      onStopSignal,
+    } as PathStep;
+  });
+
 const useSetupItineraryForTrainUpdate = (
   setPathProperties: (pathProperties: ManageTrainSchedulePathProperties) => void,
   trainIdToEdit: number
@@ -103,7 +145,7 @@ const useSetupItineraryForTrainUpdate = (
         pathfindingResult.length
       );
 
-      const updatedPathSteps: PathStep[] = trainSchedule.path.map((step, i) => {
+      const updatedPathSteps: PathStep[] = computeBasePathSteps(trainSchedule).map((step, i) => {
         const correspondingOp = suggestedOperationalPoints.find(
           (suggestedOp) =>
             'uic' in step &&
@@ -112,40 +154,16 @@ const useSetupItineraryForTrainUpdate = (
             (!step.secondary_code || suggestedOp.ch === step.secondary_code)
         );
 
-        const correspondingSchedule = trainSchedule.schedule?.find(
-          (schedule) => schedule.at === step.id
-        );
-
         const { kp, name, ch } = correspondingOp || {};
 
-        const {
-          arrival,
-          stop_for: stopFor,
-          locked,
-          on_stop_signal: onStopSignal,
-        } = correspondingSchedule || {};
-
-        const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
-
-        // TODO DROP V1: we should store the offset in mm in the store
-        if ('track' in stepWithoutSecondaryCode) {
-          stepWithoutSecondaryCode.offset = mmToM(stepWithoutSecondaryCode.offset!);
-        }
-
         return {
-          ...stepWithoutSecondaryCode,
+          ...step,
           ch,
           kp,
           name,
           positionOnPath: pathfindingResult.path_item_positions[i],
-          arrival: arrival
-            ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
-            : arrival,
-          stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
-          locked,
-          onStopSignal,
           coordinates: stepsCoordinates[i],
-        } as PathStep;
+        };
       });
 
       const findCorrespondingMargin = (
@@ -163,11 +181,7 @@ const useSetupItineraryForTrainUpdate = (
 
       if (trainSchedule.margins) {
         updatedPathSteps.forEach((step, index) => {
-          step.theoreticalMargin = findCorrespondingMargin(
-            step.id,
-            index,
-            trainSchedule.margins!
-          );
+          step.theoreticalMargin = findCorrespondingMargin(step.id, index, trainSchedule.margins!);
         });
       }
 
@@ -204,7 +218,7 @@ const useSetupItineraryForTrainUpdate = (
       const { pathSteps, rollingStockId, pathProperties } = itinerary || {};
       adjustConfWithTrainToModifyV2(
         trainSchedule,
-        pathSteps || [],
+        pathSteps || computeBasePathSteps(trainSchedule),
         rollingStockId,
         dispatch,
         usingElectricalProfiles,
