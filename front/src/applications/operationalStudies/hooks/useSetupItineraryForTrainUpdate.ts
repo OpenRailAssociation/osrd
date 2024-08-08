@@ -78,119 +78,114 @@ const useSetupItineraryForTrainUpdate = (
           rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems,
         },
       };
-      try {
-        const pathfindingResult = await postPathfindingBlocks(params).unwrap();
-        if (pathfindingResult.status !== 'success') {
-          return null;
-        }
-        const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
-          infraId,
-          props: ['electrifications', 'geometry', 'operational_points'],
-          pathPropertiesInput: {
-            track_section_ranges: pathfindingResult.track_section_ranges,
-          },
-        };
-        const { electrifications, geometry, operational_points } =
-          await postPathProperties(pathPropertiesParams).unwrap();
-        if (!electrifications || !geometry || !operational_points) {
-          return null;
-        }
-        const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
-          getPointCoordinates(geometry, pathfindingResult.length, position)
-        );
-        const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
-          operational_points,
-          geometry,
-          pathfindingResult.length
-        );
-
-        const updatedPathSteps: PathStep[] = trainSchedule.path.map((step, i) => {
-          const correspondingOp = suggestedOperationalPoints.find(
-            (suggestedOp) =>
-              'uic' in step &&
-              suggestedOp.uic === step.uic &&
-              // When importing train from open data or from files, secondary_code might not always exist
-              (!step.secondary_code || suggestedOp.ch === step.secondary_code)
-          );
-
-          const correspondingSchedule = trainSchedule.schedule?.find(
-            (schedule) => schedule.at === step.id
-          );
-
-          const { kp, name, ch } = correspondingOp || {};
-
-          const {
-            arrival,
-            stop_for: stopFor,
-            locked,
-            on_stop_signal: onStopSignal,
-          } = correspondingSchedule || {};
-
-          const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
-
-          // TODO DROP V1: we should store the offset in mm in the store
-          if ('track' in stepWithoutSecondaryCode) {
-            stepWithoutSecondaryCode.offset = mmToM(stepWithoutSecondaryCode.offset!);
-          }
-
-          return {
-            ...stepWithoutSecondaryCode,
-            ch,
-            kp,
-            name,
-            positionOnPath: pathfindingResult.path_item_positions[i],
-            arrival: arrival
-              ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
-              : arrival,
-            stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
-            locked,
-            onStopSignal,
-            coordinates: stepsCoordinates[i],
-          } as PathStep;
-        });
-
-        const findCorrespondingMargin = (
-          stepId: string,
-          stepIndex: number,
-          margins: { boundaries: string[]; values: string[] }
-        ) => {
-          // The first pathStep will never have its id in boundaries
-          if (stepIndex === 0) return margins.values[0] === 'none' ? undefined : margins.values[0];
-
-          const marginIndex = margins.boundaries.findIndex((boundaryId) => boundaryId === stepId);
-
-          return marginIndex !== -1 ? margins.values[marginIndex + 1] : undefined;
-        };
-
-        if (trainSchedule.margins) {
-          updatedPathSteps.forEach((step, index) => {
-            step.theoreticalMargin = findCorrespondingMargin(
-              step.id,
-              index,
-              trainSchedule.margins!
-            );
-          });
-        }
-
-        const allWaypoints = upsertPathStepsInOPs(suggestedOperationalPoints, updatedPathSteps);
-
-        return {
-          pathProperties: {
-            electrifications,
-            geometry,
-            suggestedOperationalPoints,
-            allWaypoints,
-            length: pathfindingResult.length,
-            trackSectionRanges: pathfindingResult.track_section_ranges,
-          },
-          pathSteps: updatedPathSteps,
-          rollingStockId: rollingStock.id,
-        };
-        // TODO TS2 : test errors display after core / editoast connexion for pathProperties
-      } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
+      const pathfindingResult = await postPathfindingBlocks(params).unwrap();
+      if (pathfindingResult.status !== 'success') {
         return null;
       }
+      const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
+        infraId,
+        props: ['electrifications', 'geometry', 'operational_points'],
+        pathPropertiesInput: {
+          track_section_ranges: pathfindingResult.track_section_ranges,
+        },
+      };
+      const { electrifications, geometry, operational_points } =
+        await postPathProperties(pathPropertiesParams).unwrap();
+      if (!electrifications || !geometry || !operational_points) {
+        return null;
+      }
+      const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
+        getPointCoordinates(geometry, pathfindingResult.length, position)
+      );
+      const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
+        operational_points,
+        geometry,
+        pathfindingResult.length
+      );
+
+      const updatedPathSteps: PathStep[] = trainSchedule.path.map((step, i) => {
+        const correspondingOp = suggestedOperationalPoints.find(
+          (suggestedOp) =>
+            'uic' in step &&
+            suggestedOp.uic === step.uic &&
+            // When importing train from open data or from files, secondary_code might not always exist
+            (!step.secondary_code || suggestedOp.ch === step.secondary_code)
+        );
+
+        const correspondingSchedule = trainSchedule.schedule?.find(
+          (schedule) => schedule.at === step.id
+        );
+
+        const { kp, name, ch } = correspondingOp || {};
+
+        const {
+          arrival,
+          stop_for: stopFor,
+          locked,
+          on_stop_signal: onStopSignal,
+        } = correspondingSchedule || {};
+
+        const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
+
+        // TODO DROP V1: we should store the offset in mm in the store
+        if ('track' in stepWithoutSecondaryCode) {
+          stepWithoutSecondaryCode.offset = mmToM(stepWithoutSecondaryCode.offset!);
+        }
+
+        return {
+          ...stepWithoutSecondaryCode,
+          ch,
+          kp,
+          name,
+          positionOnPath: pathfindingResult.path_item_positions[i],
+          arrival: arrival
+            ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
+            : arrival,
+          stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
+          locked,
+          onStopSignal,
+          coordinates: stepsCoordinates[i],
+        } as PathStep;
+      });
+
+      const findCorrespondingMargin = (
+        stepId: string,
+        stepIndex: number,
+        margins: { boundaries: string[]; values: string[] }
+      ) => {
+        // The first pathStep will never have its id in boundaries
+        if (stepIndex === 0) return margins.values[0] === 'none' ? undefined : margins.values[0];
+
+        const marginIndex = margins.boundaries.findIndex((boundaryId) => boundaryId === stepId);
+
+        return marginIndex !== -1 ? margins.values[marginIndex + 1] : undefined;
+      };
+
+      if (trainSchedule.margins) {
+        updatedPathSteps.forEach((step, index) => {
+          step.theoreticalMargin = findCorrespondingMargin(
+            step.id,
+            index,
+            trainSchedule.margins!
+          );
+        });
+      }
+
+      const allWaypoints = upsertPathStepsInOPs(suggestedOperationalPoints, updatedPathSteps);
+
+      return {
+        pathProperties: {
+          electrifications,
+          geometry,
+          suggestedOperationalPoints,
+          allWaypoints,
+          length: pathfindingResult.length,
+          trackSectionRanges: pathfindingResult.track_section_ranges,
+        },
+        pathSteps: updatedPathSteps,
+        rollingStockId: rollingStock.id,
+      };
+      // TODO TS2 : test errors display after core / editoast connexion for pathProperties
     };
 
     const setupItineraryForTrainUpdate = async () => {
@@ -200,7 +195,12 @@ const useSetupItineraryForTrainUpdate = (
       const trainSchedule = await getTrainScheduleById({
         id: trainIdToEdit,
       }).unwrap();
-      const itinerary = await computeItineraryForTrainUpdate(trainSchedule);
+      let itinerary = null;
+      try {
+        itinerary = await computeItineraryForTrainUpdate(trainSchedule);
+      } catch (e) {
+        dispatch(setFailure(castErrorToFailure(e)));
+      }
       const { pathSteps, rollingStockId, pathProperties } = itinerary || {};
       adjustConfWithTrainToModifyV2(
         trainSchedule,
