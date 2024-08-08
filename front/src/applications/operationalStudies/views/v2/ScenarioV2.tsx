@@ -13,7 +13,7 @@ import handleOperation from 'applications/operationalStudies/components/MacroEdi
 import importTimetableToNGE from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
 import type {
   NetzgrafikDto,
-  NGETrainrunEvent,
+  NGEEvent,
 } from 'applications/operationalStudies/components/MacroEditor/types';
 import MicroMacroSwitch from 'applications/operationalStudies/components/MicroMacroSwitch';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
@@ -169,7 +169,7 @@ const ScenarioV2 = () => {
     setCollapsedTimetable(isMacroMode);
   };
 
-  const handleNGEOperation = (event: NGETrainrunEvent, netzgrafikDto: NetzgrafikDto) =>
+  const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) =>
     handleOperation({ event, dispatch, timeTableId: timetableId!, netzgrafikDto });
 
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto | undefined>(undefined);

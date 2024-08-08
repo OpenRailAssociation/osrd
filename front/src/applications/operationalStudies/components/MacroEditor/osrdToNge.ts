@@ -7,6 +7,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
+import nodeStore from './nodeStore';
 import type {
   Node,
   Port,
@@ -427,6 +428,17 @@ const importTimetable = async (
       });
     })
     .flat();
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const node of nodes) {
+    // eslint-disable-next-line no-continue
+    if (!node.betriebspunktName) continue;
+    const savedNode = nodeStore.get(timetableId, node.betriebspunktName);
+    if (savedNode) {
+      node.positionX = savedNode.positionX;
+      node.positionY = savedNode.positionY;
+    }
+  }
 
   return {
     ...DEFAULT_DTO,
