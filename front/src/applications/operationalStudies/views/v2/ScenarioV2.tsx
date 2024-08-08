@@ -8,9 +8,9 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import handleOperation from 'applications/operationalStudies/components/MacroEditor/export';
-import importTimetableToNGE from 'applications/operationalStudies/components/MacroEditor/import';
 import NGE from 'applications/operationalStudies/components/MacroEditor/NGE';
+import handleOperation from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
+import importTimetableToNGE from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
 import type {
   NetzgrafikDto,
   NGETrainrunEvent,

@@ -3,7 +3,7 @@ import type { AppDispatch } from 'store';
 
 import type { NetzgrafikDto, NGETrainrunEvent, TrainrunSection, Node, Trainrun } from './types';
 
-const CREATED_TRAINRUN = new Map<number, number>();
+const createdTrainrun = new Map<number, number>();
 
 const getTrainrunSectionsByTrainrunId = (trainrunSections: TrainrunSection[], trainrunId: number) =>
   trainrunSections.filter((section) => section.trainrunId === trainrunId);
@@ -21,40 +21,38 @@ const DEFAULT_PAYLOAD: Pick<
   start_time: '2024-07-15T08:00:00+02:00',
 };
 
-const createPayloadOperation = (
+const createPathItemFromNode = (node: Node, index: number) => {
+  const [trigram, secondaryCode] = node.betriebspunktName.split('/');
+  return {
+    trigram,
+    secondary_code: secondaryCode || 'BV',
+    id: `${node.id}-${index}`,
+  };
+};
+
+const createTrainSchedulePayload = (
   trainrunSections: TrainrunSection[],
   nodes: Node[],
   trainrun: Trainrun
-) => {
+): TrainScheduleBase => {
   // TODO: check that the trainrunSections format is still compatible
   const path = trainrunSections.flatMap((section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
     const targetNode = getNodeById(nodes, section.targetNodeId);
     if (!sourceNode || !targetNode) return [];
-    const [sourceTrigram, sourceSecondaryCode] = sourceNode.betriebspunktName.split('/');
-    const [targetTrigram, targetSecondaryCode] = targetNode.betriebspunktName.split('/');
-    const originPathItem = {
-      trigram: sourceTrigram,
-      secondary_code: sourceSecondaryCode || 'BV',
-      id: `${sourceNode.id}-${index}`,
-    };
-    const destinationPathItem = {
-      trigram: targetTrigram,
-      secondary_code: targetSecondaryCode || 'BV',
-      id: `${targetNode.id}-${index}`,
-    };
+    const originPathItem = createPathItemFromNode(sourceNode, index);
     if (index === trainrunSections.length - 1) {
+      const destinationPathItem = createPathItemFromNode(targetNode, index);
       return [originPathItem, destinationPathItem];
     }
     return [originPathItem];
   });
 
-  const payload: TrainScheduleBase = {
+  return {
     ...DEFAULT_PAYLOAD,
     path,
     train_name: trainrun.name,
   };
-  return payload;
 };
 
 const handleOperation = async ({
@@ -80,28 +78,32 @@ const handleOperation = async ({
       const newTrainSchedules = await dispatch(
         osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.initiate({
           id: timeTableId,
-          body: [createPayloadOperation(trainrunSectionsByTrainrunId, nodes, trainrun)],
+          body: [createTrainSchedulePayload(trainrunSectionsByTrainrunId, nodes, trainrun)],
         })
       ).unwrap();
-      CREATED_TRAINRUN.set(trainrun.id, newTrainSchedules[0].id);
+      createdTrainrun.set(trainrun.id, newTrainSchedules[0].id);
       break;
     }
     case 'delete': {
-      const trainrunIdToDelete = CREATED_TRAINRUN.get(trainrun.id) || trainrun.id;
+      const trainrunIdToDelete = createdTrainrun.get(trainrun.id) || trainrun.id;
       await dispatch(
         osrdEditoastApi.endpoints.deleteV2TrainSchedule.initiate({
           body: { ids: [trainrunIdToDelete] },
         })
       ).unwrap();
-      CREATED_TRAINRUN.delete(trainrun.id);
+      createdTrainrun.delete(trainrun.id);
       break;
     }
     case 'update': {
-      const trainrunIdToUpdate = CREATED_TRAINRUN.get(trainrun.id) || trainrun.id;
+      const trainrunIdToUpdate = createdTrainrun.get(trainrun.id) || trainrun.id;
       await dispatch(
         osrdEditoastApi.endpoints.putV2TrainScheduleById.initiate({
           id: trainrunIdToUpdate,
-          trainScheduleForm: createPayloadOperation(trainrunSectionsByTrainrunId, nodes, trainrun),
+          trainScheduleForm: createTrainSchedulePayload(
+            trainrunSectionsByTrainrunId,
+            nodes,
+            trainrun
+          ),
         })
       ).unwrap();
       break;
