@@ -28,6 +28,7 @@ public enum ErrorType {
     UnknownError("unknown_error", "An unknown exception was thrown", ErrorCause.INTERNAL),
     InfraSoftLoadingError("infra_loading:soft_error", "soft error while loading new infra", ErrorCause.USER),
     InfraHardLoadingError("infra_loading:hard_error", "hard error while loading new infra", ErrorCause.USER),
+    InfraHardError("infra:hard_error", "hard error while parsing infra", ErrorCause.USER),
     InfraLoadingCacheException("infra_loading:cache_exception", "cached exception", ErrorCause.INTERNAL),
     InfraLoadingInvalidStatusException("infra_loading:invalid_status", "Status doesn’t exist", ErrorCause.INTERNAL),
     InfraInvalidStatusWhileWaitingStable(
