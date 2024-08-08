@@ -16,7 +16,9 @@ export function computeScheduleData(schedule: ScheduleEntry, startTime: string) 
   const arrivalSeconds = schedule.arrival
     ? startTimeSeconds + ISO8601Duration2sec(schedule.arrival)
     : null;
+
   const stopForSeconds = schedule.stop_for ? ISO8601Duration2sec(schedule.stop_for) : null;
+
   const departure =
     arrivalSeconds && stopForSeconds ? startTimeSeconds + arrivalSeconds + stopForSeconds : null;
   return {
@@ -30,6 +32,6 @@ export function formatScheduleData(scheduleData: ComputedScheduleEntry) {
   return {
     arrival: scheduleData.arrival ? secToHoursString(scheduleData.arrival, true) : '',
     departure: scheduleData.departure ? secToHoursString(scheduleData.departure, true) : '',
-    stopFor: scheduleData.stopFor ? String(scheduleData.stopFor) : '',
+    stopFor: scheduleData.stopFor !== null ? String(scheduleData.stopFor) : '',
   };
 }
