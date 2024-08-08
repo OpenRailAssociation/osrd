@@ -79,7 +79,7 @@ const DriverTrainScheduleHeaderV2 = ({
           <div className="row no-gutters align-items-center ">
             <div className="col-xl-4 col-5">{t('origin')}</div>
             <div className="font-weight-bold text-primary col-xl-8 col-7">
-              {operationalPoints[0].name || t('unknownStop')}
+              {operationalPoints[0]?.name || t('unknownStop')}
             </div>
           </div>
           <div className="row no-gutters align-items-center">
