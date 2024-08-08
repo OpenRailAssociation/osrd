@@ -34,7 +34,7 @@ const createTrainSchedulePayload = (
   trainrunSections: TrainrunSection[],
   nodes: Node[],
   trainrun: Trainrun
-): TrainScheduleBase => {
+) => {
   // TODO: check that the trainrunSections format is still compatible
   const path = trainrunSections.flatMap((section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
@@ -49,7 +49,6 @@ const createTrainSchedulePayload = (
   });
 
   return {
-    ...DEFAULT_PAYLOAD,
     path,
     train_name: trainrun.name,
   };
@@ -78,7 +77,12 @@ const handleOperation = async ({
       const newTrainSchedules = await dispatch(
         osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.initiate({
           id: timeTableId,
-          body: [createTrainSchedulePayload(trainrunSectionsByTrainrunId, nodes, trainrun)],
+          body: [
+            {
+              ...DEFAULT_PAYLOAD,
+              ...createTrainSchedulePayload(trainrunSectionsByTrainrunId, nodes, trainrun),
+            },
+          ],
         })
       ).unwrap();
       createdTrainrun.set(trainrun.id, newTrainSchedules[0].id);
@@ -96,14 +100,20 @@ const handleOperation = async ({
     }
     case 'update': {
       const trainrunIdToUpdate = createdTrainrun.get(trainrun.id) || trainrun.id;
+      const trainSchedule = await dispatch(
+        osrdEditoastApi.endpoints.getV2TrainScheduleById.initiate({
+          id: trainrunIdToUpdate,
+        })
+      ).unwrap();
       await dispatch(
         osrdEditoastApi.endpoints.putV2TrainScheduleById.initiate({
           id: trainrunIdToUpdate,
-          trainScheduleForm: createTrainSchedulePayload(
-            trainrunSectionsByTrainrunId,
-            nodes,
-            trainrun
-          ),
+          trainScheduleForm: {
+            ...trainSchedule,
+            ...createTrainSchedulePayload(trainrunSectionsByTrainrunId, nodes, trainrun),
+            // TODO: convert NGE times to OSRD schedule
+            schedule: [],
+          },
         })
       ).unwrap();
       break;
