@@ -46,11 +46,36 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    authz_grant_authn_group (subject) {
+        subject -> Int8,
+        grant -> Int8,
+        granted_by -> Nullable<Int8>,
+        granted_at -> Timestamp,
+        resource -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     authz_role (id) {
         id -> Int8,
         subject -> Int8,
         #[max_length = 255]
         role -> Varchar,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    authz_template_grant (subject) {
+        subject -> Int8,
+        grant -> Int8,
+        granted_by -> Nullable<Int8>,
+        granted_at -> Timestamp,
     }
 }
 
@@ -798,7 +823,10 @@ diesel::joinable!(authn_group -> authn_subject (id));
 diesel::joinable!(authn_group_membership -> authn_group (group));
 diesel::joinable!(authn_group_membership -> authn_user (user));
 diesel::joinable!(authn_user -> authn_subject (id));
+diesel::joinable!(authz_grant_authn_group -> authn_group (resource));
 diesel::joinable!(authz_role -> authn_subject (subject));
+diesel::joinable!(authz_template_grant -> authn_subject (subject));
+diesel::joinable!(authz_template_grant -> authn_user (granted_by));
 diesel::joinable!(infra_layer_buffer_stop -> infra (infra_id));
 diesel::joinable!(infra_layer_detector -> infra (infra_id));
 diesel::joinable!(infra_layer_electrification -> infra (infra_id));
@@ -858,7 +886,9 @@ diesel::allow_tables_to_appear_in_same_query!(
     authn_group_membership,
     authn_subject,
     authn_user,
+    authz_grant_authn_group,
     authz_role,
+    authz_template_grant,
     document,
     electrical_profile_set,
     infra,

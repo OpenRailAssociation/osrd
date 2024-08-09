@@ -1,5 +1,6 @@
 pub mod authorizer;
 pub mod builtin_role;
+pub mod perms;
 pub mod roles;
 
 pub use builtin_role::BuiltinRole;
