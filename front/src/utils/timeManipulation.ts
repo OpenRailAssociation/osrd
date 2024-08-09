@@ -56,7 +56,7 @@ export function durationInSeconds(start: number, end: number) {
   return end > start ? end - start : end + 86400 - start;
 }
 
-export function calculateTimeDifferenceInSeconds(time1: string, time2: string) {
+export function calculateTimeDifferenceInSeconds(time1: string | Date, time2: string | Date) {
   const date1 = new Date(time1);
   const date2 = new Date(time2);
   return (date2.getTime() - date1.getTime()) / 1000;
