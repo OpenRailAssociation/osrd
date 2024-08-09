@@ -14,7 +14,7 @@ const formatTrainsIntoSpaceTimeData = (
     const formattedProjectedPathTrainResult = {
       ...currentProjectedTrain,
       id: +trainId,
-      trainName: matchingTrain?.train_name || 'Train name not found',
+      name: matchingTrain?.train_name || 'Train name not found',
     };
     result.push(formattedProjectedPathTrainResult);
     return result;

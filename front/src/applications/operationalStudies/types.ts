@@ -58,7 +58,7 @@ export type ManageTrainSchedulePathProperties = {
  */
 export type TrainSpaceTimeData = {
   id: number;
-  trainName: string;
+  name: string;
 } & ProjectPathTrainResult;
 
 export type PositionData<T extends 'gradient' | 'radius'> = {

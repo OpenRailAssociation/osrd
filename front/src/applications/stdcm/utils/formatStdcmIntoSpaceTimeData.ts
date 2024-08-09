@@ -7,9 +7,9 @@ const formatStdcmTrainIntoSpaceTimeData = (
   stdcmSimulation: StdcmV2SuccessResponse['simulation'],
   stdcmDepartureTime: string,
   stdcmRollingStockLength: number
-): ProjectPathTrainResult & { id: number; trainName: string } => ({
+): ProjectPathTrainResult & { id: number; name: string } => ({
   id: STDCM_TRAIN_ID,
-  trainName: 'stdcm',
+  name: 'stdcm',
   space_time_curves: [
     {
       times: stdcmSimulation.final_output.times,
