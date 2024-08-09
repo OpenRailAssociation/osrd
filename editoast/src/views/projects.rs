@@ -10,6 +10,7 @@ use chrono::Utc;
 use derivative::Derivative;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
 use serde::Serialize;
@@ -32,7 +33,6 @@ use crate::modelsv2::Project;
 use crate::modelsv2::Retrieve;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::AuthorizationError;
-use editoast_models::DbConnection;
 
 crate::routes! {
     "/projects" => {
@@ -190,9 +190,17 @@ struct ProjectWithStudyCountList {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let ordering = ordering_params.ordering;
     let settings = pagination_params
         .validate(1000)?
@@ -233,8 +241,16 @@ pub struct ProjectIdParam {
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(project_id): Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     let project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
@@ -254,8 +270,16 @@ async fn get(
 )]
 async fn delete(
     Path(project_id): Path<i64>,
+    Extension(authorizer): AuthorizerExt,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     if Project::delete_and_prune_document(conn, project_id).await? {
         Ok(axum::http::StatusCode::NO_CONTENT)
@@ -311,10 +335,18 @@ impl From<ProjectPatchForm> for Changeset<Project> {
     )
 )]
 async fn patch(
-    Path(project_id): Path<i64>,
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
+    Path(project_id): Path<i64>,
     Json(form): Json<ProjectPatchForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     if let Some(image) = form.image {
         check_image_content(conn, image).await?;
