@@ -7,9 +7,19 @@ import {
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
+import { formatToIsoDate } from 'utils/date';
+import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils/timeManipulation';
 
 import nodeStore from './nodeStore';
-import type { NetzgrafikDto, NGEEvent, TrainrunSection, Node, Trainrun, Label } from '../NGE/types';
+import type {
+  NetzgrafikDto,
+  NGEEvent,
+  TrainrunSection,
+  Node,
+  TimeLock,
+  Trainrun,
+  Label,
+} from '../NGE/types';
 
 const createdTrainrun = new Map<number, number>();
 
@@ -90,14 +100,9 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   return orderedSections;
 };
 
-// TODO: add a dynamic values when available
-const DEFAULT_PAYLOAD: Pick<
-  TrainScheduleBase,
-  'constraint_distribution' | 'rolling_stock_name' | 'start_time'
-> = {
+const DEFAULT_PAYLOAD: Pick<TrainScheduleBase, 'constraint_distribution' | 'rolling_stock_name'> = {
   constraint_distribution: 'STANDARD',
   rolling_stock_name: '',
-  start_time: '2024-07-15T08:00:00+02:00',
 };
 
 const createPathItemFromNode = async (
@@ -139,13 +144,27 @@ const createPathItemFromNode = async (
   };
 };
 
+const getTimeLockDate = (
+  timeLock: TimeLock,
+  startTimeLock: TimeLock,
+  startDate: Date
+): Date | null => {
+  if (timeLock.time === null) return null;
+  const offset = timeLock.consecutiveTime! - startTimeLock.consecutiveTime!;
+  return new Date(startDate.getTime() + offset * 60 * 1000);
+};
+
+const formatDateDifference = (start: Date, stop: Date) =>
+  formatDurationAsISO8601(calculateTimeDifferenceInSeconds(start, stop));
+
 const createTrainSchedulePayload = async (
   trainrunSections: TrainrunSection[],
   nodes: Node[],
   trainrun: Trainrun,
   infraId: number,
   dispatch: AppDispatch,
-  labels: Label[]
+  labels: Label[],
+  oldStartDate: Date
 ) => {
   // TODO: check that the trainrunSections format is still compatible
   const pathPromise = trainrunSections.map(async (section, index) => {
@@ -156,7 +175,7 @@ const createTrainSchedulePayload = async (
     if (index === trainrunSections.length - 1) {
       const destinationPathItem = await createPathItemFromNode(
         targetNode,
-        index,
+        index + 1,
         infraId,
         dispatch
       );
@@ -171,10 +190,39 @@ const createTrainSchedulePayload = async (
     (labelId) => labels.find((label) => label.id === labelId)?.label
   );
 
+  // The departure time of the first section is guaranteed to be non-null
+  const startTimeLock = trainrunSections[0].sourceDeparture;
+  const startDate = new Date(oldStartDate);
+  startDate.setMinutes(startTimeLock.time!, 0, 0);
+
+  const schedule = trainrunSections.flatMap((section, index) => {
+    const nextSection = trainrunSections[index + 1];
+
+    // TODO: extract isNonStopTransit from transitions
+    let arrival = getTimeLockDate(section.targetArrival, startTimeLock, startDate);
+    const departure = nextSection
+      ? getTimeLockDate(nextSection.sourceDeparture, startTimeLock, startDate)
+      : null;
+    if (!arrival && !departure) {
+      return [];
+    }
+
+    // If missing arrival time, default to a zero stop duration
+    arrival = arrival || departure!;
+
+    return {
+      at: `${section.targetNodeId}-${index + 1}`,
+      arrival: formatDateDifference(arrival, startDate),
+      stop_for: departure ? formatDateDifference(departure, arrival) : null,
+    };
+  });
+
   return {
-    path: path.flat(),
     train_name: trainrun.name,
     labels: compact(trainrunLabels),
+    path: path.flat(),
+    start_time: formatToIsoDate(startDate),
+    schedule,
   };
 };
 
@@ -204,6 +252,7 @@ const handleTrainrunOperation = async ({
         netzgrafikDto,
         trainrun.id
       );
+      const startDate = new Date();
       const newTrainSchedules = await dispatch(
         osrdEditoastApi.endpoints.postTimetableByIdTrainSchedule.initiate({
           id: timeTableId,
@@ -216,7 +265,8 @@ const handleTrainrunOperation = async ({
                 trainrun,
                 infraId,
                 dispatch,
-                labels
+                labels,
+                startDate
               )),
             },
           ],
@@ -248,6 +298,7 @@ const handleTrainrunOperation = async ({
           id: trainrunIdToUpdate,
         })
       ).unwrap();
+      const startDate = new Date(trainSchedule.start_time);
       const newTrainSchedule = await dispatch(
         osrdEditoastApi.endpoints.putTrainScheduleById.initiate({
           id: trainrunIdToUpdate,
@@ -259,10 +310,11 @@ const handleTrainrunOperation = async ({
               trainrun,
               infraId,
               dispatch,
-              labels
+              labels,
+              startDate
             )),
-            // TODO: convert NGE times to OSRD schedule
-            schedule: [],
+            // Reset margins because they contain references to path items
+            margins: undefined,
           },
         })
       ).unwrap();
