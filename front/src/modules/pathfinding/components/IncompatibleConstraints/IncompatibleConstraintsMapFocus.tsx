@@ -5,6 +5,9 @@ import bbox from '@turf/bbox';
 import type { FeatureCollection, LineString } from '@turf/helpers';
 import { useTranslation } from 'react-i18next';
 import { useMap } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
+
+import { getMap } from 'reducers/map/selectors';
 
 interface IncompatibleConstraintsMapFocusProps extends HTMLAttributes<unknown> {
   geojson?: FeatureCollection<LineString, unknown>;
@@ -12,14 +15,17 @@ interface IncompatibleConstraintsMapFocusProps extends HTMLAttributes<unknown> {
 
 const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusProps) => {
   const map = useMap();
+  const { smoothTravel } = useSelector(getMap);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { geojson, ...attrs } = props;
 
   const mapFocusOnPath = useCallback(() => {
     if (geojson) {
-      map.current?.fitBounds(bbox(geojson) as [number, number, number, number]);
+      map.current?.fitBounds(bbox(geojson) as [number, number, number, number], {
+        animate: smoothTravel,
+      });
     }
-  }, [map, geojson]);
+  }, [map, geojson, smoothTravel]);
 
   return (
     <button
