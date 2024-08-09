@@ -73,7 +73,7 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
   }, [mapRef, bbox]);
 
   useEffect(() => {
-    if (state === 'render') {
+    if (state === 'render' && mapRef) {
       const m = mapRef as MapRef;
 
       const querySources = () => {
@@ -132,7 +132,7 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
     }
 
     return undefined;
-  }, [state]);
+  }, [state, mapRef]);
 
   if (state === 'loaded') return null;
   return createPortal(
