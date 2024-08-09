@@ -48,7 +48,7 @@ describe('findTrackOffset', () => {
     const trackRanges = [
       { track_section: 'track_0' },
       { track_section: 'track_1' },
-      { track_section: 'track_2', begin: 1060, end: 60, direction: 'STOP_TO_START' },
+      { track_section: 'track_2', begin: 60, end: 1060, direction: 'STOP_TO_START' },
       { track_section: 'track_3' },
       { track_section: 'track_4' },
     ] as TrackRange[];

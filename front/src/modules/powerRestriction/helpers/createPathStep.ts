@@ -37,7 +37,7 @@ export const findTrackSectionOffset = (
   const offsetOnTrackSection =
     trackRange.direction === 'START_TO_STOP'
       ? trackRange.begin + offsetOnTrackRange
-      : trackRange.begin - offsetOnTrackRange;
+      : trackRange.end - offsetOnTrackRange;
 
   return { track: trackRange.track_section, offset: offsetOnTrackSection };
 };
