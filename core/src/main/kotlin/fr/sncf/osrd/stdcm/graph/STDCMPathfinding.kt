@@ -120,7 +120,7 @@ class STDCMPathfinding(
             logger.info("Failed to find a path")
             return null
         }
-        logger.info("Path found, start preprocessing")
+        logger.info("Path found, start postprocessing")
 
         val res =
             STDCMPostProcessing(graph)
