@@ -189,6 +189,7 @@ interface TrainHoverPositionProps {
   layerOrder: number;
   train: Train;
   viewport: Viewport;
+  // TODO: fix warped map - probably remove this from props (and delete the AllowancesSettings type)
   allowancesSettings?: AllowancesSettings;
   isSelectedTrain?: boolean;
 }

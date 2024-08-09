@@ -38,6 +38,7 @@ const WarpedMap: FC<{
   osmData: Record<string, FeatureCollection>;
   trainsPositions?: (TrainPosition & { train: Train; isSelected?: boolean })[];
   itinerary?: Feature<LineString>;
+  // TODO: fix warped map - probably remove this from props
   allowancesSettings?: AllowancesSettings;
 }> = ({
   bbox,
