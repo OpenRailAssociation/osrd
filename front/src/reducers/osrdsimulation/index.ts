@@ -15,13 +15,7 @@ export const initialState: OsrdSimulationState = {
   chart: undefined,
   isPlaying: false,
   isUpdating: false,
-  allowancesSettings: undefined,
   selectedTrainId: undefined,
-  simulation: {
-    past: [],
-    present: { trains: [] },
-    future: [],
-  },
   trainIdUsedForProjection: undefined,
 };
 

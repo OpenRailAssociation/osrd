@@ -3,11 +3,8 @@ import type { Dispatch } from 'redux';
 import type { OsrdSimulationState } from './types';
 
 // Action Types
-export const UPDATE_HOVER_POSITION = 'osrdsimu/UPDATE_HOVER_POSITION';
 export const UPDATE_IS_PLAYING = 'osrdsimu/UPDATE_IS_PLAYING';
 export const UPDATE_IS_UPDATING = 'osrdsimu/UPDATE_IS_UPDATING';
-export const UPDATE_RELOAD_TIMETABLE = 'osrdsimu/UPDATE_RELOAD_TIMETABLE';
-export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
 export const UPDATE_SELECTED_TRAIN_ID = 'osrdsimu/UPDATE_SELECTED_TRAIN_ID';
 export const UPDATE_TRAIN_ID_USED_FOR_PROJECTION = 'osrdsimu/UPDATE_TRAIN_ID_USED_FOR_PROJECTION';
 

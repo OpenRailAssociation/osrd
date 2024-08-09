@@ -3,7 +3,6 @@ import type * as d3 from 'd3';
 import type {
   ElectrificationRange,
   SimulationPowerRestrictionRange,
-  SimulationReport,
 } from 'common/api/osrdEditoastApi';
 import type { AllListValues } from 'modules/simulationResult/consts';
 
@@ -174,12 +173,6 @@ export interface Train {
   speed_limit_tags?: string;
 }
 
-export interface SimulationSnapshot {
-  trains: Train[] | SimulationReport[];
-}
-
-export type SimulationHistory = SimulationSnapshot[];
-
 export type PositionsSpeedTimes<Time = number> = Record<AllListValues, PositionSpeedTime<Time>>;
 
 export interface SimulationTrain<DateType = Date> {
@@ -201,16 +194,9 @@ export interface SimulationTrain<DateType = Date> {
 }
 
 export interface OsrdSimulationState {
-  redirectToGraph?: boolean;
   chart?: Chart;
   isPlaying: boolean;
   isUpdating: boolean;
-  allowancesSettings?: AllowancesSettings;
   selectedTrainId?: number;
-  simulation: {
-    past: SimulationHistory;
-    present: SimulationSnapshot;
-    future: SimulationHistory;
-  };
   trainIdUsedForProjection?: number;
 }

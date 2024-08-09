@@ -6,14 +6,14 @@ import { lineString } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import length from '@turf/length';
 import type { Feature, FeatureCollection, LineString, Position } from 'geojson';
-import { clamp, first, isEmpty, isNil, keyBy, last, mapValues, omitBy, debounce } from 'lodash';
+import { clamp, first, isEmpty, isNil, last, mapValues, omitBy } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
 
 import type { Layer } from 'applications/editor/consts';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import { osrdEditoastApi, type GeoJsonLineStringValue } from 'common/api/osrdEditoastApi';
+import { type GeoJsonLineStringValue } from 'common/api/osrdEditoastApi';
 import { LoaderFill } from 'common/Loaders';
 import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
 import DataLoader from 'common/Map/WarpedMap/DataLoader';
@@ -21,15 +21,9 @@ import type { WarpingFunction } from 'common/Map/WarpedMap/getWarping';
 import getWarping from 'common/Map/WarpedMap/getWarping';
 import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
 import { useInfraID } from 'common/osrdContext';
-import { useChartSynchronizerV2 } from 'modules/simulationResult/components/ChartSynchronizer';
-import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
-import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
-import { getOsrdSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import type { PositionsSpeedTimes, Train } from 'reducers/osrdsimulation/types';
+import { getOsrdSimulation } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 import { clip } from 'utils/mapHelper';
-import type { AsyncMemoState } from 'utils/useAsyncMemo';
-import { getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
 
 const TIME_LABEL = 'Warping OSRD and OSM data';
 const WIDTH = 300;
@@ -63,6 +57,7 @@ function transformDataStatePayload(
 const SimulationWarpedMap = ({
   collapsed,
   pathProperties,
+  // TODO: fix warped map - pass the selected train simulation results (SimulationResponseSuccess) in props
 }: {
   collapsed?: boolean;
   pathProperties?: PathPropertiesFormatted;
@@ -82,26 +77,22 @@ const SimulationWarpedMap = ({
         DataStatePayload)
   >({ type: 'idle' });
 
-  const [getPath] = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useLazyQuery();
   const layers = useMemo(() => new Set<Layer>(['track_sections']), []);
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
-  const {
-    chart,
-    allowancesSettings,
-    simulation: { present: simulation },
-  } = useSelector(getOsrdSimulation);
-  const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
-  const [localPositionValues, setLocalPositionValues] = useState<PositionsSpeedTimes<Date>>(
-    {} as PositionsSpeedTimes<Date>
-  );
-  useChartSynchronizerV2(
-    debounce((timePosition, positionValues) => {
-      setLocalTimePosition(timePosition);
-      setLocalPositionValues(positionValues);
-    }, 1),
-    'warped-map',
-    []
-  );
+  const { chart } = useSelector(getOsrdSimulation);
+  // TODO: fix warped map - uncomment the next commented lines
+  // const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
+  // const [localPositionValues, setLocalPositionValues] = useState<PositionsSpeedTimes<Date>>(
+  //   {} as PositionsSpeedTimes<Date>
+  // );
+  // useChartSynchronizerV2(
+  //   debounce((timePosition, positionValues) => {
+  //     setLocalTimePosition(timePosition);
+  //     setLocalPositionValues(positionValues);
+  //   }, 1),
+  //   'warped-map',
+  //   []
+  // );
 
   // Boundaries handling (ie zoom sync):
   const syncedBoundingBox: LngLatBoundsLike = useMemo(() => {
@@ -179,74 +170,55 @@ const SimulationWarpedMap = ({
     ] as LngLatBoundsLike;
   }, [chart, state]);
 
-  // Itinerary handling:
-  const selectedTrain = useSelector(getSelectedTrain);
-
-  const itineraryState: AsyncMemoState<Feature<LineString> | null> = useAsyncMemo(async () => {
+  const itineraryState: Feature<LineString> | null = useMemo(() => {
     if (pathProperties) return lineString(pathProperties.geometry.coordinates);
-    if (!selectedTrain || state.type !== 'dataLoaded') return null;
-
-    const { data: path } = await getPath({ pathfindingId: selectedTrain.path });
-    if (!path) return null;
-
-    return lineString(path.geographic.coordinates);
-  }, [selectedTrain, state.type, simulation]);
+    return null;
+  }, [pathProperties]);
 
   const warpedItinerary = useMemo(() => {
-    const itinerary = getAsyncMemoData(itineraryState);
-    if (itinerary && state.type === 'dataLoaded')
+    if (itineraryState && state.type === 'dataLoaded')
       // we don't clip the path
-      return state.transform(itinerary, false) || undefined;
+      return state.transform(itineraryState, false) || undefined;
     return undefined;
   }, [itineraryState, state]);
 
   // Trains handling:
-  // TODO: remove the cast to Train
-  const trainsIndex = useMemo(() => keyBy(simulation.trains as Train[], 'id'), [simulation.trains]);
-  const trainsPositionsState: AsyncMemoState<
-    (TrainPosition & { train: Train; isSelected?: boolean })[]
-  > = useAsyncMemo(async () => {
-    const path = getAsyncMemoData(itineraryState);
-    if (!path || !warpedItinerary || state.type !== 'dataLoaded') return [];
+  // TODO: fix warped map - adapt this part with simulations results v2
+  // const trainsIndex = useMemo(() => keyBy(simulation.trains as Train[], 'id'), [simulation.trains]);
+  // const trainsPositionsState: AsyncMemoState<
+  //   (TrainPosition & { train: Train; isSelected?: boolean })[]
+  // > = useAsyncMemo(async () => {
+  //   if (!itineraryState || !warpedItinerary || state.type !== 'dataLoaded') return [];
 
-    const pathLength = length(path);
-    const transformedPathLength = length(warpedItinerary);
+  //   const pathLength = length(itineraryState);
+  //   const transformedPathLength = length(warpedItinerary);
 
-    return getSimulationHoverPositions(
-      path,
-      simulation,
-      localTimePosition,
-      localPositionValues,
-      selectedTrain?.id,
-      allowancesSettings
-    ).map((position) => {
-      const transformedTrain = { ...position };
+  //   return getSimulationHoverPositions(
+  //     path,
+  //     simulation,
+  //     localTimePosition,
+  //     localPositionValues,
+  //     selectedTrain?.id
+  //   ).map((position) => {
+  //     const transformedTrain = { ...position };
 
-      // Transform positions:
-      transformedTrain.headPosition = state.transform(
-        position.headPosition
-      ) as TrainPosition['headPosition'];
-      transformedTrain.tailPosition = state.transform(
-        position.tailPosition
-      ) as TrainPosition['tailPosition'];
+  //     // Transform positions:
+  //     transformedTrain.headPosition = state.transform(
+  //       position.headPosition
+  //     ) as TrainPosition['headPosition'];
+  //     transformedTrain.tailPosition = state.transform(
+  //       position.tailPosition
+  //     ) as TrainPosition['tailPosition'];
 
-      // Interpolate positions:
-      transformedTrain.headDistanceAlong =
-        (position.headDistanceAlong / pathLength) * transformedPathLength;
-      transformedTrain.tailDistanceAlong =
-        (position.tailDistanceAlong / pathLength) * transformedPathLength;
+  //     // Interpolate positions:
+  //     transformedTrain.headDistanceAlong =
+  //       (position.headDistanceAlong / pathLength) * transformedPathLength;
+  //     transformedTrain.tailDistanceAlong =
+  //       (position.tailDistanceAlong / pathLength) * transformedPathLength;
 
-      return { ...transformedTrain, train: trainsIndex[position.trainId] };
-    });
-  }, [
-    itineraryState,
-    simulation,
-    localTimePosition,
-    localPositionValues,
-    selectedTrain,
-    allowancesSettings,
-    state,
-  ]);
+  //     return { ...transformedTrain, train: trainsIndex[position.trainId] };
+  //   });
+  // }, [itineraryState, simulation, localTimePosition, localPositionValues, selectedTrain, state]);
 
   const updateWarpedMapState = (coordinates: GeoJsonLineStringValue) => {
     const path = lineString(coordinates);
@@ -325,9 +297,9 @@ const SimulationWarpedMap = ({
             osrdData={state.osrd}
             osmData={state.osm}
             itinerary={warpedItinerary}
-            trainsPositions={getAsyncMemoData(trainsPositionsState) || undefined}
+            // TODO: fix warped map - adapt this part with simulations results v2
+            // trainsPositions={getAsyncMemoData(trainsPositionsState) || undefined}
             boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
-            allowancesSettings={allowancesSettings}
           />
           <div className="buttons">
             <button
