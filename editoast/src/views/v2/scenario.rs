@@ -5,11 +5,15 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use axum::Extension;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::AsyncConnection;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -35,8 +39,8 @@ use crate::views::projects::ProjectIdParam;
 use crate::views::scenario::ScenarioIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 
 crate::routes! {
     "/v2/projects/{project_id}/studies/{study_id}/scenarios" => {
@@ -191,9 +195,18 @@ impl ScenarioResponse {
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
     Json(data): Json<ScenarioCreateForm>,
 ) -> Result<Json<ScenarioResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let timetable_id = data.timetable_id;
     let infra_id = data.infra_id;
     let scenario: Changeset<Scenario> = data.into();
@@ -252,13 +265,22 @@ async fn create(
     )
 )]
 async fn delete(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
     }): Path<ScenarioPathParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     db_pool
         .get()
         .await?
@@ -326,14 +348,23 @@ impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset
     )
 )]
 async fn patch(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
     }): Path<ScenarioPathParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
     Json(form): Json<ScenarioPatchForm>,
 ) -> Result<Json<ScenarioResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let scenarios_response = db_pool
         .get()
         .await?
@@ -390,12 +421,21 @@ async fn patch(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
     }): Path<ScenarioPathParam>,
 ) -> Result<Json<ScenarioResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let conn = &mut db_pool.get().await?;
 
     let (project, study) = check_project_study(conn, project_id, study_id).await?;
@@ -435,10 +475,19 @@ struct ListScenariosResponse {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ListScenariosResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let _ = check_project_study(db_pool.get().await?.deref_mut(), project_id, study_id).await?;
 
     let settings = pagination_params

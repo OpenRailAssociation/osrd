@@ -5,12 +5,16 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use axum::Extension;
 use chrono::NaiveDate;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::AsyncConnection;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -20,12 +24,11 @@ use utoipa::ToSchema;
 use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginationStats;
 use super::scenario;
+use super::AuthorizationError;
+use super::AuthorizerExt;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
-
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
@@ -138,9 +141,18 @@ impl StudyCreateForm {
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(project_id): Path<i64>,
     Json(data): Json<StudyCreateForm>,
 ) -> Result<Json<StudyResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let conn = &mut db_pool.get().await?;
 
     let (study, project) = conn
@@ -191,9 +203,17 @@ pub struct StudyIdParam {
     )
 )]
 async fn delete(
-    Path((project_id, study_id)): Path<(i64, i64)>,
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
+    Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     // Check if project exists
     let conn = &mut db_pool.get().await?;
     let mut project =
@@ -221,8 +241,16 @@ async fn delete(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<Json<StudyResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     // Check if project exists
     let conn = &mut db_pool.get().await?;
     use crate::modelsv2::Retrieve;
@@ -295,10 +323,18 @@ impl StudyPatchForm {
     )
 )]
 async fn patch(
-    Path((project_id, study_id)): Path<(i64, i64)>,
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
+    Path((project_id, study_id)): Path<(i64, i64)>,
     Json(data): Json<StudyPatchForm>,
 ) -> Result<Json<StudyResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     let (study_scenarios, project) = conn
         .transaction::<_, InternalError, _>(|conn| {
@@ -367,10 +403,19 @@ struct StudyListResponse {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(project_id): Path<i64>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<StudyListResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let ordering = ordering_params.ordering;
     if !Project::exists(db_pool.get().await?.deref_mut(), project_id).await? {
         return Err(ProjectError::NotFound { project_id }.into());

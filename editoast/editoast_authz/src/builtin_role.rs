@@ -1,8 +1,10 @@
-use strum::{AsRefStr, EnumString};
+use strum::AsRefStr;
+use strum::Display;
+use strum::EnumString;
 
 use crate::roles::BuiltinRoleSet;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, AsRefStr)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, AsRefStr, Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum BuiltinRole {
     #[strum(serialize = "operational_studies:write")]
