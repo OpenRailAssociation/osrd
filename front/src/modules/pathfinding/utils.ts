@@ -157,6 +157,14 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
   return updatedOPs;
 };
 
+export const pathStepMatchesOp = (pathStep: PathStep, op: SuggestedOP, withKP = false) =>
+  ('uic' in pathStep &&
+    'ch' in pathStep &&
+    pathStep.uic === op.uic &&
+    pathStep.ch === op.ch &&
+    (withKP ? pathStep.kp === op.kp : pathStep.name === op.name)) ||
+  pathStep.id === op.opId;
+
 /**
  * Check if a suggested operational point is a via.
  * Some OPs have same uic so we need to check also the ch (can be still not enough
@@ -166,12 +174,4 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
  * It is used in the times and stops table to check if an operational point is a via.
  */
 export const isVia = (vias: PathStep[], op: SuggestedOP, withKP = false) =>
-  vias.some(
-    (via) =>
-      ('uic' in via &&
-        'ch' in via &&
-        via.uic === op.uic &&
-        via.ch === op.ch &&
-        (withKP ? via.kp === op.kp : via.name === op.name)) ||
-      via.id === op.opId
-  );
+  vias.some((via) => pathStepMatchesOp(via, op, withKP));

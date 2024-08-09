@@ -1,8 +1,11 @@
 import { feature, point } from '@turf/helpers';
-import { last } from 'lodash';
+import { compact, last, pick } from 'lodash';
+import nextId from 'react-id-generator';
 
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import { pathStepMatchesOp } from 'modules/pathfinding/utils';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { addElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
@@ -142,3 +145,47 @@ export const updateDestinationPathStep = (
   destination: Partial<PathStep> | null,
   replaceCompletely: boolean = false
 ) => updatePathStepAtIndex(pathSteps, pathSteps.length - 1, destination, replaceCompletely);
+
+/**
+ * modifies the array statePathSteps in place
+ */
+export function upsertPathStep(statePathSteps: (PathStep | null)[], op: SuggestedOP) {
+  // We know that, at this point, origin and destination are defined because pathfinding has been done
+  const cleanPathSteps = compact(statePathSteps);
+
+  let newVia = {
+    ...pick(op, [
+      'coordinates',
+      'positionOnPath',
+      'name',
+      'ch',
+      'kp',
+      'stopFor',
+      'arrival',
+      'locked',
+      'deleted',
+      'onStopSignal',
+      'theoreticalMargin',
+    ]),
+    id: nextId(),
+    ...(op.uic
+      ? { uic: op.uic }
+      : {
+          track: op.track,
+          offset: op.offsetOnTrack,
+        }),
+  } as PathStep;
+
+  const stepIndex = cleanPathSteps.findIndex((step) => pathStepMatchesOp(step, op));
+  if (stepIndex >= 0) {
+    // Because of import issues, there can be multiple ops with same position on path
+    // To avoid updating the wrong one, we need to find the one that matches the payload
+    newVia = { ...newVia, id: cleanPathSteps[stepIndex].id }; // We don't need to change the id of the updated via
+    statePathSteps[stepIndex] = newVia;
+  } else {
+    // Because of import issues, there can be multiple ops at position 0
+    // To avoid inserting a new via before the origin we need to check if the index is 0
+    const index = cleanPathSteps.findIndex((step) => step.positionOnPath! >= op.positionOnPath);
+    statePathSteps.splice(index || 1, 0, newVia);
+  }
+}
