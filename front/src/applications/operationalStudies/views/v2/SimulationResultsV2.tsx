@@ -173,6 +173,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
               <SpaceTimeChartWithManchette
                 operationalPoints={projectedOperationalPoints}
                 projectPathTrainResult={spaceTimeData}
+                selectedProjection={selectedTrainSchedule?.id}
               />
             </div>
           </div>

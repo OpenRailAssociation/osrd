@@ -92,7 +92,7 @@ const StcdmResults = ({
                     }
                     fileName={`STDCM-${simulationReportSheetNumber}.pdf`}
                   >
-                    <Button label={t('downloadSimulationSheet')} />
+                    <Button label={t('downloadSimulationSheet')} onClick={() => {}} />
                   </PDFDownloadLink>
                 </div>
                 <div className="gesico-text">{t('gesicoRequest')}</div>

@@ -89,7 +89,7 @@ export const getSpaceTimeChartData = async (
             const formattedProjectedPathTrainResult = {
               ...currentProjectedTrain,
               id: +trainId,
-              trainName: matchingTrain?.train_name || 'Train name not found',
+              name: matchingTrain?.train_name || 'Train name not found',
               departure_time:
                 `${convertIsoUtcToLocalTime(currentProjectedTrain.departure_time).slice(0, -6)}Z` ||
                 '',

@@ -19,10 +19,10 @@ const StdcmUpgrade = () => {
       </div>
       {/* TODO: remove the disabling on buttons when functional */}
       <div className="buttons-list">
-        <Button variant="Cancel" label={t('startIncompatible')} isDisabled />
-        <Button variant="Cancel" label={t('arrivalIncompatible')} isDisabled />
-        <Button variant="Cancel" label={t('unqualifiedDriver')} isDisabled />
-        <Button variant="Cancel" label={t('other')} isDisabled />
+        <Button variant="Cancel" label={t('startIncompatible')} isDisabled onClick={() => {}} />
+        <Button variant="Cancel" label={t('arrivalIncompatible')} isDisabled onClick={() => {}} />
+        <Button variant="Cancel" label={t('unqualifiedDriver')} isDisabled onClick={() => {}} />
+        <Button variant="Cancel" label={t('other')} isDisabled onClick={() => {}} />
       </div>
     </div>
   );
