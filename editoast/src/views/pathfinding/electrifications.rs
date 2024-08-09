@@ -6,6 +6,8 @@ use std::ops::DerefMut;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_common::rangemap_utils::RangedValue;
 use rangemap::RangeMap;
 use serde::Deserialize;
@@ -23,6 +25,8 @@ use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_schemas::primitives::ObjectType;
 
@@ -108,7 +112,16 @@ async fn electrifications_on_path(
         infra_caches,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<ElectrificationsOnPathResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::PathfindingRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let pathfinding_id = params.pathfinding_id;
     let pathfinding =
         match Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), pathfinding_id).await? {

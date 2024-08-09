@@ -11,9 +11,11 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Extension;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::TrackRange;
 use editoast_schemas::rolling_stock::RollingStock;
@@ -49,6 +51,8 @@ use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve as RetrieveV2;
 use crate::modelsv2::RollingStockModel;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
@@ -498,8 +502,17 @@ async fn create_pf(
         core_client,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(payload): Json<PathfindingRequest>,
 ) -> Result<Json<PathResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::PathfindingWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let pathfinding = call_core_pf_and_save_result(payload, db_pool, core_client, None).await?;
     Ok(Json(pathfinding.into()))
 }
@@ -527,8 +540,17 @@ async fn update_pf(
         core_client,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(payload): Json<PathfindingRequest>,
 ) -> Result<Json<PathResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::PathfindingWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let pathfinding =
         call_core_pf_and_save_result(payload, db_pool, core_client, Some(params.pathfinding_id))
             .await?;
@@ -550,7 +572,16 @@ async fn get_pf(
         db_pool_v1: db_pool,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<PathResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::PathfindingRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let pathfinding_id = params.pathfinding_id;
     match Pathfinding::retrieve(db_pool, pathfinding_id).await? {
         Some(pf) => Ok(Json(pf.into())),
@@ -573,7 +604,16 @@ async fn del_pf(
         db_pool_v1: db_pool,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::PathfindingWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let pathfinding_id = params.pathfinding_id;
     if Pathfinding::delete(db_pool, pathfinding_id).await? {
         Ok(StatusCode::NO_CONTENT)

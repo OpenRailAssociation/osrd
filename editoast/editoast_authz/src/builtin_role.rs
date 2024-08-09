@@ -12,6 +12,11 @@ pub enum BuiltinRole {
     InfraRead,
     #[strum(serialize = "infra:write")]
     InfraWrite,
+
+    #[strum(serialize = "pathfinding:read")]
+    PathfindingRead,
+    #[strum(serialize = "pathfinding:write")]
+    PathfindingWrite,
 }
 
 impl BuiltinRoleSet for BuiltinRole {
@@ -21,6 +26,8 @@ impl BuiltinRoleSet for BuiltinRole {
             OpsWrite => vec![InfraRead],
             InfraRead => vec![],
             InfraWrite => vec![InfraRead],
+            PathfindingRead => vec![],
+            PathfindingWrite => vec![PathfindingRead],
         }
     }
 }

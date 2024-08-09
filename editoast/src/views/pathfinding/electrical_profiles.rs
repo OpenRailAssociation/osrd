@@ -7,6 +7,8 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_common::rangemap_utils::RangedValue;
 use editoast_models::DbConnectionPoolV2;
 use rangemap::RangeMap;
@@ -26,6 +28,8 @@ use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use editoast_schemas::infra::ElectricalProfileSetData;
 
 crate::routes! {
@@ -99,7 +103,16 @@ async fn electrical_profiles_on_path(
     Path(params): Path<PathfindingIdParam>,
     Query(request): Query<ProfilesOnPathQuery>,
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<ProfilesOnPathResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::PathfindingRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let pathfinding_id = params.pathfinding_id;
     let pathfinding =
         match Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), pathfinding_id).await? {
