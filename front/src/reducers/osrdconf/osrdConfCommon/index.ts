@@ -1,11 +1,9 @@
 import type { CaseReducer, PayloadAction, PrepareAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
-import { compact, omit } from 'lodash';
-import nextId from 'react-id-generator';
+import { omit } from 'lodash';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
-import { isVia } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import {
@@ -13,6 +11,7 @@ import {
   insertViaFromMap,
   updateDestinationPathStep,
   updateOriginPathStep,
+  upsertPathStep,
 } from 'reducers/osrdconf/helpers';
 import type {
   OperationalStudiesConfSlice,
@@ -22,7 +21,7 @@ import type { OperationalStudiesConfSelectors } from 'reducers/osrdconf/operatio
 import type { StdcmConfSlice, StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
-import { addElementAtIndex, removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
+import { removeElementAtIndex } from 'utils/array';
 import { formatIsoDate } from 'utils/date';
 import type { ArrayElement } from 'utils/types';
 
@@ -288,53 +287,7 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     // Use this action to transform an op to via from times and stop table or
     // from the suggested via modal
     upsertViaFromSuggestedOP(state: Draft<S>, action: PayloadAction<SuggestedOP>) {
-      // We know that, at this point, origin and destination are defined because pathfinding has been done
-      const pathSteps = compact(state.pathSteps);
-
-      let newVia: PathStep = {
-        coordinates: action.payload.coordinates,
-        id: nextId(),
-        positionOnPath: action.payload.positionOnPath,
-        name: action.payload.name,
-        ch: action.payload.ch,
-        kp: action.payload.kp,
-        stopFor: action.payload.stopFor,
-        arrival: action.payload.arrival,
-        locked: action.payload.locked,
-        deleted: action.payload.deleted,
-        onStopSignal: action.payload.onStopSignal,
-        theoreticalMargin: action.payload.theoreticalMargin,
-        ...(action.payload.uic
-          ? { uic: action.payload.uic }
-          : {
-              track: action.payload.track,
-              offset: action.payload.offsetOnTrack,
-            }),
-      };
-
-      const isInVias = isVia(pathSteps, action.payload);
-      if (isInVias) {
-        // Because of import issues, there can be multiple ops with same position on path
-        // To avoid updating the wrong one, we need to find the one that matches the payload
-        const stepIndex = pathSteps.findIndex(
-          (step) =>
-            ('uic' in step &&
-              'ch' in step &&
-              step.uic === action.payload.uic &&
-              step.ch === action.payload.ch &&
-              step.name === action.payload.name) ||
-            step.id === action.payload.opId
-        );
-        newVia = { ...newVia, id: pathSteps[stepIndex].id }; // We don't need to change the id of the updated via
-        state.pathSteps = replaceElementAtIndex(state.pathSteps, stepIndex, newVia);
-      } else {
-        const index = pathSteps.findIndex(
-          (step) => step.positionOnPath! >= action.payload.positionOnPath
-        );
-        // Because of import issues, there can be multiple ops at position 0
-        // To avoid inserting a new via before the origin we need to check if the index is 0
-        state.pathSteps = addElementAtIndex(state.pathSteps, index || 1, newVia);
-      }
+      upsertPathStep(state.pathSteps, action.payload);
     },
     updateRollingStockComfort(state: Draft<S>, action: PayloadAction<S['rollingStockComfort']>) {
       state.rollingStockComfort = action.payload;
