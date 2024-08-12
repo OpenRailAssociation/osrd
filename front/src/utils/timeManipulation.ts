@@ -86,3 +86,5 @@ export function secToHoursString(sec: number | null, withSeconds = false): TimeS
   const format = withSeconds ? '%H:%M:%S' : '%H:%M';
   return d3.utcFormat(format)(new Date(sec * 1000));
 }
+
+export const SECONDS_IN_A_DAY = 86400;
