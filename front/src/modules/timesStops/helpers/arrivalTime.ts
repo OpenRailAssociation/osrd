@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { secToHoursString } from 'utils/timeManipulation';
+import { SECONDS_IN_A_DAY, secToHoursString } from 'utils/timeManipulation';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR_MS } from '../consts';
 import type { ComputedScheduleEntry } from '../types';
@@ -18,7 +18,7 @@ export function checkAndFormatCalculatedArrival(
     return secToHoursString(operationalPointTime, true);
   }
   const arrivalValuesAreClose =
-    Math.abs(scheduleData.arrival - operationalPointTime) <=
+    Math.abs(scheduleData.arrival - (operationalPointTime % SECONDS_IN_A_DAY)) <=
     ARRIVAL_TIME_ACCEPTABLE_ERROR_MS / 1000;
   const calculatedArrival = arrivalValuesAreClose ? scheduleData.arrival : operationalPointTime;
 
