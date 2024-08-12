@@ -2,8 +2,10 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::Extension;
 use chrono::Utc;
 use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::PathItemLocation;
@@ -35,6 +37,8 @@ use crate::modelsv2::{Infra, List};
 use crate::views::v2::path::path_item_cache::PathItemCache;
 use crate::views::v2::train_schedule::train_simulation;
 use crate::views::v2::train_schedule::train_simulation_batch;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::RedisClient;
 use crate::Retrieve;
@@ -152,10 +156,19 @@ struct InfraIdQueryParam {
 )]
 async fn stdcm(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(id): Path<i64>,
     Query(query): Query<InfraIdQueryParam>,
     Json(data): Json<STDCMRequestPayload>,
 ) -> Result<Json<STDCMResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
