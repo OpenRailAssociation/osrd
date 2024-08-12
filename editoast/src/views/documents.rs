@@ -4,7 +4,9 @@ use axum::extract::State;
 use axum::http::header::{CACHE_CONTROL, CONTENT_TYPE};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Extension;
 use axum::Json;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use serde::Serialize;
 use thiserror::Error;
@@ -13,6 +15,9 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::modelsv2::*;
 use editoast_models::DbConnectionPoolV2;
+
+use super::AuthorizationError;
+use super::AuthorizerExt;
 
 crate::routes! {
     "/documents" => {
@@ -50,8 +55,16 @@ pub enum DocumentErrors {
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::DocumentRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     let doc = Document::retrieve_or_fail(conn, document_id, || DocumentErrors::NotFound {
         document_key: document_id,
@@ -86,9 +99,17 @@ struct NewDocumentResponse {
 )]
 async fn post(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
     bytes: Bytes,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::DocumentWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let content_type = content_type.to_string();
 
     // Create document
@@ -122,8 +143,16 @@ async fn post(
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::DocumentWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     Document::delete_static_or_fail(conn, document_id, || DocumentErrors::NotFound {
         document_key: document_id,
