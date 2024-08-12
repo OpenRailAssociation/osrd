@@ -24,7 +24,7 @@ thiserror = "1.0.63"
 # main crate
 actix-files = "0.6"
 actix-session = "0.9"
-actix-web = "4.8"
+actix-web = "4.9"
 actix-web-opentelemetry = { version = "0.18.0", features = ["awc", "metrics"] }
 base64ct = "1.6"
 figment = "0.10.19"
