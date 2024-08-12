@@ -24,6 +24,9 @@ pub enum BuiltinRole {
 
     #[strum(serialize = "map:read")]
     MapRead,
+
+    #[strum(serialize = "stdcm")]
+    Stdcm,
 }
 
 impl BuiltinRoleSet for BuiltinRole {
@@ -37,6 +40,7 @@ impl BuiltinRoleSet for BuiltinRole {
             TrainScheduleRead => vec![InfraRead],
             WorkScheduleWrite => vec![],
             MapRead => vec![],
+            Stdcm => vec![MapRead],
         }
     }
 }
