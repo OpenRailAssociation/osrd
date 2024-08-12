@@ -10,6 +10,9 @@ use editoast_derive::EditoastError;
 use serde::Deserialize;
 use thiserror::Error;
 use utoipa::IntoParams;
+use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::infra::ElectricalProfileSetData;
+use editoast_schemas::infra::LevelValues;
 
 use crate::error::Result;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
@@ -18,9 +21,6 @@ use crate::modelsv2::Create;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
-use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::infra::ElectricalProfileSetData;
-use editoast_schemas::infra::LevelValues;
 
 crate::routes! {
     "/electrical_profile_set" => {
