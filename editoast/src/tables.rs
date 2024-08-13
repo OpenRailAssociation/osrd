@@ -413,23 +413,6 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    pathfinding (id) {
-        id -> Int8,
-        owner -> Uuid,
-        created -> Timestamptz,
-        payload -> Jsonb,
-        slopes -> Jsonb,
-        curves -> Jsonb,
-        geographic -> Geometry,
-        infra_id -> Int8,
-        length -> Float8,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use postgis_diesel::sql_types::*;
-
     project (id) {
         id -> Int8,
         #[max_length = 128]
@@ -504,26 +487,6 @@ diesel::table! {
         order -> Int4,
         livery_id -> Int8,
         image_id -> Int8,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use postgis_diesel::sql_types::*;
-
-    scenario (id) {
-        id -> Int8,
-        #[max_length = 128]
-        name -> Varchar,
-        #[max_length = 1024]
-        description -> Varchar,
-        creation_date -> Timestamptz,
-        last_modification -> Timestamptz,
-        tags -> Array<Nullable<Text>>,
-        infra_id -> Int8,
-        timetable_id -> Int8,
-        study_id -> Int8,
-        electrical_profile_set_id -> Nullable<Int8>,
     }
 }
 
@@ -637,21 +600,6 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
-    simulation_output (id) {
-        id -> Int8,
-        mrsp -> Jsonb,
-        base_simulation -> Jsonb,
-        eco_simulation -> Nullable<Jsonb>,
-        electrification_ranges -> Jsonb,
-        train_schedule_id -> Nullable<Int8>,
-        power_restriction_ranges -> Jsonb,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use postgis_diesel::sql_types::*;
-
     stdcm_search_environment (id) {
         id -> Int8,
         infra_id -> Int8,
@@ -689,17 +637,6 @@ diesel::table! {
         #[max_length = 100]
         study_type -> Nullable<Varchar>,
         project_id -> Int8,
-    }
-}
-
-diesel::table! {
-    use diesel::sql_types::*;
-    use postgis_diesel::sql_types::*;
-
-    timetable (id) {
-        id -> Int8,
-        #[max_length = 128]
-        name -> Varchar,
     }
 }
 
@@ -822,34 +759,25 @@ diesel::joinable!(infra_object_signal -> infra (infra_id));
 diesel::joinable!(infra_object_speed_section -> infra (infra_id));
 diesel::joinable!(infra_object_switch -> infra (infra_id));
 diesel::joinable!(infra_object_track_section -> infra (infra_id));
-diesel::joinable!(pathfinding -> infra (infra_id));
 diesel::joinable!(project -> document (image_id));
 diesel::joinable!(rolling_stock_livery -> document (compound_image_id));
 diesel::joinable!(rolling_stock_livery -> rolling_stock (rolling_stock_id));
 diesel::joinable!(rolling_stock_separate_image -> document (image_id));
 diesel::joinable!(rolling_stock_separate_image -> rolling_stock_livery (livery_id));
-diesel::joinable!(scenario -> electrical_profile_set (electrical_profile_set_id));
-diesel::joinable!(scenario -> infra (infra_id));
-diesel::joinable!(scenario -> study (study_id));
-diesel::joinable!(scenario -> timetable (timetable_id));
 diesel::joinable!(scenario_v2 -> electrical_profile_set (electrical_profile_set_id));
 diesel::joinable!(scenario_v2 -> infra (infra_id));
 diesel::joinable!(scenario_v2 -> study (study_id));
 diesel::joinable!(scenario_v2 -> timetable_v2 (timetable_id));
 diesel::joinable!(search_operational_point -> infra_object_operational_point (id));
 diesel::joinable!(search_project -> project (id));
-diesel::joinable!(search_scenario -> scenario (id));
 diesel::joinable!(search_signal -> infra_object_signal (id));
 diesel::joinable!(search_study -> study (id));
-diesel::joinable!(simulation_output -> train_schedule (train_schedule_id));
 diesel::joinable!(stdcm_search_environment -> electrical_profile_set (electrical_profile_set_id));
 diesel::joinable!(stdcm_search_environment -> infra (infra_id));
 diesel::joinable!(stdcm_search_environment -> timetable_v2 (timetable_id));
 diesel::joinable!(stdcm_search_environment -> work_schedule_group (work_schedule_group_id));
 diesel::joinable!(study -> project (project_id));
-diesel::joinable!(train_schedule -> pathfinding (path_id));
 diesel::joinable!(train_schedule -> rolling_stock (rolling_stock_id));
-diesel::joinable!(train_schedule -> timetable (timetable_id));
 diesel::joinable!(train_schedule_v2 -> timetable_v2 (timetable_id));
 diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
@@ -885,12 +813,10 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_speed_section,
     infra_object_switch,
     infra_object_track_section,
-    pathfinding,
     project,
     rolling_stock,
     rolling_stock_livery,
     rolling_stock_separate_image,
-    scenario,
     scenario_v2,
     search_operational_point,
     search_project,
@@ -898,10 +824,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     search_signal,
     search_study,
     search_track,
-    simulation_output,
     stdcm_search_environment,
     study,
-    timetable,
     timetable_v2,
     train_schedule,
     train_schedule_v2,
