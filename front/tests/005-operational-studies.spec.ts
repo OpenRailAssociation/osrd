@@ -5,7 +5,7 @@ import type {
   Infra,
   Project,
   RollingStock,
-  Scenario,
+  ScenarioV2,
   Study,
   TimetableResult,
 } from 'common/api/osrdEditoastApi';
@@ -19,7 +19,7 @@ import { getInfra, getProject, getRollingStock, getStudy, postApiRequest } from 
 let smallInfra: Infra;
 let project: Project;
 let study: Study;
-let scenario: Scenario;
+let scenario: ScenarioV2;
 let rollingStock: RollingStock;
 let timetableResult: TimetableResult;
 

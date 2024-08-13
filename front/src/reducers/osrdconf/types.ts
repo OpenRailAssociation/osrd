@@ -1,12 +1,8 @@
 import type { Feature, Position } from 'geojson';
 
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
-import type {
-  AllowanceValue,
-  Comfort,
-  Distribution,
-  PathItemLocation,
-} from 'common/api/osrdEditoastApi';
+import type { AllowanceValue } from 'applications/stdcm/types';
+import type { Comfort, Distribution, PathItemLocation } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
 
 export interface OsrdConfState extends InfraState {

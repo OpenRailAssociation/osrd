@@ -1,7 +1,13 @@
 import { test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
+import type {
+  Infra,
+  Project,
+  ScenarioV2,
+  Study,
+  TimetableResult,
+} from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
 import HomePage from './pages/home-page-model';
@@ -12,7 +18,7 @@ import { getInfra, getProject, getStudy, postApiRequest } from './utils/index';
 let smallInfra: Infra;
 let project: Project;
 let study: Study;
-let scenario: Scenario;
+let scenario: ScenarioV2;
 let timetableResult: TimetableResult;
 let selectedLanguage: string;
 

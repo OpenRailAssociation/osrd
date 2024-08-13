@@ -15,3 +15,9 @@ export type ArrayElement<ArrayType extends readonly unknown[] | undefined | null
 export type typedEntries<T> = Array<[keyof T, T[keyof T]]>;
 
 export type Unit = 'meters' | 'millimeters';
+
+export type RangedValue = {
+  begin: number;
+  end: number;
+  value: string;
+};

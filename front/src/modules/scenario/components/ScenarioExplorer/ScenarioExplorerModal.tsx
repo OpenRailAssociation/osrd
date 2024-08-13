@@ -8,9 +8,9 @@ import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg
 import scenariosLogo from 'assets/pictures/views/scenarios.svg';
 import studiesLogo from 'assets/pictures/views/studies.svg';
 import {
-  type ScenarioWithCountTrains,
   type StudyWithScenarios,
   osrdEditoastApi,
+  type ScenarioWithDetails,
 } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -38,7 +38,7 @@ const ScenarioExplorerModal = ({
   const [studyID, setStudyID] = useState<number | undefined>(globalStudyId);
   const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioId);
   const [studiesList, setStudiesList] = useState<StudyWithScenarios[]>();
-  const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>();
+  const [scenariosList, setScenariosList] = useState<ScenarioWithDetails[]>();
 
   const {
     projectsList,

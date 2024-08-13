@@ -60,3 +60,17 @@ export type StdcmV2Results = {
   } | null;
   spaceTimeData: TrainSpaceTimeData[];
 };
+
+export type AllowanceValue =
+  | {
+      minutes: number;
+      value_type: 'time_per_distance';
+    }
+  | {
+      seconds: number;
+      value_type: 'time';
+    }
+  | {
+      percentage: number;
+      value_type: 'percentage';
+    };

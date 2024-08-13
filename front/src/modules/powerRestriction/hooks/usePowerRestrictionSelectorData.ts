@@ -4,10 +4,11 @@ import { compact } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
+import type { RollingStock } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { mmToM } from 'utils/physics';
+import type { RangedValue } from 'utils/types';
 
 import usePowerRestrictionSelectorBehaviours from './usePowerRestrictionSelectorBehaviours';
 import { NO_POWER_RESTRICTION } from '../consts';

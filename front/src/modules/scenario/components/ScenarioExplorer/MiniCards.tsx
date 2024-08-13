@@ -4,8 +4,8 @@ import cx from 'classnames';
 
 import type {
   ProjectWithStudies,
+  ScenarioWithDetails,
   StudyWithScenarios,
-  ScenarioWithCountTrains,
 } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useOsrdConfActions } from 'common/osrdContext';
@@ -25,7 +25,7 @@ interface MiniCardStudyProps extends MiniCardProps {
   study: StudyWithScenarios;
 }
 interface MiniCardScenarioProps extends MiniCardProps {
-  scenario: ScenarioWithCountTrains;
+  scenario: ScenarioWithDetails;
   projectID: number;
   studyID: number;
 }

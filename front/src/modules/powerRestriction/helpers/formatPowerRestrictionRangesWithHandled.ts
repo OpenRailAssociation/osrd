@@ -7,13 +7,13 @@ import { compact } from 'lodash';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   PathfindingResultSuccess,
-  RangedValue,
   RollingStock,
   TrainScheduleBase,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
 import { mmToKm, mToMm } from 'utils/physics';
+import type { RangedValue } from 'utils/types';
 
 /**
  * Format power restrictions data to ranges data base on path steps position

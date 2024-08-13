@@ -1,8 +1,4 @@
 import type {
-  ElectrificationRange,
-  SimulationPowerRestrictionRange,
-} from 'common/api/osrdEditoastApi';
-import type {
   GradientPosition,
   HeightPosition,
   PositionSpeedTime,
@@ -28,8 +24,7 @@ export type GevPreparedData = {
   areaSlopesHistogram: AreaBlock[];
   curvesHistogram: RadiusPosition[];
   eco_speed: PositionSpeedTime[];
-  electrificationRanges: ElectrificationRange[];
-  powerRestrictionRanges: SimulationPowerRestrictionRange[];
+
   margins_speed: PositionSpeedTime[];
   slopesCurve: HeightPosition[];
   slopesHistogram: GradientPosition[];

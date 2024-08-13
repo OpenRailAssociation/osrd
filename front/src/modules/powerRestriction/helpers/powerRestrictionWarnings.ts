@@ -1,11 +1,12 @@
 import { compact, isEmpty, keyBy } from 'lodash';
 
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
-import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
+import type { RollingStock } from 'common/api/osrdEditoastApi';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import type { PowerRestrictionWarnings } from 'modules/powerRestriction/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
 import type { PathStep } from 'reducers/osrdconf/types';
+import type { RangedValue } from 'utils/types';
 
 // TODO drop v1: convert begin and end in meters here instead of in PowerRestrictionsSelectorV2
 const getInvalidZoneBoundaries = (

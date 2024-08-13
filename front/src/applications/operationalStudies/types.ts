@@ -3,12 +3,11 @@ import type {
   PathProperties,
   PathfindingResultSuccess,
   ProjectPathTrainResult,
-  RangedValue,
   SimulationResponse,
   TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import type { ArrayElement } from 'utils/types';
+import type { ArrayElement, RangedValue } from 'utils/types';
 
 interface Step {
   uic: number;

@@ -40,17 +40,17 @@ export const simulation: SimulationResponseSuccess = {
     ],
     signal_sightings: [
       {
-        offset: 0,
         signal: 'signal',
         state: 'state',
+        position: 0,
         time: 0,
       },
     ],
     spacing_requirements: [{ begin_time: 0, end_time: 0, zone: 'zone' }],
     zone_updates: [
       {
-        isEntry: false,
-        offset: 0,
+        is_entry: false,
+        position: 0,
         time: 0,
         zone: 'zone',
       },
