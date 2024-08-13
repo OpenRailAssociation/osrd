@@ -2,16 +2,14 @@
 import React from 'react';
 
 import { useOsrdConfActions } from 'common/osrdContext';
-import { isVia } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { removeElementAtIndex } from 'utils/array';
 
-import TimesStops, { WITH_KP } from './TimesStops';
+import TimesStops from './TimesStops';
 import { TableType, type PathWaypointRow } from './types';
 
-type DeleteButtonProps = {
+type ClearButtonProps = {
   removeVia: () => void;
   rowIndex: number;
   rowData: PathWaypointRow;
@@ -19,19 +17,16 @@ type DeleteButtonProps = {
   pathSteps: PathStep[];
 };
 
-const createDeleteViaButton = ({
-  removeVia,
-  rowIndex,
-  rowData,
-  allWaypoints,
-  pathSteps,
-}: DeleteButtonProps) => {
-  const isRowVia =
+const createClearViaButton = ({ removeVia, rowIndex, rowData, allWaypoints }: ClearButtonProps) => {
+  const isClearBtnShown =
     allWaypoints &&
-    rowIndex !== 0 &&
-    rowIndex !== allWaypoints.length - 1 &&
-    isVia(pathSteps, rowData, WITH_KP);
-  if (isRowVia) {
+    rowIndex > 0 &&
+    rowIndex < allWaypoints.length - 1 &&
+    (rowData.stopFor !== undefined ||
+      rowData.theoreticalMargin !== undefined ||
+      rowData.arrival !== undefined ||
+      rowData.onStopSignal !== false);
+  if (isClearBtnShown) {
     return (
       <button type="button" onClick={removeVia}>
         ❌
@@ -51,18 +46,38 @@ const TimesStopsinput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
   const dispatch = useAppDispatch();
   const { updatePathSteps } = useOsrdConfActions();
 
-  const removeVia = (rowData: PathWaypointRow) => {
-    const index = pathSteps.findIndex((step) => {
-      if ('uic' in step) {
-        return step.uic === rowData.uic && step.ch === rowData.ch && step.name === rowData.name;
-      }
-      if ('track' in step) {
-        return step.track === rowData.track;
-      }
-      return false;
-    });
-    const updatedPathSteps = removeElementAtIndex(pathSteps, index);
+  const clearPathStep = (rowData: PathWaypointRow) => {
+    const isMatchingUICStep = (step: PathStep) =>
+      'uic' in step &&
+      step.uic === rowData.uic &&
+      step.ch === rowData.ch &&
+      step.name === rowData.name;
 
+    const isMatchingTrackStep = (step: PathStep) =>
+      'track' in step &&
+      step.track === rowData.track &&
+      step.positionOnPath === rowData.positionOnPath &&
+      step.offset === rowData.offsetOnTrack &&
+      step.id === rowData.opId;
+
+    const index = pathSteps.findIndex(
+      (step) => isMatchingUICStep(step) || isMatchingTrackStep(step)
+    );
+
+    if (index === -1) return;
+
+    const updatedPathSteps = pathSteps.map((step, i) => {
+      if (i === index) {
+        return {
+          ...step,
+          stopFor: undefined,
+          theoreticalMargin: undefined,
+          arrival: undefined,
+          onStopSignal: undefined,
+        };
+      }
+      return step;
+    });
     dispatch(updatePathSteps({ pathSteps: updatedPathSteps }));
   };
 
@@ -74,8 +89,8 @@ const TimesStopsinput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
       tableType={TableType.Input}
       stickyRightColumn={{
         component: ({ rowData, rowIndex }) =>
-          createDeleteViaButton({
-            removeVia: () => removeVia(rowData),
+          createClearViaButton({
+            removeVia: () => clearPathStep(rowData),
             rowIndex,
             rowData,
             allWaypoints,
