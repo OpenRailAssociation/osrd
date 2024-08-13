@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Optional
+from typing import Optional
 
 import requests
 
@@ -54,8 +54,6 @@ class _ScenarioResponse:
     last_modification: str
     tags: list[str]
     infra_name: str
-    electrical_profile_set_name: Optional[str]
-    train_schedules: Iterable[Any]
     project: _Project
     study: _Study
 
@@ -63,7 +61,7 @@ class _ScenarioResponse:
 def test_get_scenario(small_scenario: Scenario):
     response = requests.get(
         EDITOAST_URL
-        + f"projects/{small_scenario.project}/studies/{small_scenario.op_study}/scenarios/{small_scenario.scenario}/"
+        + f"v2/projects/{small_scenario.project}/studies/{small_scenario.op_study}/scenarios/{small_scenario.scenario}/"
     )
     assert response.status_code == 200
     res = response.json()
@@ -71,7 +69,9 @@ def test_get_scenario(small_scenario: Scenario):
     if project and study:
         del res["project"]
         del res["study"]
-        scenario = _ScenarioResponse(**res, project=_Project(**project), study=_Study(**study))
+        scenario = _ScenarioResponse(
+            **res, project=_Project(**project), study=_Study(**study), electrical_profile_set_id=None
+        )
         assert scenario.name == "_@Test integration scenario"
     else:
         raise ValueError("Missing project or study")

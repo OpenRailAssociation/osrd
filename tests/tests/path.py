@@ -5,11 +5,9 @@ from typing import Any, Iterable
 
 @dataclass(frozen=True)
 class Path:
-    id: int
-    owner: str
-    created: str
-    length: float
-    slopes: Iterable[Any]
-    curves: Iterable[Any]
-    steps: Sequence[Any]
-    geographic: Any
+    status: str
+    blocks: Iterable[Any]
+    routes: Iterable[Any]
+    track_section_ranges: Sequence[Any]
+    length: int
+    path_item_positions: Iterable[Any]

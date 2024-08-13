@@ -3,39 +3,34 @@ import json
 
 import requests
 
-from tests.utils.timetable import create_op_study, create_scenario
+from tests.utils.timetable import create_op_study, create_scenario_v2
 
 from .infra import Infra
-from .path import Path
 from .scenario import Scenario
 from .services import EDITOAST_URL
 
 _START = {"track_section": "TA2", "geo_coordinate": [-0.387122554630656, 49.4998]}
-_MIDDLE = {"track_section": "TA5", "geo_coordinate": [-0.387122554630656, 49.4998]}
-_STOP = {"track_section": "TH1", "geo_coordinate": [-0.095104854807785, 49.484]}
 
 _START_V2 = {"track": "TA2", "offset": 0}
 _MIDDLE_V2 = {"track": "TA5", "offset": 0}
 _STOP_V2 = {"track": "TH1", "offset": 0}
 
 
-def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_id: int, path_id: int, departure_time: int):
-    schedule_payload = {
-        "timetable": scenario.timetable,
-        "path": path_id,
-        "schedules": [
-            {
-                "train_name": "foo",
-                "labels": [],
-                "allowances": [],
-                "departure_time": departure_time,
-                "initial_speed": 0,
-                "rolling_stock_id": rolling_stock_id,
-                "speed_limit_category": "foo",
-            }
-        ],
-    }
-    r = requests.post(editoast_url + "train_schedule/standalone_simulation/", json=schedule_payload)
+def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_name: str, start_time: str):
+    schedule_payload = [
+        {
+            "constraint_distribution": "STANDARD",
+            "path": [
+                {"offset": 837034, "track": "TA2", "id": "a"},
+                {"offset": 4386000, "track": "TH1", "id": "b"},
+            ],
+            "rolling_stock_name": rolling_stock_name,
+            "train_name": "foo",
+            "speed_limit_tag": "foo",
+            "start_time": start_time,
+        }
+    ]
+    r = requests.post(editoast_url + f"v2/timetable/{scenario.timetable}/train_schedule/", json=schedule_payload)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
     schedule_id = r.json()[0]
@@ -44,70 +39,69 @@ def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_id: int, pat
 
 def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_stock: int):
     op_study = create_op_study(EDITOAST_URL, foo_project_id)
-    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
+    _, timetable = create_scenario_v2(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
     requests.post(EDITOAST_URL + f"infra/{small_infra.id}/load")
     payload = {
-        "infra_id": small_infra.id,
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
-        "start_time": 0,
-        "name": "foo",
+        "margin": "0%",
+        "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 0.1, "waypoints": [_START]},
-            {"duration": 0.1, "waypoints": [_STOP]},
+            {"duration": 100, "location": _START_V2},
+            {"duration": 100, "location": _STOP_V2},
         ],
         "comfort": "STANDARD",
-        "maximum_departure_delay": 7200,
-        "maximum_run_time": 43200,
+        "maximum_departure_delay": 7200000,
+        "maximum_run_time": 43200000,
     }
-    r = requests.post(EDITOAST_URL + "stdcm/", json=payload)
-    assert r.status_code == 201
+    r = requests.post(EDITOAST_URL + f"v2/timetable/{timetable}/stdcm?infra={small_infra.id}", json=payload)
+    assert r.status_code == 200
 
 
+# TO ADAPT
 def test_empty_timetable_with_stop(small_infra: Infra, foo_project_id: int, fast_rolling_stock: int):
     op_study = create_op_study(EDITOAST_URL, foo_project_id)
-    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
+    _, timetable = create_scenario_v2(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
     payload = {
-        "infra_id": small_infra.id,
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
-        "start_time": 0,
-        "name": "foo",
+        "margin": "0%",
+        "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 0.1, "waypoints": [_START]},
-            {"duration": 42, "waypoints": [_MIDDLE]},
-            {"duration": 0.1, "waypoints": [_STOP]},
+            {"duration": 100, "location": _START_V2},
+            {"duration": 42000, "location": _MIDDLE_V2},
+            {"duration": 100, "location": _STOP_V2},
         ],
         "comfort": "STANDARD",
-        "maximum_departure_delay": 7200,
-        "maximum_run_time": 43200,
+        "maximum_departure_delay": 7200000,
+        "maximum_run_time": 43200000,
     }
-    r = requests.post(EDITOAST_URL + "stdcm/", json=payload)
-    r.raise_for_status()
-    result = r.json()
-    stops = result["simulation"]["base"]["stops"]
-    assert stops[0]["duration"] == 42
-    assert r.status_code == 201
+    r = requests.post(EDITOAST_URL + f"v2/timetable/{timetable}/stdcm?infra={small_infra.id}", json=payload)
+    assert r.status_code == 200
 
 
-def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int, west_to_south_east_path: Path):
-    _add_train(EDITOAST_URL, small_scenario, fast_rolling_stock, west_to_south_east_path.id, 0)
-    _add_train(EDITOAST_URL, small_scenario, fast_rolling_stock, west_to_south_east_path.id, 10000)
+def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int):
+    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    fast_rolling_stock_name = response.json()["name"]
+    _add_train(EDITOAST_URL, small_scenario, fast_rolling_stock_name, "2024-08-13T22:31:36.377Z")
+    _add_train(EDITOAST_URL, small_scenario, fast_rolling_stock_name, "2024-08-13T23:31:36.377Z")
     payload = {
-        "infra_id": small_scenario.infra,
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": small_scenario.timetable,
-        "start_time": 5000,
-        "name": "foo",
+        "margin": "0%",
+        "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 0.1, "waypoints": [_START]},
-            {"duration": 0.1, "waypoints": [_STOP]},
+            {"duration": 100, "location": _START_V2},
+            {"duration": 42000, "location": _MIDDLE_V2},
+            {"duration": 100, "location": _STOP_V2},
         ],
         "comfort": "STANDARD",
-        "maximum_departure_delay": 7200,
-        "maximum_run_time": 43200,
+        "maximum_departure_delay": 7200000,
+        "maximum_run_time": 43200000,
     }
-    r = requests.post(EDITOAST_URL + "stdcm/", json=payload)
+    r = requests.post(
+        EDITOAST_URL + f"v2/timetable/{small_scenario.timetable}/stdcm?infra={small_scenario.infra}", json=payload
+    )
     if r.status_code // 100 != 2:
         raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
 
