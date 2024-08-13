@@ -9,7 +9,7 @@ import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { type ScenarioPatchForm, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ScenarioPatchFormV2 } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -32,7 +32,7 @@ import checkScenarioFields from '../utils';
 
 // TODO: use ScenarioCreateForm from osrdEditoastApi to harmonize with study and project
 // and then change checkNameInvalidity
-export type ScenarioForm = ScenarioPatchForm & {
+export type ScenarioForm = ScenarioPatchFormV2 & {
   id?: number;
   infra_id?: number;
   electrical_profile_set_id?: number | null;

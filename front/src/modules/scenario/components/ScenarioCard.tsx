@@ -8,7 +8,7 @@ import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
 
 import infraLogo from 'assets/pictures/components/tracks.svg';
-import type { ScenarioWithCountTrains } from 'common/api/osrdEditoastApi';
+import type { ScenarioWithDetails } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { updateTrainIdUsedForProjection } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
@@ -16,7 +16,7 @@ import { dateTimeFormatting } from 'utils/date';
 
 type ScenarioCardProps = {
   setFilterChips: (filterChips: string) => void;
-  scenario: ScenarioWithCountTrains;
+  scenario: ScenarioWithDetails;
 };
 
 export default function ScenarioCard({ setFilterChips, scenario }: ScenarioCardProps) {

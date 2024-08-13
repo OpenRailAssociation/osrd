@@ -4,12 +4,12 @@ import { ChevronRight } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-import type { Project, Study, Scenario } from 'common/api/osrdEditoastApi';
+import type { Project, Study, ScenarioV2 } from 'common/api/osrdEditoastApi';
 
 type Props = {
   project?: Project;
   study?: Study;
-  scenario?: Scenario;
+  scenario?: ScenarioV2;
 };
 
 export default function BreadCrumbs({ project, study, scenario }: Props) {

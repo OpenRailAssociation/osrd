@@ -1,9 +1,5 @@
 import type * as d3 from 'd3';
 
-import type {
-  ElectrificationRange,
-  SimulationPowerRestrictionRange,
-} from 'common/api/osrdEditoastApi';
 import type { AllListValues } from 'modules/simulationResult/consts';
 
 export type MergedDataPoint<T = number> = {
@@ -154,8 +150,6 @@ export interface SpeedTime<Time = number> {
 export type ConsolidatedSpeedTime = SpeedTime<Date>;
 
 export interface Train {
-  electrification_ranges: ElectrificationRange[];
-  power_restriction_ranges: SimulationPowerRestrictionRange[];
   id: number;
   labels: string[];
   path: number;

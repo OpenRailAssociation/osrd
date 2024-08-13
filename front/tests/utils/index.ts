@@ -3,7 +3,7 @@
 import { type Page, request, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Project, Scenario, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
+import type { Project, ScenarioV2, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
 
 // API requests
 
@@ -64,7 +64,7 @@ export const getScenario = async (projectId: number, studyId: number) => {
   const { results } = await getApiRequest(
     `/api/projects/${projectId}/studies/${studyId}/scenarios/`
   );
-  const scenario = findOneInResults(results, 'scenario_test_e2e') as Scenario;
+  const scenario = findOneInResults(results, 'scenario_test_e2e') as ScenarioV2;
   return scenario;
 };
 

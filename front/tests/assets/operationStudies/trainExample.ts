@@ -4271,20 +4271,6 @@ const train: Train = {
     ],
     mechanical_energy_consumed: 4341138851.046319,
   },
-  electrification_ranges: [
-    {
-      stop: 54483.80299490723,
-      start: 0,
-      electrificationUsage: {
-        mode: '25000V',
-        mode_handled: true,
-        profile: 'αβ',
-        profile_handled: true,
-        object_type: 'Electrified',
-      },
-    },
-  ],
-  power_restriction_ranges: [],
 };
 
 export default train;

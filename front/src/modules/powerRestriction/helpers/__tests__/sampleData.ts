@@ -3,12 +3,8 @@ import type {
   PowerRestrictionValues,
 } from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
 
-import type {
-  EffortCurves,
-  RangedValue,
-  RollingStock,
-  TrainScheduleBase,
-} from 'common/api/osrdEditoastApi';
+import type { EffortCurves, RollingStock, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { RangedValue } from 'common/types';
 
 /**
  * Ranges on the path Lille Flandres - Perpignan with a 2N2

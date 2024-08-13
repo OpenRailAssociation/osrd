@@ -1,7 +1,8 @@
 import { compact, isEmpty, keyBy } from 'lodash';
 
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
-import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
+import type { RollingStock } from 'common/api/osrdEditoastApi';
+import type { RangedValue } from 'common/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import type { PowerRestrictionWarnings } from 'modules/powerRestriction/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';

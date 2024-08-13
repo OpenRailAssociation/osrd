@@ -14,3 +14,9 @@ export const DATA_TYPES = {
  * A string with the format HH:MM:SS or HH:MM
  */
 export type TimeString = string;
+
+export type RangedValue = {
+  begin: number;
+  end: number;
+  value: string;
+};

@@ -1,5 +1,6 @@
 import type { ElectrificationVoltage } from 'applications/operationalStudies/types';
-import type { PathProperties, RangedValue } from 'common/api/osrdEditoastApi';
+import type { PathProperties } from 'common/api/osrdEditoastApi';
+import type { RangedValue } from 'common/types';
 
 const isElectrification = (
   value: ElectrificationVoltage

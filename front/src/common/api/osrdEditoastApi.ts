@@ -52,15 +52,6 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
     deleteProjectsByProjectIdStudiesAndStudyId: {
       invalidatesTags: ['studies', 'projects'],
     },
-    postProjectsByProjectIdStudiesAndStudyIdScenarios: {
-      invalidatesTags: ['scenarios', 'studies', 'projects'],
-    },
-    patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
-      invalidatesTags: ['scenarios', 'studies', 'projects'],
-    },
-    deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
-      invalidatesTags: ['scenarios', 'studies', 'projects'],
-    },
     postV2ProjectsByProjectIdStudiesAndStudyIdScenarios: {
       invalidatesTags: ['scenariosv2', 'studies', 'projects'],
     },

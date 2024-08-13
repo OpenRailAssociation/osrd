@@ -12,8 +12,8 @@ import StateStep from 'applications/operationalStudies/components/Study/StateSte
 import { type StudyState, studyStates } from 'applications/operationalStudies/consts';
 import {
   type PostSearchApiArg,
-  type ScenarioWithCountTrains,
   osrdEditoastApi,
+  type ScenarioWithDetails,
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
@@ -42,7 +42,7 @@ export default function Study() {
   const { openModal } = useModal();
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
 
-  const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>([]);
+  const [scenariosList, setScenariosList] = useState<ScenarioWithDetails[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
@@ -127,7 +127,7 @@ export default function Study() {
           },
         };
         try {
-          let filteredScenarios = (await postSearch(payload).unwrap()) as ScenarioWithCountTrains[];
+          let filteredScenarios = (await postSearch(payload).unwrap()) as ScenarioWithDetails[];
           if (sortOption === 'LastModifiedDesc') {
             filteredScenarios = [...filteredScenarios].sort((a, b) =>
               b.last_modification.localeCompare(a.last_modification)
@@ -135,7 +135,7 @@ export default function Study() {
           } else if (sortOption === 'NameAsc') {
             filteredScenarios = [...filteredScenarios].sort((a, b) => a.name.localeCompare(b.name));
           }
-          setScenariosList(filteredScenarios as ScenarioWithCountTrains[]);
+          setScenariosList(filteredScenarios as ScenarioWithDetails[]);
         } catch (error) {
           console.error(error);
         }
