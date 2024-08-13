@@ -134,7 +134,7 @@ async fn project_path(
         .check_roles(
             [
                 BuiltinRole::InfraRead,
-                BuiltinRole::TrainScheduleRead,
+                BuiltinRole::TimetableRead,
                 BuiltinRole::RollingStockCollectionRead,
             ]
             .into(),
