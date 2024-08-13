@@ -176,7 +176,6 @@ def _make_error(
     error = "" if response.content is None else response.content.decode("utf-8")
     raise _FailedTest(
         {
-            "timetable_version": 2,  # legacy, to be removed when v1 is deleted
             "error_type": error_type.value,
             "code": response.status_code,
             "error": error,
@@ -209,6 +208,7 @@ def _run_test(
         else _get_rolling_stock(editoast_url, rolling_stock_name)
     )
     path = _make_valid_path(infra)
+
     if random.randint(0, 1) == 1:
         _test_new_train(editoast_url, scenario, rolling_stock.name, infra_name, path, prelude)
     else:
@@ -228,6 +228,7 @@ def _test_new_train(
     """
     print("testing new train")
     schedule_payload = _make_payload_schedule(path, rolling_stock)
+    print(schedule_payload)
     r = _post_with_timeout(
         editoast_url + f"v2/timetable/{scenario.timetable}/train_schedule/",
         json=schedule_payload,
@@ -241,7 +242,7 @@ def _test_new_train(
         )
 
     sim_id = r.json()[0]["id"]
-    r = _get_with_timeout(editoast_url + f"v2/train_schedule/{sim_id}/simulation/?infra_id={infra_id}")
+    r = _get_with_timeout(editoast_url + f"v2/train_schedule/{sim_id}/simulation/?infra_id={scenario.infra}")
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         _make_error(
             _ErrorType.RESULT,
@@ -464,7 +465,7 @@ def _convert_stop(stop: Tuple[str, float], i: int) -> Dict:
 def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
     """Deletes the current timetable and creates a new one."""
     # Delete the current timetable
-    r = _delete_with_timeout(editoast_url + f"/v2/timetable/{scenario.timetable}/")
+    r = _delete_with_timeout(editoast_url + f"v2/timetable/{scenario.timetable}/")
     r.raise_for_status()
 
     # Create a timetable
@@ -514,7 +515,7 @@ def _make_payload_schedule(
             "margins": _make_random_margins(len(path)),
             "options": {"use_electrical_profiles": False},
             "rolling_stock_name": rolling_stock,
-            "schedule": [],  # TODO?
+            "schedule": [],
             "speed_limit_tag": None,
             "start_time": _make_random_time(),
             "train_name": "fuzzer_train",

@@ -1,184 +1,72 @@
 from collections.abc import Sequence
-from itertools import chain
 from typing import Any
 
 import pytest
 
 from .path import Path
-from .utils.approximations import recursive_approx
 
 _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
     **{
-        "id": -1,  # not checked
-        "owner": "00000000-0000-0000-0000-000000000000",
-        "created": "",  # not checked
-        "length": 45549.5653000392,
-        "slopes": [
-            {"gradient": 0.0, "position": 0.0},
-            {"gradient": 0.0, "position": 5162.966050992638},
-            {"gradient": -3.0, "position": 5162.966050992638},
-            {"gradient": -3.0, "position": 5462.966050992638},
-            {"gradient": -6.0, "position": 5462.966050992638},
-            {"gradient": -6.0, "position": 5862.966050992638},
-            {"gradient": -3.0, "position": 5862.966050992638},
-            {"gradient": -3.0, "position": 6162.966050992638},
-            {"gradient": 0.0, "position": 6162.966050992638},
-            {"gradient": 0.0, "position": 8162.966050992638},
-            {"gradient": 3.0, "position": 8162.966050992638},
-            {"gradient": 3.0, "position": 8462.966050992638},
-            {"gradient": 6.0, "position": 8462.966050992638},
-            {"gradient": 6.0, "position": 8862.966050992638},
-            {"gradient": 3.0, "position": 8862.966050992638},
-            {"gradient": 3.0, "position": 9162.966050992638},
-            {"gradient": 0.0, "position": 9162.966050992638},
-            {"gradient": 0.0, "position": 18162.96605099264},
-            {"gradient": 3.0, "position": 18162.96605099264},
-            {"gradient": 3.0, "position": 19162.96605099264},
-            {"gradient": 6.0, "position": 19162.96605099264},
-            {"gradient": 6.0, "position": 20162.96605099264},
-            {"gradient": 3.0, "position": 20162.96605099264},
-            {"gradient": 3.0, "position": 21162.96605099264},
-            {"gradient": 0.0, "position": 21162.96605099264},
-            {"gradient": 0.0, "position": 26162.96605099264},
-            {"gradient": -3.0, "position": 26162.96605099264},
-            {"gradient": -3.0, "position": 27162.96605099264},
-            {"gradient": -6.0, "position": 27162.96605099264},
-            {"gradient": -6.0, "position": 28162.96605099264},
-            {"gradient": -3.0, "position": 28162.96605099264},
-            {"gradient": -3.0, "position": 29162.96605099264},
-            {"gradient": 0.0, "position": 29162.96605099264},
-            {"gradient": 0.0, "position": 45549.5653000392},
+        "status": "success",
+        "blocks": [
+            "block.257fce538543c5f960490c7606bbc603",
+            "block.1dbf71a8896e98cd71157a44bb918a9e",
+            "block.97661cd54d96453abdc191d1be184af5",
+            "block.52b46c47a8253001dad72b6907da3a07",
+            "block.26351683b3a305dab1fb15183e256f82",
+            "block.9fd6806a7f1c25dbc9809036f8799c50",
+            "block.6eac7803d789741b4aab9b9d347ab7b0",
+            "block.077f958857f85779fd13430750bfdd80",
+            "block.99f89fff7dabab637ca7e7fb823faa8c",
+            "block.7a8dbf58fefc7795eb972d52f931ee3f",
+            "block.ddd4e5a371d90d2522e86eb3ced76206",
+            "block.1345e674f8d1c39dae0cd05951af5d8d",
+            "block.a69d6a804dfee71d0cc91314b915e0c7",
+            "block.f2b0ac13a7f1d9149ee6df4004cbaac3",
+            "block.374246fd74fffa8a5dc3e2dc11b78b84",
+            "block.1fd1a71ba69b41b8849eff642ebfcf61",
         ],
-        "curves": [{"radius": 0.0, "position": 0.0}, {"radius": 0.0, "position": 45549.5653000392}],
-        "steps": [
-            {
-                "id": None,
-                "name": None,
-                "location": {"track_section": "TA2", "offset": 837.033949007362},
-                "duration": 0.0,
-                "path_offset": 0.0,
-                "suggestion": False,
-                "geo": {"coordinates": [-0.387122554630656, 49.49979999999999], "type": "Point"},
-                "ch": None,
-                "uic": None,
-            },
-            {
-                "id": "Mid_West_station",
-                "name": "Mid_West_station",
-                "location": {"track_section": "TC2", "offset": 450.0},
-                "duration": 0.0,
-                "path_offset": 11612.966050992638,
-                "suggestion": True,
-                "geo": {"coordinates": [-0.30369999999999997, 49.4999], "type": "Point"},
-                "ch": "BV",
-                "uic": 3,
-            },
-            {
-                "id": "Mid_East_station",
-                "name": "Mid_East_station",
-                "location": {"track_section": "TD1", "offset": 14000.0},
-                "duration": 0.0,
-                "path_offset": 26162.96605099264,
-                "suggestion": True,
-                "geo": {"coordinates": [-0.22656, 49.4999], "type": "Point"},
-                "ch": "BV",
-                "uic": 4,
-            },
-            {
-                "id": None,
-                "name": None,
-                "location": {"track_section": "TH1", "offset": 4386.599249046556},
-                "duration": 1.0,
-                "path_offset": 45549.5653000392,
-                "suggestion": False,
-                "geo": {"coordinates": [-0.095104854807785, 49.484], "type": "Point"},
-                "ch": None,
-                "uic": None,
-            },
+        "routes": [
+            "rt.buffer_stop.2->DA1",
+            "rt.DA1->DA6",
+            "rt.DA6->DC6",
+            "rt.DC6->DD3",
+            "rt.DD3->DH0",
+            "rt.DH0->DH2",
+            "rt.DH2->buffer_stop.7",
         ],
-        "geographic": {
-            "coordinates": [
-                [-0.3871225692307692, 49.49979999999999],
-                [-0.37276923076923074, 49.49979999999999],
-                [-0.37, 49.49979999999999],
-                [-0.3675, 49.499849999999995],
-                [-0.365, 49.4999],
-                [-0.36401, 49.4999],
-                [-0.35509999999999997, 49.4999],
-                [-0.3463, 49.4999],
-                [-0.3375, 49.4999],
-                [-0.3287, 49.4999],
-                [-0.3199, 49.4999],
-                [-0.31099, 49.4999],
-                [-0.31, 49.4999],
-                [-0.30748, 49.4999],
-                [-0.29852, 49.4999],
-                [-0.296, 49.4999],
-                [-0.29510719999999996, 49.4999],
-                [-0.28738199999999997, 49.4999],
-                [-0.279756, 49.4999],
-                [-0.27213, 49.4999],
-                [-0.26450399999999996, 49.4999],
-                [-0.256878, 49.4999],
-                [-0.24925199999999997, 49.4999],
-                [-0.241626, 49.4999],
-                [-0.234, 49.4999],
-                [-0.226374, 49.4999],
-                [-0.218748, 49.4999],
-                [-0.211122, 49.4999],
-                [-0.203496, 49.4999],
-                [-0.19587, 49.4999],
-                [-0.18824399999999997, 49.4999],
-                [-0.180618, 49.4999],
-                [-0.1728928, 49.4999],
-                [-0.172, 49.4999],
-                [-0.1697798132267551, 49.4999],
-                [-0.1372170738858298, 49.4999],
-                [-0.1354, 49.4999],
-                [-0.135, 49.49995],
-                [-0.1346, 49.4999],
-                [-0.13230255256768042, 49.4999],
-                [-0.12270056031973472, 49.4999],
-                [-0.12, 49.4999],
-                [-0.11870418392652043, 49.49914842667738],
-                [-0.115, 49.497],
-                [-0.115, 49.487800145898106],
-                [-0.115, 49.487],
-                [-0.11, 49.484],
-                [-0.10331554889647653, 49.484],
-                [-0.09510485688040474, 49.484],
-            ],
-            "type": "LineString",
-        },
+        "track_section_ranges": [
+            {"track_section": "TA2", "begin": 837034, "end": 1950000, "direction": "START_TO_STOP"},
+            {"track_section": "TA5", "begin": 0, "end": 50000, "direction": "START_TO_STOP"},
+            {"track_section": "TA7", "begin": 0, "end": 10000000, "direction": "START_TO_STOP"},
+            {"track_section": "TC2", "begin": 0, "end": 1000000, "direction": "START_TO_STOP"},
+            {"track_section": "TD1", "begin": 0, "end": 25000000, "direction": "START_TO_STOP"},
+            {"track_section": "TD3", "begin": 0, "end": 3000000, "direction": "START_TO_STOP"},
+            {"track_section": "TH0", "begin": 0, "end": 1000000, "direction": "START_TO_STOP"},
+            {"track_section": "TH1", "begin": 0, "end": 4386000, "direction": "START_TO_STOP"},
+        ],
+        "length": 45548966,
+        "path_item_positions": [0, 45548966],
     }
 )
 
 
-def assert_line_strings_are_equals(geometry, expected_geometry):
-    assert geometry["type"] == expected_geometry["type"]
-    assert list(chain.from_iterable(geometry["coordinates"])) == pytest.approx(
-        list(chain.from_iterable(expected_geometry["coordinates"]))
-    )
+def assert_track_ranges_are_equals(track_ranges: Sequence[Any], expected_track_ranges: Sequence[Any]):
+    assert len(track_ranges) == len(expected_track_ranges)
 
-
-def assert_points_are_equals(geometry, expected_geometry):
-    assert geometry["type"] == expected_geometry["type"]
-    assert geometry["coordinates"] == pytest.approx(expected_geometry["coordinates"])
-
-
-def assert_steps_are_equals(steps: Sequence[Any], expected_steps: Sequence[Any]):
-    assert len(steps) == len(expected_steps)
-
-    for i in range(len(steps)):
-        assert_points_are_equals(steps[i].pop("geo"), expected_steps[i].pop("geo"))
-        recursive_approx(expected_steps[i], steps[i])
+    for i in range(len(track_ranges)):
+        assert track_ranges[i]["track_section"] == expected_track_ranges[i]["track_section"]
+        assert track_ranges[i]["begin"] == expected_track_ranges[i]["begin"]
+        assert track_ranges[i]["end"] == expected_track_ranges[i]["end"]
+        assert track_ranges[i]["direction"] == expected_track_ranges[i]["direction"]
 
 
 def test_west_to_south_east_path(west_to_south_east_path: Path):
-    assert west_to_south_east_path.owner == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.owner
+    assert west_to_south_east_path.status == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.status
     assert west_to_south_east_path.length == pytest.approx(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.length, rel=1e-3)
-    recursive_approx(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.slopes, west_to_south_east_path.slopes)
-    recursive_approx(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.curves, west_to_south_east_path.curves)
-    assert_steps_are_equals(west_to_south_east_path.steps, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.steps)
-
-    assert_line_strings_are_equals(west_to_south_east_path.geographic, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.geographic)
+    assert west_to_south_east_path.routes == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.routes
+    assert west_to_south_east_path.blocks == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.blocks
+    assert west_to_south_east_path.path_item_positions == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.path_item_positions
+    assert_track_ranges_are_equals(
+        west_to_south_east_path.track_section_ranges, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.track_section_ranges
+    )

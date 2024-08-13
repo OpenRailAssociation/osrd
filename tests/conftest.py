@@ -10,7 +10,7 @@ from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import EDITOAST_URL
 from tests.test_e2e import FAST_ROLLING_STOCK_JSON_PATH, TestRollingStock
-from tests.utils.timetable import create_scenario, create_scenario_v2
+from tests.utils.timetable import create_scenario_v2
 
 
 def _load_generated_infra(name: str) -> int:
@@ -70,13 +70,13 @@ def foo_study_id(foo_project_id: int) -> Iterator[int]:
 
 @pytest.fixture
 def tiny_scenario(tiny_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
-    scenario_id, timetable_id = create_scenario(EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id)
+    scenario_id, timetable_id = create_scenario_v2(EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id)
 
 
 @pytest.fixture
 def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
-    scenario_id, timetable_id = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
+    scenario_id, timetable_id = create_scenario_v2(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
@@ -145,30 +145,16 @@ def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Iter
     """west_to_south_east_path screenshot in `tests/README.md`"""
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     response = requests.post(
-        f"{EDITOAST_URL}pathfinding/",
+        f"{EDITOAST_URL}/v2/infra/{small_infra.id}/pathfinding/blocks",
         json={
-            "infra": small_infra.id,
-            "steps": [
-                {
-                    "duration": 0,
-                    "waypoints": [
-                        {
-                            "track_section": "TA2",
-                            "geo_coordinate": [-0.387122554630656, 49.4998],
-                        }
-                    ],
-                },
-                {
-                    "duration": 1,
-                    "waypoints": [
-                        {
-                            "track_section": "TH1",
-                            "geo_coordinate": [-0.095104854807785, 49.484],
-                        }
-                    ],
-                },
+            "path_items": [
+                {"offset": 837034, "track": "TA2"},
+                {"offset": 4386000, "track": "TH1"},
             ],
-            "rolling_stocks": [fast_rolling_stock],
+            "rolling_stock_is_thermal": True,
+            "rolling_stock_loading_gauge": "G1",
+            "rolling_stock_supported_electrifications": [],
+            "rolling_stock_supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
         },
     )
     yield TrainPath(**response.json())
@@ -177,26 +163,26 @@ def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Iter
 @pytest.fixture
 def west_to_south_east_simulation(
     small_scenario: Scenario,
-    west_to_south_east_path: TrainPath,
     fast_rolling_stock: int,
 ) -> Iterator[Dict]:
+
+    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    fast_rolling_stock_name = response.json()["name"]
     response = requests.post(
-        f"{EDITOAST_URL}train_schedule/standalone_simulation/",
-        json={
-            "timetable": small_scenario.timetable,
-            "path": west_to_south_east_path.id,
-            "schedules": [
-                {
-                    "train_name": "foo",
-                    "labels": [],
-                    "allowances": [],
-                    "departure_time": 0,
-                    "initial_speed": 0,
-                    "rolling_stock_id": fast_rolling_stock,
-                    "speed_limit_category": "foo",
-                }
-            ],
-        },
+        f"{EDITOAST_URL}v2/timetable/{small_scenario.timetable}/train_schedule/",
+        json=[
+            {
+                "constraint_distribution": "STANDARD",
+                "path": [
+                    {"offset": 837034, "track": "TA2", "id": "a"},
+                    {"offset": 4386000, "track": "TH1", "id": "b"},
+                ],
+                "rolling_stock_name": fast_rolling_stock_name,
+                "train_name": "foo",
+                "speed_limit_tag": "foo",
+                "start_time": "2024-01-01T07:19:54+00:00",
+            }
+        ],
     )
     yield response.json()
 
@@ -204,38 +190,39 @@ def west_to_south_east_simulation(
 @pytest.fixture
 def west_to_south_east_simulations(
     small_scenario: Scenario,
-    west_to_south_east_path: TrainPath,
     fast_rolling_stock: int,
 ) -> Iterator[Dict]:
+
+    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    fast_rolling_stock_name = response.json()["name"]
+
     base = {
+        "constraint_distribution": "STANDARD",
+        "path": [
+            {"offset": 837034, "track": "TA2", "id": "a"},
+            {"offset": 4386000, "track": "TH1", "id": "b"},
+        ],
+        "rolling_stock_name": fast_rolling_stock_name,
         "train_name": "foo",
-        "labels": [],
-        "allowances": [],
-        "departure_time": 0,
-        "initial_speed": 0,
-        "rolling_stock_id": fast_rolling_stock,
-        "speed_limit_category": "foo",
+        "speed_limit_tag": "foo",
     }
+
     response = requests.post(
-        f"{EDITOAST_URL}train_schedule/standalone_simulation/",
-        json={
-            "timetable": small_scenario.timetable,
-            "path": west_to_south_east_path.id,
-            "schedules": [
-                {
-                    **base,
-                    "departure_time": 0,
-                },
-                {
-                    **base,
-                    "departure_time": 3600,
-                },
-                {
-                    **base,
-                    "departure_time": 5200,
-                },
-            ],
-        },
+        f"{EDITOAST_URL}v2/timetable/{small_scenario.timetable}/train_schedule/",
+        json=[
+            {
+                **base,
+                "start_time": "2024-01-01T07:19:54+00:00",
+            },
+            {
+                **base,
+                "start_time": "2024-01-01T07:29:54+00:00",
+            },
+            {
+                **base,
+                "start_time": "2024-01-01T07:39:59+00:00",
+            },
+        ],
     )
     yield response.json()
 
