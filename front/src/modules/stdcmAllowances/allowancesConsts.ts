@@ -1,4 +1,4 @@
-import type { AllowanceValue } from 'common/api/osrdEditoastApi';
+import type { AllowanceValue } from 'applications/stdcm/types';
 
 export const ALLOWANCE_UNITS_KEYS = {
   time: 's',
