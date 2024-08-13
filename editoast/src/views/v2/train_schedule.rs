@@ -13,6 +13,8 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -44,6 +46,8 @@ use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::views::v2::path::pathfinding::pathfinding_from_train;
 use crate::views::v2::path::pathfinding_from_train_batch;
 use crate::views::v2::path::PathfindingError;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::RedisClient;
 use crate::RollingStockModel;
@@ -174,8 +178,17 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
 )]
 async fn get(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     train_schedule_id: Path<TrainScheduleIdParam>,
 ) -> Result<Json<TrainScheduleResult>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let train_schedule_id = train_schedule_id.id;
     let conn = &mut db_pool.get().await?;
@@ -203,8 +216,17 @@ struct BatchRequest {
 )]
 async fn get_batch(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(data): Json<BatchRequest>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
     let train_ids = data.ids;
@@ -229,8 +251,17 @@ async fn get_batch(
 )]
 async fn delete(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(data): Json<BatchRequest>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
 
     use crate::modelsv2::DeleteBatch;
@@ -256,9 +287,18 @@ async fn delete(
 )]
 async fn put(
     db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     train_schedule_id: Path<TrainScheduleIdParam>,
     Json(data): Json<TrainScheduleForm>,
 ) -> Result<Json<TrainScheduleResult>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let conn = &mut db_pool.get().await?;
 
     let train_schedule_id = train_schedule_id.id;
@@ -296,10 +336,19 @@ pub struct ElectricalProfileSetIdQueryParam {
 )]
 async fn simulation(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(train_schedule_id): Path<TrainScheduleIdParam>,
     Query(infra_id_query): Query<InfraIdQueryParam>,
     Query(electrical_profile_set_id_query): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<SimulationResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
     let db_pool = app_state.db_pool_v2.clone();
@@ -622,8 +671,17 @@ enum SimulationSummaryResult {
 )]
 async fn simulation_summary(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(data): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let redis_client = app_state.redis.clone();
     let core = app_state.core_client.clone();
@@ -715,11 +773,20 @@ async fn simulation_summary(
 )]
 async fn get_path(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let redis_client = app_state.redis.clone();
     let core = app_state.core_client.clone();
