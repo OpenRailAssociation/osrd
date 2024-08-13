@@ -6,14 +6,18 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
-use serde::Deserialize;
-use thiserror::Error;
-use utoipa::IntoParams;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::infra::LevelValues;
+use serde::Deserialize;
+use thiserror::Error;
+use utoipa::IntoParams;
 
+use super::AuthorizationError;
+use super::AuthorizerExt;
 use crate::error::Result;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::electrical_profiles::LightElectricalProfileSet;
@@ -55,7 +59,15 @@ pub struct ElectricalProfileSetId {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<Vec<LightElectricalProfileSet>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let mut conn = db_pool.get().await?;
     Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
 }
@@ -72,8 +84,16 @@ async fn list(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
         ElectricalProfilesError::NotFound {
@@ -103,8 +123,16 @@ async fn get(
 )]
 async fn get_level_order(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
         ElectricalProfilesError::NotFound {
@@ -127,8 +155,16 @@ async fn get_level_order(
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     let deleted = ElectricalProfileSet::delete_static(conn, electrical_profile_set_id).await?;
     if deleted {
@@ -156,9 +192,17 @@ struct ElectricalProfileQueryArgs {
 )]
 async fn post_electrical_profile(
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Query(ep_set_name): Query<ElectricalProfileQueryArgs>,
     Json(data): Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let ep_set = ElectricalProfileSet::changeset()
         .name(ep_set_name.name)
         .data(data);
