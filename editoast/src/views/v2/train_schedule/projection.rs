@@ -1,7 +1,9 @@
 use axum::extract::Json;
 use axum::extract::State;
+use axum::Extension;
 use chrono::DateTime;
 use chrono::Utc;
+use editoast_authz::BuiltinRole;
 use editoast_schemas::primitives::Identifier;
 use futures::join;
 use serde::Deserialize;
@@ -39,6 +41,8 @@ use crate::views::v2::train_schedule::CompleteReportTrain;
 use crate::views::v2::train_schedule::ReportTrain;
 use crate::views::v2::train_schedule::SignalSighting;
 use crate::views::v2::train_schedule::ZoneUpdate;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::RollingStockModel;
 
@@ -123,8 +127,24 @@ struct CachedProjectPathTrainResult {
 )]
 async fn project_path(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(data): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
+    let authorized = authorizer
+        .check_roles(
+            [
+                BuiltinRole::InfraRead,
+                BuiltinRole::TrainScheduleRead,
+                BuiltinRole::RollingStockCollectionRead,
+            ]
+            .into(),
+        )
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
