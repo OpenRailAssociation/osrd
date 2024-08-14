@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { type Position } from '@turf/helpers';
 import { omit } from 'lodash';
 import { useSelector } from 'react-redux';
 
@@ -9,6 +10,7 @@ import {
   type PostV2InfraByInfraIdPathPropertiesApiArg,
   type PostV2InfraByInfraIdPathfindingBlocksApiArg,
   type TrainScheduleResult,
+  type PathfindingResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/pathfinding/utils';
@@ -33,6 +35,9 @@ type ItineraryForTrainUpdate = {
   pathProperties: ManageTrainSchedulePathProperties;
 };
 
+/**
+ * create pathSteps in the case pathfinding fails or the train is imported from NGE
+ */
 const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
   trainSchedule.path.map((step) => {
     const correspondingSchedule = trainSchedule.schedule?.find(
@@ -74,6 +79,48 @@ const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
       onStopSignal,
     } as PathStep;
   });
+
+export function updatePathStepsFromOperationalPoints(
+  pathSteps: PathStep[],
+  suggestedOperationalPoints: SuggestedOP[],
+  pathfindingResult: Extract<PathfindingResult, { status: 'success' }>,
+  stepsCoordinates: Position[]
+) {
+  const updatedPathSteps: PathStep[] = pathSteps.map((step, i) => {
+    const correspondingOp = suggestedOperationalPoints.find((suggestedOp) => {
+      if ('uic' in step) {
+        const condition = suggestedOp.uic === step.uic;
+        if ('ch' in step) {
+          return condition && suggestedOp.ch === step.ch;
+        }
+        // When importing train from open data or from files, secondary_code might not always exist
+        if ('secondary_code' in step) {
+          return condition && suggestedOp.ch === step.secondary_code;
+        }
+        return condition;
+      }
+      if ('trigram' in step) {
+        const condition = suggestedOp.trigram === step.trigram;
+        if ('secondary_code' in step) {
+          return condition && suggestedOp.ch === step.secondary_code;
+        }
+      }
+      return false;
+    });
+
+    const { kp, name, ch } = correspondingOp || {};
+
+    return {
+      ...step,
+      ch,
+      kp,
+      name,
+      positionOnPath: pathfindingResult.path_item_positions[i],
+      coordinates: stepsCoordinates[i],
+    };
+  });
+  return updatedPathSteps;
+}
 
 const useSetupItineraryForTrainUpdate = (
   setPathProperties: (pathProperties: ManageTrainSchedulePathProperties) => void,
@@ -145,26 +192,13 @@ const useSetupItineraryForTrainUpdate = (
         pathfindingResult.length
       );
 
-      const updatedPathSteps: PathStep[] = computeBasePathSteps(trainSchedule).map((step, i) => {
-        const correspondingOp = suggestedOperationalPoints.find(
-          (suggestedOp) =>
-            'uic' in step &&
-            suggestedOp.uic === step.uic &&
-            // When importing train from open data or from files, secondary_code might not always exist
-            (!step.secondary_code || suggestedOp.ch === step.secondary_code)
-        );
-
-        const { kp, name, ch } = correspondingOp || {};
-
-        return {
-          ...step,
-          ch,
-          kp,
-          name,
-          positionOnPath: pathfindingResult.path_item_positions[i],
-          coordinates: stepsCoordinates[i],
-        };
-      });
+      const computedpathSteps = computeBasePathSteps(trainSchedule);
+      const updatedPathSteps: PathStep[] = updatePathStepsFromOperationalPoints(
+        computedpathSteps,
+        suggestedOperationalPoints,
+        pathfindingResult,
+        stepsCoordinates
+      );
 
       const findCorrespondingMargin = (
         stepId: string,
