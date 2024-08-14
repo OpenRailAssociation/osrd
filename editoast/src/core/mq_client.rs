@@ -247,22 +247,24 @@ impl RabbitMQClient {
         .await
         .map_err(|_| Error::ResponseTimeout)?;
 
-        if let Some(Ok(delivery)) = response_delivery {
-            let status = delivery
-                .properties
-                .headers()
-                .as_ref()
-                .and_then(|f| f.inner().get("x-status"))
-                .and_then(|s| s.as_byte_array())
-                .map(|s| Ok(s.as_slice().to_owned()))
-                .unwrap_or(Err(Error::StatusParsing))?;
+        match response_delivery {
+            Some(Ok(delivery)) => {
+                let status = delivery
+                    .properties
+                    .headers()
+                    .as_ref()
+                    .and_then(|f| f.inner().get("x-status"))
+                    .and_then(|s| s.as_byte_array())
+                    .map(|s| Ok(s.as_slice().to_owned()))
+                    .unwrap_or(Err(Error::StatusParsing))?;
 
-            Ok(MQResponse {
-                payload: delivery.data,
-                status,
-            })
-        } else {
-            Err(Error::ResponseTimeout)
+                Ok(MQResponse {
+                    payload: delivery.data,
+                    status,
+                })
+            }
+            Some(Err(e)) => Err(e.into()),
+            None => panic!("Rabbitmq consumer was cancelled unexpectedly"),
         }
     }
 }
