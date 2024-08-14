@@ -19,7 +19,7 @@ ksp = '1.9.23-1.0.20'
 kotlinx-coroutines = '1.8.+'
 logback = '1.5.+'
 moshi = '1.15.1'
-junit = '5.10.+'
+junit = '5.11.+'
 mockito = '5.2.+'
 otel = '1.41.0'
 
