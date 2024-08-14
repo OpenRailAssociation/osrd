@@ -174,7 +174,7 @@ const handleOperation = async ({
     case 'trainrun':
       await handleTrainrunOperation({
         type,
-        trainrun: event.trainrun!,
+        trainrun: event.trainrun,
         dispatch,
         timeTableId,
         netzgrafikDto,
