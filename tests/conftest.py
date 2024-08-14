@@ -1,6 +1,7 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Optional
+from typing import Dict, Iterable, Iterator, List, Mapping, Optional
 
 import pytest
 import requests
@@ -9,7 +10,6 @@ from tests.infra import Infra
 from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import EDITOAST_URL
-from tests.test_e2e import FAST_ROLLING_STOCK_JSON_PATH, TestRollingStock
 from tests.utils.timetable import create_scenario, create_scenario_v2
 
 
@@ -105,6 +105,20 @@ def get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> int:
                 return rolling_stock["id"]
         page = rjson.get("next")
     raise ValueError(f"Unable to find rolling stock {rolling_stock_name}")
+
+
+FAST_ROLLING_STOCK_JSON_PATH = Path(__file__).parents[1] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json"
+
+
+@dataclass
+class TestRollingStock:
+    name: str
+    metadata: Mapping
+    base_path: Path
+
+
+# Mark the class as not a test class
+TestRollingStock.__test__ = False
 
 
 def create_fast_rolling_stocks(test_rolling_stocks: Optional[List[TestRollingStock]] = None):

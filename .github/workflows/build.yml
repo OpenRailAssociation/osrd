@@ -925,7 +925,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          poetry -C tests run pytest -m "not e2e" --cov --cov-report=xml
+          poetry -C tests run pytest --cov --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
