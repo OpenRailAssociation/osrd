@@ -1,3 +1,5 @@
+import { debounce } from 'lodash';
+
 import { osrdEditoastApi, type TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
@@ -114,6 +116,11 @@ const handleTrainrunOperation = async ({
   }
 };
 
+const handleUpsertNode = debounce((timeTableId: number, node: Node) => {
+  const { betriebspunktName: trigram, positionX, positionY } = node;
+  nodeStore.set(timeTableId, { trigram, positionX, positionY });
+}, 500);
+
 const handleNodeOperation = ({
   type,
   node,
@@ -123,15 +130,14 @@ const handleNodeOperation = ({
   node: Node;
   timeTableId: number;
 }) => {
-  const { betriebspunktName: trigram, positionX, positionY } = node;
   switch (type) {
     case 'create':
     case 'update': {
-      nodeStore.set(timeTableId, { trigram, positionX, positionY });
+      handleUpsertNode(timeTableId, node);
       break;
     }
     case 'delete': {
-      nodeStore.delete(timeTableId, trigram);
+      nodeStore.delete(timeTableId, node.betriebspunktName);
       break;
     }
     default:
