@@ -42,7 +42,6 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
   const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
   const dispatch = useAppDispatch();
-  // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const isUpdating = useSelector(getIsUpdating);
   const { infraId, trainIdUsedForProjection } = useStoreDataForSpaceTimeChart();
 
