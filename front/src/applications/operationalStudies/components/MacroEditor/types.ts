@@ -156,10 +156,10 @@ export type NetzgrafikDto = {
 
 export type NGEEvent = {
   type: 'create' | 'delete' | 'update';
-  } & (
-    | {
-        objectType: 'trainrun';
-        trainrun: Trainrun;
-      }
-    | { objectType: 'node'; node: Node }
-  );
+} & (
+  | {
+      objectType: 'trainrun';
+      trainrun: Trainrun;
+    }
+  | { objectType: 'node'; node: Node }
+);
