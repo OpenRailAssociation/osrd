@@ -57,7 +57,7 @@ assertj = { module = 'org.assertj:assertj-core', version = '3.26.3' } # Apache 2
 jqwik = { module = 'net.jqwik:jqwik', version = '1.9.+' } # EPL 2.0
 mockito-inline = { module = 'org.mockito:mockito-inline', version.ref = 'mockito' } # MIT
 mockito-junit-jupiter = { module = 'org.mockito:mockito-junit-jupiter', version.ref = 'mockito' } # MIT
-junit-platform-launcher = { module = 'org.junit.platform:junit-platform-launcher', version = '1.10.+' } # EPL 2.0
+junit-platform-launcher = { module = 'org.junit.platform:junit-platform-launcher', version = '1.11.+' } # EPL 2.0
 jcip-annotations = { module = 'net.jcip:jcip-annotations', version = '1.0' } # CC Attribution
 spotbugs-annotations = { module = 'com.github.spotbugs:spotbugs-annotations', version = '4.8.+' } # LGPLv2.1
 
