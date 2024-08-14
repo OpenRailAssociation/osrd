@@ -5059,7 +5059,7 @@ components:
       properties:
         comfort:
           allOf:
-          - $ref: '#/components/schemas/RollingStockComfortType'
+          - $ref: '#/components/schemas/Comfort'
           nullable: true
         electrical_profile_level:
           type: string
@@ -7658,13 +7658,6 @@ components:
         version:
           type: integer
           format: int64
-    RollingStockComfortType:
-      type: string
-      description: Train comfort that will be used for the simulation
-      enum:
-      - STANDARD
-      - AC
-      - HEATING
     RollingStockError:
       oneOf:
       - type: string

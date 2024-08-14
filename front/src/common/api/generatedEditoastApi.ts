@@ -2289,9 +2289,9 @@ export type StudyPatchForm = {
   study_type?: string | null;
   tags?: Tags | null;
 };
-export type RollingStockComfortType = 'STANDARD' | 'AC' | 'HEATING';
+export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type EffortCurveConditions = {
-  comfort: RollingStockComfortType | null;
+  comfort: Comfort | null;
   electrical_profile_level: string | null;
   power_restriction_code: string | null;
 };
@@ -2817,7 +2817,6 @@ export type SimulationResponse =
       core_error: InternalError;
       status: 'simulation_failed';
     };
-export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type StepTimingData = {
   /** Time at which the train should arrive at the location */
   arrival_time: string;
