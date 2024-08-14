@@ -7,6 +7,8 @@ use std::sync::Arc;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
@@ -27,6 +29,8 @@ use crate::redis_utils::RedisConnection;
 use crate::views::get_app_version;
 use crate::views::v2::path::path_item_cache::PathItemCache;
 use crate::views::v2::path::PathfindingError;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_models::DbConnection;
 
@@ -75,9 +79,18 @@ async fn post(
         core_client,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(infra_id): Path<i64>,
     Json(path_input): Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let conn = &mut db_pool.get().await?;
     let mut redis_conn = redis.get_connection().await?;
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
