@@ -27,6 +27,11 @@ pub enum BuiltinRole {
 
     #[strum(serialize = "stdcm")]
     Stdcm,
+
+    #[strum(serialize = "timetable:read")]
+    TimetableRead,
+    #[strum(serialize = "timetable:write")]
+    TimetableWrite,
 }
 
 impl BuiltinRoleSet for BuiltinRole {
@@ -41,6 +46,8 @@ impl BuiltinRoleSet for BuiltinRole {
             WorkScheduleWrite => vec![],
             MapRead => vec![],
             Stdcm => vec![MapRead],
+            TimetableRead => vec![],
+            TimetableWrite => vec![TimetableRead],
         }
     }
 }

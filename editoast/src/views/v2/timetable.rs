@@ -9,7 +9,9 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Extension;
 use derivative::Derivative;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use itertools::Itertools;
@@ -34,6 +36,8 @@ use crate::modelsv2::Infra;
 use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::views::v2::train_schedule::TrainScheduleForm;
 use crate::views::v2::train_schedule::TrainScheduleResult;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::RetrieveBatch;
 use editoast_models::DbConnectionPoolV2;
@@ -118,8 +122,17 @@ struct TimetableIdParam {
 )]
 async fn get(
     db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(timetable_id): Path<TimetableIdParam>,
 ) -> Result<Json<TimetableDetailedResult>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::TimetableRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let timetable_id = timetable_id.id;
     // Return the timetable
 
@@ -141,7 +154,18 @@ async fn get(
         (status = 404, description = "Timetable not found"),
     ),
 )]
-async fn post(db_pool: State<DbConnectionPoolV2>) -> Result<Json<TimetableResult>> {
+async fn post(
+    db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
+) -> Result<Json<TimetableResult>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::TimetableWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let conn = &mut db_pool.get().await?;
 
     let timetable = Timetable::create(conn).await?;
@@ -161,8 +185,17 @@ async fn post(db_pool: State<DbConnectionPoolV2>) -> Result<Json<TimetableResult
 )]
 async fn delete(
     db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     timetable_id: Path<TimetableIdParam>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::TimetableWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let timetable_id = timetable_id.id;
     let conn = &mut db_pool.get().await?;
     Timetable::delete_static_or_fail(conn, timetable_id, || TimetableError::NotFound {
@@ -184,9 +217,18 @@ async fn delete(
 )]
 async fn train_schedule(
     db_pool: State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
     Path(timetable_id): Path<TimetableIdParam>,
     Json(data): Json<Vec<TrainScheduleBase>>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::TimetableWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let conn = &mut db_pool.get().await?;
 
     let timetable_id = timetable_id.id;
@@ -232,10 +274,19 @@ pub struct ElectricalProfileSetIdQueryParam {
 )]
 async fn conflicts(
     app_state: State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Path(timetable_id): Path<TimetableIdParam>,
     Query(infra_id_query): Query<InfraIdQueryParam>,
     Query(electrical_profile_set_id_query): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
