@@ -159,7 +159,7 @@ const handleOperation = async ({
   const { type } = event;
   switch (event.objectType) {
     case 'node':
-      handleNodeOperation({ type, node: event.node!, timeTableId });
+      handleNodeOperation({ type, node: event.node, timeTableId });
       break;
     case 'trainrun':
       await handleTrainrunOperation({
