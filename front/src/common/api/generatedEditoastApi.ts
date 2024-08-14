@@ -1754,9 +1754,6 @@ export type PostV2TimetableByIdStdcmApiArg = {
     electrical_profile_set_id?: number | null;
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
     margin?: string | null;
-    /** By how long we can shift the departure time in milliseconds
-        Deprecated, first step data should be used instead */
-    maximum_departure_delay?: number;
     /** Specifies how long the total run time can be in milliseconds */
     maximum_run_time?: number | null;
     rolling_stock_id: number;

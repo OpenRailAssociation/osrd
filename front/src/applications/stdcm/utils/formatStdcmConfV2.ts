@@ -242,9 +242,6 @@ export const formatStdcmPayload = (
     speed_limit_tags: validConfig.speedLimitByTag,
     ...(!stdcmV2Activated && {
       maximum_run_time: toMsOrUndefined(validConfig.maximumRunTime),
-      maximum_departure_delay: sec2ms(
-        time2sec(validConfig.latestStartTime!) - time2sec(validConfig.startTime!)
-      ),
       start_time: validConfig.formattedStartTime,
     }),
     steps: validConfig.path,

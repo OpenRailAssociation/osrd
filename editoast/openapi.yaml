@@ -3022,14 +3022,6 @@ paths:
                   - 5%
                   - 2min/100km
                   nullable: true
-                maximum_departure_delay:
-                  type: integer
-                  format: int64
-                  description: |-
-                    By how long we can shift the departure time in milliseconds
-                    Deprecated, first step data should be used instead
-                  default: 432000
-                  minimum: 0
                 maximum_run_time:
                   type: integer
                   format: int64
@@ -9774,14 +9766,6 @@ components:
           - 5%
           - 2min/100km
           nullable: true
-        maximum_departure_delay:
-          type: integer
-          format: int64
-          description: |-
-            By how long we can shift the departure time in milliseconds
-            Deprecated, first step data should be used instead
-          default: 432000
-          minimum: 0
         maximum_run_time:
           type: integer
           format: int64

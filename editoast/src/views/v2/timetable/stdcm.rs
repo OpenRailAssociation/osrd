@@ -81,11 +81,6 @@ pub struct STDCMRequestPayload {
     electrical_profile_set_id: Option<i64>,
     work_schedule_group_id: Option<i64>,
     comfort: Comfort,
-    /// By how long we can shift the departure time in milliseconds
-    /// Deprecated, first step data should be used instead
-    #[serde(default = "default_maximum_departure_delay")]
-    #[schema(default = default_maximum_departure_delay)]
-    maximum_departure_delay: u64,
     /// Specifies how long the total run time can be in milliseconds
     maximum_run_time: Option<u64>,
     /// Train categories for speed limits
@@ -126,11 +121,6 @@ struct StepTimingData {
     arrival_time_tolerance_before: u64,
     /// The train may arrive up to this duration after the expected arrival time
     arrival_time_tolerance_after: u64,
-}
-
-const TWO_HOURS_IN_MILLISECONDS: u64 = 2 * 60 * 60 * 60;
-const fn default_maximum_departure_delay() -> u64 {
-    TWO_HOURS_IN_MILLISECONDS
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -198,8 +188,8 @@ async fn stdcm(
     )
     .await?;
 
-    // 2. Compute the earliest start time and maximum running time
-    let maximum_run_time_result = get_maximum_run_time(
+    // 2. Compute the earliest start time, maximum running time and maximum departure delay
+    let simulation_run_time_result = get_simulation_run_time(
         db_pool.clone(),
         redis_client.clone(),
         core_client.clone(),
@@ -209,18 +199,21 @@ async fn stdcm(
         timetable_id,
     )
     .await?;
-    let maximum_run_time = match maximum_run_time_result {
-        MaxRunningTimeResult::MaxRunningTime { value } => value,
-        MaxRunningTimeResult::Error { error } => {
+    let simulation_run_time = match simulation_run_time_result {
+        SimulationTimeResult::SimulationTime { value } => value,
+        SimulationTimeResult::Error { error } => {
             return Ok(Json(STDCMResponse::PreprocessingSimulationError {
                 error: *error,
             }))
         }
     };
+    let earliest_step_tolerance_window = get_earliest_step_tolerance_window(&data);
+    let maximum_departure_delay = simulation_run_time + earliest_step_tolerance_window;
+    let maximum_run_time_without_tolerance = 2 * simulation_run_time + get_total_stop_time(&data);
+    let maximum_run_time = maximum_run_time_without_tolerance + earliest_step_tolerance_window;
 
-    let departure_time = get_earliest_departure_time(&data, maximum_run_time);
-    let latest_simulation_end = departure_time
-        + Duration::milliseconds((maximum_run_time + data.maximum_departure_delay) as i64);
+    let departure_time = get_earliest_departure_time(&data, maximum_run_time_without_tolerance);
+    let latest_simulation_end = departure_time + Duration::milliseconds((maximum_run_time) as i64);
 
     // 3. Get scheduled train requirements
     let trains_requirements =
@@ -242,7 +235,7 @@ async fn stdcm(
         path_items,
         start_time: departure_time,
         trains_requirements,
-        maximum_departure_delay: Some(data.maximum_departure_delay),
+        maximum_departure_delay,
         maximum_run_time,
         speed_limit_tag: data.speed_limit_tags,
         time_gap_before: data.time_gap_before,
@@ -254,7 +247,7 @@ async fn stdcm(
                 build_work_schedules(
                     db_pool.get().await?.deref_mut(),
                     departure_time,
-                    data.maximum_departure_delay,
+                    maximum_departure_delay,
                     maximum_run_time,
                     work_schedule_group_id,
                 )
@@ -354,15 +347,24 @@ fn is_resource_in_range(
 }
 
 /// Returns the earliest time at which the train may start
-fn get_earliest_departure_time(data: &STDCMRequestPayload, maximum_run_time: u64) -> DateTime<Utc> {
+fn get_earliest_departure_time(
+    data: &STDCMRequestPayload,
+    maximum_run_time_without_tolerance: u64,
+) -> DateTime<Utc> {
     // Prioritize: start time, or first step time, or (first specified time - max run time)
     data.start_time.unwrap_or(
         data.steps
             .first()
             .and_then(|step| step.timing_data.clone())
-            .and_then(|data| Option::from(data.arrival_time))
+            .and_then(|data| {
+                Option::from(
+                    data.arrival_time
+                        - Duration::milliseconds(data.arrival_time_tolerance_before as i64),
+                )
+            })
             .unwrap_or(
-                get_earliest_step_time(data) - Duration::milliseconds(maximum_run_time as i64),
+                get_earliest_step_time(data)
+                    - Duration::milliseconds(maximum_run_time_without_tolerance as i64),
             ),
     )
 }
@@ -375,15 +377,29 @@ fn get_earliest_step_time(data: &STDCMRequestPayload) -> DateTime<Utc> {
             data.steps
                 .iter()
                 .flat_map(|step| step.timing_data.iter())
-                .map(|data| data.arrival_time)
+                .map(|data| {
+                    data.arrival_time
+                        - Duration::milliseconds(data.arrival_time_tolerance_before as i64)
+                })
                 .next()
         })
         .expect("No time specified for stdcm request")
 }
 
-/// get the maximum run time, compute it if unspecified.
-/// returns an enum with either the result or a SimulationResponse if it failed
-async fn get_maximum_run_time(
+/// Returns the earliest tolerance window that has been set on any step
+fn get_earliest_step_tolerance_window(data: &STDCMRequestPayload) -> u64 {
+    // Get the earliest time window that has been specified for any step
+    data.steps
+        .iter()
+        .flat_map(|step| step.timing_data.iter())
+        .map(|data| data.arrival_time_tolerance_before + data.arrival_time_tolerance_after)
+        .next()
+        .expect("No time specified for stdcm request")
+}
+
+/// Computes the simulation run time
+/// Returns an enum with either the result or a SimulationResponse if it failed
+async fn get_simulation_run_time(
     db_pool: Arc<DbConnectionPoolV2>,
     redis_client: Arc<RedisClient>,
     core_client: Arc<CoreClient>,
@@ -391,13 +407,7 @@ async fn get_maximum_run_time(
     infra: &Infra,
     rolling_stock: &RollingStockModel,
     timetable_id: i64,
-) -> Result<MaxRunningTimeResult> {
-    if let Some(maximum_run_time) = data.maximum_run_time {
-        return Ok(MaxRunningTimeResult::MaxRunningTime {
-            value: maximum_run_time,
-        });
-    }
-
+) -> Result<SimulationTimeResult> {
     // Doesn't matter for now, but eventually it will affect tmp speed limits
     let approx_start_time = get_earliest_step_time(data);
 
@@ -429,21 +439,23 @@ async fn get_maximum_run_time(
     )
     .await?;
 
-    let total_stop_time: u64 = data
+    return Ok(match sim_result {
+        SimulationResponse::Success { provisional, .. } => SimulationTimeResult::SimulationTime {
+            value: *provisional.times.last().expect("empty simulation result"),
+        },
+        err => SimulationTimeResult::Error {
+            error: Box::from(err),
+        },
+    });
+}
+
+/// Returns the request's total stop time
+fn get_total_stop_time(data: &STDCMRequestPayload) -> u64 {
+    return data
         .steps
         .iter()
         .map(|step: &PathfindingItem| step.duration.unwrap_or_default())
         .sum();
-
-    return Ok(match sim_result {
-        SimulationResponse::Success { provisional, .. } => MaxRunningTimeResult::MaxRunningTime {
-            value: *provisional.times.last().expect("empty simulation result") * 2
-                + total_stop_time,
-        },
-        err => MaxRunningTimeResult::Error {
-            error: Box::from(err),
-        },
-    });
 }
 
 /// Convert the list of pathfinding items into a list of path item
@@ -546,7 +558,7 @@ async fn parse_stdcm_steps(
         .collect())
 }
 
-enum MaxRunningTimeResult {
-    MaxRunningTime { value: u64 },
+enum SimulationTimeResult {
+    SimulationTime { value: u64 },
     Error { error: Box<SimulationResponse> },
 }
