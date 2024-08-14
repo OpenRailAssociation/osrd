@@ -126,10 +126,10 @@ const handleTrainrunOperation = async ({
   }
 };
 
-const handleUpsertNode = debounce((timeTableId: number, node: Node) => {
+const handleUpdateNode = debounce((timeTableId: number, node: Node) => {
   const { betriebspunktName: trigram, positionX, positionY } = node;
   nodeStore.set(timeTableId, { trigram, positionX, positionY });
-}, 500);
+}, 2000);
 
 const handleNodeOperation = ({
   type,
@@ -143,7 +143,7 @@ const handleNodeOperation = ({
   switch (type) {
     case 'create':
     case 'update': {
-      handleUpsertNode(timeTableId, node);
+      handleUpdateNode(timeTableId, node);
       break;
     }
     case 'delete': {
