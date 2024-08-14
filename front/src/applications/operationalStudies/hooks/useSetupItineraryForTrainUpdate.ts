@@ -8,6 +8,7 @@ import {
   type PathItemLocation,
   type PostV2InfraByInfraIdPathPropertiesApiArg,
   type PostV2InfraByInfraIdPathfindingBlocksApiArg,
+  type RollingStockWithLiveries,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
@@ -29,7 +30,6 @@ import type { ManageTrainSchedulePathProperties } from '../types';
 
 type ItineraryForTrainUpdate = {
   pathSteps: (PathStep | null)[];
-  rollingStockId: number;
   pathProperties: ManageTrainSchedulePathProperties;
 };
 
@@ -91,19 +91,16 @@ const useSetupItineraryForTrainUpdate = (
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+
   useEffect(() => {
     const computeItineraryForTrainUpdate = async (
-      trainSchedule: TrainScheduleResult
+      trainSchedule: TrainScheduleResult,
+      rollingStock: RollingStockWithLiveries
     ): Promise<ItineraryForTrainUpdate | null> => {
       if (!infraId) {
         return null;
       }
-      if (!trainSchedule.rolling_stock_name) {
-        return null;
-      }
-      const rollingStock = await getRollingStockByName({
-        rollingStockName: trainSchedule.rolling_stock_name,
-      }).unwrap();
+
       // TODO TS2 : Next part might not be needed (except to updePathSteps), we need inly trainSchedulePath and
       // rolling stock infos to relaunch the pathfinding. Check for that in simulation results issue
       const params: PostV2InfraByInfraIdPathfindingBlocksApiArg = {
@@ -197,7 +194,6 @@ const useSetupItineraryForTrainUpdate = (
           trackSectionRanges: pathfindingResult.track_section_ranges,
         },
         pathSteps: updatedPathSteps,
-        rollingStockId: rollingStock.id,
       };
       // TODO TS2 : test errors display after core / editoast connexion for pathProperties
     };
@@ -206,26 +202,32 @@ const useSetupItineraryForTrainUpdate = (
       if (!infraId) {
         return;
       }
-      const trainSchedule = await getTrainScheduleById({
-        id: trainIdToEdit,
-      }).unwrap();
+      const trainSchedule = await getTrainScheduleById({ id: trainIdToEdit }).unwrap();
+      if (!trainSchedule.rolling_stock_name) {
+        return;
+      }
+
       let itinerary = null;
       try {
-        itinerary = await computeItineraryForTrainUpdate(trainSchedule);
+        const rollingStock = await getRollingStockByName({
+          rollingStockName: trainSchedule.rolling_stock_name,
+        }).unwrap();
+        itinerary = await computeItineraryForTrainUpdate(trainSchedule, rollingStock);
+        const { pathSteps, pathProperties } = itinerary || {};
+
+        adjustConfWithTrainToModifyV2(
+          trainSchedule,
+          pathSteps || computeBasePathSteps(trainSchedule),
+          rollingStock.id,
+          dispatch,
+          usingElectricalProfiles,
+          osrdActions
+        );
+        if (pathProperties) {
+          setPathProperties(pathProperties);
+        }
       } catch (e) {
         dispatch(setFailure(castErrorToFailure(e)));
-      }
-      const { pathSteps, rollingStockId, pathProperties } = itinerary || {};
-      adjustConfWithTrainToModifyV2(
-        trainSchedule,
-        pathSteps || computeBasePathSteps(trainSchedule),
-        rollingStockId,
-        dispatch,
-        usingElectricalProfiles,
-        osrdActions
-      );
-      if (pathProperties) {
-        setPathProperties(pathProperties);
       }
     };
 
