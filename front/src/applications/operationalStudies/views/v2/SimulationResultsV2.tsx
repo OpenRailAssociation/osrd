@@ -25,7 +25,6 @@ import DriverTrainScheduleV2 from 'modules/trainschedule/components/DriverTrainS
 import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
-// TIMELINE DISABLED // import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
 import { useAppDispatch } from 'store';
 
 const MAP_MIN_HEIGHT = 450;
@@ -60,7 +59,6 @@ const SimulationResultsV2 = ({
   const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
   const dispatch = useAppDispatch();
-  // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const isUpdating = useSelector(getIsUpdating);
 
   const timeTableRef = useRef<HTMLDivElement | null>(null);
@@ -150,17 +148,6 @@ const SimulationResultsV2 = ({
           </div>
         </div>
       )}
-
-      {/* SIMULATION: TIMELINE — TEMPORARILY DISABLED
-      {simulation.trains.length && (
-        <TimeLine
-          timeScaleDomain={timeScaleDomain}
-          selectedTrainId={selectedTrain?.id || simulation.trains[0].id}
-          trains={simulation.trains as SimulationReport[]}
-          onTimeScaleDomainChange={setTimeScaleDomain}
-        />
-      )}
-      */}
 
       {/* SIMULATION : SPACE TIME CHART */}
 
