@@ -32,3 +32,10 @@ export const LIST_VALUES = {
 
 export type ListValues = ValueOf<typeof LIST_VALUES>;
 export type AllListValues = ArrayElement<ListValues>;
+
+export const TAG_COLORS = {
+  MISSING: '#94918E',
+  GIVEN_TRAIN: '#494641',
+  FALLBACK: '#216482',
+  INCOMPATIBLE: '#EAA72B',
+};

@@ -1,5 +1,9 @@
-import type { PositionData } from 'applications/operationalStudies/types';
+import type {
+  PositionData,
+  SimulationResponseSuccess,
+} from 'applications/operationalStudies/types';
 import type { HeightPosition } from 'reducers/osrdsimulation/types';
+import type { ArrayElement } from 'utils/types';
 
 import type { MergedBlock } from './components/ChartHelpers/ChartHelpers';
 import type { ReportTrainData } from './components/SpeedSpaceChart/types';
@@ -23,3 +27,5 @@ export type SpaceCurvesSlopesDataV2 = {
   slopesCurve: HeightPosition[];
   curvesHistogram: PositionData<'radius'>[];
 };
+
+export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
