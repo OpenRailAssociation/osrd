@@ -14,9 +14,76 @@ import type {
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type { ReportTrain } from 'common/api/osrdEditoastApi';
+import { TAG_COLORS } from 'modules/simulationResult/consts';
+import type { SpeedLimitTagValue } from 'modules/simulationResult/types';
 import { mmToKm, msToKmh, mToKm } from 'utils/physics';
 
 import { electricalProfilesDesignValues } from './consts';
+
+const getTag = (source?: SpeedLimitTagValue['source']): { name: string; color: string } => {
+  let name: string;
+  let color: string;
+
+  switch (source?.speed_limit_source_type) {
+    case 'given_train_tag':
+      name = source.tag;
+      color = TAG_COLORS.GIVEN_TRAIN;
+      break;
+    case 'fallback_tag':
+      name = source.tag;
+      color = TAG_COLORS.FALLBACK;
+      break;
+    case 'unknown_tag':
+      name = 'incompatible';
+      color = TAG_COLORS.INCOMPATIBLE;
+      break;
+    default:
+      name = 'missing_from_train';
+      color = TAG_COLORS.MISSING;
+  }
+
+  return { name, color };
+};
+
+export const formatSpeedLimitTags = (
+  rawSpeedLimitTags: SimulationResponseSuccess['mrsp'],
+  pathLength: number
+): LayerData<SpeedLimitTagValues>[] =>
+  rawSpeedLimitTags.values.reduce((mergedPositions, value, index) => {
+    const { name, color } = getTag(value.source);
+
+    if (name === 'missing_from_train') return mergedPositions;
+
+    const start = index === 0 ? 0 : rawSpeedLimitTags.boundaries[index - 1];
+    const end =
+      index === rawSpeedLimitTags.values.length - 1
+        ? pathLength
+        : rawSpeedLimitTags.boundaries[index];
+
+    const newPosition = {
+      position: {
+        start: mmToKm(start),
+        end: mmToKm(end),
+      },
+      value: {
+        tag: name,
+        color,
+      },
+    };
+
+    const lastPosition = mergedPositions.at(-1);
+    if (
+      lastPosition &&
+      lastPosition.value.tag === newPosition.value.tag &&
+      lastPosition.value.color === newPosition.value.color &&
+      lastPosition.position.end === newPosition.position.start
+    ) {
+      lastPosition.position.end = newPosition.position.end;
+    } else {
+      mergedPositions.push(newPosition);
+    }
+    return mergedPositions;
+  }, [] as LayerData<SpeedLimitTagValues>[]);
 
 export const formatSpeeds = (simulation: ReportTrain) => {
   const { positions, speeds } = simulation;
@@ -139,8 +206,10 @@ export const formatData = (
     selectedTrainPowerRestrictions;
   const electricalProfiles: LayerData<ElectricalPofilelValues>[] | undefined =
     formatElectricalProfiles(simulation.electrical_profiles, electrifications, pathLength);
-  const speedLimitTags: LayerData<SpeedLimitTagValues>[] | undefined = undefined;
-
+  const speedLimitTags: LayerData<SpeedLimitTagValues>[] | undefined = formatSpeedLimitTags(
+    simulation.mrsp,
+    pathLength
+  );
   return {
     speeds,
     ecoSpeeds,
