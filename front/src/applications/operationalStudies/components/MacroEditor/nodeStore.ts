@@ -14,7 +14,7 @@ const loadNodes = () => {
   let entries = [];
   const rawNodes = localStorage.getItem(NODES_LOCAL_STORAGE_KEY);
   if (rawNodes) {
-    entries = JSON.parse(rawNodes).map((node: Node) => node);
+    entries = JSON.parse(rawNodes);
   }
 
   nodesCache = new Map(entries);
@@ -22,7 +22,7 @@ const loadNodes = () => {
 };
 
 const saveNodes = (nodes: Map<string, Node>) => {
-  localStorage.setItem(NODES_LOCAL_STORAGE_KEY, JSON.stringify([...nodes]));
+  localStorage.setItem(NODES_LOCAL_STORAGE_KEY, JSON.stringify(nodes));
 };
 
 const getNodeKey = (timetableId: number, trigram: string) => `${timetableId}:${trigram}`;
