@@ -74,7 +74,7 @@ uuid = { version = "1.10.0", features = ["serde", "v4"] }
 async-trait = "0.1.81"
 axum = { version = "0.7.5", features = ["multipart"] }
 axum-extra = { version = "0.9.3", features = ["typed-header"] }
-axum-test = "15.3.0"
+axum-test = "15.3.1"
 axum-tracing-opentelemetry = "0.19.0"
 chashmap = "2.2.2"
 chrono.workspace = true
