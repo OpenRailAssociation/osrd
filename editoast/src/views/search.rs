@@ -203,6 +203,7 @@ use axum::extract::State;
 use axum::http::header::CONTENT_TYPE;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum::Extension;
 use chrono::NaiveDateTime;
 use diesel::pg::Pg;
 use diesel::sql_query;
@@ -210,6 +211,7 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
+use editoast_authz::BuiltinRole;
 use editoast_common::geometry::GeoJsonPoint;
 use editoast_derive::EditoastError;
 use editoast_derive::Search;
@@ -220,11 +222,14 @@ use editoast_search::SearchError;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::value::Value as JsonValue;
+use std::collections::HashSet;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
@@ -333,10 +338,30 @@ struct SearchDBResult {
     )
 )]
 async fn search(
-    Query(query_params): Query<PaginationQueryParam>,
     State(db_pool): State<DbConnectionPoolV2>,
+    Extension(authorizer): AuthorizerExt,
+    Query(query_params): Query<PaginationQueryParam>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<impl IntoResponse> {
+    let roles: HashSet<BuiltinRole> = match object.as_str() {
+        "track" | "operationalpoint" | "signal" => HashSet::from([BuiltinRole::InfraRead]),
+        "project" | "study" | "scenario" => HashSet::from([BuiltinRole::OpsRead]),
+        _ => {
+            return Err(SearchApiError::ObjectType {
+                object_type: object.to_owned(),
+            }
+            .into())
+        }
+    };
+
+    let authorized = authorizer
+        .check_roles(roles)
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let (page, per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
     let search_config =
         SearchConfigFinder::find(&object).ok_or_else(|| SearchApiError::ObjectType {
