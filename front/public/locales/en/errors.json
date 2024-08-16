@@ -42,7 +42,8 @@
       "ResponseTimeout": "Core: request timeout",
       "Serialization": "Core: cannot serialize request",
       "StatusParsing": "Core: cannot parse status",
-      "UnparsableErrorOutput": "Core returned an error in an unknown format"
+      "UnparsableErrorOutput": "Core returned an error in an unknown format",
+      "ConnectionDoesNotExist": "Core: message queue: connection not established"
     },
     "DatabaseAccessError": "Database access fatal error",
     "document": {
