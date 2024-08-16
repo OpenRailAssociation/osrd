@@ -13,7 +13,6 @@ bin
 # vscode
 .project
 .settings
-.vscode
 bin
 .classpath
 
