@@ -1,8 +1,12 @@
 use axum::extract::State;
+use axum::Extension;
 use axum::Json;
+use editoast_authz::BuiltinRole;
 
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 
 crate::routes! {
@@ -21,7 +25,16 @@ async fn speed_limit_tags(
         speed_limit_tag_ids,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<SpeedLimitTagIds>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     Ok(Json(speed_limit_tag_ids.as_ref().clone()))
 }
 
