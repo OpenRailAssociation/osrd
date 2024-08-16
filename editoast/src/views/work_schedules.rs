@@ -1,8 +1,10 @@
 use axum::extract::Json;
 use axum::extract::State;
+use axum::Extension;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use derivative::Derivative;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
@@ -20,6 +22,8 @@ use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::CreateBatch;
 use crate::modelsv2::Model;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_schemas::infra::TrackRange;
 
@@ -135,8 +139,17 @@ struct WorkScheduleCreateResponse {
 )]
 async fn create(
     State(app_state): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(data): Json<WorkScheduleCreateForm>,
 ) -> Result<Json<WorkScheduleCreateResponse>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::WorkScheduleWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
 
