@@ -1,6 +1,6 @@
 from enum import Enum
 from itertools import product
-from typing import Annotated, List, Literal, Mapping, NewType, Optional, Union, get_args
+from typing import Annotated, List, Literal, Mapping, Optional, Type, Union, get_args
 
 from geojson_pydantic import LineString
 from pydantic import BaseModel, Field, StringConstraints, create_model, model_validator
@@ -14,8 +14,8 @@ RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 # Traits
 # Used as an input model in the definition of the following classes.
 
-Identifier = NewType("Identifier", Annotated[str, StringConstraints(min_length=1, max_length=255)])
-NonBlankStr = NewType("NonBlankStr", Annotated[str, StringConstraints(min_length=1)])
+Identifier = Annotated[str, StringConstraints(min_length=1, max_length=255)]
+NonBlankStr = Annotated[str, StringConstraints(min_length=1)]
 
 
 class DetectorReference(BaseModel):
@@ -140,6 +140,7 @@ class DirectionalTrackRange(TrackRange):
 
     direction: Direction = Field(description="Description of the direction")
 
+    @staticmethod
     def make(track, begin, end) -> "DirectionalTrackRange":
         """
         This function return the directional track range.
@@ -232,7 +233,7 @@ class SwitchPortConnection(BaseModel):
 
     @classmethod
     def from_strs(cls, src: str, dst: str):
-        return cls(src=Identifier(src), dst=Identifier(dst))
+        return cls(src=src, dst=dst)
 
 
 class SwitchType(BaseObjectTrait):
@@ -253,9 +254,9 @@ class SwitchType(BaseObjectTrait):
     @classmethod
     def from_strs(cls, id: str, ports: List[str], groups: Mapping[str, List[SwitchPortConnection]]):
         return cls(
-            id=Identifier(id),
-            ports=[Identifier(e) for e in ports],
-            groups={Identifier(k): v for k, v in groups.items()},
+            id=id,
+            ports=[e for e in ports],
+            groups={k: v for k, v in groups.items()},
         )
 
     def to_dict(self):
@@ -514,7 +515,7 @@ for t in BaseObjectTrait.__subclasses__():
 # Extensions
 
 
-def register_extension(object: BaseModel, name):
+def register_extension(object: Type[BaseModel], name):
     """
     This decorator is used to easily add an extension to an existing object.
     Example:
@@ -539,6 +540,7 @@ def register_extension(object: BaseModel, name):
 
     def register_extension(extension):
         extensions_field = object.model_fields["extensions"]
+        assert extensions_field.annotation is not None and issubclass(extensions_field.annotation, BaseModel)
         if name in extensions_field.annotation.model_fields:
             raise RuntimeError(f"Extension '{name}' already registered for {object.__name__}")
 
@@ -622,7 +624,7 @@ class DetectorSncfExtension(BaseModel):
     kp: str = Field(description="Kilometric point of the detector")
 
 
-def recursively_rebuild(model: BaseModel):
+def recursively_rebuild(model: Type[BaseModel]):
     for field in model.model_fields.values():
         if field.annotation is None:
             continue

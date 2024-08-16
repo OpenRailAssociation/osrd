@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "osrd_schemas"
-version = "0.8.12"
+version = "0.8.13"
 description = ""
 authors = ["OSRD <contact@osrd.fr>"]
 
