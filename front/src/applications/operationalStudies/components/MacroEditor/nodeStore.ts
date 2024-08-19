@@ -14,7 +14,14 @@ const loadNodes = () => {
   let entries = [];
   const rawNodes = localStorage.getItem(NODES_LOCAL_STORAGE_KEY);
   if (rawNodes) {
-    entries = JSON.parse(rawNodes);
+    const parsedNodes = JSON.parse(rawNodes);
+    if (Array.isArray(parsedNodes)) {
+      entries = parsedNodes;
+    } else {
+      console.error(
+        `Error loading nodes from localStorage: expected an array, but received: '${typeof parsedNodes}' type.`
+      );
+    }
   }
 
   nodesCache = new Map(entries);
