@@ -140,7 +140,7 @@ services:
       rabbitmq: {condition: service_healthy}
     command: osrdyne
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
       - ./docker/osrdyne.yml:/osrdyne.yml
     build:
       context: osrdyne
