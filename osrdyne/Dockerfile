@@ -18,13 +18,14 @@ RUN cargo chef prepare --recipe-path recipe.json
 ######################
 FROM chef as run_builder
 COPY --from=planner /osrdyne/recipe.json recipe.json
+ARG CARGO_PROFILE=release
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/osrdyne/target \
-    cargo chef cook --release --recipe-path recipe.json
+    cargo chef cook --profile ${CARGO_PROFILE} --recipe-path recipe.json
 COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/osrdyne/target \
-    cargo install --locked --path .
+    cargo install --profile ${CARGO_PROFILE} --locked --path .
 
 ######################
 # Testing env: build #
