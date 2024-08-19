@@ -158,55 +158,67 @@ data class BlockAvailability(
         pathStartTime: Double
     ): AvailabilityProperties {
         val incrementalPath = infraExplorer.getIncrementalPath()
-        for (location in step.locations) {
-            // Iterate over all the predecessor blocks + current block
-            for (i in 0 until infraExplorer.getPredecessorBlocks().size + 1) {
-                if (location.edge == incrementalPath.getBlock(i)) {
-                    // Only consider the blocks within the range formed by given offsets
-                    if (
-                        (incrementalPath.getBlockStartOffset(i) + location.offset.distance in
-                            startOffset..endOffset)
-                    ) {
-                        val stepOffsetOnPath =
-                            incrementalPath.getBlockStartOffset(i) + location.offset.distance
-                        val timeAtStep =
-                            infraExplorer.interpolateDepartureFromClamp(stepOffsetOnPath) +
-                                pathStartTime
-                        val plannedMinTimeAtStep =
-                            (step.plannedTimingData!!.arrivalTime -
-                                    step.plannedTimingData.arrivalTimeToleranceBefore)
-                                .seconds - internalMarginForSteps
-                        val plannedMaxTimeAtStep =
-                            (step.plannedTimingData.arrivalTime +
-                                    step.plannedTimingData.arrivalTimeToleranceAfter)
-                                .seconds + internalMarginForSteps
-                        if (plannedMinTimeAtStep > timeAtStep) {
-                            // Train passes through planned timing data before it is available
-                            return AvailabilityProperties(
-                                max(plannedMinTimeAtStep - timeAtStep, 0.0),
-                                incrementalPath.toTravelledPath(stepOffsetOnPath),
-                                0.0,
-                                0.0
-                            )
-                        } else if (timeAtStep > plannedMaxTimeAtStep) {
-                            // Train passes through planned timing data after it is available:
-                            // block is forever unavailable
-                            return AvailabilityProperties(
-                                Double.POSITIVE_INFINITY,
-                                incrementalPath.toTravelledPath(stepOffsetOnPath),
-                                0.0,
-                                0.0
-                            )
-                        }
-                        // Planned timing data respected
-                        return AvailabilityProperties(
-                            0.0,
-                            Offset(0.meters),
-                            plannedMaxTimeAtStep - timeAtStep,
-                            plannedMaxTimeAtStep
-                        )
-                    }
+        // Iterate over all the predecessor blocks + current block
+        // Iterate backwards, as the range is generally towards the end
+        for (i in infraExplorer.getPredecessorBlocks().size downTo 0) {
+            // Getting incremental path data is expensive, we only do it once
+            val blockStartOffset = incrementalPath.getBlockStartOffset(i)
+            val blockEndOffset = incrementalPath.getBlockEndOffset(i)
+            // Discard blocks fully outside the range
+            if (blockStartOffset > endOffset) {
+                // The considered range is further back in the path
+                continue
+            }
+            if (blockEndOffset < startOffset) {
+                // We're outside the considered range and can stop there
+                break
+            }
+            for (location in step.locations) {
+                if (location.edge != incrementalPath.getBlock(i)) {
+                    continue
                 }
+                // Only consider the blocks within the range formed by given offsets
+                // (including step location here)
+                if (blockStartOffset + location.offset.distance !in startOffset..endOffset) {
+                    continue
+                }
+                val stepOffsetOnPath =
+                    incrementalPath.getBlockStartOffset(i) + location.offset.distance
+                val timeAtStep =
+                    infraExplorer.interpolateDepartureFromClamp(stepOffsetOnPath) + pathStartTime
+                val plannedMinTimeAtStep =
+                    (step.plannedTimingData!!.arrivalTime -
+                            step.plannedTimingData.arrivalTimeToleranceBefore)
+                        .seconds - internalMarginForSteps
+                val plannedMaxTimeAtStep =
+                    (step.plannedTimingData.arrivalTime +
+                            step.plannedTimingData.arrivalTimeToleranceAfter)
+                        .seconds + internalMarginForSteps
+                if (plannedMinTimeAtStep > timeAtStep) {
+                    // Train passes through planned timing data before it is available
+                    return AvailabilityProperties(
+                        max(plannedMinTimeAtStep - timeAtStep, 0.0),
+                        incrementalPath.toTravelledPath(stepOffsetOnPath),
+                        0.0,
+                        0.0
+                    )
+                } else if (timeAtStep > plannedMaxTimeAtStep) {
+                    // Train passes through planned timing data after it is available:
+                    // block is forever unavailable
+                    return AvailabilityProperties(
+                        Double.POSITIVE_INFINITY,
+                        incrementalPath.toTravelledPath(stepOffsetOnPath),
+                        0.0,
+                        0.0
+                    )
+                }
+                // Planned timing data respected
+                return AvailabilityProperties(
+                    0.0,
+                    Offset(0.meters),
+                    plannedMaxTimeAtStep - timeAtStep,
+                    plannedMaxTimeAtStep
+                )
             }
         }
         return AvailabilityProperties(
