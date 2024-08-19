@@ -102,6 +102,8 @@ services:
       additional_contexts:
         test_data: tests/data
         static_assets: assets
+      args:
+        CARGO_PROFILE: dev
     restart: unless-stopped
     ports: ["8090:80"]
     environment:
@@ -128,6 +130,7 @@ services:
       dockerfile: Dockerfile
       args:
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
+        CARGO_PROFILE: dev
     volumes:
       - "./docker/gateway.dev.simple.toml:/gateway.toml"
     restart: unless-stopped
@@ -145,6 +148,8 @@ services:
     build:
       context: osrdyne
       dockerfile: Dockerfile
+      args:
+        CARGO_PROFILE: dev
     restart: unless-stopped
     ports: ["4242:4242"]
     environment:
