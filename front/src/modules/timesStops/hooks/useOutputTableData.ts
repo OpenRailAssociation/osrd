@@ -16,7 +16,7 @@ import { checkAndFormatCalculatedArrival } from '../helpers/arrivalTime';
 import computeMargins from '../helpers/computeMargins';
 import { computeScheduleData, formatScheduleData } from '../helpers/scheduleData';
 import { findNextScheduledOpPoint } from '../helpers/utils';
-import type { TrainScheduleBasePathWithUic, ScheduleEntry } from '../types';
+import type { ScheduleEntry, TrainScheduleBasePathWithUic } from '../types';
 
 function useOutputTableData(
   simulatedTrain: SimulationResponseSuccess,
@@ -92,18 +92,14 @@ function useOutputTableData(
       );
       const pathStepKey = `${sugOpPoint.uic}-${sugOpPoint.ch}`;
 
-      if (pathStepKey in pathStepsByUic && nextOpPoint) {
+      if (pathStepKey in pathStepsByUic) {
         const pathStepId = pathStepsByUic[pathStepKey].id || '';
         const schedule = scheduleByAt[pathStepId];
         const scheduleData = computeScheduleData(schedule, selectedTrainSchedule.start_time);
         const formattedScheduleData = formatScheduleData(scheduleData);
-        const marginsData = computeMargins(
-          simulatedTrain,
-          opPoint,
-          nextOpPoint,
-          selectedTrainSchedule,
-          pathStepId
-        );
+        const marginsData = nextOpPoint
+          ? computeMargins(simulatedTrain, opPoint, nextOpPoint, selectedTrainSchedule, pathStepId)
+          : null;
         const calculatedArrival = checkAndFormatCalculatedArrival(scheduleData, opPoint.time);
 
         return {
