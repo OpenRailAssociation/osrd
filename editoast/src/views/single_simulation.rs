@@ -1,5 +1,7 @@
 use axum::extract::Json;
 use axum::extract::State;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
 use editoast_schemas::train_schedule::Allowance;
@@ -28,6 +30,8 @@ use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::Exists;
 use crate::modelsv2::RollingStockModel;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 
 #[derive(Debug, Error, EditoastError)]
@@ -153,8 +157,24 @@ async fn standalone_simulation(
         core_client: core,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(request): Json<SingleSimulationRequest>,
 ) -> Result<Json<SingleSimulationResponse>> {
+    let authorized = authorizer
+        .check_roles(
+            [
+                BuiltinRole::RollingStockCollectionRead,
+                BuiltinRole::InfraRead,
+                BuiltinRole::ElectricalProfileSetRead,
+            ]
+            .into(),
+        )
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     use crate::modelsv2::Retrieve;
     let mut conn = db_pool.get().await?;
     let rolling_stock_id = request.rolling_stock_id;

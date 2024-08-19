@@ -12,6 +12,12 @@ pub enum BuiltinRole {
     InfraRead,
     #[strum(serialize = "infra:write")]
     InfraWrite,
+
+    #[strum(serialize = "rolling_stock_collection:read")]
+    RollingStockCollectionRead,
+
+    #[strum(serialize = "electrical_profile_set:read")]
+    ElectricalProfileSetRead,
 }
 
 impl BuiltinRoleSet for BuiltinRole {
@@ -21,6 +27,8 @@ impl BuiltinRoleSet for BuiltinRole {
             OpsWrite => vec![InfraRead],
             InfraRead => vec![],
             InfraWrite => vec![InfraRead],
+            RollingStockCollectionRead => vec![],
+            ElectricalProfileSetRead => vec![],
         }
     }
 }
