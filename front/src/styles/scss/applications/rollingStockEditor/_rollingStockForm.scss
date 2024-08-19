@@ -1,12 +1,15 @@
 .rollingstock-editor {
   padding-top: 5rem;
   max-height: 100vh;
+
   &-list {
     height: 100%;
     overflow-y: scroll;
+
     .rollingstock-body-container-img {
       min-height: 2.4rem;
     }
+
     &-cards {
       .active {
         .rollingstock-card-header,
@@ -18,42 +21,53 @@
       }
     }
   }
+
   &-form {
     height: 100%;
     width: 100%;
     justify-content: space-between;
     max-height: 88vh;
     overflow-y: scroll;
+
     > .rollingstock-card-header {
       @media screen and (min-width: 1140px) {
         height: 3rem;
+
         .rollingstock-title {
           height: 3rem;
+
           .rollingstock-info {
             height: 3rem;
+
             .rollingstock-info-begin {
               height: 3rem;
+
               .rollingstock-info-series {
                 height: 2.3rem;
                 font-weight: bold;
                 font-size: 1.5rem;
               }
+
               .rollingstock-info-unit {
                 margin-left: 0.5rem;
+
                 &.UM2,
                 &.UM3 {
                   font-size: large;
                 }
               }
+
               .rollingstock-info-subseries {
                 font-size: 1rem;
                 margin-left: 0.5rem;
               }
             }
+
             .rollingstock-info-middle {
               font-size: 1rem;
               line-height: 1rem;
             }
+
             .rollingstock-info-end {
               font-size: 1.2rem;
             }
@@ -65,8 +79,10 @@
     .rollingstock-card-body {
       height: 18rem;
     }
+
     .form-control {
       height: auto;
+
       .rs-form-buttons {
         margin-top: 1rem;
       }
@@ -93,20 +109,26 @@
         }
       }
     }
+
     &-container {
       height: 100%;
+
       .tab-content {
         background-color: var(--white);
         border-radius: 0.5rem;
       }
+
       .tab-pane {
         padding-top: 1rem;
       }
+
       .tabs {
         margin-bottom: 1rem;
       }
+
       overflow-y: auto;
       width: 100%;
+
       @media screen and (min-width: 767px) {
         padding-right: 1.5rem;
         width: 50%;
@@ -114,49 +136,61 @@
         right: 0;
         top: 80px;
       }
+
       @media screen and (min-width: 1140px) {
         width: 60%;
       }
     }
   }
+
   &borders {
     border: 0.2rem solid #d7d7d7;
     border-radius: 0.5rem;
   }
+
   &-buttons {
     display: flex;
     width: 100%;
     justify-content: center;
     background-color: var(--blue);
     color: var(--white);
+
     svg {
       margin: 0 30px;
     }
+
     &-group {
       width: 6%;
     }
+
     &.condensed {
       height: 100px;
       justify-content: space-between;
+
       svg {
         justify-self: center;
         margin: 0;
       }
     }
   }
+
   &-left-container {
     width: 94%;
     padding-right: 1.5rem;
+
     @media screen and (min-width: 767px) {
       width: 45%;
     }
+
     @media screen and (min-width: 1140px) {
       width: 37%;
     }
   }
+
   &-unselected {
     margin: 0 auto;
     display: none;
+
     @media screen and (min-width: 767px) {
       display: block;
     }
@@ -168,10 +202,12 @@
         justify-content: space-between;
       }
     }
+
     label {
       white-space: normal;
-      min-width: calc(50% - 0.5rem);
+      min-width: calc(50%);
     }
+
     .signaling-systems-label {
       min-width: 40%;
     }
@@ -225,6 +261,7 @@
     width: 40%;
     height: auto;
     border-radius: 0.3rem;
+
     .dsg-cell-header {
       color: var(--blue);
       white-space: normal !important;
@@ -234,10 +271,12 @@
 
   .rollingstock-editor-curves {
     background-color: var(--white);
+
     .rollingstock-card-body {
       width: 60%;
       border: none;
       height: 20.75rem;
+
       .rollingstock-curves {
         height: 20.75rem;
       }
@@ -247,6 +286,7 @@
   @media screen and (max-width: 1040px) {
     .rollingstock-editor-curves {
       flex-direction: column-reverse;
+
       .rollingstock-card-body {
         margin-bottom: 1rem;
         width: 100%;
@@ -277,11 +317,13 @@
         visibility: hidden;
       }
     }
+
     &:first-child {
       .selector-itemslist-wrapper::after {
         visibility: hidden;
       }
     }
+
     &:nth-child(4) {
       .selector-itemslist {
         border-radius: 0.3rem;

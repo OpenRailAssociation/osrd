@@ -250,7 +250,7 @@ const RollingStockEditorForm = ({
 
   const tabRollingStockCurves: TabProps = {
     id: 'rollingstock-curves',
-    title: t('tabs.rollingStockCurves'),
+    title: `${t('tabs.rollingStockCurves')} *`,
     withWarning: false,
     label: t('tabs.rollingStockCurves'),
     content: (
