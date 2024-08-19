@@ -6,6 +6,8 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::header::CONTENT_TYPE;
 use axum::response::IntoResponse;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use redis::AsyncCommands;
 use serde::Deserialize;
@@ -23,6 +25,8 @@ use crate::map::MapLayers;
 use crate::map::Tile;
 use crate::modelsv2::layers::geo_json_and_data::create_and_fill_mvt_tile;
 use crate::modelsv2::layers::geo_json_and_data::GeoJsonAndData;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 
 crate::routes! {
@@ -108,14 +112,23 @@ struct ViewMetadata {
     )
 )]
 async fn layer_view(
-    Path((layer_slug, view_slug)): Path<(String, String)>,
-    Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
     State(AppState {
         map_layers,
         map_layers_config,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
+    Path((layer_slug, view_slug)): Path<(String, String)>,
+    Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<Json<ViewMetadata>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::MapRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let layer = match map_layers.layers.get(&layer_slug) {
         Some(layer) => layer,
         None => return Err(LayersError::new_layer_not_found(layer_slug, &map_layers).into()),
@@ -166,15 +179,24 @@ struct TileParams {
     )
 )]
 async fn cache_and_get_mvt_tile(
-    Path((layer_slug, view_slug, z, x, y)): Path<(String, String, u64, u64, u64)>,
-    Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
     State(AppState {
         map_layers,
         db_pool_v2: db_pool,
         redis,
         ..
     }): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
+    Path((layer_slug, view_slug, z, x, y)): Path<(String, String, u64, u64, u64)>,
+    Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::MapRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let layer = match map_layers.layers.get(&layer_slug) {
         Some(layer) => layer,
         None => return Err(LayersError::new_layer_not_found(layer_slug, &map_layers).into()),
