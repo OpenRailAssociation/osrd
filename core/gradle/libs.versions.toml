@@ -38,7 +38,7 @@ logback-core = { module = 'ch.qos.logback:logback-core', version.ref = 'logback'
 logback-classic = { module = 'ch.qos.logback:logback-classic', version.ref = 'logback' } # EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
 
 # java stuff
-guava = { module = 'com.google.guava:guava', version = '33.1.0-jre' } # Apache 2.0
+guava = { module = 'com.google.guava:guava', version = '33.3.0-jre' } # Apache 2.0
 jcommander = { module = 'com.beust:jcommander', version = '1.82' } # Apache 2.0
 hppc = { module = 'com.carrotsearch:hppc', version = '0.9.1' } # Apache 2.0
 moshi = { module = 'com.squareup.moshi:moshi', version.ref = 'moshi' } # Apache 2.0
