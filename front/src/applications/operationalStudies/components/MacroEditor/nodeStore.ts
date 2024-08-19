@@ -22,7 +22,8 @@ const loadNodes = () => {
 };
 
 const saveNodes = (nodes: Map<string, Node>) => {
-  localStorage.setItem(NODES_LOCAL_STORAGE_KEY, JSON.stringify(nodes));
+  const entries = [...nodes.entries()];
+  localStorage.setItem(NODES_LOCAL_STORAGE_KEY, JSON.stringify(entries));
 };
 
 const getNodeKey = (timetableId: number, trigram: string) => `${timetableId}:${trigram}`;
