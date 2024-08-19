@@ -15,6 +15,8 @@ class PathfindingBlockRequest(
     val rollingStockSupportedElectrifications: List<String>,
     @Json(name = "rolling_stock_supported_signaling_systems")
     val rollingStockSupportedSignalingSystems: List<String>,
+    @Json(name = "rolling_stock_maximum_speed") val rollingStockMaximumSpeed: Double,
+    @Json(name = "rolling_stock_length") val rollingStockLength: Double,
     val timeout: Double?,
     val infra: String,
     @Json(name = "expected_version") val expectedVersion: String,

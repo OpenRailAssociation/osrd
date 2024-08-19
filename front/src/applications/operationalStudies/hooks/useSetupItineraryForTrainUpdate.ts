@@ -165,6 +165,8 @@ const useSetupItineraryForTrainUpdate = (
             rollingStock.effort_curves.modes
           ),
           rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems,
+          rolling_stock_maximum_speed: rollingStock.max_speed,
+          rolling_stock_length: rollingStock.length,
         },
       };
       const pathfindingResult = await postPathfindingBlocks(params).unwrap();

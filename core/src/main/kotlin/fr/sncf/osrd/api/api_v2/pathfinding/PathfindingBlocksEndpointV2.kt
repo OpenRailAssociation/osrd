@@ -15,7 +15,6 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.*
-import fr.sncf.osrd.utils.CachedBlockMRSPBuilder.Companion.DEFAULT_MAX_ROLLING_STOCK_SPEED
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -93,8 +92,7 @@ fun runPathfinding(
             request.rollingStockSupportedSignalingSystems,
         )
 
-    // TODO: add the rolling stock global speed limit to the request
-    val heuristics = makeHeuristics(infra, waypoints, DEFAULT_MAX_ROLLING_STOCK_SPEED)
+    val heuristics = makeHeuristics(infra, waypoints, request.rollingStockMaximumSpeed)
 
     // Compute the paths from the entry waypoint to the exit waypoint
     val path = computePaths(infra, waypoints, constraints, heuristics, request, request.timeout)
@@ -137,7 +135,13 @@ private fun computePaths(
     timeout: Double?,
 ): PathfindingResultId<Block> {
     val start = Instant.now()
-    val mrspBuilder = CachedBlockMRSPBuilder(infra.rawInfra, infra.blockInfra, null)
+    val mrspBuilder =
+        CachedBlockMRSPBuilder(
+            infra.rawInfra,
+            infra.blockInfra,
+            initialRequest.rollingStockMaximumSpeed,
+            initialRequest.rollingStockLength
+        )
     val pathFound =
         Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
             .setTimeout(timeout)
