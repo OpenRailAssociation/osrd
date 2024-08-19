@@ -37,6 +37,10 @@ pub struct PathfindingRequest {
     pub rolling_stock_supported_electrifications: Vec<String>,
     /// List of supported signaling systems
     pub rolling_stock_supported_signaling_systems: Vec<String>,
+    /// Maximum speed of the rolling stock
+    pub rolling_stock_maximum_speed: f64,
+    /// Rolling stock length in meters:
+    pub rolling_stock_length: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]

@@ -3538,7 +3538,11 @@ export type PathfindingInputV2 = {
   path_items: PathItemLocation[];
   /** Can the rolling stock run on non-electrified tracks */
   rolling_stock_is_thermal: boolean;
+  /** Rolling stock length */
+  rolling_stock_length: number;
   rolling_stock_loading_gauge: LoadingGaugeType;
+  /** Rolling stock maximum speed */
+  rolling_stock_maximum_speed: number;
   /** List of supported electrification modes.
     Empty if does not support any electrification */
   rolling_stock_supported_electrifications: string[];

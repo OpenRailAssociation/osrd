@@ -11,6 +11,7 @@ use axum::Extension;
 use editoast_authz::BuiltinRole;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
+use ordered_float::OrderedFloat;
 use serde::Deserialize;
 use tracing::debug;
 use tracing::info;
@@ -58,6 +59,12 @@ struct PathfindingInput {
     rolling_stock_supported_signaling_systems: Vec<String>,
     /// List of waypoints given to the pathfinding
     path_items: Vec<PathItemLocation>,
+    /// Rolling stock maximum speed
+    #[schema(value_type = f64)]
+    rolling_stock_maximum_speed: OrderedFloat<f64>,
+    /// Rolling stock length
+    #[schema(value_type = f64)]
+    rolling_stock_length: OrderedFloat<f64>,
 }
 
 /// Compute a pathfinding
@@ -235,6 +242,8 @@ fn build_pathfinding_request(
         rolling_stock_supported_signaling_systems: pathfinding_input
             .rolling_stock_supported_signaling_systems
             .clone(),
+        rolling_stock_maximum_speed: pathfinding_input.rolling_stock_maximum_speed.0,
+        rolling_stock_length: pathfinding_input.rolling_stock_length.0,
     })
 }
 
@@ -288,6 +297,8 @@ pub async fn pathfinding_from_train_batch(
             rolling_stock_is_thermal: rolling_stock.has_thermal_curves(),
             rolling_stock_supported_electrifications: rolling_stock.supported_electrification(),
             rolling_stock_supported_signaling_systems: rolling_stock.supported_signaling_systems.0,
+            rolling_stock_maximum_speed: OrderedFloat(rolling_stock.max_speed),
+            rolling_stock_length: OrderedFloat(rolling_stock.length),
             path_items: train_schedule
                 .path
                 .clone()

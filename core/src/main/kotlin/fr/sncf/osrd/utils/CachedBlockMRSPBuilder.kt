@@ -15,12 +15,21 @@ import fr.sncf.osrd.utils.units.meters
 data class CachedBlockMRSPBuilder(
     val rawInfra: RawInfra,
     val blockInfra: BlockInfra,
-    val rollingStock: PhysicsRollingStock?,
+    private val rsMaxSpeed: Double,
+    private val rsLength: Double,
 ) {
     private val mrspCache = mutableMapOf<BlockId, Envelope>()
 
-    private val rsMaxSpeed = rollingStock?.maxSpeed ?: DEFAULT_MAX_ROLLING_STOCK_SPEED
-    private val rsLength = rollingStock?.length ?: 0.0
+    constructor(
+        rawInfra: RawInfra,
+        blockInfra: BlockInfra,
+        rollingStock: PhysicsRollingStock?
+    ) : this(
+        rawInfra,
+        blockInfra,
+        rollingStock?.maxSpeed ?: DEFAULT_MAX_ROLLING_STOCK_SPEED,
+        rollingStock?.length ?: 0.0
+    )
 
     /** Returns the speed limits for the given block (cached). */
     fun getMRSP(block: BlockId): Envelope {

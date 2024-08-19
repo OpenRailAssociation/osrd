@@ -8240,6 +8240,8 @@ components:
       - rolling_stock_supported_electrifications
       - rolling_stock_supported_signaling_systems
       - path_items
+      - rolling_stock_maximum_speed
+      - rolling_stock_length
       properties:
         path_items:
           type: array
@@ -8249,8 +8251,16 @@ components:
         rolling_stock_is_thermal:
           type: boolean
           description: Can the rolling stock run on non-electrified tracks
+        rolling_stock_length:
+          type: number
+          format: double
+          description: Rolling stock length
         rolling_stock_loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
+        rolling_stock_maximum_speed:
+          type: number
+          format: double
+          description: Rolling stock maximum speed
         rolling_stock_supported_electrifications:
           type: array
           items:
