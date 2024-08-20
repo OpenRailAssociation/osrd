@@ -113,7 +113,7 @@ const ItineraryV2 = ({
       </div>
       {displayTypeAndPath && (
         <div className="mb-2">
-          <TypeAndPathV2 />
+          <TypeAndPathV2 setDisplayTypeAndPath={setDisplayTypeAndPath} />
         </div>
       )}
       {origin && destination && (
