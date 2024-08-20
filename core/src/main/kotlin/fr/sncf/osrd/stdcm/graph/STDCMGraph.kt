@@ -152,7 +152,7 @@ class STDCMGraph(
         var remainingDistance = 20_000.meters
         var maxTime = Double.POSITIVE_INFINITY
         while (true) {
-            val edge = node.previousEdge ?: return 0.0
+            val edge = node.previousEdge ?: return maxTime
 
             val latestTimeWithMaxShift =
                 edge.timeStart + edge.totalTime + edge.maximumAddedDelayAfter

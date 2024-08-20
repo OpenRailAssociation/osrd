@@ -11,7 +11,6 @@ import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.stdcm.infra_exploration.EdgeIdentifier
 import fr.sncf.osrd.utils.units.Distance
 import kotlin.Double.Companion.POSITIVE_INFINITY
-import kotlin.math.max
 
 /**
  * This class keeps track of which nodes have already been visited.
@@ -120,9 +119,9 @@ data class VisitedNodes(val minDelay: Double) {
         val visitedTimes =
             visitedRangesPerLocation.getOrPut(parameters.fingerprint!!) { TreeRangeSet.create() }
 
-        // We still enforce a min duration for the visited range to avoid evaluating close trains
-        // separately
-        val endVisitedTime = parameters.startTime + max(parameters.duration, minDelay)
+        // We still add some padding to the end of the range, to avoid evaluating trains that are
+        // close to one another separately
+        val endVisitedTime = parameters.startTime + parameters.duration + minDelay
         val newRange = Range.closed(parameters.startTime, endVisitedTime)
         visitedTimes.add(newRange)
 
