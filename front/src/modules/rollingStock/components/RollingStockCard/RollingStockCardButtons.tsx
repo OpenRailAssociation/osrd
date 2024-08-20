@@ -59,7 +59,7 @@ const RollingStockCardButtons = ({
         value: 'AIR_CONDITIONING',
         label: (
           <span data-testid="comfort-ac-button" className="rollingstock-footer-button-with-picto">
-            {comfort2pictogram('AIR_CONDITIONING')} {t('comfortTypes.AIR_CONDITIONING')}
+            {comfort2pictogram('AIR_CONDITIONING')} {t('comfortTypes.AC')}
           </span>
         ),
       });

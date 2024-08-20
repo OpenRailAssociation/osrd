@@ -53,7 +53,7 @@ function LegendComfortSwitches(props: {
   // TODO: remove this condition when getRollingStock endpoint returns comfort
   // with type Comfort instead of RollingStockComfortType */
   const curvesComfortListV2 = curvesComfortList.map((comfort) =>
-    comfort === 'AC' ? 'AIR_CONDITIONING' : comfort
+    comfort === 'AIR_CONDITIONING' ? 'AIR_CONDITIONING' : comfort
   );
 
   return curvesComfortListV2.length > 1 ? (
@@ -112,7 +112,9 @@ function Legend(props: {
                 with type Comfort instead of RollingStockComfortType */}
           {curve.comfort !== STANDARD_COMFORT_LEVEL &&
             !isOnEditionMode &&
-            comfort2pictogram(curve.comfort === 'AC' ? 'AIR_CONDITIONING' : curve.comfort)}
+            comfort2pictogram(
+              curve.comfort === 'AIR_CONDITIONING' ? 'AIR_CONDITIONING' : curve.comfort
+            )}
         </span>
       ))}
     </span>
@@ -247,7 +249,9 @@ export default function RollingStockCurve({
                 {/* TODO: remove this condition when getRollingStock endpoint returns comfort 
                 with type Comfort instead of RollingStockComfortType */}
                 {comfort2pictogram(
-                  transformedCurve.comfort === 'AC' ? 'AIR_CONDITIONING' : transformedCurve.comfort
+                  transformedCurve.comfort === 'AIR_CONDITIONING'
+                    ? 'AIR_CONDITIONING'
+                    : transformedCurve.comfort
                 )}
               </span>
             )}

@@ -5,7 +5,7 @@ import {
   sortSelectedModeCurves,
 } from 'modules/rollingStock/helpers/utils';
 
-const emptyEffortCurves = createEmptyCurves('1500V', ['STANDARD', 'AC', 'HEATING']);
+const emptyEffortCurves = createEmptyCurves('1500V', ['STANDARD', 'AIR_CONDITIONING', 'HEATING']);
 const newCurveWithAllCond = createEmptyCurve('STANDARD', 'A1', 'C1US');
 const newCurveWithOnlyPR = createEmptyCurve('STANDARD', null, 'C1US');
 const newCurveWithOnlyEP = createEmptyCurve('STANDARD', 'B');

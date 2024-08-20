@@ -2774,7 +2774,7 @@ export type ScenarioPatchForm = {
   name?: string | null;
   tags?: string[] | null;
 };
-export type RollingStockComfortType = 'STANDARD' | 'AC' | 'HEATING';
+export type RollingStockComfortType = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type EffortCurveConditions = {
   comfort: RollingStockComfortType | null;
   electrical_profile_level: string | null;
