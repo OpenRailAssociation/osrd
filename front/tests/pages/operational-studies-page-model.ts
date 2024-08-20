@@ -203,12 +203,6 @@ class OperationalStudiesPage {
       const noDestinationChosenText = await this.noDestinationChosen.innerText();
       expect(noDestinationChosenText).toEqual(translations.noDestinationChosen);
     }
-    const isSearchByTrigramInputVisible = await this.searchByTrigramInput.isVisible();
-
-    if (!isSearchByTrigramInputVisible) {
-      const pathfindingNoStateText = await this.pathfindingNoState.innerText();
-      expect(pathfindingNoStateText).toEqual(translations.pathfindingNoState);
-    }
   }
 
   // Performs pathfinding by entering origin, destination, and optionally via trigrams.
@@ -230,16 +224,16 @@ class OperationalStudiesPage {
     if (viaTrigram) {
       await expect(this.getViaLocatorByTrigram(viaTrigram)).toBeVisible();
     }
+    const expectedOriginTrigram = await this.getOriginLocatorByTrigram(originTrigram).innerText();
+    const expectedDestinationTrigram =
+      await this.getDestinationLocatorByTrigram(destinationTrigram).innerText();
     await this.clickSearchByTrigramSubmitButton();
+    await expect(this.searchByTrigramContainer).not.toBeVisible();
     await this.page.waitForLoadState('load');
     await expect(this.resultPathfindingDone).toBeVisible();
 
-    expect(await this.originInfo.innerText()).toEqual(
-      await this.getOriginLocatorByTrigram(originTrigram).innerText()
-    );
-    expect(await this.destinationInfo.innerText()).toEqual(
-      await this.getDestinationLocatorByTrigram(destinationTrigram).innerText()
-    );
+    expect(await this.originInfo.innerText()).toEqual(expectedOriginTrigram);
+    expect(await this.destinationInfo.innerText()).toEqual(expectedDestinationTrigram);
   }
 
   // Clicks the button to reverse the itinerary.

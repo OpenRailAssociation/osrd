@@ -54,8 +54,11 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
     </div>
   );
 }
+type typeAndPathV2Props = {
+  setDisplayTypeAndPath: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
-const TypeAndPathV2 = () => {
+const TypeAndPathV2 = ({ setDisplayTypeAndPath }: typeAndPathV2Props) => {
   const dispatch = useAppDispatch();
   const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);
@@ -168,6 +171,7 @@ const TypeAndPathV2 = () => {
         }));
 
       dispatch(updatePathSteps({ pathSteps }));
+      setDisplayTypeAndPath(false);
     }
   };
 
@@ -233,7 +237,7 @@ const TypeAndPathV2 = () => {
     <>
       <div
         className="type-and-path mb-2"
-        style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }} // To grow input field & whole div along text size
+        style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }}
         data-testid="type-and-path-container"
       >
         <div className="help">{opList.length === 0 && tManageTrainSchedule('inputOPTrigrams')}</div>
@@ -273,7 +277,7 @@ const TypeAndPathV2 = () => {
         <>
           <span className="arrow-img"> </span>
           <div className="results-container">
-            <div className="station-results  p-2 ">
+            <div className="station-results p-2">
               {sortedSearchResults.map((result) => (
                 <button
                   id={`trigram-button-${result.name}`}
@@ -283,7 +287,7 @@ const TypeAndPathV2 = () => {
                   className="station"
                   title={`${result.name} ${result.ch}`}
                 >
-                  <span className="station-text text-secondary ">{result.name}</span>
+                  <span className="station-text text-secondary">{result.name}</span>
                 </button>
               ))}
               {sortedSearchResults.length > 8 && (

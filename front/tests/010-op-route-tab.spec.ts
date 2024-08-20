@@ -161,7 +161,7 @@ test.describe('Verifying that all elements in the route tab are loaded correctly
     await operationalStudiesPage.verifyNoSelectedRoute(selectedLanguage);
 
     // Search by trigram and verify map markers
-    await operationalStudiesPage.clickSearchByTrigramSubmitButton();
+    await operationalStudiesPage.performPathfindingByTrigram('WS', 'SES', 'MWS');
     if (browserName === 'chromium') {
       await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
     }
