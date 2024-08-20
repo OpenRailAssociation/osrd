@@ -44,8 +44,8 @@ pub struct STDCMRequest {
     /// Numerical integration time step in milliseconds. Use default value if not specified.
     pub time_step: Option<u64>,
     pub start_time: DateTime<Utc>,
-    /// Maximum departure delay in milliseconds. Use default value if not specified.
-    pub maximum_departure_delay: Option<u64>,
+    /// Maximum departure delay in milliseconds.
+    pub maximum_departure_delay: u64,
     /// Maximum run time of the simulation in milliseconds
     pub maximum_run_time: u64,
     /// Gap between the created train and previous trains in milliseconds

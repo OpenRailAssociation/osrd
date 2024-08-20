@@ -3028,12 +3028,14 @@ paths:
                   description: |-
                     By how long we can shift the departure time in milliseconds
                     Deprecated, first step data should be used instead
-                  default: 432000
+                  nullable: true
                   minimum: 0
                 maximum_run_time:
                   type: integer
                   format: int64
-                  description: Specifies how long the total run time can be in milliseconds
+                  description: |-
+                    Specifies how long the total run time can be in milliseconds
+                    Deprecated, first step data should be used instead
                   nullable: true
                   minimum: 0
                 rolling_stock_id:
@@ -9800,12 +9802,14 @@ components:
           description: |-
             By how long we can shift the departure time in milliseconds
             Deprecated, first step data should be used instead
-          default: 432000
+          nullable: true
           minimum: 0
         maximum_run_time:
           type: integer
           format: int64
-          description: Specifies how long the total run time can be in milliseconds
+          description: |-
+            Specifies how long the total run time can be in milliseconds
+            Deprecated, first step data should be used instead
           nullable: true
           minimum: 0
         rolling_stock_id:
