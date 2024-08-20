@@ -108,6 +108,7 @@ class WorkerCommand : CliCommand {
 
         val factory = ConnectionFactory()
         factory.setUri(WORKER_AMQP_URI)
+        factory.setMaxInboundMessageBodySize(1024 * 1024 * 128)
         val connection = factory.newConnection()
         connection.createChannel().use { channel -> reportActivity(channel, "started") }
 
