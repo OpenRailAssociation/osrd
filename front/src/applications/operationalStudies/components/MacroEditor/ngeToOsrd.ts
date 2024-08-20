@@ -10,11 +10,82 @@ import type { NetzgrafikDto, NGEEvent, TrainrunSection, Node, Trainrun } from '.
 
 const createdTrainrun = new Map<number, number>();
 
-const getTrainrunSectionsByTrainrunId = (trainrunSections: TrainrunSection[], trainrunId: number) =>
-  trainrunSections.filter((section) => section.trainrunId === trainrunId);
-
 const getNodeById = (nodes: Node[], nodeId: number | string) =>
   nodes.find((node) => node.id === nodeId);
+
+const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunId: number) => {
+  // The sections we obtain here may be out-of-order. For instance, for a path
+  // A → B → C, we may get two sections B → C and then A → B. We need to
+  // re-order the section A → B before B → C.
+  const sections = netzgrafikDto.trainrunSections.filter(
+    (section) => section.trainrunId === trainrunId
+  );
+
+  // Sections are linked together with transitions and ports:
+  //
+  //                           Node
+  //                 ┌──────────────────────┐
+  //                 │                      │
+  //      Section  ┌─┴──┐   Transition   ┌──┴─┐  Section
+  //     ──────────┤Port├────────────────┤Port├──────────
+  //               └─┬──┘                └──┬─┘
+  //                 │                      │
+  //                 └──────────────────────┘
+  //
+  //
+  // Two subsequent sections can be linked together at a node with a target
+  // port followed by a transition itself followed by a source port.
+  //
+  // Build a map of sections keyed by their previous section's target port ID.
+  // Find the departure section: it's the one without a transition for its
+  // source port.
+  let departureSection: TrainrunSection | undefined;
+  const sectionsByPrevTargetPortId = new Map<number, TrainrunSection>();
+  // eslint-disable-next-line no-restricted-syntax
+  for (const section of sections) {
+    const sourceNode = getNodeById(netzgrafikDto.nodes, section.sourceNodeId)!;
+    const transition = sourceNode.transitions.find(
+      (tr) => tr.port1Id === section.sourcePortId || tr.port2Id === section.sourcePortId
+    );
+    if (transition) {
+      const prevPortId =
+        transition.port1Id === section.sourcePortId ? transition.port2Id : transition.port1Id;
+      sectionsByPrevTargetPortId.set(prevPortId, section);
+    } else {
+      departureSection = section;
+    }
+  }
+  if (!departureSection) {
+    throw new Error('Train run is missing departure section');
+  }
+
+  // Start with the departure section and iterate over the path
+  const orderedSections = [departureSection];
+  const seenSectionIds = new Set<number>([departureSection.id]);
+  let section: TrainrunSection | undefined = departureSection;
+  for (;;) {
+    section = sectionsByPrevTargetPortId.get(section.targetPortId);
+    if (!section) {
+      break;
+    }
+
+    orderedSections.push(section);
+
+    // Make sure we don't enter an infinite loop
+    if (seenSectionIds.has(section.id)) {
+      throw new Error('Cycle detected in train run');
+    }
+    seenSectionIds.add(section.id);
+  }
+
+  // If we haven't seen all sections belonging to the train run, it's because
+  // it's made up of multiple separate parts
+  if (orderedSections.length !== sections.length) {
+    throw new Error('Train run is not continuous');
+  }
+
+  return orderedSections;
+};
 
 // TODO: add a dynamic values when available
 const DEFAULT_PAYLOAD: Pick<
@@ -40,7 +111,6 @@ const createTrainSchedulePayload = (
   nodes: Node[],
   trainrun: Trainrun
 ) => {
-  // TODO: check that the trainrunSections format is still compatible
   const path = trainrunSections.flatMap((section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
     const targetNode = getNodeById(nodes, section.targetNodeId);
@@ -76,11 +146,8 @@ const handleTrainrunOperation = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   addDeletedTrainIds: (trainIds: number[]) => void;
 }) => {
-  const { trainrunSections, nodes } = netzgrafikDto;
-  const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(
-    trainrunSections,
-    trainrun.id
-  );
+  const { nodes } = netzgrafikDto;
+  const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   switch (type) {
     case 'create': {
       const newTrainSchedules = await dispatch(
