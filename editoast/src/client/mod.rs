@@ -141,8 +141,8 @@ pub struct RunserverArgs {
     #[derivative(Default(value = r#""amqp://osrd-rabbitmq:5672/%2f".into()"#))]
     #[clap(long, env = "OSRD_MQ_URL", default_value_t = String::from("amqp://osrd-rabbitmq:5672/%2f"))]
     pub mq_url: String,
-    #[derivative(Default(value = "60"))] // TODO: find the currently used timeout
-    #[clap(long, env = "EDITOAST_CORE_TIMEOUT", default_value_t = 60)]
+    #[derivative(Default(value = "180"))]
+    #[clap(long, env = "EDITOAST_CORE_TIMEOUT", default_value_t = 180)]
     pub core_timeout: u64,
     #[derivative(Default(value = r#""".into()"#))]
     #[clap(long, env = "ROOT_PATH", default_value_t = String::new())]
