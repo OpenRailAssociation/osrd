@@ -1756,8 +1756,9 @@ export type PostV2TimetableByIdStdcmApiArg = {
     margin?: string | null;
     /** By how long we can shift the departure time in milliseconds
         Deprecated, first step data should be used instead */
-    maximum_departure_delay?: number;
-    /** Specifies how long the total run time can be in milliseconds */
+    maximum_departure_delay?: number | null;
+    /** Specifies how long the total run time can be in milliseconds
+        Deprecated, first step data should be used instead */
     maximum_run_time?: number | null;
     rolling_stock_id: number;
     /** Train categories for speed limits */
