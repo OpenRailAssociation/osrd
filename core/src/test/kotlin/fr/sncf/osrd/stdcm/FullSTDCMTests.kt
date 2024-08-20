@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.api_v2.UndirectedTrackRange
 import fr.sncf.osrd.api.api_v2.stdcm.WorkSchedule
 import fr.sncf.osrd.api.stdcm.makeTrainSchedule
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
 import fr.sncf.osrd.sim_infra.api.Block
@@ -21,7 +22,6 @@ import fr.sncf.osrd.utils.units.seconds
 import java.io.IOException
 import java.net.URISyntaxException
 import java.util.stream.Stream
-import kotlin.math.round
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -223,7 +223,8 @@ class FullSTDCMTests {
         end: Set<PathfindingEdgeLocationId<Block>>,
         startPlannedTimingData: PlannedTimingData?,
         endPlannedTimingData: PlannedTimingData?,
-        expectedPassageTime: Double
+        expectedPassageTime: Double,
+        hasStandardAllowance: Boolean,
     ) {
         val blockAvailability =
             makeBlockAvailability(
@@ -235,17 +236,22 @@ class FullSTDCMTests {
                     STDCMStep(end, 0.0, true, endPlannedTimingData)
                 )
             )
-        val res =
+        val timeStep = 2.0
+        var builder =
             STDCMPathfindingBuilder()
                 .setInfra(smallInfra)
                 .setStartLocations(start, startPlannedTimingData)
                 .setEndLocations(end, endPlannedTimingData)
                 .setBlockAvailability(blockAvailability)
-                .run()!!
+                .setTimeStep(timeStep)
+                .setMaxDepartureDelay(12_000.0)
+        if (hasStandardAllowance)
+            builder = builder.setStandardAllowance(AllowanceValue.Percentage(5.0))
+        val res = builder.run()!!
         if (startPlannedTimingData != null) {
             assertEquals(expectedPassageTime, res.departureTime)
         } else {
-            assertEquals(expectedPassageTime, round(res.departureTime + res.envelope.totalTime))
+            assertEquals(expectedPassageTime, res.departureTime + res.envelope.totalTime, timeStep)
         }
     }
 
@@ -299,29 +305,81 @@ class FullSTDCMTests {
                 end,
                 PlannedTimingData(300.seconds, 100.seconds, 100.seconds),
                 null,
-                300.0
+                300.0,
+                false,
             ),
             Arguments.of(
                 start,
                 end,
                 PlannedTimingData(300.seconds, 0.seconds, 0.seconds),
                 null,
-                300.0
+                300.0,
+                false,
             ),
             Arguments.of(
                 start,
                 end,
                 null,
                 PlannedTimingData(800.seconds, 100.seconds, 100.seconds),
-                800.0
+                800.0,
+                false,
             ),
             Arguments.of(
                 start,
                 end,
                 null,
                 PlannedTimingData(800.seconds, 0.seconds, 0.seconds),
-                800.0
-            )
+                800.0,
+                false,
+            ),
+            Arguments.of(
+                start,
+                end,
+                null,
+                PlannedTimingData(10_000.seconds, 300.seconds, 300.seconds),
+                10_000.0,
+                false,
+            ),
+            Arguments.of(
+                start,
+                end,
+                PlannedTimingData(300.seconds, 100.seconds, 100.seconds),
+                null,
+                300.0,
+                true,
+            ),
+            Arguments.of(
+                start,
+                end,
+                PlannedTimingData(300.seconds, 0.seconds, 0.seconds),
+                null,
+                300.0,
+                true,
+            ),
+            Arguments.of(
+                start,
+                end,
+                null,
+                PlannedTimingData(800.seconds, 100.seconds, 100.seconds),
+                800.0,
+                true,
+            ),
+            Arguments.of(
+                start,
+                end,
+                null,
+                PlannedTimingData(800.seconds, 0.seconds, 0.seconds),
+                800.0,
+                true,
+            ),
+            Arguments.of(
+                start,
+                end,
+                null,
+                PlannedTimingData(10_000.seconds, 300.seconds, 300.seconds),
+                10_000.0,
+                true,
+            ),
         )
     }
 }

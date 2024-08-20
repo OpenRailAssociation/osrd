@@ -74,7 +74,6 @@ fun buildFinalEnvelope(
         initFixedPoints(
             edges,
             stops,
-            departureTime,
             pathLength,
             standardAllowance != null &&
                 standardAllowance.getAllowanceTime(
@@ -103,9 +102,7 @@ fun buildFinalEnvelope(
                 "Conflict when running final stdcm simulation at offset {}, adding a fixed time point",
                 conflictOffset
             )
-            fixedPoints.add(
-                makeFixedPoint(fixedPoints, edges, conflictOffset, departureTime, pathLength)
-            )
+            fixedPoints.add(makeFixedPoint(fixedPoints, edges, conflictOffset, pathLength))
         } catch (e: OSRDError) {
             if (e.osrdErrorType == ErrorType.AllowanceConvergenceTooMuchTime) {
                 // Mareco allowances must have a non-zero capacity speed limit,
@@ -143,7 +140,6 @@ fun buildFinalEnvelope(
 private fun initFixedPoints(
     edges: List<STDCMEdge>,
     stops: List<TrainStop>,
-    departureTime: Double,
     length: Length<TravelledPath>,
     hasStandardAllowance: Boolean,
 ): TreeSet<FixedTimePoint> {
@@ -155,7 +151,6 @@ private fun initFixedPoints(
                 res,
                 edges,
                 Offset(Distance.fromMeters(stop.position)),
-                departureTime,
                 length,
                 stop.duration
             )
@@ -163,7 +158,7 @@ private fun initFixedPoints(
         prevStopTime += stop.duration
     }
     if (hasStandardAllowance && res.none { it.offset == length })
-        res.add(makeFixedPoint(res, edges, length, departureTime, length, 0.0))
+        res.add(makeFixedPoint(res, edges, length, length, 0.0))
     return res
 }
 
@@ -186,7 +181,6 @@ private fun makeFixedPoint(
     fixedPoints: TreeSet<FixedTimePoint>,
     edges: List<STDCMEdge>,
     conflictOffset: Offset<TravelledPath>,
-    departureTime: Double,
     pathLength: Length<TravelledPath>,
     stopDuration: Double = 0.0,
 ): FixedTimePoint {
@@ -199,7 +193,7 @@ private fun makeFixedPoint(
     }
     offset = Offset.min(offset, pathLength)
     return FixedTimePoint(
-        getTimeOnEdges(edges, offset, departureTime),
+        getTimeOnEdges(edges, offset),
         offset,
         if (stopDuration > 0) stopDuration else null
     )
@@ -233,24 +227,19 @@ private fun roundOffset(
 private fun getTimeOnEdges(
     edges: List<STDCMEdge>,
     offset: Offset<TravelledPath>,
-    departureTime: Double,
 ): Double {
     var remainingDistance = offset.distance
     for (edge in edges) {
         val atStop = edge.endAtStop && remainingDistance == edge.length.distance
         if (remainingDistance < edge.length.distance || atStop) {
             val absoluteTime = edge.getApproximateTimeAtLocation(Offset(remainingDistance))
-            // We still have to account for departure time shift
-            val actualDepartureTimeShift = edges.last().totalDepartureTimeShift
-            val timeWithShift =
-                absoluteTime - edge.totalDepartureTimeShift + actualDepartureTimeShift
-            return timeWithShift - departureTime
+            return absoluteTime - edge.totalDepartureTimeShift
         }
         remainingDistance -= edge.length.distance
     }
     // End of the last edge, this case is easier to handle separately
     val absoluteTime = edges.last().getApproximateTimeAtLocation(edges.last().length)
-    return absoluteTime - departureTime
+    return absoluteTime - edges.last().totalDepartureTimeShift
 }
 
 /**
