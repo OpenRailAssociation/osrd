@@ -117,10 +117,13 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
     requests.post(EDITOAST_URL + f"infra/{small_scenario_v2.infra}/load")
     start_time = datetime.datetime(2024, 1, 1, 14, 0, 0)
     end_time = start_time + datetime.timedelta(days=4)
+    # TODO: we cannot delete work schedules for now, so let's give a unique name
+    # to avoid collisions
+    now = datetime.datetime.now()
     work_schedules_r = requests.post(
         EDITOAST_URL + "work_schedules/",
         json={
-            "work_schedule_group_name": "generic_group",
+            "work_schedule_group_name": f"generic_group_{now}",
             "work_schedules": [
                 {
                     "start_date_time": start_time.isoformat(),
