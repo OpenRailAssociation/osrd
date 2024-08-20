@@ -61,8 +61,14 @@
     }
   }
   .scenario-sidemenu {
+    display: flex;
+    flex-direction: column;
+    height: var(--content-height);
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+    .tabs-container {
+      overflow: initial;
+    }
     .scenario-details {
       display: flex;
       flex-direction: column;
@@ -118,7 +124,8 @@
     .scenario-timetable {
       display: flex;
       flex-direction: column;
-      height: calc(var(--content-height) - 11rem);
+      flex-grow: 1;
+      min-height: 0;
       .scenario-timetable-addtrains-buttons {
         display: flex;
         align-items: center;
@@ -204,12 +211,8 @@
       }
       .scenario-timetable-trains {
         overflow: auto;
-        height: auto;
+        min-height: 0;
 
-        @media screen and (max-width: 1023px) {
-          height: auto;
-          max-height: 50vh;
-        }
         .scenario-timetable-train-with-right-bar {
           position: relative;
           display: flex;
@@ -480,7 +483,6 @@
       }
       .scenario-timetable-warnings {
         margin-top: auto;
-        max-height: 45%;
 
         .invalid-trains {
           display: flex;
