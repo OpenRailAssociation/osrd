@@ -3,7 +3,7 @@ import { type ProjectPathTrainResult, type TrainScheduleResult } from 'common/ap
 import { convertIsoUtcToLocalTime } from 'utils/date';
 
 // TODO: feed the spaceTimeChart with date instead of formatted string
-const formatDatetimeForSpaceTimeChart = (departureTime: string) =>
+export const formatDatetimeForSpaceTimeChart = (departureTime: string) =>
   `${convertIsoUtcToLocalTime(departureTime).slice(0, -6)}Z`;
 
 const upsertNewProjectedTrains = (
