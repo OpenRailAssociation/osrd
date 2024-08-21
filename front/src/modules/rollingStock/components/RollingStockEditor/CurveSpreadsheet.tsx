@@ -126,6 +126,7 @@ const CurveSpreadsheet = ({
         addRowsComponent={false}
         onBlur={handleBlur}
         onSelectionChange={handleBlur}
+        height={332}
       />
     </div>
   );

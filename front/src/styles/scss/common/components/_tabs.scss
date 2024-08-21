@@ -1,35 +1,45 @@
 .tabs-container {
   display: flex;
   flex-direction: column;
+  overflow: auto;
+
   &.full-width {
     width: 100%;
+
     .tabs.pills {
       overflow: auto;
       justify-content: space-between;
       min-height: 2.35rem;
+
       .tab {
         flex-grow: 1;
       }
     }
   }
+
   &.full-height {
     height: 100%;
+
     .tab-content {
       height: 100%;
+
       .tab-pane {
         height: 100%;
       }
     }
   }
+
   .tabs {
     display: flex;
     margin-bottom: 0.5rem;
     gap: 1rem;
+
     .tab {
       padding-bottom: 0.5rem;
       position: relative;
       border-bottom: 3px solid transparent;
       transition: text-shadow 0.3s;
+
       &::after {
         transition: all ease 0.3s;
         position: absolute;
@@ -56,6 +66,7 @@
         }
       }
     }
+
     &.pills {
       .tab {
         display: flex;
@@ -67,23 +78,28 @@
         border-radius: var(--border-radius);
         background-color: var(--white);
         color: var(--primary);
+
         &::after {
           content: none;
         }
+
         &:hover,
         &.active {
           background-color: var(--primary);
           color: var(--white);
         }
+
         &.warning {
           border-color: var(--danger);
         }
       }
     }
   }
+
   .tab-content > .tab-pane {
     display: none;
   }
+
   .tab-content > .active {
     display: block;
   }
