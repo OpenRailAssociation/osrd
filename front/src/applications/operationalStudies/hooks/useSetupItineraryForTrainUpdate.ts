@@ -108,7 +108,7 @@ export function updatePathStepsFromOperationalPoints(
       return false;
     });
 
-    const { kp, name, ch } = correspondingOp || {};
+    const { kp, name, ch } = correspondingOp || step;
 
     return {
       ...step,
