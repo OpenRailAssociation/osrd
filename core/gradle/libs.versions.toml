@@ -65,7 +65,7 @@ opentelemetry-api = { module = 'io.opentelemetry:opentelemetry-api', version.ref
 opentelemetry-instrumentation-annotations = { module = 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations', version = '2.7.0' }
 
 opentracing-util = { module = 'io.opentracing:opentracing-util', version = '0.33.0' }
-dd-trace-api = { module = 'com.datadoghq:dd-trace-api', version = '1.38.0' }
+dd-trace-api = { module = 'com.datadoghq:dd-trace-api', version = '1.38.1' }
 
 kaml = { module = 'com.charleskorn.kaml:kaml', version = '0.59.0' } # Apache 2.0
 
