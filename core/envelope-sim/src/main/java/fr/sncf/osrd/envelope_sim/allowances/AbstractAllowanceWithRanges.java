@@ -333,7 +333,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         Envelope res = null;
         OSRDError lastError = null;
         var search = new DoubleBinarySearch(initialLowBound, initialHighBound, targetTime, tolerance, true);
-        for (int i = 1; i < 21 && !search.complete(); i++) {
+        for (int i = 1; i < 30 && !search.complete(); i++) {
             var input = search.getInput();
             try {
                 res = computeIteration(envelopeSection, context, input, imposedBeginSpeed, imposedEndSpeed);
