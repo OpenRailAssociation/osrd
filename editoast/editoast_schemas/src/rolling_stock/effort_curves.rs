@@ -3,9 +3,9 @@ use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
 use std::collections::BTreeMap;
-use strum::Display;
-use strum::EnumString;
 use utoipa::ToSchema;
+
+use crate::train_schedule::Comfort;
 
 editoast_common::schemas! {
     ConditionalEffortCurve,
@@ -13,7 +13,6 @@ editoast_common::schemas! {
     EffortCurves,
     EffortCurveConditions,
     ModeEffortCurves,
-    RollingStockComfortType,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
@@ -52,24 +51,11 @@ pub struct ConditionalEffortCurve {
 #[serde(deny_unknown_fields)]
 pub struct EffortCurveConditions {
     #[schema(required)]
-    comfort: Option<RollingStockComfortType>,
+    comfort: Option<Comfort>,
     #[schema(required)]
     electrical_profile_level: Option<String>,
     #[schema(required)]
     power_restriction_code: Option<String>,
-}
-
-/// Train comfort that will be used for the simulation
-#[derive(
-    Display, Clone, Default, Debug, EnumString, PartialEq, Deserialize, Serialize, ToSchema, Hash,
-)]
-#[strum(serialize_all = "UPPERCASE")]
-#[serde(rename_all = "UPPERCASE")]
-pub enum RollingStockComfortType {
-    #[default]
-    Standard,
-    AC,
-    Heating,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, ToSchema, Derivative)]

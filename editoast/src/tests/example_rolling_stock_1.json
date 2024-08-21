@@ -645,7 +645,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "25000V",
                             "power_restriction_code": "C1"
                         },
@@ -670,7 +670,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "25000V",
                             "power_restriction_code": "C2"
                         },
@@ -695,7 +695,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "25000V",
                             "power_restriction_code": null
                         },
@@ -720,7 +720,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "22500V",
                             "power_restriction_code": "C1"
                         },
@@ -745,7 +745,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "22500V",
                             "power_restriction_code": "C2"
                         },
@@ -770,7 +770,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "22500V",
                             "power_restriction_code": null
                         },
@@ -795,7 +795,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "20000V",
                             "power_restriction_code": "C1"
                         },
@@ -820,7 +820,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "20000V",
                             "power_restriction_code": "C2"
                         },
@@ -845,7 +845,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": "20000V",
                             "power_restriction_code": null
                         },
@@ -870,7 +870,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": null,
                             "power_restriction_code": "C1"
                         },
@@ -895,7 +895,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": null,
                             "power_restriction_code": "C2"
                         },
@@ -920,7 +920,7 @@
                     },
                     {
                         "cond": {
-                            "comfort": "AC",
+                            "comfort": "AIR_CONDITIONING",
                             "electrical_profile_level": null,
                             "power_restriction_code": null
                         },
