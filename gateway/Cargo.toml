@@ -37,7 +37,7 @@ opentelemetry_sdk = { version = "0.23.0", features = [
   "metrics",
   "rt-tokio-current-thread",
 ] }
-serde = { version = "1.0.207", features = ["derive"] }
+serde = { version = "1.0.208", features = ["derive"] }
 serde_json = "1"
 
 # reverse proxy dependencies
