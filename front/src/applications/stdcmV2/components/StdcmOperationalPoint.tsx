@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 
 import { Select } from '@osrd-project/ui-core';
-import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
@@ -75,7 +74,7 @@ const StdcmOperationalPoint = ({
   );
 
   const dispatchNewPoint = (p?: SearchResultItemOperationalPoint) => {
-    if (p && isEqual(p.geographic.coordinates, point?.coordinates)) return;
+    if (p && p.ch === point?.ch && 'uic' in point && p.uic === point?.uic) return;
     const newPoint = p
       ? {
           name: p.name,
