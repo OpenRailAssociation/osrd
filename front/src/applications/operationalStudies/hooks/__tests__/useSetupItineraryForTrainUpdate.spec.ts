@@ -290,5 +290,74 @@ describe('updatePathStepsFrom', () => {
       ];
       expect(result).toEqual(expected);
     });
+
+    it('should handle missing corresponding OPs', () => {
+      const pathSteps = [
+        {
+          id: 'whatev-0',
+          trigram: 'GE',
+          ch: 'BV',
+          name: '87747006',
+        },
+        {
+          id: 'whatev-1',
+          trigram: 'GE',
+          ch: 'P2',
+          name: '87747006',
+          arrival: '15:00:00',
+        },
+        {
+          id: 'who-0',
+          trigram: 'VPE',
+          ch: 'BV',
+          name: '87747337',
+        },
+      ];
+      const pathFindingResult = {
+        path_item_positions: [0, 586000, 13116000],
+      };
+      const stepsCoordinates = [
+        [5.714214596139134, 45.191404467130226],
+        [5.711846462951984, 45.19643525506182],
+        [5.631369628448958, 45.29094364381627],
+      ];
+      const result = updatePathStepsFromOperationalPoints(
+        pathSteps,
+        [],
+        pathFindingResult as Extract<PathfindingResult, { status: 'success' }>,
+        stepsCoordinates
+      );
+      const expected = [
+        {
+          id: 'whatev-0',
+          ch: 'BV',
+          trigram: 'GE',
+          name: '87747006',
+          kp: undefined,
+          positionOnPath: 0,
+          coordinates: [5.714214596139134, 45.191404467130226],
+        },
+        {
+          id: 'whatev-1',
+          ch: 'P2',
+          trigram: 'GE',
+          name: '87747006',
+          arrival: '15:00:00',
+          kp: undefined,
+          positionOnPath: 586000,
+          coordinates: [5.711846462951984, 45.19643525506182],
+        },
+        {
+          id: 'who-0',
+          ch: 'BV',
+          trigram: 'VPE',
+          name: '87747337',
+          kp: undefined,
+          positionOnPath: 13116000,
+          coordinates: [5.631369628448958, 45.29094364381627],
+        },
+      ];
+      expect(result).toEqual(expected);
+    });
   });
 });
