@@ -1,7 +1,7 @@
 use axum::body::Bytes;
 use axum::extract::Path;
 use axum::extract::State;
-use axum::http::header::CONTENT_TYPE;
+use axum::http::header::{CACHE_CONTROL, CONTENT_TYPE};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
@@ -57,7 +57,14 @@ async fn get(
         document_key: document_id,
     })
     .await?;
-    Ok((StatusCode::OK, [(CONTENT_TYPE, doc.content_type)], doc.data))
+    Ok((
+        StatusCode::OK,
+        [
+            (CONTENT_TYPE, doc.content_type),
+            (CACHE_CONTROL, "public, max-age=3600".to_string()),
+        ],
+        doc.data,
+    ))
 }
 
 #[derive(Serialize, ToSchema)]
