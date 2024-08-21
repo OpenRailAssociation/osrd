@@ -38,9 +38,12 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
+import java.io.File
 import java.time.Duration.between
 import java.time.Duration.ofMillis
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take
@@ -63,6 +66,15 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
             logger.info(
                 "Request received: start=${request.startTime}, max duration=${request.maximumRunTime}"
             )
+
+            val logRequest = System.getenv("LOG_STDCM_REQUESTS")
+            if (logRequest?.equals("true", ignoreCase = true) == true) {
+                val time = LocalDateTime.now()
+                val formatted = time.format(DateTimeFormatter.ofPattern("MM-dd-HH:mm:ss:SSS"))
+                File("stdcm-$formatted.json").printWriter().use {
+                    it.println(stdcmRequestAdapter.indent("    ").toJson(request))
+                }
+            }
 
             // parse input data
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
