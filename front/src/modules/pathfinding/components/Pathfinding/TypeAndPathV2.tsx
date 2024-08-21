@@ -223,6 +223,12 @@ const TypeAndPathV2 = () => {
     setInitialCursorPositionRem(0);
   }, []);
 
+  const isSortedSearchResultsDisplayed = useMemo(() => {
+    const trigrams = debouncedInputText.split(' ');
+    const opListFiltered = opList.filter((op) => op.name !== undefined);
+    return trigrams.length !== opListFiltered.length;
+  }, [debouncedInputText, opList]);
+
   return (
     <>
       <div
@@ -263,7 +269,7 @@ const TypeAndPathV2 = () => {
           </button>
         </div>
       </div>
-      {searchResults.length > 0 && (
+      {searchResults.length > 0 && isSortedSearchResultsDisplayed && (
         <>
           <span className="arrow-img"> </span>
           <div className="results-container">
