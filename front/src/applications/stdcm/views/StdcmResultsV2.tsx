@@ -9,6 +9,7 @@ import { LoaderFill } from 'common/Loaders';
 import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
 
 import SimulationReportSheetV2 from '../components/SimulationReportSheetV2';
+import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmV2Results } from '../types';
 import {
   generateCodeNumber,
@@ -58,6 +59,7 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
               <SpaceTimeChartWithManchette
                 operationalPoints={pathProperties.manchetteOperationalPoints}
                 projectPathTrainResult={spaceTimeData}
+                selectedProjection={STDCM_TRAIN_ID}
               />
             ) : (
               <LoaderFill />
