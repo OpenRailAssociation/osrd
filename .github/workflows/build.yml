@@ -529,12 +529,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download built front-build image
-        if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: front-build
-          path: .
       - name: Download built editoast-test image
         if: needs.build.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v4
@@ -545,15 +539,7 @@ jobs:
       - name: Load built images
         if: needs.build.outputs.output_method == 'artifact'
         run: |
-          docker load --input ./osrd-front-build.tar
           docker load --input ./osrd-editoast-test.tar
-
-      - name: Check for i18n missing keys
-        run: |
-          docker run --name=front-i18n-checker --net=host \
-              ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
-              yarn i18n-checker
-          exit $(docker wait front-i18n-checker)
 
       - name: Execute tests within container
         run: |
@@ -826,6 +812,13 @@ jobs:
             yarn prettier . --check
 
           exit $(docker wait front-format)
+
+      - name: Check for i18n missing keys
+        run: |
+          docker run --name=front-i18n-checker --net=host \
+            ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
+            yarn i18n-checker
+          exit $(docker wait front-i18n-checker)
 
       - name: Execute tests within container
         run: |
