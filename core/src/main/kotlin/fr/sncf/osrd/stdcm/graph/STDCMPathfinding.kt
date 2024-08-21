@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.api.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
+import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -84,7 +85,7 @@ class STDCMPathfinding(
     private val maxRunTime: Double,
     private val tag: String?,
     private val standardAllowance: AllowanceValue?,
-    private val pathfindingTimeout: Double = 120.0
+    private val pathfindingTimeout: Double = Pathfinding.TIMEOUT
 ) {
 
     private var starts: Set<STDCMNode> = HashSet()
