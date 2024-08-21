@@ -3,6 +3,8 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::http::header;
 use axum::response::IntoResponse;
+use axum::Extension;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 use tokio_util::io::ReaderStream;
@@ -10,6 +12,8 @@ use tokio_util::io::ReaderStream;
 use crate::client::get_dynamic_assets_path;
 use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 
 crate::routes! {
     "/sprites" => {
@@ -37,7 +41,15 @@ enum SpriteErrors {
         (status = 200, description = "List of supported signaling systems", body = Vec<String>, example = json!(["BAL", "TVM300"])),
     ),
 )]
-async fn signaling_systems() -> Result<Json<Vec<String>>> {
+async fn signaling_systems(Extension(authorizer): AuthorizerExt) -> Result<Json<Vec<String>>> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::MapRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let sprite_configs = SpriteConfig::load();
     let signaling_systems = sprite_configs.keys().cloned().collect();
     Ok(Json(signaling_systems))
@@ -57,8 +69,17 @@ async fn signaling_systems() -> Result<Json<Vec<String>>> {
     ),
 )]
 async fn sprites(
+    Extension(authorizer): AuthorizerExt,
     Path((signaling_system, file_name)): Path<(String, String)>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::MapRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let sprite_configs = SpriteConfig::load();
     if !sprite_configs.contains_key(&signaling_system) {
         return Err(SpriteErrors::UnknownSignalingSystem { signaling_system }.into());
