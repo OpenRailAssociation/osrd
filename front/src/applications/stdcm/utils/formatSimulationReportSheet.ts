@@ -83,7 +83,7 @@ function getTimeAtPosition(
 ): string {
   const index = trainPositions.findIndex((pos) => pos >= trainPosition);
   const timeInMillis = trainTimes[index];
-  const timeInMinutes = Math.floor(timeInMillis / 60000);
+  const timeInMinutes = Math.round(timeInMillis / 60000);
   return addMinutesToTime(trainDepartureHour, trainDepartureMinute, timeInMinutes);
 }
 
