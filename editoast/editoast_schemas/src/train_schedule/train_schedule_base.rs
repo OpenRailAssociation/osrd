@@ -38,7 +38,6 @@ pub struct TrainScheduleBase {
     pub margins: Margins,
     #[serde(default)]
     pub initial_speed: f64,
-    #[schema(inline)]
     #[serde(default)]
     pub comfort: Comfort,
     pub constraint_distribution: Distribution,
