@@ -15,7 +15,8 @@ const ConflictCardV2 = ({
   onConflictClick: (conflict: ConflictWithTrainNames) => void;
 }) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
-
+  const start_time = formatToIsoDate(conflict.start_time, true);
+  const end_time = formatToIsoDate(conflict.end_time, true);
   return (
     <div
       className="conflict-card"
@@ -35,11 +36,11 @@ const ConflictCardV2 = ({
         <p>{t(`${conflict.conflict_type}`)}</p>
       </div>
       <div className="conflict-times">
-        <div className="start-time" title={formatToIsoDate(conflict.start_time, true)}>
-          {formatToIsoDate(conflict.start_time, true)}
+        <div className="start-time" title={start_time}>
+          {start_time}
         </div>
-        <div className="end-time" title={formatToIsoDate(conflict.end_time, true)}>
-          {formatToIsoDate(conflict.end_time, true)}
+        <div className="end-time" title={end_time}>
+          {end_time}
         </div>
       </div>
     </div>

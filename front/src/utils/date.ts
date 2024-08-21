@@ -12,6 +12,8 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 
+const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
+
 /**
  * @param dateTimeString date string in ISO format
  * @returns string "HH:MM:SS"
@@ -59,8 +61,7 @@ export function dateTimeFormatting(
   // Force interpreting the date in UTC
   const dateToUTC = dayjs(date).utc(isUTC);
   const dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
-  const tz = dayjs.tz.guess();
-  return dateToUTC.locale(locale).tz(tz).format(dateFormat).replace(/\./gi, '');
+  return dateToUTC.locale(locale).tz(userTimeZone).format(dateFormat).replace(/\./gi, '');
 }
 
 /**
@@ -73,7 +74,6 @@ export const dateTimeToIso = (inputDateTime: string) => {
   // Regex to check format 1234-56-78T12:00:00(:00)
   const inputDateTimeRegex = /^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(?::\d{2}){0,1}$/;
   if (inputDateTimeRegex.test(inputDateTime)) {
-    const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
     return dayjs.tz(inputDateTime, userTimeZone).format();
   }
   return null;
@@ -85,7 +85,6 @@ export const dateTimeToIso = (inputDateTime: string) => {
  * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00)
  */
 export const formatToIsoDate = (date: number | string, formatDate: boolean = false) => {
-  const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
   const format = formatDate ? 'D/MM/YYYY HH:mm:ss' : '';
   return dayjs.tz(date, userTimeZone).format(format);
 };
