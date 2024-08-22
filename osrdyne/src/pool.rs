@@ -42,6 +42,8 @@ pub struct Pool {
 
     pub extra_lifetime: Duration,
 
+    pub worker_loop_interval: Duration,
+
     pool_req_prefix: String,
     request_queue_policy: BTreeMap<String, ArgumentValue>,
 }
@@ -51,6 +53,7 @@ impl Pool {
         raw_pool_id: String,
         request_queue_policy: BTreeMap<String, ArgumentValue>,
         extra_lifetime: Duration,
+        worker_loop_interval: Duration,
     ) -> Self {
         let pool_id = utf8_percent_encode(&raw_pool_id, NON_ALPHANUMERIC).to_string();
 
@@ -83,6 +86,7 @@ impl Pool {
 
             pool_req_prefix,
             request_queue_policy,
+            worker_loop_interval,
         }
     }
 
@@ -224,12 +228,14 @@ impl Pool {
     pub async fn start(
         self: Arc<Self>,
         conn: &Connection,
+        driver: Box<dyn WorkerDriver>,
         management_client: &ManagementClient,
         tracker_client: TargetTrackerClient,
-        driver: Box<dyn WorkerDriver>,
-        worker_loop_interval: Duration,
         running_worker_watch: tokio::sync::watch::Sender<Arc<Vec<WorkerMetadata>>>,
+        status_tracker: tokio::sync::mpsc::Sender<ActivityMessage>,
     ) -> anyhow::Result<JoinSet<anyhow::Result<()>>> {
+        let worker_loop_interval = self.worker_loop_interval;
+
         let mut tasks = JoinSet::new();
         // start control loops
         let expected_state = tracker_client.subscribe().await?;
@@ -293,6 +299,7 @@ impl Pool {
             self.clone(),
             activity_channel,
             tracker_client.clone(),
+            status_tracker,
             self.extra_lifetime,
         ));
         tasks.spawn(orphan_processor(
@@ -366,10 +373,31 @@ async fn orphan_processor(
     Ok(())
 }
 
+pub struct ActivityMessage {
+    pub kind: ActivityMessageKind,
+    pub worker_key: Key,
+    pub worker_id: Vec<u8>,
+}
+
+pub enum ActivityMessageKind {
+    Ready,
+    Unknown,
+}
+
+impl ActivityMessageKind {
+    pub fn from_bytes(s: &[u8]) -> Self {
+        match s {
+            b"ready" => Self::Ready,
+            _ => Self::Unknown,
+        }
+    }
+}
+
 async fn activity_processor(
     pool: Arc<Pool>,
     chan: Channel,
     client: TargetTrackerClient,
+    status_tracker: tokio::sync::mpsc::Sender<ActivityMessage>,
     extra_lifetime: Duration,
 ) -> anyhow::Result<()> {
     chan.basic_qos(200, BasicQosOptions::default()).await?;
@@ -395,6 +423,29 @@ async fn activity_processor(
         let routing_key = delivery.routing_key.as_str();
         let key = Key::decode(routing_key);
         let now = std::time::Instant::now();
+
+        let headers = delivery.properties.headers();
+        let worker_id = headers
+            .as_ref()
+            .and_then(|h| h.inner().get("x-worker-id"))
+            .and_then(|v| v.as_long_string().map(|s| s.as_bytes()));
+
+        if let Some(worker_id) = worker_id {
+            let kind = headers
+                .as_ref()
+                .and_then(|h| h.inner().get("x-event"))
+                .and_then(|v| v.as_long_string())
+                .map(|s| s.as_bytes())
+                .map(ActivityMessageKind::from_bytes)
+                .unwrap_or(ActivityMessageKind::Unknown);
+
+            let activity = ActivityMessage {
+                kind,
+                worker_key: key.clone(),
+                worker_id: worker_id.to_owned(),
+            };
+            status_tracker.send(activity).await?;
+        }
 
         // debouncing
         if let Some(&last_activity) = last_activities.get(&key) {

@@ -83,6 +83,9 @@
         "WrongRailjsonVersionProvided": "Mauvaise version de railjson fournie"
       }
     },
+    "infra_state": {
+      "FetchError": "Erreur de récupération de l'état de chargement de l'infrastructure"
+    },
     "layers": {
       "LayerNotFound": "Couche de données {{layer_name}} non trouvée.",
       "ViewNotFound": "View {{view_name}} non trouvé."

@@ -17,6 +17,8 @@ use axum::response::IntoResponse;
 use axum::Extension;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
+use editoast_osrdyne_client::OsrdyneClient;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -28,9 +30,7 @@ use super::pagination::PaginationStats;
 use super::params::List;
 use super::AuthorizerExt;
 use crate::core::infra_loading::InfraLoadRequest;
-use crate::core::infra_state::InfraStateResponse;
 use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
@@ -210,6 +210,7 @@ async fn list(
         return Err(AuthorizationError::Unauthorized.into());
     }
     let db_pool = app_state.db_pool_v2.clone();
+    let osrdyne_client = app_state.osrdyne_client.clone();
 
     let settings = pagination_params
         .validate(1000)?
@@ -221,7 +222,7 @@ async fn list(
         Infra::list_paginated(conn, settings).await?
     };
 
-    let infra_states = fetch_all_infra_states(&infras).await?;
+    let infra_states = fetch_all_infra_states(&infras, osrdyne_client.as_ref()).await?;
 
     let response = InfraListResponse {
         stats,
@@ -230,8 +231,8 @@ async fn list(
             .map(|infra| {
                 let state = infra_states
                     .get(&infra.id.to_string())
-                    .map(|response| response.status)
-                    .unwrap_or_default();
+                    .cloned()
+                    .unwrap_or(InfraState::NotLoaded);
                 InfraWithState { infra, state }
             })
             .collect(),
@@ -255,7 +256,18 @@ pub enum InfraState {
     Error,
 }
 
-#[derive(Debug, Clone, Serialize, ToSchema)]
+impl From<editoast_osrdyne_client::WorkerStatus> for InfraState {
+    fn from(status: editoast_osrdyne_client::WorkerStatus) -> Self {
+        match status {
+            editoast_osrdyne_client::WorkerStatus::Unscheduled => InfraState::NotLoaded,
+            editoast_osrdyne_client::WorkerStatus::Started => InfraState::Initializing,
+            editoast_osrdyne_client::WorkerStatus::Ready => InfraState::Cached,
+            editoast_osrdyne_client::WorkerStatus::Error => InfraState::Error,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 struct InfraWithState {
     #[serde(flatten)]
     pub infra: Infra,
@@ -293,16 +305,14 @@ async fn get(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let core_client = app_state.core_client.clone();
+    let osrdyne_client = app_state.osrdyne_client.clone();
 
     let infra_id = infra.infra_id;
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
-    let state = fetch_infra_state(infra.id, core_client.as_ref())
-        .await?
-        .status;
+    let state = fetch_infra_state(infra.id, osrdyne_client.as_ref()).await?;
     Ok(Json(InfraWithState { infra, state }))
 }
 
@@ -727,29 +737,39 @@ async fn load(
     Ok(StatusCode::NO_CONTENT)
 }
 
-/// Builds a Core cache_status request, runs it
-pub async fn fetch_infra_state(_infra_id: i64, _core: &CoreClient) -> Result<InfraStateResponse> {
-    Ok(InfraStateResponse {
-        // TODO: have a way to actually report infras states
-        last_status: None,
-        status: InfraState::Cached,
-    })
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra_state")]
+pub enum InfraStateError {
+    #[error("Failed to fetch infra state: {0}")]
+    #[editoast_error(status = 500)]
+    FetchError(#[from] editoast_osrdyne_client::Error),
+}
+
+pub async fn fetch_infra_state(infra_id: i64, osrdyne: &OsrdyneClient) -> Result<InfraState> {
+    let status = osrdyne
+        .get_worker_status(&infra_id.to_string())
+        .await
+        .map_err(InfraStateError::FetchError)?;
+    Ok(status.into())
 }
 
 pub async fn fetch_all_infra_states(
     infras: &[Infra],
-) -> Result<HashMap<String, InfraStateResponse>> {
-    let infras = infras.iter().map(|infra| {
-        (
-            infra.id.to_string(),
-            InfraStateResponse {
-                // TODO: have a way to actually report infras states
-                last_status: None,
-                status: InfraState::Cached,
-            },
-        )
-    });
-    Ok(HashMap::from_iter(infras))
+    osrdyne: &OsrdyneClient,
+) -> Result<HashMap<String, InfraState>> {
+    let ids = infras
+        .iter()
+        .map(|infra| infra.id.to_string())
+        .collect_vec();
+    let statuses = osrdyne
+        .get_workers_statuses(&ids)
+        .await
+        .map_err(InfraStateError::FetchError)?;
+
+    Ok(statuses
+        .into_iter()
+        .map(|(id, status)| (id, status.into()))
+        .collect())
 }
 
 #[cfg(test)]
@@ -758,6 +778,7 @@ pub mod tests {
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
+    use editoast_osrdyne_client::WorkerStatus;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -766,6 +787,7 @@ pub mod tests {
 
     use super::*;
     use crate::core::mocking::MockingClient;
+    use crate::core::CoreClient;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::fixtures::create_empty_infra;
@@ -776,6 +798,7 @@ pub mod tests {
     use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_osrdyne_client::OsrdyneClient;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Speed;
     use editoast_schemas::infra::SpeedSection;
@@ -1194,5 +1217,24 @@ pub mod tests {
         let req = app.post(format!("/infra/{}/load", empty_infra.id).as_str());
 
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
+    }
+
+    #[rstest]
+    async fn infra_status() {
+        let db_pool: DbConnectionPoolV2 = DbConnectionPoolV2::for_tests();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+
+        let osrdyne_client = OsrdyneClient::mock()
+            .with_status(&empty_infra.id.to_string(), WorkerStatus::Ready)
+            .build();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool)
+            .core_client(CoreClient::default())
+            .osrdyne_client(osrdyne_client)
+            .build();
+
+        let req = app.get(format!("/infra/{}/", empty_infra.id).as_str());
+        let response: InfraWithState = app.fetch(req).assert_status(StatusCode::OK).json_into();
+        assert_eq!(response.state, InfraState::Cached);
     }
 }

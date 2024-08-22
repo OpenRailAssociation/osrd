@@ -1,0 +1,23 @@
+[package]
+name = "editoast_osrdyne_client"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[features]
+mock_client = []
+
+[dependencies]
+itertools.workspace = true
+reqwest.workspace = true
+serde = { workspace = true, features = ["derive"] }
+thiserror.workspace = true
+tracing.workspace = true
+url.workspace = true
+urlencoding.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+
+[lints]
+workspace = true

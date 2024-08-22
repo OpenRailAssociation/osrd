@@ -10,6 +10,7 @@ members = [
   "editoast_common",
   "editoast_derive",
   "editoast_models",
+  "editoast_osrdyne_client",
   "editoast_schemas",
   "editoast_search",
   "osm_to_railjson",
@@ -40,6 +41,7 @@ editoast_authz = { path = "./editoast_authz" }
 editoast_common = { path = "./editoast_common" }
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
+editoast_osrdyne_client = { path = "./editoast_osrdyne_client" }
 editoast_schemas = { path = "./editoast_schemas" }
 editoast_search = { path = "./editoast_search" }
 enum-map = "2.7.3"
@@ -57,6 +59,7 @@ postgres-openssl = "0.5.0"
 pretty_assertions = "1.4.1"
 rand = "0.8.5"
 rangemap = "1.5.1"
+reqwest = { version = "0.11.27", features = ["json"] }
 rstest = { version = "0.19.0", default-features = false }
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
@@ -70,6 +73,7 @@ tracing = { version = "0.1.40", default-features = false, features = [
   "log",
 ] }
 url = { version = "2.5.2", features = ["serde"] }
+urlencoding = "2.1.3"
 utoipa = { version = "4.2.3", features = ["chrono", "uuid"] }
 uuid = { version = "1.10.0", features = ["serde", "v4"] }
 
@@ -98,6 +102,7 @@ editoast_authz.workspace = true
 editoast_common = { workspace = true }
 editoast_derive.workspace = true
 editoast_models.workspace = true
+editoast_osrdyne_client.workspace = true
 editoast_schemas.workspace = true
 editoast_search = { workspace = true }
 enum-map.workspace = true
@@ -152,7 +157,7 @@ regex = "1.10.6"
 hostname.workspace = true
 lapin = "2.5.0"
 ordered-float = { version = "4.2.2", features = ["serde"] }
-reqwest = { version = "0.11.27", default-features = false, features = ["json"] }
+reqwest.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 serde_qs = { version = "0.13.0", features = ["axum"] }
@@ -189,6 +194,7 @@ axum = { version = "0.7.6", default-features = false, features = [
 ] }
 editoast_authz = { workspace = true, features = ["fixtures"] }
 editoast_models = { workspace = true, features = ["testing"] }
+editoast_osrdyne_client = { workspace = true, features = ["mock_client"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 serial_test = "3.1.1"

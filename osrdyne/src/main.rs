@@ -3,6 +3,7 @@ use lapin::ConnectionProperties;
 use log::error;
 use log::info;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -31,6 +32,7 @@ mod key;
 mod management_client;
 mod pool;
 mod queue_controller;
+mod status_tracker;
 mod target_tracker;
 mod watch_logger;
 
@@ -74,6 +76,7 @@ async fn main() -> Result<(), anyhow::Error> {
         config.pool_id.clone(),
         request_queues_policy(&config),
         config.extra_lifetime.unwrap_or(Duration::from_secs(1)),
+        config.worker_loop_interval,
     ));
 
     // fetch the list of queues from the web API
@@ -97,9 +100,21 @@ async fn main() -> Result<(), anyhow::Error> {
         target_tracker_config,
     ));
 
-    let (worker_list_send, woker_list_recv) = tokio::sync::watch::channel(Arc::new(vec![]));
-
-    tokio::spawn(api::create_server(config.api_address, woker_list_recv));
+    let (worker_list_send, worker_list_recv) = tokio::sync::watch::channel(Arc::new(vec![]));
+    let (worker_activity_send, worker_activity_recv) = tokio::sync::mpsc::channel(512);
+    let (worker_status_send, worker_status_recv) =
+        tokio::sync::watch::channel(Arc::new(HashMap::new()));
+    tokio::spawn(status_tracker::status_tracker(
+        worker_list_recv.clone(),
+        worker_activity_recv,
+        worker_status_send,
+    ));
+    tokio::spawn(api::create_server(
+        config.api_address,
+        worker_list_recv,
+        worker_status_recv,
+        matches!(config.worker_driver, WorkerDriverConfig::Noop),
+    ));
 
     'reconnect_loop: loop {
         // connect to rabbitmq
@@ -139,11 +154,11 @@ async fn main() -> Result<(), anyhow::Error> {
         let mut tasks = pool
             .start(
                 &conn,
+                driver,
                 &management_client,
                 target_tracker_client.clone(),
-                driver,
-                config.worker_loop_interval,
                 worker_list_send.clone(),
+                worker_activity_send.clone(),
             )
             .await?;
 
