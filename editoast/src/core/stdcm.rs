@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::core::v2::simulation::RoutingRequirement;
-use crate::core::v2::simulation::SpacingRequirement;
+use crate::core::simulation::RoutingRequirement;
+use crate::core::simulation::SpacingRequirement;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_schemas::infra::TrackOffset;

@@ -37,7 +37,6 @@ pub struct ConflictDetectionResponse {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-#[schema(as=ConflictV2)]
 pub struct Conflict {
     /// List of train ids involved in the conflict
     pub train_ids: Vec<i64>,

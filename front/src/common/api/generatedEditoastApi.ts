@@ -10,16 +10,15 @@ export const addTagTypes = [
   'layers',
   'projects',
   'studies',
+  'scenariosv2',
   'rolling_stock_livery',
   'search',
   'speed_limit_tags',
   'sprites',
   'stdcm_search_environment',
-  'pathfindingv2',
-  'scenariosv2',
-  'timetablev2',
+  'timetable',
   'stdcm',
-  'train_schedulev2',
+  'train_schedule',
   'work_schedules',
 ] as const;
 const injectedRtkApi = api
@@ -235,6 +234,18 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra'],
       }),
+      postInfraByInfraIdPathProperties: build.mutation<
+        PostInfraByInfraIdPathPropertiesApiResponse,
+        PostInfraByInfraIdPathPropertiesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/path_properties`,
+          method: 'POST',
+          body: queryArg.pathPropertiesInput,
+          params: { props: queryArg.props },
+        }),
+        invalidatesTags: ['pathfinding'],
+      }),
       postInfraByInfraIdPathfinding: build.mutation<
         PostInfraByInfraIdPathfindingApiResponse,
         PostInfraByInfraIdPathfindingApiArg
@@ -242,10 +253,21 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/infra/${queryArg.infraId}/pathfinding`,
           method: 'POST',
-          body: queryArg.pathfindingInput,
+          body: queryArg.infraPathfindingInput,
           params: { number: queryArg.number },
         }),
         invalidatesTags: ['infra', 'pathfinding'],
+      }),
+      postInfraByInfraIdPathfindingBlocks: build.mutation<
+        PostInfraByInfraIdPathfindingBlocksApiResponse,
+        PostInfraByInfraIdPathfindingBlocksApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/pathfinding/blocks`,
+          method: 'POST',
+          body: queryArg.pathfindingInput,
+        }),
+        invalidatesTags: ['pathfinding'],
       }),
       getInfraByInfraIdRailjson: build.query<
         GetInfraByInfraIdRailjsonApiResponse,
@@ -469,6 +491,61 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['studies'],
       }),
+      getProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+            ordering: queryArg.ordering,
+          },
+        }),
+        providesTags: ['scenariosv2'],
+      }),
+      postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
+        PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+        PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
+          method: 'POST',
+          body: queryArg.scenarioCreateForm,
+        }),
+        invalidatesTags: ['scenariosv2'],
+      }),
+      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
+        }),
+        providesTags: ['scenariosv2'],
+      }),
+      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['scenariosv2'],
+      }),
+      patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+        PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
+          method: 'PATCH',
+          body: queryArg.scenarioPatchForm,
+        }),
+        invalidatesTags: ['scenariosv2'],
+      }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
           url: `/rolling_stock`,
@@ -595,208 +672,130 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['stdcm_search_environment'],
       }),
-      postV2InfraByInfraIdPathProperties: build.mutation<
-        PostV2InfraByInfraIdPathPropertiesApiResponse,
-        PostV2InfraByInfraIdPathPropertiesApiArg
+      postTimetable: build.mutation<PostTimetableApiResponse, PostTimetableApiArg>({
+        query: () => ({ url: `/timetable`, method: 'POST' }),
+        invalidatesTags: ['timetable'],
+      }),
+      getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
+        query: (queryArg) => ({ url: `/timetable/${queryArg.id}` }),
+        providesTags: ['timetable'],
+      }),
+      deleteTimetableById: build.mutation<
+        DeleteTimetableByIdApiResponse,
+        DeleteTimetableByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/timetable/${queryArg.id}`, method: 'DELETE' }),
+        invalidatesTags: ['timetable'],
+      }),
+      getTimetableByIdConflicts: build.query<
+        GetTimetableByIdConflictsApiResponse,
+        GetTimetableByIdConflictsApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/infra/${queryArg.infraId}/path_properties`,
-          method: 'POST',
-          body: queryArg.pathPropertiesInput,
-          params: { props: queryArg.props },
-        }),
-        invalidatesTags: ['pathfindingv2'],
-      }),
-      postV2InfraByInfraIdPathfindingBlocks: build.mutation<
-        PostV2InfraByInfraIdPathfindingBlocksApiResponse,
-        PostV2InfraByInfraIdPathfindingBlocksApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/v2/infra/${queryArg.infraId}/pathfinding/blocks`,
-          method: 'POST',
-          body: queryArg.pathfindingInputV2,
-        }),
-        invalidatesTags: ['pathfindingv2'],
-      }),
-      getV2ProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
-        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-            ordering: queryArg.ordering,
-          },
-        }),
-        providesTags: ['scenariosv2'],
-      }),
-      postV2ProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
-        PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-        PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
-          method: 'POST',
-          body: queryArg.scenarioCreateFormV2,
-        }),
-        invalidatesTags: ['scenariosv2'],
-      }),
-      getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
-        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-        }),
-        providesTags: ['scenariosv2'],
-      }),
-      deleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
-        DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['scenariosv2'],
-      }),
-      patchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
-        PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-          method: 'PATCH',
-          body: queryArg.scenarioPatchFormV2,
-        }),
-        invalidatesTags: ['scenariosv2'],
-      }),
-      postV2Timetable: build.mutation<PostV2TimetableApiResponse, PostV2TimetableApiArg>({
-        query: () => ({ url: `/v2/timetable`, method: 'POST' }),
-        invalidatesTags: ['timetablev2'],
-      }),
-      getV2TimetableById: build.query<GetV2TimetableByIdApiResponse, GetV2TimetableByIdApiArg>({
-        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}` }),
-        providesTags: ['timetablev2'],
-      }),
-      deleteV2TimetableById: build.mutation<
-        DeleteV2TimetableByIdApiResponse,
-        DeleteV2TimetableByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}`, method: 'DELETE' }),
-        invalidatesTags: ['timetablev2'],
-      }),
-      getV2TimetableByIdConflicts: build.query<
-        GetV2TimetableByIdConflictsApiResponse,
-        GetV2TimetableByIdConflictsApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/v2/timetable/${queryArg.id}/conflicts`,
+          url: `/timetable/${queryArg.id}/conflicts`,
           params: {
             infra_id: queryArg.infraId,
             electrical_profile_set_id: queryArg.electricalProfileSetId,
           },
         }),
-        providesTags: ['timetablev2'],
+        providesTags: ['timetable'],
       }),
-      postV2TimetableByIdStdcm: build.mutation<
-        PostV2TimetableByIdStdcmApiResponse,
-        PostV2TimetableByIdStdcmApiArg
+      postTimetableByIdStdcm: build.mutation<
+        PostTimetableByIdStdcmApiResponse,
+        PostTimetableByIdStdcmApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/timetable/${queryArg.id}/stdcm`,
+          url: `/timetable/${queryArg.id}/stdcm`,
           method: 'POST',
           body: queryArg.body,
           params: { infra: queryArg.infra },
         }),
         invalidatesTags: ['stdcm'],
       }),
-      postV2TimetableByIdTrainSchedule: build.mutation<
-        PostV2TimetableByIdTrainScheduleApiResponse,
-        PostV2TimetableByIdTrainScheduleApiArg
+      postTimetableByIdTrainSchedule: build.mutation<
+        PostTimetableByIdTrainScheduleApiResponse,
+        PostTimetableByIdTrainScheduleApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/timetable/${queryArg.id}/train_schedule`,
+          url: `/timetable/${queryArg.id}/train_schedule`,
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['timetablev2', 'train_schedulev2'],
+        invalidatesTags: ['timetable', 'train_schedule'],
       }),
-      postV2TrainSchedule: build.query<PostV2TrainScheduleApiResponse, PostV2TrainScheduleApiArg>({
-        query: (queryArg) => ({ url: `/v2/train_schedule`, method: 'POST', body: queryArg.body }),
-        providesTags: ['train_schedulev2'],
+      postTrainSchedule: build.query<PostTrainScheduleApiResponse, PostTrainScheduleApiArg>({
+        query: (queryArg) => ({ url: `/train_schedule`, method: 'POST', body: queryArg.body }),
+        providesTags: ['train_schedule'],
       }),
-      deleteV2TrainSchedule: build.mutation<
-        DeleteV2TrainScheduleApiResponse,
-        DeleteV2TrainScheduleApiArg
+      deleteTrainSchedule: build.mutation<
+        DeleteTrainScheduleApiResponse,
+        DeleteTrainScheduleApiArg
       >({
-        query: (queryArg) => ({ url: `/v2/train_schedule`, method: 'DELETE', body: queryArg.body }),
-        invalidatesTags: ['timetablev2', 'train_schedulev2'],
+        query: (queryArg) => ({ url: `/train_schedule`, method: 'DELETE', body: queryArg.body }),
+        invalidatesTags: ['timetable', 'train_schedule'],
       }),
-      postV2TrainScheduleProjectPath: build.query<
-        PostV2TrainScheduleProjectPathApiResponse,
-        PostV2TrainScheduleProjectPathApiArg
+      postTrainScheduleProjectPath: build.query<
+        PostTrainScheduleProjectPathApiResponse,
+        PostTrainScheduleProjectPathApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/project_path`,
+          url: `/train_schedule/project_path`,
           method: 'POST',
           body: queryArg.projectPathForm,
         }),
-        providesTags: ['train_schedulev2'],
+        providesTags: ['train_schedule'],
       }),
-      postV2TrainScheduleSimulationSummary: build.query<
-        PostV2TrainScheduleSimulationSummaryApiResponse,
-        PostV2TrainScheduleSimulationSummaryApiArg
+      postTrainScheduleSimulationSummary: build.query<
+        PostTrainScheduleSimulationSummaryApiResponse,
+        PostTrainScheduleSimulationSummaryApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/simulation_summary`,
+          url: `/train_schedule/simulation_summary`,
           method: 'POST',
           body: queryArg.body,
         }),
-        providesTags: ['train_schedulev2'],
+        providesTags: ['train_schedule'],
       }),
-      getV2TrainScheduleById: build.query<
-        GetV2TrainScheduleByIdApiResponse,
-        GetV2TrainScheduleByIdApiArg
+      getTrainScheduleById: build.query<
+        GetTrainScheduleByIdApiResponse,
+        GetTrainScheduleByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/v2/train_schedule/${queryArg.id}` }),
-        providesTags: ['train_schedulev2'],
+        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}` }),
+        providesTags: ['train_schedule'],
       }),
-      putV2TrainScheduleById: build.mutation<
-        PutV2TrainScheduleByIdApiResponse,
-        PutV2TrainScheduleByIdApiArg
+      putTrainScheduleById: build.mutation<
+        PutTrainScheduleByIdApiResponse,
+        PutTrainScheduleByIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/${queryArg.id}`,
+          url: `/train_schedule/${queryArg.id}`,
           method: 'PUT',
           body: queryArg.trainScheduleForm,
         }),
-        invalidatesTags: ['train_schedulev2', 'timetablev2'],
+        invalidatesTags: ['train_schedule', 'timetable'],
       }),
-      getV2TrainScheduleByIdPath: build.query<
-        GetV2TrainScheduleByIdPathApiResponse,
-        GetV2TrainScheduleByIdPathApiArg
+      getTrainScheduleByIdPath: build.query<
+        GetTrainScheduleByIdPathApiResponse,
+        GetTrainScheduleByIdPathApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/${queryArg.id}/path`,
+          url: `/train_schedule/${queryArg.id}/path`,
           params: { infra_id: queryArg.infraId },
         }),
-        providesTags: ['train_schedulev2', 'pathfindingv2'],
+        providesTags: ['train_schedule', 'pathfinding'],
       }),
-      getV2TrainScheduleByIdSimulation: build.query<
-        GetV2TrainScheduleByIdSimulationApiResponse,
-        GetV2TrainScheduleByIdSimulationApiArg
+      getTrainScheduleByIdSimulation: build.query<
+        GetTrainScheduleByIdSimulationApiResponse,
+        GetTrainScheduleByIdSimulationApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/${queryArg.id}/simulation`,
+          url: `/train_schedule/${queryArg.id}/simulation`,
           params: {
             infra_id: queryArg.infraId,
             electrical_profile_set_id: queryArg.electricalProfileSetId,
           },
         }),
-        providesTags: ['train_schedulev2'],
+        providesTags: ['train_schedule'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
@@ -993,12 +992,28 @@ export type PostInfraByInfraIdObjectsAndObjectTypeApiArg = {
   objectType: ObjectType;
   body: string[];
 };
+export type PostInfraByInfraIdPathPropertiesApiResponse =
+  /** status 200 Path properties */ PathProperties;
+export type PostInfraByInfraIdPathPropertiesApiArg = {
+  /** The infra id */
+  infraId: number;
+  /** Path properties */
+  props: Property[];
+  pathPropertiesInput: PathPropertiesInput;
+};
 export type PostInfraByInfraIdPathfindingApiResponse =
   /** status 200 A list of shortest paths between starting and ending track locations */ PathfindingOutput[];
 export type PostInfraByInfraIdPathfindingApiArg = {
   /** An existing infra ID */
   infraId: number;
   number?: number | null;
+  infraPathfindingInput: InfraPathfindingInput;
+};
+export type PostInfraByInfraIdPathfindingBlocksApiResponse =
+  /** status 200 Pathfinding Result */ PathfindingResult;
+export type PostInfraByInfraIdPathfindingBlocksApiArg = {
+  /** The infra id */
+  infraId: number;
   pathfindingInput: PathfindingInput;
 };
 export type GetInfraByInfraIdRailjsonApiResponse =
@@ -1202,6 +1217,51 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** The fields to update */
   studyPatchForm: StudyPatchForm;
 };
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
+  /** status 200 A paginated list of scenarios */ PaginationStats & {
+    results: ScenarioWithDetails[];
+  };
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  page?: number;
+  pageSize?: number | null;
+  ordering?: Ordering;
+};
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
+  /** status 201 The created scenario */ ScenarioResponse;
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioCreateForm: ScenarioCreateForm;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 200 The requested scenario */ ScenarioResponse;
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+};
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 204 The scenario was deleted successfully */ void;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+};
+export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 204 The scenario was updated successfully */ ScenarioResponse;
+export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  scenarioPatchForm: ScenarioPatchForm;
+};
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
   locked?: boolean;
@@ -1276,90 +1336,28 @@ export type PostStdcmSearchEnvironmentApiResponse = /** status 201  */ StdcmSear
 export type PostStdcmSearchEnvironmentApiArg = {
   stdcmSearchEnvironmentCreateForm: StdcmSearchEnvironmentCreateForm;
 };
-export type PostV2InfraByInfraIdPathPropertiesApiResponse =
-  /** status 200 Path properties */ PathProperties;
-export type PostV2InfraByInfraIdPathPropertiesApiArg = {
-  /** The infra id */
-  infraId: number;
-  /** Path properties */
-  props: Property[];
-  pathPropertiesInput: PathPropertiesInput;
-};
-export type PostV2InfraByInfraIdPathfindingBlocksApiResponse =
-  /** status 200 Pathfinding Result */ PathfindingResult;
-export type PostV2InfraByInfraIdPathfindingBlocksApiArg = {
-  /** The infra id */
-  infraId: number;
-  pathfindingInputV2: PathfindingInputV2;
-};
-export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 200 A paginated list of scenarios */ PaginationStats & {
-    results: ScenarioWithDetails[];
-  };
-export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  page?: number;
-  pageSize?: number | null;
-  ordering?: Ordering;
-};
-export type PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 201 The created scenario */ ScenarioResponseV2;
-export type PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioCreateFormV2: ScenarioCreateFormV2;
-};
-export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The requested scenario */ ScenarioResponseV2;
-export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-};
-export type DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was deleted successfully */ void;
-export type DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-};
-export type PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was updated successfully */ ScenarioResponseV2;
-export type PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  scenarioPatchFormV2: ScenarioPatchFormV2;
-};
-export type PostV2TimetableApiResponse =
+export type PostTimetableApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableResult;
-export type PostV2TimetableApiArg = void;
-export type GetV2TimetableByIdApiResponse =
+export type PostTimetableApiArg = void;
+export type GetTimetableByIdApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableDetailedResult;
-export type GetV2TimetableByIdApiArg = {
+export type GetTimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
 };
-export type DeleteV2TimetableByIdApiResponse = unknown;
-export type DeleteV2TimetableByIdApiArg = {
+export type DeleteTimetableByIdApiResponse = unknown;
+export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
 };
-export type GetV2TimetableByIdConflictsApiResponse =
-  /** status 200 List of conflict */ ConflictV2[];
-export type GetV2TimetableByIdConflictsApiArg = {
+export type GetTimetableByIdConflictsApiResponse = /** status 200 List of conflict */ Conflict[];
+export type GetTimetableByIdConflictsApiArg = {
   /** A timetable ID */
   id: number;
   infraId: number;
   electricalProfileSetId?: number | null;
 };
-export type PostV2TimetableByIdStdcmApiResponse = /** status 201 The simulation result */
+export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation result */
   | {
       departure_time: string;
       path: PathfindingResultSuccess;
@@ -1373,7 +1371,7 @@ export type PostV2TimetableByIdStdcmApiResponse = /** status 201 The simulation 
       error: SimulationResponse;
       status: 'preprocessing_simulation_error';
     };
-export type PostV2TimetableByIdStdcmApiArg = {
+export type PostTimetableByIdStdcmApiArg = {
   /** The infra id */
   infra: number;
   /** timetable_id */
@@ -1408,65 +1406,65 @@ export type PostV2TimetableByIdStdcmApiArg = {
     work_schedule_group_id?: number | null;
   };
 };
-export type PostV2TimetableByIdTrainScheduleApiResponse =
+export type PostTimetableByIdTrainScheduleApiResponse =
   /** status 200 The created train schedules */ TrainScheduleResult[];
-export type PostV2TimetableByIdTrainScheduleApiArg = {
+export type PostTimetableByIdTrainScheduleApiArg = {
   /** A timetable ID */
   id: number;
   body: TrainScheduleBase[];
 };
-export type PostV2TrainScheduleApiResponse =
+export type PostTrainScheduleApiResponse =
   /** status 200 Retrieve a list of train schedule */ TrainScheduleResult[];
-export type PostV2TrainScheduleApiArg = {
+export type PostTrainScheduleApiArg = {
   body: {
     ids: number[];
   };
 };
-export type DeleteV2TrainScheduleApiResponse = unknown;
-export type DeleteV2TrainScheduleApiArg = {
+export type DeleteTrainScheduleApiResponse = unknown;
+export type DeleteTrainScheduleApiArg = {
   body: {
     ids: number[];
   };
 };
-export type PostV2TrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
+export type PostTrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
   [key: string]: ProjectPathTrainResult;
 };
-export type PostV2TrainScheduleProjectPathApiArg = {
+export type PostTrainScheduleProjectPathApiArg = {
   projectPathForm: ProjectPathForm;
 };
-export type PostV2TrainScheduleSimulationSummaryApiResponse =
+export type PostTrainScheduleSimulationSummaryApiResponse =
   /** status 200 Associate each train id with its simulation summary */ {
     [key: string]: SimulationSummaryResult;
   };
-export type PostV2TrainScheduleSimulationSummaryApiArg = {
+export type PostTrainScheduleSimulationSummaryApiArg = {
   body: {
     electrical_profile_set_id?: number | null;
     ids: number[];
     infra_id: number;
   };
 };
-export type GetV2TrainScheduleByIdApiResponse =
+export type GetTrainScheduleByIdApiResponse =
   /** status 200 The train schedule */ TrainScheduleResult;
-export type GetV2TrainScheduleByIdApiArg = {
+export type GetTrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
 };
-export type PutV2TrainScheduleByIdApiResponse =
+export type PutTrainScheduleByIdApiResponse =
   /** status 200 The train schedule have been updated */ TrainScheduleResult;
-export type PutV2TrainScheduleByIdApiArg = {
+export type PutTrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
   trainScheduleForm: TrainScheduleForm;
 };
-export type GetV2TrainScheduleByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
-export type GetV2TrainScheduleByIdPathApiArg = {
+export type GetTrainScheduleByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
+export type GetTrainScheduleByIdPathApiArg = {
   /** A train schedule ID */
   id: number;
   infraId: number;
 };
-export type GetV2TrainScheduleByIdSimulationApiResponse =
+export type GetTrainScheduleByIdSimulationApiResponse =
   /** status 200 Simulation Output */ SimulationResponse;
-export type GetV2TrainScheduleByIdSimulationApiArg = {
+export type GetTrainScheduleByIdSimulationApiArg = {
   /** A train schedule ID */
   id: number;
   infraId: number;
@@ -2085,6 +2083,70 @@ export type InfraObjectWithGeometry = {
   obj_id: string;
   railjson: object;
 };
+export type OperationalPointExtensions = {
+  identifier?: {
+    name: string;
+    uic: number;
+  } | null;
+  sncf?: {
+    ch: string;
+    ch_long_label: string;
+    ch_short_label: string;
+    ci: number;
+    trigram: string;
+  } | null;
+};
+export type PathProperties = {
+  curves?: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: number[];
+  } | null;
+  electrifications?: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: (
+      | {
+          type: 'electrification';
+          voltage: string;
+        }
+      | {
+          lower_pantograph: boolean;
+          type: 'neutral_section';
+        }
+      | {
+          type: 'non_electrified';
+        }
+    )[];
+  } | null;
+  geometry?: GeoJsonLineString | null;
+  /** Operational points along the path */
+  operational_points?:
+    | {
+        extensions?: OperationalPointExtensions;
+        id: string;
+        part: OperationalPointPart;
+        /** Distance from the beginning of the path in mm */
+        position: number;
+      }[]
+    | null;
+  slopes?: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: number[];
+  } | null;
+};
+export type Property = 'slopes' | 'curves' | 'electrifications' | 'geometry' | 'operational_points';
+export type PathPropertiesInput = {
+  /** List of track sections */
+  track_section_ranges: TrackRange[];
+};
 export type PathfindingOutput = {
   detectors: string[];
   switches_directions: {
@@ -2096,18 +2158,117 @@ export type PathfindingTrackLocationInput = {
   position: number;
   track: string;
 };
-export type PathfindingInput = {
+export type InfraPathfindingInput = {
   ending: PathfindingTrackLocationInput;
   starting: PathfindingTrackLocationInput;
 };
-export type RoutePath = {
-  switches_directions: (string & string)[][];
-  track_ranges: DirectionalTrackRange[];
+export type PathfindingResultSuccess = {
+  /** Path description as block ids */
+  blocks: string[];
+  /** Length of the path in mm */
+  length: number;
+  /** The path offset in mm of each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
+  path_item_positions: number[];
+  /** Path description as route ids */
+  routes: string[];
+  /** Path description as track ranges */
+  track_section_ranges: TrackRange[];
+};
+export type OffsetRange = {
+  end: number;
+  start: number;
+};
+export type IncompatibleOffsetRangeWithValue = {
+  range: OffsetRange;
+  value: string;
+};
+export type IncompatibleOffsetRange = {
+  range: OffsetRange;
+};
+export type IncompatibleConstraints = {
+  incompatible_electrification_ranges: IncompatibleOffsetRangeWithValue[];
+  incompatible_gauge_ranges: IncompatibleOffsetRange[];
+  incompatible_signaling_system_ranges: IncompatibleOffsetRangeWithValue[];
 };
 export type TrackOffset = {
   /** Offset in mm */
   offset: number;
   track: string;
+};
+export type PathItemLocation =
+  | TrackOffset
+  | {
+      operational_point: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      trigram: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+      uic: number;
+    };
+export type PathfindingResult =
+  | (PathfindingResultSuccess & {
+      status: 'success';
+    })
+  | {
+      length: number;
+      status: 'not_found_in_blocks';
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      length: number;
+      status: 'not_found_in_routes';
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      status: 'not_found_in_tracks';
+    }
+  | {
+      incompatible_constraints: IncompatibleConstraints;
+      relaxed_constraints_path: PathfindingResultSuccess;
+      status: 'incompatible_constraints';
+    }
+  | {
+      index: number;
+      path_item: PathItemLocation;
+      status: 'invalid_path_item';
+    }
+  | {
+      status: 'not_enough_path_items';
+    }
+  | {
+      rolling_stock_name: string;
+      status: 'rolling_stock_not_found';
+    }
+  | {
+      core_error: InternalError;
+      status: 'pathfinding_failed';
+    };
+export type PathfindingInput = {
+  /** List of waypoints given to the pathfinding */
+  path_items: PathItemLocation[];
+  /** Can the rolling stock run on non-electrified tracks */
+  rolling_stock_is_thermal: boolean;
+  /** Rolling stock length */
+  rolling_stock_length: number;
+  rolling_stock_loading_gauge: LoadingGaugeType;
+  /** Rolling stock maximum speed */
+  rolling_stock_maximum_speed: number;
+  /** List of supported electrification modes.
+    Empty if does not support any electrification */
+  rolling_stock_supported_electrifications: string[];
+  /** List of supported signaling systems */
+  rolling_stock_supported_signaling_systems: string[];
+};
+export type RoutePath = {
+  switches_directions: (string & string)[][];
+  track_ranges: DirectionalTrackRange[];
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
@@ -2300,6 +2461,43 @@ export type StudyPatchForm = {
   start_date?: string | null;
   state?: string | null;
   study_type?: string | null;
+  tags?: Tags | null;
+};
+export type Scenario = {
+  creation_date: string;
+  description: string;
+  electrical_profile_set_id?: number;
+  id: number;
+  infra_id: number;
+  last_modification: string;
+  name: string;
+  study_id: number;
+  tags: Tags;
+  timetable_id: number;
+};
+export type ScenarioWithDetails = Scenario & {
+  infra_name: string;
+  trains_count: number;
+};
+export type ScenarioResponse = Scenario & {
+  infra_name: string;
+  project: Project;
+  study: Study;
+  trains_count: number;
+};
+export type ScenarioCreateForm = {
+  description?: string;
+  electrical_profile_set_id?: number | null;
+  infra_id: number;
+  name: string;
+  tags?: Tags;
+  timetable_id: number;
+};
+export type ScenarioPatchForm = {
+  description?: string | null;
+  electrical_profile_set_id?: number | null;
+  infra_id?: number | null;
+  name?: string | null;
   tags?: Tags | null;
 };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
@@ -2539,206 +2737,6 @@ export type StdcmSearchEnvironmentCreateForm = {
   timetable_id: number;
   work_schedule_group_id?: number | null;
 };
-export type OperationalPointExtensions = {
-  identifier?: {
-    name: string;
-    uic: number;
-  } | null;
-  sncf?: {
-    ch: string;
-    ch_long_label: string;
-    ch_short_label: string;
-    ci: number;
-    trigram: string;
-  } | null;
-};
-export type PathProperties = {
-  curves?: {
-    /** List of `n` boundaries of the ranges.
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: number[];
-  } | null;
-  electrifications?: {
-    /** List of `n` boundaries of the ranges.
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: (
-      | {
-          type: 'electrification';
-          voltage: string;
-        }
-      | {
-          lower_pantograph: boolean;
-          type: 'neutral_section';
-        }
-      | {
-          type: 'non_electrified';
-        }
-    )[];
-  } | null;
-  geometry?: GeoJsonLineString | null;
-  /** Operational points along the path */
-  operational_points?:
-    | {
-        extensions?: OperationalPointExtensions;
-        id: string;
-        part: OperationalPointPart;
-        /** Distance from the beginning of the path in mm */
-        position: number;
-      }[]
-    | null;
-  slopes?: {
-    /** List of `n` boundaries of the ranges.
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: number[];
-  } | null;
-};
-export type Property = 'slopes' | 'curves' | 'electrifications' | 'geometry' | 'operational_points';
-export type PathPropertiesInput = {
-  /** List of track sections */
-  track_section_ranges: TrackRange[];
-};
-export type PathfindingResultSuccess = {
-  /** Path description as block ids */
-  blocks: string[];
-  /** Length of the path in mm */
-  length: number;
-  /** The path offset in mm of each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
-  path_item_positions: number[];
-  /** Path description as route ids */
-  routes: string[];
-  /** Path description as track ranges */
-  track_section_ranges: TrackRange[];
-};
-export type OffsetRange = {
-  end: number;
-  start: number;
-};
-export type IncompatibleOffsetRangeWithValue = {
-  range: OffsetRange;
-  value: string;
-};
-export type IncompatibleOffsetRange = {
-  range: OffsetRange;
-};
-export type IncompatibleConstraints = {
-  incompatible_electrification_ranges: IncompatibleOffsetRangeWithValue[];
-  incompatible_gauge_ranges: IncompatibleOffsetRange[];
-  incompatible_signaling_system_ranges: IncompatibleOffsetRangeWithValue[];
-};
-export type PathItemLocation =
-  | TrackOffset
-  | {
-      operational_point: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      trigram: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-      uic: number;
-    };
-export type PathfindingResult =
-  | (PathfindingResultSuccess & {
-      status: 'success';
-    })
-  | {
-      length: number;
-      status: 'not_found_in_blocks';
-      track_section_ranges: TrackRange[];
-    }
-  | {
-      length: number;
-      status: 'not_found_in_routes';
-      track_section_ranges: TrackRange[];
-    }
-  | {
-      status: 'not_found_in_tracks';
-    }
-  | {
-      incompatible_constraints: IncompatibleConstraints;
-      relaxed_constraints_path: PathfindingResultSuccess;
-      status: 'incompatible_constraints';
-    }
-  | {
-      index: number;
-      path_item: PathItemLocation;
-      status: 'invalid_path_item';
-    }
-  | {
-      status: 'not_enough_path_items';
-    }
-  | {
-      rolling_stock_name: string;
-      status: 'rolling_stock_not_found';
-    }
-  | {
-      core_error: InternalError;
-      status: 'pathfinding_failed';
-    };
-export type PathfindingInputV2 = {
-  /** List of waypoints given to the pathfinding */
-  path_items: PathItemLocation[];
-  /** Can the rolling stock run on non-electrified tracks */
-  rolling_stock_is_thermal: boolean;
-  /** Rolling stock length */
-  rolling_stock_length: number;
-  rolling_stock_loading_gauge: LoadingGaugeType;
-  /** Rolling stock maximum speed */
-  rolling_stock_maximum_speed: number;
-  /** List of supported electrification modes.
-    Empty if does not support any electrification */
-  rolling_stock_supported_electrifications: string[];
-  /** List of supported signaling systems */
-  rolling_stock_supported_signaling_systems: string[];
-};
-export type ScenarioV2 = {
-  creation_date: string;
-  description: string;
-  electrical_profile_set_id?: number;
-  id: number;
-  infra_id: number;
-  last_modification: string;
-  name: string;
-  study_id: number;
-  tags: Tags;
-  timetable_id: number;
-};
-export type ScenarioWithDetails = ScenarioV2 & {
-  infra_name: string;
-  trains_count: number;
-};
-export type ScenarioResponseV2 = ScenarioV2 & {
-  infra_name: string;
-  project: Project;
-  study: Study;
-  trains_count: number;
-};
-export type ScenarioCreateFormV2 = {
-  description?: string;
-  electrical_profile_set_id?: number | null;
-  infra_id: number;
-  name: string;
-  tags?: Tags;
-  timetable_id: number;
-};
-export type ScenarioPatchFormV2 = {
-  description?: string | null;
-  electrical_profile_set_id?: number | null;
-  infra_id?: number | null;
-  name?: string | null;
-  tags?: Tags | null;
-};
 export type TimetableResult = {
   timetable_id: number;
 };
@@ -2746,7 +2744,7 @@ export type TimetableDetailedResult = {
   timetable_id: number;
   train_ids: number[];
 };
-export type ConflictV2 = {
+export type Conflict = {
   conflict_type: 'Spacing' | 'Routing';
   /** Datetime of the end of the conflict */
   end_time: string;
@@ -2755,7 +2753,7 @@ export type ConflictV2 = {
   /** List of train ids involved in the conflict */
   train_ids: number[];
 };
-export type ReportTrainV2 = {
+export type ReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
   /** Time in ms of each path item given as input of the pathfinding
@@ -2805,7 +2803,7 @@ export type ZoneUpdate = {
 };
 export type SimulationResponse =
   | {
-      base: ReportTrainV2;
+      base: ReportTrain;
       electrical_profiles: {
         /** List of `n` boundaries of the ranges (block path).
         A boundary is a distance from the beginning of the path in mm. */
@@ -2822,7 +2820,7 @@ export type SimulationResponse =
             }
         )[];
       };
-      final_output: ReportTrainV2 & {
+      final_output: ReportTrain & {
         routing_requirements: RoutingRequirement[];
         signal_sightings: SignalSighting[];
         spacing_requirements: SpacingRequirement[];
@@ -2854,7 +2852,7 @@ export type SimulationResponse =
           speed: number;
         }[];
       };
-      provisional: ReportTrainV2;
+      provisional: ReportTrain;
       status: 'success';
     }
   | {

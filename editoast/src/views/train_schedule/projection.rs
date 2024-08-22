@@ -20,13 +20,13 @@ use utoipa::ToSchema;
 
 use super::TrainScheduleError;
 use crate::client::get_app_version;
-use crate::core::v2::pathfinding::PathfindingResult;
-use crate::core::v2::pathfinding::PathfindingResultSuccess;
-use crate::core::v2::pathfinding::TrackRange;
-use crate::core::v2::signal_projection::SignalUpdate;
-use crate::core::v2::signal_projection::SignalUpdatesRequest;
-use crate::core::v2::signal_projection::TrainSimulation;
-use crate::core::v2::simulation::SimulationResponse;
+use crate::core::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingResultSuccess;
+use crate::core::pathfinding::TrackRange;
+use crate::core::signal_projection::SignalUpdate;
+use crate::core::signal_projection::SignalUpdatesRequest;
+use crate::core::signal_projection::TrainSimulation;
+use crate::core::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -34,13 +34,13 @@ use crate::modelsv2::infra::Infra;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
-use crate::views::v2::path::projection::PathProjection;
-use crate::views::v2::path::projection::TrackLocationFromPath;
-use crate::views::v2::train_schedule::train_simulation_batch;
-use crate::views::v2::train_schedule::CompleteReportTrain;
-use crate::views::v2::train_schedule::ReportTrain;
-use crate::views::v2::train_schedule::SignalSighting;
-use crate::views::v2::train_schedule::ZoneUpdate;
+use crate::views::path::projection::PathProjection;
+use crate::views::path::projection::TrackLocationFromPath;
+use crate::views::train_schedule::train_simulation_batch;
+use crate::views::train_schedule::CompleteReportTrain;
+use crate::views::train_schedule::ReportTrain;
+use crate::views::train_schedule::SignalSighting;
+use crate::views::train_schedule::ZoneUpdate;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;
@@ -119,7 +119,7 @@ struct CachedProjectPathTrainResult {
 /// Train schedules that are invalid (pathfinding or simulation failed) are not included in the result
 #[utoipa::path(
     post, path = "",
-    tag = "train_schedulev2",
+    tag = "train_schedule",
     request_body = ProjectPathForm,
     responses(
         (status = 200, description = "Project Path Output", body = HashMap<i64, ProjectPathTrainResult>),

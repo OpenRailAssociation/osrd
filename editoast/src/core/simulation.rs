@@ -13,7 +13,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::pathfinding::TrackRange;
-use crate::core::v2::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingResult;
 use crate::core::{AsCoreRequest, Json};
 use crate::error::InternalError;
 use crate::RollingStockModel;
@@ -138,7 +138,6 @@ pub struct SimulationPath {
 }
 
 #[derive(Deserialize, Default, Serialize, Clone, Debug, ToSchema)]
-#[schema(as = ReportTrainV2)]
 pub struct ReportTrain {
     /// List of positions of a train
     /// Both positions (in mm) and times (in ms) must have the same length
@@ -156,7 +155,6 @@ pub struct ReportTrain {
 #[derive(Deserialize, Default, Serialize, Clone, Debug, ToSchema)]
 pub struct CompleteReportTrain {
     #[serde(flatten)]
-    #[schema(value_type = ReportTrainV2)]
     pub report_train: ReportTrain,
     pub signal_sightings: Vec<SignalSighting>,
     pub zone_updates: Vec<ZoneUpdate>,
@@ -288,10 +286,8 @@ pub struct SimulationRequest {
 pub enum SimulationResponse {
     Success {
         /// Simulation without any regularity margins
-        #[schema(value_type = ReportTrainV2)]
         base: ReportTrain,
         /// Simulation that takes into account the regularity margins
-        #[schema(value_type = ReportTrainV2)]
         provisional: ReportTrain,
         #[schema(inline)]
         /// User-selected simulation: can be base or provisional

@@ -12,8 +12,7 @@ use crate::modelsv2::Tags;
 use editoast_models::DbConnection;
 
 #[derive(Debug, Clone, ModelV2, Deserialize, Serialize, ToSchema)]
-#[schema(as = ScenarioV2)]
-#[model(table = editoast_models::tables::scenario_v2)]
+#[model(table = editoast_models::tables::scenario)]
 #[model(gen(ops = crud, list))]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct Scenario {
@@ -44,8 +43,8 @@ impl Scenario {
     }
 
     pub async fn trains_count(&self, conn: &mut DbConnection) -> Result<i64> {
-        use editoast_models::tables::train_schedule_v2::dsl::*;
-        let trains_count = train_schedule_v2
+        use editoast_models::tables::train_schedule::dsl::*;
+        let trains_count = train_schedule
             .filter(timetable_id.eq(self.timetable_id))
             .count()
             .get_result(conn)

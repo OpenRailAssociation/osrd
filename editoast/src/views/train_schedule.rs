@@ -24,18 +24,18 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
-use crate::core::v2::pathfinding::PathfindingResult;
-use crate::core::v2::pathfinding::PathfindingResultSuccess;
-use crate::core::v2::simulation::CompleteReportTrain;
-use crate::core::v2::simulation::ReportTrain;
-use crate::core::v2::simulation::SignalSighting;
-use crate::core::v2::simulation::SimulationMargins;
-use crate::core::v2::simulation::SimulationPath;
-use crate::core::v2::simulation::SimulationPowerRestrictionItem;
-use crate::core::v2::simulation::SimulationRequest;
-use crate::core::v2::simulation::SimulationResponse;
-use crate::core::v2::simulation::SimulationScheduleItem;
-use crate::core::v2::simulation::ZoneUpdate;
+use crate::core::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingResultSuccess;
+use crate::core::simulation::CompleteReportTrain;
+use crate::core::simulation::ReportTrain;
+use crate::core::simulation::SignalSighting;
+use crate::core::simulation::SimulationMargins;
+use crate::core::simulation::SimulationPath;
+use crate::core::simulation::SimulationPowerRestrictionItem;
+use crate::core::simulation::SimulationRequest;
+use crate::core::simulation::SimulationResponse;
+use crate::core::simulation::SimulationScheduleItem;
+use crate::core::simulation::ZoneUpdate;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -43,9 +43,9 @@ use crate::modelsv2::infra::Infra;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
-use crate::views::v2::path::pathfinding::pathfinding_from_train;
-use crate::views::v2::path::pathfinding_from_train_batch;
-use crate::views::v2::path::PathfindingError;
+use crate::views::path::pathfinding::pathfinding_from_train;
+use crate::views::path::pathfinding_from_train_batch;
+use crate::views::path::PathfindingError;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;
@@ -57,7 +57,7 @@ use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 
 crate::routes! {
-    "/v2/train_schedule" => {
+    "/train_schedule" => {
         delete,
         "/simulation_summary" => simulation_summary,
         get_batch,
@@ -82,7 +82,7 @@ editoast_common::schemas! {
 }
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "train_schedule_v2")]
+#[editoast_error(base_id = "train_schedule")]
 #[allow(clippy::enum_variant_names)] // Variant have the same postfix by chance, it's not a problem
 pub enum TrainScheduleError {
     #[error("Train Schedule '{train_schedule_id}', could not be found")]
@@ -170,7 +170,7 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
 /// Return a specific train schedule
 #[utoipa::path(
     get, path = "",
-    tag = "train_schedulev2",
+    tag = "train_schedule",
     params(TrainScheduleIdParam),
     responses(
         (status = 200, description = "The train schedule", body = TrainScheduleResult)
@@ -208,7 +208,7 @@ struct BatchRequest {
 /// Return a specific train schedule
 #[utoipa::path(
     post, path = "",
-    tag = "train_schedulev2",
+    tag = "train_schedule",
     request_body = inline(BatchRequest),
     responses(
         (status = 200, description = "Retrieve a list of train schedule", body = Vec<TrainScheduleResult>)
@@ -242,7 +242,7 @@ async fn get_batch(
 /// Delete a train schedule and its result
 #[utoipa::path(
     delete, path = "",
-    tag = "timetablev2,train_schedulev2",
+    tag = "timetable,train_schedule",
     request_body = inline(BatchRequest),
     responses(
         (status = 204, description = "All train schedules have been deleted")
@@ -276,7 +276,7 @@ async fn delete(
 /// Update  train schedule at once
 #[utoipa::path(
     put, path = "",
-    tag = "train_schedulev2,timetablev2",
+    tag = "train_schedule,timetable",
     request_body = TrainScheduleForm,
     params(TrainScheduleIdParam),
     responses(
@@ -326,7 +326,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 /// Retrieve the space, speed and time curve of a given train
 #[utoipa::path(
     get, path = "",
-    tag = "train_schedulev2",
+    tag = "train_schedule",
     params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
         (status = 200, description = "Simulation Output", body = SimulationResponse),
@@ -661,7 +661,7 @@ enum SimulationSummaryResult {
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 #[utoipa::path(
     post, path = "",
-    tag = "train_schedulev2",
+    tag = "train_schedule",
     request_body = inline(SimulationBatchForm),
     responses(
         (status = 200, description = "Associate each train id with its simulation summary", body = HashMap<i64, SimulationSummaryResult>),
@@ -760,7 +760,7 @@ async fn simulation_summary(
 /// Get a path from a trainschedule given an infrastructure id and a train schedule id
 #[utoipa::path(
     get, path = "",
-    tag = "train_schedulev2,pathfindingv2",
+    tag = "train_schedule,pathfinding",
     params(TrainScheduleIdParam, InfraIdQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),
@@ -831,7 +831,7 @@ mod tests {
         let train_schedule =
             create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
 
-        let url = format!("/v2/train_schedule/{}", train_schedule.id);
+        let url = format!("/train_schedule/{}", train_schedule.id);
         let request = app.get(&url);
 
         let response = app
@@ -858,7 +858,7 @@ mod tests {
         let ts3 = create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
 
         // Should succeed
-        let request = app.post("/v2/train_schedule").json(&json!({
+        let request = app.post("/train_schedule").json(&json!({
             "ids": vec![ts1.id, ts2.id, ts3.id]
         }));
         let response: Vec<TrainScheduleResult> =
@@ -876,7 +876,7 @@ mod tests {
 
         // Insert train_schedule
         let request = app
-            .post(format!("/v2/timetable/{}/train_schedule", timetable.id).as_str())
+            .post(format!("/timetable/{}/train_schedule", timetable.id).as_str())
             .json(&json!(vec![train_schedule_base]));
 
         let response: Vec<TrainScheduleResult> =
@@ -894,7 +894,7 @@ mod tests {
             create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
 
         let request = app
-            .delete("/v2/train_schedule/")
+            .delete("/train_schedule/")
             .json(&json!({"ids": vec![train_schedule.id]}));
 
         let _ = app.fetch(request).assert_status(StatusCode::NO_CONTENT);
@@ -924,7 +924,7 @@ mod tests {
         };
 
         let request = app
-            .put(format!("/v2/train_schedule/{}", train_schedule.id).as_str())
+            .put(format!("/train_schedule/{}", train_schedule.id).as_str())
             .json(&json!(update_train_schedule_form));
 
         let response: TrainScheduleResult =
@@ -1005,7 +1005,7 @@ mod tests {
         let timetable = create_timetable(db_pool.get_ok().deref_mut()).await;
         let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
             rolling_stock_name: rolling_stock.name.clone(),
-            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
+            ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
                 .expect("Unable to parse")
         };
         let train_schedule: Changeset<TrainSchedule> = TrainScheduleForm {
@@ -1026,7 +1026,7 @@ mod tests {
             app_infra_id_train_schedule_id_for_simulation_tests().await;
         let request = app.get(
             format!(
-                "/v2/train_schedule/{}/simulation/?infra_id={}",
+                "/train_schedule/{}/simulation/?infra_id={}",
                 train_schedule_id, infra_id
             )
             .as_str(),
@@ -1038,12 +1038,10 @@ mod tests {
     async fn train_schedule_simulation_summary() {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_train_schedule_id_for_simulation_tests().await;
-        let request = app
-            .post("/v2/train_schedule/simulation_summary")
-            .json(&json!({
-                "infra_id": infra_id,
-                "ids": vec![train_schedule_id],
-            }));
+        let request = app.post("/train_schedule/simulation_summary").json(&json!({
+            "infra_id": infra_id,
+            "ids": vec![train_schedule_id],
+        }));
         app.fetch(request).assert_status(StatusCode::OK);
     }
 }

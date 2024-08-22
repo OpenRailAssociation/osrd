@@ -8,7 +8,7 @@ pub use pathfinding::pathfinding_from_train_batch;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 
-use crate::core::v2::pathfinding::TrackRange;
+use crate::core::pathfinding::TrackRange;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;

@@ -44,7 +44,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::normalize_path::NormalizePathLayer;
 use tower_http::trace::TraceLayer;
-use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
+use views::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
 use diesel::sql_query;
@@ -251,7 +251,6 @@ async fn trains_export(
                 return Err(Box::new(error));
             }
         };
-
     let (train_schedules, missing): (Vec<_>, _) =
         TrainSchedule::retrieve_batch(db_pool.get().await?.deref_mut(), train_ids).await?;
 
@@ -931,7 +930,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_export_timetable_schedule_v2() {
+    async fn import_export_timetable_schedule() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let timetable = Timetable::create(db_pool.get_ok().deref_mut())

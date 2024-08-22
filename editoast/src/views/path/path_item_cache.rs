@@ -1,4 +1,4 @@
-use crate::core::v2::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingResult;
 use crate::error::Result;
 use crate::modelsv2::TrackSectionModel;
 use crate::RetrieveBatchUnchecked;

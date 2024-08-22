@@ -23,8 +23,8 @@ use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::Scenario;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
-use crate::views::rolling_stock::RollingStockForm;
-use crate::views::v2::train_schedule::TrainScheduleForm;
+use crate::views::rolling_stock::form::RollingStockForm;
+use crate::views::train_schedule::TrainScheduleForm;
 use crate::ElectricalProfileSet;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
@@ -103,7 +103,7 @@ pub fn scenario_changeset(
 ) -> Changeset<Scenario> {
     Scenario::changeset()
         .name(name.to_string())
-        .description("test_scenario_v2 description".to_string())
+        .description("test_scenario description".to_string())
         .creation_date(Utc::now().naive_utc())
         .last_modification(Utc::now().naive_utc())
         .tags(Tags::default())

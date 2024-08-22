@@ -752,6 +752,40 @@ paths:
           description: Duplicate object ids provided
         '404':
           description: Object ID or infra ID invalid
+  /infra/{infra_id}/path_properties:
+    post:
+      tags:
+      - pathfinding
+      summary: Compute path properties
+      parameters:
+      - name: infra_id
+        in: path
+        description: The infra id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: props
+        in: query
+        description: Path properties
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/Property'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathPropertiesInput'
+        required: true
+      responses:
+        '200':
+          description: Path properties
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathProperties'
   /infra/{infra_id}/pathfinding:
     post:
       tags:
@@ -778,7 +812,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PathfindingInput'
+              $ref: '#/components/schemas/InfraPathfindingInput'
         required: true
       responses:
         '200':
@@ -789,6 +823,32 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PathfindingOutput'
+  /infra/{infra_id}/pathfinding/blocks:
+    post:
+      tags:
+      - pathfinding
+      summary: Compute a pathfinding
+      parameters:
+      - name: infra_id
+        in: path
+        description: The infra id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathfindingInput'
+        required: true
+      responses:
+        '200':
+          description: Pathfinding Result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathfindingResult'
   /infra/{infra_id}/railjson:
     get:
       tags:
@@ -1599,6 +1659,210 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
+  /projects/{project_id}/studies/{study_id}/scenarios:
+    get:
+      tags:
+      - scenarios
+      summary: Return a list of scenarios
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 25
+          nullable: true
+          minimum: 1
+      - name: ordering
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Ordering'
+      responses:
+        '200':
+          description: A paginated list of scenarios
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ScenarioWithDetails'
+        '404':
+          description: Project or study doesn't exist
+    post:
+      tags:
+      - scenarios
+      summary: Create a scenario
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioCreateForm'
+        required: true
+      responses:
+        '201':
+          description: The created scenario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioResponse'
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}:
+    get:
+      tags:
+      - scenarios
+      summary: Return a specific scenario
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The requested scenario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioResponse'
+        '404':
+          description: The requested scenario was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+    delete:
+      tags:
+      - scenarios
+      summary: Delete a scenario
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The scenario was deleted successfully
+        '404':
+          description: The requested scenario was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+    patch:
+      tags:
+      - scenarios
+      summary: Update a scenario
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioPatchForm'
+        required: true
+      responses:
+        '204':
+          description: The scenario was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioResponse'
+        '404':
+          description: The requested scenario was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
   /rolling_stock:
     post:
       tags:
@@ -1965,274 +2229,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StdcmSearchEnvironment'
-  /v2/infra/{infra_id}/path_properties:
+  /timetable:
     post:
       tags:
-      - pathfindingv2
-      summary: Compute path properties
-      parameters:
-      - name: infra_id
-        in: path
-        description: The infra id
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: props
-        in: query
-        description: Path properties
-        required: true
-        schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/Property'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PathPropertiesInput'
-        required: true
-      responses:
-        '200':
-          description: Path properties
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PathProperties'
-  /v2/infra/{infra_id}/pathfinding/blocks:
-    post:
-      tags:
-      - pathfindingv2
-      summary: Compute a pathfinding
-      parameters:
-      - name: infra_id
-        in: path
-        description: The infra id
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PathfindingInputV2'
-        required: true
-      responses:
-        '200':
-          description: Pathfinding Result
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PathfindingResult'
-  /v2/projects/{project_id}/studies/{study_id}/scenarios:
-    get:
-      tags:
-      - scenariosv2
-      summary: Return a list of scenarios
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 1
-          minimum: 1
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 25
-          nullable: true
-          minimum: 1
-      - name: ordering
-        in: query
-        required: false
-        schema:
-          $ref: '#/components/schemas/Ordering'
-      responses:
-        '200':
-          description: A paginated list of scenarios
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/PaginationStats'
-                - type: object
-                  required:
-                  - results
-                  properties:
-                    results:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/ScenarioWithDetails'
-        '404':
-          description: Project or study doesn't exist
-    post:
-      tags:
-      - scenariosv2
-      summary: Create a scenario
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScenarioCreateFormV2'
-        required: true
-      responses:
-        '201':
-          description: The created scenario
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioResponseV2'
-  /v2/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}:
-    get:
-      tags:
-      - scenariosv2
-      summary: Return a specific scenario
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: scenario_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: The requested scenario
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioResponseV2'
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
-    delete:
-      tags:
-      - scenariosv2
-      summary: Delete a scenario
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: scenario_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '204':
-          description: The scenario was deleted successfully
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
-    patch:
-      tags:
-      - scenariosv2
-      summary: Update a scenario
-      parameters:
-      - name: project_id
-        in: path
-        description: The id of a project
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: study_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: scenario_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScenarioPatchFormV2'
-        required: true
-      responses:
-        '204':
-          description: The scenario was updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioResponseV2'
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
-  /v2/timetable:
-    post:
-      tags:
-      - timetablev2
+      - timetable
       summary: Create a timetable
       responses:
         '200':
@@ -2243,10 +2243,10 @@ paths:
                 $ref: '#/components/schemas/TimetableResult'
         '404':
           description: Timetable not found
-  /v2/timetable/{id}:
+  /timetable/{id}:
     get:
       tags:
-      - timetablev2
+      - timetable
       summary: Return a specific timetable with its associated schedules
       parameters:
       - name: id
@@ -2267,7 +2267,7 @@ paths:
           description: Timetable not found
     delete:
       tags:
-      - timetablev2
+      - timetable
       summary: Delete a timetable
       parameters:
       - name: id
@@ -2282,10 +2282,10 @@ paths:
           description: No content
         '404':
           description: Timetable not found
-  /v2/timetable/{id}/conflicts:
+  /timetable/{id}/conflicts:
     get:
       tags:
-      - timetablev2
+      - timetable
       summary: Retrieve the list of conflict of the timetable (invalid trains are ignored)
       parameters:
       - name: id
@@ -2316,8 +2316,8 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ConflictV2'
-  /v2/timetable/{id}/stdcm:
+                  $ref: '#/components/schemas/Conflict'
+  /timetable/{id}/stdcm:
     post:
       tags:
       - stdcm
@@ -2460,11 +2460,11 @@ paths:
                       type: string
                       enum:
                       - preprocessing_simulation_error
-  /v2/timetable/{id}/train_schedule:
+  /timetable/{id}/train_schedule:
     post:
       tags:
-      - timetablev2
-      - train_schedulev2
+      - timetable
+      - train_schedule
       summary: Create train schedule by batch
       parameters:
       - name: id
@@ -2491,10 +2491,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TrainScheduleResult'
-  /v2/train_schedule:
+  /train_schedule:
     post:
       tags:
-      - train_schedulev2
+      - train_schedule
       summary: Return a specific train schedule
       requestBody:
         content:
@@ -2522,8 +2522,8 @@ paths:
                   $ref: '#/components/schemas/TrainScheduleResult'
     delete:
       tags:
-      - timetablev2
-      - train_schedulev2
+      - timetable
+      - train_schedule
       summary: Delete a train schedule and its result
       requestBody:
         content:
@@ -2543,10 +2543,10 @@ paths:
       responses:
         '204':
           description: All train schedules have been deleted
-  /v2/train_schedule/project_path:
+  /train_schedule/project_path:
     post:
       tags:
-      - train_schedulev2
+      - train_schedule
       summary: Projects the space time curves and paths of a number of train schedules onto a given path
       description: |-
         - Returns 404 if the infra or any of the train schedules are not found
@@ -2568,10 +2568,10 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/ProjectPathTrainResult'
-  /v2/train_schedule/simulation_summary:
+  /train_schedule/simulation_summary:
     post:
       tags:
-      - train_schedulev2
+      - train_schedule
       summary: Associate each train id with its simulation summary response
       description: 'If the simulation fails, it associates the reason: pathfinding failed or running time failed'
       requestBody:
@@ -2606,10 +2606,10 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/SimulationSummaryResult'
-  /v2/train_schedule/{id}:
+  /train_schedule/{id}:
     get:
       tags:
-      - train_schedulev2
+      - train_schedule
       summary: Return a specific train schedule
       parameters:
       - name: id
@@ -2628,8 +2628,8 @@ paths:
                 $ref: '#/components/schemas/TrainScheduleResult'
     put:
       tags:
-      - train_schedulev2
-      - timetablev2
+      - train_schedule
+      - timetable
       summary: Update  train schedule at once
       parameters:
       - name: id
@@ -2652,11 +2652,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleResult'
-  /v2/train_schedule/{id}/path:
+  /train_schedule/{id}/path:
     get:
       tags:
-      - train_schedulev2
-      - pathfindingv2
+      - train_schedule
+      - pathfinding
       summary: Get a path from a trainschedule given an infrastructure id and a train schedule id
       parameters:
       - name: id
@@ -2681,10 +2681,10 @@ paths:
                 $ref: '#/components/schemas/PathfindingResult'
         '404':
           description: Infrastructure or Train schedule not found
-  /v2/train_schedule/{id}/simulation:
+  /train_schedule/{id}/simulation:
     get:
       tags:
-      - train_schedulev2
+      - train_schedule
       summary: Retrieve the space, speed and time curve of a given train
       parameters:
       - name: id
@@ -2911,7 +2911,7 @@ components:
       - HEATING
     CompleteReportTrain:
       allOf:
-      - $ref: '#/components/schemas/ReportTrainV2'
+      - $ref: '#/components/schemas/ReportTrain'
       - type: object
         required:
         - signal_sightings
@@ -2946,6 +2946,33 @@ components:
         curve:
           $ref: '#/components/schemas/EffortCurve'
       additionalProperties: false
+    Conflict:
+      type: object
+      required:
+      - train_ids
+      - start_time
+      - end_time
+      - conflict_type
+      properties:
+        conflict_type:
+          type: string
+          enum:
+          - Spacing
+          - Routing
+        end_time:
+          type: string
+          format: date-time
+          description: Datetime of the end of the conflict
+        start_time:
+          type: string
+          format: date-time
+          description: Datetime of the start of the conflict
+        train_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of train ids involved in the conflict
     ConflictDetectionResponse:
       type: object
       required:
@@ -2981,33 +3008,6 @@ components:
                   format: int64
                 description: List of train ids involved in the conflict
           description: List of conflicts detected
-    ConflictV2:
-      type: object
-      required:
-      - train_ids
-      - start_time
-      - end_time
-      - conflict_type
-      properties:
-        conflict_type:
-          type: string
-          enum:
-          - Spacing
-          - Routing
-        end_time:
-          type: string
-          format: date-time
-          description: Datetime of the end of the conflict
-        start_time:
-          type: string
-          format: date-time
-          description: Datetime of the start of the conflict
-        train_ids:
-          type: array
-          items:
-            type: integer
-            format: int64
-          description: List of train ids involved in the conflict
     CopyOperation:
       type: object
       description: JSON Patch 'copy' operation representation
@@ -4995,7 +4995,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:train_schedule_v2:BatchTrainScheduleNotFound
+          - editoast:train_schedule:BatchTrainScheduleNotFound
     EditoastTrainScheduleErrorInfraNotFound:
       type: object
       required:
@@ -5019,7 +5019,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:train_schedule_v2:InfraNotFound
+          - editoast:train_schedule:InfraNotFound
     EditoastTrainScheduleErrorNotFound:
       type: object
       required:
@@ -5043,7 +5043,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:train_schedule_v2:NotFound
+          - editoast:train_schedule:NotFound
     EditoastWorkScheduleErrorNameAlreadyUsed:
       type: object
       required:
@@ -5876,6 +5876,16 @@ components:
           type: string
         railjson:
           type: object
+    InfraPathfindingInput:
+      type: object
+      required:
+      - starting
+      - ending
+      properties:
+        ending:
+          $ref: '#/components/schemas/PathfindingTrackLocationInput'
+        starting:
+          $ref: '#/components/schemas/PathfindingTrackLocationInput'
     InfraState:
       type: string
       enum:
@@ -6758,16 +6768,6 @@ components:
           description: List of track sections
     PathfindingInput:
       type: object
-      required:
-      - starting
-      - ending
-      properties:
-        ending:
-          $ref: '#/components/schemas/PathfindingTrackLocationInput'
-        starting:
-          $ref: '#/components/schemas/PathfindingTrackLocationInput'
-    PathfindingInputV2:
-      type: object
       description: |-
         Path input is described by some rolling stock information
         and a list of path waypoints
@@ -7448,7 +7448,7 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to replace with.
-    ReportTrainV2:
+    ReportTrain:
       type: object
       required:
       - positions
@@ -8155,7 +8155,47 @@ components:
           type: integer
           format: int64
           nullable: true
-    ScenarioCreateFormV2:
+    Scenario:
+      type: object
+      required:
+      - id
+      - infra_id
+      - name
+      - description
+      - creation_date
+      - last_modification
+      - tags
+      - timetable_id
+      - study_id
+      properties:
+        creation_date:
+          type: string
+          format: date-time
+        description:
+          type: string
+        electrical_profile_set_id:
+          type: integer
+          format: int64
+        id:
+          type: integer
+          format: int64
+        infra_id:
+          type: integer
+          format: int64
+        last_modification:
+          type: string
+          format: date-time
+        name:
+          type: string
+        study_id:
+          type: integer
+          format: int64
+        tags:
+          $ref: '#/components/schemas/Tags'
+        timetable_id:
+          type: integer
+          format: int64
+    ScenarioCreateForm:
       type: object
       description: This structure is used by the post endpoint to create a scenario
       required:
@@ -8179,7 +8219,7 @@ components:
         timetable_id:
           type: integer
           format: int64
-    ScenarioPatchFormV2:
+    ScenarioPatchForm:
       type: object
       description: This structure is used by the patch endpoint to patch a scenario
       properties:
@@ -8226,9 +8266,9 @@ components:
           format: int64
         study_name:
           type: string
-    ScenarioResponseV2:
+    ScenarioResponse:
       allOf:
-      - $ref: '#/components/schemas/ScenarioV2'
+      - $ref: '#/components/schemas/Scenario'
       - type: object
         required:
         - infra_name
@@ -8245,49 +8285,9 @@ components:
           trains_count:
             type: integer
             format: int64
-    ScenarioV2:
-      type: object
-      required:
-      - id
-      - infra_id
-      - name
-      - description
-      - creation_date
-      - last_modification
-      - tags
-      - timetable_id
-      - study_id
-      properties:
-        creation_date:
-          type: string
-          format: date-time
-        description:
-          type: string
-        electrical_profile_set_id:
-          type: integer
-          format: int64
-        id:
-          type: integer
-          format: int64
-        infra_id:
-          type: integer
-          format: int64
-        last_modification:
-          type: string
-          format: date-time
-        name:
-          type: string
-        study_id:
-          type: integer
-          format: int64
-        tags:
-          $ref: '#/components/schemas/Tags'
-        timetable_id:
-          type: integer
-          format: int64
     ScenarioWithDetails:
       allOf:
-      - $ref: '#/components/schemas/ScenarioV2'
+      - $ref: '#/components/schemas/Scenario'
       - type: object
         required:
         - infra_name
@@ -8783,7 +8783,7 @@ components:
         - status
         properties:
           base:
-            $ref: '#/components/schemas/ReportTrainV2'
+            $ref: '#/components/schemas/ReportTrain'
           electrical_profiles:
             type: object
             required:
@@ -8828,7 +8828,7 @@ components:
                 description: List of `n+1` values associated to the ranges
           final_output:
             allOf:
-            - $ref: '#/components/schemas/ReportTrainV2'
+            - $ref: '#/components/schemas/ReportTrain'
             - type: object
               required:
               - signal_sightings
@@ -8915,7 +8915,7 @@ components:
                       description: in meters per second
                 description: List of `n+1` values associated to the ranges
           provisional:
-            $ref: '#/components/schemas/ReportTrainV2'
+            $ref: '#/components/schemas/ReportTrain'
           status:
             type: string
             enum:

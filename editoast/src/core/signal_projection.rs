@@ -4,8 +4,8 @@ use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-use crate::core::v2::simulation::SignalSighting;
-use crate::core::v2::simulation::ZoneUpdate;
+use crate::core::simulation::SignalSighting;
+use crate::core::simulation::ZoneUpdate;
 use crate::core::{AsCoreRequest, Json};
 
 use super::pathfinding::TrackRange;
