@@ -96,7 +96,14 @@ async fn main() -> Result<(), anyhow::Error> {
 
     'reconnect_loop: loop {
         // connect to rabbitmq
-        let conn = Connection::connect(&config.amqp_uri, ConnectionProperties::default()).await?;
+        let conn = match Connection::connect(&config.amqp_uri, ConnectionProperties::default()).await {
+            Ok(conn) => conn,
+            Err(err) => {
+                error!("Failed to connect to RabbitMQ: {}", err);
+                tokio::time::sleep(Duration::from_secs(2)).await;
+                continue 'reconnect_loop
+            },
+        };
 
         let driver: Box<dyn WorkerDriver> = match config.worker_driver.clone() {
             WorkerDriverConfig::DockerDriver(opts) => {
