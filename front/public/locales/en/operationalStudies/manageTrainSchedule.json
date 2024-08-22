@@ -140,6 +140,7 @@
   "trainScheduleName": "Number, name",
   "trainScheduleStep": "Increment step",
   "trainUpdated": "Updated train",
+  "unavailableDistance": "Unavailable distance",
   "updateTrainSchedule": "Edit train",
   "usingElectricalProfiles": "Use electrical profiles",
   "via": "Via",

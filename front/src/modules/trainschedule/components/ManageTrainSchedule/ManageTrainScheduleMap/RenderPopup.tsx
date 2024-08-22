@@ -29,11 +29,13 @@ type RenderPopupProps = {
 };
 
 function RenderPopup({ pathProperties }: RenderPopupProps) {
-  const { getFeatureInfoClick, getInfraID } = useOsrdConfSelectors();
+  const { getFeatureInfoClick, getInfraID, getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
   const osrdConfActions = useOsrdConfActions();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const featureInfoClick: FeatureInfoClickType = useSelector(getFeatureInfoClick);
   const infraId = useSelector(getInfraID);
+  const origin = useSelector(getOriginV2);
+  const destination = useSelector(getDestinationV2);
 
   const [trackOffset, setTrackOffset] = useState(0);
 
@@ -127,14 +129,18 @@ function RenderPopup({ pathProperties }: RenderPopupProps) {
           <RiMapPin2Fill />
           <span className="d-none">{t('origin')}</span>
         </button>
-        <button
-          className="btn btn-sm btn-info"
-          type="button"
-          onClick={() => setPointItiV2('via', pathStepProperties, osrdConfActions, pathProperties)}
-        >
-          <RiMapPin3Fill />
-          <span className="d-none">{t('via')}</span>
-        </button>
+        {origin && destination && (
+          <button
+            className="btn btn-sm btn-info"
+            type="button"
+            onClick={() =>
+              setPointItiV2('via', pathStepProperties, osrdConfActions, pathProperties)
+            }
+          >
+            <RiMapPin3Fill />
+            <span className="d-none">{t('via')}</span>
+          </button>
+        )}
         <button
           data-testid="map-destination-button"
           className="btn btn-sm btn-warning"

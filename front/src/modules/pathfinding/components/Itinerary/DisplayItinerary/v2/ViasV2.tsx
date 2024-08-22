@@ -4,6 +4,7 @@ import { XCircle } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import type { Position } from 'geojson';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
@@ -18,6 +19,7 @@ type DisplayViasV2Props = {
 };
 
 const ViasV2 = ({ zoomToFeaturePoint, shouldManageStopDuration }: DisplayViasV2Props) => {
+  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { getViasV2 } = useOsrdConfSelectors();
   const dispatch = useAppDispatch();
   const vias = useSelector(getViasV2());
@@ -61,7 +63,7 @@ const ViasV2 = ({ zoomToFeaturePoint, shouldManageStopDuration }: DisplayViasV2P
                       >
                         <small className="font-weight-bold text-muted mr-1">{index + 1}</small>
                         <small data-testid="via-dropped-name" className="mr-1 text-nowrap">
-                          {`${via.name || `KM ${via.positionOnPath && (Math.round(via.positionOnPath) / 1000000).toFixed(3)}`}`}
+                          {`${via.name || (via.positionOnPath && `KM ${(Math.round(via.positionOnPath) / 1000000).toFixed(3)}`) || t('unavailableDistance')}`}
                         </small>
                         {via.ch && <small data-testid="via-dropped-ch">{via.ch}</small>}
                         {'uic' in via && (

@@ -3,6 +3,7 @@ import type { ManageTrainSchedulePathProperties } from 'applications/operational
 import type { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { store } from 'store';
+import { addElementAtIndex } from 'utils/array';
 
 export function setPointItiV2(
   pointType: 'origin' | 'destination' | 'via',
@@ -10,7 +11,9 @@ export function setPointItiV2(
   actions: ConfSliceActions,
   pathProperties?: ManageTrainSchedulePathProperties
 ) {
-  const { updateOriginV2, updateDestinationV2, addViaV2, updateFeatureInfoClick } = actions;
+  const { updateOriginV2, updateDestinationV2, addViaV2, updatePathSteps, updateFeatureInfoClick } =
+    actions;
+  const { pathSteps } = store.getState().operationalStudiesConf;
 
   switch (pointType) {
     case 'origin':
@@ -23,7 +26,11 @@ export function setPointItiV2(
       if (pathProperties) {
         store.dispatch(addViaV2({ newVia: pathStep, pathProperties }));
       } else {
-        console.error('No pathProperties');
+        store.dispatch(
+          updatePathSteps({
+            pathSteps: addElementAtIndex(pathSteps, pathSteps.length - 1, pathStep),
+          })
+        );
       }
   }
   store.dispatch(updateFeatureInfoClick({ displayPopup: false }));
