@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import pytest
 import requests
 
-from fuzzer.fuzzer_v2 import create_scenario, get_infra
+from fuzzer.fuzzer import create_scenario, get_infra
 
 from .scenario import Scenario
 from .services import EDITOAST_URL
@@ -39,7 +39,7 @@ def _schedule_with_payload(editoast_url: str, payload: Dict, accept_400: bool, s
     Send a schedule request with the given payload, raises an error if the request failed (unless we accept 400s).
     Returns the schedule id.
     """
-    r = requests.post(editoast_url + f"v2/timetable/{scenario.timetable}/train_schedule/", json=payload)
+    r = requests.post(editoast_url + f"/timetable/{scenario.timetable}/train_schedule/", json=payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4 and accept_400:
             return None
@@ -51,7 +51,7 @@ def _stdcm_with_payload(editoast_url: str, payload: Dict, scenario: Scenario):
     """
     Send a stdcm request with the given payload, raises an error if the request failed.
     """
-    url = editoast_url + f"v2/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}"
+    url = editoast_url + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}"
     r = requests.post(url, json=payload)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"stdcm error {r.status_code}: {r.content}")
@@ -68,7 +68,7 @@ def _check_result(editoast_url: str, schedule_id: int, infra_id: int):
     """
     Get the /result/ of the given train id. The function doesn't return anything, it just raises any error
     """
-    r = requests.get(f"{editoast_url}v2/train_schedule/{schedule_id}/simulation/?infra_id={infra_id}")
+    r = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation/?infra_id={infra_id}")
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}")
 
@@ -115,5 +115,5 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: in
 
 
 @pytest.mark.parametrize("file_name", REGRESSION_TESTS_JSON_FILES)
-def test_regressions_v2(file_name: str, small_scenario_v2: Scenario, fast_rolling_stock: int):
-    _reproduce_test(REGRESSION_TESTS_DATA_FOLDER / file_name, small_scenario_v2, fast_rolling_stock)
+def test_regressions(file_name: str, small_scenario: Scenario, fast_rolling_stock: int):
+    _reproduce_test(REGRESSION_TESTS_DATA_FOLDER / file_name, small_scenario, fast_rolling_stock)

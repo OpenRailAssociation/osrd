@@ -111,7 +111,7 @@ def get_infra(editoast_url: str, infra_name: str) -> int:
 
 def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     # Create the timetable
-    r = _post_with_timeout(editoast_url + "v2/timetable/", json={})
+    r = _post_with_timeout(editoast_url + "/timetable/", json={})
     timetable_id = r.json()["id"]
     return Scenario(-1, -1, -1, infra_id, timetable_id)
 
@@ -229,7 +229,7 @@ def _test_new_train(
     print("testing new train")
     schedule_payload = _make_payload_schedule(path, rolling_stock)
     r = _post_with_timeout(
-        editoast_url + f"v2/timetable/{scenario.timetable}/train_schedule/",
+        editoast_url + f"/timetable/{scenario.timetable}/train_schedule/",
         json=schedule_payload,
     )
     if r.status_code // 100 != 2:
@@ -241,7 +241,7 @@ def _test_new_train(
         )
 
     sim_id = r.json()[0]["id"]
-    r = _get_with_timeout(editoast_url + f"v2/train_schedule/{sim_id}/simulation/?infra_id={scenario.infra}")
+    r = _get_with_timeout(editoast_url + f"/train_schedule/{sim_id}/simulation/?infra_id={scenario.infra}")
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         _make_error(
             _ErrorType.RESULT,
@@ -268,7 +268,7 @@ def _test_stdcm(
     print("testing stdcm")
     stdcm_payload = _make_stdcm_payload(path, rolling_stock)
     r = _post_with_timeout(
-        editoast_url + f"v2/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}", json=stdcm_payload
+        editoast_url + f"/timetable/{scenario.timetable}/stdcm/?infra={scenario.infra}", json=stdcm_payload
     )
     if r.status_code // 100 != 2:
         content = r.content.decode("utf-8")
@@ -464,11 +464,11 @@ def _convert_stop(stop: Tuple[str, float], i: int) -> Dict:
 def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
     """Deletes the current timetable and creates a new one."""
     # Delete the current timetable
-    r = _delete_with_timeout(editoast_url + f"v2/timetable/{scenario.timetable}/")
+    r = _delete_with_timeout(editoast_url + f"/timetable/{scenario.timetable}/")
     r.raise_for_status()
 
     # Create a timetable
-    r = _post_with_timeout(editoast_url + "v2/timetable/", json={})
+    r = _post_with_timeout(editoast_url + "/timetable/", json={})
     timetable_id = r.json()["id"]
     return Scenario(-1, -1, -1, infra_id, timetable_id)
 
