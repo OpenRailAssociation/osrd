@@ -239,32 +239,34 @@ const useSetupItineraryForTrainUpdate = (
         return;
       }
       const trainSchedule = await getTrainScheduleById({ id: trainIdToEdit }).unwrap();
-      if (!trainSchedule.rolling_stock_name) {
-        return;
-      }
 
-      let itinerary = null;
-      try {
-        const rollingStock = await getRollingStockByName({
-          rollingStockName: trainSchedule.rolling_stock_name,
-        }).unwrap();
-        itinerary = await computeItineraryForTrainUpdate(trainSchedule, rollingStock);
-        const { pathSteps, pathProperties } = itinerary || {};
+      let rollingStock: RollingStockWithLiveries | null = null;
+      let pathSteps: (PathStep | null)[] | undefined;
 
-        adjustConfWithTrainToModifyV2(
-          trainSchedule,
-          pathSteps || computeBasePathSteps(trainSchedule),
-          rollingStock.id,
-          dispatch,
-          usingElectricalProfiles,
-          osrdActions
-        );
-        if (pathProperties) {
-          setPathProperties(pathProperties);
+      if (trainSchedule.rolling_stock_name) {
+        try {
+          rollingStock = await getRollingStockByName({
+            rollingStockName: trainSchedule.rolling_stock_name,
+          }).unwrap();
+          const itinerary = await computeItineraryForTrainUpdate(trainSchedule, rollingStock);
+          pathSteps = itinerary?.pathSteps;
+
+          if (itinerary?.pathProperties) {
+            setPathProperties(itinerary.pathProperties);
+          }
+        } catch (e) {
+          dispatch(setFailure(castErrorToFailure(e)));
         }
-      } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
       }
+
+      adjustConfWithTrainToModifyV2(
+        trainSchedule,
+        pathSteps || computeBasePathSteps(trainSchedule),
+        rollingStock?.id,
+        dispatch,
+        usingElectricalProfiles,
+        osrdActions
+      );
     };
 
     setupItineraryForTrainUpdate();
