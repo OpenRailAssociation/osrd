@@ -7,9 +7,9 @@ use chrono::Utc;
 use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
-use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::{Comfort, Margins, PathItem};
+use editoast_schemas::train_schedule::{MarginValue, ScheduleItem};
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
@@ -20,6 +20,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::SelectionSettings;
 use crate::core::v2::pathfinding::PathfindingResult;
 use crate::core::v2::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::v2::stdcm::STDCMResponse;
@@ -45,8 +46,7 @@ use crate::Retrieve;
 use crate::RetrieveBatch;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
-
-use super::SelectionSettings;
+use editoast_schemas::primitives::PositiveDuration;
 
 crate::routes! {
     "/stdcm" => stdcm,
@@ -453,6 +453,9 @@ async fn get_simulation_run_time(
     // Doesn't matter for now, but eventually it will affect tmp speed limits
     let approx_start_time = get_earliest_step_time(data);
 
+    let path = convert_steps(&data.steps);
+    let last_step = path.last().expect("empty step list");
+
     let train_schedule = TrainSchedule {
         id: 0,
         train_name: "".to_string(),
@@ -460,11 +463,18 @@ async fn get_simulation_run_time(
         rolling_stock_name: rolling_stock.name.clone(),
         timetable_id,
         start_time: approx_start_time,
-        schedule: vec![],
+        schedule: vec![ScheduleItem {
+            // Make the train stop at the end
+            at: last_step.id.clone(),
+            arrival: None,
+            stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
+            on_stop_signal: false,
+            locked: false,
+        }],
         margins: build_single_margin(data.margin),
         initial_speed: 0.0,
         comfort: data.comfort,
-        path: convert_steps(&data.steps),
+        path,
         constraint_distribution: Default::default(),
         speed_limit_tag: data.speed_limit_tags.clone(),
         power_restrictions: vec![],
