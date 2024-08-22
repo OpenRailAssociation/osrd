@@ -43,7 +43,11 @@ export function formatIsoDate(date: Date) {
   return date.toISOString().substring(0, 10);
 }
 
-export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
+export function dateTimeFormatting(
+  date: Date,
+  withoutTime: boolean = false,
+  isUTC: boolean = true
+) {
   let locale;
   switch (i18n.language) {
     case 'fr':
@@ -53,7 +57,7 @@ export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
       locale = 'en';
   }
   // Force interpreting the date in UTC
-  const dateToUTC = dayjs(date).utc(true);
+  const dateToUTC = dayjs(date).utc(isUTC);
   const dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
   const tz = dayjs.tz.guess();
   return dateToUTC.locale(locale).tz(tz).format(dateFormat).replace(/\./gi, '');
