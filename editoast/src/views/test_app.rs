@@ -9,6 +9,7 @@ use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use chashmap::CHashMap;
 use editoast_models::db_connection_pool::create_connection_pool;
 use editoast_models::DbConnectionPoolV2;
+use editoast_osrdyne_client::OsrdyneClient;
 use serde::de::DeserializeOwned;
 use tower_http::trace::TraceLayer;
 
@@ -38,6 +39,7 @@ pub(crate) struct TestAppBuilder {
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
     roles: Option<Roles>,
+    osrdyne_client: Option<OsrdyneClient>,
     db_pool_v1: bool,
 }
 
@@ -47,6 +49,7 @@ impl TestAppBuilder {
             db_pool: None,
             core_client: None,
             roles: None,
+            osrdyne_client: None,
             db_pool_v1: false,
         }
     }
@@ -61,6 +64,12 @@ impl TestAppBuilder {
     pub fn core_client(mut self, core_client: CoreClient) -> Self {
         assert!(self.core_client.is_none());
         self.core_client = Some(core_client);
+        self
+    }
+
+    pub fn osrdyne_client(mut self, osrdyne_client: OsrdyneClient) -> Self {
+        assert!(self.osrdyne_client.is_none());
+        self.osrdyne_client = Some(osrdyne_client);
         self
     }
 
@@ -129,10 +138,17 @@ impl TestAppBuilder {
             "No core client provided to TestAppBuilder, use Default or provide a core client",
         ));
 
+        // Build Osrdyne client
+        let osrdyne_client = self
+            .osrdyne_client
+            .unwrap_or_else(OsrdyneClient::default_mock);
+        let osrdyne_client = Arc::new(osrdyne_client);
+
         let app_state = AppState {
             db_pool_v1,
             db_pool_v2: db_pool_v2.clone(),
             core_client: core_client.clone(),
+            osrdyne_client,
             redis,
             infra_caches,
             map_layers: MapLayers::parse().into(),

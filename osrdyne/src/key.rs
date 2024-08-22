@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 
 use percent_encoding::{percent_decode_str, percent_encode, NON_ALPHANUMERIC};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 
 #[derive(Hash, Clone, PartialOrd, Ord, PartialEq, Eq)]
@@ -10,6 +10,13 @@ pub struct Key(SmallVec<[u8; 16]>);
 impl Serialize for Key {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.collect_str(&self.encode())
+    }
+}
+
+impl<'de> Deserialize<'de> for Key {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let key = String::deserialize(deserializer)?;
+        Ok(Key::decode(&key))
     }
 }
 

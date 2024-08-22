@@ -83,6 +83,9 @@
         "WrongRailjsonVersionProvided": "Wrong railjson version provided"
       }
     },
+    "infra_state": {
+      "FetchError": "Error while fetching the infrastructure loading status"
+    },
     "layers": {
       "LayerNotFound": "Layer {{layer_name}} not found.",
       "ViewNotFound": "View {{view_name}} not found."

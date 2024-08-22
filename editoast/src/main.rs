@@ -29,6 +29,7 @@ use client::{
 use client::{MapLayersConfig, PostgresConfig};
 use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
+use editoast_osrdyne_client::OsrdyneClient;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
@@ -343,6 +344,7 @@ pub struct AppState {
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
     pub role_config: Arc<Roles>,
     pub core_client: Arc<CoreClient>,
+    pub osrdyne_client: Arc<OsrdyneClient>,
 }
 
 impl AppState {
@@ -377,12 +379,15 @@ impl AppState {
             .await?
             .into();
 
+        let osrdyne_client = Arc::new(OsrdyneClient::new(args.osrdyne_api_url.as_str())?);
+
         Ok(Self {
             redis,
             db_pool_v1,
             db_pool_v2,
             infra_caches,
             core_client,
+            osrdyne_client,
             map_layers: Arc::new(MapLayers::parse()),
             map_layers_config: Arc::new(args.map_layers_config.clone()),
             speed_limit_tag_ids,

@@ -76,8 +76,6 @@ class WorkerCommand : CliCommand {
         val electricalProfileSetManager =
             ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
 
-        infraManager.load(infraId, null, diagnosticRecorder)
-
         val monitoringType = System.getenv("CORE_MONITOR_TYPE")
         if (monitoringType != null) {
             logger.info("monitoring type: {}", monitoringType)
@@ -111,6 +109,10 @@ class WorkerCommand : CliCommand {
         factory.setMaxInboundMessageBodySize(1024 * 1024 * 128)
         val connection = factory.newConnection()
         connection.createChannel().use { channel -> reportActivity(channel, "started") }
+
+        infraManager.load(infraId, null, diagnosticRecorder)
+
+        connection.createChannel().use { channel -> reportActivity(channel, "ready") }
 
         val activityChannel = connection.createChannel()
         val channel = connection.createChannel()
@@ -227,7 +229,11 @@ class WorkerCommand : CliCommand {
     }
 
     private fun reportActivity(activityChannel: Channel, event: String) {
-        val properties = AMQP.BasicProperties().builder().headers(mapOf("x-event" to event)).build()
+        val properties =
+            AMQP.BasicProperties()
+                .builder()
+                .headers(mapOf("x-event" to event, "x-worker-id" to WORKER_ID))
+                .build()
         activityChannel.basicPublish(WORKER_ACTIVITY_EXCHANGE, WORKER_KEY, properties, null)
     }
 
