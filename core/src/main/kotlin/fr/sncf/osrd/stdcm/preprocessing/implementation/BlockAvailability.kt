@@ -38,7 +38,8 @@ data class BlockAvailability(
         startTime: Double
     ): BlockAvailabilityInterface.Availability {
         var timeShift = 0.0
-        var firstConflictOffset = infraExplorer.getIncrementalPath().toTravelledPath(startOffset)
+        var firstConflictOffset: Offset<TravelledPath>? = null
+        val defaultOffset = infraExplorer.getIncrementalPath().toTravelledPath(startOffset)
         while (timeShift.isFinite()) {
             val shiftedStartTime = startTime + timeShift
             val pathStartTime =
@@ -65,7 +66,7 @@ data class BlockAvailability(
                     ) { // Availability is available due to adding a delay: timeShift
                         return BlockAvailabilityInterface.Unavailable(
                             timeShift,
-                            firstConflictOffset
+                            firstConflictOffset ?: defaultOffset
                         )
                     }
                     // Availability is directly available without adding any delay
@@ -73,12 +74,17 @@ data class BlockAvailability(
                 }
                 is BlockAvailabilityInterface.Unavailable -> {
                     timeShift += availability.duration
-                    firstConflictOffset = availability.firstConflictOffset
+
+                    // Only update the conflict offset if it hasn't been set
+                    firstConflictOffset = firstConflictOffset ?: availability.firstConflictOffset
                 }
             }
         }
         // No available solution with a finite delay was found
-        return BlockAvailabilityInterface.Unavailable(Double.POSITIVE_INFINITY, firstConflictOffset)
+        return BlockAvailabilityInterface.Unavailable(
+            Double.POSITIVE_INFINITY,
+            firstConflictOffset ?: defaultOffset
+        )
     }
 
     /**
