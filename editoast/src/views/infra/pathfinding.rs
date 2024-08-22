@@ -39,7 +39,7 @@ crate::routes! {
 
 editoast_common::schemas! {
     PathfindingTrackLocationInput,
-    PathfindingInput,
+    InfraPathfindingInput,
     PathfindingOutput,
 }
 
@@ -66,7 +66,7 @@ struct PathfindingTrackLocationInput {
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
-struct PathfindingInput {
+struct InfraPathfindingInput {
     starting: PathfindingTrackLocationInput,
     ending: PathfindingTrackLocationInput,
 }
@@ -91,7 +91,7 @@ struct QueryParam {
     post, path = "",
     tag = "infra,pathfinding",
     params(InfraIdParam, QueryParam),
-    request_body = PathfindingInput,
+    request_body = InfraPathfindingInput,
     responses(
         (status = 200, description = "A list of shortest paths between starting and ending track locations", body = Vec<PathfindingOutput>)
     )
@@ -101,7 +101,7 @@ async fn pathfinding_view(
     Extension(authorizer): AuthorizerExt,
     Path(infra): Path<InfraIdParam>,
     Query(params): Query<QueryParam>,
-    Json(input): Json<PathfindingInput>,
+    Json(input): Json<InfraPathfindingInput>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::InfraRead].into())
@@ -217,7 +217,7 @@ impl PathfindingStep {
 
 /// Compute the path between starting and ending locations using Dijkstra (return at most `number_result` paths)
 fn compute_path(
-    input: &PathfindingInput,
+    input: &InfraPathfindingInput,
     infra_cache: &InfraCache,
     graph: &Graph,
     k: u8,
@@ -425,7 +425,7 @@ mod tests {
     use super::compute_path;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
-    use crate::views::infra::pathfinding::PathfindingInput;
+    use crate::views::infra::pathfinding::InfraPathfindingInput;
     use crate::views::infra::pathfinding::PathfindingTrackLocationInput;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::DirectionalTrackRange;
@@ -449,7 +449,7 @@ mod tests {
     fn test_compute_path() {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
-        let input = PathfindingInput {
+        let input = InfraPathfindingInput {
             starting: PathfindingTrackLocationInput {
                 track: "A".into(),
                 position: 30.0,
@@ -472,7 +472,7 @@ mod tests {
     fn test_compute_path_opposite_direction() {
         let infra_cache = create_small_infra_cache();
         let graph = Graph::load(&infra_cache);
-        let input = PathfindingInput {
+        let input = InfraPathfindingInput {
             starting: PathfindingTrackLocationInput {
                 track: "A".into(),
                 position: 30.0,
