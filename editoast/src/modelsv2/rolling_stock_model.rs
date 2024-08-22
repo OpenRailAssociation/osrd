@@ -23,6 +23,9 @@ use validator::ValidationErrors;
 
 use crate::modelsv2::prelude::*;
 
+mod schedules_from_rolling_stock;
+pub use schedules_from_rolling_stock::ScenarioReference;
+
 editoast_common::schemas! {
     RollingStockModel,
     PowerRestriction,
