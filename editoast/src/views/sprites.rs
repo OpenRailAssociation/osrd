@@ -1,13 +1,13 @@
-use axum::body::Body;
 use axum::extract::Json;
 use axum::extract::Path;
-use axum::http::header;
+use axum::extract::Request;
 use axum::response::IntoResponse;
 use axum::Extension;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use thiserror::Error;
-use tokio_util::io::ReaderStream;
+use tower::ServiceExt;
+use tower_http::services::ServeFile;
 
 use crate::client::get_dynamic_assets_path;
 use crate::error::Result;
@@ -71,6 +71,7 @@ async fn signaling_systems(Extension(authorizer): AuthorizerExt) -> Result<Json<
 async fn sprites(
     Extension(authorizer): AuthorizerExt,
     Path((signaling_system, file_name)): Path<(String, String)>,
+    request: Request,
 ) -> Result<impl IntoResponse> {
     let authorized = authorizer
         .check_roles([BuiltinRole::MapRead].into())
@@ -90,37 +91,8 @@ async fn sprites(
     if !path.is_file() {
         return Err(SpriteErrors::FileNotFound { file: file_name }.into());
     }
-    let file = match tokio::fs::File::open(&path).await {
-        Ok(file) => file,
-        Err(err) => {
-            tracing::error!(path = %path.display(), error = %err, "cannot open existing atlas file");
-            panic!("Cannot open existing sprite: {}", path.display());
-        }
-    };
 
-    let stream = ReaderStream::new(file);
-    let body = Body::from_stream(stream);
-
-    let content_type = match path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .expect("all files have an extension")
-    {
-        "json" => headers::ContentType::json(),
-        "png" => headers::ContentType::png(),
-        "svg" => mime::IMAGE_SVG.into(),
-        _ => unreachable!(),
-    };
-
-    let content_disposition = format!("inline; filename=\"{}\"", file_name);
-
-    Ok((
-        [
-            (header::CONTENT_TYPE, content_type.to_string()),
-            (header::CONTENT_DISPOSITION, content_disposition),
-        ],
-        body,
-    ))
+    Ok(ServeFile::new(&path).oneshot(request).await)
 }
 
 #[cfg(test)]

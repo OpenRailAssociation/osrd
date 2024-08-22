@@ -139,6 +139,7 @@ tokio-util = { version = "0.7.11", features = ["io", "tracing"] }
 tower = "0.4.13"
 tower-http = { version = "0.5.2", features = [
   "cors",
+  "fs",
   "limit",
   "normalize-path",
   "trace",
