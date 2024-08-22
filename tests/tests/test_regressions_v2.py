@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import pytest
 import requests
 
-from fuzzer.fuzzer_v2 import create_scenario, get_infra
+from fuzzer.fuzzer import create_scenario, get_infra
 
 from .scenario import Scenario
 from .services import EDITOAST_URL

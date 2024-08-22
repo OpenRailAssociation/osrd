@@ -112,7 +112,7 @@ def get_infra(editoast_url: str, infra_name: str) -> int:
 def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     # Create the timetable
     r = _post_with_timeout(editoast_url + "v2/timetable/", json={})
-    timetable_id = r.json()["id"]
+    timetable_id = r.json()["timetable_id"]
     return Scenario(-1, -1, -1, infra_id, timetable_id)
 
 
@@ -283,18 +283,28 @@ def _make_stdcm_payload(path: List[Tuple[str, float]], rolling_stock: int) -> Di
     """
     Creates a payload for an STDCM request
     """
+    steps = [_convert_stop_stdcm(stop) for stop in path]
+    timing_data = {
+        "arrival_time": _make_random_time(),
+        "arrival_time_tolerance_before": random.randint(0, 3_600_000),
+        "arrival_time_tolerance_after": random.randint(0, 3_600_000),
+    }
     res = {
         "rolling_stock_id": rolling_stock,
-        "start_time": _make_random_time(),
         "maximum_departure_delay": random.randint(0, 3_600_000 * 4),
         "maximum_run_time": random.randint(3_600_000 * 5, 3_600_000 * 10),
         "time_gap_before": random.randint(0, 600_000),
         "time_gap_after": random.randint(0, 600_000),
-        "steps": [_convert_stop_stdcm(stop) for stop in path],
+        "steps": steps,
         "comfort": "STANDARD",
         "margin": "0%",
     }
-    res["steps"][-1]["duration"] = 1  # Force a stop at the end
+    if random.randint(0, 1) == 0:
+        steps[0]["timing_data"] = timing_data
+    else:
+        steps[-1]["timing_data"] = timing_data
+    res["steps"][-1]["duration"] = 0  # Force a stop at the start and end
+    res["steps"][0]["duration"] = 0
     allowance_value = _make_random_margin_value()
     if random.randint(0, 2) == 0:
         res["standard_allowance"] = allowance_value
@@ -469,16 +479,14 @@ def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
 
     # Create a timetable
     r = _post_with_timeout(editoast_url + "v2/timetable/", json={})
-    timetable_id = r.json()["id"]
+    timetable_id = r.json()["timetable_id"]
     return Scenario(-1, -1, -1, infra_id, timetable_id)
 
 
 def _make_random_margin_value() -> str:
-    if random.randint(0, 3) == 0:
-        return f"{random.randint(3, 20)}%"
-    if random.randint(0, 3) == 0:
-        return f"{random.randint(3, 7)}min/100km"
-    return "None"
+    if random.randint(0, 2) == 0:
+        return f"{random.randint(0, 20)}%"
+    return f"{random.randint(0, 7)}min/100km"
 
 
 def _make_random_margins(n_steps: int) -> Dict:
