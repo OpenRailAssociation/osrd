@@ -20,12 +20,15 @@ export function generateV2TrainSchedulesPayloads(
             train.departureTime,
             step.arrivalTime
           );
-          const isoDuration = formatDurationAsISO8601(timeDifferenceInSeconds);
-          acc.schedule.push({
+          const schedulePoint = {
             at: stepId,
-            arrival: isoDuration,
-            ...(step.duration ? { stop_for: `PT${step.duration}S` } : {}),
-          });
+            arrival: formatDurationAsISO8601(timeDifferenceInSeconds),
+            stop_for: null as string | null,
+          };
+          if (step.duration || index === train.steps.length - 1) {
+            schedulePoint.stop_for = `PT${step.duration || 0}S`;
+          }
+          acc.schedule.push(schedulePoint);
         }
         return acc;
       },
