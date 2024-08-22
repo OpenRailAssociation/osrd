@@ -14,7 +14,7 @@ export const getDocument = async (documentKey: number): Promise<Blob> => {
 export const postDocument = async (image: Blob) => {
   const config = {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': image.type || 'application/octet-stream',
     },
   };
   const path = `${mainConfig.proxy_editoast}/documents`;
