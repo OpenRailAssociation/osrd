@@ -2,7 +2,7 @@
     "timetable_version": 2,
     "error_type": "STDCM",
     "code": 500,
-    "error": "{\"status\":500,\"type\":\"core:assert_error\",\"context\":{\"stack_trace\":[\"STDCMEndpointV2.kt:172\",\"STDCMEndpointV2.kt:1\",\"STDCMEndpointV2.kt:116\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:840\"],\"url\":\"http://localhost:8080/v2/stdcm\",\"assert_message\":\"STDCM result is conflicting with the scheduled timetable\",\"file_location\":\"STDCMEndpointV2.kt:172\"},\"message\":\"assert check failed\"}",
+    "error": "{\"status\":500,\"type\":\"core:assert_error\",\"context\":{\"stack_trace\":[\"STDCMEndpointV2.kt:172\",\"STDCMEndpointV2.kt:1\",\"STDCMEndpointV2.kt:116\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:840\"],\"url\":\"http://localhost:8080//stdcm\",\"assert_message\":\"STDCM result is conflicting with the scheduled timetable\",\"file_location\":\"STDCMEndpointV2.kt:172\"},\"message\":\"assert check failed\"}",
     "infra_name": "small_infra",
     "stdcm_payload": {
         "rolling_stock_id": 470,

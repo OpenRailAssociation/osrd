@@ -61,7 +61,7 @@ class _ScenarioResponse:
 def test_get_scenario(small_scenario: Scenario):
     response = requests.get(
         EDITOAST_URL
-        + f"v2/projects/{small_scenario.project}/studies/{small_scenario.op_study}/scenarios/{small_scenario.scenario}/"
+        + f"/projects/{small_scenario.project}/studies/{small_scenario.op_study}/scenarios/{small_scenario.scenario}/"
     )
     assert response.status_code == 200
     res = response.json()

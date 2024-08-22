@@ -4,17 +4,15 @@ from typing import Any, Dict
 
 import requests
 
-from tests.utils.timetable import create_op_study, create_scenario_v2
+from tests.utils.timetable import create_op_study, create_scenario
 
 from .infra import Infra
 from .scenario import Scenario
 from .services import EDITOAST_URL
 
-_START = {"track_section": "TA2", "geo_coordinate": [-0.387122554630656, 49.4998]}
-
-_START_V2 = {"track": "TA2", "offset": 0}
-_MIDDLE_V2 = {"track": "TA5", "offset": 0}
-_STOP_V2 = {"track": "TH1", "offset": 0}
+_START = {"track": "TA2", "offset": 0}
+_MIDDLE = {"track": "TA5", "offset": 0}
+_STOP = {"track": "TH1", "offset": 0}
 
 
 def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_name: str, start_time: str):
@@ -31,7 +29,7 @@ def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_name: str, s
             "start_time": start_time,
         }
     ]
-    r = requests.post(editoast_url + f"v2/timetable/{scenario.timetable}/train_schedule/", json=schedule_payload)
+    r = requests.post(editoast_url + f"/timetable/{scenario.timetable}/train_schedule/", json=schedule_payload)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
     schedule_id = r.json()[0]
@@ -40,7 +38,7 @@ def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_name: str, s
 
 def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_stock: int):
     op_study = create_op_study(EDITOAST_URL, foo_project_id)
-    _, timetable = create_scenario_v2(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
+    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
     requests.post(EDITOAST_URL + f"infra/{small_infra.id}/load")
     payload = {
         "rolling_stock_id": fast_rolling_stock,
@@ -48,36 +46,36 @@ def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_s
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 100, "location": _START_V2},
-            {"duration": 100, "location": _STOP_V2},
+            {"duration": 100, "location": _START},
+            {"duration": 100, "location": _STOP},
         ],
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
     }
-    r = requests.post(EDITOAST_URL + f"v2/timetable/{timetable}/stdcm?infra={small_infra.id}", json=payload)
+    r = requests.post(EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}", json=payload)
     assert r.status_code == 200
 
 
 # TO ADAPT
 def test_empty_timetable_with_stop(small_infra: Infra, foo_project_id: int, fast_rolling_stock: int):
     op_study = create_op_study(EDITOAST_URL, foo_project_id)
-    _, timetable = create_scenario_v2(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
+    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
     payload = {
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 100, "location": _START_V2},
-            {"duration": 42000, "location": _MIDDLE_V2},
-            {"duration": 100, "location": _STOP_V2},
+            {"duration": 100, "location": _START},
+            {"duration": 42000, "location": _MIDDLE},
+            {"duration": 100, "location": _STOP},
         ],
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
     }
-    r = requests.post(EDITOAST_URL + f"v2/timetable/{timetable}/stdcm?infra={small_infra.id}", json=payload)
+    r = requests.post(EDITOAST_URL + f"/timetable/{timetable}/stdcm?infra={small_infra.id}", json=payload)
     assert r.status_code == 200
 
 
@@ -92,24 +90,24 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int):
         "margin": "0%",
         "start_time": "2024-08-13T21:26:05.793Z",
         "steps": [
-            {"duration": 100, "location": _START_V2},
-            {"duration": 42000, "location": _MIDDLE_V2},
-            {"duration": 100, "location": _STOP_V2},
+            {"duration": 100, "location": _START},
+            {"duration": 42000, "location": _MIDDLE},
+            {"duration": 100, "location": _STOP},
         ],
         "comfort": "STANDARD",
         "maximum_departure_delay": 7200000,
         "maximum_run_time": 43200000,
     }
     r = requests.post(
-        EDITOAST_URL + f"v2/timetable/{small_scenario.timetable}/stdcm?infra={small_scenario.infra}", json=payload
+        EDITOAST_URL + f"/timetable/{small_scenario.timetable}/stdcm?infra={small_scenario.infra}", json=payload
     )
     if r.status_code // 100 != 2:
         raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
 
 
-def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
+def test_work_schedules(small_scenario: Scenario, fast_rolling_stock: int):
     # This test is already using time schedules v2, it's required for work schedules
-    requests.post(EDITOAST_URL + f"infra/{small_scenario_v2.infra}/load")
+    requests.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
     start_time = datetime.datetime(2024, 1, 1, 14, 0, 0)
     end_time = start_time + datetime.timedelta(days=4)
     # TODO: we cannot delete work schedules for now, so let's give a unique name
@@ -124,7 +122,7 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
                     "start_date_time": start_time.isoformat(),
                     "end_date_time": end_time.isoformat(),
                     "obj_id": "string",
-                    "track_ranges": [{"begin": 0, "end": 100000, "track": _START["track_section"]}],
+                    "track_ranges": [{"begin": 0, "end": 100000, "track": _START["track"]}],
                     "work_schedule_type": "CATENARY",
                 }
             ],
@@ -140,14 +138,14 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
         "time_gap_before": 0,
         "time_gap_after": 0,
         "steps": [
-            {"duration": None, "location": _START_V2},
-            {"duration": 1, "location": _STOP_V2},
+            {"duration": None, "location": _START},
+            {"duration": 1, "location": _STOP},
         ],
         "comfort": "STANDARD",
         "margin": "0%",
         "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
     }
-    url = f"{EDITOAST_URL}v2/timetable/{small_scenario_v2.timetable}/stdcm/?infra={small_scenario_v2.infra}"
+    url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
     r = requests.post(url, json=payload)
     assert r.status_code == 200
     response = r.json()
@@ -157,7 +155,7 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
 
 def test_mrsp_sources(
     small_infra: Infra,
-    timetable_v2_id: int,
+    timetable_id: int,
     fast_rolling_stock: int,
 ):
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
@@ -178,7 +176,7 @@ def test_mrsp_sources(
         "standard_allowance": "3%",
     }
 
-    content = _get_stdcm_response(small_infra, timetable_v2_id, stdcm_payload)
+    content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload)
     assert content["simulation"]["mrsp"] == {
         "boundaries": [4180000, 4580000],
         "values": [
@@ -189,7 +187,7 @@ def test_mrsp_sources(
     }
 
     stdcm_payload["speed_limit_tags"] = "MA80"
-    content = _get_stdcm_response(small_infra, timetable_v2_id, stdcm_payload)
+    content = _get_stdcm_response(small_infra, timetable_id, stdcm_payload)
     assert content["simulation"]["mrsp"] == {
         "boundaries": [3680000, 4580000],
         "values": [
@@ -200,9 +198,9 @@ def test_mrsp_sources(
     }
 
 
-def _get_stdcm_response(infra: Infra, timetable_v2_id: int, stdcm_payload: Dict[str, Any]):
+def _get_stdcm_response(infra: Infra, timetable_id: int, stdcm_payload: Dict[str, Any]):
     stdcm_response = requests.post(
-        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/stdcm/?infra={infra.id}", json=stdcm_payload
+        f"{EDITOAST_URL}/timetable/{timetable_id}/stdcm/?infra={infra.id}", json=stdcm_payload
     )
     stdcm_response.raise_for_status()
     content = stdcm_response.json()

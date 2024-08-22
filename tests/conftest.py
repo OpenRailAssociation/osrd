@@ -10,7 +10,7 @@ from tests.infra import Infra
 from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import EDITOAST_URL
-from tests.utils.timetable import create_scenario_v2
+from tests.utils.timetable import create_scenario
 
 
 def _load_generated_infra(name: str) -> int:
@@ -70,19 +70,13 @@ def foo_study_id(foo_project_id: int) -> Iterator[int]:
 
 @pytest.fixture
 def tiny_scenario(tiny_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
-    scenario_id, timetable_id = create_scenario_v2(EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id)
+    scenario_id, timetable_id = create_scenario(EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id)
 
 
 @pytest.fixture
 def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
-    scenario_id, timetable_id = create_scenario_v2(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
-    yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
-
-
-@pytest.fixture
-def small_scenario_v2(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
-    scenario_id, timetable_id = create_scenario_v2(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
+    scenario_id, timetable_id = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
@@ -159,7 +153,7 @@ def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Iter
     """west_to_south_east_path screenshot in `tests/README.md`"""
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     response = requests.post(
-        f"{EDITOAST_URL}v2/infra/{small_infra.id}/pathfinding/blocks",
+        f"{EDITOAST_URL}infra/{small_infra.id}/pathfinding/blocks",
         json={
             "path_items": [
                 {"offset": 837034, "track": "TA2"},
@@ -185,7 +179,7 @@ def west_to_south_east_simulation(
     response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     response = requests.post(
-        f"{EDITOAST_URL}v2/timetable/{small_scenario.timetable}/train_schedule/",
+        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/train_schedule/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -224,7 +218,7 @@ def west_to_south_east_simulations(
     }
 
     response = requests.post(
-        f"{EDITOAST_URL}v2/timetable/{small_scenario.timetable}/train_schedule/",
+        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/train_schedule/",
         json=[
             {
                 **base,
@@ -244,8 +238,8 @@ def west_to_south_east_simulations(
 
 
 @pytest.fixture
-def timetable_v2_id() -> int:
-    r = requests.post(f"{EDITOAST_URL}v2/timetable/")
+def timetable_id() -> int:
+    r = requests.post(f"{EDITOAST_URL}timetable/")
     if not r.ok:
         raise RuntimeError(f"Error creating timetable {r.status_code}: {r.content}")
     return r.json()["timetable_id"]

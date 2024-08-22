@@ -7,10 +7,10 @@ from .infra import Infra
 from .services import EDITOAST_URL
 
 
-def test_get_timetable_v2(
-    timetable_v2_id: int,
+def test_get_timetable(
+    timetable_id: int,
 ):
-    response = requests.get(f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/")
+    response = requests.get(f"{EDITOAST_URL}/timetable/{timetable_id}/")
     assert response.status_code == 200
     json = response.json()
     assert "timetable_id" in json
@@ -22,7 +22,7 @@ def test_get_timetable_v2(
 )
 def test_conflicts(
     small_infra: Infra,
-    timetable_v2_id: int,
+    timetable_id: int,
     fast_rolling_stock: int,
     on_stop_signal: bool,
     expected_conflict_types: set[str],
@@ -56,9 +56,7 @@ def test_conflicts(
             "train_name": "with_stop",
         }
     ]
-    response = requests.post(
-        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/train_schedule", json=train_schedule_payload
-    )
+    response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
     train_schedule_payload = [
         {
             "comfort": "STANDARD",
@@ -85,10 +83,8 @@ def test_conflicts(
             "train_name": "pass",
         }
     ]
-    response = requests.post(
-        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/train_schedule", json=train_schedule_payload
-    )
-    response = requests.get(f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/conflicts/?infra_id={small_infra.id}")
+    response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
+    response = requests.get(f"{EDITOAST_URL}/timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}")
     assert response.status_code == 200
     actual_conflicts = {conflict["conflict_type"] for conflict in response.json()}
     assert actual_conflicts == expected_conflict_types
@@ -96,7 +92,7 @@ def test_conflicts(
 
 def test_scheduled_points_with_incompatible_margins(
     small_infra: Infra,
-    timetable_v2_id: int,
+    timetable_id: int,
     fast_rolling_stock: int,
 ):
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
@@ -128,12 +124,10 @@ def test_scheduled_points_with_incompatible_margins(
             "train_name": "name",
         }
     ]
-    response = requests.post(
-        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/train_schedule", json=train_schedule_payload
-    )
+    response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
     response.raise_for_status()
     train_id = response.json()[0]["id"]
-    response = requests.get(f"{EDITOAST_URL}/v2/train_schedule/{train_id}/simulation/?infra_id={small_infra.id}")
+    response = requests.get(f"{EDITOAST_URL}/train_schedule/{train_id}/simulation/?infra_id={small_infra.id}")
     response.raise_for_status()
     content = response.json()
     sim_output = content["final_output"]
@@ -145,7 +139,7 @@ def test_scheduled_points_with_incompatible_margins(
 
 def test_mrsp_sources(
     small_infra: Infra,
-    timetable_v2_id: int,
+    timetable_id: int,
     fast_rolling_stock: int,
 ):
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
@@ -176,7 +170,7 @@ def test_mrsp_sources(
             "train_name": "name",
         }
     ]
-    content = _get_train_schedule_simulation_response(small_infra, timetable_v2_id, train_schedule_payload)
+    content = _get_train_schedule_simulation_response(small_infra, timetable_id, train_schedule_payload)
     assert content["mrsp"] == {
         "boundaries": [4180000, 4580000],
         "values": [
@@ -187,7 +181,7 @@ def test_mrsp_sources(
     }
 
     train_schedule_payload[0]["speed_limit_tag"] = "MA80"
-    content = _get_train_schedule_simulation_response(small_infra, timetable_v2_id, train_schedule_payload)
+    content = _get_train_schedule_simulation_response(small_infra, timetable_id, train_schedule_payload)
     assert content["mrsp"] == {
         "boundaries": [3680000, 4580000],
         "values": [
@@ -199,14 +193,12 @@ def test_mrsp_sources(
 
 
 def _get_train_schedule_simulation_response(
-    infra: Infra, timetable_v2_id: int, train_schedules_payload: List[Dict[str, Any]]
+    infra: Infra, timetable_id: int, train_schedules_payload: List[Dict[str, Any]]
 ):
-    ts_response = requests.post(
-        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/train_schedule", json=train_schedules_payload
-    )
+    ts_response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedules_payload)
     ts_response.raise_for_status()
     train_id = ts_response.json()[0]["id"]
-    sim_response = requests.get(f"{EDITOAST_URL}/v2/train_schedule/{train_id}/simulation/?infra_id={infra.id}")
+    sim_response = requests.get(f"{EDITOAST_URL}/train_schedule/{train_id}/simulation/?infra_id={infra.id}")
     sim_response.raise_for_status()
     content = sim_response.json()
     return content
