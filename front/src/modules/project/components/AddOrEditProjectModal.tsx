@@ -110,8 +110,7 @@ export default function AddOrEditProjectModal({
 
   const uploadImage = async (image: Blob): Promise<number | null> => {
     try {
-      const imageId = await postDocument(image as Blob);
-      return imageId;
+      return await postDocument(image);
     } catch (error) {
       dispatch(
         setFailure(castErrorToFailure(error, { name: t('error.unableToPostDocumentTitle') }))
