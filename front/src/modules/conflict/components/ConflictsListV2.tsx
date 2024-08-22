@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { ConflictV2 } from 'common/api/osrdEditoastApi';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/TimetableV2/types';
 
 import ConflictCardV2 from './ConflictCardV2';
@@ -11,7 +11,7 @@ import type { ConflictWithTrainNames } from '../types';
 import addTrainNamesToConflicts from '../utils';
 
 type ConflictsListV2Props = {
-  conflicts: ConflictV2[];
+  conflicts: Conflict[];
   expanded: boolean;
   trainSchedulesDetails: TrainScheduleWithDetails[];
   toggleConflictsList: () => void;

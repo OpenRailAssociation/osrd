@@ -74,12 +74,12 @@ export default function Study() {
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [deleteScenarioV2] =
-    osrdEditoastApi.endpoints.deleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
+    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
       {}
     );
 
   const { data: scenariosV2 } =
-    osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
       {
         projectId: projectId!,
         studyId: studyId!,

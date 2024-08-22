@@ -159,7 +159,7 @@ const RouteEditionPanel = () => {
       );
       const candidates = await postPathfinding({
         infraId: infraID,
-        pathfindingInput: payload,
+        infraPathfindingInput: payload,
       }).unwrap();
 
       const candidateColors = chroma

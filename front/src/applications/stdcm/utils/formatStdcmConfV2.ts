@@ -5,7 +5,7 @@ import type { Dispatch } from 'redux';
 
 import type {
   PathfindingItem,
-  PostV2TimetableByIdStdcmApiArg,
+  PostTimetableByIdStdcmApiArg,
   TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
@@ -232,7 +232,7 @@ const toMsOrUndefined = (value: number | undefined): number | undefined =>
 export const formatStdcmPayload = (
   validConfig: ValidStdcmConfig,
   stdcmV2Activated: boolean
-): PostV2TimetableByIdStdcmApiArg => ({
+): PostTimetableByIdStdcmApiArg => ({
   infra: validConfig.infraId,
   id: validConfig.timetableId,
   body: {

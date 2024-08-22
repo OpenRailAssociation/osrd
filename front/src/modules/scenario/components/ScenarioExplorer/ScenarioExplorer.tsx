@@ -44,8 +44,8 @@ const ScenarioExplorer = ({
       { skip: !globalProjectId && !globalStudyId }
     );
 
-  const { currentData: scenarioV2, isSuccess: isScenarioSuccess } =
-    osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
+  const { currentData: scenario, isSuccess: isScenarioSuccess } =
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
       {
         projectId: globalProjectId as number,
         studyId: globalStudyId as number,
@@ -57,7 +57,7 @@ const ScenarioExplorer = ({
       }
     );
 
-  const { data: timetableV2 } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
+  const { data: timetableV2 } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
     { id: timetableID as number },
     { skip: !timetableID }
   );
@@ -74,11 +74,11 @@ const ScenarioExplorer = ({
   const v2TrainCount = (trainIds: number[]) => trainIds.length;
 
   useEffect(() => {
-    if (scenarioV2) {
-      dispatch(updateTimetableID(scenarioV2.timetable_id));
-      dispatch(updateInfraID(scenarioV2.infra_id));
+    if (scenario) {
+      dispatch(updateTimetableID(scenario.timetable_id));
+      dispatch(updateInfraID(scenario.infra_id));
     }
-  }, [scenarioV2]);
+  }, [scenario]);
 
   useEffect(() => {
     if (projectDetails?.image) {
@@ -92,7 +92,7 @@ const ScenarioExplorer = ({
     if (!isScenarioSuccess && stdcmV2Activated) {
       dispatch(updateScenarioID(undefined));
     }
-  }, [scenarioV2, isScenarioSuccess]);
+  }, [scenario, isScenarioSuccess]);
 
   return (
     <div
@@ -111,7 +111,7 @@ const ScenarioExplorer = ({
       role="button"
       tabIndex={0}
     >
-      {globalProjectId && projectDetails && studyDetails && scenarioV2 ? (
+      {globalProjectId && projectDetails && studyDetails && scenario ? (
         <div className="scenario-explorator-card-head">
           {displayImgProject && imageUrl && (
             <div className="scenario-explorator-card-head-img">
@@ -146,8 +146,8 @@ const ScenarioExplorer = ({
               <img src={scenarioIcon} alt="scenario icon" />
               <span className="scenario-explorator-card-head-legend">{t('scenarioLegend')}</span>
               <div className="scenario-explorator-card-head-scenario">
-                <span className="text-truncate" title={scenarioV2.name}>
-                  {scenarioV2.name}
+                <span className="text-truncate" title={scenario.name}>
+                  {scenario.name}
                 </span>
 
                 <span className="scenario-explorator-card-head-scenario-traincount">
@@ -159,7 +159,7 @@ const ScenarioExplorer = ({
             <div className="scenario-explorator-card-head-content-item">
               <img src={infraIcon} alt="infra icon" />
               <span className="scenario-explorator-card-head-legend">{t('infraLegend')}</span>
-              <div className="scenario-explorator-card-head-infra">{scenarioV2.infra_name}</div>
+              <div className="scenario-explorator-card-head-infra">{scenario.infra_name}</div>
             </div>
           </div>
         </div>

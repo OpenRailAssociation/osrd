@@ -66,9 +66,9 @@ const TimetableTrainCardV2 = ({
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
   const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
-  const [getTrainSchedule] = osrdEditoastApi.endpoints.postV2TrainSchedule.useLazyQuery();
-  const [deleteTrainSchedule] = osrdEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
+    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedule.useMutation();
+  const [getTrainSchedule] = osrdEditoastApi.endpoints.postTrainSchedule.useLazyQuery();
+  const [deleteTrainSchedule] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
   const changeSelectedTrainId = (trainId: number) => {
     dispatch(updateSelectedTrainId(trainId));

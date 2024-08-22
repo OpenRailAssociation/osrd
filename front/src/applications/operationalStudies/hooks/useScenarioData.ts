@@ -33,7 +33,7 @@ const useScenarioData = () => {
 
   const { infra, isInfraLoaded, reloadCount } = useInfraStatus();
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
+  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
     { id: scenario?.timetable_id! },
     {
       skip: !scenario,
@@ -41,7 +41,7 @@ const useScenarioData = () => {
   );
 
   const { data: rawTrainSchedules, error: fetchTrainSchedulesError } =
-    osrdEditoastApi.endpoints.postV2TrainSchedule.useQuery(
+    osrdEditoastApi.endpoints.postTrainSchedule.useQuery(
       {
         body: {
           ids: timetable?.train_ids!,
@@ -52,12 +52,12 @@ const useScenarioData = () => {
       }
     );
 
-  const { data: conflicts } = osrdEditoastApi.endpoints.getV2TimetableByIdConflicts.useQuery(
+  const { data: conflicts } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
     { id: scenario?.timetable_id!, infraId: scenario?.infra_id! },
     { skip: !scenario }
   );
 
-  const { data: projectionPath } = osrdEditoastApi.endpoints.getV2TrainScheduleByIdPath.useQuery(
+  const { data: projectionPath } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
     {
       id: trainIdUsedForProjection!,
       infraId: scenario?.infra_id!,

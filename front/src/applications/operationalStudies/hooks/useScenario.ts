@@ -37,7 +37,7 @@ const useScenario = () => {
     data: scenario,
     isError: isScenarioError,
     error: errorScenario,
-  } = osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
+  } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
     {
       projectId: projectId!,
       studyId: studyId!,

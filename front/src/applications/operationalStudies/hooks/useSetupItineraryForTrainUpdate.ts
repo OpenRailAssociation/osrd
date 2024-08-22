@@ -7,8 +7,8 @@ import { useSelector } from 'react-redux';
 import {
   osrdEditoastApi,
   type PathItemLocation,
-  type PostV2InfraByInfraIdPathPropertiesApiArg,
-  type PostV2InfraByInfraIdPathfindingBlocksApiArg,
+  type PostInfraByInfraIdPathPropertiesApiArg,
+  type PostInfraByInfraIdPathfindingBlocksApiArg,
   type RollingStockWithLiveries,
   type TrainScheduleResult,
   type PathfindingResult,
@@ -131,13 +131,13 @@ const useSetupItineraryForTrainUpdate = (
   const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const dispatch = useAppDispatch();
   const osrdActions = useOsrdConfActions() as OperationalStudiesConfSliceActions;
-  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getV2TrainScheduleById.useLazyQuery({});
+  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getRollingStockByName] =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useLazyQuery();
   const [postPathfindingBlocks] =
-    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useMutation();
   const [postPathProperties] =
-    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useMutation();
 
   useEffect(() => {
     const computeItineraryForTrainUpdate = async (
@@ -150,9 +150,9 @@ const useSetupItineraryForTrainUpdate = (
 
       // TODO TS2 : Next part might not be needed (except to updePathSteps), we need inly trainSchedulePath and
       // rolling stock infos to relaunch the pathfinding. Check for that in simulation results issue
-      const params: PostV2InfraByInfraIdPathfindingBlocksApiArg = {
+      const params: PostInfraByInfraIdPathfindingBlocksApiArg = {
         infraId,
-        pathfindingInputV2: {
+        pathfindingInput: {
           path_items: trainSchedule.path.map((item) =>
             omit(item, ['id', 'deleted'])
           ) as PathItemLocation[],
@@ -170,7 +170,7 @@ const useSetupItineraryForTrainUpdate = (
       if (pathfindingResult.status !== 'success') {
         return null;
       }
-      const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
+      const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
         infraId,
         props: ['electrifications', 'geometry', 'operational_points'],
         pathPropertiesInput: {

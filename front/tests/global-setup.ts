@@ -69,10 +69,9 @@ async function createDataForTests() {
   } as StudyCreateForm);
 
   // Generate a timetable
-  const timetableResult = await postApiRequest(`/api/v2/timetable/`);
-
+  const timetableResult = await postApiRequest(`/api/timetable/`);
   // Create a scenario for the study
-  await postApiRequest(`/api/v2/projects/${project.id}/studies/${study.id}/scenarios`, {
+  await postApiRequest(`/api/projects/${project.id}/studies/${study.id}/scenarios`, {
     ...scenarioData,
     name: `${scenarioData.name} ${uuidv4()}`,
     study_id: study.id,

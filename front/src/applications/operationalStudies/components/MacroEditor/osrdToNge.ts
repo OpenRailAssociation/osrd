@@ -204,12 +204,12 @@ const importTimetable = async (
   dispatch: AppDispatch
 ): Promise<NetzgrafikDto> => {
   const timetablePromise = dispatch(
-    osrdEditoastApi.endpoints.getV2TimetableById.initiate({ id: timetableId })
+    osrdEditoastApi.endpoints.getTimetableById.initiate({ id: timetableId })
   );
   const { train_ids } = await timetablePromise.unwrap();
 
   const trainSchedulesPromise = dispatch(
-    osrdEditoastApi.endpoints.postV2TrainSchedule.initiate({
+    osrdEditoastApi.endpoints.postTrainSchedule.initiate({
       body: { ids: train_ids },
     })
   );

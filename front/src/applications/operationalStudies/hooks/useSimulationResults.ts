@@ -16,14 +16,14 @@ const useSimulationResults = (): SimulationResults => {
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getV2TrainScheduleById.useQuery(
+  const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
     {
       id: selectedTrainId as number,
     },
     { skip: !selectedTrainId }
   );
 
-  const { data: rawPath } = osrdEditoastApi.endpoints.getV2TrainScheduleByIdPath.useQuery(
+  const { data: rawPath } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
     {
       id: selectedTrainId as number,
       infraId: infraId as number,
@@ -33,7 +33,7 @@ const useSimulationResults = (): SimulationResults => {
   const path = selectedTrainId && rawPath?.status === 'success' ? rawPath : undefined;
 
   const { data: trainSimulation } =
-    osrdEditoastApi.endpoints.getV2TrainScheduleByIdSimulation.useQuery(
+    osrdEditoastApi.endpoints.getTrainScheduleByIdSimulation.useQuery(
       { id: selectedTrainId as number, infraId: infraId as number, electricalProfileSetId },
       { skip: !selectedTrainId || !infraId }
     );

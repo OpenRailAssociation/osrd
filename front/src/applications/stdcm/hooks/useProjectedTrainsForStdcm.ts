@@ -18,14 +18,14 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmV2SuccessResponse) => {
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
   const [trainIdsToProject, setTrainIdsToProject] = useState<number[]>([]);
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
+  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
     { id: timetableId! },
     {
       skip: !timetableId,
     }
   );
 
-  const { currentData: trainSchedules } = osrdEditoastApi.endpoints.postV2TrainSchedule.useQuery(
+  const { currentData: trainSchedules } = osrdEditoastApi.endpoints.postTrainSchedule.useQuery(
     {
       body: {
         ids: timetable?.train_ids as number[],

@@ -1,13 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import type {
-  Infra,
-  Project,
-  ScenarioV2,
-  Study,
-  TimetableResult,
-} from 'common/api/osrdEditoastApi';
+import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
 import CommonPage from './pages/common-page-model';
@@ -18,7 +12,7 @@ import { getInfra, getProject, getStudy, postApiRequest } from './utils/api-setu
 let smallInfra: Infra;
 let project: Project;
 let study: Study;
-let scenario: ScenarioV2;
+let scenario: Scenario;
 let timetableResult: TimetableResult;
 
 test.beforeAll(async () => {
@@ -28,8 +22,8 @@ test.beforeAll(async () => {
 });
 
 test.beforeEach(async () => {
-  timetableResult = await postApiRequest(`/api/v2/timetable/`);
-  scenario = await postApiRequest(`/api/v2/projects/${project.id}/studies/${study.id}/scenarios`, {
+  timetableResult = await postApiRequest(`/api/timetable/`);
+  scenario = await postApiRequest(`/api/projects/${project.id}/studies/${study.id}/scenarios`, {
     ...scenarioData,
     name: `${scenarioData.name} ${uuidv4()}`,
     study_id: study.id,

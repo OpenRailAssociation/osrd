@@ -1,5 +1,5 @@
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
-import type { ReportTrainV2, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { ReportTrain, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainScheduleV2/types';
 import { interpolateValue } from 'modules/trainschedule/components/DriverTrainScheduleV2/utils';
 import { mToMm, msToS } from 'utils/physics';
@@ -29,7 +29,7 @@ function getTheoreticalMargin(selectedTrainSchedule: TrainScheduleResult, pathSt
 }
 
 function computeDuration(
-  trainSimulation: ReportTrainV2,
+  trainSimulation: ReportTrain,
   opPoint: OperationalPointWithTimeAndSpeed,
   nextOpPoint: OperationalPointWithTimeAndSpeed
 ) {

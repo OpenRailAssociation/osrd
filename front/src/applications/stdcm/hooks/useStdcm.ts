@@ -47,8 +47,7 @@ const useStdcm = (showFailureNotification: boolean = true) => {
 
   const stdcmV2Results = useStdcmResults(stdcmV2Response, stdcmTrainResult, setPathProperties);
 
-  const [postV2TimetableByIdStdcm] =
-    osrdEditoastApi.endpoints.postV2TimetableByIdStdcm.useMutation();
+  const [postTimetableByIdStdcm] = osrdEditoastApi.endpoints.postTimetableByIdStdcm.useMutation();
 
   const { data: stdcmRollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
@@ -83,7 +82,7 @@ const useStdcm = (showFailureNotification: boolean = true) => {
     if (validConfig) {
       const payload = formatStdcmPayload(validConfig, stdcmV2Activated);
       try {
-        const response = await postV2TimetableByIdStdcm(payload).unwrap();
+        const response = await postTimetableByIdStdcm(payload).unwrap();
         if (
           response.status === 'success' &&
           response.simulation.status === 'success' &&

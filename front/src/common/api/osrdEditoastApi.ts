@@ -23,24 +23,24 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
     },
     // This endpoint will return only the props we ask for and the url needs to be build in a specific way
     // See https://osrd.fr/en/docs/reference/design-docs/timetable/#path
-    postV2InfraByInfraIdPathProperties: {
+    postInfraByInfraIdPathProperties: {
       query: (queryArg) => ({
         // We currently can't build the url path the way we want with rtk query with the regular endpoint
         // so we need to do it manually with this function and enhanced endpoint
-        url: `/v2/infra/${queryArg.infraId}/path_properties?${formatPathPropertiesProps(queryArg.props)}`,
+        url: `/infra/${queryArg.infraId}/path_properties?${formatPathPropertiesProps(queryArg.props)}`,
         method: 'POST',
         body: queryArg.pathPropertiesInput,
       }),
     },
-    deleteV2TrainSchedule: {
+    deleteTrainSchedule: {
       // As we always use all get trainschedule v2 endpoints after updating the timetable,
       // we don't want to invalidate the trainschedulev2 tag here to prevent multiple calls
-      invalidatesTags: ['timetablev2', 'scenariosv2'],
+      invalidatesTags: ['timetable', 'scenarios'],
     },
-    postV2TimetableByIdTrainSchedule: {
+    postTimetableByIdTrainSchedule: {
       // As we always use all get trainschedule v2 endpoints after updating the timetable,
       // we don't want to invalidate the trainschedulev2 tag here to prevent multiple calls
-      invalidatesTags: ['timetablev2', 'scenariosv2'],
+      invalidatesTags: ['timetable', 'scenarios'],
     },
     // Invalidate the children count and last update timestamp
     postProjectsByProjectIdStudies: {
@@ -52,14 +52,14 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
     deleteProjectsByProjectIdStudiesAndStudyId: {
       invalidatesTags: ['studies', 'projects'],
     },
-    postV2ProjectsByProjectIdStudiesAndStudyIdScenarios: {
-      invalidatesTags: ['scenariosv2', 'studies', 'projects'],
+    postProjectsByProjectIdStudiesAndStudyIdScenarios: {
+      invalidatesTags: ['scenarios', 'studies', 'projects'],
     },
-    patchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
-      invalidatesTags: ['scenariosv2', 'studies', 'projects'],
+    patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
+      invalidatesTags: ['scenarios', 'studies', 'projects'],
     },
-    deleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
-      invalidatesTags: ['scenariosv2', 'studies', 'projects'],
+    deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
+      invalidatesTags: ['scenarios', 'studies', 'projects'],
     },
   },
 });

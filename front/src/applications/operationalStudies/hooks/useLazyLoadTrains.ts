@@ -49,8 +49,8 @@ const useLazyLoadTrains = ({
   const [trainIdsToProject, setTrainIdsToProject] = useState<number[]>([]);
   const [allTrainsLoaded, setAllTrainsLoaded] = useState(false);
 
-  const [postV2TrainScheduleSimulationSummary] =
-    osrdEditoastApi.endpoints.postV2TrainScheduleSimulationSummary.useLazyQuery();
+  const [postTrainScheduleSimulationSummary] =
+    osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.useLazyQuery();
 
   const { data: { results: rollingStocks } = { results: [] } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
@@ -74,7 +74,7 @@ const useLazyLoadTrains = ({
       for (let i = 0; i < _trainToFetchIds.length; i += BATCH_SIZE) {
         const packageToFetch = getBatchPackage(i, _trainToFetchIds, BATCH_SIZE);
 
-        const rawSummaries = await postV2TrainScheduleSimulationSummary({
+        const rawSummaries = await postTrainScheduleSimulationSummary({
           body: {
             infra_id: _infraId,
             ids: packageToFetch,

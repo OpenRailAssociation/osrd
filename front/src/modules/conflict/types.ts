@@ -1,5 +1,5 @@
-import type { ConflictV2 } from 'common/api/osrdEditoastApi';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 
-export type ConflictWithTrainNames = ConflictV2 & {
+export type ConflictWithTrainNames = Conflict & {
   trainNames: string[];
 };

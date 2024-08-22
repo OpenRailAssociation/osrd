@@ -155,7 +155,7 @@ const handleTrainrunOperation = async ({
         trainrun.id
       );
       const newTrainSchedules = await dispatch(
-        osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.initiate({
+        osrdEditoastApi.endpoints.postTimetableByIdTrainSchedule.initiate({
           id: timeTableId,
           body: [
             {
@@ -172,7 +172,7 @@ const handleTrainrunOperation = async ({
     case 'delete': {
       const trainrunIdToDelete = createdTrainrun.get(trainrun.id) || trainrun.id;
       await dispatch(
-        osrdEditoastApi.endpoints.deleteV2TrainSchedule.initiate({
+        osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
           body: { ids: [trainrunIdToDelete] },
         })
       ).unwrap();
@@ -187,12 +187,12 @@ const handleTrainrunOperation = async ({
       );
       const trainrunIdToUpdate = createdTrainrun.get(trainrun.id) || trainrun.id;
       const trainSchedule = await dispatch(
-        osrdEditoastApi.endpoints.getV2TrainScheduleById.initiate({
+        osrdEditoastApi.endpoints.getTrainScheduleById.initiate({
           id: trainrunIdToUpdate,
         })
       ).unwrap();
       const newTrainSchedule = await dispatch(
-        osrdEditoastApi.endpoints.putV2TrainScheduleById.initiate({
+        osrdEditoastApi.endpoints.putTrainScheduleById.initiate({
           id: trainrunIdToUpdate,
           trainScheduleForm: {
             ...trainSchedule,

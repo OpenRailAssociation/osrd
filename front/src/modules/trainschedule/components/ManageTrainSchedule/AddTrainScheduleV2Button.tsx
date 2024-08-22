@@ -32,7 +32,7 @@ const AddTrainScheduleV2Button = ({
   upsertTrainSchedules,
 }: SubmitConfAddTrainScheduleProps) => {
   const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
+    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedule.useMutation();
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 

@@ -10,7 +10,7 @@ export const addTagTypes = [
   'layers',
   'projects',
   'studies',
-  'scenariosv2',
+  'scenarios',
   'rolling_stock_livery',
   'search',
   'speed_limit_tags',
@@ -503,7 +503,7 @@ const injectedRtkApi = api
             ordering: queryArg.ordering,
           },
         }),
-        providesTags: ['scenariosv2'],
+        providesTags: ['scenarios'],
       }),
       postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
         PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
@@ -514,7 +514,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.scenarioCreateForm,
         }),
-        invalidatesTags: ['scenariosv2'],
+        invalidatesTags: ['scenarios'],
       }),
       getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
         GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
@@ -523,7 +523,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
         }),
-        providesTags: ['scenariosv2'],
+        providesTags: ['scenarios'],
       }),
       deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
         DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
@@ -533,7 +533,7 @@ const injectedRtkApi = api
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
           method: 'DELETE',
         }),
-        invalidatesTags: ['scenariosv2'],
+        invalidatesTags: ['scenarios'],
       }),
       patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
         PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
@@ -544,7 +544,7 @@ const injectedRtkApi = api
           method: 'PATCH',
           body: queryArg.scenarioPatchForm,
         }),
-        invalidatesTags: ['scenariosv2'],
+        invalidatesTags: ['scenarios'],
       }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({

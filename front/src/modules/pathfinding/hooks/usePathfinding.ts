@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type {
-  PostV2InfraByInfraIdPathPropertiesApiArg,
-  PostV2InfraByInfraIdPathfindingBlocksApiArg,
+  PostInfraByInfraIdPathPropertiesApiArg,
+  PostInfraByInfraIdPathfindingBlocksApiArg,
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -177,13 +177,13 @@ export const usePathfindingV2 = (
   const [isPathfindingInitialized, setIsPathfindingInitialized] = useState(false);
 
   const [postPathfindingBlocks] =
-    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useMutation();
   const [postPathProperties] =
-    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useMutation();
 
   const { updatePathSteps } = useOsrdConfActions();
 
-  const generatePathfindingParams = (): PostV2InfraByInfraIdPathfindingBlocksApiArg | null => {
+  const generatePathfindingParams = (): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
     setPathProperties?.(undefined);
     return getPathfindingQuery({ infraId, rollingStock, origin, destination, pathSteps });
   };
@@ -218,8 +218,8 @@ export const usePathfindingV2 = (
     const startPathFinding = async () => {
       if (!pathfindingState.running) {
         pathfindingDispatch({ type: 'PATHFINDING_STARTED' });
-        const pathfindingInputV2 = generatePathfindingParams();
-        if (!pathfindingInputV2 || !infraId) {
+        const pathfindingInput = generatePathfindingParams();
+        if (!pathfindingInput || !infraId) {
           dispatch(
             setFailure({
               name: t('pathfinding'),
@@ -230,7 +230,7 @@ export const usePathfindingV2 = (
         }
 
         try {
-          const pathfindingResult = await postPathfindingBlocks(pathfindingInputV2).unwrap();
+          const pathfindingResult = await postPathfindingBlocks(pathfindingInput).unwrap();
 
           if (
             pathfindingResult.status === 'success' ||
@@ -241,7 +241,7 @@ export const usePathfindingV2 = (
                 ? pathfindingResult
                 : pathfindingResult.relaxed_constraints_path;
 
-            const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
+            const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
               infraId,
               props: ['electrifications', 'geometry', 'operational_points'],
               pathPropertiesInput: {

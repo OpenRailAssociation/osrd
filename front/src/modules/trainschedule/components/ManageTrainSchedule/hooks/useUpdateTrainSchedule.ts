@@ -23,7 +23,7 @@ const useUpdateTrainSchedule = (
   trainIdToEdit?: number
 ) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const [putV2TrainScheduleById] = osrdEditoastApi.endpoints.putV2TrainScheduleById.useMutation();
+  const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const dispatch = useAppDispatch();
   const { getConf, getName, getStartTime } = useOsrdConfSelectors();
   const confName = useSelector(getName);
@@ -47,7 +47,7 @@ const useUpdateTrainSchedule = (
         startTime
       );
       try {
-        const trainScheduleResult = await putV2TrainScheduleById({
+        const trainScheduleResult = await putTrainScheduleById({
           id: trainIdToEdit,
           trainScheduleForm: trainSchedule,
         }).unwrap();

@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { ConflictV2, InfraState, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { Conflict, InfraState, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import ConflictsListV2 from 'modules/conflict/components/ConflictsListV2';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
@@ -25,7 +25,7 @@ type TimetableV2Props = {
   infraState: InfraState;
   trainIds: number[];
   selectedTrainId?: number;
-  conflicts?: ConflictV2[];
+  conflicts?: Conflict[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   setTrainIdToEdit: (trainId?: number) => void;
   removeTrains: (trainIds: number[]) => void;
@@ -92,7 +92,7 @@ const TimetableV2 = ({
     setSelectedTrainIds(currentSelectedTrainIds);
   };
 
-  const handleConflictClick = (conflict: ConflictV2) => {
+  const handleConflictClick = (conflict: Conflict) => {
     if (conflict.train_ids.length > 0) {
       const firstTrainId = conflict.train_ids[0];
       dispatch(updateSelectedTrainId(firstTrainId));

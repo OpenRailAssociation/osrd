@@ -1,10 +1,10 @@
-import type { ConflictV2 } from 'common/api/osrdEditoastApi';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/TimetableV2/types';
 
 import type { ConflictWithTrainNames } from './types';
 
 export default function addTrainNamesToConflicts(
-  conflicts: ConflictV2[],
+  conflicts: Conflict[],
   trainSchedulesDetails: TrainScheduleWithDetails[]
 ): ConflictWithTrainNames[] {
   const trainNameMap: { [id: number]: string } = {};
