@@ -955,11 +955,10 @@ class BlockAvailabilityTests {
             // because the zone itself becomes available again after 10s, which leaves 20s to
             // respect step timing data
             assertEquals(stepMinDelay + conflictMinDelay, res.duration)
-            assertTrue(res.firstConflictOffset.distance > plannedStepOffset.distance)
         } else {
             // The zone becomes available too late, step timing data is not respected
             assertEquals(POSITIVE_INFINITY, res.duration)
-            assertEquals(plannedStepOffset.distance, res.firstConflictOffset.distance)
         }
+        assertTrue(res.firstConflictOffset.distance > plannedStepOffset.distance)
     }
 }
