@@ -8,7 +8,7 @@ import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
 import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
-  type PostV2InfraByInfraIdPathPropertiesApiArg,
+  type PostInfraByInfraIdPathPropertiesApiArg,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
@@ -30,10 +30,10 @@ const useStdcmResults = (
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const [postPathProperties] =
-    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useMutation();
 
   const { data: otherSelectedTrainSchedule } =
-    osrdEditoastApi.endpoints.getV2TrainScheduleById.useQuery(
+    osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
       {
         id: selectedTrainId as number,
       },
@@ -57,7 +57,7 @@ const useStdcmResults = (
 
   useEffect(() => {
     const getPathProperties = async (_infraId: number, path: PathfindingResultSuccess) => {
-      const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
+      const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
         infraId: _infraId,
         props: ['electrifications', 'geometry', 'operational_points'],
         pathPropertiesInput: {

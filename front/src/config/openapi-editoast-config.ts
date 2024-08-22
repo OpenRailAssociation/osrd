@@ -11,9 +11,9 @@ const config: ConfigFile = {
   endpointOverrides: [
     {
       pattern: [
-        'postV2TrainSchedule',
-        'postV2TrainScheduleSimulationSummary',
-        'postV2TrainScheduleProjectPath',
+        'postTrainSchedule',
+        'postTrainScheduleSimulationSummary',
+        'postTrainScheduleProjectPath',
       ],
       type: 'query',
     },

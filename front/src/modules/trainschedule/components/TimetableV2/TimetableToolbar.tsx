@@ -67,7 +67,7 @@ const TimetableToolbar = ({
 
   const debouncedRollingstockFilter = useDebounce(rollingStockFilter, 500);
 
-  const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
+  const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
   // TODO: move this hook in Timetable
   const { uniqueTags } = useFilterTrainSchedules(

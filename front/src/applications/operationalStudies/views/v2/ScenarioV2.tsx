@@ -31,7 +31,7 @@ import ManageTrainScheduleV2 from './ManageTrainScheduleV2';
 import SimulationResultsV2 from './SimulationResultsV2';
 import useScenarioData from '../../hooks/useScenarioData';
 
-const ScenarioV2 = () => {
+const Scenario = () => {
   const { t } = useTranslation('operationalStudies/scenario');
   const dispatch = useAppDispatch();
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
@@ -323,4 +323,4 @@ const ScenarioV2 = () => {
   );
 };
 
-export default ScenarioV2;
+export default Scenario;

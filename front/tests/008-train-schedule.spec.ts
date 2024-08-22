@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 
-import type { ScenarioV2, Study, Project } from 'common/api/osrdEditoastApi';
+import type { Scenario, Study, Project } from 'common/api/osrdEditoastApi';
 
 import HomePage from './pages/home-page-model';
 import OperationalStudiesTimetablePage from './pages/op-timetable-page-model';
@@ -12,7 +12,7 @@ import { postSimulation, sendTrainSchedules } from './utils/trainSchedule';
 let selectedLanguage: string;
 let project: Project;
 let study: Study;
-let scenario: ScenarioV2;
+let scenario: Scenario;
 
 const trainSchedulesJson = readJsonFile('./tests/assets/trainSchedule/train_schedules.json');
 

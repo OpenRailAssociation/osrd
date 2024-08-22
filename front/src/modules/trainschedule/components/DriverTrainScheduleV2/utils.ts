@@ -9,7 +9,7 @@ import type {
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
-  type ReportTrainV2,
+  type ReportTrain,
   type TrackSection,
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
@@ -214,7 +214,7 @@ export const interpolateValue = (
 };
 
 const getTimeAndSpeed = (
-  simulationReport: ReportTrainV2,
+  simulationReport: ReportTrain,
   op: PathPropertiesFormatted['operationalPoints'][number]
 ) => {
   const matchingReportTrainIndex = simulationReport.positions.findIndex(

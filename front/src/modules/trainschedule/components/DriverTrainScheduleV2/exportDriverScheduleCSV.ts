@@ -3,7 +3,7 @@ import type {
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
-import type { ReportTrainV2, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { ReportTrain, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
 import { timestampToHHMMSS } from 'utils/date';
 import { mmToM, mToMm } from 'utils/physics';
@@ -57,7 +57,7 @@ const compareOldActualValues = (old?: string, actual?: string) =>
 // Add OPs inside speedsteps array, gather speedlimit with stop position, add electrification ranges,
 // and sort the array along position before return
 const overloadSteps = (
-  trainRegime: ReportTrainV2,
+  trainRegime: ReportTrain,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
   speedLimits: SpeedRanges,
   electrificationRanges: ElectrificationRangeV2[]
@@ -199,7 +199,7 @@ export default function driverTrainScheduleV2ExportCSV(
 ) {
   const trainRegime =
     baseOrEco === BaseOrEco.base ? simulatedTrain.base : simulatedTrain.final_output;
-  const trainRegimeWithAccurateTime: ReportTrainV2 = {
+  const trainRegimeWithAccurateTime: ReportTrain = {
     ...trainRegime,
     times: trainRegime.times.map(
       (time) => convertDepartureTimeIntoSec(train.start_time) + ms2sec(time)

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
-import type { ReportTrainV2 } from 'common/api/osrdEditoastApi';
+import type { ReportTrain } from 'common/api/osrdEditoastApi';
 import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
 import { mmToM } from 'utils/physics';
 
@@ -11,7 +11,7 @@ import DriverTrainScheduleStopV2 from './DriverTrainScheduleStopV2';
 import type { OperationalPointWithTimeAndSpeed } from './types';
 
 type DriverTrainScheduleStopListV2Props = {
-  trainRegime: ReportTrainV2 | SimulationResponseSuccess['final_output'];
+  trainRegime: ReportTrain | SimulationResponseSuccess['final_output'];
   mrsp: SimulationResponseSuccess['mrsp'];
   operationalPoints: OperationalPointWithTimeAndSpeed[];
 };

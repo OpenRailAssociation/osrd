@@ -10,7 +10,7 @@ import type {
 import type { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import type {
   LightRollingStock,
-  PostV2TimetableByIdStdcmApiResponse,
+  PostTimetableByIdStdcmApiResponse,
   RollingStockWithLiveries,
   SimulationResponse,
 } from 'common/api/osrdEditoastApi';
@@ -20,7 +20,7 @@ import type { ValueOf } from 'utils/types';
 export type StdcmRequestStatus = ValueOf<typeof STDCM_REQUEST_STATUS>;
 
 export type StdcmV2SuccessResponse = Omit<
-  Extract<PostV2TimetableByIdStdcmApiResponse, { status: 'success' }>,
+  Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' }>,
   'simulation'
 > & {
   simulation: Extract<SimulationResponse, { status: 'success' }>;

@@ -54,8 +54,8 @@ const useLazyProjectTrains = ({
   const requestedProjectedTrainIds = useRef<Set<number>>(new Set());
   const projectionSeqNum = useRef(0);
 
-  const [postV2TrainScheduleProjectPath] =
-    osrdEditoastApi.endpoints.postV2TrainScheduleProjectPath.useLazyQuery();
+  const [postTrainScheduleProjectPath] =
+    osrdEditoastApi.endpoints.postTrainScheduleProjectPath.useLazyQuery();
 
   const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
 
@@ -68,7 +68,7 @@ const useLazyProjectTrains = ({
       packageToProject.forEach((trainId) => requestedProjectedTrainIds.current.add(trainId));
 
       const { blocks, routes, track_section_ranges } = _path;
-      const rawProjectedTrains = await postV2TrainScheduleProjectPath({
+      const rawProjectedTrains = await postTrainScheduleProjectPath({
         projectPathForm: {
           infra_id: infraId!,
           ids: packageToProject,

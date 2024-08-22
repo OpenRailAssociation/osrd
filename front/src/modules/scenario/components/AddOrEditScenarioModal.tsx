@@ -9,7 +9,7 @@ import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { osrdEditoastApi, type ScenarioPatchFormV2 } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ScenarioPatchForm } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -32,7 +32,7 @@ import checkScenarioFields from '../utils';
 
 // TODO: use ScenarioCreateForm from osrdEditoastApi to harmonize with study and project
 // and then change checkNameInvalidity
-export type ScenarioForm = ScenarioPatchFormV2 & {
+export type ScenarioForm = ScenarioPatchForm & {
   id?: number;
   infra_id?: number;
   electrical_profile_set_id?: number | null;
@@ -84,15 +84,15 @@ export default function AddOrEditScenarioModal({
     [urlStudyId, urlProjectId]
   );
 
-  const [postTimetableV2] = osrdEditoastApi.endpoints.postV2Timetable.useMutation({});
-  const [postScenarioV2] =
-    osrdEditoastApi.endpoints.postV2ProjectsByProjectIdStudiesAndStudyIdScenarios.useMutation({});
-  const [patchScenarioV2] =
-    osrdEditoastApi.endpoints.patchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
+  const [postTimetableV2] = osrdEditoastApi.endpoints.postTimetable.useMutation({});
+  const [postScenario] =
+    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenarios.useMutation({});
+  const [patchScenario] =
+    osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
       {}
     );
-  const [deleteScenarioV2] =
-    osrdEditoastApi.endpoints.deleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
+  const [deleteScenario] =
+    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
       {}
     );
 
@@ -161,9 +161,9 @@ export default function AddOrEditScenarioModal({
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
       const ids = { projectId, studyId };
       const timetable = await postTimetableV2().unwrap();
-      postScenarioV2({
+      postScenario({
         ...ids,
-        scenarioCreateFormV2: {
+        scenarioCreateForm: {
           description: currentScenario.description || '',
           infra_id: currentScenario.infra_id,
           name: currentScenario.name,
@@ -191,9 +191,9 @@ export default function AddOrEditScenarioModal({
     } else if (scenario && projectId && studyId && scenario.id) {
       const ids = { projectId, studyId, scenarioId: scenario.id };
 
-      patchScenarioV2({
+      patchScenario({
         ...ids,
-        scenarioPatchFormV2: {
+        scenarioPatchForm: {
           description: currentScenario.description,
           infra_id: currentScenario.infra_id,
           name: currentScenario.name,
@@ -218,7 +218,7 @@ export default function AddOrEditScenarioModal({
 
   const removeScenario = () => {
     if (projectId && studyId && scenario?.id) {
-      deleteScenarioV2({ projectId, studyId, scenarioId: scenario.id })
+      deleteScenario({ projectId, studyId, scenarioId: scenario.id })
         .unwrap()
         .then(() => {
           dispatch(updateScenarioID(undefined));

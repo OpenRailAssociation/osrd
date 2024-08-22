@@ -13,12 +13,12 @@ import type {
   PositionData,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { ReportTrainV2 } from 'common/api/osrdEditoastApi';
+import type { ReportTrain } from 'common/api/osrdEditoastApi';
 import { mmToKm, msToKmh, mToKm } from 'utils/physics';
 
 import { electricalProfilesDesignValues } from './consts';
 
-export const formatSpeeds = (simulation: ReportTrainV2) => {
+export const formatSpeeds = (simulation: ReportTrain) => {
   const { positions, speeds } = simulation;
   return speeds.map((value, index) => ({
     position: {

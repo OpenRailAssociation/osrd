@@ -4,7 +4,7 @@ import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import {
   osrdEditoastApi,
   type PathProperties,
-  type PostV2InfraByInfraIdPathPropertiesApiArg,
+  type PostInfraByInfraIdPathPropertiesApiArg,
 } from 'common/api/osrdEditoastApi';
 
 const useGetProjectedTrainOperationalPoints = (
@@ -15,7 +15,7 @@ const useGetProjectedTrainOperationalPoints = (
     NonNullable<PathProperties['operational_points']>
   >([]);
 
-  const { data: pathfindingResult } = osrdEditoastApi.endpoints.getV2TrainScheduleByIdPath.useQuery(
+  const { data: pathfindingResult } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
     {
       id: trainIdUsedForProjection as number,
       infraId: infraId as number,
@@ -26,12 +26,12 @@ const useGetProjectedTrainOperationalPoints = (
   );
 
   const [postPathProperties] =
-    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useMutation();
 
   useEffect(() => {
     const getOperationalPoints = async () => {
       if (infraId && pathfindingResult && pathfindingResult.status === 'success') {
-        const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
+        const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
           infraId,
           props: ['operational_points'],
           pathPropertiesInput: {

@@ -194,13 +194,8 @@
       "PathNotFound": "Chemin '{{path_id}}' non trouvé",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
-      "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée"
-    },
-    "train_schedule_v2": {
-      "BatchTrainScheduleNotFound": "'{{number}}' circulation(s) n'ont pas pu être trouvée(s)",
-      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "InvalidQueryParams": "Paramètres de la requête invalides '{{message}}'"
+      "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée"
     },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"

@@ -62,7 +62,7 @@ const ImportTrainScheduleTrainsListV2 = ({
   );
 
   const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
+    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedule.useMutation();
 
   const dispatch = useAppDispatch();
 

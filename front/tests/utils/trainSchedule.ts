@@ -12,7 +12,7 @@ export async function sendTrainSchedules(
 ): Promise<TrainScheduleResult[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const trainSchedulesResponse: APIResponse = await apiContext.post(
-    `/api/v2/timetable/${timetableId}/train_schedule/`,
+    `/api/timetable/${timetableId}/train_schedule/`,
     {
       data: JSON.stringify(body),
       headers: {
@@ -36,7 +36,7 @@ export async function postSimulation(
   const trainIds = getTrainIds(response);
   if (trainIds.length > 0) {
     await postApiRequest(
-      `/api/v2/train_schedule/simulation_summary/`,
+      `/api/train_schedule/simulation_summary/`,
       { ids: trainIds, infra_id: infraId },
       undefined,
       'Failed to post simulation'

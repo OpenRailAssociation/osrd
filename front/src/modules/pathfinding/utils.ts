@@ -3,8 +3,8 @@ import { compact } from 'lodash';
 import type {
   GeoJsonLineString,
   PathProperties,
-  PathfindingInputV2,
-  PostV2InfraByInfraIdPathfindingBlocksApiArg,
+  PathfindingInput,
+  PostInfraByInfraIdPathfindingBlocksApiArg,
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
@@ -63,10 +63,10 @@ export const getPathfindingQuery = ({
   origin: PathStep | null;
   destination: PathStep | null;
   pathSteps: (PathStep | null)[];
-}): PostV2InfraByInfraIdPathfindingBlocksApiArg | null => {
+}): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
   if (infraId && rollingStock && origin && destination) {
     // Only origin and destination can be null so we can compact and we want to remove any via that would be null
-    const pathItems: PathfindingInputV2['path_items'] = compact(pathSteps).map((step) => {
+    const pathItems: PathfindingInput['path_items'] = compact(pathSteps).map((step) => {
       if ('uic' in step) {
         return { uic: step.uic, secondary_code: step.ch };
       }
@@ -91,7 +91,7 @@ export const getPathfindingQuery = ({
 
     return {
       infraId,
-      pathfindingInputV2: {
+      pathfindingInput: {
         path_items: pathItems,
         rolling_stock_is_thermal: isThermal(rollingStock.effort_curves.modes),
         rolling_stock_loading_gauge: rollingStock.loading_gauge,

@@ -1,12 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type {
-  Infra,
-  Project,
-  ScenarioV2,
-  Study,
-  TimetableResult,
-} from 'common/api/osrdEditoastApi';
+import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
 
 import { getInfra, getProject, getStudy, postApiRequest } from './api-setup';
 import scenarioData from '../assets/operationStudies/scenario.json';
@@ -16,7 +10,7 @@ interface SetupResult {
   smallInfra: Infra;
   project: Project;
   study: Study;
-  scenario: ScenarioV2;
+  scenario: Scenario;
   timetableResult: TimetableResult;
 }
 
@@ -26,11 +20,11 @@ export default async function setupScenario(): Promise<SetupResult> {
   const smallInfra = (await getInfra()) as Infra;
   const project = await getProject();
   const study = await getStudy(project.id);
-  const timetableResult = await postApiRequest(`/api/v2/timetable/`);
+  const timetableResult = await postApiRequest(`/api/timetable/`);
 
   // Create a new scenario with a unique name
   const scenario = await postApiRequest(
-    `/api/v2/projects/${project.id}/studies/${study.id}/scenarios/`,
+    `/api/projects/${project.id}/studies/${study.id}/scenarios/`,
     {
       ...scenarioData,
       name: `${scenarioData.name} ${uuidv4()}`,
