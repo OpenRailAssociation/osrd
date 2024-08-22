@@ -21,10 +21,10 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::core::v2::conflict_detection::Conflict;
-use crate::core::v2::conflict_detection::ConflictDetectionRequest;
-use crate::core::v2::conflict_detection::TrainRequirements;
-use crate::core::v2::simulation::SimulationResponse;
+use crate::core::conflict_detection::Conflict;
+use crate::core::conflict_detection::ConflictDetectionRequest;
+use crate::core::conflict_detection::TrainRequirements;
+use crate::core::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
@@ -33,9 +33,9 @@ use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Infra;
-use crate::views::v2::train_schedule::train_simulation_batch;
-use crate::views::v2::train_schedule::TrainScheduleForm;
-use crate::views::v2::train_schedule::TrainScheduleResult;
+use crate::views::train_schedule::train_simulation_batch;
+use crate::views::train_schedule::TrainScheduleForm;
+use crate::views::train_schedule::TrainScheduleResult;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;
@@ -43,7 +43,7 @@ use crate::RetrieveBatch;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
-    "/v2/timetable" => {
+    "/timetable" => {
         post,
         "/{id}" => {
             delete,
@@ -113,7 +113,7 @@ struct TimetableIdParam {
 /// Return a specific timetable with its associated schedules
 #[utoipa::path(
     get, path = "",
-    tag = "timetablev2",
+    tag = "timetable",
     params(TimetableIdParam),
     responses(
         (status = 200, description = "Timetable with train schedules ids", body = TimetableDetailedResult),
@@ -148,7 +148,7 @@ async fn get(
 /// Create a timetable
 #[utoipa::path(
     post, path = "",
-    tag = "timetablev2",
+    tag = "timetable",
     responses(
         (status = 200, description = "Timetable with train schedules ids", body = TimetableResult),
         (status = 404, description = "Timetable not found"),
@@ -176,7 +176,7 @@ async fn post(
 /// Delete a timetable
 #[utoipa::path(
     delete, path = "",
-    tag = "timetablev2",
+    tag = "timetable",
     params(TimetableIdParam),
     responses(
         (status = 204, description = "No content"),
@@ -208,7 +208,7 @@ async fn delete(
 /// Create train schedule by batch
 #[utoipa::path(
     post, path = "",
-    tag = "timetablev2,train_schedulev2",
+    tag = "timetable,train_schedule",
     params(TimetableIdParam),
     request_body = Vec<TrainScheduleBase>,
     responses(
@@ -266,10 +266,10 @@ pub struct ElectricalProfileSetIdQueryParam {
 /// Retrieve the list of conflict of the timetable (invalid trains are ignored)
 #[utoipa::path(
     get, path = "",
-    tag = "timetablev2",
+    tag = "timetable",
     params(TimetableIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
-        (status = 200, description = "List of conflict", body = Vec<ConflictV2>),
+        (status = 200, description = "List of conflict", body = Vec<Conflict>),
     ),
 )]
 async fn conflicts(
@@ -367,7 +367,7 @@ mod tests {
 
         let timetable = create_timetable(pool.get_ok().deref_mut()).await;
 
-        let request = app.get(&format!("/v2/timetable/{}", timetable.id));
+        let request = app.get(&format!("/timetable/{}", timetable.id));
 
         let timetable_from_response: TimetableDetailedResult =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -384,7 +384,7 @@ mod tests {
     #[rstest]
     async fn get_unexisting_timetable() {
         let app = TestAppBuilder::default_app();
-        let request = app.get(&format!("/v2/timetable/{}", 0));
+        let request = app.get(&format!("/timetable/{}", 0));
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
@@ -394,7 +394,7 @@ mod tests {
         let pool = app.db_pool();
 
         // Insert timetable
-        let request = app.post("/v2/timetable");
+        let request = app.post("/timetable");
 
         let created_timetable: TimetableResult =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -415,7 +415,7 @@ mod tests {
 
         let timetable = create_timetable(pool.get_ok().deref_mut()).await;
 
-        let request = app.delete(format!("/v2/timetable/{}", timetable.id).as_str());
+        let request = app.delete(format!("/timetable/{}", timetable.id).as_str());
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 

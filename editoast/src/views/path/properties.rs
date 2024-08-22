@@ -21,14 +21,14 @@ use tracing::info;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
-use crate::core::v2::path_properties::OperationalPointOnPath;
-use crate::core::v2::path_properties::PathPropertiesRequest;
-use crate::core::v2::path_properties::PropertyElectrificationValues;
-use crate::core::v2::path_properties::PropertyValuesF64;
-use crate::core::v2::pathfinding::TrackRange;
+use crate::core::path_properties::OperationalPointOnPath;
+use crate::core::path_properties::PathPropertiesRequest;
+use crate::core::path_properties::PropertyElectrificationValues;
+use crate::core::path_properties::PropertyValuesF64;
+use crate::core::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
-use crate::views::v2::path::retrieve_infra_version;
+use crate::views::path::retrieve_infra_version;
 use crate::AppState;
 use crate::RedisConnection;
 use editoast_common::geometry::GeoJsonLineString;
@@ -36,7 +36,7 @@ use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
 
 crate::routes! {
-    "/v2/infra/{infra_id}/path_properties" => post,
+    "/infra/{infra_id}/path_properties" => post,
 }
 
 editoast_common::schemas! {
@@ -142,7 +142,7 @@ type Properties = EnumSet<Property>;
 /// Compute path properties
 #[utoipa::path(
     post, path = "",
-    tag = "pathfindingv2",
+    tag = "pathfinding",
     request_body = PathPropertiesInput,
     params(
         ("infra_id" = i64, Path, description = "The infra id"),
@@ -278,7 +278,7 @@ mod tests {
     async fn path_properties_small_infra() {
         let app = TestAppBuilder::default_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let url = format!("/v2/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id);
+        let url = format!("/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id);
 
         // Should succeed
         let request = app.post(&url).json(&json!(

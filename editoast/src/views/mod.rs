@@ -6,14 +6,17 @@ mod openapi;
 pub mod operational_studies;
 pub mod pagination;
 pub mod params;
+pub mod path;
 pub mod projects;
 pub mod rolling_stock;
+pub mod scenario;
 pub mod search;
 pub mod speed_limit_tags;
 pub mod sprites;
 pub mod stdcm_search_environment;
 pub mod study;
-pub mod v2;
+pub mod timetable;
+pub mod train_schedule;
 pub mod work_schedules;
 
 #[cfg(test)]
@@ -75,8 +78,11 @@ crate::routes! {
     &speed_limit_tags,
     &sprites,
     &stdcm_search_environment,
-    &v2,
     &work_schedules,
+    &train_schedule,
+    &timetable,
+    &path,
+    &scenario,
 }
 
 editoast_common::schemas! {
@@ -99,8 +105,11 @@ editoast_common::schemas! {
     rolling_stock::schemas(),
     search::schemas(),
     stdcm_search_environment::schemas(),
-    v2::schemas(),
     work_schedules::schemas(),
+    train_schedule::schemas(),
+    timetable::schemas(),
+    path::schemas(),
+    scenario::schemas(),
 }
 
 pub type Roles = editoast_authz::roles::RoleConfig<BuiltinRole>;

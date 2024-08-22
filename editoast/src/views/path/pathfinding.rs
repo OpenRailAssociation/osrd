@@ -17,8 +17,8 @@ use tracing::debug;
 use tracing::info;
 use utoipa::ToSchema;
 
-use crate::core::v2::pathfinding::PathfindingRequest;
-use crate::core::v2::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingRequest;
+use crate::core::pathfinding::PathfindingResult;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -28,15 +28,15 @@ use crate::modelsv2::Retrieve;
 use crate::modelsv2::RollingStockModel;
 use crate::redis_utils::RedisConnection;
 use crate::views::get_app_version;
-use crate::views::v2::path::path_item_cache::PathItemCache;
-use crate::views::v2::path::PathfindingError;
+use crate::views::path::path_item_cache::PathItemCache;
+use crate::views::path::PathfindingError;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_models::DbConnection;
 
 crate::routes! {
-    "/v2/infra/{infra_id}/pathfinding/blocks" => post,
+    "/infra/{infra_id}/pathfinding/blocks" => post,
 }
 
 editoast_common::schemas! {
@@ -46,7 +46,6 @@ editoast_common::schemas! {
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
-#[schema(as = PathfindingInputV2)]
 struct PathfindingInput {
     /// The loading gauge of the rolling stock
     rolling_stock_loading_gauge: LoadingGaugeType,
@@ -70,11 +69,11 @@ struct PathfindingInput {
 /// Compute a pathfinding
 #[utoipa::path(
     post, path = "",
-    tag = "pathfindingv2",
+    tag = "pathfinding",
     params(
         ("infra_id" = i64, Path, description = "The infra id"),
     ),
-    request_body = PathfindingInputV2,
+    request_body = PathfindingInput,
     responses(
         (status = 200, description = "Pathfinding Result", body = PathfindingResult),
     ),

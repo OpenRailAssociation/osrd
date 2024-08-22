@@ -9,7 +9,7 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_model::RollingStockModel;
 use editoast_models::db_connection_pool::DbConnectionV2;
-use editoast_models::tables::{project, rolling_stock, scenario_v2, study, train_schedule_v2};
+use editoast_models::tables::{project, rolling_stock, scenario, study, train_schedule};
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Eq, PartialOrd, Ord, Deserialize))]
@@ -40,26 +40,24 @@ type SchedulesFromRollingStock = (i64, String, i64, String, i64, String);
 
 impl RollingStockModel {
     pub async fn get_usage(&self, conn: &mut DbConnectionV2) -> Result<Vec<ScenarioReference>> {
-        let schedules: Vec<_> = train_schedule_v2::table
+        let schedules: Vec<_> = train_schedule::table
             .inner_join(
-                rolling_stock::table
-                    .on(train_schedule_v2::rolling_stock_name.eq(rolling_stock::name)),
+                rolling_stock::table.on(train_schedule::rolling_stock_name.eq(rolling_stock::name)),
             )
             .inner_join(
-                (scenario_v2::table
-                    .on(scenario_v2::timetable_id.eq(train_schedule_v2::timetable_id)))
-                .inner_join(study::table.inner_join(project::table)),
+                (scenario::table.on(scenario::timetable_id.eq(scenario::timetable_id)))
+                    .inner_join(study::table.inner_join(project::table)),
             )
             .select((
                 project::id,
                 project::name,
                 study::id,
                 study::name,
-                scenario_v2::id,
-                scenario_v2::name,
+                scenario::id,
+                scenario::name,
             ))
             .filter(rolling_stock::id.eq(self.id))
-            .filter(train_schedule_v2::id.is_not_null())
+            .filter(train_schedule::id.is_not_null())
             .load::<SchedulesFromRollingStock>(conn)
             .await?;
         let schedules = schedules.into_iter().map_into().collect();

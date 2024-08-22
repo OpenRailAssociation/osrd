@@ -10,7 +10,7 @@ use editoast_schemas::train_schedule::ScheduleItem;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 
 #[derive(Debug, Default, Clone, ModelV2)]
-#[model(table = editoast_models::tables::train_schedule_v2)]
+#[model(table = editoast_models::tables::train_schedule)]
 #[model(gen(ops = crud, batch_ops = crd, list))]
 pub struct TrainSchedule {
     pub id: i64,

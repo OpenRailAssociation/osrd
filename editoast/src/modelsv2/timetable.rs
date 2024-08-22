@@ -8,11 +8,11 @@ use crate::error::Result;
 use crate::models::Identifiable;
 use crate::modelsv2::{DeleteStatic, Retrieve};
 use crate::Exists;
-use editoast_models::tables::timetable_v2::dsl;
+use editoast_models::tables::timetable::dsl;
 use editoast_models::DbConnection;
 
 #[derive(Debug, Default, Clone, PartialEq, Queryable, Identifiable)]
-#[diesel(table_name = editoast_models::tables::timetable_v2)]
+#[diesel(table_name = editoast_models::tables::timetable)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 pub struct Timetable {
     pub id: i64,
@@ -21,7 +21,7 @@ pub struct Timetable {
 impl Timetable {
     #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
     pub async fn create(conn: &mut DbConnection) -> Result<Self> {
-        diesel::insert_into(editoast_models::tables::timetable_v2::table)
+        diesel::insert_into(editoast_models::tables::timetable::table)
             .default_values()
             .get_result::<Timetable>(conn)
             .await
@@ -35,7 +35,7 @@ impl DeleteStatic<i64> for Timetable {
     #[allow(clippy::blocks_in_conditions)] // TODO: Remove this once using clippy 0.1.80
     #[tracing::instrument(name = "model:delete_static<Timetable>", skip_all, ret, err)]
     async fn delete_static(conn: &mut DbConnection, id: i64) -> Result<bool> {
-        diesel::delete(dsl::timetable_v2.filter(dsl::id.eq(id)))
+        diesel::delete(dsl::timetable.filter(dsl::id.eq(id)))
             .execute(conn)
             .await
             .map(|n| n == 1)
@@ -51,7 +51,7 @@ impl Retrieve<i64> for Timetable {
         conn: &mut editoast_models::DbConnection,
         id: i64,
     ) -> crate::error::Result<Option<Timetable>> {
-        dsl::timetable_v2
+        dsl::timetable
             .filter(dsl::id.eq(id))
             .first::<Timetable>(conn)
             .await
@@ -91,12 +91,12 @@ pub struct TimetableWithTrains {
 impl Retrieve<i64> for TimetableWithTrains {
     async fn retrieve(conn: &mut DbConnection, timetable_id: i64) -> Result<Option<Self>> {
         let result = sql_query(
-            "SELECT timetable_v2.*,
-        array_remove(array_agg(train_schedule_v2.id), NULL) as train_ids
-        FROM timetable_v2
-        LEFT JOIN train_schedule_v2 ON timetable_v2.id = train_schedule_v2.timetable_id
-        WHERE timetable_v2.id = $1
-        GROUP BY timetable_v2.id",
+            "SELECT timetable.*,
+        array_remove(array_agg(train_schedule.id), NULL) as train_ids
+        FROM timetable
+        LEFT JOIN train_schedule ON timetable.id = train_schedule.timetable_id
+        WHERE timetable.id = $1
+        GROUP BY timetable.id",
         )
         .bind::<BigInt, _>(timetable_id)
         .get_result::<TimetableWithTrains>(conn)

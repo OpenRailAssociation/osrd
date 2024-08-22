@@ -1,10 +1,15 @@
+pub mod conflict_detection;
 mod http_client;
 pub mod infra_loading;
 pub mod infra_state;
 #[cfg(test)]
 pub mod mocking;
 pub mod mq_client;
-pub mod v2;
+pub mod path_properties;
+pub mod pathfinding;
+pub mod signal_projection;
+pub mod simulation;
+pub mod stdcm;
 pub mod version;
 
 use std::collections::HashMap;
@@ -36,9 +41,9 @@ use crate::error::Result;
 pub use mq_client::RabbitMQClient;
 
 editoast_common::schemas! {
-    v2::simulation::schemas(),
-    v2::pathfinding::schemas(),
-    v2::conflict_detection::schemas(),
+    simulation::schemas(),
+    pathfinding::schemas(),
+    conflict_detection::schemas(),
 }
 
 const MAX_RETRIES: u8 = 5;

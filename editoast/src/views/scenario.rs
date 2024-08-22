@@ -41,7 +41,7 @@ use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 
 crate::routes! {
-    "/v2/projects/{project_id}/studies/{study_id}/scenarios" => {
+    "/projects/{project_id}/studies/{study_id}/scenarios" => {
         create,
         list,
         "/{scenario_id}" => {
@@ -75,7 +75,6 @@ pub struct ScenarioIdParam {
 
 /// This structure is used by the post endpoint to create a scenario
 #[derive(Serialize, Deserialize, Derivative, ToSchema)]
-#[schema(as = ScenarioCreateFormV2)]
 #[derivative(Default)]
 struct ScenarioCreateForm {
     pub name: String,
@@ -141,7 +140,6 @@ pub enum ScenarioError {
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct ScenarioWithDetails {
     #[serde(flatten)]
-    #[schema(value_type = ScenarioV2)]
     pub scenario: Scenario,
     pub infra_name: String,
     pub trains_count: i64,
@@ -158,10 +156,8 @@ impl ScenarioWithDetails {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-#[schema(as = ScenarioResponseV2)]
 pub struct ScenarioResponse {
     #[serde(flatten)]
-    #[schema(value_type = ScenarioV2)]
     pub scenario: Scenario,
     pub infra_name: String,
     pub trains_count: i64,
@@ -188,11 +184,11 @@ impl ScenarioResponse {
 /// Create a scenario
 #[utoipa::path(
     post, path = "",
-    tag = "scenariosv2",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam),
-    request_body = ScenarioCreateFormV2,
+    request_body = ScenarioCreateForm,
     responses(
-        (status = 201, body = ScenarioResponseV2, description = "The created scenario"),
+        (status = 201, body = ScenarioResponse, description = "The created scenario"),
     )
 )]
 async fn create(
@@ -259,7 +255,7 @@ async fn create(
 /// Delete a scenario
 #[utoipa::path(
     delete, path = "",
-    tag = "scenariosv2",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
         (status = 204, description = "The scenario was deleted successfully"),
@@ -316,7 +312,6 @@ async fn delete(
 
 /// This structure is used by the patch endpoint to patch a scenario
 #[derive(Serialize, Deserialize, Derivative, ToSchema)]
-#[schema(as = ScenarioPatchFormV2)]
 #[derivative(Default)]
 struct ScenarioPatchForm {
     pub name: Option<String>,
@@ -341,11 +336,11 @@ impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset
 /// Update a scenario
 #[utoipa::path(
     patch, path = "",
-    tag = "scenariosv2",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
-    request_body = ScenarioPatchFormV2,
+    request_body = ScenarioPatchForm,
     responses(
-        (status = 204, body = ScenarioResponseV2, description = "The scenario was updated successfully"),
+        (status = 204, body = ScenarioResponse, description = "The scenario was updated successfully"),
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
@@ -414,10 +409,10 @@ async fn patch(
 /// Return a specific scenario
 #[utoipa::path(
     get, path = "",
-    tag = "scenariosv2",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
-        (status = 200, body = ScenarioResponseV2, description = "The requested scenario"),
+        (status = 200, body = ScenarioResponse, description = "The requested scenario"),
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
@@ -468,7 +463,7 @@ struct ListScenariosResponse {
 /// Return a list of scenarios
 #[utoipa::path(
     get, path = "",
-    tag = "scenariosv2",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
         (status = 200, description = "A paginated list of scenarios", body = inline(ListScenariosResponse)),
@@ -529,7 +524,7 @@ mod tests {
 
     pub fn scenario_url(project_id: i64, study_id: i64, scenario_id: Option<i64>) -> String {
         format!(
-            "/v2/projects/{}/studies/{}/scenarios/{}",
+            "/projects/{}/studies/{}/scenarios/{}",
             project_id,
             study_id,
             scenario_id.map_or_else(|| "".to_owned(), |v| v.to_string())
