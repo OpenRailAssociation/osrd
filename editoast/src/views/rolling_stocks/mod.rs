@@ -35,6 +35,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
+use crate::modelsv2::rolling_stock_model::ScenarioReference;
 use crate::modelsv2::rolling_stock_model::TrainScheduleScenarioStudyProject;
 use crate::modelsv2::Document;
 use crate::modelsv2::RollingStockModel;
@@ -53,6 +54,7 @@ crate::routes! {
             delete,
             "/locked" => update_locked,
             "/livery" => create_livery,
+            "/usage" => get_usage,
         },
     },
 }
@@ -65,6 +67,7 @@ editoast_common::schemas! {
     RollingStockError,
     RollingStockKey,
     RollingStockWithLiveries,
+    ScenarioReference,
     light_rolling_stock::schemas(),
 }
 
@@ -626,6 +629,34 @@ async fn create_livery(
     Ok(Json(rolling_stock_livery))
 }
 
+/// List the scenarios (and their respective studies and projects) which use a given rolling stock.
+#[utoipa::path(
+    get, path = "",
+    tag = "rolling_stock",
+    params(RollingStockIdParam),
+    responses(
+        (status = 200, description = "A list of the associated scenarios and their respective studies and projects.", body = Vec<ScenarioReference>),
+        (status = 404, description = "The requested rolling stock was not found"),
+    )
+)]
+pub async fn get_usage(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_id): Path<i64>,
+) -> Result<Json<Vec<ScenarioReference>>> {
+    let mut conn = db_pool.get().await?;
+
+    let rolling_stock = RollingStockModel::retrieve_or_fail(&mut conn, rolling_stock_id, || {
+        RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        }
+    })
+    .await?;
+
+    let related_train_schedules = rolling_stock.get_usage(&mut conn).await?;
+
+    Ok(Json(related_train_schedules))
+}
+
 /// Retrieve a rolling stock by id or by name
 pub async fn retrieve_existing_rolling_stock(
     conn: &mut DbConnection,
@@ -742,19 +773,14 @@ pub mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
+    use uuid::Uuid;
 
     use crate::error::InternalError;
 
-    use crate::modelsv2::fixtures::create_fast_rolling_stock;
-
-    use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
-
-    use crate::modelsv2::fixtures::fast_rolling_stock_changeset;
-    use crate::modelsv2::fixtures::fast_rolling_stock_form;
-    use crate::modelsv2::fixtures::get_rolling_stock_with_invalid_effort_curves;
-    use crate::modelsv2::fixtures::rolling_stock_with_energy_sources_form;
-    use crate::modelsv2::prelude::*;
+    use super::*;
+    use crate::modelsv2::fixtures::*;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
+    use crate::modelsv2::train_schedule::TrainSchedule;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
@@ -849,6 +875,112 @@ pub mod tests {
             response.error_type,
             "editoast:rollingstocks:NameAlreadyUsed"
         );
+    }
+
+    #[rstest]
+    async fn get_rolling_stock_usage_with_no_usage_returns_empty_ok() {
+        let app = TestAppBuilder::default_app();
+        let stock_name = Uuid::new_v4().to_string();
+        let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
+        let request = app.rolling_stock_create_request(&rolling_stock);
+        let RollingStockModel { id, .. } =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let request = app.get(&format!("/rolling_stock/{id}/usage"));
+        let related_schedules: Vec<ScenarioReference> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert!(related_schedules.is_empty());
+    }
+
+    #[rstest]
+    async fn get_rolling_stock_usage_with_related_schedules_returns_schedules_list() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let create_rolling_stock_request =
+            app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
+        let rolling_stock: RollingStockModel = app
+            .fetch(create_rolling_stock_request)
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        let project =
+            create_project(db_pool.get_ok().deref_mut(), &Uuid::new_v4().to_string()).await;
+        let study = create_study(
+            db_pool.get_ok().deref_mut(),
+            &Uuid::new_v4().to_string(),
+            project.id,
+        )
+        .await;
+        let timetable_1 = create_timetable(db_pool.get_ok().deref_mut()).await;
+        let timetable_2 = create_timetable(db_pool.get_ok().deref_mut()).await;
+        let infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let scenario_1 = create_scenario(
+            db_pool.get_ok().deref_mut(),
+            &Uuid::new_v4().to_string(),
+            study.id,
+            timetable_1.id,
+            infra.id,
+        )
+        .await;
+        let scenario_2 = create_scenario(
+            db_pool.get_ok().deref_mut(),
+            &Uuid::new_v4().to_string(),
+            study.id,
+            timetable_2.id,
+            infra.id,
+        )
+        .await;
+
+        let mut schedule_form_1 = simple_train_schedule_form(timetable_1.id);
+        let mut schedule_form_2 = simple_train_schedule_form(timetable_1.id);
+        schedule_form_1
+            .train_schedule
+            .rolling_stock_name
+            .clone_from(&rolling_stock.name);
+        schedule_form_2.train_schedule.rolling_stock_name = rolling_stock.name;
+        let train_schedule_1: Changeset<TrainSchedule> = schedule_form_1.into();
+        let _ = train_schedule_1
+            .create(db_pool.get_ok().deref_mut())
+            .await
+            .unwrap();
+        let train_schedule_2: Changeset<TrainSchedule> = schedule_form_2.into();
+        let _ = train_schedule_2
+            .create(db_pool.get_ok().deref_mut())
+            .await
+            .unwrap();
+
+        let request = app.get(&format!("/rolling_stock/{}/usage", rolling_stock.id));
+        let mut related_scenarios: Vec<ScenarioReference> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let mut expected_scenarios = [
+            ScenarioReference {
+                project_id: project.id,
+                project_name: project.name.clone(),
+                study_id: study.id,
+                study_name: study.name.clone(),
+                scenario_id: scenario_1.id,
+                scenario_name: scenario_1.name.clone(),
+            },
+            ScenarioReference {
+                project_id: project.id,
+                project_name: project.name.clone(),
+                study_id: study.id,
+                study_name: study.name.clone(),
+                scenario_id: scenario_2.id,
+                scenario_name: scenario_2.name.clone(),
+            },
+        ];
+        assert_eq!(related_scenarios.sort(), expected_scenarios.sort());
+    }
+
+    #[rstest]
+    async fn get_invalid_rolling_stock_id_returns_404_not_found() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let _ = RollingStockModel::delete_static(db_pool.get_ok().deref_mut(), 1).await;
+
+        let request = app.get("/rolling_stock/1/usage");
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]

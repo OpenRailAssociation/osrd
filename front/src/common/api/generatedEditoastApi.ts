@@ -543,6 +543,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['rolling_stock'],
       }),
+      getRollingStockByRollingStockIdUsage: build.query<
+        GetRollingStockByRollingStockIdUsageApiResponse,
+        GetRollingStockByRollingStockIdUsageApiArg
+      >({
+        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}/usage` }),
+        providesTags: ['rolling_stock'],
+      }),
       postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
         query: (queryArg) => ({
           url: `/search`,
@@ -1237,6 +1244,11 @@ export type PatchRollingStockByRollingStockIdLockedApiResponse =
 export type PatchRollingStockByRollingStockIdLockedApiArg = {
   rollingStockId: number;
   rollingStockLockedUpdateForm: RollingStockLockedUpdateForm;
+};
+export type GetRollingStockByRollingStockIdUsageApiResponse =
+  /** status 200 A list of the associated scenarios and their respective studies and projects. */ ScenarioReference[];
+export type GetRollingStockByRollingStockIdUsageApiArg = {
+  rollingStockId: number;
 };
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
@@ -2423,6 +2435,14 @@ export type RollingStockLiveryCreateForm = {
 export type RollingStockLockedUpdateForm = {
   /** New locked value */
   locked: boolean;
+};
+export type ScenarioReference = {
+  project_id: number;
+  project_name: string;
+  scenario_id: number;
+  scenario_name: string;
+  study_id: number;
+  study_name: string;
 };
 export type SearchResultItemTrack = {
   infra_id: number;

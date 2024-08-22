@@ -1779,6 +1779,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollingStock'
+  /rolling_stock/{rolling_stock_id}/usage:
+    get:
+      tags:
+      - rolling_stock
+      summary: List the scenarios (and their respective studies and projects) which use a given rolling stock.
+      parameters:
+      - name: rolling_stock_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: A list of the associated scenarios and their respective studies and projects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScenarioReference'
+        '404':
+          description: The requested rolling stock was not found
   /search:
     post:
       tags:
@@ -8178,6 +8201,31 @@ components:
           allOf:
           - $ref: '#/components/schemas/Tags'
           nullable: true
+    ScenarioReference:
+      type: object
+      required:
+      - project_id
+      - project_name
+      - study_id
+      - study_name
+      - scenario_id
+      - scenario_name
+      properties:
+        project_id:
+          type: integer
+          format: int64
+        project_name:
+          type: string
+        scenario_id:
+          type: integer
+          format: int64
+        scenario_name:
+          type: string
+        study_id:
+          type: integer
+          format: int64
+        study_name:
+          type: string
     ScenarioResponseV2:
       allOf:
       - $ref: '#/components/schemas/ScenarioV2'
