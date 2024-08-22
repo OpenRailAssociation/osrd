@@ -30,9 +30,8 @@ export default function useStdcmEnvironment() {
           electricalProfileSetId: data.electrical_profile_set_id,
           workScheduleGroupId: data.work_schedule_group_id,
           searchDatetimeWindow: {
-            // We specify that the date received from the backend is in UTC, otherwise it will be considered as the local date
-            begin: new Date(`${data.search_window_begin}+00:00`),
-            end: new Date(`${data.search_window_end}+00:00`),
+            begin: new Date(data.search_window_begin),
+            end: new Date(data.search_window_end),
           },
         })
       );
