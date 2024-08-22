@@ -18,7 +18,9 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
+import { setSuccess } from 'reducers/main';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
 
 import StdcmResultsV2 from './StdcmResultsV2';
 
@@ -53,6 +55,7 @@ const StdcmConfig = ({
   const originV2 = useSelector(getOriginV2);
   const destinationV2 = useSelector(getDestinationV2);
   const infraID = useInfraID();
+  const dispatch = useAppDispatch();
 
   const [showMap, setShowMap] = useState<boolean>(true);
   const [isInfraLoaded, setIsInfraLoaded] = useState<boolean>(false);
@@ -76,6 +79,9 @@ const StdcmConfig = ({
     }
   );
 
+  const [postStdcmSearchEnvironment] =
+    osrdEditoastApi.endpoints.postStdcmSearchEnvironment.useMutation();
+
   const disabledApplyButton = useMemo(() => {
     if (!originV2 || !destinationV2 || !osrdconf.originDate) return true;
 
@@ -88,6 +94,26 @@ const StdcmConfig = ({
       !osrdconf.rollingStockID
     );
   }, [infra, osrdconf, originV2, destinationV2]);
+
+  const handleSetSearchEnv = async () => {
+    const searchWindowBegin = new Date();
+    const searchWindowEnd = new Date(searchWindowBegin.getTime() + 7 * 24 * 60 * 60 * 1000);
+    await postStdcmSearchEnvironment({
+      stdcmSearchEnvironmentCreateForm: {
+        infra_id: infraID!,
+        timetable_id: timetableID!,
+        // TODO: pass dates with timezone here
+        search_window_begin: searchWindowBegin.toISOString().replace('Z', ''),
+        search_window_end: searchWindowEnd.toISOString().replace('Z', ''),
+      },
+    }).unwrap();
+    dispatch(
+      setSuccess({
+        title: t('stdcm:setSearchEnvSuccess.title'),
+        text: t('stdcm:setSearchEnvSuccess.text'),
+      })
+    );
+  };
 
   const handleClick = () => {
     launchStdcmRequest();
@@ -138,6 +164,13 @@ const StdcmConfig = ({
               <RunningTime />
               <StdcmAllowances />
               <div className="osrd-config-stdcm-apply">
+                <button
+                  type="button"
+                  className="btn btn-sm float-left"
+                  onClick={handleSetSearchEnv}
+                >
+                  {t('stdcm:setSearchEnv')}
+                </button>
                 {/* TODO: use RTK request status */}
                 <button
                   data-testid="applyStdcmButton"

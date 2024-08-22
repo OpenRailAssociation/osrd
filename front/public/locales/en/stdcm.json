@@ -80,5 +80,10 @@
     "time": "Time",
     "tolerance": "Tolerance",
     "vias": "Intermediate OP"
+  },
+  "setSearchEnv": "Set as search environment",
+  "setSearchEnvSuccess": {
+    "title": "Search environment saved",
+    "text": "A 7-day search window has been set."
   }
 }

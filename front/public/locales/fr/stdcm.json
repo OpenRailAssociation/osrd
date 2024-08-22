@@ -80,5 +80,10 @@
     "time": "Heure",
     "tolerance": "Tolérance",
     "vias": "PR intermédiaire"
+  },
+  "setSearchEnv": "Définir comme environnement de recherche",
+  "setSearchEnvSuccess": {
+    "title": "Environnement de recherche sauvegardé",
+    "text": "Une fenêtre de 7 jours a été définie."
   }
 }
