@@ -49,7 +49,7 @@ const SimulationResultsV2 = ({
     selectedTrainPowerRestrictions,
     trainSimulation,
     pathProperties,
-    pathLength,
+    path,
   },
   timetableTrainNb,
 }: SimulationResultsV2Props) => {
@@ -214,7 +214,7 @@ const SimulationResultsV2 = ({
               pathProperties={pathProperties}
               operationalPoints={operationalPoints.finalOutput}
               selectedTrainSchedule={selectedTrainSchedule}
-              pathLength={pathLength}
+              path={path}
               dataIsLoading={formattedOpPointsLoading}
             />
           </div>

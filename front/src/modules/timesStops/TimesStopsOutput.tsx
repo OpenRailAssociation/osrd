@@ -6,7 +6,7 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainScheduleV2/types';
 import { convertIsoUtcToLocalTime } from 'utils/date';
@@ -21,7 +21,7 @@ type TimesStopsOutputProps = {
   pathProperties: PathPropertiesFormatted;
   operationalPoints: OperationalPointWithTimeAndSpeed[];
   selectedTrainSchedule: TrainScheduleResult;
-  pathLength?: number;
+  path?: PathfindingResultSuccess;
   dataIsLoading: boolean;
 };
 
@@ -30,7 +30,7 @@ const TimesStopsOutput = ({
   pathProperties,
   operationalPoints,
   selectedTrainSchedule,
-  pathLength,
+  path,
   dataIsLoading,
 }: TimesStopsOutputProps) => {
   const startTime = convertIsoUtcToLocalTime(selectedTrainSchedule.start_time);
@@ -39,7 +39,7 @@ const TimesStopsOutput = ({
     pathProperties,
     operationalPoints,
     selectedTrainSchedule,
-    pathLength
+    path
   );
   if (dataIsLoading) {
     return (
