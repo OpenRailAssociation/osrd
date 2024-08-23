@@ -191,6 +191,7 @@ const SimulationResultsV2 = ({
                   projectPathTrainResult={spaceTimeData.filter(
                     (train) => train.space_time_curves.length > 0
                   )}
+                  selectedProjection={selectedTrainSchedule?.id}
                 />
               </div>
             </div>
