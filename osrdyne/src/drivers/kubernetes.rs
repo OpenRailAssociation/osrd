@@ -98,7 +98,7 @@ impl KubernetesDriver {
 
 impl WorkerDriver for KubernetesDriver {
     fn get_or_create_worker_group(
-        &self,
+        &mut self,
         worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move {
@@ -245,7 +245,7 @@ impl WorkerDriver for KubernetesDriver {
     }
 
     fn destroy_worker_group(
-        &self,
+        &mut self,
         worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
         Box::pin(async move {

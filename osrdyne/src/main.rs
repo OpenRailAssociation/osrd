@@ -20,6 +20,7 @@ use crate::config::WorkerDriverConfig;
 use crate::drivers::docker::DockerDriver;
 use crate::drivers::kubernetes::KubernetesDriver;
 use crate::drivers::noop::NoopDriver;
+use crate::drivers::process_compose::PCDriver;
 use crate::drivers::worker_driver::WorkerDriver;
 
 mod api;
@@ -114,6 +115,11 @@ async fn main() -> Result<(), anyhow::Error> {
                     KubernetesDriver::new(opts, config.amqp_uri.clone(), config.pool_id.clone())
                         .await,
                 )
+            }
+
+            WorkerDriverConfig::ProcessComposeDriver(opts) => {
+                info!("Using process-compose driver");
+                Box::new(PCDriver::new(opts, config.amqp_uri.clone()))
             }
 
             WorkerDriverConfig::Noop => {

@@ -414,7 +414,7 @@ async fn activity_processor(
 async fn worker_control_loop(
     expected_state: tokio::sync::watch::Receiver<TargetUpdate>,
     running_workers_watch: tokio::sync::watch::Sender<Arc<Vec<WorkerMetadata>>>,
-    driver: Box<dyn WorkerDriver>,
+    mut driver: Box<dyn WorkerDriver>,
     sleep_interval: Duration,
 ) {
     loop {

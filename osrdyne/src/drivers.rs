@@ -1,6 +1,7 @@
 pub mod docker;
 pub mod kubernetes;
 pub mod noop;
+pub mod process_compose;
 pub mod worker_driver;
 
 const LABEL_MANAGED_BY: &str = "osrd/managed_by";

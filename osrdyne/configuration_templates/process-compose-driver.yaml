@@ -1,0 +1,11 @@
+worker_driver:
+  type: ProcessComposeDriver
+  address: localhost
+  port: 8080 # process-compose sets it to 8080 by default, better change it...
+  process: core # the process name to scale
+
+  # Files to write the content of the osrdyne environment variables
+  comm_files:
+    worker_id: /tmp/worker_id # WORKER_ID
+    worker_key: /tmp/worker_key # WORKER_KEY
+    amqp_uri: /tmp/worker_amqp_uri # WORKER_AMQP_URI
