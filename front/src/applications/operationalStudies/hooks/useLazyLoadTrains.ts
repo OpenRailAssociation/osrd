@@ -82,19 +82,33 @@ const useLazyLoadTrains = ({
           },
         }).unwrap();
 
-        // launch the projection of the trains
-        setTrainIdsToProject((prev) => [...prev, ...packageToFetch]);
+        // the two rtk-query calls postV2TrainSchedule & postV2TrainScheduleSimulationSummary
+        // do not happen during the same react cycle.
+        // if we update a train, one is going to re-fetch first and the 2 are out of sync during a few cycles.
+        // these cycles do not make sense to render.
+        const outOfSync = [...trainSchedulesById.values()].some((trainShedule) => {
+          const summary = rawSummaries[trainShedule.id];
+          if (summary?.status === 'success') {
+            return trainShedule.path.length !== summary.path_item_times_final.length;
+          }
+          return false;
+        });
 
-        // format the summaries to display them in the timetable
-        const newFormattedSummaries = formatTrainScheduleSummaries(
-          packageToFetch,
-          rawSummaries,
-          trainSchedulesById,
-          rollingStocks
-        );
+        if (!outOfSync) {
+          // launch the projection of the trains
+          setTrainIdsToProject((prev) => [...prev, ...packageToFetch]);
 
-        // as formattedSummaries is a dictionary, we replace the previous values with the new ones
-        setTrainScheduleSummariesById((prev) => concatMap(prev, newFormattedSummaries));
+          // format the summaries to display them in the timetable
+          const newFormattedSummaries = formatTrainScheduleSummaries(
+            packageToFetch,
+            rawSummaries,
+            trainSchedulesById,
+            rollingStocks
+          );
+
+          // as formattedSummaries is a dictionary, we replace the previous values with the new ones
+          setTrainScheduleSummariesById((prev) => concatMap(prev, newFormattedSummaries));
+        }
       }
 
       setTrainIdsToFetch([]);
