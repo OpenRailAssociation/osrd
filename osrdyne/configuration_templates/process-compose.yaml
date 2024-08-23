@@ -1,0 +1,37 @@
+version: "0.5"
+is_strict: true
+
+environment:
+  - "CORE_EDITOAST_URL=http://localhost:8090"
+  - "JAVA_TOOL_OPTIONS=-javaagent:$HOME/opentelemetry-javaagent.jar" # edit this path
+  - "CORE_MONITOR_TYPE=opentelemetry"
+  - "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc"
+  - "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:4317"
+  - "OTEL_METRICS_EXPORTER=none"
+  - "OTEL_LOGS_EXPORTER=none"
+
+processes:
+  core:
+    # Disabled by default (started by osrdyne, only the templating matters).
+    # The osrdyne env variables are read from the files specified in the driver configuration.
+    command: |
+      (
+        export WORKER_ID=$(cat /tmp/worker_id);
+        export WORKER_KEY=$(cat /tmp/worker_key);
+        export WORKER_AMQP_URI="$(cat /tmp/worker_amqp_uri);"
+        java $$JAVA_OPTS -ea -jar build/libs/osrd-all.jar worker
+      )
+    working_dir: "$OSRD_PATH/core"
+    disabled: true
+  gateway:
+    command: cargo run
+    working_dir: "$OSRD_PATH/gateway"
+  editoast:
+    command: cargo run runserver
+    working_dir: "$OSRD_PATH/editoast"
+  front:
+    command: yarn start
+    working_dir: "$OSRD_PATH/front"
+  osrdyne:
+    command: cargo run
+    working_dir: "$OSRD_PATH/osrdyne"

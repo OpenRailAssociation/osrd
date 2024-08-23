@@ -18,14 +18,14 @@ impl NoopDriver {
 
 impl WorkerDriver for NoopDriver {
     fn get_or_create_worker_group(
-        &self,
+        &mut self,
         _worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move { Ok(self.fixed_pool_id) })
     }
 
     fn destroy_worker_group(
-        &self,
+        &mut self,
         _worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
         Box::pin(async move { Ok(()) })
