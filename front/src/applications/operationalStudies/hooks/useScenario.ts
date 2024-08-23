@@ -16,7 +16,7 @@ type SimulationParams = {
 
 const useScenario = () => {
   const dispatch = useAppDispatch();
-  const { updateInfraID, updateTimetableID } = useOsrdConfActions();
+  const { updateInfraID, updateTimetableID, updateElectricalProfileSetId } = useOsrdConfActions();
 
   const {
     projectId: urlProjectId,
@@ -52,10 +52,12 @@ const useScenario = () => {
     if (scenario) {
       dispatch(updateTimetableID(scenario.timetable_id));
       dispatch(updateInfraID(scenario.infra_id));
+      dispatch(updateElectricalProfileSetId(scenario.electrical_profile_set_id));
     } else {
       dispatch(updateTimetableID(undefined));
       dispatch(updateInfraID(undefined));
       dispatch(updateTrainIdUsedForProjection(undefined));
+      dispatch(updateElectricalProfileSetId(undefined));
     }
   }, [scenario]);
 
