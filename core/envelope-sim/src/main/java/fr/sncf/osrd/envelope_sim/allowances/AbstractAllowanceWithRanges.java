@@ -333,12 +333,13 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         Envelope res = null;
         OSRDError lastError = null;
         var search = new DoubleBinarySearch(initialLowBound, initialHighBound, targetTime, tolerance, true);
+        double lastTime = 0.0;
         for (int i = 1; i < 30 && !search.complete(); i++) {
             var input = search.getInput();
             try {
                 res = computeIteration(envelopeSection, context, input, imposedBeginSpeed, imposedEndSpeed);
-                var regionTime = res.getTotalTime();
-                search.feedback(regionTime);
+                lastTime = res.getTotalTime();
+                search.feedback(lastTime);
             } catch (OSRDError allowanceError) {
                 logger.debug("    couldn't build an envelope ({})", allowanceError.toString());
                 lastError = allowanceError;
@@ -355,9 +356,24 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         }
 
         if (!search.complete()) {
-            if (lastError != null) throw lastError; // If we couldn't converge and an error happened, it has more info
-            // than a generic error
-            throw makeError(search);
+            if (res != null && abs(lastTime - targetTime) <= context.timeStep) {
+                // We couldn't match the distributed tolerance, but we're still within one timestep.
+                // This sometimes happen when the path is very long with many scheduled points. Most
+                // of the time the error isn't significant in this context, we can log a warning and
+                // move on.
+                logger.warn("Couldn't reach target time for allowance section "
+                        + "with distributed tolerance. Using closest result.");
+                logger.warn("Closest time = {}, target time = {} +- {}", lastTime, targetTime, tolerance);
+                // TODO: raise a warning to be included in the response
+            } else {
+                if (lastError != null) {
+                    // If we couldn't converge and an error happened, it has more info
+                    // than a generic error
+                    throw lastError;
+                } else {
+                    throw makeError(search);
+                }
+            }
         }
         return res;
     }
