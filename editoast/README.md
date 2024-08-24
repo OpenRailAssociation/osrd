@@ -41,6 +41,19 @@ To avoid thread conflicts while accessing the database, use serial_test
 cargo test -- --test-threads=4
 ```
 
+# Debugging
+
+:warning: For improving compilation time and therefore the developer experience, the project
+choose to strip out debug information by default, resulting in [about 20%
+shorter compilation time](https://github.com/OpenRailAssociation/osrd/pull/8579).
+
+If you need to debug the project, you might want to activate the `dev-for-debug` profile
+which will build with debug information.
+
+```
+cargo build --profile dev-for-debug
+```
+
 ## Useful tools
 
 Here a list of components to help you in your development (see CI jobs if necessary):
