@@ -189,3 +189,10 @@ tempfile.workspace = true
 
 [lints]
 workspace = true
+
+[profile.dev]
+debug = "limited"
+
+[profile.dev-for-debug]
+inherits = "dev"
+debug = "full"
