@@ -38,7 +38,6 @@ use modelsv2::{
     train_schedule::TrainScheduleChangeset,
 };
 use modelsv2::{Changeset, RollingStockModel};
-use opentelemetry_datadog::DatadogPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use tower::Layer as _;
 use tower_http::cors::{Any, CorsLayer};
@@ -109,6 +108,7 @@ fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) 
     // https://docs.rs/tracing-subscriber/latest/tracing_subscriber/layer/index.html#runtime-configuration-with-layers
     let telemetry_layer = match telemetry_config.telemetry_kind {
         client::TelemetryKind::None => None,
+        #[cfg(feature = "datadog")]
         client::TelemetryKind::Datadog => {
             let datadog_tracer = opentelemetry_datadog::new_pipeline()
                 .with_service_name(telemetry_config.service_name.as_str())
@@ -118,7 +118,9 @@ fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) 
             let layer = tracing_opentelemetry::layer()
                 .with_tracer(datadog_tracer)
                 .boxed();
-            opentelemetry::global::set_text_map_propagator(DatadogPropagator::default());
+            opentelemetry::global::set_text_map_propagator(
+                opentelemetry_datadog::DatadogPropagator::default(),
+            );
             Some(layer)
         }
         client::TelemetryKind::Opentelemetry => {

@@ -123,7 +123,7 @@ opentelemetry = { version = "0.23.0", default-features = false, features = [
 opentelemetry-datadog = { version = "0.11.0", default-features = false, features = [
   "intern-std",
   "reqwest-client",
-] }
+], optional = true }
 opentelemetry-otlp = { version = "0.16.0", default-features = false, features = [
   "grpc-tonic",
   "trace",
@@ -188,6 +188,9 @@ pretty_assertions.workspace = true
 rstest.workspace = true
 serial_test = "3.1.1"
 tempfile.workspace = true
+
+[features]
+datadog = ["dep:opentelemetry-datadog"]
 
 [lints]
 workspace = true
