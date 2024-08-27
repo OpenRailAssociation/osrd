@@ -167,15 +167,15 @@ data class BlockAvailability(
         // Iterate over all the predecessor blocks + current block
         // Iterate backwards, as the range is generally towards the end
         for (i in incrementalPath.blockCount - 1 downTo 0) {
-            // Getting incremental path data is expensive, we only do it once
-            val blockStartOffset = incrementalPath.getBlockStartOffset(i)
-            val blockEndOffset = incrementalPath.getBlockEndOffset(i)
             val block = incrementalPath.getBlock(i)
 
             // Discard lookahead blocks
             if (infraExplorer.getLookahead().toList().contains(block)) {
                 continue
             }
+
+            val blockStartOffset = incrementalPath.getBlockStartOffset(i)
+            val blockEndOffset = incrementalPath.getBlockEndOffset(i)
 
             // Discard blocks fully outside the range
             if (blockStartOffset > endOffset) {
