@@ -1,6 +1,6 @@
 # OSRD's Front
 
-## How to launch project for developpement purpose ?
+## How to launch project for development purpose?
 
 - go inside `/front/` from OSRD main project
 - you'll need [`npm`](https://nodejs.org/en/download/package-manager) and
@@ -89,7 +89,7 @@ components requiring a specific design.
 ## Homepage `/src/main`
 
 Landing is done in `/main` where we can find `app.js` for routing purpose and `home.js` as homepage
-with cards linking to differents applications.
+with cards linking to different applications.
 
 OSRD's front is organized in 5 main `applications/`.
 
@@ -99,7 +99,7 @@ All applications are contained in a single folder, have a `home` JS/TS file and 
 organized in folders.
 
 **The components propose the main JS/TS file and eventually another folder with same name containing
-some minors subcomponents linked to.**
+some minor subcomponents linked to.**
 
   - components/
   - views/
