@@ -1,5 +1,6 @@
 use rangemap::RangeMap;
-use serde_derive::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use std::fmt::Debug;
 use std::ops::Range;
 use utoipa::ToSchema;

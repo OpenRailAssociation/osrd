@@ -6,7 +6,7 @@ use axum::extract::State;
 use axum::Extension;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
-use serde_derive::Deserialize;
+use serde::Deserialize;
 use thiserror::Error;
 
 use crate::error::Result;

@@ -5,8 +5,8 @@ use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use futures::future::OptionFuture;
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::core::simulation::SignalProjectionRequest;

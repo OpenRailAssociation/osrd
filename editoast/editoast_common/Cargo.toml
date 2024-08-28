@@ -8,8 +8,7 @@ edition.workspace = true
 
 [dependencies]
 rangemap.workspace = true
-serde.workspace = true
-serde_derive.workspace = true
+serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 thiserror.workspace = true
 utoipa.workspace = true

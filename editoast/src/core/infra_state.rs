@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use derivative::Derivative;
+use serde::Deserialize;
 use serde::Serialize;
-use serde_derive::Deserialize;
 
 use super::AsCoreRequest;
 use super::Json;
