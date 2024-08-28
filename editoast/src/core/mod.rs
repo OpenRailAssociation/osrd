@@ -24,8 +24,8 @@ pub use http_client::HttpClient;
 pub use http_client::HttpClientBuilder;
 use reqwest::Url;
 use serde::de::DeserializeOwned;
+use serde::Deserialize;
 use serde::Serialize;
-use serde_derive::Deserialize;
 use serde_json::Value;
 use thiserror::Error;
 use tracing::debug;
@@ -458,7 +458,7 @@ mod test {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use reqwest::Method;
-    use serde_derive::Serialize;
+    use serde::Serialize;
     use serde_json::json;
 
     use crate::core::mocking::MockingClient;

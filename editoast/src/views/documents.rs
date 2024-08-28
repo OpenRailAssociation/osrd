@@ -6,7 +6,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
 use editoast_derive::EditoastError;
-use serde_derive::Serialize;
+use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
 

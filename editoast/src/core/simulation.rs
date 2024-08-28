@@ -2,8 +2,8 @@ use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
 use editoast_schemas::train_schedule::Allowance;
 use editoast_schemas::train_schedule::RjsPowerRestrictionRange;
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::AsCoreRequest;

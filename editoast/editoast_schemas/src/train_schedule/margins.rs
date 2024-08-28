@@ -2,7 +2,8 @@ use std::str::FromStr;
 
 use crate::primitives::NonBlankString;
 use derivative::Derivative;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
 editoast_common::schemas! {

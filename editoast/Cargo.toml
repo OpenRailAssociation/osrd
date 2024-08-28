@@ -58,8 +58,7 @@ pretty_assertions = "1.4.0"
 rand = "0.8.5"
 rangemap = "1.5.1"
 rstest = { version = "0.19.0", default-features = false }
-serde = "1.0.204"
-serde_derive = "1.0.195"
+serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.121"
 strum = { version = "0.26.3", features = ["derive"] }
 tempfile = "3.10.1"
@@ -148,8 +147,7 @@ hostname.workspace = true
 lapin = "2.3.1"
 ordered-float = { version = "4.2.2", features = ["serde"] }
 reqwest = { version = "0.11.27", default-features = false, features = ["json"] }
-serde.workspace = true
-serde_derive.workspace = true
+serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 serde_qs = { version = "0.13.0", features = ["axum"] }
 serde_yaml = "0.9.34"
