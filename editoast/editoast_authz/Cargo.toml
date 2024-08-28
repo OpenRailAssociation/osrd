@@ -11,7 +11,10 @@ fixtures = []
 serde = { workspace = true, features = ["derive"] }
 strum.workspace = true
 thiserror.workspace = true
-toml_edit = { version = "0.22.16", features = ["parse", "serde"] }
+toml_edit = { version = "0.22.16", default-features = false, features = [
+  "parse",
+  "serde",
+] }
 tracing.workspace = true
 
 [dev-dependencies]
