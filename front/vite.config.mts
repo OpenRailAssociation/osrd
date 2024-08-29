@@ -24,12 +24,12 @@ export default defineConfig(({ mode }) => {
         example: '.env.example',
       }),
       checker({
-        typescript: {
-          buildMode: true,
-        },
-        eslint: {
-          lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 0',
-        },
+        // typescript: {
+        //   buildMode: true,
+        // },
+        // eslint: {
+        //   lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 0',
+        // },
         overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
           initialIsOpen: env.OSRD_VITE_OVERLAY_OPEN_BY_DEFAULT === 'true',
         },

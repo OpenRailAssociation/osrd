@@ -24,24 +24,26 @@ const reduxDevToolsOptions: Config = {
 
 const middlewares: Middleware[] = [osrdEditoastApi.middleware, osrdGatewayApi.middleware];
 
-const store = configureStore({
-  reducer: persistedReducer,
-  devTools: reduxDevToolsOptions,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: false,
-      // The following line disables the detection of immutability across the entire Redux state.
-      // Immutability detection can be time-consuming, especially for large stores
-      // and can show warning message : "ImmutableStateInvariantMiddleware took xms, which is more than the warning threshold of 32ms."
-      // Since we use RTK, which incorporates Immer for managing our store slices,
-      // this check is not really necessary since Immer has already ensured the store immutability.
-      // Disabling this feature improve performance. https://github.com/reduxjs/redux-toolkit/issues/415
-      immutableCheck: false,
-    })
-      .prepend(listenerMiddleware.middleware)
-      .concat(...middlewares),
-});
+const createStore = () =>
+  configureStore({
+    reducer: persistedReducer,
+    devTools: reduxDevToolsOptions,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        serializableCheck: false,
+        // The following line disables the detection of immutability across the entire Redux state.
+        // Immutability detection can be time-consuming, especially for large stores
+        // and can show warning message : "ImmutableStateInvariantMiddleware took xms, which is more than the warning threshold of 32ms."
+        // Since we use RTK, which incorporates Immer for managing our store slices,
+        // this check is not really necessary since Immer has already ensured the store immutability.
+        // Disabling this feature improve performance. https://github.com/reduxjs/redux-toolkit/issues/415
+        immutableCheck: false,
+      })
+        .prepend(listenerMiddleware.middleware)
+        .concat(...middlewares),
+  });
 
+const store = createStore();
 export type AppDispatch = typeof store.dispatch;
 export type GetState = typeof store.getState;
 export type Store = typeof store;
@@ -80,4 +82,4 @@ const createStoreWithoutMiddleware = (initialStateExtra: Partial<RootState>) =>
     },
   });
 
-export { store, persistor, createStoreWithoutMiddleware };
+export { store, persistor, createStoreWithoutMiddleware, createStore };

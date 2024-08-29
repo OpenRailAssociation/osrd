@@ -8,6 +8,8 @@ import type { OsrdSlice } from 'reducers';
 import type { EditorSelectors } from 'reducers/editor/selectors';
 import type { MapViewerSelectors } from 'reducers/mapViewer/selectors';
 import type { ConfSelectors, ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
+import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
+import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
 import type { ValueOf } from 'utils/types';
 
 export type OsrdSelectors = ConfSelectors | MapViewerSelectors | EditorSelectors;
@@ -20,7 +22,7 @@ export type OsrdContext = {
   isSimulation: boolean;
 } | null;
 
-const osrdContext = createContext<OsrdContext>(null);
+export const osrdContext = createContext<OsrdContext>(null);
 
 export const useOsrdContext = () => {
   const context = useContext(osrdContext);
@@ -114,4 +116,18 @@ export const OsrdContextLayout = ({ slice, selectors, mode }: OsrdContextLayoutP
       <ModalProvider />
     </osrdContext.Provider>
   );
+};
+
+export const StdcmTestLayout = ({ children }: { children: React.ReactNode }) => {
+  const value = useMemo(
+    () => ({
+      isSimulation: false,
+      isStdcm: true,
+      mode: MODES.stdcm,
+      slice: stdcmConfSlice,
+      selectors: stdcmConfSelectors,
+    }),
+    []
+  );
+  return <osrdContext.Provider value={value}>{children}</osrdContext.Provider>;
 };
