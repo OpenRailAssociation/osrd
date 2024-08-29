@@ -60,7 +60,7 @@ rstest = { version = "0.19.0", default-features = false }
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.121"
 strum = { version = "0.26.3", features = ["derive"] }
-tempfile = "3.10.1"
+tempfile = "3.12.0"
 thiserror = "1.0.63"
 tokio = { version = "1.40.0", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-postgres = "0.7.11"
