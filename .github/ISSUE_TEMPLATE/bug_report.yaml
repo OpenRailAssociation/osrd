@@ -46,14 +46,13 @@ body:
       multiple: true
       options:
         - Local
-        - Dev (DgexSol)
-        - Staging (DgexSol)
         - Dev (SNCF)
         - Recette (SNCF)
         - Integration (SNCF)
         - Custom (Docker compose)
         - Custom (Using K8s Helm Chart)
         - Other
+      default: Recette (SNCF)
 
   - type: dropdown
     id: Browser
@@ -67,6 +66,7 @@ body:
         - Safari
         - Opera
         - Other
+      default: Firefox
 
   - type: input
     id: osrdVersion
