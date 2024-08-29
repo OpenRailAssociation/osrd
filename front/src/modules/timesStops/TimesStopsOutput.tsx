@@ -9,7 +9,6 @@ import type {
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainScheduleV2/types';
-import type { PathStep } from 'reducers/osrdconf/types';
 import { convertIsoUtcToLocalTime } from 'utils/date';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
@@ -22,7 +21,6 @@ type TimesStopsOutputProps = {
   pathProperties: PathPropertiesFormatted;
   operationalPoints: OperationalPointWithTimeAndSpeed[];
   selectedTrainSchedule: TrainScheduleResult;
-  pathSteps: PathStep[];
   pathLength?: number;
   dataIsLoading: boolean;
 };
@@ -32,7 +30,6 @@ const TimesStopsOutput = ({
   pathProperties,
   operationalPoints,
   selectedTrainSchedule,
-  pathSteps,
   pathLength,
   dataIsLoading,
 }: TimesStopsOutputProps) => {
@@ -54,7 +51,6 @@ const TimesStopsOutput = ({
   return (
     <TimesStops
       allWaypoints={enrichedOperationalPoints}
-      pathSteps={pathSteps}
       startTime={startTime}
       tableType={TableType.Output}
       cellClassName={({ rowData: rowData_ }) => {
