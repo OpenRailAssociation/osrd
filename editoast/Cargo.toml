@@ -141,7 +141,7 @@ redis = { version = "0.25.4", default-features = false, features = [
   "tokio-comp",
   "tokio-native-tls-comp",
 ] }
-regex = "1.10.5"
+regex = "1.10.6"
 # 0.12.0 to 0.12.4 have weird timeout issues https://github.com/seanmonstar/reqwest/issues/2283
 # This bug was introduced between 0.12.0 and 0.12.3.
 hostname.workspace = true
