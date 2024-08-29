@@ -119,7 +119,7 @@ mvt.workspace = true
 opentelemetry = { version = "0.23.0", default-features = false, features = [
   "trace",
 ] }
-opentelemetry-datadog = { version = "0.11.0", default-features = false, features = [
+opentelemetry-datadog = { version = "0.12.0", default-features = false, features = [
   "intern-std",
   "reqwest-client",
 ] }
