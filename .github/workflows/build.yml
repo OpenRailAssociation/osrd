@@ -877,6 +877,12 @@ jobs:
         with:
           name: front-nginx
           path: .
+      - name: Download built osrdyne image
+        if: needs.build.outputs.output_method == 'artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: osrdyne
+          path: .
       - name: Load built images
         if: needs.build.outputs.output_method == 'artifact'
         run: |
@@ -885,6 +891,7 @@ jobs:
           docker load --input ./osrd-core.tar
           docker load --input ./osrd-gateway-standalone.tar
           docker load --input ./osrd-front-nginx.tar
+          docker load --input ./osrd-osrdyne.tar
       - name: Install poetry
         run: pipx install poetry
       - name: Set up Python
