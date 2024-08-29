@@ -48,13 +48,7 @@ const TimesStops = ({
 
   useEffect(() => {
     if (allWaypoints) {
-      const suggestedOPs = formatSuggestedViasToRowVias(
-        allWaypoints,
-        pathSteps,
-        t,
-        startTime,
-        tableType
-      );
+      const suggestedOPs = formatSuggestedViasToRowVias(allWaypoints, pathSteps, t, startTime);
       setRows(suggestedOPs);
     }
   }, [allWaypoints, pathSteps, startTime]);

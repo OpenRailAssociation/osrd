@@ -11,15 +11,13 @@ import { NO_BREAK_SPACE } from 'utils/strings';
 import { datetime2sec, secToHoursString, time2sec } from 'utils/timeManipulation';
 
 import { marginRegExValidation, MarginUnit } from '../consts';
-import { TableType } from '../types';
 import type { PathStepOpPointCorrespondance, PathWaypointRow } from '../types';
 
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
   pathSteps: PathStep[],
   t: TFunction<'timesStops', undefined>,
-  startTime?: string,
-  tableType?: TableType
+  startTime?: string
 ): PathWaypointRow[] => {
   const formattedOps = [...operationalPoints];
 
@@ -52,8 +50,7 @@ export const formatSuggestedViasToRowVias = (
   return formattedOps.map((op, i) => {
     const pathStep = pathSteps.find((step) => matchPathStepAndOp(step, op));
     const { name } = pathStep || op;
-    const objectToUse = tableType === TableType.Input ? pathStep : op;
-    const { arrival, onStopSignal, stopFor, theoreticalMargin } = objectToUse || {};
+    const { arrival, onStopSignal, stopFor, theoreticalMargin } = pathStep || {};
 
     const isMarginValid = theoreticalMargin ? marginRegExValidation.test(theoreticalMargin) : true;
     let departure: string | undefined;
