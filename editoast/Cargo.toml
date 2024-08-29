@@ -64,7 +64,7 @@ serde_json = "1.0.121"
 strum = { version = "0.26.3", features = ["derive"] }
 tempfile = "3.10.1"
 thiserror = "1.0.63"
-tokio = { version = "1.39.2", features = ["fs", "macros", "rt-multi-thread"] }
+tokio = { version = "1.39.3", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-postgres = "0.7.11"
 tracing = { version = "0.1.40", default-features = false, features = ["log"] }
 url = { version = "2.5.2", features = ["serde"] }
