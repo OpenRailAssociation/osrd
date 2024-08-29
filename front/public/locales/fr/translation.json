@@ -85,7 +85,7 @@
           "description": "Le type d’aiguille « {{obj_id}} » contient un doublon de configuration « {{original_group_path}} »"
         },
         "empty_object": {
-          "name": "Object vide",
+          "name": "Objet vide",
           "description": "L’objet « {{obj_id}} » a le champ « {{field}} » vide"
         },
         "invalid_group": {
@@ -133,8 +133,8 @@
           "description": "L’aiguille/le noeud « {{obj_id}} » et l’aiguille/le noeud « {{reference.obj_id}} » connectent les mêmes extrémités des voies"
         },
         "overlapping_electrifications": {
-          "name": "Superposition de catenaires",
-          "description": "La catenaire « {{obj_id}} » se superpose à la catenaire « {{reference.obj_id}} »"
+          "name": "Superposition de caténaires",
+          "description": "La caténaire « {{obj_id}} » se superpose à la caténaire « {{reference.obj_id}} »"
         },
         "unknown_port_name": {
           "name": "Nom de branche inconnu",
@@ -183,15 +183,15 @@
     },
     "layers": {
       "buffer_stops": "Heurtoirs",
-      "electrifications": "Électrifications",
+      "electrifications": "Électrification",
       "detectors": "Détecteurs",
       "errors": "Erreurs",
-      "psl-psl_signs": "Limites permanentes de vitesse",
+      "psl-psl_signs": "Limitations permanentes de vitesse",
       "routes": "Itinéraires",
       "signals": "Signaux",
       "switches": "Aiguillages",
-      "track_sections": "Sections de lignes",
-      "speed_sections": "Vitesses limites",
+      "track_sections": "Sections de voie",
+      "speed_sections": "Vitesses de ligne",
       "platforms": "Quais",
       "neutral_sections": "BP/CC",
       "operational_points": "Points remarquables"
@@ -216,7 +216,7 @@
       "infra-error-corrector": "Correcteur automatique d’anomalies",
       "toggle-layers": "Choisir les types d'éléments à afficher",
       "osrd-layers": "Couches de données",
-      "speed-limits": "Limitations de vitesse",
+      "speed-limits": "Limitations de vitesse par code de composition",
       "map-layers": "Paramètres cartographiques"
     },
     "obj-types": {
@@ -226,7 +226,7 @@
       "Route": "Itinéraire",
       "Signal": "Signal",
       "Switch": "Aiguillage",
-      "TrackSection": "Tronçon d'itinéraire de voie",
+      "TrackSection": "Section de voie",
       "SpeedSection": "Vitesse limite"
     },
     "tools": {
@@ -249,9 +249,9 @@
           "save-electrification": "Sauvegarder l'électrification"
         },
         "help": {
-          "init": "Cliquez sur un tronçon d'itinéraire pour l'associer à l'électrification",
-          "add-track": "Ajouter le tronçon '{{track.id}}' à l'électrification {{voltage}}",
-          "remove-range": "Supprimer le tronçon de l'électrification {{voltage}}"
+          "init": "Cliquez sur une section de voie pour l'associer à l'électrification",
+          "add-track": "Ajouter la section '{{track.id}}' à l'électrification {{voltage}}",
+          "remove-range": "Supprimer la section de l'électrification {{voltage}}"
         },
         "add-new-electrification": "Ajouter une nouvelle électrification",
         "electrifications": "Électrification",
@@ -272,7 +272,7 @@
         "default-routes-error": "Une erreur est survenue lors du chargement des itinéraires liés.",
         "help": {
           "start-dragging": "Cliquez sur l'élément pour commencer à le déplacer.",
-          "stop-dragging-no-line": "L'élément doit être placé sur une section de ligne.",
+          "stop-dragging-no-line": "L'élément doit être placé sur une section de voie.",
           "stop-dragging-on-line": "Cliquez pour valider le déplacement de l'élément."
         },
         "linked-routes": "Itinéraires liés",
@@ -283,11 +283,11 @@
       "range-edition": {
         "edit-track-range-start": "Modifier le point de départ",
         "edit-track-range-end": "Modifier le point d'arrivée",
-        "linked-track-sections": "Tronçons d'itinéraire de voie associés",
-        "empty-linked-track-section": "Cliquez sur un tronçon d'itinéraire pour l'associer",
-        "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
-        "show-more-ranges_one": "Voir une section de ligne de plus",
-        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"
+        "linked-track-sections": "Sections de voie associées",
+        "empty-linked-track-section": "Cliquez sur une section de voie pour l'associer",
+        "only-show-n": "Ne montrer que les {{count}} premières sections de voie",
+        "show-more-ranges_one": "Voir une section de voie de plus",
+        "show-more-ranges_other": "Voir {{count}} sections de voie de plus"
       },
       "routes-edition": {
         "actions": {
@@ -308,9 +308,9 @@
         "crossed-detectors": "{{count}} détecteurs",
         "crossed-detectors_one": "Un détecteur",
         "crossed-detectors_zero": "Aucun détecteur rencontré",
-        "crossed-track-ranges": "{{count}} tronçons",
-        "crossed-track-ranges_one": "Un tronçon",
-        "crossed-track-ranges_zero": "Aucun tronçon",
+        "crossed-track-ranges": "{{count}} sections",
+        "crossed-track-ranges_one": "Une section",
+        "crossed-track-ranges_zero": "Aucune section",
         "delete-route": "Supprimer l'itinéraire",
         "delete-route-success": "L'itinéraire a été supprimé avec succès.",
         "directions": {
@@ -330,7 +330,7 @@
           "validate-route": "Vous pouvez valider cet itinéraire, ou en sélectionner un autre."
         },
         "include-release-detectors": "Transit rigide",
-        "label": "Outil \"Itinéraires\"",
+        "label": "Outil \"Itinéraire\"",
         "locked-release-detectors": "Une fois cette propriété activée et sauvegardée, celle-ci ne peut plus être désactivée",
         "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte.",
         "preview-candidate": "Sélectionner",
@@ -354,7 +354,7 @@
           "polygon": "Sélection polygone",
           "rectangle": "Sélection rectangle",
           "single": "Sélection simple",
-          "split-track-section": "Diviser le tronçon d'itinéraire de voie",
+          "split-track-section": "Diviser la section de voie",
           "unselect-all": "Tout désélectionner"
         },
         "errors": {
@@ -371,11 +371,11 @@
         },
         "item": "Élément",
         "label": "Outil \"Sélection\"",
-        "linked-to-line_one": "associé au TIV",
-        "linked-to-line_other": "associé aux TIV",
-        "linked-to-n-lines_zero": "relatif à aucun TIV",
-        "linked-to-n-lines_one": "relatif à un TIV",
-        "linked-to-n-lines_other": "relatif à {{count}} TIV",
+        "linked-to-line_one": "associé à la section de voie",
+        "linked-to-line_other": "associé aux sections de voie",
+        "linked-to-n-lines_zero": "relatif à aucune section de voie",
+        "linked-to-n-lines_one": "relatif à une section de voie",
+        "linked-to-n-lines_other": "relatif à {{count}} sections de voie",
         "no-selection": "Aucun élément sélectionné",
         "of-type": "de type",
         "selection": "{{count}} élément sélectionné",
@@ -406,17 +406,17 @@
         "add-new-tag": "Ajouter un nouveau code de composition",
         "add-sign": "Ajouter un panneau de type {{signType}}",
         "add-track-range": "Cliquer pour lier à :",
-        "additional-speed-limit": "Limitation de vitesse additionnelles",
+        "additional-speed-limit": "Limitations de vitesse par code de composition",
         "hovered-sign": "Panneau {{signType}}",
         "incompatible-switch": "Cette position d’aiguille n’est pas compatible avec la position des autres aiguilles",
         "label": "Outil \"Vitesse limite\"",
-        "main-speed-limit": "Limitation de vitesse par défaut",
+        "main-speed-limit": "Limitation de vitesse de ligne",
         "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
         "new-tag": "Code de composition",
-        "ralen-30-60": "Ralentissements 30-60",
+        "ralen-30-60": "Limitations de vitesse par itinéraire",
         "search-routes": "Rechercher des itinéraires compatibles",
         "select-route": "Sélectionner un itinéraire",
-        "select-switches-to-get-route": "Sélectionner des aiguillages et leur positions pour rechercher les itinéraires",
+        "select-switches-to-get-route": "Sélectionner des aiguillages et leur position pour rechercher les itinéraires",
         "sign-direction": "Direction",
         "sign-category": "Panneau(x) {{signType}}",
         "sign-kp": "Point kilométrique",
@@ -429,56 +429,56 @@
         "sign-value": "Vitesse",
         "signs-section-list": "Liste des panneaux de la section",
         "remove-track-range": "Cliquer pour détacher de :",
-        "speed-limits": "Limitations de vitesses",
-        "toggle-psl": "Limite permanente de vitesse",
-        "toggle-psl-help": "Cliquez d'abord sur un tronçon d'itinéraire pour pouvoir activer cette option"
+        "speed-limits": "Limitations de vitesse",
+        "toggle-psl": "Limitations permanentes de vitesse",
+        "toggle-psl-help": "Cliquez d'abord sur une section de voie pour pouvoir activer cette option"
       },
       "switch-edition": {
         "actions": {
           "confirm-delete-switch": "Êtes-vous sûr(e) de vouloir supprimer l'aiguillage ?",
           "delete-switch": "Supprimer l'aiguillage",
           "new-switch": "Créer un nouvel aiguillage",
-          "pick-track": "Outil de sélection d'une ligne sur la carte",
-          "pick-track-cancel": "Annuler la sélection d'une ligne",
+          "pick-track": "Outil de sélection d'une voie sur la carte",
+          "pick-track-cancel": "Annuler la sélection d'une voie",
           "save-switch": "Sauvegarder l'aiguillage"
         },
         "duplicate-errors": "La voie {{track}} est déjà utilisée par le port {{port}}",
         "endpoint": "Extrémité :",
         "help": {
           "no-move": "Les aiguillages ne peuvent pas être déplacés, et sont automatiquement placés sur leur premier port.",
-          "select-track": "Sélectionnez une ligne sur la carte"
+          "select-track": "Sélectionnez une voie sur la carte"
         },
         "label": "Outil \"Aiguillage\"",
-        "no-track-picked-yet": "Aucune ligne n'a encore été sélectionnée",
+        "no-track-picked-yet": "Aucune voie n'a encore été sélectionnée",
         "switch-type": "Type d'aiguillage",
-        "untitled-track": "Ligne sans nom"
+        "untitled-track": "Voie sans nom"
       },
       "track-edition": {
         "actions": {
           "add-at-end": "Ajouter les nouveaux points à la fin",
           "add-at-start": "Ajouter les nouveaux points au début",
           "cancel-line": "Retirer le tracé sélectionné",
-          "confirm-delete-line": "Êtes-vous sûr(e) de vouloir supprimer la ligne ?",
-          "delete-line": "Supprimer la ligne",
+          "confirm-delete-line": "Êtes-vous sûr(e) de vouloir supprimer la voie ?",
+          "delete-line": "Supprimer la voie",
           "mode-add-point": "Ajouter un point",
           "mode-delete-point": "Supprimer des points",
           "mode-move-point": "Déplacer les points",
           "reset-line": "Réinitialiser les données",
-          "save-line": "Sauvegarder la ligne",
+          "save-line": "Sauvegarder la voie",
           "toggle-anchoring": "Activer / désactiver l'ancrage automatique"
         },
         "help": {
-          "add-anchor-point": "Cliquez pour ajouter un point au bout de la section de ligne. Cliquez sur la ligne pour ajouter un point intermédiaire.",
-          "add-point": "Cliquez pour ajouter un point au bout de la section de ligne.",
-          "delete-point": "Cliquez sur un point pour le supprimer de la ligne.",
+          "add-anchor-point": "Cliquez pour ajouter un point au bout de la section de voie. Cliquez sur la voie pour ajouter un point intermédiaire.",
+          "add-point": "Cliquez pour ajouter un point au bout de la section de voie.",
+          "delete-point": "Cliquez sur un point pour le supprimer de la section de voie.",
           "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
           "move-point-end": "Cliquez pour valider le déplacement du point."
         },
-        "attached-electrifications": "Électrifications",
+        "attached-electrifications": "Électrification",
         "attached-speed-sections": "Vitesses limites",
-        "default-electrifications-error": "Une erreur est survenue lors du chargement des {{type}} liées à cette section de ligne.",
-        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de ligne.",
-        "label": "Outil \"Ligne\"",
+        "default-electrifications-error": "Une erreur est survenue lors du chargement des électrifications liées à cette section de voie.",
+        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de voie.",
+        "label": "Outil \"Voie\"",
         "no-linked-electrification": "Aucune électrification renseignée",
         "no-linked-speed-section": "Aucune vitesse limite renseignée",
         "only-show-n": "Ne montrer que les {{count}} premiers résultats",
@@ -487,10 +487,10 @@
       },
       "track-split": {
         "title": "Découpe",
-        "label": "Outil de division de TIV",
+        "label": "Outil de division de section de voie",
         "offset": {
           "label": "Position",
-          "description": "Distance entre le point et le début du TIV (en mètres)",
+          "description": "Distance entre le point et le début de la section de voie (en mètres)",
           "error": "La position doit être un nombre compris entre 1 et {{max}}"
         },
         "actions": {
@@ -499,8 +499,8 @@
         "help": {
           "move": "Cliquer pour valider le déplacement, ou appuyer sur 'esc' pour annuler",
           "hover": "Cliquer sur le point pour pouvoir le déplacer",
-          "split": "Cliquer sur le tronçon d'itinéraire de voie pour le diviser à cette localisation",
-          "default": "Cliquer sur le point de division sur la carte, ou renseigner sa position par rapport au début du tronçon d'itinéraire de voie dans le formulaire"
+          "split": "Cliquer sur la section de voie pour le diviser à cette localisation",
+          "default": "Cliquer sur le point de division sur la carte, ou renseigner sa position par rapport au début de la section de voie dans le formulaire"
         }
       }
     }

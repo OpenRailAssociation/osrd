@@ -49,7 +49,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
           />
         ))
       ) : (
-        <div className="rollingstock-empty">{t('rollingstock:noResultFound')}</div>
+        <div className="rollingstock-empty">{t('rollingstock:resultFound_zero')}</div>
       ),
     [filteredRollingStockList, openRollingStockCardId, ref2scroll, openRollingStockCardId]
   );

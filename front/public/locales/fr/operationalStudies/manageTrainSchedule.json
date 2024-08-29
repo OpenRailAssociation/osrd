@@ -55,7 +55,7 @@
   "gare": "Gare, poste",
   "importTrainSchedule": "Importation",
   "infraLoading": "Infra en cours de chargement…",
-  "inputOPTrigrams": "Entrez les trigrammes des points remarquables par lesquels vous voulez que l'itinéraire se fasse, séparés par un espace.",
+  "inputOPTrigrams": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
   "inputOPTrigramsExample": "Ex : LSN CIG CCS",
   "incompatibleConstraints": {
     "filters": {

@@ -14,7 +14,7 @@
   },
   "editoast": {
     "attached": {
-      "TrackNotFound": "Section de ligne {{track_id}} non trouvée"
+      "TrackNotFound": "Section de voie {{track_id}} non trouvée"
     },
     "authorization": {
       "AuthError": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
@@ -62,7 +62,7 @@
       "NotFound": "",
       "edition": {
         "InfraIsLocked": "Infrastructure verrouillée",
-        "SplitTrackSectionBadOffset": "La distance pour scinder la section de ligne '{{tracksection_id}}' de l'infrastructure '{{infra_id}}' est invalide. La valeur doit être comprise entre 0 et {{tracksection_length}} mètres."
+        "SplitTrackSectionBadOffset": "La distance pour scinder la section de voie '{{tracksection_id}}' de l'infrastructure '{{infra_id}}' est invalide. La valeur doit être comprise entre 0 et {{tracksection_length}} mètres."
       },
       "errors": {
         "WrongErrorTypeProvided": "Mauvais type d'erreur fourni"
@@ -104,7 +104,7 @@
       "NotFound": "Itinéraire '{{pathfinding_id}}' non trouvé",
       "OperationalPointsNotFound": "Points opérationnels {{operational_points}} non trouvés",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
-      "TrackSectionsNotFound": "Section de ligne {{track_sections}} non trouvée"
+      "TrackSectionsNotFound": "Section de voie {{track_sections}} non trouvée"
     },
     "postgres": {
       "Host": "Url de base de données '{{hostname}} est invalide",

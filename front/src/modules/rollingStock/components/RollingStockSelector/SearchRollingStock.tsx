@@ -113,9 +113,7 @@ const SearchRollingStock = ({
       </div>
       <div className="col-md-2 mt-1 ml-auto">
         <small data-testid="search-results-text">
-          {filteredRollingStockList.length > 0
-            ? `${filteredRollingStockList.length} ${t('resultsFound')}`
-            : t('noResultFound')}
+          {t('resultFound', { count: filteredRollingStockList.length })}
         </small>
       </div>
     </div>

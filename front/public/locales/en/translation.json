@@ -433,7 +433,7 @@
         "ralen-30-60": "Speed restriction",
         "search-routes": "Search for compatible routes",
         "select-route": "Select a route",
-        "select-switches-to-get-route": "Select switches and their positions to search for routes",
+        "select-switches-to-get-route": "Select switches and their position to search for routes",
         "sign-direction": "Direction",
         "sign-category": "Sign(s) {{signType}}",
         "sign-kp": "Kilometric point of the sign",
@@ -456,17 +456,17 @@
           "delete-switch": "Delete the switch",
           "new-switch": "Create a new switch",
           "pick-track": "Track selection tool on the map",
-          "pick-track-cancel": "Undo line selection",
+          "pick-track-cancel": "Undo track selection",
           "save-switch": "Save the switch"
         },
         "duplicate-errors": "The track {{track}} is already used by the port {{port}}",
         "endpoint": "Endpoint:",
         "help": {
           "no-move": "Switches cannot be moved, and are automatically placed on their first port.",
-          "select-track": "Select a line on the map"
+          "select-track": "Select a track on the map"
         },
         "label": "Switch tool",
-        "no-track-picked-yet": "No line selected yet",
+        "no-track-picked-yet": "No track selected yet",
         "switch-type": "Switch type",
         "untitled-track": "Untitled track"
       },
@@ -487,14 +487,14 @@
         "help": {
           "add-anchor-point": "Click to add a point at the end of the track section. Click on the track to add an intermediate point.",
           "add-point": "Click to add a point at the end of the track section.",
-          "delete-point": "Click on a point to remove it from the line.",
+          "delete-point": "Click on a point to remove it from the track section.",
           "move-point": "Click a point once to start moving it.",
           "move-point-end": "Click to confirm the move of the point."
         },
         "attached-electrifications": "electrifications",
         "attached-speed-sections": "Speed limits",
-        "default-electrifications-error": "An error occurred when loading the {{type}} linked to this line segment.",
-        "default-speed-sections-error": "An exception occured when loading speed limits related to this section.",
+        "default-electrifications-error": "An error occurred when loading the electrifications linked to this track section.",
+        "default-speed-sections-error": "An exception occured when loading speed limits related to this track section.",
         "label": "Track tool",
         "no-linked-electrification": "No electrification data available",
         "no-linked-speed-section": "No speed limit entered",
