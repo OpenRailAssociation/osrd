@@ -174,7 +174,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne-test')
         with:
-          name: osrdyne
+          name: osrdyne-test
           path: osrd-osrdyne-test.tar
 
   check_generated_railjson_sync:
