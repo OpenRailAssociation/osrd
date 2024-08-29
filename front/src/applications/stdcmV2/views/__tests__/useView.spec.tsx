@@ -4,6 +4,8 @@ import { renderHook, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { vi } from 'vitest';
 
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import type { StdcmSimulation } from 'applications/stdcmV2/types';
 import { useOsrdConfActions, StdcmTestLayout } from 'common/osrdContext';
 import * as osrdContext from 'common/osrdContext';
@@ -12,6 +14,8 @@ import { createStore } from 'store';
 
 import server from './server';
 import useView from '../useView';
+
+vi.mock('applications/stdcm/hooks/useStdcm');
 
 const store = createStore();
 
@@ -30,9 +34,19 @@ describe('useView', () => {
   afterAll(() => server.close());
 
   describe('simulation selection', () => {
+    beforeEach(() => {
+      // tell vitest we use mocked time
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      // restoring date after each test run
+      vi.useRealTimers();
+    });
+
     const mockedDipatch = vi.spyOn(store, 'dispatch');
 
-    it('should set rollingStockId, speedLimitByTag, pathSteps, originDate, and originTime when a simulation is selected', () => {
+    it.only('should set rollingStockId, speedLimitByTag, pathSteps, originDate, and originTime when a simulation is selected', () => {
       // Arrange
       const initialSimulationsList: StdcmSimulation[] = [
         {
@@ -79,14 +93,45 @@ describe('useView', () => {
       // expect(stdcmConfStore.originDate).toBe(selectedSimulation.inputs.departureDate);
     });
 
-    // it('should show status banner when siulation failed', () => {
-    //   const { result } = renderHook(() => useView(), { wrapper });
-    //   act(() => {
-    //     result.current.launchStdcmRequest();
-    //   });
+    it.only('should show status banner when siulation failed', () => {
+      vi.mocked(useStdcm).mockReturnValue({
+        isRejected: true,
+        isStdcmResultsEmpty: false,
+        pathProperties: { length: 403 } as ManageTrainSchedulePathProperties,
+        launchStdcmRequest: () => {},
+      } as ReturnType<typeof useStdcm>);
 
-    //   expect(result.current.showStatusBanner).toBe(true);
-    //   expect(result.current.simulationsList.length).toBe(0);
-    // });
+      const { result, rerender } = renderHook(() => useView(), { wrapper });
+
+      expect(result.current.pathProperties).toStrictEqual({ length: 403 });
+      expect(result.current.selectedSimulationIndex).toBe(-1);
+      vi.mocked(useStdcm).mockReturnValue({
+        isRejected: false,
+        isStdcmResultsEmpty: false,
+        pathProperties: { length: 404 } as ManageTrainSchedulePathProperties,
+        stdcmV2Results: { stdcmResponse: {} },
+      } as ReturnType<typeof useStdcm>);
+
+      rerender();
+
+      const date = new Date();
+      vi.setSystemTime(date);
+
+      expect(result.current.simulationsList[0]).toStrictEqual({
+        id: 1,
+        creationDate: new Date(),
+        inputs: {
+          pathSteps: [null, null],
+        },
+        outputs: {
+          results: {},
+          pathProperties: { length: 404 },
+        },
+      });
+
+      expect(result.current.simulationsList.length).toBe(1);
+      expect(result.current.selectedSimulationIndex).toBe(0);
+      expect(result.current.showStatusBanner).toBe(true);
+    });
   });
 });

@@ -103,25 +103,26 @@ const useView = (props?: UseViewProps) => {
             }),
         },
       ]);
+      setSelectedSimulationIndex(simulationsList.length);
       setShowStatusBanner(true);
     }
   }, [pathProperties, isStdcmResultsEmpty]);
 
   // We have a simulation with an error.
   useEffect(() => {
-    console.log("TEST")
     if (isRejected && !isStdcmResultsEmpty) {
-    console.log("TEST 2")
       setShowStatusBanner(true);
     }
   }, [isRejected, isStdcmResultsEmpty]);
 
   // select the last simulation in the list
-  useEffect(() => {
-    if (simulationsList.length > 0) {
-      setSelectedSimulationIndex(simulationsList.length - 1);
-    }
-  }, [simulationsList]);
+  // useEffect(() => {
+  //   const length = simulationsList.length;
+  //     console.log("LENGTH 2", length);
+  //   if (simulationsList.length > 0) {
+  //     setSelectedSimulationIndex(simulationsList.length - 1);
+  //   }
+  // }, [simulationsList]);
 
   return {
     error,
