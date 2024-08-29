@@ -3,14 +3,12 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import cx from 'classnames';
-import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
 
 import type { SimulationResults, TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { getScaleDomainFromValuesV2 } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SimulationResultsMapV2 from 'modules/simulationResult/components/SimulationResultsMapV2';
 import SpaceCurvesSlopesV2 from 'modules/simulationResult/components/SpaceCurvesSlopes/SpaceCurvesSlopesV2';
@@ -56,8 +54,6 @@ const SimulationResultsV2 = ({
   timetableTrainNb,
 }: SimulationResultsV2Props) => {
   const { t } = useTranslation('simulation');
-  const { getPathSteps } = useOsrdConfSelectors();
-  const pathSteps = useSelector(getPathSteps);
   const dispatch = useAppDispatch();
   const isUpdating = useSelector(getIsUpdating);
 
@@ -218,7 +214,6 @@ const SimulationResultsV2 = ({
               pathProperties={pathProperties}
               operationalPoints={operationalPoints.finalOutput}
               selectedTrainSchedule={selectedTrainSchedule}
-              pathSteps={compact(pathSteps)}
               pathLength={pathLength}
               dataIsLoading={formattedOpPointsLoading}
             />
