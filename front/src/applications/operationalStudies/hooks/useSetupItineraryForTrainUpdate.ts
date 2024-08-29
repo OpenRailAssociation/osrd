@@ -94,14 +94,14 @@ export function updatePathStepsFromOperationalPoints(
           return condition && suggestedOp.ch === step.ch;
         }
         // When importing train from open data or from files, secondary_code might not always exist
-        if ('secondary_code' in step) {
+        if (step.secondary_code) {
           return condition && suggestedOp.ch === step.secondary_code;
         }
         return condition;
       }
       if ('trigram' in step) {
         const condition = suggestedOp.trigram === step.trigram;
-        if ('secondary_code' in step) {
+        if (step.secondary_code) {
           return condition && suggestedOp.ch === step.secondary_code;
         }
       }
