@@ -271,7 +271,7 @@
           },
           {
             "cond": {
-              "comfort": "AC",
+              "comfort": "AIR_CONDITIONING",
               "electrical_profile_level": null,
               "power_restriction_code": null
             },
@@ -352,7 +352,7 @@
           },
           {
             "cond": {
-              "comfort": "AC",
+              "comfort": "AIR_CONDITIONING",
               "electrical_profile_level": null,
               "power_restriction_code": null
             },

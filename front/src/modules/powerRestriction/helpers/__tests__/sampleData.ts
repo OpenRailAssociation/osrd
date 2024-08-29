@@ -511,7 +511,7 @@ export const effortCurves: EffortCurves['modes'] = {
       },
       {
         cond: {
-          comfort: 'AC',
+          comfort: 'AIR_CONDITIONING',
           electrical_profile_level: 'level1',
           power_restriction_code: 'code2',
         },
@@ -531,7 +531,7 @@ export const effortCurves: EffortCurves['modes'] = {
     curves: [
       {
         cond: {
-          comfort: 'AC',
+          comfort: 'AIR_CONDITIONING',
           electrical_profile_level: 'level2',
           power_restriction_code: 'code3',
         },
@@ -542,7 +542,7 @@ export const effortCurves: EffortCurves['modes'] = {
       },
       {
         cond: {
-          comfort: 'AC',
+          comfort: 'AIR_CONDITIONING',
           electrical_profile_level: 'level2',
           power_restriction_code: 'code4',
         },

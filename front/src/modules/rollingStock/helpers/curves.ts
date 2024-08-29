@@ -1,10 +1,10 @@
-import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import type { Comfort } from 'common/api/osrdEditoastApi';
 import { geti18nKeyForNull } from 'utils/strings';
 
 // eslint-disable-next-line import/prefer-default-export
 export const getCurveName = (
   name: string,
-  comfort: RollingStockComfortType,
+  comfort: Comfort,
   electricalProfileLevel: string | null,
   powerRestrictionCode: string | null,
   isOnEditionMode?: boolean

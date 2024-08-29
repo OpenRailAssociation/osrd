@@ -1,4 +1,4 @@
-import type { Comfort, RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import type { Comfort } from 'common/api/osrdEditoastApi';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import type {
   ElectricalProfileByMode,
@@ -8,7 +8,7 @@ import type {
 } from 'modules/rollingStock/types';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
-export const STANDARD_COMFORT_LEVEL: RollingStockComfortType = 'STANDARD';
+export const STANDARD_COMFORT_LEVEL: Comfort = 'STANDARD';
 
 export const DEFAULT_SIGNALING_SYSTEMS = ['BAL', 'BAPR'];
 
@@ -310,7 +310,7 @@ export const ComfortLevels: Record<Comfort, Comfort> = {
   HEATING: 'HEATING',
 };
 
-export const COMFORTS = Object.keys(ComfortLevels) as RollingStockComfortType[];
+export const COMFORTS = Object.keys(ComfortLevels) as Comfort[];
 
 export const EP_BY_MODE: ElectricalProfileByMode = {
   '1500V': [

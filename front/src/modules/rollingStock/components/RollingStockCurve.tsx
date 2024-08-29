@@ -5,7 +5,7 @@ import type { PointTooltipProps } from '@nivo/line';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { RollingStock, RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import type { RollingStock, Comfort } from 'common/api/osrdEditoastApi';
 import { COLORS } from 'modules/rollingStock/components/RollingStockSelector/consts/consts';
 import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
@@ -44,21 +44,15 @@ const parseData = (
 };
 
 function LegendComfortSwitches(props: {
-  curvesComfortList: RollingStockComfortType[];
+  curvesComfortList: Comfort[];
   comfortsStates: { [key: string]: boolean };
   onComfortsStatesChange: (comfort: string) => void;
 }) {
   const { curvesComfortList, comfortsStates, onComfortsStatesChange } = props;
 
-  // TODO: remove this condition when getRollingStock endpoint returns comfort
-  // with type Comfort instead of RollingStockComfortType */
-  const curvesComfortListV2 = curvesComfortList.map((comfort) =>
-    comfort === 'AC' ? 'AIR_CONDITIONING' : comfort
-  );
-
-  return curvesComfortListV2.length > 1 ? (
+  return curvesComfortList.length > 1 ? (
     <span className="d-flex">
-      {curvesComfortListV2.map((comfort) => (
+      {curvesComfortList.map((comfort) => (
         <span
           className={cx('curves-chart-legend-comfort-button', {
             active: comfortsStates[comfort],
@@ -74,7 +68,7 @@ function LegendComfortSwitches(props: {
     </span>
   ) : (
     <span className="curves-chart-legend-comfort-button active">
-      {comfort2pictogram(curvesComfortListV2[0])}
+      {comfort2pictogram(curvesComfortList[0])}
     </span>
   );
 }
@@ -108,11 +102,9 @@ function Legend(props: {
           {isOnEditionMode && showPowerRestriction && curve.power_restriction}
           {isOnEditionMode && !showPowerRestriction && curve.electrical_profile_level}
           {!isOnEditionMode && !showPowerRestriction && curve.mode}
-          {/* TODO: remove this condition when getRollingStock endpoint returns comfort 
-                with type Comfort instead of RollingStockComfortType */}
           {curve.comfort !== STANDARD_COMFORT_LEVEL &&
             !isOnEditionMode &&
-            comfort2pictogram(curve.comfort === 'AC' ? 'AIR_CONDITIONING' : curve.comfort)}
+            comfort2pictogram(curve.comfort)}
         </span>
       ))}
     </span>
@@ -181,7 +173,7 @@ export default function RollingStockCurve({
   selectedElectricalParam,
 }: {
   data: RollingStock['effort_curves']['modes'];
-  curvesComfortList: RollingStockComfortType[];
+  curvesComfortList: Comfort[];
   isOnEditionMode?: boolean;
   showPowerRestriction?: boolean;
   hoveredElectricalParam?: string | null;
@@ -244,11 +236,7 @@ export default function RollingStockCurve({
             <span className="ml-1" />
             {transformedCurve.comfort !== STANDARD_COMFORT_LEVEL && (
               <span className="curves-chart-tooltip-comfort">
-                {/* TODO: remove this condition when getRollingStock endpoint returns comfort 
-                with type Comfort instead of RollingStockComfortType */}
-                {comfort2pictogram(
-                  transformedCurve.comfort === 'AC' ? 'AIR_CONDITIONING' : transformedCurve.comfort
-                )}
+                {comfort2pictogram(transformedCurve.comfort)}
               </span>
             )}
           </div>

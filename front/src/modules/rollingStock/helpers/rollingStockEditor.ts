@@ -1,12 +1,12 @@
 /* eslint-disable import/prefer-default-export */
-import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import type { Comfort } from 'common/api/osrdEditoastApi';
 import type { EffortCurveForms, ElectricalParamsLists } from 'modules/rollingStock/types';
 import type { ValueOf } from 'utils/types';
 
 /** Get the list of electrical profiles and power restrictions for an ModeEffortCurves */
 export const getElectricalProfilesAndPowerRestrictions = (
   effortCurvesByMode: ValueOf<EffortCurveForms>,
-  selectedComfortLvl: RollingStockComfortType,
+  selectedComfortLvl: Comfort,
   selectedElectricalProfile: string | null
 ) =>
   effortCurvesByMode.curves.reduce<ElectricalParamsLists>(

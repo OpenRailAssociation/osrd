@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import cx from 'classnames';
 
-import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCardDetail, {
   getCurvesComforts,
@@ -21,7 +21,7 @@ export default function RollingStockInformationPanel({
   isEditing,
   rollingStock,
 }: RollingStockInformationPanelProps) {
-  const [curvesComfortList, setCurvesComfortList] = useState<RollingStockComfortType[]>([]);
+  const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
 
   return (
     <div className={cx('rollingstock-editor-form', { borders: !isEditing })}>

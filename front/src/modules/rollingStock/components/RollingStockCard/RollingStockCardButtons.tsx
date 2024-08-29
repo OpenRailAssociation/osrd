@@ -13,7 +13,7 @@ import { useAppDispatch } from 'store';
 
 interface RollingStockCardButtonsProps {
   id: number;
-  curvesComfortList: string[];
+  curvesComfortList: Comfort[];
   setOpenedRollingStockCardId: (openCardId: number | undefined) => void;
 }
 
@@ -54,7 +54,7 @@ const RollingStockCardButtons = ({
         ),
       });
     }
-    if (curvesComfortList.includes('AC')) {
+    if (curvesComfortList.includes('AIR_CONDITIONING')) {
       options.push({
         value: 'AIR_CONDITIONING',
         label: (

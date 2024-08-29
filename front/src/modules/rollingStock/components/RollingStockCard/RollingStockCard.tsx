@@ -8,10 +8,7 @@ import { IoIosSpeedometer } from 'react-icons/io';
 import { MdLocalGasStation } from 'react-icons/md';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
-import type {
-  RollingStockComfortType,
-  LightRollingStockWithLiveries,
-} from 'common/api/osrdEditoastApi';
+import type { Comfort, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 
@@ -35,7 +32,7 @@ const RollingStockCard = ({
   ref2scroll = undefined,
   setOpenedRollingStockCardId,
 }: RollingStockCardProps) => {
-  const [curvesComfortList, setCurvesComfortList] = useState<RollingStockComfortType[]>([]);
+  const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
 
   const ref2scrollWhenOpened: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
 

@@ -1,7 +1,7 @@
 import type {
   EffortCurveConditions,
   LoadingGaugeType,
-  RollingStockComfortType,
+  Comfort,
   RollingStock,
 } from 'common/api/osrdEditoastApi';
 
@@ -148,7 +148,7 @@ export type EffortCurveForms = Record<
 >;
 
 export type RollingStockSelectorParams = {
-  comfortLevels: RollingStockComfortType[];
+  comfortLevels: Comfort[];
   electricalProfiles: (string | null)[];
   powerRestrictions: (string | null)[];
   tractionModes: string[];
@@ -162,7 +162,7 @@ export type ElectricalParamsLists = Omit<
 export type TransformedCurves = {
   [index: string]: {
     mode: string;
-    comfort: RollingStockComfortType;
+    comfort: Comfort;
     speeds: number[];
     max_efforts: number[];
     electricalProfile: string | null;
@@ -172,7 +172,7 @@ export type TransformedCurves = {
 
 export type ParsedCurve = {
   color: string;
-  comfort: RollingStockComfortType;
+  comfort: Comfort;
   data: {
     x: number;
     y: number;

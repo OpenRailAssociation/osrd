@@ -4,7 +4,7 @@ import { floor, groupBy, has, isNil, isNull, omit, pick } from 'lodash';
 
 import type {
   EffortCurve,
-  RollingStockComfortType,
+  Comfort,
   RollingStock,
   RollingStockForm,
 } from 'common/api/osrdEditoastApi';
@@ -296,7 +296,7 @@ const formatCurveCondition = (
 };
 
 export const createEmptyCurve = (
-  comfort: RollingStockComfortType,
+  comfort: Comfort,
   electricalProfile: string | null = null,
   powerRestriction: string | null = null
 ) => ({
@@ -309,7 +309,7 @@ export const createEmptyCurve = (
 });
 
 /** given a tractionMode and a list of comfort, return empty EffortCurves */
-export const createEmptyCurves = (tractionMode: string, comforts: RollingStockComfortType[]) => ({
+export const createEmptyCurves = (tractionMode: string, comforts: Comfort[]) => ({
   curves: comforts.map((comfort) => createEmptyCurve(comfort)),
   default_curve: { speeds: [0], max_efforts: [0] },
   is_electric: tractionMode !== THERMAL_TRACTION_IDENTIFIER,
