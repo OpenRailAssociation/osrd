@@ -10,7 +10,6 @@
   "comfortLevels": "Niveaux de confort",
   "comfortAcceleration": "Accélération «\u202Fconfort\u202F»",
   "comfortTypes": {
-    "AC": "Climatisation",
     "AIR_CONDITIONING": "Climatisation",
     "HEATING": "Chauffage",
     "STANDARD": "Standard"

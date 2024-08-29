@@ -10,7 +10,6 @@
   "comfortLevels": "Comfort levels",
   "comfortAcceleration": "Comfort acceleration",
   "comfortTypes": {
-    "AC": "Air conditioning",
     "AIR_CONDITIONING": "Air conditioning",
     "HEATING": "Heating",
     "STANDARD": "Standard"

@@ -3,11 +3,7 @@ import type { Dispatch, PropsWithChildren, SetStateAction } from 'react';
 
 import { isEmpty } from 'lodash';
 
-import type {
-  EffortCurves,
-  RollingStock,
-  RollingStockComfortType,
-} from 'common/api/osrdEditoastApi';
+import type { EffortCurves, RollingStock, Comfort } from 'common/api/osrdEditoastApi';
 import { getCurvesComforts } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
 import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
 import CurveParamSelectors from 'modules/rollingStock/components/RollingStockEditor/CurveParamSelectors';
@@ -60,14 +56,14 @@ const RollingStockEditorCurves = ({
   children,
 }: PropsWithChildren<RollingStockEditorCurvesProps>) => {
   const [selectedParams, setSelectedParams] = useState<{
-    comfortLevel: RollingStockComfortType;
+    comfortLevel: Comfort;
     electricalProfile: string | null;
     powerRestriction: string | null;
   }>(EMPTY_SELECTED_PARAMS);
 
   const updateSelectedParams = (
     key: 'comfortLevel' | 'tractionMode' | 'electricalProfile' | 'powerRestriction',
-    value: RollingStockComfortType | string | null
+    value: Comfort | string | null
   ) => {
     if (key === 'tractionMode') {
       setSelectedTractionMode(value);

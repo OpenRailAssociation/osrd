@@ -5,7 +5,7 @@ import { isEmpty, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
@@ -20,14 +20,14 @@ type RollingStockCardDetailProps = {
   id: number;
   hideCurves?: boolean;
   form?: string;
-  curvesComfortList: RollingStockComfortType[];
-  setCurvesComfortList: (curvesComfortList: RollingStockComfortType[]) => void;
+  curvesComfortList: Comfort[];
+  setCurvesComfortList: (curvesComfortList: Comfort[]) => void;
 };
 
 export const getCurvesComforts = (curvesData: EffortCurveForms) => {
   const modes = Object.keys(curvesData);
   return modes.length
-    ? modes.reduce<RollingStockComfortType[]>((list, mode) => {
+    ? modes.reduce<Comfort[]>((list, mode) => {
         const modeComfortList = curvesData[mode].curves.reduce(
           (acc, curve) => {
             const { comfort } = curve.cond;

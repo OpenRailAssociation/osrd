@@ -77,7 +77,7 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
     await rollingstockCard.click();
     await expect(rollingstockCard).not.toHaveClass(/inactive/);
 
-    // Select the comfort AC
+    // Select the comfort AIR_CONDITIONING
     const comfortACRadioText = await rollingStockSelector.comfortACButton.innerText();
     await rollingStockSelector.comfortACButton.click();
 

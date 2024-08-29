@@ -6,11 +6,7 @@ import { compact, isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type {
-  ConditionalEffortCurve,
-  RollingStock,
-  RollingStockComfortType,
-} from 'common/api/osrdEditoastApi';
+import type { ConditionalEffortCurve, RollingStock, Comfort } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import Selector from 'common/Selector/Selector';
 import PowerRestrictionGridModal from 'modules/rollingStock/components/RollingStockEditor/PowerRestrictionGridModal';
@@ -51,14 +47,14 @@ const addNewCurveToMode = (
 
 type RollingStockEditorCurvesProps = {
   selectedParams: {
-    comfortLevel: RollingStockComfortType;
+    comfortLevel: Comfort;
     electricalProfile: string | null;
     powerRestriction: string | null;
     tractionMode: string | null;
   };
   selectedParamsSetter: (
     key: 'comfortLevel' | 'tractionMode' | 'electricalProfile' | 'powerRestriction',
-    value: RollingStockComfortType | string | null
+    value: Comfort | string | null
   ) => void;
 
   effortCurves: EffortCurveForms | null;
@@ -126,7 +122,7 @@ const CurveParamSelectors = ({
       }));
   }, [availableModes, rollingstockParams.tractionModes]);
 
-  const updateComfortLevelsList = (value: RollingStockComfortType) => {
+  const updateComfortLevelsList = (value: Comfort) => {
     if (!effortCurves) return;
     // add the new comfort to all the modes
     const updatedCurves = Object.keys(effortCurves).reduce((acc, mode) => {
@@ -200,7 +196,7 @@ const CurveParamSelectors = ({
 
   const removeAnotherRsParam = (
     title: 'comfort' | 'electrical_profile_level' | 'power_restriction_code',
-    value: string | RollingStockComfortType
+    value: string | Comfort
   ) => {
     if (!effortCurves) return;
     const condKey = title as keyof ConditionalEffortCurve['cond'];
@@ -229,7 +225,7 @@ const CurveParamSelectors = ({
 
   const confirmRsParamRemoval = (
     title: 'comfort' | 'tractionMode' | 'electrical_profile_level' | 'power_restriction_code',
-    value: string | null | RollingStockComfortType
+    value: string | null | Comfort
   ) => {
     if (value === null) return;
     openModal(
@@ -260,10 +256,10 @@ const CurveParamSelectors = ({
           displayedItems={translateItemsList(t, rollingstockParams.comfortLevels, 'comfortTypes')}
           selectedItem={selectedComfortLvl}
           permanentItems={[STANDARD_COMFORT_LEVEL]}
-          onItemSelected={(item: RollingStockComfortType) => {
+          onItemSelected={(item: Comfort) => {
             selectedParamsSetter('comfortLevel', item);
           }}
-          onItemRemoved={(item: RollingStockComfortType) => {
+          onItemRemoved={(item: Comfort) => {
             confirmRsParamRemoval('comfort', item);
           }}
           selectNewItemButtonProps={{
