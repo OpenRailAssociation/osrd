@@ -85,6 +85,7 @@ export const getPathfindingQuery = ({
       }
       return {
         trigram: step.trigram,
+        secondary_code: step.ch,
       };
     });
 
