@@ -116,7 +116,7 @@
       }
       .scenario-details-description {
         overflow: auto;
-        height: 4rem;
+        max-height: 4rem;
         font-size: 0.9rem;
         white-space: break-spaces;
       }
