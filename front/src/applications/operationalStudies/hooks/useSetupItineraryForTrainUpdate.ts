@@ -51,11 +51,9 @@ const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
       on_stop_signal: onStopSignal,
     } = correspondingSchedule || {};
 
-    const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
-
     // TODO DROP V1: we should store the offset in mm in the store
-    if ('track' in stepWithoutSecondaryCode) {
-      stepWithoutSecondaryCode.offset = mmToM(stepWithoutSecondaryCode.offset!);
+    if ('track' in step) {
+      step.offset = mmToM(step.offset!);
     }
 
     let name;
@@ -68,8 +66,7 @@ const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
     }
 
     return {
-      ...stepWithoutSecondaryCode,
-      ch: 'secondary_code' in step ? step.secondary_code : undefined,
+      ...step,
       name,
       arrival: arrival
         ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
@@ -108,11 +105,10 @@ export function updatePathStepsFromOperationalPoints(
       return false;
     });
 
-    const { kp, name, ch } = correspondingOp || step;
+    const { kp, name } = correspondingOp || step;
 
     return {
       ...step,
-      ch,
       kp,
       name,
       positionOnPath: pathfindingResult.path_item_positions[i],

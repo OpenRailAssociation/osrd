@@ -73,7 +73,6 @@ export type PathStep = PathItemLocation & {
   coordinates?: Position;
   // Metadatas given by the search endpoint in TypeAndPath (name)
   name?: string;
-  ch?: string; // can be used to difference two steps from each other when they have same uic
   // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
   metadata?: {
     lineCode: number;

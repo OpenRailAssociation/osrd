@@ -36,7 +36,10 @@ const StdcmOperationalPoint = ({
     filteredAndSortedSearchResults,
     setSearchTerm,
     setChCodeFilter,
-  } = useSearchOperationalPoint({ initialSearchTerm: point?.name, initialChCodeFilter: point?.ch });
+  } = useSearchOperationalPoint({
+    initialSearchTerm: point?.name,
+    initialChCodeFilter: (point && 'uic' in point && point.secondary_code) || undefined,
+  });
 
   const operationalPointsSuggestions = useMemo(
     () =>
@@ -74,7 +77,8 @@ const StdcmOperationalPoint = ({
   );
 
   const dispatchNewPoint = (p?: SearchResultItemOperationalPoint) => {
-    if (p && p.ch === point?.ch && 'uic' in point && p.uic === point?.uic) return;
+    if (p && point && 'uic' in point && p.uic === point.uic && p.ch === point.secondary_code)
+      return;
     const newPoint = p
       ? {
           name: p.name,
@@ -110,8 +114,9 @@ const StdcmOperationalPoint = ({
 
   useEffect(() => {
     if (point) {
+      const ch = 'uic' in point ? point.secondary_code : '';
       setSearchTerm(point.name || '');
-      setChCodeFilter(point.ch || '');
+      setChCodeFilter(ch || '');
     } else {
       setSearchTerm('');
       setChCodeFilter(undefined);

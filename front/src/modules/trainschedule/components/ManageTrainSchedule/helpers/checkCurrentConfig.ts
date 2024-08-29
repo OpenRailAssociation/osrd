@@ -153,7 +153,6 @@ const checkCurrentConfig = (
         positionOnPath,
         coordinates,
         name,
-        ch,
         metadata,
         kp,
         onStopSignal,
@@ -168,7 +167,7 @@ const checkCurrentConfig = (
           offset: mToMm(stepLocation.offset),
         };
       }
-      return { ...stepLocation, secondary_code: ch };
+      return stepLocation;
     }),
 
     margins: formatMargin(compact(pathSteps)),

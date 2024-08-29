@@ -574,7 +574,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
         locked: newVia.locked,
         deleted: newVia.deleted,
         name: newVia.name,
-        ch: newVia.ch,
       };
 
       store.dispatch(slice.actions.upsertViaFromSuggestedOP(newVia));

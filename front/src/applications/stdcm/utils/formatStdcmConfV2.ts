@@ -170,7 +170,6 @@ export const checkStdcmConf = (
       positionOnPath,
       coordinates,
       name,
-      ch,
       metadata,
       theoreticalMargin,
       kp,
@@ -197,7 +196,8 @@ export const checkStdcmConf = (
       };
     }
 
-    const secondary_code = 'trigram' in stepLocation || 'uic' in stepLocation ? ch : undefined;
+    const secondary_code =
+      'secondary_code' in stepLocation ? stepLocation.secondary_code : undefined;
     return {
       duration,
       location: { ...stepLocation, secondary_code },
