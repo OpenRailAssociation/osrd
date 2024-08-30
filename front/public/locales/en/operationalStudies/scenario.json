@@ -71,7 +71,7 @@
   "toggleTimetable": "Toggle the timetable",
   "trainCount_one": "1/{{ totalCount }} trains",
   "trainCount_other": "{{ count }}/{{ totalCount }} trains",
-  "trainCount_zero": "0/{{ totalCount }} train",
+  "trainCount_zero": "0/{{ totalCount }} trains",
   "conflictsCount_one": "1 conflict",
   "conflictsCount_other": "{{count}} conflicts",
   "conflictsCount_zero": "No conflict",

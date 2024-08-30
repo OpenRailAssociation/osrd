@@ -1,6 +1,6 @@
 import { request } from '@playwright/test';
 
-import type { Project, Study, RollingStock, Infra, Scenario } from 'common/api/osrdEditoastApi';
+import type { Project, Study, RollingStock, Infra, ScenarioV2 } from 'common/api/osrdEditoastApi';
 
 import { handleApiResponse } from './index';
 
@@ -29,7 +29,7 @@ export const postApiRequest = async <T>(
   const apiContext = await getApiContext();
   const response = await apiContext.post(url, { data, params });
   if (errorMessage) {
-    await handleApiResponse(response, errorMessage);
+    handleApiResponse(response, errorMessage);
   }
   return response.json();
 };
@@ -66,7 +66,7 @@ export const getScenario = async (projectId: number, studyId: number) => {
   const { results } = await getApiRequest(
     `/api/v2/projects/${projectId}/studies/${studyId}/scenarios/`
   );
-  const scenario = findOneInResults(results, 'scenario_test_e2e') as Scenario;
+  const scenario = findOneInResults(results, 'scenario_test_e2e') as ScenarioV2;
   return scenario;
 };
 export const getRollingStock = async () => {
