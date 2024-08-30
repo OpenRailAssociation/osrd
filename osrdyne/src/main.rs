@@ -174,7 +174,7 @@ async fn main() -> Result<(), anyhow::Error> {
     Ok::<(), anyhow::Error>(())
 }
 
-fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) {
+fn init_tracing(telemetry_config: &client::TelemetryConfig) {
     let env_filter_layer = tracing_subscriber::EnvFilter::builder()
         // Set the default log level to 'info'
         .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
