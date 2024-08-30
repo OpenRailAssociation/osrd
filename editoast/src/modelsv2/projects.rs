@@ -19,7 +19,7 @@ editoast_common::schemas! {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema, PartialEq)]
-#[model(table = crate::tables::project)]
+#[model(table = editoast_models::tables::project)]
 pub struct Project {
     pub id: i64,
     pub name: String,
@@ -31,7 +31,7 @@ pub struct Project {
     pub last_modification: NaiveDateTime,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
-    #[model(column = crate::tables::project::image_id)]
+    #[model(column = editoast_models::tables::project::image_id)]
     pub image: Option<i64>,
 }
 

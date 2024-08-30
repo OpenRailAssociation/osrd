@@ -37,7 +37,7 @@ use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
 use crate::modelsv2::Create;
-use crate::tables::infra::dsl;
+use editoast_models::tables::infra::dsl;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::RailJson;
@@ -57,7 +57,7 @@ editoast_common::schemas! {
 pub const DEFAULT_INFRA_VERSION: &str = "0";
 
 #[derive(Debug, Clone, Derivative, Serialize, Deserialize, ModelV2, utoipa::ToSchema)]
-#[model(table = crate::tables::infra)]
+#[model(table = editoast_models::tables::infra)]
 #[derivative(Default)]
 pub struct Infra {
     pub id: i64,
@@ -151,7 +151,7 @@ impl Infra {
                     let sql = if object != ObjectType::Signal {
                         format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id) SELECT obj_id,geographic,$1 FROM {layer_table} WHERE infra_id=$2")
                     } else {
-                        format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id, angle_geo, signaling_system, sprite) 
+                        format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id, angle_geo, signaling_system, sprite)
                                     SELECT obj_id,geographic,$1,angle_geo, signaling_system, sprite FROM {layer_table} WHERE infra_id = $2")
                     };
 
@@ -169,8 +169,8 @@ impl Infra {
             sql_query("ALTER TABLE infra_object_operational_point ENABLE TRIGGER search_operational_point__ins_trig").execute(conn).await?;
 
             // Fill search tables
-            sql_query("INSERT INTO search_signal(id, label, line_name, infra_id, obj_id, signaling_systems, settings, line_code) 
-                        SELECT signal.id, label, line_name, $1, search_signal.obj_id, signaling_systems, settings, line_code FROM search_signal 
+            sql_query("INSERT INTO search_signal(id, label, line_name, infra_id, obj_id, signaling_systems, settings, line_code)
+                        SELECT signal.id, label, line_name, $1, search_signal.obj_id, signaling_systems, settings, line_code FROM search_signal
                         JOIN infra_object_signal AS signal ON search_signal.obj_id = signal.obj_id and signal.infra_id = $1
                         WHERE search_signal.infra_id = $2")
                 .bind::<BigInt, _>(cloned_infra.id)
@@ -182,8 +182,8 @@ impl Infra {
                 .bind::<BigInt, _>(self.id)
                 .execute(conn).await?;
 
-            sql_query("INSERT INTO search_operational_point(id, infra_id, obj_id, uic, trigram, ci, ch, name) 
-                        SELECT op.id, $1, op.obj_id, uic, trigram, ci, ch, name FROM search_operational_point 
+            sql_query("INSERT INTO search_operational_point(id, infra_id, obj_id, uic, trigram, ci, ch, name)
+                        SELECT op.id, $1, op.obj_id, uic, trigram, ci, ch, name FROM search_operational_point
                         JOIN infra_object_operational_point AS op ON search_operational_point.obj_id = op.obj_id and op.infra_id = $1
                         WHERE search_operational_point.infra_id = $2")
                 .bind::<BigInt, _>(cloned_infra.id)
@@ -252,8 +252,8 @@ impl Infra {
     ///
     /// Note: Everything is done in one transaction for consistency.
     pub async fn fast_delete_static(conn: &mut DbConnection, infra_id: i64) -> Result<bool> {
-        use crate::tables::infra_object_track_section::dsl as track_section_dsl;
-        use crate::tables::search_track::dsl as search_track_dsl;
+        use editoast_models::tables::infra_object_track_section::dsl as track_section_dsl;
+        use editoast_models::tables::search_track::dsl as search_track_dsl;
 
         conn.build_transaction()
             .run(|conn| Box::pin(async {

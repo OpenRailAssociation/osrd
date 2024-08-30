@@ -13,7 +13,7 @@ use editoast_models::DbConnection;
 
 #[derive(Debug, Clone, ModelV2, Deserialize, Serialize, ToSchema)]
 #[schema(as = ScenarioV2)]
-#[model(table = crate::tables::scenario_v2)]
+#[model(table = editoast_models::tables::scenario_v2)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct Scenario {
     pub id: i64,
@@ -33,7 +33,7 @@ pub struct Scenario {
 
 impl Scenario {
     pub async fn infra_name(&self, conn: &mut DbConnection) -> Result<String> {
-        use crate::tables::infra::dsl as infra_dsl;
+        use editoast_models::tables::infra::dsl as infra_dsl;
         let infra_name = infra_dsl::infra
             .filter(infra_dsl::id.eq(self.infra_id))
             .select(infra_dsl::name)
@@ -43,7 +43,7 @@ impl Scenario {
     }
 
     pub async fn trains_count(&self, conn: &mut DbConnection) -> Result<i64> {
-        use crate::tables::train_schedule_v2::dsl::*;
+        use editoast_models::tables::train_schedule_v2::dsl::*;
         let trains_count = train_schedule_v2
             .filter(timetable_id.eq(self.timetable_id))
             .count()

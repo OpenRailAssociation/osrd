@@ -8,7 +8,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, ModelV2)]
-#[model(table = crate::tables::work_schedule_group)]
+#[model(table = editoast_models::tables::work_schedule_group)]
 pub struct WorkScheduleGroup {
     pub id: i64,
     pub creation_date: NaiveDateTime,
@@ -24,7 +24,7 @@ pub enum WorkScheduleType {
 }
 
 #[derive(Debug, Default, Clone, ModelV2)]
-#[model(table = crate::tables::work_schedule)]
+#[model(table = editoast_models::tables::work_schedule)]
 pub struct WorkSchedule {
     pub id: i64,
     pub start_date_time: NaiveDateTime,

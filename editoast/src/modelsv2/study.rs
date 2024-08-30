@@ -14,7 +14,7 @@ use crate::modelsv2::Scenario;
 use editoast_models::DbConnection;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ModelV2, ToSchema)]
-#[model(table = crate::tables::study)]
+#[model(table = editoast_models::tables::study)]
 pub struct Study {
     pub id: i64,
     pub name: String,

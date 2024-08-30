@@ -7,12 +7,12 @@ use diesel_async::RunQueryDsl;
 use crate::error::Result;
 use crate::models::Identifiable;
 use crate::modelsv2::{DeleteStatic, Retrieve};
-use crate::tables::timetable_v2::dsl;
 use crate::Exists;
+use editoast_models::tables::timetable_v2::dsl;
 use editoast_models::DbConnection;
 
 #[derive(Debug, Default, Clone, PartialEq, Queryable, Identifiable)]
-#[diesel(table_name = crate::tables::timetable_v2)]
+#[diesel(table_name = editoast_models::tables::timetable_v2)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 pub struct Timetable {
     pub id: i64,
@@ -21,7 +21,7 @@ pub struct Timetable {
 impl Timetable {
     #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
     pub async fn create(conn: &mut DbConnection) -> Result<Self> {
-        diesel::insert_into(crate::tables::timetable_v2::table)
+        diesel::insert_into(editoast_models::tables::timetable_v2::table)
             .default_values()
             .get_result::<Timetable>(conn)
             .await

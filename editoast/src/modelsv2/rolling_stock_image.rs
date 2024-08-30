@@ -7,7 +7,7 @@ use editoast_derive::ModelV2;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, ModelV2)]
-#[model(table = crate::tables::rolling_stock_separate_image)]
+#[model(table = editoast_models::tables::rolling_stock_separate_image)]
 pub struct RollingStockSeparatedImageModel {
     pub id: i64,
     pub order: i32,

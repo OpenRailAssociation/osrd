@@ -2,7 +2,7 @@
 # see https://diesel.rs/guides/configuring-diesel-cli
 
 [print_schema]
-file = "src/tables.rs"
+file = "editoast_models/src/tables.rs"
 generate_missing_sql_type_definitions = false
 filter = { except_tables = ["spatial_ref_sys"] }
 import_types = ["diesel::sql_types::*", "postgis_diesel::sql_types::*"]

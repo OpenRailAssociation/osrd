@@ -6,12 +6,12 @@ use utoipa::ToSchema;
 
 use crate::diesel::QueryDsl;
 use crate::error::Result;
-use crate::tables::electrical_profile_set;
+use editoast_models::tables::electrical_profile_set;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::ElectricalProfileSetData;
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
-#[model(table = crate::tables::electrical_profile_set)]
+#[model(table = editoast_models::tables::electrical_profile_set)]
 #[model(changeset(derive(Deserialize)))]
 pub struct ElectricalProfileSet {
     pub id: i64,
@@ -22,7 +22,7 @@ pub struct ElectricalProfileSet {
 
 impl ElectricalProfileSet {
     pub async fn list_light(conn: &mut DbConnection) -> Result<Vec<LightElectricalProfileSet>> {
-        use crate::tables::electrical_profile_set::dsl::*;
+        use editoast_models::tables::electrical_profile_set::dsl::*;
         let result = electrical_profile_set.select((id, name)).load(conn).await?;
         Ok(result)
     }
