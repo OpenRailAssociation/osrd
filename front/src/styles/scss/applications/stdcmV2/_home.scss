@@ -82,7 +82,6 @@
       .stdcm-v2-simulation-itinerary {
         display: flex;
         flex-direction: column;
-        gap: 32px;
         min-width: 28.125rem;
         width: 28.125rem;
         position: relative;
@@ -96,7 +95,11 @@
         * > .stdcm-v2-vias-bundle {
           display: flex;
           flex-direction: column;
-          gap: 2rem;
+          gap: 1rem;
+        }
+
+        .stdcm-v2-vias-list {
+          margin-block: 1rem;
         }
 
         .stdcm-origin-icon,
@@ -110,6 +113,7 @@
             justify-content: center;
             width: 100%;
             font-weight: 500;
+            margin-top: 2rem;
           }
 
           .stdcm-warning-buttons {

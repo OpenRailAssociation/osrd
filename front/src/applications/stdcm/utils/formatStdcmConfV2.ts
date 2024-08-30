@@ -173,6 +173,7 @@ export const checkStdcmConf = (
       deleted,
       locked,
       stopFor,
+      stopType,
       positionOnPath,
       coordinates,
       name,

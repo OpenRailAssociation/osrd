@@ -1,4 +1,4 @@
-import { conditionalStringConcat } from 'utils/strings';
+import { capitalizeFirstLetter, conditionalStringConcat } from 'utils/strings';
 
 describe('conditionalStringConcat', () => {
   it('should return concatenated string', () => {
@@ -30,5 +30,14 @@ describe('conditionalStringConcat', () => {
         '_'
       )
     ).toBe('abcd_efghij');
+  });
+});
+
+describe('capitalizeFirstLetter', () => {
+  it('should capitalize first letter if there is multiple words', () => {
+    expect(capitalizeFirstLetter('service stop')).toBe('Service stop');
+  });
+  it('should capitalize first letter if there is one word', () => {
+    expect(capitalizeFirstLetter('passage')).toBe('Passage');
   });
 });

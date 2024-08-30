@@ -77,69 +77,63 @@ const StdcmOpSchedule = ({
     }, [opTimingData, opToleranceValues, searchDatetimeWindow]);
 
   return (
-    <div className="d-flex flex-column">
-      <div className="col-12 pr-1">
-        <Select
-          id={`select-${opId}`}
-          value={opScheduleTimeType}
-          onChange={(e) => {
-            if (e) {
-              onArrivalTypeChange(e as ArrivalTimeTypes);
-            }
-          }}
-          options={['preciseTime', 'asSoonAsPossible']}
-          getOptionLabel={(option) => t(`trainPath.${option}`)}
-          getOptionValue={(option) => option}
-          disabled={disabled}
-        />
-      </div>
+    <div className="d-flex flex-column selector">
+      <Select
+        id={`select-${opId}`}
+        value={opScheduleTimeType}
+        onChange={(e) => {
+          if (e) {
+            onArrivalTypeChange(e as ArrivalTimeTypes);
+          }
+        }}
+        options={['preciseTime', 'asSoonAsPossible']}
+        getOptionLabel={(option) => t(`trainPath.${option}`)}
+        getOptionValue={(option) => option}
+        disabled={disabled}
+      />
       {opScheduleTimeType === 'preciseTime' && (
         <div className="d-flex">
-          <div className="col-5 pr-0">
-            {/* TODO: Remove empty onChange events once we fix the warning on ui-core side */}
-            <DatePicker
-              inputProps={{
-                id: `date-${opId}`,
-                label: t('trainPath.date'),
-                name: 'op-date',
-                disabled,
-                onChange: () => {},
-              }}
-              value={arrivalDate}
-              calendarPickerProps={
-                searchDatetimeWindow
-                  ? {
-                      selectableSlot: {
-                        start: searchDatetimeWindow.begin,
-                        end: searchDatetimeWindow.end,
-                      },
-                    }
-                  : undefined
-              }
-              onDateChange={(e) => {
-                onArrivalChange({
-                  date: e,
-                  hours: arrivalTimeHours || 0,
-                  minutes: arrivalTimeMinutes || 0,
-                });
-              }}
-            />
-          </div>
-          <div className="col-3 ml-1 px-0">
-            <TimePicker
-              id={`time-${opId}`}
-              label={t('trainPath.time')}
-              hours={arrivalTimeHours}
-              minutes={arrivalTimeMinutes}
-              onTimeChange={({ hours, minutes }) => {
-                onArrivalChange({ date: arrivalDate, hours, minutes });
-              }}
-              disabled={disabled}
-              value={arrivalTime}
-              readOnly={false}
-            />
-          </div>
-          <div className="col-4 ml-1 pl-0 pr-1">
+          {/* TODO: Remove empty onChange events once we fix the warning on ui-core side */}
+          <DatePicker
+            inputProps={{
+              id: `date-${opId}`,
+              label: t('trainPath.date'),
+              name: 'op-date',
+              disabled,
+              onChange: () => {},
+            }}
+            value={arrivalDate}
+            calendarPickerProps={
+              searchDatetimeWindow
+                ? {
+                    selectableSlot: {
+                      start: searchDatetimeWindow.begin,
+                      end: searchDatetimeWindow.end,
+                    },
+                  }
+                : undefined
+            }
+            onDateChange={(e) => {
+              onArrivalChange({
+                date: e,
+                hours: arrivalTimeHours || 0,
+                minutes: arrivalTimeMinutes || 0,
+              });
+            }}
+          />
+          <TimePicker
+            id={`time-${opId}`}
+            label={t('trainPath.time')}
+            hours={arrivalTimeHours}
+            minutes={arrivalTimeMinutes}
+            onTimeChange={({ hours, minutes }) => {
+              onArrivalChange({ date: arrivalDate, hours, minutes });
+            }}
+            disabled={disabled}
+            value={arrivalTime}
+            readOnly={false}
+          />
+          <div className="mr-n2 pr-1">
             <TolerancePicker
               id={`stdcm-tolerance-${opId}`}
               label={t('trainPath.tolerance')}

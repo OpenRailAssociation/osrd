@@ -59,3 +59,8 @@ export type ScheduleConstraint = {
   hours: number;
   minutes: number;
 };
+export enum StdcmStopTypes {
+  PASSAGE_TIME = 'passageTime',
+  DRIVER_SWITCH = 'driverSwitch',
+  SERVICE_STOP = 'serviceStop',
+}

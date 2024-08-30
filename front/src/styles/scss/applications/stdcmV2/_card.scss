@@ -9,7 +9,6 @@
   position: relative;
 
   .stdcm-v2-default-card-icon {
-    padding-left: 0.125rem;
     color: #1844ef;
   }
 
@@ -36,11 +35,11 @@
     content: '';
     position: absolute;
     top: 100%;
-    left: 20px;
-    border-top: 10px solid transparent;
+    left: 0.75rem;
+    border-top: 8px solid transparent;
     border-top-color: rgba(255, 255, 255, 1);
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
     filter: drop-shadow(0px 2px 1px #d0d7e7);
   }
 
@@ -62,10 +61,10 @@
   }
 
   .stdcm-v2-card__body {
-    padding: 14px 21px 21px 21px;
+    padding: 0.688rem 1rem 0.8125rem 1rem;
     // TODO: remove this style after ui-core component is implemented
     .suggestions > div:first-child {
-      padding-left: 0;
+      padding-left: 0.5rem;
     }
     .suggestions * label,
     .stdcm-v2-via-stop-for * label {
@@ -73,12 +72,21 @@
     }
 
     .feed-back {
-      padding: 0.375rem 0.3rem 0.625rem 0rem;
+      padding-right: 0.3rem;
+    }
+
+    .selector {
+      padding-inline: 0.188rem 0.25rem;
+    }
+
+    .stop-time {
+      padding-left: 0.125rem;
     }
 
     .stdcm-v2-default-card-button {
       color: rgba(24, 68, 239, 1);
       line-height: 24px;
+      margin-left: 0.75rem;
     }
     button:focus {
       outline: none;

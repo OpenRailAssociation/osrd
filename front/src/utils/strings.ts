@@ -99,3 +99,7 @@ export function distanceToHumanReadable(distance: number): string {
 
   return `${distance}mm`;
 }
+
+export function capitalizeFirstLetter(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}

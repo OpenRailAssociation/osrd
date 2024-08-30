@@ -301,7 +301,7 @@ const styles = {
     stopTableStartWidth: {
       width: '168',
     },
-    stopTableMotifWidth: {
+    stopTableStopTypeWidth: {
       width: '216',
     },
     stopTableTH: {
