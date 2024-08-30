@@ -239,7 +239,8 @@ class PathfindingTest : ApiTest() {
             .satisfies({ exception ->
                 AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
                     .isEqualTo(ErrorType.PathfindingGenericError)
-                AssertionsForClassTypes.assertThat(exception.context).isEqualTo(HashMap<Any, Any>())
+                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.context)
+                    .isEqualTo(HashMap<Any, Any>())
             })
     }
 
@@ -266,7 +267,7 @@ class PathfindingTest : ApiTest() {
             .satisfies({ exception ->
                 AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
                     .isEqualTo(ErrorType.UnknownTrackSection)
-                AssertionsForClassTypes.assertThat(exception.context)
+                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.context)
                     .isEqualTo(mapOf(Pair("track_section_id", "this_track_does_not_exist")))
             })
     }
@@ -297,7 +298,7 @@ class PathfindingTest : ApiTest() {
             .satisfies({ exception ->
                 AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
                     .isEqualTo(ErrorType.PathfindingGaugeError)
-                AssertionsForClassTypes.assertThat(exception.context)
+                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.context)
                     .isEqualTo(mapOf<String, Any>())
             })
 
@@ -412,7 +413,7 @@ class PathfindingTest : ApiTest() {
             .satisfies({ exception ->
                 AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
                     .isEqualTo(ErrorType.PathfindingElectrificationError)
-                AssertionsForClassTypes.assertThat(exception.context)
+                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.context)
                     .isEqualTo(mapOf<String, Any>())
             })
     }
