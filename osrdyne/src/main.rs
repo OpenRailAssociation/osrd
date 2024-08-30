@@ -173,3 +173,59 @@ async fn main() -> Result<(), anyhow::Error> {
     target_tracker.await?;
     Ok::<(), anyhow::Error>(())
 }
+
+fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) {
+    let env_filter_layer = tracing_subscriber::EnvFilter::builder()
+        // Set the default log level to 'info'
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
+        .from_env_lossy();
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .pretty()
+        .with_file(true)
+        .with_line_number(false)
+        .boxed();
+    // https://docs.rs/tracing-subscriber/latest/tracing_subscriber/layer/index.html#runtime-configuration-with-layers
+    let telemetry_layer = match telemetry_config.telemetry_kind {
+        client::TelemetryKind::None => None,
+        client::TelemetryKind::Datadog => {
+            let datadog_tracer = opentelemetry_datadog::new_pipeline()
+                .with_service_name(telemetry_config.service_name.as_str())
+                .with_agent_endpoint(telemetry_config.telemetry_endpoint.as_str())
+                .install_batch(opentelemetry_sdk::runtime::Tokio)
+                .expect("Failed to initialize datadog tracer");
+            let layer = tracing_opentelemetry::layer()
+                .with_tracer(datadog_tracer)
+                .boxed();
+            opentelemetry::global::set_text_map_propagator(DatadogPropagator::default());
+            Some(layer)
+        }
+        client::TelemetryKind::Opentelemetry => {
+            let exporter = opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint(telemetry_config.telemetry_endpoint.as_str());
+            let trace_config =
+                opentelemetry_sdk::trace::config().with_resource(Resource::new(vec![
+                    KeyValue::new(
+                        opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                        telemetry_config.service_name.clone(),
+                    ),
+                ]));
+            let otlp_tracer = opentelemetry_otlp::new_pipeline()
+                .tracing()
+                .with_exporter(exporter)
+                .with_trace_config(trace_config)
+                .install_batch(opentelemetry_sdk::runtime::Tokio)
+                .expect("Failed to initialize Opentelemetry tracer");
+            let layer = tracing_opentelemetry::layer()
+                .with_tracer(otlp_tracer)
+                .boxed();
+            opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
+            Some(layer)
+        }
+    };
+    tracing_subscriber::registry()
+        .with(telemetry_layer)
+        .with(env_filter_layer)
+        .with(fmt_layer)
+        .init();
+}
