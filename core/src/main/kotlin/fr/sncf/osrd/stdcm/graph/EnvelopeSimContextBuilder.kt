@@ -2,8 +2,8 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.train.RollingStock.Comfort
 
 /** Computes the rolling stock effort curves that will be used and creates a context */
 fun build(

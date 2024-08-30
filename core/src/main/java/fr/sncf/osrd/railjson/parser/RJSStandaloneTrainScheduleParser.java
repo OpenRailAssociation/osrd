@@ -1,7 +1,5 @@
 package fr.sncf.osrd.railjson.parser;
 
-import static fr.sncf.osrd.railjson.parser.RJSRollingStockParser.parseComfort;
-
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -49,7 +47,7 @@ public class RJSStandaloneTrainScheduleParser {
             throw new OSRDError(ErrorType.InvalidScheduleInvalidInitialSpeed);
 
         // Parse comfort
-        var comfort = parseComfort(rjsTrainSchedule.comfort);
+        var comfort = rjsTrainSchedule.comfort;
 
         // Parse options
         var options = new TrainScheduleOptions(rjsTrainSchedule.options);

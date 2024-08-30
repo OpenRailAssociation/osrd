@@ -16,6 +16,7 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
@@ -140,7 +141,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
         path: STDCMResult,
         rollingStock: RollingStock,
         speedLimitTag: String?,
-        comfort: RollingStock.Comfort,
+        comfort: Comfort,
     ): SimulationSuccess {
         val reportTrain =
             runScheduleMetadataExtractor(
@@ -180,7 +181,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
         infra: FullInfra,
         path: STDCMResult,
         rollingStock: RollingStock,
-        comfort: RollingStock.Comfort
+        comfort: Comfort
     ): RangeValues<ElectricalProfileValue> {
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path.trainPath, null)
         val electrificationMap =

@@ -9,13 +9,13 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.infra_exploration.withEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -23,8 +23,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
 import kotlin.math.max
-
-object STDCMStandardAllowance
 
 private data class FixedTimePoint(
     val time: Double,

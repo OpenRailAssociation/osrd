@@ -21,10 +21,10 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
-import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.train.TrainStop;
@@ -194,7 +194,7 @@ public class ConflictDetectionTest {
                     case ROUTING -> routingConflict = true;
                 }
             var conflictStatus = new ConflictStatus(spacingConflict, routingConflict);
-            if (statusHist.size() != 0 && statusHist.get(statusHist.size() - 1).equals(conflictStatus)) continue;
+            if (!statusHist.isEmpty() && statusHist.get(statusHist.size() - 1).equals(conflictStatus)) continue;
             statusHist.add(conflictStatus);
         }
         var expectedStatusHist = List.of(
@@ -485,7 +485,7 @@ public class ConflictDetectionTest {
                 intermediateStops,
                 List.of(),
                 "test",
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 null,
                 null);
         return new SimResult(ScheduleMetadataExtractor.run(envelope, path, chunkPath, schedule, fullInfra), envelope);

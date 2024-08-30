@@ -2,10 +2,10 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.graph.simulateBlock
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
@@ -42,7 +42,7 @@ class EngineeringAllowanceTests {
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 2.0,
                 null,
                 null
@@ -54,7 +54,7 @@ class EngineeringAllowanceTests {
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 2.0,
                 null,
                 null
@@ -122,7 +122,7 @@ class EngineeringAllowanceTests {
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 2.0,
                 null,
                 null
@@ -134,7 +134,7 @@ class EngineeringAllowanceTests {
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 2.0,
                 null,
                 null
@@ -205,7 +205,7 @@ class EngineeringAllowanceTests {
                 0.0,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 2.0,
                 null,
                 null
@@ -217,7 +217,7 @@ class EngineeringAllowanceTests {
                 firstBlockEnvelope.endSpeed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 2.0,
                 null,
                 null

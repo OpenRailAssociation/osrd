@@ -6,12 +6,12 @@ import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.GammaType
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.RJSModeEffortCurve
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Length

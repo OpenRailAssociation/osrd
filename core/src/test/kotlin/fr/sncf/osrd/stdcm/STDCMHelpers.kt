@@ -8,6 +8,7 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
@@ -17,7 +18,6 @@ import fr.sncf.osrd.stdcm.graph.simulateBlock
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.train.TrainStop
@@ -48,7 +48,7 @@ fun makeRequirementsFromPath(
                     listOf(TrainStop(trainPath.getLength().meters, 1.0, true)),
                     listOf(),
                     null,
-                    RollingStock.Comfort.STANDARD,
+                    Comfort.STANDARD,
                     null,
                     null
                 )
@@ -107,7 +107,7 @@ fun getBlocksRunTime(infra: FullInfra, blocks: List<BlockId>): Double {
                 speed,
                 Offset(0.meters),
                 TestTrains.REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 2.0,
                 null,
                 null

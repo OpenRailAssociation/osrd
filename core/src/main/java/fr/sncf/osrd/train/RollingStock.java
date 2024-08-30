@@ -11,6 +11,7 @@ import fr.sncf.osrd.envelope_sim.electrification.Electrification;
 import fr.sncf.osrd.envelope_sim.electrification.Electrified;
 import fr.sncf.osrd.envelope_sim.electrification.Neutral;
 import fr.sncf.osrd.envelope_sim.electrification.NonElectrified;
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.Map;
 import java.util.Set;
@@ -153,12 +154,6 @@ public final class RollingStock implements PhysicsRollingStock {
     }
 
     public record InfraConditions(String mode, String electricalProfile, String powerRestriction) {}
-
-    public enum Comfort {
-        STANDARD,
-        HEATING,
-        AIR_CONDITIONING,
-    }
 
     protected record CurveAndCondition(TractiveEffortPoint[] curve, InfraConditions cond) {}
 

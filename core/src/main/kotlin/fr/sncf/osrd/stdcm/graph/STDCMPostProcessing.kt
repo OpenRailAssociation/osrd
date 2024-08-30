@@ -15,11 +15,11 @@ import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind

@@ -7,6 +7,7 @@ import com.google.common.collect.*;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -33,10 +34,7 @@ public class TestRollingStock {
                                 EnvelopeSimPathBuilder.withElectricalProfiles25000(40),
                                 EnvelopeSimPathBuilder.withElectricalProfiles25000(60),
                                 EnvelopeSimPathBuilder.withModes(50)),
-                        List.of(
-                                RollingStock.Comfort.STANDARD,
-                                RollingStock.Comfort.AIR_CONDITIONING,
-                                RollingStock.Comfort.HEATING),
+                        List.of(Comfort.STANDARD, Comfort.AIR_CONDITIONING, Comfort.HEATING),
                         Arrays.asList(powerRestrictionMap, emptyPowerRestrictionMap))
                 .stream()
                 .map(args -> Arguments.of(args.get(0), args.get(1), args.get(2)));
@@ -45,7 +43,7 @@ public class TestRollingStock {
     @ParameterizedTest
     @MethodSource("mapTractiveEffortCurveArgs")
     void testMapTractiveEffortCurveCoherent(
-            EnvelopeSimPath path, RollingStock.Comfort comfort, RangeMap<Double, String> powerRestrictionMap) {
+            EnvelopeSimPath path, Comfort comfort, RangeMap<Double, String> powerRestrictionMap) {
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
         var elecCondMap = path.getElectrificationMap(
@@ -82,7 +80,7 @@ public class TestRollingStock {
 
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
-        var comfort = RollingStock.Comfort.STANDARD;
+        var comfort = Comfort.STANDARD;
         var elecCondMap = path.getElectrificationMap(
                 rollingStock.basePowerClass, powerRestrictionMap, rollingStock.powerRestrictions);
         var res = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort);
@@ -121,7 +119,10 @@ public class TestRollingStock {
                     new InfraConditions("thermal", null, null), // 20 No mode given
                     new InfraConditions("thermal", null, null) // 30 Invalid mode
                 },
-                res.conditions().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().values().stream()
+                res.conditions()
+                        .subRangeMap(Range.closed(0., path.getLength()))
+                        .asMapOfRanges()
+                        .values()
                         .toArray());
 
         // Check that the curves are correct
@@ -153,14 +154,13 @@ public class TestRollingStock {
         var subMap = map.subRangeMap(Range.closed(0., length));
 
         var span = subMap.span();
-        assertTrue((span.upperEndpoint() - span.lowerEndpoint()) == length, "map does not cover the whole path");
+        assertEquals((span.upperEndpoint() - span.lowerEndpoint()), length, "map does not cover the whole path");
 
         var entries = subMap.asMapOfRanges().entrySet().iterator();
         var prev = entries.next();
         while (entries.hasNext()) {
             var next = entries.next();
-            assertTrue(
-                    prev.getKey().upperEndpoint().equals(next.getKey().lowerEndpoint()), "ranges are not contiguous");
+            assertEquals(prev.getKey().upperEndpoint(), next.getKey().lowerEndpoint(), "ranges are not contiguous");
             prev = next;
         }
     }

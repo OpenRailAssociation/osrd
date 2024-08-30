@@ -8,11 +8,11 @@ import fr.sncf.osrd.api.stdcm.makeTrainSchedule
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.standalone_sim.run
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.Helpers.smallInfra
@@ -273,7 +273,7 @@ class FullSTDCMTests {
                     makeTrainSchedule(
                         res.envelope.endPos,
                         TestTrains.REALISTIC_FAST_TRAIN,
-                        RollingStock.Comfort.STANDARD,
+                        Comfort.STANDARD,
                         res.stopResults
                     ),
                     infra
