@@ -1,10 +1,9 @@
 import { useContext, useState } from 'react';
 
-import { Filter, Trash, Download } from '@osrd-project/ui-icons';
+import { Button, Checkbox } from '@osrd-project/ui-core';
+import { Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { BiSelectMultiple } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
@@ -26,25 +25,25 @@ import type {
 import useFilterTrainSchedules from './useFilterTrainSchedules';
 
 type TimetableToolbarProps = {
+  showTrainDetails: boolean;
+  toggleShowTrainDetails: () => void;
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   displayedTrainSchedules: TrainScheduleWithDetails[];
   setDisplayedTrainSchedules: (trainSchedulesDetails: TrainScheduleWithDetails[]) => void;
   selectedTrainIds: number[];
   setSelectedTrainIds: (selectedTrainIds: number[]) => void;
-  multiSelectOn: boolean;
-  setMultiSelectOn: (multiSelectOn: boolean) => void;
   removeTrains: (trainIds: number[]) => void;
   trainSchedules: TrainScheduleResult[];
 };
 
 const TimetableToolbar = ({
+  showTrainDetails,
+  toggleShowTrainDetails,
   trainSchedulesWithDetails,
   displayedTrainSchedules,
   setDisplayedTrainSchedules,
   selectedTrainIds,
   setSelectedTrainIds,
-  multiSelectOn,
-  setMultiSelectOn,
   removeTrains,
   trainSchedules,
 }: TimetableToolbarProps) => {
@@ -140,100 +139,111 @@ const TimetableToolbar = ({
 
   return (
     <>
-      <div className="scenario-timetable-toolbar justify-content-between">
-        <div className="multi-select-buttons">
-          {multiSelectOn && (
-            <>
-              <input
-                type="checkbox"
-                className="mr-2"
-                checked={selectedTrainIds.length === trainSchedulesWithDetails.length}
+      <div
+        className={cx('scenario-timetable-toolbar', {
+          centered: trainSchedules.length === 0,
+        })}
+      >
+        <div
+          className={cx('toolbar-header', {
+            'with-details': isInSelection,
+          })}
+        >
+          {trainSchedules.length === 0 ? (
+            <Checkbox small readOnly label={t('timetable.noTrain')} />
+          ) : (
+            <div className="train-count">
+              <Checkbox
+                label={t('trainCount', {
+                  count: selectedTrainIds.length,
+                  totalCount: displayedTrainSchedules.length,
+                })}
+                small
+                checked={
+                  selectedTrainIds.length === trainSchedulesWithDetails.length &&
+                  selectedTrainIds.length > 0
+                }
+                isIndeterminate={
+                  selectedTrainIds.length !== trainSchedulesWithDetails.length &&
+                  selectedTrainIds.length > 0
+                }
                 onChange={() => toggleAllTrainsSelecton()}
               />
-              <button
-                aria-label={t('timetable.deleteSelection')}
-                disabled={!selectedTrainIds.length}
-                className={cx('multiselect-delete', { disabled: !selectedTrainIds.length })}
-                type="button"
-                onClick={() =>
-                  openModal(
-                    <DeleteModal
-                      handleDelete={handleTrainsDelete}
-                      items={t('common/itemTypes:trains', { count: selectedTrainIds.length })}
-                    />,
-                    'sm'
-                  )
-                }
-              >
-                <Trash />
-              </button>
-              <button
-                aria-label={t('timetable.downloadSelection')}
-                disabled={!selectedTrainIds.length}
-                className={cx('mx-2 multiselect-download', { disabled: !selectedTrainIds.length })}
-                type="button"
-                onClick={() => exportTrainSchedules(selectedTrainIds)}
-              >
-                <Download />
-              </button>
-            </>
-          )}
-        </div>
-        <div data-testid="train-count">
-          {trainSchedules.length > 0
-            ? t(
-                'trainCount',
-                multiSelectOn
-                  ? {
-                      count: selectedTrainIds.length,
-                      totalCount: displayedTrainSchedules.length,
-                    }
-                  : {
-                      count: displayedTrainSchedules.length,
-                      totalCount: trainSchedules.length,
-                    }
-              )
-            : t('timetable.noTrain')}
-        </div>
-        <div className="d-flex">
-          {!isEmpty(trainSchedulesWithDetails) && (
-            <button
-              aria-label={t('timetable.toggleMultiSelection')}
-              type="button"
-              className={cx('filter-selector', 'mr-1', { on: multiSelectOn })}
-              onClick={() => setMultiSelectOn(!multiSelectOn)}
-            >
-              <BiSelectMultiple />
-            </button>
+            </div>
           )}
 
-          <button
-            data-testid="timetable-filter-button"
-            aria-label={t('timetable.toggleFilters')}
-            onClick={toggleFilterPanel}
-            type="button"
-            className={cx('filter-selector', 'btn', 'btn-sm', 'btn-only-icon', {
-              on: isFilterPanelOpen,
-            })}
-          >
-            <Filter />
-          </button>
+          {trainSchedules.length > 0 && (
+            <div>
+              <button
+                type="button"
+                className="more-details-button"
+                onClick={toggleShowTrainDetails}
+                title={t('displayTrainsWithDetails')}
+              >
+                {showTrainDetails ? t('lessDetails') : t('moreDetails')}
+              </button>
+            </div>
+          )}
         </div>
+
+        {selectedTrainIds.length > 0 && (
+          <div className="action-buttons">
+            <Button
+              size="small"
+              variant="Destructive"
+              label={t('timetable.delete')}
+              title={t('timetable.deleteSelection')}
+              onClick={() =>
+                openModal(
+                  <DeleteModal
+                    handleDelete={handleTrainsDelete}
+                    items={t('common/itemTypes:trains', { count: selectedTrainIds.length })}
+                  />,
+                  'sm'
+                )
+              }
+            />
+            <Button
+              size="small"
+              label={t('timetable.export')}
+              title={t('timetable.exportSelection')}
+              type="button"
+              onClick={() => exportTrainSchedules(selectedTrainIds)}
+            />
+          </div>
+        )}
       </div>
-      {isFilterPanelOpen && (
-        <FilterPanel
-          filter={filter}
-          setFilter={setFilter}
-          rollingStockFilter={rollingStockFilter}
-          setRollingStockFilter={setRollingStockFilter}
-          validityFilter={validityFilter}
-          setValidityFilter={setValidityFilter}
-          scheduledPointsHonoredFilter={scheduledPointsHonoredFilter}
-          setScheduledPointsHonoredFilter={setScheduledPointsHonoredFilter}
-          uniqueTags={uniqueTags}
-          selectedTags={selectedTags}
-          setSelectedTags={setSelectedTags}
-        />
+      {trainSchedules.length > 0 && (
+        <div>
+          {!isFilterPanelOpen ? (
+            <div className="filter">
+              <button
+                data-testid="timetable-filter-button"
+                aria-label={t('timetable.toggleFilters')}
+                onClick={toggleFilterPanel}
+                type="button"
+                className="filter-button"
+              >
+                <Filter />
+              </button>
+            </div>
+          ) : (
+            <FilterPanel
+              toggleFilterPanel={toggleFilterPanel}
+              filter={filter}
+              setFilter={setFilter}
+              rollingStockFilter={rollingStockFilter}
+              setRollingStockFilter={setRollingStockFilter}
+              validityFilter={validityFilter}
+              setValidityFilter={setValidityFilter}
+              scheduledPointsHonoredFilter={scheduledPointsHonoredFilter}
+              setScheduledPointsHonoredFilter={setScheduledPointsHonoredFilter}
+              uniqueTags={uniqueTags}
+              selectedTags={selectedTags}
+              setSelectedTags={setSelectedTags}
+            />
+          )}
+        </div>
       )}
     </>
   );

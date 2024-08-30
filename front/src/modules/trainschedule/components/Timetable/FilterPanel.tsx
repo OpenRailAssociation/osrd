@@ -1,3 +1,4 @@
+import { X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -7,6 +8,7 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { ValidityFilter, ScheduledPointsHonoredFilter } from './types';
 
 type FilterPanelProps = {
+  toggleFilterPanel: () => void;
   filter: string;
   setFilter: (filter: string) => void;
   rollingStockFilter: string;
@@ -23,6 +25,7 @@ type FilterPanelProps = {
 };
 
 const FilterPanel = ({
+  toggleFilterPanel,
   filter,
   setFilter,
   rollingStockFilter,
@@ -63,6 +66,9 @@ const FilterPanel = ({
 
   return (
     <div className="filter-panel">
+      <button aria-label={t('timetable.closeFilter')} onClick={toggleFilterPanel} type="button">
+        <X iconColor="#B6B2AF" className="close-filter" />
+      </button>
       <div className="row">
         <div className="col-5">
           <InputSNCF
