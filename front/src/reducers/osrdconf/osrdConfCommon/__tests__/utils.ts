@@ -1,6 +1,6 @@
 import { compact, last, omit } from 'lodash';
 
-import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
+import { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcmV2/types';
 import type { Distribution, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
@@ -342,9 +342,16 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
       pathSteps,
     });
 
-    store.dispatch(slice.actions.updateViaStopTime({ via, duration: 'PT60S' }));
+    store.dispatch(
+      slice.actions.updateViaStopTime({
+        via,
+        duration: 'PT60S',
+        stopType: StdcmStopTypes.SERVICE_STOP,
+      })
+    );
     const state = store.getState()[slice.name];
     expect(state.pathSteps[1]?.stopFor).toEqual('PT60S');
+    expect(state.pathSteps[1]?.stopType).toEqual('serviceStop');
   });
 
   it('should handle updateFeatureInfoClick', () => {

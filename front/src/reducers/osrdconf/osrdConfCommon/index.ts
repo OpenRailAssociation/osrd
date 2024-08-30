@@ -3,7 +3,7 @@ import type { Draft } from 'immer';
 import { omit } from 'lodash';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
+import { ArrivalTimeTypes, type StdcmStopTypes } from 'applications/stdcmV2/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import {
@@ -78,7 +78,10 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['toggleOriginLinkedBounds']: CaseReducer<S>;
   ['updateOriginDate']: CaseReducer<S, PayloadAction<S['originDate']>>;
   ['updateOriginUpperBoundDate']: CaseReducer<S, PayloadAction<S['originUpperBoundDate']>>;
-  ['updateViaStopTime']: CaseReducer<S, PayloadAction<{ via: PathStep; duration: string }>>;
+  ['updateViaStopTime']: CaseReducer<
+    S,
+    PayloadAction<{ via: PathStep; duration: string; stopType?: StdcmStopTypes }>
+  >;
   ['updateGridMarginBefore']: CaseReducer<S, PayloadAction<S['gridMarginBefore']>>;
   ['updateGridMarginAfter']: CaseReducer<S, PayloadAction<S['gridMarginAfter']>>;
   ['updateFeatureInfoClick']: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
@@ -217,13 +220,16 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     // TODO: Change the type of duration to number. It is preferable to keep this value in seconds in the store
     //* to avoid multiple conversions between seconds and ISO8601 format across the front.
-    updateViaStopTime(state: Draft<S>, action: PayloadAction<{ via: PathStep; duration: string }>) {
+    updateViaStopTime(
+      state: Draft<S>,
+      action: PayloadAction<{ via: PathStep; duration: string; stopType?: StdcmStopTypes }>
+    ) {
       const {
-        payload: { via, duration },
+        payload: { via, duration, stopType },
       } = action;
       state.pathSteps = state.pathSteps.map((pathStep) => {
         if (pathStep && pathStep.id === via.id) {
-          return { ...pathStep, stopFor: duration };
+          return { ...pathStep, stopFor: duration, stopType };
         }
         return pathStep;
       });

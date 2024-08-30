@@ -82,8 +82,15 @@
     "origin": "Origin",
     "preciseTime": "precise time",
     "stopFor": "Minimum stop time",
+    "stopType": {
+      "driverSwitch": "driver switch",
+      "passageTime": "passage time",
+      "serviceStop": "service stop"
+    },
     "time": "Time",
     "tolerance": "Tolerance",
-    "vias": "Intermediate OP"
+    "type": "Type",
+    "vias": "Intermediate OP",
+    "warningMinStopTime": "The driver switch stop time is usually at least 3 minutes."
   }
 }

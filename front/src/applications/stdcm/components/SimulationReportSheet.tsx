@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import { formatDateToString, formatDay } from 'utils/date';
+import { capitalizeFirstLetter } from 'utils/strings';
 
 import styles from './SimulationReportStyleSheet';
 import type { SimulationReportSheetProps } from '../types';
@@ -16,7 +17,7 @@ const SimulationReportSheet = ({
   mapCanvas,
   operationalPointsList,
 }: SimulationReportSheetProps) => {
-  const { t } = useTranslation('stdcm-simulation-report-sheet');
+  const { t } = useTranslation(['stdcm-simulation-report-sheet', 'stdcm']);
   let renderedIndex = 0;
 
   const { rollingStock, speedLimitByTag, departure_time: departureTime, creationDate } = stdcmData;
@@ -134,14 +135,18 @@ const SimulationReportSheet = ({
                   <View style={styles.convoyAndRoute.stopTableStartWidth}>
                     <TD>{t('startStop')}</TD>
                   </View>
-                  <View style={styles.convoyAndRoute.stopTableMotifWidth}>
-                    <TD>{t('motif')}</TD>
+                  <View style={styles.convoyAndRoute.stopTableStopTypeWidth}>
+                    <TD>{t('stopType')}</TD>
                   </View>
                 </TH>
                 {operationalPointsList.map((step, index) => {
                   const isFirstStep = index === 0;
                   const isLastStep = index === operationalPointsList.length - 1;
-                  const shouldRenderRow = isFirstStep || step.duration > 0 || isLastStep;
+                  const shouldRenderRow =
+                    isFirstStep ||
+                    step.duration > 0 ||
+                    stdcmData.simulationPathSteps[renderedIndex].stopType === 'passageTime' ||
+                    isLastStep;
                   if (shouldRenderRow) {
                     renderedIndex += 1;
                     return (
@@ -169,9 +174,15 @@ const SimulationReportSheet = ({
                             {isFirstStep ? step.stopEndTime : ''}
                           </TD>
                         </View>
-                        <View style={styles.convoyAndRoute.stopTableMotifWidth}>
+                        <View style={styles.convoyAndRoute.stopTableStopTypeWidth}>
                           <TD style={styles.convoyAndRoute.stopTableItalicColumn}>
-                            {isFirstStep || isLastStep ? t('serviceStop') : ''}
+                            {isFirstStep || isLastStep
+                              ? t('serviceStop')
+                              : capitalizeFirstLetter(
+                                  t(
+                                    `stdcm:trainPath.stopType.${stdcmData.simulationPathSteps[renderedIndex - 1].stopType}`
+                                  )
+                                )}
                           </TD>
                         </View>
                       </TR>

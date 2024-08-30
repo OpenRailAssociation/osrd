@@ -82,8 +82,15 @@
     "origin": "Origine",
     "preciseTime": "horaire précis",
     "stopFor": "Temps d'arrêt minimum",
+    "stopType": {
+      "driverSwitch": "relève conducteur",
+      "passageTime": "passage",
+      "serviceStop": "arrêt de service"
+    },
     "time": "Heure",
     "tolerance": "Tolérance",
-    "vias": "PR intermédiaire"
+    "type": "Type",
+    "vias": "PR intermédiaire",
+    "warningMinStopTime": "Le temps d'arrêt d'une relève conducteur est d'au moins 3 minutes."
   }
 }

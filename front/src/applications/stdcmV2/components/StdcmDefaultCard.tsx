@@ -16,8 +16,8 @@ const StdcmDefaultCard = ({
 }: StdcmCardProps) => (
   <StdcmCard hasTip={hasTip} disabled={disabled}>
     <button type="button" onClick={onClick}>
-      <span className="stdcm-v2-default-card-icon">{Icon}</span>
-      <span className="stdcm-v2-default-card-button pl-3">{text}</span>
+      <span className="stdcm-v2-default-card-icon ml-n1">{Icon}</span>
+      <span className="stdcm-v2-default-card-button">{text}</span>
     </button>
   </StdcmCard>
 );
