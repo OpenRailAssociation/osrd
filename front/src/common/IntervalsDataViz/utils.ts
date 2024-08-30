@@ -45,7 +45,6 @@ export function shortNumber(value: unknown): string {
   const exponent = size % 3 === 0 ? size - 3 : size - (size % 3);
   let shortNumberValue = `${Math.round(10 * (num / 10 ** exponent)) / 10}`;
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const suffix in suffixes) {
     if (exponent < suffixes[suffix]) {
       shortNumberValue += suffix;

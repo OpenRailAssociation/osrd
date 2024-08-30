@@ -40,7 +40,7 @@
     "no-shadow": "off",
     "@typescript-eslint/consistent-type-imports": ["error", { "fixStyle": "inline-type-imports" }],
     "@typescript-eslint/no-shadow": "error",
-    "@typescript-eslint/no-use-before-define": ["error"],
+    "@typescript-eslint/no-use-before-define": "error",
 
     "@typescript-eslint/ban-types": [
       "error",
@@ -69,10 +69,13 @@
     "import/no-unresolved": [2, { "commonjs": true, "amd": true }],
     "jsx-a11y/click-events-have-key-events": "off",
     "linebreak-style": ["error", "unix"],
+    "no-await-in-loop": "off",
     "no-console": ["error", { "allow": ["info", "debug", "warn", "error"] }],
+    "no-continue": "off",
     "no-named-as-default": "off",
     "no-param-reassign": "off",
     "no-use-before-define": "off",
+    "no-restricted-syntax": "off",
     "prettier/prettier": ["warn"],
     "react/forbid-prop-types": "off",
     "react/jsx-filename-extension": "off",
@@ -82,10 +85,13 @@
     "react/static-property-placement": 0,
     // disable vitest/prefer-to-be because it does not authorize toEqual for the floats
     "vitest/prefer-to-be": "off",
-    "no-restricted-imports": ["error", {
-      "name": "common/api/generatedEditoastApi",
-      "message": "Please use common/api/osrdEditoastApi instead"
-    }]
+    "no-restricted-imports": [
+      "error",
+      {
+        "name": "common/api/generatedEditoastApi",
+        "message": "Please use common/api/osrdEditoastApi instead"
+      }
+    ]
   },
   "settings": {
     "import/resolver": {

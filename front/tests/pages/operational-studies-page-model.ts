@@ -263,7 +263,6 @@ class OperationalStudiesPage {
     expect(actualMessage).toContain(expectedMessage);
   }
 
-  /* eslint-disable no-restricted-syntax, no-await-in-loop */
   // Clicks the add buttons for the specified via names.
   async clickOnViaAddButtons(...viaNames: string[]) {
     for (const viaName of viaNames) {
@@ -278,7 +277,6 @@ class OperationalStudiesPage {
       await expect(this.getMapPathfindingMarker(markerName)).toBeVisible();
     }
   }
-  /* eslint-enable no-restricted-syntax, no-await-in-loop */
 
   // Validates the waypoint suggestions by checking the name, CH, UIC, and distance.
   static async validateWaypointSuggestions(
@@ -336,7 +334,6 @@ class OperationalStudiesPage {
       const waypointSuggestion = this.waypointSuggestions.nth(waypointSuggestionCount);
       const expectedValue = expectedValues[waypointSuggestionCount];
 
-      // eslint-disable-next-line no-await-in-loop
       await OperationalStudiesPage.validateWaypointSuggestions(
         waypointSuggestion,
         expectedValue.name,
@@ -357,7 +354,6 @@ class OperationalStudiesPage {
       const droppedWaypoint = this.droppedWaypoints.nth(droppedWaypointCount);
       const expectedValue = expectedValues[droppedWaypointCount];
 
-      // eslint-disable-next-line no-await-in-loop
       await OperationalStudiesPage.validateAddedWaypoint(
         droppedWaypoint,
         expectedValue.name,
