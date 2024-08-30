@@ -1,6 +1,5 @@
 package fr.sncf.osrd.railjson.parser;
 
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
@@ -130,15 +129,7 @@ public class RJSRollingStockParser {
             RJSEffortCurves.RJSEffortCurveConditions rjsCond, String fieldKey) {
         if (rjsCond == null) throw OSRDError.newMissingRollingStockFieldError(fieldKey);
         return new RollingStock.EffortCurveConditions(
-                parseComfort(rjsCond.comfort), rjsCond.electricalProfileLevel, rjsCond.powerRestrictionCode);
-    }
-
-    /** Parse rjsComfort into a RollingStock comfort */
-    public static RollingStock.Comfort parseComfort(RJSComfortType rjsComfort) {
-        if (rjsComfort == null) return null;
-        if (rjsComfort == RJSComfortType.AC) return RollingStock.Comfort.AIR_CONDITIONING;
-        if (rjsComfort == RJSComfortType.HEATING) return RollingStock.Comfort.HEATING;
-        return RollingStock.Comfort.STANDARD;
+                rjsCond.comfort, rjsCond.electricalProfileLevel, rjsCond.powerRestrictionCode);
     }
 
     /** Parse RJSModeEffortCurve into a ModeEffortCurve */

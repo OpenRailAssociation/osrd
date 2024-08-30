@@ -7,7 +7,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.railjson.schema.common.ID
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance
@@ -41,7 +41,7 @@ constructor(
     maximumRunTime: Double = 12.0 * 3600.0
 ) {
     /** Train comfort */
-    var comfort: RJSComfortType? = null
+    var comfort: Comfort? = null
 
     /** Time step used in simulations (defaults to 2) */
     @Json(name = "time_step") var timeStep = 2.0

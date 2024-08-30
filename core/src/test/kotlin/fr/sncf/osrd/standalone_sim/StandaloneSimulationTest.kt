@@ -14,9 +14,9 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.makePathProperties
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.distanceRangeMapOf
@@ -62,7 +62,7 @@ class StandaloneSimulationTest {
             true
         )
     private val curvesAndConditions =
-        rollingStock.mapTractiveEffortCurves(electrificationMap, RollingStock.Comfort.STANDARD)
+        rollingStock.mapTractiveEffortCurves(electrificationMap, Comfort.STANDARD)
     private var context =
         EnvelopeSimContext(rollingStock, envelopeSimPath, 2.0, curvesAndConditions.curves)
     private val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, doubleArrayOf(), mrsp)
@@ -79,7 +79,7 @@ class StandaloneSimulationTest {
                 routes.toIdxList(),
                 ElectricalProfileMapping(),
                 rollingStock,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 RJSAllowanceDistribution.LINEAR,
                 null,
                 distanceRangeMapOf(),
@@ -196,7 +196,7 @@ class StandaloneSimulationTest {
                 routes.toIdxList(),
                 ElectricalProfileMapping(),
                 rollingStock,
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 testCase.allowanceDistribution,
                 null,
                 distanceRangeMapOf(),

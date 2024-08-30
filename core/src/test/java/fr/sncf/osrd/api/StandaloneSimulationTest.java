@@ -19,7 +19,7 @@ import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution;
@@ -377,7 +377,7 @@ public class StandaloneSimulationTest extends ApiTest {
             trainSchedules.add(trainSchedule);
         }
         var trainSchedule = new RJSStandaloneTrainSchedule(
-                "Test", "electric_rolling_stock1", 0, null, stops, null, RJSComfortType.AC, null, null);
+                "Test", "electric_rolling_stock1", 0, null, stops, null, Comfort.AIR_CONDITIONING, null, null);
         trainSchedules.add(trainSchedule);
 
         // build the simulation request
@@ -397,7 +397,7 @@ public class StandaloneSimulationTest extends ApiTest {
 
         assertTrue(
                 result1Standard < result1Ac,
-                "AC should be slower than standard, but was " + result1Standard + " vs " + result1Ac);
+                "AIR_CONDITIONING should be slower than standard, but was " + result1Standard + " vs " + result1Ac);
 
         for (int i = 1; i < 5; i++) {
             var resultA = Iterables.getLast(simResult.baseSimulations.get(i - 1).headPositions).time;
@@ -433,7 +433,7 @@ public class StandaloneSimulationTest extends ApiTest {
                 null,
                 stops,
                 null,
-                RJSComfortType.STANDARD,
+                Comfort.STANDARD,
                 null,
                 powerRestrictionRanges));
         trains.add(new RJSStandaloneTrainSchedule("without", "electric_rolling_stock", 0, null, stops, null));
@@ -470,7 +470,7 @@ public class StandaloneSimulationTest extends ApiTest {
                 null,
                 stops,
                 null,
-                RJSComfortType.STANDARD,
+                Comfort.STANDARD,
                 null,
                 powerRestrictionRanges));
         trains.add(new RJSStandaloneTrainSchedule("without", "electric_rolling_stock", 0, null, stops, null));
@@ -503,7 +503,7 @@ public class StandaloneSimulationTest extends ApiTest {
                 new RJSAllowance[0],
                 new RJSTrainStop[] {RJSTrainStop.lastStop(0.1)},
                 null,
-                RJSComfortType.AC,
+                Comfort.AIR_CONDITIONING,
                 null,
                 null);
 
@@ -552,7 +552,7 @@ public class StandaloneSimulationTest extends ApiTest {
                 new RJSAllowance[0],
                 new RJSTrainStop[] {RJSTrainStop.lastStop(0.1)},
                 null,
-                RJSComfortType.AC,
+                Comfort.AIR_CONDITIONING,
                 null,
                 null);
 
@@ -563,7 +563,7 @@ public class StandaloneSimulationTest extends ApiTest {
                 new RJSAllowance[0],
                 new RJSTrainStop[] {RJSTrainStop.lastStop(0.1)},
                 null,
-                RJSComfortType.STANDARD,
+                Comfort.STANDARD,
                 new RJSTrainScheduleOptions(true),
                 null);
 
@@ -609,7 +609,7 @@ public class StandaloneSimulationTest extends ApiTest {
                 new RJSAllowance[0],
                 new RJSTrainStop[] {RJSTrainStop.lastStop(0.1)},
                 null,
-                RJSComfortType.AC,
+                Comfort.AIR_CONDITIONING,
                 null,
                 new RJSPowerRestrictionRange[] {new RJSPowerRestrictionRange(90.0, 5000.0, "C2")});
 

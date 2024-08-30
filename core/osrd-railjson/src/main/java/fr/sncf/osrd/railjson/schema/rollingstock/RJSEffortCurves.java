@@ -36,7 +36,7 @@ public class RJSEffortCurves {
     }
 
     public static final class RJSEffortCurveConditions {
-        public RJSComfortType comfort = null;
+        public Comfort comfort = null;
 
         @Json(name = "electrical_profile_level")
         public String electricalProfileLevel = null;

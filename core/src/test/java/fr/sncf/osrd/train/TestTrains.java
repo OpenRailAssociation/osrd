@@ -5,8 +5,8 @@ import static fr.sncf.osrd.envelope_sim.SimpleRollingStock.createEffortSpeedCurv
 import com.google.common.collect.Lists;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.CurveShape;
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.train.RollingStock.Comfort;
 import fr.sncf.osrd.utils.Helpers;
 import java.util.*;
 import org.junit.jupiter.api.Test;

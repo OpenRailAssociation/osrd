@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 
 public class RJSStandaloneTrainSchedule implements Identified {
     /** The identifier of this train */
@@ -35,7 +35,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
     public String tag;
 
     /** The type of comfort the train using */
-    public RJSComfortType comfort;
+    public Comfort comfort;
 
     /** Ranges on the path where power restrictions are to be applied */
     @Json(name = "power_restriction_ranges")
@@ -52,7 +52,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
             RJSAllowance[] allowances,
             RJSTrainStop[] stops,
             String tag,
-            RJSComfortType comfort,
+            Comfort comfort,
             RJSTrainScheduleOptions options,
             RJSPowerRestrictionRange[] powerRestrictionRanges) {
         this.id = id;
@@ -73,7 +73,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
             RJSAllowance[] allowances,
             RJSTrainStop[] stops,
             String tag) {
-        this(id, rollingStock, initialSpeed, allowances, stops, tag, RJSComfortType.STANDARD, null, null);
+        this(id, rollingStock, initialSpeed, allowances, stops, tag, Comfort.STANDARD, null, null);
     }
 
     public RJSStandaloneTrainSchedule(

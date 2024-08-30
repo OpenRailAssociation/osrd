@@ -4,6 +4,7 @@ import com.carrotsearch.hppc.DoubleArrayList;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.List;
 import java.util.Objects;
@@ -22,7 +23,7 @@ public class StandaloneTrainSchedule {
 
     public final String tag;
 
-    public final RollingStock.Comfort comfort;
+    public final Comfort comfort;
 
     public final RangeMap<Double, String> powerRestrictionMap;
 
@@ -36,7 +37,7 @@ public class StandaloneTrainSchedule {
             List<TrainStop> stops,
             List<? extends Allowance> allowances,
             String tag,
-            RollingStock.Comfort comfort,
+            Comfort comfort,
             ImmutableRangeMap<Double, String> powerRestrictionMap,
             TrainScheduleOptions options) {
         this.rollingStock = rollingStock;

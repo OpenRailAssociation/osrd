@@ -25,6 +25,7 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
@@ -51,7 +52,7 @@ fun runStandaloneSimulation(
     routes: StaticIdxList<Route>,
     electricalProfileMap: ElectricalProfileMapping?,
     rollingStock: RollingStock,
-    comfort: RollingStock.Comfort,
+    comfort: Comfort,
     constraintDistribution: RJSAllowanceDistribution,
     speedLimitTag: String?,
     powerRestrictions: DistanceRangeMap<String>,

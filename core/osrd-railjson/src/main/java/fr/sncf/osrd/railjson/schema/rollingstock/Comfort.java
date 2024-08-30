@@ -1,7 +1,7 @@
 package fr.sncf.osrd.railjson.schema.rollingstock;
 
-public enum RJSComfortType {
-    AC,
+public enum Comfort {
+    AIR_CONDITIONING,
     HEATING,
     STANDARD
 }

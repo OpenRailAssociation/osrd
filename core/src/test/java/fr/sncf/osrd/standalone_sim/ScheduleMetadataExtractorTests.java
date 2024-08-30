@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.TrackInfraKt;
 import fr.sncf.osrd.sim_infra.impl.ChunkPath;
@@ -136,7 +137,7 @@ public class ScheduleMetadataExtractorTests {
                 List.of(new TrainStop[] {new TrainStop(500., 1000, true), new TrainStop(501., 10, true)}),
                 List.of(),
                 "test",
-                RollingStock.Comfort.STANDARD,
+                Comfort.STANDARD,
                 null,
                 null);
         var res = ScheduleMetadataExtractor.run(envelope, pathProps, chunkPath, schedule, infra);
@@ -170,15 +171,7 @@ public class ScheduleMetadataExtractorTests {
             RollingStock testRollingStock,
             Envelope envelope) {
         var schedule = new StandaloneTrainSchedule(
-                testRollingStock,
-                0,
-                new ArrayList<>(),
-                List.of(),
-                List.of(),
-                "test",
-                RollingStock.Comfort.STANDARD,
-                null,
-                null);
+                testRollingStock, 0, new ArrayList<>(), List.of(), List.of(), "test", Comfort.STANDARD, null, null);
         ScheduleMetadataExtractor.run(envelope, path, chunkPath, schedule, fullInfra);
     }
 }

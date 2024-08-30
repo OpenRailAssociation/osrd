@@ -8,6 +8,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
@@ -45,7 +46,7 @@ val logger: Logger = LoggerFactory.getLogger("STDCM")
 fun findPath(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
-    comfort: RollingStock.Comfort?,
+    comfort: Comfort?,
     startTime: Double,
     steps: List<STDCMStep>,
     blockAvailability: BlockAvailabilityInterface,
@@ -76,7 +77,7 @@ fun findPath(
 class STDCMPathfinding(
     private val fullInfra: FullInfra,
     private val rollingStock: RollingStock,
-    private val comfort: RollingStock.Comfort?,
+    private val comfort: Comfort?,
     private val startTime: Double,
     private val steps: List<STDCMStep>,
     private val blockAvailability: BlockAvailabilityInterface,

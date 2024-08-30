@@ -11,6 +11,7 @@ import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser
+import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
@@ -22,7 +23,6 @@ import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.train.RollingStock
-import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.train.TrainStop
 import org.takes.Request
@@ -52,7 +52,7 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
             // TODO : change with get infra when the front is ready
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
             val rollingStock = RJSRollingStockParser.parse(request.rollingStock)
-            val comfort = RJSRollingStockParser.parseComfort(request.comfort)
+            val comfort = request.comfort
             val steps = parseSteps(infra, request.steps)
             val tag = request.speedLimitComposition
             var standardAllowance: AllowanceValue? = null
