@@ -77,14 +77,9 @@ const useLazyProjectTrains = ({
         },
       }).unwrap();
 
-      setProjectedTrainsById((prevTrains) => {
-        const newProjectedTrains = upsertNewProjectedTrains(
-          prevTrains,
-          rawProjectedTrains,
-          trainSchedulesById
-        );
-        return newProjectedTrains;
-      });
+      setProjectedTrainsById((prevTrains) =>
+        upsertNewProjectedTrains(prevTrains, rawProjectedTrains, trainSchedulesById)
+      );
     };
 
     const projectTrains = async (
