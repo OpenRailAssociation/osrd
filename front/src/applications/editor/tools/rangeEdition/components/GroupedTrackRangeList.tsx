@@ -27,7 +27,6 @@ const GroupedTrackRangeList = ({ displayedRanges }: GroupedTrackRangeListProps) 
   >;
 
   const rangesByRoute = groupBy(displayedRanges, (currentRange) => {
-    // eslint-disable-next-line no-restricted-syntax
     for (const [routeKey, { trackRanges }] of Object.entries(routeElements)) {
       if (
         partialIsEqual(['track', 'begin', 'end'], currentRange, routeExtra[routeKey]) ||

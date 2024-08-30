@@ -37,7 +37,6 @@ export const updateRestrictions = (
 ): PowerRestrictionV2[] =>
   compact(
     restrictions.map((restriction) => {
-      // eslint-disable-next-line no-restricted-syntax
       for (const restrictionToRemove of restrictionsToRemove) {
         if (
           restriction.from === restrictionToRemove.from &&

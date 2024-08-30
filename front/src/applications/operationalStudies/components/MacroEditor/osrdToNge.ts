@@ -104,7 +104,6 @@ const buildOpQuery = (
   const pathItems = trainSchedules.map((schedule) => schedule.path).flat();
   const pathItemQueries = [];
   const pathItemSet = new Set<string>();
-  // eslint-disable-next-line no-restricted-syntax
   for (const item of pathItems) {
     let query: SearchQuery;
     if ('uic' in item) {
@@ -120,14 +119,12 @@ const buildOpQuery = (
     } else if ('operational_point' in item) {
       query = ['=', ['obj_id'], item.operational_point];
     } else {
-      // eslint-disable-next-line no-continue
       continue; // track offset, handled by creating an empty node
     }
 
     // Avoid including the same query twice in the search payload
     const key = JSON.stringify(query);
     if (pathItemSet.has(key)) {
-      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -163,7 +160,6 @@ const executeSearch = async (
         searchPayload,
       })
     );
-    // eslint-disable-next-line no-await-in-loop
     const results = (await searchPromise.unwrap()) as SearchResultItemOperationalPoint[];
     searchResults.push(...results);
     done = results.length < pageSize;
@@ -277,7 +273,6 @@ const importTimetable = async (
     return node;
   };
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const op of searchResults) {
     createNode({
       id: op.obj_id,

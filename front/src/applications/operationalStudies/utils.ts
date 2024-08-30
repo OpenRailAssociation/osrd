@@ -280,7 +280,6 @@ export const isTooFast = (
 
   const pathItemMap = getPathItemByIndexDict(trainSchedule);
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const pathItemId of toCheckPathItemIds) {
     const pathItemIndex = pathItemMap[pathItemId];
     const pathItemTimeFinal = trainSummary.path_item_times_final[pathItemIndex];
