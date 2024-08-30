@@ -1,6 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
+import type {
+  Infra,
+  Project,
+  ScenarioV2,
+  Study,
+  TimetableResult,
+} from 'common/api/osrdEditoastApi';
 
 import { getInfra, getProject, getStudy, postApiRequest } from './api-setup';
 import scenarioData from '../assets/operationStudies/scenario.json';
@@ -10,7 +16,7 @@ interface SetupResult {
   smallInfra: Infra;
   project: Project;
   study: Study;
-  scenario: Scenario;
+  scenario: ScenarioV2;
   timetableResult: TimetableResult;
 }
 

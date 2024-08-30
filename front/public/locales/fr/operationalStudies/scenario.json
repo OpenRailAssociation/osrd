@@ -70,7 +70,7 @@
   "toggleTimetable": "Basculer l'affichage de la grille horaires",
   "trainCount_one": "1/{{ totalCount }} trains",
   "trainCount_other": "{{ count }}/{{ totalCount }} trains",
-  "trainCount_zero": "0/{{ totalCount }} train",
+  "trainCount_zero": "0/{{ totalCount }} trains",
   "conflictsCount_one": "1 conflit",
   "conflictsCount_other": "{{count}} conflits",
   "conflictsCount_zero": "Aucun conflit",

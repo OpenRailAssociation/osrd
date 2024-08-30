@@ -1,6 +1,6 @@
 import type { APIResponse, APIRequestContext } from '@playwright/test';
 
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 
 import { getApiContext, postApiRequest } from './api-setup';
 import { handleApiResponse } from './index';
@@ -9,7 +9,7 @@ import { handleApiResponse } from './index';
 export async function sendTrainSchedules(
   timetableId: number,
   body: object
-): Promise<TrainSchedule[]> {
+): Promise<TrainScheduleResult[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const trainSchedulesResponse: APIResponse = await apiContext.post(
     `/api/v2/timetable/${timetableId}/train_schedule/`,
@@ -20,16 +20,19 @@ export async function sendTrainSchedules(
       },
     }
   );
-  await handleApiResponse(trainSchedulesResponse, 'Failed to send train schedule');
+  handleApiResponse(trainSchedulesResponse, 'Failed to send train schedule');
   return trainSchedulesResponse.json();
 }
 
 // Function to extract train IDs from the train schedules
-export function getTrainIds(trainSchedules: TrainSchedule[]) {
-  return trainSchedules.map((item: TrainSchedule) => item.id);
+export function getTrainIds(trainSchedules: TrainScheduleResult[]) {
+  return trainSchedules.map((item: TrainScheduleResult) => item.id);
 }
 // Function to post simulation using extracted train IDs
-export async function postSimulation(response: TrainSchedule[], infraId: number): Promise<void> {
+export async function postSimulation(
+  response: TrainScheduleResult[],
+  infraId: number
+): Promise<void> {
   const trainIds = getTrainIds(response);
   if (trainIds.length > 0) {
     await postApiRequest(

@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { type APIResponse, type Page, expect } from '@playwright/test';
+import { type APIResponse, type Page, expect, request } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Project, ScenarioV2, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
@@ -141,10 +141,7 @@ export async function extractNumberFromString(input: string): Promise<number> {
 export const readJsonFile = (path: string) => JSON.parse(fs.readFileSync(path, 'utf8'));
 
 // Helper function to handle API error responses
-export async function handleApiResponse(
-  response: APIResponse,
-  errorMessage: string
-): Promise<void> {
+export function handleApiResponse(response: APIResponse, errorMessage: string) {
   if (!response.ok()) {
     throw new Error(`${errorMessage}: ${response.status()} ${response.statusText()}`);
   }

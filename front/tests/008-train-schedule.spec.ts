@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 
-import type { Scenario, Study, Project } from 'common/api/osrdEditoastApi';
+import type { ScenarioV2, Study, Project } from 'common/api/osrdEditoastApi';
 
 import HomePage from './pages/home-page-model';
 import OperationalStudiesTimetablePage from './pages/op-timetable-page-model';
@@ -12,7 +12,7 @@ import { postSimulation, sendTrainSchedules } from './utils/trainSchedule';
 let selectedLanguage: string;
 let project: Project;
 let study: Study;
-let scenario: Scenario;
+let scenario: ScenarioV2;
 
 const trainSchedulesJson = readJsonFile('./tests/assets/trainSchedule/train_schedules.json');
 
@@ -47,10 +47,10 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
     await scenarioPage.checkInfraLoaded();
 
     // Verify the train count and various elements on the timetable page
-    await opTimetablePage.verifyTrainCount(20, selectedLanguage);
+    await opTimetablePage.verifyTrainCount(20, 20);
     await opTimetablePage.verifyInvalidTrainsMessageVisibility(selectedLanguage);
     await opTimetablePage.checkSelectedTimetableTrain();
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Valid', 16);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Valid', 16, 20);
     await opTimetablePage.verifyEachTrainSimulation();
   });
 
@@ -63,15 +63,15 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
     await scenarioPage.checkInfraLoaded();
 
     // Verify the train count and apply various filters
-    await opTimetablePage.verifyTrainCount(20, selectedLanguage);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Invalid', 4);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'All', 20);
-    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'Honored', 12);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Valid', 12);
-    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'Not honored', 4);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Invalid', 0);
-    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'All', 4);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'All', 20);
+    await opTimetablePage.verifyTrainCount(20, 20);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Invalid', 4, 20);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'All', 20, 20);
+    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'Honored', 12, 20);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Valid', 12, 20);
+    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'Not honored', 4, 20);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Invalid', 0, 20);
+    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'All', 4, 20);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'All', 20, 20);
 
     // Define the composition filters and verify each filter
     const compositionFilters = [
@@ -81,13 +81,15 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
       { code: 'Without code', count: 9 },
     ];
 
-    await compositionFilters.reduce(async (promise, filter) => {
-      await promise;
-      return opTimetablePage.clickCodeCompoTrainFilterButton(
+    /* eslint-disable no-restricted-syntax, no-await-in-loop */
+    for (const filter of compositionFilters) {
+      await opTimetablePage.clickCodeCompoTrainFilterButton(
         selectedLanguage,
         filter.code,
-        filter.count
+        filter.count,
+        20
       );
-    }, Promise.resolve());
+    }
+    /* eslint-enable no-restricted-syntax, no-await-in-loop */
   });
 });
