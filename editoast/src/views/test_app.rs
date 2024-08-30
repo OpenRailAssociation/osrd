@@ -5,7 +5,7 @@
 use std::sync::Arc;
 
 use axum::Router;
-use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
+use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use chashmap::CHashMap;
 use editoast_models::db_connection_pool::create_connection_pool;
 use editoast_models::DbConnectionPoolV2;
@@ -148,7 +148,6 @@ impl TestAppBuilder {
                 app_state.clone(),
                 authorizer_middleware,
             ))
-            .layer(OtelInResponseLayer)
             .layer(OtelAxumLayer::default())
             .layer(TraceLayer::new_for_http())
             .with_state(app_state);

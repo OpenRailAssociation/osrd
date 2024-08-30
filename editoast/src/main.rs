@@ -17,7 +17,7 @@ use crate::modelsv2::Infra;
 use crate::views::OpenApiRoot;
 use axum::extract::FromRef;
 use axum::{Router, ServiceExt};
-use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
+use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
@@ -431,7 +431,6 @@ async fn runserver(
             app_state.clone(),
             authorizer_middleware,
         ))
-        .layer(OtelInResponseLayer)
         .layer(OtelAxumLayer::default())
         .layer(request_payload_limit)
         .layer(cors)
