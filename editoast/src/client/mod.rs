@@ -1,5 +1,6 @@
 mod postgres_config;
 mod redis_config;
+pub mod stdcm_search_env_commands;
 mod telemetry_config;
 
 use std::env;
@@ -13,6 +14,7 @@ use derivative::Derivative;
 use editoast_derive::EditoastError;
 pub use postgres_config::PostgresConfig;
 pub use redis_config::RedisConfig;
+use stdcm_search_env_commands::StdcmSearchEnvCommands;
 pub use telemetry_config::TelemetryConfig;
 pub use telemetry_config::TelemetryKind;
 use thiserror::Error;
@@ -63,6 +65,12 @@ pub enum Commands {
     Infra(InfraCommands),
     #[command(subcommand, about, long_about = "Timetables related commands")]
     Timetables(TimetablesCommands),
+    #[command(
+        subcommand,
+        about,
+        long_about = "STDCM search environment management commands"
+    )]
+    STDCMSearchEnv(StdcmSearchEnvCommands),
 }
 
 #[derive(Subcommand, Debug)]

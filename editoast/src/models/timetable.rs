@@ -1,3 +1,5 @@
+use chrono::DateTime;
+use chrono::Utc;
 use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
@@ -27,6 +29,31 @@ impl Timetable {
             .get_result::<Timetable>(conn.write().await.deref_mut())
             .await
             .map(Into::into)
+            .map_err(Into::into)
+    }
+
+    pub async fn trains_count(timetable_id: i64, conn: &mut DbConnection) -> Result<i64> {
+        use editoast_models::tables::train_schedule::dsl;
+
+        dsl::train_schedule
+            .filter(dsl::timetable_id.eq(timetable_id))
+            .count()
+            .get_result(conn.write().await.deref_mut())
+            .await
+            .map_err(Into::into)
+    }
+
+    pub async fn gather_start_times(
+        timetable_id: i64,
+        conn: &mut DbConnection,
+    ) -> Result<Vec<DateTime<Utc>>> {
+        use editoast_models::tables::train_schedule::dsl;
+
+        dsl::train_schedule
+            .select(dsl::start_time)
+            .filter(dsl::timetable_id.eq(timetable_id))
+            .load(conn.write().await.deref_mut())
+            .await
             .map_err(Into::into)
     }
 }
