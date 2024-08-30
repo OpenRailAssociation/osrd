@@ -26,7 +26,7 @@ import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import OSM from 'common/Map/Layers/OSM';
-import PlatformsLayer from 'common/Map/Layers/Platforms';
+import { Platforms as PlatformsLayer } from 'common/Map/Layers/Platforms';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Terrain from 'common/Map/Layers/Terrain';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
@@ -322,10 +322,12 @@ const MapUnplugged = ({
             infraID={infraID}
           />
 
-          <PlatformsLayer
-            colors={colors[mapStyle]}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
-          />
+          {editorState.editorLayers.has('platforms') && (
+            <PlatformsLayer
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
+            />
+          )}
 
           {editorState.editorLayers.has('neutral_sections') && (
             <NeutralSections
