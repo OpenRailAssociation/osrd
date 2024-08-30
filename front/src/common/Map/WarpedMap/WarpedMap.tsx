@@ -1,4 +1,4 @@
-import React, { type FC, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { featureCollection } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
@@ -25,11 +25,7 @@ import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import type { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 
-/**
- * This component handles displaying warped data. The data must be warped before being given to this component.
- * Check `SimulationWarpedMap` to see an example use case.
- */
-const WarpedMap: FC<{
+type WarpedMapProps = {
   bbox: BBox2d;
   osrdLayers: Set<LayerType>;
   boundingBox?: LngLatBoundsLike;
@@ -40,7 +36,13 @@ const WarpedMap: FC<{
   itinerary?: Feature<LineString>;
   // TODO: fix warped map - probably remove this from props
   allowancesSettings?: AllowancesSettings;
-}> = ({
+};
+
+/**
+ * This component handles displaying warped data. The data must be warped before being given to this component.
+ * Check `SimulationWarpedMap` to see an example use case.
+ */
+const WarpedMap = ({
   bbox,
   osrdLayers,
   osrdData,
@@ -49,7 +51,7 @@ const WarpedMap: FC<{
   itinerary,
   boundingBox,
   allowancesSettings,
-}) => {
+}: WarpedMapProps) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const prefix = 'warped/';

@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useContext, useEffect, useMemo } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo } from 'react';
 
 import chroma from 'chroma-js';
 import { isNil } from 'lodash';
@@ -30,7 +30,7 @@ import { Endpoints } from './EndPoints';
 import { RouteMetadata } from './RouteMetadata';
 import { SearchRoute } from './SearchRoute';
 
-const RouteEditionPanel: FC = () => {
+const RouteEditionPanel = () => {
   const { t } = useTranslation();
   const infraID = useInfraID();
   const dispatch = useAppDispatch();

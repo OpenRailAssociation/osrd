@@ -1,6 +1,6 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
-const DotLoader: FC<unknown> = () => (
+const DotLoader = () => (
   <div className="dots-loader">
     <div className="dots-loader--dot" />
     <div className="dots-loader--dot" />

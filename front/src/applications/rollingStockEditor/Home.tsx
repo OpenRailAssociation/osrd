@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -8,7 +8,7 @@ import { getLogo } from 'utils/logo';
 
 import RollingStockEditor from './views/RollingStockEditor';
 
-const HomeRollingStockEditor: FC = () => {
+const HomeRollingStockEditor = () => {
   const { t } = useTranslation(['home/home', 'referenceMap']);
 
   return (

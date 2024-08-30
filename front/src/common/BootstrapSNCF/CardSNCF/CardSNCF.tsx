@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
@@ -10,7 +10,7 @@ interface CardProps {
   disabledLink: boolean;
   openInNewTab?: boolean;
 }
-const Card: FC<CardProps> = ({ link, img, title, disabledLink = false, openInNewTab = false }) => (
+const Card = ({ link, img, title, disabledLink = false, openInNewTab = false }: CardProps) => (
   <Link
     to={link}
     {...(openInNewTab

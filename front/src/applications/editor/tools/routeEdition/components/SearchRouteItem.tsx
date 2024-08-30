@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -13,14 +13,14 @@ interface SearchRouteItemProps {
   mode: 'normal' | 'selection';
   onSelect: (index: number) => void;
 }
-export const SearchRouteItem: FC<SearchRouteItemProps> = ({
+export const SearchRouteItem = ({
   index,
   data,
   color,
   selected,
   mode,
   onSelect,
-}) => {
+}: SearchRouteItemProps) => {
   const { t } = useTranslation();
 
   return (

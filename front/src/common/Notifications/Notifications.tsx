@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -9,7 +9,7 @@ import type { Notification } from 'types';
 
 const TIMEOUT_MS = 5000;
 
-const NotificationWrapper: FC<Notification> = (notif) => {
+const NotificationWrapper = (notif: Notification) => {
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
   const dispatch = useAppDispatch();
 
@@ -46,7 +46,7 @@ const NotificationWrapper: FC<Notification> = (notif) => {
 interface Props {
   notifications: Array<Notification>;
 }
-const Notifications: FC<Props> = (props) => {
+const Notifications = (props: Props) => {
   const { notifications } = props;
 
   return (

@@ -8,15 +8,13 @@ import InfraErrorDescription from './InfraErrorDescription';
 import InfraErrorIcon from './InfraErrorIcon';
 import InfraErrorTypeLabel from './InfraErrorTypeLabel';
 
+type InfraErrorBoxProps = PropsWithChildren<{ error: InfraError; index?: number }>;
+
 /**
  * A component that display an infra error.
  * If index is provided, we display it with `#` on the left
  */
-export const InfraErrorBox: React.FC<PropsWithChildren<{ error: InfraError; index?: number }>> = ({
-  error,
-  index,
-  children,
-}) => (
+export const InfraErrorBox = ({ error, index, children }: InfraErrorBoxProps) => (
   <div className="management-item-content">
     <div className="management-item-symbol">
       <InfraErrorIcon error={error} />
@@ -34,7 +32,7 @@ export const InfraErrorBox: React.FC<PropsWithChildren<{ error: InfraError; inde
   </div>
 );
 
-export const InfraErrorLine: React.FC<{ error: InfraError }> = ({ error }) => (
+export const InfraErrorLine = ({ error }: { error: InfraError }) => (
   <div>
     <span className={cx('font-weight-bold', error.is_warning ? 'text-warning' : 'text-danger')}>
       <InfraErrorTypeLabel error={error} />

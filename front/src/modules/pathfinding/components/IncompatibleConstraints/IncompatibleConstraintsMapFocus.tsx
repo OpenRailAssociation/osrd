@@ -1,4 +1,4 @@
-import React, { useCallback, type FC, type HTMLAttributes } from 'react';
+import React, { useCallback, type HTMLAttributes } from 'react';
 
 import { Location } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
@@ -10,7 +10,7 @@ interface IncompatibleConstraintsMapFocusProps extends HTMLAttributes<unknown> {
   geojson?: FeatureCollection<LineString, unknown>;
 }
 
-const IncompatibleConstraintsMapFocus: FC<IncompatibleConstraintsMapFocusProps> = (props) => {
+const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusProps) => {
   const map = useMap();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { geojson, ...attrs } = props;

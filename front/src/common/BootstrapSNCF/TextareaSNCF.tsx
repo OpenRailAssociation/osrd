@@ -1,8 +1,8 @@
-import React, { type FC, type InputHTMLAttributes, type ReactNode } from 'react';
+import React, { type InputHTMLAttributes, type ReactNode } from 'react';
 
 import cx from 'classnames';
 
-const TextareaSNCF: FC<{
+type TextareaSNCFProps = {
   // Basic input props
   id: string;
   label?: ReactNode;
@@ -18,7 +18,9 @@ const TextareaSNCF: FC<{
   focus?: boolean;
   selectAllOnFocus?: boolean;
   rows?: number;
-}> = (props) => {
+};
+
+const TextareaSNCF = (props: TextareaSNCFProps) => {
   const {
     id,
     // Basic input props

@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import type { FeatureCollection, LineString } from 'geojson';
 import type { FilterSpecification } from 'maplibre-gl';
@@ -19,11 +19,11 @@ interface IncompatibleConstraintsLayerProps {
   hovered: Set<string>;
 }
 
-const IncompatibleConstraintsLayer: FC<IncompatibleConstraintsLayerProps> = ({
+const IncompatibleConstraintsLayer = ({
   geojson,
   hovered,
   selected,
-}) => (
+}: IncompatibleConstraintsLayerProps) => (
   <Source type="geojson" data={geojson}>
     <Layer
       id="pathfinding-incompatible-constraints"

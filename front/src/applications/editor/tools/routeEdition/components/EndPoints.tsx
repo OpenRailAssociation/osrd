@@ -1,4 +1,4 @@
-import React, { type FC, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { BsArrowBarRight } from 'react-icons/bs';
@@ -14,11 +14,17 @@ import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
 
 import WayPointInput from './WayPointInput';
 
-export const Endpoints: FC<{
+type EndpointsProps = {
   entity: RouteEditionState['entity'];
   onExtremityChange: (waypoint: WayPointEntity | null, endPoint: EndPoint) => void;
   onExtremitiesSiwtch: () => void;
-}> = ({ entity, onExtremityChange, onExtremitiesSiwtch: onExtremitiesSwitch }) => {
+};
+
+export const Endpoints = ({
+  entity,
+  onExtremityChange,
+  onExtremitiesSiwtch: onExtremitiesSwitch,
+}: EndpointsProps) => {
   const { t } = useTranslation();
 
   const entryPoint = useMemo(

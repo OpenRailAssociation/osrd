@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 
 import { Download } from '@osrd-project/ui-icons';
 import { isNil } from 'lodash';
@@ -11,7 +11,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 interface UploadFileModalProps {
   handleSubmit: (file: File) => void;
 }
-const UploadFileModal: FC<UploadFileModalProps> = ({ handleSubmit }) => {
+const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
   const { t } = useTranslation(['translation']);
   const { closeModal } = useContext(ModalContext);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);

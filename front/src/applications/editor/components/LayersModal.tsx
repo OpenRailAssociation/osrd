@@ -1,4 +1,4 @@
-import React, { type FC, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   groupBy,
@@ -70,12 +70,7 @@ type LayersModalProps = {
   onChange: (args: { newLayers: Set<Layer> }) => void;
 };
 
-const LayersModal: FC<LayersModalProps> = ({
-  initialLayers,
-  selection,
-  frozenLayers,
-  onChange,
-}) => {
+const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: LayersModalProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { layersSettings } = useSelector(getMap);

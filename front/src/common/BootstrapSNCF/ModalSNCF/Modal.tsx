@@ -1,4 +1,4 @@
-import React, { type FC, type PropsWithChildren, useContext, useEffect } from 'react';
+import React, { type PropsWithChildren, useContext, useEffect } from 'react';
 
 import { isArray } from 'lodash';
 
@@ -14,11 +14,11 @@ export interface ModalProps {
   withCloseButton?: boolean;
 }
 
-export const Modal: FC<PropsWithChildren<ModalProps>> = ({
+export const Modal = ({
   children,
   title,
   withCloseButton = true,
-}) => {
+}: PropsWithChildren<ModalProps>) => {
   const { closeModal } = useContext(ModalContext);
   const { register } = useKeyboardShortcuts();
   const childrenArray = isArray(children) ? children : [children];

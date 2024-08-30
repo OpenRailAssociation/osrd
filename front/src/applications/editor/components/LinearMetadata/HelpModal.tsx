@@ -1,10 +1,10 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 
-const HelpModal: FC = () => {
+const HelpModal = () => {
   const { t } = useTranslation();
 
   return (

@@ -1,4 +1,4 @@
-import React, { type FC, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import { debounce, sortBy } from 'lodash';
 import { useMap } from 'react-map-gl/maplibre';
@@ -14,13 +14,13 @@ interface IncompatibleConstraintListProps {
   onSelect: (itemId: string) => void;
 }
 
-const IncompatibleConstraintsList: FC<IncompatibleConstraintListProps> = ({
+const IncompatibleConstraintsList = ({
   data,
   hovered,
   selected,
   onHover,
   onSelect,
-}) => {
+}: IncompatibleConstraintListProps) => {
   const map = useMap();
   const items = useMemo(() => sortBy(data, ['start', 'end']), [data]);
 

@@ -1,4 +1,4 @@
-import React, { type FC, type PropsWithChildren, useContext, useState, useCallback } from 'react';
+import React, { type PropsWithChildren, useContext, useState, useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -15,7 +15,7 @@ export interface ConfirmModalProps {
   withCloseButton?: boolean;
 }
 
-export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
+export const ConfirmModal = ({
   title,
   confirmLabel,
   cancelLabel,
@@ -24,7 +24,7 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
   onCancel,
   withCloseButton = true,
   children,
-}) => {
+}: PropsWithChildren<ConfirmModalProps>) => {
   const { t } = useTranslation();
   const { closeModal } = useContext(ModalContext);
   const [disabled, setDisabled] = useState(false);

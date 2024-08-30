@@ -34,7 +34,7 @@ import HelpModal from './HelpModal';
 import { LinearMetadataTooltip } from './tooltip';
 import 'common/IntervalsDataViz/style.scss';
 
-const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
+const IntervalEditorComponent = (props: FieldProps) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { openModal, closeModal } = useModal();
   const { t } = useTranslation();
@@ -414,7 +414,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
   );
 };
 
-export const FormComponent: React.FC<FieldProps> = (props) => {
+export const FormComponent = (props: FieldProps) => {
   const { name, formContext, schema, registry } = props;
   const Fields = getDefaultRegistry().fields;
 

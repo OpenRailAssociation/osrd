@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -12,7 +12,7 @@ interface InfraErrorsModalProps {
   onErrorClick: (infraId: number, item: InfraError) => void | Promise<void>;
 }
 
-const InfraErrorsModal: FC<InfraErrorsModalProps> = ({ onErrorClick }) => {
+const InfraErrorsModal = ({ onErrorClick }: InfraErrorsModalProps) => {
   const { t } = useTranslation();
   const infraID = useInfraID();
 

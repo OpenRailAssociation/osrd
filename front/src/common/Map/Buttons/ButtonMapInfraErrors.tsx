@@ -12,7 +12,7 @@ interface ButtonMapInfraErrorsProps {
   editorState: EditorState;
 }
 
-const ButtonMapInfraErrors: React.FC<ButtonMapInfraErrorsProps> = ({ editorState }) => {
+const ButtonMapInfraErrors = ({ editorState }: ButtonMapInfraErrorsProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('translation');
   const [isActive, setIsActive] = useState(true);

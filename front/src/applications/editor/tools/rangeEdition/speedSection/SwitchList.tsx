@@ -26,13 +26,13 @@ type SwitchListProps = {
   availableSwitchesPositions: AvailableSwitchPositions;
 };
 
-const SwitchList: React.FC<SwitchListProps> = ({
+const SwitchList = ({
   selectedSwitches,
   unselectSwitch,
   setSwitchSelection,
   /** possible positions based on the routes found */
   availableSwitchesPositions,
-}) => {
+}: SwitchListProps) => {
   const infraID = useInfraID();
   const { data: switchTypes } = useSwitchTypes(infraID);
 

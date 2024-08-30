@@ -25,7 +25,7 @@ import { useAppDispatch } from 'store';
 
 import AttachedRangesItemsList from './AttachedRangesItemsList';
 
-const TrackEditionLeftPanel: React.FC = () => {
+const TrackEditionLeftPanel = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();

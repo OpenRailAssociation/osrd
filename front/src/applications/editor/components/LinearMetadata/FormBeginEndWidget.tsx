@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { WidgetProps } from '@rjsf/utils';
 
-export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
+export const FormBeginEndWidget = (props: WidgetProps) => {
   const { id, value, required, readonly, onChange, options, schema } = props;
   return (
     <div>
@@ -24,4 +24,5 @@ export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
     </div>
   );
 };
+
 export default FormBeginEndWidget;

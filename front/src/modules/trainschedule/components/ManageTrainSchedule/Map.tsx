@@ -1,5 +1,4 @@
 import React, {
-  type FC,
   type PropsWithChildren,
   useCallback,
   useEffect,
@@ -73,7 +72,7 @@ type MapProps = {
   simulationPathSteps?: PathStep[];
 };
 
-const Map: FC<PropsWithChildren<MapProps>> = ({
+const Map = ({
   pathProperties,
   setMapCanvas,
   isReadOnly = false,
@@ -83,7 +82,7 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
   mapId = 'map-container',
   simulationPathSteps,
   children,
-}) => {
+}: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();

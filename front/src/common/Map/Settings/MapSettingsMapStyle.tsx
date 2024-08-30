@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import { updateMapStyle } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 
-const MapSettingsMapStyle: FC<unknown> = () => {
+const MapSettingsMapStyle = () => {
   const { t } = useTranslation(['map-settings']);
   const { mapStyle } = useSelector(getMap);
   const dispatch = useAppDispatch();

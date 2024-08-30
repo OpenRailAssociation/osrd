@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import Slider from 'rc-slider';
 import { useTranslation } from 'react-i18next';
@@ -27,14 +27,16 @@ import {
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 
-const FormatSwitch: FC<{
+type FormatSwitchProps = {
   name: string;
   onChange: SwitchSNCFProps['onChange'];
   state: boolean;
   icon: string;
   label: string;
   disabled?: boolean;
-}> = ({ name, onChange, state, icon, label, disabled }) => {
+};
+
+const FormatSwitch = ({ name, onChange, state, icon, label, disabled }: FormatSwitchProps) => {
   const { t } = useTranslation(['map-settings']);
   return (
     <div className="d-flex align-items-center">
@@ -52,7 +54,7 @@ const FormatSwitch: FC<{
   );
 };
 
-const MapSettingsBackgroundSwitches: FC<unknown> = () => {
+const MapSettingsBackgroundSwitches = () => {
   const { t } = useTranslation(['map-settings']);
   const {
     mapStyle,

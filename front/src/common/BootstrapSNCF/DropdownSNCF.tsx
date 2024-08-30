@@ -1,4 +1,4 @@
-import React, { type FC, type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
+import React, { type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
 
 import nextId from 'react-id-generator';
 import TetherComponent from 'react-tether';
@@ -8,13 +8,21 @@ export const DROPDOWN_STYLE_TYPES = {
   transparent: 'btn-transparent',
 } as const;
 
-const DropdownSNCF: FC<{
+type DropdownSNCFProps = {
   titleContent: ReactNode;
   items?: ReactNode[];
   type?: string;
   className?: string;
   noArrow?: boolean;
-}> = ({ titleContent, items = [], type = 'transparent', className, noArrow = false }) => {
+};
+
+const DropdownSNCF = ({
+  titleContent,
+  items = [],
+  type = 'transparent',
+  className,
+  noArrow = false,
+}: DropdownSNCFProps) => {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const targetRef = useRef<HTMLDivElement>(null);
   const itemNode = items.map((item) => (

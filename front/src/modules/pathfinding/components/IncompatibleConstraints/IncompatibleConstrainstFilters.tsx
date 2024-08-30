@@ -1,4 +1,4 @@
-import React, { useCallback, type FC, type HTMLAttributes } from 'react';
+import React, { useCallback, type HTMLAttributes } from 'react';
 
 import { Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -12,7 +12,7 @@ interface IncompatibleConstraintsFiltersProps extends HTMLAttributes<unknown> {
   toggleFilter: (type: string) => void;
 }
 
-const IncompatibleConstraintsFilters: FC<IncompatibleConstraintsFiltersProps> = (props) => {
+const IncompatibleConstraintsFilters = (props: IncompatibleConstraintsFiltersProps) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { data, toggleFilter, ...htmlAttrs } = props;
 

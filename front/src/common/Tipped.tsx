@@ -1,4 +1,4 @@
-import React, { type FC, type HTMLAttributes, useState } from 'react';
+import React, { type HTMLAttributes, useState } from 'react';
 
 import cx from 'classnames';
 import { CSSTransition } from 'react-transition-group';
@@ -11,7 +11,7 @@ interface TippedProps extends HTMLAttributes<unknown> {
   disableTooltip?: boolean;
 }
 
-const Tipped: FC<TippedProps> = (props) => {
+const Tipped = (props: TippedProps) => {
   const { children, tag, rootTag, mode = 'bottom', disableTooltip, ...attributes } = props;
   const [target, tooltip] = children;
   const [showTip, setShowTip] = useState<boolean>(false);

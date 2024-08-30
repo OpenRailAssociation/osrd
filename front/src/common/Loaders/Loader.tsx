@@ -1,4 +1,4 @@
-import React, { type FC, type HTMLAttributes, useEffect, useRef, useState } from 'react';
+import React, { type HTMLAttributes, useEffect, useRef, useState } from 'react';
 
 import cx from 'classnames';
 import { useSelector } from 'react-redux';
@@ -7,7 +7,7 @@ import { getIsLoading } from 'reducers/main/mainSelector';
 
 type SpinnerProps = HTMLAttributes<HTMLDivElement> & { displayDelay?: number };
 
-export const Spinner: FC<SpinnerProps> = ({ displayDelay, ...props }) => {
+export const Spinner = ({ displayDelay, ...props }: SpinnerProps) => {
   const [display, setDisplay] = useState(false);
   const timeoutRef = useRef<null | number>(null);
 
@@ -32,7 +32,7 @@ export const Spinner: FC<SpinnerProps> = ({ displayDelay, ...props }) => {
   );
 };
 
-export const LoaderFill: FC<SpinnerProps> = ({ className, ...props }) => (
+export const LoaderFill = ({ className, ...props }: SpinnerProps) => (
   <Spinner {...props} className={cx(`loader-fill inset-0`, className)} />
 );
 
@@ -43,19 +43,19 @@ type LoaderProps = {
   className?: string;
 };
 
-export const Loader: FC<LoaderProps> = ({
+export const Loader = ({
   msg = '',
   position = 'center',
   childClass = '',
   className = '',
-}) => (
+}: LoaderProps) => (
   <div className={`loader ${position} ${className}`}>
     <Spinner />
     <div className={childClass}>{msg}</div>
   </div>
 );
 
-export const LoaderState: FC<unknown> = () => {
+export const LoaderState = () => {
   const isLoading = useSelector(getIsLoading);
   return isLoading ? <Loader position="top-right" /> : null;
 };
