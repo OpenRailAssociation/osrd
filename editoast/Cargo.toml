@@ -64,7 +64,10 @@ tempfile = "3.12.0"
 thiserror = "1.0.63"
 tokio = { version = "1.40.0", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-postgres = "0.7.11"
-tracing = { version = "0.1.40", default-features = false, features = ["log"] }
+tracing = { version = "0.1.40", default-features = false, features = [
+  "attributes",
+  "log",
+] }
 url = { version = "2.5.2", features = ["serde"] }
 utoipa = { version = "4.2.3", features = ["chrono", "uuid"] }
 uuid = { version = "1.10.0", features = ["serde", "v4"] }
