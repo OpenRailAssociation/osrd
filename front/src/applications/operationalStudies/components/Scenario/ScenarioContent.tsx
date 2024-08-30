@@ -49,7 +49,6 @@ const ScenarioContent = ({
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
-  const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [trainIdToEdit, setTrainIdToEdit] = useState<number>();
   const [isMacro, setIsMacro] = useState(false);
@@ -135,8 +134,6 @@ const ScenarioContent = ({
                 scenario={scenario}
                 infra={infra}
                 infraReloadCount={reloadCount}
-                showTrainDetails={showTrainDetails}
-                toggleTrainDetails={() => setShowTrainDetails(!showTrainDetails)}
                 collapseTimetable={() => setCollapsedTimetable(true)}
               />
               <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
@@ -154,9 +151,7 @@ const ScenarioContent = ({
                   )}
                   <Timetable
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    trainsWithDetails={showTrainDetails}
                     infraState={infra.state}
-                    trainIds={timetable.train_ids}
                     selectedTrainId={selectedTrainId}
                     conflicts={conflicts}
                     upsertTrainSchedules={upsertTrainSchedules}

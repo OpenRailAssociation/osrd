@@ -6,8 +6,6 @@ import frTranslations from '../../public/locales/fr/operationalStudies/scenario.
 class OperationalStudiesTimetablePage {
   readonly page: Page;
 
-  readonly trainCountText: Locator;
-
   readonly invalidTrainsMessage: Locator;
 
   readonly timetableTrains: Locator;
@@ -32,7 +30,6 @@ class OperationalStudiesTimetablePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.trainCountText = page.getByTestId('train-count');
     this.invalidTrainsMessage = page.getByTestId('invalid-trains-message');
     this.timetableTrains = page.getByTestId('scenario-timetable-train');
     this.selectedTimetableTrain = page.locator('[data-testid="scenario-timetable-train"].selected');
@@ -115,8 +112,7 @@ class OperationalStudiesTimetablePage {
   async clickCodeCompoTrainFilterButton(
     selectedLanguage: string,
     filterTranslation: string,
-    expectedTrainCount: number,
-    totalTrainCount: number
+    expectedTrainCount: number
   ): Promise<void> {
     await this.timetableFilterButton.click();
     const translations = selectedLanguage === 'English' ? enTranslations : frTranslations;
@@ -130,24 +126,23 @@ class OperationalStudiesTimetablePage {
       : this.page.getByRole('button', { name: filterTranslation });
 
     await filterButtonLocator.click();
-    await this.verifyTrainCount(expectedTrainCount, totalTrainCount);
+    await this.verifyTrainCount(expectedTrainCount);
     await filterButtonLocator.click();
     await this.timetableFilterButton.click();
   }
 
   // Verifies that the imported train number is correct
-  async verifyTrainCount(trainCount: number, totalTrainCount: number): Promise<void> {
+  async verifyTrainCount(trainCount: number): Promise<void> {
     await this.page.waitForLoadState('networkidle');
-    const trainCountText = await this.trainCountText.innerText();
-    expect(trainCountText).toEqual(`${trainCount}/${totalTrainCount} trains`);
+    const trainCard = await this.timetableTrains;
+    expect(trainCard).toHaveCount(trainCount);
   }
 
   // Filter trains validity and verify their count
   async filterValidityAndVerifyTrainCount(
     selectedLanguage: string,
     validityFilter: 'Valid' | 'Invalid' | 'All',
-    expectedTrainCount: number,
-    totalTrainCount: number
+    expectedTrainCount: number
   ): Promise<void> {
     const translations = selectedLanguage === 'English' ? enTranslations : frTranslations;
     await this.timetableFilterButton.click();
@@ -160,15 +155,14 @@ class OperationalStudiesTimetablePage {
 
     await this.clickValidityTrainFilterButton(validityFilters[validityFilter]);
     await this.timetableFilterButton.click();
-    await this.verifyTrainCount(expectedTrainCount, totalTrainCount);
+    await this.verifyTrainCount(expectedTrainCount);
   }
 
   // Filter the honored trains and verify their count
   async filterHonoredAndVerifyTrainCount(
     selectedLanguage: string,
     honoredFilter: 'Honored' | 'Not honored' | 'All',
-    expectedTrainCount: number,
-    totalTrainCount: number
+    expectedTrainCount: number
   ): Promise<void> {
     const translations = selectedLanguage === 'English' ? enTranslations : frTranslations;
     await this.timetableFilterButton.click();
@@ -181,7 +175,7 @@ class OperationalStudiesTimetablePage {
 
     await this.clickHonoredTrainFilterButton(honoredFilters[honoredFilter]);
     await this.timetableFilterButton.click();
-    await this.verifyTrainCount(expectedTrainCount, totalTrainCount);
+    await this.verifyTrainCount(expectedTrainCount);
   }
 
   // Iterate over each train element and verify the visibility of simulation results
@@ -194,7 +188,7 @@ class OperationalStudiesTimetablePage {
       const trainButton = OperationalStudiesTimetablePage.getTrainButton(
         this.timetableTrains.nth(currentTrainIndex)
       );
-      await trainButton.click();
+      await trainButton.click({ position: { x: 5, y: 5 } });
       await this.verifySimulationResultsVisibility();
     }
   }

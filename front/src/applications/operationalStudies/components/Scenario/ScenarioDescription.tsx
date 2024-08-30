@@ -1,4 +1,4 @@
-import { ChevronLeft, Eye, EyeClosed, Pencil } from '@osrd-project/ui-icons';
+import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
 
@@ -12,8 +12,6 @@ type ScenarioDescriptionProps = {
   scenario: ScenarioResponse;
   infra?: InfraWithState;
   infraReloadCount: number;
-  showTrainDetails: boolean;
-  toggleTrainDetails: () => void;
   collapseTimetable: () => void;
 };
 
@@ -21,8 +19,6 @@ const ScenarioDescription = ({
   scenario,
   infra,
   infraReloadCount,
-  showTrainDetails,
-  toggleTrainDetails,
   collapseTimetable,
 }: ScenarioDescriptionProps) => {
   const { t } = useTranslation('operationalStudies/scenario');
@@ -49,14 +45,6 @@ const ScenarioDescription = ({
           title={t('editScenario')}
         >
           <Pencil />
-        </button>
-        <button
-          type="button"
-          className="scenario-details-modify-button"
-          onClick={toggleTrainDetails}
-          title={t('displayTrainsWithDetails')}
-        >
-          {showTrainDetails ? <EyeClosed /> : <Eye />}
         </button>
         <button
           type="button"

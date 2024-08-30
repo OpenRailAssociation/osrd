@@ -1,18 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Alert, Download, Plus } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { Conflict, InfraState, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { distributedIntervalsFromArrayOfValues, valueToInterval } from 'utils/numbers';
+import { distributedIntervalsFromArrayOfValues } from 'utils/numbers';
 
 import TimetableToolbar from './TimetableToolbar';
 import TimetableTrainCard from './TimetableTrainCard';
@@ -21,9 +19,7 @@ import { timetableHasInvalidTrain } from './utils';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  trainsWithDetails: boolean;
   infraState: InfraState;
-  trainIds: number[];
   selectedTrainId?: number;
   conflicts?: Conflict[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
@@ -36,9 +32,7 @@ type TimetableProps = {
 
 const Timetable = ({
   setDisplayTrainScheduleManagement,
-  trainsWithDetails,
   infraState,
-  trainIds,
   selectedTrainId,
   conflicts,
   upsertTrainSchedules,
@@ -50,15 +44,12 @@ const Timetable = ({
 }: TimetableProps) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
 
-  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
-
   const [displayedTrainSchedules, setDisplayedTrainSchedules] = useState<
     TrainScheduleWithDetails[]
   >([]);
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
-  const [multiselectOn, setMultiselectOn] = useState(false);
   const [selectedTrainIds, setSelectedTrainIds] = useState<number[]>([]);
-
+  const [showTrainDetails, setShowTrainDetails] = useState(false);
   const dispatch = useAppDispatch();
 
   const trainsDurationsIntervals = useMemo(
@@ -71,9 +62,14 @@ const Timetable = ({
     [displayedTrainSchedules]
   );
 
-  useEffect(() => {
-    setMultiselectOn(false);
-  }, [trainIds, infraState]);
+  const toggleShowTrainDetails = () => {
+    setShowTrainDetails(!showTrainDetails);
+  };
+
+  const removeAndUnselectTrains = (trainIds: number[]) => {
+    removeTrains(trainIds);
+    setSelectedTrainIds([]);
+  };
 
   const toggleConflictsListExpanded = () => {
     setConflictsListExpanded(!conflictsListExpanded);
@@ -98,10 +94,6 @@ const Timetable = ({
       dispatch(updateSelectedTrainId(firstTrainId));
     }
   };
-
-  useEffect(() => {
-    if (!multiselectOn) setSelectedTrainIds([]);
-  }, [multiselectOn]);
 
   return (
     <div className="scenario-timetable">
@@ -131,45 +123,43 @@ const Timetable = ({
           {t('timetable.addTrainSchedule')}
         </button>
       </div>
-      <TimetableToolbar
-        trainSchedulesWithDetails={trainSchedulesWithDetails}
-        displayedTrainSchedules={displayedTrainSchedules}
-        setDisplayedTrainSchedules={setDisplayedTrainSchedules}
-        selectedTrainIds={selectedTrainIds}
-        setSelectedTrainIds={setSelectedTrainIds}
-        multiSelectOn={multiselectOn}
-        setMultiSelectOn={setMultiselectOn}
-        removeTrains={removeTrains}
-        trainSchedules={trainSchedules}
-      />
-
       <div
         className={cx('scenario-timetable-trains', {
           expanded: conflictsListExpanded,
-          'with-details': trainsWithDetails,
+          'with-details': showTrainDetails,
         })}
       >
+        <TimetableToolbar
+          showTrainDetails={showTrainDetails}
+          toggleShowTrainDetails={toggleShowTrainDetails}
+          trainSchedulesWithDetails={trainSchedulesWithDetails}
+          displayedTrainSchedules={displayedTrainSchedules}
+          setDisplayedTrainSchedules={setDisplayedTrainSchedules}
+          selectedTrainIds={selectedTrainIds}
+          setSelectedTrainIds={setSelectedTrainIds}
+          removeTrains={removeAndUnselectTrains}
+          trainSchedules={trainSchedules}
+        />
         {trainsDurationsIntervals &&
-          displayedTrainSchedules.map((train: TrainScheduleWithDetails, idx: number) => (
+          displayedTrainSchedules.map((train: TrainScheduleWithDetails) => (
             <TimetableTrainCard
-              idx={idx}
-              isSelectable={multiselectOn}
               isInSelection={selectedTrainIds.includes(train.id)}
               handleSelectTrain={handleSelectTrain}
               train={train}
-              intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
               key={`timetable-train-card-${train.id}-${train.trainName}`}
               isSelected={infraState === 'CACHED' && selectedTrainId === train.id}
               isModified={train.id === trainIdToEdit}
-              projectionPathIsUsed={
-                infraState === 'CACHED' && trainIdUsedForProjection === train.id
-              }
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               upsertTrainSchedules={upsertTrainSchedules}
               setTrainIdToEdit={setTrainIdToEdit}
-              removeTrains={removeTrains}
+              removeTrains={removeAndUnselectTrains}
             />
           ))}
+        <div
+          className={cx('bottom-timetables-trains', {
+            'empty-list': trainSchedulesWithDetails.length === 0,
+          })}
+        />
       </div>
       <div className="scenario-timetable-warnings">
         {timetableHasInvalidTrain(displayedTrainSchedules) && (

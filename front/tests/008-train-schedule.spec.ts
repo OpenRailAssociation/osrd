@@ -47,10 +47,10 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
     await scenarioPage.checkInfraLoaded();
 
     // Verify the train count and various elements on the timetable page
-    await opTimetablePage.verifyTrainCount(20, 20);
+    await opTimetablePage.verifyTrainCount(20);
     await opTimetablePage.verifyInvalidTrainsMessageVisibility(selectedLanguage);
     await opTimetablePage.checkSelectedTimetableTrain();
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Valid', 16, 20);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Valid', 16);
     await opTimetablePage.verifyEachTrainSimulation();
   });
 
@@ -63,15 +63,15 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
     await scenarioPage.checkInfraLoaded();
 
     // Verify the train count and apply various filters
-    await opTimetablePage.verifyTrainCount(20, 20);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Invalid', 4, 20);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'All', 20, 20);
-    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'Honored', 12, 20);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Valid', 12, 20);
-    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'Not honored', 4, 20);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Invalid', 0, 20);
-    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'All', 4, 20);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'All', 20, 20);
+    await opTimetablePage.verifyTrainCount(20);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Invalid', 4);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'All', 20);
+    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'Honored', 12);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Valid', 12);
+    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'Not honored', 4);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'Invalid', 0);
+    await opTimetablePage.filterHonoredAndVerifyTrainCount(selectedLanguage, 'All', 4);
+    await opTimetablePage.filterValidityAndVerifyTrainCount(selectedLanguage, 'All', 20);
 
     // Define the composition filters and verify each filter
     const compositionFilters = [
@@ -85,8 +85,7 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
       await opTimetablePage.clickCodeCompoTrainFilterButton(
         selectedLanguage,
         filter.code,
-        filter.count,
-        20
+        filter.count
       );
     }
   });
