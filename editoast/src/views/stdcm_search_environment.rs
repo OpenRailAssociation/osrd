@@ -3,7 +3,9 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
+use axum::Extension;
 use chrono::NaiveDateTime;
+use editoast_authz::BuiltinRole;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use std::result::Result as StdResult;
@@ -15,6 +17,8 @@ use serde::Serialize;
 use crate::error::Result;
 use crate::modelsv2::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::modelsv2::Changeset;
+use crate::views::AuthorizationError;
+use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::Model;
 
@@ -99,8 +103,17 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
 )]
 async fn overwrite(
     State(app_state): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
 ) -> Result<impl IntoResponse> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::Admin].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
 
@@ -117,7 +130,18 @@ async fn overwrite(
         (status = 204, description = "No search environment was created")
     )
 )]
-async fn retrieve_latest(State(app_state): State<AppState>) -> Result<Response> {
+async fn retrieve_latest(
+    State(app_state): State<AppState>,
+    Extension(authorizer): AuthorizerExt,
+) -> Result<Response> {
+    let authorized = authorizer
+        .check_roles([BuiltinRole::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
+
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
 

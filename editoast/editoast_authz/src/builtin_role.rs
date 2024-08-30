@@ -40,6 +40,9 @@ pub enum BuiltinRole {
     DocumentRead,
     #[strum(serialize = "document:write")]
     DocumentWrite,
+
+    #[strum(serialize = "admin")]
+    Admin,
 }
 
 impl BuiltinRoleSet for BuiltinRole {
@@ -59,6 +62,7 @@ impl BuiltinRoleSet for BuiltinRole {
             TimetableWrite => vec![TimetableRead],
             DocumentRead => vec![],
             DocumentWrite => vec![DocumentRead],
+            Admin => vec![],
         }
     }
 }
