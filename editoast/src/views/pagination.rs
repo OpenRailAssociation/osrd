@@ -1,8 +1,3 @@
-use diesel::pg::Pg;
-use diesel::query_builder::*;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Untyped;
-use diesel::QueryResult;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -127,45 +122,6 @@ pub trait PaginatedList: ListAndCount + 'static {
 
 impl<T> PaginatedList for T where T: ListAndCount + 'static {}
 
-/// Generates a specialized [PaginatedResponse], commented, annotated with `ToSchema`
-///
-/// We need to specialize manually PaginatedResponse with each
-/// type we intend to use it with, otherwise utoipa will generate a $ref to T...
-#[macro_export]
-macro_rules! decl_paginated_response {
-    ($name:ident, $item:ty) => {
-        $crate::decl_paginated_response! {pub(self) $name, $item}
-    };
-    ($vis:vis $name:ident, $item:ty) => {
-        /// A paginated response
-        #[allow(unused)]
-        #[allow(clippy::needless_pub_self)]
-        #[derive(utoipa::ToSchema)]
-        $vis struct $name {
-            /// The total number of items
-            pub count: i64,
-            /// The previous page number
-            #[schema(required)]
-            pub previous: Option<i64>,
-            /// The next page number
-            #[schema(required)]
-            pub next: Option<i64>,
-            /// The list of results
-            #[schema(required)]
-            pub results: Vec<$item>,
-        }
-    };
-}
-
-/// A paginated response
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
-pub struct PaginatedResponse<T> {
-    pub count: i64,
-    pub previous: Option<i64>,
-    pub next: Option<i64>,
-    pub results: Vec<T>,
-}
-
 #[derive(Debug, Clone, Copy, Deserialize, IntoParams)]
 #[into_params(parameter_in = Query)]
 pub struct PaginationQueryParam {
@@ -233,32 +189,6 @@ pub enum PaginationError {
         provided_page_size: i64,
         max_page_size: i64,
     },
-}
-
-#[derive(Debug, Clone, Copy, QueryId)]
-pub struct Paginated<T> {
-    query: T,
-    page_size: i64,
-    offset: i64,
-}
-
-impl<T> QueryFragment<Pg> for Paginated<T>
-where
-    T: QueryFragment<Pg>,
-{
-    fn walk_ast<'b>(&'b self, mut out: AstPass<'_, 'b, Pg>) -> QueryResult<()> {
-        out.push_sql("SELECT *, COUNT(*) OVER () FROM (");
-        self.query.walk_ast(out.reborrow())?;
-        out.push_sql(") as paged_query_with LIMIT ");
-        out.push_bind_param::<BigInt, _>(&self.page_size)?;
-        out.push_sql(" OFFSET ");
-        out.push_bind_param::<BigInt, _>(&self.offset)?;
-        Ok(())
-    }
-}
-
-impl<T: Query> Query for Paginated<T> {
-    type SqlType = Untyped;
 }
 
 #[cfg(test)]

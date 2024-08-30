@@ -217,7 +217,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::modelsv2::fixtures::create_fast_rolling_stock;
     use crate::modelsv2::fixtures::create_rolling_stock_livery_fixture;
-    use crate::views::pagination::PaginatedResponse;
+    use crate::views::light_rolling_stocks::LightRollingStockWithLiveriesCountList;
     use crate::views::test_app::TestAppBuilder;
 
     fn is_sorted(data: &[i64]) -> bool {
@@ -313,12 +313,12 @@ mod tests {
             .collect::<HashSet<_>>();
 
         let request = app.get("/light_rolling_stock/");
-        let response: PaginatedResponse<LightRollingStockWithLiveries> =
+        let response: LightRollingStockWithLiveriesCountList =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-        let count = response.count;
+        let count = response.stats.count;
         let uri = format!("/light_rolling_stock/?page_size={count}");
         let request = app.get(&uri);
-        let response: PaginatedResponse<LightRollingStockWithLiveries> =
+        let response: LightRollingStockWithLiveriesCountList =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // Ensure that AT LEAST all the rolling stocks create above are returned, in order
