@@ -1,6 +1,8 @@
 # --- CI - CODEOWNERS - Dependabot - Template ---
 /.github                                                 @openrailassociation/OSRD-DevOps
 /.github/CODEOWNERS                                      @openrailassociation/OSRD-Admins
+/*.md                                                    @openrailassociation/OSRD-Admins
+/LICENSE                                                 @openrailassociation/OSRD-Admins
 
 # -- Docker --
 /docker                                                  @openrailassociation/OSRD-DevOps
