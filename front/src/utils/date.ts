@@ -86,7 +86,7 @@ export const dateTimeToIso = (inputDateTime: string) => {
  */
 export const formatToIsoDate = (date: number | string, formatDate: boolean = false) => {
   const format = formatDate ? 'D/MM/YYYY HH:mm:ss' : '';
-  return dayjs.tz(date, userTimeZone).format(format);
+  return dayjs(date).tz(userTimeZone).format(format);
 };
 
 /**
