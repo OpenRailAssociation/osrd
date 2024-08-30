@@ -6,7 +6,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::modelsv2::prelude::*;
-use crate::tables::*;
+use editoast_models::tables::*;
 use editoast_models::DbConnection;
 use editoast_schemas::primitives::ObjectType;
 

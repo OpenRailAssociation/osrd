@@ -58,7 +58,7 @@ mod tests {
     use super::prelude::*;
 
     #[derive(Debug, Default, Clone, ModelV2, PartialEq, Eq)]
-    #[model(table = crate::tables::document)]
+    #[model(table = editoast_models::tables::document)]
     struct Document {
         id: i64,
         content_type: String,
@@ -165,7 +165,7 @@ mod tests {
         }
 
         #[derive(Debug, Clone, ModelV2)]
-        #[model(table = crate::tables::document)]
+        #[model(table = editoast_models::tables::document)]
         struct Document {
             id: i64,
             content_type: String,

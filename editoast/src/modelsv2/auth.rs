@@ -9,7 +9,7 @@ use editoast_authz::{
 use editoast_models::DbConnectionPoolV2;
 use itertools::Itertools;
 
-use crate::tables::*;
+use editoast_models::tables::*;
 
 pub struct PgAuthDriver<B: BuiltinRoleSet + Send + Sync> {
     pool: Arc<DbConnectionPoolV2>,

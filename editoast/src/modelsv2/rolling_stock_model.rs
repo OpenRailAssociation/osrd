@@ -30,7 +30,7 @@ editoast_common::schemas! {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ModelV2, ToSchema)]
-#[model(table = crate::tables::rolling_stock)]
+#[model(table = editoast_models::tables::rolling_stock)]
 #[model(changeset(derive(Validate), public))]
 #[schema(as = RollingStock)]
 pub struct RollingStockModel {

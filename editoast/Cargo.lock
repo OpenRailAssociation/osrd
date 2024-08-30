@@ -1431,6 +1431,7 @@ dependencies = [
  "futures 0.3.30",
  "futures-util",
  "openssl",
+ "postgis_diesel",
  "postgres-openssl",
  "thiserror",
  "tokio",

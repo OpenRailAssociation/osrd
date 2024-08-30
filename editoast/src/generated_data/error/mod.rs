@@ -304,7 +304,7 @@ async fn retrieve_current_errors_hash(
     conn: &mut DbConnection,
     infra_id: i64,
 ) -> Result<Vec<ErrorHash>> {
-    use crate::tables::infra_layer_error::dsl;
+    use editoast_models::tables::infra_layer_error::dsl;
     Ok(dsl::infra_layer_error
         .filter(dsl::infra_id.eq(infra_id))
         .select(dsl::info_hash)
@@ -318,7 +318,7 @@ async fn remove_errors_from_hashes(
     infra_id: i64,
     errors_hash: &Vec<&ErrorHash>,
 ) -> Result<()> {
-    use crate::tables::infra_layer_error::dsl;
+    use editoast_models::tables::infra_layer_error::dsl;
     let nb_deleted = diesel::delete(
         dsl::infra_layer_error
             .filter(dsl::infra_id.eq(infra_id))

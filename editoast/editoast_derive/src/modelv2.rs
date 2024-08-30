@@ -90,7 +90,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
 fn test_construction() {
     let input = syn::parse_quote! {
         #[derive(Clone, Model)]
-        #[model(table = crate::tables::osrd_infra_document)]
+        #[model(table = editoast_models::tables::osrd_infra_document)]
         #[model(row(type_name = "DocumentRow", derive(Debug)))]
         #[model(changeset(type_name = "DocumentChangeset", public, derive(Debug)))] // fields are public
         struct Document {

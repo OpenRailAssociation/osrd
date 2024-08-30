@@ -22,7 +22,7 @@ use serde::Deserialize;
 ///
 #[derive(Debug, Clone, Derivative, ModelV2)]
 #[derivative(Default)]
-#[model(table = crate::tables::rolling_stock_livery)]
+#[model(table = editoast_models::tables::rolling_stock_livery)]
 #[cfg_attr(test, derive(Deserialize))]
 pub struct RollingStockLiveryModel {
     pub id: i64,

@@ -27,11 +27,11 @@ impl Infra {
         page: u64,
         page_size: u64,
     ) -> Result<(Vec<InfraError>, u64)> {
-        use crate::tables::infra_layer_error::dsl;
-        use crate::tables::infra_layer_error::table;
         use diesel::dsl::sql;
         use diesel::prelude::*;
         use diesel::sql_types::*;
+        use editoast_models::tables::infra_layer_error::dsl;
+        use editoast_models::tables::infra_layer_error::table;
 
         type Filter = Box<dyn BoxableExpression<table, Pg, SqlType = Bool>>;
         fn sql_true() -> Filter {

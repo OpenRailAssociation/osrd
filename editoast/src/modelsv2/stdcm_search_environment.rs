@@ -14,7 +14,7 @@ use editoast_models::DbConnection;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, ModelV2, ToSchema, Serialize)]
-#[model(table = crate::tables::stdcm_search_environment)]
+#[model(table = editoast_models::tables::stdcm_search_environment)]
 #[cfg_attr(test, derive(Deserialize, PartialEq), model(changeset(derive(Clone))))]
 pub struct StdcmSearchEnvironment {
     pub id: i64,
@@ -33,7 +33,7 @@ pub struct StdcmSearchEnvironment {
 impl StdcmSearchEnvironment {
     /// Retrieve the latest search environment. Returns None if no search environment is found.
     pub async fn retrieve_latest(conn: &mut DbConnection) -> Option<Self> {
-        use crate::tables::stdcm_search_environment::dsl::*;
+        use editoast_models::tables::stdcm_search_environment::dsl::*;
         stdcm_search_environment
             .order_by((search_window_end.desc(), search_window_begin.asc()))
             .first::<Row<StdcmSearchEnvironment>>(conn)
@@ -43,7 +43,7 @@ impl StdcmSearchEnvironment {
     }
 
     pub async fn delete_all(conn: &mut DbConnection) -> Result<()> {
-        use crate::tables::stdcm_search_environment::dsl::*;
+        use editoast_models::tables::stdcm_search_environment::dsl::*;
         diesel::delete(stdcm_search_environment)
             .execute(conn)
             .await?;

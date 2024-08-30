@@ -13,7 +13,7 @@ use utoipa::ToSchema;
 use crate::views::rolling_stocks::light_rolling_stock::LightEffortCurves;
 
 #[derive(Debug, Clone, ModelV2, Serialize, ToSchema)]
-#[model(table = crate::tables::rolling_stock)]
+#[model(table = editoast_models::tables::rolling_stock)]
 pub struct LightRollingStockModel {
     pub id: i64,
     pub railjson_version: String,

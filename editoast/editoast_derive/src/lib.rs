@@ -51,7 +51,7 @@ pub fn error(input: TokenStream) -> TokenStream {
 /// ## Usage
 ///
 /// You should provide a diesel table path, like so
-/// ```#[model(table = "crate::tables::project")]```
+/// ```#[model(table = "editoast_models::tables::project")]```
 ///
 /// Then you can enable implementations like so:
 /// ```#[model(retrieve, create, delete)]```
@@ -185,7 +185,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 ///
 /// ```ignore
 /// #[derive(Debug, Default, Clone, ModelV2)]
-/// #[model(table = crate::tables::osrd_infra_document)]
+/// #[model(table = editoast_models::tables::osrd_infra_document)]
 /// pub struct Document {
 ///     pub id: i64,
 ///     pub content_type: String,

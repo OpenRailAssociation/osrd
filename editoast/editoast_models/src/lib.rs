@@ -1,6 +1,7 @@
 use diesel_async::{pooled_connection::deadpool::Pool, AsyncPgConnection};
 
 pub mod db_connection_pool;
+pub mod tables;
 
 pub use db_connection_pool::DbConnectionPoolV2;
 

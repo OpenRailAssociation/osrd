@@ -11,7 +11,6 @@ mod map;
 mod models;
 mod modelsv2;
 mod redis_utils;
-mod tables;
 mod views;
 
 use crate::core::CoreClient;
