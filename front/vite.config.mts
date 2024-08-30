@@ -48,6 +48,7 @@ export default defineConfig(({ mode }) => {
     ],
     build: {
       outDir: 'build',
+      sourcemap: true,
     },
     server: {
       open: false,
