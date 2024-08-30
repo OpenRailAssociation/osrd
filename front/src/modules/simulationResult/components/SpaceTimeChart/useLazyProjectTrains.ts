@@ -93,7 +93,7 @@ const useLazyProjectTrains = ({
 
       for (let i = 0; i < shouldProjectIds.length; i += BATCH_SIZE) {
         // If projection parameters have changed, bail out
-        if (projectionSeqNum.current !== seqNum) break;
+        if (projectionSeqNum.current !== seqNum) return;
 
         const packageToProject = getBatchPackage(i, shouldProjectIds, BATCH_SIZE);
         try {
@@ -103,25 +103,16 @@ const useLazyProjectTrains = ({
           dispatch(setFailure(castErrorToFailure(e)));
         }
       }
+
+      requestedProjectedTrainIds.current = new Set();
+      setTrainIdsToProject([]);
     };
 
-    if (infraId && path) {
+    if (infraId && path && trainIdsToProject.length > 0) {
       projectionSeqNum.current += 1;
       projectTrains(projectionSeqNum.current, path, trainIdsToProject);
     }
   }, [trainIdsToProject]);
-
-  useEffect(() => {
-    // reset the state when all the trains have been projected
-    if (
-      !moreTrainsToCome &&
-      trainIdsToProject.length > 0 &&
-      requestedProjectedTrainIds.current.size === trainIdsToProject.length
-    ) {
-      setTrainIdsToProject([]);
-      requestedProjectedTrainIds.current = new Set();
-    }
-  }, [moreTrainsToCome, projectedTrainsById]);
 
   useEffect(() => {
     if (!moreTrainsToCome && trainSchedules && path) {
