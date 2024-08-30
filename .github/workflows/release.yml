@@ -30,6 +30,7 @@ jobs:
 
           echo ::group::Bake metadata
           .github/scripts/bake-metadata.py | tee bake-metadata.json
+          echo
           echo ::endgroup::
 
       - name: Set up Docker Buildx
