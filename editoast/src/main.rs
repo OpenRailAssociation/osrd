@@ -19,6 +19,7 @@ use axum::{Router, ServiceExt};
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use chashmap::CHashMap;
 use clap::Parser;
+use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
     ExportTimetableArgs, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
@@ -234,6 +235,9 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             TimetablesCommands::Import(args) => trains_import(args, db_pool.into()).await,
             TimetablesCommands::Export(args) => trains_export(args, db_pool.into()).await,
         },
+        Commands::STDCMSearchEnv(subcommand) => {
+            handle_stdcm_search_env_command(subcommand, db_pool).await
+        }
     }
 }
 

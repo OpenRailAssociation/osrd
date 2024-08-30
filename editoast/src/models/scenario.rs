@@ -4,14 +4,15 @@ use chrono::NaiveDateTime;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
-use editoast_derive::Model;
-use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::error::Result;
+use crate::models::timetable::Timetable;
 use crate::models::Tags;
+use editoast_derive::Model;
+use editoast_models::DbConnection;
 
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
 #[model(table = editoast_models::tables::scenario)]
@@ -45,12 +46,6 @@ impl Scenario {
     }
 
     pub async fn trains_count(&self, conn: &mut DbConnection) -> Result<i64> {
-        use editoast_models::tables::train_schedule::dsl::*;
-        let trains_count = train_schedule
-            .filter(timetable_id.eq(self.timetable_id))
-            .count()
-            .get_result(conn.write().await.deref_mut())
-            .await?;
-        Ok(trains_count)
+        Timetable::trains_count(self.timetable_id, conn).await
     }
 }

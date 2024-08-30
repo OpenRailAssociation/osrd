@@ -41,7 +41,7 @@ struct StdcmSearchEnvironmentCreateForm {
     electrical_profile_set_id: Option<i64>,
     work_schedule_group_id: Option<i64>,
     timetable_id: i64,
-    search_window_begin: NaiveDateTime,
+    search_window_begin: NaiveDateTime, // TODO: move to DateTime<Utc>
     search_window_end: NaiveDateTime,
 }
 
