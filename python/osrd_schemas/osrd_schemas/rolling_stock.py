@@ -22,7 +22,7 @@ class ComfortType(str, Enum):
     """
 
     STANDARD = "STANDARD"
-    AC = "AC"
+    AIR_CONDITIONING = "AIR_CONDITIONING"
     HEATING = "HEATING"
 
 
