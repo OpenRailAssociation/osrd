@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
 import { lineString, point } from '@turf/helpers';
@@ -65,7 +65,7 @@ type MapProps = {
   trainSimulation?: SimulationResponseSuccess & { trainId: number; startTime: string };
 };
 
-const SimulationResultMapV2: FC<MapProps> = ({ geometry, trainSimulation }) => {
+const SimulationResultMapV2 = ({ geometry, trainSimulation }: MapProps) => {
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
 
   const mapBlankStyle = useMapBlankStyle();

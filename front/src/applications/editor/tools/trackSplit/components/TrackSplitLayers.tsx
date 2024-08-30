@@ -1,4 +1,4 @@
-import React, { useContext, type FC } from 'react';
+import React, { useContext } from 'react';
 
 import along from '@turf/along';
 import length from '@turf/length';
@@ -38,7 +38,7 @@ function getSplitPoint(state: TrackSplitState): Feature<Point> {
   return along(state.track.geometry, frontOffset, { units: 'millimeters' });
 }
 
-const TrackSplitLayers: FC<unknown> = () => {
+const TrackSplitLayers = () => {
   const { mapStyle, layersSettings, issuesSettings } = useSelector(getMap);
   const infraID = useInfraID();
   const {

@@ -1,4 +1,4 @@
-import React, { type FC, type InputHTMLAttributes } from 'react';
+import React, { type InputHTMLAttributes } from 'react';
 
 import cx from 'classnames';
 
@@ -21,7 +21,7 @@ export type SwitchSNCFProps = {
   disabled?: boolean;
 };
 
-const SwitchSNCF: FC<SwitchSNCFProps> = ({
+const SwitchSNCF = ({
   type,
   options = [],
   onChange,
@@ -31,7 +31,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
   checked = true,
   warning,
   disabled,
-}) => {
+}: SwitchSNCFProps) => {
   switch (type) {
     case SWITCH_TYPES.radio:
       return (

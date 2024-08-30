@@ -10,9 +10,11 @@ import type {
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 
-const RollingStock2Img: React.FC<{
+type RollingStock2ImgProps = {
   rollingStock: RollingStockWithLiveries | LightRollingStockWithLiveries;
-}> = ({ rollingStock }) => {
+};
+
+const RollingStock2Img = ({ rollingStock }: RollingStock2ImgProps) => {
   // as the image is stored in the database and can be fetched only through api (authentication needed),
   // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
   // url is generated and stored in imageUrl (then used in <img />).

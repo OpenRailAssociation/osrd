@@ -1,4 +1,4 @@
-import React, { type FC, type ReactNode, type InputHTMLAttributes } from 'react';
+import React, { type ReactNode, type InputHTMLAttributes } from 'react';
 
 import cx from 'classnames';
 
@@ -12,7 +12,7 @@ type CheckboxRadioProps = InputHTMLAttributes<HTMLInputElement> & {
   containerClassName?: string;
 };
 
-const CheckboxInput: FC<CheckboxRadioProps> = (props) => {
+const CheckboxInput = (props: CheckboxRadioProps) => {
   const { id, label, className, containerClassName, ...inputProps } = props;
   return (
     <div className={`custom-control custom-checkbox ${containerClassName}`}>
@@ -29,7 +29,7 @@ const CheckboxInput: FC<CheckboxRadioProps> = (props) => {
   );
 };
 
-const RadioInput: FC<CheckboxRadioProps> = (props) => {
+const RadioInput = (props: CheckboxRadioProps) => {
   const { id, label, className, containerClassName, ...inputProps } = props;
   return (
     <div className={`custom-control custom-radio ${containerClassName}`}>
@@ -46,7 +46,7 @@ const RadioInput: FC<CheckboxRadioProps> = (props) => {
   );
 };
 
-const CheckboxRadioSNCF: FC<CheckboxRadioProps & { type: 'radio' | 'checkbox' }> = (props) => {
+const CheckboxRadioSNCF = (props: CheckboxRadioProps & { type: 'radio' | 'checkbox' }) => {
   const { type } = props;
   return type === 'radio' ? <RadioInput {...props} /> : <CheckboxInput {...props} />;
 };

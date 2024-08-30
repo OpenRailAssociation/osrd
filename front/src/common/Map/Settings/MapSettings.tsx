@@ -1,4 +1,4 @@
-import React, { type FC, useState } from 'react';
+import React, { useState } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import MapSettingsSpeedLimits from 'common/Map/Settings/MapSettingsSpeedLimits';
 interface MapSettingsProps {
   closeMapSettingsPopUp: () => void;
 }
-const MapSettings: FC<MapSettingsProps> = ({ closeMapSettingsPopUp }) => {
+const MapSettings = ({ closeMapSettingsPopUp }: MapSettingsProps) => {
   const { t } = useTranslation(['translation', 'map-settings']);
   const [showSettingsLayers, setShowSettingsLayers] = useState(false);
   const [showSettingsSpeedLimits, setShowSettingsSpeedLimits] = useState(false);

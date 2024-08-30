@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, type FC, type HTMLAttributes } from 'react';
+import React, { useCallback, useEffect, useState, type HTMLAttributes } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -9,7 +9,7 @@ interface CollapsableProps extends Omit<HTMLAttributes<unknown>, 'children' | 'c
   children: [JSX.Element, JSX.Element];
   collapsed?: boolean;
 }
-const Collapsable: FC<CollapsableProps> = (props) => {
+const Collapsable = (props: CollapsableProps) => {
   const { children, collapsed = false, className } = props;
   const { t } = useTranslation('common/common');
   const [isCollapsed, setIsCollapsed] = useState(collapsed);

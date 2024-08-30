@@ -1,6 +1,6 @@
-import React, { type FC, type PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 
-const ModalFooterSNCF: FC<PropsWithChildren<unknown>> = ({ children }) => (
+const ModalFooterSNCF = ({ children }: PropsWithChildren) => (
   <div className="modal-footer">{children}</div>
 );
 

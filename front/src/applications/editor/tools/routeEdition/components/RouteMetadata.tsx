@@ -1,15 +1,22 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
 import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
 
-export const RouteMetadata: FC<{
+type RouteMetadataProps = {
   entity: RouteEntity;
   disabled: boolean;
   disableTransit: boolean;
   onChange: (e: boolean) => void;
-}> = ({ entity, onChange, disableTransit, disabled }) => {
+};
+
+export const RouteMetadata = ({
+  entity,
+  onChange,
+  disableTransit,
+  disabled,
+}: RouteMetadataProps) => {
   const { t } = useTranslation();
 
   return (

@@ -1,5 +1,4 @@
 import React, {
-  type FC,
   type PropsWithChildren,
   useCallback,
   useEffect,
@@ -69,14 +68,14 @@ type MapProps = {
   preventPointSelection?: boolean;
 };
 
-const Map: FC<PropsWithChildren<MapProps>> = ({
+const Map = ({
   pathProperties,
   setMapCanvas,
   hideAttribution = false,
   hideItinerary = false,
   preventPointSelection = false,
   children,
-}) => {
+}: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();

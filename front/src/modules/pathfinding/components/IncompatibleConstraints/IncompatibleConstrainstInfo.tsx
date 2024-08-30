@@ -1,11 +1,11 @@
-import React, { type FC, type HTMLAttributes } from 'react';
+import React, { type HTMLAttributes } from 'react';
 
 import { Info } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import Tipped from 'common/Tipped';
 
-const IncompatibleConstraintsInfo: FC<HTMLAttributes<unknown>> = (props) => {
+const IncompatibleConstraintsInfo = (props: HTMLAttributes<unknown>) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   return (

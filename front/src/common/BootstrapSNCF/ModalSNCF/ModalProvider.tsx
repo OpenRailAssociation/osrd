@@ -1,5 +1,4 @@
 import React, {
-  type FC,
   type PropsWithChildren,
   type ReactNode,
   useState,
@@ -47,7 +46,7 @@ const initialModalContext: ModalContextType = {
  */
 export const ModalContext = createContext(initialModalContext);
 
-export const ModalSNCF: FC = () => {
+export const ModalSNCF = () => {
   const modalRef = useRef<HTMLDivElement | null>(null);
   const { isOpen, content, closeModal, size, className } = useContext(ModalContext);
 
@@ -80,7 +79,7 @@ export const ModalSNCF: FC = () => {
 /*
  * Provider of the modal context
  */
-export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
+export const ModalProvider = ({ children }: PropsWithChildren) => {
   const location = useLocation();
   const [modalContext, setModalContext] = useState<ModalContextType>(initialModalContext);
 

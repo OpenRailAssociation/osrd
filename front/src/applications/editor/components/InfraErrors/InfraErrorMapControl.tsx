@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import { Alert } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -16,10 +16,12 @@ import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
 import InfraErrorsModal from './InfraErrorsModal';
 
-const InfraErrorMapControl: FC<{
+type InfraErrorMapControlProps = {
   mapRef: MapRef;
   switchTool: EditorContextType['switchTool'];
-}> = ({ mapRef, switchTool }) => {
+};
+
+const InfraErrorMapControl = ({ mapRef, switchTool }: InfraErrorMapControlProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { register } = useKeyboardShortcuts();

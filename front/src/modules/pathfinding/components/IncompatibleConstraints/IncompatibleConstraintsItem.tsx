@@ -1,4 +1,4 @@
-import React, { type FC, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import { Location } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -20,7 +20,7 @@ interface IncompatibleConstraintItemProps {
   gotoMap: () => void;
 }
 
-const IncompatibleConstraintItem: FC<IncompatibleConstraintItemProps> = ({
+const IncompatibleConstraintItem = ({
   data,
   isHovered,
   isSelected,
@@ -28,7 +28,7 @@ const IncompatibleConstraintItem: FC<IncompatibleConstraintItemProps> = ({
   onLeave,
   onClick,
   gotoMap,
-}) => {
+}: IncompatibleConstraintItemProps) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const Icon = getIcon(data.type);
   let bgClass = 'bg-light';

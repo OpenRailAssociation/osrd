@@ -1,4 +1,4 @@
-import React, { type FC, type InputHTMLAttributes, useEffect, useState } from 'react';
+import React, { type InputHTMLAttributes, useEffect, useState } from 'react';
 
 import { isNumber } from 'lodash';
 
@@ -8,12 +8,12 @@ function msToKmhString(msSpeed: number | undefined): string {
   return isNumber(msSpeed) ? msToKmh(msSpeed).toFixed(2) : '';
 }
 
-const SpeedInput: FC<
-  {
-    msSpeed: number | undefined;
-    onChange: (newMsSpeed: number | undefined) => void;
-  } & Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'>
-> = ({ msSpeed, onChange, ...attrs }) => {
+type SpeedInputProps = {
+  msSpeed: number | undefined;
+  onChange: (newMsSpeed: number | undefined) => void;
+} & Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'>;
+
+const SpeedInput = ({ msSpeed, onChange, ...attrs }: SpeedInputProps) => {
   const [kmhSpeed, setKmhSpeed] = useState<string>(msToKmhString(msSpeed));
 
   useEffect(() => {

@@ -8,7 +8,7 @@ type MapModalHeaderProps = {
   textLight?: boolean;
 };
 
-const MapModalHeader: React.FC<MapModalHeaderProps> = ({ closeAction, title, textLight }) => (
+const MapModalHeader = ({ closeAction, title, textLight }: MapModalHeaderProps) => (
   <div className="d-flex justify-content-between align-items-start">
     <div className={cx('h2', { 'text-light': textLight })}>{title}</div>
     <button

@@ -34,7 +34,7 @@ type IntervalsEditorProps = {
   units: string[];
 };
 
-const IntervalsEditorWrapper: React.FC<IntervalsEditorProps> = (props) => {
+const IntervalsEditorWrapper = (props: IntervalsEditorProps) => {
   const { data, intervalType, selectOptions, totalLength, units = [] } = props;
   const [persistedData, setData] = useState<IntervalItem[]>(
     fixLinearMetadataItems(data.filter(notEmpty), totalLength)

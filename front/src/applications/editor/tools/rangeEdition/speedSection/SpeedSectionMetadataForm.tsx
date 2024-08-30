@@ -1,4 +1,4 @@
-import React, { type FC, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { cloneDeep, isEmpty, isEqual, map, size } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +32,7 @@ const getNewSpeedLimitTag = (
 
 type SpeedSectionMetadataFormProps = { speedLimitTags: string[] };
 
-const SpeedSectionMetadataForm: FC<SpeedSectionMetadataFormProps> = ({ speedLimitTags }) => {
+const SpeedSectionMetadataForm = ({ speedLimitTags }: SpeedSectionMetadataFormProps) => {
   const { t } = useTranslation();
   const {
     state: { entity, error },

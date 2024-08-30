@@ -1,4 +1,4 @@
-import React, { type FC, useEffect, useState, Fragment } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 
 import cx from 'classnames';
 import type { TFunction } from 'i18next';
@@ -299,16 +299,16 @@ function getSumUpContent(
   );
 }
 
-const EntitySumUp: FC<
-  {
-    classes?: Partial<typeof DEFAULT_CLASSES>;
-    status?: string;
-    error?: InfraError;
-  } & (
-    | { entity: EditorEntity; id?: undefined; objType?: undefined }
-    | { id: string; objType: EditoastType; entity?: undefined }
-  )
-> = ({ entity, id, objType, classes, status, error }) => {
+type EntitySumUpProps = {
+  classes?: Partial<typeof DEFAULT_CLASSES>;
+  status?: string;
+  error?: InfraError;
+} & (
+  | { entity: EditorEntity; id?: undefined; objType?: undefined }
+  | { id: string; objType: EditoastType; entity?: undefined }
+);
+
+const EntitySumUp = ({ entity, id, objType, classes, status, error }: EntitySumUpProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();

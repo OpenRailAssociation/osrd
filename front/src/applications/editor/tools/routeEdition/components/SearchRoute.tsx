@@ -1,4 +1,4 @@
-import React, { type FC, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import { Search } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -16,13 +16,7 @@ interface SearchRouteProps {
   isNew: boolean;
 }
 
-export const SearchRoute: FC<SearchRouteProps> = ({
-  searchFn,
-  selectFn,
-  state,
-  disabled,
-  isNew,
-}) => {
+export const SearchRoute = ({ searchFn, selectFn, state, disabled, isNew }: SearchRouteProps) => {
   const { t } = useTranslation();
 
   const focusedOptionIndex = useMemo(

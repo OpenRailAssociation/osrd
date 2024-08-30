@@ -1,4 +1,4 @@
-import React, { type FC, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import cx from 'classnames';
 import { isNil, uniqueId } from 'lodash';
@@ -11,7 +11,7 @@ import { useInfraID } from 'common/osrdContext';
 
 import { InfraErrorLine } from './InfraErrors';
 
-const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity, className }) => {
+const EntityError = ({ entity, className }: { entity: EditorEntity; className?: string }) => {
   const { t } = useTranslation();
   const infraID = useInfraID();
   const { data } = osrdEditoastApi.endpoints.getInfraByInfraIdErrors.useQuery(

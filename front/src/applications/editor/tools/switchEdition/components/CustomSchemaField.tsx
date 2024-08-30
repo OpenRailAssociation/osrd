@@ -1,4 +1,4 @@
-import React, { type FC, Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
 
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
 import type { FieldProps } from '@rjsf/utils';
@@ -14,7 +14,7 @@ import TrackSectionEndpointSelector from './TrackSectionEndpointSelector';
 
 const TrackNodeTypeDiagram = lazy(() => import('./TrackNodeTypeDiagram'));
 
-const CustomSchemaField: FC<FieldProps> = (props) => {
+const CustomSchemaField = (props: FieldProps) => {
   const { name = '' } = props;
   const { switchType } = useSwitch();
   if (name === GROUP_CHANGE_DELAY)

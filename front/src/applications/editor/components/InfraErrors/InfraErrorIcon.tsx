@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React from 'react';
 
 import cx from 'classnames';
 import type { IconBaseProps } from 'react-icons';
@@ -12,7 +12,7 @@ import type { InfraError } from 'common/api/osrdEditoastApi';
 interface InfraErrorIconProps extends IconBaseProps {
   error: InfraError;
 }
-const InfraErrorIcon: FC<InfraErrorIconProps> = ({ error, ...props }) =>
+const InfraErrorIcon = ({ error, ...props }: InfraErrorIconProps) =>
   error.is_warning ? (
     <BsFillExclamationTriangleFill {...props} className={cx('text-warning', props.className)} />
   ) : (

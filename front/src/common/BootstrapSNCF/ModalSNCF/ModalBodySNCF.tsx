@@ -1,9 +1,6 @@
-import React, { type CSSProperties, type FC, type PropsWithChildren } from 'react';
+import React, { type CSSProperties, type PropsWithChildren } from 'react';
 
-const ModalBodySNCF: FC<PropsWithChildren<unknown> & { style?: CSSProperties }> = ({
-  children,
-  style,
-}) => (
+const ModalBodySNCF = ({ children, style }: PropsWithChildren<{ style?: CSSProperties }>) => (
   <div id="modal-body" className="modal-body" style={style}>
     {children}
   </div>

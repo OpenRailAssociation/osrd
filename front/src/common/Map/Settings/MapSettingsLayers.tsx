@@ -1,4 +1,4 @@
-import React, { type FC, type ReactNode, useCallback } from 'react';
+import React, { type ReactNode, useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
@@ -24,7 +24,7 @@ interface FormatSwitchProps {
   color?: string;
   disabled?: boolean;
 }
-export const FormatSwitch: FC<FormatSwitchProps> = ({ name, icon, color, disabled }) => {
+export const FormatSwitch = ({ name, icon, color, disabled }: FormatSwitchProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector(getMap);
@@ -57,16 +57,18 @@ export const FormatSwitch: FC<FormatSwitchProps> = ({ name, icon, color, disable
   );
 };
 
-export const Icon2SVG: FC<{
+type Icon2SVGProps = {
   file: string;
   altName?: string;
   style?: React.CSSProperties;
   className?: string;
-}> = ({ file, altName, style, className }) => (
+};
+
+export const Icon2SVG = ({ file, altName, style, className }: Icon2SVGProps) => (
   <img className={className || 'icon-to-svg'} src={file} alt={altName} style={style} />
 );
 
-const MapSettingsLayers: FC<unknown> = () => (
+const MapSettingsLayers = () => (
   <div className="row mt-2">
     <div className="col-md-6">
       <FormatSwitch name="signals" icon={<Icon2SVG file={SignalsSVGFile} altName="Signal svg" />} />

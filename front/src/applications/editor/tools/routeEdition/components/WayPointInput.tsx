@@ -1,4 +1,4 @@
-import React, { type FC, useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
 import { isNil } from 'lodash';
@@ -28,7 +28,7 @@ interface WayPointInputProps {
   wayPoint?: WayPoint | null;
   onChange: (entity: WayPointEntity | null) => void;
 }
-const WayPointInput: FC<WayPointInputProps> = ({ endPoint, wayPoint, onChange }) => {
+const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => {
   const dispatch = useAppDispatch();
   const { state, setState } = useContext(
     EditorContext

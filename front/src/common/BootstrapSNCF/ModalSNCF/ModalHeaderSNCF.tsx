@@ -1,4 +1,4 @@
-import React, { type FC, useContext, type PropsWithChildren } from 'react';
+import React, { useContext, type PropsWithChildren } from 'react';
 
 import { ModalContext } from './ModalProvider';
 
@@ -7,11 +7,11 @@ interface ModalHeaderSNCFProps {
   withBorderBottom?: boolean;
 }
 
-const ModalHeaderSNCF: FC<PropsWithChildren<ModalHeaderSNCFProps>> = ({
+const ModalHeaderSNCF = ({
   children,
   withCloseButton = false,
   withBorderBottom = false,
-}) => {
+}: PropsWithChildren<ModalHeaderSNCFProps>) => {
   const { closeModal } = useContext(ModalContext);
 
   return (

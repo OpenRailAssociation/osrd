@@ -5,9 +5,8 @@ import cx from 'classnames';
 import { toNumber } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
+export const FormLineStringLength = ({ id, value, required, onChange }: WidgetProps) => {
   const { t } = useTranslation();
-  const { id, value, required, onChange } = props;
 
   const [length, setLength] = useState<number>(toNumber(value));
 

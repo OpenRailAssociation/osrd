@@ -29,7 +29,7 @@ interface InfraErrorsListProps {
   onErrorClick: (infraId: number, item: InfraError) => void | Promise<void>;
 }
 
-const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick }) => {
+const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [total, setTotal] = useState<number | null>(null);

@@ -1,4 +1,4 @@
-import React, { type FC, useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 
 import bbox from '@turf/bbox';
 import { feature, featureCollection } from '@turf/helpers';
@@ -29,7 +29,7 @@ interface IncompatibleConstraintsProps {
   pathProperties?: ManageTrainSchedulePathProperties;
 }
 
-const IncompatibleConstraints: FC<IncompatibleConstraintsProps> = ({ pathProperties }) => {
+const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProps) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const map = useMap();
 

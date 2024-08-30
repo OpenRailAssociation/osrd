@@ -1,4 +1,4 @@
-import React, { type FC, useState } from 'react';
+import React, { useState } from 'react';
 
 import type { Notification } from 'types';
 /**
@@ -44,7 +44,7 @@ const typeToIcon = {
 /**
  * Toast for notification object.
  */
-const ToastSNCF: FC<Notification> = ({ title, date, type, text }) => {
+const ToastSNCF = ({ title, date, type, text }: Notification) => {
   const [open, setOpen] = useState<boolean>(true);
 
   return (

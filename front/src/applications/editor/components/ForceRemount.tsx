@@ -1,9 +1,8 @@
-import React, { type FC, type ReactNode, useEffect, useState } from 'react';
+import React, { type ReactNode, useEffect, useState } from 'react';
 
-const ForceRemount: FC<{ fingerprint: string; renderChildren: () => ReactNode }> = ({
-  fingerprint,
-  renderChildren,
-}) => {
+type ForceRemountProps = { fingerprint: string; renderChildren: () => ReactNode };
+
+const ForceRemount = ({ fingerprint, renderChildren }: ForceRemountProps) => {
   const [skipRender, setSkipRender] = useState(false);
 
   useEffect(() => {

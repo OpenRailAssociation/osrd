@@ -1,5 +1,4 @@
 import React, { useCallback, useContext, useEffect } from 'react';
-import type { FC } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -14,7 +13,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useInfraID } from 'common/osrdContext';
 import { saveSplitTrackSection } from 'reducers/editor/thunkActions';
 
-const TrackSplitLeftPanel: FC<unknown> = () => {
+const TrackSplitLeftPanel = () => {
   const { t } = useTranslation(['translation', 'infraEditor']);
   const infraID = useInfraID();
   const { state, setState, isFormSubmited, setIsFormSubmited, switchTool, dispatch } = useContext(
