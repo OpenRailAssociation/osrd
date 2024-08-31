@@ -8337,7 +8337,10 @@ components:
       properties:
         dry:
           type: boolean
-          description: Whether to return the SQL query instead of executing it
+          description: |-
+            Whether to return the SQL query instead of executing it
+
+            Only available in debug builds.
         object:
           type: string
           description: The object kind to query - run `editoast search list` to get all possible values

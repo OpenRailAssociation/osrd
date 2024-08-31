@@ -2514,7 +2514,9 @@ export type SearchResultItem =
   | SearchResultItemScenario;
 export type SearchQuery = boolean | number | number | string | (SearchQuery | null)[];
 export type SearchPayload = {
-  /** Whether to return the SQL query instead of executing it */
+  /** Whether to return the SQL query instead of executing it
+    
+    Only available in debug builds. */
   dry?: boolean;
   /** The object kind to query - run `editoast search list` to get all possible values */
   object: string;

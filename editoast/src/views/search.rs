@@ -200,9 +200,6 @@
 use axum::extract::Json;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::http::header::CONTENT_TYPE;
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use axum::Extension;
 use chrono::NaiveDateTime;
 use diesel::pg::Pg;
@@ -277,6 +274,8 @@ pub struct SearchPayload {
     #[schema(value_type = SearchQuery)]
     query: JsonValue,
     /// Whether to return the SQL query instead of executing it
+    ///
+    /// Only available in debug builds.
     #[serde(default)]
     dry: bool,
 }
@@ -342,7 +341,7 @@ async fn search(
     Extension(authorizer): AuthorizerExt,
     Query(query_params): Query<PaginationQueryParam>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
-) -> Result<impl IntoResponse> {
+) -> Result<Json<serde_json::Value>> {
     let roles: HashSet<BuiltinRole> = match object.as_str() {
         "track" | "operationalpoint" | "signal" => HashSet::from([BuiltinRole::InfraRead]),
         "project" | "study" | "scenario" => HashSet::from([BuiltinRole::OpsRead]),
@@ -376,25 +375,17 @@ async fn search(
         query = query.bind::<Text, _>(string.to_owned());
     }
 
-    if dry {
+    if cfg!(debug_assertions) && dry {
+        tracing::debug!("not running query");
         let query = diesel::debug_query::<Pg, _>(&query).to_string();
-        return Ok(axum::response::Response::builder()
-            .status(StatusCode::OK)
-            .body(axum::body::Body::from(query))
-            .unwrap());
+        return Ok(Json(serde_json::to_value(query).unwrap()));
     }
 
     let objects = query
         .load::<SearchDBResult>(db_pool.get().await?.deref_mut())
         .await?;
     let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
-    Ok(axum::response::Response::builder()
-        .status(StatusCode::OK)
-        .header(CONTENT_TYPE, "application/json")
-        .body(axum::body::Body::from(
-            serde_json::to_string(&results).expect("serde error"),
-        ))
-        .expect("response builder error"))
+    Ok(Json(serde_json::to_value(results).unwrap()))
 }
 
 // NOTE: every structure deriving `Search` here might have to `#[allow(unused)]`
