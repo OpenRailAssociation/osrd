@@ -96,6 +96,10 @@ pub mod test {
     #[rstest]
     async fn test_overwrite() {
         let db_pool = DbConnectionPoolV2::for_tests();
+        let initial_env_count =
+            StdcmSearchEnvironment::count(db_pool.get_ok().deref_mut(), Default::default())
+                .await
+                .expect("failed to count STDCM envs");
         let (infra, timetable, work_schedule_group, electrical_profile_set) =
             stdcm_search_env_fixtures(db_pool.get_ok().deref_mut()).await;
 
@@ -124,7 +128,7 @@ pub mod test {
             StdcmSearchEnvironment::count(db_pool.get_ok().deref_mut(), SelectionSettings::new())
                 .await
                 .expect("Failed to count"),
-            1
+            initial_env_count + 1
         );
 
         let _ = changeset_2
@@ -150,6 +154,9 @@ pub mod test {
     #[rstest]
     async fn test_retrieve_latest() {
         let db_pool = DbConnectionPoolV2::for_tests();
+        StdcmSearchEnvironment::delete_all(db_pool.get_ok().deref_mut())
+            .await
+            .expect("failed to delete envs");
         let (infra, timetable, work_schedule_group, electrical_profile_set) =
             stdcm_search_env_fixtures(db_pool.get_ok().deref_mut()).await;
 
@@ -192,8 +199,10 @@ pub mod test {
     #[rstest]
     async fn test_retrieve_latest_empty() {
         let db_pool = DbConnectionPoolV2::for_tests();
+        StdcmSearchEnvironment::delete_all(db_pool.get_ok().deref_mut())
+            .await
+            .expect("failed to delete envs");
         let result = StdcmSearchEnvironment::retrieve_latest(db_pool.get_ok().deref_mut()).await;
-
         assert_eq!(result, None);
     }
 }
