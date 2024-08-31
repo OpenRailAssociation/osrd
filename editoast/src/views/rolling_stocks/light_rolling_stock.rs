@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use editoast_schemas::rolling_stock::EffortCurves;
+use editoast_schemas::rolling_stock::ModeEffortCurves;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -11,7 +13,7 @@ use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 
-use crate::modelsv2::light_rolling_stock::LightRollingStockModel;
+use crate::modelsv2::RollingStockModel;
 
 editoast_common::schemas! {
     LightRollingStock,
@@ -44,29 +46,53 @@ pub struct LightRollingStock {
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
 }
 
-impl From<LightRollingStockModel> for LightRollingStock {
-    fn from(rolling_stock_model: LightRollingStockModel) -> Self {
+impl From<RollingStockModel> for LightRollingStock {
+    fn from(
+        RollingStockModel {
+            id,
+            railjson_version,
+            name,
+            effort_curves,
+            metadata,
+            length,
+            max_speed,
+            startup_time,
+            startup_acceleration,
+            comfort_acceleration,
+            gamma,
+            inertia_coefficient,
+            base_power_class,
+            mass,
+            rolling_resistance,
+            loading_gauge,
+            power_restrictions,
+            energy_sources,
+            locked,
+            supported_signaling_systems,
+            ..
+        }: RollingStockModel,
+    ) -> Self {
         LightRollingStock {
-            id: rolling_stock_model.id,
-            name: rolling_stock_model.name,
-            railjson_version: rolling_stock_model.railjson_version,
-            locked: rolling_stock_model.locked,
-            effort_curves: rolling_stock_model.effort_curves,
-            base_power_class: rolling_stock_model.base_power_class,
-            length: rolling_stock_model.length,
-            max_speed: rolling_stock_model.max_speed,
-            startup_time: rolling_stock_model.startup_time,
-            startup_acceleration: rolling_stock_model.startup_acceleration,
-            comfort_acceleration: rolling_stock_model.comfort_acceleration,
-            gamma: rolling_stock_model.gamma,
-            inertia_coefficient: rolling_stock_model.inertia_coefficient,
-            mass: rolling_stock_model.mass,
-            rolling_resistance: rolling_stock_model.rolling_resistance,
-            loading_gauge: rolling_stock_model.loading_gauge,
-            metadata: rolling_stock_model.metadata,
-            power_restrictions: rolling_stock_model.power_restrictions,
-            energy_sources: rolling_stock_model.energy_sources,
-            supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
+            id,
+            name,
+            railjson_version,
+            locked,
+            effort_curves: effort_curves.into(),
+            base_power_class,
+            length,
+            max_speed,
+            startup_time,
+            startup_acceleration,
+            comfort_acceleration,
+            gamma,
+            inertia_coefficient,
+            mass,
+            rolling_resistance,
+            loading_gauge,
+            metadata,
+            power_restrictions,
+            energy_sources,
+            supported_signaling_systems,
         }
     }
 }
@@ -82,4 +108,30 @@ pub struct LightModeEffortCurves {
 pub struct LightEffortCurves {
     modes: HashMap<String, LightModeEffortCurves>,
     default_mode: String,
+}
+
+impl From<EffortCurves> for LightEffortCurves {
+    fn from(
+        EffortCurves {
+            modes,
+            default_mode,
+        }: EffortCurves,
+    ) -> Self {
+        let modes = modes
+            .into_iter()
+            .map(|(mode, curve)| (mode, curve.into()))
+            .collect();
+        Self {
+            modes,
+            default_mode,
+        }
+    }
+}
+
+impl From<ModeEffortCurves> for LightModeEffortCurves {
+    fn from(value: ModeEffortCurves) -> Self {
+        Self {
+            is_electric: value.is_electric,
+        }
+    }
 }

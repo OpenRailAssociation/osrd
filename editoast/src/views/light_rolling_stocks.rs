@@ -14,8 +14,8 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
+use crate::modelsv2::RollingStockModel;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
@@ -56,7 +56,7 @@ pub struct LightRollingStockWithLiveries {
 impl LightRollingStockWithLiveries {
     async fn try_fetch(
         conn: &mut DbConnection,
-        light_rolling_stock: LightRollingStockModel,
+        light_rolling_stock: RollingStockModel,
     ) -> Result<Self> {
         let light_rolling_stock_id = light_rolling_stock.id;
         let liveries = RollingStockLiveryModel::list(
@@ -110,17 +110,15 @@ async fn list(
         .validate(1000)?
         .warn_page_size(100)
         .into_selection_settings()
-        .order_by(|| LightRollingStockModel::ID.asc());
-    let (light_rolling_stocks, stats) =
-        LightRollingStockModel::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+        .order_by(|| RollingStockModel::ID.asc());
+    let (rolling_stocks, stats) =
+        RollingStockModel::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
 
-    let results = light_rolling_stocks
-        .into_iter()
-        .zip(db_pool.iter_conn())
-        .map(|(light_rolling_stock, conn)| async move {
-            LightRollingStockWithLiveries::try_fetch(conn.await?.deref_mut(), light_rolling_stock)
-                .await
-        });
+    let results = rolling_stocks.into_iter().zip(db_pool.iter_conn()).map(
+        |(rolling_stock, conn)| async move {
+            LightRollingStockWithLiveries::try_fetch(conn.await?.deref_mut(), rolling_stock).await
+        },
+    );
 
     let results = futures::future::try_join_all(results).await?;
 
@@ -151,7 +149,7 @@ async fn get(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let light_rolling_stock = LightRollingStockModel::retrieve_or_fail(
+    let rolling_stock = RollingStockModel::retrieve_or_fail(
         db_pool.get().await?.deref_mut(),
         light_rolling_stock_id,
         || RollingStockError::KeyNotFound {
@@ -159,11 +157,9 @@ async fn get(
         },
     )
     .await?;
-    let light_rolling_stock_with_liveries = LightRollingStockWithLiveries::try_fetch(
-        db_pool.get().await?.deref_mut(),
-        light_rolling_stock,
-    )
-    .await?;
+    let light_rolling_stock_with_liveries =
+        LightRollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), rolling_stock)
+            .await?;
     Ok(Json(light_rolling_stock_with_liveries))
 }
 
@@ -188,7 +184,7 @@ async fn get_by_name(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let light_rolling_stock = LightRollingStockModel::retrieve_or_fail(
+    let rolling_stock = RollingStockModel::retrieve_or_fail(
         db_pool.get().await?.deref_mut(),
         light_rolling_stock_name.clone(),
         || RollingStockError::KeyNotFound {
@@ -196,11 +192,9 @@ async fn get_by_name(
         },
     )
     .await?;
-    let light_rolling_stock_with_liveries = LightRollingStockWithLiveries::try_fetch(
-        db_pool.get().await?.deref_mut(),
-        light_rolling_stock,
-    )
-    .await?;
+    let light_rolling_stock_with_liveries =
+        LightRollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), rolling_stock)
+            .await?;
     Ok(Json(light_rolling_stock_with_liveries))
 }
 
