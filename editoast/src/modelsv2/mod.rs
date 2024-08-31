@@ -6,7 +6,6 @@ pub mod fixtures;
 pub mod infra;
 pub mod infra_objects;
 pub mod layers;
-pub mod light_rolling_stock;
 // We allow unused until models is moved to a separate crate
 pub mod auth;
 pub mod pagination;
@@ -29,7 +28,6 @@ pub use prelude::*;
 pub use documents::Document;
 pub use infra::Infra;
 pub use infra_objects::*;
-pub use light_rolling_stock::LightRollingStockModel;
 pub use projects::Project;
 pub use projects::Tags;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;

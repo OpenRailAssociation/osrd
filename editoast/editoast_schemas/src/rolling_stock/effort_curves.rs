@@ -19,7 +19,7 @@ editoast_common::schemas! {
 #[serde(deny_unknown_fields)]
 pub struct EffortCurves {
     pub modes: BTreeMap<String, ModeEffortCurves>,
-    default_mode: String,
+    pub default_mode: String,
 }
 
 impl EffortCurves {
