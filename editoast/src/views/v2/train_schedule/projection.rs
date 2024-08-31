@@ -128,7 +128,12 @@ struct CachedProjectPathTrainResult {
 async fn project_path(
     app_state: State<AppState>,
     Extension(authorizer): AuthorizerExt,
-    Json(data): Json<ProjectPathForm>,
+    Json(ProjectPathForm {
+        infra_id,
+        ids: train_ids,
+        path,
+        electrical_profile_set_id,
+    }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
     let authorized = authorizer
         .check_roles(
@@ -149,12 +154,6 @@ async fn project_path(
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
 
-    let ProjectPathForm {
-        infra_id,
-        ids: train_ids,
-        path,
-        electrical_profile_set_id,
-    } = data;
     let ProjectPathInput {
         track_section_ranges: path_track_ranges,
         routes: path_routes,

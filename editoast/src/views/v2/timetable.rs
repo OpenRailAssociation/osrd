@@ -219,7 +219,7 @@ async fn train_schedule(
     db_pool: State<DbConnectionPoolV2>,
     Extension(authorizer): AuthorizerExt,
     Path(timetable_id): Path<TimetableIdParam>,
-    Json(data): Json<Vec<TrainScheduleBase>>,
+    Json(train_schedules): Json<Vec<TrainScheduleBase>>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::TimetableWrite].into())
@@ -237,7 +237,7 @@ async fn train_schedule(
     })
     .await?;
 
-    let changesets: Vec<TrainScheduleChangeset> = data
+    let changesets: Vec<TrainScheduleChangeset> = train_schedules
         .into_iter()
         .map(|ts| TrainScheduleForm {
             timetable_id: Some(timetable_id),

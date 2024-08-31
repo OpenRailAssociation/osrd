@@ -140,7 +140,10 @@ struct WorkScheduleCreateResponse {
 async fn create(
     State(app_state): State<AppState>,
     Extension(authorizer): AuthorizerExt,
-    Json(data): Json<WorkScheduleCreateForm>,
+    Json(WorkScheduleCreateForm {
+        work_schedule_group_name,
+        work_schedules,
+    }): Json<WorkScheduleCreateForm>,
 ) -> Result<Json<WorkScheduleCreateResponse>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::WorkScheduleWrite].into())
@@ -153,20 +156,17 @@ async fn create(
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
 
-    let work_schedule_create_form = data;
-
     // Create the work_schedule_group
     let work_schedule_group = WorkScheduleGroup::changeset()
-        .name(work_schedule_create_form.work_schedule_group_name.clone())
+        .name(work_schedule_group_name.clone())
         .creation_date(Utc::now().naive_utc())
         .create(conn)
         .await;
-    let work_schedule_group = work_schedule_group
-        .map_err(|e| map_diesel_error(e, work_schedule_create_form.work_schedule_group_name))?;
+    let work_schedule_group =
+        work_schedule_group.map_err(|e| map_diesel_error(e, work_schedule_group_name))?;
 
     // Create work schedules
-    let work_schedules_changesets = work_schedule_create_form
-        .work_schedules
+    let work_schedules_changesets = work_schedules
         .into_iter()
         .map(|work_schedule| work_schedule.into_work_schedule_changeset(work_schedule_group.id))
         .collect::<Vec<_>>();

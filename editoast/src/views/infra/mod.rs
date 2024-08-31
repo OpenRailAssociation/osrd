@@ -335,7 +335,7 @@ impl From<InfraCreateForm> for Changeset<Infra> {
 async fn create(
     db_pool: State<DbConnectionPoolV2>,
     Extension(authorizer): AuthorizerExt,
-    Json(data): Json<InfraCreateForm>,
+    Json(infra_form): Json<InfraCreateForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = authorizer
         .check_roles([BuiltinRole::InfraWrite].into())
@@ -345,7 +345,7 @@ async fn create(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let infra: Changeset<Infra> = data.into();
+    let infra: Changeset<Infra> = infra_form.into();
     let infra = infra.create(db_pool.get().await?.deref_mut()).await?;
     Ok((StatusCode::CREATED, Json(infra)))
 }

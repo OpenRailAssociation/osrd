@@ -217,7 +217,7 @@ struct BatchRequest {
 async fn get_batch(
     app_state: State<AppState>,
     Extension(authorizer): AuthorizerExt,
-    Json(data): Json<BatchRequest>,
+    Json(BatchRequest { ids: train_ids }): Json<BatchRequest>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
@@ -229,7 +229,6 @@ async fn get_batch(
 
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
-    let train_ids = data.ids;
     let train_schedules: Vec<TrainSchedule> =
         TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
@@ -252,7 +251,7 @@ async fn get_batch(
 async fn delete(
     app_state: State<AppState>,
     Extension(authorizer): AuthorizerExt,
-    Json(data): Json<BatchRequest>,
+    Json(BatchRequest { ids: train_ids }): Json<BatchRequest>,
 ) -> Result<impl IntoResponse> {
     let authorized = authorizer
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())
@@ -266,8 +265,7 @@ async fn delete(
 
     use crate::modelsv2::DeleteBatch;
     let conn = &mut db_pool.get().await?;
-    let train_schedule_ids = data.ids;
-    TrainSchedule::delete_batch_or_fail(conn, train_schedule_ids, |number| {
+    TrainSchedule::delete_batch_or_fail(conn, train_ids, |number| {
         TrainScheduleError::BatchTrainScheduleNotFound { number }
     })
     .await?;
@@ -289,7 +287,7 @@ async fn put(
     db_pool: State<DbConnectionPoolV2>,
     Extension(authorizer): AuthorizerExt,
     train_schedule_id: Path<TrainScheduleIdParam>,
-    Json(data): Json<TrainScheduleForm>,
+    Json(train_schedule_form): Json<TrainScheduleForm>,
 ) -> Result<Json<TrainScheduleResult>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())
@@ -302,7 +300,7 @@ async fn put(
     let conn = &mut db_pool.get().await?;
 
     let train_schedule_id = train_schedule_id.id;
-    let ts_changeset: TrainScheduleChangeset = data.into();
+    let ts_changeset: TrainScheduleChangeset = train_schedule_form.into();
 
     let ts_result = ts_changeset
         .update_or_fail(conn, train_schedule_id, || TrainScheduleError::NotFound {
@@ -672,7 +670,11 @@ enum SimulationSummaryResult {
 async fn simulation_summary(
     app_state: State<AppState>,
     Extension(authorizer): AuthorizerExt,
-    Json(data): Json<SimulationBatchForm>,
+    Json(SimulationBatchForm {
+        infra_id,
+        electrical_profile_set_id,
+        ids: train_schedule_ids,
+    }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
@@ -685,12 +687,6 @@ async fn simulation_summary(
     let db_pool = app_state.db_pool_v2.clone();
     let redis_client = app_state.redis.clone();
     let core = app_state.core_client.clone();
-
-    let SimulationBatchForm {
-        infra_id,
-        electrical_profile_set_id,
-        ids: train_schedule_ids,
-    } = data;
 
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
