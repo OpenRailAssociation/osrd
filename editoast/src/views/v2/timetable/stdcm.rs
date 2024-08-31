@@ -153,7 +153,7 @@ async fn stdcm(
     Extension(authorizer): AuthorizerExt,
     Path(id): Path<i64>,
     Query(query): Query<InfraIdQueryParam>,
-    Json(data): Json<STDCMRequestPayload>,
+    Json(stdcm_request): Json<STDCMRequestPayload>,
 ) -> Result<Json<STDCMResponse>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::Stdcm].into())
@@ -188,9 +188,9 @@ async fn stdcm(
 
     let rolling_stock = RollingStockModel::retrieve_or_fail(
         db_pool.get().await?.deref_mut(),
-        data.rolling_stock_id,
+        stdcm_request.rolling_stock_id,
         || STDCMError::RollingStockNotFound {
-            rolling_stock_id: data.rolling_stock_id,
+            rolling_stock_id: stdcm_request.rolling_stock_id,
         },
     )
     .await?;
@@ -201,7 +201,7 @@ async fn stdcm(
         core_client.clone(),
         &trains,
         &infra,
-        data.electrical_profile_set_id,
+        stdcm_request.electrical_profile_set_id,
     )
     .await?;
 
@@ -210,7 +210,7 @@ async fn stdcm(
         db_pool.clone(),
         redis_client.clone(),
         core_client.clone(),
-        &data,
+        &stdcm_request,
         &infra,
         &rolling_stock,
         timetable_id,
@@ -224,17 +224,22 @@ async fn stdcm(
             }))
         }
     };
-    let earliest_step_tolerance_window = get_earliest_step_tolerance_window(&data);
-    let maximum_departure_delay =
-        get_maximum_departure_delay(&data, simulation_run_time, earliest_step_tolerance_window);
-    let maximum_run_time_without_tolerance = 2 * simulation_run_time + get_total_stop_time(&data);
+    let earliest_step_tolerance_window = get_earliest_step_tolerance_window(&stdcm_request);
+    let maximum_departure_delay = get_maximum_departure_delay(
+        &stdcm_request,
+        simulation_run_time,
+        earliest_step_tolerance_window,
+    );
+    let maximum_run_time_without_tolerance =
+        2 * simulation_run_time + get_total_stop_time(&stdcm_request);
     let maximum_run_time = get_maximum_run_time(
-        &data,
+        &stdcm_request,
         maximum_run_time_without_tolerance,
         earliest_step_tolerance_window,
     );
 
-    let departure_time = get_earliest_departure_time(&data, maximum_run_time_without_tolerance);
+    let departure_time =
+        get_earliest_departure_time(&stdcm_request, maximum_run_time_without_tolerance);
     let latest_simulation_end = departure_time + Duration::milliseconds((maximum_run_time) as i64);
 
     // 3. Get scheduled train requirements
@@ -242,7 +247,8 @@ async fn stdcm(
         build_train_requirements(trains, simulations, departure_time, latest_simulation_end);
 
     // 4. Parse stdcm path items
-    let path_items = parse_stdcm_steps(db_pool.get().await?.deref_mut(), &data, &infra).await?;
+    let path_items =
+        parse_stdcm_steps(db_pool.get().await?.deref_mut(), &stdcm_request, &infra).await?;
 
     // 5. Build STDCM request
     let stdcm_response = STDCMRequest {
@@ -253,18 +259,18 @@ async fn stdcm(
         rolling_stock_supported_signaling_systems: rolling_stock
             .supported_signaling_systems
             .clone(),
-        comfort: data.comfort,
+        comfort: stdcm_request.comfort,
         path_items,
         start_time: departure_time,
         trains_requirements,
         maximum_departure_delay,
         maximum_run_time,
-        speed_limit_tag: data.speed_limit_tags,
-        time_gap_before: data.time_gap_before,
-        time_gap_after: data.time_gap_after,
-        margin: data.margin,
+        speed_limit_tag: stdcm_request.speed_limit_tags,
+        time_gap_before: stdcm_request.time_gap_before,
+        time_gap_after: stdcm_request.time_gap_after,
+        margin: stdcm_request.margin,
         time_step: Some(2000),
-        work_schedules: match data.work_schedule_group_id {
+        work_schedules: match stdcm_request.work_schedule_group_id {
             Some(work_schedule_group_id) => {
                 build_work_schedules(
                     db_pool.get().await?.deref_mut(),

@@ -194,7 +194,7 @@ async fn post_electrical_profile(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(authorizer): AuthorizerExt,
     Query(ep_set_name): Query<ElectricalProfileQueryArgs>,
-    Json(data): Json<ElectricalProfileSetData>,
+    Json(ep_data): Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::InfraWrite].into())
@@ -205,7 +205,7 @@ async fn post_electrical_profile(
     }
     let ep_set = ElectricalProfileSet::changeset()
         .name(ep_set_name.name)
-        .data(data);
+        .data(ep_data);
     let conn = &mut db_pool.get().await?;
     Ok(Json(ep_set.create(conn).await?))
 }
