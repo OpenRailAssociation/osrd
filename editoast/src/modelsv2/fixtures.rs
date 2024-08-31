@@ -23,7 +23,7 @@ use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::Scenario;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
-use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
+use crate::views::rolling_stock::RollingStockForm;
 use crate::views::v2::train_schedule::TrainScheduleForm;
 use crate::ElectricalProfileSet;
 use editoast_models::DbConnection;

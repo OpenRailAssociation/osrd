@@ -6,12 +6,25 @@ use axum::Extension;
 use editoast_authz::BuiltinRole;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::rolling_stock::EffortCurves;
+use editoast_schemas::rolling_stock::EnergySource;
+use editoast_schemas::rolling_stock::Gamma;
+use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::rolling_stock::ModeEffortCurves;
+use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockLivery;
+use editoast_schemas::rolling_stock::RollingStockMetadata;
+use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use itertools::Itertools;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
 
+use super::RollingStockError;
+use super::RollingStockIdParam;
+use super::RollingStockKey;
+use super::RollingStockNameParam;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::Retrieve;
@@ -19,11 +32,6 @@ use crate::modelsv2::RollingStockModel;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
-use crate::views::rolling_stocks::light_rolling_stock::LightRollingStock;
-use crate::views::rolling_stocks::RollingStockError;
-use crate::views::rolling_stocks::RollingStockIdParam;
-use crate::views::rolling_stocks::RollingStockKey;
-use crate::views::rolling_stocks::RollingStockNameParam;
 use crate::List;
 use crate::SelectionSettings;
 
@@ -42,15 +50,18 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
+    LightEffortCurves,
+    LightModeEffortCurves,
+    LightRollingStock,
     LightRollingStockWithLiveries,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-pub struct LightRollingStockWithLiveries {
+struct LightRollingStockWithLiveries {
     #[serde(flatten)]
-    pub rolling_stock: LightRollingStock,
-    pub liveries: Vec<RollingStockLivery>,
+    rolling_stock: LightRollingStock,
+    liveries: Vec<RollingStockLivery>,
 }
 
 impl LightRollingStockWithLiveries {
@@ -198,6 +209,123 @@ async fn get_by_name(
     Ok(Json(light_rolling_stock_with_liveries))
 }
 
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+struct LightRollingStock {
+    id: i64,
+    name: String,
+    railjson_version: String,
+    locked: bool,
+    effort_curves: LightEffortCurves,
+    base_power_class: Option<String>,
+    length: f64,
+    max_speed: f64,
+    startup_time: f64,
+    startup_acceleration: f64,
+    comfort_acceleration: f64,
+    gamma: Gamma,
+    inertia_coefficient: f64,
+    mass: f64,
+    rolling_resistance: RollingResistance,
+    loading_gauge: LoadingGaugeType,
+    metadata: Option<RollingStockMetadata>,
+    power_restrictions: HashMap<String, String>,
+    energy_sources: Vec<EnergySource>,
+    supported_signaling_systems: RollingStockSupportedSignalingSystems,
+}
+
+impl From<RollingStockModel> for LightRollingStock {
+    fn from(
+        RollingStockModel {
+            id,
+            railjson_version,
+            name,
+            effort_curves,
+            metadata,
+            length,
+            max_speed,
+            startup_time,
+            startup_acceleration,
+            comfort_acceleration,
+            gamma,
+            inertia_coefficient,
+            base_power_class,
+            mass,
+            rolling_resistance,
+            loading_gauge,
+            power_restrictions,
+            energy_sources,
+            locked,
+            supported_signaling_systems,
+            ..
+        }: RollingStockModel,
+    ) -> Self {
+        LightRollingStock {
+            id,
+            name,
+            railjson_version,
+            locked,
+            effort_curves: effort_curves.into(),
+            base_power_class,
+            length,
+            max_speed,
+            startup_time,
+            startup_acceleration,
+            comfort_acceleration,
+            gamma,
+            inertia_coefficient,
+            mass,
+            rolling_resistance,
+            loading_gauge,
+            metadata,
+            power_restrictions,
+            energy_sources,
+            supported_signaling_systems,
+        }
+    }
+}
+
+// Light effort curves schema for LightRollingStock
+#[derive(Debug, Clone, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+struct LightModeEffortCurves {
+    is_electric: bool,
+}
+
+#[derive(Debug, Clone, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+#[serde(deny_unknown_fields)]
+struct LightEffortCurves {
+    modes: HashMap<String, LightModeEffortCurves>,
+    default_mode: String,
+}
+
+impl From<EffortCurves> for LightEffortCurves {
+    fn from(
+        EffortCurves {
+            modes,
+            default_mode,
+        }: EffortCurves,
+    ) -> Self {
+        let modes = modes
+            .into_iter()
+            .map(|(mode, curve)| (mode, curve.into()))
+            .collect();
+        Self {
+            modes,
+            default_mode,
+        }
+    }
+}
+
+impl From<ModeEffortCurves> for LightModeEffortCurves {
+    fn from(value: ModeEffortCurves) -> Self {
+        Self {
+            is_electric: value.is_electric,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
@@ -207,11 +335,10 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::*;
 
-    use super::LightRollingStockWithLiveries;
+    use super::{LightRollingStockWithLiveries, LightRollingStockWithLiveriesCountList};
     use crate::error::InternalError;
     use crate::modelsv2::fixtures::create_fast_rolling_stock;
     use crate::modelsv2::fixtures::create_rolling_stock_livery_fixture;
-    use crate::views::light_rolling_stocks::LightRollingStockWithLiveriesCountList;
     use crate::views::test_app::TestAppBuilder;
 
     fn is_sorted(data: &[i64]) -> bool {
