@@ -184,6 +184,9 @@ pub mod test {
         let app = TestAppBuilder::default_app();
 
         let pool = app.db_pool();
+        StdcmSearchEnvironment::delete_all(pool.get_ok().deref_mut())
+            .await
+            .expect("failed to delete envs");
 
         let (infra, timetable, work_schedule_group, electrical_profile_set) =
             stdcm_search_env_fixtures(pool.get_ok().deref_mut()).await;
