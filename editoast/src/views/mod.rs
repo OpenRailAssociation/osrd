@@ -2,13 +2,12 @@ mod documents;
 pub mod electrical_profiles;
 pub mod infra;
 mod layers;
-pub mod light_rolling_stocks;
 mod openapi;
 pub mod operational_studies;
 pub mod pagination;
 pub mod params;
 pub mod projects;
-pub mod rolling_stocks;
+pub mod rolling_stock;
 pub mod search;
 pub mod speed_limit_tags;
 pub mod sprites;
@@ -70,9 +69,8 @@ crate::routes! {
     &electrical_profiles,
     &infra,
     &layers,
-    &light_rolling_stocks,
     &projects,
-    &rolling_stocks,
+    &rolling_stock,
     &search,
     &speed_limit_tags,
     &sprites,
@@ -94,12 +92,11 @@ editoast_common::schemas! {
     error::schemas(),
     generated_data::schemas(),
     infra::schemas(),
-    light_rolling_stocks::schemas(),
     operation::schemas(),
     operational_studies::schemas(),
     pagination::schemas(),
     projects::schemas(),
-    rolling_stocks::schemas(),
+    rolling_stock::schemas(),
     search::schemas(),
     stdcm_search_environment::schemas(),
     v2::schemas(),

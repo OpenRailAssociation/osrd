@@ -1,5 +1,7 @@
-pub mod light_rolling_stock;
-pub mod rolling_stock_form;
+mod form;
+pub mod light;
+
+pub use form::RollingStockForm;
 
 use std::io::Cursor;
 use std::ops::DerefMut;
@@ -22,7 +24,6 @@ use image::GenericImage;
 use image::ImageBuffer;
 use image::ImageFormat;
 use image::ImageReader;
-use rolling_stock_form::RollingStockForm;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -57,6 +58,7 @@ crate::routes! {
             "/usage" => get_usage,
         },
     },
+    &light,
 }
 
 editoast_common::schemas! {
@@ -68,7 +70,7 @@ editoast_common::schemas! {
     RollingStockKey,
     RollingStockWithLiveries,
     ScenarioReference,
-    light_rolling_stock::schemas(),
+    light::schemas(),
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -775,13 +777,22 @@ pub mod tests {
     use serde_json::json;
     use uuid::Uuid;
 
-    use crate::error::InternalError;
-
     use super::*;
-    use crate::modelsv2::fixtures::*;
+    use crate::error::InternalError;
+    use crate::modelsv2::fixtures::create_fast_rolling_stock;
+    use crate::modelsv2::fixtures::create_project;
+    use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::modelsv2::fixtures::create_scenario;
+    use crate::modelsv2::fixtures::create_small_infra;
+    use crate::modelsv2::fixtures::create_study;
+    use crate::modelsv2::fixtures::create_timetable;
+    use crate::modelsv2::fixtures::fast_rolling_stock_changeset;
+    use crate::modelsv2::fixtures::fast_rolling_stock_form;
+    use crate::modelsv2::fixtures::get_rolling_stock_with_invalid_effort_curves;
+    use crate::modelsv2::fixtures::rolling_stock_with_energy_sources_form;
+    use crate::modelsv2::fixtures::simple_train_schedule_form;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
     use crate::modelsv2::train_schedule::TrainSchedule;
-    use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 

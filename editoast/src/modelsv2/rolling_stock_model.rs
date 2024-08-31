@@ -208,8 +208,8 @@ pub mod tests {
     use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
     use crate::modelsv2::fixtures::rolling_stock_with_energy_sources_changeset;
     use crate::modelsv2::prelude::*;
-    use crate::views::rolling_stocks::map_diesel_error;
-    use crate::views::rolling_stocks::RollingStockError;
+    use crate::views::rolling_stock::map_diesel_error;
+    use crate::views::rolling_stock::RollingStockError;
     use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
