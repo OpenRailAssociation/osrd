@@ -6,7 +6,7 @@ import {
 import type { AppDispatch } from 'store';
 
 import nodeStore from './nodeStore';
-import type { NetzgrafikDto, NGEEvent, TrainrunSection, Node, Trainrun } from './types';
+import type { NetzgrafikDto, NGEEvent, TrainrunSection, Node, Trainrun } from '../NGE/types';
 
 const createdTrainrun = new Map<number, number>();
 

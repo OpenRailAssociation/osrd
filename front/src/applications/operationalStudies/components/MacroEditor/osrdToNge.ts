@@ -8,6 +8,7 @@ import type {
 import type { AppDispatch } from 'store';
 
 import nodeStore from './nodeStore';
+import { findOpFromPathItem, addDurationToDate } from './utils';
 import type {
   Node,
   Port,
@@ -18,9 +19,8 @@ import type {
   TrainrunFrequency,
   TrainrunTimeCategory,
   NetzgrafikDto,
-} from './types';
-import { PortAlignment } from './types';
-import { findOpFromPathItem, addDurationToDate } from './utils';
+} from '../NGE/types';
+import { PortAlignment } from '../NGE/types';
 
 // TODO: make this optional in NGE since it's SBB-specific
 const TRAINRUN_CATEGORY_HALTEZEITEN = {

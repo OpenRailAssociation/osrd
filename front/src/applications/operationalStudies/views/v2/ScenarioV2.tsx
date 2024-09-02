@@ -7,14 +7,11 @@ import { GiElectric } from 'react-icons/gi';
 import { useSelector } from 'react-redux';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import NGE from 'applications/operationalStudies/components/MacroEditor/NGE';
 import handleOperation from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
 import importTimetableToNGE from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
-import type {
-  NetzgrafikDto,
-  NGEEvent,
-} from 'applications/operationalStudies/components/MacroEditor/types';
 import MicroMacroSwitch from 'applications/operationalStudies/components/MicroMacroSwitch';
+import NGE from 'applications/operationalStudies/components/NGE/NGE';
+import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import infraLogo from 'assets/pictures/components/tracks.svg';
