@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
 
 import type { SimulationResults, TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import { getScaleDomainFromValuesV2 } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SimulationResultsMapV2 from 'modules/simulationResult/components/SimulationResultsMapV2';
@@ -33,6 +34,7 @@ type SimulationResultsV2Props = {
   collapsedTimetable: boolean;
   spaceTimeData?: TrainSpaceTimeData[];
   infraId?: number;
+  trainScheduleUsedForProjection?: TrainScheduleResult;
   trainIdUsedForProjection?: number;
   simulationResults: SimulationResults;
   timetableTrainNb: number;
@@ -42,6 +44,7 @@ const SimulationResultsV2 = ({
   collapsedTimetable,
   spaceTimeData,
   infraId,
+  trainScheduleUsedForProjection,
   trainIdUsedForProjection,
   simulationResults: {
     selectedTrainSchedule,
@@ -88,6 +91,7 @@ const SimulationResultsV2 = ({
   );
 
   const projectedOperationalPoints = useGetProjectedTrainOperationalPoints(
+    trainScheduleUsedForProjection,
     trainIdUsedForProjection,
     infraId
   );
