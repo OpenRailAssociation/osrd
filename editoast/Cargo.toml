@@ -129,7 +129,7 @@ opentelemetry-semantic-conventions = "0.15.0"
 opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio", "trace"] }
 osm_to_railjson = { path = "./osm_to_railjson" }
 paste.workspace = true
-pathfinding = "4.10.0"
+pathfinding = "4.11.0"
 postgis_diesel.workspace = true
 rand.workspace = true
 rangemap.workspace = true
