@@ -524,6 +524,24 @@ export const trainScheduleHonored: TrainScheduleResult = {
   },
 };
 
+export const trainScheduleNoSchedule: TrainScheduleResult = {
+  ...trainScheduleHonored,
+  schedule: undefined,
+};
+
+export const trainScheduleNoMatch: TrainScheduleResult = {
+  ...trainScheduleHonored,
+  schedule: [
+    {
+      at: 'notExisting',
+      arrival: 'PT300S',
+      stop_for: 'P0D',
+      on_stop_signal: false,
+      locked: false,
+    },
+  ],
+};
+
 export const trainSummaryHonored: Extract<SimulationSummaryResult, { status: 'success' }> = {
   status: 'success',
   length: 40345000,
