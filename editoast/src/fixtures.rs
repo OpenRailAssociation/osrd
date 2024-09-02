@@ -1,7 +1,6 @@
 #[allow(dead_code)]
 #[cfg(test)]
 pub mod tests {
-    use std::io::Cursor;
     use std::ops::{Deref, DerefMut};
     use std::sync::Arc;
 
@@ -11,21 +10,10 @@ pub mod tests {
     use crate::client::PostgresConfig;
     use crate::{
         models::Identifiable,
-        modelsv2::{
-            self, projects::Tags, scenario::Scenario as ScenarioV2,
-            timetable::Timetable as TimetableV2, train_schedule::TrainSchedule as TrainScheduleV2,
-            Changeset, Document, Infra, Model, Project, RollingStockModel, Study,
-        },
-        views::{
-            rolling_stocks::rolling_stock_form::RollingStockForm,
-            v2::train_schedule::TrainScheduleForm,
-        },
+        modelsv2::{self, Infra, Model},
     };
 
-    use chrono::Utc;
     use editoast_schemas::infra::RailJson;
-    use editoast_schemas::rolling_stock::RollingStock;
-    use editoast_schemas::train_schedule::TrainScheduleBase;
     use futures::executor;
     use rstest::*;
     use std::fmt;
@@ -120,189 +108,6 @@ pub mod tests {
         Arc::new(
             create_connection_pool(pg_config_url, config.pool_size).expect("cannot create pool"),
         )
-    }
-
-    pub fn get_fast_rolling_stock_form(name: &str) -> RollingStockForm {
-        let mut rolling_stock_form: RollingStockForm =
-            serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
-                .expect("Unable to parse");
-        rolling_stock_form.name = name.to_string();
-        rolling_stock_form
-    }
-
-    pub fn get_fast_rolling_stock_schema(name: &str) -> RollingStock {
-        let mut rolling_stock_form: RollingStock =
-            serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
-                .expect("Unable to parse");
-        rolling_stock_form.name = name.to_string();
-        rolling_stock_form
-    }
-
-    pub async fn named_fast_rolling_stock(
-        name: &str,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> TestFixture<RollingStockModel> {
-        let mut rs: Changeset<RollingStockModel> = get_fast_rolling_stock_form(name).into();
-        rs = rs.version(0);
-        TestFixture::create(rs, db_pool).await
-    }
-
-    pub fn get_other_rolling_stock_form(name: &str) -> RollingStockForm {
-        let mut rolling_stock_form: RollingStockForm = serde_json::from_str(include_str!(
-            "./tests/example_rolling_stock_2_energy_sources.json"
-        ))
-        .expect("Unable to parse");
-        rolling_stock_form.name = name.to_string();
-        rolling_stock_form
-    }
-
-    pub fn get_trainschedule_json_array() -> &'static str {
-        include_str!("./tests/train_schedules/simple_array.json")
-    }
-
-    #[derive(Debug)]
-    pub struct TrainScheduleV2FixtureSet {
-        pub train_schedule: TestFixture<TrainScheduleV2>,
-        pub timetable: TestFixture<TimetableV2>,
-    }
-
-    #[fixture]
-    pub async fn train_schedule_v2(
-        #[future] timetable_v2: TestFixture<TimetableV2>,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> TrainScheduleV2FixtureSet {
-        let timetable = timetable_v2.await;
-        let train_schedule = make_simple_train_schedule_v2(timetable.id(), db_pool).await;
-
-        TrainScheduleV2FixtureSet {
-            train_schedule,
-            timetable,
-        }
-    }
-
-    pub async fn make_simple_train_schedule_v2(
-        timetable_id: i64,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> TestFixture<TrainScheduleV2> {
-        let train_schedule_base: TrainScheduleBase =
-            serde_json::from_str(include_str!("./tests/train_schedules/simple.json"))
-                .expect("Unable to parse");
-        let train_schedule_form = TrainScheduleForm {
-            timetable_id: Some(timetable_id),
-            train_schedule: train_schedule_base,
-        };
-
-        TestFixture::create(train_schedule_form.into(), db_pool).await
-    }
-
-    pub struct StudyFixtureSet {
-        pub project: TestFixture<Project>,
-        pub study: TestFixture<Study>,
-    }
-
-    #[fixture]
-    pub async fn study_fixture_set(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] project: TestFixture<Project>,
-    ) -> StudyFixtureSet {
-        let project = project.await;
-        let study_model = Study::changeset()
-            .name("test_study".into())
-            .creation_date(Utc::now().naive_utc())
-            .creation_date(Utc::now().naive_utc())
-            .last_modification(Utc::now().naive_utc())
-            .budget(Some(0))
-            .tags(Tags::default())
-            .state("some_state".into())
-            .project_id(project.id());
-        StudyFixtureSet {
-            project,
-            study: TestFixture::create(study_model, db_pool).await,
-        }
-    }
-
-    #[fixture]
-    pub async fn project(db_pool: Arc<DbConnectionPool>) -> TestFixture<Project> {
-        let project_model = Project::changeset()
-            .name("test_project".to_owned())
-            .budget(Some(0))
-            .creation_date(Utc::now().naive_utc())
-            .last_modification(Utc::now().naive_utc())
-            .tags(Tags::default());
-        TestFixture::create(project_model, db_pool).await
-    }
-
-    #[fixture]
-    pub async fn timetable_v2(db_pool: Arc<DbConnectionPool>) -> TestFixture<TimetableV2> {
-        TestFixture::new(
-            TimetableV2::create(db_pool.get().await.unwrap().deref_mut())
-                .await
-                .expect("Unable to create timetable"),
-            db_pool,
-        )
-    }
-
-    pub struct ScenarioV2FixtureSet {
-        pub project: TestFixture<Project>,
-        pub study: TestFixture<Study>,
-        pub scenario: TestFixture<ScenarioV2>,
-        pub timetable: TestFixture<TimetableV2>,
-        pub infra: TestFixture<Infra>,
-    }
-
-    #[fixture]
-    pub async fn scenario_v2_fixture_set(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] timetable_v2: TestFixture<TimetableV2>,
-        #[future] project: TestFixture<Project>,
-    ) -> ScenarioV2FixtureSet {
-        let StudyFixtureSet { project, study } = study_fixture_set(db_pool.clone(), project).await;
-        let empty_infra = empty_infra(db_pool.clone()).await;
-        let timetable = timetable_v2.await;
-        let scenario = ScenarioV2::changeset()
-            .name("test_scenario_v2".to_string())
-            .description("test_scenario_v2 description".to_string())
-            .creation_date(Utc::now().naive_utc())
-            .last_modification(Utc::now().naive_utc())
-            .tags(Tags::default())
-            .timetable_id(timetable.model.get_id())
-            .study_id(study.model.get_id())
-            .infra_id(empty_infra.model.get_id());
-        let scenario = TestFixture::create(scenario, db_pool).await;
-        ScenarioV2FixtureSet {
-            project,
-            study,
-            scenario,
-            timetable,
-            infra: empty_infra,
-        }
-    }
-
-    #[fixture]
-    pub async fn document_example(db_pool: Arc<DbConnectionPool>) -> TestFixture<Document> {
-        let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
-        let mut img_bytes: Vec<u8> = Vec::new();
-        assert!(img
-            .write_to(&mut Cursor::new(&mut img_bytes), image::ImageFormat::Png)
-            .is_ok());
-        TestFixture::create(
-            Document::changeset()
-                .content_type(String::from("img/png"))
-                .data(img_bytes),
-            db_pool,
-        )
-        .await
-    }
-
-    #[fixture]
-    pub async fn empty_infra(db_pool: Arc<DbConnectionPool>) -> TestFixture<Infra> {
-        TestFixture::create(
-            Infra::changeset()
-                .name("test_infra".to_owned())
-                .last_railjson_version(),
-            db_pool,
-        )
-        .await
     }
 
     async fn make_small_infra(db_pool: Arc<DbConnectionPool>) -> Infra {
