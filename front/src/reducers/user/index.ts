@@ -17,7 +17,7 @@ export const userInitialState: UserState = {
   username: '',
   userPreferences: { safeWord: '' },
   account: {},
-  stdcmV2Activated: false,
+  stdcmV2Activated: true,
 };
 
 export const userSlice = createSlice({

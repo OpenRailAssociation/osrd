@@ -45,37 +45,46 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
 
   return (
     <div className="d-flex mb-2 osrd-config-item-container px-0">
-      <div className="col-3">
-        <InputSNCF
-          id="standardAllowanceTypeGridMarginBefore"
-          type="number"
-          value={gridMarginBefore || ''}
-          unit={ALLOWANCE_UNITS_KEYS.time}
-          onChange={(e) =>
-            dispatch(updateGridMarginBefore(Math.abs(convertInputStringToNumber(e.target.value))))
-          }
-          disabled={disabled}
-          sm
-          noMargin
-          label={t('allowances:gridMarginBeforeAfter')}
-          textRight
-        />
-      </div>
-      <div className="col-3">
-        <InputSNCF
-          id="standardAllowanceTypeGridMarginAfter"
-          type="number"
-          value={gridMarginAfter || ''}
-          unit={ALLOWANCE_UNITS_KEYS.time}
-          onChange={(e) =>
-            dispatch(updateGridMarginAfter(Math.abs(convertInputStringToNumber(e.target.value))))
-          }
-          disabled={disabled}
-          sm
-          noMargin
-          label=" "
-          textRight
-        />
+      <div className="d-flex flex-column">
+        <span className="mb-2">{t('allowances:gridMarginBeforeAfter')}</span>
+        <div className="d-flex">
+          <div className="col-6">
+            <InputSNCF
+              id="standardAllowanceTypeGridMarginBefore"
+              type="number"
+              value={gridMarginBefore || ''}
+              unit={ALLOWANCE_UNITS_KEYS.time}
+              onChange={(e) =>
+                dispatch(
+                  updateGridMarginBefore(Math.abs(convertInputStringToNumber(e.target.value)))
+                )
+              }
+              disabled={disabled}
+              sm
+              noMargin
+              label=""
+              textRight
+            />
+          </div>
+          <div className="col-6">
+            <InputSNCF
+              id="standardAllowanceTypeGridMarginAfter"
+              type="number"
+              value={gridMarginAfter || ''}
+              unit={ALLOWANCE_UNITS_KEYS.time}
+              onChange={(e) =>
+                dispatch(
+                  updateGridMarginAfter(Math.abs(convertInputStringToNumber(e.target.value)))
+                )
+              }
+              disabled={disabled}
+              sm
+              noMargin
+              label=""
+              textRight
+            />
+          </div>
+        </div>
       </div>
       <div className="col-6">
         <label htmlFor="standardAllowanceTypeSelect">{t('allowances:standardAllowance')}</label>

@@ -9,6 +9,9 @@
     "tractionEngine": "Traction engine"
   },
   "datetimeOutsideWindow": "Date must be between {{low}} and {{high}}",
+  "debug": {
+    "simulationSettings": "Simulation settings"
+  },
   "departureTime": "Departure time",
   "destinationTime": "Destination time",
   "leaveAt": "Leave at {{ time }}",

@@ -67,7 +67,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
         intermediatePoints.map((pathStep, index) => {
           const pathStepIndex = index + 1;
           return (
-            <>
+            <div className="stdcm-v2-vias-bundle" key={nextId('via-')}>
               <StdcmDefaultCard
                 hasTip
                 text={t('trainPath.addVia')}
@@ -76,18 +76,11 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                 disabled={disabled}
               />
               <StdcmCard
-                key={nextId('via-')}
                 name={t('trainPath.vias')}
                 title={
                   <div className="stdcm-v2-via-icons">
                     <div className="icon-bundle mt-1">
-                      <span>
-                        <img
-                          src={IntermediatePointIcon}
-                          alt="intermediate-point"
-                          style={{ width: '45px' }}
-                        />
-                      </span>
+                      <img src={IntermediatePointIcon} alt="intermediate-point" />
                       <span className="icon-index">{pathStepIndex}</span>
                     </div>
                     <button type="button" onClick={() => deleteViaOnClick(index)}>
@@ -113,7 +106,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                   />
                 )}
               </StdcmCard>
-            </>
+            </div>
           );
         })}
       <StdcmDefaultCard

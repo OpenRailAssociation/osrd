@@ -159,7 +159,7 @@ export const formatElectrificationRanges = (
   });
 
 /**
- * Format path propreties data to be used in simulation results charts
+ * Format path properties data to be used in simulation results charts
  */
 export const preparePathPropertiesData = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'],

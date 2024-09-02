@@ -17,6 +17,7 @@ import {
 import { useInfraID } from 'common/osrdContext';
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
+import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
 
 import { updateChartSynchronizerTrainData } from '../ChartSynchronizer/utils';
 
@@ -26,7 +27,7 @@ const useSpeedSpaceChart = (
   pathfindingResult?: PathfindingResultSuccess,
   simulation?: SimulationResponse,
   departureTime?: string
-) => {
+): SpeedSpaceChartData | null => {
   const { t } = useTranslation('simulation');
   const infraId = useInfraID();
 

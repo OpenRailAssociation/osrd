@@ -29,7 +29,10 @@ import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConfV2';
  *
  * @returns object with all the necessary information to manage the stdcm request/response
  */
-const useStdcm = (showFailureNotification: boolean = true) => {
+const useStdcm = (
+  isDebugMode = false,
+  { showFailureNotification = true }: { showFailureNotification?: boolean } = {}
+) => {
   const [stdcmTrainResult, setStdcmTrainResult] = useState<TrainScheduleResult>();
   const [stdcmV2Response, setStdcmV2Response] = useState<StdcmV2SuccessResponse>();
   const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState<StdcmRequestStatus>(
@@ -77,7 +80,8 @@ const useStdcm = (showFailureNotification: boolean = true) => {
       dispatch,
       t,
       osrdconf as OsrdStdcmConfState,
-      stdcmV2Activated
+      stdcmV2Activated,
+      isDebugMode
     );
     if (validConfig) {
       const payload = formatStdcmPayload(validConfig, stdcmV2Activated);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -12,8 +12,10 @@ import studyIcon from 'assets/pictures/views/study.svg';
 import { getDocument } from 'common/api/documentApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { LoaderFill } from 'common/Loaders';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { getStdcmV2Activated } from 'reducers/user/userSelectors';
+import { getScenarioDatetimeWindow } from 'modules/scenario/helpers/utils';
+import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
 
 import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
@@ -23,16 +25,17 @@ const ScenarioExplorer = ({
   globalStudyId,
   globalScenarioId,
   displayImgProject = true,
-}: ScenarioExplorerProps & { displayImgProject?: boolean }) => {
+}: ScenarioExplorerProps & {
+  displayImgProject?: boolean;
+}) => {
   const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useAppDispatch();
   const { openModal } = useModal();
   const { getTimetableID } = useOsrdConfSelectors();
   const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
-  const stdcmV2Activated = useSelector(getStdcmV2Activated);
 
-  const { updateInfraID, updateTimetableID, updateScenarioID } = useOsrdConfActions();
+  const { updateStdcmEnvironment } = useOsrdConfActions() as StdcmConfSliceActions;
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     { projectId: globalProjectId! },
     { skip: !globalProjectId }
@@ -44,7 +47,7 @@ const ScenarioExplorer = ({
       { skip: !globalProjectId && !globalStudyId }
     );
 
-  const { currentData: scenario, isSuccess: isScenarioSuccess } =
+  const { currentData: scenario } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
       {
         projectId: globalProjectId!,
@@ -62,6 +65,18 @@ const ScenarioExplorer = ({
     { skip: !timetableID }
   );
 
+  const timetableTrainIds = useMemo(() => timetable?.train_ids, [timetable]);
+  const { data: trainsDetails } = osrdEditoastApi.endpoints.postTrainSchedule.useQuery(
+    {
+      body: {
+        ids: timetableTrainIds!,
+      },
+    },
+    {
+      skip: !timetable || !timetableTrainIds,
+    }
+  );
+
   const getProjectImage = async (imageId: number) => {
     try {
       const blobImage = await getDocument(imageId);
@@ -75,10 +90,20 @@ const ScenarioExplorer = ({
 
   useEffect(() => {
     if (scenario) {
-      dispatch(updateTimetableID(scenario.timetable_id));
-      dispatch(updateInfraID(scenario.infra_id));
+      const scenarioDateTimeWindow = getScenarioDatetimeWindow(trainsDetails);
+
+      // We also set the stdcm environment in case we select a scenario from the stdcm interface.
+      dispatch(
+        updateStdcmEnvironment({
+          infraID: scenario.infra_id,
+          timetableID: scenario.timetable_id,
+          electricalProfileSetId: undefined,
+          workScheduleGroupId: undefined,
+          searchDatetimeWindow: scenarioDateTimeWindow,
+        })
+      );
     }
-  }, [scenario]);
+  }, [scenario, trainsDetails]);
 
   useEffect(() => {
     if (projectDetails?.image) {
@@ -88,11 +113,12 @@ const ScenarioExplorer = ({
     }
   }, [projectDetails]);
 
-  useEffect(() => {
-    if (!isScenarioSuccess && stdcmV2Activated) {
-      dispatch(updateScenarioID(undefined));
-    }
-  }, [scenario, isScenarioSuccess]);
+  const showNoScenarioContent = () =>
+    globalScenarioId && !scenario ? (
+      <LoaderFill />
+    ) : (
+      <div className="scenario-explorator-card-noscenario">{t('noScenarioSelected')}</div>
+    );
 
   return (
     <div
@@ -164,7 +190,7 @@ const ScenarioExplorer = ({
           </div>
         </div>
       ) : (
-        <div className="scenario-explorator-card-noscenario">{t('noScenarioSelected')}</div>
+        showNoScenarioContent()
       )}
     </div>
   );

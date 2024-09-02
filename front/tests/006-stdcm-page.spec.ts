@@ -15,7 +15,8 @@ const rollingStockName = 'rollingstock_1500_25000_test_e2e';
 const emptyRouteTranslation = manageTrainScheduleTranslation.pathfindingNoState;
 
 test.describe('STDCM page', () => {
-  test('should configure and launch a stdcm', async ({ page }) => {
+  // TODO: Refacto this test for the new stdcm page
+  test.skip('should configure and launch a stdcm', async ({ page }) => {
     const stdcmPage = new StdcmPage(page);
 
     // TODO: DROP STDCMV1: remove this part

@@ -89,7 +89,7 @@ const StdcmOrigin = ({
   return (
     <StdcmCard
       name={t('trainPath.origin')}
-      title={<img src={OriginIcon} alt="origin" />}
+      title={<img src={OriginIcon} alt="origin" className="stdcm-origin-icon" />}
       disabled={disabled}
       hasTip
     >

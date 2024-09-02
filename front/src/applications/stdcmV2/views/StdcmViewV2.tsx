@@ -7,6 +7,7 @@ import { LoaderFill } from 'common/Loaders';
 import { useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
+import { replaceElementAtIndex } from 'utils/array';
 
 import StdcmConfig from '../components/StdcmConfig';
 import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
@@ -16,17 +17,7 @@ import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';
 import type { StdcmSimulation, StdcmSimulationInputs } from '../types';
 
 const StdcmViewV2 = () => {
-  const { loading, error } = useStdcmEnvironment();
   // TODO : refacto. state useStdcm. Maybe we can merge some state together in order to reduce the number of refresh
-  const {
-    launchStdcmRequest,
-    cancelStdcmRequest,
-    isPending,
-    isRejected,
-    isStdcmResultsEmpty,
-    stdcmV2Results,
-    pathProperties,
-  } = useStdcm(false);
   const [currentSimulationInputs, setCurrentSimulationInputs] = useState<StdcmSimulationInputs>({
     pathSteps: [null, null], // origin and destination are not set yet. We use the same logic as in the store.
   });
@@ -35,6 +26,19 @@ const StdcmViewV2 = () => {
   const [showStatusBanner, setShowStatusBanner] = useState(false);
   const [retainedSimulationIndex, setRetainedSimulationIndex] = useState(-1);
   const [showBtnToLaunchSimulation, setShowBtnToLaunchSimulation] = useState(false);
+  const [isDebugMode, setIsDebugMode] = useState(false);
+
+  const {
+    launchStdcmRequest,
+    cancelStdcmRequest,
+    isPending,
+    isRejected,
+    isStdcmResultsEmpty,
+    stdcmV2Results,
+    pathProperties,
+  } = useStdcm(isDebugMode, { showFailureNotification: false });
+
+  const { loading, error, loadStdcmEnvironment } = useStdcmEnvironment();
 
   const dispatch = useAppDispatch();
   const { resetStdcmConfig, updateStdcmConfigWithData } =
@@ -87,25 +91,54 @@ const StdcmViewV2 = () => {
   }, [isPending]);
 
   useEffect(() => {
-    if (currentSimulationInputs && (stdcmV2Results?.stdcmResponse || isStdcmResultsEmpty)) {
-      setSimulationsList((prevSimulationList) => [
-        ...prevSimulationList,
-        {
-          id: prevSimulationList.length + 1,
-          creationDate: new Date(),
-          inputs: currentSimulationInputs,
-          ...(stdcmV2Results?.stdcmResponse &&
-            pathProperties && {
-              outputs: {
-                results: stdcmV2Results.stdcmResponse,
-                pathProperties,
-              },
+    if (!isDebugMode) {
+      loadStdcmEnvironment();
+    }
+  }, [isDebugMode]);
+
+  useEffect(() => {
+    /*
+     * Due to frequent re-renders and the fact that "speedSpaceChartData" is initially null before
+     * "formattedPathProperties" is computed, we need to check if the current simulation is already
+     * listed in the simulations list. This helps us determine whether to add a new simulation or update
+     * the existing one.
+     */
+    const lastSimulation = simulationsList[simulationsList.length - 1];
+    const isSimulationAlreadyListed = isEqual(lastSimulation?.inputs, currentSimulationInputs);
+    const isSimulationOutputsComplete =
+      stdcmV2Results?.stdcmResponse && stdcmV2Results?.speedSpaceChartData?.formattedPathProperties;
+
+    if (isSimulationOutputsComplete || isStdcmResultsEmpty) {
+      const newSimulation = {
+        ...(isSimulationAlreadyListed
+          ? { ...lastSimulation }
+          : {
+              id: simulationsList.length + 1,
+              creationDate: new Date(),
+              inputs: currentSimulationInputs,
             }),
-        },
-      ]);
+        ...(stdcmV2Results?.stdcmResponse &&
+          pathProperties && {
+            outputs: {
+              pathProperties,
+              results: stdcmV2Results.stdcmResponse,
+              speedSpaceChartData: stdcmV2Results.speedSpaceChartData,
+            },
+          }),
+      };
+
+      const updateSimulationsList = isSimulationAlreadyListed
+        ? replaceElementAtIndex(simulationsList, simulationsList.length - 1, newSimulation)
+        : [...simulationsList, newSimulation];
+
+      setSimulationsList(updateSimulationsList);
       setShowStatusBanner(true);
     }
-  }, [pathProperties, isStdcmResultsEmpty]);
+  }, [
+    pathProperties,
+    isStdcmResultsEmpty,
+    stdcmV2Results?.speedSpaceChartData?.formattedPathProperties,
+  ]);
 
   // We have a simulation with an error.
   useEffect(() => {
@@ -127,37 +160,38 @@ const StdcmViewV2 = () => {
 
   return (
     <div role="button" tabIndex={0} className="stdcm-v2" onClick={() => setShowStatusBanner(false)}>
-      <StdcmHeader />
+      <StdcmHeader isDebugMode={isDebugMode} onDebugModeToggle={setIsDebugMode} />
 
       {!isNil(error) ? (
         <StdcmEmptyConfigError />
       ) : (
         <div>
           <StdcmConfig
-            selectedSimulation={selectedSimulation}
-            currentSimulationInputs={currentSimulationInputs}
-            isPending={isPending}
-            showBtnToLaunchSimulation={showBtnToLaunchSimulation}
-            retainedSimulationIndex={retainedSimulationIndex}
-            showStatusBanner={showStatusBanner}
-            isCalculationFailed={isCalculationFailed}
-            launchStdcmRequest={launchStdcmRequest}
             cancelStdcmRequest={cancelStdcmRequest}
+            isCalculationFailed={isCalculationFailed}
+            isDebugMode={isDebugMode}
+            isPending={isPending}
+            launchStdcmRequest={launchStdcmRequest}
+            retainedSimulationIndex={retainedSimulationIndex}
+            selectedSimulation={selectedSimulation}
             setCurrentSimulationInputs={setCurrentSimulationInputs}
+            showBtnToLaunchSimulation={showBtnToLaunchSimulation}
+            showStatusBanner={showStatusBanner}
           />
 
           {showResults && (
             <div className="stdcm-v2-results">
               {selectedSimulationIndex > -1 && (
                 <StdcmResults
-                  simulationsList={simulationsList}
-                  selectedSimulationIndex={selectedSimulationIndex}
-                  retainedSimulationIndex={retainedSimulationIndex}
-                  showStatusBanner={showStatusBanner}
                   isCalculationFailed={isCalculationFailed}
+                  isDebugMode={isDebugMode}
                   onRetainSimulation={handleRetainSimulation}
                   onSelectSimulation={handleSelectSimulation}
                   onStartNewQuery={handleStartNewQuery}
+                  retainedSimulationIndex={retainedSimulationIndex}
+                  selectedSimulationIndex={selectedSimulationIndex}
+                  showStatusBanner={showStatusBanner}
+                  simulationsList={simulationsList}
                 />
               )}
             </div>

@@ -17,6 +17,11 @@
     button {
       display: none;
     }
+    .icon-bundle {
+      img {
+        width: 2.8125rem;
+      }
+    }
     .icon-index {
       position: absolute;
       width: 2.812rem;
@@ -80,7 +85,8 @@
     }
   }
 
-  &.disabled {
+  &.disabled,
+  * > .disabled {
     opacity: 0.5;
     pointer-events: none;
   }
@@ -92,7 +98,7 @@
 
 .stdcm-v2-card:hover {
   .stdcm-v2-via-icons {
-    span {
+    .icon-bundle {
       display: none;
     }
     button {
