@@ -54,7 +54,7 @@ export type Trainrun = {
   categoryId: number;
   frequencyId: number;
   trainrunTimeCategoryId: number;
-  labelIds: number[];
+  labelIds: (number | string)[];
 };
 
 export type TimeLock = {
@@ -147,8 +147,8 @@ export type NetzgrafikDto = {
     trainrunTimeCategories: TrainrunTimeCategory[];
   };
   freeFloatingTexts: unknown[];
-  labels: unknown[];
-  labelGroups: unknown[];
+  labels: Label[];
+  labelGroups: LabelGroup[];
   filterData: {
     filterSettings: unknown[];
   };
@@ -163,3 +163,16 @@ export type NGEEvent = {
     }
   | { objectType: 'node'; node: Node }
 );
+
+export type Label = {
+  id: number | string;
+  label: string;
+  labelGroupId: number;
+  labelRef: string;
+};
+
+export type LabelGroup = {
+  id: number;
+  name: string;
+  labelRef: string;
+};

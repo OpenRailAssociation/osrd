@@ -1,3 +1,5 @@
+import { compact } from 'lodash';
+
 import {
   osrdEditoastApi,
   type SearchResultItemOperationalPoint,
@@ -7,7 +9,7 @@ import {
 import type { AppDispatch } from 'store';
 
 import nodeStore from './nodeStore';
-import type { NetzgrafikDto, NGEEvent, TrainrunSection, Node, Trainrun } from '../NGE/types';
+import type { NetzgrafikDto, NGEEvent, TrainrunSection, Node, Trainrun, Label } from '../NGE/types';
 
 const createdTrainrun = new Map<number, number>();
 
@@ -142,7 +144,8 @@ const createTrainSchedulePayload = async (
   nodes: Node[],
   trainrun: Trainrun,
   infraId: number,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  labels: Label[]
 ) => {
   // TODO: check that the trainrunSections format is still compatible
   const pathPromise = trainrunSections.map(async (section, index) => {
@@ -164,9 +167,14 @@ const createTrainSchedulePayload = async (
 
   const path = await Promise.all(pathPromise);
 
+  const trainrunLabels = trainrun.labelIds.map(
+    (labelId) => labels.find((label) => label.id === labelId)?.label
+  );
+
   return {
     path: path.flat(),
     train_name: trainrun.name,
+    labels: compact(trainrunLabels),
   };
 };
 
@@ -189,8 +197,7 @@ const handleTrainrunOperation = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   addDeletedTrainIds: (trainIds: number[]) => void;
 }) => {
-  const { nodes } = netzgrafikDto;
-
+  const { nodes, labels } = netzgrafikDto;
   switch (type) {
     case 'create': {
       const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(
@@ -208,7 +215,8 @@ const handleTrainrunOperation = async ({
                 nodes,
                 trainrun,
                 infraId,
-                dispatch
+                dispatch,
+                labels
               )),
             },
           ],
@@ -250,7 +258,8 @@ const handleTrainrunOperation = async ({
               nodes,
               trainrun,
               infraId,
-              dispatch
+              dispatch,
+              labels
             )),
             // TODO: convert NGE times to OSRD schedule
             schedule: [],
