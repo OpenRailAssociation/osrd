@@ -92,6 +92,11 @@ const useScenarioData = () => {
     [projectedTrainsById]
   );
 
+  const trainScheduleUsedForProjection = useMemo(
+    () => trainSchedules?.find((trainSchedule) => trainSchedule.id === trainIdUsedForProjection),
+    [trainIdUsedForProjection, trainSchedules]
+  );
+
   useEffect(() => {
     if (!rawTrainSchedules) {
       setTrainSchedules(undefined);
@@ -193,6 +198,7 @@ const useScenarioData = () => {
         infra: { infra, isInfraLoaded, reloadCount },
         trainScheduleSummaries,
         trainSchedules,
+        trainScheduleUsedForProjection,
         trainIdUsedForProjection,
         projectedTrains,
         simulationResults,

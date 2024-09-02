@@ -97,6 +97,7 @@ const Scenario = () => {
     infra: { infra, isInfraLoaded, reloadCount },
     trainScheduleSummaries,
     trainSchedules,
+    trainScheduleUsedForProjection,
     trainIdUsedForProjection,
     projectedTrains,
     simulationResults,
@@ -308,6 +309,7 @@ const Scenario = () => {
                       collapsedTimetable={collapsedTimetable}
                       spaceTimeData={projectedTrains}
                       simulationResults={simulationResults}
+                      trainScheduleUsedForProjection={trainScheduleUsedForProjection}
                       trainIdUsedForProjection={trainIdUsedForProjection}
                       infraId={infraId}
                       timetableTrainNb={timetable.train_ids.length}
