@@ -4,7 +4,6 @@ extern crate diesel;
 mod client;
 mod core;
 mod error;
-mod fixtures;
 mod generated_data;
 mod infra_cache;
 mod map;
@@ -905,12 +904,12 @@ impl CliError {
 mod tests {
     use super::*;
 
-    use crate::fixtures::tests::get_fast_rolling_stock_schema;
-    use crate::fixtures::tests::get_trainschedule_json_array;
     use crate::modelsv2::fixtures::create_electrical_profile_set;
     use crate::modelsv2::RollingStockModel;
 
     use editoast_models::DbConnectionPoolV2;
+    use modelsv2::fixtures::get_fast_rolling_stock_schema;
+    use modelsv2::fixtures::get_trainschedule_json_array;
     use modelsv2::DeleteStatic;
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};

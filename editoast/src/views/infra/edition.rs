@@ -920,8 +920,6 @@ pub mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::small_infra;
     use crate::generated_data::infra_error::InfraError;
     use crate::generated_data::infra_error::InfraErrorType;
     use crate::modelsv2::fixtures::create_small_infra;
@@ -1030,10 +1028,13 @@ pub mod tests {
     #[rstest]
     async fn apply_edit_transaction_should_work() {
         // Init
-        let pg_db_pool = db_pool();
-        let conn = &mut pg_db_pool.get().await.unwrap();
-        let mut small_infra = small_infra(pg_db_pool.clone()).await;
-        let mut infra_cache = InfraCache::load(conn, &small_infra.model).await.unwrap();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let mut small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let mut infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+            .await
+            .unwrap();
 
         // Calling "apply_edit" with a OK operation
         let operations: Vec<Operation> = [
@@ -1051,10 +1052,14 @@ pub mod tests {
             }),
         ]
         .to_vec();
-        let result: Vec<InfraObject> =
-            apply_edit(conn, &mut small_infra.model, &operations, &mut infra_cache)
-                .await
-                .unwrap();
+        let result: Vec<InfraObject> = apply_edit(
+            &mut db_pool.get_ok(),
+            &mut small_infra,
+            &operations,
+            &mut infra_cache,
+        )
+        .await
+        .unwrap();
 
         // Check that the updated track has the new length
         assert_eq!(1234.0, result[0].get_data()["length"]);
@@ -1063,9 +1068,12 @@ pub mod tests {
     #[rstest]
     async fn apply_edit_transaction_should_rollback() {
         // Init
-        let conn = &mut db_pool().get().await.unwrap();
-        let mut small_infra = small_infra(db_pool().clone()).await;
-        let mut infra_cache = InfraCache::load(conn, &small_infra.model).await.unwrap();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let mut small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let mut infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+            .await
+            .unwrap();
 
         // Calling "apply_edit" with a first OK operation and a KO second one
         let operations: Vec<Operation> = [
@@ -1095,15 +1103,24 @@ pub mod tests {
             }),
         ]
         .to_vec();
-        let result = apply_edit(conn, &mut small_infra.model, &operations, &mut infra_cache).await;
+        let result = apply_edit(
+            &mut db_pool.get_ok(),
+            &mut small_infra,
+            &operations,
+            &mut infra_cache,
+        )
+        .await;
 
         // Check that we have an error
         assert!(result.is_err());
 
         // Check that TA0 length is not changed
         let res: Vec<ObjectQueryable> = small_infra
-            .model
-            .get_objects(conn, ObjectType::TrackSection, &vec!["TA0".to_string()])
+            .get_objects(
+                &mut db_pool.get_ok(),
+                ObjectType::TrackSection,
+                &vec!["TA0".to_string()],
+            )
             .await
             .unwrap();
         assert_eq!(2000.0, res[0].railjson.as_object().unwrap()["length"]);

@@ -1,16 +1,19 @@
 use std::io::Cursor;
 
 use chrono::Utc;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use postgis_diesel::types::LineString;
 
 use crate::infra_cache::operation::create::apply_create_operation;
-
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::timetable::Timetable;
@@ -26,9 +29,6 @@ use crate::modelsv2::Tags;
 use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
 use crate::views::v2::train_schedule::TrainScheduleForm;
 use crate::ElectricalProfileSet;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPool;
-use editoast_models::DbConnectionPoolV2;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
@@ -193,9 +193,6 @@ pub fn rolling_stock_livery_changeset(
     rolling_stock_id: i64,
     compound_image_id: i64,
 ) -> Changeset<RollingStockLiveryModel> {
-    // let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool.clone()).await;
-    // let image = document_example(db_pool.clone()).await;
-
     RollingStockLiveryModel::changeset()
         .name(name.to_string())
         .rolling_stock_id(rolling_stock_id)
@@ -309,4 +306,16 @@ pub async fn create_work_schedule_group(conn: &mut DbConnection) -> WorkSchedule
         .create(conn)
         .await
         .expect("Failed to create empty work schedule group")
+}
+
+pub fn get_trainschedule_json_array() -> &'static str {
+    include_str!("../tests/train_schedules/simple_array.json")
+}
+
+pub fn get_fast_rolling_stock_schema(name: &str) -> RollingStock {
+    let mut rolling_stock_form: RollingStock =
+        serde_json::from_str(include_str!("../tests/example_rolling_stock_1.json"))
+            .expect("Unable to parse");
+    rolling_stock_form.name = name.to_string();
+    rolling_stock_form
 }
