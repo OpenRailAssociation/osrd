@@ -72,7 +72,7 @@ uuid = { version = "1.10.0", features = ["serde", "v4"] }
 [dependencies]
 # For batch dependency updates, see editoast/README.md
 
-async-trait = "0.1.81"
+async-trait = "0.1.82"
 axum = { version = "0.7.5", default-features = false, features = ["multipart"] }
 axum-extra = { version = "0.9.3", default-features = false, features = [
   "typed-header",
