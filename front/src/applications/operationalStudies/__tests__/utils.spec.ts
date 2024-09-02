@@ -19,6 +19,8 @@ import {
   getExpectedResultDataNumber,
   pathLength,
   trainScheduleHonored,
+  trainScheduleNoMatch,
+  trainScheduleNoSchedule,
   trainScheduleNotHonored,
   trainScheduleTooFast,
   trainSummaryHonored,
@@ -109,5 +111,16 @@ describe('isScheduledPointsNotHonored', () => {
   it('should return false if the train schedule is honored', () => {
     const result = isScheduledPointsNotHonored(trainScheduleHonored, trainSummaryHonored);
     expect(result).toBe(false);
+  });
+
+  it('should return false if there is no schedule', () => {
+    const result = isScheduledPointsNotHonored(trainScheduleNoSchedule, trainSummaryHonored);
+    expect(result).toBe(false);
+  });
+
+  it('should throw an error if no matching index is found for a schedule', () => {
+    expect(() => {
+      isScheduledPointsNotHonored(trainScheduleNoMatch, trainSummaryHonored);
+    }).toThrow();
   });
 });

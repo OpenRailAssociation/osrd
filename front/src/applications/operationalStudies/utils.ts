@@ -235,12 +235,22 @@ export const isScheduledPointsNotHonored = (
   }
 
   if (!trainSchedule.schedule) return false;
-  return trainSchedule.schedule.some((schedule, index) => {
+
+  const pathItemIndexById = new Map<string, number>();
+  trainSchedule.path.forEach((pathItem, index) => {
+    pathItemIndexById.set(pathItem.id, index);
+  });
+  return trainSchedule.schedule.some((schedule) => {
     if (!schedule.arrival) return false;
-    // need to add +1 because origin will never be in schedules
+    const matchindIndex = pathItemIndexById.get(schedule.at);
+    if (!matchindIndex) {
+      throw new Error(
+        `No matching index found for schedule ${schedule} on trainSchedule ${trainSchedule}`
+      );
+    }
     const arrivalTimeInMs = sToMs(ISO8601Duration2sec(schedule.arrival));
     return (
-      Math.abs(arrivalTimeInMs - trainSummary.path_item_times_final[index + 1]) >=
+      Math.abs(arrivalTimeInMs - trainSummary.path_item_times_final[matchindIndex]) >=
       ARRIVAL_TIME_ACCEPTABLE_ERROR_MS
     );
   });
