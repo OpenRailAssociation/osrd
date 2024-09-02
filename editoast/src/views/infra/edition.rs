@@ -920,8 +920,6 @@ pub mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::small_infra;
     use crate::generated_data::infra_error::InfraError;
     use crate::generated_data::infra_error::InfraErrorType;
     use crate::modelsv2::fixtures::create_small_infra;
@@ -1030,10 +1028,11 @@ pub mod tests {
     #[rstest]
     async fn apply_edit_transaction_should_work() {
         // Init
-        let pg_db_pool = db_pool();
-        let conn = &mut pg_db_pool.get().await.unwrap();
-        let mut small_infra = small_infra(pg_db_pool.clone()).await;
-        let mut infra_cache = InfraCache::load(conn, &small_infra.model).await.unwrap();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let conn = &mut db_pool.get().await.unwrap();
+        let mut small_infra = create_small_infra(conn).await;
+        let mut infra_cache = InfraCache::load(conn, &small_infra).await.unwrap();
 
         // Calling "apply_edit" with a OK operation
         let operations: Vec<Operation> = [
@@ -1052,7 +1051,7 @@ pub mod tests {
         ]
         .to_vec();
         let result: Vec<InfraObject> =
-            apply_edit(conn, &mut small_infra.model, &operations, &mut infra_cache)
+            apply_edit(conn, &mut small_infra, &operations, &mut infra_cache)
                 .await
                 .unwrap();
 
@@ -1063,9 +1062,11 @@ pub mod tests {
     #[rstest]
     async fn apply_edit_transaction_should_rollback() {
         // Init
-        let conn = &mut db_pool().get().await.unwrap();
-        let mut small_infra = small_infra(db_pool().clone()).await;
-        let mut infra_cache = InfraCache::load(conn, &small_infra.model).await.unwrap();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let conn = &mut db_pool.get().await.unwrap();
+        let mut small_infra = create_small_infra(conn).await;
+        let mut infra_cache = InfraCache::load(conn, &small_infra).await.unwrap();
 
         // Calling "apply_edit" with a first OK operation and a KO second one
         let operations: Vec<Operation> = [
@@ -1095,14 +1096,13 @@ pub mod tests {
             }),
         ]
         .to_vec();
-        let result = apply_edit(conn, &mut small_infra.model, &operations, &mut infra_cache).await;
+        let result = apply_edit(conn, &mut small_infra, &operations, &mut infra_cache).await;
 
         // Check that we have an error
         assert!(result.is_err());
 
         // Check that TA0 length is not changed
         let res: Vec<ObjectQueryable> = small_infra
-            .model
             .get_objects(conn, ObjectType::TrackSection, &vec!["TA0".to_string()])
             .await
             .unwrap();

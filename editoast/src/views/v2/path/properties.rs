@@ -270,17 +270,15 @@ mod tests {
     use serde_json::json;
 
     use super::PathProperties;
-    use crate::fixtures::tests::small_infra;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::infra::Infra;
+    use crate::modelsv2::fixtures::create_small_infra;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
     #[ignore] // TODO: Need to mock the core response to fix this test
-    async fn path_properties_small_infra(#[future] small_infra: TestFixture<Infra>) {
+    async fn path_properties_small_infra() {
         let app = TestAppBuilder::default_app();
-        let infra = small_infra.await;
-        let url = format!("/v2/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id());
+        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let url = format!("/v2/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id);
 
         // Should succeed
         let request = app.post(&url).json(&json!(

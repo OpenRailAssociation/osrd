@@ -4,7 +4,6 @@ extern crate diesel;
 mod client;
 mod core;
 mod error;
-mod fixtures;
 mod generated_data;
 mod infra_cache;
 mod map;
