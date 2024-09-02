@@ -8,12 +8,43 @@
   Using !important ensures that the cursor remains in its default state.
 */
   cursor: default !important;
+
   .stdcm-v2__body {
     padding: 2rem 2rem 4rem;
     background-color: rgb(239, 243, 245);
     display: flex;
+    flex-direction: column;
 
-    .stdcm-v2-simulation-settings {
+    .stdcm-simulation-parameters {
+      margin-bottom: 1.5rem;
+      min-width: 50.25rem;
+    }
+
+    .stdcm-scenario-explorer {
+      width: 20.125rem;
+      .scenario-explorator-card {
+        padding: 0.5rem 3.2rem 0.5rem 0;
+        .scenario-explorator-card,
+        .scenario-explorator-card-noscenario {
+          font-size: 1.25rem;
+        }
+      }
+    }
+
+    .stdcm-allowances {
+      display: flex;
+      align-items: center;
+      min-width: 28.125rem;
+      width: 28.125rem;
+      .osrd-config-item-container {
+        .col-3,
+        .col-6 {
+          padding: 0 0.31rem !important;
+        }
+      }
+    }
+
+    .stdcm-v2-simulation-inputs {
       display: flex;
       gap: 0.813rem;
 
@@ -61,10 +92,16 @@
           width: 100%;
         }
 
-        .stdcm-v2-vias-list {
+        .stdcm-v2-vias-list,
+        * > .stdcm-v2-vias-bundle {
           display: flex;
           flex-direction: column;
           gap: 2rem;
+        }
+
+        .stdcm-origin-icon,
+        .stdcm-destination-icon {
+          align-self: baseline;
         }
 
         /*TODO Waiting to fix the button in ui-core...*/

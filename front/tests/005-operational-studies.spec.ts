@@ -23,6 +23,8 @@ test.beforeEach(async () => {
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test('Testing pathfinding with rollingstock and composition code', async ({ page }) => {
+    // Add enough timeout to wait for the infra to be loaded
+    test.slow();
     const homePage = new HomePage(page);
     const scenarioPage = new ScenarioPage(page);
     await page.goto(

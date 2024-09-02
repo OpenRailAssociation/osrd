@@ -40,7 +40,9 @@ export const checkStdcmConf = (
   dispatch: Dispatch,
   t: TFunction,
   osrdconf: OsrdStdcmConfState & InfraState,
-  stdcmV2Activated: boolean = false
+  // TODO: Remove this parameter when we drop V1
+  stdcmV2Activated = true,
+  isDebugMode = false
 ): ValidStdcmConfig | null => {
   const {
     pathSteps,
@@ -70,6 +72,7 @@ export const checkStdcmConf = (
       })
     );
   }
+  // TODO: remove this condition when we drop V1
   if (!(osrdconf.originTime && osrdconf.originUpperBoundTime) && !stdcmV2Activated) {
     error = true;
     dispatch(
@@ -141,6 +144,7 @@ export const checkStdcmConf = (
   }
 
   if (
+    !isDebugMode &&
     searchDatetimeWindow &&
     startDateTime &&
     (startDateTime < searchDatetimeWindow.begin || searchDatetimeWindow.end < startDateTime)

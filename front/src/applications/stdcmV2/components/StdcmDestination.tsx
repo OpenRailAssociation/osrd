@@ -99,7 +99,7 @@ const StdcmDestination = ({
   return (
     <StdcmCard
       name={t('trainPath.destination')}
-      title={<img src={DestinationIcon} alt="destination" />}
+      title={<img src={DestinationIcon} alt="destination" className="stdcm-destination-icon" />}
       disabled={disabled}
     >
       <div className="stdcm-v2-destination">

@@ -1,6 +1,7 @@
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
 import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
 export type StdcmSimulationInputs = {
@@ -13,9 +14,15 @@ export type StdcmSimulationInputs = {
   };
 };
 
+export type StdcmSpeedSpaceChartData = Pick<
+  SpeedSpaceChartData,
+  'formattedPathProperties' | 'formattedPowerRestrictions'
+> | null;
+
 export type StdcmSimulationOutputs = {
   results: StdcmV2SuccessResponse;
   pathProperties: ManageTrainSchedulePathProperties;
+  speedSpaceChartData: StdcmSpeedSpaceChartData;
 };
 
 export type StdcmSimulation = {

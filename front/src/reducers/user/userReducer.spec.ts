@@ -7,7 +7,6 @@ import {
   logoutSuccess,
   type UserState,
   updateUserPreferences,
-  switchStdcmV2Activated,
 } from 'reducers/user';
 import { createStoreWithoutMiddleware } from 'store';
 
@@ -73,12 +72,5 @@ describe('userReducer', () => {
       ...userInitialState,
       userPreferences: { safeWord: 'Test userSlice' },
     });
-  });
-
-  it('should handle switchStdcmV2Activated', () => {
-    const store = createStore(userInitialState);
-    store.dispatch(switchStdcmV2Activated());
-    const userState = store.getState().user;
-    expect(userState.stdcmV2Activated).toBe(true);
   });
 });

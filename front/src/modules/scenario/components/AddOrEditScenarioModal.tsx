@@ -28,7 +28,7 @@ import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
-import checkScenarioFields from '../utils';
+import { checkScenarioFields } from '../helpers/utils';
 
 // TODO: use ScenarioCreateForm from osrdEditoastApi to harmonize with study and project
 // and then change checkNameInvalidity

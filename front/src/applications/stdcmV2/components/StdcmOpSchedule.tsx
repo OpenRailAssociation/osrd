@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
 import { useMemo } from 'react';
 
 import { DatePicker, Select, TimePicker, TolerancePicker } from '@osrd-project/ui-core';
@@ -97,22 +96,26 @@ const StdcmOpSchedule = ({
       {opScheduleTimeType === 'preciseTime' && (
         <div className="d-flex">
           <div className="col-5 pr-0">
+            {/* TODO: Remove empty onChange events once we fix the warning on ui-core side */}
             <DatePicker
               inputProps={{
                 id: `date-${opId}`,
                 label: t('trainPath.date'),
                 name: 'op-date',
                 disabled,
+                onChange: () => {},
               }}
               value={arrivalDate}
-              calendarPickerProps={{
-                selectableSlot: searchDatetimeWindow
+              calendarPickerProps={
+                searchDatetimeWindow
                   ? {
-                      start: searchDatetimeWindow.begin,
-                      end: searchDatetimeWindow.end,
+                      selectableSlot: {
+                        start: searchDatetimeWindow.begin,
+                        end: searchDatetimeWindow.end,
+                      },
                     }
-                  : undefined,
-              }}
+                  : undefined
+              }
               onDateChange={(e) => {
                 onArrivalChange({
                   date: e,
@@ -133,6 +136,7 @@ const StdcmOpSchedule = ({
               }}
               disabled={disabled}
               value={arrivalTime}
+              readOnly={false}
             />
           </div>
           <div className="col-4 ml-1 pl-0 pr-1">
@@ -140,6 +144,7 @@ const StdcmOpSchedule = ({
               id={`stdcm-tolerance-${opId}`}
               label={t('trainPath.tolerance')}
               toleranceValues={arrivalToleranceValues}
+              onChange={() => {}}
               onToleranceChange={({ minusTolerance, plusTolerance }) => {
                 onArrivalToleranceChange({
                   toleranceBefore: minusTolerance,

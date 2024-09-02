@@ -46,5 +46,5 @@ export default function useStdcmEnvironment() {
     loadStdcmEnvironment();
   }, [loadStdcmEnvironment]);
 
-  return { loading, error };
+  return { loading, error, loadStdcmEnvironment };
 }

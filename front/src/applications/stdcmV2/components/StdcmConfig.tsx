@@ -17,6 +17,7 @@ import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
 import StdcmLoader from './StdcmLoader';
 import StdcmOrigin from './StdcmOrigin';
+import StdcmSimulationParams from './StdcmSimulationParams';
 import StdcmStatusBanner from './StdcmStatusBanner';
 import StdcmVias from './StdcmVias';
 import StdcmWarningBox from './StdcmWarningBox';
@@ -26,32 +27,32 @@ import checkStdcmConfigErrors from '../utils/checkStdcmConfigErrors';
 
 /**
  * Inputs in different cards inside the StdcmConfig component come from the stdcm redux store.
- * CurrentSimulationInputs is the current simulation inputs which are not yet launched.
  * SelectedSimulation is the simulation that is currently selected from the list of simulations.
  */
 type StdcmConfigProps = {
-  currentSimulationInputs?: StdcmSimulationInputs;
-  selectedSimulation?: StdcmSimulation;
+  cancelStdcmRequest: () => void;
+  isCalculationFailed: boolean;
+  isDebugMode: boolean;
   isPending: boolean;
+  launchStdcmRequest: () => Promise<void>;
   retainedSimulationIndex: number;
+  selectedSimulation?: StdcmSimulation;
+  setCurrentSimulationInputs: React.Dispatch<React.SetStateAction<StdcmSimulationInputs>>;
   showBtnToLaunchSimulation: boolean;
   showStatusBanner: boolean;
-  isCalculationFailed: boolean;
-  launchStdcmRequest: () => Promise<void>;
-  cancelStdcmRequest: () => void;
-  setCurrentSimulationInputs: React.Dispatch<React.SetStateAction<StdcmSimulationInputs>>;
 };
 
 const StdcmConfig = ({
-  selectedSimulation,
+  cancelStdcmRequest,
+  isCalculationFailed,
+  isDebugMode,
   isPending,
+  launchStdcmRequest,
   retainedSimulationIndex,
+  selectedSimulation,
+  setCurrentSimulationInputs,
   showBtnToLaunchSimulation,
   showStatusBanner,
-  isCalculationFailed,
-  launchStdcmRequest,
-  cancelStdcmRequest,
-  setCurrentSimulationInputs,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -65,9 +66,13 @@ const StdcmConfig = ({
     updateDestinationArrivalType,
   } = useOsrdConfActions() as StdcmConfSliceActions;
 
-  const { getOrigin, getDestination } = useOsrdConfSelectors();
+  const { getOrigin, getDestination, getProjectID, getScenarioID, getStudyID } =
+    useOsrdConfSelectors();
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
+  const projectID = useSelector(getProjectID);
+  const studyID = useSelector(getStudyID);
+  const scenarioID = useSelector(getScenarioID);
 
   const [pathfindingProperties, setPathfindingProperties] =
     useState<ManageTrainSchedulePathProperties>();
@@ -76,8 +81,10 @@ const StdcmConfig = ({
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
+  const disabled = isPending || retainedSimulationIndex > -1;
+
   const inputsProps = {
-    disabled: isPending || retainedSimulationIndex > -1,
+    disabled,
     selectedSimulation,
     setCurrentSimulationInputs,
   };
@@ -122,56 +129,66 @@ const StdcmConfig = ({
 
   // TODO: DROP STDCMV1: set those values by default in the store when <StdcmAllowances/> is not used anymore.
   useEffect(() => {
-    dispatch(updateGridMarginAfter(35));
-    dispatch(updateGridMarginBefore(35));
-    dispatch(updateStdcmStandardAllowance({ type: 'time_per_distance', value: 4.5 }));
-  }, []);
+    if (!isDebugMode) {
+      dispatch(updateGridMarginAfter(35));
+      dispatch(updateGridMarginBefore(35));
+      dispatch(updateStdcmStandardAllowance({ type: 'time_per_distance', value: 4.5 }));
+    }
+  }, [isDebugMode]);
 
   return (
     <div className="stdcm-v2__body">
-      <div className="stdcm-v2-simulation-settings">
-        <div className="stdcm-v2-consist-container">
-          <StdcmConsist {...inputsProps} />
+      {isDebugMode && (
+        <div className="stdcm-simulation-parameters">
+          <StdcmSimulationParams {...{ disabled, projectID, studyID, scenarioID }} />
         </div>
-        <div className="stdcm-v2__separator" />
-        <div className="stdcm-v2-simulation-itinerary">
-          {/* //TODO: use them when we implement this feature #403 */}
-          {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
-          <StdcmOrigin {...inputsProps} origin={origin} />
-          <StdcmVias {...inputsProps} />
-          <StdcmDestination {...inputsProps} destination={destination} />
-          {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
-          <div
-            className={cx('stdcm-v2-launch-request', {
-              'wizz-effect': !pathfindingState.done || formErrors,
-              'pb-5': !pathfindingState.error,
-            })}
-          >
-            {showBtnToLaunchSimulation && (
-              <Button label={t('simulation.getSimulation')} onClick={startSimulation} />
-            )}
-            {formErrors && (
-              <StdcmWarningBox
-                errorInfos={formErrors}
-                removeOriginArrivalTime={removeOriginArrivalTime}
-                removeDestinationArrivalTime={removeDestinationArrivalTime}
-              />
-            )}
+      )}
+      <div className="d-flex">
+        <div className="stdcm-v2-simulation-inputs">
+          <div className="stdcm-v2-consist-container">
+            <StdcmConsist {...inputsProps} />
           </div>
-          {isPending && <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />}
-          {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
+          <div className="stdcm-v2__separator" />
+          <div className="stdcm-v2-simulation-itinerary">
+            {/* //TODO: use them when we implement this feature #403 */}
+            {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
+            <StdcmOrigin {...inputsProps} origin={origin} />
+            <StdcmVias {...inputsProps} />
+            <StdcmDestination {...inputsProps} destination={destination} />
+            {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
+            <div
+              className={cx('stdcm-v2-launch-request', {
+                'wizz-effect': !pathfindingState.done || formErrors,
+                'pb-5': !pathfindingState.error && showBtnToLaunchSimulation,
+              })}
+            >
+              {showBtnToLaunchSimulation && (
+                <Button label={t('simulation.getSimulation')} onClick={startSimulation} />
+              )}
+              {formErrors && (
+                <StdcmWarningBox
+                  errorInfos={formErrors}
+                  removeOriginArrivalTime={removeOriginArrivalTime}
+                  removeDestinationArrivalTime={removeDestinationArrivalTime}
+                />
+              )}
+            </div>
+            {isPending && <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />}
+            {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
+          </div>
         </div>
+
+        <div className="osrd-config-item-container osrd-config-item-container-map stdcm-v2-map">
+          <Map
+            hideAttribution
+            hideItinerary
+            preventPointSelection
+            pathProperties={pathfindingProperties}
+            showStdcmAssets
+          />
+        </div>
+        <div />
       </div>
-      <div className="osrd-config-item-container osrd-config-item-container-map stdcm-v2-map">
-        <Map
-          hideAttribution
-          hideItinerary
-          preventPointSelection
-          pathProperties={pathfindingProperties}
-          showStdcmAssets
-        />
-      </div>
-      <div />
     </div>
   );
 };
