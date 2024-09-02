@@ -147,9 +147,13 @@ const handleTrainrunOperation = async ({
   addDeletedTrainIds: (trainIds: number[]) => void;
 }) => {
   const { nodes } = netzgrafikDto;
-  const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
+
   switch (type) {
     case 'create': {
+      const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(
+        netzgrafikDto,
+        trainrun.id
+      );
       const newTrainSchedules = await dispatch(
         osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.initiate({
           id: timeTableId,
@@ -177,6 +181,10 @@ const handleTrainrunOperation = async ({
       break;
     }
     case 'update': {
+      const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(
+        netzgrafikDto,
+        trainrun.id
+      );
       const trainrunIdToUpdate = createdTrainrun.get(trainrun.id) || trainrun.id;
       const trainSchedule = await dispatch(
         osrdEditoastApi.endpoints.getV2TrainScheduleById.initiate({
