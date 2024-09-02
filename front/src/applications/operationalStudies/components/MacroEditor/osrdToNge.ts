@@ -19,6 +19,8 @@ import type {
   TrainrunFrequency,
   TrainrunTimeCategory,
   NetzgrafikDto,
+  Label,
+  LabelGroup,
 } from '../NGE/types';
 import { PortAlignment } from '../NGE/types';
 
@@ -30,6 +32,12 @@ const TRAINRUN_CATEGORY_HALTEZEITEN = {
   HaltezeitC: { haltezeit: 0, no_halt: false },
   HaltezeitD: { haltezeit: 0, no_halt: false },
   HaltezeitUncategorized: { haltezeit: 0, no_halt: false },
+};
+
+const DEFAULT_LABEL_GROUP: LabelGroup = {
+  id: 1,
+  name: 'Default',
+  labelRef: 'Trainrun',
 };
 
 const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
@@ -281,15 +289,37 @@ const importTimetable = async (
 
   nodes = convertGeoCoords(nodes);
 
+  const DTOLabels: Label[] = [];
   // Create one NGE train run per OSRD train schedule
-  const trainruns: Trainrun[] = trainSchedules.map((trainSchedule) => ({
-    id: trainSchedule.id,
-    name: trainSchedule.train_name,
-    categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
-    frequencyId: DEFAULT_TRAINRUN_FREQUENCY.id,
-    trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
-    labelIds: [],
-  }));
+  let labelId = 0;
+  const trainruns: Trainrun[] = trainSchedules.map((trainSchedule) => {
+    let formatedLabels: Label[] = [];
+    if (trainSchedule.labels) {
+      formatedLabels = trainSchedule.labels.map((label) => {
+        const DTOLabel = DTOLabels.find((DTOlabel) => DTOlabel.label === label);
+        if (DTOLabel) {
+          return DTOLabel;
+        }
+        const newDTOLabel: Label = {
+          id: labelId,
+          label,
+          labelGroupId: DEFAULT_LABEL_GROUP.id,
+          labelRef: 'Trainrun',
+        };
+        DTOLabels.push(newDTOLabel);
+        labelId += 1;
+        return newDTOLabel;
+      });
+    }
+    return {
+      id: trainSchedule.id,
+      name: trainSchedule.train_name,
+      categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
+      frequencyId: DEFAULT_TRAINRUN_FREQUENCY.id,
+      trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
+      labelIds: formatedLabels.map((label) => label.id),
+    };
+  });
 
   let portId = 0;
   const createPort = (trainrunSectionId: number) => {
@@ -441,6 +471,8 @@ const importTimetable = async (
 
   return {
     ...DEFAULT_DTO,
+    labels: DTOLabels,
+    labelGroups: [DEFAULT_LABEL_GROUP],
     resources: [resource],
     metadata: {
       netzgrafikColors: [],
