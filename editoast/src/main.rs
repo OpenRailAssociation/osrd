@@ -905,8 +905,6 @@ impl CliError {
 mod tests {
     use super::*;
 
-    use crate::fixtures::tests::get_fast_rolling_stock_schema;
-    use crate::fixtures::tests::get_trainschedule_json_array;
     use crate::modelsv2::fixtures::create_electrical_profile_set;
     use crate::modelsv2::RollingStockModel;
 
@@ -919,6 +917,18 @@ mod tests {
     use std::io::Write;
     use std::ops::DerefMut;
     use tempfile::NamedTempFile;
+
+    pub fn get_trainschedule_json_array() -> &'static str {
+        include_str!("./tests/train_schedules/simple_array.json")
+    }
+
+    fn get_fast_rolling_stock_schema(name: &str) -> RollingStock {
+        let mut rolling_stock_form: RollingStock =
+            serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
+                .expect("Unable to parse");
+        rolling_stock_form.name = name.to_string();
+        rolling_stock_form
+    }
 
     #[rstest]
     async fn import_export_timetable_schedule_v2() {
