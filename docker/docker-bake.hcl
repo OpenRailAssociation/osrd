@@ -23,6 +23,7 @@ group "release" {
     "core",
     "editoast",
     "gateway-front",
+    "osrdyne",
   ]
 }
 
