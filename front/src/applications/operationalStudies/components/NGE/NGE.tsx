@@ -34,6 +34,12 @@ const frameSrc = `
 </html>
 `;
 
+/**
+ * Standalone NetzGraphik Editor component.
+ *
+ * Abstracts away low-level NGE details. Doesn't contain any OSRD-specific
+ * logic.
+ */
 const NGE = ({ dto, onOperation }: NGEProps) => {
   const frameRef = useRef<HTMLIFrameElement>(null);
 
