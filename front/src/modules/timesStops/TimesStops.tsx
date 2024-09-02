@@ -31,7 +31,7 @@ type TimesStopsProps = {
 
 const TimesStops = ({
   allWaypoints,
-  pathSteps = [],
+  pathSteps,
   startTime,
   tableType,
   cellClassName,
@@ -47,7 +47,7 @@ const TimesStops = ({
   const [rows, setRows] = useState<PathWaypointRow[]>([]);
 
   useEffect(() => {
-    if (allWaypoints) {
+    if (allWaypoints && pathSteps) {
       const suggestedOPs = formatSuggestedViasToRowVias(
         allWaypoints,
         pathSteps,
@@ -114,7 +114,7 @@ const TimesStops = ({
           activeRow:
             rowIndex === 0 ||
             rowIndex === allWaypoints.length - 1 ||
-            isVia(pathSteps, rowData, WITH_KP),
+            isVia(pathSteps || [], rowData, WITH_KP),
         })
       }
       cellClassName={cellClassName}
