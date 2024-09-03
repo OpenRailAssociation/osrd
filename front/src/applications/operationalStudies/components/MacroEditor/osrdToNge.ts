@@ -329,7 +329,15 @@ const importTimetable = async (
           return op.obj_id;
         }
 
-        const node = createNode({ trigram: 'trigram' in pathItem ? pathItem.trigram : undefined });
+        let trigram: string | undefined;
+        if ('trigram' in pathItem) {
+          trigram = pathItem.trigram;
+          if (pathItem.secondary_code) {
+            trigram += `/${pathItem.secondary_code}`;
+          }
+        }
+
+        const node = createNode({ trigram });
         return node.id;
       });
 
