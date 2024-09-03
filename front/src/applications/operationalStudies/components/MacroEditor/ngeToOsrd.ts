@@ -1,5 +1,6 @@
 import {
   osrdEditoastApi,
+  type SearchResultItemOperationalPoint,
   type TrainScheduleBase,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
@@ -97,34 +98,74 @@ const DEFAULT_PAYLOAD: Pick<
   start_time: '2024-07-15T08:00:00+02:00',
 };
 
-const createPathItemFromNode = (node: Node, index: number) => {
+const createPathItemFromNode = async (
+  node: Node,
+  index: number,
+  infraId: number,
+  dispatch: AppDispatch
+) => {
   const [trigram, secondaryCode] = node.betriebspunktName.split('/');
+  let finalSecondaryCode: string | undefined;
+
+  if (secondaryCode) {
+    finalSecondaryCode = secondaryCode;
+    return {
+      trigram,
+      secondary_code: finalSecondaryCode,
+      id: `${node.id}-${index}`,
+    };
+  }
+
+  const searchPayload = {
+    object: 'operationalpoint',
+    query: ['and', ['=', ['infra_id'], infraId], ['=', ['trigram'], trigram]],
+  };
+  const searchResults = (await dispatch(
+    osrdEditoastApi.endpoints.postSearch.initiate({
+      searchPayload,
+    })
+  ).unwrap()) as SearchResultItemOperationalPoint[];
+
+  let opFound = searchResults.find((op) => op.ch === 'BV' || op.ch === '00');
+  if (!opFound) opFound = searchResults.find((op) => op.ch === '');
+  finalSecondaryCode = opFound?.ch;
+
   return {
     trigram,
-    secondary_code: secondaryCode || 'BV',
+    secondary_code: finalSecondaryCode,
     id: `${node.id}-${index}`,
   };
 };
 
-const createTrainSchedulePayload = (
+const createTrainSchedulePayload = async (
   trainrunSections: TrainrunSection[],
   nodes: Node[],
-  trainrun: Trainrun
+  trainrun: Trainrun,
+  infraId: number,
+  dispatch: AppDispatch
 ) => {
-  const path = trainrunSections.flatMap((section, index) => {
+  // TODO: check that the trainrunSections format is still compatible
+  const pathPromise = trainrunSections.map(async (section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
     const targetNode = getNodeById(nodes, section.targetNodeId);
     if (!sourceNode || !targetNode) return [];
-    const originPathItem = createPathItemFromNode(sourceNode, index);
+    const originPathItem = await createPathItemFromNode(sourceNode, index, infraId, dispatch);
     if (index === trainrunSections.length - 1) {
-      const destinationPathItem = createPathItemFromNode(targetNode, index);
+      const destinationPathItem = await createPathItemFromNode(
+        targetNode,
+        index,
+        infraId,
+        dispatch
+      );
       return [originPathItem, destinationPathItem];
     }
     return [originPathItem];
   });
 
+  const path = await Promise.all(pathPromise);
+
   return {
-    path,
+    path: path.flat(),
     train_name: trainrun.name,
   };
 };
@@ -133,6 +174,7 @@ const handleTrainrunOperation = async ({
   type,
   trainrun,
   dispatch,
+  infraId,
   timeTableId,
   netzgrafikDto,
   addUpsertedTrainSchedules,
@@ -141,6 +183,7 @@ const handleTrainrunOperation = async ({
   type: NGEEvent['type'];
   trainrun: Trainrun;
   dispatch: AppDispatch;
+  infraId: number;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
@@ -160,7 +203,13 @@ const handleTrainrunOperation = async ({
           body: [
             {
               ...DEFAULT_PAYLOAD,
-              ...createTrainSchedulePayload(trainrunSectionsByTrainrunId, nodes, trainrun),
+              ...(await createTrainSchedulePayload(
+                trainrunSectionsByTrainrunId,
+                nodes,
+                trainrun,
+                infraId,
+                dispatch
+              )),
             },
           ],
         })
@@ -196,7 +245,13 @@ const handleTrainrunOperation = async ({
           id: trainrunIdToUpdate,
           trainScheduleForm: {
             ...trainSchedule,
-            ...createTrainSchedulePayload(trainrunSectionsByTrainrunId, nodes, trainrun),
+            ...(await createTrainSchedulePayload(
+              trainrunSectionsByTrainrunId,
+              nodes,
+              trainrun,
+              infraId,
+              dispatch
+            )),
             // TODO: convert NGE times to OSRD schedule
             schedule: [],
           },
@@ -242,6 +297,7 @@ const handleNodeOperation = ({
 const handleOperation = async ({
   event,
   dispatch,
+  infraId,
   timeTableId,
   netzgrafikDto,
   addUpsertedTrainSchedules,
@@ -249,6 +305,7 @@ const handleOperation = async ({
 }: {
   event: NGEEvent;
   dispatch: AppDispatch;
+  infraId: number;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
@@ -264,6 +321,7 @@ const handleOperation = async ({
         type,
         trainrun: event.trainrun,
         dispatch,
+        infraId,
         timeTableId,
         netzgrafikDto,
         addUpsertedTrainSchedules,
