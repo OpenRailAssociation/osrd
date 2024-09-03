@@ -299,7 +299,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         id: nextId(),
         positionOnPath: action.payload.positionOnPath,
         name: action.payload.name,
-        ch: action.payload.ch,
         kp: action.payload.kp,
         stopFor: action.payload.stopFor,
         arrival: action.payload.arrival,
@@ -308,7 +307,7 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         onStopSignal: action.payload.onStopSignal,
         theoreticalMargin: action.payload.theoreticalMargin,
         ...(action.payload.uic
-          ? { uic: action.payload.uic }
+          ? { uic: action.payload.uic, secondary_code: action.payload.ch }
           : {
               track: action.payload.track,
               offset: action.payload.offsetOnTrack,

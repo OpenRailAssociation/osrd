@@ -263,7 +263,9 @@ export const usePathfindingV2 = (
                 if (!step) return step;
                 const correspondingOp = suggestedOperationalPoints.find(
                   (suggestedOp) =>
-                    'uic' in step && suggestedOp.uic === step.uic && suggestedOp.ch === step.ch
+                    'uic' in step &&
+                    suggestedOp.uic === step.uic &&
+                    suggestedOp.ch === step.secondary_code
                 );
 
                 const theoreticalMargin = i === 0 ? '0%' : step.theoreticalMargin;
@@ -277,7 +279,6 @@ export const usePathfindingV2 = (
                   ...(correspondingOp && {
                     name: correspondingOp.name,
                     uic: correspondingOp.uic,
-                    ch: correspondingOp.ch,
                     kp: correspondingOp.kp,
                     coordinates: correspondingOp.coordinates,
                   }),

@@ -41,10 +41,10 @@ export const matchPathStepAndOp = (step: PathStep, op: SuggestedOP) => {
   // We match the kp in case two OPs have the same uic+ch (can happen when the
   // infra is imported)
   if ('uic' in step) {
-    return step.uic === op.uic && step.ch === op.ch && step.kp === op.kp;
+    return step.uic === op.uic && step.secondary_code === op.ch && step.kp === op.kp;
   }
   if ('trigram' in step) {
-    return step.trigram === op.trigram && step.ch === op.ch && step.kp === op.kp;
+    return step.trigram === op.trigram && step.secondary_code === op.ch && step.kp === op.kp;
   }
   // TODO: we abuse the PathStep.id field here, the backend also sets it to an
   // ID which has nothing to do with OPs
@@ -68,7 +68,7 @@ export const getPathfindingQuery = ({
     // Only origin and destination can be null so we can compact and we want to remove any via that would be null
     const pathItems: PathfindingInputV2['path_items'] = compact(pathSteps).map((step) => {
       if ('uic' in step) {
-        return { uic: step.uic, secondary_code: step.ch };
+        return { uic: step.uic, secondary_code: step.secondary_code };
       }
       if ('track' in step) {
         return {
@@ -141,7 +141,7 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
       }
     } else if ('uic' in step) {
       updatedOPs = updatedOPs.map((op) => {
-        if (op.uic === step.uic && op.ch === step.ch && op.kp === step.kp) {
+        if (op.uic === step.uic && op.ch === step.secondary_code && op.kp === step.kp) {
           return {
             ...op,
             stopFor,

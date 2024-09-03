@@ -50,7 +50,7 @@ const TimesStopsinput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
     const isMatchingUICStep = (step: PathStep) =>
       'uic' in step &&
       step.uic === rowData.uic &&
-      step.ch === rowData.ch &&
+      step.secondary_code === rowData.ch &&
       step.name === rowData.name;
 
     const isMatchingTrackStep = (step: PathStep) =>
