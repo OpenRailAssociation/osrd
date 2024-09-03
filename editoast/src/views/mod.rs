@@ -205,9 +205,9 @@ async fn check_health(
     db_pool: Arc<DbConnectionPoolV2>,
     redis_client: Arc<RedisClient>,
 ) -> Result<()> {
-    let mut db_connection = db_pool.clone().get().await?;
+    let db_connection = db_pool.clone().get().await?;
     tokio::try_join!(
-        ping_database(&mut db_connection).map_err(AppHealthError::Database),
+        ping_database(&db_connection).map_err(AppHealthError::Database),
         redis_client.ping_redis().map_err(|e| e.into())
     )?;
     Ok(())

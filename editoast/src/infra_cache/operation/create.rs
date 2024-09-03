@@ -16,7 +16,7 @@ use crate::modelsv2::get_table;
 pub async fn apply_create_operation<'r>(
     infra_object: &'r InfraObject,
     infra_id: i64,
-    conn: &mut DbConnection,
+    conn: &DbConnection,
 ) -> Result<(usize, &'r InfraObject)> {
     if infra_object.get_id().is_empty() {
         return Err(OperationError::EmptyId.into());
@@ -54,11 +54,11 @@ pub mod tests {
                 #[rstest::rstest]
                 async fn [<test_create_ $obj:snake>]() {
                     let db_pool = editoast_models::DbConnectionPoolV2::for_tests();
-                    let infra = crate::modelsv2::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                    let infra = crate::modelsv2::fixtures::create_empty_infra(&db_pool.get_ok()).await;
                     let infra_object = editoast_schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),
                     };
-                    let result = crate::infra_cache::operation::create::apply_create_operation(&infra_object, infra.id, &mut db_pool.get_ok()).await;
+                    let result = crate::infra_cache::operation::create::apply_create_operation(&infra_object, infra.id, &db_pool.get_ok()).await;
                     assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
                 }
             }

@@ -54,7 +54,7 @@ pub struct LightRollingStockWithLiveries {
 
 impl LightRollingStockWithLiveries {
     async fn try_fetch(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         light_rolling_stock: LightRollingStockModel,
     ) -> Result<Self> {
         let light_rolling_stock_id = light_rolling_stock.id;
@@ -111,13 +111,13 @@ async fn list(
         .into_selection_settings()
         .order_by(|| LightRollingStockModel::ID.asc());
     let (light_rolling_stocks, stats) =
-        LightRollingStockModel::list_paginated(&mut db_pool.get().await?, settings).await?;
+        LightRollingStockModel::list_paginated(&db_pool.get().await?, settings).await?;
 
     let results = light_rolling_stocks
         .into_iter()
         .zip(db_pool.iter_conn())
         .map(|(light_rolling_stock, conn)| async move {
-            LightRollingStockWithLiveries::try_fetch(&mut conn.await?, light_rolling_stock).await
+            LightRollingStockWithLiveries::try_fetch(&conn.await?, light_rolling_stock).await
         });
 
     let results = futures::future::try_join_all(results).await?;
@@ -150,7 +150,7 @@ async fn get(
         return Err(AuthorizationError::Unauthorized.into());
     }
     let light_rolling_stock = LightRollingStockModel::retrieve_or_fail(
-        &mut db_pool.get().await?,
+        &db_pool.get().await?,
         light_rolling_stock_id,
         || RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(light_rolling_stock_id),
@@ -158,7 +158,7 @@ async fn get(
     )
     .await?;
     let light_rolling_stock_with_liveries =
-        LightRollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, light_rolling_stock)
+        LightRollingStockWithLiveries::try_fetch(&db_pool.get().await?, light_rolling_stock)
             .await?;
     Ok(Json(light_rolling_stock_with_liveries))
 }
@@ -185,7 +185,7 @@ async fn get_by_name(
         return Err(AuthorizationError::Unauthorized.into());
     }
     let light_rolling_stock = LightRollingStockModel::retrieve_or_fail(
-        &mut db_pool.get().await?,
+        &db_pool.get().await?,
         light_rolling_stock_name.clone(),
         || RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Name(light_rolling_stock_name),
@@ -193,7 +193,7 @@ async fn get_by_name(
     )
     .await?;
     let light_rolling_stock_with_liveries =
-        LightRollingStockWithLiveries::try_fetch(&mut db_pool.get().await?, light_rolling_stock)
+        LightRollingStockWithLiveries::try_fetch(&db_pool.get().await?, light_rolling_stock)
             .await?;
     Ok(Json(light_rolling_stock_with_liveries))
 }
@@ -236,7 +236,7 @@ mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&db_pool.get_ok(), rs_name).await;
 
         let request = app.get(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str());
 
@@ -255,7 +255,7 @@ mod tests {
         let db_pool = app.db_pool();
 
         let rs_name = "fast_rolling_stock_name";
-        let fast_rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+        let fast_rolling_stock = create_fast_rolling_stock(&db_pool.get_ok(), rs_name).await;
 
         let request = app.get(format!("/light_rolling_stock/name/{}", rs_name).as_str());
 
@@ -286,7 +286,7 @@ mod tests {
             .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
             .map(|(rs_id, conn)| async move {
                 let fixtures = create_rolling_stock_livery_fixture(
-                    &mut conn.await.unwrap(),
+                    &conn.await.unwrap(),
                     &format!("rs_name_{}", rs_id),
                 )
                 .await;

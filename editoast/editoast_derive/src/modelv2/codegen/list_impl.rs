@@ -28,7 +28,7 @@ impl ToTokens for ListImpl {
                     offset,
                 ))]
                 async fn list(
-                    conn: &'async_trait mut editoast_models::DbConnection,
+                    conn: &'async_trait editoast_models::DbConnection,
                     settings: crate::modelsv2::prelude::SelectionSettings<Self>,
                 ) -> crate::error::Result<Vec<Self>> {
                     use diesel::QueryDsl;

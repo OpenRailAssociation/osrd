@@ -34,7 +34,7 @@ pub struct Scenario {
 }
 
 impl Scenario {
-    pub async fn infra_name(&self, conn: &mut DbConnection) -> Result<String> {
+    pub async fn infra_name(&self, conn: &DbConnection) -> Result<String> {
         use editoast_models::tables::infra::dsl as infra_dsl;
         let infra_name = infra_dsl::infra
             .filter(infra_dsl::id.eq(self.infra_id))
@@ -44,7 +44,7 @@ impl Scenario {
         Ok(infra_name)
     }
 
-    pub async fn trains_count(&self, conn: &mut DbConnection) -> Result<i64> {
+    pub async fn trains_count(&self, conn: &DbConnection) -> Result<i64> {
         use editoast_models::tables::train_schedule_v2::dsl::*;
         let trains_count = train_schedule_v2
             .filter(timetable_id.eq(self.timetable_id))

@@ -21,7 +21,7 @@ pub struct Timetable {
 
 impl Timetable {
     #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
-    pub async fn create(conn: &mut DbConnection) -> Result<Self> {
+    pub async fn create(conn: &DbConnection) -> Result<Self> {
         diesel::insert_into(editoast_models::tables::timetable_v2::table)
             .default_values()
             .get_result::<Timetable>(conn.write().await.deref_mut())
@@ -35,7 +35,7 @@ impl Timetable {
 impl DeleteStatic<i64> for Timetable {
     #[allow(clippy::blocks_in_conditions)] // TODO: Remove this once using clippy 0.1.80
     #[tracing::instrument(name = "model:delete_static<Timetable>", skip_all, ret, err)]
-    async fn delete_static(conn: &mut DbConnection, id: i64) -> Result<bool> {
+    async fn delete_static(conn: &DbConnection, id: i64) -> Result<bool> {
         diesel::delete(dsl::timetable_v2.filter(dsl::id.eq(id)))
             .execute(conn.write().await.deref_mut())
             .await
@@ -49,7 +49,7 @@ impl Retrieve<i64> for Timetable {
     #[allow(clippy::blocks_in_conditions)] // TODO: Remove this once using clippy 0.1.80
     #[tracing::instrument(name = "model:retrieve<Timetable>", skip_all, err)]
     async fn retrieve(
-        conn: &mut editoast_models::DbConnection,
+        conn: &editoast_models::DbConnection,
         id: i64,
     ) -> crate::error::Result<Option<Timetable>> {
         dsl::timetable_v2
@@ -65,7 +65,7 @@ impl Retrieve<i64> for Timetable {
 impl Exists<i64> for Timetable {
     #[allow(clippy::blocks_in_conditions)] // TODO: Remove this once using clippy 0.1.80
     #[tracing::instrument(name = "model:exists<Timetable>", skip_all, ret, err)]
-    async fn exists(conn: &mut DbConnection, id: i64) -> Result<bool> {
+    async fn exists(conn: &DbConnection, id: i64) -> Result<bool> {
         Self::retrieve(conn, id)
             .await
             .map(|r| r.is_some())
@@ -90,7 +90,7 @@ pub struct TimetableWithTrains {
 
 #[async_trait::async_trait]
 impl Retrieve<i64> for TimetableWithTrains {
-    async fn retrieve(conn: &mut DbConnection, timetable_id: i64) -> Result<Option<Self>> {
+    async fn retrieve(conn: &DbConnection, timetable_id: i64) -> Result<Option<Self>> {
         let result = sql_query(
             "SELECT timetable_v2.*,
         array_remove(array_agg(train_schedule_v2.id), NULL) as train_ids

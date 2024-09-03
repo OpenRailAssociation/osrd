@@ -25,7 +25,7 @@ pub trait SchemaModel: Model {
 
     /// Retrieve all objects of this type from the database for a given infra
     async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         infra_id: i64,
     ) -> crate::error::Result<C>;
 }
@@ -68,7 +68,7 @@ macro_rules! infra_model {
             }
 
             async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
-                conn: &mut DbConnection,
+                conn: &DbConnection,
                 infra_id: i64,
             ) -> crate::error::Result<C> {
                 use diesel::prelude::*;
@@ -247,7 +247,7 @@ pub fn get_geometry_layer_table(object_type: &ObjectType) -> Option<&'static str
 impl OperationalPointModel {
     /// Retrieve a list of operational points from the database
     pub async fn retrieve_from_uic(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         infra_id: i64,
         uic: &[i64],
     ) -> crate::error::Result<Vec<Self>> {
@@ -270,7 +270,7 @@ impl OperationalPointModel {
     }
 
     pub async fn retrieve_from_trigrams(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         infra_id: i64,
         trigrams: &[String],
     ) -> crate::error::Result<Vec<Self>> {
@@ -305,10 +305,10 @@ mod tests_persist {
                 #[rstest::rstest]
                 async fn [<test_persist_ $obj:snake>]() {
                     let db_pool =  editoast_models::DbConnectionPoolV2::for_tests();
-                    let infra =  crate::modelsv2::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                    let infra =  crate::modelsv2::fixtures::create_empty_infra(&db_pool.get_ok()).await;
                     let schemas = (0..10).map(|_| Default::default());
                     let changesets = $obj::from_infra_schemas(infra.id, schemas);
-                    assert!($obj::create_batch::<_, Vec<_>>(&mut db_pool.get_ok(), changesets).await.is_ok());
+                    assert!($obj::create_batch::<_, Vec<_>>(&db_pool.get_ok(), changesets).await.is_ok());
                 }
             }
         };
@@ -339,11 +339,11 @@ mod tests_retrieve {
     #[rstest]
     async fn from_trigrams() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let small_infra = create_small_infra(&db_pool.get_ok()).await;
 
         let trigrams = vec!["MES".to_string(), "WS".to_string()];
         let res = OperationalPointModel::retrieve_from_trigrams(
-            &mut db_pool.get_ok(),
+            &db_pool.get_ok(),
             small_infra.id,
             &trigrams,
         )
@@ -356,12 +356,11 @@ mod tests_retrieve {
     #[rstest]
     async fn from_uic() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let small_infra = create_small_infra(&db_pool.get_ok()).await;
         let uic = vec![1, 2];
-        let res =
-            OperationalPointModel::retrieve_from_uic(&mut db_pool.get_ok(), small_infra.id, &uic)
-                .await
-                .expect("Failed to retrieve operational points");
+        let res = OperationalPointModel::retrieve_from_uic(&db_pool.get_ok(), small_infra.id, &uic)
+            .await
+            .expect("Failed to retrieve operational points");
 
         assert_eq!(res.len(), 2);
     }

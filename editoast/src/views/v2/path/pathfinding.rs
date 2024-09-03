@@ -98,7 +98,7 @@ async fn post(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let mut redis_conn = redis.get_connection().await?;
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
@@ -112,7 +112,7 @@ async fn post(
 
 /// Pathfinding computation given a path input
 async fn pathfinding_blocks(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     redis_conn: &mut RedisConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
@@ -124,7 +124,7 @@ async fn pathfinding_blocks(
 
 /// Pathfinding batch computation given a list of path inputs
 async fn pathfinding_blocks_batch(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     redis_conn: &mut RedisConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
@@ -249,7 +249,7 @@ fn build_pathfinding_request(
 
 /// Compute a path given a train schedule and an infrastructure.
 pub async fn pathfinding_from_train(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     redis: &mut RedisConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
@@ -272,7 +272,7 @@ pub async fn pathfinding_from_train(
 
 /// Compute a path given a batch of trainschedule and an infrastructure.
 pub async fn pathfinding_from_train_batch(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     redis: &mut RedisConnection,
     core: Arc<CoreClient>,
     infra: &Infra,

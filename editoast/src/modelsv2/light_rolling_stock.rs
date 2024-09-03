@@ -68,15 +68,14 @@ pub mod tests {
 
         let rs_name = "fast_rolling_stock_name";
         let created_fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+            create_fast_rolling_stock(&db_pool.get_ok(), rs_name).await;
 
         // THEN
-        assert!(LightRollingStockModel::retrieve(
-            &mut db_pool.get_ok(),
-            created_fast_rolling_stock.id
-        )
-        .await
-        .is_ok());
+        assert!(
+            LightRollingStockModel::retrieve(&db_pool.get_ok(), created_fast_rolling_stock.id)
+                .await
+                .is_ok()
+        );
     }
 
     #[rstest]
@@ -86,15 +85,13 @@ pub mod tests {
 
         let rs_name = "fast_rolling_stock_name";
         let created_fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+            create_fast_rolling_stock(&db_pool.get_ok(), rs_name).await;
 
         // WHEN
-        let rolling_stocks = LightRollingStockModel::list(
-            &mut db_pool.get_ok(),
-            SelectionSettings::new().limit(1000),
-        )
-        .await
-        .unwrap();
+        let rolling_stocks =
+            LightRollingStockModel::list(&db_pool.get_ok(), SelectionSettings::new().limit(1000))
+                .await
+                .unwrap();
 
         // THEN
         assert!(!rolling_stocks.is_empty());

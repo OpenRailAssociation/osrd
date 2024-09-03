@@ -22,7 +22,7 @@ pub struct DeleteOperation {
 }
 
 impl DeleteOperation {
-    pub async fn apply(&self, infra_id: i64, conn: &mut DbConnection) -> Result<()> {
+    pub async fn apply(&self, infra_id: i64, conn: &DbConnection) -> Result<()> {
         match sql_query(format!(
             "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
             get_table(&self.obj_type)
@@ -94,16 +94,16 @@ mod tests {
                     use std::ops::DerefMut;
 
                     let db_pool = DbConnectionPoolV2::for_tests();
-                    let infra = crate::modelsv2::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                    let infra = crate::modelsv2::fixtures::create_empty_infra(&db_pool.get_ok()).await;
 
                     let railjson_object = editoast_schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),
                     };
-                    let result = crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, &mut db_pool.get_ok()).await;
+                    let result = crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, &db_pool.get_ok()).await;
                     assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
 
                     let object_deletion: crate::infra_cache::operation::delete::DeleteOperation = railjson_object.get_ref().into();
-                    let result = object_deletion.apply(infra.id, &mut db_pool.get_ok()).await;
+                    let result = object_deletion.apply(infra.id, &db_pool.get_ok()).await;
                     assert!(result.is_ok(), "Failed to delete a {}", stringify!($obj));
 
                     let res_del = diesel::sql_query(format!(
@@ -112,7 +112,7 @@ mod tests {
                             railjson_object.get_id(),
                             infra.id
                         ))
-                        .get_result::<Count>(&mut db_pool.get_ok().write().await.deref_mut()).await.unwrap();
+                        .get_result::<Count>(db_pool.get_ok().write().await.deref_mut()).await.unwrap();
 
                     pretty_assertions::assert_eq!(res_del.nb, 0);
                 }

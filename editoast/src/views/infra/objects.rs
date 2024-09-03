@@ -75,13 +75,13 @@ async fn get_objects(
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
     }
 
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(&db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
     let objects = infra
         .get_objects(
-            &mut db_pool.get().await?,
+            &db_pool.get().await?,
             object_type_param.object_type,
             &obj_ids,
         )
@@ -134,7 +134,7 @@ mod tests {
     async fn check_invalid_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let request = app
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
@@ -147,7 +147,7 @@ mod tests {
     async fn get_objects_no_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let request = app
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
@@ -161,20 +161,16 @@ mod tests {
         // GIVEN
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let switch = Switch {
             id: "switch_001".into(),
             switch_type: "switch_type_001".into(),
             ..Default::default()
         };
-        apply_create_operation(
-            &switch.clone().into(),
-            empty_infra.id,
-            &mut db_pool.get_ok(),
-        )
-        .await
-        .expect("Failed to create switch object");
+        apply_create_operation(&switch.clone().into(), empty_infra.id, &db_pool.get_ok())
+            .await
+            .expect("Failed to create switch object");
 
         // WHEN
         let request = app
@@ -204,7 +200,7 @@ mod tests {
     async fn get_objects_duplicate_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let request = app
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
@@ -217,14 +213,14 @@ mod tests {
     async fn get_switch_types() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         // Add a switch type
         let switch_type = SwitchType::default();
         apply_create_operation(
             &switch_type.clone().into(),
             empty_infra.id,
-            &mut db_pool.get_ok(),
+            &db_pool.get_ok(),
         )
         .await
         .expect("Failed to create switch type object");

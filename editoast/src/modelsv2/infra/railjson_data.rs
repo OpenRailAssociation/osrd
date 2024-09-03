@@ -19,7 +19,7 @@ pub struct RailJsonData {
 
 impl Infra {
     pub async fn get_railjson(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         infra_id: i64,
         object_type: &ObjectType,
     ) -> Result<Vec<RailJsonData>> {

@@ -20,7 +20,7 @@ pub struct Voltage {
 impl Infra {
     pub async fn get_voltages(
         &self,
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         include_rolling_stock_modes: bool,
     ) -> Result<Vec<Voltage>> {
         let query = if !include_rolling_stock_modes {
@@ -35,7 +35,7 @@ impl Infra {
         Ok(voltages)
     }
 
-    pub async fn get_all_voltages(conn: &mut DbConnection) -> Result<Vec<Voltage>> {
+    pub async fn get_all_voltages(conn: &DbConnection) -> Result<Vec<Voltage>> {
         let query = include_str!("sql/get_all_voltages_and_modes.sql");
         let voltages = sql_query(query)
             .load::<Voltage>(conn.write().await.deref_mut())

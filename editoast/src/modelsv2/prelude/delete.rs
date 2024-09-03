@@ -12,10 +12,10 @@ pub trait Delete: Sized {
     /// Deletes the row corresponding to this model instance
     ///
     /// Returns `true` if the row was deleted, `false` if it didn't exist
-    async fn delete(&self, conn: &mut DbConnection) -> Result<bool>;
+    async fn delete(&self, conn: &DbConnection) -> Result<bool>;
 
     /// Just like [Delete::delete] but returns `Err(fail())` if the row didn't exist
-    async fn delete_or_fail<E, F>(&self, conn: &mut DbConnection, fail: F) -> Result<()>
+    async fn delete_or_fail<E, F>(&self, conn: &DbConnection, fail: F) -> Result<()>
     where
         E: EditoastError,
         F: FnOnce() -> E + Send + 'async_trait,
@@ -41,10 +41,10 @@ where
     for<'async_trait> K: Send + 'async_trait,
 {
     /// Deletes the row #`id` from the database
-    async fn delete_static(conn: &mut DbConnection, id: K) -> Result<bool>;
+    async fn delete_static(conn: &DbConnection, id: K) -> Result<bool>;
 
     /// Just like [DeleteStatic::delete_static] but returns `Err(fail())` if the row didn't exist
-    async fn delete_static_or_fail<E, F>(conn: &mut DbConnection, id: K, fail: F) -> Result<()>
+    async fn delete_static_or_fail<E, F>(conn: &DbConnection, id: K, fail: F) -> Result<()>
     where
         E: EditoastError,
         F: FnOnce() -> E + Send + 'async_trait,
@@ -70,13 +70,13 @@ where
     ///
     /// Returns the number of rows deleted.
     async fn delete_batch<I: IntoIterator<Item = K> + Send + 'async_trait>(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         ids: I,
     ) -> Result<usize>;
 
     /// Just like [DeleteBatch::delete_batch] but returns `Err(fail(missing))` where `missing`
     /// is the number of rows that were not deleted
-    async fn delete_batch_or_fail<I, E, F>(conn: &mut DbConnection, ids: I, fail: F) -> Result<()>
+    async fn delete_batch_or_fail<I, E, F>(conn: &DbConnection, ids: I, fail: F) -> Result<()>
     where
         I: Send + IntoIterator<Item = K> + 'async_trait,
         E: EditoastError,

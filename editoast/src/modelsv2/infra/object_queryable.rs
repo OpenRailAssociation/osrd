@@ -38,7 +38,7 @@ pub struct ObjectQueryable {
 impl Infra {
     pub async fn get_objects(
         &self,
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         object_type: ObjectType,
         object_ids: &Vec<String>,
     ) -> Result<Vec<ObjectQueryable>> {

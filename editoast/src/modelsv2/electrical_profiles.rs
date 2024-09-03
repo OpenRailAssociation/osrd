@@ -23,7 +23,7 @@ pub struct ElectricalProfileSet {
 }
 
 impl ElectricalProfileSet {
-    pub async fn list_light(conn: &mut DbConnection) -> Result<Vec<LightElectricalProfileSet>> {
+    pub async fn list_light(conn: &DbConnection) -> Result<Vec<LightElectricalProfileSet>> {
         use editoast_models::tables::electrical_profile_set::dsl::*;
         let result = electrical_profile_set
             .select((id, name))
@@ -51,10 +51,10 @@ mod tests {
     #[rstest]
     async fn test_list_light() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let set_1 = create_electrical_profile_set(&mut db_pool.get_ok()).await;
-        let set_2 = create_electrical_profile_set(&mut db_pool.get_ok()).await;
+        let set_1 = create_electrical_profile_set(&db_pool.get_ok()).await;
+        let set_2 = create_electrical_profile_set(&db_pool.get_ok()).await;
 
-        let list = ElectricalProfileSet::list_light(&mut db_pool.get_ok())
+        let list = ElectricalProfileSet::list_light(&db_pool.get_ok())
             .await
             .expect("Failed to list electrical profile sets");
 

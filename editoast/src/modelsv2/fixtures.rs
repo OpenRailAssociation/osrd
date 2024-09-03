@@ -40,7 +40,7 @@ pub fn project_changeset(name: &str) -> Changeset<Project> {
         .tags(Tags::default())
 }
 
-pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
+pub async fn create_project(conn: &DbConnection, name: &str) -> Project {
     project_changeset(name)
         .create(conn)
         .await
@@ -59,14 +59,14 @@ pub fn study_changeset(name: &str, project_id: i64) -> Changeset<Study> {
         .project_id(project_id)
 }
 
-pub async fn create_study(conn: &mut DbConnection, name: &str, project_id: i64) -> Study {
+pub async fn create_study(conn: &DbConnection, name: &str, project_id: i64) -> Study {
     study_changeset(name, project_id)
         .create(conn)
         .await
         .expect("Failed to create study")
 }
 
-pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
+pub async fn create_timetable(conn: &DbConnection) -> Timetable {
     Timetable::create(conn)
         .await
         .expect("Failed to create timetable")
@@ -85,10 +85,7 @@ pub fn simple_train_schedule_form(timetable_id: i64) -> TrainScheduleForm {
     }
 }
 
-pub async fn create_simple_train_schedule(
-    conn: &mut DbConnection,
-    timetable_id: i64,
-) -> TrainSchedule {
+pub async fn create_simple_train_schedule(conn: &DbConnection, timetable_id: i64) -> TrainSchedule {
     let train_schedule: Changeset<TrainSchedule> = simple_train_schedule_form(timetable_id).into();
     train_schedule
         .create(conn)
@@ -114,7 +111,7 @@ pub fn scenario_changeset(
 }
 
 pub async fn create_scenario(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     name: &str,
     study_id: i64,
     timetable_id: i64,
@@ -135,10 +132,7 @@ pub struct ScenarioFixtureSet {
     pub infra: Infra,
 }
 
-pub async fn create_scenario_fixtures_set(
-    conn: &mut DbConnection,
-    name: &str,
-) -> ScenarioFixtureSet {
+pub async fn create_scenario_fixtures_set(conn: &DbConnection, name: &str) -> ScenarioFixtureSet {
     let project = create_project(conn, &format!("project_test_name_with_{name}")).await;
     let study = create_study(conn, &format!("study_test_name_with_{name}"), project.id).await;
     let infra = create_empty_infra(conn).await;
@@ -168,7 +162,7 @@ pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStockModel> 
     rolling_stock_model.version(0)
 }
 
-pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> RollingStockModel {
+pub async fn create_fast_rolling_stock(conn: &DbConnection, name: &str) -> RollingStockModel {
     fast_rolling_stock_changeset(name)
         .create(conn)
         .await
@@ -176,7 +170,7 @@ pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> R
 }
 
 pub async fn create_rolling_stock_with_energy_sources(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     name: &str,
 ) -> RollingStockModel {
     rolling_stock_with_energy_sources_changeset(name)
@@ -201,7 +195,7 @@ pub fn rolling_stock_livery_changeset(
 }
 
 pub async fn create_rolling_stock_livery(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     name: &str,
     rolling_stock_id: i64,
     compound_image_id: i64,
@@ -212,7 +206,7 @@ pub async fn create_rolling_stock_livery(
         .expect("Failed to create rolling stock livery")
 }
 
-pub async fn create_document_example(conn: &mut DbConnection) -> Document {
+pub async fn create_document_example(conn: &DbConnection) -> Document {
     let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
     let mut img_bytes: Vec<u8> = Vec::new();
     assert!(img
@@ -229,7 +223,7 @@ pub async fn create_document_example(conn: &mut DbConnection) -> Document {
 }
 
 pub async fn create_rolling_stock_livery_fixture(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     name: &str,
 ) -> (RollingStockLiveryModel, RollingStockModel, Document) {
     let rolling_stock = create_fast_rolling_stock(conn, name).await;
@@ -239,7 +233,7 @@ pub async fn create_rolling_stock_livery_fixture(
     (rs_livery, rolling_stock, document_exemple)
 }
 
-pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> ElectricalProfileSet {
+pub async fn create_electrical_profile_set(conn: &DbConnection) -> ElectricalProfileSet {
     let json = include_str!("../tests/electrical_profile_set.json");
     serde_json::from_str::<Changeset<ElectricalProfileSet>>(json)
         .expect("Unable to parse")
@@ -248,7 +242,7 @@ pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> Electrica
         .expect("Failed to create electrical profile set")
 }
 
-pub async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
+pub async fn create_empty_infra(conn: &DbConnection) -> Infra {
     Infra::changeset()
         .name("empty_infra".to_owned())
         .last_railjson_version()
@@ -272,11 +266,7 @@ pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<Roll
     rolling_stock_model.name(name.to_owned()).version(1)
 }
 
-pub async fn create_infra_object<T>(
-    conn: &mut DbConnection,
-    infra_id: i64,
-    object: T,
-) -> InfraObject
+pub async fn create_infra_object<T>(conn: &DbConnection, infra_id: i64, object: T) -> InfraObject
 where
     T: Into<InfraObject> + OSRDObject,
 {
@@ -287,7 +277,7 @@ where
     railjson_object
 }
 
-pub async fn create_small_infra(conn: &mut DbConnection) -> Infra {
+pub async fn create_small_infra(conn: &DbConnection) -> Infra {
     let railjson: RailJson = serde_json::from_str(include_str!(
         "../../../tests/data/infras/small_infra/infra.json"
     ))
@@ -300,7 +290,7 @@ pub async fn create_small_infra(conn: &mut DbConnection) -> Infra {
         .unwrap()
 }
 
-pub async fn create_work_schedule_group(conn: &mut DbConnection) -> WorkScheduleGroup {
+pub async fn create_work_schedule_group(conn: &DbConnection) -> WorkScheduleGroup {
     WorkScheduleGroup::changeset()
         .name("Empty work schedule group".to_string())
         .creation_date(Utc::now().naive_utc())

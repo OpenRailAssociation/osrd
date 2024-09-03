@@ -65,7 +65,7 @@ async fn get(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let doc = Document::retrieve_or_fail(conn, document_id, || DocumentErrors::NotFound {
         document_key: document_id,
     })
@@ -113,7 +113,7 @@ async fn post(
     let content_type = content_type.to_string();
 
     // Create document
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let doc = Document::changeset()
         .content_type(content_type.to_owned())
         .data(bytes.to_vec())
@@ -153,7 +153,7 @@ async fn delete(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     Document::delete_static_or_fail(conn, document_id, || DocumentErrors::NotFound {
         document_key: document_id,
     })
@@ -195,7 +195,7 @@ mod tests {
         let new_doc = response.json::<PostDocumentResponse>().document_key;
 
         // Get create document
-        let document = Document::retrieve(&mut pool.get_ok(), new_doc)
+        let document = Document::retrieve(&pool.get_ok(), new_doc)
             .await
             .expect("Failed to retrieve document")
             .expect("Document not found");
@@ -212,7 +212,7 @@ mod tests {
         let document = Document::changeset()
             .data(b"Document post test data".to_vec())
             .content_type(String::from("text/plain"))
-            .create(&mut pool.get_ok())
+            .create(&pool.get_ok())
             .await
             .expect("Failed to create document");
 
@@ -233,7 +233,7 @@ mod tests {
         let document = Document::changeset()
             .data(b"Document post test data".to_vec())
             .content_type(String::from("text/plain"))
-            .create(&mut pool.get_ok())
+            .create(&pool.get_ok())
             .await
             .expect("Failed to create document");
 
@@ -244,7 +244,7 @@ mod tests {
         response.assert_status(StatusCode::NO_CONTENT);
 
         // Get create document
-        let document = Document::exists(&mut pool.get_ok(), document.id)
+        let document = Document::exists(&pool.get_ok(), document.id)
             .await
             .expect("Failed to retrieve document");
 

@@ -32,7 +32,7 @@ impl ToTokens for RetrieveImpl {
             impl crate::modelsv2::Retrieve<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn retrieve(
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &editoast_models::DbConnection,
                     #id_ident: #ty,
                 ) -> crate::error::Result<Option<#model>> {
                     use diesel::prelude::*;

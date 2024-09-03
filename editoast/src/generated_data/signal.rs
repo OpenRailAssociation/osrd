@@ -44,7 +44,7 @@ fn find_sprite_id(sprite_config: &SpriteConfigs, logical_signal: &LogicalSignal)
 /// Generate the signaling system and sprite fields of the layer.
 /// Only updated_signals are updated
 async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a String>>(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     infra: i64,
     infra_cache: &InfraCache,
     updated_signals: T,
@@ -90,7 +90,7 @@ impl GeneratedData for SignalLayer {
         "infra_layer_signal"
     }
 
-    async fn generate(conn: &mut DbConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
+    async fn generate(conn: &DbConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
         use diesel_async::RunQueryDsl;
 
         sql_query(include_str!("sql/generate_signal_layer.sql"))
@@ -108,7 +108,7 @@ impl GeneratedData for SignalLayer {
     }
 
     async fn update(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,

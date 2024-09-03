@@ -43,7 +43,7 @@ impl ToTokens for UpdateBatchImpl {
                     C: Default + std::iter::Extend<#model> + Send + std::fmt::Debug,
                 >(
                     self,
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &editoast_models::DbConnection,
                     ids: I,
                 ) -> crate::error::Result<C> {
                     use crate::modelsv2::Model;
@@ -84,7 +84,7 @@ impl ToTokens for UpdateBatchImpl {
                     C: Default + std::iter::Extend<(#ty, #model)> + Send,
                 >(
                     self,
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &editoast_models::DbConnection,
                     ids: I,
                 ) -> crate::error::Result<C> {
                     use crate::models::Identifiable;

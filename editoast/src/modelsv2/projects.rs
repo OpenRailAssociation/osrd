@@ -58,13 +58,13 @@ impl From<Tags> for Vec<Option<String>> {
 
 impl Project {
     /// This function takes a filled project and update to now the last_modification field
-    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn update_last_modified(&mut self, conn: &DbConnection) -> Result<()> {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
     }
 
-    pub async fn studies_count(&self, conn: &mut DbConnection) -> Result<u64> {
+    pub async fn studies_count(&self, conn: &DbConnection) -> Result<u64> {
         let project_id = self.id;
         let studies_count = Study::count(
             conn,
@@ -75,7 +75,7 @@ impl Project {
     }
 
     pub async fn update_and_prune_document(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         project_changeset: Changeset<Self>,
         project_id: i64,
     ) -> Result<Project> {
@@ -97,10 +97,7 @@ impl Project {
         Ok(project)
     }
 
-    pub async fn delete_and_prune_document(
-        conn: &mut DbConnection,
-        project_id: i64,
-    ) -> Result<bool> {
+    pub async fn delete_and_prune_document(conn: &DbConnection, project_id: i64) -> Result<bool> {
         let project_obj =
             Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
                 .await?;
@@ -130,17 +127,17 @@ pub mod test {
     async fn project_creation() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let project_name = "test_project_name";
-        let created_project = create_project(&mut db_pool.get_ok(), project_name).await;
+        let created_project = create_project(&db_pool.get_ok(), project_name).await;
         assert_eq!(created_project.name, project_name);
     }
 
     #[rstest]
     async fn project_retrieve() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = create_project(&db_pool.get_ok(), "test_project_name").await;
 
         // Get a project
-        let project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
+        let project = Project::retrieve(&db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -151,7 +148,7 @@ pub mod test {
     #[rstest]
     async fn project_update() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let mut created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let mut created_project = create_project(&db_pool.get_ok(), "test_project_name").await;
 
         let project_name = "update_name";
         let project_budget = Some(1000);
@@ -161,11 +158,11 @@ pub mod test {
             .patch()
             .name(project_name.to_owned())
             .budget(project_budget)
-            .apply(&mut db_pool.get_ok())
+            .apply(&db_pool.get_ok())
             .await
             .expect("Failed to update project");
 
-        let project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
+        let project = Project::retrieve(&db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -177,11 +174,11 @@ pub mod test {
     #[rstest]
     async fn sort_project() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let _created_project_1 = create_project(&mut db_pool.get_ok(), "test_project_name_1").await;
-        let _created_project_2 = create_project(&mut db_pool.get_ok(), "test_project_name_2").await;
+        let _created_project_1 = create_project(&db_pool.get_ok(), "test_project_name_1").await;
+        let _created_project_2 = create_project(&db_pool.get_ok(), "test_project_name_2").await;
 
         let projects = Project::list(
-            &mut db_pool.get_ok(),
+            &db_pool.get_ok(),
             SelectionSettings::new().order_by(|| Project::NAME.desc()),
         )
         .await

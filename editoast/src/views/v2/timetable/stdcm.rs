@@ -163,7 +163,7 @@ async fn stdcm(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let redis_client = app_state.redis.clone();
     let core_client = app_state.core_client.clone();
@@ -482,7 +482,7 @@ async fn get_simulation_run_time(
     };
 
     let (sim_result, _) = train_simulation(
-        &mut db_pool.get().await?,
+        &db_pool.get().await?,
         redis_client,
         core_client,
         train_schedule,
@@ -538,7 +538,7 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
 
 /// Build the list of work schedules for the given time range
 async fn build_work_schedules(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     time: DateTime<Utc>,
     maximum_departure_delay: u64,
     maximum_run_time: u64,
@@ -577,7 +577,7 @@ fn elapsed_since_time_ms(time: &NaiveDateTime, zero: &DateTime<Utc>) -> u64 {
 
 /// Create steps from track_map and waypoints
 async fn parse_stdcm_steps(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     data: &STDCMRequestPayload,
     infra: &Infra,
 ) -> Result<Vec<STDCMPathItem>> {

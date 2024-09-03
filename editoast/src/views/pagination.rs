@@ -108,7 +108,7 @@ pub trait PaginatedList: ListAndCount + 'static {
     ///    and [SelectionSettings::offset] beforehand. [PaginationQueryParam::into_selection_settings]
     ///    works as well.
     async fn list_paginated(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         settings: SelectionSettings<Self>,
     ) -> Result<(Vec<Self>, PaginationStats)> {
         let (page, page_size) = settings

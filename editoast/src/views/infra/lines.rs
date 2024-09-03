@@ -60,7 +60,7 @@ async fn get_line_bbox(
 
     let line_code: i32 = line_code.try_into().unwrap();
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
@@ -103,7 +103,7 @@ mod test {
     async fn returns_correct_bbox_for_existing_line_code() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let line_code = 1234;
         let geometry_json = json!({
@@ -124,7 +124,7 @@ mod test {
             ..Default::default()
         }
         .into();
-        apply_create_operation(&track_section, empty_infra.id, &mut db_pool.get_ok())
+        apply_create_operation(&track_section, empty_infra.id, &db_pool.get_ok())
             .await
             .expect("Failed to create track section object");
 
@@ -139,7 +139,7 @@ mod test {
     async fn returns_bad_request_when_line_code_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let not_existing_line_code = 123456789;
         let request = app.get(

@@ -20,7 +20,7 @@ pub enum Level {
 impl Infra {
     pub async fn get_paginated_errors(
         &self,
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         level: Level,
         error_type: Option<InfraErrorTypeLabel>,
         object_id: Option<Identifier>,

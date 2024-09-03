@@ -68,8 +68,8 @@ async fn list(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let mut conn = db_pool.get().await?;
-    Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
+    let conn = db_pool.get().await?;
+    Ok(Json(ElectricalProfileSet::list_light(&conn).await?))
 }
 
 /// Return a specific set of electrical profiles
@@ -94,7 +94,7 @@ async fn get(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
         ElectricalProfilesError::NotFound {
             electrical_profile_set_id,
@@ -133,7 +133,7 @@ async fn get_level_order(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
         ElectricalProfilesError::NotFound {
             electrical_profile_set_id,
@@ -165,7 +165,7 @@ async fn delete(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let deleted = ElectricalProfileSet::delete_static(conn, electrical_profile_set_id).await?;
     if deleted {
         Ok(StatusCode::NO_CONTENT)
@@ -206,7 +206,7 @@ async fn post_electrical_profile(
     let ep_set = ElectricalProfileSet::changeset()
         .name(ep_set_name.name)
         .data(ep_data);
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     Ok(Json(ep_set.create(conn).await?))
 }
 
@@ -238,8 +238,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let _set_1 = create_electrical_profile_set(&mut pool.get_ok()).await;
-        let _set_2 = create_electrical_profile_set(&mut pool.get_ok()).await;
+        let _set_1 = create_electrical_profile_set(&pool.get_ok()).await;
+        let _set_2 = create_electrical_profile_set(&pool.get_ok()).await;
 
         let response = app.get("/electrical_profile_set").await;
         response.assert_status(StatusCode::OK);
@@ -261,7 +261,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
+        let electrical_profile_set = create_electrical_profile_set(&pool.get_ok()).await;
 
         let response = app
             .get(&format!(
@@ -285,7 +285,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
+        let electrical_profile_set = create_electrical_profile_set(&pool.get_ok()).await;
 
         let response = app
             .get(&format!(
@@ -315,7 +315,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let electrical_profile_set = create_electrical_profile_set(&mut pool.get_ok()).await;
+        let electrical_profile_set = create_electrical_profile_set(&pool.get_ok()).await;
 
         let response = app
             .delete(&format!(
@@ -325,7 +325,7 @@ mod tests {
             .await;
         response.assert_status(StatusCode::NO_CONTENT);
 
-        let exists = ElectricalProfileSet::exists(&mut pool.get_ok(), electrical_profile_set.id)
+        let exists = ElectricalProfileSet::exists(&pool.get_ok(), electrical_profile_set.id)
             .await
             .expect("Failed to check if electrical profile set exists");
 
@@ -353,7 +353,7 @@ mod tests {
         response.assert_status(StatusCode::OK);
         let created_ep: ElectricalProfileSet = response.json();
 
-        let created_ep = ElectricalProfileSet::retrieve(&mut pool.get_ok(), created_ep.id)
+        let created_ep = ElectricalProfileSet::retrieve(&pool.get_ok(), created_ep.id)
             .await
             .expect("Failed to retrieve created electrical profile set")
             .expect("Electrical profile set not found");

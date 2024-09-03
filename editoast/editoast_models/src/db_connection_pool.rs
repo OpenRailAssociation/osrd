@@ -412,7 +412,7 @@ impl DbConnectionPoolV2 {
 #[error("could not ping the database: '{0}'")]
 pub struct PingError(#[from] diesel::result::Error);
 
-pub async fn ping_database(conn: &mut DbConnection) -> Result<(), PingError> {
+pub async fn ping_database(conn: &DbConnection) -> Result<(), PingError> {
     sql_query("SELECT 1")
         .execute(conn.write().await.deref_mut())
         .await?;

@@ -302,7 +302,7 @@ fn dispatch_errors_by_object_type(
 
 /// Retrieve the current errors hash for a given infra
 async fn retrieve_current_errors_hash(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     infra_id: i64,
 ) -> Result<Vec<ErrorHash>> {
     use editoast_models::tables::infra_layer_error::dsl;
@@ -315,7 +315,7 @@ async fn retrieve_current_errors_hash(
 
 /// Remove a list of errors given an infra and a list of error hashes
 async fn remove_errors_from_hashes(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     infra_id: i64,
     errors_hash: &Vec<&ErrorHash>,
 ) -> Result<()> {
@@ -333,7 +333,7 @@ async fn remove_errors_from_hashes(
 
 /// Remove a list of errors given an infra and a list of error hashes
 async fn create_errors(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     infra_id: i64,
     errors: Vec<ErrorWithHash>,
 ) -> Result<()> {
@@ -360,11 +360,7 @@ async fn create_errors(
 /// Insert a heterogeneous list of infra errors in DB with a minimum number of queries and operations
 /// This function retrieve the existing errors in DB, compare them with the new ones and insert only
 /// the new ones. It also remove the errors that are not present anymore.
-async fn update_errors(
-    conn: &mut DbConnection,
-    infra_id: i64,
-    errors: Vec<InfraError>,
-) -> Result<()> {
+async fn update_errors(conn: &DbConnection, infra_id: i64, errors: Vec<InfraError>) -> Result<()> {
     let new_errors_with_hash: Vec<ErrorWithHash> = errors.into_iter().map_into().collect();
     let new_errors_hash = new_errors_with_hash
         .iter()
@@ -405,11 +401,7 @@ impl GeneratedData for ErrorLayer {
         "infra_layer_error"
     }
 
-    async fn generate(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        infra_cache: &InfraCache,
-    ) -> Result<()> {
+    async fn generate(conn: &DbConnection, infra_id: i64, infra_cache: &InfraCache) -> Result<()> {
         // Compute current errors
         let infra_errors = generate_infra_errors(infra_cache).await;
 
@@ -418,7 +410,7 @@ impl GeneratedData for ErrorLayer {
     }
 
     async fn update(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         infra_id: i64,
         _operations: &[CacheOperation],
         infra_cache: &InfraCache,

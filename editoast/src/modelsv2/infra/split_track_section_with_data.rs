@@ -30,7 +30,7 @@ pub struct SplitTrackSectionWithData {
 impl Infra {
     pub async fn get_split_track_section_with_data(
         &self,
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         track: Identifier,
         distance_fraction: f64,
     ) -> Result<Option<SplitTrackSectionWithData>> {

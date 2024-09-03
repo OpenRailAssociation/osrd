@@ -74,7 +74,7 @@ pub struct Infra {
 }
 
 impl InfraChangeset {
-    pub async fn persist(self, railjson: RailJson, conn: &mut DbConnection) -> Result<Infra> {
+    pub async fn persist(self, railjson: RailJson, conn: &DbConnection) -> Result<Infra> {
         let infra = self.create(conn).await?;
         // TODO: lock infra for update
         debug!("🛤  Begin importing all railjson objects");
@@ -94,7 +94,7 @@ impl InfraChangeset {
 }
 
 impl Infra {
-    pub async fn all(conn: &mut DbConnection) -> Vec<Infra> {
+    pub async fn all(conn: &DbConnection) -> Vec<Infra> {
         dsl::infra
             .load(conn.write().await.deref_mut())
             .await
@@ -104,7 +104,7 @@ impl Infra {
             .collect()
     }
 
-    pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn bump_version(&mut self, conn: &DbConnection) -> Result<()> {
         let new_version = self
             .version
             .parse::<u32>()
@@ -114,12 +114,12 @@ impl Infra {
         self.save(conn).await
     }
 
-    pub async fn bump_generated_version(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn bump_generated_version(&mut self, conn: &DbConnection) -> Result<()> {
         self.generated_version = Some(self.version.clone());
         self.save(conn).await
     }
 
-    pub async fn clone(&self, conn: &mut DbConnection, new_name: String) -> Result<Infra> {
+    pub async fn clone(&self, conn: &DbConnection, new_name: String) -> Result<Infra> {
         conn.clone().transaction(|conn| Box::pin(async move {
             // Duplicate infra shell
             let cloned_infra = <Self as Clone>::clone(self)
@@ -127,7 +127,7 @@ impl Infra {
                 .name(new_name)
                 .created(Utc::now().naive_utc())
                 .modified(Utc::now().naive_utc())
-                .create(&mut conn.clone())
+                .create(&conn)
                 .await?;
 
             // Disable triggers to speed up the cloning
@@ -230,15 +230,14 @@ impl Infra {
         generated_data::refresh_all(db_pool.clone(), self.id, infra_cache).await?;
 
         // Update generated infra version
-        self.bump_generated_version(&mut db_pool.get().await?)
-            .await?;
+        self.bump_generated_version(&db_pool.get().await?).await?;
 
         Ok(true)
     }
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` acordingly.
-    pub async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool> {
+    pub async fn clear(&mut self, conn: &DbConnection) -> Result<bool> {
         // TODO: lock self for update
         generated_data::clear_all(conn, self.id).await?;
         self.generated_version = None;
@@ -250,7 +249,7 @@ impl Infra {
     /// This disable some triggers to speed up the deletion.
     ///
     /// Note: Everything is done in one transaction for consistency.
-    pub async fn fast_delete_static(conn: &mut DbConnection, infra_id: i64) -> Result<bool> {
+    pub async fn fast_delete_static(conn: &DbConnection, infra_id: i64) -> Result<bool> {
         use editoast_models::tables::infra_object_track_section::dsl as track_section_dsl;
         use editoast_models::tables::search_track::dsl as search_track_dsl;
 
@@ -289,7 +288,7 @@ impl Infra {
                 .expect("Failed to enable trigger");
 
                     // Delete the rest of the infra
-                    Self::delete_static(&mut conn.clone(), infra_id).await
+                    Self::delete_static(&conn.clone(), infra_id).await
                 })
             })
             .await
@@ -328,7 +327,7 @@ pub mod tests {
     #[rstest]
     async fn create_infra() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra = create_empty_infra(&db_pool.get_ok()).await;
 
         assert_eq!(infra.owner, Uuid::nil());
         assert_eq!(infra.railjson_version, RAILJSON_VERSION);
@@ -343,12 +342,12 @@ pub mod tests {
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
         let infra_new_name = "clone_infra_with_new_name_returns_new_cloned_infra".to_string();
 
         // WHEN
         let result = empty_infra
-            .clone(&mut db_pool.get_ok(), infra_new_name.clone())
+            .clone(&db_pool.get_ok(), infra_new_name.clone())
             .await
             .expect("could not clone infra");
 
@@ -367,7 +366,7 @@ pub mod tests {
         let res = Infra::changeset()
             .name("test".to_owned())
             .last_railjson_version()
-            .persist(railjson_with_invalid_version, &mut db_pool.get_ok())
+            .persist(railjson_with_invalid_version, &db_pool.get_ok())
             .await;
         assert!(res.is_err());
         let expected_error = RailJsonError::UnsupportedVersion {
@@ -403,7 +402,7 @@ pub mod tests {
         let infra = Infra::changeset()
             .name("persist_railjson_ok_infra".to_owned())
             .last_railjson_version()
-            .persist(railjson.clone(), &mut db_pool.get_ok())
+            .persist(railjson.clone(), &db_pool.get_ok())
             .await
             .expect("could not persist infra");
 
@@ -418,47 +417,47 @@ pub mod tests {
         let id = infra.id;
 
         assert_eq!(
-            sort::<BufferStop>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<BufferStop>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.buffer_stops)
         );
         assert_eq!(
-            sort::<Route>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<Route>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.routes)
         );
         assert_eq!(
-            sort::<SwitchType>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<SwitchType>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.extended_switch_types)
         );
         assert_eq!(
-            sort::<Switch>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<Switch>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.switches)
         );
         assert_eq!(
-            sort::<TrackSection>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<TrackSection>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.track_sections)
         );
         assert_eq!(
-            sort::<SpeedSection>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<SpeedSection>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.speed_sections)
         );
         assert_eq!(
-            sort::<NeutralSection>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<NeutralSection>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.neutral_sections)
         );
         assert_eq!(
-            sort::<Electrification>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<Electrification>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.electrifications)
         );
         assert_eq!(
-            sort::<Signal>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<Signal>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.signals)
         );
         assert_eq!(
-            sort::<Detector>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<Detector>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.detectors)
         );
         assert_eq!(
-            sort::<OperationalPoint>(find_all_schemas(&mut db_pool.get_ok(), id).await.unwrap()),
+            sort::<OperationalPoint>(find_all_schemas(&db_pool.get_ok(), id).await.unwrap()),
             sort(railjson.operational_points)
         );
     }

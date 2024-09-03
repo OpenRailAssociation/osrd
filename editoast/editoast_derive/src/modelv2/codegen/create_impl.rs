@@ -25,7 +25,7 @@ impl ToTokens for CreateImpl {
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create(
                     self,
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &editoast_models::DbConnection,
                 ) -> crate::error::Result<#model> {
                     use diesel_async::RunQueryDsl;
                     use std::ops::DerefMut;

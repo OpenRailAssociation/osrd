@@ -15,11 +15,11 @@ where
     for<'async_trait> K: Send + 'async_trait,
 {
     /// Retrieves the row #`id` and deserializes it as a model instance
-    async fn retrieve(conn: &mut DbConnection, id: K) -> Result<Option<Self>>;
+    async fn retrieve(conn: &DbConnection, id: K) -> Result<Option<Self>>;
 
     /// Just like [Retrieve::retrieve] but returns `Err(fail())` if the row was not found
     async fn retrieve_or_fail<E, F>(
-        conn: &'async_trait mut DbConnection,
+        conn: &'async_trait DbConnection,
         id: K,
         fail: F,
     ) -> Result<Self>
@@ -45,7 +45,7 @@ where
     for<'async_trait> K: Send + 'async_trait,
 {
     /// Returns whether the row #`id` exists in the database
-    async fn exists(conn: &mut DbConnection, id: K) -> Result<bool>;
+    async fn exists(conn: &DbConnection, id: K) -> Result<bool>;
 }
 
 /// Unchecked batch retrieval of a [Model](super::Model) from the database
@@ -71,7 +71,7 @@ where
         I: IntoIterator<Item = K> + Send + 'async_trait,
         C: Default + std::iter::Extend<Self> + Send + Debug,
     >(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         ids: I,
     ) -> Result<C>;
 
@@ -86,7 +86,7 @@ where
         I: IntoIterator<Item = K> + Send + 'async_trait,
         C: Default + std::iter::Extend<(K, Self)> + Send + Debug,
     >(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         ids: I,
     ) -> Result<C>;
 }
@@ -117,7 +117,7 @@ where
     /// assert_eq!(docs.len(), 5);
     /// ```
     async fn retrieve_batch<I, C>(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
@@ -153,7 +153,7 @@ where
     /// assert!(docs.contains(&1));
     /// ```
     async fn retrieve_batch_with_key<I, C>(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
@@ -192,11 +192,7 @@ where
     ///    MyErrorType::DocumentsNotFound(missing)
     /// }).await?;
     /// ```
-    async fn retrieve_batch_or_fail<I, C, E, F>(
-        conn: &mut DbConnection,
-        ids: I,
-        fail: F,
-    ) -> Result<C>
+    async fn retrieve_batch_or_fail<I, C, E, F>(conn: &DbConnection, ids: I, fail: F) -> Result<C>
     where
         I: Send + IntoIterator<Item = K> + 'async_trait,
         C: Send
@@ -224,7 +220,7 @@ where
     /// }).await?;
     /// ```
     async fn retrieve_batch_with_key_or_fail<I, C, E, F>(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         ids: I,
         fail: F,
     ) -> Result<C>

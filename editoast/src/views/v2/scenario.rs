@@ -100,7 +100,7 @@ impl From<ScenarioCreateForm> for Changeset<Scenario> {
 }
 
 pub async fn check_project_study(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     project_id: i64,
     study_id: i64,
 ) -> Result<(Project, Study)> {
@@ -145,7 +145,7 @@ pub struct ScenarioWithDetails {
 }
 
 impl ScenarioWithDetails {
-    pub async fn from_scenario(scenario: Scenario, conn: &mut DbConnection) -> Result<Self> {
+    pub async fn from_scenario(scenario: Scenario, conn: &DbConnection) -> Result<Self> {
         Ok(Self {
             infra_name: scenario.infra_name(conn).await?,
             trains_count: scenario.trains_count(conn).await?,
@@ -217,36 +217,30 @@ async fn create(
             async move {
                 // Check if the project and the study exist
                 let (mut project, study) =
-                    check_project_study(&mut conn.clone(), project_id, study_id).await?;
+                    check_project_study(&conn.clone(), project_id, study_id).await?;
 
                 // Check if the timetable exists
-                let _ = Timetable::retrieve_or_fail(&mut conn.clone(), timetable_id, || {
+                let _ = Timetable::retrieve_or_fail(&conn.clone(), timetable_id, || {
                     ScenarioError::TimetableNotFound { timetable_id }
                 })
                 .await?;
 
                 // Check if the infra exists
-                if !Infra::exists(&mut conn.clone(), infra_id).await? {
+                if !Infra::exists(&conn.clone(), infra_id).await? {
                     return Err(ScenarioError::InfraNotFound { infra_id }.into());
                 }
 
                 // Create Scenario
-                let scenario = scenario
-                    .study_id(study_id)
-                    .create(&mut conn.clone())
-                    .await?;
+                let scenario = scenario.study_id(study_id).create(&conn).await?;
 
                 // Update study last_modification field
-                study
-                    .clone()
-                    .update_last_modified(&mut conn.clone())
-                    .await?;
+                study.clone().update_last_modified(&conn.clone()).await?;
 
                 // Update project last_modification field
-                project.update_last_modified(&mut conn.clone()).await?;
+                project.update_last_modified(&conn.clone()).await?;
 
                 let scenarios_with_details =
-                    ScenarioWithDetails::from_scenario(scenario, &mut conn.clone()).await?;
+                    ScenarioWithDetails::from_scenario(scenario, &conn.clone()).await?;
 
                 let scenarios_response =
                     ScenarioResponse::new(scenarios_with_details, project, study);
@@ -293,25 +287,21 @@ async fn delete(
         .transaction::<_, InternalError, _>(|conn| {
             async move {
                 // Check if the project and the study exist
-                let (mut project, study) =
-                    check_project_study(&mut conn.clone(), project_id, study_id)
-                        .await
-                        .unwrap();
+                let (mut project, study) = check_project_study(&conn.clone(), project_id, study_id)
+                    .await
+                    .unwrap();
 
                 // Delete scenario
-                Scenario::delete_static_or_fail(&mut conn.clone(), scenario_id, || {
+                Scenario::delete_static_or_fail(&conn.clone(), scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
                 .await?;
 
                 // Update project last_modification field
-                project.update_last_modified(&mut conn.clone()).await?;
+                project.update_last_modified(&conn.clone()).await?;
 
                 // Update study last_modification field
-                study
-                    .clone()
-                    .update_last_modified(&mut conn.clone())
-                    .await?;
+                study.clone().update_last_modified(&conn.clone()).await?;
 
                 Ok(())
             }
@@ -382,11 +372,11 @@ async fn patch(
             async move {
                 // Check if project and study exist
                 let (mut project, study) =
-                    check_project_study(&mut conn.clone(), project_id, study_id).await?;
+                    check_project_study(&conn.clone(), project_id, study_id).await?;
 
                 // Check if the infra exists
                 if let Some(infra_id) = form.infra_id {
-                    if !Infra::exists(&mut conn.clone(), infra_id).await? {
+                    if !Infra::exists(&conn.clone(), infra_id).await? {
                         return Err(ScenarioError::InfraNotFound { infra_id }.into());
                     }
                 }
@@ -394,22 +384,19 @@ async fn patch(
                 // Update the scenario
                 let scenario: Changeset<Scenario> = form.into();
                 let scenario = scenario
-                    .update_or_fail(&mut conn.clone(), scenario_id, || ScenarioError::NotFound {
+                    .update_or_fail(&conn.clone(), scenario_id, || ScenarioError::NotFound {
                         scenario_id,
                     })
                     .await?;
 
                 // Update study last_modification field
-                study
-                    .clone()
-                    .update_last_modified(&mut conn.clone())
-                    .await?;
+                study.clone().update_last_modified(&conn.clone()).await?;
 
                 // Update project last_modification field
-                project.update_last_modified(&mut conn.clone()).await?;
+                project.update_last_modified(&conn.clone()).await?;
 
                 let scenario_with_details =
-                    ScenarioWithDetails::from_scenario(scenario, &mut conn.clone()).await?;
+                    ScenarioWithDetails::from_scenario(scenario, &conn.clone()).await?;
 
                 let scenarios_response =
                     ScenarioResponse::new(scenario_with_details, project, study);
@@ -450,7 +437,7 @@ async fn get(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let (project, study) = check_project_study(conn, project_id, study_id).await?;
     // Return the scenarios
@@ -502,7 +489,7 @@ async fn list(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let _ = check_project_study(conn, project_id, study_id).await?;
 
@@ -518,7 +505,7 @@ async fn list(
         .into_iter()
         .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
         .map(|(scenario, conn)| async {
-            ScenarioWithDetails::from_scenario(scenario, &mut conn.await?).await
+            ScenarioWithDetails::from_scenario(scenario, &conn.await?).await
         });
     let results = futures::future::try_join_all(futs).await?;
 
@@ -554,7 +541,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
+        let fixtures = create_scenario_fixtures_set(&pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(
             fixtures.project.id,
@@ -574,7 +561,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
+        let fixtures = create_scenario_fixtures_set(&pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(fixtures.project.id, fixtures.study.id, None);
         let request = app.get(&url);
@@ -598,7 +585,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
+        let fixtures = create_scenario_fixtures_set(&pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(fixtures.project.id, 99999999, Some(fixtures.scenario.id));
 
@@ -612,10 +599,10 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let project = create_project(&mut pool.get_ok(), "project_test_name").await;
-        let study = create_study(&mut pool.get_ok(), "study_test_name", project.id).await;
-        let infra = create_empty_infra(&mut pool.get_ok()).await;
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let project = create_project(&pool.get_ok(), "project_test_name").await;
+        let study = create_study(&pool.get_ok(), "study_test_name", project.id).await;
+        let infra = create_empty_infra(&pool.get_ok()).await;
+        let timetable = create_timetable(&pool.get_ok()).await;
 
         let url = scenario_url(project.id, study.id, None);
 
@@ -643,7 +630,7 @@ mod tests {
         assert_eq!(response.scenario.timetable_id, study_timetable_id);
         assert_eq!(response.scenario.tags, study_tags);
 
-        let created_scenario = Scenario::retrieve(&mut pool.get_ok(), response.scenario.id)
+        let created_scenario = Scenario::retrieve(&pool.get_ok(), response.scenario.id)
             .await
             .expect("Failed to retrieve scenario")
             .expect("Scenario not found");
@@ -660,7 +647,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
+        let fixtures = create_scenario_fixtures_set(&pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(
             fixtures.project.id,
@@ -692,7 +679,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
+        let fixtures = create_scenario_fixtures_set(&pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(
             fixtures.project.id,
@@ -713,8 +700,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
-        let other_infra = create_empty_infra(&mut pool.get_ok()).await;
+        let fixtures = create_scenario_fixtures_set(&pool.get_ok(), "test_scenario_name").await;
+        let other_infra = create_empty_infra(&pool.get_ok()).await;
 
         assert_eq!(fixtures.scenario.infra_id, fixtures.infra.id);
         assert_ne!(fixtures.scenario.infra_id, other_infra.id);
@@ -744,7 +731,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
+        let fixtures = create_scenario_fixtures_set(&pool.get_ok(), "test_scenario_name").await;
 
         let url = scenario_url(
             fixtures.project.id,
@@ -755,7 +742,7 @@ mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let exists = Scenario::exists(&mut pool.get_ok(), fixtures.scenario.id)
+        let exists = Scenario::exists(&pool.get_ok(), fixtures.scenario.id)
             .await
             .expect("Failed to check if scenario exists");
 

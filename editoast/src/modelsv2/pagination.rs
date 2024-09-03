@@ -26,7 +26,7 @@ struct RowWithCount<T: QueryableByName<Pg>> {
 /// `load`s and returns the content of a diesel query, along with the total count of items that would
 /// be returned if the query was not paginated
 pub async fn load_for_pagination<Q, T>(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     query: Q,
     page: u64,
     page_size: u64,

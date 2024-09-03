@@ -386,7 +386,7 @@ async fn search(
     }
 
     let objects = query
-        .load::<SearchDBResult>(&mut db_pool.get().await?.write().await.deref_mut())
+        .load::<SearchDBResult>(db_pool.get().await?.write().await.deref_mut())
         .await?;
     let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
     Ok(axum::response::Response::builder()

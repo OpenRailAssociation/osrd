@@ -19,7 +19,7 @@ pub enum RailJsonError {
 /// All objects are attached to a given infra.
 ///
 pub async fn persist_railjson(
-    connection: &mut DbConnection,
+    connection: &DbConnection,
     infra_id: i64,
     railjson: RailJson,
 ) -> Result<()> {
@@ -51,67 +51,67 @@ pub async fn persist_railjson(
         .transaction(|conn| {
             Box::pin(async move {
                 let _ = TrackSectionModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     TrackSectionModel::from_infra_schemas(infra_id, track_sections),
                 )
                 .await?;
 
                 let _ = BufferStopModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     BufferStopModel::from_infra_schemas(infra_id, buffer_stops),
                 )
                 .await?;
 
                 let _ = ElectrificationModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     ElectrificationModel::from_infra_schemas(infra_id, electrifications),
                 )
                 .await?;
 
                 let _ = DetectorModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     DetectorModel::from_infra_schemas(infra_id, detectors),
                 )
                 .await?;
 
                 let _ = OperationalPointModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     OperationalPointModel::from_infra_schemas(infra_id, operational_points),
                 )
                 .await?;
 
                 let _ = RouteModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     RouteModel::from_infra_schemas(infra_id, routes),
                 )
                 .await?;
 
                 let _ = SignalModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     SignalModel::from_infra_schemas(infra_id, signals),
                 )
                 .await?;
 
                 let _ = SwitchModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     SwitchModel::from_infra_schemas(infra_id, switches),
                 )
                 .await?;
 
                 let _ = SpeedSectionModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     SpeedSectionModel::from_infra_schemas(infra_id, speed_sections),
                 )
                 .await?;
 
                 let _ = SwitchTypeModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     SwitchTypeModel::from_infra_schemas(infra_id, extended_switch_types),
                 )
                 .await?;
 
                 let _ = NeutralSectionModel::create_batch::<_, Vec<_>>(
-                    &mut conn.clone(),
+                    &conn.clone(),
                     NeutralSectionModel::from_infra_schemas(infra_id, neutral_sections),
                 )
                 .await?;
@@ -122,7 +122,7 @@ pub async fn persist_railjson(
         .await
 }
 
-pub async fn find_all_schemas<T, C>(conn: &mut DbConnection, infra_id: i64) -> Result<C>
+pub async fn find_all_schemas<T, C>(conn: &DbConnection, infra_id: i64) -> Result<C>
 where
     T: ModelBackedSchema,
     C: FromIterator<T>,

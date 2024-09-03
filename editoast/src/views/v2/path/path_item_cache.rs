@@ -24,7 +24,7 @@ pub struct PathItemCache {
 impl PathItemCache {
     /// Load the path item cache from a list of pathfinding inputs
     pub async fn load(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         infra_id: i64,
         path_items: &[&PathItemLocation],
     ) -> Result<PathItemCache> {
@@ -182,7 +182,7 @@ fn collect_path_item_ids(path_items: &[&PathItemLocation]) -> (Vec<String>, Vec<
 
 /// Retrieve operational points from operational point uic codes
 async fn retrieve_op_from_uic(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     infra_id: i64,
     ops_uic: &[i64],
 ) -> Result<HashMap<i64, Vec<OperationalPointModel>>> {
@@ -201,7 +201,7 @@ async fn retrieve_op_from_uic(
 
 /// Retrieve operational points from operational point trigams
 async fn retrieve_op_from_trigrams(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     infra_id: i64,
     trigrams: &[String],
 ) -> Result<HashMap<String, Vec<OperationalPointModel>>> {
@@ -220,7 +220,7 @@ async fn retrieve_op_from_trigrams(
 
 /// Retrieve operational points from operational point ids
 async fn retrieve_op_from_ids(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     infra_id: i64,
     ops_id: &[String],
 ) -> Result<HashMap<String, OperationalPointModel>> {

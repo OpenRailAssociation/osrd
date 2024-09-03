@@ -35,13 +35,13 @@ pub struct Study {
 }
 
 impl Study {
-    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn update_last_modified(&mut self, conn: &DbConnection) -> Result<()> {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
     }
 
-    pub async fn scenarios_count(&self, conn: &mut DbConnection) -> Result<u64> {
+    pub async fn scenarios_count(&self, conn: &DbConnection) -> Result<u64> {
         let study_id = self.id;
         let count = Scenario::count(
             conn,
@@ -84,14 +84,13 @@ pub mod test {
     #[rstest]
     async fn study_retrieve() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = create_project(&db_pool.get_ok(), "test_project_name").await;
 
         let study_name = "test_study_name";
-        let created_study =
-            create_study(&mut db_pool.get_ok(), study_name, created_project.id).await;
+        let created_study = create_study(&db_pool.get_ok(), study_name, created_project.id).await;
 
         // Retrieve a study
-        let study = Study::retrieve(&mut db_pool.get_ok(), created_study.id)
+        let study = Study::retrieve(&db_pool.get_ok(), created_study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");
@@ -103,24 +102,16 @@ pub mod test {
     async fn sort_study() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = create_project(&db_pool.get_ok(), "test_project_name").await;
 
-        let _created_study_1 = create_study(
-            &mut db_pool.get_ok(),
-            "test_study_name_1",
-            created_project.id,
-        )
-        .await;
+        let _created_study_1 =
+            create_study(&db_pool.get_ok(), "test_study_name_1", created_project.id).await;
 
-        let _created_study_2 = create_study(
-            &mut db_pool.get_ok(),
-            "test_study_name_2",
-            created_project.id,
-        )
-        .await;
+        let _created_study_2 =
+            create_study(&db_pool.get_ok(), "test_study_name_2", created_project.id).await;
 
         let studies = Study::list(
-            &mut db_pool.get_ok(),
+            &db_pool.get_ok(),
             SelectionSettings::new().order_by(|| Study::NAME.desc()),
         )
         .await

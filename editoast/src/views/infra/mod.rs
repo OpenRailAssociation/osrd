@@ -145,10 +145,10 @@ async fn refresh(
 
     let infras_list = if infras.is_empty() {
         // Retrieve all available infra
-        Infra::all(&mut db_pool.get().await?).await
+        Infra::all(&db_pool.get().await?).await
     } else {
         // Retrieve given infras
-        Infra::retrieve_batch_or_fail(&mut db_pool.get().await?, infras, |missing| {
+        Infra::retrieve_batch_or_fail(&db_pool.get().await?, infras, |missing| {
             InfraApiError::NotFound {
                 infra_id: missing.into_iter().next().unwrap(),
             }
@@ -162,7 +162,7 @@ async fn refresh(
 
     for mut infra in infras_list {
         let infra_cache =
-            InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
+            InfraCache::get_or_load(&db_pool.get().await?, &infra_caches, &infra).await?;
         if infra.refresh(db_pool.clone(), force, &infra_cache).await? {
             infra_refreshed.push(infra.id);
         }
@@ -217,7 +217,7 @@ async fn list(
         .into_selection_settings();
 
     let (infras, stats) = {
-        let conn = &mut db_pool.get().await?;
+        let conn = &db_pool.get().await?;
         Infra::list_paginated(conn, settings).await?
     };
 
@@ -296,7 +296,7 @@ async fn get(
     let core_client = app_state.core_client.clone();
 
     let infra_id = infra.infra_id;
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(&db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -344,7 +344,7 @@ async fn create(
     }
 
     let infra: Changeset<Infra> = infra_form.into();
-    let infra = infra.create(&mut db_pool.get().await?).await?;
+    let infra = infra.create(&db_pool.get().await?).await?;
     Ok((StatusCode::CREATED, Json(infra)))
 }
 
@@ -379,7 +379,7 @@ async fn clone(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn, params.infra_id, || InfraApiError::NotFound {
         infra_id: params.infra_id,
@@ -423,7 +423,7 @@ async fn delete(
     let db_pool = app_state.db_pool_v2.clone();
     let infra_caches = app_state.infra_caches.clone();
     let infra_id = infra.infra_id;
-    if Infra::fast_delete_static(&mut db_pool.get().await?, infra_id).await? {
+    if Infra::fast_delete_static(&db_pool.get().await?, infra_id).await? {
         infra_caches.remove(&infra_id);
         Ok(StatusCode::NO_CONTENT)
     } else {
@@ -470,8 +470,8 @@ async fn put(
 
     let infra_cs: Changeset<Infra> = patch.into();
     let infra = infra_cs
-        .update_or_fail(&mut db_pool.get().await?, infra, || {
-            InfraApiError::NotFound { infra_id: infra }
+        .update_or_fail(&db_pool.get().await?, infra, || InfraApiError::NotFound {
+            infra_id: infra,
         })
         .await?;
     Ok(Json(infra))
@@ -501,7 +501,7 @@ async fn get_switch_types(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let infra_caches = app_state.infra_caches.clone();
 
     let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
@@ -543,7 +543,7 @@ async fn get_speed_limit_tags(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
         infra_id: infra.infra_id,
@@ -588,14 +588,14 @@ async fn get_voltages(
     }
 
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra.infra_id, || {
+    let infra = Infra::retrieve_or_fail(&db_pool.get().await?, infra.infra_id, || {
         InfraApiError::NotFound {
             infra_id: infra.infra_id,
         }
     })
     .await?;
     let voltages = infra
-        .get_voltages(&mut db_pool.get().await?, include_rolling_stock_modes)
+        .get_voltages(&db_pool.get().await?, include_rolling_stock_modes)
         .await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
@@ -621,17 +621,17 @@ async fn get_all_voltages(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let voltages = Infra::get_all_voltages(&mut db_pool.get().await?).await?;
+    let voltages = Infra::get_all_voltages(&db_pool.get().await?).await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
 async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) -> Result<()> {
-    let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let mut infra = Infra::retrieve_or_fail(&db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
     infra.locked = locked;
-    infra.save(&mut db_pool.get().await?).await
+    infra.save(&db_pool.get().await?).await
 }
 
 /// Lock an infra
@@ -715,7 +715,7 @@ async fn load(
     let core_client = app_state.core_client.clone();
 
     let infra_id = path.infra_id;
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(&db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -794,13 +794,13 @@ pub mod tests {
     async fn infra_clone_empty() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let request =
             app.post(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str());
 
         let cloned_infra_id: i64 = app.fetch(request).assert_status(StatusCode::OK).json_into();
-        let cloned_infra = Infra::retrieve(&mut db_pool.get_ok(), cloned_infra_id)
+        let cloned_infra = Infra::retrieve(&db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -818,9 +818,9 @@ pub mod tests {
     async fn infra_clone() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let small_infra = create_small_infra(&db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
-        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+        let infra_cache = InfraCache::load(&db_pool.get_ok(), &small_infra)
             .await
             .unwrap();
 
@@ -833,7 +833,7 @@ pub mod tests {
             ..Default::default()
         }
         .into();
-        apply_create_operation(&switch_type, small_infra_id, &mut db_pool.get_ok())
+        apply_create_operation(&switch_type, small_infra_id, &db_pool.get_ok())
             .await
             .expect("Failed to create switch_type object");
 
@@ -845,7 +845,7 @@ pub mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        let _cloned_infra = Infra::retrieve(&mut db_pool.get_ok(), cloned_infra_id)
+        let _cloned_infra = Infra::retrieve(&db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -867,7 +867,7 @@ pub mod tests {
                     table
                 ))
                 .bind::<BigInt, _>(inf_id)
-                .get_result::<Count>(&mut db_pool.get_ok().write().await.deref_mut())
+                .get_result::<Count>(db_pool.get_ok().write().await.deref_mut())
                 .await
                 .unwrap();
 
@@ -896,7 +896,7 @@ pub mod tests {
             .core_client(CoreClient::default())
             .build();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         app.fetch(app.delete_infra_request(empty_infra.id))
             .assert_status(StatusCode::NO_CONTENT);
@@ -945,13 +945,13 @@ pub mod tests {
             .db_pool(db_pool.clone())
             .core_client(core.into())
             .build();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let req = app.get(format!("/infra/{}", empty_infra.id).as_str());
 
         app.fetch(req).assert_status(StatusCode::OK);
 
-        empty_infra.delete(&mut db_pool.get_ok()).await.unwrap();
+        empty_infra.delete(&db_pool.get_ok()).await.unwrap();
 
         let req = app.get(format!("/infra/{}", empty_infra.id).as_str());
 
@@ -962,7 +962,7 @@ pub mod tests {
     async fn infra_rename() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let req = app
             .put(format!("/infra/{}", empty_infra.id).as_str())
@@ -982,7 +982,7 @@ pub mod tests {
     async fn infra_refresh() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let req = app.post(format!("/infra/refresh/?infras={}", empty_infra.id).as_str());
 
@@ -998,7 +998,7 @@ pub mod tests {
     async fn infra_refresh_force() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let req =
             app.post(format!("/infra/refresh/?infras={}&force=true", empty_infra.id).as_str());
@@ -1011,14 +1011,14 @@ pub mod tests {
     async fn infra_get_speed_limit_tags() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let speed_section = SpeedSection {
             speed_limit_by_tag: HashMap::from([("test_tag".into(), Speed(10.))]),
             ..Default::default()
         }
         .into();
-        apply_create_operation(&speed_section, empty_infra.id, &mut db_pool.get_ok())
+        apply_create_operation(&speed_section, empty_infra.id, &db_pool.get_ok())
             .await
             .expect("Failed to create speed section object");
 
@@ -1034,8 +1034,8 @@ pub mod tests {
     async fn infra_get_all_voltages() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let infra_1 = create_empty_infra(&mut db_pool.get_ok()).await;
-        let infra_2 = create_empty_infra(&mut db_pool.get_ok()).await;
+        let infra_1 = create_empty_infra(&db_pool.get_ok()).await;
+        let infra_2 = create_empty_infra(&db_pool.get_ok()).await;
 
         // Create electrifications
         let electrification_1 = Electrification {
@@ -1044,7 +1044,7 @@ pub mod tests {
             track_ranges: vec![],
         }
         .into();
-        apply_create_operation(&electrification_1, infra_1.id, &mut db_pool.get_ok())
+        apply_create_operation(&electrification_1, infra_1.id, &db_pool.get_ok())
             .await
             .expect("Failed to create electrification_1 object");
 
@@ -1054,13 +1054,13 @@ pub mod tests {
             track_ranges: vec![],
         }
         .into();
-        apply_create_operation(&electrification_2, infra_2.id, &mut db_pool.get_ok())
+        apply_create_operation(&electrification_2, infra_2.id, &db_pool.get_ok())
             .await
             .expect("Failed to create electrification_2 object");
 
         // Create rolling_stock
         let _rolling_stock = create_rolling_stock_with_energy_sources(
-            &mut db_pool.get_ok(),
+            &db_pool.get_ok(),
             "other_rolling_stock_infra_get_all_voltages",
         )
         .await;
@@ -1081,7 +1081,7 @@ pub mod tests {
     async fn infra_get_voltages(#[case] include_rolling_stock_modes: bool) {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         // Create electrification
         let electrification = Electrification {
@@ -1090,13 +1090,13 @@ pub mod tests {
             track_ranges: vec![],
         }
         .into();
-        apply_create_operation(&electrification, empty_infra.id, &mut db_pool.get_ok())
+        apply_create_operation(&electrification, empty_infra.id, &db_pool.get_ok())
             .await
             .expect("Failed to create electrification object");
 
         // Create rolling_stock
         let _rolling_stock = create_rolling_stock_with_energy_sources(
-            &mut db_pool.get_ok(),
+            &db_pool.get_ok(),
             "other_rolling_stock_infra_get_voltages",
         )
         .await;
@@ -1124,7 +1124,7 @@ pub mod tests {
     async fn infra_get_switch_types() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let req = app.get(format!("/infra/{}/switch_types/", empty_infra.id).as_str());
 
@@ -1148,7 +1148,7 @@ pub mod tests {
             .db_pool(db_pool.clone())
             .core_client(core.into())
             .build();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         // Lock infra
         let req = app.post(format!("/infra/{}/lock/", empty_infra.id).as_str());
@@ -1156,7 +1156,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
-        let infra = Infra::retrieve(&mut db_pool.get_ok(), empty_infra.id)
+        let infra = Infra::retrieve(&db_pool.get_ok(), empty_infra.id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1168,7 +1168,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
-        let infra = Infra::retrieve(&mut db_pool.get_ok(), empty_infra.id)
+        let infra = Infra::retrieve(&db_pool.get_ok(), empty_infra.id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1189,7 +1189,7 @@ pub mod tests {
             .db_pool(db_pool.clone())
             .core_client(core.into())
             .build();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let req = app.post(format!("/infra/{}/load", empty_infra.id).as_str());
 

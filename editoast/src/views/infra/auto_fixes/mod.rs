@@ -100,7 +100,7 @@ async fn list_auto_fixes(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
@@ -377,7 +377,7 @@ mod tests {
     async fn test_no_fix() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let small_infra = create_small_infra(&db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
 
         let operations: Vec<Operation> = app
@@ -393,9 +393,9 @@ mod tests {
         // GIVEN
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let mut small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let mut small_infra = create_small_infra(&db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
-        let mut infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+        let mut infra_cache = InfraCache::load(&db_pool.get_ok(), &small_infra)
             .await
             .expect("Failed to get infra cache");
         small_infra
@@ -405,7 +405,7 @@ mod tests {
 
         // Check the only initial issues are "overlapping_speed_sections" warnings
         let (infra_errors_before_all, before_all_count) =
-            query_errors(&mut db_pool.get_ok(), &small_infra).await;
+            query_errors(&db_pool.get_ok(), &small_infra).await;
         assert!(infra_errors_before_all
             .iter()
             .all(|e| matches!(e.sub_type, InfraErrorType::OverlappingSpeedSections { .. })));
@@ -417,7 +417,7 @@ mod tests {
         };
         let deletion = Operation::Delete(delete_operation.clone());
         let _ = deletion
-            .apply(small_infra_id, &mut db_pool.get_ok())
+            .apply(small_infra_id, &db_pool.get_ok())
             .await
             .expect("Failed to delete a track");
         infra_cache
@@ -430,7 +430,7 @@ mod tests {
 
         // Check that some new issues appeared
         let (infra_errors_before_fix, before_fix_count) =
-            query_errors(&mut db_pool.get_ok(), &small_infra).await;
+            query_errors(&db_pool.get_ok(), &small_infra).await;
         assert!(before_fix_count > before_all_count);
 
         // WHEN
@@ -440,7 +440,7 @@ mod tests {
             .json_into();
 
         // THEN
-        let (infra_errors_after_fix, _) = query_errors(&mut db_pool.get_ok(), &small_infra).await;
+        let (infra_errors_after_fix, _) = query_errors(&db_pool.get_ok(), &small_infra).await;
         assert_eq!(infra_errors_after_fix, infra_errors_before_fix);
 
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
@@ -465,7 +465,7 @@ mod tests {
     async fn test_fix_invalid_ref_route_entry_exit() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let small_infra = create_small_infra(&db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
         // Remove a buffer stop
         let deletion = Operation::Delete(DeleteOperation {
@@ -473,7 +473,7 @@ mod tests {
             obj_type: ObjectType::BufferStop,
         });
         deletion
-            .apply(small_infra_id, &mut db_pool.get_ok())
+            .apply(small_infra_id, &db_pool.get_ok())
             .await
             .expect("Failed to delete BufferStop");
 
@@ -698,7 +698,7 @@ mod tests {
     async fn invalid_switch_ports() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let small_infra = create_small_infra(&db_pool.get_ok()).await;
         let small_infra_id = small_infra.id;
 
         let ports = HashMap::from([
@@ -715,7 +715,7 @@ mod tests {
         apply_create_operation(
             &invalid_switch.clone().into(),
             small_infra_id,
-            &mut db_pool.get_ok(),
+            &db_pool.get_ok(),
         )
         .await
         .expect("Failed to create invalid_switch object");
@@ -735,7 +735,7 @@ mod tests {
     async fn odd_buffer_stop_location() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
 
         // Create an odd buffer stops (to a track endpoint linked by a switch)
@@ -767,7 +767,7 @@ mod tests {
         }
         .into();
         for obj in [&track, &bs_start, &bs_stop, &bs_odd] {
-            apply_create_operation(obj, empty_infra_id, &mut db_pool.get_ok())
+            apply_create_operation(obj, empty_infra_id, &db_pool.get_ok())
                 .await
                 .expect("Failed to create object");
         }
@@ -787,7 +787,7 @@ mod tests {
     async fn empty_object() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
 
         let electrification: InfraObject = Electrification::default().into();
@@ -795,7 +795,7 @@ mod tests {
         let speed_section = SpeedSection::default().into();
 
         for obj in [&electrification, &operational_point, &speed_section] {
-            apply_create_operation(obj, empty_infra_id, &mut db_pool.get_ok())
+            apply_create_operation(obj, empty_infra_id, &db_pool.get_ok())
                 .await
                 .expect("Failed to create object");
         }
@@ -817,7 +817,7 @@ mod tests {
     async fn out_of_range_must_be_ignored() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
 
         let track: InfraObject = TrackSection {
@@ -865,7 +865,7 @@ mod tests {
         .into();
 
         for obj in [&track, &electrification, &operational_point, &speed_section] {
-            apply_create_operation(obj, empty_infra_id, &mut db_pool.get_ok())
+            apply_create_operation(obj, empty_infra_id, &db_pool.get_ok())
                 .await
                 .expect("Failed to create object");
         }
@@ -889,7 +889,7 @@ mod tests {
     async fn out_of_range_must_be_deleted(#[case] pos: f64, #[case] error_count: usize) {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
 
         let track: InfraObject = TrackSection {
@@ -925,7 +925,7 @@ mod tests {
         .into();
 
         for obj in [&track, &signal, &detector, &buffer_stop] {
-            apply_create_operation(obj, empty_infra_id, &mut db_pool.get_ok())
+            apply_create_operation(obj, empty_infra_id, &db_pool.get_ok())
                 .await
                 .expect("Failed to create object");
         }
@@ -952,7 +952,7 @@ mod tests {
         // GIVEN
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
         let empty_infra_id = empty_infra.id;
 
         let track: InfraObject = TrackSection {
@@ -961,7 +961,7 @@ mod tests {
             ..Default::default()
         }
         .into();
-        apply_create_operation(&track, empty_infra_id, &mut db_pool.get_ok())
+        apply_create_operation(&track, empty_infra_id, &db_pool.get_ok())
             .await
             .expect("Failed to create track section object");
 

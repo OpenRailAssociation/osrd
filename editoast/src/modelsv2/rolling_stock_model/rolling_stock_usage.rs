@@ -39,7 +39,7 @@ pub struct TrainScheduleScenarioStudyProject {
 impl RollingStockModel {
     pub async fn get_rolling_stock_usage(
         &self,
-        conn: &mut DbConnection,
+        conn: &DbConnection,
     ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
         let result = sql_query(include_str!("sql/get_train_schedules_with_scenario.sql"))
             .bind::<BigInt, _>(self.id)

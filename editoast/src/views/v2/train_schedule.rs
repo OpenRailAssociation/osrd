@@ -190,7 +190,7 @@ async fn get(
 
     let db_pool = app_state.db_pool_v2.clone();
     let train_schedule_id = train_schedule_id.id;
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let train_schedule = TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
         TrainScheduleError::NotFound { train_schedule_id }
@@ -227,7 +227,7 @@ async fn get_batch(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let train_schedules: Vec<TrainSchedule> =
         TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
@@ -263,7 +263,7 @@ async fn delete(
     let db_pool = app_state.db_pool_v2.clone();
 
     use crate::modelsv2::DeleteBatch;
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     TrainSchedule::delete_batch_or_fail(conn, train_ids, |number| {
         TrainScheduleError::BatchTrainScheduleNotFound { number }
     })
@@ -296,7 +296,7 @@ async fn put(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let train_schedule_id = train_schedule_id.id;
     let ts_changeset: TrainScheduleChangeset = train_schedule_form.into();
@@ -355,21 +355,21 @@ async fn simulation(
     let train_schedule_id = train_schedule_id.id;
 
     // Retrieve infra or fail
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(&db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
     // Retrieve train_schedule or fail
     let train_schedule =
-        TrainSchedule::retrieve_or_fail(&mut db_pool.get().await?, train_schedule_id, || {
+        TrainSchedule::retrieve_or_fail(&db_pool.get().await?, train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
 
     Ok(Json(
         train_simulation(
-            &mut db_pool.get().await?,
+            &db_pool.get().await?,
             redis_client,
             core_client,
             train_schedule,
@@ -383,7 +383,7 @@ async fn simulation(
 
 /// Compute simulation of a train schedule
 pub async fn train_simulation(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     redis_client: Arc<RedisClient>,
     core: Arc<CoreClient>,
     train_schedule: TrainSchedule,
@@ -407,7 +407,7 @@ pub async fn train_simulation(
 ///
 /// Note: The order of the returned simulations is the same as the order of the train schedules.
 pub async fn train_simulation_batch(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     redis_client: Arc<RedisClient>,
     core: Arc<CoreClient>,
     train_schedules: &[TrainSchedule],
@@ -683,7 +683,7 @@ async fn simulation_summary(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let redis_client = app_state.redis.clone();
     let core = app_state.core_client.clone();
 
@@ -785,7 +785,7 @@ async fn get_path(
     let redis_client = app_state.redis.clone();
     let core = app_state.core_client.clone();
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let mut redis_conn = redis_client.get_connection().await?;
 
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
@@ -823,8 +823,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let train_schedule = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
+        let timetable = create_timetable(&pool.get_ok()).await;
+        let train_schedule = create_simple_train_schedule(&pool.get_ok(), timetable.id).await;
 
         let url = format!("/v2/train_schedule/{}", train_schedule.id);
         let request = app.get(&url);
@@ -847,10 +847,10 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let ts1 = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
-        let ts2 = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
-        let ts3 = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
+        let timetable = create_timetable(&pool.get_ok()).await;
+        let ts1 = create_simple_train_schedule(&pool.get_ok(), timetable.id).await;
+        let ts2 = create_simple_train_schedule(&pool.get_ok(), timetable.id).await;
+        let ts3 = create_simple_train_schedule(&pool.get_ok(), timetable.id).await;
 
         // Should succeed
         let request = app.post("/v2/train_schedule").json(&json!({
@@ -866,7 +866,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let timetable = create_timetable(&pool.get_ok()).await;
         let train_schedule_base = simple_train_schedule_base();
 
         // Insert train_schedule
@@ -884,8 +884,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let train_schedule = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
+        let timetable = create_timetable(&pool.get_ok()).await;
+        let train_schedule = create_simple_train_schedule(&pool.get_ok(), timetable.id).await;
 
         let request = app
             .delete("/v2/train_schedule/")
@@ -893,7 +893,7 @@ mod tests {
 
         let _ = app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let exists = TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
+        let exists = TrainSchedule::exists(&pool.get_ok(), train_schedule.id)
             .await
             .expect("Failed to retrieve train_schedule");
 
@@ -905,8 +905,8 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let train_schedule = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
+        let timetable = create_timetable(&pool.get_ok()).await;
+        let train_schedule = create_simple_train_schedule(&pool.get_ok(), timetable.id).await;
 
         let mut update_train_schedule_base = simple_train_schedule_base();
         update_train_schedule_base.rolling_stock_name = String::from("NEW ROLLING_STOCK");
@@ -991,10 +991,10 @@ mod tests {
             .db_pool(db_pool.clone())
             .core_client(core.into())
             .build();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let small_infra = create_small_infra(&db_pool.get_ok()).await;
         let rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+            create_fast_rolling_stock(&db_pool.get_ok(), "simulation_rolling_stock").await;
+        let timetable = create_timetable(&db_pool.get_ok()).await;
         let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
             rolling_stock_name: rolling_stock.name.clone(),
             ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
@@ -1006,7 +1006,7 @@ mod tests {
         }
         .into();
         let train_schedule = train_schedule
-            .create(&mut db_pool.get_ok())
+            .create(&db_pool.get_ok())
             .await
             .expect("Failed to create train schedule");
         (app, small_infra.id, train_schedule.id)

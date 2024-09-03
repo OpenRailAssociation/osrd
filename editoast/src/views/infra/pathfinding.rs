@@ -125,12 +125,11 @@ async fn pathfinding_view(
     }
 
     // TODO: lock for share
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(&db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
-    let infra_cache =
-        InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(&db_pool.get().await?, &infra_caches, &infra).await?;
 
     // Check that the starting and ending track locations are valid
     if !infra_cache

@@ -21,7 +21,7 @@ pub struct RouteFromWaypointResult {
 impl Infra {
     pub async fn get_routes_from_waypoint(
         &self,
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         waypoint_id: &String,
         waypoint_type: String,
     ) -> Result<Vec<RouteFromWaypointResult>> {

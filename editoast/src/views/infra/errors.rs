@@ -101,7 +101,7 @@ async fn list_errors(
         None => None,
     };
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
 
@@ -125,7 +125,7 @@ enum ListErrorsErrors {
 
 #[cfg(test)]
 pub(in crate::views) async fn query_errors(
-    conn: &mut editoast_models::DbConnection,
+    conn: &editoast_models::DbConnection,
     infra: &Infra,
 ) -> (Vec<InfraError>, u64) {
     infra
@@ -146,7 +146,7 @@ mod tests {
     async fn list_errors_get() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let empty_infra = create_empty_infra(&db_pool.get_ok()).await;
 
         let error_type = "overlapping_electrifications";
         let level = "warnings";

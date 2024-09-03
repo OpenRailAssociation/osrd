@@ -27,7 +27,7 @@ impl GeneratedData for SpeedSectionLayer {
         "infra_layer_speed_section"
     }
 
-    async fn generate(conn: &mut DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
+    async fn generate(conn: &DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
         sql_query(include_str!("sql/generate_speed_section_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn.write().await.deref_mut())
@@ -36,7 +36,7 @@ impl GeneratedData for SpeedSectionLayer {
     }
 
     async fn update(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,

@@ -135,7 +135,7 @@ async fn get(
     let timetable_id = timetable_id.id;
     // Return the timetable
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let timetable = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
         TimetableError::NotFound { timetable_id }
     })
@@ -165,7 +165,7 @@ async fn post(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let timetable = Timetable::create(conn).await?;
 
@@ -196,7 +196,7 @@ async fn delete(
     }
 
     let timetable_id = timetable_id.id;
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     Timetable::delete_static_or_fail(conn, timetable_id, || TimetableError::NotFound {
         timetable_id,
     })
@@ -228,7 +228,7 @@ async fn train_schedule(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let timetable_id = timetable_id.id;
     TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || TimetableError::NotFound {
@@ -296,22 +296,21 @@ async fn conflicts(
 
     // 1. Retrieve Timetable / Infra / Trains / Simultion
     let timetable_trains =
-        TimetableWithTrains::retrieve_or_fail(&mut db_pool.get().await?, timetable_id, || {
+        TimetableWithTrains::retrieve_or_fail(&db_pool.get().await?, timetable_id, || {
             TimetableError::NotFound { timetable_id }
         })
         .await?;
 
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(&db_pool.get().await?, infra_id, || {
         TimetableError::InfraNotFound { infra_id }
     })
     .await?;
 
     let (trains, _): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(&mut db_pool.get().await?, timetable_trains.train_ids)
-            .await?;
+        TrainSchedule::retrieve_batch(&db_pool.get().await?, timetable_trains.train_ids).await?;
 
     let simulations = train_simulation_batch(
-        &mut db_pool.get().await?,
+        &db_pool.get().await?,
         redis_client.clone(),
         core_client.clone(),
         &trains,
@@ -363,7 +362,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let timetable = create_timetable(&pool.get_ok()).await;
 
         let request = app.get(&format!("/v2/timetable/{}", timetable.id));
 
@@ -398,7 +397,7 @@ mod tests {
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let retrieved_timetable =
-            Timetable::retrieve(&mut pool.get_ok(), created_timetable.timetable_id)
+            Timetable::retrieve(&pool.get_ok(), created_timetable.timetable_id)
                 .await
                 .expect("Failed to retrieve timetable")
                 .expect("Timetable not found");
@@ -411,13 +410,13 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let timetable = create_timetable(&pool.get_ok()).await;
 
         let request = app.delete(format!("/v2/timetable/{}", timetable.id).as_str());
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let exists = Timetable::exists(&mut pool.get_ok(), timetable.id)
+        let exists = Timetable::exists(&pool.get_ok(), timetable.id)
             .await
             .expect("Failed to check if timetable exists");
 

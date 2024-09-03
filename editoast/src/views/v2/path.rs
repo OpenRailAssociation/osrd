@@ -33,7 +33,7 @@ pub enum PathfindingError {
     InfraNotFound { infra_id: i64 },
 }
 
-async fn retrieve_infra_version(conn: &mut DbConnection, infra_id: i64) -> Result<String> {
+async fn retrieve_infra_version(conn: &DbConnection, infra_id: i64) -> Result<String> {
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
     })

@@ -30,7 +30,7 @@ pub struct GeoJsonAndData {
 
 impl GeoJsonAndData {
     pub async fn get_records(
-        conn: &mut DbConnection,
+        conn: &DbConnection,
         layer: &Layer,
         view: &View,
         infra: i64,

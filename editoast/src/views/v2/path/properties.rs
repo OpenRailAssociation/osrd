@@ -164,7 +164,7 @@ async fn post(
     Json(path_properties_input): Json<PathPropertiesInput>,
 ) -> Result<Json<PathProperties>> {
     // Extract information from parameters
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let infra_version = retrieve_infra_version(conn, infra_id).await?;
     let query_props: Properties = props.into();
     let mut redis_conn = redis.get_connection().await?;
@@ -277,7 +277,7 @@ mod tests {
     #[ignore] // TODO: Need to mock the core response to fix this test
     async fn path_properties_small_infra() {
         let app = TestAppBuilder::default_app();
-        let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
+        let infra = create_small_infra(&app.db_pool().get_ok()).await;
         let url = format!("/v2/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id);
 
         // Should succeed

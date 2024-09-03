@@ -217,7 +217,7 @@ async fn cache_and_get_mvt_tile(
         return Ok(([(CONTENT_TYPE, "application/x-protobuf")], value));
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let records = GeoJsonAndData::get_records(conn, layer, view, infra_id, (x, y, z)).await?;
 
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)

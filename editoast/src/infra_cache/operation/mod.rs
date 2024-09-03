@@ -137,11 +137,7 @@ impl CacheOperation {
 }
 
 impl Operation {
-    pub async fn apply(
-        &self,
-        infra_id: i64,
-        conn: &mut DbConnection,
-    ) -> Result<Option<InfraObject>> {
+    pub async fn apply(&self, infra_id: i64, conn: &DbConnection) -> Result<Option<InfraObject>> {
         match self {
             Operation::Delete(deletion) => {
                 deletion.apply(infra_id, conn).await?;

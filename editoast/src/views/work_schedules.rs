@@ -154,7 +154,7 @@ async fn create(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     // Create the work_schedule_group
     let work_schedule_group = WorkScheduleGroup::changeset()
@@ -214,7 +214,7 @@ pub mod test {
 
         // THEN
         let created_group = WorkScheduleGroup::retrieve(
-            &mut pool.get_ok(),
+            &pool.get_ok(),
             work_schedule_response.work_schedule_group_id,
         )
         .await
@@ -250,7 +250,7 @@ pub mod test {
         WorkScheduleGroup::changeset()
             .name("duplicated work schedule group name".to_string())
             .creation_date(Utc::now().naive_utc())
-            .create(&mut pool.get_ok())
+            .create(&pool.get_ok())
             .await
             .expect("Failed to create work schedule group");
 

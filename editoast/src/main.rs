@@ -242,7 +242,7 @@ async fn trains_export(
     args: ExportTimetableArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let train_ids = match TimetableWithTrains::retrieve(&mut db_pool.get().await?, args.id).await? {
+    let train_ids = match TimetableWithTrains::retrieve(&db_pool.get().await?, args.id).await? {
         Some(timetable) => timetable.train_ids,
         None => {
             let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", args.id));
@@ -251,7 +251,7 @@ async fn trains_export(
     };
 
     let (train_schedules, missing): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(&mut db_pool.get().await?, train_ids).await?;
+        TrainSchedule::retrieve_batch(&db_pool.get().await?, train_ids).await?;
 
     assert!(missing.is_empty());
 
@@ -287,14 +287,14 @@ async fn trains_import(
     };
 
     let timetable = match args.id {
-        Some(timetable) => match Timetable::retrieve(&mut db_pool.get().await?, timetable).await? {
+        Some(timetable) => match Timetable::retrieve(&db_pool.get().await?, timetable).await? {
             Some(timetable) => timetable,
             None => {
                 let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", timetable));
                 return Err(Box::new(error));
             }
         },
-        None => Timetable::create(&mut db_pool.get().await?).await?,
+        None => Timetable::create(&db_pool.get().await?).await?,
     };
 
     let train_schedules: Vec<TrainScheduleBase> =
@@ -309,8 +309,7 @@ async fn trains_import(
             .into()
         })
         .collect();
-    let inserted: Vec<_> =
-        TrainSchedule::create_batch(&mut db_pool.get().await?, changesets).await?;
+    let inserted: Vec<_> = TrainSchedule::create_batch(&db_pool.get().await?, changesets).await?;
 
     println!(
         "✅ {} train schedules created for timetable with id {}",
@@ -480,7 +479,7 @@ async fn build_redis_pool_and_invalidate_all_cache(
 }
 
 async fn batch_retrieve_infras(
-    conn: &mut DbConnection,
+    conn: &DbConnection,
     ids: &[u64],
 ) -> Result<Vec<Infra>, Box<dyn Error + Send + Sync>> {
     let (infras, missing) = Infra::retrieve_batch(conn, ids.iter().map(|id| *id as i64)).await?;
@@ -511,12 +510,12 @@ async fn generate_infra(
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::all(&mut db_pool.get().await?).await {
+        for infra in Infra::all(&db_pool.get().await?).await {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
-        infras = batch_retrieve_infras(&mut db_pool.get().await?, &args.infra_ids).await?;
+        infras = batch_retrieve_infras(&db_pool.get().await?, &args.infra_ids).await?;
     }
     for mut infra in infras {
         println!(
@@ -524,7 +523,7 @@ async fn generate_infra(
             infra.name.clone().bold(),
             infra.id
         );
-        let infra_cache = InfraCache::load(&mut db_pool.get().await?, &infra).await?;
+        let infra_cache = InfraCache::load(&db_pool.get().await?, &infra).await?;
         if infra
             .refresh(db_pool.clone(), args.force, &infra_cache)
             .await?
@@ -568,7 +567,7 @@ async fn import_rolling_stock(
                 let rolling_stock = rolling_stock
                     .locked(false)
                     .version(0)
-                    .create(&mut db_pool.get().await?)
+                    .create(&db_pool.get().await?)
                     .await?;
                 println!(
                     "✅ Rolling stock {}[{}] saved!",
@@ -603,7 +602,7 @@ async fn clone_infra(
     infra_args: InfraCloneArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let infra = Infra::retrieve(&mut db_pool.get().await?, infra_args.id as i64)
+    let infra = Infra::retrieve(&db_pool.get().await?, infra_args.id as i64)
         .await?
         .ok_or_else(|| {
             // When EditoastError will be removed from the models crate,
@@ -616,7 +615,7 @@ async fn clone_infra(
     let new_name = infra_args
         .new_name
         .unwrap_or_else(|| format!("{} (clone)", infra.name));
-    let cloned_infra = infra.clone(&mut db_pool.get().await?, new_name).await?;
+    let cloned_infra = infra.clone(&db_pool.get().await?, new_name).await?;
     println!(
         "✅ Infra {} (ID: {}) was successfully cloned",
         cloned_infra.name.bold(),
@@ -651,17 +650,17 @@ async fn import_railjson(
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
     println!("🍞 Importing infra {infra_name}");
-    let mut infra = infra.persist(railjson, &mut db_pool.get().await?).await?;
+    let mut infra = infra.persist(railjson, &db_pool.get().await?).await?;
 
     infra
-        .bump_version(&mut db_pool.get().await?)
+        .bump_version(&db_pool.get().await?)
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id: infra.id })?;
 
     println!("✅ Infra {infra_name}[{}] saved!", infra.id);
     // Generate only if the was set
     if args.generate {
-        let infra_cache = InfraCache::load(&mut db_pool.get().await?, &infra).await?;
+        let infra_cache = InfraCache::load(&db_pool.get().await?, &infra).await?;
         infra.refresh(db_pool, true, &infra_cache).await?;
         println!(
             "✅ Infra {infra_name}[{}] generated data refreshed!",
@@ -683,7 +682,7 @@ async fn electrical_profile_set_import(
         .name(args.name)
         .data(electrical_profile_set_data);
 
-    let created_ep_set = ep_set.create(&mut db_pool.get().await?).await?;
+    let created_ep_set = ep_set.create(&db_pool.get().await?).await?;
     println!("✅ Electrical profile set {} created", created_ep_set.id);
     Ok(())
 }
@@ -692,7 +691,7 @@ async fn electrical_profile_set_list(
     args: ListProfileSetArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let electrical_profile_sets = ElectricalProfileSet::list_light(&mut db_pool.get().await?)
+    let electrical_profile_sets = ElectricalProfileSet::list_light(&db_pool.get().await?)
         .await
         .unwrap();
     if !args.quiet {
@@ -712,10 +711,9 @@ async fn electrical_profile_set_delete(
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for profile_set_id in args.profile_set_ids {
-        let deleted =
-            ElectricalProfileSet::delete_static(&mut db_pool.get().await?, profile_set_id)
-                .await
-                .unwrap();
+        let deleted = ElectricalProfileSet::delete_static(&db_pool.get().await?, profile_set_id)
+            .await
+            .unwrap();
         if !deleted {
             println!("❎ Electrical profile set {} not found", profile_set_id);
         } else {
@@ -735,12 +733,12 @@ async fn clear_infra(
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::all(&mut db_pool.get().await?).await {
+        for infra in Infra::all(&db_pool.get().await?).await {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
-        infras = batch_retrieve_infras(&mut db_pool.get().await?, &args.infra_ids).await?;
+        infras = batch_retrieve_infras(&db_pool.get().await?, &args.infra_ids).await?;
     };
 
     for mut infra in infras {
@@ -750,7 +748,7 @@ async fn clear_infra(
             infra.id
         );
         build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id).await?;
-        infra.clear(&mut db_pool.get().await?).await?;
+        infra.clear(&db_pool.get().await?).await?;
         println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
     Ok(())
@@ -924,7 +922,7 @@ mod tests {
     async fn import_export_timetable_schedule_v2() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let timetable = Timetable::create(&mut db_pool.get_ok()).await.unwrap();
+        let timetable = Timetable::create(&db_pool.get_ok()).await.unwrap();
 
         let mut file = NamedTempFile::new().unwrap();
         file.write_all(get_trainschedule_json_array().as_bytes())
@@ -955,7 +953,7 @@ mod tests {
         let reimport_result = trains_import(reimport_args, db_pool.clone().into()).await;
         assert!(reimport_result.is_ok(), "{:?}", reimport_result);
 
-        Timetable::delete_static(&mut db_pool.get_ok(), timetable.id)
+        Timetable::delete_static(&db_pool.get_ok(), timetable.id)
             .await
             .unwrap();
     }
@@ -999,7 +997,7 @@ mod tests {
         );
         use crate::modelsv2::Retrieve;
         let created_rs =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
+            RollingStockModel::retrieve(&db_pool.get_ok(), rolling_stock_name.to_string())
                 .await
                 .unwrap();
         assert!(created_rs.is_some());
@@ -1026,7 +1024,7 @@ mod tests {
         assert!(result.is_ok(), "import should succeed");
         use crate::modelsv2::Retrieve;
         let created_rs =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
+            RollingStockModel::retrieve(&db_pool.get_ok(), rolling_stock_name.to_string())
                 .await
                 .expect("failed to retrieve rolling stock")
                 .unwrap();
@@ -1063,7 +1061,7 @@ mod tests {
         );
         use crate::modelsv2::Retrieve;
         let created_rs =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
+            RollingStockModel::retrieve(&db_pool.get_ok(), rolling_stock_name.to_string())
                 .await
                 .unwrap();
         assert!(created_rs.is_none());
@@ -1088,7 +1086,7 @@ mod tests {
         assert!(result.is_ok(), "import should succeed");
         use crate::modelsv2::Retrieve;
         let created_rs =
-            RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
+            RollingStockModel::retrieve(&db_pool.get_ok(), rolling_stock_name.to_string())
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .unwrap();
@@ -1161,7 +1159,7 @@ mod tests {
     async fn test_electrical_profile_set_delete() {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
-        let electrical_profile_set = create_electrical_profile_set(&mut db_pool.get_ok()).await;
+        let electrical_profile_set = create_electrical_profile_set(&db_pool.get_ok()).await;
 
         let args = DeleteProfileSetArgs {
             profile_set_ids: vec![electrical_profile_set.id],
@@ -1173,7 +1171,7 @@ mod tests {
             .unwrap();
 
         // THEN
-        let empty = !ElectricalProfileSet::list_light(&mut db_pool.get_ok())
+        let empty = !ElectricalProfileSet::list_light(&db_pool.get_ok())
             .await
             .unwrap()
             .iter()
@@ -1184,7 +1182,7 @@ mod tests {
     #[rstest]
     async fn test_electrical_profile_set_list_doesnt_fail() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let _ = create_electrical_profile_set(&mut db_pool.get_ok()).await;
+        let _ = create_electrical_profile_set(&db_pool.get_ok()).await;
         for quiet in [true, false] {
             let args = ListProfileSetArgs { quiet };
             electrical_profile_set_list(args, db_pool.clone().into())

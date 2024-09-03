@@ -102,7 +102,7 @@ impl From<ProjectCreateForm> for Changeset<Project> {
     }
 }
 
-async fn check_image_content(conn: &mut DbConnection, document_key: i64) -> Result<()> {
+async fn check_image_content(conn: &DbConnection, document_key: i64) -> Result<()> {
     let doc = Document::retrieve_or_fail(conn, document_key, || ProjectError::ImageNotFound {
         document_key,
     })
@@ -127,7 +127,7 @@ pub struct ProjectWithStudyCount {
 }
 
 impl ProjectWithStudyCount {
-    async fn try_fetch(conn: &mut DbConnection, project: Project) -> Result<Self> {
+    async fn try_fetch(conn: &DbConnection, project: Project) -> Result<Self> {
         let studies_count = project.studies_count(conn).await?;
         Ok(Self {
             project,
@@ -157,7 +157,7 @@ async fn create(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     if let Some(image) = project_create_form.image {
         check_image_content(conn, image).await?;
     }
@@ -207,7 +207,7 @@ async fn list(
         .into_selection_settings()
         .order_by(move || ordering.as_project_ordering());
 
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
 
     let (projects, stats) = Project::list_paginated(conn, settings).await?;
 
@@ -215,7 +215,7 @@ async fn list(
         .into_iter()
         .zip(db_pool.iter_conn())
         .map(|(project, conn)| async move {
-            ProjectWithStudyCount::try_fetch(&mut conn.await?, project).await
+            ProjectWithStudyCount::try_fetch(&conn.await?, project).await
         });
     let results = futures::future::try_join_all(results).await?;
     Ok(Json(ProjectWithStudyCountList { results, stats }))
@@ -251,7 +251,7 @@ async fn get(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     let project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
             .await?;
@@ -280,7 +280,7 @@ async fn delete(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     if Project::delete_and_prune_document(conn, project_id).await? {
         Ok(axum::http::StatusCode::NO_CONTENT)
     } else {
@@ -347,7 +347,7 @@ async fn patch(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = &db_pool.get().await?;
     if let Some(image) = form.image {
         check_image_content(conn, image).await?;
     }
@@ -390,7 +390,7 @@ pub mod test {
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let project = Project::retrieve(&mut pool.get_ok(), response.project.id)
+        let project = Project::retrieve(&pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -426,7 +426,7 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = create_project(&db_pool.get_ok(), "test_project_name").await;
 
         let request = app.get("/projects/");
 
@@ -447,7 +447,7 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = create_project(&db_pool.get_ok(), "test_project_name").await;
 
         let request = app.get(format!("/projects/{}", created_project.id).as_str());
 
@@ -462,13 +462,13 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = create_project(&db_pool.get_ok(), "test_project_name").await;
 
         let request = app.delete(format!("/projects/{}", created_project.id).as_str());
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let exists = Project::exists(&mut db_pool.get_ok(), created_project.id)
+        let exists = Project::exists(&db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to check if project exists");
 
@@ -480,7 +480,7 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = create_project(&db_pool.get_ok(), "test_project_name").await;
 
         let updated_name = "rename_test";
         let updated_budget = 20000;
@@ -497,7 +497,7 @@ pub mod test {
 
         assert_eq!(response.project, response.project);
 
-        let project = Project::retrieve(&mut db_pool.get_ok(), response.project.id)
+        let project = Project::retrieve(&db_pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");

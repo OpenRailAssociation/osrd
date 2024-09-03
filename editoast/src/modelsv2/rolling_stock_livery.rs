@@ -43,7 +43,7 @@ impl From<RollingStockLiveryModel> for RollingStockLivery {
 }
 
 impl RollingStockLiveryModel {
-    pub async fn delete_with_compound_image(&self, conn: &mut DbConnection) -> Result<bool> {
+    pub async fn delete_with_compound_image(&self, conn: &DbConnection) -> Result<bool> {
         use crate::modelsv2::DeleteStatic;
         let livery = RollingStockLiveryModel::delete_static(conn, self.id).await?;
         if let Some(image_id) = self.compound_image_id {
@@ -69,31 +69,31 @@ pub mod tests {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let (rs_livery, _, image) =
-            create_rolling_stock_livery_fixture(&mut db_pool.get_ok(), "rs_livery_name").await;
+            create_rolling_stock_livery_fixture(&db_pool.get_ok(), "rs_livery_name").await;
 
         assert!(
-            RollingStockLiveryModel::retrieve(&mut db_pool.get_ok(), rs_livery.id)
+            RollingStockLiveryModel::retrieve(&db_pool.get_ok(), rs_livery.id)
                 .await
                 .is_ok()
         );
 
-        assert!(Document::retrieve(&mut db_pool.get_ok(), image.id)
+        assert!(Document::retrieve(&db_pool.get_ok(), image.id)
             .await
             .is_ok());
 
         assert!(rs_livery
-            .delete_with_compound_image(&mut db_pool.get_ok())
+            .delete_with_compound_image(&db_pool.get_ok())
             .await
             .is_ok());
 
         assert!(
-            RollingStockLiveryModel::retrieve(&mut db_pool.get_ok(), rs_livery.id)
+            RollingStockLiveryModel::retrieve(&db_pool.get_ok(), rs_livery.id)
                 .await
                 .expect("Failed to retrieve rolling stock livery")
                 .is_none()
         );
 
-        assert!(Document::retrieve(&mut db_pool.get_ok(), image.id)
+        assert!(Document::retrieve(&db_pool.get_ok(), image.id)
             .await
             .expect("Failed to retrieve document")
             .is_none());

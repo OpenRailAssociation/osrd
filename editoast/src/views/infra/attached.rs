@@ -80,12 +80,11 @@ async fn attached(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let mut conn = db_pool.get().await?;
+    let conn = db_pool.get().await?;
     // TODO: lock for share
     let infra =
-        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
-            .await?;
-    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+        Infra::retrieve_or_fail(&conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let infra_cache = InfraCache::get_or_load(&conn, &infra_caches, &infra).await?;
     // Check track existence
     if !infra_cache.track_sections().contains_key(&track_id) {
         return Err(AttachedError::TrackNotFound {
@@ -134,13 +133,13 @@ mod tests {
         let empty_infra = Infra::changeset()
             .name("test_infra".to_owned())
             .last_railjson_version()
-            .create(&mut pool.get_ok())
+            .create(&pool.get_ok())
             .await
             .expect("Failed to create infra");
 
         // Create a track and a detector on it
         let track = TrackSection::default().into();
-        apply_create_operation(&track, empty_infra.id, &mut pool.get_ok())
+        apply_create_operation(&track, empty_infra.id, &pool.get_ok())
             .await
             .expect("Failed to create track object");
 
@@ -149,7 +148,7 @@ mod tests {
             ..Default::default()
         }
         .into();
-        apply_create_operation(&detector, empty_infra.id, &mut pool.get_ok())
+        apply_create_operation(&detector, empty_infra.id, &pool.get_ok())
             .await
             .expect("Failed to create detector object");
 

@@ -191,7 +191,7 @@ impl<M: Model + 'static> SelectionSettings<M> {
 pub trait List: Model {
     /// Lists the objects that match the provided settings
     async fn list(
-        conn: &'async_trait mut DbConnection,
+        conn: &'async_trait DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<Vec<Self>>;
 }
@@ -205,7 +205,7 @@ pub trait List: Model {
 pub trait Count: Model {
     /// Counts the number of objects that match the provided settings
     async fn count(
-        conn: &'async_trait mut DbConnection,
+        conn: &'async_trait DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<u64>;
 }
@@ -228,7 +228,7 @@ pub trait ListAndCount: Model {
     /// 3. Fetch in OSRD's git log that function original implementation and restore it
     ///    (this is a _very last resort_ solution ofc).
     async fn list_and_count(
-        conn: &'async_trait mut DbConnection,
+        conn: &'async_trait DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<(Vec<Self>, u64)>;
 }
@@ -236,7 +236,7 @@ pub trait ListAndCount: Model {
 #[async_trait::async_trait]
 impl<M: Model + List + Count> ListAndCount for M {
     async fn list_and_count(
-        conn: &'async_trait mut DbConnection,
+        conn: &'async_trait DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<(Vec<Self>, u64)> {
         let count = Self::count(conn, settings.clone()).await?;

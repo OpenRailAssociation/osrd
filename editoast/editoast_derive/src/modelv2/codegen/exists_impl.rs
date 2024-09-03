@@ -30,7 +30,7 @@ impl ToTokens for ExistsImpl {
             impl crate::modelsv2::Exists<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn exists(
-                    conn: &mut editoast_models::DbConnection,
+                    conn: &editoast_models::DbConnection,
                     #id_ident: #ty,
                 ) -> crate::error::Result<bool> {
                     use diesel::prelude::*;
