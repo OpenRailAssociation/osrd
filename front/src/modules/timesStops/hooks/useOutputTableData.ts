@@ -123,7 +123,7 @@ function useOutputTableData(
       }
       return sugOpPoint;
     });
-  }, [simulatedTrain, pathProperties, operationalPoints, selectedTrainSchedule, path]);
+  }, [simulatedTrain, operationalPoints, selectedTrainSchedule, pathStepsWithOpPointIndices]);
   return outputTableData;
 }
 export default useOutputTableData;
