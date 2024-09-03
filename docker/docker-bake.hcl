@@ -29,7 +29,7 @@ group "release" {
 
 target "base" {
   args = {
-    OSRD_GIT_DESCRIBE  = "${OSRD_GIT_DESCRIBE}"
+    OSRD_GIT_DESCRIBE = "${OSRD_GIT_DESCRIBE}"
   }
 }
 
@@ -79,7 +79,11 @@ target "editoast-test" {
   }
 }
 
-target "base-editoast" {}
+target "base-editoast" {
+  args = {
+    CARGO_FEATURES = "datadog"
+  }
+}
 target "editoast" {
   inherits = ["base", "base-editoast"]
   context = "editoast"
