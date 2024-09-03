@@ -367,6 +367,8 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
                 logger.warn("Closest time = {}, target time = {} +- {}", lastTime, targetTime, tolerance);
                 // TODO: raise a warning to be included in the response
             } else {
+                logger.error("Couldn't reach target time for allowance section.");
+                logger.error("Closest time = {}, target time = {} +- {}", lastTime, targetTime, tolerance);
                 if (lastError != null) {
                     // If we couldn't converge and an error happened, it has more info
                     // than a generic error
