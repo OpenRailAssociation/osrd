@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::DerefMut;
 
 use async_trait::async_trait;
 use diesel::delete;
@@ -8,6 +9,10 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
+use editoast_models::tables::infra_layer_signal::dsl;
+use editoast_models::DbConnection;
+use editoast_schemas::infra::LogicalSignal;
+use editoast_schemas::primitives::ObjectType;
 
 use super::utils::InvolvedObjects;
 use super::GeneratedData;
@@ -17,10 +22,6 @@ use crate::generated_data::sprite_config::SpriteConfig;
 use crate::generated_data::sprite_config::SpriteConfigs;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
-use editoast_models::tables::infra_layer_signal::dsl;
-use editoast_models::DbConnection;
-use editoast_schemas::infra::LogicalSignal;
-use editoast_schemas::primitives::ObjectType;
 
 pub struct SignalLayer;
 
@@ -77,7 +78,7 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a String>
             .bind::<Text, _>(signaling_system)
             .bind::<Nullable<Text>, _>(sprite_id)
             .bind::<Array<Text>, _>(signals)
-            .execute(conn)
+            .execute(conn.write().await.deref_mut())
             .await?;
     }
     Ok(())
@@ -94,7 +95,7 @@ impl GeneratedData for SignalLayer {
 
         sql_query(include_str!("sql/generate_signal_layer.sql"))
             .bind::<BigInt, _>(infra)
-            .execute(conn)
+            .execute(conn.write().await.deref_mut())
             .await?;
         generate_signaling_system_and_sprite(
             conn,
@@ -124,7 +125,7 @@ impl GeneratedData for SignalLayer {
                     .filter(dsl::infra_id.eq(infra))
                     .filter(dsl::obj_id.eq_any(involved_objects.deleted)),
             )
-            .execute(conn)
+            .execute(conn.write().await.deref_mut())
             .await?;
         }
 
@@ -134,7 +135,7 @@ impl GeneratedData for SignalLayer {
             sql_query(include_str!("sql/insert_update_signal_layer.sql"))
                 .bind::<BigInt, _>(infra)
                 .bind::<Array<Text>, _>(&updated_signals)
-                .execute(conn)
+                .execute(conn.write().await.deref_mut())
                 .await?;
             generate_signaling_system_and_sprite(
                 conn,

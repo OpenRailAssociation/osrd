@@ -1,13 +1,15 @@
+use std::ops::DerefMut;
+
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
 use editoast_schemas::primitives::ObjectType;
 
 use super::Infra;
 use crate::error::Result;
 use crate::modelsv2::get_table;
-use editoast_models::DbConnection;
 
 #[derive(QueryableByName, Default)]
 pub struct RailJsonData {
@@ -25,7 +27,7 @@ impl Infra {
         let query = format!("SELECT (x.data)::text AS railjson FROM {table_name} x WHERE x.infra_id = $1 ORDER BY x.obj_id");
         let railjson_data = sql_query(query)
             .bind::<BigInt, _>(infra_id)
-            .load::<RailJsonData>(conn)
+            .load::<RailJsonData>(conn.write().await.deref_mut())
             .await?;
         Ok(railjson_data)
     }

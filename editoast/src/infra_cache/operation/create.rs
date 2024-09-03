@@ -3,14 +3,15 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-
-use super::OperationError;
-use crate::error::Result;
-use crate::modelsv2::get_table;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
+use std::ops::DerefMut;
+
+use super::OperationError;
+use crate::error::Result;
+use crate::modelsv2::get_table;
 
 pub async fn apply_create_operation<'r>(
     infra_object: &'r InfraObject,
@@ -27,7 +28,7 @@ pub async fn apply_create_operation<'r>(
     .bind::<BigInt, _>(infra_id)
     .bind::<Text, _>(infra_object.get_id())
     .bind::<Json, _>(infra_object.get_data())
-    .execute(conn)
+    .execute(conn.write().await.deref_mut())
     .await
     .map(|idx| (idx, infra_object))
     .map_err(|err| err.into())
@@ -46,7 +47,6 @@ pub mod tests {
     use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::TrackSection;
-    use std::ops::DerefMut;
 
     macro_rules! test_create_object {
         ($obj:ident) => {
@@ -54,11 +54,11 @@ pub mod tests {
                 #[rstest::rstest]
                 async fn [<test_create_ $obj:snake>]() {
                     let db_pool = editoast_models::DbConnectionPoolV2::for_tests();
-                    let infra = crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
+                    let infra = crate::modelsv2::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
                     let infra_object = editoast_schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),
                     };
-                    let result = crate::infra_cache::operation::create::apply_create_operation(&infra_object, infra.id, db_pool.get_ok().deref_mut()).await;
+                    let result = crate::infra_cache::operation::create::apply_create_operation(&infra_object, infra.id, &mut db_pool.get_ok()).await;
                     assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
                 }
             }

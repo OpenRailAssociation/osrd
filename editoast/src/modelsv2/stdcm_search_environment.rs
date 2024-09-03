@@ -2,13 +2,14 @@ use chrono::NaiveDateTime;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
+use editoast_derive::ModelV2;
+use editoast_models::DbConnection;
 use serde::Serialize;
+use std::ops::DerefMut;
 use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::modelsv2::prelude::{Create, Row};
-use editoast_derive::ModelV2;
-use editoast_models::DbConnection;
 
 #[cfg(test)]
 use serde::Deserialize;
@@ -36,7 +37,7 @@ impl StdcmSearchEnvironment {
         use editoast_models::tables::stdcm_search_environment::dsl::*;
         stdcm_search_environment
             .order_by((search_window_end.desc(), search_window_begin.asc()))
-            .first::<Row<StdcmSearchEnvironment>>(conn)
+            .first::<Row<StdcmSearchEnvironment>>(conn.write().await.deref_mut())
             .await
             .map(Into::into)
             .ok()
@@ -45,7 +46,7 @@ impl StdcmSearchEnvironment {
     pub async fn delete_all(conn: &mut DbConnection) -> Result<()> {
         use editoast_models::tables::stdcm_search_environment::dsl::*;
         diesel::delete(stdcm_search_environment)
-            .execute(conn)
+            .execute(conn.write().await.deref_mut())
             .await?;
         Ok(())
     }
@@ -63,7 +64,6 @@ pub mod test {
     use chrono::NaiveDate;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use super::*;
     use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
@@ -97,11 +97,11 @@ pub mod test {
     async fn test_overwrite() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let initial_env_count =
-            StdcmSearchEnvironment::count(db_pool.get_ok().deref_mut(), Default::default())
+            StdcmSearchEnvironment::count(&mut db_pool.get_ok(), Default::default())
                 .await
                 .expect("failed to count STDCM envs");
         let (infra, timetable, work_schedule_group, electrical_profile_set) =
-            stdcm_search_env_fixtures(db_pool.get_ok().deref_mut()).await;
+            stdcm_search_env_fixtures(&mut db_pool.get_ok()).await;
 
         let changeset_1 = StdcmSearchEnvironment::changeset()
             .infra_id(infra.id)
@@ -120,30 +120,30 @@ pub mod test {
             .search_window_end(end);
 
         changeset_1
-            .create(db_pool.get_ok().deref_mut())
+            .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create first search environment");
 
         assert_eq!(
-            StdcmSearchEnvironment::count(db_pool.get_ok().deref_mut(), SelectionSettings::new())
+            StdcmSearchEnvironment::count(&mut db_pool.get_ok(), SelectionSettings::new())
                 .await
                 .expect("Failed to count"),
             initial_env_count + 1
         );
 
         let _ = changeset_2
-            .overwrite(db_pool.get_ok().deref_mut())
+            .overwrite(&mut db_pool.get_ok())
             .await
             .expect("Failed to overwrite search environment");
 
         assert_eq!(
-            StdcmSearchEnvironment::count(db_pool.get_ok().deref_mut(), SelectionSettings::new())
+            StdcmSearchEnvironment::count(&mut db_pool.get_ok(), SelectionSettings::new())
                 .await
                 .expect("Failed to count"),
             1
         );
 
-        let result = StdcmSearchEnvironment::retrieve_latest(db_pool.get_ok().deref_mut())
+        let result = StdcmSearchEnvironment::retrieve_latest(&mut db_pool.get_ok())
             .await
             .expect("Failed to retrieve latest search environment");
 
@@ -154,11 +154,11 @@ pub mod test {
     #[rstest]
     async fn test_retrieve_latest() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        StdcmSearchEnvironment::delete_all(db_pool.get_ok().deref_mut())
+        StdcmSearchEnvironment::delete_all(&mut db_pool.get_ok())
             .await
             .expect("failed to delete envs");
         let (infra, timetable, work_schedule_group, electrical_profile_set) =
-            stdcm_search_env_fixtures(db_pool.get_ok().deref_mut()).await;
+            stdcm_search_env_fixtures(&mut db_pool.get_ok()).await;
 
         let too_old = StdcmSearchEnvironment::changeset()
             .infra_id(infra.id)
@@ -183,12 +183,12 @@ pub mod test {
 
         for changeset in [too_old, too_young.clone(), the_best, too_young] {
             changeset
-                .create(db_pool.get_ok().deref_mut())
+                .create(&mut db_pool.get_ok())
                 .await
                 .expect("Failed to create search environment");
         }
 
-        let result = StdcmSearchEnvironment::retrieve_latest(db_pool.get_ok().deref_mut())
+        let result = StdcmSearchEnvironment::retrieve_latest(&mut db_pool.get_ok())
             .await
             .expect("Failed to retrieve latest search environment");
 
@@ -199,10 +199,10 @@ pub mod test {
     #[rstest]
     async fn test_retrieve_latest_empty() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        StdcmSearchEnvironment::delete_all(db_pool.get_ok().deref_mut())
+        StdcmSearchEnvironment::delete_all(&mut db_pool.get_ok())
             .await
             .expect("failed to delete envs");
-        let result = StdcmSearchEnvironment::retrieve_latest(db_pool.get_ok().deref_mut()).await;
+        let result = StdcmSearchEnvironment::retrieve_latest(&mut db_pool.get_ok()).await;
         assert_eq!(result, None);
     }
 }

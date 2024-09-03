@@ -43,6 +43,7 @@ use enum_map::EnumMap;
 use geos::geojson::Geometry;
 pub use graph::Graph;
 use itertools::Itertools as _;
+use std::ops::DerefMut;
 use thiserror::Error;
 
 use crate::error::Result;
@@ -436,7 +437,7 @@ impl InfraCache {
             FROM infra_object_track_section WHERE infra_id = $1",
         )
         .bind::<BigInt, _>(infra_id)
-        .load::<TrackQueryable>(conn)
+        .load::<TrackQueryable>(conn.write().await.deref_mut())
         .await?
         .into_iter()
         .try_for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()))?;
@@ -445,7 +446,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position, data->'logical_signals' as logical_signals FROM infra_object_signal WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<SignalCache>(conn).await?.into_iter().try_for_each(|signal|
+        .load::<SignalCache>(conn.write().await.deref_mut()).await?.into_iter().try_for_each(|signal|
             infra_cache.add(signal)
         )?;
 
@@ -471,7 +472,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'parts' AS parts FROM infra_object_operational_point WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<OperationalPointQueryable>(conn).await?.into_iter().try_for_each(|op|
+        .load::<OperationalPointQueryable>(&mut conn.write().await).await?.into_iter().try_for_each(|op|
             infra_cache.add::<OperationalPointCache>(op.into())
         )?;
 
@@ -479,12 +480,12 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM infra_object_switch WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<SwitchQueryable>(conn).await?.into_iter().try_for_each(|switch|
+        .load::<SwitchQueryable>(&mut conn.write().await).await?.into_iter().try_for_each(|switch|
             infra_cache.add::<SwitchCache>(switch.into())
         )?;
 
         // Load switch types references
-        find_all_schemas::<_, Vec<SwitchType>>(conn, infra_id)
+        find_all_schemas::<_, Vec<SwitchType>>(&mut conn.clone(), infra_id)
             .await?
             .into_iter()
             .try_for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type))?;
@@ -500,7 +501,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_detector WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<DetectorCache>(conn).await?.into_iter().try_for_each(|detector|
+        .load::<DetectorCache>(&mut conn.write().await).await?.into_iter().try_for_each(|detector|
             infra_cache.add(detector)
         )?;
 
@@ -508,7 +509,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM infra_object_buffer_stop WHERE infra_id = $1")
         .bind::<BigInt, _>(infra_id)
-        .load::<BufferStopCache>(conn).await?.into_iter().try_for_each(|buffer_stop|
+        .load::<BufferStopCache>(&mut conn.write().await).await?.into_iter().try_for_each(|buffer_stop|
             infra_cache.add(buffer_stop)
         )?;
 
@@ -533,7 +534,7 @@ impl InfraCache {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id, InfraCache::load(conn, infra).await?);
+        infra_caches.insert_new(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
         Ok(infra_caches.get(&infra.id).unwrap())
     }
 
@@ -549,7 +550,7 @@ impl InfraCache {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id, InfraCache::load(conn, infra).await?);
+        infra_caches.insert_new(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
         Ok(infra_caches.get_mut(&infra.id).unwrap())
     }
 
@@ -885,7 +886,6 @@ pub mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use std::collections::HashMap;
-    use std::ops::DerefMut;
 
     use super::OperationalPointCache;
     use crate::infra_cache::object_cache::BufferStopCache;
@@ -920,14 +920,10 @@ pub mod tests {
     #[rstest]
     async fn load_track_section() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let track = create_infra_object(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            TrackSection::default(),
-        )
-        .await;
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let track =
+            create_infra_object(&mut db_pool.get_ok(), infra.id, TrackSection::default()).await;
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -938,10 +934,9 @@ pub mod tests {
     #[rstest]
     async fn load_signal() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let signal =
-            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Signal::default()).await;
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let signal = create_infra_object(&mut db_pool.get_ok(), infra.id, Signal::default()).await;
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -953,9 +948,9 @@ pub mod tests {
     #[rstest]
     async fn load_speed_section() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let speed = create_infra_object(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             infra.id,
             SpeedSection {
                 track_ranges: vec![Default::default()],
@@ -963,7 +958,7 @@ pub mod tests {
             },
         )
         .await;
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -975,10 +970,9 @@ pub mod tests {
     #[rstest]
     async fn load_route() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let route =
-            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Route::default()).await;
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let route = create_infra_object(&mut db_pool.get_ok(), infra.id, Route::default()).await;
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -988,9 +982,9 @@ pub mod tests {
     #[rstest]
     async fn load_operational_point() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let op = create_infra_object(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             infra.id,
             OperationalPoint {
                 parts: vec![Default::default()],
@@ -999,7 +993,7 @@ pub mod tests {
         )
         .await;
 
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -1011,9 +1005,9 @@ pub mod tests {
     #[rstest]
     async fn load_switch() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let switch = create_infra_object(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             infra.id,
             Switch {
                 ports: HashMap::from([("port".into(), Default::default())]),
@@ -1021,7 +1015,7 @@ pub mod tests {
             },
         )
         .await;
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -1031,14 +1025,10 @@ pub mod tests {
     #[rstest]
     async fn load_switch_type() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let s_type = create_infra_object(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            SwitchType::default(),
-        )
-        .await;
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let s_type =
+            create_infra_object(&mut db_pool.get_ok(), infra.id, SwitchType::default()).await;
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -1048,10 +1038,10 @@ pub mod tests {
     #[rstest]
     async fn load_detector() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let detector =
-            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Detector::default()).await;
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            create_infra_object(&mut db_pool.get_ok(), infra.id, Detector::default()).await;
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -1063,14 +1053,9 @@ pub mod tests {
     #[rstest]
     async fn load_buffer_stop() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let bs = create_infra_object(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            BufferStop::default(),
-        )
-        .await;
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let bs = create_infra_object(&mut db_pool.get_ok(), infra.id, BufferStop::default()).await;
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -1082,9 +1067,9 @@ pub mod tests {
     #[rstest]
     async fn load_electrification() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let electrification = create_infra_object(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             infra.id,
             Electrification {
                 track_ranges: vec![Default::default()],
@@ -1093,7 +1078,7 @@ pub mod tests {
         )
         .await;
 
-        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
             .await
             .unwrap();
 
@@ -1387,13 +1372,13 @@ pub mod tests {
     #[rstest]
     async fn load_infra_cache() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_caches = CHashMap::new();
-        InfraCache::get_or_load(db_pool.get_ok().deref_mut(), &infra_caches, &infra)
+        InfraCache::get_or_load(&mut db_pool.get_ok(), &infra_caches, &infra)
             .await
             .unwrap();
         assert_eq!(infra_caches.len(), 1);
-        InfraCache::get_or_load(db_pool.get_ok().deref_mut(), &infra_caches, &infra)
+        InfraCache::get_or_load(&mut db_pool.get_ok(), &infra_caches, &infra)
             .await
             .unwrap();
         assert_eq!(infra_caches.len(), 1);
@@ -1402,13 +1387,13 @@ pub mod tests {
     #[rstest]
     async fn load_infra_cache_mut() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let infra_caches = CHashMap::new();
-        InfraCache::get_or_load_mut(db_pool.get_ok().deref_mut(), &infra_caches, &infra)
+        InfraCache::get_or_load_mut(&mut db_pool.get_ok(), &infra_caches, &infra)
             .await
             .unwrap();
         assert_eq!(infra_caches.len(), 1);
-        InfraCache::get_or_load_mut(db_pool.get_ok().deref_mut(), &infra_caches, &infra)
+        InfraCache::get_or_load_mut(&mut db_pool.get_ok(), &infra_caches, &infra)
             .await
             .unwrap();
         assert_eq!(infra_caches.len(), 1);

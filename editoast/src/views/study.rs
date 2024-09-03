@@ -1,5 +1,3 @@
-use std::ops::DerefMut as _;
-
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -10,7 +8,6 @@ use chrono::NaiveDate;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::AsyncConnection;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
@@ -150,22 +147,25 @@ async fn create(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let connection = db_pool.get().await?;
 
-    let (study, project) = conn
+    let (study, project) = connection
         .transaction::<_, InternalError, _>(|conn| {
-            async {
+            async move {
                 // Check if project exists
-                let mut project = Project::retrieve_or_fail(conn, project_id, || {
+                let mut project = Project::retrieve_or_fail(&mut conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
 
                 // Create study
-                let study: Study = data.into_study_changeset(project_id)?.create(conn).await?;
+                let study: Study = data
+                    .into_study_changeset(project_id)?
+                    .create(&mut conn.clone())
+                    .await?;
 
                 // Update project last_modification field
-                project.update_last_modified(conn).await?;
+                project.update_last_modified(&mut conn.clone()).await?;
 
                 Ok((study, project))
             }
@@ -332,12 +332,12 @@ async fn patch(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
-    let conn = &mut db_pool.get().await?;
-    let (study_scenarios, project) = conn
+    let connection = db_pool.get().await?;
+    let (study_scenarios, project) = connection
         .transaction::<_, InternalError, _>(|conn| {
-            async {
+            async move {
                 // Check if project exists
-                let mut project = Project::retrieve_or_fail(conn, project_id, || {
+                let mut project = Project::retrieve_or_fail(&mut conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
@@ -346,12 +346,15 @@ async fn patch(
                 let study = data
                     .into_study_changeset()?
                     .last_modification(Utc::now().naive_utc())
-                    .update_or_fail(conn, study_id, || StudyError::NotFound { study_id })
+                    .update_or_fail(&mut conn.clone(), study_id, || StudyError::NotFound {
+                        study_id,
+                    })
                     .await?;
-                let study_scenarios = StudyWithScenarioCount::try_fetch(conn, study).await?;
+                let study_scenarios =
+                    StudyWithScenarioCount::try_fetch(&mut conn.clone(), study).await?;
 
                 // Update project last_modification field
-                project.update_last_modified(conn).await?;
+                project.update_last_modified(&mut conn.clone()).await?;
 
                 Ok((study_scenarios, project))
             }
@@ -414,7 +417,7 @@ async fn list(
     }
 
     let ordering = ordering_params.ordering;
-    if !Project::exists(db_pool.get().await?.deref_mut(), project_id).await? {
+    if !Project::exists(&mut db_pool.get().await?, project_id).await? {
         return Err(ProjectError::NotFound { project_id }.into());
     }
 
@@ -425,13 +428,12 @@ async fn list(
         .filter(move || Study::PROJECT_ID.eq(project_id))
         .order_by(move || ordering.as_study_ordering());
 
-    let (studies, stats) =
-        Study::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+    let (studies, stats) = Study::list_paginated(&mut db_pool.get().await?, settings).await?;
     let results = studies
         .into_iter()
         .zip(db_pool.iter_conn())
         .map(|(project, conn)| async move {
-            StudyWithScenarioCount::try_fetch(conn.await?.deref_mut(), project).await
+            StudyWithScenarioCount::try_fetch(&mut conn.await?, project).await
         });
     let results = futures::future::try_join_all(results).await?;
 
@@ -456,8 +458,7 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         let request = app
             .post(&format!("/projects/{}/studies/", created_project.id))
@@ -471,7 +472,7 @@ pub mod test {
             }));
         let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let study = Study::retrieve(db_pool.get_ok().deref_mut(), response.study.id)
+        let study = Study::retrieve(&mut db_pool.get_ok(), response.study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");
@@ -485,15 +486,10 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let created_study = create_study(
-            db_pool.get_ok().deref_mut(),
-            "test_study_name",
-            created_project.id,
-        )
-        .await;
+        let created_study =
+            create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
         let request = app.get(&format!("/projects/{}/studies/", created_project.id));
 
@@ -514,15 +510,10 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let created_study = create_study(
-            db_pool.get_ok().deref_mut(),
-            "test_study_name",
-            created_project.id,
-        )
-        .await;
+        let created_study =
+            create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
         let request = app.get(&format!(
             "/projects/{}/studies/{}",
@@ -541,15 +532,10 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let created_study = create_study(
-            db_pool.get_ok().deref_mut(),
-            "test_study_name",
-            created_project.id,
-        )
-        .await;
+        let created_study =
+            create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
         let request = app.get(&format!(
             "/projects/{}/studies/{}",
@@ -565,15 +551,10 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let created_study = create_study(
-            db_pool.get_ok().deref_mut(),
-            "test_study_name",
-            created_project.id,
-        )
-        .await;
+        let created_study =
+            create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
         let request = app.delete(&format!(
             "/projects/{}/studies/{}",
@@ -582,7 +563,7 @@ pub mod test {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let exists = Study::exists(db_pool.get_ok().deref_mut(), created_study.id)
+        let exists = Study::exists(&mut db_pool.get_ok(), created_study.id)
             .await
             .expect("Failed to check if study exists");
 
@@ -594,15 +575,10 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let created_project =
-            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let created_study = create_study(
-            db_pool.get_ok().deref_mut(),
-            "test_study_name",
-            created_project.id,
-        )
-        .await;
+        let created_study =
+            create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
         let study_name = "rename_test";
         let study_budget = 20000;
@@ -619,12 +595,12 @@ pub mod test {
 
         app.fetch(request).assert_status(StatusCode::OK);
 
-        let updated_study = Study::retrieve(db_pool.get_ok().deref_mut(), created_study.id)
+        let updated_study = Study::retrieve(&mut db_pool.get_ok(), created_study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");
 
-        let updated_project = Project::retrieve(db_pool.get_ok().deref_mut(), created_project.id)
+        let updated_project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");

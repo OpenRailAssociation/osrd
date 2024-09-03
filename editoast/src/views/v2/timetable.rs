@@ -1,7 +1,6 @@
 pub mod stdcm;
 
 use std::collections::HashMap;
-use std::ops::DerefMut as _;
 
 use axum::extract::Json;
 use axum::extract::Path;
@@ -296,24 +295,23 @@ async fn conflicts(
     let electrical_profile_set_id = electrical_profile_set_id_query.electrical_profile_set_id;
 
     // 1. Retrieve Timetable / Infra / Trains / Simultion
-    let timetable_trains = TimetableWithTrains::retrieve_or_fail(
-        db_pool.get().await?.deref_mut(),
-        timetable_id,
-        || TimetableError::NotFound { timetable_id },
-    )
-    .await?;
+    let timetable_trains =
+        TimetableWithTrains::retrieve_or_fail(&mut db_pool.get().await?, timetable_id, || {
+            TimetableError::NotFound { timetable_id }
+        })
+        .await?;
 
-    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         TimetableError::InfraNotFound { infra_id }
     })
     .await?;
 
     let (trains, _): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(db_pool.get().await?.deref_mut(), timetable_trains.train_ids)
+        TrainSchedule::retrieve_batch(&mut db_pool.get().await?, timetable_trains.train_ids)
             .await?;
 
     let simulations = train_simulation_batch(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         redis_client.clone(),
         core_client.clone(),
         &trains,
@@ -365,7 +363,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
+        let timetable = create_timetable(&mut pool.get_ok()).await;
 
         let request = app.get(&format!("/v2/timetable/{}", timetable.id));
 
@@ -400,7 +398,7 @@ mod tests {
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let retrieved_timetable =
-            Timetable::retrieve(pool.get_ok().deref_mut(), created_timetable.timetable_id)
+            Timetable::retrieve(&mut pool.get_ok(), created_timetable.timetable_id)
                 .await
                 .expect("Failed to retrieve timetable")
                 .expect("Timetable not found");
@@ -413,13 +411,13 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
+        let timetable = create_timetable(&mut pool.get_ok()).await;
 
         let request = app.delete(format!("/v2/timetable/{}", timetable.id).as_str());
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let exists = Timetable::exists(pool.get_ok().deref_mut(), timetable.id)
+        let exists = Timetable::exists(&mut pool.get_ok(), timetable.id)
             .await
             .expect("Failed to check if timetable exists");
 

@@ -5,10 +5,9 @@ use diesel_async::AsyncPgConnection;
 pub mod db_connection_pool;
 pub mod tables;
 
+pub use db_connection_pool::DbConnection;
 pub use db_connection_pool::DbConnectionPoolV2;
-pub use db_connection_pool::DbConnectionV3;
 
-pub type DbConnection = AsyncPgConnection;
 pub type DieselConnection = AsyncPgConnection;
 pub type DbConnectionPool = Pool<DieselConnection>;
 

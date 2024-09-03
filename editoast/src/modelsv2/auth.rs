@@ -1,7 +1,9 @@
-use std::{collections::HashSet, sync::Arc};
+use std::collections::HashSet;
+use std::ops::DerefMut;
+use std::sync::Arc;
 
 use diesel::{dsl, prelude::*};
-use diesel_async::{scoped_futures::ScopedFutureExt, AsyncConnection, RunQueryDsl};
+use diesel_async::{scoped_futures::ScopedFutureExt, RunQueryDsl};
 use editoast_authz::{
     authorizer::{StorageDriver, UserInfo},
     roles::{BuiltinRoleSet, RoleConfig},
@@ -39,49 +41,50 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
 
     #[tracing::instrument(skip_all, fields(%user), ret, err)]
     async fn ensure_user(&self, user: &UserInfo) -> Result<i64, Self::Error> {
-        let pool = self.pool.clone();
-        let mut conn = pool.get().await?;
+        self.pool
+            .get()
+            .await?
+            .clone()
+            .transaction(|conn| {
+                async move {
+                    let user_id = authn_user::table
+                        .select(authn_user::id)
+                        .filter(authn_user::identity_id.eq(&user.identity))
+                        .first::<i64>(conn.write().await.deref_mut())
+                        .await
+                        .optional()?;
 
-        conn.transaction(|conn| {
-            async {
-                let user_id = authn_user::table
-                    .select(authn_user::id)
-                    .filter(authn_user::identity_id.eq(&user.identity))
-                    .first::<i64>(conn)
-                    .await
-                    .optional()?;
+                    match user_id {
+                        Some(user_id) => {
+                            tracing::debug!("user already exists in db");
+                            Ok(user_id)
+                        }
 
-                match user_id {
-                    Some(user_id) => {
-                        tracing::debug!("user already exists in db");
-                        Ok(user_id)
-                    }
+                        None => {
+                            tracing::info!("registering new user in db");
 
-                    None => {
-                        tracing::info!("registering new user in db");
+                            let id: i64 = dsl::insert_into(authn_subject::table)
+                                .default_values()
+                                .returning(authn_subject::id)
+                                .get_result(&mut conn.clone().write().await)
+                                .await?;
 
-                        let id: i64 = dsl::insert_into(authn_subject::table)
-                            .default_values()
-                            .returning(authn_subject::id)
-                            .get_result(conn)
-                            .await?;
+                            dsl::insert_into(authn_user::table)
+                                .values((
+                                    authn_user::id.eq(id),
+                                    authn_user::identity_id.eq(&user.identity),
+                                    authn_user::name.eq(&user.name),
+                                ))
+                                .execute(conn.write().await.deref_mut())
+                                .await?;
 
-                        dsl::insert_into(authn_user::table)
-                            .values((
-                                authn_user::id.eq(id),
-                                authn_user::identity_id.eq(&user.identity),
-                                authn_user::name.eq(&user.name),
-                            ))
-                            .execute(conn)
-                            .await?;
-
-                        Ok(id)
+                            Ok(id)
+                        }
                     }
                 }
-            }
-            .scope_boxed()
-        })
-        .await
+                .scope_boxed()
+            })
+            .await
     }
 
     #[tracing::instrument(skip_all, fields(%subject_id, %roles_config), ret, err)]
@@ -90,7 +93,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         subject_id: i64,
         roles_config: &RoleConfig<Self::BuiltinRole>,
     ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
-        let mut conn = self.pool.get().await?;
+        let conn = self.pool.get().await?;
 
         let roles = authz_role::table
             .select(authz_role::role)
@@ -99,7 +102,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
             )
             .filter(authz_role::subject.eq(subject_id))
             .or_filter(authz_role::subject.eq(authn_group_membership::group))
-            .load::<String>(&mut conn)
+            .load::<String>(conn.write().await.deref_mut())
             .await?
             .into_iter()
             .map(|role| {
@@ -119,7 +122,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         roles_config: &RoleConfig<Self::BuiltinRole>,
         roles: HashSet<Self::BuiltinRole>,
     ) -> Result<(), Self::Error> {
-        let mut conn = self.pool.get().await?;
+        let conn = self.pool.get().await?;
 
         dsl::insert_into(authz_role::table)
             .values(
@@ -135,7 +138,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
             )
             .on_conflict((authz_role::subject, authz_role::role))
             .do_nothing()
-            .execute(&mut conn)
+            .execute(conn.write().await.deref_mut())
             .await?;
 
         Ok(())
@@ -148,7 +151,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         roles_config: &RoleConfig<Self::BuiltinRole>,
         roles: HashSet<Self::BuiltinRole>,
     ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
-        let mut conn = self.pool.get().await?;
+        let conn = self.pool.get().await?;
 
         let deleted_roles = dsl::delete(
             authz_role::table
@@ -158,7 +161,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
                 ),
         )
         .returning(authz_role::role)
-        .load::<String>(&mut conn)
+        .load::<String>(conn.write().await.deref_mut())
         .await?
         .into_iter()
         .map(|role| {

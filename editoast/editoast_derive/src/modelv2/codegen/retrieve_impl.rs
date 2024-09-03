@@ -38,10 +38,11 @@ impl ToTokens for RetrieveImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
+                    use std::ops::DerefMut;
                     tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     dsl::#table_name
                         .#(filter(#eqs)).*
-                        .first::<#row>(conn)
+                        .first::<#row>(conn.write().await.deref_mut())
                         .await
                         .map(Into::into)
                         .optional()

@@ -1,15 +1,17 @@
+use std::ops::DerefMut;
+
 use chrono::NaiveDateTime;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
+use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::modelsv2::Tags;
-use editoast_models::DbConnection;
 
 #[derive(Debug, Clone, ModelV2, Deserialize, Serialize, ToSchema)]
 #[schema(as = ScenarioV2)]
@@ -37,7 +39,7 @@ impl Scenario {
         let infra_name = infra_dsl::infra
             .filter(infra_dsl::id.eq(self.infra_id))
             .select(infra_dsl::name)
-            .first::<String>(conn)
+            .first::<String>(conn.write().await.deref_mut())
             .await?;
         Ok(infra_name)
     }
@@ -47,7 +49,7 @@ impl Scenario {
         let trains_count = train_schedule_v2
             .filter(timetable_id.eq(self.timetable_id))
             .count()
-            .get_result(conn)
+            .get_result(conn.write().await.deref_mut())
             .await?;
         Ok(trains_count)
     }

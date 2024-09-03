@@ -57,7 +57,6 @@ impl RollingStockLiveryModel {
 #[cfg(test)]
 pub mod tests {
     use rstest::*;
-    use std::ops::DerefMut;
 
     use super::RollingStockLiveryModel;
     use crate::modelsv2::fixtures::create_rolling_stock_livery_fixture;
@@ -70,32 +69,31 @@ pub mod tests {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let (rs_livery, _, image) =
-            create_rolling_stock_livery_fixture(db_pool.get_ok().deref_mut(), "rs_livery_name")
-                .await;
+            create_rolling_stock_livery_fixture(&mut db_pool.get_ok(), "rs_livery_name").await;
 
         assert!(
-            RollingStockLiveryModel::retrieve(db_pool.get_ok().deref_mut(), rs_livery.id)
+            RollingStockLiveryModel::retrieve(&mut db_pool.get_ok(), rs_livery.id)
                 .await
                 .is_ok()
         );
 
-        assert!(Document::retrieve(db_pool.get_ok().deref_mut(), image.id)
+        assert!(Document::retrieve(&mut db_pool.get_ok(), image.id)
             .await
             .is_ok());
 
         assert!(rs_livery
-            .delete_with_compound_image(db_pool.get_ok().deref_mut())
+            .delete_with_compound_image(&mut db_pool.get_ok())
             .await
             .is_ok());
 
         assert!(
-            RollingStockLiveryModel::retrieve(db_pool.get_ok().deref_mut(), rs_livery.id)
+            RollingStockLiveryModel::retrieve(&mut db_pool.get_ok(), rs_livery.id)
                 .await
                 .expect("Failed to retrieve rolling stock livery")
                 .is_none()
         );
 
-        assert!(Document::retrieve(db_pool.get_ok().deref_mut(), image.id)
+        assert!(Document::retrieve(&mut db_pool.get_ok(), image.id)
             .await
             .expect("Failed to retrieve document")
             .is_none());

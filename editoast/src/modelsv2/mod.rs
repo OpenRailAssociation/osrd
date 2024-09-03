@@ -47,7 +47,6 @@ editoast_common::schemas! {
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
-    use std::ops::DerefMut;
 
     use editoast_derive::ModelV2;
     use editoast_models::DbConnectionPoolV2;
@@ -75,7 +74,7 @@ mod tests {
                 .data(vec![i])
         });
 
-        let docs = Document::create_batch::<_, Vec<_>>(pool.get_ok().deref_mut(), changesets)
+        let docs = Document::create_batch::<_, Vec<_>>(&mut pool.get_ok(), changesets)
             .await
             .expect("Failed to create documents");
         assert_eq!(docs.len(), 5);
@@ -84,7 +83,7 @@ mod tests {
         ids.push(123456789);
 
         let (docs, missing): (Vec<_>, _) =
-            Document::retrieve_batch(pool.get_ok().deref_mut(), ids.clone())
+            Document::retrieve_batch(&mut pool.get_ok(), ids.clone())
                 .await
                 .unwrap();
 
@@ -106,17 +105,16 @@ mod tests {
         let new_ct = String::from("I like trains");
         let (updated_docs, missing): (Vec<_>, _) = Document::changeset()
             .content_type(new_ct.clone())
-            .update_batch(pool.get_ok().deref_mut(), ids.iter().cloned().take(2))
+            .update_batch(&mut pool.get_ok(), ids.iter().cloned().take(2))
             .await
             .expect("Failed to update documents");
         assert!(missing.is_empty());
         assert!(updated_docs.iter().all(|d| d.content_type == new_ct));
         assert_eq!(updated_docs.len(), 2);
 
-        let (docs, _): (Vec<_>, _) =
-            Document::retrieve_batch(pool.get_ok().deref_mut(), ids.clone())
-                .await
-                .expect("Failed to retrieve documents");
+        let (docs, _): (Vec<_>, _) = Document::retrieve_batch(&mut pool.get_ok(), ids.clone())
+            .await
+            .expect("Failed to retrieve documents");
         assert_eq!(
             docs.iter()
                 .map(|d| d.content_type.clone())
@@ -125,12 +123,12 @@ mod tests {
         );
 
         let not_deleted = ids.remove(0);
-        let count = Document::delete_batch(pool.get_ok().deref_mut(), ids)
+        let count = Document::delete_batch(&mut pool.get_ok(), ids)
             .await
             .expect("Failed to delete documents");
         assert_eq!(count, 4);
 
-        let exists = Document::exists(pool.get_ok().deref_mut(), not_deleted)
+        let exists = Document::exists(&mut pool.get_ok(), not_deleted)
             .await
             .expect("Failed to check if document exists");
 
@@ -175,7 +173,7 @@ mod tests {
 
         let pool = DbConnectionPoolV2::for_tests();
         let docs = Document::create_batch::<_, Vec<_>>(
-            pool.get_ok().deref_mut(),
+            &mut pool.get_ok(),
             [
                 Document::changeset()
                     .content_type(String::from("text/plain"))
@@ -193,7 +191,7 @@ mod tests {
 
         let ids = docs.iter().map(|d| d.id).collect::<Vec<_>>();
         assert_eq!(
-            Document::retrieve(pool.get_ok().deref_mut(), ids[0])
+            Document::retrieve(&mut pool.get_ok(), ids[0])
                 .await
                 .expect("Failed to retrieve document")
                 .expect("Document not found")
@@ -201,7 +199,7 @@ mod tests {
             Data::Prefixed(0x43)
         );
         assert_eq!(
-            Document::retrieve(pool.get_ok().deref_mut(), ids[1])
+            Document::retrieve(&mut pool.get_ok(), ids[1])
                 .await
                 .expect("Failed to retrieve document")
                 .expect("Document not found")
@@ -221,22 +219,21 @@ mod tests {
                 .content_type(multiple_ct.to_string())
                 .data(vec![i])
         });
-        let mut documents =
-            Document::create_batch::<_, Vec<_>>(pool.get_ok().deref_mut(), changesets)
-                .await
-                .expect("Failed to create documents batch");
+        let mut documents = Document::create_batch::<_, Vec<_>>(&mut pool.get_ok(), changesets)
+            .await
+            .expect("Failed to create documents batch");
         let unique_doc_idx = 10;
 
         documents[unique_doc_idx]
             .patch()
             .content_type(unique_ct.to_string())
-            .apply(pool.get_ok().deref_mut())
+            .apply(&mut pool.get_ok())
             .await
             .expect("Failed to update document");
 
         // WHEN
         let (list, multiple_count) = Document::list_and_count(
-            pool.get_ok().deref_mut(),
+            &mut pool.get_ok(),
             SelectionSettings::new()
                 .filter(move || Document::CONTENT_TYPE.eq(multiple_ct.to_string()))
                 .order_by(|| Document::ID.desc())
@@ -246,7 +243,7 @@ mod tests {
         .expect("Failed to list documents with multiple content type");
 
         let (past_unique_ct_index, unique_count) = Document::list_and_count(
-            pool.get_ok().deref_mut(),
+            &mut pool.get_ok(),
             SelectionSettings::new()
                 .filter(move || Document::CONTENT_TYPE.eq(unique_ct.to_string()))
                 .offset(15),
@@ -254,7 +251,7 @@ mod tests {
         .await
         .expect("Failed to list documents with unique content type");
         let (with_unique, unique_count_bis) = Document::list_and_count(
-            pool.get_ok().deref_mut(),
+            &mut pool.get_ok(),
             SelectionSettings::new()
                 .filter(move || Document::CONTENT_TYPE.eq(unique_ct.to_string())),
         )

@@ -1,4 +1,5 @@
 use editoast_models::DbConnection;
+
 use crate::error::EditoastError;
 use crate::error::Result;
 

@@ -184,7 +184,6 @@ pub mod test {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
-    use std::ops::DerefMut;
 
     use super::*;
     use crate::modelsv2::prelude::*;
@@ -215,7 +214,7 @@ pub mod test {
 
         // THEN
         let created_group = WorkScheduleGroup::retrieve(
-            pool.get_ok().deref_mut(),
+            &mut pool.get_ok(),
             work_schedule_response.work_schedule_group_id,
         )
         .await
@@ -251,7 +250,7 @@ pub mod test {
         WorkScheduleGroup::changeset()
             .name("duplicated work schedule group name".to_string())
             .creation_date(Utc::now().naive_utc())
-            .create(pool.get_ok().deref_mut())
+            .create(&mut pool.get_ok())
             .await
             .expect("Failed to create work schedule group");
 

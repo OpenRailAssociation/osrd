@@ -1,12 +1,14 @@
+use std::ops::DerefMut;
+
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Bool;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
 
 use super::Infra;
 use crate::error::Result;
-use editoast_models::DbConnection;
 
 #[derive(QueryableByName)]
 pub struct RouteFromWaypointResult {
@@ -27,7 +29,7 @@ impl Infra {
             .bind::<BigInt, _>(self.id)
             .bind::<Text, _>(&waypoint_id)
             .bind::<Text, _>(waypoint_type)
-            .load::<RouteFromWaypointResult>(conn)
+            .load::<RouteFromWaypointResult>(conn.write().await.deref_mut())
             .await?;
         Ok(routes)
     }

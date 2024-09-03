@@ -14,7 +14,6 @@ use enum_map::EnumMap;
 use futures::future::try_join_all;
 use serde::Deserialize;
 use serde::Serialize;
-use std::ops::DerefMut;
 use strum::IntoEnumIterator;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -68,7 +67,7 @@ async fn get_railjson(
     }
 
     let infra_id = infra.infra_id;
-    let infra_meta = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+    let infra_meta = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -190,18 +189,17 @@ async fn post_railjson(
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
-        .persist(railjson, db_pool.get().await?.deref_mut())
+        .persist(railjson, &mut db_pool.get().await?)
         .await?;
     let infra_id = infra.id;
 
     infra
-        .bump_version(db_pool.get().await?.deref_mut())
+        .bump_version(&mut db_pool.get().await?)
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
     if params.generate_data {
         let infra_cache =
-            InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
-                .await?;
+            InfraCache::get_or_load(&mut db_pool.get().await?, &infra_caches, &infra).await?;
         infra.refresh(db_pool, true, &infra_cache).await?;
     }
 
@@ -226,12 +224,12 @@ mod tests {
     async fn test_get_railjson() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         apply_create_operation(
             &SwitchType::default().into(),
             empty_infra.id,
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
         )
         .await
         .expect("Failed to create SwitchType object");
@@ -271,10 +269,8 @@ mod tests {
 
         let res: PostRailjsonResponse = app.fetch(req).assert_status(StatusCode::OK).json_into();
 
-        assert!(
-            Infra::delete_static(db_pool.get_ok().deref_mut(), res.infra)
-                .await
-                .unwrap()
-        );
+        assert!(Infra::delete_static(&mut db_pool.get_ok(), res.infra)
+            .await
+            .unwrap());
     }
 }

@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use diesel::result::Error as DieselError;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
@@ -6,6 +8,10 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
+use editoast_schemas::infra::InfraObject;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::ObjectType;
 use json_patch::Patch;
 use serde::Deserialize;
 use serde::Serialize;
@@ -16,10 +22,6 @@ use serde_json::Value;
 use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
-use editoast_models::DbConnection;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::ObjectType;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -40,7 +42,7 @@ impl UpdateOperation {
         ))
         .bind::<BigInt, _>(infra_id)
         .bind::<Text, _>(&self.obj_id)
-        .get_result(conn)
+        .get_result(conn.write().await.deref_mut())
         .await
         {
             Ok(obj) => obj,
@@ -65,7 +67,7 @@ impl UpdateOperation {
         .bind::<Json, _>(obj.data)
         .bind::<BigInt, _>(infra_id)
         .bind::<Text, _>(&self.obj_id)
-        .execute(conn)
+        .execute(conn.write().await.deref_mut())
         .await
         {
             Ok(1) => Ok(railjson_obj),
@@ -157,13 +159,9 @@ mod tests {
     #[rstest]
     async fn valid_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let track = create_infra_object(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            TrackSection::default(),
-        )
-        .await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let track =
+            create_infra_object(&mut db_pool.get_ok(), infra.id, TrackSection::default()).await;
         let update_track = UpdateOperation {
             obj_id: track.get_id().clone(),
             obj_type: ObjectType::TrackSection,
@@ -176,7 +174,7 @@ mod tests {
         };
 
         assert!(update_track
-            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .apply(infra.id, &mut db_pool.get_ok())
             .await
             .is_ok());
 
@@ -185,7 +183,7 @@ mod tests {
                 track.get_id(),
                 infra.id
             ))
-            .get_result::<Value>(db_pool.get_ok().deref_mut()).await.unwrap();
+            .get_result::<Value>(db_pool.get_ok().write().await.deref_mut()).await.unwrap();
 
         assert_eq!(updated_length.val, 80.0);
     }
@@ -193,13 +191,9 @@ mod tests {
     #[rstest]
     async fn invalid_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let track = create_infra_object(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            TrackSection::default(),
-        )
-        .await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let track =
+            create_infra_object(&mut db_pool.get_ok(), infra.id, TrackSection::default()).await;
         let update_track = UpdateOperation {
             obj_id: track.get_id().clone(),
             obj_type: ObjectType::TrackSection,
@@ -210,9 +204,7 @@ mod tests {
             )
             .unwrap(),
         };
-        let res = update_track
-            .apply(infra.id, db_pool.get_ok().deref_mut())
-            .await;
+        let res = update_track.apply(infra.id, &mut db_pool.get_ok()).await;
 
         assert!(res.is_err());
         assert_eq!(
@@ -224,9 +216,8 @@ mod tests {
     #[rstest]
     async fn valid_update_signal() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let signal =
-            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Signal::default()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let signal = create_infra_object(&mut db_pool.get_ok(), infra.id, Signal::default()).await;
         let update_signal = UpdateOperation {
             obj_id: signal.get_id().clone(),
             obj_type: ObjectType::Signal,
@@ -239,7 +230,7 @@ mod tests {
         };
 
         assert!(update_signal
-            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .apply(infra.id, &mut db_pool.get_ok())
             .await
             .is_ok());
 
@@ -248,7 +239,7 @@ mod tests {
                 signal.get_id(),
                 infra.id
             ))
-            .get_result::<Value>(db_pool.get_ok().deref_mut()).await.unwrap();
+            .get_result::<Value>(db_pool.get_ok().write().await.deref_mut()).await.unwrap();
 
         assert_eq!(updated_length.val, 15.0);
     }
@@ -256,9 +247,8 @@ mod tests {
     #[rstest]
     async fn valid_update_switch_extension() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let switch =
-            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Switch::default()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let switch = create_infra_object(&mut db_pool.get_ok(), infra.id, Switch::default()).await;
         let update_switch = UpdateOperation {
                 obj_id: switch.get_id().clone(),
                 obj_type: ObjectType::Switch,
@@ -271,7 +261,7 @@ mod tests {
             };
 
         assert!(update_switch
-            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .apply(infra.id, &mut db_pool.get_ok())
             .await
             .is_ok());
 
@@ -280,7 +270,7 @@ mod tests {
                 switch.get_id(),
                 infra.id
             ))
-            .get_result::<Label>(db_pool.get_ok().deref_mut()).await.unwrap();
+            .get_result::<Label>(db_pool.get_ok().write().await.deref_mut()).await.unwrap();
 
         assert_eq!(updated_comment.label, "Switch Label");
     }
@@ -288,13 +278,9 @@ mod tests {
     #[rstest]
     async fn valid_update_speed() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let speed = create_infra_object(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            SpeedSection::default(),
-        )
-        .await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let speed =
+            create_infra_object(&mut db_pool.get_ok(), infra.id, SpeedSection::default()).await;
         let update_speed = UpdateOperation {
             obj_id: speed.get_id().clone(),
             obj_type: ObjectType::SpeedSection,
@@ -307,7 +293,7 @@ mod tests {
         };
 
         assert!(update_speed
-            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .apply(infra.id, &mut db_pool.get_ok())
             .await
             .is_ok());
 
@@ -316,7 +302,7 @@ mod tests {
                 speed.get_id(),
                 infra.id
             ))
-            .get_result::<Value>(db_pool.get_ok().deref_mut()).await.unwrap();
+            .get_result::<Value>(db_pool.get_ok().write().await.deref_mut()).await.unwrap();
 
         assert_eq!(updated_speed.val, 80.0);
     }
@@ -324,7 +310,7 @@ mod tests {
     #[rstest]
     async fn wrong_id_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
         let update_track = UpdateOperation {
             obj_id: "non_existent_id".to_string(),
             obj_type: ObjectType::TrackSection,
@@ -335,9 +321,7 @@ mod tests {
             )
             .unwrap(),
         };
-        let res = update_track
-            .apply(infra.id, db_pool.get_ok().deref_mut())
-            .await;
+        let res = update_track.apply(infra.id, &mut db_pool.get_ok()).await;
 
         assert!(res.is_err());
         assert_eq!(

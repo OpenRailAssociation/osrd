@@ -5,7 +5,6 @@ use editoast_schemas::infra::RAILJSON_VERSION;
 use crate::error::Result;
 use crate::modelsv2::infra_objects::*;
 use crate::modelsv2::prelude::*;
-use diesel_async::AsyncConnection;
 use editoast_models::DbConnection;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
@@ -48,70 +47,71 @@ pub async fn persist_railjson(
     }
 
     connection
+        .clone()
         .transaction(|conn| {
-            Box::pin(async {
+            Box::pin(async move {
                 let _ = TrackSectionModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     TrackSectionModel::from_infra_schemas(infra_id, track_sections),
                 )
                 .await?;
 
                 let _ = BufferStopModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     BufferStopModel::from_infra_schemas(infra_id, buffer_stops),
                 )
                 .await?;
 
                 let _ = ElectrificationModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     ElectrificationModel::from_infra_schemas(infra_id, electrifications),
                 )
                 .await?;
 
                 let _ = DetectorModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     DetectorModel::from_infra_schemas(infra_id, detectors),
                 )
                 .await?;
 
                 let _ = OperationalPointModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     OperationalPointModel::from_infra_schemas(infra_id, operational_points),
                 )
                 .await?;
 
                 let _ = RouteModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     RouteModel::from_infra_schemas(infra_id, routes),
                 )
                 .await?;
 
                 let _ = SignalModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     SignalModel::from_infra_schemas(infra_id, signals),
                 )
                 .await?;
 
                 let _ = SwitchModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     SwitchModel::from_infra_schemas(infra_id, switches),
                 )
                 .await?;
 
                 let _ = SpeedSectionModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     SpeedSectionModel::from_infra_schemas(infra_id, speed_sections),
                 )
                 .await?;
 
                 let _ = SwitchTypeModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     SwitchTypeModel::from_infra_schemas(infra_id, extended_switch_types),
                 )
                 .await?;
 
                 let _ = NeutralSectionModel::create_batch::<_, Vec<_>>(
-                    conn,
+                    &mut conn.clone(),
                     NeutralSectionModel::from_infra_schemas(infra_id, neutral_sections),
                 )
                 .await?;

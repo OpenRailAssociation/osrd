@@ -13,7 +13,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
-use std::ops::DerefMut;
 use std::sync::Arc;
 use tracing::info;
 use utoipa::ToSchema;
@@ -162,22 +161,21 @@ async fn project_path(
     let path_projection = PathProjection::new(&path_track_ranges);
     let mut redis_conn = redis_client.get_connection().await?;
 
-    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
-    let trains: Vec<TrainSchedule> = TrainSchedule::retrieve_batch_or_fail(
-        db_pool.get().await?.deref_mut(),
-        train_ids,
-        |missing| TrainScheduleError::BatchTrainScheduleNotFound {
-            number: missing.len(),
-        },
-    )
-    .await?;
+    let trains: Vec<TrainSchedule> =
+        TrainSchedule::retrieve_batch_or_fail(&mut db_pool.get().await?, train_ids, |missing| {
+            TrainScheduleError::BatchTrainScheduleNotFound {
+                number: missing.len(),
+            }
+        })
+        .await?;
 
     let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         trains
             .iter()
             .map::<String, _>(|t| t.rolling_stock_name.clone()),
@@ -185,7 +183,7 @@ async fn project_path(
     .await?;
 
     let simulations = train_simulation_batch(
-        db_pool.get().await?.deref_mut(),
+        &mut db_pool.get().await?,
         redis_client.clone(),
         core_client.clone(),
         &trains,

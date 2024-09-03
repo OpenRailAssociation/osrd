@@ -51,6 +51,7 @@ impl ToTokens for UpdateBatchImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    use std::ops::DerefMut;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok(crate::chunked_for_libpq! {
@@ -69,7 +70,7 @@ impl ToTokens for UpdateBatchImpl {
                             diesel::update(dsl::#table_name)
                                 .filter(dsl::#primary_key_column.eq_any(query))
                                 .set(&self)
-                                .load_stream::<#row>(conn)
+                                .load_stream::<#row>(conn.write().await.deref_mut())
                                 .await
                                 .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
                                 .await?
@@ -89,6 +90,7 @@ impl ToTokens for UpdateBatchImpl {
                     use crate::models::Identifiable;
                     use crate::modelsv2::Model;
                     use #table_mod::dsl;
+                    use std::ops::DerefMut;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
@@ -109,7 +111,7 @@ impl ToTokens for UpdateBatchImpl {
                             diesel::update(dsl::#table_name)
                                 .filter(dsl::#primary_key_column.eq_any(query))
                                 .set(&self)
-                                .load_stream::<#row>(conn)
+                                .load_stream::<#row>(conn.write().await.deref_mut())
                                 .await
                                 .map(|s| {
                                     s.map_ok(|row| {

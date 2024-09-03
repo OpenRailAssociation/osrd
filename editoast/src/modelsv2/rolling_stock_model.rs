@@ -197,7 +197,6 @@ impl From<RollingStock> for RollingStockModelChangeset {
 pub mod tests {
     use rstest::*;
     use serde_json::to_value;
-    use std::ops::DerefMut;
 
     use super::RollingStockModel;
     use crate::error::InternalError;
@@ -215,7 +214,7 @@ pub mod tests {
         let rs_name = "fast_rolling_stock_name";
 
         let created_fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+            create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         // GIVEN
         let rs_name_with_energy_sources_name = "other_rolling_stock_update_rolling_stock";
@@ -226,7 +225,7 @@ pub mod tests {
 
         // WHEN
         let updated_rolling_stock = rolling_stock_with_energy_sources
-            .update(db_pool.get_ok().deref_mut(), rolling_stock_id)
+            .update(&mut db_pool.get_ok(), rolling_stock_id)
             .await
             .expect("Failed to update rolling stock")
             .unwrap();
@@ -243,13 +242,13 @@ pub mod tests {
         // Creating the first rolling stock
         let rs_name = "fast_rolling_stock_name";
         let created_fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+            create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         // Creating the second rolling stock
         let rs_name_with_energy_sources_name = "fast_rolling_stock_with_energy_sources_name";
         let created_fast_rolling_stock_with_energy_sources =
             create_rolling_stock_with_energy_sources(
-                db_pool.get_ok().deref_mut(),
+                &mut db_pool.get_ok(),
                 rs_name_with_energy_sources_name,
             )
             .await;
@@ -257,7 +256,7 @@ pub mod tests {
         // WHEN
         let result = created_fast_rolling_stock_with_energy_sources
             .into_changeset()
-            .update(db_pool.get_ok().deref_mut(), created_fast_rolling_stock.id)
+            .update(&mut db_pool.get_ok(), created_fast_rolling_stock.id)
             .await
             .map_err(|e| map_diesel_error(e, rs_name));
 

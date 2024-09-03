@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use diesel::sql_query;
 use diesel::sql_types::Integer;
 use diesel::sql_types::Jsonb;
@@ -40,7 +42,7 @@ impl GeoJsonAndData {
             .bind::<Integer, _>(x as i32)
             .bind::<Integer, _>(y as i32)
             .bind::<Integer, _>(infra as i32)
-            .get_results::<GeoJsonAndData>(conn)
+            .get_results::<GeoJsonAndData>(conn.write().await.deref_mut())
             .await?;
 
         Ok(records)

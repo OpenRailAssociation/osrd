@@ -167,7 +167,6 @@ mod tests {
     use axum::http::StatusCode;
     use rstest::rstest;
     use serde::Deserialize;
-    use std::ops::DerefMut;
 
     use super::*;
     use crate::views::test_app::TestAppBuilder;
@@ -196,7 +195,7 @@ mod tests {
         let new_doc = response.json::<PostDocumentResponse>().document_key;
 
         // Get create document
-        let document = Document::retrieve(pool.get_ok().deref_mut(), new_doc)
+        let document = Document::retrieve(&mut pool.get_ok(), new_doc)
             .await
             .expect("Failed to retrieve document")
             .expect("Document not found");
@@ -213,7 +212,7 @@ mod tests {
         let document = Document::changeset()
             .data(b"Document post test data".to_vec())
             .content_type(String::from("text/plain"))
-            .create(pool.get_ok().deref_mut())
+            .create(&mut pool.get_ok())
             .await
             .expect("Failed to create document");
 
@@ -234,7 +233,7 @@ mod tests {
         let document = Document::changeset()
             .data(b"Document post test data".to_vec())
             .content_type(String::from("text/plain"))
-            .create(pool.get_ok().deref_mut())
+            .create(&mut pool.get_ok())
             .await
             .expect("Failed to create document");
 
@@ -245,7 +244,7 @@ mod tests {
         response.assert_status(StatusCode::NO_CONTENT);
 
         // Get create document
-        let document = Document::exists(pool.get_ok().deref_mut(), document.id)
+        let document = Document::exists(&mut pool.get_ok(), document.id)
             .await
             .expect("Failed to retrieve document");
 

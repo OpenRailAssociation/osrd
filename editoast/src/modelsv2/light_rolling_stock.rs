@@ -54,7 +54,6 @@ pub struct LightRollingStockModel {
 pub mod tests {
     use editoast_models::DbConnectionPoolV2;
     use rstest::rstest;
-    use std::ops::DerefMut;
 
     use super::LightRollingStockModel;
     use crate::modelsv2::fixtures::create_fast_rolling_stock;
@@ -69,11 +68,11 @@ pub mod tests {
 
         let rs_name = "fast_rolling_stock_name";
         let created_fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+            create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         // THEN
         assert!(LightRollingStockModel::retrieve(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             created_fast_rolling_stock.id
         )
         .await
@@ -87,11 +86,11 @@ pub mod tests {
 
         let rs_name = "fast_rolling_stock_name";
         let created_fast_rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+            create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
 
         // WHEN
         let rolling_stocks = LightRollingStockModel::list(
-            db_pool.get_ok().deref_mut(),
+            &mut db_pool.get_ok(),
             SelectionSettings::new().limit(1000),
         )
         .await

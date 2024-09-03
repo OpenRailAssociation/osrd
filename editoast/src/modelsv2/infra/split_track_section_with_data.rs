@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Double;
@@ -5,13 +7,13 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel::OptionalExtension;
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
 use editoast_schemas::infra::TrackSection;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
 
 use super::Infra;
 use crate::error::Result;
-use editoast_models::DbConnection;
 
 #[derive(QueryableByName, Debug, Clone, Deserialize)]
 pub struct SplitTrackSectionWithData {
@@ -37,7 +39,7 @@ impl Infra {
             .bind::<BigInt, _>(self.id)
             .bind::<Text, _>(track.to_string())
             .bind::<Double, _>(distance_fraction)
-            .get_result::<SplitTrackSectionWithData>(conn)
+            .get_result::<SplitTrackSectionWithData>(conn.write().await.deref_mut())
             .await
             .optional()?;
         Ok(result)

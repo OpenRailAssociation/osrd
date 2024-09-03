@@ -34,6 +34,7 @@ impl ToTokens for ListImpl {
                     use diesel::QueryDsl;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    use std::ops::DerefMut;
 
                     let mut query = #table_mod::table.into_boxed();
 
@@ -58,7 +59,7 @@ impl ToTokens for ListImpl {
                     }
 
                     let results: Vec<#model> = query
-                        .load_stream::<#row>(conn)
+                        .load_stream::<#row>(conn.write().await.deref_mut())
                         .await?
                         .map_ok(<#model as crate::modelsv2::prelude::Model>::from_row)
                         .try_collect()

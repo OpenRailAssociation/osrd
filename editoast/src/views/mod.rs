@@ -20,7 +20,6 @@ pub mod work_schedules;
 #[cfg(test)]
 mod test_app;
 
-use std::ops::DerefMut as _;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -208,7 +207,7 @@ async fn check_health(
 ) -> Result<()> {
     let mut db_connection = db_pool.clone().get().await?;
     tokio::try_join!(
-        ping_database(db_connection.deref_mut()).map_err(AppHealthError::Database),
+        ping_database(&mut db_connection).map_err(AppHealthError::Database),
         redis_client.ping_redis().map_err(|e| e.into())
     )?;
     Ok(())
