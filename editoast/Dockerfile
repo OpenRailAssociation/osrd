@@ -1,7 +1,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.67-rust-1.79.0 AS chef
+FROM lukemathwalker/cargo-chef:0.1.67-rust-1.80.0 AS chef
 WORKDIR /editoast
 
 #######################
@@ -28,7 +28,7 @@ FROM base_builder AS test_builder
 RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
     rustup component add clippy && \
-    cargo install --locked grcov
+    cargo install grcov
 COPY --from=planner /editoast/recipe.json recipe.json
 COPY --from=planner /editoast/editoast_derive/ editoast_derive
 COPY --from=test_data . /tests/data
