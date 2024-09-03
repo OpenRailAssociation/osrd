@@ -57,7 +57,7 @@ pretty_assertions = "1.4.0"
 rand = "0.8.5"
 rangemap = "1.5.1"
 rstest = { version = "0.19.0", default-features = false }
-serde = { version = "1.0.204", features = ["derive"] }
+serde = { version = "1.0.209", features = ["derive"] }
 serde_json = "1.0.121"
 strum = { version = "0.26.3", features = ["derive"] }
 tempfile = "3.12.0"
