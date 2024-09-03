@@ -126,6 +126,7 @@ test.describe('Verifying that all elements in the route tab are loaded correctly
     browserName,
     page,
   }) => {
+    test.slow(browserName === 'webkit', 'This test is slow on safari');
     const operationalStudiesPage = new OperationalStudiesPage(page);
     const scenarioPage = new ScenarioPage(page);
 
