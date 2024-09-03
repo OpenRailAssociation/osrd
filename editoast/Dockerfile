@@ -46,13 +46,14 @@ COPY --from=planner /editoast/recipe.json recipe.json
 COPY --from=planner /editoast/editoast_derive/ editoast_derive
 ENV RUSTFLAGS="-C link-arg=-fuse-ld=mold"
 ARG CARGO_PROFILE=release
+ARG CARGO_FEATURES
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/editoast/target \
-    cargo chef cook --profile ${CARGO_PROFILE} --recipe-path recipe.json
+    cargo chef cook --features="${CARGO_FEATURES}" --profile="${CARGO_PROFILE}" --recipe-path recipe.json
 COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/editoast/target \
-    cargo install --profile ${CARGO_PROFILE} --locked --path .
+    cargo install --features="${CARGO_FEATURES}" --profile="${CARGO_PROFILE}" --locked --path .
 
 ###############
 # Running env #
