@@ -110,6 +110,7 @@ const Scenario = () => {
     handleOperation({
       event,
       dispatch,
+      infraId,
       timeTableId: scenarioData.scenario.timetable_id,
       netzgrafikDto,
       addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResult[]) => {
