@@ -40,7 +40,7 @@ export default defineConfig({
     video: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
     locale: 'fr',
   },
-  reporter: process.env.CI ? 'github' : [['line'], ['html']],
+  reporter: process.env.CI ? [['github'], ['allure-playwright']] : [['line'], ['html']],
 
   /* Configure projects for major browsers */
   projects: [
