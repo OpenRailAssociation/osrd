@@ -246,10 +246,13 @@ impl Pool {
                 Ok(())
             });
         }
+
         {
+            let arc_clone = self.clone();
             let expected_state = expected_state.clone();
             tasks.spawn(async move {
                 worker_control_loop(
+                    arc_clone,
                     expected_state,
                     running_worker_watch,
                     driver,
@@ -467,6 +470,7 @@ async fn activity_processor(
 }
 
 async fn worker_control_loop(
+    pool: Arc<Pool>,
     expected_state: tokio::sync::watch::Receiver<TargetUpdate>,
     running_workers_watch: tokio::sync::watch::Sender<Arc<Vec<WorkerMetadata>>>,
     mut driver: Box<dyn WorkerDriver>,
@@ -494,6 +498,7 @@ async fn worker_control_loop(
             .iter()
             .map(|c| &c.worker_key)
             .collect::<Vec<_>>();
+
         let wanted_worker_keys = target
             .queues
             .into_iter()
@@ -516,7 +521,11 @@ async fn worker_control_loop(
 
         // Add wanted groups
         for worker_key in wanted_worker_keys {
-            if let Err(e) = driver.get_or_create_worker_group(worker_key).await {
+            let queue_name = pool.key_queue_name(&worker_key);
+            if let Err(e) = driver
+                .get_or_create_worker_group(queue_name, worker_key)
+                .await
+            {
                 log::error!(
                     "Failed to get or create worker group: {:?}. Aborting current loop iteration.",
                     e

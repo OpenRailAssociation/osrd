@@ -46,6 +46,7 @@ pub trait WorkerDriver: Send {
     /// Returns the internal UUID of the worker.
     fn get_or_create_worker_group(
         &mut self,
+        queue_name: String,
         worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>>;
 
