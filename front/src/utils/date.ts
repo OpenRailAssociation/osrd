@@ -18,22 +18,29 @@ const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
  * @param dateTimeString date string in ISO format
  * @returns string "HH:MM:SS"
  */
-export function extractHHMMSS(dateTimeString?: string) {
+export function extractHHMMSS(dateTimeString?: string): string {
   if (!dateTimeString) {
     return '';
   }
-  return dateTimeString.substring(11, 19);
+  const date = new Date(dateTimeString);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
 }
 
 /**
  * @param dateTimeString date string in ISO format
  * @returns string "HH:MM"
  */
-export function extractHHMM(dateTimeString?: string) {
+export function extractHHMM(dateTimeString?: string): string {
   if (!dateTimeString) {
     return '';
   }
-  return dateTimeString.substring(11, 16);
+  const date = new Date(dateTimeString);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
 }
 
 export function timestampToHHMMSS(timestamp: number) {
