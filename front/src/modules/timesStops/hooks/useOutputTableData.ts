@@ -68,10 +68,6 @@ function useOutputTableData(
     pathStepsWithOpPointIndices,
     (pathStep) => `${pathStep.uic}-${pathStep.secondary_code}`
   );
-  const operationPointsByNameCh = keyBy(
-    operationalPoints,
-    (opPoint) => `${opPoint.name}-${opPoint.ch}`
-  );
 
   const outputTableData = useMemo(() => {
     const pathStepRows = pathStepsWithPositionOnPath.map((pathStep) => {
@@ -81,7 +77,7 @@ function useOutputTableData(
     });
 
     const suggestedOpRows = suggestedOperationalPoints.map((sugOpPoint, sugOpIndex) => {
-      const opPoint = operationPointsByNameCh[`${sugOpPoint.name}-${sugOpPoint.ch}`];
+      const opPoint = operationalPoints.find((op) => op.id === sugOpPoint.opId);
       if (!opPoint) {
         return sugOpPoint;
       }
