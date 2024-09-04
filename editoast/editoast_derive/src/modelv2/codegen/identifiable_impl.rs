@@ -12,7 +12,7 @@ impl ToTokens for IdentifiableImpl {
         let Self { model, ty, fields } = self;
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::Identifiable<#ty> for #model {
+            impl crate::modelsv2::Identifiable<#ty> for #model {
                 fn get_id(&self) -> #ty {
                     (#(self.#fields.clone()),*)
                 }

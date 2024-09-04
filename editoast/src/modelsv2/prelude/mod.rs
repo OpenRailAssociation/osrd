@@ -83,6 +83,28 @@ impl<M, T, Column> ModelField<M, T, Column> {
     }
 }
 
+pub trait Identifiable<T = i64>
+where
+    T: Clone,
+{
+    fn get_id(&self) -> T;
+}
+
+pub trait PreferredId<T>: Identifiable<T>
+where
+    T: Clone,
+{
+    fn id(&self) -> T {
+        self.get_id()
+    }
+}
+
+impl<T: diesel::Identifiable<Id = i64> + Clone> Identifiable for T {
+    fn get_id(&self) -> i64 {
+        self.clone().id()
+    }
+}
+
 /// Splits a query into chunks to accommodate libpq's maximum number of parameters
 ///
 /// This is a hack around a libpq limitation (cf. <https://github.com/diesel-rs/diesel/issues/2414>).

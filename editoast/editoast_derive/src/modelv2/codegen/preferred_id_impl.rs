@@ -11,7 +11,7 @@ impl ToTokens for PreferredIdImpl {
         let Self { model, ty } = self;
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::PreferredId<#ty> for #model {}
+            impl crate::modelsv2::PreferredId<#ty> for #model {}
         });
     }
 }

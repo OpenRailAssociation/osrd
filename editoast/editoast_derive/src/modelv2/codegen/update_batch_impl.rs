@@ -87,7 +87,7 @@ impl ToTokens for UpdateBatchImpl {
                     conn: &mut editoast_models::DbConnection,
                     ids: I,
                 ) -> crate::error::Result<C> {
-                    use crate::models::Identifiable;
+                    use crate::modelsv2::Identifiable;
                     use crate::modelsv2::Model;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
