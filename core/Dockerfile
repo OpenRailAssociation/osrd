@@ -15,9 +15,14 @@ RUN --mount=type=cache,target=/home/gradle/.gradle \
 #### Running stage
 FROM eclipse-temurin:21 AS running_env
 
+# Versions listed in https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/
+ARG DATADOG_VERSION=1.9.0
+# Versions listed in https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases
+ARG OPENTELEMETRY_VERSION=1.33.6
+
 COPY --from=build_env /osrd-all.jar /app/osrd_core.jar
-ADD 'https://dtdg.co/latest-java-tracer' /app/dd-java-agent.jar
-ADD 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar' /app/opentelemetry-javaagent.jar
+ADD 'https://repo1.maven.org/maven2/com/datadoghq/dd-java-agent/${DATADOG_VERSION}/dd-java-agent-${DATADOG_VERSION}.jar' /app/dd-java-agent.jar
+ADD 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_VERSION}/opentelemetry-javaagent.jar' /app/opentelemetry-javaagent.jar
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
