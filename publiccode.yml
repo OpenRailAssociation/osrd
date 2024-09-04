@@ -1,0 +1,34 @@
+publiccodeYmlVersion: "0.4"
+
+name: OSRD
+
+url: "https://github.com/OpenRailAssociation/osrd"
+
+platforms:
+  - web
+
+developmentStatus: development
+
+softwareType: "standalone/web"
+
+description:
+  en:
+    shortDescription: >
+      OSRD is an open source web application for railway infrastructure design, capacity analysis, timetabling and simulation and short term path request.
+    documentation: https://osrd.fr/en/docs/
+  fr:
+    shortDescription: >
+      OSRD est une application web open source de simulation ferroviaire pour la production horaire et la demande de sillon de dernière minute.
+    documentation: https://osrd.fr/fr/docs/
+
+legal:
+  license: LGPL-3.0-only
+
+logo: https://osrd.fr/en/docs/guides/logo/pictures/fav-osrd-color.svg
+monochromeLogo: https://osrd.fr/en/docs/guides/logo/pictures/fav-osrd-black.svg
+
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - en
+    - fr
