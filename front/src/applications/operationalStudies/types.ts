@@ -17,13 +17,14 @@ import type { RangedValue } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { ArrayElement } from 'utils/types';
 
-interface Step {
+export interface Step {
   uic: number;
+  chCode?: string;
   yard?: string;
   name: string;
-  trigram: string;
-  latitude: number;
-  longitude: number;
+  trigram?: string;
+  latitude?: number;
+  longitude?: number;
   arrivalTime: string;
   departureTime: string;
   duration?: number;
@@ -45,6 +46,11 @@ export type TrainScheduleImportConfig = {
   date: string;
   startTime: string;
   endTime: string;
+};
+
+export type CichDictValue = {
+  ciCode: number | string;
+  chCode?: string;
 };
 
 // Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type

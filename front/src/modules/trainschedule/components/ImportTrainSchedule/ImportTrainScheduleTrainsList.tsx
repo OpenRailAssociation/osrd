@@ -20,6 +20,7 @@ import { useAppDispatch } from 'store';
 
 import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
 import type { RollingstockOpenData2OSRDKeys } from './types';
+import { findValidTrainNameKey } from '../ManageTrainSchedule/helpers/trainNameHelper';
 
 function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
   return (
@@ -47,18 +48,23 @@ const ImportTrainScheduleTrainsList = ({
   upsertTrainSchedules,
 }: ImportTrainScheduleTrainsListProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-
   const rollingStockDict = useMemo(
     () => keyBy(rollingStocks, (rollingStock) => rollingStock.name),
     [rollingStocks]
   );
 
-  // Format the trains list to match the train names provided by the backend
   const formattedTrainsList = useMemo(
     () =>
       trainsList.map(({ rollingStock, ...train }) => {
-        const validTrainName =
-          rollingstockOpenData2OSRD[rollingStock as RollingstockOpenData2OSRDKeys];
+        if (!rollingStock) {
+          return { ...train, rollingStock: '' };
+        }
+
+        const validTrainNameKey = findValidTrainNameKey(rollingStock);
+        const validTrainName = validTrainNameKey
+          ? rollingstockOpenData2OSRD[validTrainNameKey as keyof typeof rollingstockOpenData2OSRD]
+          : rollingStock;
+
         return { ...train, rollingStock: validTrainName };
       }),
     [trainsList]

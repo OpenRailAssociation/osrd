@@ -3,13 +3,16 @@ import { useState, useContext } from 'react';
 import { Download, Search } from '@osrd-project/ui-icons';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import nextId from 'react-id-generator';
 
 import type {
   ImportedTrainSchedule,
   TrainScheduleImportConfig,
+  Step,
+  CichDictValue,
 } from 'applications/operationalStudies/types';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import { type TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard, { type ImportStation } from 'common/StationCard';
@@ -18,6 +21,13 @@ import StationSelector from 'modules/trainschedule/components/ImportTrainSchedul
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatIsoDate } from 'utils/date';
+
+import {
+  handleFileReadingError,
+  handleUnsupportedFileType,
+  processJsonFile,
+  processXmlFile,
+} from '../ManageTrainSchedule/helpers/handleParseFiles';
 
 interface ImportTrainScheduleConfigProps {
   setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
@@ -144,19 +154,177 @@ const ImportTrainScheduleConfig = ({
       } as TrainScheduleImportConfig);
     }
   }
+  // EXTRACT-CI-CH-CODE
+  const extractCiChCode = (code: string) => {
+    const [ciCode, chCode] = code.split('/');
+    return { ciCode: ciCode || '', chCode: chCode || '' };
+  };
+
+  const cleanTimeFormat = (time: string): string => time.replace(/\.0$/, ''); // Remove the '.0' if it's at the end of the time string
+  const buildSteps = (
+    ocpTTs: Element[],
+    cichDict: Record<string, CichDictValue>,
+    startDate: string
+  ): Step[] =>
+    ocpTTs
+      .map((ocpTT, index): Step | null => {
+        // Add explicit typing for return value
+        const ocpRef = ocpTT.getAttribute('ocpRef');
+        const times = ocpTT.getElementsByTagName('times')[0];
+        let departureTime = times?.getAttribute('departure') || '';
+        let arrivalTime = times?.getAttribute('arrival') || '';
+
+        const isLastOcpTT = index === ocpTTs.length - 1;
+
+        if (isLastOcpTT) {
+          arrivalTime = cleanTimeFormat(departureTime) || cleanTimeFormat(arrivalTime); // For the last sequence, arrival equals departure
+          departureTime = cleanTimeFormat(arrivalTime) || cleanTimeFormat(departureTime);
+        } else if (index !== 0) {
+          arrivalTime = times?.getAttribute('arrival') || times?.getAttribute('departure') || '';
+          arrivalTime = cleanTimeFormat(arrivalTime);
+          departureTime = times?.getAttribute('departure') || times?.getAttribute('arrival') || '';
+          departureTime = cleanTimeFormat(departureTime);
+        }
+
+        if (!ocpRef) {
+          console.error('ocpRef is null or undefined');
+          return null;
+        }
+        const operationalPoint = cichDict[ocpRef];
+
+        if (!operationalPoint) {
+          return null; // Skip step if not found in the cichDict
+        }
+        //! We add 87 to the CI code to create the UIC. It is France specific and will break if used in other countries.
+        const uic = Number(`87${operationalPoint.ciCode}`); // Add 87 to the CI code to create the UIC
+        const { chCode } = operationalPoint;
+        const formattedArrivalTime = `${startDate} ${arrivalTime}`;
+        const formattedDepartureTime = `${startDate} ${departureTime}`;
+
+        return {
+          id: nextId(),
+          uic,
+          chCode,
+          name: ocpRef,
+          arrivalTime: cleanTimeFormat(formattedArrivalTime),
+          departureTime: cleanTimeFormat(formattedDepartureTime),
+        } as Step;
+      })
+      .filter((step): step is Step => step !== null);
+
+  const mapTrainNames = (trainSchedules: ImportedTrainSchedule[], trains: Element[]) => {
+    const trainPartToTrainMap: Record<string, string> = {};
+
+    trains.forEach((train) => {
+      const trainPartRef = train.getElementsByTagName('trainPartRef')[0]?.getAttribute('ref');
+      const trainName = train.getAttribute('name') || '';
+      if (trainPartRef) {
+        trainPartToTrainMap[trainPartRef] = trainName;
+      }
+    });
+
+    const updatedTrainSchedules = trainSchedules.map((schedule) => {
+      const mappedTrainNumber = trainPartToTrainMap[schedule.trainNumber] || schedule.trainNumber;
+
+      return {
+        ...schedule,
+        trainNumber: mappedTrainNumber,
+      };
+    });
+
+    return updatedTrainSchedules;
+  };
+
+  const parseRailML = async (xmlDoc: Document): Promise<ImportedTrainSchedule[]> => {
+    const trainSchedules: ImportedTrainSchedule[] = [];
+
+    // Initialize localCichDict
+    const localCichDict: Record<string, CichDictValue> = {};
+
+    const infrastructures = Array.from(xmlDoc.getElementsByTagName('infrastructure'));
+
+    infrastructures.forEach((infrastructure) => {
+      const ocps = Array.from(infrastructure.getElementsByTagName('ocp'));
+
+      ocps.forEach((ocp) => {
+        const id = ocp.getAttribute('id');
+        const code = ocp.getAttribute('code');
+
+        if (id && code) {
+          const { ciCode, chCode } = extractCiChCode(code);
+          localCichDict[id] = { ciCode, chCode };
+        }
+      });
+    });
+
+    const trainParts = Array.from(xmlDoc.getElementsByTagName('trainPart'));
+    const period = xmlDoc.getElementsByTagName('timetablePeriod')[0];
+    const startDate = period ? period.getAttribute('startDate') : null;
+
+    if (!startDate) {
+      console.error('Start Date not found in the timetablePeriod.');
+      return trainSchedules;
+    }
+
+    trainParts.forEach((train) => {
+      const trainNumber = train.getAttribute('id') || '';
+      const ocpSteps = Array.from(train.getElementsByTagName('ocpTT'));
+      const formationTT = train.getElementsByTagName('formationTT')[0];
+      const rollingStockViriato = formationTT?.getAttribute('formationRef');
+      const firstOcpTT = ocpSteps[0];
+      const firstDepartureTime = firstOcpTT
+        .getElementsByTagName('times')[0]
+        ?.getAttribute('departure');
+
+      const firstDepartureTimeformatted = firstDepartureTime && cleanTimeFormat(firstDepartureTime);
+
+      const lastOcpTT = ocpSteps[ocpSteps.length - 1];
+      const lastDepartureTime =
+        lastOcpTT.getElementsByTagName('times')[0]?.getAttribute('departure') ||
+        lastOcpTT.getElementsByTagName('times')[0]?.getAttribute('arrival');
+      const lastDepartureTimeformatted = lastDepartureTime && cleanTimeFormat(lastDepartureTime);
+
+      // Build steps using the fully populated localCichDict
+      const adaptedSteps = buildSteps(ocpSteps, localCichDict, startDate);
+
+      const trainSchedule: ImportedTrainSchedule = {
+        trainNumber,
+        rollingStock: rollingStockViriato, // RollingStocks in viriato files rarely have the correct format
+        departureTime: `${startDate} ${firstDepartureTimeformatted}`,
+        arrivalTime: `${startDate} ${lastDepartureTimeformatted}`,
+        departure: '', // Default for testing
+        steps: adaptedSteps,
+      };
+
+      trainSchedules.push(trainSchedule);
+    });
+    const trains = Array.from(xmlDoc.getElementsByTagName('train'));
+    const updatedTrainSchedules = mapTrainNames(trainSchedules, trains);
+
+    return updatedTrainSchedules;
+  };
 
   const importFile = async (file: File) => {
     closeModal();
     setTrainsList([]);
 
-    const text = await file.text();
-    const importedTrainSchedules: TrainScheduleBase[] = JSON.parse(text);
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.split('.').pop();
 
-    if (!isEmpty(importedTrainSchedules)) {
-      setTrainsJsonData(importedTrainSchedules);
+    try {
+      const fileContent = await file.text();
+
+      if (fileExtension === 'json') {
+        processJsonFile(fileContent, setTrainsJsonData, dispatch);
+      } else if (fileExtension === 'xml' || fileExtension === 'railml') {
+        processXmlFile(fileContent, parseRailML, updateTrainSchedules, dispatch);
+      } else {
+        handleUnsupportedFileType(dispatch);
+      }
+    } catch (error) {
+      handleFileReadingError(error as Error);
     }
   };
-
   return (
     <>
       <div className="container-fluid row no-gutters mb-2">

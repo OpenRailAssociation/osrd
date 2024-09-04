@@ -9,12 +9,29 @@ import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils
 export function generateTrainSchedulesPayloads(
   trains: ImportedTrainSchedule[]
 ): TrainScheduleBase[] {
-  return trains.map((train) => {
+  return trains.reduce((payloads, train) => {
+    // Check if the first step has a valid UIC
+    const firstStep = train.steps[0];
+    if (!firstStep || !firstStep.uic) {
+      console.warn(`Skipping train ${train.trainNumber} due to invalid first step UIC`);
+      return payloads; // Skip this train
+    }
+
     const { path, schedule } = train.steps.reduce(
       (acc, step, index) => {
         const stepId = nextId();
+        if (!step.uic) {
+          console.error(`Invalid UIC for step ${step.name}`);
+          return acc; // Skip invalid step
+        }
+        if (!step.chCode) {
+          console.error(`Invalid CH code for step ${step.name}`);
+          return acc; // Skip invalid step
+        }
 
-        acc.path.push({ id: stepId, uic: Number(step.uic) });
+        acc.path.push({ id: stepId, uic: Number(step.uic), secondary_code: step.chCode });
+
+        // Skip the first step in the schedule
         if (index !== 0) {
           const timeDifferenceInSeconds = calculateTimeDifferenceInSeconds(
             train.departureTime,
@@ -23,13 +40,11 @@ export function generateTrainSchedulesPayloads(
           const schedulePoint: NonNullable<TrainScheduleBase['schedule']>[number] = {
             at: stepId,
             arrival: formatDurationAsISO8601(timeDifferenceInSeconds),
-            stop_for: null,
+            stop_for: step.duration ? `PT${step.duration}S` : undefined,
           };
-          if (step.duration || index === train.steps.length - 1) {
-            schedulePoint.stop_for = `PT${step.duration || 0}S`;
-          }
           acc.schedule.push(schedulePoint);
         }
+
         return acc;
       },
       {
@@ -37,13 +52,15 @@ export function generateTrainSchedulesPayloads(
         schedule: [] as NonNullable<TrainScheduleBase['schedule']>,
       }
     );
-    return {
+
+    payloads.push({
       path,
       train_name: train.trainNumber,
       rolling_stock_name: train.rollingStock || '',
       constraint_distribution: 'MARECO',
       schedule,
-      start_time: formatToIsoDate(train.departureTime),
-    };
-  });
+      start_time: formatToIsoDate(train.departureTime, false),
+    });
+    return payloads;
+  }, [] as TrainScheduleBase[]);
 }
