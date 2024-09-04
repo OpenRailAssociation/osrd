@@ -10,10 +10,13 @@ import static fr.sncf.osrd.utils.Helpers.chunkPathFromRoutes;
 import static fr.sncf.osrd.utils.Helpers.fullInfraFromRJS;
 import static fr.sncf.osrd.utils.units.Distance.fromMeters;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict;
+import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.conflicts.ConflictsKt;
 import fr.sncf.osrd.conflicts.TrainRequirements;
@@ -31,6 +34,7 @@ import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.Helpers;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.LongStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -436,6 +440,38 @@ public class ConflictDetectionTest {
         var conflicts = ConflictsKt.detectConflicts(List.of(reqWithStop, reqOvertaking));
         assert (hasRoutingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
         assert (hasSpacingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+    }
+
+    /*
+    Test that merging conflicts groups entries by time as expected. The first two
+    conflicts overlap (zones "A" and "B"), the last one is isolated (zone "C").
+    */
+    @Test
+    public void testConflictMerge() {
+        var reqs = List.of(
+                new TrainRequirements(0, List.of(new ResultTrain.SpacingRequirement("A", 10, 20, true)), List.of()),
+                new TrainRequirements(0, List.of(new ResultTrain.SpacingRequirement("B", 20, 30, true)), List.of()),
+                new TrainRequirements(0, List.of(new ResultTrain.SpacingRequirement("C", 40, 50, true)), List.of()),
+                new TrainRequirements(1, List.of(new ResultTrain.SpacingRequirement("A", 15, 25, true)), List.of()),
+                new TrainRequirements(1, List.of(new ResultTrain.SpacingRequirement("B", 25, 35, true)), List.of()),
+                new TrainRequirements(1, List.of(new ResultTrain.SpacingRequirement("C", 45, 55, true)), List.of()));
+
+        var conflicts = ConflictsKt.detectConflicts(reqs);
+
+        var expectedConflicts = List.of(
+                new Conflict(
+                        LongStream.of(0, 1).boxed().toList(),
+                        10,
+                        35,
+                        SPACING,
+                        List.of(new ConflictRequirement("A", 10, 25), new ConflictRequirement("B", 20, 35))),
+                new Conflict(
+                        LongStream.of(0, 1).boxed().toList(),
+                        40,
+                        55,
+                        SPACING,
+                        List.of(new ConflictRequirement("C", 40, 55))));
+        assertThat(conflicts).usingRecursiveComparison().isEqualTo(expectedConflicts);
     }
 
     private static TrainRequirements convertRequirements(long trainId, double offset, ResultTrain train) {

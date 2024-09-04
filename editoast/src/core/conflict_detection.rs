@@ -13,6 +13,7 @@ use super::simulation::SpacingRequirement;
 editoast_common::schemas! {
     ConflictDetectionResponse,
     Conflict,
+    ConflictRequirement,
 }
 
 #[derive(Debug, Serialize)]
@@ -47,6 +48,19 @@ pub struct Conflict {
     /// Type of the conflict
     #[schema(inline)]
     pub conflict_type: ConflictType,
+    /// List of requirements causing the conflict
+    pub requirements: Vec<ConflictRequirement>,
+}
+
+/// Unmet requirement causing a conflict.
+///
+/// The start and end time describe the conflicting time span (not the full
+/// requirement's time span).
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+pub struct ConflictRequirement {
+    pub zone: String,
+    pub start_time: DateTime<Utc>,
+    pub end_time: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]

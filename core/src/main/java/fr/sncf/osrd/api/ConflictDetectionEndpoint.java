@@ -90,11 +90,31 @@ public class ConflictDetectionEndpoint implements Take {
             @Json(name = "conflict_type")
             public final ConflictType conflictType;
 
-            public Conflict(Collection<Long> trainIds, double startTime, double endTime, ConflictType conflictType) {
+            public final transient Collection<ConflictRequirement> requirements;
+
+            public Conflict(
+                    Collection<Long> trainIds,
+                    double startTime,
+                    double endTime,
+                    ConflictType conflictType,
+                    Collection<ConflictRequirement> requirements) {
                 this.trainIds = trainIds;
                 this.startTime = startTime;
                 this.endTime = endTime;
                 this.conflictType = conflictType;
+                this.requirements = requirements;
+            }
+        }
+
+        public static class ConflictRequirement {
+            public final String zone;
+            public final double startTime;
+            public final double endTime;
+
+            public ConflictRequirement(String zone, double startTime, double endTime) {
+                this.zone = zone;
+                this.startTime = startTime;
+                this.endTime = endTime;
             }
         }
 

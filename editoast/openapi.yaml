@@ -2953,6 +2953,7 @@ components:
       - start_time
       - end_time
       - conflict_type
+      - requirements
       properties:
         conflict_type:
           type: string
@@ -2963,6 +2964,11 @@ components:
           type: string
           format: date-time
           description: Datetime of the end of the conflict
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConflictRequirement'
+          description: List of requirements causing the conflict
         start_time:
           type: string
           format: date-time
@@ -2987,6 +2993,7 @@ components:
             - start_time
             - end_time
             - conflict_type
+            - requirements
             properties:
               conflict_type:
                 type: string
@@ -2997,6 +3004,11 @@ components:
                 type: string
                 format: date-time
                 description: Datetime of the end of the conflict
+              requirements:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConflictRequirement'
+                description: List of requirements causing the conflict
               start_time:
                 type: string
                 format: date-time
@@ -3008,6 +3020,26 @@ components:
                   format: int64
                 description: List of train ids involved in the conflict
           description: List of conflicts detected
+    ConflictRequirement:
+      type: object
+      description: |-
+        Unmet requirement causing a conflict.
+
+        The start and end time describe the conflicting time span (not the full
+        requirement's time span).
+      required:
+      - zone
+      - start_time
+      - end_time
+      properties:
+        end_time:
+          type: string
+          format: date-time
+        start_time:
+          type: string
+          format: date-time
+        zone:
+          type: string
     CopyOperation:
       type: object
       description: JSON Patch 'copy' operation representation

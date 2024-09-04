@@ -4,6 +4,7 @@ import com.carrotsearch.hppc.IntArrayList
 import com.squareup.moshi.Json
 import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict
 import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType
+import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import kotlin.math.max
@@ -171,12 +172,15 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         // look for requirement times overlaps.
         // as spacing requirements are exclusive, any overlap is a conflict
         val res = mutableListOf<Conflict>()
-        for (requirements in spacingZoneRequirements.values) {
-            for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
+        for (entry in spacingZoneRequirements) {
+            for (conflictGroup in detectRequirementConflicts(entry.value) { _, _ -> true }) {
                 val trains = conflictGroup.map { it.trainId }
                 val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
                 val endTime = conflictGroup.maxBy { it.endTime }.endTime
-                res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
+                val conflictReq = ConflictRequirement(entry.key, beginTime, endTime)
+                res.add(
+                    Conflict(trains, beginTime, endTime, ConflictType.SPACING, listOf(conflictReq))
+                )
             }
         }
         return res
@@ -185,13 +189,16 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
     private fun detectRoutingConflicts(): List<Conflict> {
         // for each zone, check compatibility of overlapping requirements
         val res = mutableListOf<Conflict>()
-        for (requirements in routingZoneRequirements.values) {
+        for (entry in routingZoneRequirements) {
             for (conflictGroup in
-                detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
+                detectRequirementConflicts(entry.value) { a, b -> a.config != b.config }) {
                 val trains = conflictGroup.map { it.trainId }
                 val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
                 val endTime = conflictGroup.maxBy { it.endTime }.endTime
-                res.add(Conflict(trains, beginTime, endTime, ConflictType.ROUTING))
+                val conflictReq = ConflictRequirement(entry.key, beginTime, endTime)
+                res.add(
+                    Conflict(trains, beginTime, endTime, ConflictType.ROUTING, listOf(conflictReq))
+                )
             }
         }
         return res
@@ -218,9 +225,16 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         for (otherReq in requirements) {
             val beginTime = max(req.beginTime, otherReq.beginTime)
             val endTime = min(req.endTime, otherReq.endTime)
+            val conflictReq = ConflictRequirement(req.zone, beginTime, endTime)
             if (beginTime < endTime)
                 res.add(
-                    Conflict(listOf(otherReq.trainId), beginTime, endTime, ConflictType.SPACING)
+                    Conflict(
+                        listOf(otherReq.trainId),
+                        beginTime,
+                        endTime,
+                        ConflictType.SPACING,
+                        listOf(conflictReq)
+                    )
                 )
         }
 
@@ -238,9 +252,16 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
                 if (otherReq.config == zoneReqConfig) continue
                 val beginTime = max(req.beginTime, otherReq.beginTime)
                 val endTime = min(zoneReq.endTime, otherReq.endTime)
+                val conflictReq = ConflictRequirement(zoneReq.zone, beginTime, endTime)
                 if (beginTime < endTime)
                     res.add(
-                        Conflict(listOf(otherReq.trainId), beginTime, endTime, ConflictType.ROUTING)
+                        Conflict(
+                            listOf(otherReq.trainId),
+                            beginTime,
+                            endTime,
+                            ConflictType.ROUTING,
+                            listOf(conflictReq)
+                        )
                     )
             }
         }
@@ -421,7 +442,11 @@ enum class EventType {
     END
 }
 
-class Event(val eventType: EventType, val time: Double) : Comparable<Event> {
+class Event(
+    val eventType: EventType,
+    val time: Double,
+    val requirements: Collection<ConflictRequirement>
+) : Comparable<Event> {
     override fun compareTo(other: Event): Int {
         val timeDelta = this.time.compareTo(other.time)
         if (timeDelta != 0) return timeDelta
@@ -443,28 +468,32 @@ fun mergeMap(
         // create an event list and sort it
         val events = mutableListOf<Event>()
         for (conflict in conflicts) {
-            events.add(Event(EventType.BEGIN, conflict.startTime))
-            events.add(Event(EventType.END, conflict.endTime))
+            events.add(Event(EventType.BEGIN, conflict.startTime, conflict.requirements))
+            events.add(Event(EventType.END, conflict.endTime, conflict.requirements))
         }
 
         events.sort()
         var eventCount = 0
         var eventBeginning = 0.0
+        var conflictReqs = mutableListOf<ConflictRequirement>()
         for (event in events) {
             when (event.eventType) {
                 EventType.BEGIN -> {
                     if (++eventCount == 1) eventBeginning = event.time
+                    conflictReqs.addAll(event.requirements)
                 }
                 EventType.END -> {
-                    if (--eventCount == 0)
-                        newConflicts.add(
-                            Conflict(
-                                trainIds.toMutableList(),
-                                eventBeginning,
-                                event.time,
-                                conflictType
-                            )
+                    if (--eventCount > 0) continue
+                    newConflicts.add(
+                        Conflict(
+                            trainIds.toMutableList(),
+                            eventBeginning,
+                            event.time,
+                            conflictType,
+                            conflictReqs
                         )
+                    )
+                    conflictReqs = mutableListOf()
                 }
             }
         }
