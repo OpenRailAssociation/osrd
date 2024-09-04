@@ -15,9 +15,9 @@ RUN --mount=type=cache,target=/home/gradle/.gradle \
 #### Running stage
 FROM eclipse-temurin:21 AS running_env
 
-COPY --from=build_env /osrd-all.jar /app/osrd_core.jar
 ADD 'https://dtdg.co/latest-java-tracer' /app/dd-java-agent.jar
 ADD 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar' /app/opentelemetry-javaagent.jar
+COPY --from=build_env /osrd-all.jar /app/osrd_core.jar
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
