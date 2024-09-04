@@ -101,12 +101,12 @@ class STDCMGraph(
     override fun getAdjacentEdges(node: STDCMNode): Collection<STDCMEdge> {
         val res = ArrayList<STDCMEdge>()
         val maxMarginDuration = estimateMaxMarginDuration(node)
-        val baseNodeCost = node.timeSinceDeparture + node.remainingTimeEstimation
+        val baseNodeCost = node.timeData.timeSinceDeparture + node.remainingTimeEstimation
         val visitedNodesParameters =
             VisitedNodes.Parameters(
                 null,
-                node.time,
-                node.maximumAddedDelay,
+                node.timeData.earliestReachableTime,
+                node.timeData.maxDepartureDelayingWithoutConflict,
                 maxMarginDuration,
                 baseNodeCost
             )
@@ -155,10 +155,13 @@ class STDCMGraph(
             val edge = node.previousEdge ?: return maxTime
 
             val latestTimeWithMaxShift =
-                edge.timeStart + edge.totalTime + edge.maximumAddedDelayAfter
+                edge.timeData.earliestReachableTime +
+                    edge.totalTime +
+                    edge.timeData.maxDepartureDelayingWithoutConflict
 
             // Only consider this specific edge, not the rest of the path
-            val maxDelayAddedOnEdge = max(0.0, edge.timeNextOccupancy - latestTimeWithMaxShift)
+            val maxDelayAddedOnEdge =
+                max(0.0, edge.timeData.timeOfNextConflictAtLocation - latestTimeWithMaxShift)
             maxTime = min(maxTime, maxDelayAddedOnEdge)
 
             remainingDistance -= edge.length.distance

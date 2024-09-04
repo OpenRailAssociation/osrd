@@ -24,7 +24,6 @@ import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-import kotlin.collections.HashSet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -159,7 +158,7 @@ class STDCMPathfinding(
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val endNode = queue.poll() ?: return null
             progressLogger.processNode(endNode)
-            if (endNode.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
+            if (endNode.timeData.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
                 return null
             if (endNode.waypointIndex >= graph.steps.size - 1) {
                 return buildResult(endNode)
@@ -227,11 +226,16 @@ class STDCMPathfinding(
             for (explorer in extended) {
                 val node =
                     STDCMNode(
-                        startTime,
+                        TimeData(
+                            earliestReachableTime = startTime,
+                            maxDepartureDelayingWithoutConflict = maxDepartureDelay,
+                            totalDepartureDelay = 0.0,
+                            timeOfNextConflictAtLocation = 0.0,
+                            totalRunningTime = 0.0,
+                            totalStopTime = 0.0,
+                        ),
                         0.0,
                         explorer,
-                        0.0,
-                        maxDepartureDelay,
                         null,
                         0,
                         location.offset,
@@ -239,7 +243,6 @@ class STDCMPathfinding(
                         firstStep.plannedTimingData,
                         null,
                         0.0,
-                        graph.bestPossibleTime
                     )
                 res.add(node)
             }

@@ -8,6 +8,7 @@ import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMNode
+import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Distance
@@ -215,13 +216,21 @@ class STDCMHeuristicTests {
                     newExplorer.getLookahead().all { lookahead.contains(it) }
                 }
         }
+
+        val defaultTimeData =
+            TimeData(
+                earliestReachableTime = 0.0,
+                maxDepartureDelayingWithoutConflict = 0.0,
+                totalDepartureDelay = 0.0,
+                timeOfNextConflictAtLocation = 0.0,
+                totalRunningTime = 0.0,
+                totalStopTime = 0.0,
+            )
         val defaultNode =
             STDCMNode(
-                0.0,
+                defaultTimeData,
                 0.0,
                 explorer,
-                0.0,
-                0.0,
                 null,
                 0,
                 Offset(0.meters),
@@ -229,17 +238,12 @@ class STDCMHeuristicTests {
                 null,
                 null,
                 0.0,
-                0.0
             )
         val defaultEdge =
             STDCMEdge(
+                defaultTimeData,
                 explorer,
                 explorer,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
-                0.0,
                 defaultNode,
                 Offset(0.meters),
                 0,
