@@ -35,10 +35,9 @@ pub use rolling_stock_model::RollingStockModel;
 pub use scenario::Scenario;
 pub use study::Study;
 
-pub use crate::models::PreferredId;
-
 editoast_common::schemas! {
     infra::schemas(),
+    projects::schemas(),
     rolling_stock_model::schemas(),
 }
 

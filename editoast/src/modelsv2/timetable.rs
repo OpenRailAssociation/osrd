@@ -6,7 +6,7 @@ use diesel_async::RunQueryDsl;
 use std::ops::DerefMut;
 
 use crate::error::Result;
-use crate::models::Identifiable;
+use crate::modelsv2::Identifiable;
 use crate::modelsv2::{DeleteStatic, Retrieve};
 use crate::Exists;
 use editoast_models::tables::timetable::dsl;

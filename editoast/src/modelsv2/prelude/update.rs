@@ -5,7 +5,7 @@ use editoast_models::DbConnection;
 
 use crate::error::EditoastError;
 use crate::error::Result;
-use crate::models::PreferredId;
+use crate::modelsv2::PreferredId;
 
 use super::Model;
 

@@ -7,7 +7,6 @@ mod error;
 mod generated_data;
 mod infra_cache;
 mod map;
-mod models;
 mod modelsv2;
 mod redis_utils;
 mod views;
