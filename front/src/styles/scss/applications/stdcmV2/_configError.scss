@@ -1,0 +1,34 @@
+.stdcm-config-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8em;
+
+  span.icon {
+    padding: 0.5em;
+    border-radius: 50%;
+    background-color: white;
+    color: var(--danger);
+    border: 2px solid var(--danger);
+  }
+
+  h2 {
+    color: rgba(0, 0, 0, 1);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0, 2px;
+    text-align: center;
+    line-height: 2rem;
+    margin: 2.375rem 0;
+  }
+
+  p {
+    color: rgb(49, 46, 43);
+    font-size: 1.125rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 1.5rem;
+  }
+}

@@ -96,7 +96,7 @@ const StcdmResultsTable = ({
                   <td className="weight" style={{ color: isLastStep ? '#797671' : '#312E2B' }}>
                     {!isFirstStep && !isLastStep
                       ? '='
-                      : `${Math.floor(stdcmData.rollingStock.mass / 1000)} t`}
+                      : `${Math.floor(stdcmData.rollingStock.mass / 1000)}t`}
                   </td>
                   <td style={{ color: isLastStep ? '#797671' : '#312E2B' }}>
                     {!isFirstStep && !isLastStep ? '=' : stdcmData.rollingStock.metadata?.reference}

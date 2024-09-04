@@ -1,4 +1,6 @@
 .stdcm-v2 {
+  font-family: 'IBM Plex Sans';
+
   /* 
   We set the cursor to default to avoid the pointer cursor that appears due to role="button" on the div.
   The role="button" makes the div appear clickable, which causes the cursor to change to a pointer on hover.

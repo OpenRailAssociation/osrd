@@ -1,14 +1,14 @@
 import { StyleSheet, Font } from '@react-pdf/renderer';
 
-import IBMPlexMonoBold from 'assets/simulationReportSheet/fonts/IBM-Plex-Mono/IBMPlexMono-Bold.ttf';
-import IBMPlexMonoMedium from 'assets/simulationReportSheet/fonts/IBM-Plex-Mono/IBMPlexMono-Medium.ttf';
-import IBMPlexMonoRegular from 'assets/simulationReportSheet/fonts/IBM-Plex-Mono/IBMPlexMono-Regular.ttf';
-import IBMPlexMonoSemiBold from 'assets/simulationReportSheet/fonts/IBM-Plex-Mono/IBMPlexMono-SemiBold.ttf';
-import IBMPlexSansBold from 'assets/simulationReportSheet/fonts/IBM-Plex-Sans/IBMPlexSans-Bold.ttf';
-import IBMPlexSansItalic from 'assets/simulationReportSheet/fonts/IBM-Plex-Sans/IBMPlexSans-Italic.ttf';
-import IBMPlexSansMedium from 'assets/simulationReportSheet/fonts/IBM-Plex-Sans/IBMPlexSans-Medium.ttf';
-import IBMPlexSansRegular from 'assets/simulationReportSheet/fonts/IBM-Plex-Sans/IBMPlexSans-Regular.ttf';
-import IBMPlexSansSemiBold from 'assets/simulationReportSheet/fonts/IBM-Plex-Sans/IBMPlexSans-SemiBold.ttf';
+import IBMPlexMonoBold from 'assets/newFonts/IBM-Plex-Mono/IBMPlexMono-Bold.ttf';
+import IBMPlexMonoMedium from 'assets/newFonts/IBM-Plex-Mono/IBMPlexMono-Medium.ttf';
+import IBMPlexMonoRegular from 'assets/newFonts/IBM-Plex-Mono/IBMPlexMono-Regular.ttf';
+import IBMPlexMonoSemiBold from 'assets/newFonts/IBM-Plex-Mono/IBMPlexMono-SemiBold.ttf';
+import IBMPlexSansBold from 'assets/newFonts/IBM-Plex-Sans/IBMPlexSans-Bold.ttf';
+import IBMPlexSansItalic from 'assets/newFonts/IBM-Plex-Sans/IBMPlexSans-Italic.ttf';
+import IBMPlexSansMedium from 'assets/newFonts/IBM-Plex-Sans/IBMPlexSans-Medium.ttf';
+import IBMPlexSansRegular from 'assets/newFonts/IBM-Plex-Sans/IBMPlexSans-Regular.ttf';
+import IBMPlexSansSemiBold from 'assets/newFonts/IBM-Plex-Sans/IBMPlexSans-SemiBold.ttf';
 
 Font.register({
   family: 'IBM Plex Sans',
