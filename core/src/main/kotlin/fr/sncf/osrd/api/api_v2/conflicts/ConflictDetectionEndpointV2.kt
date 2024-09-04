@@ -52,7 +52,14 @@ private fun makeConflictDetectionResponse(
                 it.trainIds,
                 startTime.plus(Duration.ofMillis((it.startTime * 1000).toLong())),
                 startTime.plus(Duration.ofMillis((it.endTime * 1000).toLong())),
-                it.conflictType
+                it.conflictType,
+                it.requirements.map {
+                    ConflictRequirement(
+                        it.zone,
+                        startTime.plus(Duration.ofMillis((it.startTime * 1000).toLong())),
+                        startTime.plus(Duration.ofMillis((it.endTime * 1000).toLong())),
+                    )
+                }
             )
         }
     )

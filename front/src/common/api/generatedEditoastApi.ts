@@ -2744,10 +2744,17 @@ export type TimetableDetailedResult = {
   timetable_id: number;
   train_ids: number[];
 };
+export type ConflictRequirement = {
+  end_time: string;
+  start_time: string;
+  zone: string;
+};
 export type Conflict = {
   conflict_type: 'Spacing' | 'Routing';
   /** Datetime of the end of the conflict */
   end_time: string;
+  /** List of requirements causing the conflict */
+  requirements: ConflictRequirement[];
   /** Datetime of the start of the conflict */
   start_time: string;
   /** List of train ids involved in the conflict */

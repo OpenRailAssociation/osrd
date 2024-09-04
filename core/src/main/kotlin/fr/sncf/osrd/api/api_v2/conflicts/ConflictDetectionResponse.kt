@@ -18,6 +18,13 @@ class Conflict(
     @Json(name = "end_time") val endTime: ZonedDateTime,
     @Json(name = "conflict_type")
     val conflictType: ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType,
+    @Json(name = "requirements") val requirements: Collection<ConflictRequirement>,
+)
+
+class ConflictRequirement(
+    @Json(name = "zone") val zone: String,
+    @Json(name = "start_time") val startTime: ZonedDateTime,
+    @Json(name = "end_time") val endTime: ZonedDateTime,
 )
 
 val conflictResponseAdapter: JsonAdapter<ConflictDetectionResponse> =
