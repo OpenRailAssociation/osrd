@@ -19,8 +19,8 @@
 
 ## What is OSRD?
 
-OSRD is an open source web application for railway infrastructure design,
-capacity analysis, timetabling and simulation.
+OSRD (Open Source Railway Designer) is an open source web application for railway infrastructure design,
+capacity analysis, timetabling and simulation and short term path request.
 
 It's free and open-source forever!
 
