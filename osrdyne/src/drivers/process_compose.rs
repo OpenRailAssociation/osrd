@@ -104,6 +104,7 @@ pub struct PCDriver {
 impl WorkerDriver for PCDriver {
     fn get_or_create_worker_group(
         &mut self,
+        _queue_name: String,
         worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move {

@@ -15,19 +15,70 @@ use k8s_openapi::{
     },
     apimachinery::pkg::apis::meta::v1::LabelSelector,
 };
+use keda::MetricType;
 use kube::{api::ObjectMeta, Client};
+use log::debug;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, future::Future, pin::Pin};
+use std::{
+    collections::{BTreeMap, HashMap},
+    future::Future,
+    pin::Pin,
+};
 use uuid::Uuid;
 
+mod keda;
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct AutoscalingOptions {
+pub struct HPAOptions {
     /// The minimum number of replicas
     pub min_replicas: i32,
+
     /// The maximum number of replicas
     pub max_replicas: i32,
+
     /// The target CPU utilization percentage
     pub target_cpu_utilization_percentage: i32,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct KedaOptions {
+    /// Polling Interval in seconds
+    pub polling_interval: i32,
+
+    /// Cooldown Period in seconds
+    pub cooldown_period: i32,
+
+    /// Min Replicas for the HPA of the ScaledObject
+    pub min_replicas: i32,
+
+    /// Max Replicas for the HPA of the ScaledObject
+    pub max_replicas: i32,
+
+    /// Amqp Host
+    pub amqp_host: String,
+
+    /// Mode
+    pub mode: String,
+
+    /// Value
+    pub value: String,
+
+    /// Activation Value
+    pub activation_value: String,
+
+    /// Use cached metrics
+    pub use_cached_metrics: bool,
+
+    /// Metric Type
+    pub metric_type: MetricType,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(tag = "type")]
+pub enum AutoscalingOptions {
+    Hpa(HPAOptions),
+    Keda(KedaOptions),
+    NoScaling,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -102,9 +153,120 @@ impl KubernetesDriver {
     }
 }
 
+impl KubernetesDriver {
+    async fn create_hpa_autoscaler(
+        &self,
+        worker_key: Key,
+        hpa: HPAOptions,
+        worker_deployment_name: String,
+    ) -> Result<(), super::worker_driver::DriverError> {
+        let hpa = HorizontalPodAutoscaler {
+            metadata: ObjectMeta {
+                name: Some(worker_deployment_name.clone()),
+                namespace: Some(self.options.namespace.clone()),
+                labels: Some({
+                    let mut labels = BTreeMap::new();
+                    labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
+                    labels.insert(LABEL_WORKER_ID.to_owned(), worker_key.to_string());
+                    labels
+                }),
+                ..Default::default()
+            },
+            spec: Some({
+                k8s_openapi::api::autoscaling::v1::HorizontalPodAutoscalerSpec {
+                    scale_target_ref:
+                        k8s_openapi::api::autoscaling::v1::CrossVersionObjectReference {
+                            api_version: Some("apps/v1".to_string()),
+                            kind: "Deployment".to_string(),
+                            name: worker_deployment_name.clone(),
+                        },
+                    min_replicas: Some(hpa.min_replicas),
+                    max_replicas: hpa.max_replicas,
+                    target_cpu_utilization_percentage: Some(hpa.target_cpu_utilization_percentage),
+                }
+            }),
+            ..Default::default()
+        };
+
+        debug!("Creating HPA: {:?}", hpa);
+
+        kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
+            self.client.clone(),
+            &self.options.namespace,
+        )
+        .create(&kube::api::PostParams::default(), &hpa)
+        .await
+        .map_err(super::worker_driver::DriverError::KubernetesError)?;
+
+        Ok(())
+    }
+
+    async fn create_keda_autoscaler(
+        &self,
+        worker_key: Key,
+        keda: KedaOptions,
+        queue_name: String,
+        worker_deployment_name: String,
+    ) -> Result<(), super::worker_driver::DriverError> {
+        let scaled_object = keda::ScaledObject {
+            metadata: ObjectMeta {
+                name: Some(worker_deployment_name.clone()),
+                namespace: Some(self.options.namespace.clone()),
+                labels: Some({
+                    let mut labels = BTreeMap::new();
+                    labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
+                    labels.insert(LABEL_WORKER_ID.to_owned(), worker_key.to_string());
+                    labels
+                }),
+                ..Default::default()
+            },
+            spec: keda::ScaledObjectSpec {
+                scale_target_ref: keda::ScaleTargetRef {
+                    api_version: "apps/v1".to_string(),
+                    kind: "Deployment".to_string(),
+                    name: worker_deployment_name.clone(),
+                    env_source_container_name: None,
+                },
+                polling_interval: Some(keda.polling_interval),
+                cooldown_period: Some(keda.cooldown_period),
+                initial_cooldown_period: None,
+                idle_replica_count: None,
+                min_replica_count: Some(keda.min_replicas),
+                max_replicas_count: Some(keda.max_replicas),
+                triggers: vec![keda::Trigger {
+                    type_: "rabbitmq".to_string(),
+                    use_cached_metrics: keda.use_cached_metrics,
+                    metric_type: keda.metric_type.clone(),
+                    metadata: {
+                        let mut metadata = HashMap::new();
+                        metadata.insert("host".to_string(), keda.amqp_host.clone());
+                        metadata.insert("protocol".to_string(), "amqp".to_string());
+                        metadata.insert("mode".to_string(), keda.mode.clone());
+                        metadata.insert("value".to_string(), keda.value.clone());
+                        metadata
+                            .insert("activationValue".to_string(), keda.activation_value.clone());
+                        metadata.insert("queueName".to_string(), queue_name);
+                        metadata
+                    },
+                }],
+            },
+        };
+
+        debug!("Creating Keda ScaledObject: {:?}", scaled_object);
+
+        kube::api::Api::namespaced(self.client.clone(), &self.options.namespace)
+            .create(&kube::api::PostParams::default(), &scaled_object)
+            .await
+            .map_err(super::worker_driver::DriverError::KubernetesError)?;
+
+        Ok(())
+    }
+}
+
 impl WorkerDriver for KubernetesDriver {
     fn get_or_create_worker_group(
         &mut self,
+        queue_name: String,
         worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move {
@@ -141,6 +303,11 @@ impl WorkerDriver for KubernetesDriver {
                 env.push(EnvVar {
                     name: "WORKER_AMQP_URI".to_string(),
                     value: Some(self.amqp_uri.clone()),
+                    ..Default::default()
+                });
+                env.push(EnvVar {
+                    name: "WORKEY_ID_USE_HOSTNAME".to_string(),
+                    value: Some("1".to_string()),
                     ..Default::default()
                 });
                 env
@@ -208,52 +375,36 @@ impl WorkerDriver for KubernetesDriver {
                 ..Default::default()
             };
 
-            // Create the autoscaler if needed
-            if let Some(autoscaling) = &self.options.autoscaling {
-                let hpa = HorizontalPodAutoscaler {
-                    metadata: ObjectMeta {
-                        name: Some(worker_deployment_name.clone()),
-                        namespace: Some(self.options.namespace.clone()),
-                        labels: Some({
-                            let mut labels = BTreeMap::new();
-                            labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
-                            labels.insert(LABEL_WORKER_ID.to_owned(), worker_key.to_string());
-                            labels
-                        }),
-                        ..Default::default()
-                    },
-                    spec: Some({
-                        k8s_openapi::api::autoscaling::v1::HorizontalPodAutoscalerSpec {
-                            scale_target_ref:
-                                k8s_openapi::api::autoscaling::v1::CrossVersionObjectReference {
-                                    api_version: Some("apps/v1".to_string()),
-                                    kind: "Deployment".to_string(),
-                                    name: worker_deployment_name.clone(),
-                                },
-                            min_replicas: Some(autoscaling.min_replicas),
-                            max_replicas: autoscaling.max_replicas,
-                            target_cpu_utilization_percentage: Some(
-                                autoscaling.target_cpu_utilization_percentage,
-                            ),
-                        }
-                    }),
-                    ..Default::default()
-                };
-
-                kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
-                    self.client.clone(),
-                    &self.options.namespace,
-                )
-                .create(&kube::api::PostParams::default(), &hpa)
-                .await
-                .map_err(super::worker_driver::DriverError::KubernetesError)?;
-            }
+            debug!("Creating deployment: {:?}", deployment);
 
             // Create the deployment
             kube::api::Api::<Deployment>::namespaced(self.client.clone(), &self.options.namespace)
                 .create(&kube::api::PostParams::default(), &deployment)
                 .await
                 .map_err(super::worker_driver::DriverError::KubernetesError)?;
+
+            // Create the autoscaler if needed
+            match &self.options.autoscaling {
+                // Using HorizontalPodAutoscaler
+                Some(AutoscalingOptions::Hpa(hpa)) => {
+                    self.create_hpa_autoscaler(worker_key, hpa.clone(), worker_deployment_name)
+                        .await?;
+                }
+
+                // Using Keda as the autoscaler
+                Some(AutoscalingOptions::Keda(keda)) => {
+                    self.create_keda_autoscaler(
+                        worker_key,
+                        keda.clone(),
+                        queue_name,
+                        worker_deployment_name,
+                    )
+                    .await?;
+                }
+
+                // No autoscaler configured
+                Some(AutoscalingOptions::NoScaling) | None => {}
+            }
 
             Ok(new_id)
         })

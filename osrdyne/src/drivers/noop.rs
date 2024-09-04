@@ -19,6 +19,7 @@ impl NoopDriver {
 impl WorkerDriver for NoopDriver {
     fn get_or_create_worker_group(
         &mut self,
+        _queue_name: String,
         _worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move { Ok(self.fixed_pool_id) })
