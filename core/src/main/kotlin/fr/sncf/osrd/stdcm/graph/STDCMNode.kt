@@ -8,18 +8,11 @@ import fr.sncf.osrd.utils.units.Offset
 import kotlin.math.min
 
 data class STDCMNode(
-    // Time at the transition of the edge. Because of potentially added delay, this isn't the actual
-    // real time at which the train arrives at this node. To get the real time, use getRealTime()
-    // method.
-    val time: Double,
+    val timeData: TimeData,
     // Speed at the end of the previous edge
     val speed: Double,
     // Instance used to explore the infra
     val infraExplorer: InfraExplorerWithEnvelope,
-    // Sum of all the delays we have added by shifting the departure time
-    val totalPrevAddedDelay: Double,
-    // Maximum delay we can add by delaying the start time without causing conflicts
-    val maximumAddedDelay: Double,
     // Edge that lead to this node, null if this is the first node
     val previousEdge: STDCMEdge?,
     // Index of the last waypoint passed by the train
@@ -34,9 +27,6 @@ data class STDCMNode(
     // Previous node with non-null PlannedTimingDelta: time difference between arrival time on node
     // and planned arrival time, divided by the total duration of the time window
     val previousPlannedNodeRelativeTimeDiff: Double?,
-    // Time since train departure. Accounts for stops and travel time, but not the changes in
-    // departure time.
-    val timeSinceDeparture: Double,
     // Estimation of the min time it takes to reach the end from this node
     var remainingTimeEstimation: Double,
 ) : Comparable<STDCMNode> {
@@ -54,11 +44,19 @@ data class STDCMNode(
      * path. We then explore them in that order.
      */
     override fun compareTo(other: STDCMNode): Int {
-        val runTimeEstimation = timeSinceDeparture + remainingTimeEstimation
-        val otherRunTimeEstimation = other.timeSinceDeparture + other.remainingTimeEstimation
-        val plannedRelativeTimeDiff = getRelativeTimeDiff(totalPrevAddedDelay, maximumAddedDelay)
+        val runTimeEstimation = timeData.timeSinceDeparture + remainingTimeEstimation
+        val otherRunTimeEstimation =
+            other.timeData.timeSinceDeparture + other.remainingTimeEstimation
+        val plannedRelativeTimeDiff =
+            getRelativeTimeDiff(
+                timeData.totalDepartureDelay,
+                timeData.maxDepartureDelayingWithoutConflict
+            )
         val otherPlannedRelativeTimeDiff =
-            other.getRelativeTimeDiff(other.totalPrevAddedDelay, other.maximumAddedDelay)
+            other.getRelativeTimeDiff(
+                other.timeData.totalDepartureDelay,
+                other.timeData.maxDepartureDelayingWithoutConflict
+            )
         // Firstly, minimize the total run time: highest priority node takes the least time to
         // complete the path
         return if (!areTimesEqual(runTimeEstimation, otherRunTimeEstimation))
@@ -79,7 +77,8 @@ data class STDCMNode(
             previousPlannedNodeRelativeTimeDiff.compareTo(other.previousPlannedNodeRelativeTimeDiff)
         // If not, take the train which departs first, as it is the closest to the demanded
         // departure time
-        else if (time != other.time) time.compareTo(other.time)
+        else if (timeData.earliestReachableTime != other.timeData.earliestReachableTime)
+            timeData.earliestReachableTime.compareTo(other.timeData.earliestReachableTime)
         // In the end, prioritize the highest number of reached targets
         else other.waypointIndex - waypointIndex
     }
@@ -88,7 +87,7 @@ data class STDCMNode(
         // Not everything is included, otherwise it may recurse a lot over edges / nodes
         return String.format(
             "time=%s, speed=%s, lastBlock=%s, waypointIndex=%s",
-            time,
+            timeData.earliestReachableTime,
             speed,
             infraExplorer.getCurrentBlock(),
             waypointIndex
@@ -139,7 +138,8 @@ data class STDCMNode(
      * which the train arrives at this node.
      */
     fun getRealTime(currentTotalAddedDelay: Double): Double {
-        assert(currentTotalAddedDelay >= totalPrevAddedDelay)
-        return time + (currentTotalAddedDelay - totalPrevAddedDelay)
+        assert(currentTotalAddedDelay >= timeData.totalDepartureDelay)
+        return timeData.earliestReachableTime +
+            (currentTotalAddedDelay - timeData.totalDepartureDelay)
     }
 }

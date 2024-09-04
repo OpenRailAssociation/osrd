@@ -136,7 +136,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     /** Computes the departure time, made of the sum of all delays added over the path */
     private fun computeDepartureTime(edges: List<STDCMEdge>, startTime: Double): Double {
         var addedDelay = 0.0
-        for (edge in edges) addedDelay += edge.addedDelay
+        for (edge in edges) addedDelay += edge.timeData.delayAddedToLastDeparture
         val totalAddedDelay = addDelayForPlannedNodes(edges, addedDelay)
         return startTime + totalAddedDelay
     }
@@ -172,7 +172,9 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     }
 
     private fun getMaxNodeDelay(nodes: List<STDCMNode>): Double {
-        return nodes.minOfOrNull { it.maximumAddedDelay + it.totalPrevAddedDelay }!!
+        return nodes.minOfOrNull {
+            it.timeData.maxDepartureDelayingWithoutConflict + it.timeData.totalDepartureDelay
+        }!!
     }
 
     /** Builds the list of stops from the edges */

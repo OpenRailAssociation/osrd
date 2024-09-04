@@ -40,7 +40,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
         val newNode = newPreviousEdge.getEdgeEnd(graph)
         return STDCMEdgeBuilder.fromNode(graph, newNode, edge.infraExplorer)
             .setEnvelope(envelope)
-            .findEdgeSameNextOccupancy(edge.timeNextOccupancy)
+            .findEdgeSameNextOccupancy(edge.timeData.timeOfNextConflictAtLocation)
     }
 
     /**
@@ -79,6 +79,6 @@ class BacktrackingManager(private val graph: STDCMGraph) {
         val prevNode = old.previousNode
         return STDCMEdgeBuilder.fromNode(graph, prevNode, old.infraExplorer)
             .setEnvelope(newEnvelope)
-            .findEdgeSameNextOccupancy(old.timeNextOccupancy)
+            .findEdgeSameNextOccupancy(old.timeData.timeOfNextConflictAtLocation)
     }
 }

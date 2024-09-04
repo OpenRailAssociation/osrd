@@ -34,8 +34,8 @@ data class ProgressLogger(
             val geo = makePathProps(graph.blockInfra, graph.rawInfra, block).getGeo().points[0]
             val str =
                 "node sample for progress $nSamplesReached/$nStepsProgress: " +
-                    "time=${node.time.toInt()}s, " +
-                    "since departure=${node.timeSinceDeparture.toInt()}s, " +
+                    "time=${node.timeData.earliestReachableTime.toInt()}s, " +
+                    "since departure=${node.timeData.timeSinceDeparture.toInt()}s, " +
                     "best remaining time=${node.remainingTimeEstimation.toInt()}s, " +
                     "loc=$geo, " +
                     "#visited nodes=$seenSteps"

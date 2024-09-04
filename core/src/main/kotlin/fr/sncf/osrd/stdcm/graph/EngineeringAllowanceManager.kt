@@ -34,7 +34,10 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
         if (prevNode.previousEdge == null)
             return false // The conflict happens on the first block, we can't add delay here
         val affectedEdges =
-            findAffectedEdges(prevNode.previousEdge, expectedStartTime - prevNode.time)
+            findAffectedEdges(
+                prevNode.previousEdge,
+                expectedStartTime - prevNode.timeData.earliestReachableTime
+            )
         if (affectedEdges.isEmpty()) return false // No space to try the allowance
 
         val length = affectedEdges.map { it.length.distance }.sumDistances()
@@ -56,7 +59,9 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
         val slowestRunningTime = getSlowestRunningTime(affectedEdges)
         val firstNode = affectedEdges.first()
         val latestArrivalTime =
-            firstNode.timeStart + firstNode.maximumAddedDelayAfter + slowestRunningTime
+            firstNode.timeData.earliestReachableTime +
+                firstNode.timeData.maxDepartureDelayingWithoutConflict +
+                slowestRunningTime
         return latestArrivalTime >= expectedStartTime
     }
 
@@ -143,8 +148,8 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                 // Engineering allowances can't span over stops
                 return ArrayList(res)
             }
-            val endTime = mutEdge.timeStart + mutEdge.totalTime
-            val maxDelayAddedOnEdge = mutEdge.timeNextOccupancy - endTime
+            val endTime = mutEdge.timeData.earliestReachableTime + mutEdge.totalTime
+            val maxDelayAddedOnEdge = mutEdge.timeData.timeOfNextConflictAtLocation - endTime
             if (mutDelayNeeded > maxDelayAddedOnEdge) {
                 // We can't add delay in this block, the allowance range ends here (excluded)
                 return ArrayList(res)
@@ -155,7 +160,7 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                 // delay parameter
                 return ArrayList(res)
             }
-            mutDelayNeeded += mutEdge.addedDelay
+            mutDelayNeeded += mutEdge.timeData.delayAddedToLastDeparture
             mutEdge = mutEdge.previousNode.previousEdge!!
         }
     }

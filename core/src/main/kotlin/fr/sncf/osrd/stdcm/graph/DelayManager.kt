@@ -80,7 +80,10 @@ internal constructor(
      * Returns true if the total run time at the start of the edge is above the specified threshold
      */
     fun isRunTimeTooLong(edge: STDCMEdge): Boolean {
-        val totalRunTime = edge.timeStart - edge.totalDepartureTimeShift - minScheduleTimeStart
+        val totalRunTime =
+            edge.timeData.earliestReachableTime -
+                edge.timeData.totalDepartureDelay -
+                minScheduleTimeStart
         // We could use the A* heuristic here, but it would break STDCM on any infra where the
         // coordinates don't match the actual distance (which is the case when generated).
         // Ideally we should add a switch in the railjson format

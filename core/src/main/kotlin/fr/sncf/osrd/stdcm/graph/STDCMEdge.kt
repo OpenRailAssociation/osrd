@@ -8,25 +8,12 @@ import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isNaN
 
 data class STDCMEdge(
+    val timeData: TimeData,
     // Instance used to explore the infra, contains the current
     // underlying edge (block)
     val infraExplorer: InfraExplorerWithEnvelope,
     // Includes this edge's envelope
     val infraExplorerWithNewEnvelope: InfraExplorerWithEnvelope,
-    // Time at which the train enters the block
-    val timeStart: Double,
-    // Maximum delay we can add after this block by delaying the start time without
-    // causing conflicts
-    val maximumAddedDelayAfter: Double,
-    // Delay we needed to add in this block to avoid conflicts (by shifting the
-    // departure time)
-    val addedDelay: Double,
-    // Time of the next occupancy of the block, used to identify the "opening" used by
-    // the edge
-    val timeNextOccupancy: Double,
-    // Total delay we have added by shifting the departure time since the start of the
-    // path
-    val totalDepartureTimeShift: Double,
     // Node located at the start of this edge
     val previousNode: STDCMNode,
     // Offset of the envelope if it doesn't start at the beginning of the edge
@@ -48,7 +35,7 @@ data class STDCMEdge(
     val block = infraExplorer.getCurrentBlock()
 
     init {
-        assert(!isNaN(timeStart)) { "STDCM edge starts at NaN time" }
+        assert(!isNaN(timeData.earliestReachableTime)) { "STDCM edge starts at NaN time" }
     }
 
     /** Returns the node at the end of this edge */
@@ -65,23 +52,26 @@ data class STDCMEdge(
             if (!pass) break
             newWaypointIndex++
         }
-        val timeSinceDeparture =
-            totalTime + timeStart - totalDepartureTimeShift - graph.minScheduleTimeStart
         return if (!endAtStop) {
             // We move on to the next block
             STDCMNode(
-                totalTime + timeStart,
+                TimeData(
+                    earliestReachableTime = totalTime + timeData.earliestReachableTime,
+                    maxDepartureDelayingWithoutConflict =
+                        timeData.maxDepartureDelayingWithoutConflict,
+                    totalDepartureDelay = timeData.totalDepartureDelay,
+                    timeOfNextConflictAtLocation = timeData.timeOfNextConflictAtLocation,
+                    totalRunningTime = timeData.totalRunningTime + totalTime,
+                    totalStopTime = timeData.totalStopTime,
+                ),
                 endSpeed,
                 infraExplorerWithNewEnvelope,
-                totalDepartureTimeShift,
-                maximumAddedDelayAfter,
                 this,
                 newWaypointIndex,
                 null,
                 null,
                 null,
                 previousPlannedNodeRelativeTimeDiff,
-                timeSinceDeparture,
                 graph.remainingTimeEstimator.invoke(this, null, newWaypointIndex),
             )
         } else {
@@ -90,18 +80,24 @@ data class STDCMEdge(
             val stopDuration = firstStopAfterIndex.duration!!
             val locationOnEdge = envelopeStartOffset + length.distance
             STDCMNode(
-                totalTime + timeStart + stopDuration,
+                TimeData(
+                    earliestReachableTime =
+                        totalTime + timeData.earliestReachableTime + stopDuration,
+                    maxDepartureDelayingWithoutConflict =
+                        timeData.maxDepartureDelayingWithoutConflict,
+                    totalDepartureDelay = timeData.totalDepartureDelay,
+                    timeOfNextConflictAtLocation = timeData.timeOfNextConflictAtLocation,
+                    totalRunningTime = timeData.totalRunningTime + totalTime,
+                    totalStopTime = timeData.totalStopTime + stopDuration,
+                ),
                 endSpeed,
                 infraExplorerWithNewEnvelope,
-                totalDepartureTimeShift,
-                maximumAddedDelayAfter,
                 this,
                 newWaypointIndex,
                 envelopeStartOffset + length.distance,
                 stopDuration,
                 firstStopAfterIndex.plannedTimingData,
                 previousPlannedNodeRelativeTimeDiff,
-                timeSinceDeparture,
                 graph.remainingTimeEstimator.invoke(this, locationOnEdge, newWaypointIndex),
             )
         }
@@ -117,8 +113,8 @@ data class STDCMEdge(
             val previousPlannedNode = currentEdge.previousNode
             if (previousPlannedNode.plannedTimingData != null) {
                 return previousPlannedNode.getRelativeTimeDiff(
-                    totalDepartureTimeShift,
-                    maximumAddedDelayAfter
+                    timeData.totalDepartureDelay,
+                    timeData.maxDepartureDelayingWithoutConflict
                 )
             }
             currentEdge = previousPlannedNode.previousEdge
@@ -131,13 +127,14 @@ data class STDCMEdge(
      * interpolation.
      */
     fun getApproximateTimeAtLocation(offset: Offset<STDCMEdge>): Double {
-        if (length.distance == 0.meters) return timeStart // Avoids division by 0
+        if (length.distance == 0.meters)
+            return timeData.earliestReachableTime // Avoids division by 0
         val offsetRatio = offset.distance.meters / length.distance.meters
-        return timeStart + (totalTime * offsetRatio)
+        return timeData.earliestReachableTime + (totalTime * offsetRatio)
     }
 
     override fun toString(): String {
-        return "STDCMEdge(timeStart=$timeStart, block=$block)"
+        return "STDCMEdge(timeStart=${timeData.earliestReachableTime}, block=$block)"
     }
 
     /**

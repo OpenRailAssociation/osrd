@@ -231,13 +231,13 @@ private fun getTimeOnEdges(
         val atStop = edge.endAtStop && remainingDistance == edge.length.distance
         if (remainingDistance < edge.length.distance || atStop) {
             val absoluteTime = edge.getApproximateTimeAtLocation(Offset(remainingDistance))
-            return absoluteTime - edge.totalDepartureTimeShift
+            return absoluteTime - edge.timeData.totalDepartureDelay
         }
         remainingDistance -= edge.length.distance
     }
     // End of the last edge, this case is easier to handle separately
     val absoluteTime = edges.last().getApproximateTimeAtLocation(edges.last().length)
-    return absoluteTime - edges.last().totalDepartureTimeShift
+    return absoluteTime - edges.last().timeData.totalDepartureDelay
 }
 
 /**

@@ -77,7 +77,9 @@ internal constructor(
         val delay =
             getDelaysPerOpening()
                 .stream()
-                .filter { x: Double -> prevNode.time + x <= timeNextOccupancy }
+                .filter { x: Double ->
+                    prevNode.timeData.earliestReachableTime + x <= timeNextOccupancy
+                }
                 .max { obj: Double, anotherDouble: Double? -> obj.compareTo(anotherDouble!!) }
         return delay.map { delayNeeded: Double -> makeSingleEdge(delayNeeded) }.orElse(null)
     }
@@ -145,7 +147,7 @@ internal constructor(
     private fun getDelaysPerOpening(): Set<Double> {
         return graph.delayManager.minimumDelaysPerOpening(
             getExplorerWithNewEnvelope()!!,
-            prevNode.time,
+            prevNode.timeData.earliestReachableTime,
             envelope!!,
             startOffset,
         )
@@ -167,24 +169,24 @@ internal constructor(
     /** Creates a single STDCM edge, adding the given amount of delay */
     private fun makeSingleEdge(delayNeeded: Double): STDCMEdge? {
         if (java.lang.Double.isInfinite(delayNeeded)) return null
-        val actualStartTime = prevNode.time + delayNeeded
+        val actualStartTime = prevNode.timeData.earliestReachableTime + delayNeeded
 
         var maximumDelay = 0.0
         var departureTimeShift = delayNeeded
-        if (delayNeeded > prevNode.maximumAddedDelay) {
+        if (delayNeeded > prevNode.timeData.maxDepartureDelayingWithoutConflict) {
             // We can't just shift the departure time, we need an engineering allowance
             // It's not computed yet, we just check that it's possible
             if (!graph.allowanceManager.checkEngineeringAllowance(prevNode, actualStartTime))
                 return null
             // We still need to adapt the delay values
-            departureTimeShift = prevNode.maximumAddedDelay
+            departureTimeShift = prevNode.timeData.maxDepartureDelayingWithoutConflict
         } else {
             maximumDelay =
                 min(
-                    prevNode.maximumAddedDelay - delayNeeded,
+                    prevNode.timeData.maxDepartureDelayingWithoutConflict - delayNeeded,
                     graph.delayManager.findMaximumAddedDelay(
                         getExplorerWithNewEnvelope()!!,
-                        prevNode.time + delayNeeded,
+                        prevNode.timeData.earliestReachableTime + delayNeeded,
                         startOffset,
                         envelope!!,
                     )
@@ -195,18 +197,24 @@ internal constructor(
         val standardAllowanceSpeedRatio = graph.getStandardAllowanceSpeedRatio(envelope!!)
         var res: STDCMEdge? =
             STDCMEdge(
+                TimeData(
+                    earliestReachableTime = actualStartTime,
+                    maxDepartureDelayingWithoutConflict = maximumDelay,
+                    totalDepartureDelay =
+                        prevNode.timeData.totalDepartureDelay + departureTimeShift,
+                    timeOfNextConflictAtLocation =
+                        graph.delayManager.findNextOccupancy(
+                            getExplorerWithNewEnvelope()!!,
+                            prevNode.timeData.earliestReachableTime + delayNeeded,
+                            startOffset,
+                            envelope!!,
+                        ),
+                    totalRunningTime = prevNode.timeData.totalRunningTime,
+                    totalStopTime = prevNode.timeData.totalStopTime,
+                    delayAddedToLastDeparture = departureTimeShift,
+                ),
                 infraExplorer,
                 getExplorerWithNewEnvelope()!!,
-                actualStartTime,
-                maximumDelay,
-                departureTimeShift,
-                graph.delayManager.findNextOccupancy(
-                    getExplorerWithNewEnvelope()!!,
-                    prevNode.time + delayNeeded,
-                    startOffset,
-                    envelope!!,
-                ),
-                prevNode.totalPrevAddedDelay + departureTimeShift,
                 prevNode,
                 startOffset,
                 prevNode.waypointIndex,
