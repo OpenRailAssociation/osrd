@@ -22,7 +22,6 @@ import { setFailure } from 'reducers/main';
 import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { addDurationToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { getPointCoordinates } from 'utils/geometry';
 import { mmToM } from 'utils/physics';
@@ -70,9 +69,7 @@ const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
       ...stepWithoutSecondaryCode,
       ch: 'secondary_code' in step ? step.secondary_code : undefined,
       name,
-      arrival: arrival
-        ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
-        : arrival,
+      arrival, // ISODurationString
       stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
       locked,
       onStopSignal,

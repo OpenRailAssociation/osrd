@@ -145,7 +145,8 @@ const checkCurrentConfig = (
     rollingStockComfort,
     initialSpeed: initialSpeed ? kmhToMs(initialSpeed) : 0,
     usingElectricalProfiles,
-    path: compact(osrdconf.pathSteps).map((step) => {
+    path: compact(pathSteps).map((step) => {
+      // TODO use lodash pick
       const {
         arrival,
         locked,
@@ -171,7 +172,7 @@ const checkCurrentConfig = (
     }),
 
     margins: formatMargin(compact(pathSteps)),
-    schedule: formatSchedule(compact(pathSteps), startTime),
+    schedule: formatSchedule(compact(pathSteps)),
     powerRestrictions: powerRestriction,
     firstStartTime: startTime,
     speedLimitByTag,

@@ -6,6 +6,8 @@ import type { TimeString } from 'common/types';
 
 dayjs.extend(duration);
 
+export const SECONDS_IN_A_DAY = 86400;
+
 export function sec2ms(sec: number) {
   return sec * 1000;
 }
@@ -53,7 +55,7 @@ export function datetime2sec(time: Date): number {
 }
 
 export function durationInSeconds(start: number, end: number) {
-  return end > start ? end - start : end + 86400 - start;
+  return end > start ? end - start : end + SECONDS_IN_A_DAY - start;
 }
 
 export function calculateTimeDifferenceInSeconds(time1: string | Date, time2: string | Date) {
@@ -79,12 +81,10 @@ export function ISO8601Duration2sec(isoDuration: string) {
  *
  * using the param withSeconds returns the longer format "HH:MM:SS"
  */
-export function secToHoursString(sec: number | null, withSeconds = false): TimeString {
+export function secToHoursString(sec: number | null, { withSeconds = false } = {}): TimeString {
   if (!sec) {
     return '';
   }
   const format = withSeconds ? '%H:%M:%S' : '%H:%M';
   return d3.utcFormat(format)(new Date(sec * 1000));
 }
-
-export const SECONDS_IN_A_DAY = 86400;

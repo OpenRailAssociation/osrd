@@ -157,7 +157,11 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
   return updatedOPs;
 };
 
-export const pathStepMatchesOp = (pathStep: PathStep, op: SuggestedOP, withKP = false) =>
+export const pathStepMatchesOp = (
+  pathStep: PathStep,
+  op: Pick<SuggestedOP, 'uic' | 'ch' | 'kp' | 'name' | 'opId'>,
+  withKP = false
+) =>
   ('uic' in pathStep &&
     'ch' in pathStep &&
     pathStep.uic === op.uic &&
@@ -173,5 +177,8 @@ export const pathStepMatchesOp = (pathStep: PathStep, op: SuggestedOP, withKP = 
  * @param withKP - If true, we check the kp compatibility instead of the name.
  * It is used in the times and stops table to check if an operational point is a via.
  */
-export const isVia = (vias: PathStep[], op: SuggestedOP, withKP = false) =>
-  vias.some((via) => pathStepMatchesOp(via, op, withKP));
+export const isVia = (
+  vias: PathStep[],
+  op: Pick<SuggestedOP, 'uic' | 'ch' | 'kp' | 'name' | 'opId'>,
+  { withKP = false } = {}
+) => vias.some((via) => pathStepMatchesOp(via, op, withKP));

@@ -34,7 +34,7 @@ export default function ImportTrainScheduleTrainDetail({
     const durationInSecond = Math.round(
       (new Date(arrivalTime).getTime() - new Date(departureTime).getTime()) / 1000
     );
-    return secToHoursString(durationInSecond, true);
+    return secToHoursString(durationInSecond, { withSeconds: true });
   };
   return (
     <div

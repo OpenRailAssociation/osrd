@@ -1,15 +1,17 @@
 import { useRef, useState, useEffect } from 'react';
 
+import cx from 'classnames';
 import type { CellProps } from 'react-datasheet-grid/dist/types';
+import { useTranslation } from 'react-i18next';
 
-const TimeInput = ({
-  focus,
-  rowData,
-  active,
-  setRowData,
-}: CellProps<string | null | undefined, string>) => {
+import type { TimeExtraDays } from './types';
+
+type TimeInputProps = CellProps<TimeExtraDays | undefined, string>;
+
+const TimeInput = ({ focus, rowData, active, setRowData }: TimeInputProps) => {
+  const { t } = useTranslation('timesStops');
   const ref = useRef<HTMLInputElement>(null);
-  const [tempTimeValue, setTempTimeValue] = useState<string | null | undefined>(rowData);
+  const [tempTimeValue, setTempTimeValue] = useState<TimeExtraDays | undefined>(rowData);
 
   useEffect(() => {
     if (active) {
@@ -26,8 +28,9 @@ const TimeInput = ({
     setTempTimeValue(rowData);
   }, [rowData]);
 
-  return (
+  const input = (
     <input
+      // className from react-datasheet-grid library
       className="dsg-input"
       type="time"
       tabIndex={-1}
@@ -37,9 +40,9 @@ const TimeInput = ({
         pointerEvents: focus ? 'auto' : 'none',
         opacity: rowData || active ? undefined : 0,
       }}
-      value={tempTimeValue ?? ''}
+      value={tempTimeValue?.time ?? ''}
       onChange={(e) => {
-        setTempTimeValue(e.target.value);
+        setTempTimeValue((prev) => ({ ...prev, time: e.target.value }));
       }}
       onBlur={() => {
         // To prevent the operational point to be transformed into a via if we leave the cell empty after focusing it
@@ -49,8 +52,22 @@ const TimeInput = ({
       }}
     />
   );
-};
 
-TimeInput.displayName = 'TimeInput';
+  if (tempTimeValue?.daySinceDeparture && tempTimeValue.dayDisplayed) {
+    return (
+      <div className="time-input-container">
+        {input}
+        <span
+          className={cx('extra-text', {
+            'extra-text-firefox': navigator.userAgent.search('Firefox') !== -1,
+          })}
+        >
+          {t('dayCounter', { count: tempTimeValue.daySinceDeparture })}
+        </span>
+      </div>
+    );
+  }
+  return input;
+};
 
 export default TimeInput;

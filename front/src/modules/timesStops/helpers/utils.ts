@@ -1,24 +1,39 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
-import { round } from 'lodash';
+import { round, isEqual } from 'lodash';
 import { keyColumn, createTextColumn } from 'react-datasheet-grid';
 
+import type { IsoDateTimeString, IsoDurationString, TimeString } from 'common/types';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
-import { extractHHMMSS } from 'utils/date';
 import { NO_BREAK_SPACE } from 'utils/strings';
-import { datetime2sec, secToHoursString, time2sec } from 'utils/timeManipulation';
+import {
+  calculateTimeDifferenceInSeconds,
+  datetime2sec,
+  durationInSeconds,
+  formatDurationAsISO8601,
+  sec2time,
+  SECONDS_IN_A_DAY,
+  secToHoursString,
+  time2sec,
+} from 'utils/timeManipulation';
 
 import { marginRegExValidation, MarginUnit } from '../consts';
-import { TableType } from '../types';
-import type { PathStepOpPointCorrespondance, PathWaypointRow } from '../types';
+import {
+  TableType,
+  type TimeExtraDays,
+  type PathStepOpPointCorrespondance,
+  type PathWaypointRow,
+} from '../types';
 
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
   pathSteps: PathStep[],
   t: TFunction<'timesStops', undefined>,
-  startTime?: string,
+  startTime?: IsoDateTimeString,
   tableType?: TableType
 ): PathWaypointRow[] => {
   const formattedOps = [...operationalPoints];
@@ -56,21 +71,23 @@ export const formatSuggestedViasToRowVias = (
     const { arrival, onStopSignal, stopFor, theoreticalMargin } = objectToUse || {};
 
     const isMarginValid = theoreticalMargin ? marginRegExValidation.test(theoreticalMargin) : true;
-    let departure: string | undefined;
-    if (stopFor) {
-      if (i === 0) {
-        departure = startTime
-          ? secToHoursString(datetime2sec(new Date(startTime)) + Number(stopFor), true)
-          : undefined;
-      } else if (arrival) {
-        departure = secToHoursString(time2sec(arrival) + Number(stopFor), true);
-      }
-    }
+    const durationArrivalTime = i === 0 ? 'PT0S' : arrival;
+    const arrivalInSeconds = durationArrivalTime ? time2sec(durationArrivalTime) : null;
+
+    const formattedArrival = calculateStepTimeAndDays(startTime, durationArrivalTime);
+
+    const departureTime =
+      stopFor && arrivalInSeconds
+        ? secToHoursString(arrivalInSeconds + Number(stopFor), { withSeconds: true })
+        : undefined;
+    const formattedDeparture: TimeExtraDays | undefined = departureTime
+      ? { time: departureTime }
+      : undefined;
     return {
       ...op,
       isMarginValid,
-      arrival: i === 0 ? extractHHMMSS(startTime) : arrival,
-      departure,
+      arrival: formattedArrival,
+      departure: formattedDeparture,
       onStopSignal: onStopSignal || false,
       name: name || t('waypoint', { id: op.opId }),
       stopFor,
@@ -126,32 +143,152 @@ export function disabledTextColumn(
   };
 }
 
-export function transformRowDataOnChange(
-    rowData: PathWaypointRow, 
-    previousRowData: PathWaypointRow, 
-    op: { fromRowIndex: number }, 
-    allWaypointsLength: number,
-  ) {
+/**
+ * Synchronizes arrival, departure and stop times.
+ * updates onStopSignal
+ * updates isMarginValid and theoreticalMargin
+ */
+export function updateRowTimesAndMargin(
+  rowData: PathWaypointRow,
+  previousRowData: PathWaypointRow,
+  op: { fromRowIndex: number },
+  allWaypointsLength: number
+): PathWaypointRow {
   const newRowData = { ...rowData };
   if (
-    newRowData.departure &&
-    newRowData.arrival &&
-    (newRowData.arrival !== previousRowData.arrival ||
-      newRowData.departure !== previousRowData.departure)
+    !isEqual(newRowData.arrival, previousRowData.arrival) ||
+    !isEqual(newRowData.departure, previousRowData.departure)
   ) {
-    newRowData.stopFor = String(time2sec(newRowData.departure) - time2sec(newRowData.arrival));
+    if (newRowData.departure?.time && newRowData.arrival?.time) {
+      newRowData.stopFor = String(
+        durationInSeconds(time2sec(newRowData.arrival.time), time2sec(newRowData.departure.time))
+      );
+    } else if (newRowData.departure) {
+      if (!previousRowData.departure) {
+        newRowData.arrival = {
+          time: sec2time(time2sec(newRowData.departure.time) - Number(newRowData.stopFor)),
+        };
+      } else {
+        newRowData.departure = undefined;
+      }
+    } else if (newRowData.arrival && previousRowData.departure) {
+      // we just erased departure value
+      newRowData.stopFor = undefined;
+    }
   }
   if (!newRowData.stopFor && op.fromRowIndex !== allWaypointsLength - 1) {
     newRowData.onStopSignal = false;
   }
-  newRowData.isMarginValid = !(newRowData.theoreticalMargin && !marginRegExValidation.test(newRowData.theoreticalMargin));
+  newRowData.isMarginValid = !(
+    newRowData.theoreticalMargin && !marginRegExValidation.test(newRowData.theoreticalMargin)
+  );
   if (newRowData.isMarginValid && op.fromRowIndex === 0) {
-    newRowData.arrival = null;
+    newRowData.arrival = undefined;
     // As we put 0% by default for origin's margin, if the user removes a margin without
     // replacing it to 0% (undefined), we change it to 0%
     if (!newRowData.theoreticalMargin) {
       newRowData.theoreticalMargin = '0%';
     }
-  } 
+  }
   return newRowData;
+}
+
+/**
+ * This function goes through the whole array of path waypoints
+ * and updates the number of days since departure.
+ */
+export function updateDaySinceDeparture(
+  pathWaypointRows: PathWaypointRow[],
+  startTime?: IsoDateTimeString,
+  keepFirstIndexArrival?: boolean
+): PathWaypointRow[] {
+  let currentDaySinceDeparture = 0;
+  let previousTime = startTime ? datetime2sec(new Date(startTime)) : Number.NEGATIVE_INFINITY;
+
+  return pathWaypointRows.map((pathWaypoint, index) => {
+    const { arrival, stopFor } = pathWaypoint;
+
+    const arrivalInSeconds = arrival?.time ? time2sec(arrival.time) : null;
+    let formattedArrival: TimeExtraDays | undefined;
+    if (arrivalInSeconds) {
+      if (arrivalInSeconds < previousTime) {
+        currentDaySinceDeparture += 1;
+        formattedArrival = {
+          time: arrival!.time,
+          daySinceDeparture: currentDaySinceDeparture,
+          dayDisplayed: true,
+        };
+      } else {
+        formattedArrival = {
+          time: arrival!.time,
+          daySinceDeparture: currentDaySinceDeparture,
+        };
+      }
+      previousTime = arrivalInSeconds;
+    }
+
+    let formattedDeparture: TimeExtraDays | undefined;
+    if (stopFor && arrivalInSeconds) {
+      const departureInSeconds = (arrivalInSeconds + Number(stopFor)) % SECONDS_IN_A_DAY;
+      const isAfterMidnight = departureInSeconds < previousTime;
+      if (isAfterMidnight) {
+        currentDaySinceDeparture += 1;
+        formattedDeparture = {
+          time: secToHoursString(departureInSeconds, { withSeconds: true }),
+          daySinceDeparture: currentDaySinceDeparture,
+          dayDisplayed: true,
+        };
+      } else {
+        formattedDeparture = {
+          time: secToHoursString(departureInSeconds, { withSeconds: true }),
+          daySinceDeparture: currentDaySinceDeparture,
+        };
+      }
+      previousTime = departureInSeconds;
+    }
+
+    return {
+      ...pathWaypoint,
+      arrival: keepFirstIndexArrival || index > 0 ? formattedArrival : undefined,
+      departure: formattedDeparture,
+    };
+  });
+}
+
+export function durationSinceStartTime(
+  startTime?: IsoDateTimeString,
+  stepTimeDays?: TimeExtraDays
+): IsoDurationString | null {
+  if (!startTime || !stepTimeDays?.time || stepTimeDays?.daySinceDeparture === undefined) {
+    return null;
+  }
+  const start = dayjs(startTime);
+  const step = dayjs(`${startTime.split('T')[0]}T${stepTimeDays.time}`).add(
+    stepTimeDays.daySinceDeparture,
+    'day'
+  );
+  return formatDurationAsISO8601(
+    calculateTimeDifferenceInSeconds(start.toISOString(), step.toISOString())
+  );
+}
+
+export function calculateStepTimeAndDays(
+  startTime?: IsoDateTimeString | null,
+  isoDuration?: IsoDurationString | null
+): TimeExtraDays | undefined {
+  if (!startTime || !isoDuration) {
+    return undefined;
+  }
+
+  const start = dayjs(startTime);
+  const duration = dayjs.duration(isoDuration);
+
+  const waypointArrivalTime = start.add(duration);
+  const daySinceDeparture = waypointArrivalTime.diff(start, 'day');
+  const time: TimeString = waypointArrivalTime.format('HH:mm:ss');
+
+  return {
+    time,
+    daySinceDeparture,
+  };
 }

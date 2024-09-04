@@ -1,0 +1,20 @@
+.time-input-container {
+  position: relative;
+  width: 100%;
+
+  input.dsg-input {
+    width: 100%;
+  }
+
+  span.extra-text {
+    position: absolute;
+    left: 5.5rem;
+    top: 0.075rem;
+    pointer-events: none;
+  }
+
+  span.extra-text-firefox {
+    top: 0.03rem;
+    left: 6.1rem;
+  }
+}

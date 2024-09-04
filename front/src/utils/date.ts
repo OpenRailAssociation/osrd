@@ -4,6 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
+import type { IsoDateTimeString, IsoDurationString } from 'common/types';
 import i18n from 'i18n';
 
 import { ISO8601Duration2sec } from './timeManipulation';
@@ -164,11 +165,14 @@ export function convertUTCDateToLocalDate(date: number) {
   return Math.abs(timeDifferenceMinutes) * 60 + date;
 }
 
-export function convertIsoUtcToLocalTime(isoUtcString: string): string {
+export function convertIsoUtcToLocalTime(isoUtcString: IsoDateTimeString): string {
   return dayjs(isoUtcString).local().format();
 }
 
-export function addDurationToIsoDate(startTime: string, duration: string) {
+export function addDurationToIsoDate(
+  startTime: IsoDateTimeString,
+  duration: IsoDurationString
+): IsoDateTimeString {
   return dayjs(startTime).add(ISO8601Duration2sec(duration), 'second').format();
 }
 

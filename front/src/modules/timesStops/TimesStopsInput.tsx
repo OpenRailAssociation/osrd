@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-no-useless-fragment */
 
 import { useOsrdConfActions } from 'common/osrdContext';
+import { isVia } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -16,11 +17,18 @@ type ClearButtonProps = {
   pathSteps: PathStep[];
 };
 
-const createClearViaButton = ({ removeVia, rowIndex, rowData, allWaypoints }: ClearButtonProps) => {
+const createClearViaButton = ({
+  removeVia,
+  rowIndex,
+  rowData,
+  allWaypoints,
+  pathSteps,
+}: ClearButtonProps) => {
   const isClearBtnShown =
     allWaypoints &&
     rowIndex > 0 &&
     rowIndex < allWaypoints.length - 1 &&
+    isVia(pathSteps || [], rowData, { withKP: true }) &&
     (rowData.stopFor !== undefined ||
       rowData.theoreticalMargin !== undefined ||
       rowData.arrival !== undefined ||
@@ -79,7 +87,6 @@ const TimesStopsinput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
     });
     dispatch(updatePathSteps({ pathSteps: updatedPathSteps }));
   };
-
   return (
     <TimesStops
       allWaypoints={allWaypoints}

@@ -7,7 +7,7 @@ import formatSchedule from '../formatSchedule';
 describe('formatSchedule', () => {
   describe('same day', () => {
     it('should ignore steps without arrival or stopFor', () => {
-      const pathSteps = [
+      const pathSteps: PathStep[] = [
         {
           id: 'id331',
           deleted: false,
@@ -17,12 +17,12 @@ describe('formatSchedule', () => {
           name: 'G',
           positionOnPath: 0,
         },
-      ] as PathStep[];
+      ];
       const result = formatSchedule(pathSteps);
       expect(result?.length).toBe(0);
     });
     it('should format the train schedule', () => {
-      const pathSteps = [
+      const pathSteps: PathStep[] = [
         {
           id: 'id332',
           deleted: false,
@@ -36,7 +36,7 @@ describe('formatSchedule', () => {
           locked: false,
           onStopSignal: false,
         },
-      ] as PathStep[];
+      ];
       const result = formatSchedule(pathSteps);
       expect(result).toEqual([
         {

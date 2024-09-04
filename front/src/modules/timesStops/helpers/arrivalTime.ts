@@ -15,12 +15,12 @@ export function checkAndFormatCalculatedArrival(
   operationalPointTime: number
 ) {
   if (!scheduleData.arrival) {
-    return secToHoursString(operationalPointTime, true);
+    return secToHoursString(operationalPointTime, { withSeconds: true });
   }
   const arrivalValuesAreClose =
     Math.abs(scheduleData.arrival - (operationalPointTime % SECONDS_IN_A_DAY)) <=
     ARRIVAL_TIME_ACCEPTABLE_ERROR_MS / 1000;
   const calculatedArrival = arrivalValuesAreClose ? scheduleData.arrival : operationalPointTime;
 
-  return secToHoursString(calculatedArrival, true);
+  return secToHoursString(calculatedArrival, { withSeconds: true });
 }

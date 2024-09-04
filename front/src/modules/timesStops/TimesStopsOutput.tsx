@@ -53,8 +53,8 @@ const TimesStopsOutput = ({
       tableType={TableType.Output}
       cellClassName={({ rowData: rowData_ }) => {
         const rowData = rowData_ as PathWaypointRow;
-        const arrivalScheduleNotRespected = rowData.arrival
-          ? rowData.calculatedArrival !== rowData.arrival
+        const arrivalScheduleNotRespected = rowData.arrival?.time
+          ? rowData.calculatedArrival !== rowData.arrival.time
           : false;
         const negativeDiffMargins = Number(rowData.diffMargins?.split(NO_BREAK_SPACE)[0]) < 0;
         return cx({

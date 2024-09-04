@@ -2,6 +2,7 @@
   "arrivalTime": "Arrivée demandée",
   "calculatedArrivalTime": "Arrivée calculée",
   "calculatedDepartureTime": "Départ calculé",
+  "dayCounter": "J+{{count}}",
   "departureTime": "Départ demandé",
   "diffMargins": "Diff. marges",
   "name": "Nom",
