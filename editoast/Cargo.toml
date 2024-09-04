@@ -1,8 +1,10 @@
+cargo-features = ["edition2024"]
+
 [package]
 name = "editoast"
 license.workspace = true
 version.workspace = true
-edition.workspace = true
+edition = "2024"
 
 [workspace]
 members = [

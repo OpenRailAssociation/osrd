@@ -158,7 +158,7 @@ impl RedisConnection {
                 .into())
             }
         };
-        self.set(key, str_value).await?;
+        let _: () = self.set(key, str_value).await?;
         Ok(())
     }
 
