@@ -1,9 +1,18 @@
 import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { ArrayElement } from 'utils/types';
 
-export type PathWaypointRow = SuggestedOP & {
+export type TimeExtraDays = {
+  time: TimeString;
+  daySinceDeparture?: number;
+  dayDisplayed?: boolean;
+};
+
+export type PathWaypointRow = Omit<SuggestedOP, 'arrival' | 'departure'> & {
   isMarginValid: boolean;
+  arrival?: TimeExtraDays; // value asked by user
+  departure?: TimeExtraDays; // value asked by user
 };
 
 export enum TableType {

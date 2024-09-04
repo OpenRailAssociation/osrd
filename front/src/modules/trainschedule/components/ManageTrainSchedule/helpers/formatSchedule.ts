@@ -2,34 +2,14 @@ import { compact, isNaN, isNil } from 'lodash';
 
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { PathStep } from 'reducers/osrdconf/types';
-import {
-  datetime2sec,
-  durationInSeconds,
-  formatDurationAsISO8601,
-  time2sec,
-} from 'utils/timeManipulation';
+import { formatDurationAsISO8601 } from 'utils/timeManipulation';
 
-const formatSchedule = (
-  pathSteps: PathStep[],
-  startTime: string
-): TrainScheduleBase['schedule'] => {
+const formatSchedule = (pathSteps: PathStep[]): TrainScheduleBase['schedule'] => {
   const schedules = pathSteps.map((step) => {
-    let formatArrival;
-    if (step.arrival || step.stopFor) {
-      if (step.arrival) {
-        // Duration in seconds between startTime and step.arrival
-        const durationStartTimeArrival = durationInSeconds(
-          datetime2sec(new Date(startTime)),
-          time2sec(step.arrival)
-        );
-
-        // Format duration in ISO8601
-        formatArrival = formatDurationAsISO8601(durationStartTimeArrival);
-      }
-
+    if (step?.arrival || step.stopFor) {
       return {
         at: step.id,
-        arrival: formatArrival ?? undefined,
+        arrival: step.arrival ?? undefined,
         locked: step.locked,
         on_stop_signal: step.onStopSignal,
         stop_for:

@@ -4,6 +4,7 @@ import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { AllowanceValue } from 'applications/stdcm/types';
 import type { ArrivalTimeTypes } from 'applications/stdcmV2/types';
 import type { Comfort, Distribution, PathItemLocation } from 'common/api/osrdEditoastApi';
+import type { IsoDurationString } from 'common/types';
 import type { InfraState } from 'reducers/infra';
 
 export interface OsrdConfState extends InfraState {
@@ -55,7 +56,7 @@ export type PathStep = PathItemLocation & {
         It's useful for soft deleting the point (waiting to fix / remove all references)
         If true, the train schedule is consider as invalid and must be edited */
   deleted?: boolean;
-  arrival?: string | null;
+  arrival?: IsoDurationString | null;
   arrivalType?: ArrivalTimeTypes;
   arrivalToleranceBefore?: number;
   arrivalToleranceAfter?: number;

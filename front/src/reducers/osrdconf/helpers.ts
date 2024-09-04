@@ -147,13 +147,13 @@ export const updateDestinationPathStep = (
 ) => updatePathStepAtIndex(pathSteps, pathSteps.length - 1, destination, replaceCompletely);
 
 /**
- * modifies the array statePathSteps in place
+ * Modifies the array statePathSteps in place in the reducer
  */
 export function upsertPathStep(statePathSteps: (PathStep | null)[], op: SuggestedOP) {
   // We know that, at this point, origin and destination are defined because pathfinding has been done
   const cleanPathSteps = compact(statePathSteps);
 
-  let newVia = {
+  let newVia: PathStep = {
     ...pick(op, [
       'coordinates',
       'positionOnPath',
@@ -174,7 +174,7 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
           track: op.track,
           offset: op.offsetOnTrack,
         }),
-  } as PathStep;
+  };
 
   const stepIndex = cleanPathSteps.findIndex((step) => pathStepMatchesOp(step, op));
   if (stepIndex >= 0) {

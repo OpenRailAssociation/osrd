@@ -72,7 +72,7 @@ function useOutputTableData(
   const outputTableData = useMemo(() => {
     const pathStepRows = pathStepsWithPositionOnPath.map((pathStep) => {
       const schedule = scheduleByAt[pathStep.id];
-      const scheduleData = computeScheduleData(schedule, selectedTrainSchedule.start_time);
+      const scheduleData = computeScheduleData(schedule);
       return { ...pathStep, ...formatScheduleData(scheduleData) };
     });
 
@@ -91,7 +91,7 @@ function useOutputTableData(
       if (pathStepKey in pathStepsByUic) {
         const pathStepId = pathStepsByUic[pathStepKey].id || '';
         const schedule = scheduleByAt[pathStepId];
-        const scheduleData = computeScheduleData(schedule, selectedTrainSchedule.start_time);
+        const scheduleData = computeScheduleData(schedule);
         const formattedScheduleData = formatScheduleData(scheduleData);
         const marginsData = nextOpPoint
           ? computeMargins(simulatedTrain, opPoint, nextOpPoint, selectedTrainSchedule, pathStepId)
@@ -103,12 +103,17 @@ function useOutputTableData(
           onStopSignal: schedule?.on_stop_signal || '',
           calculatedArrival,
           calculatedDeparture:
-            opPoint.duration > 0 ? secToHoursString(opPoint.time + opPoint.duration, true) : '',
+            opPoint.duration > 0
+              ? secToHoursString(opPoint.time + opPoint.duration, { withSeconds: true })
+              : '',
           ...marginsData,
         } as SuggestedOP;
       }
 
-      return { ...sugOpPoint, calculatedArrival: secToHoursString(opPoint.time, true) };
+      return {
+        ...sugOpPoint,
+        calculatedArrival: secToHoursString(opPoint.time, { withSeconds: true }),
+      };
     });
 
     return suggestedOpRows.map((sugOpPoint) => {

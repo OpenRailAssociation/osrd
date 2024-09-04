@@ -98,6 +98,7 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
     prepare: PrepareAction<S['pathSteps']>;
   };
   ['upsertViaFromSuggestedOP']: CaseReducer<S, PayloadAction<SuggestedOP>>;
+  ['upsertSeveralViasFromSuggestedOP']: CaseReducer<S, PayloadAction<SuggestedOP[]>>;
   ['updateRollingStockComfort']: CaseReducer<S, PayloadAction<S['rollingStockComfort']>>;
   ['updateStartTime']: CaseReducer<S, PayloadAction<S['startTime']>>;
   ['updateOrigin']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
@@ -288,6 +289,11 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     // from the suggested via modal
     upsertViaFromSuggestedOP(state: Draft<S>, action: PayloadAction<SuggestedOP>) {
       upsertPathStep(state.pathSteps, action.payload);
+    },
+    upsertSeveralViasFromSuggestedOP(state: Draft<S>, action: PayloadAction<SuggestedOP[]>) {
+      action.payload.forEach((suggestedOp) => {
+        upsertPathStep(state.pathSteps, suggestedOp);
+      });
     },
     updateRollingStockComfort(state: Draft<S>, action: PayloadAction<S['rollingStockComfort']>) {
       state.rollingStockComfort = action.payload;

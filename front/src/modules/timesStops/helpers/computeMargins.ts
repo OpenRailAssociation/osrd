@@ -14,18 +14,18 @@ function getTheoreticalMargin(selectedTrainSchedule: TrainScheduleResult, pathSt
   if (selectedTrainSchedule.path[0].id === pathStepId) {
     return selectedTrainSchedule.margins?.values[0];
   }
-  const theoriticalMarginBoundaryIndex = selectedTrainSchedule.margins?.boundaries?.findIndex(
+  const theoreticalMarginBoundaryIndex = selectedTrainSchedule.margins?.boundaries?.findIndex(
     (id) => id === pathStepId
   );
   if (
-    theoriticalMarginBoundaryIndex === undefined ||
-    theoriticalMarginBoundaryIndex < 0 ||
-    theoriticalMarginBoundaryIndex > selectedTrainSchedule.margins!.values.length - 2
+    theoreticalMarginBoundaryIndex === undefined ||
+    theoreticalMarginBoundaryIndex < 0 ||
+    theoreticalMarginBoundaryIndex > selectedTrainSchedule.margins!.values.length - 2
   ) {
     return undefined;
   }
 
-  return selectedTrainSchedule.margins!.values[theoriticalMarginBoundaryIndex + 1];
+  return selectedTrainSchedule.margins!.values[theoreticalMarginBoundaryIndex + 1];
 }
 
 function computeDuration(

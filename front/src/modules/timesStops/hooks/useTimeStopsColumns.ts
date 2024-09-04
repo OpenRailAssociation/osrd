@@ -9,17 +9,22 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 
 import { marginRegExValidation } from '../consts';
 import { disabledTextColumn } from '../helpers/utils';
+import ReadOnlyTime from '../ReadOnlyTime';
 import TimeInput from '../TimeInput';
-import { TableType, type PathWaypointRow } from '../types';
+import { TableType, type PathWaypointRow, type TimeExtraDays } from '../types';
 
-const timeColumn: Partial<Column<string | null | undefined, string, string>> = {
-  component: TimeInput as CellComponent<string | null | undefined, string>,
-  deleteValue: () => null,
-  copyValue: ({ rowData }) => rowData ?? null,
-  pasteValue: ({ value }) => value,
-  minWidth: 170,
-  isCellEmpty: ({ rowData }) => !rowData,
-};
+const timeColumn = (isOutputTable: boolean) =>
+  ({
+    component: (isOutputTable ? ReadOnlyTime : TimeInput) as CellComponent<
+      TimeExtraDays | undefined,
+      string
+    >,
+    deleteValue: () => undefined,
+    copyValue: ({ rowData }) => rowData?.time ?? null,
+    pasteValue: ({ value }) => ({ time: value }),
+    minWidth: isOutputTable ? 110 : 170,
+    isCellEmpty: ({ rowData }) => !rowData,
+  }) as Partial<Column<TimeExtraDays | undefined, string, string>>;
 
 const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
 
@@ -71,20 +76,19 @@ export const useTimeStopsColumns = (tableType: TableType, allWaypoints: Suggeste
         maxWidth: 45,
       },
       {
-        ...keyColumn('arrival', isOutputTable ? createTextColumn() : timeColumn),
+        ...keyColumn('arrival', timeColumn(isOutputTable)),
+        alignRight: true,
         title: t('arrivalTime'),
 
         // We should not be able to edit the arrival time of the origin
         disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
-        maxWidth: isOutputTable ? 90 : undefined,
       },
       {
-        ...keyColumn('departure', isOutputTable ? createTextColumn() : timeColumn),
+        ...keyColumn('departure', timeColumn(isOutputTable)),
         title: t('departureTime'),
 
         // We should not be able to edit the departure time of the origin
         disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
-        maxWidth: isOutputTable ? 90 : undefined,
       },
       {
         ...keyColumn(
@@ -105,7 +109,7 @@ export const useTimeStopsColumns = (tableType: TableType, allWaypoints: Suggeste
 
         // We should not be able to edit the reception on close signal if stopFor is not filled
         // except for the destination
-        ...fixedWidth(120),
+        ...fixedWidth(94),
         disabled: ({ rowData, rowIndex }) =>
           isOutputTable || (rowIndex !== allWaypoints?.length - 1 && !rowData.stopFor),
       },
