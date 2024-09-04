@@ -1,7 +1,6 @@
 extern crate proc_macro;
 
 mod error;
-mod model;
 mod modelv2;
 mod search;
 
@@ -40,43 +39,6 @@ use syn::{parse_macro_input, DeriveInput};
 pub fn error(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     error::expand_editoast_error(&input)
-        .unwrap_or_else(darling::Error::write_errors)
-        .into()
-}
-
-/// # A Model custom derive.
-///
-/// This derive provides implementations for common database operations traits.
-///
-/// ## Usage
-///
-/// You should provide a diesel table path, like so
-/// ```#[model(table = "editoast_models::tables::project")]```
-///
-/// Then you can enable implementations like so:
-/// ```#[model(retrieve, create, delete)]```
-///
-/// ## Available implementations
-///
-/// - **retrieve** (enable `Retrieve` trait)
-///   - `retrieve(State<DbPool>, i64) -> Result<Option<Self>>`
-///   - `retrieve_conn(&mut PgConnection, i64) -> Result<Option<Self>>`
-/// - **create** (enable `Create` trait)
-///   - `create(self, State<DbPool>) -> Result<Self>`
-///   - `create_conn(self, &mut PgConnection) -> Result<Self>`
-/// - **delete** (enable `Delete` trait)
-///   - `delete(State<DbPool>, i64) -> Result<bool>`
-///   - `delete_conn(&mut PgConnection, i64) -> Result<bool>`
-///
-/// ## Requirements
-///
-/// The type must implements:
-///   - Queryable (for **retrieve**)
-///   - Insertable (for **create**)
-#[proc_macro_derive(Model, attributes(model))]
-pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    model::model(&input)
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }
