@@ -108,6 +108,8 @@ export default function useSearchOperationalPoint({
     sortedSearchResults,
     filteredAndSortedSearchResults,
     mainOperationalPointsOnly,
+    searchResults,
+    searchOperationalPoints,
     setSearchTerm,
     setChCodeFilter,
     setSearchResults,

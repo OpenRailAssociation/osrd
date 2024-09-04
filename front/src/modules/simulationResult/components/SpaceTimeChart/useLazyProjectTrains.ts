@@ -17,7 +17,7 @@ import { getBatchPackage } from 'utils/batch';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
 
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 5;
 
 type useLazyLoadTrainsProp = {
   infraId?: number;

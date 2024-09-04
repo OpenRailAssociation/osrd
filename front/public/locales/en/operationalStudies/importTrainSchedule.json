@@ -1,15 +1,21 @@
 {
+  "cancel": "Cancel",
   "closeOSRDConfig": "Close",
+  "download": "Download",
   "date": "DATE",
   "datetime": "Date & time",
   "endTime": "END",
   "errorMessages": {
     "error": "An error has occurred",
+    "errorEmptyFile": "Empty file",
     "errorImport": "Unable to convert data to TrainSchedule",
+    "errorInvalidJSONFormat": "Invalid JSON format",
+    "errorInvalidXMLFormat": "Invalid XML format",
     "errorNoDate": "You must enter a date.",
     "errorNoFrom": "You must fill in an origin.",
     "errorNoTo": "You must fill in a destination.",
-    "errorSameFromTo": "Origin and destination must be different"
+    "errorSameFromTo": "Origin and destination must be different",
+    "errorUnsupportedFileType": "Unsupported file type"
   },
   "failure": "Operation failed",
   "from": "Origin",
