@@ -47,10 +47,10 @@ const TimesStops = ({
   const [rows, setRows] = useState<PathWaypointRow[]>([]);
 
   useEffect(() => {
-    if (allWaypoints && pathSteps) {
+    if (allWaypoints) {
       const suggestedOPs = formatSuggestedViasToRowVias(
         allWaypoints,
-        pathSteps,
+        pathSteps || [],
         t,
         startTime,
         tableType
