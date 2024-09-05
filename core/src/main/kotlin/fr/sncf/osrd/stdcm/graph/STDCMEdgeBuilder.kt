@@ -197,11 +197,9 @@ internal constructor(
         val standardAllowanceSpeedRatio = graph.getStandardAllowanceSpeedRatio(envelope!!)
         var res: STDCMEdge? =
             STDCMEdge(
-                TimeData(
-                    earliestReachableTime = actualStartTime,
-                    maxDepartureDelayingWithoutConflict = maximumDelay,
-                    totalDepartureDelay =
-                        prevNode.timeData.totalDepartureDelay + departureTimeShift,
+                prevNode.timeData.shifted(
+                    timeShift = delayNeeded,
+                    delayAddedToLastDeparture = departureTimeShift,
                     timeOfNextConflictAtLocation =
                         graph.delayManager.findNextOccupancy(
                             getExplorerWithNewEnvelope()!!,
@@ -209,9 +207,7 @@ internal constructor(
                             startOffset,
                             envelope!!,
                         ),
-                    totalRunningTime = prevNode.timeData.totalRunningTime,
-                    totalStopTime = prevNode.timeData.totalStopTime,
-                    delayAddedToLastDeparture = departureTimeShift,
+                    maxDepartureDelayingWithoutConflict = maximumDelay,
                 ),
                 infraExplorer,
                 getExplorerWithNewEnvelope()!!,
