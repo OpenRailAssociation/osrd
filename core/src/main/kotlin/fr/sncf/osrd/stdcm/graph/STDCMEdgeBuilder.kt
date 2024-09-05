@@ -15,6 +15,7 @@ import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min
 
 /** This class handles the creation of new edges, handling the many optional parameters. */
+@ConsistentCopyVisibility
 data class STDCMEdgeBuilder
 internal constructor(
     /** Instance used to explore the infra, contains the underlying edge */
@@ -23,26 +24,8 @@ internal constructor(
     private val graph: STDCMGraph,
     /** Previous node, used to compute the final path */
     private var prevNode: STDCMNode,
-    /** Start time of the edge */
-    private var startTime: Double = 0.0,
-
-    /** Start speed, ignored if envelope is specified */
-    private var startSpeed: Double = 0.0,
-
     /** Start offset on the given block */
     private var startOffset: Offset<Block> = Offset(0.meters),
-
-    /**
-     * Maximum delay we can add on any of the previous edges by shifting the departure time, without
-     * causing a conflict
-     */
-    private var prevMaximumAddedDelay: Double = 0.0,
-
-    /**
-     * Sum of all the delay that has been added in the previous edges by shifting the departure time
-     */
-    private var prevAddedDelay: Double = 0.0,
-
     /** Envelope to use on the edge, if unspecified we try to go at maximum allowed speed */
     private var envelope: Envelope? = null,
 
@@ -51,46 +34,7 @@ internal constructor(
      * for the resource generator caches. This is the instance that must be used for next edges
      */
     private var explorerWithNewEnvelope: InfraExplorerWithEnvelope? = null,
-
-    /** Index of the last waypoint passed by the train */
-    private var waypointIndex: Int = 0
 ) {
-    // region SETTERS
-    /** Sets the start time of the edge */
-    fun setStartTime(startTime: Double): STDCMEdgeBuilder {
-        this.startTime = startTime
-        return this
-    }
-
-    /** Sets the start speed, ignored if the envelope has been specified */
-    fun setStartSpeed(startSpeed: Double): STDCMEdgeBuilder {
-        this.startSpeed = startSpeed
-        return this
-    }
-
-    /** Start offset on the given block */
-    fun setStartOffset(startOffset: Offset<Block>): STDCMEdgeBuilder {
-        this.startOffset = startOffset
-        return this
-    }
-
-    /**
-     * Sets the maximum delay we can add on any of the previous edges by shifting the departure time
-     */
-    fun setPrevMaximumAddedDelay(prevMaximumAddedDelay: Double): STDCMEdgeBuilder {
-        this.prevMaximumAddedDelay = prevMaximumAddedDelay
-        return this
-    }
-
-    /**
-     * Sets the sum of all the delay that has been added in the previous edges by shifting the
-     * departure time
-     */
-    fun setPrevAddedDelay(prevAddedDelay: Double): STDCMEdgeBuilder {
-        this.prevAddedDelay = prevAddedDelay
-        return this
-    }
-
     /**
      * Sets the envelope to use on the edge, if unspecified we try to go at maximum allowed speed
      */
@@ -99,16 +43,6 @@ internal constructor(
         return this
     }
 
-    /**
-     * Sets the waypoint index on the new edge (i.e. the index of the last waypoint passed by the
-     * train)
-     */
-    fun setWaypointIndex(waypointIndex: Int): STDCMEdgeBuilder {
-        this.waypointIndex = waypointIndex
-        return this
-    }
-    // endregion SETTERS
-    // region BUILDERS
     /**
      * Creates all edges that can be accessed on the given block, using all the parameters
      * specified.
@@ -143,12 +77,10 @@ internal constructor(
         val delay =
             getDelaysPerOpening()
                 .stream()
-                .filter { x: Double -> startTime + x <= timeNextOccupancy }
+                .filter { x: Double -> prevNode.time + x <= timeNextOccupancy }
                 .max { obj: Double, anotherDouble: Double? -> obj.compareTo(anotherDouble!!) }
         return delay.map { delayNeeded: Double -> makeSingleEdge(delayNeeded) }.orElse(null)
     }
-    // endregion BUILDERS
-    // region UTILITIES
     /** Returns the envelope to be used for the new edges */
     private fun getEnvelope(): Envelope? {
         if (envelope == null)
@@ -162,13 +94,13 @@ internal constructor(
                     infraExplorer,
                     BlockSimulationParameters(
                         infraExplorer.getCurrentBlock(),
-                        startSpeed,
+                        prevNode.speed,
                         startOffset,
                         getStopOnBlock(
                             graph,
                             infraExplorer.getCurrentBlock(),
                             startOffset,
-                            waypointIndex
+                            prevNode.waypointIndex
                         )
                     )
                 )
@@ -213,7 +145,7 @@ internal constructor(
     private fun getDelaysPerOpening(): Set<Double> {
         return graph.delayManager.minimumDelaysPerOpening(
             getExplorerWithNewEnvelope()!!,
-            startTime,
+            prevNode.time,
             envelope!!,
             startOffset,
         )
@@ -222,33 +154,37 @@ internal constructor(
     /** Returns the stop duration at the end of the edge being built, or null if there's no stop */
     private fun getEndStopDuration(): Double? {
         val endAtStop =
-            getStopOnBlock(graph, infraExplorer.getCurrentBlock(), startOffset, waypointIndex) !=
-                null
+            getStopOnBlock(
+                graph,
+                infraExplorer.getCurrentBlock(),
+                startOffset,
+                prevNode.waypointIndex
+            ) != null
         if (!endAtStop) return null
-        return graph.getFirstStopAfterIndex(waypointIndex)!!.duration!!
+        return graph.getFirstStopAfterIndex(prevNode.waypointIndex)!!.duration!!
     }
 
     /** Creates a single STDCM edge, adding the given amount of delay */
     private fun makeSingleEdge(delayNeeded: Double): STDCMEdge? {
         if (java.lang.Double.isInfinite(delayNeeded)) return null
-        val actualStartTime = startTime + delayNeeded
+        val actualStartTime = prevNode.time + delayNeeded
 
         var maximumDelay = 0.0
         var departureTimeShift = delayNeeded
-        if (delayNeeded > prevMaximumAddedDelay) {
+        if (delayNeeded > prevNode.maximumAddedDelay) {
             // We can't just shift the departure time, we need an engineering allowance
             // It's not computed yet, we just check that it's possible
             if (!graph.allowanceManager.checkEngineeringAllowance(prevNode, actualStartTime))
                 return null
             // We still need to adapt the delay values
-            departureTimeShift = prevMaximumAddedDelay
+            departureTimeShift = prevNode.maximumAddedDelay
         } else {
             maximumDelay =
                 min(
-                    prevMaximumAddedDelay - delayNeeded,
+                    prevNode.maximumAddedDelay - delayNeeded,
                     graph.delayManager.findMaximumAddedDelay(
                         getExplorerWithNewEnvelope()!!,
-                        startTime + delayNeeded,
+                        prevNode.time + delayNeeded,
                         startOffset,
                         envelope!!,
                     )
@@ -266,14 +202,14 @@ internal constructor(
                 departureTimeShift,
                 graph.delayManager.findNextOccupancy(
                     getExplorerWithNewEnvelope()!!,
-                    startTime + delayNeeded,
+                    prevNode.time + delayNeeded,
                     startOffset,
                     envelope!!,
                 ),
-                prevAddedDelay + departureTimeShift,
+                prevNode.totalPrevAddedDelay + departureTimeShift,
                 prevNode,
                 startOffset,
-                waypointIndex,
+                prevNode.waypointIndex,
                 endAtStop,
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
@@ -293,7 +229,7 @@ internal constructor(
                 return true
             node = prevEdge.previousNode
         }
-    } // endregion UTILITIES
+    }
 
     companion object {
         fun fromNode(
@@ -305,12 +241,7 @@ internal constructor(
             if (node.locationOnEdge != null) {
                 builder.startOffset = node.locationOnEdge
             }
-            builder.startTime = node.time
-            builder.startSpeed = node.speed
-            builder.prevMaximumAddedDelay = node.maximumAddedDelay
-            builder.prevAddedDelay = node.totalPrevAddedDelay
             builder.prevNode = node
-            builder.waypointIndex = node.waypointIndex
             return builder
         }
     }

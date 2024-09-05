@@ -39,7 +39,6 @@ class BacktrackingManager(private val graph: STDCMGraph) {
         // Create the new edge
         val newNode = newPreviousEdge.getEdgeEnd(graph)
         return STDCMEdgeBuilder.fromNode(graph, newNode, edge.infraExplorer)
-            .setStartOffset(edge.envelopeStartOffset)
             .setEnvelope(envelope)
             .findEdgeSameNextOccupancy(edge.timeNextOccupancy)
     }
@@ -78,13 +77,8 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                 graph
             )
         val prevNode = old.previousNode
-        return STDCMEdgeBuilder(old.infraExplorer, graph, prevNode)
-            .setStartTime(old.timeStart - old.addedDelay)
-            .setStartOffset(old.envelopeStartOffset)
-            .setPrevMaximumAddedDelay(old.maximumAddedDelayAfter + old.addedDelay)
-            .setPrevAddedDelay(old.totalDepartureTimeShift - old.addedDelay)
+        return STDCMEdgeBuilder.fromNode(graph, prevNode, old.infraExplorer)
             .setEnvelope(newEnvelope)
-            .setWaypointIndex(old.waypointIndex)
             .findEdgeSameNextOccupancy(old.timeNextOccupancy)
     }
 }
