@@ -14,10 +14,10 @@ export default function useModalFocusTrap(
     const focusableElements = modalElement?.querySelectorAll(
       // last declaration stands for all elements not natively focusable like li
       'input, button, [tabindex]:not([tabindex="-1"])'
-    ) as NodeListOf<Element>;
+    );
 
-    const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements?.length - 1] as HTMLElement;
+    const firstElement = focusableElements?.[0];
+    const lastElement = focusableElements?.[focusableElements?.length - 1];
 
     /**
      *
@@ -26,13 +26,13 @@ export default function useModalFocusTrap(
      * - first element if we are only pressing "tab" and are on the last element
      */
     const handleTabKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Tab') {
+      if (event.key === 'Tab' && firstElement && lastElement) {
         if (event.shiftKey && document.activeElement === firstElement) {
           event.preventDefault();
-          lastElement.focus();
+          (lastElement as HTMLElement).focus();
         } else if (!event.shiftKey && document.activeElement === lastElement) {
           event.preventDefault();
-          firstElement.focus();
+          (firstElement as HTMLElement).focus();
         }
       }
     };
