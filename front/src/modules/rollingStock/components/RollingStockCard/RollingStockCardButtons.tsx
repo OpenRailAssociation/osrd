@@ -26,16 +26,16 @@ const RollingStockCardButtons = ({
   const { t } = useTranslation(['rollingstock']);
   const { closeModal } = useContext(ModalContext);
 
-  const { getRollingStockComfortV2 } = useOsrdConfSelectors();
-  const currentComfortInStore = useSelector(getRollingStockComfortV2);
+  const { getRollingStockComfort } = useOsrdConfSelectors();
+  const currentComfortInStore = useSelector(getRollingStockComfort);
   const [comfort, setComfort] = useState(currentComfortInStore as string);
 
-  const { updateRollingStockComfortV2, updateRollingStockID } = useOsrdConfActions();
+  const { updateRollingStockComfort, updateRollingStockID } = useOsrdConfActions();
 
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
     dispatch(updateRollingStockID(id));
-    dispatch(updateRollingStockComfortV2(comfort as Comfort));
+    dispatch(updateRollingStockComfort(comfort as Comfort));
     closeModal();
   };
 

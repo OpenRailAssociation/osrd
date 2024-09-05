@@ -4,7 +4,7 @@ import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
-import SimulationReportSheetV2 from 'applications/stdcm/components/SimulationReportSheetV2';
+import SimulationReportSheet from 'applications/stdcm/components/SimulationReportSheet';
 import {
   generateCodeNumber,
   getOperationalPointsWithTimes,
@@ -83,7 +83,7 @@ const StcdmResults = ({
                 <div className="download-simulation">
                   <PDFDownloadLink
                     document={
-                      <SimulationReportSheetV2
+                      <SimulationReportSheet
                         stdcmData={selectedSimulation.outputs.results}
                         simulationReportSheetNumber={simulationReportSheetNumber}
                         mapCanvas={mapCanvas}

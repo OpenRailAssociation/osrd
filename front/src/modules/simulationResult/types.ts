@@ -19,7 +19,7 @@ export type TimeScaleDomain = {
   source?: 'SpaceTimeChart' | 'Timeline';
 };
 
-export type SpaceCurvesSlopesDataV2 = {
+export type SpaceCurvesSlopesData = {
   gradients: number[];
   speed: ReportTrainData[];
   slopesHistogram: PositionData<'gradient'>[];

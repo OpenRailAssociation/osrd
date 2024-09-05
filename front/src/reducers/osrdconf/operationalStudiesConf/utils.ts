@@ -1,6 +1,6 @@
 import { compact } from 'lodash';
 
-import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import { addElementAtIndex } from 'utils/array';
 
 import type { PathStep } from '../types';
@@ -13,7 +13,7 @@ import type { PathStep } from '../types';
  */
 export const canRemovePathStep = (
   pathStep: PathStep,
-  powerRestrictionRanges: PowerRestrictionV2[]
+  powerRestrictionRanges: PowerRestriction[]
 ) => {
   const pathStepIsUsed = powerRestrictionRanges.some(
     (restriction) => restriction.from === pathStep.id || restriction.to === pathStep.id
@@ -29,12 +29,12 @@ export const canRemovePathStep = (
 
 /** Remove some restrictions and update the first and second restrictions with the new path step */
 export const updateRestrictions = (
-  restrictions: PowerRestrictionV2[],
-  firstRestriction: PowerRestrictionV2 | undefined,
-  secondRestriction: PowerRestrictionV2 | undefined,
+  restrictions: PowerRestriction[],
+  firstRestriction: PowerRestriction | undefined,
+  secondRestriction: PowerRestriction | undefined,
   newPathStepId: string,
-  restrictionsToRemove: PowerRestrictionV2[] = []
-): PowerRestrictionV2[] =>
+  restrictionsToRemove: PowerRestriction[] = []
+): PowerRestriction[] =>
   compact(
     restrictions.map((restriction) => {
       for (const restrictionToRemove of restrictionsToRemove) {
@@ -58,7 +58,7 @@ export const updateRestrictions = (
 
 export const isRangeCovered = (
   pathSteps: PathStep[],
-  powerRestrictionRange: PowerRestrictionV2,
+  powerRestrictionRange: PowerRestriction,
   positionMin: number | undefined,
   positionMax: number | undefined
 ): boolean => {
@@ -92,7 +92,7 @@ export const addPathStep = (pathSteps: PathStep[], newPathStep: PathStep): PathS
 /** Remove the unused path steps */
 export const cleanPathSteps = (
   pathSteps: PathStep[],
-  powerRestrictions: PowerRestrictionV2[]
+  powerRestrictions: PowerRestriction[]
 ): PathStep[] =>
   pathSteps.reduce((acc, pathStep, index) => {
     if (index === 0 || index === pathSteps.length - 1) {

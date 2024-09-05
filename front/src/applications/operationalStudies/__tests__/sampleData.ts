@@ -3,7 +3,7 @@ import type {
   ElectricalBoundariesData,
   ElectricalProfileValue,
   ElectricalRangesData,
-  ElectrificationRangeV2,
+  ElectrificationRange,
   ElectrificationValue,
   PositionData,
 } from 'applications/operationalStudies/types';
@@ -242,7 +242,7 @@ export const electricalProfileRangesDataShort: ElectricalRangesData<ElectricalPr
   },
 ];
 
-export const electrificationRanges: ElectrificationRangeV2[] = [
+export const electrificationRanges: ElectrificationRange[] = [
   {
     start: 0,
     stop: 1,
@@ -284,7 +284,7 @@ export const electrificationRanges: ElectrificationRangeV2[] = [
   },
 ];
 
-export const electrificationRangesLarge: ElectrificationRangeV2[] = [
+export const electrificationRangesLarge: ElectrificationRange[] = [
   {
     start: 0,
     stop: 1,

@@ -4,10 +4,10 @@ import type { RollingStock } from 'common/api/osrdEditoastApi';
 import { isoDateWithTimezoneToSec } from 'utils/date';
 import { mmToM } from 'utils/physics';
 
-import { ChartSynchronizerV2, type ChartSynchronizerTrainData } from './ChartSynchronizerV2';
+import { ChartSynchronizer, type ChartSynchronizerTrainData } from './ChartSynchronizer';
 import { sec2d3datetime } from '../ChartHelpers/ChartHelpers';
 
-export const updateChartSynchronizerV2TrainData = (
+export const updateChartSynchronizerTrainData = (
   simulation: SimulationResponseSuccess,
   rollingStock: RollingStock,
   departureTime: string
@@ -86,5 +86,5 @@ export const updateChartSynchronizerV2TrainData = (
     eco_speed: ecoSpeeds,
   };
 
-  ChartSynchronizerV2.getInstance().setTrainData(chartSynchronizerData);
+  ChartSynchronizer.getInstance().setTrainData(chartSynchronizerData);
 };

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import type {
   ManageTrainSchedulePathProperties,
-  PowerRestrictionV2,
+  PowerRestriction,
 } from 'applications/operationalStudies/types';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import { useOsrdConfActions } from 'common/osrdContext';
@@ -24,7 +24,7 @@ type UsePowerRestrictionSelectorBehavioursArgs = {
   cutPositions: number[];
   pathProperties: ManageTrainSchedulePathProperties;
   pathSteps: PathStep[];
-  powerRestrictionRanges: PowerRestrictionV2[];
+  powerRestrictionRanges: PowerRestriction[];
   setCutPositions: (newCutPosition: number[]) => void;
 };
 
@@ -39,9 +39,9 @@ const usePowerRestrictionSelectorBehaviours = ({
   const dispatch = useAppDispatch();
 
   const {
-    upsertPowerRestrictionRangesV2,
-    cutPowerRestrictionRangesV2,
-    deletePowerRestrictionRangesV2,
+    upsertPowerRestrictionRanges,
+    cutPowerRestrictionRanges,
+    deletePowerRestrictionRanges,
     resizeSegmentEndInput,
     resizeSegmentBeginInput,
   } = useOsrdConfActions() as OperationalStudiesConfSliceActions;
@@ -78,14 +78,14 @@ const usePowerRestrictionSelectorBehaviours = ({
     if (from && to) {
       if (newRange.value !== NO_POWER_RESTRICTION) {
         dispatch(
-          upsertPowerRestrictionRangesV2({
+          upsertPowerRestrictionRanges({
             from,
             to,
             code: newRange.value.toString(),
           })
         );
       } else {
-        dispatch(deletePowerRestrictionRangesV2({ from, to }));
+        dispatch(deletePowerRestrictionRanges({ from, to }));
       }
     }
   };
@@ -100,7 +100,7 @@ const usePowerRestrictionSelectorBehaviours = ({
       setCutPositions
     );
     if (cutAt) {
-      dispatch(cutPowerRestrictionRangesV2({ cutAt }));
+      dispatch(cutPowerRestrictionRanges({ cutAt }));
     }
   };
 
@@ -109,7 +109,7 @@ const usePowerRestrictionSelectorBehaviours = ({
     const toPathStep = getPathStep(pathSteps, to);
 
     if (fromPathStep && toPathStep) {
-      dispatch(deletePowerRestrictionRangesV2({ from: fromPathStep, to: toPathStep }));
+      dispatch(deletePowerRestrictionRanges({ from: fromPathStep, to: toPathStep }));
     }
   };
 

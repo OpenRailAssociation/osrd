@@ -1,5 +1,5 @@
 import type { Conflict } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/TimetableV2/types';
+import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 
 import type { ConflictWithTrainNames } from './types';
 

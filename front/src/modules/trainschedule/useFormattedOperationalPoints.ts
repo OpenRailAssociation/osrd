@@ -7,9 +7,9 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 
-import { BaseOrEco, type BaseOrEcoType } from './components/DriverTrainScheduleV2/consts';
-import type { OperationalPointWithTimeAndSpeed } from './components/DriverTrainScheduleV2/types';
-import { formatOperationalPoints, isEco } from './components/DriverTrainScheduleV2/utils';
+import { BaseOrEco, type BaseOrEcoType } from './components/DriverTrainSchedule/consts';
+import type { OperationalPointWithTimeAndSpeed } from './components/DriverTrainSchedule/types';
+import { formatOperationalPoints, isEco } from './components/DriverTrainSchedule/utils';
 
 /**
  * add time, speed, position, duration to operational points

@@ -52,7 +52,7 @@ import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import ItineraryLayer from './ManageTrainScheduleMap/ItineraryLayer';
-import ItineraryMarkersV2 from './ManageTrainScheduleMap/ItineraryMarkersV2';
+import ItineraryMarkers from './ManageTrainScheduleMap/ItineraryMarkers';
 
 type MapProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
@@ -403,7 +403,7 @@ const Map = ({
               hideItineraryLine={hideItinerary}
             />
             {mapRef.current && (
-              <ItineraryMarkersV2
+              <ItineraryMarkers
                 simulationPathSteps={simulationPathSteps}
                 map={mapRef.current.getMap()}
               />

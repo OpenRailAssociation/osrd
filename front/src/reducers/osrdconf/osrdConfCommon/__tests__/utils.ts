@@ -335,14 +335,14 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     expect(state.originUpperBoundDate).toBe(newOriginUpperBoundDate);
   });
 
-  it('should handle updateViaStopTimeV2', () => {
+  it('should handle updateViaStopTime', () => {
     const pathSteps = testDataBuilder.buildPathSteps();
     const via = pathSteps[1];
     const store = createStore(slice, {
       pathSteps,
     });
 
-    store.dispatch(slice.actions.updateViaStopTimeV2({ via, duration: 'PT60S' }));
+    store.dispatch(slice.actions.updateViaStopTime({ via, duration: 'PT60S' }));
     const state = store.getState()[slice.name];
     expect(state.pathSteps[1]?.stopFor).toEqual('PT60S');
   });
@@ -377,55 +377,55 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     expect(state.pathSteps).toEqual(pathSteps);
   });
 
-  it('should handle updateOriginV2', () => {
+  it('should handle updateOrigin', () => {
     const newOrigin = {
       ...testDataBuilder.buildPathSteps()[0],
       arrivalType: ArrivalTimeTypes.PRECISE_TIME,
     };
-    defaultStore.dispatch(slice.actions.updateOriginV2(newOrigin));
+    defaultStore.dispatch(slice.actions.updateOrigin(newOrigin));
     const state = defaultStore.getState()[slice.name];
     expect(state.pathSteps[0]).toEqual(newOrigin);
   });
 
-  it('should handle updateDestinationV2', () => {
+  it('should handle updateDestination', () => {
     const lastPathStep = last(testDataBuilder.buildPathSteps());
     const newDestination = { ...lastPathStep!, arrivalType: ArrivalTimeTypes.ASAP };
-    defaultStore.dispatch(slice.actions.updateDestinationV2(newDestination));
+    defaultStore.dispatch(slice.actions.updateDestination(newDestination));
     const state = defaultStore.getState()[slice.name];
     expect(last(state.pathSteps)).toEqual(newDestination);
   });
 
-  it('should handle deleteItineraryV2', () => {
+  it('should handle deleteItinerary', () => {
     const pathSteps = testDataBuilder.buildPathSteps();
     const store = createStore(slice, {
       pathSteps,
     });
-    store.dispatch(slice.actions.deleteItineraryV2());
+    store.dispatch(slice.actions.deleteItinerary());
     const state = store.getState()[slice.name];
     expect(state.pathSteps).toEqual([null, null]);
   });
 
-  it('should handle clearViasV2', () => {
+  it('should handle clearVias', () => {
     const pathSteps = testDataBuilder.buildPathSteps();
     const store = createStore(slice, {
       pathSteps,
     });
-    store.dispatch(slice.actions.clearViasV2());
+    store.dispatch(slice.actions.clearVias());
     const state = store.getState()[slice.name];
     expect(state.pathSteps).toEqual([pathSteps[0], last(pathSteps)]);
   });
 
-  it('should handle deleteViaV2', () => {
+  it('should handle deleteVia', () => {
     const pathSteps = testDataBuilder.buildPathSteps();
     const store = createStore(slice, {
       pathSteps,
     });
-    store.dispatch(slice.actions.deleteViaV2(0));
+    store.dispatch(slice.actions.deleteVia(0));
     const state = store.getState()[slice.name];
     expect(state.pathSteps).toEqual(removeElementAtIndex(pathSteps, 1));
   });
 
-  describe('should handle addViaV2', () => {
+  describe('should handle addVia', () => {
     const pathStepsData = testDataBuilder.buildPathSteps();
     const [brest, rennes, lemans, paris, strasbourg] = compact(pathStepsData);
     const pathProperties = testDataBuilder.buildPathProperties();
@@ -440,7 +440,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
         pathSteps,
       });
 
-      store.dispatch(slice.actions.addViaV2({ newVia: paris, pathProperties }));
+      store.dispatch(slice.actions.addVia({ newVia: paris, pathProperties }));
       const state = store.getState()[slice.name];
       expect(state.pathSteps).toStrictEqual([null, parisNoPosition, strasbourg]);
     });
@@ -451,7 +451,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
         pathSteps,
       });
 
-      store.dispatch(slice.actions.addViaV2({ newVia: rennes, pathProperties }));
+      store.dispatch(slice.actions.addVia({ newVia: rennes, pathProperties }));
       const state = store.getState()[slice.name];
       expect(state.pathSteps).toStrictEqual([brest, rennesNoPosition, null]);
     });
@@ -462,7 +462,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
         pathSteps,
       });
 
-      store.dispatch(slice.actions.addViaV2({ newVia: lemans, pathProperties }));
+      store.dispatch(slice.actions.addVia({ newVia: lemans, pathProperties }));
       const state = store.getState()[slice.name];
       expect(state.pathSteps).toStrictEqual([brest, lemansNoPosition, strasbourg]);
     });
@@ -473,7 +473,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
         pathSteps,
       });
 
-      store.dispatch(slice.actions.addViaV2({ newVia: lemans, pathProperties }));
+      store.dispatch(slice.actions.addVia({ newVia: lemans, pathProperties }));
       const state = store.getState()[slice.name];
       expect(state.pathSteps).toStrictEqual([brest, rennes, lemansNoPosition, strasbourg]);
     });
@@ -484,7 +484,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
         pathSteps,
       });
 
-      store.dispatch(slice.actions.addViaV2({ newVia: lemans, pathProperties }));
+      store.dispatch(slice.actions.addVia({ newVia: lemans, pathProperties }));
       const state = store.getState()[slice.name];
       expect(state.pathSteps).toStrictEqual([brest, rennes, lemansNoPosition, paris, strasbourg]);
     });
@@ -495,7 +495,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
         pathSteps,
       });
 
-      store.dispatch(slice.actions.addViaV2({ newVia: paris, pathProperties }));
+      store.dispatch(slice.actions.addVia({ newVia: paris, pathProperties }));
       const state = store.getState()[slice.name];
       expect(state.pathSteps).toStrictEqual([brest, rennes, lemans, parisNoPosition, strasbourg]);
     });
@@ -583,11 +583,11 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     });
   });
 
-  it('should handle updateRollingStockComfortV2', () => {
+  it('should handle updateRollingStockComfort', () => {
     const newRollingStockComfort: TrainScheduleBase['comfort'] = 'AIR_CONDITIONING';
-    defaultStore.dispatch(slice.actions.updateRollingStockComfortV2(newRollingStockComfort));
+    defaultStore.dispatch(slice.actions.updateRollingStockComfort(newRollingStockComfort));
     const state = defaultStore.getState()[slice.name];
-    expect(state.rollingStockComfortV2).toBe(newRollingStockComfort);
+    expect(state.rollingStockComfort).toBe(newRollingStockComfort);
   });
 
   it('should handle updateStartTime', () => {

@@ -20,11 +20,11 @@ type ModalSuggestedViasProps = {
 };
 
 const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
-  const { updatePathSteps, upsertViaFromSuggestedOP, clearViasV2 } = useOsrdConfActions();
-  const { getViasV2, getDestinationV2, getPathSteps } = useOsrdConfSelectors();
+  const { updatePathSteps, upsertViaFromSuggestedOP, clearVias } = useOsrdConfActions();
+  const { getVias, getDestination, getPathSteps } = useOsrdConfSelectors();
   const dispatch = useAppDispatch();
-  const vias = useSelector(getViasV2());
-  const destination = useSelector(getDestinationV2);
+  const vias = useSelector(getVias());
+  const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
 
@@ -122,7 +122,7 @@ const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
           <button
             className="btn btn-danger btn-sm btn-block mb-1"
             type="button"
-            onClick={() => dispatch(clearViasV2())}
+            onClick={() => dispatch(clearVias())}
           >
             <Trash />
             <span className="ml-2">{t('deleteVias')}</span>

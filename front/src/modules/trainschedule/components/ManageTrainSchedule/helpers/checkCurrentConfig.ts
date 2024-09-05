@@ -31,8 +31,8 @@ const checkCurrentConfig = (
     speedLimitByTag,
     initialSpeed,
     usingElectricalProfiles,
-    rollingStockComfortV2,
-    powerRestrictionV2,
+    rollingStockComfort,
+    powerRestriction,
     startTime,
   } = osrdconf;
   let error = false;
@@ -142,7 +142,7 @@ const checkCurrentConfig = (
     trainStep,
     trainDelta,
     labels,
-    rollingStockComfort: rollingStockComfortV2,
+    rollingStockComfort,
     initialSpeed: initialSpeed ? kmhToMs(initialSpeed) : 0,
     usingElectricalProfiles,
     path: compact(osrdconf.pathSteps).map((step) => {
@@ -164,7 +164,6 @@ const checkCurrentConfig = (
       if ('track' in stepLocation) {
         return {
           ...stepLocation,
-          // TODO drop V1: we should store the offset in mm in the store
           offset: mToMm(stepLocation.offset),
         };
       }
@@ -173,7 +172,7 @@ const checkCurrentConfig = (
 
     margins: formatMargin(compact(pathSteps)),
     schedule: formatSchedule(compact(pathSteps), startTime),
-    powerRestrictions: powerRestrictionV2,
+    powerRestrictions: powerRestriction,
     firstStartTime: startTime,
     speedLimitByTag,
   };

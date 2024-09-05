@@ -1,6 +1,6 @@
 import { compact, isEmpty, keyBy } from 'lodash';
 
-import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
@@ -8,7 +8,7 @@ import type { PowerRestrictionWarnings } from 'modules/powerRestriction/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
 import type { PathStep } from 'reducers/osrdconf/types';
 
-// TODO drop v1: convert begin and end in meters here instead of in PowerRestrictionsSelectorV2
+// TODO : convert begin and end in meters here instead of in PowerRestrictionsSelector
 const getInvalidZoneBoundaries = (
   powerRestrictionRange: RangedValue,
   voltageRange: RangedValue
@@ -100,7 +100,7 @@ export const countWarnings = (
 };
 
 const formatElectricalRanges = (
-  ranges: PowerRestrictionV2[],
+  ranges: PowerRestriction[],
   pathStepsById: Record<string, PathStep>
 ): { begin: number; end: number; value: string }[] => {
   const formattedRanges = compact(
@@ -130,7 +130,7 @@ const getPowerRestrictionsWarningsData = ({
   pathSteps: PathStep[];
   rollingStockPowerRestrictions: RollingStock['power_restrictions'];
   voltageRanges: RangedValue[];
-  powerRestrictionRanges: PowerRestrictionV2[];
+  powerRestrictionRanges: PowerRestriction[];
   rollingStockModes: RollingStock['effort_curves']['modes'];
 }) => {
   const pathStepsById = keyBy(pathSteps, 'id');

@@ -12,7 +12,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
-import ItineraryV2 from 'modules/pathfinding/components/Itinerary/ItineraryV2';
+import Itinerary from 'modules/pathfinding/components/Itinerary/Itinerary';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
@@ -43,15 +43,15 @@ const StdcmConfig = ({
     getScenarioID,
     getStudyID,
     getTimetableID,
-    getOriginV2,
-    getDestinationV2,
+    getOrigin,
+    getDestination,
   } = useOsrdConfSelectors();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
   const timetableID = useSelector(getTimetableID);
-  const originV2 = useSelector(getOriginV2);
-  const destinationV2 = useSelector(getDestinationV2);
+  const origin = useSelector(getOrigin);
+  const destination = useSelector(getDestination);
   const infraID = useInfraID();
 
   const [showMap, setShowMap] = useState<boolean>(true);
@@ -77,7 +77,7 @@ const StdcmConfig = ({
   );
 
   const disabledApplyButton = useMemo(() => {
-    if (!originV2 || !destinationV2 || !osrdconf.originDate) return true;
+    if (!origin || !destination || !osrdconf.originDate) return true;
 
     return (
       infra?.state !== 'CACHED' ||
@@ -87,7 +87,7 @@ const StdcmConfig = ({
         osrdconf.originTime > osrdconf.originUpperBoundTime) ||
       !osrdconf.rollingStockID
     );
-  }, [infra, osrdconf, originV2, destinationV2]);
+  }, [infra, osrdconf, origin, destination]);
 
   const handleClick = () => {
     launchStdcmRequest();
@@ -129,7 +129,7 @@ const StdcmConfig = ({
                 dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
               />
 
-              <ItineraryV2
+              <Itinerary
                 pathProperties={pathProperties}
                 setPathProperties={setPathProperties}
                 shouldManageStopDuration

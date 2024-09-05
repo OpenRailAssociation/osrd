@@ -7,7 +7,6 @@ import type { ReportTrainData } from 'modules/simulationResult/components/SpeedS
 import type { ChartAxes, ListValues, XAxis, Y2Axis, YAxis } from 'modules/simulationResult/consts';
 import type {
   Position,
-  PositionSpeedTime,
   SimulationD3Scale,
   PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
@@ -37,7 +36,7 @@ export type MergedBlock<Keys extends string> = {
 // called with keyValues
 // ['position', 'gradient']
 // ['position', 'speed']
-export const mergeDatasAreaConstantV2 = <Keys extends 'position' | 'gradient'>(
+export const mergeDatasAreaConstant = <Keys extends 'position' | 'gradient'>(
   data1: PositionData<'gradient'>[],
   data2: number,
   keyValues: Keys[]
@@ -71,12 +70,12 @@ export const gridY2 = (axisScale: SimulationD3Scale, width: number) =>
 
 // Interpolation of cursor based on space position
 // ['position', 'speed']
-export const interpolateOnPositionV2 = (
-  dataSimulation: { speed: PositionSpeedTime[] | ReportTrainData[] }, // TODO DROP V1 : remove PositionSpeedTime type
+export const interpolateOnPosition = (
+  dataSimulation: { speed: ReportTrainData[] },
   positionLocal: number,
   offset: number // in seconds
 ) => {
-  const bisect = d3.bisector<PositionSpeedTime, number>((d) => d.position).left;
+  const bisect = d3.bisector<ReportTrainData, number>((d) => d.position).left;
   const index = bisect(dataSimulation.speed, positionLocal, 1);
   const bisection = [dataSimulation.speed[index - 1], dataSimulation.speed[index]];
   if (bisection[1]) {

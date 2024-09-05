@@ -6,9 +6,9 @@ import { useTranslation } from 'react-i18next';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { LoaderFill } from 'common/Loaders';
-import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
+import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 
-import SimulationReportSheetV2 from '../components/SimulationReportSheetV2';
+import SimulationReportSheet from '../components/SimulationReportSheet';
 import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmV2Results } from '../types';
 import {
@@ -26,8 +26,6 @@ type StcdmResultsProps = {
 };
 
 const codeNumber = generateCodeNumber();
-
-// TODO TS2 : Adapt StdcmResult to trainSchedule v2 (SpaceTimeChart and SpeedSpaceChart)
 
 const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResultsProps) => {
   const { t } = useTranslation(['stdcm']);
@@ -74,7 +72,7 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
             }}
           >
             {speedSpaceChartData ? (
-              <SpeedSpaceChartV2
+              <SpeedSpaceChartContainer
                 trainSimulation={stdcmResponse.simulation}
                 selectedTrainPowerRestrictions={speedSpaceChartData.formattedPowerRestrictions}
                 pathProperties={speedSpaceChartData.formattedPathProperties}
@@ -90,7 +88,7 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
           <button className="btn d-flex align-items-center mb-1 font-weight-bold" type="button">
             <PDFDownloadLink
               document={
-                <SimulationReportSheetV2
+                <SimulationReportSheet
                   stdcmData={stdcmResponse}
                   simulationReportSheetNumber={codeNumber}
                   mapCanvas={mapCanvas}

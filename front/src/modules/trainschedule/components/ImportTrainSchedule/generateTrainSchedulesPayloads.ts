@@ -6,7 +6,7 @@ import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { formatToIsoDate } from 'utils/date';
 import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils/timeManipulation';
 
-export function generateV2TrainSchedulesPayloads(
+export function generateTrainSchedulesPayloads(
   trains: ImportedTrainSchedule[]
 ): TrainScheduleBase[] {
   return trains.map((train) => {

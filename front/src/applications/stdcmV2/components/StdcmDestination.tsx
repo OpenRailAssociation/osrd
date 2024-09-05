@@ -25,7 +25,7 @@ const StdcmDestination = ({
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
   const {
-    updateDestinationV2,
+    updateDestination,
     updateDestinationArrival,
     updateDestinationArrivalType,
     updateDestinationTolerances,
@@ -58,7 +58,7 @@ const StdcmDestination = ({
   }, [destination]);
 
   const updateDestinationPoint = (pathStep: PathStep | null) => {
-    dispatch(updateDestinationV2(pathStep));
+    dispatch(updateDestination(pathStep));
   };
 
   const onDestinationArrivalChange = (arrival: string) => {

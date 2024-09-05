@@ -46,7 +46,7 @@ export const checkStdcmConf = (
     pathSteps,
     timetableID,
     speedLimitByTag,
-    rollingStockComfortV2,
+    rollingStockComfort,
     infraID,
     rollingStockID,
     maximumRunTime,
@@ -191,7 +191,6 @@ export const checkStdcmConf = (
     if ('track' in stepLocation) {
       return {
         duration,
-        // TODO DROP V1: we should store the offset in mm in the store
         location: { track: stepLocation.track, offset: mToMm(stepLocation.offset) },
         timing_data: timingData,
       };
@@ -209,7 +208,7 @@ export const checkStdcmConf = (
     infraId: infraID!,
     rollingStockId: rollingStockID!,
     timetableId: timetableID!,
-    rollingStockComfort: rollingStockComfortV2,
+    rollingStockComfort,
     path,
     ...(!stdcmV2Activated && {
       startTime: originTime!,

@@ -85,7 +85,7 @@ const SimulationWarpedMap = ({
   // const [localPositionValues, setLocalPositionValues] = useState<PositionsSpeedTimes<Date>>(
   //   {} as PositionsSpeedTimes<Date>
   // );
-  // useChartSynchronizerV2(
+  // useChartSynchronizer(
   //   debounce((timePosition, positionValues) => {
   //     setLocalTimePosition(timePosition);
   //     setLocalPositionValues(positionValues);
@@ -183,7 +183,7 @@ const SimulationWarpedMap = ({
   }, [itineraryState, state]);
 
   // Trains handling:
-  // TODO: fix warped map - adapt this part with simulations results v2
+  // TODO: fix warped map - adapt this part with simulations results
   // const trainsIndex = useMemo(() => keyBy(simulation.trains as Train[], 'id'), [simulation.trains]);
   // const trainsPositionsState: AsyncMemoState<
   //   (TrainPosition & { train: Train; isSelected?: boolean })[]
@@ -297,7 +297,7 @@ const SimulationWarpedMap = ({
             osrdData={state.osrd}
             osmData={state.osm}
             itinerary={warpedItinerary}
-            // TODO: fix warped map - adapt this part with simulations results v2
+            // TODO: fix warped map - adapt this part with simulations results
             // trainsPositions={getAsyncMemoData(trainsPositionsState) || undefined}
             boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
           />

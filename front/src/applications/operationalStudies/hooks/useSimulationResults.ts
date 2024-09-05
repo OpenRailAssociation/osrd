@@ -5,12 +5,12 @@ import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 
-import type { SimulationResults } from '../types';
+import type { SimulationResultsData } from '../types';
 
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = (): SimulationResults => {
+const useSimulationResults = (): SimulationResultsData => {
   const infraId = useInfraID();
   const { getElectricalProfileSetId } = useOsrdConfSelectors();
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);

@@ -7,7 +7,7 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import { convertIsoUtcToLocalTime } from 'utils/date';
 import { msToKmh } from 'utils/physics';
 
-export function adjustConfWithTrainToModifyV2(
+export function adjustConfWithTrainToModify(
   trainSchedule: TrainScheduleResult,
   pathSteps: (PathStep | null)[],
   rollingStockId: number | undefined,
@@ -23,7 +23,7 @@ export function adjustConfWithTrainToModifyV2(
     updateName,
     updateStartTime,
     updateInitialSpeed,
-    updatePowerRestrictionRangesV2,
+    updatePowerRestrictionRanges,
     updatePathSteps,
   } = osrdActions;
 
@@ -52,5 +52,5 @@ export function adjustConfWithTrainToModifyV2(
 
   dispatch(updateLabels(labels || []));
 
-  dispatch(updatePowerRestrictionRangesV2(power_restrictions || []));
+  dispatch(updatePowerRestrictionRanges(power_restrictions || []));
 }

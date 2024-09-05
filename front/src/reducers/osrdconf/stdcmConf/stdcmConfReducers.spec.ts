@@ -121,7 +121,7 @@ describe('stdcmConfReducers', () => {
     };
 
     it('should handle updateOriginArrival', () => {
-      store.dispatch(stdcmConfSliceActions.updateOriginV2(newOrigin));
+      store.dispatch(stdcmConfSliceActions.updateOrigin(newOrigin));
       store.dispatch(stdcmConfSliceActions.updateOriginArrival('2024-08-12T15:45:00.000+02:00'));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.pathSteps[0]).toEqual({
@@ -168,7 +168,7 @@ describe('stdcmConfReducers', () => {
     };
 
     it('should handle updateDestinationArrival', () => {
-      store.dispatch(stdcmConfSliceActions.updateDestinationV2(newDestination));
+      store.dispatch(stdcmConfSliceActions.updateDestination(newDestination));
       store.dispatch(
         stdcmConfSliceActions.updateDestinationArrival('2024-08-12T15:45:00.000+02:00')
       );

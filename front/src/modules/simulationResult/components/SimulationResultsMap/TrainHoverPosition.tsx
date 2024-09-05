@@ -1,5 +1,3 @@
-// TO DO DROP V1: remove this file
-
 import along from '@turf/along';
 import bezierSpline from '@turf/bezier-spline';
 import { type Point, polygon, lineString } from '@turf/helpers';

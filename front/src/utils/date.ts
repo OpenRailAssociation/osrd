@@ -112,19 +112,7 @@ export const isoDateWithTimezoneToSec = (isoDate: string) => {
   return isoDateToMs(isoDate) / 1000 + Math.abs(timeDifferenceMinutes) * 60;
 };
 
-// TODO: This function is only used for V1, so it must be deleted when V1 is abandoned. Also we must rename formatDayV2.
-export function formatDay(locale = 'fr') {
-  if (!['en', 'fr'].includes(locale)) {
-    throw new Error('Invalid locale');
-  }
-  const currentDate = dayjs().locale(locale);
-  if (locale === 'en') {
-    return currentDate.format('dddd, MMMM D, YYYY');
-  }
-  return currentDate.format('dddd D MMMM YYYY');
-}
-
-export function formatDayV2(dateString: string, locale: string = 'fr'): string {
+export function formatDay(dateString: string, locale: string = 'fr'): string {
   if (!['en', 'fr'].includes(locale)) {
     throw new Error('Invalid locale');
   }

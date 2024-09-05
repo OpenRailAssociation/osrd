@@ -73,12 +73,12 @@ export default function Study() {
   );
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
-  const [deleteScenarioV2] =
+  const [deleteScenario] =
     osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
       {}
     );
 
-  const { data: scenariosV2 } =
+  const { data: scenarios } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
       {
         projectId: projectId!,
@@ -97,7 +97,7 @@ export default function Study() {
     toggleSelection: toggleScenarioSelection,
     deleteItems,
   } = useMultiSelection<ScenarioWithDetails>((scenarioId) => {
-    deleteScenarioV2({ projectId: projectId!, studyId: studyId!, scenarioId });
+    deleteScenario({ projectId: projectId!, studyId: studyId!, scenarioId });
   });
   const handleDeleteScenario = () => {
     if (selectedScenarioIds.length > 0 && studyId && projectId) {
@@ -161,7 +161,7 @@ export default function Study() {
           console.error(error);
         }
       } else {
-        setScenariosList(scenariosV2?.results || []);
+        setScenariosList(scenarios?.results || []);
       }
       setIsLoading(false);
     }
@@ -197,7 +197,7 @@ export default function Study() {
 
   useEffect(() => {
     getScenarioList();
-  }, [sortOption, filter, scenariosV2]);
+  }, [sortOption, filter, scenarios]);
 
   return (
     <>

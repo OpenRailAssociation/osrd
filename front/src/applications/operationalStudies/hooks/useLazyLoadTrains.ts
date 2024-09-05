@@ -10,7 +10,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/TimetableV2/types';
+import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { getBatchPackage } from 'utils/batch';
 import { concatMap, mapBy } from 'utils/types';
 
@@ -82,7 +82,7 @@ const useLazyLoadTrains = ({
           },
         }).unwrap();
 
-        // the two rtk-query calls postV2TrainSchedule & postV2TrainScheduleSimulationSummary
+        // the two rtk-query calls postTrainSchedule & postTrainScheduleSimulationSummary
         // do not happen during the same react cycle.
         // if we update a train, one is going to re-fetch first and the 2 are out of sync during a few cycles.
         // these cycles do not make sense to render.
