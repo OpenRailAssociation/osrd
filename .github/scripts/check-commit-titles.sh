@@ -34,7 +34,7 @@ check_forbidden_chars() {
 }
 
 check_structure() {
-    if grep -q -E -v '^([-_.a-z]+[,:] )*[-_.a-z]+: [a-z](:[^ ]|[^:])*$'; then
+    if grep -q -E -v '^([-_.a-z0-9]+[,:] )*[-_.a-z0-9]+: [a-z](:[^ ]|[^:])*$'; then
         echo 'Invalid commit title structure'
     fi
 }
