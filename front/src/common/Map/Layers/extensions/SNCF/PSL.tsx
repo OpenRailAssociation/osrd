@@ -1,5 +1,4 @@
 /* eslint-disable react/jsx-pascal-case */
-import React from 'react';
 
 import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';

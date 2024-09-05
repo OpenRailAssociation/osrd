@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 
 import { featureCollection, point } from '@turf/helpers';
 import nearestPoint from '@turf/nearest-point';

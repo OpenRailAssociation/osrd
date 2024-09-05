@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { NoEntry, PlusCircle, Trash, XCircle } from '@osrd-project/ui-icons';
 import { featureCollection } from '@turf/helpers';
 import getNearestPoint from '@turf/nearest-point';

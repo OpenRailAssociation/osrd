@@ -1,5 +1,4 @@
 /* eslint-disable react/jsx-no-useless-fragment */
-import React from 'react';
 
 import { useOsrdConfActions } from 'common/osrdContext';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';

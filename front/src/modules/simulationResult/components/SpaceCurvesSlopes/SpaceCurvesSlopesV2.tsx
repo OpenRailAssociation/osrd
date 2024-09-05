@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import * as d3 from 'd3';
 import { CgLoadbar } from 'react-icons/cg';

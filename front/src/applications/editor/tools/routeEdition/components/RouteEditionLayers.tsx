@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { featureCollection } from '@turf/helpers';
 import type { Feature, LineString } from 'geojson';

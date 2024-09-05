@@ -1,8 +1,6 @@
 // React Component displaying different applications versions and license attributions
 // List of applications : Editoast, Core, Api
 
-import React from 'react';
-
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';

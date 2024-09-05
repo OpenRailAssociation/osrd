@@ -1,4 +1,4 @@
-import React, { type ComponentType } from 'react';
+import { type ComponentType } from 'react';
 
 import { PlusCircle, Trash } from '@osrd-project/ui-icons';
 import type { Feature, LineString, Point } from 'geojson';

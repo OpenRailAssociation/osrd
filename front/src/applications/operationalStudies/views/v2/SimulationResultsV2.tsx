@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';

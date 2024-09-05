@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useMemo, useState } from 'react';
+import { useContext, useEffect, useRef, useMemo, useState } from 'react';
 
 import type { JSONSchema7 } from 'json-schema';
 import { isNil, omit, uniqueId } from 'lodash';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { SpeedSpaceChart } from '@osrd-project/ui-speedspacechart';
 import type {

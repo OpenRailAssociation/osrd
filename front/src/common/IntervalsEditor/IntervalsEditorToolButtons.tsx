@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useTranslation } from 'react-i18next';
 import { BiArrowFromLeft } from 'react-icons/bi';
 import { BsFillTrashFill } from 'react-icons/bs';

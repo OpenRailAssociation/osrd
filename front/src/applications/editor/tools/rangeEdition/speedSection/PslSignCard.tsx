@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Trash } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';

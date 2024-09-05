@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Pencil, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';

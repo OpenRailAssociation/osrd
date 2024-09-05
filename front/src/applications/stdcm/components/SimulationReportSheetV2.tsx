@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Table, TR, TH, TD } from '@ag-media/react-pdf-table';
 import { Page, Text, Image, Document, View, Link } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';

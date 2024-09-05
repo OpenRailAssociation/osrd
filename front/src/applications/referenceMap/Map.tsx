@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { isNil } from 'lodash';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';

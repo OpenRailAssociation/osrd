@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 import along from '@turf/along';
 import length from '@turf/length';

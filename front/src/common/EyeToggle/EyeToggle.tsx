@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Eye, EyeClosed } from '@osrd-project/ui-icons';
 
 type EyeToggleProps = {

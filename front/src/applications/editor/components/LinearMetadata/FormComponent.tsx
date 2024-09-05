@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 import Form, { getDefaultRegistry } from '@rjsf/core';
 import type { FieldProps } from '@rjsf/utils';

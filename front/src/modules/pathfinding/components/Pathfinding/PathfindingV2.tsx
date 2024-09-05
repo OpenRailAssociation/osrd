@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Alert, CheckCircle, Stop } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { isEqual } from 'lodash';

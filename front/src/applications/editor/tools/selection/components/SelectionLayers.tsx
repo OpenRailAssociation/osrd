@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';

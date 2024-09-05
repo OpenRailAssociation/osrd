@@ -1,5 +1,3 @@
-import React from 'react';
-
 import StdcmCard from './StdcmCard';
 
 type StdcmCardProps = {

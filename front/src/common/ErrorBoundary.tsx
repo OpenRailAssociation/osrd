@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { SerializedError } from '@reduxjs/toolkit';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useRouteError } from 'react-router-dom';

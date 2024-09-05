@@ -1,5 +1,3 @@
-import React from 'react';
-
 import cx from 'classnames';
 import type { IconBaseProps } from 'react-icons';
 import { BsFillExclamationCircleFill, BsFillExclamationTriangleFill } from 'react-icons/bs';

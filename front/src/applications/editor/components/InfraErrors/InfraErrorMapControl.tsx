@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { Alert } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';

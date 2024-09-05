@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { CompassCardinal, CompassNeedle } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 

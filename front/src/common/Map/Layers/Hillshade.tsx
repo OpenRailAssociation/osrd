@@ -1,5 +1,3 @@
-import React from 'react';
-
 import PropTypes from 'prop-types';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 

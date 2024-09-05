@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import cx from 'classnames';
 import nextId from 'react-id-generator';

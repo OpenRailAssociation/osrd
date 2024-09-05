@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { Distribution } from 'common/api/osrdEditoastApi';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 

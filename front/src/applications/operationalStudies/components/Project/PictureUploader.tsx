@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, type ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
 
 import { Image, XCircle } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';

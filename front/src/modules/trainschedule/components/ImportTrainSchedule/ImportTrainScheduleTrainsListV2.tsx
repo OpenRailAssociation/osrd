@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { Rocket } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';

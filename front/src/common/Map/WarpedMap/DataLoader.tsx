@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { featureCollection } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';

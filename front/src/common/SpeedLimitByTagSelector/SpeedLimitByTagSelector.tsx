@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import cx from 'classnames';
 import { isEmpty } from 'lodash';

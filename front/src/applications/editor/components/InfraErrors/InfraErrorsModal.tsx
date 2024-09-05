@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useTranslation } from 'react-i18next';
 
 import type { InfraError } from 'common/api/osrdEditoastApi';

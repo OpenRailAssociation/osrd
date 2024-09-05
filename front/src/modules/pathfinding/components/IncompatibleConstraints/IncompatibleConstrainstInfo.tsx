@@ -1,4 +1,4 @@
-import React, { type HTMLAttributes } from 'react';
+import { type HTMLAttributes } from 'react';
 
 import { Info } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';

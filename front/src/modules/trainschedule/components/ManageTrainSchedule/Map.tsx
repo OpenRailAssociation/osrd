@@ -1,11 +1,4 @@
-import React, {
-  type PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { type PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import bbox from '@turf/bbox';
 import type { Feature, Point } from 'geojson';

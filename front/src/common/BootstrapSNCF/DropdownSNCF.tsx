@@ -1,4 +1,4 @@
-import React, { type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
 
 import nextId from 'react-id-generator';
 import TetherComponent from 'react-tether';

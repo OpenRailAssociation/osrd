@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ResponsiveLine } from '@nivo/line';
 import type { PointTooltipProps } from '@nivo/line';

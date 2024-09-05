@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { Feature, LineString } from 'geojson';
 import { Source } from 'react-map-gl/maplibre';
 

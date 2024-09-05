@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 
 import { NoEntry } from '@osrd-project/ui-icons';
 import { groupBy, map } from 'lodash';

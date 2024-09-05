@@ -1,4 +1,4 @@
-import React, { useContext, type PropsWithChildren } from 'react';
+import { useContext, type PropsWithChildren } from 'react';
 
 import { ModalContext } from './ModalProvider';
 

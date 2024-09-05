@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 import { Pencil, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';

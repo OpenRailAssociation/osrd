@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';

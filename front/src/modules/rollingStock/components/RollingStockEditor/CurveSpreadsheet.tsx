@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
 import { DataSheetGrid, keyColumn, intColumn, floatColumn } from 'react-datasheet-grid';

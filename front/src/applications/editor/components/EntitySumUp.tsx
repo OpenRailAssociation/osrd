@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState } from 'react';
 
 import cx from 'classnames';
 import type { TFunction } from 'i18next';

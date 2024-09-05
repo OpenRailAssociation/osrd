@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
 import { Download } from '@osrd-project/ui-icons';
 import { isNil } from 'lodash';

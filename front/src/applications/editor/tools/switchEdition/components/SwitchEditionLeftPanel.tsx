@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 
 import { debounce, omit } from 'lodash';
 import { useTranslation } from 'react-i18next';

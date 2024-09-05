@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { DatePicker, Select, TimePicker, TolerancePicker } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';

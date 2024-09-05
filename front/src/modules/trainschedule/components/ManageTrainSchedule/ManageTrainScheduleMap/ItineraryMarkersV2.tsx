@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { Position } from '@turf/helpers';
 import cx from 'classnames';

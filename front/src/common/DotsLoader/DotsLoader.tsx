@@ -1,5 +1,3 @@
-import React from 'react';
-
 const DotLoader = () => (
   <div className="dots-loader">
     <div className="dots-loader--dot" />

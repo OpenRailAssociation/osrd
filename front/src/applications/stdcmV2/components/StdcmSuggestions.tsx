@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Input, type InputProps } from '@osrd-project/ui-core';
 import { isEmpty } from 'lodash';

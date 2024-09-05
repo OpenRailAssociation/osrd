@@ -6,7 +6,7 @@
  * options={[{ value: string, label: string}, { value: string, label: string}]} />
  */
 
-import React, { type ChangeEventHandler } from 'react';
+import { type ChangeEventHandler } from 'react';
 
 import cx from 'classnames';
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
 import { Alert } from '@osrd-project/ui-icons';

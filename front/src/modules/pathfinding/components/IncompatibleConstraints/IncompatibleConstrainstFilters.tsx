@@ -1,4 +1,4 @@
-import React, { useCallback, type HTMLAttributes } from 'react';
+import { useCallback, type HTMLAttributes } from 'react';
 
 import { Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';

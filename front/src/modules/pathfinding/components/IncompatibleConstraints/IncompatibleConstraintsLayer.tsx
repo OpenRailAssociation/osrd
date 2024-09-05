@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { FeatureCollection, LineString } from 'geojson';
 import type { FilterSpecification } from 'maplibre-gl';
 import { Layer, Source } from 'react-map-gl/maplibre';

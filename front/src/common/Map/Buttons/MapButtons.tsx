@@ -1,4 +1,4 @@
-import React, { useRef, useState, useContext, useEffect, useCallback } from 'react';
+import { useRef, useState, useContext, useEffect, useCallback } from 'react';
 
 import cx from 'classnames';
 import type { MapRef } from 'react-map-gl/maplibre';

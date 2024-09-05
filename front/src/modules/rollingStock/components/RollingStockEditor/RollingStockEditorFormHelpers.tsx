@@ -1,5 +1,3 @@
-import React from 'react';
-
 import cx from 'classnames';
 import { floor, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';

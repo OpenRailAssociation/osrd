@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import cx from 'classnames';
 import { head, isNil, last, maxBy, minBy } from 'lodash';

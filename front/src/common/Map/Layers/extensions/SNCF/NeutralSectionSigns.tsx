@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { isNil } from 'lodash';
 import { type LayerProps, Source, type SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';

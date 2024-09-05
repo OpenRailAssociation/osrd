@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';

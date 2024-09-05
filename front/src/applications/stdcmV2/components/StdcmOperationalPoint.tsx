@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { Select } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';

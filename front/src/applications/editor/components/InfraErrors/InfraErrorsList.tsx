@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { isNil, sortBy, uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';

@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Duplicate, Pencil, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';

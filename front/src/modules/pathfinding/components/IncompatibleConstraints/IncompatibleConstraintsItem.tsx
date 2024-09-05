@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { Location } from '@osrd-project/ui-icons';
 import cx from 'classnames';

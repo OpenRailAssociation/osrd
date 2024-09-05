@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { range } from 'lodash';
 import { Layer } from 'react-map-gl/maplibre';
 

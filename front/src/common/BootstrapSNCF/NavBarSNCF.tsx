@@ -1,4 +1,4 @@
-import React, { type ReactElement } from 'react';
+import { type ReactElement } from 'react';
 
 import { Gear, Info, ShieldCheck, SignOut } from '@osrd-project/ui-icons';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 import type { Position } from 'geojson';
 import { last } from 'lodash';

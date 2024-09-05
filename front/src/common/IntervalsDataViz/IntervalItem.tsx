@@ -1,5 +1,3 @@
-import React from 'react';
-
 import cx from 'classnames';
 
 import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';

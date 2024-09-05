@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import 'stories/storybook.css';
 
 import { fixLinearMetadataItems } from 'common/IntervalsDataViz/data';

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
 import { lineString } from '@turf/helpers';

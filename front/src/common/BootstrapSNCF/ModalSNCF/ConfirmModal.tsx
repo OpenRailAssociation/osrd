@@ -1,4 +1,4 @@
-import React, { type PropsWithChildren, useContext, useState, useCallback } from 'react';
+import { type PropsWithChildren, useContext, useState, useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
 

@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { BiLockAlt } from 'react-icons/bi';
 import { ImFire } from 'react-icons/im';
 import { IoIosSnow } from 'react-icons/io';

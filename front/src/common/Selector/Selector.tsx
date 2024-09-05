@@ -1,4 +1,4 @@
-import React, { useState, type PropsWithChildren } from 'react';
+import { useState, type PropsWithChildren } from 'react';
 
 import { Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';

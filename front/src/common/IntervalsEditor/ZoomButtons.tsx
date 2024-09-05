@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useTranslation } from 'react-i18next';
 import { TbZoomCancel, TbZoomIn, TbZoomOut } from 'react-icons/tb';
 

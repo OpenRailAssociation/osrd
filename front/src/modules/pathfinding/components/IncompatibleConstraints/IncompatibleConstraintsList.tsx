@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { debounce, sortBy } from 'lodash';
 import { useMap } from 'react-map-gl/maplibre';
