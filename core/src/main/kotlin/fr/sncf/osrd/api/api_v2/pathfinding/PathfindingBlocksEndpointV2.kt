@@ -23,6 +23,8 @@ import fr.sncf.osrd.utils.units.meters
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take
@@ -39,7 +41,10 @@ import org.takes.rs.RsWithStatus
  */
 class NoPathFoundException(val response: PathfindingBlockResponse) : Exception()
 
+val pathfindingLogger: Logger = LoggerFactory.getLogger("Pathfinding")
+
 class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take {
+
     override fun act(req: Request): Response {
         val recorder = DiagnosticRecorderImpl(false)
         return try {
@@ -50,13 +55,16 @@ class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take
             // Load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
             val res = runPathfinding(infra, request)
+            pathfindingLogger.info("success")
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(res)))
         } catch (error: NoPathFoundException) {
+            pathfindingLogger.info("no path found")
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(error.response)))
         } catch (error: OSRDError) {
             if (!error.osrdErrorType.isCacheable) {
                 ExceptionHandler.handle(error)
             } else {
+                pathfindingLogger.info("pathfinding failed: ${error.message}")
                 val response = PathfindingFailed(error)
                 RsJson(RsWithBody(pathfindingResponseAdapter.toJson(response)))
             }
@@ -154,8 +162,10 @@ private fun computePaths(
             .addBlockedRangeOnEdges(constraints)
             .runPathfinding(waypoints)
     if (pathFound != null) {
+        pathfindingLogger.info("path found in block graph, start postprocessing")
         return pathFound
     }
+    pathfindingLogger.info("no path found, identifying issues")
 
     // Handling errors
     // Check if pathfinding failed due to incompatible constraints

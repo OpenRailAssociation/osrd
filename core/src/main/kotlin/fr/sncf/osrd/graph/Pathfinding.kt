@@ -1,6 +1,7 @@
 package fr.sncf.osrd.graph
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import fr.sncf.osrd.api.api_v2.pathfinding.pathfindingLogger
 import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -11,6 +12,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.stream.Collectors
+import kotlin.math.max
 
 @SuppressFBWarnings(
     value = ["FE_FLOATING_POINT_EQUALITY"],
@@ -184,15 +186,23 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
             val startRange = EdgeRange(location.edge, location.offset, location.offset)
             registerStep(startRange, null, 0.0, 0, listOf(location))
         }
+        var maxReachedTarget = 0
         val start = Instant.now()
         while (true) {
             if (Duration.between(start, Instant.now()).toSeconds() >= timeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
-            val step = queue.poll() ?: return null
+            val step = queue.poll()
+            if (step == null) {
+                pathfindingLogger.info(
+                    "pathfinding failed, # reached waypoints = $maxReachedTarget/${targetsOnEdges.size}"
+                )
+                return null
+            }
             val endNode = graph.getEdgeEnd(step.range.edge)
             if (seen.getOrDefault(step.range, -1) >= step.nReachedTargets) {
                 continue
             }
+            maxReachedTarget = max(step.nReachedTargets, maxReachedTarget)
             seen[step.range] = step.nReachedTargets
             if (hasReachedEnd(targetsOnEdges.size, step)) return buildResult(step)
             // Check if the next target is reached in this step, only if the step doesn't already

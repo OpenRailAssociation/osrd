@@ -118,9 +118,7 @@ private fun findRoute(
             return routeId
         }
     }
-    val error = OSRDError(ErrorType.ScheduleMetadataExtractionFailed)
-    error.context["reason"] = "Couldn't find a route matching the given chunk list"
-    throw error
+    throw OSRDError(ErrorType.MissingRouteFromChunkPath)
 }
 
 /** Returns false if the route differs from the path */
