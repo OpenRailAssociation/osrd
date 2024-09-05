@@ -36,7 +36,10 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   return (
     <div className="manchette-space-time-chart-wrapper">
-      <div className="header" />
+      <div className="header">
+        {/* TODO : uncomment this component in #8628 */}
+        {/* <ManchetteMenuButton /> */}
+      </div>
       <div className="header-separator" />
       <div
         ref={manchetteWithSpaceTimeChartRef}
