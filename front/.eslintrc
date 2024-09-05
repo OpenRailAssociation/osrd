@@ -85,6 +85,8 @@
     "react/jsx-filename-extension": "off",
     "react/jsx-no-useless-fragment": "error",
     "react/jsx-props-no-spreading": 0,
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
     "react/prefer-stateless-function": "off",
     "react/static-property-placement": 0,
     // disable vitest/prefer-to-be because it does not authorize toEqual for the floats
