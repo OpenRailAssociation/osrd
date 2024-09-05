@@ -12,7 +12,7 @@
     "plugin:import/recommended",
     "plugin:import/typescript",
     "prettier",
-    "plugin:@typescript-eslint/base"
+    "plugin:@typescript-eslint/recommended-type-checked"
   ],
   "plugins": ["import", "only-warn", "prettier", "react", "react-hooks", "vitest"],
   "parserOptions": {
@@ -43,7 +43,6 @@
     "@typescript-eslint/consistent-type-imports": ["error", { "fixStyle": "inline-type-imports" }],
     "@typescript-eslint/no-shadow": "error",
     "@typescript-eslint/no-use-before-define": "error",
-    "@typescript-eslint/no-unnecessary-type-assertion": "error",
 
     "@typescript-eslint/ban-types": [
       "error",
