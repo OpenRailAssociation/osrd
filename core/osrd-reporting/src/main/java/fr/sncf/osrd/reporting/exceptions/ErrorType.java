@@ -162,7 +162,12 @@ public enum ErrorType {
     InvalidSTDCMStepWithTimingData(
             "invalid_stdcm_step_with_timing_data",
             "An STDCM step with planned timing data must be a stop",
-            ErrorCause.USER);
+            ErrorCause.USER),
+    MissingRouteFromChunkPath(
+            "missing_route_from_chunk_path",
+            "couldn't find a route matching the given chunk list",
+            ErrorCause.INTERNAL),
+    ;
 
     public final String type;
     public final String message;
