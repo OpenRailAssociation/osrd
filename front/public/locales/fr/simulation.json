@@ -20,6 +20,9 @@
   "isWorking": "Calcul de la simulation en cours…",
   "labels": "Étiquettes",
   "loadingTrain": "Chargement du train",
+  "manchetteSettings": {
+    "waypointsVisibility": "Modifier la visibilité des PRs"
+  },
   "ManualOffset": "Ajout de secondes au train",
   "map": "Carte",
   "ModalEdit": "Édition d'un train",
@@ -61,6 +64,7 @@
   "stopTime": "Arrivée",
   "timetable": "Table horaire",
   "toggleElectricalProfileLegend": "Basculer l'affichage de la légende des tractions électriques",
+  "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",
   "toggleRewind": "Basculer le rembobinage de la simulation",
   "toggleSpeedSpaceSettings": "Basculer l'affichage des paramètres du graphique",
   "toggleWarpedMap": "Basculer l'affichage de la carte déformée",

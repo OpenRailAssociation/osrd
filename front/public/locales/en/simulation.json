@@ -20,6 +20,9 @@
   "isWorking": "Generating simulation...",
   "labels": "Tags",
   "loadingTrain": "Loading train",
+  "manchetteSettings": {
+    "waypointsVisibility": "show/hide OP"
+  },
   "ManualOffset": "Add seconds to the train",
   "map": "Map",
   "ModalEdit": "Train edition",
@@ -61,6 +64,7 @@
   "stopTime": "Arrival",
   "timetable": "Timetable",
   "toggleElectricalProfileLegend": "Toggle electrical profiles legend",
+  "toggleManchetteMenu": "Toggle manchette menu",
   "toggleRewind": "Toggle simulation rewind",
   "toggleSpeedSpaceSettings": "Toggle chart settings",
   "toggleWarpedMap": "Toggle the warped map",

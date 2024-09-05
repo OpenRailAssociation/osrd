@@ -6,12 +6,28 @@
   background-color: var(--white100);
 
   .header {
+    position: relative;
     height: 2.5rem;
-    background-color: var(--ambiantB5);
-    border-color: var(--black25);
-    border-bottom-width: 0.0625rem;
-    box-shadow: 0rem 0.0625rem 0rem var(--white100) inset;
     border-radius: 0.625rem 0.625rem 0 0;
+    box-shadow: inset 0 0.0625rem 0 var(--white100);
+    padding: 0.25rem;
+    background-color: var(--ambiantB5);
+    border-bottom: 0.0625rem solid var(--black25);
+
+    .manchette-menu-button {
+      border-radius: 0.5rem;
+      width: 2.5rem;
+      height: 2rem;
+      margin-bottom: -0.5rem;
+
+      &:hover {
+        background-color: var(--black10);
+      }
+
+      &.menu-open {
+        background-color: var(--black5);
+      }
+    }
   }
   .header-separator {
     height: 0.0625rem;
