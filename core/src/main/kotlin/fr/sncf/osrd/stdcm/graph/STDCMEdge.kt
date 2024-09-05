@@ -55,15 +55,7 @@ data class STDCMEdge(
         return if (!endAtStop) {
             // We move on to the next block
             STDCMNode(
-                TimeData(
-                    earliestReachableTime = totalTime + timeData.earliestReachableTime,
-                    maxDepartureDelayingWithoutConflict =
-                        timeData.maxDepartureDelayingWithoutConflict,
-                    totalDepartureDelay = timeData.totalDepartureDelay,
-                    timeOfNextConflictAtLocation = timeData.timeOfNextConflictAtLocation,
-                    totalRunningTime = timeData.totalRunningTime + totalTime,
-                    totalStopTime = timeData.totalStopTime,
-                ),
+                timeData.withAddedTime(totalTime, 0.0),
                 endSpeed,
                 infraExplorerWithNewEnvelope,
                 this,
@@ -80,16 +72,7 @@ data class STDCMEdge(
             val stopDuration = firstStopAfterIndex.duration!!
             val locationOnEdge = envelopeStartOffset + length.distance
             STDCMNode(
-                TimeData(
-                    earliestReachableTime =
-                        totalTime + timeData.earliestReachableTime + stopDuration,
-                    maxDepartureDelayingWithoutConflict =
-                        timeData.maxDepartureDelayingWithoutConflict,
-                    totalDepartureDelay = timeData.totalDepartureDelay,
-                    timeOfNextConflictAtLocation = timeData.timeOfNextConflictAtLocation,
-                    totalRunningTime = timeData.totalRunningTime + totalTime,
-                    totalStopTime = timeData.totalStopTime + stopDuration,
-                ),
+                timeData.withAddedTime(totalTime, stopDuration),
                 endSpeed,
                 infraExplorerWithNewEnvelope,
                 this,

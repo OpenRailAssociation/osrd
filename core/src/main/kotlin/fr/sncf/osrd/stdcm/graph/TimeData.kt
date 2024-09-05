@@ -67,4 +67,43 @@ data class TimeData(
      * lengthening stop durations.
      */
     val timeSinceDeparture = totalRunningTime + totalStopTime
+
+    /** Returns a copy of the current instance, with added travel / stop time. */
+    fun withAddedTime(
+        extraTravelTime: Double,
+        extraStopTime: Double,
+    ): TimeData {
+        return copy(
+            earliestReachableTime = earliestReachableTime + extraTravelTime + extraStopTime,
+            totalRunningTime = totalRunningTime + extraTravelTime,
+            totalStopTime = totalStopTime + extraStopTime
+        )
+    }
+
+    /**
+     * Return a copy of the current instance, with "shifted" time values. Used to create new edges.
+     *
+     * @param timeShift by how much we delay the new element compared to the earliest possible time.
+     *   A value >0 means that we want to arrive later (to avoid a conflict)
+     * @param delayAddedToLastDeparture how much extra delay we add to the last departure (train
+     *   start time or last stop). This is one method to reach `timeShift`
+     * @param timeOfNextConflictAtLocation when is the first conflict at the given location
+     * @param maxDepartureDelayingWithoutConflict how much delay we can add at the given location
+     *   without causing conflict
+     */
+    fun shifted(
+        timeShift: Double,
+        delayAddedToLastDeparture: Double,
+        timeOfNextConflictAtLocation: Double,
+        maxDepartureDelayingWithoutConflict: Double,
+    ): TimeData {
+        assert(timeShift >= delayAddedToLastDeparture)
+        return copy(
+            earliestReachableTime = earliestReachableTime + timeShift,
+            maxDepartureDelayingWithoutConflict = maxDepartureDelayingWithoutConflict,
+            totalDepartureDelay = totalDepartureDelay + delayAddedToLastDeparture,
+            timeOfNextConflictAtLocation = timeOfNextConflictAtLocation,
+            delayAddedToLastDeparture = delayAddedToLastDeparture
+        )
+    }
 }
