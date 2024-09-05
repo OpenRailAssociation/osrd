@@ -23,7 +23,7 @@
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",
-      "FixTrialFailure": "Echec de l'application des correctifs",
+      "FixTrialFailure": "Échec de l'application des correctifs",
       "MaximumIterationReached": "Nombre maximum d'itérations atteint pour corriger l'infrastructure sans fournir tous les correctifs possibles",
       "MissingErrorObject": "Impossible de trouver l'objet de l'erreur"
     },
