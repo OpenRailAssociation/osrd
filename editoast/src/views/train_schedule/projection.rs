@@ -342,6 +342,9 @@ async fn compute_batch_signal_updates<'a>(
     path_blocks: &'a Vec<Identifier>,
     trains_details: &'a HashMap<i64, TrainSimulationDetails>,
 ) -> Result<HashMap<i64, Vec<SignalUpdate>>> {
+    if trains_details.is_empty() {
+        return Ok(HashMap::new());
+    }
     let request = SignalUpdatesRequest {
         infra: infra.id,
         expected_version: infra.version.clone(),
