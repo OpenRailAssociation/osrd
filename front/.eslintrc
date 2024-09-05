@@ -11,11 +11,13 @@
     "airbnb",
     "plugin:import/recommended",
     "plugin:import/typescript",
-    "prettier"
+    "prettier",
+    "plugin:@typescript-eslint/base"
   ],
   "plugins": ["import", "only-warn", "prettier", "react", "react-hooks", "vitest"],
   "parserOptions": {
-    "ecmaVersion": "latest"
+    "ecmaVersion": "latest",
+    "project": true
   },
   "rules": {
     "import/order": [
@@ -41,6 +43,7 @@
     "@typescript-eslint/consistent-type-imports": ["error", { "fixStyle": "inline-type-imports" }],
     "@typescript-eslint/no-shadow": "error",
     "@typescript-eslint/no-use-before-define": "error",
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
 
     "@typescript-eslint/ban-types": [
       "error",
