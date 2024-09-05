@@ -35,7 +35,7 @@
   "electric": "Électrique",
   "electricalPowerStartupTime": "Temps de reprise de courant",
   "electricalProfiles": "Profils électriques",
-  "electricOnly": "Uniquement éléctrique",
+  "electricOnly": "Uniquement électrique",
   "equipement": "Équipement",
   "errorMessages": {
     "invalidConversion": "Conversion invalide",
@@ -54,7 +54,7 @@
   "inertiaCoefficient": "Coefficient d'inertie",
   "legend": "Légende",
   "length": "Longueur",
-  "listDisabled": "Veuillez quitter l'éditeur pour modifier la séléction",
+  "listDisabled": "Veuillez quitter l'éditeur pour modifier la sélection",
   "loadingGauge": "Gabarit",
   "locked": "Verrouillé",
   "mass": "Masse",
