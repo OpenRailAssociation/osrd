@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 
 import { cloneDeep, compact, concat, isEmpty, isEqual, last, pick, uniq, uniqWith } from 'lodash';
 import { useTranslation } from 'react-i18next';

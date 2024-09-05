@@ -1,8 +1,6 @@
 // React Component displaying different applications versions and license attributions
 // List of applications : Editoast, Core, Api
 
-import React from 'react';
-
 import { DE, ES, FR, GB, IT, JP, RU, UA } from 'country-flag-icons/react/3x2';
 import { useTranslation } from 'react-i18next';
 

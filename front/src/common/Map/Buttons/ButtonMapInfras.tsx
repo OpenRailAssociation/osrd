@@ -1,5 +1,3 @@
-import React from 'react';
-
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { GiRailway } from 'react-icons/gi';

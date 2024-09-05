@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ArrowSwitch, Route, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';

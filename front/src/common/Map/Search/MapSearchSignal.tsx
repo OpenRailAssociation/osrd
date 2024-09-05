@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';

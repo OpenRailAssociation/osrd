@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { XCircle } from '@osrd-project/ui-icons';
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';

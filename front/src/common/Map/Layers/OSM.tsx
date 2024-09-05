@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { get } from 'lodash';
 import { type LayerProps, Source } from 'react-map-gl/maplibre';

@@ -1,4 +1,4 @@
-import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 import { isNil } from 'lodash';

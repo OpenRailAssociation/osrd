@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
 import type { FieldProps } from '@rjsf/utils';

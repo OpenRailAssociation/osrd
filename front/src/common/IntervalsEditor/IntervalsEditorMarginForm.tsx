@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { cloneDeep, head } from 'lodash';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';

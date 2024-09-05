@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';

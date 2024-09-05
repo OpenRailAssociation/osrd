@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 
 import { Dash, Plus, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';

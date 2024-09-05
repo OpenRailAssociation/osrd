@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { WidgetProps } from '@rjsf/utils';
 
 export const FormBeginEndWidget = (props: WidgetProps) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { Duplicate, Pencil, Download, Lock, Unlock } from '@osrd-project/ui-icons';
 import fileDownload from 'js-file-download';

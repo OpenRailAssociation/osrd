@@ -1,4 +1,4 @@
-import React, { useCallback, type HTMLAttributes } from 'react';
+import { useCallback, type HTMLAttributes } from 'react';
 
 import { Location } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';

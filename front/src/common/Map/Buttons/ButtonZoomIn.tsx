@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ZoomIn } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 

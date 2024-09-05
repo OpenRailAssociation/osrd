@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';

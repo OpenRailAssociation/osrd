@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { XCircle } from '@osrd-project/ui-icons';
 import cx from 'classnames';

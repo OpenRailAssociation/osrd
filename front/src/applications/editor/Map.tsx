@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import { useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
 import type { TFunction } from 'i18next';
 import { isEmpty, isEqual, isNil } from 'lodash';

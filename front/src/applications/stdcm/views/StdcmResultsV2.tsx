@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import { PDFDownloadLink } from '@react-pdf/renderer';

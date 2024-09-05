@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';

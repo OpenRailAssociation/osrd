@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, type PropsWithChildren } from 'react';
+import { useState, useEffect, useMemo, type PropsWithChildren } from 'react';
 
 import Form from '@rjsf/core';
 import type { Field, UiSchema } from '@rjsf/utils';

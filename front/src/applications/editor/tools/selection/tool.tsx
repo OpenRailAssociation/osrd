@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Trash } from '@osrd-project/ui-icons';
 import { isEqual, max, min } from 'lodash';
 import type { PointLike } from 'maplibre-gl';

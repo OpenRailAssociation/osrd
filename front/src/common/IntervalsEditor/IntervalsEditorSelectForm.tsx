@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { cloneDeep } from 'lodash';
 
 import SelectSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';

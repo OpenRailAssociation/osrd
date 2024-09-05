@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import type { FieldProps } from '@rjsf/utils';
 import { isEmpty, isNil, keyBy } from 'lodash';

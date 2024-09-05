@@ -1,4 +1,4 @@
-import React, { type PropsWithChildren, useContext, useEffect } from 'react';
+import { type PropsWithChildren, useContext, useEffect } from 'react';
 
 import { isArray } from 'lodash';
 

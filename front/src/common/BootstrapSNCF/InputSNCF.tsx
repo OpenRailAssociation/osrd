@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-import React, { type InputHTMLAttributes, type ReactNode } from 'react';
+import { type InputHTMLAttributes, type ReactNode } from 'react';
 
 import cx from 'classnames';
 

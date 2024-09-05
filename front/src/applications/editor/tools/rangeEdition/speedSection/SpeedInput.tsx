@@ -1,4 +1,4 @@
-import React, { type InputHTMLAttributes, useEffect, useState } from 'react';
+import { type InputHTMLAttributes, useEffect, useState } from 'react';
 
 import { isNumber } from 'lodash';
 

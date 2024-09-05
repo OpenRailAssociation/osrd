@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'i18n';

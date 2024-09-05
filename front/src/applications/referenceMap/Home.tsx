@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { Lock } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';

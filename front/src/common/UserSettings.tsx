@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Gear, ShieldCheck } from '@osrd-project/ui-icons';
 import cx from 'classnames';

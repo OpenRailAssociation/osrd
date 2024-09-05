@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 import type { CellProps } from 'react-datasheet-grid/dist/types';
 

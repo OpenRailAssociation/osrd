@@ -1,4 +1,4 @@
-import React, { type ReactNode, type InputHTMLAttributes } from 'react';
+import { type ReactNode, type InputHTMLAttributes } from 'react';
 
 import cx from 'classnames';
 

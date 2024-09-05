@@ -1,4 +1,4 @@
-import React, { type ReactNode, useCallback } from 'react';
+import { type ReactNode, useCallback } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';

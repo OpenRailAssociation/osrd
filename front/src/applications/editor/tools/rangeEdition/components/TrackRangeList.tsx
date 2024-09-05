@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { MdShowChart } from 'react-icons/md';

@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Lock } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';

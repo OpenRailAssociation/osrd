@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { isNil } from 'lodash';
 import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import { Source } from 'react-map-gl/maplibre';

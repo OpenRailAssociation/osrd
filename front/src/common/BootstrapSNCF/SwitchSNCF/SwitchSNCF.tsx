@@ -1,4 +1,4 @@
-import React, { type InputHTMLAttributes } from 'react';
+import { type InputHTMLAttributes } from 'react';
 
 import cx from 'classnames';
 

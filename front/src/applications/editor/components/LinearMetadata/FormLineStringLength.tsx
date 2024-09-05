@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 import type { WidgetProps } from '@rjsf/utils';
 import cx from 'classnames';

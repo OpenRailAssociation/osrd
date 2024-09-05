@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { CheckCircle, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';

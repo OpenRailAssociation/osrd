@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 // TODO TS2: rename ManageTrainSchedulePathProperties and move it to /modules/pathfinding
 import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';

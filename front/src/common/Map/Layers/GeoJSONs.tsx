@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import chroma from 'chroma-js';
 import type { Feature, FeatureCollection } from 'geojson';

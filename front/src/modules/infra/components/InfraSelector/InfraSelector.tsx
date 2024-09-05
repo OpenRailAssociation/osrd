@@ -1,5 +1,3 @@
-import React from 'react';
-
 import InfraSelectorModal from './InfraSelectorModal';
 
 type InfraSelectorProps = {

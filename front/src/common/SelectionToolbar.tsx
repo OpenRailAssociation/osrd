@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { AiFillCheckCircle } from 'react-icons/ai';

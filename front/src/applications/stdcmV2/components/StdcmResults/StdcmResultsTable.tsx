@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';

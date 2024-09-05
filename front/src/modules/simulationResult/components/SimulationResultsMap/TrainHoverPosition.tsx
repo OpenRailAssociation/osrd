@@ -1,5 +1,4 @@
 // TO DO DROP V1: remove this file
-import React from 'react';
 
 import along from '@turf/along';
 import bezierSpline from '@turf/bezier-spline';

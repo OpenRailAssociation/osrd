@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Button } from '@osrd-project/ui-core';
 import { Comment } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';

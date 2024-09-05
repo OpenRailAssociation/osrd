@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 
 import { Download, Search } from '@osrd-project/ui-icons';
 import { isEmpty } from 'lodash';

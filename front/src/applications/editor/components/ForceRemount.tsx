@@ -1,4 +1,4 @@
-import React, { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 type ForceRemountProps = { fingerprint: string; renderChildren: () => ReactNode };
 

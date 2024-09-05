@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { PlusCircle, Trash } from '@osrd-project/ui-icons';
 import { isEqual } from 'lodash';
 import { AiFillSave } from 'react-icons/ai';

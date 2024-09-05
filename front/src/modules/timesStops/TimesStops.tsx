@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import cx from 'classnames';
 import { DynamicDataSheetGrid, type DataSheetGridProps } from 'react-datasheet-grid';

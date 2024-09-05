@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { Feature, Point } from 'geojson';
 import { Marker } from 'react-map-gl/maplibre';
 

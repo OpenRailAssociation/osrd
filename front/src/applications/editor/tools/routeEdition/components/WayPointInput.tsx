@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
 import { isNil } from 'lodash';

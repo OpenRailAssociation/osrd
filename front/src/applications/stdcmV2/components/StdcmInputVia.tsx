@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 import { Input } from '@osrd-project/ui-core';
 import { debounce } from 'lodash';

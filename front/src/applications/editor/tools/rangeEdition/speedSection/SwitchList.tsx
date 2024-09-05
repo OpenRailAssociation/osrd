@@ -1,5 +1,3 @@
-import React from 'react';
-
 import cx from 'classnames';
 import { t } from 'i18next';
 import { FaTimes } from 'react-icons/fa';

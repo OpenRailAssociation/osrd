@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { Meta } from '@storybook/react';
 
 import exampleRollingStockImage1 from 'assets/defaultRSImages/example_rolling_stock_image_1.gif';

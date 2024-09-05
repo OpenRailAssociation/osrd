@@ -1,4 +1,4 @@
-import React, { useCallback, useContext } from 'react';
+import { useCallback, useContext } from 'react';
 
 import { Lock, Search } from '@osrd-project/ui-icons';
 import cx from 'classnames';

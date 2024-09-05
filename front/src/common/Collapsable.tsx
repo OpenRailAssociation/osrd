@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, type HTMLAttributes } from 'react';
+import { useCallback, useEffect, useState, type HTMLAttributes } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';

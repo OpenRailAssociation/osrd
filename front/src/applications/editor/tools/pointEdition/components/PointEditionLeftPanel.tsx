@@ -1,4 +1,4 @@
-import React, { type ComponentType, useContext, useEffect, useRef, useState } from 'react';
+import { type ComponentType, useContext, useEffect, useRef, useState } from 'react';
 
 import along from '@turf/along';
 import length from '@turf/length';

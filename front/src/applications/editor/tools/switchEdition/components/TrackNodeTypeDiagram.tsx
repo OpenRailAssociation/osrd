@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import crossing from 'assets/pictures/trackNodeTypes/crossing.svg';
 import doubleSlipSwitch from 'assets/pictures/trackNodeTypes/double_slip_switch.svg';

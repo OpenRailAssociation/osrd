@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { Search } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';

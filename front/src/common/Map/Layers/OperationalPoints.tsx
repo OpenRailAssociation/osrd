@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { isNil } from 'lodash';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 

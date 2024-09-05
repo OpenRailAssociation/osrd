@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { JSONSchema7 } from 'json-schema';
 import { isNil } from 'lodash';
 

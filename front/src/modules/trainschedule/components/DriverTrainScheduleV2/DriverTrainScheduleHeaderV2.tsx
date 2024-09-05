@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Download } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /* eslint-disable import/extensions, import/no-unresolved */
 import ngeMain from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/main.js?url';

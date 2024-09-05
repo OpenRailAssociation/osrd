@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
