@@ -1,6 +1,6 @@
 import { isEmpty, keyBy, sortBy } from 'lodash';
 
-import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { mmToM } from 'utils/physics';
@@ -46,7 +46,7 @@ const appendFinalNoPowerRestriction = (
 
 const reducePowerRestrictions =
   (pathStepById: Record<string, PathStep>, electrificationChangePoints: number[]) =>
-  (acc: IntervalItem[], restriction: PowerRestrictionV2, index: number): IntervalItem[] => {
+  (acc: IntervalItem[], restriction: PowerRestriction, index: number): IntervalItem[] => {
     const fromPathStep = pathStepById[restriction.from];
     const toPathStep = pathStepById[restriction.to];
     const from =
@@ -71,7 +71,7 @@ const reducePowerRestrictions =
   };
 
 const formatPowerRestrictions = (
-  powerRestrictionRanges: PowerRestrictionV2[],
+  powerRestrictionRanges: PowerRestriction[],
   changePoints: number[],
   pathSteps: PathStep[],
   pathLength: number

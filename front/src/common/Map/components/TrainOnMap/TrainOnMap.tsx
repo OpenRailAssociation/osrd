@@ -61,8 +61,6 @@ type TrainOnMapProps = {
   viewport: Viewport;
 };
 
-// TO DO DROP V1: remove this comment
-// TrainOnMap corresponds to TrainHoverPositionV2
 const TrainOnMap = ({ trainInfo, geojsonPath, viewport, trainSimulation }: TrainOnMapProps) => {
   const zoomLengthFactor = getZoomPowerOf2LengthFactor(viewport);
 

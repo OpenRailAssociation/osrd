@@ -13,7 +13,7 @@ import type {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { initialState } from 'modules/pathfinding/consts';
-import type { PathfindingActionV2, PathfindingState } from 'modules/pathfinding/types';
+import type { PathfindingAction, PathfindingState } from 'modules/pathfinding/types';
 import {
   formatSuggestedOperationalPoints,
   getPathfindingQuery,
@@ -29,7 +29,7 @@ import { castErrorToFailure } from 'utils/error';
 
 import useInfraStatus from './useInfraStatus';
 
-export function reducer(state: PathfindingState, action: PathfindingActionV2): PathfindingState {
+export function reducer(state: PathfindingState, action: PathfindingAction): PathfindingState {
   switch (action.type) {
     case 'PATHFINDING_STARTED': {
       return {
@@ -142,26 +142,20 @@ function init({
   return initialState;
 }
 
-export const usePathfindingV2 = (
+export const usePathfinding = (
   setPathProperties?: (pathProperties?: ManageTrainSchedulePathProperties) => void | null,
   pathProperties?: ManageTrainSchedulePathProperties
 ) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
-  const {
-    getInfraID,
-    getOriginV2,
-    getDestinationV2,
-    getViasV2,
-    getPathSteps,
-    getPowerRestrictionV2,
-  } = useOsrdConfSelectors();
+  const { getInfraID, getOrigin, getDestination, getVias, getPathSteps, getPowerRestriction } =
+    useOsrdConfSelectors();
   const infraId = useSelector(getInfraID, isEqual);
-  const origin = useSelector(getOriginV2, isEqual);
-  const destination = useSelector(getDestinationV2, isEqual);
-  const vias = useSelector(getViasV2(), isEqual);
+  const origin = useSelector(getOrigin, isEqual);
+  const destination = useSelector(getDestination, isEqual);
+  const vias = useSelector(getVias(), isEqual);
   const pathSteps = useSelector(getPathSteps);
-  const powerRestrictions = useSelector(getPowerRestrictionV2);
+  const powerRestrictions = useSelector(getPowerRestriction);
   const { infra, reloadCount, setIsInfraError } = useInfraStatus();
   const { rollingStock } = useStoreDataForRollingStockSelector();
 

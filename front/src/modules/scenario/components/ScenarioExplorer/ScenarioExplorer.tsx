@@ -57,7 +57,7 @@ const ScenarioExplorer = ({
       }
     );
 
-  const { data: timetableV2 } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
+  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
     { id: timetableID as number },
     { skip: !timetableID }
   );
@@ -71,7 +71,7 @@ const ScenarioExplorer = ({
     }
   };
 
-  const v2TrainCount = (trainIds: number[]) => trainIds.length;
+  const trainCount = (trainIds: number[]) => trainIds.length;
 
   useEffect(() => {
     if (scenario) {
@@ -151,7 +151,7 @@ const ScenarioExplorer = ({
                 </span>
 
                 <span className="scenario-explorator-card-head-scenario-traincount">
-                  {timetableV2 && v2TrainCount(timetableV2.train_ids)}
+                  {timetable && trainCount(timetable.train_ids)}
                   <MdTrain />
                 </span>
               </div>

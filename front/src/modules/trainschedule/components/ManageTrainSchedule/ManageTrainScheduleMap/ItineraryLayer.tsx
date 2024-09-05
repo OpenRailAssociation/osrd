@@ -16,9 +16,9 @@ export default function ItineraryLayer({
   geometry,
   hideItineraryLine = false,
 }: ItineraryLayerProps) {
-  const { getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
-  const origin = useSelector(getOriginV2);
-  const destination = useSelector(getDestinationV2);
+  const { getOrigin, getDestination } = useOsrdConfSelectors();
+  const origin = useSelector(getOrigin);
+  const destination = useSelector(getDestination);
   if (geometry && origin && destination) {
     return (
       <Source type="geojson" data={geometry}>

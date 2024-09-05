@@ -25,7 +25,7 @@ const StdcmOrigin = ({
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const { updateOriginV2, updateOriginArrival, updateOriginArrivalType, updateOriginTolerances } =
+  const { updateOrigin, updateOriginArrival, updateOriginArrivalType, updateOriginTolerances } =
     useOsrdConfActions() as StdcmConfSliceActions;
 
   const { originArrival, originToleranceValues } = useMemo(
@@ -48,8 +48,8 @@ const StdcmOrigin = ({
     }));
   }, [origin]);
 
-  const updateOriginV2Point = (pathStep: PathStep | null) => {
-    dispatch(updateOriginV2(pathStep));
+  const updateOriginPoint = (pathStep: PathStep | null) => {
+    dispatch(updateOrigin(pathStep));
   };
 
   const onOriginArrivalChange = (arrival: string) => {
@@ -79,7 +79,7 @@ const StdcmOrigin = ({
     >
       <div className="stdcm-v2-origin__parameters">
         <StdcmOperationalPoint
-          updatePoint={updateOriginV2Point}
+          updatePoint={updateOriginPoint}
           point={origin}
           opPointId={origin?.id || 'origin'}
           disabled={disabled}

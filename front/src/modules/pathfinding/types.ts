@@ -11,7 +11,7 @@ export type PathfindingState = {
   cancelled: boolean;
 };
 
-export type PathfindingActionV2 = {
+export type PathfindingAction = {
   type: string;
   message?: string;
   params?: {

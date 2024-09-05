@@ -1,6 +1,6 @@
 import type { Feature, Position } from 'geojson';
 
-import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { AllowanceValue } from 'applications/stdcm/types';
 import type { ArrivalTimeTypes } from 'applications/stdcmV2/types';
 import type { Comfort, Distribution, PathItemLocation } from 'common/api/osrdEditoastApi';
@@ -23,7 +23,7 @@ export interface OsrdConfState extends InfraState {
   searchDatetimeWindow?: { begin: Date; end: Date };
   rollingStockID?: number;
   speedLimitByTag?: string;
-  powerRestrictionV2: PowerRestrictionV2[];
+  powerRestriction: PowerRestriction[];
   initialSpeed?: number;
   originDate?: string;
   originTime?: string;
@@ -34,7 +34,7 @@ export interface OsrdConfState extends InfraState {
   gridMarginAfter?: number;
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   pathSteps: (PathStep | null)[];
-  rollingStockComfortV2: Comfort;
+  rollingStockComfort: Comfort;
   // Format ISO 8601
   startTime: string;
 }

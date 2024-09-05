@@ -17,7 +17,7 @@ import { useInfraID } from 'common/osrdContext';
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
 
-import { updateChartSynchronizerV2TrainData } from '../ChartSynchronizer/utils';
+import { updateChartSynchronizerTrainData } from '../ChartSynchronizer/utils';
 
 /** Prepare data needed for speedSpaceChart */
 const useSpeedSpaceChart = (
@@ -83,7 +83,7 @@ const useSpeedSpaceChart = (
   // setup chart synchronizer
   useEffect(() => {
     if (simulation?.status === 'success' && trainScheduleResult && rollingStock && departureTime) {
-      updateChartSynchronizerV2TrainData(simulation, rollingStock, departureTime);
+      updateChartSynchronizerTrainData(simulation, rollingStock, departureTime);
     }
   }, [simulation, trainScheduleResult, rollingStock, departureTime]);
 

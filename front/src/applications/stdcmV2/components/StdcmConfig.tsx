@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { usePathfindingV2 } from 'modules/pathfinding/hooks/usePathfinding';
+import { usePathfinding } from 'modules/pathfinding/hooks/usePathfinding';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
@@ -67,11 +67,11 @@ const StdcmConfig = ({
     updateDestinationArrivalType,
   } = useOsrdConfActions() as StdcmConfSliceActions;
 
-  const { getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
-  const origin = useSelector(getOriginV2);
-  const destination = useSelector(getDestinationV2);
+  const { getOrigin, getDestination } = useOsrdConfSelectors();
+  const origin = useSelector(getOrigin);
+  const destination = useSelector(getDestination);
 
-  const { pathfindingState } = usePathfindingV2(undefined, pathProperties);
+  const { pathfindingState } = usePathfinding(undefined, pathProperties);
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors | undefined>(undefined);
 

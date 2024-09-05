@@ -21,8 +21,8 @@ const usePowerRestrictionSelector = (
   rollingStockModes: RollingStock['effort_curves']['modes'],
   pathProperties: ManageTrainSchedulePathProperties
 ) => {
-  const { getPowerRestrictionV2, getPathSteps } = useOsrdConfSelectors();
-  const powerRestrictionRanges = useSelector(getPowerRestrictionV2);
+  const { getPowerRestriction, getPathSteps } = useOsrdConfSelectors();
+  const powerRestrictionRanges = useSelector(getPowerRestriction);
   const pathSteps = compact(useSelector(getPathSteps));
 
   const [cutPositions, setCutPositions] = useState<number[]>([]); // in meters

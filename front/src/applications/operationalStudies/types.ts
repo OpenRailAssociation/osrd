@@ -75,13 +75,13 @@ export type PositionData<T extends 'gradient' | 'radius'> = {
 };
 
 /** Start and stop are in meters */
-export type ElectrificationRangeV2 = {
-  electrificationUsage: ElectrificationUsageV2;
+export type ElectrificationRange = {
+  electrificationUsage: ElectrificationUsage;
   start: number;
   stop: number;
 };
 
-type ElectrificationUsageV2 = ElectrificationValue &
+type ElectrificationUsage = ElectrificationValue &
   SimulationResponseSuccess['electrical_profiles']['values'][number];
 
 export type BoundariesData = {
@@ -114,7 +114,7 @@ export type ElectricalProfileValue = Extract<
 
 /** Electrifications start and stop are in meters */
 export type PathPropertiesFormatted = {
-  electrifications: ElectrificationRangeV2[];
+  electrifications: ElectrificationRange[];
   curves: PositionData<'radius'>[];
   slopes: PositionData<'gradient'>[];
   operationalPoints: NonNullable<PathProperties['operational_points']>;
@@ -122,7 +122,7 @@ export type PathPropertiesFormatted = {
   voltages: RangedValue[];
 };
 
-export type PowerRestrictionV2 = ArrayElement<TrainScheduleBase['power_restrictions']>;
+export type PowerRestriction = ArrayElement<TrainScheduleBase['power_restrictions']>;
 
 export type SimulationResponseSuccess = Extract<SimulationResponse, { status: 'success' }>;
 
@@ -131,7 +131,7 @@ export type ElectrificationVoltage = {
   voltage?: string;
 };
 
-export type SimulationResults = {
+export type SimulationResultsData = {
   selectedTrainSchedule?: TrainScheduleResult;
   selectedTrainRollingStock?: RollingStockWithLiveries;
   selectedTrainPowerRestrictions: LayerData<PowerRestrictionValues>[];

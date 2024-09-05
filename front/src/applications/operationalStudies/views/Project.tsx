@@ -50,7 +50,7 @@ export default function Project() {
   const [isLoading, setIsLoading] = useState(true);
 
   const { projectId: urlProjectId } = useParams() as ProjectParams;
-  const [deleteStudyV2] =
+  const [deleteStudy] =
     osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyId.useMutation();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
@@ -69,7 +69,7 @@ export default function Project() {
     toggleSelection: toggleStudySelection,
     deleteItems,
   } = useMultiSelection<StudyWithScenarios>((studyId) => {
-    deleteStudyV2({ projectId: projectId!, studyId });
+    deleteStudy({ projectId: projectId!, studyId });
   });
 
   const handleDeleteStudy = () => {

@@ -9,12 +9,12 @@ import {
   gridY2,
   interpolateOnTime,
   getAxis,
-  interpolateOnPositionV2,
+  interpolateOnPosition,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import drawGuideLines from 'modules/simulationResult/components/ChartHelpers/drawGuideLines';
 import type { AreaBlock } from 'modules/simulationResult/components/SpeedSpaceChart/types';
 import { CHART_AXES, LIST_VALUES, type ChartAxes } from 'modules/simulationResult/consts';
-import type { PositionScaleDomain, SpaceCurvesSlopesDataV2 } from 'modules/simulationResult/types';
+import type { PositionScaleDomain, SpaceCurvesSlopesData } from 'modules/simulationResult/types';
 import type {
   Chart,
   ConsolidatedRouteAspect,
@@ -256,9 +256,9 @@ function wheelDelta(event: WheelEvent) {
   return -event.deltaY * factor;
 }
 
-export const enableInteractivityV2 = <
+export const enableInteractivity = <
   T extends Chart | SpeedSpaceChart,
-  Data extends SimulationTrain<Date> | SpaceCurvesSlopesDataV2,
+  Data extends SimulationTrain<Date> | SpaceCurvesSlopesData,
 >(
   chart: T | undefined,
   selectedTrainData: Data,
@@ -310,7 +310,7 @@ export const enableInteractivityV2 = <
     if (!simulationIsPlaying) {
       // SpaceCurvesSlopesChart
       const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
-      const timePositionLocal = interpolateOnPositionV2(
+      const timePositionLocal = interpolateOnPosition(
         selectedTrainData as { speed: PositionSpeedTime[] },
         Math.max(positionLocal, 0),
         isoDateWithTimezoneToSec(selectedTrainDepartureDate)

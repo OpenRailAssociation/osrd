@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 
 import type { PositionData } from 'applications/operationalStudies/types';
 import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
-import type { SpaceCurvesSlopesDataV2 } from 'modules/simulationResult/types';
+import type { SpaceCurvesSlopesData } from 'modules/simulationResult/types';
 import type {
   Chart,
   GradientPosition,
@@ -11,10 +11,7 @@ import type {
   SpeedSpaceChart,
 } from 'reducers/osrdsimulation/types';
 
-export const drawAxisTitle = (
-  chart: Chart,
-  slopes?: SpaceCurvesSlopesDataV2['slopesHistogram']
-) => {
+export const drawAxisTitle = (chart: Chart, slopes?: SpaceCurvesSlopesData['slopesHistogram']) => {
   chart.drawZone
     .append('text')
     .attr('class', 'axis-unit')
@@ -77,7 +74,7 @@ const calculateReferentialHeight = (data: number[]) => {
 };
 
 export const createCurveCurve = (
-  curves: RadiusPosition[] | PositionData<'radius'>[], // TODO DROPV1 : remove RadiusPosition type
+  curves: PositionData<'radius'>[],
   speeds: number[]
 ): RadiusPosition[] => {
   const referentialHeight = calculateReferentialHeight(speeds);

@@ -33,13 +33,13 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
       }),
     },
     deleteTrainSchedule: {
-      // As we always use all get trainschedule v2 endpoints after updating the timetable,
-      // we don't want to invalidate the trainschedulev2 tag here to prevent multiple calls
+      // As we always use all get trainschedule endpoints after updating the timetable,
+      // we don't want to invalidate the trainschedule tag here to prevent multiple calls
       invalidatesTags: ['timetable', 'scenarios'],
     },
     postTimetableByIdTrainSchedule: {
-      // As we always use all get trainschedule v2 endpoints after updating the timetable,
-      // we don't want to invalidate the trainschedulev2 tag here to prevent multiple calls
+      // As we always use all get trainschedule endpoints after updating the timetable,
+      // we don't want to invalidate the trainschedule tag here to prevent multiple calls
       invalidatesTags: ['timetable', 'scenarios'],
     },
     // Invalidate the children count and last update timestamp

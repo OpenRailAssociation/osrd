@@ -16,7 +16,7 @@ import {
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/pathfinding/utils';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
-import { adjustConfWithTrainToModifyV2 } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
+import { adjustConfWithTrainToModify } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
@@ -53,7 +53,6 @@ const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
 
     const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
 
-    // TODO DROP V1: we should store the offset in mm in the store
     if ('track' in stepWithoutSecondaryCode) {
       stepWithoutSecondaryCode.offset = mmToM(stepWithoutSecondaryCode.offset!);
     }
@@ -259,7 +258,7 @@ const useSetupItineraryForTrainUpdate = (
         }
       }
 
-      adjustConfWithTrainToModifyV2(
+      adjustConfWithTrainToModify(
         trainSchedule,
         pathSteps || computeBasePathSteps(trainSchedule),
         rollingStock?.id,

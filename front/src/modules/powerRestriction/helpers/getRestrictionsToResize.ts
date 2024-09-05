@@ -1,4 +1,4 @@
-import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
@@ -7,9 +7,9 @@ import { NO_POWER_RESTRICTION } from '../consts';
 
 const getPowerRestrictionFromRange = (
   pathSteps: PathStep[],
-  powerRestrictionRanges: PowerRestrictionV2[],
+  powerRestrictionRanges: PowerRestriction[],
   rangeData: IntervalItem
-): PowerRestrictionV2 | null => {
+): PowerRestriction | null => {
   const fromPathStep = getPathStep(pathSteps, rangeData.begin);
   const toPathStep = getPathStep(pathSteps, rangeData.end);
 
@@ -26,7 +26,7 @@ const getPowerRestrictionFromRange = (
  */
 const getPowerRestrictionsToUpdate = (
   pathSteps: PathStep[],
-  powerRestrictionRanges: PowerRestrictionV2[],
+  powerRestrictionRanges: PowerRestriction[],
   ranges: IntervalItem[],
   position: number,
   selectedRangeIndex: number
@@ -62,7 +62,7 @@ const getRestrictionsToResize = (
   context: 'begin' | 'end',
   newPosition: number,
   pathSteps: PathStep[],
-  powerRestrictionRanges: PowerRestrictionV2[]
+  powerRestrictionRanges: PowerRestriction[]
 ) => {
   const result = getPowerRestrictionsToUpdate(
     pathSteps,
@@ -75,8 +75,8 @@ const getRestrictionsToResize = (
 
   const { selectedRange, selectedRestriction, otherRange, otherRestriction } = result;
 
-  let firstRestriction: PowerRestrictionV2 | undefined;
-  let secondRestriction: PowerRestrictionV2 | undefined;
+  let firstRestriction: PowerRestriction | undefined;
+  let secondRestriction: PowerRestriction | undefined;
   if (context === 'begin') {
     // default hypothesis: the begin was decremented
     firstRestriction = otherRestriction || undefined;

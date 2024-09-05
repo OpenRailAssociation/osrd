@@ -40,7 +40,7 @@ export const defaultCommonConf: OsrdConfState = {
   timetableID: undefined,
   electricalProfileSetId: undefined,
   rollingStockID: undefined,
-  powerRestrictionV2: [],
+  powerRestriction: [],
   speedLimitByTag: undefined,
   initialSpeed: 0,
   originDate: formatIsoDate(new Date()),
@@ -54,7 +54,7 @@ export const defaultCommonConf: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
   // Corresponds to origin and destination not defined
   pathSteps: [null, null],
-  rollingStockComfortV2: 'STANDARD' as const,
+  rollingStockComfort: 'STANDARD' as const,
   startTime: new Date().toISOString(),
 };
 
@@ -79,7 +79,7 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['toggleOriginLinkedBounds']: CaseReducer<S>;
   ['updateOriginDate']: CaseReducer<S, PayloadAction<S['originDate']>>;
   ['updateOriginUpperBoundDate']: CaseReducer<S, PayloadAction<S['originUpperBoundDate']>>;
-  ['updateViaStopTimeV2']: CaseReducer<S, PayloadAction<{ via: PathStep; duration: string }>>;
+  ['updateViaStopTime']: CaseReducer<S, PayloadAction<{ via: PathStep; duration: string }>>;
   ['updateGridMarginBefore']: CaseReducer<S, PayloadAction<S['gridMarginBefore']>>;
   ['updateGridMarginAfter']: CaseReducer<S, PayloadAction<S['gridMarginAfter']>>;
   ['updateFeatureInfoClick']: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
@@ -87,10 +87,10 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
     S,
     PayloadAction<{ pathSteps: S['pathSteps']; resetPowerRestrictions?: boolean }>
   >;
-  ['deleteItineraryV2']: CaseReducer<S>;
-  ['clearViasV2']: CaseReducer<S>;
-  ['deleteViaV2']: CaseReducer<S, PayloadAction<number>>;
-  ['addViaV2']: CaseReducer<
+  ['deleteItinerary']: CaseReducer<S>;
+  ['clearVias']: CaseReducer<S>;
+  ['deleteVia']: CaseReducer<S, PayloadAction<number>>;
+  ['addVia']: CaseReducer<
     S,
     PayloadAction<{ newVia: PathStep; pathProperties: ManageTrainSchedulePathProperties }>
   >;
@@ -99,10 +99,10 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
     prepare: PrepareAction<S['pathSteps']>;
   };
   ['upsertViaFromSuggestedOP']: CaseReducer<S, PayloadAction<SuggestedOP>>;
-  ['updateRollingStockComfortV2']: CaseReducer<S, PayloadAction<S['rollingStockComfortV2']>>;
+  ['updateRollingStockComfort']: CaseReducer<S, PayloadAction<S['rollingStockComfort']>>;
   ['updateStartTime']: CaseReducer<S, PayloadAction<S['startTime']>>;
-  ['updateOriginV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
-  ['updateDestinationV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
+  ['updateOrigin']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
+  ['updateDestination']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
 }
 
 export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducers<S> {
@@ -217,10 +217,7 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     // TODO: Change the type of duration to number. It is preferable to keep this value in seconds in the store
     //* to avoid multiple conversions between seconds and ISO8601 format across the front.
-    updateViaStopTimeV2(
-      state: Draft<S>,
-      action: PayloadAction<{ via: PathStep; duration: string }>
-    ) {
+    updateViaStopTime(state: Draft<S>, action: PayloadAction<{ via: PathStep; duration: string }>) {
       const {
         payload: { via, duration },
       } = action;
@@ -247,22 +244,22 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     ) {
       state.pathSteps = action.payload.pathSteps;
       if (action.payload.resetPowerRestrictions) {
-        state.powerRestrictionV2 = [];
+        state.powerRestriction = [];
       }
     },
-    deleteItineraryV2(state: Draft<S>) {
+    deleteItinerary(state: Draft<S>) {
       state.pathSteps = [null, null];
     },
-    clearViasV2(state: Draft<S>) {
+    clearVias(state: Draft<S>) {
       state.pathSteps = [state.pathSteps[0], state.pathSteps[state.pathSteps.length - 1]];
     },
     // Use this action in the via list, not the suggested op list
-    deleteViaV2(state: Draft<S>, action: PayloadAction<number>) {
+    deleteVia(state: Draft<S>, action: PayloadAction<number>) {
       // Index takes count of the origin in the array
       state.pathSteps = removeElementAtIndex(state.pathSteps, action.payload + 1);
     },
     // Use this action only to via added by click on map
-    addViaV2(
+    addVia(
       state: Draft<S>,
       action: PayloadAction<{
         newVia: PathStep;
@@ -339,16 +336,13 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         state.pathSteps = addElementAtIndex(state.pathSteps, index || 1, newVia);
       }
     },
-    updateRollingStockComfortV2(
-      state: Draft<S>,
-      action: PayloadAction<S['rollingStockComfortV2']>
-    ) {
-      state.rollingStockComfortV2 = action.payload;
+    updateRollingStockComfort(state: Draft<S>, action: PayloadAction<S['rollingStockComfort']>) {
+      state.rollingStockComfort = action.payload;
     },
     updateStartTime(state: Draft<S>, action: PayloadAction<S['startTime']>) {
       state.startTime = action.payload;
     },
-    updateOriginV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
+    updateOrigin(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
       const newPoint = action.payload
         ? {
             ...action.payload,
@@ -357,7 +351,7 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         : null;
       state.pathSteps = updateOriginPathStep(state.pathSteps, newPoint, true);
     },
-    updateDestinationV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
+    updateDestination(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
       const newPoint = action.payload
         ? {
             ...action.payload,

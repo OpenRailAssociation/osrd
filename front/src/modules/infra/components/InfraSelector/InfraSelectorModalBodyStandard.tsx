@@ -51,7 +51,7 @@ export default function InfraSelectorModalBodyStandard({
   const { updateInfraID } = useInfraActions();
   const infraID = useInfraID();
   const { closeModal } = useContext(ModalContext);
-  const { deleteItineraryV2 } = useOsrdConfActions();
+  const { deleteItinerary } = useOsrdConfActions();
   const navigate = useNavigate();
 
   const setInfraID = useCallback(
@@ -60,7 +60,7 @@ export default function InfraSelectorModalBodyStandard({
       if (isInEditor) {
         navigate(`/editor/${id}`);
       }
-      if ([MODES.simulation, MODES.stdcm].includes(mode)) dispatch(deleteItineraryV2());
+      if ([MODES.simulation, MODES.stdcm].includes(mode)) dispatch(deleteItinerary());
       if (!onlySelectionMode) {
         closeModal();
       }

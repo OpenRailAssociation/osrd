@@ -2,7 +2,7 @@ import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 import { compact, isEqual, keyBy, sortBy } from 'lodash';
 
-import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
@@ -10,29 +10,26 @@ import { addElementAtIndex } from 'utils/array';
 import { addPathStep, cleanPathSteps, isRangeCovered, updateRestrictions } from './utils';
 
 export type PowerRestrictionReducer<S extends OsrdConfState> = {
-  ['updatePowerRestrictionRangesV2']: CaseReducer<S, PayloadAction<PowerRestrictionV2[]>>;
-  ['upsertPowerRestrictionRangesV2']: CaseReducer<
+  ['updatePowerRestrictionRanges']: CaseReducer<S, PayloadAction<PowerRestriction[]>>;
+  ['upsertPowerRestrictionRanges']: CaseReducer<
     S,
     PayloadAction<{ from: PathStep; to: PathStep; code: string }>
   >;
-  ['cutPowerRestrictionRangesV2']: CaseReducer<S, PayloadAction<{ cutAt: PathStep }>>;
-  ['deletePowerRestrictionRangesV2']: CaseReducer<
-    S,
-    PayloadAction<{ from: PathStep; to: PathStep }>
-  >;
+  ['cutPowerRestrictionRanges']: CaseReducer<S, PayloadAction<{ cutAt: PathStep }>>;
+  ['deletePowerRestrictionRanges']: CaseReducer<S, PayloadAction<{ from: PathStep; to: PathStep }>>;
   ['resizeSegmentEndInput']: CaseReducer<
     S,
     PayloadAction<{
-      firstRestriction: PowerRestrictionV2;
-      secondRestriction?: PowerRestrictionV2;
+      firstRestriction: PowerRestriction;
+      secondRestriction?: PowerRestriction;
       newEndPathStep: PathStep;
     }>
   >;
   ['resizeSegmentBeginInput']: CaseReducer<
     S,
     PayloadAction<{
-      firstRestriction?: PowerRestrictionV2;
-      secondRestriction: PowerRestrictionV2;
+      firstRestriction?: PowerRestriction;
+      secondRestriction: PowerRestriction;
       newFromPathStep: PathStep;
     }>
   >;
@@ -40,17 +37,17 @@ export type PowerRestrictionReducer<S extends OsrdConfState> = {
 
 export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRestrictionReducer<S> {
   return {
-    updatePowerRestrictionRangesV2(state: Draft<S>, action: PayloadAction<PowerRestrictionV2[]>) {
-      state.powerRestrictionV2 = action.payload;
+    updatePowerRestrictionRanges(state: Draft<S>, action: PayloadAction<PowerRestriction[]>) {
+      state.powerRestriction = action.payload;
     },
 
-    upsertPowerRestrictionRangesV2(
+    upsertPowerRestrictionRanges(
       state: Draft<S>,
       action: PayloadAction<{ from: PathStep; to: PathStep; code: string }>
     ) {
       const { from, to, code } = action.payload;
       let newPathSteps = compact(state.pathSteps);
-      let newPowerRestrictionRangesV2 = state.powerRestrictionV2.filter(
+      let newPowerRestrictionRanges = state.powerRestriction.filter(
         (restriction) => restriction.from !== from.id && restriction.to !== to.id
       );
 
@@ -62,18 +59,18 @@ export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRes
 
       // update power restriction ranges
       if (code !== NO_POWER_RESTRICTION) {
-        newPowerRestrictionRangesV2.push({ from: from.id, to: to.id, value: code });
-        newPowerRestrictionRangesV2 = sortBy(
-          newPowerRestrictionRangesV2,
+        newPowerRestrictionRanges.push({ from: from.id, to: to.id, value: code });
+        newPowerRestrictionRanges = sortBy(
+          newPowerRestrictionRanges,
           (range) => newPathStepsById[range.from]?.positionOnPath
         );
       }
 
       state.pathSteps = newPathSteps;
-      state.powerRestrictionV2 = newPowerRestrictionRangesV2;
+      state.powerRestriction = newPowerRestrictionRanges;
     },
 
-    cutPowerRestrictionRangesV2(state: Draft<S>, action: PayloadAction<{ cutAt: PathStep }>) {
+    cutPowerRestrictionRanges(state: Draft<S>, action: PayloadAction<{ cutAt: PathStep }>) {
       const { cutAt } = action.payload;
       let newPathSteps = [...state.pathSteps];
 
@@ -93,10 +90,10 @@ export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRes
         const nextStep = newPathSteps[cutAtIndex + 1];
 
         if (!prevStep || !nextStep) {
-          console.error('cutPowerRestrictionRangesV2: prevStep or nextStep is undefined');
+          console.error('cutPowerRestrictionRanges: prevStep or nextStep is undefined');
         } else {
           // update the power restriction ranges by splitting 1 range into 2
-          const newPowerRestrictionRangesV2 = state.powerRestrictionV2.reduce(
+          const newPowerRestrictionRanges = state.powerRestriction.reduce(
             (acc, powerRestriction) => {
               if (powerRestriction.from === prevStep.id) {
                 acc.push({
@@ -113,35 +110,35 @@ export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRes
               }
               return acc;
             },
-            [] as PowerRestrictionV2[]
+            [] as PowerRestriction[]
           );
 
           state.pathSteps = newPathSteps;
-          state.powerRestrictionV2 = newPowerRestrictionRangesV2;
+          state.powerRestriction = newPowerRestrictionRanges;
         }
       }
     },
 
-    deletePowerRestrictionRangesV2(
+    deletePowerRestrictionRanges(
       state: Draft<S>,
       action: PayloadAction<{ from: PathStep; to: PathStep }>
     ) {
       const { from, to } = action.payload;
 
-      const newPowerRestrictionRanges = state.powerRestrictionV2.filter(
+      const newPowerRestrictionRanges = state.powerRestriction.filter(
         (restriction) => restriction.from !== from.id && restriction.to !== to.id
       );
 
       const newPathSteps = [...state.pathSteps] as PathStep[];
       state.pathSteps = cleanPathSteps(newPathSteps, newPowerRestrictionRanges);
-      state.powerRestrictionV2 = newPowerRestrictionRanges;
+      state.powerRestriction = newPowerRestrictionRanges;
     },
 
     resizeSegmentBeginInput(
       state: Draft<S>,
       action: PayloadAction<{
-        firstRestriction?: PowerRestrictionV2;
-        secondRestriction: PowerRestrictionV2;
+        firstRestriction?: PowerRestriction;
+        secondRestriction: PowerRestriction;
         newFromPathStep: PathStep;
       }>
     ) {
@@ -150,7 +147,7 @@ export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRes
       // pathSteps should not be undefined or have null values
       if (state.pathSteps && !state.pathSteps.some((pathStep) => !pathStep)) {
         let newPathSteps = [...state.pathSteps] as PathStep[];
-        let newPowerRestrictionRanges = state.powerRestrictionV2.filter(
+        let newPowerRestrictionRanges = state.powerRestriction.filter(
           (restriction) =>
             !isEqual(restriction, firstRestriction) || !isEqual(restriction, secondRestriction)
         );
@@ -184,14 +181,14 @@ export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRes
         newPathSteps = cleanPathSteps(newPathSteps, newPowerRestrictionRanges);
 
         state.pathSteps = newPathSteps;
-        state.powerRestrictionV2 = newPowerRestrictionRanges;
+        state.powerRestriction = newPowerRestrictionRanges;
       }
     },
     resizeSegmentEndInput(
       state: Draft<S>,
       action: PayloadAction<{
-        firstRestriction: PowerRestrictionV2;
-        secondRestriction?: PowerRestrictionV2;
+        firstRestriction: PowerRestriction;
+        secondRestriction?: PowerRestriction;
         newEndPathStep: PathStep;
       }>
     ) {
@@ -200,7 +197,7 @@ export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRes
       // pathSteps should not be undefined or have null values
       if (state.pathSteps && !state.pathSteps.some((pathStep) => !pathStep)) {
         let newPathSteps = [...state.pathSteps] as PathStep[];
-        let newPowerRestrictionRanges = state.powerRestrictionV2.filter(
+        let newPowerRestrictionRanges = state.powerRestriction.filter(
           (restriction) =>
             !isEqual(restriction, firstRestriction) || !isEqual(restriction, secondRestriction)
         );
@@ -236,7 +233,7 @@ export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRes
         newPathSteps = cleanPathSteps(newPathSteps, newPowerRestrictionRanges);
 
         state.pathSteps = newPathSteps;
-        state.powerRestrictionV2 = newPowerRestrictionRanges;
+        state.powerRestriction = newPowerRestrictionRanges;
       }
     },
   };

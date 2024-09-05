@@ -17,7 +17,7 @@ import type {
   ElectricalBoundariesData,
   ElectricalProfileValue,
   ElectricalRangesData,
-  ElectrificationRangeV2,
+  ElectrificationRange,
   ElectrificationValue,
   PathPropertiesFormatted,
   PositionData,
@@ -77,7 +77,7 @@ export const transformBoundariesDataToRangesData = <
   boundariesData: ElectricalBoundariesData<T>,
   pathLength: number
 ): ElectricalRangesData<T>[] => {
-  // TODO DROP V1 : remove electrical profiles
+  // TODO : remove electrical profiles
   const formatedData = boundariesData.boundaries.map((boundary, index) => ({
     start: index === 0 ? 0 : mmToM(boundariesData.boundaries[index - 1]),
     stop: mmToM(boundary),
@@ -99,7 +99,7 @@ export const transformBoundariesDataToRangesData = <
 export const formatElectrificationRanges = (
   electrifications: ElectricalRangesData<ElectrificationValue>[],
   electricalProfiles: ElectricalRangesData<ElectricalProfileValue>[]
-): ElectrificationRangeV2[] =>
+): ElectrificationRange[] =>
   // Electrifications can be of three types, electricalProfiles only two, so we know electrifications
   // will always be at least as long as electricalProfiles so we can use it as the main array
   electrifications.map((currentElectrification, index) => {

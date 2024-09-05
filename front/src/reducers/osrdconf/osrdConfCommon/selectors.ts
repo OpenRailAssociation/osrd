@@ -17,7 +17,7 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
   const getPathSteps = makeOsrdConfSelector('pathSteps');
 
   // If createSelector is not used and we return directly : pathSteps.slice(1, -1), we get this rtk warning :
-  // Selector getViasV2 returned a different result when called with the same parameters. This can lead to unnecessary rerenders.
+  // Selector getVias returned a different result when called with the same parameters. This can lead to unnecessary rerenders.
   // Selectors that return a new reference (such as an object or an array) should be memoized: https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
   const viasSelector = createSelector(
     getPathSteps,
@@ -50,20 +50,20 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
     getOriginLinkedBounds: makeOsrdConfSelector('originLinkedBounds'),
     getGridMarginBefore: makeOsrdConfSelector('gridMarginBefore'),
     getGridMarginAfter: makeOsrdConfSelector('gridMarginAfter'),
-    getPowerRestrictionV2: makeOsrdConfSelector('powerRestrictionV2'),
+    getPowerRestriction: makeOsrdConfSelector('powerRestriction'),
     getFeatureInfoClick: makeOsrdConfSelector('featureInfoClick'),
     getPathSteps,
-    getOriginV2: (state: RootState) => {
+    getOrigin: (state: RootState) => {
       const pathSteps = getPathSteps(state);
       return pathSteps[0];
     },
-    getDestinationV2: (state: RootState) => {
+    getDestination: (state: RootState) => {
       const pathSteps = getPathSteps(state);
       return pathSteps[pathSteps.length - 1];
     },
-    /** To use this action, do useSelector(getViasV2()) */
-    getViasV2: () => viasSelector,
-    getRollingStockComfortV2: makeOsrdConfSelector('rollingStockComfortV2'),
+    /** To use this action, do useSelector(getVias()) */
+    getVias: () => viasSelector,
+    getRollingStockComfort: makeOsrdConfSelector('rollingStockComfort'),
     getStartTime: makeOsrdConfSelector('startTime'),
   };
 };

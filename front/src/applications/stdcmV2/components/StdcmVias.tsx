@@ -23,7 +23,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
   const { getPathSteps } = useOsrdConfSelectors();
-  const { deleteViaV2, updatePathSteps, updateViaStopTimeV2 } =
+  const { deleteVia, updatePathSteps, updateViaStopTime } =
     useOsrdConfActions() as StdcmConfSliceActions;
   const pathSteps = useSelector(getPathSteps);
 
@@ -38,7 +38,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
     const pathStepToUpdate = pathSteps[index];
     if (!pathStepToUpdate) return;
     dispatch(
-      updateViaStopTimeV2({
+      updateViaStopTime({
         via: pathStepToUpdate,
         duration: formatDurationAsISO8601(Number(stopTime) * 60),
       })
@@ -46,7 +46,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
   };
 
   const deleteViaOnClick = (index: number) => {
-    dispatch(deleteViaV2(index));
+    dispatch(deleteVia(index));
   };
 
   const addViaOnClick = (pathStepIndex: number) => {

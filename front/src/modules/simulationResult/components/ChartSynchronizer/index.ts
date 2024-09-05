@@ -1,1 +1,1 @@
-export { ChartSynchronizerV2, useChartSynchronizerV2 } from './ChartSynchronizerV2';
+export { ChartSynchronizer, useChartSynchronizer } from './ChartSynchronizer';

@@ -84,7 +84,7 @@ export default function AddOrEditScenarioModal({
     [urlStudyId, urlProjectId]
   );
 
-  const [postTimetableV2] = osrdEditoastApi.endpoints.postTimetable.useMutation({});
+  const [postTimetable] = osrdEditoastApi.endpoints.postTimetable.useMutation({});
   const [postScenario] =
     osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenarios.useMutation({});
   const [patchScenario] =
@@ -160,7 +160,7 @@ export default function AddOrEditScenarioModal({
       setDisplayErrors(true);
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
       const ids = { projectId, studyId };
-      const timetable = await postTimetableV2().unwrap();
+      const timetable = await postTimetable().unwrap();
       postScenario({
         ...ids,
         scenarioCreateForm: {

@@ -5,26 +5,26 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import { store } from 'store';
 import { addElementAtIndex } from 'utils/array';
 
-export function setPointItiV2(
+export function setPointIti(
   pointType: 'origin' | 'destination' | 'via',
   pathStep: PathStep,
   actions: ConfSliceActions,
   pathProperties?: ManageTrainSchedulePathProperties
 ) {
-  const { updateOriginV2, updateDestinationV2, addViaV2, updatePathSteps, updateFeatureInfoClick } =
+  const { updateOrigin, updateDestination, addVia, updatePathSteps, updateFeatureInfoClick } =
     actions;
   const { pathSteps } = store.getState().operationalStudiesConf;
 
   switch (pointType) {
     case 'origin':
-      store.dispatch(updateOriginV2(pathStep));
+      store.dispatch(updateOrigin(pathStep));
       break;
     case 'destination':
-      store.dispatch(updateDestinationV2(pathStep));
+      store.dispatch(updateDestination(pathStep));
       break;
     default:
       if (pathProperties) {
-        store.dispatch(addViaV2({ newVia: pathStep, pathProperties }));
+        store.dispatch(addVia({ newVia: pathStep, pathProperties }));
       } else {
         store.dispatch(
           updatePathSteps({

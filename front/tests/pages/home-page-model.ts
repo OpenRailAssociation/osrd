@@ -30,8 +30,6 @@ class HomePage {
 
   readonly getViteOverlay: Locator;
 
-  readonly TSV2Switch: Locator;
-
   readonly dropDown: Locator;
 
   readonly userSettings: Locator;
@@ -55,7 +53,6 @@ class HomePage {
     this.getBody = page.locator('body');
     this.translation = home;
     this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
-    this.TSV2Switch = page.getByTestId('train-schedule-version-switch');
     this.stdcmSwitch = page.getByTestId('stdcm-version-switch');
     this.dropDown = page.getByTestId('dropdown-sncf');
     this.userSettings = page.getByTestId('user-settings-btn');

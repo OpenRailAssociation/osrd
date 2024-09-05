@@ -9,7 +9,7 @@ import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
 
-import { useChartSynchronizerV2 } from './ChartSynchronizer';
+import { useChartSynchronizer } from './ChartSynchronizer';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
 const factor2ms = (factor: number) => {
@@ -33,7 +33,7 @@ const TimeButtons = ({ departureTime }: TimeButtonsProps) => {
 
   const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
 
-  const { updateTimePosition: updateTimePositionV2 } = useChartSynchronizerV2(
+  const { updateTimePosition } = useChartSynchronizer(
     (timePosition) => {
       setLocalTimePosition(timePosition);
     },
@@ -44,8 +44,7 @@ const TimeButtons = ({ departureTime }: TimeButtonsProps) => {
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
-    if (departureTime)
-      updateTimePositionV2(sec2datetime(convertDepartureTimeIntoSec(departureTime)));
+    if (departureTime) updateTimePosition(sec2datetime(convertDepartureTimeIntoSec(departureTime)));
 
     dispatch(updateIsPlaying(false));
   };
@@ -67,7 +66,7 @@ const TimeButtons = ({ departureTime }: TimeButtonsProps) => {
       } else {
         i += factor.steps;
       }
-      updateTimePositionV2(new Date(i * 1000));
+      updateTimePosition(new Date(i * 1000));
     }, factor.ms);
     setPlayInterval(playIntervalLocal);
     dispatch(updateIsPlaying(true));
@@ -101,7 +100,7 @@ const TimeButtons = ({ departureTime }: TimeButtonsProps) => {
   const changeTimePosition = (newTimePosition: string) => {
     const newTimePositionDate = time2datetime(newTimePosition);
     if (newTimePositionDate) {
-      updateTimePositionV2(newTimePositionDate);
+      updateTimePosition(newTimePositionDate);
     }
   };
 

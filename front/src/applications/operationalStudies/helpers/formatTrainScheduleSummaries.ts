@@ -6,7 +6,7 @@ import type {
   SimulationSummaryResult,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/TimetableV2/types';
+import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { formatToIsoDate, isoDateToMs } from 'utils/date';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';

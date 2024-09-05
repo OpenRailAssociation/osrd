@@ -3,7 +3,7 @@ import { round } from 'lodash';
 import { keyColumn, createTextColumn } from 'react-datasheet-grid';
 
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainScheduleV2/types';
+import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { extractHHMMSS } from 'utils/date';
