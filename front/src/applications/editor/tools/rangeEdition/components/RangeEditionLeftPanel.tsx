@@ -59,8 +59,8 @@ const RangeEditionLeftPanel = () => {
     useState<AvailableSwitchPositions>({});
 
   // The 2 main checkboxes
-  const isPermanentSpeedLimit = speedSectionIsPsl(entity as SpeedSectionEntity);
-  const isSpeedRestriction = speedSectionIsSpeedRestriction(entity as SpeedSectionEntity);
+  const isPermanentSpeedLimit = speedSectionIsPsl(entity);
+  const isSpeedRestriction = speedSectionIsSpeedRestriction(entity);
 
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const infraID = useInfraID();
@@ -68,7 +68,7 @@ const RangeEditionLeftPanel = () => {
 
   /** Reset both highlighted and selected track_ranges, route ids and switches lists */
   const resetSpeedRestrictionSelections = () => {
-    const newEntity = cloneDeep(entity) as SpeedSectionEntity;
+    const newEntity = cloneDeep(entity);
     newEntity.properties.on_routes = [];
     newEntity.properties.track_ranges = [];
     setState({
@@ -81,7 +81,7 @@ const RangeEditionLeftPanel = () => {
 
   const toggleSpeedRestriction = () => {
     const selectiontype = isSpeedRestriction ? 'idle' : 'selectSwitch';
-    const newEntity = cloneDeep(entity) as SpeedSectionEntity;
+    const newEntity = cloneDeep(entity);
     newEntity.properties.extensions = undefined;
     newEntity.properties.track_ranges = [];
     if (isSpeedRestriction) {
@@ -123,7 +123,7 @@ const RangeEditionLeftPanel = () => {
   const updateSpeedSectionExtensions = (
     extensions: SpeedSectionEntity['properties']['extensions']
   ) => {
-    const newEntity = cloneDeep(entity) as SpeedSectionEntity;
+    const newEntity = cloneDeep(entity);
     newEntity.properties.extensions = extensions;
     setState({
       entity: newEntity,
@@ -144,7 +144,7 @@ const RangeEditionLeftPanel = () => {
     if (isEmpty(routeElements)) {
       return;
     }
-    const newEntity = cloneDeep(entity) as SpeedSectionEntity;
+    const newEntity = cloneDeep(entity);
     const { properties } = newEntity;
     if (select) {
       properties.on_routes = toggleElement(properties.on_routes || [], routeId);
@@ -195,7 +195,7 @@ const RangeEditionLeftPanel = () => {
     }).unwrap();
     const { routes, available_node_positions } = routesAndNodesPositions;
 
-    const newEntity = cloneDeep(entity) as SpeedSectionEntity;
+    const newEntity = cloneDeep(entity);
     if (isSpeedRestriction) {
       newEntity.properties.on_routes = [];
     }

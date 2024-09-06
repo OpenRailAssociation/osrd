@@ -118,7 +118,7 @@ const updateChart = <
 
   chart.xAxisGrid.call(gridX(newX, chart.height));
   chart.yAxisGrid.call(gridY(newY, chart.width));
-  if (chart.y2AxisGrid) chart.y2AxisGrid.call(gridY2(newY2 as SimulationD3Scale, chart.width));
+  if (chart.y2AxisGrid) chart.y2AxisGrid.call(gridY2(newY2, chart.width));
 
   // * update lines, areas, rects by aiming their specific class.
 

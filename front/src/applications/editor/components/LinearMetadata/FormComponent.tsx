@@ -167,7 +167,7 @@ const IntervalEditorComponent = (props: FieldProps) => {
                     setHovered(null);
                   }
                   setClickPrevent(false);
-                }, 150) as number;
+                }, 150);
                 setClickTimeout(timer);
               }
             }}

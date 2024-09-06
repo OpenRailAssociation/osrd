@@ -169,7 +169,7 @@ async function getRouteGeometryByRoute(
 ): Promise<Feature<LineString, { id: string }>> {
   const trackRangesResp = dispatch(
     osrdEditoastApi.endpoints.getInfraByInfraIdRoutesTrackRanges.initiate({
-      infraId: infra as number,
+      infraId: infra,
       routes: route.properties.id,
     })
   );

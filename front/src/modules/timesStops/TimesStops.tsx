@@ -91,7 +91,7 @@ const TimesStops = ({
         if (!rowData.stopFor && op.fromRowIndex !== allWaypoints.length - 1) {
           rowData.onStopSignal = false;
         }
-        if (rowData.theoreticalMargin && !marginRegExValidation.test(rowData.theoreticalMargin!)) {
+        if (rowData.theoreticalMargin && !marginRegExValidation.test(rowData.theoreticalMargin)) {
           rowData.isMarginValid = false;
           setRows(row);
         } else {

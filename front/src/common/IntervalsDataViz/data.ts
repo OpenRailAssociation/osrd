@@ -682,7 +682,7 @@ export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: Li
         newProps[name] = value;
       }
     });
-    newProps.length = getLineStringDistance(entity.geometry as LineString);
+    newProps.length = getLineStringDistance(entity.geometry);
     return { ...entity, properties: newProps };
   }
   return entity;

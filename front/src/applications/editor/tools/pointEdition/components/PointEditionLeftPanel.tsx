@@ -112,7 +112,7 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
       )}
       <EditorForm
         key={formKey}
-        data={state.entity as Entity}
+        data={state.entity}
         overrideUiSchema={{
           logical_signals: {
             items: {

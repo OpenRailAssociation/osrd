@@ -46,7 +46,7 @@ export const BasePointEditionLayers = ({
   const renderedEntity = useMemo(() => {
     let res: EditorEntity | null = null;
     if (entity.geometry && !isEqual(entity.geometry, NULL_GEOMETRY)) {
-      res = entity as EditorEntity;
+      res = entity;
     } else if (nearestPoint) {
       if (mergeEntityWithNearestPoint) {
         res = mergeEntityWithNearestPoint(entity, nearestPoint);

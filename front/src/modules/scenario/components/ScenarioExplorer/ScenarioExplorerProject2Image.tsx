@@ -9,7 +9,7 @@ const Project2Image = ({ project }: { project: ProjectWithStudies }) => {
   useMemo(async () => {
     if (!project || !project.image) return;
     try {
-      const blobImage = await getDocument(project.image as number);
+      const blobImage = await getDocument(project.image);
       if (blobImage) setImageUrl(URL.createObjectURL(blobImage));
     } catch (error: unknown) {
       console.error(error);

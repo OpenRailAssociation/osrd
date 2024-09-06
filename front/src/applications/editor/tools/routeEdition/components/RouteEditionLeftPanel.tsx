@@ -169,7 +169,7 @@ const RouteEditionPanel = () => {
         .map((str) => chroma(str).hex());
 
       const features = await getRouteGeometries(
-        infraID as number,
+        infraID,
         route.properties.entry_point,
         route.properties.exit_point,
         candidates,

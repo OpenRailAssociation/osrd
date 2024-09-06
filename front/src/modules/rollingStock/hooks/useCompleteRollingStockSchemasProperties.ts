@@ -17,7 +17,7 @@ function useCompleteRollingStockSchemasProperties(): readonly SchemaProperty[] {
   const completeRsSchemaProperties = useMemo(() => {
     const sigSystemsIndex = RS_SCHEMA_PROPERTIES.findIndex(
       (s) => s.title === 'supportedSignalingSystems'
-    )!;
+    );
     const completeSigSystemsSchema = {
       ...RS_SCHEMA_PROPERTIES[sigSystemsIndex],
       enum: supportedSignalingSystems || [],

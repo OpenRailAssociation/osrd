@@ -7,7 +7,6 @@ import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import checkCurrentConfig from 'modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig';
 import { setFailure, setSuccess } from 'reducers/main';
-import { type OsrdConfState } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
 import { formatToIsoDate } from 'utils/date';
@@ -33,7 +32,7 @@ const useUpdateTrainSchedule = (
 
   return async function submitConfUpdateTrainSchedules() {
     const formattedSimulationConf = checkCurrentConfig(
-      simulationConf as OsrdConfState,
+      simulationConf,
       t,
       dispatch,
       rollingStock?.name
