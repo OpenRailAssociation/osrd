@@ -59,6 +59,7 @@ data class STDCMNode(
             )
         // Firstly, minimize the total run time: highest priority node takes the least time to
         // complete the path
+        // TODO: with variable stop times, stop duration and running time should be separated
         return if (!areTimesEqual(runTimeEstimation, otherRunTimeEstimation))
             runTimeEstimation.compareTo(otherRunTimeEstimation)
         // Minimise the difference with the planned arrival times
@@ -136,6 +137,8 @@ data class STDCMNode(
     /**
      * Takes into account the real current departure time shift to return the real current time at
      * which the train arrives at this node.
+     *
+     * TODO: this version will be invalid with variable stop times and will need to be updated.
      */
     fun getRealTime(currentTotalAddedDelay: Double): Double {
         assert(currentTotalAddedDelay >= timeData.totalDepartureDelay)
