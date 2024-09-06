@@ -20,7 +20,9 @@ data class TimeData(
 
     /**
      * We can delay departure time from either the train start or stops. This value represents how
-     * much more delay we can add to the last departure without causing any conflict.
+     * much more delay we can add to the last departure without causing any conflict. The delay
+     * would be added to the departure time of the last stop, or to the global departure time if no
+     * stop has been reached yet.
      */
     val maxDepartureDelayingWithoutConflict: Double,
 
@@ -37,21 +39,23 @@ data class TimeData(
     val timeOfNextConflictAtLocation: Double,
 
     /**
-     * Time the train has spent moving since its departure. Does not include stop times. This value
-     * is constant for this given partial path, unlike departure and stop times it can't be changed
-     * retroactively further down the path.
+     * Time the train has spent moving since its departure. Does not include stop times. Does not
+     * account for engineering allowances that would be added further down the path.
      */
     val totalRunningTime: Double,
 
     /**
      * Time the train has spent stopped since its departure. Includes both used-requested minimum
      * stop duration, and extra stop times added to avoid conflicts.
+     *
+     * TODO: to implement variable stop times, this will need to be changed to a list with the
+     *   duration of each stop.
      */
     val totalStopTime: Double,
 
     /**
      * Global delay that have been added to avoid conflicts on the given element, by delaying the
-     * last departure.
+     * last departure. This is the value that is added on this specific node/edge.
      */
     val delayAddedToLastDeparture: Double = 0.0,
 ) {
@@ -64,7 +68,7 @@ data class TimeData(
 
     /**
      * Time elapsed since the departure time. This may be changed further down the path by
-     * lengthening stop durations.
+     * lengthening stop durations or adding engineering allowances.
      */
     val timeSinceDeparture = totalRunningTime + totalStopTime
 
@@ -84,7 +88,7 @@ data class TimeData(
      * Return a copy of the current instance, with "shifted" time values. Used to create new edges.
      *
      * @param timeShift by how much we delay the new element compared to the earliest possible time.
-     *   A value >0 means that we want to arrive later (to avoid a conflict)
+     *   A value > 0 means that we want to arrive later (to avoid a conflict)
      * @param delayAddedToLastDeparture how much extra delay we add to the last departure (train
      *   start time or last stop). This is one method to reach `timeShift`
      * @param timeOfNextConflictAtLocation when is the first conflict at the given location
