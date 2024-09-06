@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
+import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { osrdEditoastApi, type ScenarioPatchForm } from 'common/api/osrdEditoastApi';
@@ -19,7 +20,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
+import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -28,7 +29,7 @@ import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
-import { checkScenarioFields } from '../helpers/utils';
+import { checkScenarioFields, cleanScenarioLocalStorage } from '../helpers/utils';
 
 // TODO: use ScenarioCreateForm from osrdEditoastApi to harmonize with study and project
 // and then change checkNameInvalidity
@@ -57,15 +58,14 @@ const emptyScenario: ScenarioForm = {
   tags: [],
 };
 
-export default function AddOrEditScenarioModal({
-  editionMode = false,
-  scenario,
-}: AddOrEditScenarioModalProps) {
+const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScenarioModalProps) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const infraID = useInfraID();
+  const { getTimetableID } = useOsrdConfSelectors();
+  const timetableId = useSelector(getTimetableID);
   const { updateScenarioID } = useOsrdConfActions();
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
@@ -222,6 +222,7 @@ export default function AddOrEditScenarioModal({
         .unwrap()
         .then(() => {
           dispatch(updateScenarioID(undefined));
+          cleanScenarioLocalStorage(timetableId!);
           navigate(`projects/${projectId}/studies/${studyId}`);
           closeModal();
           dispatch(
@@ -411,4 +412,6 @@ export default function AddOrEditScenarioModal({
       </ModalFooterSNCF>
     </div>
   );
-}
+};
+
+export default AddOrEditScenarioModal;

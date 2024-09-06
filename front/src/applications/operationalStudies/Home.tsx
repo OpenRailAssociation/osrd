@@ -16,7 +16,9 @@ import { Spinner } from 'common/Loaders';
 import SelectionToolbar from 'common/SelectionToolbar';
 import ProjectCard from 'modules/project/components/ProjectCard';
 import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
+import cleanLocalStorageByProject from 'modules/project/helpers/cleanLocalStorageByProject';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
+import { useAppDispatch } from 'store';
 import { getLogo } from 'utils/logo';
 
 import useMultiSelection from './hooks/useMultiSelection';
@@ -29,13 +31,16 @@ type SortOptions =
   | 'LastModifiedAsc'
   | 'LastModifiedDesc';
 
-export default function HomeOperationalStudies() {
+const HomeOperationalStudies = () => {
   const { t } = useTranslation('operationalStudies/home');
+  const dispatch = useAppDispatch();
   const safeWord = useSelector(getUserSafeWord);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
+
+  const [getStudies] = osrdEditoastApi.endpoints.getProjectsByProjectIdStudies.useLazyQuery();
 
   const {
     selectedItemIds: selectedProjectIds,
@@ -44,9 +49,16 @@ export default function HomeOperationalStudies() {
     setItems: setProjectsList,
     toggleSelection: toggleProjectSelection,
     deleteItems,
-  } = useMultiSelection<ProjectWithStudies | SearchResultItemProject>((projectId) => {
+  } = useMultiSelection<ProjectWithStudies | SearchResultItemProject>(async (projectId) => {
+    // For each scenario in the selected projects, clean the local storage if a manchette is saved
+    const { data: studies } = await getStudies({ projectId });
+    if (studies) {
+      cleanLocalStorageByProject(projectId, studies.results, dispatch);
+    }
+
     deleteProject({ projectId });
   });
+
   const handleDeleteProjects = () => {
     if (selectedProjectIds.length > 0) {
       deleteItems();
@@ -187,4 +199,6 @@ export default function HomeOperationalStudies() {
       </main>
     </>
   );
-}
+};
+
+export default HomeOperationalStudies;

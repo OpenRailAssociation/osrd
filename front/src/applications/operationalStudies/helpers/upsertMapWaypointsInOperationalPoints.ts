@@ -1,11 +1,9 @@
 /* eslint-disable import/prefer-default-export */
 import type { TFunction } from 'i18next';
 
-import type {
-  PathfindingResultSuccess,
-  PathProperties,
-  TrainScheduleResult,
-} from 'common/api/osrdEditoastApi';
+import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+
+import type { OperationalPoint } from '../types';
 
 /**
  * Check if the train path used waypoints added by map click and add them to the operational points
@@ -13,9 +11,9 @@ import type {
 export const upsertMapWaypointsInOperationalPoints = (
   path: TrainScheduleResult['path'],
   pathItemsPositions: PathfindingResultSuccess['path_item_positions'],
-  operationalPoints: NonNullable<PathProperties['operational_points']>,
+  operationalPoints: OperationalPoint[],
   t: TFunction
-): NonNullable<PathProperties['operational_points']> => {
+): OperationalPoint[] => {
   let waypointCounter = 1;
 
   return path.reduce(
@@ -27,7 +25,7 @@ export const upsertMapWaypointsInOperationalPoints = (
         (op) => op.position >= positionOnPath
       );
 
-      const formattedStep: NonNullable<PathProperties['operational_points']>[number] = {
+      const formattedStep: OperationalPoint = {
         id: step.id,
         extensions: {
           identifier: {

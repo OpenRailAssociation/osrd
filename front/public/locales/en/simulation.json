@@ -79,5 +79,10 @@
     "tailPosition": "Tail"
   },
   "trainList": "Train list",
-  "waiting": "Loading..."
+  "waiting": "Loading...",
+  "waypointsPanel": {
+    "name": "name",
+    "secondaryCode": "CH",
+    "warning": "At least two points are required to project the space time chart"
+  }
 }

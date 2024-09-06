@@ -22,6 +22,7 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
+import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import StudyCard from 'modules/study/components/StudyCard';
 import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
 import { budgetFormat } from 'utils/numbers';
@@ -40,7 +41,7 @@ type ProjectParams = {
   projectId: string;
 };
 
-export default function Project() {
+const Project = () => {
   const { t } = useTranslation(['operationalStudies/project']);
   const { openModal } = useModal();
   const [filter, setFilter] = useState('');
@@ -62,33 +63,6 @@ export default function Project() {
   );
 
   const {
-    selectedItemIds: selectedStudyIds,
-    setSelectedItemIds: setSelectedStudyIds,
-    items: studiesList,
-    setItems: setStudiesList,
-    toggleSelection: toggleStudySelection,
-    deleteItems,
-  } = useMultiSelection<StudyWithScenarios>((studyId) => {
-    deleteStudy({ projectId: projectId!, studyId });
-  });
-
-  const handleDeleteStudy = () => {
-    if (selectedStudyIds.length > 0 && projectId) {
-      deleteItems();
-    }
-  };
-  const sortOptions = [
-    {
-      label: t('sortOptions.byName'),
-      value: 'NameAsc',
-    },
-    {
-      label: t('sortOptions.byRecentDate'),
-      value: 'LastModifiedDesc',
-    },
-  ];
-
-  const {
     data: project,
     isError: isProjectError,
     error: projectError,
@@ -107,6 +81,44 @@ export default function Project() {
     },
     { skip: !projectId }
   );
+
+  const [getScenarios] =
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useLazyQuery();
+
+  const {
+    selectedItemIds: selectedStudyIds,
+    setSelectedItemIds: setSelectedStudyIds,
+    items: studiesList,
+    setItems: setStudiesList,
+    toggleSelection: toggleStudySelection,
+    deleteItems,
+  } = useMultiSelection<StudyWithScenarios>(async (studyId) => {
+    deleteStudy({ projectId: projectId!, studyId });
+
+    // For each scenario in the selected studies, clean the local storage if a manchette is saved
+    const { data: scenarios } = await getScenarios({ projectId: projectId!, studyId });
+    if (scenarios) {
+      scenarios.results.forEach((scenario) => {
+        cleanScenarioLocalStorage(scenario.timetable_id);
+      });
+    }
+  });
+
+  const handleDeleteStudy = () => {
+    if (selectedStudyIds.length > 0 && projectId) {
+      deleteItems();
+    }
+  };
+  const sortOptions = [
+    {
+      label: t('sortOptions.byName'),
+      value: 'NameAsc',
+    },
+    {
+      label: t('sortOptions.byRecentDate'),
+      value: 'LastModifiedDesc',
+    },
+  ];
 
   const updateImage = async () => {
     if (project?.image) {
@@ -226,7 +238,11 @@ export default function Project() {
                           type="button"
                           onClick={() =>
                             openModal(
-                              <AddOrEditProjectModal editionMode project={project} />,
+                              <AddOrEditProjectModal
+                                editionMode
+                                project={project}
+                                projectStudies={projectStudies?.results}
+                              />,
                               'xl',
                               'no-close-modal'
                             )
@@ -330,4 +346,6 @@ export default function Project() {
       </main>
     </>
   );
-}
+};
+
+export default Project;

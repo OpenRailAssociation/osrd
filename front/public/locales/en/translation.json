@@ -34,6 +34,7 @@
     "sort": "Sort",
     "toggleInfraErrors": "Toggler infra errors layer",
     "train(s)": "train(s)",
+    "validate": "Save",
     "yes": "Yes",
     "zoom-in": "Zoom in",
     "zoom-out": "Zoom out",

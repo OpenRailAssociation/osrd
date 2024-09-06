@@ -52,8 +52,8 @@ $colors: (
   'grey40': #94918e,
   'grey50': #797671,
   'grey60': #5c5955,
-  'grey90': #1f1b17,
   'grey80': #312e2b,
+  'grey90': #1f1b17,
   'info5': #e6f7ff,
   'info30': #70c1e5,
   'info60': #216482,
@@ -80,4 +80,5 @@ $colors: (
   }
 
   --modal-gray-transparent-background: rgba(0, 0, 0, 0.1);
+  --modal-osrd-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.7) 100%);
 }

@@ -79,5 +79,10 @@
     "tailPosition": "Queue"
   },
   "trainList": "Liste des trains",
-  "waiting": "Chargement en cours…"
+  "waiting": "Chargement en cours…",
+  "waypointsPanel": {
+    "name": "nom",
+    "secondaryCode": "CH",
+    "warning": "Au moins deux points sont nécessaires à la projection du GET"
+  }
 }

@@ -2,20 +2,19 @@ import { useRef, useState } from 'react';
 
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
-import { SpaceTimeChart, PathLayer } from '@osrd-project/ui-spacetimechart';
+import { PathLayer, SpaceTimeChart } from '@osrd-project/ui-spacetimechart';
 
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import type { OperationalPointExtensions, OperationalPointPart } from 'common/api/osrdEditoastApi';
+import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import type { WaypointsPanelData } from 'modules/simulationResult/types';
+
+import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
+import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 
 type ManchetteWithSpaceTimeChartProps = {
-  operationalPoints: {
-    extensions?: OperationalPointExtensions;
-    id: string;
-    part: OperationalPointPart;
-    position: number;
-  }[];
+  operationalPoints: OperationalPoint[];
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainScheduleId?: number;
+  waypointsPanelData?: WaypointsPanelData;
 };
 const DEFAULT_HEIGHT = 561;
 
@@ -23,12 +22,15 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   operationalPoints,
   projectPathTrainResult,
   selectedTrainScheduleId,
+  waypointsPanelData,
 }: ManchetteWithSpaceTimeChartProps) => {
   const [heightOfManchetteWithSpaceTimeChart] = useState(DEFAULT_HEIGHT);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
 
+  const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
+
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchettesWithSpaceTimeChart(
-    operationalPoints,
+    waypointsPanelData?.filteredWaypoints ?? operationalPoints,
     projectPathTrainResult,
     manchetteWithSpaceTimeChartRef,
     selectedTrainScheduleId
@@ -37,8 +39,15 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   return (
     <div className="manchette-space-time-chart-wrapper">
       <div className="header">
-        {/* TODO : uncomment this component in #8628 */}
-        {/* <ManchetteMenuButton /> */}
+        <ManchetteMenuButton setWaypointsPanelIsOpen={setWaypointsPanelIsOpen} />
+        {waypointsPanelIsOpen && waypointsPanelData && (
+          <WaypointsPanel
+            waypointsPanelIsOpen={waypointsPanelIsOpen}
+            setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
+            waypoints={operationalPoints}
+            waypointsPanelData={waypointsPanelData}
+          />
+        )}
       </div>
       <div className="header-separator" />
       <div
@@ -59,7 +68,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         >
           <SpaceTimeChart
             className="inset-0 absolute h-full"
-            spaceOrigin={0}
+            spaceOrigin={
+              (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
+            }
             timeOrigin={Math.min(...projectPathTrainResult.map((p) => +new Date(p.departure_time)))}
             {...spaceTimeChartProps}
           >

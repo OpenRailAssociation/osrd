@@ -14,7 +14,11 @@ import remarkGfm from 'remark-gfm';
 import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
 import { postDocument } from 'common/api/documentApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { ProjectWithStudies, ProjectCreateForm } from 'common/api/osrdEditoastApi';
+import type {
+  ProjectWithStudies,
+  ProjectCreateForm,
+  StudyWithScenarios,
+} from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -33,6 +37,7 @@ import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
+import cleanLocalStorageByProject from '../helpers/cleanLocalStorageByProject';
 import checkProjectFields from '../utils';
 
 const emptyProject: ProjectCreateForm = {
@@ -53,12 +58,14 @@ type AddOrEditProjectModalProps = {
   editionMode?: boolean;
   project?: ProjectWithStudies;
   getProject?: (v: boolean) => void;
+  projectStudies?: StudyWithScenarios[];
 };
 
 export default function AddOrEditProjectModal({
   editionMode,
   project,
   getProject,
+  projectStudies,
 }: AddOrEditProjectModalProps) {
   const { t } = useTranslation(['operationalStudies/project', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
@@ -204,30 +211,34 @@ export default function AddOrEditProjectModal({
   };
 
   const removeProject = async () => {
-    if (project) {
-      await deleteProject({ projectId: project.id })
-        .unwrap()
-        .then(() => {
-          dispatch(updateProjectID(undefined));
-          navigate(`/operational-studies/projects/`);
-          closeModal();
-          dispatch(
-            setSuccess({
-              title: t('projectDeleted'),
-              text: t('projectDeletedDetails', { name: project.name }),
-            })
-          );
-        })
-        .catch((e) => {
-          dispatch(
-            setFailure(
-              castErrorToFailure(e, {
-                name: t('error.unableToDeleteProject'),
-              })
-            )
-          );
-        });
+    if (projectStudies) {
+      // For each scenario in the project, clean the local storage if a manchette is saved
+      cleanLocalStorageByProject(project!.id, projectStudies, dispatch);
     }
+
+    await deleteProject({ projectId: project!.id })
+      .unwrap()
+      .then(async () => {
+        dispatch(updateProjectID(undefined));
+
+        navigate(`/operational-studies/projects/`);
+        closeModal();
+        dispatch(
+          setSuccess({
+            title: t('projectDeleted'),
+            text: t('projectDeletedDetails', { name: project!.name }),
+          })
+        );
+      })
+      .catch((e) => {
+        dispatch(
+          setFailure(
+            castErrorToFailure(e, {
+              name: t('error.unableToDeleteProject'),
+            })
+          )
+        );
+      });
   };
 
   const debouncedObjectives = useDebounce(currentProject.objectives, 500);

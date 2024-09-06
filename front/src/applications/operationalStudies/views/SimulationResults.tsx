@@ -69,7 +69,11 @@ const SimulationResults = ({
     infraId
   );
 
-  const projectedOperationalPoints = useGetProjectedTrainOperationalPoints(
+  const {
+    operationalPoints: projectedOperationalPoints,
+    filteredOperationalPoints,
+    setFilteredOperationalPoints,
+  } = useGetProjectedTrainOperationalPoints(
     projectionData?.trainSchedule,
     projectionData?.trainSchedule.id,
     infraId
@@ -153,6 +157,11 @@ const SimulationResults = ({
                   operationalPoints={projectedOperationalPoints}
                   projectPathTrainResult={projectPathTrainResult}
                   selectedTrainScheduleId={selectedTrainSchedule?.id}
+                  waypointsPanelData={{
+                    filteredWaypoints: filteredOperationalPoints,
+                    setFilteredWaypoints: setFilteredOperationalPoints,
+                    projectionPath: projectionData.trainSchedule.path,
+                  }}
                 />
               </div>
             </div>

@@ -8,7 +8,11 @@ import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
-const ManchetteMenuButton = () => {
+type ManchetteMenuButtonProps = {
+  setWaypointsPanelIsOpen: (waypointsModalOpen: boolean) => void;
+};
+
+const ManchetteMenuButton = ({ setWaypointsPanelIsOpen }: ManchetteMenuButtonProps) => {
   const { t } = useTranslation('simulation');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -22,7 +26,8 @@ const ManchetteMenuButton = () => {
       title: t('manchetteSettings.waypointsVisibility'),
       icon: <Eye />,
       onClick: () => {
-        closeMenu(); // TODO : in #8628, change this to open the waypoints modal
+        closeMenu();
+        setWaypointsPanelIsOpen(true);
       },
     },
   ];

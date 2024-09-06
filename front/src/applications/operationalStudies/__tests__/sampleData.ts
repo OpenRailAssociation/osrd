@@ -5,6 +5,7 @@ import type {
   ElectricalRangesData,
   ElectrificationRange,
   ElectrificationValue,
+  OperationalPoint,
   PositionData,
 } from 'applications/operationalStudies/types';
 import type {
@@ -672,7 +673,7 @@ export const pathInputsEndingWithTwoWaypointsByMap: TrainScheduleResult['path'] 
   },
 ];
 
-export const sampleWithOneOperationalPoint: NonNullable<PathProperties['operational_points']> = [
+export const sampleWithOneOperationalPoint: OperationalPoint[] = [
   {
     id: 'Mid_West_station',
     part: {
