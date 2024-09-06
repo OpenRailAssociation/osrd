@@ -188,7 +188,6 @@ class OperationalStudiesTimetablePage {
   async verifyEachTrainSimulation(): Promise<void> {
     const trainCount = await this.timetableTrains.count();
 
-    /* eslint-disable no-await-in-loop */
     for (let currentTrainIndex = 0; currentTrainIndex < trainCount; currentTrainIndex += 1) {
       await this.page.waitForLoadState('networkidle');
       await this.waitForSimulationResults();
@@ -198,7 +197,6 @@ class OperationalStudiesTimetablePage {
       await trainButton.click();
       await this.verifySimulationResultsVisibility();
     }
-    /* eslint-enable no-await-in-loop */
   }
 }
 

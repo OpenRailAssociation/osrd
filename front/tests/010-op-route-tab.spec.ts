@@ -1,39 +1,25 @@
 import { test } from '@playwright/test';
-import { v4 as uuidv4 } from 'uuid';
 
-import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
+import type { Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
-import scenarioData from './assets/operationStudies/scenario.json';
 import HomePage from './pages/home-page-model';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
 import ScenarioPage from './pages/scenario-page-model';
-import { getProject, getStudy, postApiRequest, getInfra } from './utils/api-setup';
+import setupScenario from './utils/scenario';
 
-let smallInfra: Infra;
 let project: Project;
 let study: Study;
 let scenario: Scenario;
-let timetableResult: TimetableResult;
 let selectedLanguage: string;
 
 const electricRollingStockName = 'rollingstock_1500_25000_test_e2e';
 
 test.beforeAll(async () => {
-  smallInfra = (await getInfra()) as Infra;
-  project = await getProject();
-  study = await getStudy(project.id);
+  // Create a new scenario
+  ({ project, study, scenario } = await setupScenario());
 });
 
 test.beforeEach(async ({ page }) => {
-  timetableResult = await postApiRequest(`/api/timetable/`);
-  scenario = await postApiRequest(`/api/projects/${project.id}/studies/${study.id}/scenarios/`, {
-    ...scenarioData,
-    name: `${scenarioData.name} ${uuidv4()}`,
-    study_id: study.id,
-    infra_id: smallInfra.id,
-    timetable_id: timetableResult.timetable_id,
-  });
-
   // Navigate to the home page and set up the required settings
   const homePage = new HomePage(page);
   await homePage.goToHomePage();

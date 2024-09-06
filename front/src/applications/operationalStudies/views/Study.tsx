@@ -238,8 +238,11 @@ export default function Study() {
               </div>
               <div className="d-flex flex-column p-2">
                 <div className="study-details-name">
-                  <div className="study-name">{study.name}</div>
+                  <div data-testid="study-name-info" className="study-name">
+                    {study.name}
+                  </div>
                   <button
+                    data-testid="study-modify-button"
                     className="study-details-modify-button"
                     type="button"
                     onClick={() =>
@@ -291,13 +294,17 @@ export default function Study() {
                     {study.service_code && (
                       <div className="study-details-financials-infos-item">
                         <h3>{t('geremiCode')}</h3>
-                        <div className="code">{study.service_code}</div>
+                        <div data-testid="study-service-code-info" className="code">
+                          {study.service_code}
+                        </div>
                       </div>
                     )}
                     {study.business_code && (
                       <div className="study-details-financials-infos-item">
                         <h3>{t('affairCode')}</h3>
-                        <div className="code">{study.business_code}</div>
+                        <div data-testid="study-business-code-info" className="code">
+                          {study.business_code}
+                        </div>
                       </div>
                     )}
                   </div>

@@ -55,7 +55,9 @@ export default function StateStep({
       onClick={() => changeStudyState()}
     >
       <span className="study-details-state-step-number">{number}</span>
-      <span className="study-details-state-step-label">{t(`studyStates.${state}`)}</span>
+      <span data-testid="study-state-step-label" className="study-details-state-step-label">
+        {t(`studyStates.${state}`)}
+      </span>
     </div>
   );
 }

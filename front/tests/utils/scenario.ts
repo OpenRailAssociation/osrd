@@ -17,7 +17,7 @@ interface SetupResult {
 // Define the setupScenario function
 export default async function setupScenario(): Promise<SetupResult> {
   // Fetch infrastructure, project, study, and timetable result
-  const smallInfra = (await getInfra()) as Infra;
+  const smallInfra = await getInfra();
   const project = await getProject();
   const study = await getStudy(project.id);
   const timetableResult = await postApiRequest(`/api/timetable/`);

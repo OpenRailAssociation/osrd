@@ -198,7 +198,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   useModalFocusTrap(modalRef, closeModal);
 
   return (
-    <div className="study-edition-modal" ref={modalRef}>
+    <div data-testid="study-edition-modal" className="study-edition-modal" ref={modalRef}>
       {clickedOutside && (
         <div className="confirm-modal">
           <div className="confirm-modal-content">
@@ -447,7 +447,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
         <div className="d-flex justify-content-end w-100">
           {editionMode && (
             <button
-              data-testid="deleteStudy"
+              data-testid="delete-study"
               className="btn btn-outline-danger mr-auto"
               type="button"
               onClick={deleteStudy}
@@ -463,7 +463,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
           </button>
           {editionMode ? (
             <button
-              data-testid="updateStudy"
+              data-testid="update-study"
               className="btn btn-warning"
               type="button"
               onClick={updateStudy}
@@ -476,7 +476,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
             </button>
           ) : (
             <button
-              data-testid="createStudy"
+              data-testid="create-study"
               className="btn btn-primary"
               type="button"
               onClick={createStudy}

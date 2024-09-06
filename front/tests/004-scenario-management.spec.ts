@@ -1,36 +1,20 @@
 import { expect, test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
+import type { Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
 import CommonPage from './pages/common-page-model';
 import HomePage from './pages/home-page-model';
 import ScenarioPage from './pages/scenario-page-model';
-import { getInfra, getProject, getStudy, postApiRequest } from './utils/api-setup';
+import setupScenario from './utils/scenario';
 
-let smallInfra: Infra;
 let project: Project;
 let study: Study;
 let scenario: Scenario;
-let timetableResult: TimetableResult;
-
-test.beforeAll(async () => {
-  smallInfra = (await getInfra()) as Infra;
-  project = await getProject();
-  study = await getStudy(project.id);
-});
 
 test.beforeEach(async () => {
-  timetableResult = await postApiRequest(`/api/timetable/`);
-  scenario = await postApiRequest(`/api/projects/${project.id}/studies/${study.id}/scenarios`, {
-    ...scenarioData,
-    name: `${scenarioData.name} ${uuidv4()}`,
-    study_id: study.id,
-    infra_id: smallInfra.id,
-    timetable_id: timetableResult.timetable_id,
-    electrical_profile_set_id: null,
-  });
+  ({ project, study, scenario } = await setupScenario());
 });
 
 test.describe('Test if operationnal study : scenario creation workflow is working properly', () => {
@@ -82,7 +66,7 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
     const scenarioName = `${scenarioData.name} ${uuidv4()}`;
     await scenarioPage.setScenarioName(scenarioName);
 
-    await scenarioPage.setScenarioDescription(`${scenario.description!} (updated)`);
+    await scenarioPage.setScenarioDescription(`${scenario.description} (updated)`);
 
     await commonPage.setTag('update-tag');
 
@@ -98,7 +82,7 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
 
     expect(await scenarioPage.getScenarioName.textContent()).toContain(scenarioName);
     expect(await scenarioPage.getScenarioDescription.textContent()).toContain(
-      `${scenario.description!} (updated)`
+      `${scenario.description} (updated)`
     );
   });
 
@@ -115,6 +99,6 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
 
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
 
-    await expect(scenarioPage.getScenarioByName(scenario.name!)).not.toBeVisible();
+    await expect(scenarioPage.getScenarioByName(scenario.name)).not.toBeVisible();
   });
 });
