@@ -15,7 +15,9 @@ const ngeBase = path.dirname(
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  const isTestEnvironment = mode === 'test' || process.env.NODE_ENV === 'test';
   const env = loadEnv(mode, process.cwd(), '');
+
   return {
     plugins: [
       react(),
@@ -24,10 +26,10 @@ export default defineConfig(({ mode }) => {
         example: '.env.example',
       }),
       checker({
-        typescript: {
+        typescript: !isTestEnvironment && {
           buildMode: true,
         },
-        eslint: {
+        eslint: !isTestEnvironment && {
           lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 0',
         },
         overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
