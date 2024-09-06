@@ -9,6 +9,12 @@ import HomePage from './pages/home-page-model';
 import StudyPage from './pages/study-page-model';
 import { getProject, postApiRequest } from './utils/api-setup';
 
+test.use({
+  launchOptions: {
+    slowMo: 10, // Introduces a slight delay to prevent UI elements (e.g., "Create Study" button and "Study edition" modal) from overlapping due to fast test execution.
+  },
+});
+
 let project: Project;
 let study: Study;
 
@@ -27,13 +33,11 @@ test.beforeEach(async () => {
 
 test.describe('Test if operationnal study: study creation workflow is working properly', () => {
   test('Create a new study', async ({ page }) => {
-    const homePage = new HomePage(page);
     const studyPage = new StudyPage(page);
     const commonPage = new CommonPage(page);
 
     await page.goto(`/operational-studies/projects/${project.id}`);
 
-    await expect(studyPage.getAddStudyBtn).toBeVisible();
     await studyPage.openStudyCreationModal();
 
     const studyName = `${studyData.name} ${uuidv4()}`;
@@ -62,28 +66,23 @@ test.describe('Test if operationnal study: study creation workflow is working pr
     await commonPage.setTag(project.tags[1]);
     await commonPage.setTag(project.tags[2]);
 
-    const createButton = homePage.page.getByTestId('createStudy');
-    await createButton.click();
-    await homePage.page.waitForURL('**/studies/*');
-    expect(await studyPage.getStudyName.textContent()).toContain(studyName);
-    expect(await studyPage.getStudyDescription.textContent()).toContain(studyData.description);
-    expect(await studyPage.getStudyType.textContent()).toContain(studyData.type);
-    expect(await studyPage.getStudyState.last().textContent()).toContain(studyData.state);
+    await studyPage.createStudyButton.click();
 
-    expect(await studyPage.getStudyFinancialsInfos.first().textContent()).toContain(
-      studyData.service_code
-    );
-    expect(await studyPage.getStudyFinancialsInfos.last().textContent()).toContain(
-      studyData.business_code
-    );
-    const budget = await studyPage.getStudyFinancialsAmount.textContent();
-    expect(budget).not.toEqual(null);
-    if (budget !== null) expect(budget.replace(/[^0-9]/g, '')).toContain(studyData.budget);
+    await expect(studyPage.studyEditionModal).not.toBeVisible();
+
+    await expect(studyPage.getStudyName).toHaveText(studyName);
+    await expect(studyPage.getStudyDescription).toHaveText(studyData.description);
+    await expect(studyPage.getStudyType).toHaveText(studyData.type);
+    await expect(studyPage.getStudyState.first()).toHaveText(studyData.state);
+
+    await expect(studyPage.studyServiceCodeInfo).toHaveText(studyData.service_code);
+    await expect(studyPage.studyBusinessCodeInfo).toHaveText(studyData.business_code);
+    expect(await studyPage.getNumericFinancialsAmount()).toBe('1 234 567 890 €');
     const tags = await studyPage.getStudyTags.textContent();
     expect(tags).toContain(studyData.tags.join(''));
   });
 
-  test(' update a study', async ({ page }) => {
+  test('Update a study', async ({ page }) => {
     const studyPage = new StudyPage(page);
     const commonPage = new CommonPage(page);
 
@@ -119,21 +118,14 @@ test.describe('Test if operationnal study: study creation workflow is working pr
     await page.goto(`/operational-studies/projects/${project.id}`);
 
     await studyPage.openStudyByTestId(`${study.name} (updated)`);
-    expect(await studyPage.getStudyName.textContent()).toContain(`${study.name} (updated)`);
-    expect(await studyPage.getStudyDescription.textContent()).toContain(
-      `${study.description} (updated)`
-    );
-    expect(await studyPage.getStudyType.textContent()).toContain('Exploitabilité');
-    expect(await studyPage.getStudyState.last().textContent()).toContain('En cours');
-    expect(await studyPage.getStudyFinancialsInfos.first().textContent()).toContain(
-      `${study.service_code} (updated)`
-    );
-    expect(await studyPage.getStudyFinancialsInfos.last().textContent()).toContain(
-      `${study.business_code} (updated)`
-    );
-    const budget = await studyPage.getStudyFinancialsAmount.textContent();
-    expect(budget).not.toEqual(null);
-    if (budget !== null) expect(budget.replace(/[^0-9]/g, '')).toContain('123456789');
+
+    await expect(studyPage.getStudyName).toHaveText(`${study.name} (updated)`);
+    await expect(studyPage.getStudyDescription).toHaveText(`${study.description} (updated)`);
+    await expect(studyPage.getStudyType).toHaveText('Exploitabilité');
+    await expect(studyPage.getStudyState.nth(1)).toHaveText('En cours');
+    await expect(studyPage.studyServiceCodeInfo).toHaveText(`${study.service_code} (updated)`);
+    await expect(studyPage.studyBusinessCodeInfo).toHaveText(`${study.business_code} (updated)`);
+    expect(await studyPage.getNumericFinancialsAmount()).toBe('123 456 789 €');
     const tags = await studyPage.getStudyTags.textContent();
     expect(tags).toContain('update-tag');
   });

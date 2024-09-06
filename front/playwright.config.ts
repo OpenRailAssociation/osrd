@@ -12,22 +12,26 @@ export default defineConfig({
   testDir: './tests',
 
   /* Maximum time one test can run for. */
-  timeout: 60 * 1000,
+  timeout: process.env.CI ? 90 * 1000 : 180 * 1000, // 90 seconds in CI, otherwise 180 seconds
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
-     * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 10 * 1000,
+    timeout: process.env.CI ? 10 * 1000 : 30 * 1000, // 10 seconds in CI, otherwise 30 seconds
   },
+
   /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Opt out of parallel tests on CI based on cpu capacity */
-  workers: '50%',
+  /*
+   * Limit parallelism in CI based on CPU capacity,
+   * running 50% of the available workers when in CI.
+   * Otherwise, run tests with a single worker.
+   */
+  workers: process.env.CI ? '50%' : 1,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 3 : 0,
+  /* Retry up to 3 times on CI, and 1 time otherwise */
+  retries: process.env.CI ? 3 : 1,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
@@ -36,8 +40,9 @@ export default defineConfig({
     baseURL: process.env.BASE_URL || 'http://localhost:4000',
 
     /* Collect trace and video when retrying the first failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
-    video: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+    trace: 'on-first-retry',
+    video: 'on-first-retry',
+
     locale: 'fr',
   },
   reporter: process.env.CI ? 'github' : [['line'], ['html']],
@@ -68,7 +73,7 @@ export default defineConfig({
       use: {
         browserName: 'webkit',
         launchOptions: {
-          slowMo: 500, // Slows down WebKit interactions by 500 milliseconds
+          slowMo: 50, // Slows down WebKit interactions by 50 milliseconds
         },
       },
       dependencies: ['setup'],

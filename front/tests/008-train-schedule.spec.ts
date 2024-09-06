@@ -81,7 +81,6 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
       { code: 'Without code', count: 9 },
     ];
 
-    /* eslint-disable no-restricted-syntax, no-await-in-loop */
     for (const filter of compositionFilters) {
       await opTimetablePage.clickCodeCompoTrainFilterButton(
         selectedLanguage,
@@ -90,6 +89,5 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
         20
       );
     }
-    /* eslint-enable no-restricted-syntax, no-await-in-loop */
   });
 });

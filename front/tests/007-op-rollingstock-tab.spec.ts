@@ -1,61 +1,43 @@
 import { expect, test } from '@playwright/test';
-import { v4 as uuidv4 } from 'uuid';
 
-import type {
-  Infra,
-  Project,
-  RollingStock,
-  Scenario,
-  Study,
-  TimetableResult,
-} from 'common/api/osrdEditoastApi';
+import type { Project, RollingStock, Scenario, Study } from 'common/api/osrdEditoastApi';
 
-import scenarioData from './assets/operationStudies/scenario.json';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page';
 import ScenarioPage from './pages/scenario-page-model';
-import { getProject, getStudy, getRollingStock, postApiRequest, getInfra } from './utils/api-setup';
+import { getRollingStock } from './utils/api-setup';
+import setupScenario from './utils/scenario';
 
-let smallInfra: Infra;
 let project: Project;
 let study: Study;
 let scenario: Scenario;
 let rollingStock: RollingStock;
-let timetableResult: TimetableResult;
 
 const dualModeRollingStockName = 'dual-mode_rollingstock_test_e2e';
 const electricRollingStockName = 'rollingstock_1500_25000_test_e2e';
+
 test.beforeAll(async () => {
-  smallInfra = (await getInfra()) as Infra;
-  project = await getProject();
-  study = await getStudy(project.id);
   rollingStock = await getRollingStock();
+
+  // Create a new scenario
+  ({ project, study, scenario } = await setupScenario());
 });
 
-test.beforeEach(async () => {
-  timetableResult = await postApiRequest(`/api/timetable/`);
-  scenario = await postApiRequest(`/api/projects/${project.id}/studies/${study.id}/scenarios/`, {
-    ...scenarioData,
-    name: `${scenarioData.name} ${uuidv4()}`,
-    study_id: study.id,
-    infra_id: smallInfra.id,
-    timetable_id: timetableResult.timetable_id,
-  });
+test.beforeEach(async ({ page }) => {
+  const scenarioPage = new ScenarioPage(page);
+
+  // Navigate to the created scenario page
+  await page.goto(
+    `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+  );
+  // Verify that the infrastructure is correctly loaded
+  await scenarioPage.checkInfraLoaded();
 });
 
 test.describe('Verifying that all elements in the rolling stock tab are loaded correctly', () => {
   test('should correctly select a rolling stock for operational study', async ({ page }) => {
     const operationalStudiesPage = new OperationalStudiesPage(page);
-    const scenarioPage = new ScenarioPage(page);
     const rollingStockSelector = new RollingStockSelectorPage(page);
-
-    // Navigate to the created scenario page
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-    );
-
-    // Verify that the infrastructure is correctly loaded
-    await scenarioPage.checkInfraLoaded();
 
     // Click on add train button
     await operationalStudiesPage.clickOnAddTrainBtn();
@@ -91,16 +73,7 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
 
   test('should correctly modify a rolling stock for operational study', async ({ page }) => {
     const operationalStudiesPage = new OperationalStudiesPage(page);
-    const scenarioPage = new ScenarioPage(page);
     const rollingStockSelector = new RollingStockSelectorPage(page);
-
-    // Navigate to the created scenario page
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-    );
-
-    // Verify that the infrastructure is correctly loaded
-    await scenarioPage.checkInfraLoaded();
 
     // Click on add train button
     await operationalStudiesPage.clickOnAddTrainBtn();

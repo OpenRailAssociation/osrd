@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax, no-await-in-loop */
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import CommonPage from './common-page-model';
@@ -165,7 +164,6 @@ class RollingstockEditorPage extends CommonPage {
   }
 
   // Set spreadsheet row value
-  // TODO: Refactor to eliminate ESLint errors
   async setSpreadsheetRow(data: { row: number; velocity: string; effort: string }[]) {
     for (const { row, effort, velocity } of data) {
       const velocityCell = this.getVelocityCellByRow(row);
@@ -226,7 +224,7 @@ class RollingstockEditorPage extends CommonPage {
         .getByTitle(powerRestrictionValue, { exact: true })
         .click();
     }
-    // TODO: Refactor to eliminate ESLint errors
+
     for (const rowData of data) {
       const rowIndex = data.indexOf(rowData) + 1;
       const velocityCell = this.getVelocityCellByRow(rowIndex);
@@ -247,7 +245,7 @@ class RollingstockEditorPage extends CommonPage {
         .getByRole('button', { name: powerRestrictionValue })
         .click();
     }
-    // TODO: Refactor to eliminate ESLint errors
+
     for (const rowData of expectedData) {
       const rowIndex = expectedData.indexOf(rowData) + 1;
       const velocityCell = await this.getVelocityCellByRowValue(rowIndex);
