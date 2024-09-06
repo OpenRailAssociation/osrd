@@ -16,6 +16,7 @@ export const addTagTypes = [
   'speed_limit_tags',
   'sprites',
   'stdcm_search_environment',
+  'temporary_speed_limits',
   'timetable',
   'stdcm',
   'train_schedule',
@@ -671,6 +672,17 @@ const injectedRtkApi = api
           body: queryArg.stdcmSearchEnvironmentCreateForm,
         }),
         invalidatesTags: ['stdcm_search_environment'],
+      }),
+      postTemporarySpeedLimitGroup: build.mutation<
+        PostTemporarySpeedLimitGroupApiResponse,
+        PostTemporarySpeedLimitGroupApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/temporary_speed_limit_group`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['temporary_speed_limits'],
       }),
       postTimetable: build.mutation<PostTimetableApiResponse, PostTimetableApiArg>({
         query: () => ({ url: `/timetable`, method: 'POST' }),
@@ -1347,6 +1359,22 @@ export type PostStdcmSearchEnvironmentApiResponse = /** status 201  */ StdcmSear
 export type PostStdcmSearchEnvironmentApiArg = {
   stdcmSearchEnvironmentCreateForm: StdcmSearchEnvironmentCreateForm;
 };
+export type PostTemporarySpeedLimitGroupApiResponse =
+  /** status 201 The id of the created temporary speed limit group. */ {
+    group_id: number;
+  };
+export type PostTemporarySpeedLimitGroupApiArg = {
+  body: {
+    speed_limit_group_name: string;
+    speed_limits: {
+      end_date_time: string;
+      obj_id: string;
+      speed_limit: number;
+      start_date_time: string;
+      track_ranges: DirectionalTrackRange[];
+    }[];
+  };
+};
 export type PostTimetableApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableResult;
 export type PostTimetableApiArg = void;
@@ -1404,6 +1432,7 @@ export type PostTimetableByIdStdcmApiArg = {
     /** Deprecated, first step arrival time should be used instead */
     start_time?: string | null;
     steps: PathfindingItem[];
+    temporary_speed_limit_group_id?: number | null;
     /** Margin after the train passage in milliseconds
         
         Enforces that the path used by the train should be free and

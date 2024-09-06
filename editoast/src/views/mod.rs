@@ -15,6 +15,7 @@ pub mod speed_limit_tags;
 pub mod sprites;
 pub mod stdcm_search_environment;
 pub mod study;
+pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod train_schedule;
 pub mod work_schedules;
@@ -77,6 +78,7 @@ crate::routes! {
     &sprites,
     &stdcm_search_environment,
     &work_schedules,
+    &temporary_speed_limits,
     &train_schedule,
     &timetable,
     &path,

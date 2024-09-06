@@ -209,6 +209,9 @@
     "work_schedule": {
       "NameAlreadyUsed": "A group of work schedules with '{{name}}' already exists"
     },
+    "temporary_speed_limit": {
+      "NameAlreadyUsed": "A group of temporary speed limits with '{{name}}' already exists"
+    },
     "app_health": {
       "Timeout": "Service has not responded in time",
       "Database": "Database is in error",

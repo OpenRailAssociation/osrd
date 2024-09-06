@@ -14,6 +14,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::pathfinding::PathfindingResultSuccess;
+use super::pathfinding::TrackRange;
 use super::simulation::PhysicsRollingStock;
 use super::simulation::SimulationResponse;
 use crate::core::{AsCoreRequest, Json};
@@ -55,7 +56,9 @@ pub struct STDCMRequest {
     /// Margin to apply to the whole train
     pub margin: Option<MarginValue>,
     /// List of planned work schedules
-    pub work_schedules: Vec<LightWorkSchedule>,
+    pub work_schedules: Vec<WorkSchedule>,
+    /// List of applicable temporary speed limits between the train departure and arrival
+    pub temporary_speed_limits: Vec<TemporarySpeedLimit>,
 }
 
 #[derive(Debug, Serialize)]
@@ -79,15 +82,24 @@ pub struct STDCMStepTimingData {
     pub arrival_time_tolerance_after: u64,
 }
 
-/// Lighter description of a work schedule, only contains what's relevant
+/// Lighter description of a work schedule, with only the relevant information for core
 #[derive(Debug, Serialize)]
-pub struct LightWorkSchedule {
+pub struct WorkSchedule {
     /// Start time as a time delta from the stdcm start time in ms
     pub start_time: u64,
     /// End time as a time delta from the stdcm start time in ms
     pub end_time: u64,
     /// List of unavailable track ranges
     pub track_ranges: Vec<UndirectedTrackRange>,
+}
+
+/// Lighter description of a work schedule with only the relevant information for core
+#[derive(Debug, Serialize)]
+pub struct TemporarySpeedLimit {
+    /// Speed limitation in m/s
+    pub speed_limit: f64,
+    /// Track ranges on which the speed limitation applies
+    pub track_ranges: Vec<TrackRange>,
 }
 
 /// A range on a track section.

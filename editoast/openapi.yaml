@@ -2229,6 +2229,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StdcmSearchEnvironment'
+  /temporary_speed_limit_group:
+    post:
+      tags:
+      - temporary_speed_limits
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - speed_limit_group_name
+              - speed_limits
+              properties:
+                speed_limit_group_name:
+                  type: string
+                speed_limits:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - start_date_time
+                    - end_date_time
+                    - track_ranges
+                    - speed_limit
+                    - obj_id
+                    properties:
+                      end_date_time:
+                        type: string
+                        format: date-time
+                      obj_id:
+                        type: string
+                      speed_limit:
+                        type: number
+                        format: double
+                      start_date_time:
+                        type: string
+                        format: date-time
+                      track_ranges:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/DirectionalTrackRange'
+        required: true
+      responses:
+        '201':
+          description: The id of the created temporary speed limit group.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - group_id
+                properties:
+                  group_id:
+                    type: integer
+                    format: int64
   /timetable:
     post:
       tags:
@@ -2393,6 +2448,10 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/PathfindingItem'
+                temporary_speed_limit_group_id:
+                  type: integer
+                  format: int64
+                  nullable: true
                 time_gap_after:
                   type: integer
                   format: int64
@@ -3880,6 +3939,7 @@ components:
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
+      - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
@@ -5048,6 +5108,30 @@ components:
           type: string
           enum:
           - editoast:study:StartDateAfterEndDate
+    EditoastTemporarySpeedLimitErrorNameAlreadyUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - name
+          properties:
+            name:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:temporary_speed_limit:NameAlreadyUsed
     EditoastTimetableErrorInfraNotFound:
       type: object
       required:
@@ -8199,6 +8283,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PathfindingItem'
+        temporary_speed_limit_group_id:
+          type: integer
+          format: int64
+          nullable: true
         time_gap_after:
           type: integer
           format: int64
