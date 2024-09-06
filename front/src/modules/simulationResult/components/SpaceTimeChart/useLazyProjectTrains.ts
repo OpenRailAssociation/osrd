@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop */
-import { useEffect, useState, type Dispatch, type SetStateAction, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -21,11 +21,9 @@ const BATCH_SIZE = 10;
 
 type useLazyLoadTrainsProp = {
   infraId?: number;
-  trainIdsToProject: number[];
   path?: PathfindingResultSuccess;
   trainSchedules?: TrainScheduleResult[];
   moreTrainsToCome?: boolean;
-  setTrainIdsToProject: Dispatch<SetStateAction<number[]>>;
 };
 
 /**
@@ -37,15 +35,15 @@ type useLazyLoadTrainsProp = {
  */
 const useLazyProjectTrains = ({
   infraId,
-  trainIdsToProject,
   path,
   trainSchedules,
   moreTrainsToCome = false,
-  setTrainIdsToProject,
 }: useLazyLoadTrainsProp) => {
   const dispatch = useAppDispatch();
   const { getElectricalProfileSetId } = useOsrdConfSelectors();
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
+
+  const [trainIdsToProject, setTrainIdsToProject] = useState<number[]>([]);
 
   const [projectedTrainsById, setProjectedTrainsById] = useState<Map<number, TrainSpaceTimeData>>(
     new Map()
@@ -126,9 +124,14 @@ const useLazyProjectTrains = ({
     }
   }, [path]);
 
+  const projectTrains = (trainIds: number[]) => {
+    setTrainIdsToProject((prev) => [...prev, ...trainIds]);
+  };
+
   return {
     projectedTrainsById,
     setProjectedTrainsById,
+    projectTrains,
   };
 };
 

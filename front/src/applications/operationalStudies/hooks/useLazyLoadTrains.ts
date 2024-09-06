@@ -38,7 +38,6 @@ const useLazyLoadTrains = ({ infraId, path, trainSchedules }: UseLazyLoadTrainsP
   const [trainScheduleSummariesById, setTrainScheduleSummariesById] = useState<
     Map<number, TrainScheduleWithDetails>
   >(new Map());
-  const [trainIdsToProject, setTrainIdsToProject] = useState<number[]>([]);
   const [allTrainsLoaded, setAllTrainsLoaded] = useState(false);
 
   const [postTrainScheduleSimulationSummary] =
@@ -47,13 +46,11 @@ const useLazyLoadTrains = ({ infraId, path, trainSchedules }: UseLazyLoadTrainsP
   const { data: { results: rollingStocks } = { results: [] } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const { projectedTrainsById, setProjectedTrainsById } = useLazyProjectTrains({
+  const { projectedTrainsById, setProjectedTrainsById, projectTrains } = useLazyProjectTrains({
     infraId,
-    trainIdsToProject,
     path,
     trainSchedules,
     moreTrainsToCome: !allTrainsLoaded,
-    setTrainIdsToProject,
   });
 
   const loadTrains = async (_trainSchedules: TrainScheduleResult[]) => {
@@ -77,7 +74,7 @@ const useLazyLoadTrains = ({ infraId, path, trainSchedules }: UseLazyLoadTrainsP
       }).unwrap();
 
       // launch the projection of the trains
-      setTrainIdsToProject((prev) => [...prev, ...packageToFetch]);
+      projectTrains(packageToFetch);
 
       // format the summaries to display them in the timetable
       const newFormattedSummaries = formatTrainScheduleSummaries(
