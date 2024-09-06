@@ -22,6 +22,7 @@ import { Loader, Spinner } from 'common/Loaders';
 import SelectionToolbar from 'common/SelectionToolbar';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
+import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import { budgetFormat } from 'utils/numbers';
 
@@ -40,7 +41,7 @@ type studyParams = {
   studyId: string;
 };
 
-export default function Study() {
+const Study = () => {
   const { t } = useTranslation(['operationalStudies/study']);
   const { openModal } = useModal();
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
@@ -98,6 +99,10 @@ export default function Study() {
     deleteItems,
   } = useMultiSelection<ScenarioWithDetails>((scenarioId) => {
     deleteScenario({ projectId: projectId!, studyId: studyId!, scenarioId });
+
+    // For each scenarios, clean the local storage if a manchette is saved
+    const deletedScenario = scenarios!.results.find((scenario) => scenario.id === scenarioId);
+    cleanScenarioLocalStorage(deletedScenario!.timetable_id);
   });
   const handleDeleteScenario = () => {
     if (selectedScenarioIds.length > 0 && studyId && projectId) {
@@ -247,7 +252,11 @@ export default function Study() {
                     type="button"
                     onClick={() =>
                       openModal(
-                        <AddOrEditStudyModal editionMode study={study} />,
+                        <AddOrEditStudyModal
+                          editionMode
+                          study={study}
+                          scenarios={scenarios?.results}
+                        />,
                         'xl',
                         'no-close-modal'
                       )
@@ -370,4 +379,6 @@ export default function Study() {
       </main>
     </>
   );
-}
+};
+
+export default Study;

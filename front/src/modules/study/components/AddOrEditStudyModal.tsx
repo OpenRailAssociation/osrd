@@ -10,7 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { STUDY_STATES, STUDY_TYPES, studyStates } from 'applications/operationalStudies/consts';
 import studyLogo from 'assets/pictures/views/studies.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
+import type { ScenarioWithDetails, StudyCreateForm } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -21,6 +21,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';
+import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { checkStudyFields, createSelectOptions } from 'modules/study/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -34,9 +35,10 @@ export interface StudyForm extends StudyCreateForm {
   id?: number;
 }
 
-type Props = {
+type AddOrEditStudyModalProps = {
   editionMode?: boolean;
   study?: StudyForm;
+  scenarios?: ScenarioWithDetails[];
 };
 
 type StudyParams = {
@@ -57,7 +59,7 @@ const emptyStudy: StudyForm = {
   tags: [],
 };
 
-export default function AddOrEditStudyModal({ editionMode, study }: Props) {
+const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyModalProps) => {
   const { t } = useTranslation(['operationalStudies/study', 'translation']);
   const { closeModal, isOpen } = useContext(ModalContext);
   const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
@@ -151,6 +153,13 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
       })
         .unwrap()
         .then(() => {
+          if (scenarios) {
+            // For each scenario in the study, clean the local storage if a manchette is saved
+            scenarios.forEach((scenario) => {
+              cleanScenarioLocalStorage(scenario.timetable_id);
+            });
+          }
+
           dispatch(
             setSuccess({
               title: t('studyDeleted'),
@@ -492,4 +501,6 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
       </ModalFooterSNCF>
     </div>
   );
-}
+};
+
+export default AddOrEditStudyModal;

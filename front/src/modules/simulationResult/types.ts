@@ -4,6 +4,7 @@ import type {
 } from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
 
 import type {
+  OperationalPoint,
   PathPropertiesFormatted,
   SimulationResponseSuccess,
   TrainSpaceTimeData,
@@ -12,6 +13,7 @@ import type {
   PathProperties,
   PathfindingResultSuccess,
   RollingStockWithLiveries,
+  TrainScheduleBase,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { ArrayElement } from 'utils/types';
@@ -32,4 +34,10 @@ export type ProjectionData = {
   path: PathfindingResultSuccess;
   geometry: PathProperties['geometry'];
   allTrainsProjected: boolean;
+};
+
+export type WaypointsPanelData = {
+  filteredWaypoints: OperationalPoint[];
+  setFilteredWaypoints: (waypoints: OperationalPoint[]) => void;
+  projectionPath: TrainScheduleBase['path'];
 };

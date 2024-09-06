@@ -30,3 +30,14 @@ export const checkScenarioFields = (
   name: isInvalidName(scenario.name),
   description: isInvalidString(SMALL_TEXT_AREA_MAX_LENGTH, scenario.description),
 });
+
+/**
+ * Clean the local storage for potential store manchette
+ */
+export const cleanScenarioLocalStorage = (timetableId: number) => {
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith(timetableId.toString())) {
+      localStorage.removeItem(key);
+    }
+  });
+};

@@ -5,7 +5,7 @@ import { useEffect } from 'react';
  * */
 
 export default function useModalFocusTrap(
-  modalRef: React.RefObject<HTMLDivElement>,
+  modalRef: React.RefObject<HTMLDivElement | HTMLDialogElement>,
   closeModal: () => void
 ) {
   useEffect(() => {
@@ -25,20 +25,22 @@ export default function useModalFocusTrap(
      * - last element if we are pressing on "shift" in addition to "tab" and are on the first element
      * - first element if we are only pressing "tab" and are on the last element
      */
-    const handleTabKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Tab' && firstElement && lastElement) {
-        if (event.shiftKey && document.activeElement === firstElement) {
-          event.preventDefault();
+    const handleTabKeyPress: EventListener = (event) => {
+      const keyboardEvent = event as KeyboardEvent;
+      if (keyboardEvent.key === 'Tab') {
+        if (keyboardEvent.shiftKey && document.activeElement === firstElement) {
+          keyboardEvent.preventDefault();
           (lastElement as HTMLElement).focus();
-        } else if (!event.shiftKey && document.activeElement === lastElement) {
+        } else if (!keyboardEvent.shiftKey && document.activeElement === lastElement) {
           event.preventDefault();
           (firstElement as HTMLElement).focus();
         }
       }
     };
 
-    const handleEscapeKeyPress: (event: KeyboardEvent) => void = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+    const handleEscapeKeyPress: EventListener = (event) => {
+      const keyboardEvent = event as KeyboardEvent;
+      if (keyboardEvent.key === 'Escape') {
         closeModal();
       }
     };

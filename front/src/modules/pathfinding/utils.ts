@@ -182,3 +182,6 @@ export const isVia = (
   op: Pick<SuggestedOP, 'uic' | 'ch' | 'kp' | 'name' | 'opId'>,
   { withKP = false } = {}
 ) => vias.some((via) => pathStepMatchesOp(via, op, withKP));
+
+export const isStation = (chCode: string): boolean =>
+  chCode === 'BV' || chCode === '00' || chCode === '';

@@ -53,9 +53,11 @@ export type CichDictValue = {
   chCode?: string;
 };
 
+export type OperationalPoint = NonNullable<PathProperties['operational_points']>[number];
+
 // Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type
 export type ManageTrainSchedulePathProperties = {
-  manchetteOperationalPoints?: NonNullable<PathProperties['operational_points']>;
+  manchetteOperationalPoints?: OperationalPoint[];
   electrifications: NonNullable<PathProperties['electrifications']>;
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
@@ -123,7 +125,7 @@ export type PathPropertiesFormatted = {
   electrifications: ElectrificationRange[];
   curves: PositionData<'radius'>[];
   slopes: PositionData<'gradient'>[];
-  operationalPoints: NonNullable<PathProperties['operational_points']>;
+  operationalPoints: OperationalPoint[];
   geometry: NonNullable<PathProperties['geometry']>;
   voltages: RangedValue[];
 };

@@ -1,0 +1,169 @@
+.waypoints-panel {
+  margin: 0;
+  width: 28.5rem; // TODO switch width to 44.5rem (712px) after implementing styles columns
+  height: 100vh;
+  max-height: 100vh;
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  &::backdrop {
+    background: var(--modal-osrd-overlay);
+  }
+
+  .waypoints-panel-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 3.25rem;
+    font-size: 0.875rem;
+    color: var(--grey50);
+    background-color: var(--ambiantB15);
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0.25rem;
+      left: 0;
+      width: 100%;
+      height: 0.0625rem;
+      background-color: var(--grey30);
+    }
+
+    .name {
+      flex-grow: 1;
+      margin-left: 7.375rem;
+    }
+    .secondary-code {
+      margin-right: 1.5rem;
+    }
+  }
+
+  .waypoints-panel-body {
+    height: calc(100% - 3.25rem - 6.5625rem);
+    background-color: var(--ambiantB10);
+    padding-top: calc(0.6875rem - 0.125rem); // 0.125rem > checkbox border
+    padding-left: calc(1.125rem - 0.125rem); // 0.125rem > checkbox border
+    overflow-y: scroll;
+
+    .waypoint-item {
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      border-bottom: 0.0625rem solid var(--black10);
+
+      &.selector-all {
+        padding-bottom: 0.875rem;
+      }
+
+      .custom-checkbox {
+        margin-bottom: 0; // there is a weird margin-bottom on the checkbox component (probably for the checkboxes tree)
+      }
+
+      .path-offset {
+        width: 3.4375rem;
+        font-size: 0.875rem;
+        text-align: end;
+        color: var(--grey30);
+        line-height: 1.25rem;
+        margin: 0.5625rem 1rem 0.625rem 0.4375rem;
+      }
+
+      .name {
+        font-weight: 600;
+        line-height: 1.5rem;
+        flex-grow: 1;
+        margin-block: 0.375rem 0.5rem; // to align with the path offset
+      }
+
+      .ch {
+        width: 1.1875rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: var(--grey80);
+        margin-right: 1.5rem;
+        margin-block: 0.5625rem 0.6875rem; // to align with the path offset
+      }
+    }
+  }
+
+  .waypoints-panel-footer {
+    position: relative;
+    height: 6.5625rem;
+    background-color: var(--white100);
+    border-top: 0.0625rem solid var(--grey30);
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 2rem;
+    padding-right: 2.25rem;
+    box-shadow: 0;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -0.3125rem;
+      left: 0;
+      width: 100%;
+      height: 0.25rem;
+      background-color: var(--black10);
+    }
+
+    &.wizz-effect:active {
+      .warning-message {
+        animation: tilt-shaking 0.25s 0s;
+      }
+    }
+
+    @keyframes tilt-shaking {
+      0% {
+        transform: rotate(0deg);
+      }
+      12% {
+        transform: rotate(1deg);
+      }
+      24% {
+        transform: rotate(0eg);
+      }
+      36% {
+        transform: rotate(-1deg);
+      }
+      47% {
+        transform: rotate(0deg);
+      }
+      59% {
+        transform: rotate(1deg);
+      }
+      70% {
+        transform: rotate(0eg);
+      }
+      85% {
+        transform: rotate(-1deg);
+      }
+      100% {
+        transform: rotate(0deg);
+      }
+    }
+
+    .warning-message {
+      position: absolute;
+      width: 22.875rem; // TODO switch width to 29.125rem (466px) after implementing styles columns
+      height: 8rem;
+      top: calc(-1rem - 8rem);
+      left: calc((28.5rem - 22.875rem) / 2); // TODO update left after implementing styles columns
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.375rem;
+      padding-top: calc(1rem - 0.25rem);
+      padding-inline: 1.8125rem;
+      border: 0.25rem solid var(--white100);
+      color: var(--warning60);
+      background-color: var(--warning5);
+      border-radius: 0.5rem;
+      box-shadow:
+        inset 0 0 0 0.0625rem var(--warning30),
+        0 0.375rem 1.3125rem -0.3125rem rgba(0, 0, 0, 0.25),
+        0 0.9375rem 1.875rem -0.75rem rgba(0, 0, 0, 1),
+        0 0.0625rem 0.0625rem rgba(0, 0, 0, 1);
+    }
+  }
+}
