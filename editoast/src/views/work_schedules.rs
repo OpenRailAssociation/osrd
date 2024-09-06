@@ -43,7 +43,7 @@ editoast_common::schemas! {
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "work_schedule")]
-pub enum WorkScheduleError {
+enum WorkScheduleError {
     #[error("Name '{name}' already used")]
     #[editoast_error(status = 400)]
     NameAlreadyUsed { name: String },

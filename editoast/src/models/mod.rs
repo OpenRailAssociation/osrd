@@ -19,6 +19,7 @@ pub mod rolling_stock_model;
 pub mod scenario;
 pub mod stdcm_search_environment;
 pub mod study;
+pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod train_schedule;
 pub mod work_schedules;

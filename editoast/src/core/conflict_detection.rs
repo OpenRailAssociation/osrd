@@ -9,7 +9,7 @@ use crate::core::{AsCoreRequest, Json};
 
 use super::simulation::RoutingRequirement;
 use super::simulation::SpacingRequirement;
-use super::stdcm::LightWorkSchedule;
+use super::stdcm::WorkSchedule;
 
 editoast_common::schemas! {
     ConflictDetectionResponse,
@@ -39,7 +39,7 @@ pub struct TrainRequirements {
 #[derive(Debug, Serialize)]
 pub struct WorkSchedulesRequest {
     pub start_time: DateTime<Utc>,
-    pub work_schedule_requirements: HashMap<i64, LightWorkSchedule>,
+    pub work_schedule_requirements: HashMap<i64, WorkSchedule>,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]

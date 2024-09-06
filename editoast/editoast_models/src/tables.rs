@@ -644,6 +644,34 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    temporary_speed_limit (id) {
+        id -> Int8,
+        start_date_time -> Timestamptz,
+        end_date_time -> Timestamptz,
+        speed_limit -> Float8,
+        track_ranges -> Jsonb,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        temporary_speed_limit_group_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    temporary_speed_limit_group (id) {
+        id -> Int8,
+        creation_date -> Timestamptz,
+        #[max_length = 255]
+        name -> Varchar,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     timetable (id) {
         id -> Int8,
     }
@@ -749,6 +777,7 @@ diesel::joinable!(stdcm_search_environment -> infra (infra_id));
 diesel::joinable!(stdcm_search_environment -> timetable (timetable_id));
 diesel::joinable!(stdcm_search_environment -> work_schedule_group (work_schedule_group_id));
 diesel::joinable!(study -> project (project_id));
+diesel::joinable!(temporary_speed_limit -> temporary_speed_limit_group (temporary_speed_limit_group_id));
 diesel::joinable!(train_schedule -> timetable (timetable_id));
 diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
@@ -797,6 +826,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     search_track,
     stdcm_search_environment,
     study,
+    temporary_speed_limit,
+    temporary_speed_limit_group,
     timetable,
     train_schedule,
     work_schedule,

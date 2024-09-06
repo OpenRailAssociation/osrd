@@ -23,7 +23,6 @@ editoast_common::schemas! {
     pathfinding::schemas(),
     projection::schemas(),
     properties::schemas(),
-    TrackRange,
 }
 
 #[derive(Debug, Error, EditoastError)]

@@ -136,6 +136,17 @@ pub struct TrackRange {
     pub direction: Direction,
 }
 
+impl From<editoast_schemas::infra::DirectionalTrackRange> for TrackRange {
+    fn from(value: editoast_schemas::infra::DirectionalTrackRange) -> Self {
+        TrackRange {
+            track_section: value.track,
+            begin: (value.begin * 1000.).round() as u64,
+            end: (value.end * 1000.).round() as u64,
+            direction: value.direction,
+        }
+    }
+}
+
 impl TrackRange {
     #[cfg(test)]
     /// Creates a new `TrackRange`.

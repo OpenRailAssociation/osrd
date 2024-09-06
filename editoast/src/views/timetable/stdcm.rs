@@ -14,6 +14,7 @@ use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::ReceptionSignal;
 use editoast_schemas::train_schedule::{Comfort, Margins, PathItem};
 use editoast_schemas::train_schedule::{MarginValue, ScheduleItem};
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
@@ -28,12 +29,14 @@ use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResult;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::stdcm::STDCMResponse;
+use crate::core::stdcm::TemporarySpeedLimit as CoreTemporarySpeedLimit;
 use crate::core::stdcm::TrainRequirement;
-use crate::core::stdcm::{LightWorkSchedule, STDCMPathItem, UndirectedTrackRange};
+use crate::core::stdcm::{STDCMPathItem, UndirectedTrackRange, WorkSchedule as CoreWorkSchedule};
 use crate::core::stdcm::{STDCMRequest, STDCMStepTimingData};
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
+use crate::models::temporary_speed_limits::TemporarySpeedLimit;
 use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::work_schedules::WorkSchedule;
@@ -82,6 +85,7 @@ pub struct STDCMRequestPayload {
     rolling_stock_id: i64,
     electrical_profile_set_id: Option<i64>,
     work_schedule_group_id: Option<i64>,
+    temporary_speed_limit_group_id: Option<i64>,
     comfort: Comfort,
     /// By how long we can shift the departure time in milliseconds
     /// Deprecated, first step data should be used instead
@@ -90,6 +94,7 @@ pub struct STDCMRequestPayload {
     /// Deprecated, first step data should be used instead
     maximum_run_time: Option<u64>,
     /// Train categories for speed limits
+    // TODO: rename the field and its description
     speed_limit_tags: Option<String>,
     /// Margin before the train passage in seconds
     ///
@@ -232,18 +237,40 @@ async fn stdcm(
         earliest_step_tolerance_window,
     );
 
-    let departure_time =
+    let earliest_departure_time =
         get_earliest_departure_time(&stdcm_request, maximum_run_time_without_tolerance);
-    let latest_simulation_end = departure_time + Duration::milliseconds((maximum_run_time) as i64);
+    let latest_simulation_end =
+        earliest_departure_time + Duration::milliseconds((maximum_run_time) as i64);
+
+    let latest_arrival_time =
+        get_latest_arrival_time(&stdcm_request, maximum_run_time_without_tolerance);
 
     // 3. Get scheduled train requirements
-    let trains_requirements =
-        build_train_requirements(trains, simulations, departure_time, latest_simulation_end);
+    let trains_requirements = build_train_requirements(
+        trains,
+        simulations,
+        earliest_departure_time,
+        latest_simulation_end,
+    );
 
     // 4. Parse stdcm path items
     let path_items = parse_stdcm_steps(conn, &stdcm_request, &infra).await?;
 
-    // 5. Build STDCM request
+    // 5. Get applicable temporary speed limits
+    let temporary_speed_limits = match stdcm_request.temporary_speed_limit_group_id {
+        Some(group_id) => {
+            build_temporary_speed_limits(
+                conn,
+                earliest_departure_time,
+                latest_arrival_time,
+                group_id,
+            )
+            .await?
+        }
+        None => vec![],
+    };
+
+    // 6. Build STDCM request
     let stdcm_response = STDCMRequest {
         infra: infra.id,
         expected_version: infra.version,
@@ -254,7 +281,7 @@ async fn stdcm(
             .clone(),
         comfort: stdcm_request.comfort,
         path_items,
-        start_time: departure_time,
+        start_time: earliest_departure_time,
         trains_requirements,
         maximum_departure_delay,
         maximum_run_time,
@@ -267,7 +294,7 @@ async fn stdcm(
             Some(work_schedule_group_id) => {
                 build_work_schedules(
                     conn,
-                    departure_time,
+                    earliest_departure_time,
                     maximum_run_time,
                     work_schedule_group_id,
                 )
@@ -275,6 +302,7 @@ async fn stdcm(
             }
             None => vec![],
         },
+        temporary_speed_limits,
     }
     .fetch(core_client.as_ref())
     .await?;
@@ -409,6 +437,47 @@ fn get_earliest_departure_time(
     )
 }
 
+/// Return the latest time at which the train may arrive, margins included.
+fn get_latest_arrival_time(
+    data: &STDCMRequestPayload,
+    maximum_run_time_without_tolerance: u64,
+) -> DateTime<Utc> {
+    // Return the maximum time between:
+    //   * latest step time + its tolerance after
+    //   * start time + maximum start delay + max runtime
+    //   * first step time + its tolerance after + max runtime
+    let result_from_last_step: Option<DateTime<Utc>> = get_last_step_with_timing(data)
+        .and_then(|step| step.timing_data.as_ref())
+        .map(|timing| {
+            timing.arrival_time + Duration::milliseconds(timing.arrival_time_tolerance_after as i64)
+        });
+    let result_from_start_time: Option<DateTime<Utc>> = data.start_time.map(|start| {
+        start
+            + Duration::milliseconds(
+                (data.maximum_departure_delay.unwrap_or(0) + maximum_run_time_without_tolerance)
+                    as i64,
+            )
+    });
+    let result_from_first_step: Option<DateTime<Utc>> = get_first_step_with_timing(data)
+        .and_then(|step| step.timing_data.as_ref())
+        .map(|timing| {
+            timing.arrival_time
+                + Duration::milliseconds(
+                    (timing.arrival_time_tolerance_after + maximum_run_time_without_tolerance)
+                        as i64,
+                )
+        });
+    [
+        result_from_first_step,
+        result_from_last_step,
+        result_from_start_time,
+    ]
+    .into_iter()
+    .flatten()
+    .max()
+    .expect("No arrival time specified in the STDCM request.")
+}
+
 /// Returns the earliest time that has been set on any step
 fn get_earliest_step_time(data: &STDCMRequestPayload) -> DateTime<Utc> {
     // Get the earliest time that has been specified for any step
@@ -424,6 +493,19 @@ fn get_earliest_step_time(data: &STDCMRequestPayload) -> DateTime<Utc> {
                 .next()
         })
         .expect("No time specified for stdcm request")
+}
+
+/// Return last step that has a timing defined.
+fn get_last_step_with_timing(data: &STDCMRequestPayload) -> Option<&PathfindingItem> {
+    data.steps
+        .iter()
+        .rev()
+        .find(|step| step.timing_data.is_some())
+}
+
+/// Return the first step that has a timing defined.
+fn get_first_step_with_timing(data: &STDCMRequestPayload) -> Option<&PathfindingItem> {
+    data.steps.iter().find(|step| step.timing_data.is_some())
 }
 
 /// Returns the earliest tolerance window that has been set on any step
@@ -540,14 +622,14 @@ async fn build_work_schedules(
     time: DateTime<Utc>,
     maximum_run_time: u64,
     work_schedule_group_id: i64,
-) -> Result<Vec<LightWorkSchedule>> {
+) -> Result<Vec<CoreWorkSchedule>> {
     let selection_setting: SelectionSettings<WorkSchedule> = SelectionSettings::new()
         .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(work_schedule_group_id));
     let res = Ok(WorkSchedule::list(conn, selection_setting)
         .await?
         .iter()
         .map(|ws| {
-            let schedule = LightWorkSchedule {
+            let schedule = CoreWorkSchedule {
                 start_time: elapsed_since_time_ms(&ws.start_date_time, &time),
                 end_time: elapsed_since_time_ms(&ws.end_date_time, &time),
                 track_ranges: ws
@@ -565,6 +647,32 @@ async fn build_work_schedules(
         .filter(|ws| ws.end_time > 0 && ws.start_time < maximum_run_time)
         .collect());
     res
+}
+
+/// Return the list of speed limits that are active at any point in a given time range
+async fn build_temporary_speed_limits(
+    conn: &mut DbConnection,
+    start_date_time: DateTime<Utc>,
+    end_date_time: DateTime<Utc>,
+    temporary_speed_limit_group_id: i64,
+) -> Result<Vec<CoreTemporarySpeedLimit>> {
+    if end_date_time <= start_date_time {
+        return Ok(Vec::new());
+    }
+    let selection_settings: SelectionSettings<TemporarySpeedLimit> = SelectionSettings::new()
+        .filter(move || {
+            TemporarySpeedLimit::TEMPORARY_SPEED_LIMIT_GROUP_ID.eq(temporary_speed_limit_group_id)
+        });
+    let applicable_speed_limits = TemporarySpeedLimit::list(conn, selection_settings)
+        .await?
+        .into_iter()
+        .filter(|speed_limit| {
+            !(end_date_time <= speed_limit.start_date_time.and_utc()
+                || speed_limit.end_date_time.and_utc() <= start_date_time)
+        })
+        .map_into()
+        .collect();
+    Ok(applicable_speed_limits)
 }
 
 fn elapsed_since_time_ms(time: &NaiveDateTime, zero: &DateTime<Utc>) -> u64 {
