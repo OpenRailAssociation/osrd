@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop */
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -47,8 +47,6 @@ const useLazyLoadTrains = ({ infraId, path, trainSchedules }: UseLazyLoadTrainsP
   const { data: { results: rollingStocks } = { results: [] } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
-
   const { projectedTrainsById, setProjectedTrainsById } = useLazyProjectTrains({
     infraId,
     trainIdsToProject,
@@ -58,10 +56,12 @@ const useLazyLoadTrains = ({ infraId, path, trainSchedules }: UseLazyLoadTrainsP
     setTrainIdsToProject,
   });
 
-  const loadTrainIds = async (trainIds: number[]) => {
+  const loadTrains = async (_trainSchedules: TrainScheduleResult[]) => {
     if (!infraId) {
       return;
     }
+
+    const trainIds = _trainSchedules.map((trainSchedule) => trainSchedule.id);
 
     setAllTrainsLoaded(false);
 
@@ -76,33 +76,19 @@ const useLazyLoadTrains = ({ infraId, path, trainSchedules }: UseLazyLoadTrainsP
         },
       }).unwrap();
 
-      // the two rtk-query calls postV2TrainSchedule & postV2TrainScheduleSimulationSummary
-      // do not happen during the same react cycle.
-      // if we update a train, one is going to re-fetch first and the 2 are out of sync during a few cycles.
-      // these cycles do not make sense to render.
-      const outOfSync = [...trainSchedulesById.values()].some((trainShedule) => {
-        const summary = rawSummaries[trainShedule.id];
-        if (summary?.status === 'success') {
-          return trainShedule.path.length !== summary.path_item_times_final.length;
-        }
-        return false;
-      });
+      // launch the projection of the trains
+      setTrainIdsToProject((prev) => [...prev, ...packageToFetch]);
 
-      if (!outOfSync) {
-        // launch the projection of the trains
-        setTrainIdsToProject((prev) => [...prev, ...packageToFetch]);
+      // format the summaries to display them in the timetable
+      const newFormattedSummaries = formatTrainScheduleSummaries(
+        packageToFetch,
+        rawSummaries,
+        mapBy(_trainSchedules, 'id'),
+        rollingStocks
+      );
 
-        // format the summaries to display them in the timetable
-        const newFormattedSummaries = formatTrainScheduleSummaries(
-          packageToFetch,
-          rawSummaries,
-          trainSchedulesById,
-          rollingStocks
-        );
-
-        // as formattedSummaries is a dictionary, we replace the previous values with the new ones
-        setTrainScheduleSummariesById((prev) => concatMap(prev, newFormattedSummaries));
-      }
+      // as formattedSummaries is a dictionary, we replace the previous values with the new ones
+      setTrainScheduleSummariesById((prev) => concatMap(prev, newFormattedSummaries));
     }
 
     setAllTrainsLoaded(true);
@@ -113,7 +99,7 @@ const useLazyLoadTrains = ({ infraId, path, trainSchedules }: UseLazyLoadTrainsP
     projectedTrainsById,
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
-    loadTrainIds,
+    loadTrains,
   };
 };
 
