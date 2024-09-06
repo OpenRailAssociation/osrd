@@ -811,6 +811,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['work_schedules'],
       }),
+      postWorkSchedulesProjectPath: build.query<
+        PostWorkSchedulesProjectPathApiResponse,
+        PostWorkSchedulesProjectPathApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/work_schedules/project_path`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        providesTags: ['work_schedules'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -1478,6 +1489,24 @@ export type PostWorkSchedulesApiResponse =
   /** status 201 The id of the created work schedule group */ WorkScheduleCreateResponse;
 export type PostWorkSchedulesApiArg = {
   workScheduleCreateForm: WorkScheduleCreateForm;
+};
+export type PostWorkSchedulesProjectPathApiResponse =
+  /** status 201 Returns a list of work schedules whose track ranges intersect the given path */ {
+    /** The date and time when the work schedule ends. */
+    end_date_time: string;
+    /** a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:
+    - `a` is the distance from the beginning of the path to the beginning of the track range
+    - `b` is the distance from the beginning of the path to the end of the track range */
+    path_position_ranges: (number & number)[][];
+    /** The date and time when the work schedule takes effect. */
+    start_date_time: string;
+    type: 'CATENARY' | 'TRACK';
+  }[];
+export type PostWorkSchedulesProjectPathApiArg = {
+  body: {
+    path_track_ranges: TrackRange[];
+    work_schedule_group_id: number;
+  };
 };
 export type NewDocumentResponse = {
   document_key: number;

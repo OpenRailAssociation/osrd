@@ -13,13 +13,14 @@ use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use postgis_diesel::types::LineString;
+use serde_json::Value;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models::prelude::*;
 use crate::models::rolling_stock_livery::RollingStockLiveryModel;
 use crate::models::timetable::Timetable;
 use crate::models::train_schedule::TrainSchedule;
-use crate::models::work_schedules::WorkScheduleGroup;
+use crate::models::work_schedules::{WorkSchedule, WorkScheduleGroup};
 use crate::models::Document;
 use crate::models::Infra;
 use crate::models::Project;
@@ -307,4 +308,20 @@ pub async fn create_work_schedule_group(conn: &mut DbConnection) -> WorkSchedule
         .create(conn)
         .await
         .expect("Failed to create empty work schedule group")
+}
+
+pub async fn create_work_schedules_fixture_set(
+    conn: &mut DbConnection,
+    work_schedules: Vec<Changeset<WorkSchedule>>,
+) -> (WorkScheduleGroup, Vec<WorkSchedule>) {
+    let work_schedule_group = create_work_schedule_group(conn).await;
+    let work_schedules_changesets = work_schedules
+        .into_iter()
+        .map(|ws| ws.work_schedule_group_id(work_schedule_group.id))
+        .collect::<Vec<_>>();
+    let work_schedules = WorkSchedule::create_batch(conn, work_schedules_changesets)
+        .await
+        .expect("Failed to create work test schedules");
+
+    (work_schedule_group, work_schedules)
 }
