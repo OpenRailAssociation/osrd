@@ -14,6 +14,7 @@ const config: ConfigFile = {
         'postTrainSchedule',
         'postTrainScheduleSimulationSummary',
         'postTrainScheduleProjectPath',
+        'postWorkSchedulesProjectPath',
       ],
       type: 'query',
     },

@@ -2748,6 +2748,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkScheduleCreateResponse'
+  /work_schedules/project_path:
+    post:
+      tags:
+      - work_schedules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - work_schedule_group_id
+              - path_track_ranges
+              properties:
+                path_track_ranges:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TrackRange'
+                work_schedule_group_id:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        '201':
+          description: Returns a list of work schedules whose track ranges intersect the given path
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: Represents the projection of a work schedule on a path.
+                  required:
+                  - type
+                  - start_date_time
+                  - end_date_time
+                  - path_position_ranges
+                  properties:
+                    end_date_time:
+                      type: string
+                      format: date-time
+                      description: The date and time when the work schedule ends.
+                    path_position_ranges:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          allOf:
+                          - type: integer
+                            format: int64
+                            minimum: 0
+                          - type: integer
+                            format: int64
+                            minimum: 0
+                      description: |-
+                        a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:
+                        - `a` is the distance from the beginning of the path to the beginning of the track range
+                        - `b` is the distance from the beginning of the path to the end of the track range
+                    start_date_time:
+                      type: string
+                      format: date-time
+                      description: The date and time when the work schedule takes effect.
+                    type:
+                      type: string
+                      enum:
+                      - CATENARY
+                      - TRACK
 components:
   schemas:
     AddOperation:
