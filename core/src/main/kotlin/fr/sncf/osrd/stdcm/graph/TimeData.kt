@@ -27,12 +27,6 @@ data class TimeData(
     val maxDepartureDelayingWithoutConflict: Double,
 
     /**
-     * By how much we have added delay to any departure, both train departure time and lengthening
-     * stop duration.
-     */
-    val totalDepartureDelay: Double,
-
-    /**
      * Time of the next conflict on the given location. Used both to identify edges that go through
      * the same "opening", and to figure out how much delay we can add locally (with margins).
      */
@@ -45,13 +39,16 @@ data class TimeData(
     val totalRunningTime: Double,
 
     /**
-     * Time the train has spent stopped since its departure. Includes both used-requested minimum
-     * stop duration, and extra stop times added to avoid conflicts.
-     *
-     * TODO: to implement variable stop times, this will need to be changed to a list with the
-     *   duration of each stop.
+     * Current estimation of the departure time, may be delayed further down the path (up to the
+     * first stop).
      */
-    val totalStopTime: Double,
+    val departureTime: Double,
+
+    /**
+     * List of stop data over the path up to the current point. The duration of the last stop may be
+     * retroactively lengthened further down the path.
+     */
+    val stopTimeData: List<StopTimeData>,
 
     /**
      * Global delay that have been added to avoid conflicts on the given element, by delaying the
@@ -59,33 +56,44 @@ data class TimeData(
      */
     val delayAddedToLastDeparture: Double = 0.0,
 ) {
-    // Getters for different handy values. They may not all be used,
-    // but they're here if we need them. It also shows how the values
-    // are related to each other.
-
-    /** This is the time at which we may start the train path, if there's no extra delay */
-    val earliestDepartureTime = earliestReachableTime - totalRunningTime - totalStopTime
-
     /**
      * Time elapsed since the departure time. This may be changed further down the path by
      * lengthening stop durations or adding engineering allowances.
      */
-    val timeSinceDeparture = totalRunningTime + totalStopTime
+    val timeSinceDeparture = totalRunningTime + stopTimeData.sumOf { it.currentDuration }
 
     /** Returns a copy of the current instance, with added travel / stop time. */
     fun withAddedTime(
         extraTravelTime: Double,
-        extraStopTime: Double,
+        extraStopTime: Double?,
     ): TimeData {
+        var newStopData = stopTimeData
+        var maxDepartureDelayingWithoutConflict = maxDepartureDelayingWithoutConflict
+        if (extraStopTime != null) {
+            val stopDataCopy = newStopData.toMutableList()
+            stopDataCopy.add(
+                StopTimeData(
+                    currentDuration = extraStopTime,
+                    minDuration = extraStopTime,
+                    maxDepartureDelayBeforeStop = maxDepartureDelayingWithoutConflict,
+                )
+            )
+            newStopData = stopDataCopy
+            maxDepartureDelayingWithoutConflict = Double.POSITIVE_INFINITY
+        }
         return copy(
-            earliestReachableTime = earliestReachableTime + extraTravelTime + extraStopTime,
+            earliestReachableTime =
+                earliestReachableTime + extraTravelTime + (extraStopTime ?: 0.0),
             totalRunningTime = totalRunningTime + extraTravelTime,
-            totalStopTime = totalStopTime + extraStopTime
+            stopTimeData = newStopData,
+            maxDepartureDelayingWithoutConflict = maxDepartureDelayingWithoutConflict,
         )
     }
 
     /**
      * Return a copy of the current instance, with "shifted" time values. Used to create new edges.
+     * The shift is made by delaying the last departure (either by lengthening the last stop if any,
+     * or by making the train start at a later time).
      *
      * @param timeShift by how much we delay the new element compared to the earliest possible time.
      *   A value > 0 means that we want to arrive later (to avoid a conflict)
@@ -102,12 +110,60 @@ data class TimeData(
         maxDepartureDelayingWithoutConflict: Double,
     ): TimeData {
         assert(timeShift >= delayAddedToLastDeparture)
+        var newStopData = stopTimeData
+        var newDepartureTime = departureTime
+        if (delayAddedToLastDeparture > 0) {
+            if (newStopData.isEmpty()) {
+                newDepartureTime += delayAddedToLastDeparture
+            } else {
+                val stopDataCopy = newStopData.toMutableList()
+                val oldLastStopData = stopDataCopy.last()
+                stopDataCopy[stopDataCopy.size - 1] =
+                    oldLastStopData.withAddedStopTime(delayAddedToLastDeparture)
+                newStopData = stopDataCopy
+            }
+        }
         return copy(
             earliestReachableTime = earliestReachableTime + timeShift,
             maxDepartureDelayingWithoutConflict = maxDepartureDelayingWithoutConflict,
-            totalDepartureDelay = totalDepartureDelay + delayAddedToLastDeparture,
             timeOfNextConflictAtLocation = timeOfNextConflictAtLocation,
-            delayAddedToLastDeparture = delayAddedToLastDeparture
+            delayAddedToLastDeparture = delayAddedToLastDeparture,
+            stopTimeData = newStopData,
+            departureTime = newDepartureTime,
         )
+    }
+
+    /**
+     * When we have moved further down the path, this method gives an updated estimation of the
+     * earliest reachable time. This accounts for any extra delay that may have been added to any
+     * departure time. "updatedTimeData" is the latest available TimeData instance.
+     */
+    fun getUpdatedEarliestReachableTime(updatedTimeData: TimeData): Double {
+        val addedDepartureDelay = updatedTimeData.departureTime - departureTime
+
+        // Ignore stops that haven't been reached in the current instance
+        val updatedStopValues = updatedTimeData.stopTimeData.subList(0, stopTimeData.size)
+        val addedStopValues =
+            (updatedStopValues zip stopTimeData).map {
+                it.first.currentDuration - it.second.currentDuration
+            }
+
+        assert(addedDepartureDelay >= 0)
+        assert(addedStopValues.all { it >= 0 })
+
+        return earliestReachableTime + addedDepartureDelay + addedStopValues.sum()
+    }
+}
+
+data class StopTimeData(
+    /** Current stop duration. It may be made longer further down the path. */
+    val currentDuration: Double,
+    /** Minimum stop duration as described in the input. */
+    val minDuration: Double,
+    /** We need to keep track of how much delay we can add before this stop. */
+    val maxDepartureDelayBeforeStop: Double
+) {
+    fun withAddedStopTime(extraStopTime: Double): StopTimeData {
+        return copy(currentDuration = currentDuration + extraStopTime)
     }
 }

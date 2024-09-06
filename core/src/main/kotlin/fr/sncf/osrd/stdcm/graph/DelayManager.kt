@@ -80,7 +80,7 @@ internal constructor(
      * Returns true if the total run time at the start of the edge is above the specified threshold
      */
     fun isRunTimeTooLong(edge: STDCMEdge): Boolean {
-        val totalRunTime = edge.timeData.totalRunningTime
+        val totalRunTime = edge.timeData.timeSinceDeparture
 
         // TODO: we should use the A* heuristic here, but that requires a small refactoring
         return totalRunTime > maxRunTime

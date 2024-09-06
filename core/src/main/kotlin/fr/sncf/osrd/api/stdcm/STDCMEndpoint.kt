@@ -118,6 +118,8 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
 
 private fun parseSteps(infra: FullInfra, steps: List<STDCMRequest.STDCMStep>): List<STDCMStep> {
     assert(steps.last().stop)
+    steps.first().stop = false
+    steps.first().stopDuration = null
     return steps
         .stream()
         .map { step: STDCMRequest.STDCMStep ->

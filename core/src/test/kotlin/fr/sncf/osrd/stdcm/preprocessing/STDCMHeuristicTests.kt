@@ -221,10 +221,10 @@ class STDCMHeuristicTests {
             TimeData(
                 earliestReachableTime = 0.0,
                 maxDepartureDelayingWithoutConflict = 0.0,
-                totalDepartureDelay = 0.0,
+                departureTime = 0.0,
                 timeOfNextConflictAtLocation = 0.0,
                 totalRunningTime = 0.0,
-                totalStopTime = 0.0,
+                stopTimeData = listOf(),
             )
         val defaultNode =
             STDCMNode(

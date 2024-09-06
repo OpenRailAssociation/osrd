@@ -55,8 +55,8 @@ fun buildFinalEnvelope(
     timeStep: Double,
     comfort: Comfort?,
     blockAvailability: BlockAvailabilityInterface,
-    departureTime: Double,
     stops: List<TrainStop>,
+    updatedTimeData: TimeData,
     isMareco: Boolean = true,
 ): Envelope {
     val context = build(rollingStock, envelopeSimPath, timeStep, comfort)
@@ -77,7 +77,8 @@ fun buildFinalEnvelope(
                 standardAllowance.getAllowanceTime(
                     maxSpeedEnvelope.totalTime,
                     pathLength.distance.meters
-                ) > 0.0
+                ) > 0.0,
+            updatedTimeData,
         )
 
     val maxIterations = edges.size * 2 // just to avoid infinite loops on bugs or edge cases
@@ -91,8 +92,8 @@ fun buildFinalEnvelope(
                     newEnvelope,
                     blockAvailability,
                     edges,
-                    departureTime,
-                    stops
+                    stops,
+                    updatedTimeData,
                 ) ?: return newEnvelope
             if (fixedPoints.any { it.offset == conflictOffset })
                 break // Error case, we exit and fallback to the linear envelope
@@ -100,7 +101,9 @@ fun buildFinalEnvelope(
                 "Conflict when running final stdcm simulation at offset {}, adding a fixed time point",
                 conflictOffset
             )
-            fixedPoints.add(makeFixedPoint(fixedPoints, edges, conflictOffset, pathLength))
+            fixedPoints.add(
+                makeFixedPoint(fixedPoints, edges, conflictOffset, pathLength, updatedTimeData)
+            )
         } catch (e: OSRDError) {
             if (e.osrdErrorType == ErrorType.AllowanceConvergenceTooMuchTime) {
                 // Mareco allowances must have a non-zero capacity speed limit,
@@ -127,8 +130,8 @@ fun buildFinalEnvelope(
             timeStep,
             comfort,
             blockAvailability,
-            departureTime,
             stops,
+            updatedTimeData,
             false,
         )
     }
@@ -140,6 +143,7 @@ private fun initFixedPoints(
     stops: List<TrainStop>,
     length: Length<TravelledPath>,
     hasStandardAllowance: Boolean,
+    updatedTimeData: TimeData,
 ): TreeSet<FixedTimePoint> {
     val res = TreeSet<FixedTimePoint>()
     var prevStopTime = 0.0
@@ -150,13 +154,14 @@ private fun initFixedPoints(
                 edges,
                 Offset(Distance.fromMeters(stop.position)),
                 length,
-                stop.duration
+                updatedTimeData,
+                stop.duration,
             )
         )
         prevStopTime += stop.duration
     }
     if (hasStandardAllowance && res.none { it.offset == length })
-        res.add(makeFixedPoint(res, edges, length, length, 0.0))
+        res.add(makeFixedPoint(res, edges, length, length, updatedTimeData, 0.0))
     return res
 }
 
@@ -180,6 +185,7 @@ private fun makeFixedPoint(
     edges: List<STDCMEdge>,
     conflictOffset: Offset<TravelledPath>,
     pathLength: Length<TravelledPath>,
+    updatedTimeData: TimeData,
     stopDuration: Double = 0.0,
 ): FixedTimePoint {
     var offset = roundOffset(edges, Offset.min(conflictOffset, pathLength), true)
@@ -191,7 +197,7 @@ private fun makeFixedPoint(
     }
     offset = Offset.min(offset, pathLength)
     return FixedTimePoint(
-        getTimeOnEdges(edges, offset),
+        getTimeOnEdges(edges, offset, updatedTimeData),
         offset,
         if (stopDuration > 0) stopDuration else null
     )
@@ -225,19 +231,22 @@ private fun roundOffset(
 private fun getTimeOnEdges(
     edges: List<STDCMEdge>,
     offset: Offset<TravelledPath>,
+    updatedTimeData: TimeData,
 ): Double {
     var remainingDistance = offset.distance
     for (edge in edges) {
         val atStop = edge.endAtStop && remainingDistance == edge.length.distance
         if (remainingDistance < edge.length.distance || atStop) {
-            val absoluteTime = edge.getApproximateTimeAtLocation(Offset(remainingDistance))
-            return absoluteTime - edge.timeData.totalDepartureDelay
+            val absoluteTime =
+                edge.getApproximateTimeAtLocation(Offset(remainingDistance), updatedTimeData)
+            return absoluteTime - updatedTimeData.departureTime
         }
         remainingDistance -= edge.length.distance
     }
     // End of the last edge, this case is easier to handle separately
-    val absoluteTime = edges.last().getApproximateTimeAtLocation(edges.last().length)
-    return absoluteTime - edges.last().timeData.totalDepartureDelay
+    val absoluteTime =
+        edges.last().getApproximateTimeAtLocation(edges.last().length, updatedTimeData)
+    return absoluteTime - updatedTimeData.departureTime
 }
 
 /**
@@ -249,8 +258,8 @@ private fun findConflictOffsets(
     envelope: Envelope,
     blockAvailability: BlockAvailabilityInterface,
     edges: List<STDCMEdge>,
-    departureTime: Double,
-    stops: List<TrainStop>
+    stops: List<TrainStop>,
+    updatedTimeData: TimeData,
 ): Offset<TravelledPath>? {
     val envelopeWithStops = EnvelopeStopWrapper(envelope, stops)
     val startOffset = edges[0].envelopeStartOffset
@@ -281,7 +290,7 @@ private fun findConflictOffsets(
             explorer,
             startOffset.cast(),
             endOffset.cast(),
-            departureTime
+            updatedTimeData.departureTime,
         )
     val offsetDistance =
         (availability as? BlockAvailabilityInterface.Unavailable)?.firstConflictOffset

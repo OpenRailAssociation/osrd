@@ -16,7 +16,10 @@ import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
+import fr.sncf.osrd.sim_infra.api.makePathProperties
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -24,8 +27,8 @@ import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import java.util.*
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -42,7 +45,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     fun makeResult(
         infra: RawSignalingInfra,
         path: Result,
-        startTime: Double,
         standardAllowance: AllowanceValue?,
         rollingStock: RollingStock,
         timeStep: Double,
@@ -58,8 +60,9 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val routes = edges.last().infraExplorer.getExploredRoutes()
         val trainPath = makePathProperties(infra, chunkPath, routes)
         val physicsPath = EnvelopeTrainPath.from(infra, trainPath)
-        val departureTime = computeDepartureTime(edges, startTime)
-        val stops = makeStops(edges)
+        // val departureTime = computeDepartureTime(edges, startTime)
+        val updatedTimeData = computeTimeData(edges)
+        val stops = makeStops(edges, updatedTimeData)
         val maxSpeedEnvelope =
             makeMaxSpeedEnvelope(
                 trainPath,
@@ -82,8 +85,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 timeStep,
                 comfort,
                 blockAvailability,
-                departureTime,
-                stops
+                stops,
+                updatedTimeData,
             )
         val res =
             STDCMResult(
@@ -92,7 +95,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 trainPath,
                 chunkPath,
                 physicsPath,
-                departureTime,
+                updatedTimeData.departureTime,
 
                 // Allow us to display OP, a hack that will be fixed
                 // after the redesign of simulation data models
@@ -133,32 +136,118 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         return res
     }
 
-    /** Computes the departure time, made of the sum of all delays added over the path */
-    private fun computeDepartureTime(edges: List<STDCMEdge>, startTime: Double): Double {
-        var addedDelay = 0.0
-        for (edge in edges) addedDelay += edge.timeData.delayAddedToLastDeparture
-        val totalAddedDelay = addDelayForPlannedNodes(edges, addedDelay)
-        return startTime + totalAddedDelay
+    /**
+     * Compute the final TimeData to be used as reference. The main things we're looking for are the
+     * train departure time and the duration of each stop.
+     */
+    private fun computeTimeData(
+        edges: List<STDCMEdge>,
+    ): TimeData {
+        // Make stop list mutable (locally)
+        val nodes = getNodes(edges)
+        val mutableStopData = nodes.last().timeData.stopTimeData.toMutableList()
+        var timeData = nodes.last().timeData.copy(stopTimeData = mutableStopData)
+
+        // Find the index of the first planned node, and matching stop index
+        val firstPlannedNodeIndex = nodes.indexOfFirst { it.plannedTimingData != null }
+        if (firstPlannedNodeIndex < 0) return timeData
+        val node = nodes[firstPlannedNodeIndex]
+        // Index of the last stop *before* the first planned node (in the mutableStopData list)
+        val lastStopIndexBeforeNode =
+            nodes.subList(0, firstPlannedNodeIndex).count { it.stopDuration != null }
+
+        // Figure out how much time we'd like to add
+        val realTime = node.getRealTime(timeData)
+        var timeDiff = node.plannedTimingData!!.getTimeDiff(realTime)
+        if (timeDiff > 0) return timeData // No change required
+        timeDiff = abs(timeDiff)
+
+        // Identify how much time we can add to the previous stop without causing conflict
+        var maxAddedTime =
+            findMaxPossibleTimeToAdd(
+                lastStopIndexBeforeNode,
+                node,
+                nodes.subList(firstPlannedNodeIndex + 1, nodes.size),
+                mutableStopData,
+            )
+        val actualStopAddedTime = min(maxAddedTime, timeDiff)
+
+        // Add time to the previous stop, or delay the departure time accordingly
+        if (lastStopIndexBeforeNode == 0)
+            timeData = timeData.copy(departureTime = timeData.departureTime + actualStopAddedTime)
+        else
+            mutableStopData[lastStopIndexBeforeNode - 1] =
+                mutableStopData[lastStopIndexBeforeNode - 1].withAddedStopTime(actualStopAddedTime)
+
+        // Reduce time to the next stops, to keep the change as local as possible
+        reduceNextStopDurations(
+            lastStopIndexBeforeNode,
+            actualStopAddedTime,
+            nodes.subList(firstPlannedNodeIndex + 1, nodes.size),
+            mutableStopData,
+        )
+        return timeData
     }
 
-    /** Add delay needed to minimize the relative time diff with planned timing data */
-    private fun addDelayForPlannedNodes(edges: List<STDCMEdge>, addedDelay: Double): Double {
-        var delayForPlannedNodes = 0.0
-        val nodes = getNodes(edges)
-        val maxNodeDelay = getMaxNodeDelay(nodes)
-        val firstPlannedNode = getPlannedNodes(nodes).firstOrNull()
-        if (firstPlannedNode != null) {
-            val realTime = firstPlannedNode.getRealTime(addedDelay)
-            val timeDiff = firstPlannedNode.plannedTimingData!!.getTimeDiff(realTime)
-            // Train passes before planned node: adding delay can make the train pass closer to
-            // planned arrival time
-            if (timeDiff < 0.0) {
-                delayForPlannedNodes = abs(timeDiff)
+    /** Reduce the duration of the next stops to account for any extra time we have added before */
+    private fun reduceNextStopDurations(
+        lastStopIndexBeforeNode: Int,
+        maxTimeDiff: Double,
+        nextNodes: List<STDCMNode>,
+        mutableStopData: MutableList<StopTimeData>,
+    ) {
+        var addedStopTimeIndex = lastStopIndexBeforeNode
+        var remainingStopTimeToRemove = maxTimeDiff
+        for (nextNode in nextNodes) {
+            if (nextNode.stopDuration != null) {
+                val newStopDuration =
+                    max(
+                        mutableStopData[addedStopTimeIndex].minDuration,
+                        mutableStopData[addedStopTimeIndex].currentDuration -
+                            remainingStopTimeToRemove
+                    )
+                val timeRemoved =
+                    mutableStopData[addedStopTimeIndex].currentDuration - newStopDuration
+                mutableStopData[addedStopTimeIndex] =
+                    mutableStopData[addedStopTimeIndex].copy(currentDuration = newStopDuration)
+                remainingStopTimeToRemove -= timeRemoved
+                if (remainingStopTimeToRemove <= 0) break
+                addedStopTimeIndex++
             }
         }
-        // Total delay added shouldn't be higher than the maximum delay that can possibly be added
-        // to the nodes.
-        return min(addedDelay + delayForPlannedNodes, maxNodeDelay)
+    }
+
+    /**
+     * Identify the max possible time we can add to the previous stop, assuming we can remove some
+     * time from next stops
+     */
+    private fun findMaxPossibleTimeToAdd(
+        lastStopIndexBeforeNode: Int,
+        node: STDCMNode,
+        nextNodes: List<STDCMNode>,
+        mutableStopData: MutableList<StopTimeData>,
+    ): Double {
+        var maxTimeDiff = Double.POSITIVE_INFINITY
+        var nextStopIndex = lastStopIndexBeforeNode
+        if (node.stopDuration != null) nextStopIndex++
+        var timeRemovedFromStops = 0.0
+        for (nextNode in nextNodes) {
+            // Using the edge is more reliable to check the lack of conflict
+            val edge = nextNode.previousEdge!!
+            maxTimeDiff =
+                min(
+                    maxTimeDiff,
+                    edge.timeData.maxDepartureDelayingWithoutConflict - timeRemovedFromStops
+                )
+            if (nextNode.stopDuration != null) {
+                val maxRemovedStopTime =
+                    mutableStopData[nextStopIndex].currentDuration -
+                        mutableStopData[nextStopIndex].currentDuration
+                timeRemovedFromStops += maxRemovedStopTime
+                nextStopIndex++
+            }
+        }
+        return maxTimeDiff
     }
 
     private fun getNodes(edges: List<STDCMEdge>): List<STDCMNode> {
@@ -167,32 +256,19 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         return nodes
     }
 
-    private fun getPlannedNodes(nodes: List<STDCMNode>): List<STDCMNode> {
-        return nodes.filter { it.plannedTimingData != null }
-    }
-
-    private fun getMaxNodeDelay(nodes: List<STDCMNode>): Double {
-        return nodes.minOfOrNull {
-            it.timeData.maxDepartureDelayingWithoutConflict + it.timeData.totalDepartureDelay
-        }!!
-    }
-
     /** Builds the list of stops from the edges */
-    private fun makeStops(edges: List<STDCMEdge>): List<TrainStop> {
+    private fun makeStops(edges: List<STDCMEdge>, timeData: TimeData): List<TrainStop> {
         val res = ArrayList<TrainStop>()
         var offset = 0.meters
+        var stopIndex = 0
         for (edge in edges) {
             val prevNode = edge.previousNode
             // Ignore first path node and last node (we aren't checking lastEdge.getEdgeEnd())
-            if (
-                prevNode.previousEdge != null &&
-                    prevNode.stopDuration != null &&
-                    prevNode.stopDuration >= 0
-            )
+            if (prevNode.previousEdge != null && prevNode.stopDuration != null)
                 res.add(
                     TrainStop(
                         offset.meters,
-                        prevNode.stopDuration,
+                        timeData.stopTimeData[stopIndex++].currentDuration,
                         // TODO: forward and use onStopSignal param from request
                         isTimeStrictlyPositive(prevNode.stopDuration)
                     )

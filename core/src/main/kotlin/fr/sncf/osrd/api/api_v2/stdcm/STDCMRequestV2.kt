@@ -57,7 +57,7 @@ class STDCMRequestV2(
 
 class STDCMPathItem(
     val locations: List<TrackLocation>,
-    @Json(name = "stop_duration") val stopDuration: Duration?,
+    @Json(name = "stop_duration") var stopDuration: Duration?,
     @Json(name = "step_timing_data") val stepTimingData: StepTimingData?,
 )
 
