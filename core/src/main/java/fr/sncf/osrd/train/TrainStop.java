@@ -24,6 +24,14 @@ public class TrainStop {
     }
 
     @Override
+    public String toString() {
+        return "TrainStop{" + "position="
+                + position + ", duration="
+                + duration + ", onStopSignal="
+                + onStopSignal + '}';
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(position, duration);
     }

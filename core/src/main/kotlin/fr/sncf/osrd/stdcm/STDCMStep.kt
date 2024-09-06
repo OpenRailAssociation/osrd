@@ -8,8 +8,8 @@ import kotlin.math.abs
 
 data class STDCMStep(
     val locations: Collection<PathfindingEdgeLocationId<Block>>,
-    val duration: Double?,
-    val stop: Boolean,
+    val duration: Double? = null,
+    val stop: Boolean = false,
     val plannedTimingData: PlannedTimingData? = null,
 )
 

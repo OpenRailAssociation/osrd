@@ -211,6 +211,12 @@ private fun parseSteps(
     if (pathItems.any { it.stopDuration == null && it.stepTimingData != null }) {
         throw OSRDError(ErrorType.InvalidSTDCMStepWithTimingData)
     }
+
+    // Semantically a stop at the start location doesn't change anything,
+    // it's not *wrong* so there's no error, but it's easier to consider
+    // that it's not a stop.
+    pathItems.first().stopDuration = null
+
     return pathItems
         .map {
             STDCMStep(

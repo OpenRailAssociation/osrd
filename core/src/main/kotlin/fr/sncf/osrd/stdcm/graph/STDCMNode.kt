@@ -33,9 +33,10 @@ data class STDCMNode(
 
     /**
      * Defines the estimated better path between 2 nodes, in the following priority:
-     * - lowest total run time
+     * - lowest total run time, excluding stops
      * - closest planned arrival time, taking the tolerance into account, using the current node's
-     *   planned timing data, then the last planned node's timing data
+     * - planned timing data, then the last planned node's timing data
+     * - total run time, including stops
      * - earliest departure time
      * - highest number of reached targets
      *
@@ -44,43 +45,44 @@ data class STDCMNode(
      * path. We then explore them in that order.
      */
     override fun compareTo(other: STDCMNode): Int {
-        val runTimeEstimation = timeData.timeSinceDeparture + remainingTimeEstimation
-        val otherRunTimeEstimation =
-            other.timeData.timeSinceDeparture + other.remainingTimeEstimation
-        val plannedRelativeTimeDiff =
-            getRelativeTimeDiff(
-                timeData.totalDepartureDelay,
-                timeData.maxDepartureDelayingWithoutConflict
-            )
-        val otherPlannedRelativeTimeDiff =
-            other.getRelativeTimeDiff(
-                other.timeData.totalDepartureDelay,
-                other.timeData.maxDepartureDelayingWithoutConflict
-            )
-        // Firstly, minimize the total run time: highest priority node takes the least time to
-        // complete the path
-        // TODO: with variable stop times, stop duration and running time should be separated
-        return if (!areTimesEqual(runTimeEstimation, otherRunTimeEstimation))
-            runTimeEstimation.compareTo(otherRunTimeEstimation)
-        // Minimise the difference with the planned arrival times
-        else if (
+        val runTimeEstimation = timeData.totalRunningTime + remainingTimeEstimation
+        val otherRunTimeEstimation = other.timeData.totalRunningTime + other.remainingTimeEstimation
+        // First, minimize the total run time:
+        // highest priority node takes the least time to complete the path
+        if (!areTimesEqual(runTimeEstimation, otherRunTimeEstimation))
+            return runTimeEstimation.compareTo(otherRunTimeEstimation)
+
+        val plannedRelativeTimeDiff = getRelativeTimeDiff(timeData)
+        val otherPlannedRelativeTimeDiff = other.getRelativeTimeDiff(other.timeData)
+
+        // If equal, minimise the difference with the planned arrival times
+        return if (
             plannedRelativeTimeDiff != null &&
                 otherPlannedRelativeTimeDiff != null &&
                 plannedRelativeTimeDiff != otherPlannedRelativeTimeDiff
         )
             (plannedRelativeTimeDiff).compareTo(otherPlannedRelativeTimeDiff)
-        // If not, minimise the difference with the planned arrival times at the last planned node
+
+        // If equal, minimise the difference with the planned arrival times at the last planned node
         else if (
             previousPlannedNodeRelativeTimeDiff != null &&
                 other.previousPlannedNodeRelativeTimeDiff != null &&
                 previousPlannedNodeRelativeTimeDiff != other.previousPlannedNodeRelativeTimeDiff
         )
             previousPlannedNodeRelativeTimeDiff.compareTo(other.previousPlannedNodeRelativeTimeDiff)
-        // If not, take the train which departs first, as it is the closest to the demanded
-        // departure time
+
+        // If equal, take the train which has the smallest time since its departure.
+        // Unlike the first check, this includes stop time.
+        else if (!areTimesEqual(timeData.timeSinceDeparture, other.timeData.timeSinceDeparture))
+            return timeData.timeSinceDeparture.compareTo(other.timeData.timeSinceDeparture)
+
+        // If equal, take the train which departs first
         else if (timeData.earliestReachableTime != other.timeData.earliestReachableTime)
             timeData.earliestReachableTime.compareTo(other.timeData.earliestReachableTime)
-        // In the end, prioritize the highest number of reached targets
+
+        // In the end, prioritize the highest number of reached targets.
+        // This doesn't define the priority between different paths,
+        // it just minimizes the chance of evaluating redundant nodes
         else other.waypointIndex - waypointIndex
     }
 
@@ -100,49 +102,71 @@ data class STDCMNode(
      * arrival time at node, taking into account the tolerance on either side. It takes the lowest
      * value in the window made of [currentTime; currentTimeWithMaxDelayAdded].
      */
-    fun getRelativeTimeDiff(
-        currentTotalPrevAddedDelay: Double,
-        currentMaximumAddedDelay: Double
-    ): Double? {
+    fun getRelativeTimeDiff(updatedTimeData: TimeData): Double? {
         // Ex: here, minimum time diff possible is 0.0 => minimum relative time diff will be 0.0.
         //          before         plannedArrival                  after
         // ------------[-----|-----------|----------------|----------]------------
         //               currentTime            currentTimeWithMaxDelay
-        if (plannedTimingData != null) {
-            val realTime = getRealTime(currentTotalPrevAddedDelay)
-            val timeDiff = plannedTimingData.getTimeDiff(realTime)
-            val relativeTimeDiff = plannedTimingData.getBeforeOrAfterRelativeTimeDiff(timeDiff)
-            // If time diff is positive, adding delay won't decrease relative time diff: return
-            // relativeTimeDiff
-            if (timeDiff >= 0) return relativeTimeDiff
-
-            val maxTime = getRealTime(currentTotalPrevAddedDelay + currentMaximumAddedDelay)
-            val maxTimeDiff =
-                min(
-                    plannedTimingData.getTimeDiff(maxTime),
-                    plannedTimingData.arrivalTimeToleranceAfter.seconds
-                )
-            val relativeMaxTimeDiff =
-                plannedTimingData.getBeforeOrAfterRelativeTimeDiff(maxTimeDiff)
-            // If time diff < 0.0 and maxTimeDiff >= 0.0, then we can add delay to make the node
-            // arrive at planned arrival time: return 0.0
-            if (maxTimeDiff >= 0.0) return 0.0
-
-            // Else, both are < 0.0: return the lowest relative time diff, i.e., relativeMaxTimeDiff
-            return relativeMaxTimeDiff
+        if (plannedTimingData == null) {
+            return null
         }
-        return null
+        val realTime = getRealTime(updatedTimeData)
+        val timeDiff = plannedTimingData.getTimeDiff(realTime)
+        val relativeTimeDiff = plannedTimingData.getBeforeOrAfterRelativeTimeDiff(timeDiff)
+        // If time diff is positive, adding delay won't decrease relative time diff: return
+        // relativeTimeDiff
+        if (timeDiff >= 0) return relativeTimeDiff
+
+        val maxAddedDelay = computeMaxAddedDelay(updatedTimeData)
+        val maxTime = getRealTime(updatedTimeData) + maxAddedDelay
+
+        val maxTimeDiff =
+            min(
+                plannedTimingData.getTimeDiff(maxTime),
+                plannedTimingData.arrivalTimeToleranceAfter.seconds
+            )
+        val relativeMaxTimeDiff = plannedTimingData.getBeforeOrAfterRelativeTimeDiff(maxTimeDiff)
+        // If time diff < 0.0 and maxTimeDiff >= 0.0, then we can add delay to make the node
+        // arrive at planned arrival time: return 0.0
+        if (maxTimeDiff >= 0.0) return 0.0
+
+        // Else, both are < 0.0: return the lowest relative time diff, i.e., relativeMaxTimeDiff
+        return relativeMaxTimeDiff
+    }
+
+    /**
+     * Compute how much delay we can add to the current node, given some elements about what happens
+     * further down the path. The tricky part is identifying how stop durations may be adjusted to
+     * locally change passage times without conflict.
+     */
+    private fun computeMaxAddedDelay(updatedTimeData: TimeData): Double {
+        var maxAddedDelay = Double.POSITIVE_INFINITY
+
+        // List of stops that haven't been reached on this node
+        var nextStopIndex = timeData.stopTimeData.size - 1
+        if (stopDuration == null) nextStopIndex++
+        val nextStops =
+            updatedTimeData.stopTimeData.subList(nextStopIndex, updatedTimeData.stopTimeData.size)
+
+        // We keep track of how much time we've added at each stop
+        // (which can be ignored for local time changes)
+        var possibleTimeRemovedFromStops = 0.0
+        for (stop in nextStops) {
+            maxAddedDelay =
+                min(maxAddedDelay, stop.maxDepartureDelayBeforeStop - possibleTimeRemovedFromStops)
+            possibleTimeRemovedFromStops += stop.currentDuration - stop.minDuration
+        }
+        return min(
+            maxAddedDelay,
+            updatedTimeData.maxDepartureDelayingWithoutConflict - possibleTimeRemovedFromStops
+        )
     }
 
     /**
      * Takes into account the real current departure time shift to return the real current time at
      * which the train arrives at this node.
-     *
-     * TODO: this version will be invalid with variable stop times and will need to be updated.
      */
-    fun getRealTime(currentTotalAddedDelay: Double): Double {
-        assert(currentTotalAddedDelay >= timeData.totalDepartureDelay)
-        return timeData.earliestReachableTime +
-            (currentTotalAddedDelay - timeData.totalDepartureDelay)
+    fun getRealTime(updatedTimeData: TimeData): Double {
+        return timeData.getUpdatedEarliestReachableTime(updatedTimeData)
     }
 }

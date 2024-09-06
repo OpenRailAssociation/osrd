@@ -24,24 +24,25 @@ import fr.sncf.osrd.train.TestTrains
  * values were set with tests in mind, but it could be moved to the non-test module if it becomes
  * relevant
  */
-class STDCMPathfindingBuilder {
+data class STDCMPathfindingBuilder(
     // region NON-OPTIONAL
-    private var infra: FullInfra? = null
-    private var steps: MutableList<STDCMStep> = ArrayList()
+    var infra: FullInfra? = null,
+    var steps: MutableList<STDCMStep> = ArrayList(),
 
     // endregion NON-OPTIONAL
     // region OPTIONAL
-    private var rollingStock = TestTrains.REALISTIC_FAST_TRAIN
-    private var startTime = 0.0
-    private var comfort = Comfort.STANDARD
-    private var pathfindingTimeout = Pathfinding.TIMEOUT
-    private var unavailableTimes: Multimap<BlockId, OccupancySegment> = ImmutableMultimap.of()
-    private var timeStep = 2.0
-    private var maxDepartureDelay = (3600 * 2).toDouble()
-    private var maxRunTime = Double.POSITIVE_INFINITY
-    private var tag = ""
-    private var standardAllowance: AllowanceValue? = null
-    private var blockAvailability: BlockAvailabilityInterface? = null
+    var rollingStock: RollingStock = TestTrains.REALISTIC_FAST_TRAIN,
+    var startTime: Double = 0.0,
+    var comfort: Comfort = Comfort.STANDARD,
+    var pathfindingTimeout: Double = Pathfinding.TIMEOUT,
+    var unavailableTimes: Multimap<BlockId, OccupancySegment> = ImmutableMultimap.of(),
+    var timeStep: Double = 2.0,
+    var maxDepartureDelay: Double = (3600 * 2).toDouble(),
+    var maxRunTime: Double = Double.POSITIVE_INFINITY,
+    var tag: String = "",
+    var standardAllowance: AllowanceValue? = null,
+    var blockAvailability: BlockAvailabilityInterface? = null,
+) {
     // endregion OPTIONAL
     // region SETTERS
     /** Sets the infra to be used */
@@ -51,7 +52,7 @@ class STDCMPathfindingBuilder {
     }
 
     /** Set the rolling stock to be used for the simulation. Defaults to REALISTIC_FAST_TRAIN */
-    fun setRollingStock(rollingStock: RollingStock?): STDCMPathfindingBuilder {
+    fun setRollingStock(rollingStock: RollingStock): STDCMPathfindingBuilder {
         this.rollingStock = rollingStock
         return this
     }
@@ -64,7 +65,7 @@ class STDCMPathfindingBuilder {
         startLocations: Set<PathfindingEdgeLocationId<Block>>,
         plannedTimingData: PlannedTimingData? = null
     ): STDCMPathfindingBuilder {
-        steps.add(0, STDCMStep(startLocations, 0.0, true, plannedTimingData))
+        steps.add(0, STDCMStep(startLocations, null, false, plannedTimingData))
         return this
     }
 
@@ -89,12 +90,6 @@ class STDCMPathfindingBuilder {
     /** Set the earliest time at which the train can leave. Defaults to 0 */
     fun setStartTime(startTime: Double): STDCMPathfindingBuilder {
         this.startTime = startTime
-        return this
-    }
-
-    /** Sets the rolling stock comfort parameter used for the simulation. Defaults to "standard" */
-    fun setComfort(comfort: Comfort): STDCMPathfindingBuilder {
-        this.comfort = comfort
         return this
     }
 
@@ -127,12 +122,6 @@ class STDCMPathfindingBuilder {
         return this
     }
 
-    /** Sets the train tag used to determine the speed limits by category. Defaults to empty */
-    fun setTag(tag: String): STDCMPathfindingBuilder {
-        this.tag = tag
-        return this
-    }
-
     /** Sets the standard allowance used for the new train. Defaults to null (no allowance) */
     fun setStandardAllowance(allowance: AllowanceValue?): STDCMPathfindingBuilder {
         standardAllowance = allowance
@@ -157,7 +146,6 @@ class STDCMPathfindingBuilder {
     /** Runs the pathfinding request with the given parameters */
     fun run(): STDCMResult? {
         assert(infra != null) { "infra is a required parameter and was not set" }
-        assert(rollingStock != null) { "rolling stock is a required parameter and was not set" }
         assert(steps.size >= 2) { "Not enough steps have been set" }
         assert(blockAvailability == null || unavailableTimes.isEmpty) {
             "Can't set both block availability and unavailable times"
@@ -166,7 +154,7 @@ class STDCMPathfindingBuilder {
             blockAvailability ?: DummyBlockAvailability(infra!!.blockInfra, unavailableTimes)
         return findPath(
             infra!!,
-            rollingStock!!,
+            rollingStock,
             comfort,
             startTime,
             steps,

@@ -55,7 +55,7 @@ data class STDCMEdge(
         return if (!endAtStop) {
             // We move on to the next block
             STDCMNode(
-                timeData.withAddedTime(totalTime, 0.0),
+                timeData.withAddedTime(totalTime, null),
                 endSpeed,
                 infraExplorerWithNewEnvelope,
                 this,
@@ -95,10 +95,7 @@ data class STDCMEdge(
         while (currentEdge != null) {
             val previousPlannedNode = currentEdge.previousNode
             if (previousPlannedNode.plannedTimingData != null) {
-                return previousPlannedNode.getRelativeTimeDiff(
-                    timeData.totalDepartureDelay,
-                    timeData.maxDepartureDelayingWithoutConflict
-                )
+                return previousPlannedNode.getRelativeTimeDiff(timeData)
             }
             currentEdge = previousPlannedNode.previousEdge
         }
@@ -107,13 +104,17 @@ data class STDCMEdge(
 
     /**
      * Returns the approximate time of the given offset of the edge. Runs a simple linear
-     * interpolation.
+     * interpolation. The updated time data is used to account for any extra departure delay, it
+     * should come from the last edge/node.
      */
-    fun getApproximateTimeAtLocation(offset: Offset<STDCMEdge>): Double {
-        if (length.distance == 0.meters)
-            return timeData.earliestReachableTime // Avoids division by 0
+    fun getApproximateTimeAtLocation(
+        offset: Offset<STDCMEdge>,
+        updatedTimeData: TimeData,
+    ): Double {
+        val updatedEarliestTime = timeData.getUpdatedEarliestReachableTime(updatedTimeData)
+        if (length.distance == 0.meters) return updatedEarliestTime // Avoids division by 0
         val offsetRatio = offset.distance.meters / length.distance.meters
-        return timeData.earliestReachableTime + (totalTime * offsetRatio)
+        return updatedEarliestTime + (totalTime * offsetRatio)
     }
 
     override fun toString(): String {
