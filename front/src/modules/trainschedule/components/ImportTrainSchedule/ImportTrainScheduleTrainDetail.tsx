@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import cx from 'classnames';
 import nextId from 'react-id-generator';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import type {
@@ -65,11 +64,9 @@ export default function ImportTrainScheduleTrainDetail({
           {calcRouteDurationInHour(trainData.departureTime, trainData.arrivalTime)}
         </span>
         {rollingStock && (
-          <LazyLoadComponent>
-            <span className="import-train-schedule-traindetail-rollingstock">
-              <RollingStock2Img rollingStock={rollingStock} />
-            </span>
-          </LazyLoadComponent>
+          <span className="import-train-schedule-traindetail-rollingstock">
+            <RollingStock2Img rollingStock={rollingStock} />
+          </span>
         )}
         <span className="import-train-schedule-traindetail-rollingstock-name">
           {trainData.rollingStock}

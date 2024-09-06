@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-
 import placeholderRollingStockElectric from 'assets/pictures/placeholder_rollingstock_elec.gif';
 import placeholderRollingStockThermal from 'assets/pictures/placeholder_rollingstock_thermal.gif';
 import { getDocument } from 'common/api/documentApi';
@@ -48,7 +46,7 @@ const RollingStock2Img = ({ rollingStock }: RollingStock2ImgProps) => {
     getRollingStockImage();
   }, [rollingStock]);
 
-  return <LazyLoadImage src={imageUrl || ''} alt={rollingStock?.name || 'defaultImg'} />;
+  return <img src={imageUrl || ''} alt={rollingStock?.name || 'defaultImg'} loading="lazy" />;
 };
 
 export default React.memo(RollingStock2Img);

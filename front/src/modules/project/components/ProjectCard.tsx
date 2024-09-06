@@ -4,7 +4,6 @@ import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-p
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -55,7 +54,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
         <CheckCircle variant="fill" size="lg" />
       </span>
       <div className="project-card-img">
-        <LazyLoadImage src={imageUrl} alt="project logo" />
+        <img src={imageUrl} alt="project logo" loading="lazy" />
         <div className="buttons">
           <Link to={`/operational-studies/projects/${project.id}`}>
             <button

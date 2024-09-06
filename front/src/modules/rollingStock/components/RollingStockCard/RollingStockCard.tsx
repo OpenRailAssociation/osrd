@@ -6,7 +6,6 @@ import { BsLightningFill } from 'react-icons/bs';
 import { FaWeightHanging } from 'react-icons/fa';
 import { IoIosSpeedometer } from 'react-icons/io';
 import { MdLocalGasStation } from 'react-icons/md';
-import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
 import type { Comfort, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
@@ -98,17 +97,15 @@ const RollingStockCard = ({
           setCurvesComfortList={setCurvesComfortList}
         />
       ) : (
-        <LazyLoadComponent>
-          <div
-            className={cx('rollingstock-body-container-img', {
-              'opened-rollingstock-card-body': isOpen,
-            })}
-          >
-            <div className="rollingstock-body-img">
-              <RollingStock2Img rollingStock={rollingStock} />
-            </div>
+        <div
+          className={cx('rollingstock-body-container-img', {
+            'opened-rollingstock-card-body': isOpen,
+          })}
+        >
+          <div className="rollingstock-body-img">
+            <RollingStock2Img rollingStock={rollingStock} />
           </div>
-        </LazyLoadComponent>
+        </div>
       )}
       <div className="rollingstock-footer">
         <div className="rollingstock-footer-specs">
