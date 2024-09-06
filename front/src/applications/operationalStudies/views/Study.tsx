@@ -156,7 +156,7 @@ export default function Study() {
           } else if (sortOption === 'NameAsc') {
             filteredScenarios = [...filteredScenarios].sort((a, b) => a.name.localeCompare(b.name));
           }
-          setScenariosList(filteredScenarios as ScenarioWithDetails[]);
+          setScenariosList(filteredScenarios);
         } catch (error) {
           console.error(error);
         }

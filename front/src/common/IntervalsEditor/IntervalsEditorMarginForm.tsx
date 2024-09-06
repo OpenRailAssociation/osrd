@@ -34,7 +34,7 @@ const IntervalsEditorMarginForm = ({
           const result = cloneDeep(data);
           if (result && result[selectedIntervalIndex]) {
             result[selectedIntervalIndex].value = parseFloat(e.target.value);
-            setData(result as IntervalItem[]);
+            setData(result);
           }
         }}
         value={(interval.value as number) || 0}

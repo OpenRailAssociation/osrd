@@ -2,7 +2,7 @@ import along from '@turf/along';
 import { lineString } from '@turf/helpers';
 import type { Feature, LineString } from 'geojson';
 
-import type { PositionSpeedTime, PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
+import type { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
 
 import type { TrainPosition } from './types';
 
@@ -18,7 +18,7 @@ import type { TrainPosition } from './types';
 
 function getPosition(positionValues: PositionsSpeedTimes<Date>, baseKey?: string) {
   const key = baseKey as keyof PositionsSpeedTimes<Date>;
-  return positionValues[key] as PositionSpeedTime<Date>;
+  return positionValues[key];
 }
 
 // TODO: fix warped map - probably remove this function and use finalOutput as key ?

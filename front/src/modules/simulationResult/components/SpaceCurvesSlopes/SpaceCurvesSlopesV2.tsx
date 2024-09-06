@@ -151,7 +151,7 @@ const SpaceCurvesSlopesV2 = ({
     const operationalPointsZone = chartLocal.drawZone
       .append('g')
       .attr('id', 'gev-operationalPointsZone');
-    operationalPoints!.forEach((op) => {
+    operationalPoints.forEach((op) => {
       operationalPointsZone
         .append('line')
         .datum(mmToM(op.position))

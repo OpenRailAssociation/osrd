@@ -74,7 +74,7 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
 
   useEffect(() => {
     if (state === 'render' && mapRef) {
-      const m = mapRef as MapRef;
+      const m = mapRef;
 
       const querySources = () => {
         // Retrieve OSRD data:

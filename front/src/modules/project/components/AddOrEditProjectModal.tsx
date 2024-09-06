@@ -128,7 +128,7 @@ export default function AddOrEditProjectModal({
     } else {
       try {
         if (tempProjectImage) {
-          const imageId = await uploadImage(tempProjectImage as Blob);
+          const imageId = await uploadImage(tempProjectImage);
           if (imageId) currentProject.image = imageId;
         }
         const request = postProject({
@@ -165,7 +165,7 @@ export default function AddOrEditProjectModal({
         let imageId = currentProject.image;
 
         if (tempProjectImage) {
-          imageId = await uploadImage(tempProjectImage as Blob);
+          imageId = await uploadImage(tempProjectImage);
           // if the upload of the new image fails, keep the old one
           if (!imageId && currentProject.image) {
             imageId = currentProject.image;

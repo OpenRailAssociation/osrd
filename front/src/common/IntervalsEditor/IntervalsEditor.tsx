@@ -241,7 +241,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
                     setHovered(null);
                   }
                   setClickPrevent(false);
-                }, 50) as number;
+                }, 50);
                 setClickTimeout(timer);
               }
               if (selectedTool === INTERVALS_EDITOR_TOOLS.CUT_TOOL) {

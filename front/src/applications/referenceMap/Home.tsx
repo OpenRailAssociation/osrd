@@ -29,7 +29,7 @@ const HomeReferenceMap = () => {
   useEffect(() => {
     if (infraID) {
       // if the infra in the store is not found, then we set it to undefined
-      getInfraByInfraId({ infraId: infraID as number }).then((resp) => {
+      getInfraByInfraId({ infraId: infraID }).then((resp) => {
         if (resp.error && 'status' in resp.error && resp.error.status === 404) {
           dispatch(updateInfraID(undefined));
         }

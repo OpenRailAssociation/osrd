@@ -56,7 +56,7 @@ export const SpeedSectionEditionLayers = () => {
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
   const isPermanentSpeedLimit = speedSectionIsPsl(entity);
-  const isSpeedRestriction = speedSectionIsSpeedRestriction(entity as SpeedSectionEntity);
+  const isSpeedRestriction = speedSectionIsSpeedRestriction(entity);
 
   const { mapStyle, layersSettings, issuesSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraID = useInfraID();

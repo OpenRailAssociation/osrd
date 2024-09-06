@@ -178,12 +178,12 @@ export const preparePathPropertiesData = (
   const electrificationsRanges = transformBoundariesDataToRangesData(
     electrifications as NonNullable<PathProperties['electrifications']>,
     pathLength
-  ) as ElectricalRangesData<ElectrificationValue>[];
+  );
 
   const electricalProfilesRanges = transformBoundariesDataToRangesData(
     electricalProfiles,
     pathLength
-  ) as ElectricalRangesData<ElectricalProfileValue>[];
+  );
 
   const electrificationRanges = formatElectrificationRanges(
     electrificationsRanges,

@@ -148,7 +148,7 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone)
   if (tree.type === 'FeatureCollection') {
     return {
       ...tree,
-      features: (tree as FeatureCollection).features.flatMap((f) => {
+      features: tree.features.flatMap((f) => {
         const res = clip(f, zone);
         if (!res) return [];
         return [res];
@@ -157,7 +157,7 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone)
   }
 
   if (tree.type === 'Feature') {
-    const feature = tree as Feature;
+    const feature: Feature = tree;
 
     if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
       if (zone.type === 'polygon') {
@@ -272,8 +272,8 @@ export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): Nea
   const nearestPoints: Feature<Point>[] = lines.map((line) => {
     const point = nearestPointOnLine(line, coord, { units: 'meters' });
     const angle = getAngle(
-      line.geometry.coordinates[point.properties.index as number],
-      line.geometry.coordinates[(point.properties.index as number) + 1]
+      line.geometry.coordinates[point.properties.index],
+      line.geometry.coordinates[point.properties.index + 1]
     );
     return {
       ...point,

@@ -163,9 +163,8 @@ export function clipAndProjectGeoJSON<T extends Geometry | Feature | FeatureColl
     };
 
   if (geojson.type === 'Feature') {
-    const clippedFeature = shouldClip
-      ? (clip(geojson, zone) as Feature | null)
-      : (geojson as Feature);
+    const feature: Feature = geojson;
+    const clippedFeature = shouldClip ? clip(feature, zone) : feature;
 
     if (clippedFeature) {
       const newGeometry = projectGeometry(clippedFeature.geometry, projection);

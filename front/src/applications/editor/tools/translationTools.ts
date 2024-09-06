@@ -47,7 +47,7 @@ export function translateDefinitions(
   return Object.keys(defsList).reduce<{
     [key: string]: JSONSchema7;
   }>((acc, defName) => {
-    const currentEntity = defsList![defName] as JSONSchema7;
+    const currentEntity = defsList[defName] as JSONSchema7;
     const properties =
       currentEntity.properties && translateProperties(currentEntity.properties, defName, t);
 

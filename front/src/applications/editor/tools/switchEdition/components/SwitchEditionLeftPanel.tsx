@@ -91,7 +91,7 @@ const SwitchEditionLeftPanel = () => {
           SchemaField: CustomSchemaField,
         }}
         onSubmit={async (flatSwitch) => {
-          const entityToSave = flatSwitchToSwitch(switchType, flatSwitch as FlatSwitchEntity);
+          const entityToSave = flatSwitchToSwitch(switchType, flatSwitch);
 
           const res = await dispatch(
             save(

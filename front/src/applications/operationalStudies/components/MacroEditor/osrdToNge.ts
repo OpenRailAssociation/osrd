@@ -250,10 +250,10 @@ const importTimetable = async (
     }
 
     const node = {
-      id: id!,
+      id,
       betriebspunktName: trigram || '',
       fullName: fullName || '',
-      positionX: positionX!,
+      positionX,
       positionY: positionY || 0,
       ports: [],
       transitions: [],
@@ -356,7 +356,7 @@ const importTimetable = async (
       // convert them.
       let prevPort: Port | null = null;
       return pathNodeIds.slice(0, -1).map((sourceNodeId, i) => {
-        const targetNodeId = pathNodeIds[i + 1]!;
+        const targetNodeId = pathNodeIds[i + 1];
 
         const sourcePort = createPort(trainrunSectionId);
         const targetPort = createPort(trainrunSectionId);

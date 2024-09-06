@@ -180,7 +180,7 @@ export function getTrackRangeFeatures(
         itemType: 'TrackRange',
         rangeIndex,
       }),
-      point(track.geometry.coordinates[0] as Position, {
+      point(track.geometry.coordinates[0], {
         ...properties,
         id: `speedSectionRangeExtremity::${rangeIndex}::${begin}`,
         track: range.track,

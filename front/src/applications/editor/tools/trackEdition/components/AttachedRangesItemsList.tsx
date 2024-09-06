@@ -128,12 +128,12 @@ const AttachedRangesItemsList = ({ id, itemType }: AttachedRangesItemsListProps)
                       if (entity.objType === 'SpeedSection') {
                         switchTool({
                           toolType: TOOL_NAMES.SPEED_SECTION_EDITION,
-                          toolState: getEditSpeedSectionState(entity as SpeedSectionEntity),
+                          toolState: getEditSpeedSectionState(entity),
                         });
                       } else
                         switchTool({
                           toolType: TOOL_NAMES.ELECTRIFICATION_EDITION,
-                          toolState: getEditElectrificationState(entity as ElectrificationEntity),
+                          toolState: getEditElectrificationState(entity),
                         });
                     }}
                   >
