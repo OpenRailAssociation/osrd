@@ -3,6 +3,7 @@ use lapin::ConnectionProperties;
 use log::error;
 use log::info;
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::select;
@@ -62,7 +63,12 @@ fn request_queues_policy(config: &OsrdyneConfig) -> BTreeMap<String, ArgumentVal
 async fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
 
-    let config = parse_config()?;
+    let file = {
+        let mut args = std::env::args();
+        args.nth(1).map(PathBuf::from)
+    };
+
+    let config = parse_config(file)?;
     log::info!("config: {:?}", &config);
     let pool = Arc::new(Pool::new(
         config.pool_id.clone(),
