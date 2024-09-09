@@ -2,7 +2,7 @@
 
 All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.
 
-Check out our community's [Code of Conduct](https://github.com/OpenRailAssociation/osrd/blob/dev/CODE_OF_CONDUCT.md) and feel free to say hi on [libera chat](https://web.libera.chat/#osrd) if you'd like. It's a nice place to chat about OSRD development, ask questions, and get to know the other contributors and users in a less formal setting. If you are not sure about what to do have a look at currently open [good first issues](https://github.com/OpenRailAssociation/osrd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+Check out our community's [Code of Conduct](https://github.com/OpenRailAssociation/osrd/blob/dev/CODE_OF_CONDUCT.md) and feel free to say hi on our [#public-general:osrd.fr](https://matrix.to/#/#public-general:osrd.fr) matrix channel if you'd like. It's a nice place to chat about OSRD development, ask questions, and get to know the other contributors and users in a less formal setting. If you are not sure about what to do have a look at currently open [good first issues](https://github.com/OpenRailAssociation/osrd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 ## Getting oriented
 
@@ -70,16 +70,16 @@ You can join the OSRD team on [transifex](https://explore.transifex.com/osrd/osr
 
 ## Contribute code
 
-[osrd.fr/docs/contribute/code](https://osrd.fr/en/docs/guides/contribute/code).
+To comply with the [DCO](http://developercertificate.org/), all commits must
+include a Signed-off-by line. You can find more information about this [here](https://osrd.fr/en/docs/guides/contribute/contribute-code/commit-conventions/#the-developer-certificate-of-origin)
+
+For more advice on how to contribute, follow that link:
+https://osrd.fr/en/docs/guides/contribute/contribute-code
 
 ### Pull request / code review
 
-[osrd.fr/docs/contribute/code/#share-your-changes](https://osrd.fr/en/docs/guides/contribute/code/#share-your-changes).
+https://osrd.fr/en/docs/guides/contribute/contribute-code/#share-your-changes
 
 ### Report and solve bugs
 
-[osrd.fr/docs/contribute/bug-reports](https://osrd.fr/en/docs/guides/contribute/bug-reports)
-
-### Style guide
-
-[osrd.fr/docs/contribute/conventions](https://osrd.fr/en/docs/guides/contribute/conventions)
+https://osrd.fr/en/docs/guides/contribute/bug-reports
