@@ -68,3 +68,61 @@ img {
     }
   }
 }
+
+// __________________ Select  __________________
+.field-and-status-icon {
+  .custom-select {
+    border-radius: 0.25rem;
+    border: 0.063rem solid rgba(148, 145, 142, 1);
+    box-shadow:
+      0 0.063rem 0.063rem rgba(0, 0, 0, 0.2),
+      0 0.125 0.25rem rgba(0, 0, 0, 0.1);
+    height: 2.5rem;
+    padding: 0.438rem 2rem 0.563rem 0.813rem;
+    letter-spacing: 0;
+    text-align: left;
+    line-height: 1.5rem;
+    width: 100%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-color: #94918e;
+    background-color: #00000003;
+    color: #312e2b;
+
+    option {
+      color: #312e2b;
+    }
+
+    option:first-child {
+      color: #797671;
+    }
+
+    &.placeholder-selected {
+      color: #797671;
+    }
+
+    &:focus {
+      outline: none;
+      border: 2px solid rgba(37, 106, 250, 1);
+      background-color: #00000003;
+      border-color: #256afa;
+    }
+
+    &.read-only {
+      border: 1px solid rgba(182, 178, 175, 1);
+      box-shadow:
+        0px 0px 0px rgba(0, 0, 0, 0.2),
+        0px 1px 0px rgba(0, 0, 0, 0.1);
+      color: #797671;
+    }
+
+    &:disabled {
+      border: 1px solid rgba(211, 209, 207, 1);
+      box-shadow:
+        0px 0px 0px rgba(0, 0, 0, 0.2),
+        0px 1px 0px rgba(0, 0, 0, 0.1);
+      color: #b6b2af;
+    }
+  }
+}

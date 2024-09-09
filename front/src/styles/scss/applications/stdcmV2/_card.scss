@@ -60,25 +60,6 @@
       margin-bottom: 0;
     }
 
-    .suggestions.stdcm-v2-ch-selector {
-      label {
-        margin: 0 0 0.15rem;
-      }
-      select {
-        min-height: 2.55rem;
-        padding: 0 1rem;
-        appearance: auto;
-        background-image: none;
-        border-radius: 4px;
-        border: 0.125rem solid rgba(255, 255, 255, 0.75);
-        border: 0.0625rem solid rgba(148, 145, 142, 1);
-        box-shadow:
-          0px 0.0625rem 0.0625rem rgba(0, 0, 0, 0.2),
-          0px 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
-        background-color: rgba(0, 0, 0, 0.01);
-      }
-    }
-
     .feed-back {
       padding-left: 0rem;
       padding-right: 0.3rem;
