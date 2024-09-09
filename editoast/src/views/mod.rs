@@ -53,8 +53,8 @@ use crate::error::Result;
 use crate::error::{self};
 use crate::generated_data;
 use crate::infra_cache::operation;
-use crate::modelsv2;
-use crate::modelsv2::auth::PgAuthDriver;
+use crate::models;
+use crate::models::auth::PgAuthDriver;
 use crate::AppState;
 use crate::RedisClient;
 
@@ -88,7 +88,7 @@ editoast_common::schemas! {
 
     editoast_common::schemas(),
     editoast_schemas::schemas(),
-    modelsv2::schemas(),
+    models::schemas(),
     core::schemas(),
     documents::schemas(),
     electrical_profiles::schemas(),

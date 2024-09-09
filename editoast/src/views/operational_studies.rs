@@ -1,7 +1,7 @@
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Project;
-use crate::modelsv2::Scenario;
-use crate::modelsv2::Study;
+use crate::models::prelude::*;
+use crate::models::Project;
+use crate::models::Scenario;
+use crate::models::Study;
 
 editoast_common::schemas! {
     Ordering,

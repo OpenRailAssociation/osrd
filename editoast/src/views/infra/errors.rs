@@ -15,9 +15,9 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
-use crate::modelsv2::infra::errors::Level;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Infra;
+use crate::models::infra::errors::Level;
+use crate::models::prelude::*;
+use crate::models::Infra;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
@@ -139,7 +139,7 @@ mod tests {
     use axum::http::StatusCode;
     use rstest::rstest;
 
-    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]

@@ -34,8 +34,8 @@ use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::map;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Infra;
+use crate::models::prelude::*;
+use crate::models::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::AuthorizationError;
@@ -924,8 +924,8 @@ pub mod tests {
     use super::*;
     use crate::generated_data::infra_error::InfraError;
     use crate::generated_data::infra_error::InfraErrorType;
-    use crate::modelsv2::fixtures::create_small_infra;
-    use crate::modelsv2::infra::ObjectQueryable;
+    use crate::models::fixtures::create_small_infra;
+    use crate::models::infra::ObjectQueryable;
     use crate::views::infra::errors::query_errors;
     use crate::views::test_app::TestAppBuilder;
 

@@ -19,12 +19,12 @@ use utoipa::IntoParams;
 use super::AuthorizationError;
 use super::AuthorizerExt;
 use crate::error::Result;
-use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
-use crate::modelsv2::electrical_profiles::LightElectricalProfileSet;
-use crate::modelsv2::Create;
-use crate::modelsv2::DeleteStatic;
-use crate::modelsv2::Model;
-use crate::modelsv2::Retrieve;
+use crate::models::electrical_profiles::ElectricalProfileSet;
+use crate::models::electrical_profiles::LightElectricalProfileSet;
+use crate::models::Create;
+use crate::models::DeleteStatic;
+use crate::models::Model;
+use crate::models::Retrieve;
 
 crate::routes! {
     "/electrical_profile_set" => {
@@ -227,7 +227,7 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::modelsv2::fixtures::create_electrical_profile_set;
+    use crate::models::fixtures::create_electrical_profile_set;
     use crate::views::test_app::TestAppBuilder;
     use crate::Exists;
     use editoast_schemas::infra::ElectricalProfile;

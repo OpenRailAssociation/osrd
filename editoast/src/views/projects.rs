@@ -22,13 +22,13 @@ use super::pagination::PaginationStats;
 use super::study;
 use super::AuthorizerExt;
 use crate::error::Result;
-use crate::modelsv2::projects::Tags;
-use crate::modelsv2::Changeset;
-use crate::modelsv2::Create;
-use crate::modelsv2::Document;
-use crate::modelsv2::Model;
-use crate::modelsv2::Project;
-use crate::modelsv2::Retrieve;
+use crate::models::projects::Tags;
+use crate::models::Changeset;
+use crate::models::Create;
+use crate::models::Document;
+use crate::models::Model;
+use crate::models::Project;
+use crate::models::Retrieve;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::AuthorizationError;
 
@@ -368,8 +368,8 @@ pub mod test {
 
     use super::*;
     use crate::core::CoreClient;
-    use crate::modelsv2::fixtures::create_project;
-    use crate::modelsv2::prelude::*;
+    use crate::models::fixtures::create_project;
+    use crate::models::prelude::*;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::Roles;
 

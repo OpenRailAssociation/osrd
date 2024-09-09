@@ -11,8 +11,8 @@ use thiserror::Error;
 
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Infra;
+use crate::models::prelude::*;
+use crate::models::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
@@ -117,8 +117,8 @@ mod tests {
     use rstest::rstest;
 
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::modelsv2::prelude::*;
-    use crate::modelsv2::Infra;
+    use crate::models::prelude::*;
+    use crate::models::Infra;
     use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::TrackSection;

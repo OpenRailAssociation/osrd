@@ -19,13 +19,13 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::scenario::Scenario;
-use crate::modelsv2::timetable::Timetable;
-use crate::modelsv2::Infra;
-use crate::modelsv2::Project;
-use crate::modelsv2::Study;
-use crate::modelsv2::Tags;
+use crate::models::prelude::*;
+use crate::models::scenario::Scenario;
+use crate::models::timetable::Timetable;
+use crate::models::Infra;
+use crate::models::Project;
+use crate::models::Study;
+use crate::models::Tags;
 use crate::views::operational_studies::OperationalStudiesOrderingParam;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
@@ -329,7 +329,7 @@ struct ScenarioPatchForm {
     pub electrical_profile_set_id: Option<Option<i64>>,
 }
 
-impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset {
+impl From<ScenarioPatchForm> for <Scenario as crate::models::Model>::Changeset {
     fn from(scenario: ScenarioPatchForm) -> Self {
         Scenario::changeset()
             .flat_name(scenario.name)
@@ -528,11 +528,11 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::modelsv2::fixtures::create_empty_infra;
-    use crate::modelsv2::fixtures::create_project;
-    use crate::modelsv2::fixtures::create_scenario_fixtures_set;
-    use crate::modelsv2::fixtures::create_study;
-    use crate::modelsv2::fixtures::create_timetable;
+    use crate::models::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_project;
+    use crate::models::fixtures::create_scenario_fixtures_set;
+    use crate::models::fixtures::create_study;
+    use crate::models::fixtures::create_timetable;
     use crate::views::test_app::TestAppBuilder;
 
     pub fn scenario_url(project_id: i64, study_id: i64, scenario_id: Option<i64>) -> String {

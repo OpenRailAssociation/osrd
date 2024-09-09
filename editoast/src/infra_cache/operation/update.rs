@@ -21,7 +21,7 @@ use serde_json::Value;
 
 use super::OperationError;
 use crate::error::Result;
-use crate::modelsv2::get_table;
+use crate::models::get_table;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -137,8 +137,8 @@ mod tests {
     use super::UpdateOperation;
     use crate::error::EditoastError;
     use crate::infra_cache::operation::OperationError;
-    use crate::modelsv2::fixtures::create_empty_infra;
-    use crate::modelsv2::fixtures::create_infra_object;
+    use crate::models::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_infra_object;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::primitives::OSRDIdentified;

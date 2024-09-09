@@ -7,12 +7,12 @@ mod error;
 mod generated_data;
 mod infra_cache;
 mod map;
-mod modelsv2;
+mod models;
 mod redis_utils;
 mod views;
 
 use crate::core::CoreClient;
-use crate::modelsv2::Infra;
+use crate::models::Infra;
 use crate::views::OpenApiRoot;
 use axum::extract::FromRef;
 use axum::{Router, ServiceExt};
@@ -32,11 +32,11 @@ use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use generated_data::speed_limit_tags_config::SpeedLimitTagIds;
-use modelsv2::{
+use models::{
     timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
     train_schedule::TrainScheduleChangeset,
 };
-use modelsv2::{Changeset, RollingStockModel};
+use models::{Changeset, RollingStockModel};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use tower::Layer as _;
 use tower_http::cors::{Any, CorsLayer};
@@ -53,8 +53,8 @@ use editoast_schemas::infra::RailJson;
 use editoast_search::{SearchConfig, SearchConfigStore};
 use infra_cache::InfraCache;
 use map::MapLayers;
-use modelsv2::electrical_profiles::ElectricalProfileSet;
-use modelsv2::prelude::*;
+use models::electrical_profiles::ElectricalProfileSet;
+use models::prelude::*;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig as _;
 use opentelemetry_sdk::Resource;
@@ -895,11 +895,11 @@ impl CliError {
 mod tests {
     use super::*;
 
-    use crate::modelsv2::fixtures::create_electrical_profile_set;
-    use crate::modelsv2::RollingStockModel;
+    use crate::models::fixtures::create_electrical_profile_set;
+    use crate::models::RollingStockModel;
 
     use editoast_models::DbConnectionPoolV2;
-    use modelsv2::DeleteStatic;
+    use models::DeleteStatic;
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
     use rstest::rstest;
@@ -996,7 +996,7 @@ mod tests {
             result.is_ok(),
             "import should succeed, as raise_panto and startup are not required for non electric",
         );
-        use crate::modelsv2::Retrieve;
+        use crate::models::Retrieve;
         let created_rs =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                 .await
@@ -1023,7 +1023,7 @@ mod tests {
 
         // THEN
         assert!(result.is_ok(), "import should succeed");
-        use crate::modelsv2::Retrieve;
+        use crate::models::Retrieve;
         let created_rs =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                 .await
@@ -1060,7 +1060,7 @@ mod tests {
             result.is_err(),
             "import should fail, as raise_panto and startup are required for electric"
         );
-        use crate::modelsv2::Retrieve;
+        use crate::models::Retrieve;
         let created_rs =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                 .await
@@ -1085,7 +1085,7 @@ mod tests {
 
         // THEN
         assert!(result.is_ok(), "import should succeed");
-        use crate::modelsv2::Retrieve;
+        use crate::models::Retrieve;
         let created_rs =
             RollingStockModel::retrieve(&mut db_pool.get_ok(), rolling_stock_name.to_string())
                 .await

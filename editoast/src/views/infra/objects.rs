@@ -14,8 +14,8 @@ use thiserror::Error;
 use super::InfraApiError;
 use super::InfraIdParam;
 use crate::error::Result;
-use crate::modelsv2::infra::ObjectQueryable;
-use crate::modelsv2::Infra;
+use crate::models::infra::ObjectQueryable;
+use crate::models::Infra;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::Retrieve;
@@ -123,7 +123,7 @@ mod tests {
     use serde_json::Value as JsonValue;
 
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_empty_infra;
     use crate::views::infra::objects::ObjectQueryable;
     use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::Switch;

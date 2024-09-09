@@ -38,10 +38,10 @@ use crate::core::simulation::ZoneUpdate;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
-use crate::modelsv2::infra::Infra;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::train_schedule::TrainSchedule;
-use crate::modelsv2::train_schedule::TrainScheduleChangeset;
+use crate::models::infra::Infra;
+use crate::models::prelude::*;
+use crate::models::train_schedule::TrainSchedule;
+use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::path::PathfindingError;
@@ -262,7 +262,7 @@ async fn delete(
 
     let db_pool = app_state.db_pool_v2.clone();
 
-    use crate::modelsv2::DeleteBatch;
+    use crate::models::DeleteBatch;
     let conn = &mut db_pool.get().await?;
     TrainSchedule::delete_batch_or_fail(conn, train_ids, |number| {
         TrainScheduleError::BatchTrainScheduleNotFound { number }
@@ -810,11 +810,11 @@ mod tests {
 
     use super::*;
     use crate::core::mocking::MockingClient;
-    use crate::modelsv2::fixtures::create_fast_rolling_stock;
-    use crate::modelsv2::fixtures::create_simple_train_schedule;
-    use crate::modelsv2::fixtures::create_small_infra;
-    use crate::modelsv2::fixtures::create_timetable;
-    use crate::modelsv2::fixtures::simple_train_schedule_base;
+    use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::models::fixtures::create_simple_train_schedule;
+    use crate::models::fixtures::create_small_infra;
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::simple_train_schedule_base;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 

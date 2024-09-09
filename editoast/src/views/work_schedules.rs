@@ -15,10 +15,10 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::work_schedules::WorkSchedule;
-use crate::modelsv2::work_schedules::WorkScheduleGroup;
-use crate::modelsv2::work_schedules::WorkScheduleType;
+use crate::models::prelude::*;
+use crate::models::work_schedules::WorkSchedule;
+use crate::models::work_schedules::WorkScheduleGroup;
+use crate::models::work_schedules::WorkScheduleType;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;

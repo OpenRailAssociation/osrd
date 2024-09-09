@@ -16,8 +16,8 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Infra;
+use crate::models::prelude::*;
+use crate::models::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
@@ -298,8 +298,8 @@ mod tests {
     use std::collections::HashSet;
 
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::modelsv2::fixtures::create_empty_infra;
-    use crate::modelsv2::fixtures::create_small_infra;
+    use crate::models::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_small_infra;
     use crate::views::infra::routes::RoutesFromNodesPositions;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
