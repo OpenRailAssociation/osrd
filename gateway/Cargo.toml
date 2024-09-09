@@ -45,7 +45,7 @@ actix = "0.13"
 actix-web-actors = "4.3"
 awc = { version = "3", features = ["rustls"] } # the http / ws client
 bytestring = "1"
-ipnet = "2.9"
+ipnet = "2.10"
 percent-encoding = "2.3"
 phf = "0.11"
 
