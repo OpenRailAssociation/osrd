@@ -26,12 +26,12 @@ use crate::core::conflict_detection::TrainRequirements;
 use crate::core::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::timetable::Timetable;
-use crate::modelsv2::timetable::TimetableWithTrains;
-use crate::modelsv2::train_schedule::TrainSchedule;
-use crate::modelsv2::train_schedule::TrainScheduleChangeset;
-use crate::modelsv2::Infra;
+use crate::models::prelude::*;
+use crate::models::timetable::Timetable;
+use crate::models::timetable::TimetableWithTrains;
+use crate::models::train_schedule::TrainSchedule;
+use crate::models::train_schedule::TrainScheduleChangeset;
+use crate::models::Infra;
 use crate::views::train_schedule::train_simulation_batch;
 use crate::views::train_schedule::TrainScheduleForm;
 use crate::views::train_schedule::TrainScheduleResult;
@@ -355,7 +355,7 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::modelsv2::fixtures::create_timetable;
+    use crate::models::fixtures::create_timetable;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]

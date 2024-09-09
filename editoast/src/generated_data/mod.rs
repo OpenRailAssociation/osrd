@@ -169,7 +169,7 @@ pub mod tests {
     use crate::generated_data::clear_all;
     use crate::generated_data::refresh_all;
     use crate::generated_data::update_all;
-    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_empty_infra;
     use editoast_models::DbConnectionPoolV2;
 
     #[rstest]

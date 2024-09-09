@@ -1,6 +1,6 @@
 use crate::core::pathfinding::PathfindingResult;
 use crate::error::Result;
-use crate::modelsv2::TrackSectionModel;
+use crate::models::TrackSectionModel;
 use crate::RetrieveBatchUnchecked;
 use editoast_schemas::infra::TrackOffset;
 use std::collections::HashMap;
@@ -9,7 +9,7 @@ use std::collections::HashSet;
 use editoast_models::DbConnection;
 use editoast_schemas::train_schedule::PathItemLocation;
 
-use crate::modelsv2::OperationalPointModel;
+use crate::models::OperationalPointModel;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 

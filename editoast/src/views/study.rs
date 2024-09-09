@@ -24,10 +24,10 @@ use super::AuthorizationError;
 use super::AuthorizerExt;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Project;
-use crate::modelsv2::Study;
-use crate::modelsv2::Tags;
+use crate::models::prelude::*;
+use crate::models::Project;
+use crate::models::Study;
+use crate::models::Tags;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::projects::ProjectError;
@@ -250,7 +250,7 @@ async fn get(
     }
     // Check if project exists
     let conn = &mut db_pool.get().await?;
-    use crate::modelsv2::Retrieve;
+    use crate::models::Retrieve;
     let project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
             .await?;
@@ -448,9 +448,9 @@ pub mod test {
     use serde_json::json;
 
     use super::*;
-    use crate::modelsv2::fixtures::create_project;
-    use crate::modelsv2::fixtures::create_study;
-    use crate::modelsv2::Study;
+    use crate::models::fixtures::create_project;
+    use crate::models::fixtures::create_study;
+    use crate::models::Study;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]

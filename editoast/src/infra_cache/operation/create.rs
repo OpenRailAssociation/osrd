@@ -11,7 +11,7 @@ use std::ops::DerefMut;
 
 use super::OperationError;
 use crate::error::Result;
-use crate::modelsv2::get_table;
+use crate::models::get_table;
 
 pub async fn apply_create_operation<'r>(
     infra_object: &'r InfraObject,
@@ -54,7 +54,7 @@ pub mod tests {
                 #[rstest::rstest]
                 async fn [<test_create_ $obj:snake>]() {
                     let db_pool = editoast_models::DbConnectionPoolV2::for_tests();
-                    let infra = crate::modelsv2::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                    let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
                     let infra_object = editoast_schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),
                     };

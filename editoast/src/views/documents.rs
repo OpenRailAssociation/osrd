@@ -13,7 +13,7 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::modelsv2::*;
+use crate::models::*;
 use editoast_models::DbConnectionPoolV2;
 
 use super::AuthorizationError;

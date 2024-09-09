@@ -10,8 +10,8 @@ use thiserror::Error;
 
 use crate::core::pathfinding::TrackRange;
 use crate::error::Result;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Infra;
+use crate::models::prelude::*;
+use crate::models::Infra;
 use editoast_models::DbConnection;
 
 crate::routes! {

@@ -33,13 +33,13 @@ use validator::Validate;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::rolling_stock_model::ScenarioReference;
-use crate::modelsv2::rolling_stock_model::TrainScheduleScenarioStudyProject;
-use crate::modelsv2::Document;
-use crate::modelsv2::RollingStockModel;
-use crate::modelsv2::RollingStockSeparatedImageModel;
+use crate::models::prelude::*;
+use crate::models::rolling_stock_livery::RollingStockLiveryModel;
+use crate::models::rolling_stock_model::ScenarioReference;
+use crate::models::rolling_stock_model::TrainScheduleScenarioStudyProject;
+use crate::models::Document;
+use crate::models::RollingStockModel;
+use crate::models::RollingStockSeparatedImageModel;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 
@@ -608,7 +608,7 @@ async fn create_livery(
         let mut w = Cursor::new(Vec::new());
         image.write_to(&mut w, ImageFormat::Png).unwrap();
 
-        use crate::modelsv2::Create;
+        use crate::models::Create;
         let image = Document::changeset()
             .content_type(String::from("image/png"))
             .data(w.into_inner())
@@ -772,20 +772,20 @@ pub mod tests {
 
     use super::*;
     use crate::error::InternalError;
-    use crate::modelsv2::fixtures::create_fast_rolling_stock;
-    use crate::modelsv2::fixtures::create_project;
-    use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
-    use crate::modelsv2::fixtures::create_scenario;
-    use crate::modelsv2::fixtures::create_small_infra;
-    use crate::modelsv2::fixtures::create_study;
-    use crate::modelsv2::fixtures::create_timetable;
-    use crate::modelsv2::fixtures::fast_rolling_stock_changeset;
-    use crate::modelsv2::fixtures::fast_rolling_stock_form;
-    use crate::modelsv2::fixtures::get_rolling_stock_with_invalid_effort_curves;
-    use crate::modelsv2::fixtures::rolling_stock_with_energy_sources_form;
-    use crate::modelsv2::fixtures::simple_train_schedule_form;
-    use crate::modelsv2::rolling_stock_model::RollingStockModel;
-    use crate::modelsv2::train_schedule::TrainSchedule;
+    use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::models::fixtures::create_project;
+    use crate::models::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::models::fixtures::create_scenario;
+    use crate::models::fixtures::create_small_infra;
+    use crate::models::fixtures::create_study;
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::fast_rolling_stock_changeset;
+    use crate::models::fixtures::fast_rolling_stock_form;
+    use crate::models::fixtures::get_rolling_stock_with_invalid_effort_curves;
+    use crate::models::fixtures::rolling_stock_with_energy_sources_form;
+    use crate::models::fixtures::simple_train_schedule_form;
+    use crate::models::rolling_stock_model::RollingStockModel;
+    use crate::models::train_schedule::TrainSchedule;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 

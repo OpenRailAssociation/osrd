@@ -270,7 +270,7 @@ mod tests {
     use serde_json::json;
 
     use super::PathProperties;
-    use crate::modelsv2::fixtures::create_small_infra;
+    use crate::models::fixtures::create_small_infra;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]

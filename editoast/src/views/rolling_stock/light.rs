@@ -25,9 +25,9 @@ use super::RollingStockIdParam;
 use super::RollingStockKey;
 use super::RollingStockNameParam;
 use crate::error::Result;
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::Retrieve;
-use crate::modelsv2::RollingStockModel;
+use crate::models::rolling_stock_livery::RollingStockLiveryModel;
+use crate::models::Retrieve;
+use crate::models::RollingStockModel;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
@@ -333,8 +333,8 @@ mod tests {
 
     use super::{LightRollingStockWithLiveries, LightRollingStockWithLiveriesCountList};
     use crate::error::InternalError;
-    use crate::modelsv2::fixtures::create_fast_rolling_stock;
-    use crate::modelsv2::fixtures::create_rolling_stock_livery_fixture;
+    use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::models::fixtures::create_rolling_stock_livery_fixture;
     use crate::views::test_app::TestAppBuilder;
 
     fn is_sorted(data: &[i64]) -> bool {

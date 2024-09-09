@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 mod error;
-mod modelv2;
+mod model;
 mod search;
 
 use proc_macro::TokenStream;
@@ -139,14 +139,14 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
         .into()
 }
 
-/// # `ModelV2` derive macro
+/// # `Model` derive macro
 ///
 /// This derive macro provides implementations for common database operations traits.
 ///
 /// ## Usage
 ///
 /// ```ignore
-/// #[derive(Debug, Default, Clone, ModelV2)]
+/// #[derive(Debug, Default, Clone, Model)]
 /// #[model(table = editoast_models::tables::osrd_infra_document)]
 /// pub struct Document {
 ///     pub id: i64,
@@ -199,7 +199,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * `#[model(preferred = PREFERRED)]`: just like `#[model(preferred)]` for fields, but at the struct level.
 ///     Compound identifier syntax is supported. This option can be specified only once, including at field level.
 ///     It is NOT NECESSARY to also specify `#[model(identifier = PREFERRED)]`.
-/// * `#[model(batch_chunk_size_limit = usize)]` (default: [modelv2::DEFAULT_BATCH_CHUNK_SIZE_LIMIT]): there seem to be a bug from either diesel or libpq that causes
+/// * `#[model(batch_chunk_size_limit = usize)]` (default: [model::DEFAULT_BATCH_CHUNK_SIZE_LIMIT]): there seem to be a bug from either diesel or libpq that causes
 ///     a stack overflow for large batch chunk sizes. Until a better solution is found, this option allows to limit the
 ///     size of each chunk on a per-model basis. Increasing this value could lead to stack overflows, decreasing it
 ///     might degrade the performance of batch operations.
@@ -230,10 +230,10 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * There can only be one `preferred` field
 /// * If no `preferred` field is provided, the `primary` field will be used
 /// * There can be as many `identifier` fields as you want (as long as it makes sense ofc)
-#[proc_macro_derive(ModelV2, attributes(model))]
-pub fn model_v2(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+#[proc_macro_derive(Model, attributes(model))]
+pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    modelv2::model(&input)
+    model::model(&input)
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }

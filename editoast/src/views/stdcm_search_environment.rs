@@ -15,8 +15,8 @@ use utoipa::ToSchema;
 use serde::Serialize;
 
 use crate::error::Result;
-use crate::modelsv2::stdcm_search_environment::StdcmSearchEnvironment;
-use crate::modelsv2::Changeset;
+use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
+use crate::models::Changeset;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;
@@ -162,7 +162,7 @@ pub mod test {
     use rstest::rstest;
 
     use super::*;
-    use crate::modelsv2::stdcm_search_environment::test::stdcm_search_env_fixtures;
+    use crate::models::stdcm_search_environment::test::stdcm_search_env_fixtures;
     use crate::views::test_app::TestAppBuilder;
     use crate::{Create, Retrieve};
 

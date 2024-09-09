@@ -11,7 +11,7 @@ use std::ops::DerefMut;
 
 use super::OperationError;
 use crate::error::Result;
-use crate::modelsv2::get_table;
+use crate::models::get_table;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -94,7 +94,7 @@ mod tests {
                     use std::ops::DerefMut;
 
                     let db_pool = DbConnectionPoolV2::for_tests();
-                    let infra = crate::modelsv2::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                    let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
 
                     let railjson_object = editoast_schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),
