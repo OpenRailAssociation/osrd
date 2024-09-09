@@ -2,3 +2,7 @@
 *.backup
 __pycache__
 .vscode
+
+# Direnv
+.envrc
+.direnv
