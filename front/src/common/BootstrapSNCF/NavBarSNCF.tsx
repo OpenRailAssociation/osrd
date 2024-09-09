@@ -1,6 +1,6 @@
 import { type ReactElement } from 'react';
 
-import { Gear, Info, ShieldCheck, SignOut } from '@osrd-project/ui-icons';
+import { Gear, Info, Report, ShieldCheck, SignOut } from '@osrd-project/ui-icons';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
+import HelpModal from 'common/HelpModal/HelpModal';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import UserSettings from 'common/UserSettings';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
@@ -77,6 +78,17 @@ const LegacyNavBarSNCF = ({ appName, logo = getLogo() }: Props) => {
                   <Info />
                 </span>
                 {t('about')}
+              </button>,
+              <button
+                type="button"
+                className="btn-link text-reset"
+                onClick={() => openModal(<HelpModal />, 'lg')}
+                key="help"
+              >
+                <span className="mr-2">
+                  <Report />
+                </span>
+                {t('help')}
               </button>,
               <button
                 type="button"
