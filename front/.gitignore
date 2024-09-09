@@ -34,6 +34,9 @@ yarn-error.log*
 /playwright-report/
 /playwright/.cache/
 
+# eslint cache
+.eslintcache
+
 # .env is built from .env.local and .env.local.defaults
 /.env
 # .env.local is up to the developer
