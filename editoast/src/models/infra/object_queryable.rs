@@ -51,7 +51,7 @@ impl Infra {
             )
         } else {
             format!("
-            SELECT
+            SELECT DISTINCT ON (object_table.obj_id)
                 object_table.obj_id as obj_id,
                 object_table.data as railjson,
                 ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic
