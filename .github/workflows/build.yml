@@ -936,16 +936,27 @@ jobs:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
-
-      - name: Run Playwright tests
+    
+      - name: Run Playwright tests with Allure
         run: |
-            docker run --init --name=playwright-test --net=host \
-              -e CI=true \
-              -v $PWD/front/test-results:/app/test-results \
-              ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
-              /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests"
+              docker run --init --name=playwright-test --net=host \
+                -e CI=true \
+                -v $PWD/front/test-results:/app/test-results \
+                -v $PWD/allure-results:/app/allure-results \
+                ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+                /bin/sh -c "
+                npx playwright install --with-deps && yarn add --dev allure-commandline && yarn add --dev @playwright/test allure-playwright &&  yarn e2e-tests && yarn allure generate /app/allure-results --clean -o /app/allure-report"
 
-            exit $(docker wait playwright-test)
+              exit $(docker wait playwright-test)
+        env:
+          ALLURE_RESULTS_DIR: /app/allure-results
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+              name: allure-report
+              path: front/test-results/allure-report/
+              retention-days: 30
 
       - uses: actions/upload-artifact@v4
         if: always()
