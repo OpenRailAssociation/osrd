@@ -67,7 +67,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
     if (map.mapSearchMarker) {
       dispatch(updateMapSearchMarker(undefined));
     }
-    await getTrackPath({ infraId: infraID as number, lineCode: searchResultItem.line_code })
+    await getTrackPath({ infraId: infraID!, lineCode: searchResultItem.line_code })
       .unwrap()
       .then((trackPath) => {
         const boundaries = bbox({

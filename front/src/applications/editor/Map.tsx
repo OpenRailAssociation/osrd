@@ -174,13 +174,13 @@ const MapUnplugged = ({
                 feature.properties.id !== toolState.hovered?.id
               ) {
                 partialToolState.hovered = {
-                  id: feature.properties?.id as string,
+                  id: feature.properties.id,
                   type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
                   renderedEntity: feature,
                 };
               } else if (feature.sourceLayer === 'errors') {
                 partialToolState.hovered = {
-                  id: feature.properties?.obj_id as string,
+                  id: feature.properties.obj_id,
                   type: feature.properties?.obj_type,
                   renderedEntity: feature,
                   error: feature.properties as InfraError,
@@ -255,23 +255,20 @@ const MapUnplugged = ({
               : e;
             if (toolState.hovered && activeTool.onClickEntity) {
               if (toolState.hovered.type) {
-                getEntity(
-                  infraID as number,
-                  toolState.hovered.id,
-                  toolState.hovered.type,
-                  dispatch
-                ).then((entity) => {
-                  if (activeTool.onClickEntity) {
-                    // Those features lack a proper "geometry", and have a "_geometry"
-                    // instead. This fixes it:
-                    entity = {
-                      ...entity,
-                      // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
-                      geometry: entity.geometry || (entity as any)._geometry,
-                    };
-                    activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+                getEntity(infraID!, toolState.hovered.id, toolState.hovered.type, dispatch).then(
+                  (entity) => {
+                    if (activeTool.onClickEntity) {
+                      // Those features lack a proper "geometry", and have a "_geometry"
+                      // instead. This fixes it:
+                      entity = {
+                        ...entity,
+                        // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+                        geometry: entity.geometry || (entity as any)._geometry,
+                      };
+                      activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+                    }
                   }
-                });
+                );
               }
             }
             if (activeTool.onClickMap) {

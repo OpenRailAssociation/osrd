@@ -328,10 +328,10 @@ const EntitySumUp = ({ entity, id, objType, classes, status, error }: EntitySumU
       setState({ type: 'loading' });
 
       if (!entity) {
-        entity = await getEntity(infraID as number, id, objType as EditoastType, dispatch);
+        entity = await getEntity(infraID!, id, objType as EditoastType, dispatch);
       }
 
-      const additionalEntities = await getAdditionalEntities(infraID as number, entity, dispatch);
+      const additionalEntities = await getAdditionalEntities(infraID!, entity, dispatch);
       setState({
         type: 'ready',
         entity,

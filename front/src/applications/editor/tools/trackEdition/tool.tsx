@@ -350,7 +350,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       } else if (point && typeof editionState.hoveredPointIndex !== 'number') {
         newState.editionState = {
           ...editionState,
-          hoveredPointIndex: point.feature.properties?.index as number,
+          hoveredPointIndex: point.feature.properties.index,
         };
       }
     }

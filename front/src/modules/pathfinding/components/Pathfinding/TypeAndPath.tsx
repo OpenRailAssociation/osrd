@@ -253,7 +253,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath }: TypeAndPathProps) => {
               className="form-control form-control-sm text-zone"
               type="text"
               value={inputText}
-              onChange={(e) => handleInput(e.target.value, e.target.selectionStart as number)}
+              onChange={(e) => handleInput(e.target.value, e.target.selectionStart!)}
               placeholder={tManageTrainSchedule('inputOPTrigramsExample')}
               autoFocus
               data-testid="type-and-path-input"

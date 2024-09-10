@@ -91,7 +91,7 @@ const checkCurrentConfig = (
     );
   }
 
-  if (isInvalidFloatNumber(initialSpeed as number, 1)) {
+  if (isInvalidFloatNumber(initialSpeed!, 1)) {
     error = true;
     dispatch(
       setFailure({
@@ -135,9 +135,9 @@ const checkCurrentConfig = (
   if (error) return null;
   return {
     constraintDistribution,
-    rollingStockName: rollingStockName as string,
+    rollingStockName: rollingStockName!,
     baseTrainName: trainName,
-    timetableId: timetableID as number,
+    timetableId: timetableID!,
     trainCount,
     trainStep,
     trainDelta,

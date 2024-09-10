@@ -16,7 +16,7 @@ export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
     objType: 'Switch',
     properties: {
       ports: {},
-      switch_type: type.id as string,
+      switch_type: type.id,
       id: NEW_ENTITY_ID,
     },
   };
@@ -76,7 +76,7 @@ export function flatSwitchToSwitch(
     properties: {
       ...omitBy(flatSwitch.properties, (_, key) => key.indexOf(FLAT_SWITCH_PORTS_PREFIX) === 0),
       id: flatSwitch.properties.id,
-      switch_type: switchType.id as string,
+      switch_type: switchType.id,
       ports: {
         ...switchType.ports.reduce(
           (iter, port) => ({

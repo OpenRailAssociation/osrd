@@ -224,12 +224,12 @@ const SelectionTool: Tool<SelectionState> = {
 
           setState({ isLoading: true });
           getMixedEntities(
-            infraID as number,
+            infraID!,
             selection.flatMap((entity) =>
               entity.properties?.id
                 ? [
                     {
-                      id: entity.properties.id as string,
+                      id: entity.properties.id,
                       type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as Layer],
                     },
                   ]
@@ -269,8 +269,8 @@ const SelectionTool: Tool<SelectionState> = {
           const selection = selectInZone(
             map
               .queryRenderedFeatures([
-                map.project([min(lngs) as number, min(lats) as number]),
-                map.project([max(lngs) as number, max(lats) as number]),
+                map.project([min(lngs)!, min(lats)!]),
+                map.project([max(lngs)!, max(lats)!]),
               ] as [PointLike, PointLike])
               .filter((f) => !f.layer.id.startsWith('osm')),
             {
@@ -281,12 +281,12 @@ const SelectionTool: Tool<SelectionState> = {
 
           setState({ isLoading: true });
           getMixedEntities(
-            infraID as number,
+            infraID!,
             selection.flatMap((entity) =>
               entity.properties?.id
                 ? [
                     {
-                      id: entity.properties.id as string,
+                      id: entity.properties.id,
                       type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as Layer],
                     },
                   ]

@@ -19,7 +19,7 @@ const InfraErrorCorrectorModal = () => {
 
   const { data: infraAutoFixes, isLoading } =
     osrdEditoastApi.endpoints.getInfraByInfraIdAutoFixes.useQuery(
-      { infraId: infraId as number },
+      { infraId: infraId! },
       { skip: !infraId }
     );
 

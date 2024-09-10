@@ -96,7 +96,7 @@ const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => 
     ) {
       if (wayPoint && wayPoint.id !== NEW_ENTITY_ID) {
         setEntityState({ type: 'loading' });
-        getEntity<WayPointEntity>(infraID as number, wayPoint.id, wayPoint.type, dispatch)
+        getEntity<WayPointEntity>(infraID!, wayPoint.id, wayPoint.type, dispatch)
           .then((entity) => {
             setEntityState({ type: 'data', entity });
             // we call the onchange here to populate the state `extremitiesEntities`

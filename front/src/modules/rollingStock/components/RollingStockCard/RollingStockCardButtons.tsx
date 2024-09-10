@@ -28,7 +28,7 @@ const RollingStockCardButtons = ({
 
   const { getRollingStockComfort } = useOsrdConfSelectors();
   const currentComfortInStore = useSelector(getRollingStockComfort);
-  const [comfort, setComfort] = useState(currentComfortInStore as string);
+  const [comfort, setComfort] = useState<string>(currentComfortInStore);
 
   const { updateRollingStockComfort, updateRollingStockID } = useOsrdConfActions();
 

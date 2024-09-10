@@ -90,14 +90,11 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
 
   useEffect(() => {
     if (typeof formData?.track === 'string') {
-      getEntity<TrackSectionEntity>(
-        infraID as number,
-        formData.track,
-        'TrackSection',
-        dispatch
-      ).then((track) => {
-        setTrackSection(track);
-      });
+      getEntity<TrackSectionEntity>(infraID!, formData.track, 'TrackSection', dispatch).then(
+        (track) => {
+          setTrackSection(track);
+        }
+      );
     } else {
       setTrackSection(null);
     }

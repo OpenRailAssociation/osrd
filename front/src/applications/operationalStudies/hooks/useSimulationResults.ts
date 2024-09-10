@@ -18,15 +18,15 @@ const useSimulationResults = (): SimulationResultsData => {
 
   const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
     {
-      id: selectedTrainId as number,
+      id: selectedTrainId!,
     },
     { skip: !selectedTrainId }
   );
 
   const { data: rawPath } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
     {
-      id: selectedTrainId as number,
-      infraId: infraId as number,
+      id: selectedTrainId!,
+      infraId: infraId!,
     },
     { skip: !selectedTrainId || !infraId }
   );
@@ -34,7 +34,7 @@ const useSimulationResults = (): SimulationResultsData => {
 
   const { data: trainSimulation } =
     osrdEditoastApi.endpoints.getTrainScheduleByIdSimulation.useQuery(
-      { id: selectedTrainId as number, infraId: infraId as number, electricalProfileSetId },
+      { id: selectedTrainId!, infraId: infraId!, electricalProfileSetId },
       { skip: !selectedTrainId || !infraId }
     );
 

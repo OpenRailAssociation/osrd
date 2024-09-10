@@ -10,7 +10,7 @@ export const useStoreDataForRollingStockSelector = () => {
 
   const { data: rollingStock } = osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
     {
-      rollingStockId: rollingStockId as number,
+      rollingStockId: rollingStockId!,
     },
     {
       skip: !rollingStockId,

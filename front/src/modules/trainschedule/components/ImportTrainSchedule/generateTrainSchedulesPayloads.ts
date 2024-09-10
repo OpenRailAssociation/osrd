@@ -20,10 +20,10 @@ export function generateTrainSchedulesPayloads(
             train.departureTime,
             step.arrivalTime
           );
-          const schedulePoint = {
+          const schedulePoint: NonNullable<TrainScheduleBase['schedule']>[number] = {
             at: stepId,
             arrival: formatDurationAsISO8601(timeDifferenceInSeconds),
-            stop_for: null as string | null,
+            stop_for: null,
           };
           if (step.duration || index === train.steps.length - 1) {
             schedulePoint.stop_for = `PT${step.duration || 0}S`;

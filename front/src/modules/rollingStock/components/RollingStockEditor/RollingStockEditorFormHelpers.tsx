@@ -228,8 +228,8 @@ const RollingStockEditorParameterFormColumn = ({
             isInvalid={
               property.type === 'number' &&
               (Number.isNaN(rollingStockValues[property.title]) ||
-                (rollingStockValues[property.title] as number) < (property.min as number) ||
-                (rollingStockValues[property.title] as number) > (property.max as number))
+                (rollingStockValues[property.title] as number) < property.min! ||
+                (rollingStockValues[property.title] as number) > property.max!)
             }
             errorMsg={
               property.max

@@ -123,7 +123,7 @@ export default function TrainSettings() {
           noMargin
           unit="km/h"
           textRight
-          isInvalid={isInvalidFloatNumber(initialSpeed as number, 1)}
+          isInvalid={isInvalidFloatNumber(initialSpeed!, 1)}
           errorMsg={t('errorMessages.invalidInitialSpeed')}
         />
       </div>

@@ -34,22 +34,22 @@ const ScenarioExplorer = ({
 
   const { updateInfraID, updateTimetableID, updateScenarioID } = useOsrdConfActions();
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
-    { projectId: globalProjectId as number },
+    { projectId: globalProjectId! },
     { skip: !globalProjectId }
   );
 
   const { data: studyDetails } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
-      { projectId: globalProjectId as number, studyId: globalStudyId as number },
+      { projectId: globalProjectId!, studyId: globalStudyId! },
       { skip: !globalProjectId && !globalStudyId }
     );
 
   const { currentData: scenario, isSuccess: isScenarioSuccess } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
       {
-        projectId: globalProjectId as number,
-        studyId: globalStudyId as number,
-        scenarioId: globalScenarioId as number,
+        projectId: globalProjectId!,
+        studyId: globalStudyId!,
+        scenarioId: globalScenarioId!,
       },
       {
         skip: !globalProjectId || !globalStudyId || !globalScenarioId,
@@ -58,7 +58,7 @@ const ScenarioExplorer = ({
     );
 
   const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
-    { id: timetableID as number },
+    { id: timetableID! },
     { skip: !timetableID }
   );
 

@@ -421,7 +421,7 @@ export const FormComponent = (props: FieldProps) => {
   // Get the distance of the geometry
   const distance = useMemo(() => {
     if (!isNil(formContext.length)) {
-      return formContext.length as number;
+      return formContext.length!;
     }
     if (formContext.geometry?.type === 'LineString') {
       return getLineStringDistance(formContext.geometry);
