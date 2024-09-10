@@ -32,12 +32,13 @@ const useSpeedSpaceChart = (
   const [formattedPowerRestrictions, setFormattedPowerRestrictions] =
     useState<LayerData<PowerRestrictionValues>[]>();
 
+  const rollingStockName = trainScheduleResult?.rolling_stock_name;
   const { data: rollingStock } =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
       {
-        rollingStockName: trainScheduleResult?.rolling_stock_name as string,
+        rollingStockName: rollingStockName!,
       },
-      { skip: !trainScheduleResult }
+      { skip: !rollingStockName }
     );
 
   const pathProperties = usePathProperties(infraId, pathfindingResult, [

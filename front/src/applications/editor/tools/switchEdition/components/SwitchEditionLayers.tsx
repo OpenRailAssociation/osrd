@@ -72,7 +72,7 @@ const SwitchEditionLayers = () => {
       (trackStatus.type === 'loaded' && trackStatus.trackSection.properties.id !== hoveredTrackId)
     ) {
       setTrackStatus({ type: 'loading', trackSectionID: hoveredTrackId });
-      getEntity<TrackSectionEntity>(infraID as number, hoveredTrackId, 'TrackSection', dispatch)
+      getEntity<TrackSectionEntity>(infraID!, hoveredTrackId, 'TrackSection', dispatch)
         .then((trackSection) => {
           setTrackStatus({ type: 'loaded', trackSection });
         })
@@ -134,7 +134,7 @@ const SwitchEditionLayers = () => {
       setGeometryState({ type: 'ready' });
     } else {
       setGeometryState({ type: 'loading' });
-      getEntity<TrackSectionEntity>(infraID as number, port.track, 'TrackSection', dispatch).then(
+      getEntity<TrackSectionEntity>(infraID!, port.track, 'TrackSection', dispatch).then(
         (track) => {
           if (!track || !track.geometry.coordinates.length) setGeometryState({ type: 'ready' });
 

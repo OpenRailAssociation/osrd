@@ -75,9 +75,7 @@ const SelectionLayers = () => {
             objType={state.hovered.type}
             error={state.hovered.error}
             status={
-              state.selection.find(
-                (item) => item.properties.id === (state.hovered?.id as string)
-              ) && 'selected'
+              state.selection.find((item) => item.properties.id === state.hovered?.id) && 'selected'
             }
           />
         </Popup>

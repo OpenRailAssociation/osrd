@@ -69,7 +69,7 @@ const StdcmConfig = ({
   const { t } = useTranslation(['translation', 'stdcm', 'simulation']);
 
   const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
-    { infraId: infraID as number },
+    { infraId: infraID! },
     {
       skip: !infraID,
       pollingInterval: !isInfraLoaded ? 1000 : undefined,

@@ -25,7 +25,7 @@ const RollingStockEditor = () => {
   const { data: selectedRollingStock } =
     osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
       {
-        rollingStockId: openedRollingStockCardId as number,
+        rollingStockId: openedRollingStockCardId!,
       },
       {
         skip: !openedRollingStockCardId,

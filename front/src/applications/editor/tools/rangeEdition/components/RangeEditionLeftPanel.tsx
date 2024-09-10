@@ -102,7 +102,7 @@ const RangeEditionLeftPanel = () => {
 
   const { data: voltages } = osrdEditoastApi.endpoints.getInfraByInfraIdVoltages.useQuery(
     {
-      infraId: infraID as number,
+      infraId: infraID!,
     },
     { skip: !infraID }
   );
@@ -110,7 +110,7 @@ const RangeEditionLeftPanel = () => {
   const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
       {
-        infraId: infraID as number,
+        infraId: infraID!,
       },
       { skip: !infraID }
     );
@@ -190,7 +190,7 @@ const RangeEditionLeftPanel = () => {
       optionsState: { type: 'loading' },
     });
     const routesAndNodesPositions = await getRoutesFromSwitch({
-      infraId: infraID as number,
+      infraId: infraID!,
       body,
     }).unwrap();
     const { routes, available_node_positions } = routesAndNodesPositions;
@@ -206,7 +206,7 @@ const RangeEditionLeftPanel = () => {
     setSwitchesRouteCandidates(routes);
     setAvailableSwitchesPositions(available_node_positions);
     const trackRangesResults = await getTrackRangesByRoutes({
-      infraId: infraID as number,
+      infraId: infraID!,
       routes: routes.join(','),
     }).unwrap();
     const newRouteElements = makeRouteElements(trackRangesResults, routes);

@@ -163,20 +163,17 @@ export const SpeedSectionEditionLayers = () => {
         ),
       }));
 
-      getEntities<TrackSectionEntity>(
-        infraID as number,
-        missingTrackIDs,
-        'TrackSection',
-        dispatch
-      ).then((res) => {
-        setState((s) => ({
-          ...s,
-          trackSectionsCache: {
-            ...s.trackSectionsCache,
-            ...mapValues(res, (track) => ({ type: 'success', track }) as TrackState),
-          },
-        }));
-      });
+      getEntities<TrackSectionEntity>(infraID!, missingTrackIDs, 'TrackSection', dispatch).then(
+        (res) => {
+          setState((s) => ({
+            ...s,
+            trackSectionsCache: {
+              ...s.trackSectionsCache,
+              ...mapValues(res, (track) => ({ type: 'success', track }) as TrackState),
+            },
+          }));
+        }
+      );
     }
   }, [entity.properties?.track_ranges]);
 
@@ -191,20 +188,17 @@ export const SpeedSectionEditionLayers = () => {
         },
       }));
 
-      getEntity<TrackSectionEntity>(
-        infraID as number,
-        hoveredItem.id,
-        'TrackSection',
-        dispatch
-      ).then((track) => {
-        setState((s) => ({
-          ...s,
-          trackSectionsCache: {
-            ...s.trackSectionsCache,
-            [hoveredItem.id]: { type: 'success', track },
-          },
-        }));
-      });
+      getEntity<TrackSectionEntity>(infraID!, hoveredItem.id, 'TrackSection', dispatch).then(
+        (track) => {
+          setState((s) => ({
+            ...s,
+            trackSectionsCache: {
+              ...s.trackSectionsCache,
+              [hoveredItem.id]: { type: 'success', track },
+            },
+          }));
+        }
+      );
     }
   }, [hoveredItem]);
 

@@ -1,17 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import {
-  groupBy,
-  mapKeys,
-  mapValues,
-  sum,
-  isString,
-  isArray,
-  uniq,
-  isNil,
-  concat,
-  compact,
-} from 'lodash';
+import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq, concat, compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
@@ -80,8 +69,8 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
 
   const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
-      { infraId: infraID as number },
-      { skip: isNil(infraID) }
+      { infraId: infraID! },
+      { skip: !infraID }
     );
   const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
 

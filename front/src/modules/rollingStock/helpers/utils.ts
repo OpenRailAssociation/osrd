@@ -42,7 +42,7 @@ export const filterNullValueInCurve = (curve: EffortCurveForm) =>
       }
       return result;
     },
-    { speeds: [] as number[], max_efforts: [] as number[] }
+    { speeds: [], max_efforts: [] }
   );
 
 export const getDefaultRollingStockMode = (selectedMode: string | null): EffortCurveForms | null =>
@@ -151,7 +151,7 @@ export const rollingStockEditorQueryArg = (
       { unit: 'm/s', value: data.maxSpeed.value },
       data.maxSpeed,
       data.mass
-    ) as number, // Back-end needs value in m/s.
+    )!, // Back-end needs value in m/s.
     startup_time: data.startupTime,
     startup_acceleration: data.startupAcceleration,
     comfort_acceleration: data.comfortAcceleration,
@@ -166,17 +166,17 @@ export const rollingStockEditorQueryArg = (
         { unit: 'N', value: data.rollingResistanceA.value },
         data.rollingResistanceA,
         data.mass
-      ) as number, // Back-end needs value in N.
+      )!, // Back-end needs value in N.
       B: handleUnitValue(
         { unit: 'N/(m/s)', value: data.rollingResistanceB.value },
         data.rollingResistanceB,
         data.mass
-      ) as number, // Back-end needs value in N/(m/s).
+      )!, // Back-end needs value in N/(m/s).
       C: handleUnitValue(
         { unit: 'N/(m/s)²', value: data.rollingResistanceC.value },
         data.rollingResistanceC,
         data.mass
-      ) as number, // Back-end needs value in N/(m/s)².
+      )!, // Back-end needs value in N/(m/s)².
       type: 'davis',
     },
     loading_gauge: data.loadingGauge,

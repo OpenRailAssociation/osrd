@@ -317,7 +317,7 @@ function getRangeEditionTool<T extends EditorRange>({
       if (interactionState.type === 'selectSwitch') {
         if (feature.sourceLayer && LAYERS_SET.has(feature.sourceLayer)) {
           const newHoveredItem = {
-            id: feature.properties?.id as string,
+            id: feature.properties.id,
             type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
             renderedEntity: feature,
           };
@@ -325,7 +325,7 @@ function getRangeEditionTool<T extends EditorRange>({
             if (feature.sourceLayer === 'switches') {
               setState({
                 hovered: {
-                  id: feature.properties?.id as string,
+                  id: feature.properties.id,
                   type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
                   renderedEntity: feature,
                 },
@@ -376,8 +376,8 @@ function getRangeEditionTool<T extends EditorRange>({
           itemType: 'PSLSign',
           position: hoveredExtremity.geometry.coordinates,
           track: trackState.track,
-          signIndex: feature.properties?.speedSectionSignIndex as number,
-          signType: feature.properties?.speedSectionSignType as string,
+          signIndex: feature.properties?.speedSectionSignIndex,
+          signType: feature.properties?.speedSectionSignType,
         };
         if (!isEqual(newHoveredItem, hoveredItem))
           setState({
@@ -387,7 +387,7 @@ function getRangeEditionTool<T extends EditorRange>({
       // Handle hovering EditorEntity elements:
       else if (feature.sourceLayer && LAYERS_SET.has(feature.sourceLayer)) {
         const newHoveredItem = {
-          id: feature.properties?.id as string,
+          id: feature.properties.id,
           type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
           renderedEntity: feature,
         };

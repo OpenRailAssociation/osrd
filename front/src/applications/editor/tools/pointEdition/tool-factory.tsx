@@ -168,21 +168,19 @@ function getPointEditionTool<T extends EditorPoint>({
         newEntity.properties = newEntity.properties || {};
         newEntity.properties.track = nearestPoint.trackSectionID;
 
-        getEntity(infraID as number, newEntity.properties.track, 'TrackSection', dispatch).then(
-          (track) => {
-            const distanceAlongTrack = calculateDistanceAlongTrack(
-              track as TrackSectionEntity,
-              newEntity.geometry as Point
-            );
-            newEntity.properties.position = distanceAlongTrack;
+        getEntity(infraID!, newEntity.properties.track, 'TrackSection', dispatch).then((track) => {
+          const distanceAlongTrack = calculateDistanceAlongTrack(
+            track as TrackSectionEntity,
+            newEntity.geometry as Point
+          );
+          newEntity.properties.position = distanceAlongTrack;
 
-            setState({
-              ...state,
-              entity: newEntity,
-              nearestPoint: null,
-            });
-          }
-        );
+          setState({
+            ...state,
+            entity: newEntity,
+            nearestPoint: null,
+          });
+        });
       }
     },
     onMove(e, { setState, state }) {
@@ -247,7 +245,7 @@ function getPointEditionTool<T extends EditorPoint>({
 
       if (typeof trackId !== 'string') return;
 
-      getEntity(infraID as number, trackId, 'TrackSection', dispatch).then((track) => {
+      getEntity(infraID!, trackId, 'TrackSection', dispatch).then((track) => {
         const dbPosition = entity.properties.position;
         const computedPosition = nearestPointOnLine(
           (track as Feature<LineString>).geometry,

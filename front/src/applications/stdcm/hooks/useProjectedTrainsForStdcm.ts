@@ -25,14 +25,15 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmV2SuccessResponse) => {
     }
   );
 
+  const trainIds = timetable?.train_ids;
   const { currentData: trainSchedules } = osrdEditoastApi.endpoints.postTrainSchedule.useQuery(
     {
       body: {
-        ids: timetable?.train_ids as number[],
+        ids: trainIds!,
       },
     },
     {
-      skip: !timetable || !timetable.train_ids.length,
+      skip: !trainIds || !trainIds.length,
     }
   );
 

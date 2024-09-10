@@ -26,7 +26,7 @@ const TrackSplitLeftPanel = () => {
         // Call the API to split the track
         const res = await dispatch(saveSplitTrackSection(infraID, s.track.properties.id, s.offset));
         // From the result, get the two newly tracksections
-        const tracksections = await getEntities(infraID as number, res, 'TrackSection', dispatch);
+        const tracksections = await getEntities(infraID!, res, 'TrackSection', dispatch);
         // Redirect to the selection tool with the tracksections selected
         switchTool({
           toolType: TOOL_NAMES.SELECTION,

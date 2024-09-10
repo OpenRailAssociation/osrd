@@ -35,7 +35,7 @@ const useStdcmResults = (
   const { data: otherSelectedTrainSchedule } =
     osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
       {
-        id: selectedTrainId as number,
+        id: selectedTrainId!,
       },
       { skip: !selectedTrainId || selectedTrainId === STDCM_TRAIN_ID }
     );

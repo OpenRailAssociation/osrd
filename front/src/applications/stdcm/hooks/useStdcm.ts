@@ -52,7 +52,7 @@ const useStdcm = (showFailureNotification: boolean = true) => {
   const { data: stdcmRollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
       {
-        rollingStockId: osrdconf.rollingStockID as number,
+        rollingStockId: osrdconf.rollingStockID!,
       },
       { skip: !osrdconf.rollingStockID }
     );

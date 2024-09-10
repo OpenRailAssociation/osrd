@@ -30,7 +30,7 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
   const { data: speedLimitsTagsByInfraId = [], error } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
       {
-        infraId: infraID as number,
+        infraId: infraID!,
       },
       { skip: !infraID }
     );

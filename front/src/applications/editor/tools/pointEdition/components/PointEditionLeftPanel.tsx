@@ -72,24 +72,22 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
 
   useEffect(() => {
     const firstLoading = trackState.type === 'idle';
-    const trackId = state.entity.properties.track as string | undefined;
+    const trackId: string | undefined = state.entity.properties.track;
 
     if (trackId && trackState.id !== trackId) {
       setTrackState({ type: 'isLoading', id: trackId });
-      getEntity<TrackSectionEntity>(infraID as number, trackId, 'TrackSection', dispatch).then(
-        (track) => {
-          setTrackState({ type: 'ready', id: trackId, track });
+      getEntity<TrackSectionEntity>(infraID!, trackId, 'TrackSection', dispatch).then((track) => {
+        setTrackState({ type: 'ready', id: trackId, track });
 
-          if (!firstLoading) {
-            const { position } = state.entity.properties;
-            const turfPosition =
-              (position * length(track, { units: 'meters' })) / track.properties.length;
-            const point = along(track, turfPosition, { units: 'meters' });
+        if (!firstLoading) {
+          const { position } = state.entity.properties;
+          const turfPosition =
+            (position * length(track, { units: 'meters' })) / track.properties.length;
+          const point = along(track, turfPosition, { units: 'meters' });
 
-            setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
-          }
+          setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
         }
-      );
+      });
     }
   }, [infraID, setState, state, state.entity.properties.track, trackState.id, trackState.type]);
 
