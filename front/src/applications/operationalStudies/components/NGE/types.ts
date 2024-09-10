@@ -7,7 +7,7 @@ export type Haltezeit = {
 };
 
 export type Node = {
-  id: number | string; // TODO: in NGE this is a number
+  id: number;
   /** Trigram */
   betriebspunktName: string;
   fullName: string;
@@ -67,9 +67,9 @@ export type TimeLock = {
 
 export type TrainrunSection = {
   id: number;
-  sourceNodeId: number | string;
+  sourceNodeId: number;
   sourcePortId: number;
-  targetNodeId: number | string;
+  targetNodeId: number;
   targetPortId: number;
 
   travelTime: TimeLock;
