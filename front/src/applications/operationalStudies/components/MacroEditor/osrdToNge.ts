@@ -224,33 +224,27 @@ const importTimetable = async (
   };
 
   let nodes: Node[] = [];
-  const nodesById = new Map<string | number, Node>();
+  const nodesById = new Map<number, Node>();
   let nodeId = 0;
   let nodePositionX = 0;
   const createNode = ({
-    id,
     trigram,
     fullName,
     positionX,
     positionY,
   }: {
-    id?: string | number;
     trigram?: string;
     fullName?: string;
     positionX?: number;
     positionY?: number;
   }): Node => {
-    if (id === undefined) {
-      id = nodeId;
-      nodeId += 1;
-    }
     if (positionX === undefined) {
       positionX = nodePositionX;
       nodePositionX += 200;
     }
 
     const node = {
-      id,
+      id: nodeId,
       betriebspunktName: trigram || '',
       fullName: fullName || '',
       positionX,
@@ -267,20 +261,22 @@ const importTimetable = async (
       labelIds: [],
     };
 
+    nodeId += 1;
     nodes.push(node);
     nodesById.set(node.id, node);
 
     return node;
   };
 
+  const nodesByOpId = new Map<string, Node>();
   for (const op of searchResults) {
-    createNode({
-      id: op.obj_id,
+    const node = createNode({
       trigram: op.trigram + (op.ch ? `/${op.ch}` : ''),
       fullName: op.name,
       positionX: op.geographic.coordinates[0],
       positionY: op.geographic.coordinates[1],
     });
+    nodesByOpId.set(op.obj_id, node);
   }
 
   nodes = convertGeoCoords(nodes);
@@ -326,7 +322,7 @@ const importTimetable = async (
       const pathNodeIds = trainSchedule.path.map((pathItem) => {
         const op = findOpFromPathItem(pathItem, searchResults);
         if (op) {
-          return op.obj_id;
+          return nodesByOpId.get(op.obj_id)!.id;
         }
 
         let trigram: string | undefined;
