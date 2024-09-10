@@ -76,5 +76,6 @@
     "BAPR",
     "TVM300",
     "TVM430"
-  ]
+  ],
+  "freight_compatible": true
 }

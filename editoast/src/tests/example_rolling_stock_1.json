@@ -982,5 +982,6 @@
     "power_restrictions": {"C2":"2", "C5":"5"},
     "electrical_power_startup_time": 5.0,
     "raise_pantograph_time": 15.0,
-    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"]
+    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
+    "freight_compatible": null
 }

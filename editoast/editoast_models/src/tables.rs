@@ -462,6 +462,7 @@ diesel::table! {
         raise_pantograph_time -> Nullable<Float8>,
         version -> Int8,
         supported_signaling_systems -> Array<Nullable<Text>>,
+        freight_compatible -> Nullable<Bool>,
     }
 }
 

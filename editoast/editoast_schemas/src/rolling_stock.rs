@@ -76,4 +76,5 @@ pub struct RollingStock {
     pub railjson_version: String,
     #[serde(default)]
     pub metadata: Option<RollingStockMetadata>,
+    pub freight_compatible: Option<bool>,
 }

@@ -51,6 +51,7 @@ pub struct RollingStockForm {
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     pub locked: Option<bool>,
     pub metadata: Option<RollingStockMetadata>,
+    pub freight_compatible: Option<bool>,
 }
 
 impl From<RollingStockForm> for Changeset<RollingStockModel> {
@@ -77,6 +78,7 @@ impl From<RollingStockForm> for Changeset<RollingStockModel> {
             .electrical_power_startup_time(rolling_stock.electrical_power_startup_time)
             .raise_pantograph_time(rolling_stock.raise_pantograph_time)
             .supported_signaling_systems(rolling_stock.supported_signaling_systems)
+            .freight_compatible(rolling_stock.freight_compatible)
     }
 }
 
@@ -115,6 +117,7 @@ impl From<RollingStockModel> for RollingStockForm {
             supported_signaling_systems: value.supported_signaling_systems,
             locked: Some(value.locked),
             metadata: value.metadata,
+            freight_compatible: value.freight_compatible,
         }
     }
 }

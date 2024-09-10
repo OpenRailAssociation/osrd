@@ -6108,6 +6108,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EnergySource'
+        freight_compatible:
+          type: boolean
+          nullable: true
         gamma:
           $ref: '#/components/schemas/Gamma'
         id:
@@ -7689,6 +7692,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EnergySource'
+        freight_compatible:
+          type: boolean
+          nullable: true
         gamma:
           $ref: '#/components/schemas/Gamma'
         id:
@@ -7841,6 +7847,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EnergySource'
+        freight_compatible:
+          type: boolean
+          nullable: true
         gamma:
           $ref: '#/components/schemas/Gamma'
         inertia_coefficient:

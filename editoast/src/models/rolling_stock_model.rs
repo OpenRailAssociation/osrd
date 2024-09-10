@@ -75,6 +75,7 @@ pub struct RollingStockModel {
     #[schema(value_type = Vec<String>)]
     #[model(remote = "Vec<Option<String>>")]
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    pub freight_compatible: Option<bool>,
 }
 
 impl RollingStockModel {
@@ -167,6 +168,7 @@ impl From<RollingStockModel> for RollingStock {
             electrical_power_startup_time: rolling_stock_model.electrical_power_startup_time,
             raise_pantograph_time: rolling_stock_model.raise_pantograph_time,
             supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
+            freight_compatible: rolling_stock_model.freight_compatible,
         }
     }
 }
@@ -194,6 +196,7 @@ impl From<RollingStock> for RollingStockModelChangeset {
             .electrical_power_startup_time(rolling_stock.electrical_power_startup_time)
             .raise_pantograph_time(rolling_stock.raise_pantograph_time)
             .supported_signaling_systems(rolling_stock.supported_signaling_systems)
+            .freight_compatible(rolling_stock.freight_compatible)
     }
 }
 

@@ -226,6 +226,9 @@ class RollingStock(BaseModel, extra="forbid"):
         ge=0,
     )
     supported_signaling_systems: List[str] = Field(default_factory=list)
+    freight_compatible: Optional[bool] = Field(
+        description="The type of the train, wether it's a locomotive or something else", default=None
+    )
 
 
 if __name__ == "__main__":

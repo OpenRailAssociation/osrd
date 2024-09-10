@@ -2371,6 +2371,7 @@ export type LightRollingStock = {
   comfort_acceleration: number;
   effort_curves: LightEffortCurves;
   energy_sources: EnergySource[];
+  freight_compatible?: boolean | null;
   gamma: Gamma;
   id: number;
   inertia_coefficient: number;
@@ -2560,6 +2561,7 @@ export type RollingStock = {
   effort_curves: EffortCurves;
   electrical_power_startup_time: number | null;
   energy_sources: EnergySource[];
+  freight_compatible?: boolean | null;
   gamma: Gamma;
   id: number;
   inertia_coefficient: number;
@@ -2588,6 +2590,7 @@ export type RollingStockForm = {
   /** The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric. */
   electrical_power_startup_time?: number | null;
   energy_sources?: EnergySource[];
+  freight_compatible?: boolean | null;
   gamma: Gamma;
   inertia_coefficient: number;
   length: number;

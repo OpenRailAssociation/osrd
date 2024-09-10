@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
 import { BsLightningFill } from 'react-icons/bs';
 import { FaWeightHanging } from 'react-icons/fa';
+import { GoContainer } from 'react-icons/go';
 import { IoIosSpeedometer } from 'react-icons/io';
 import { MdLocalGasStation } from 'react-icons/md';
 
@@ -112,6 +113,11 @@ const RollingStockCard = ({
           <div className="row">
             <div className="col-5">
               <div className="rollingstock-tractionmode text-nowrap">
+                {rollingStock.freight_compatible && (
+                  <span className="text-black">
+                    <GoContainer />
+                  </span>
+                )}
                 {tractionModes.thermal && (
                   <span className="text-pink">
                     <MdLocalGasStation />
