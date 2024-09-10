@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop */
-import { useEffect, useState, type Dispatch, type SetStateAction, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -21,11 +21,9 @@ const BATCH_SIZE = 10;
 
 type useLazyLoadTrainsProp = {
   infraId?: number;
-  trainIdsToProject: number[];
   path?: PathfindingResultSuccess;
   trainSchedules?: TrainScheduleResult[];
   moreTrainsToCome?: boolean;
-  setTrainIdsToProject: Dispatch<SetStateAction<number[]>>;
 };
 
 /**
@@ -37,15 +35,15 @@ type useLazyLoadTrainsProp = {
  */
 const useLazyProjectTrains = ({
   infraId,
-  trainIdsToProject,
   path,
   trainSchedules,
   moreTrainsToCome = false,
-  setTrainIdsToProject,
 }: useLazyLoadTrainsProp) => {
   const dispatch = useAppDispatch();
   const { getElectricalProfileSetId } = useOsrdConfSelectors();
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
+
+  const [trainIdsToProject, setTrainIdsToProject] = useState<number[]>([]);
 
   const [projectedTrainsById, setProjectedTrainsById] = useState<Map<number, TrainSpaceTimeData>>(
     new Map()
@@ -77,14 +75,9 @@ const useLazyProjectTrains = ({
         },
       }).unwrap();
 
-      setProjectedTrainsById((prevTrains) => {
-        const newProjectedTrains = upsertNewProjectedTrains(
-          prevTrains,
-          rawProjectedTrains,
-          trainSchedulesById
-        );
-        return newProjectedTrains;
-      });
+      setProjectedTrainsById((prevTrains) =>
+        upsertNewProjectedTrains(prevTrains, rawProjectedTrains, trainSchedulesById)
+      );
     };
 
     const projectTrains = async (
@@ -98,7 +91,7 @@ const useLazyProjectTrains = ({
 
       for (let i = 0; i < shouldProjectIds.length; i += BATCH_SIZE) {
         // If projection parameters have changed, bail out
-        if (projectionSeqNum.current !== seqNum) break;
+        if (projectionSeqNum.current !== seqNum) return;
 
         const packageToProject = getBatchPackage(i, shouldProjectIds, BATCH_SIZE);
         try {
@@ -108,25 +101,16 @@ const useLazyProjectTrains = ({
           dispatch(setFailure(castErrorToFailure(e)));
         }
       }
+
+      requestedProjectedTrainIds.current = new Set();
+      setTrainIdsToProject([]);
     };
 
-    if (infraId && path) {
+    if (infraId && path && trainIdsToProject.length > 0) {
       projectionSeqNum.current += 1;
       projectTrains(projectionSeqNum.current, path, trainIdsToProject);
     }
   }, [trainIdsToProject]);
-
-  useEffect(() => {
-    // reset the state when all the trains have been projected
-    if (
-      !moreTrainsToCome &&
-      trainIdsToProject.length > 0 &&
-      requestedProjectedTrainIds.current.size === trainIdsToProject.length
-    ) {
-      setTrainIdsToProject([]);
-      requestedProjectedTrainIds.current = new Set();
-    }
-  }, [moreTrainsToCome, projectedTrainsById]);
 
   useEffect(() => {
     if (!moreTrainsToCome && trainSchedules && path) {
@@ -140,9 +124,14 @@ const useLazyProjectTrains = ({
     }
   }, [path]);
 
+  const projectTrains = (trainIds: number[]) => {
+    setTrainIdsToProject((prev) => [...prev, ...trainIds]);
+  };
+
   return {
     projectedTrainsById,
     setProjectedTrainsById,
+    projectTrains,
   };
 };
 

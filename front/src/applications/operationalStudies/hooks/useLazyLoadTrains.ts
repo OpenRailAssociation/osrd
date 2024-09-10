@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop */
-import { useEffect, useState, type Dispatch, type SetStateAction, useMemo } from 'react';
+import { useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -20,10 +20,8 @@ const BATCH_SIZE = 10;
 
 type UseLazyLoadTrainsProps = {
   infraId?: number;
-  trainIdsToFetch?: number[];
   path?: PathfindingResultSuccess;
   trainSchedules?: TrainScheduleResult[];
-  setTrainIdsToFetch: Dispatch<SetStateAction<number[] | undefined>>;
 };
 
 /**
@@ -33,20 +31,13 @@ type UseLazyLoadTrainsProps = {
  * This optimizes the performance of the application and allow us to display the trains as
  * soon as they are ready.
  */
-const useLazyLoadTrains = ({
-  infraId,
-  trainIdsToFetch,
-  path,
-  trainSchedules,
-  setTrainIdsToFetch,
-}: UseLazyLoadTrainsProps) => {
+const useLazyLoadTrains = ({ infraId, path, trainSchedules }: UseLazyLoadTrainsProps) => {
   const { getElectricalProfileSetId } = useOsrdConfSelectors();
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
 
   const [trainScheduleSummariesById, setTrainScheduleSummariesById] = useState<
     Map<number, TrainScheduleWithDetails>
   >(new Map());
-  const [trainIdsToProject, setTrainIdsToProject] = useState<number[]>([]);
   const [allTrainsLoaded, setAllTrainsLoaded] = useState(false);
 
   const [postTrainScheduleSimulationSummary] =
@@ -55,76 +46,57 @@ const useLazyLoadTrains = ({
   const { data: { results: rollingStocks } = { results: [] } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
-
-  const { projectedTrainsById, setProjectedTrainsById } = useLazyProjectTrains({
+  const { projectedTrainsById, setProjectedTrainsById, projectTrains } = useLazyProjectTrains({
     infraId,
-    trainIdsToProject,
     path,
     trainSchedules,
     moreTrainsToCome: !allTrainsLoaded,
-    setTrainIdsToProject,
   });
 
-  // gradually fetch the simulation of the trains
-  useEffect(() => {
-    const getTrainScheduleSummaries = async (_infraId: number, _trainToFetchIds: number[]) => {
-      setAllTrainsLoaded(false);
-
-      for (let i = 0; i < _trainToFetchIds.length; i += BATCH_SIZE) {
-        const packageToFetch = getBatchPackage(i, _trainToFetchIds, BATCH_SIZE);
-
-        const rawSummaries = await postTrainScheduleSimulationSummary({
-          body: {
-            infra_id: _infraId,
-            ids: packageToFetch,
-            electrical_profile_set_id: electricalProfileSetId,
-          },
-        }).unwrap();
-
-        // the two rtk-query calls postV2TrainSchedule & postV2TrainScheduleSimulationSummary
-        // do not happen during the same react cycle.
-        // if we update a train, one is going to re-fetch first and the 2 are out of sync during a few cycles.
-        // these cycles do not make sense to render.
-        const outOfSync = [...trainSchedulesById.values()].some((trainShedule) => {
-          const summary = rawSummaries[trainShedule.id];
-          if (summary?.status === 'success') {
-            return trainShedule.path.length !== summary.path_item_times_final.length;
-          }
-          return false;
-        });
-
-        if (!outOfSync) {
-          // launch the projection of the trains
-          setTrainIdsToProject((prev) => [...prev, ...packageToFetch]);
-
-          // format the summaries to display them in the timetable
-          const newFormattedSummaries = formatTrainScheduleSummaries(
-            packageToFetch,
-            rawSummaries,
-            trainSchedulesById,
-            rollingStocks
-          );
-
-          // as formattedSummaries is a dictionary, we replace the previous values with the new ones
-          setTrainScheduleSummariesById((prev) => concatMap(prev, newFormattedSummaries));
-        }
-      }
-
-      setTrainIdsToFetch([]);
-      setAllTrainsLoaded(true);
-    };
-
-    if (infraId && trainIdsToFetch && trainIdsToFetch.length > 0) {
-      getTrainScheduleSummaries(infraId, trainIdsToFetch);
+  const loadTrains = async (_trainSchedules: TrainScheduleResult[]) => {
+    if (!infraId) {
+      return;
     }
-  }, [infraId, trainIdsToFetch]);
+
+    const trainIds = _trainSchedules.map((trainSchedule) => trainSchedule.id);
+
+    setAllTrainsLoaded(false);
+
+    for (let i = 0; i < trainIds.length; i += BATCH_SIZE) {
+      const packageToFetch = getBatchPackage(i, trainIds, BATCH_SIZE);
+
+      const rawSummaries = await postTrainScheduleSimulationSummary({
+        body: {
+          infra_id: infraId,
+          ids: packageToFetch,
+          electrical_profile_set_id: electricalProfileSetId,
+        },
+      }).unwrap();
+
+      // launch the projection of the trains
+      projectTrains(packageToFetch);
+
+      // format the summaries to display them in the timetable
+      const newFormattedSummaries = formatTrainScheduleSummaries(
+        packageToFetch,
+        rawSummaries,
+        mapBy(_trainSchedules, 'id'),
+        rollingStocks
+      );
+
+      // as formattedSummaries is a dictionary, we replace the previous values with the new ones
+      setTrainScheduleSummariesById((prev) => concatMap(prev, newFormattedSummaries));
+    }
+
+    setAllTrainsLoaded(true);
+  };
 
   return {
     trainScheduleSummariesById,
     projectedTrainsById,
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
+    loadTrains,
   };
 };
 

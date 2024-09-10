@@ -27,7 +27,6 @@ const useScenarioData = () => {
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResult[]>();
-  const [trainIdsToFetch, setTrainIdsToFetch] = useState<number[]>();
 
   const scenario = useScenario();
 
@@ -74,10 +73,9 @@ const useScenarioData = () => {
     projectedTrainsById,
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
+    loadTrains,
   } = useLazyLoadTrains({
     infraId: scenario?.infra_id,
-    trainIdsToFetch,
-    setTrainIdsToFetch,
     path: projectionPath?.status === 'success' ? projectionPath : undefined,
     trainSchedules,
   });
@@ -109,8 +107,7 @@ const useScenarioData = () => {
   // first load of the trainScheduleSummaries
   useEffect(() => {
     if (trainSchedules && infra?.state === 'CACHED' && trainScheduleSummaries.length === 0) {
-      const trainIds = trainSchedules.map((trainSchedule) => trainSchedule.id);
-      setTrainIdsToFetch(trainIds);
+      loadTrains(trainSchedules);
     }
   }, [trainSchedules, infra?.state]);
 
@@ -153,7 +150,7 @@ const useScenarioData = () => {
       });
 
       const sortedTrainSchedulesToUpsert = sortBy(trainSchedulesToUpsert, 'start_time');
-      setTrainIdsToFetch(sortedTrainSchedulesToUpsert.map((trainSchedule) => trainSchedule.id));
+      loadTrains(sortedTrainSchedulesToUpsert);
     },
     [trainSchedules]
   );
