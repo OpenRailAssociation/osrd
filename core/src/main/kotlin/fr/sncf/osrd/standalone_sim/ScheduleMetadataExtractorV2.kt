@@ -2,20 +2,30 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.api_v2.*
-import fr.sncf.osrd.api.api_v2.standalone_sim.*
+import fr.sncf.osrd.api.api_v2.standalone_sim.CompleteReportTrain
+import fr.sncf.osrd.api.api_v2.standalone_sim.ReportTrain
+import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
-import fr.sncf.osrd.standalone_sim.result.*
+import fr.sncf.osrd.standalone_sim.result.ResultPosition
+import fr.sncf.osrd.standalone_sim.result.ResultSpeed
+import fr.sncf.osrd.standalone_sim.result.ResultStops
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.TimeDelta
+import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.seconds
 import kotlin.math.abs
 
 /** Use an already computed envelope to extract various metadata about a trip. */
@@ -34,7 +44,9 @@ fun runScheduleMetadataExtractor(
     val legacyStops =
         schedule
             .filter { it.stopFor != null }
-            .map { TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds, it.onStopSignal) }
+            .map {
+                TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds, it.receptionSignal)
+            }
 
     val rawInfra = fullInfra.rawInfra
     val loadedSignalInfra = fullInfra.loadedSignalInfra
@@ -127,7 +139,7 @@ fun runScheduleMetadataExtractor(
         )
     val pathStops =
         schedule.map {
-            PathStop(pathOffsetBuilder.fromTravelledPath(it.pathOffset), it.onStopSignal)
+            PathStop(pathOffsetBuilder.fromTravelledPath(it.pathOffset), it.receptionSignal)
         }
     incrementalPath.extend(
         PathFragment(
@@ -212,7 +224,9 @@ fun makeSimpleReportTrain(
     val stops =
         schedule
             .filter { it.stopFor != null }
-            .map { TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds, it.onStopSignal) }
+            .map {
+                TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds, it.receptionSignal)
+            }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
 
     val pathItemTimes =

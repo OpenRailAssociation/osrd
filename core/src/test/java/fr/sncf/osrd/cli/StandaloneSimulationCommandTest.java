@@ -8,6 +8,7 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -23,7 +24,7 @@ public class StandaloneSimulationCommandTest {
         simulationInput.rollingStocks = List.of(getExampleRollingStock("fast_rolling_stock.json"));
         var scheduleGroup = new StandaloneSimulationCommand.TrainScheduleGroup();
         scheduleGroup.id = "test";
-        var stops = new RJSTrainStop[] {new RJSTrainStop(1., -1., false)};
+        var stops = new RJSTrainStop[] {new RJSTrainStop(1., -1., RJSReceptionSignal.OPEN)};
         scheduleGroup.schedules =
                 List.of(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0., null, stops));
         scheduleGroup.waypoints = new PathfindingWaypoint[][] {

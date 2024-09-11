@@ -2916,6 +2916,7 @@ export type PathfindingItem = {
   timing_data?: StepTimingData | null;
 };
 export type Distribution = 'STANDARD' | 'MARECO';
+export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
 export type TrainScheduleBase = {
   comfort?: Comfort;
   constraint_distribution: Distribution;
@@ -2950,11 +2951,10 @@ export type TrainScheduleBase = {
     at: string;
     /** Whether the schedule item is locked (only for display purposes) */
     locked?: boolean;
-    /** Whether the next signal is expected to be blocking while stopping
-        Can be true only if `stop_for` is `Some` */
-    on_stop_signal?: boolean;
+    reception_signal?: ReceptionSignal;
     /** Duration of the stop.
         Can be `None` if the train does not stop.
+        If `None`, `reception_signal` must be `Open`.
         `Some("PT0S")` means the train stops for 0 seconds. */
     stop_for?: string | null;
   }[];

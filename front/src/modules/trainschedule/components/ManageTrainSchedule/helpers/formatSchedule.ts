@@ -11,7 +11,7 @@ const formatSchedule = (pathSteps: PathStep[]): TrainScheduleBase['schedule'] =>
         at: step.id,
         arrival: step.arrival ?? undefined,
         locked: step.locked,
-        on_stop_signal: step.onStopSignal,
+        reception_signal: step.receptionSignal,
         stop_for:
           isNil(step.stopFor) || isNaN(Number(step.stopFor))
             ? undefined

@@ -113,7 +113,7 @@ function useOutputTableData(
         return {
           ...sugOpPoint,
           ...formattedScheduleData,
-          onStopSignal: schedule?.on_stop_signal || '',
+          receptionSignal: schedule?.reception_signal || '',
           calculatedArrival,
           calculatedDeparture:
             opPoint.duration > 0

@@ -9,6 +9,7 @@ import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
@@ -45,7 +46,7 @@ fun makeRequirementsFromPath(
                     TestTrains.REALISTIC_FAST_TRAIN,
                     0.0,
                     ArrayList(),
-                    listOf(TrainStop(trainPath.getLength().meters, 1.0, true)),
+                    listOf(TrainStop(trainPath.getLength().meters, 1.0, SHORT_SLIP_STOP)),
                     listOf(),
                     null,
                     Comfort.STANDARD,

@@ -3,6 +3,7 @@ pub use margins::MarginValue;
 pub use margins::Margins;
 
 mod schedule_item;
+pub use schedule_item::ReceptionSignal;
 pub use schedule_item::ScheduleItem;
 
 mod path_item;

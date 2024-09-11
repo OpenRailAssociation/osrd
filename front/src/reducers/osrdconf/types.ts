@@ -3,7 +3,12 @@ import type { Feature, Position } from 'geojson';
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { AllowanceValue } from 'applications/stdcm/types';
 import type { ArrivalTimeTypes } from 'applications/stdcmV2/types';
-import type { Comfort, Distribution, PathItemLocation } from 'common/api/osrdEditoastApi';
+import type {
+  Comfort,
+  Distribution,
+  PathItemLocation,
+  ReceptionSignal,
+} from 'common/api/osrdEditoastApi';
 import type { IsoDurationString } from 'common/types';
 import type { InfraState } from 'reducers/infra';
 
@@ -63,7 +68,7 @@ export type PathStep = PathItemLocation & {
   locked?: boolean;
   stopFor?: string | null;
   theoreticalMargin?: string;
-  onStopSignal?: boolean;
+  receptionSignal?: ReceptionSignal;
   kp?: string;
   /** Distance from the beginning of the path in mm */
   positionOnPath?: number;

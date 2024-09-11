@@ -110,7 +110,7 @@ export const getPathfindingQuery = ({
 export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): SuggestedOP[] => {
   let updatedOPs = [...ops];
   pathSteps.forEach((step) => {
-    const { stopFor, arrival, onStopSignal, theoreticalMargin } = step;
+    const { stopFor, arrival, receptionSignal, theoreticalMargin } = step;
     // We check only for pathSteps added by map click
     if ('track' in step) {
       const formattedStep: SuggestedOP = {
@@ -121,7 +121,7 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
         coordinates: step.coordinates,
         stopFor,
         arrival,
-        onStopSignal,
+        receptionSignal,
         theoreticalMargin,
       };
       // If it hasn't an uic, the step has been added by map click,
@@ -146,7 +146,7 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
             ...op,
             stopFor,
             arrival,
-            onStopSignal,
+            receptionSignal,
             theoreticalMargin,
           };
         }

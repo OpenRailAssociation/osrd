@@ -11,6 +11,7 @@ use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::PositiveDuration;
 use editoast_schemas::train_schedule::PathItemLocation;
+use editoast_schemas::train_schedule::ReceptionSignal;
 use editoast_schemas::train_schedule::{Comfort, Margins, PathItem};
 use editoast_schemas::train_schedule::{MarginValue, ScheduleItem};
 use serde::Deserialize;
@@ -467,7 +468,7 @@ async fn get_simulation_run_time(
             at: last_step.id.clone(),
             arrival: None,
             stop_for: Some(PositiveDuration::try_from(Duration::zero()).unwrap()),
-            on_stop_signal: false,
+            reception_signal: ReceptionSignal::Open,
             locked: false,
         }],
         margins: build_single_margin(data.margin),

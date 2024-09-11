@@ -67,7 +67,7 @@
           "arrival": null,
           "at": "id-654",
           "locked": false,
-          "on_stop_signal": false,
+          "reception_signal": "OPEN",
           "stop_for": "P0D"
         }
       ],
@@ -219,7 +219,7 @@
           "arrival": null,
           "at": "id196",
           "locked": false,
-          "on_stop_signal": false,
+          "reception_signal": "OPEN",
           "stop_for": "P0D"
         }
       ],

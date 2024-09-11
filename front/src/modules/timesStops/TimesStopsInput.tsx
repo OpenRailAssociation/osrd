@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-useless-fragment */
 import { useCallback, useEffect, useState } from 'react';
 
-import { isEqual } from 'lodash';
+import { isEqual, isNil } from 'lodash';
 import type { Operation } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
@@ -14,6 +14,7 @@ import { useAppDispatch } from 'store';
 import {
   durationSinceStartTime,
   formatSuggestedViasToRowVias,
+  onStopSignalToReceptionSignal,
   updateDaySinceDeparture,
   updateRowTimesAndMargin,
 } from './helpers/utils';
@@ -40,10 +41,10 @@ const createClearViaButton = ({
     rowIndex > 0 &&
     rowIndex < allWaypoints.length - 1 &&
     isVia(pathSteps || [], rowData, { withKP: true }) &&
-    (rowData.stopFor !== undefined ||
+    (!isNil(rowData.stopFor) ||
       rowData.theoreticalMargin !== undefined ||
       rowData.arrival !== undefined ||
-      rowData.onStopSignal !== false);
+      rowData.onStopSignal === true);
   if (isClearBtnShown) {
     return (
       <button type="button" onClick={removeVia}>
@@ -94,7 +95,7 @@ const TimesStopsInput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
           stopFor: undefined,
           theoreticalMargin: undefined,
           arrival: undefined,
-          onStopSignal: undefined,
+          receptionSignal: undefined,
         };
       }
       return step;
@@ -125,13 +126,12 @@ const TimesStopsInput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
       } else {
         const newVias = updatedRows
           .filter((row, index) => !isEqual(row, rows[index]))
-          .map(
-            (row) =>
-              ({
-                ...row,
-                ...(row.arrival && { arrival: durationSinceStartTime(startTime, row.arrival) }),
-              }) as SuggestedOP
-          );
+          .map(({ onStopSignal, arrival, departure, ...row }) => ({
+            ...row,
+            arrival: durationSinceStartTime(startTime, arrival),
+            departure: durationSinceStartTime(startTime, departure),
+            receptionSignal: onStopSignalToReceptionSignal(onStopSignal),
+          }));
         dispatch(upsertSeveralViasFromSuggestedOP(newVias));
       }
     },

@@ -8,6 +8,7 @@ import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
@@ -102,7 +103,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 TrainStop(
                     position,
                     stopDuration,
-                    true,
+                    SHORT_SLIP_STOP,
                 )
             )
             envelopeCache = null
@@ -125,7 +126,7 @@ data class InfraExplorerWithEnvelopeImpl(
                     TrainStop(
                         stops[i].position,
                         updatedStop.currentDuration,
-                        stops[i].onStopSignal,
+                        stops[i].receptionSignal,
                     )
             }
         }

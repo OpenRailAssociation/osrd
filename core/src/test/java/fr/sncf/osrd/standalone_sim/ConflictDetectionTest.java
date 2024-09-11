@@ -24,6 +24,7 @@ import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.impl.ChunkPath;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
@@ -255,7 +256,7 @@ public class ConflictDetectionTest {
         // if both trains runs at the same time, but first one has an arrival on stop signal (before PC2 switch)
         // with a stop long enough for the other train to get out, there is no conflict
         {
-            var stop = new TrainStop(500, 600, true);
+            var stop = new TrainStop(500, 600, RJSReceptionSignal.STOP);
             var simResultAWithStop =
                     simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
 
@@ -272,7 +273,7 @@ public class ConflictDetectionTest {
     This block is protected by 2 signals (first will be yellow, last and closest will be red).
     Test for trains starting after the first signal protecting block with the switch.
     Also, the stopping train stops either (all combinations):
-    * on stop-signal or on open signal
+    * on stop signal (stop, or short slip distance stop) or open
     * while seeing the last signal protecting block or before seeing it
 
     Stopping on open signal and before seeing any signal protecting the block is quite an undefined behavior (train
@@ -284,13 +285,18 @@ public class ConflictDetectionTest {
      */
     @ParameterizedTest
     @CsvSource({
-        "false, true, true, true",
-        "true, true, false, false",
-        "false, false, false, false",
-        "true, false, false, false",
+        "OPEN, true, true, true",
+        "STOP, true, false, false",
+        "SHORT_SLIP_STOP, true, false, false",
+        "OPEN, false, false, false",
+        "STOP, false, false, false",
+        "SHORT_SLIP_STOP, false, false, false",
     })
     public void conflictHandlingWithTrainStartingDuringRequirementTrigger(
-            boolean onStopSignal, boolean seeingEntrySignal, boolean hasRoutingConflict, boolean hasSpacingConflict)
+            RJSReceptionSignal receptionSignal,
+            boolean seeingEntrySignal,
+            boolean hasRoutingConflict,
+            boolean hasSpacingConflict)
             throws Exception {
         var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
         var fullInfra = fullInfraFromRJS(rjsInfra);
@@ -317,7 +323,7 @@ public class ConflictDetectionTest {
         // signal position on track minus sight distance and start travelled path position
         var sightOffset = 800 - 400 - 185;
         var stopPosition = sightOffset + (seeingEntrySignal ? 100 : -100);
-        var stop = new TrainStop(stopPosition, 600, onStopSignal);
+        var stop = new TrainStop(stopPosition, 600, receptionSignal);
         var simResultAWithStop =
                 simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
 
@@ -333,17 +339,22 @@ public class ConflictDetectionTest {
     Context: 2 trains would conflict requiring the same block at the same time at a crossing.
     Test conflict handling with a train stopping before or after seeing the very first signal protecting the
     crossing block (no ambiguity about the start of the train being after any protecting signal).
-    Test also combination with reception on stop-signal or open signal.
+    Test also combination with reception on stop-signal (stop or short slip distance stop) or open signal.
      */
     @ParameterizedTest
     @CsvSource({
-        "false, true, true, true",
-        "true, true, false, false",
-        "false, false, false, false",
-        "true, false, false, false",
+        "OPEN, true, true, true",
+        "STOP, true, false, false",
+        "SHORT_SLIP_STOP, true, false, false",
+        "OPEN, false, false, false",
+        "STOP, false, false, false",
+        "SHORT_SLIP_STOP, false, false, false",
     })
     public void conflictHandlingBeforeAfterSignalSight(
-            boolean onStopSignal, boolean seeingLimitingSignal, boolean hasRoutingConflict, boolean hasSpacingConflict)
+            RJSReceptionSignal receptionSignal,
+            boolean seeingLimitingSignal,
+            boolean hasRoutingConflict,
+            boolean hasSpacingConflict)
             throws Exception {
         var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
         var fullInfra = fullInfraFromRJS(rjsInfra);
@@ -376,7 +387,7 @@ public class ConflictDetectionTest {
         // limiting signal is seen after 200 m on travelled path
         var sightOffset = 200;
         var stopPosition = sightOffset + (seeingLimitingSignal ? 100 : -100);
-        var stop = new TrainStop(stopPosition, 600, onStopSignal);
+        var stop = new TrainStop(stopPosition, 600, receptionSignal);
         var simResultAWithStop =
                 simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
 
@@ -392,23 +403,27 @@ public class ConflictDetectionTest {
     Test that overtaking conflicts are correctly processed in the case of 2 trains, one is
     stopping for 10 min, the other is direct.
     For all combinations of:
-    - stop with reception on stop signal or not
+    - stop with reception on stop signal (stop, or short slip distance stop) or open
     - trains being close (5min) or far (1hour) from each other
     - first train leaving being the one with stop (overtaking) or the direct (no overtake)
      */
     @ParameterizedTest
     @CsvSource({
-        "false, 300, true, true",
-        "true, 300, false, false",
-        "false, 3600, false, false",
-        "true, 3600, false, false",
-        "false, -300, false, false",
-        "true, -300, false, false",
-        "false, -3600, false, false",
-        "true, -3600, false, false",
+        "OPEN, 300, true, true",
+        "STOP, 300, false, false",
+        "SHORT_SLIP_STOP, 300, false, false",
+        "OPEN, 3600, false, false",
+        "STOP, 3600, false, false",
+        "SHORT_SLIP_STOP, 3600, false, false",
+        "OPEN, -300, false, false",
+        "STOP, -300, false, false",
+        "SHORT_SLIP_STOP, -300, false, false",
+        "OPEN, -3600, false, false",
+        "STOP, -3600, false, false",
+        "SHORT_SLIP_STOP, -3600, false, false",
     })
     public void conflictDetectionForOvertakeInStation(
-            boolean onStopSignal,
+            RJSReceptionSignal receptionSignal,
             double directStartTime, // stopping train starts at 0
             boolean hasRoutingConflict,
             boolean hasSpacingConflict)
@@ -433,7 +448,7 @@ public class ConflictDetectionTest {
                 makeTrackLocation(td0, fromMeters(24820)));
         var pathPropsNorth = makePathProperties(rawInfra, chunkPathNorth, null);
 
-        var stop = new TrainStop(9700, 600, onStopSignal);
+        var stop = new TrainStop(9700, 600, receptionSignal);
         var simResultCenterWithStop =
                 simpleSim(fullInfra, pathPropsCenter, chunkPathCenter, 0, Double.POSITIVE_INFINITY, List.of(stop));
         var simResultNorthOvertaking =

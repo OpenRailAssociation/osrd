@@ -7547,6 +7547,15 @@ components:
           format: double
         value:
           $ref: '#/components/schemas/AllowanceValue'
+    ReceptionSignal:
+      type: string
+      description: |-
+        State of the signal where the train is received for its stop.
+        For (important) details, see https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields.
+      enum:
+      - OPEN
+      - STOP
+      - SHORT_SLIP_STOP
     RefillLaw:
       type: object
       description: physical law defining how the storage can be refilled
@@ -8372,16 +8381,14 @@ components:
         locked:
           type: boolean
           description: Whether the schedule item is locked (only for display purposes)
-        on_stop_signal:
-          type: boolean
-          description: |-
-            Whether the next signal is expected to be blocking while stopping
-            Can be true only if `stop_for` is `Some`
+        reception_signal:
+          $ref: '#/components/schemas/ReceptionSignal'
         stop_for:
           type: string
           description: |-
             Duration of the stop.
             Can be `None` if the train does not stop.
+            If `None`, `reception_signal` must be `Open`.
             `Some("PT0S")` means the train stops for 0 seconds.
           nullable: true
       additionalProperties: false
@@ -9848,16 +9855,14 @@ components:
               locked:
                 type: boolean
                 description: Whether the schedule item is locked (only for display purposes)
-              on_stop_signal:
-                type: boolean
-                description: |-
-                  Whether the next signal is expected to be blocking while stopping
-                  Can be true only if `stop_for` is `Some`
+              reception_signal:
+                $ref: '#/components/schemas/ReceptionSignal'
               stop_for:
                 type: string
                 description: |-
                   Duration of the stop.
                   Can be `None` if the train does not stop.
+                  If `None`, `reception_signal` must be `Open`.
                   `Some("PT0S")` means the train stops for 0 seconds.
                 nullable: true
             additionalProperties: false

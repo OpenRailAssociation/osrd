@@ -1,14 +1,17 @@
 package fr.sncf.osrd.conflicts
 
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.sim_infra.utils.getBlockExit
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 
-data class PathStop(val pathOffset: Offset<Path>, val onStopSignal: Boolean)
+data class PathStop(val pathOffset: Offset<Path>, val receptionSignal: RJSReceptionSignal)
 
 class PathFragment(
     val routes: StaticIdxList<Route>,
@@ -110,7 +113,7 @@ fun incrementalPathOf(rawInfra: RawInfra, blockInfra: BlockInfra): IncrementalPa
     return IncrementalPathImpl(rawInfra, blockInfra)
 }
 
-private class IncrementalStop(val offset: Offset<Path>, val onStopSignal: Boolean)
+private class IncrementalStop(val offset: Offset<Path>, val receptionSignal: RJSReceptionSignal)
 
 private class IncrementalPathImpl(
     private val rawInfra: RawInfra,
@@ -213,7 +216,7 @@ private class IncrementalPathImpl(
 
         for (stop in fragment.stops) {
             val offset = fragmentStartOffset + stop.pathOffset.distance
-            stops.add(IncrementalStop(offset, stop.onStopSignal))
+            stops.add(IncrementalStop(offset, stop.receptionSignal))
         }
 
         var fragBlocksZoneCount = 0
@@ -322,7 +325,7 @@ private class IncrementalPathImpl(
     }
 
     override fun isStopOnClosedSignal(stopIndex: Int): Boolean {
-        return stops[stopIndex].onStopSignal
+        return stops[stopIndex].receptionSignal.isStopOnClosedSignal
     }
 
     override fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath> {

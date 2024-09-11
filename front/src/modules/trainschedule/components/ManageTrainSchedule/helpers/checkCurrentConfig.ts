@@ -157,7 +157,7 @@ const checkCurrentConfig = (
         ch,
         metadata,
         kp,
-        onStopSignal,
+        receptionSignal,
         theoreticalMargin,
         ...stepLocation
       } = step;

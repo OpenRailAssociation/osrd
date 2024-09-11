@@ -16,6 +16,8 @@ import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
@@ -269,8 +271,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                     TrainStop(
                         offset.meters,
                         timeData.stopTimeData[stopIndex++].currentDuration,
-                        // TODO: forward and use onStopSignal param from request
-                        isTimeStrictlyPositive(prevNode.stopDuration)
+                        // TODO: forward and use receptionSignal param from request
+                        if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP else OPEN
                     )
                 )
             offset += edge.length.distance
@@ -304,7 +306,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val operationalPoints = makeOperationalPoints(infra, trainPath)
         val res = ArrayList<TrainStop>()
         for (op in operationalPoints) {
-            res.add(TrainStop(op.pathOffset, 0.0, false))
+            res.add(TrainStop(op.pathOffset, 0.0, OPEN))
         }
         return res
     }

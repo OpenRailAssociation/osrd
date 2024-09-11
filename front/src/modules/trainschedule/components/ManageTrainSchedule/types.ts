@@ -1,6 +1,6 @@
 import type { Position } from 'geojson';
 
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { ReceptionSignal, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { IsoDurationString } from 'common/types';
 
 export type SuggestedOP = {
@@ -32,7 +32,7 @@ export type SuggestedOP = {
   diffMargins?: string;
   calculatedArrival?: string | null;
   calculatedDeparture?: string | null;
-  onStopSignal?: boolean;
+  receptionSignal?: ReceptionSignal;
   // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
   metadata?: {
     lineCode: number;

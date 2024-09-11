@@ -47,7 +47,7 @@ const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
       arrival,
       stop_for: stopFor,
       locked,
-      on_stop_signal: onStopSignal,
+      reception_signal: receptionSignal,
     } = correspondingSchedule || {};
 
     const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
@@ -72,7 +72,7 @@ const computeBasePathSteps = (trainSchedule: TrainScheduleResult) =>
       arrival, // ISODurationString
       stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
       locked,
-      onStopSignal,
+      receptionSignal,
     } as PathStep;
   });
 

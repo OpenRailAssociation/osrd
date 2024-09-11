@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.checkAllowanceResult
@@ -52,7 +53,10 @@ class StopTests {
         )
 
         // Check that the stop is properly returned
-        Assertions.assertEquals(listOf(TrainStop(expectedOffset, 10000.0, true)), res.stopResults)
+        Assertions.assertEquals(
+            listOf(TrainStop(expectedOffset, 10000.0, SHORT_SLIP_STOP)),
+            res.stopResults
+        )
     }
 
     /** Test that we can handle several stops in a row, after waypoints that aren't stops */
@@ -113,7 +117,7 @@ class StopTests {
                 )
                 .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
                 .run()!!
-        checkStop(res, listOf(TrainStop(100.0, 10000.0, true)))
+        checkStop(res, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
     }
 
     /** Look for a path in an empty timetable, with a stop at the end of a block */
@@ -134,7 +138,7 @@ class StopTests {
                 )
                 .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
                 .run()!!
-        checkStop(res, listOf(TrainStop(100.0, 10000.0, true)))
+        checkStop(res, listOf(TrainStop(100.0, 10000.0, SHORT_SLIP_STOP)))
     }
 
     /** Checks that we can make a detour to pass by an intermediate step */
@@ -244,7 +248,7 @@ class StopTests {
                 .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setUnavailableTimes(occupancy)
                 .run()!!
-        checkStop(res, listOf(TrainStop(50.0, 10000.0, true)))
+        checkStop(res, listOf(TrainStop(50.0, 10000.0, SHORT_SLIP_STOP)))
         occupancyTest(res, occupancy)
     }
 
@@ -297,7 +301,7 @@ class StopTests {
                     )
                     .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
             )
-        val expectedStops = listOf(TrainStop(51.0, 1000.0, true))
+        val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
         checkStop(res.withAllowance!!, expectedStops)
         checkStop(res.withoutAllowance!!, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
@@ -366,7 +370,7 @@ class StopTests {
                     )
                     .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
             )
-        val expectedStops = listOf(TrainStop(51.0, 1000.0, true))
+        val expectedStops = listOf(TrainStop(51.0, 1000.0, SHORT_SLIP_STOP))
         checkStop(res.withAllowance!!, expectedStops)
         checkStop(res.withoutAllowance!!, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
@@ -533,7 +537,7 @@ class StopTests {
                     blocks[2],
                     OccupancySegment(0.0, 10_000.0, 0.meters, 1.meters),
                 )
-        var res =
+        val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .addStep(
@@ -601,7 +605,7 @@ class StopTests {
                     blocks[2],
                     OccupancySegment(0.0, 10_000.0, 0.meters, 1.meters),
                 )
-        var res =
+        val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters)))))
@@ -683,7 +687,7 @@ class StopTests {
             OccupancySegment(22_000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
         )
         val occupancy = builder.build()
-        var res =
+        val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)

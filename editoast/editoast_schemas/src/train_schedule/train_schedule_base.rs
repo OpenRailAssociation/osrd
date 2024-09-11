@@ -162,6 +162,7 @@ mod tests {
     use serde_json::from_str;
     use serde_json::to_string;
 
+    use crate::train_schedule::schedule_item::ReceptionSignal;
     use crate::train_schedule::Margins;
     use crate::train_schedule::PathItemLocation;
     use crate::train_schedule::ScheduleItem;
@@ -250,14 +251,14 @@ mod tests {
                     arrival: None,
                     stop_for: None,
                     locked: false,
-                    on_stop_signal: false,
+                    reception_signal: ReceptionSignal::Open,
                 },
                 ScheduleItem {
                     at: "a".into(),
                     arrival: None,
                     stop_for: None,
                     locked: false,
-                    on_stop_signal: false,
+                    reception_signal: ReceptionSignal::Open,
                 },
             ],
             ..Default::default()
@@ -284,7 +285,7 @@ mod tests {
                 arrival: Some(Duration::minutes(5).try_into().unwrap()),
                 stop_for: None,
                 locked: false,
-                on_stop_signal: false,
+                reception_signal: ReceptionSignal::Open,
             }],
             ..Default::default()
         };

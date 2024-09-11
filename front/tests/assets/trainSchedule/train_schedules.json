@@ -14,7 +14,7 @@
         "at": "id494",
         "arrival": "PT1320S",
         "stop_for": "PT10S",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -59,7 +59,7 @@
         "at": "id2881",
         "arrival": "PT123S",
         "stop_for": "PT120S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       }
     ],
@@ -103,14 +103,14 @@
         "at": "id3958",
         "arrival": null,
         "stop_for": "P0D",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       },
       {
         "at": "id3957",
         "arrival": null,
         "stop_for": "P0D",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -136,7 +136,7 @@
         "at": "id3950",
         "arrival": "PT297S",
         "stop_for": null,
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -163,7 +163,7 @@
         "at": "id4442",
         "arrival": null,
         "stop_for": "PT100S",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -227,7 +227,7 @@
         "at": "id8641",
         "arrival": null,
         "stop_for": "P0D",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -254,14 +254,14 @@
         "at": "id13764",
         "arrival": null,
         "stop_for": "PT30S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       },
       {
         "at": "id13740",
         "arrival": null,
         "stop_for": "P0D",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -288,7 +288,7 @@
         "at": "id10352",
         "arrival": null,
         "stop_for": "PT360S",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -314,7 +314,7 @@
         "at": "id9795",
         "arrival": null,
         "stop_for": "P0D",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -341,7 +341,7 @@
         "at": "id1367",
         "arrival": "PT2734S",
         "stop_for": null,
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -369,21 +369,21 @@
         "at": "id16267",
         "arrival": "PT3654S",
         "stop_for": "PT300S",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       },
       {
         "at": "id14869",
         "arrival": null,
         "stop_for": "PT600S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       },
       {
         "at": "id14748",
         "arrival": "PT7223S",
         "stop_for": "PT20S",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
@@ -412,14 +412,14 @@
         "at": "id920",
         "arrival": "PT5380S",
         "stop_for": "PT120S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       },
       {
         "at": "id922",
         "arrival": "PT6280S",
         "stop_for": "PT180S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       }
     ],
@@ -447,7 +447,7 @@
         "at": "id6811",
         "arrival": "PT776S",
         "stop_for": "PT180S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       }
     ],
@@ -474,14 +474,14 @@
         "at": "id54756",
         "arrival": null,
         "stop_for": "PT120S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       },
       {
         "at": "id54648",
         "arrival": null,
         "stop_for": "PT300S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       }
     ],
@@ -509,7 +509,7 @@
         "at": "id349",
         "arrival": null,
         "stop_for": "PT120S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       }
     ],
@@ -537,21 +537,21 @@
         "at": "id11327",
         "arrival": null,
         "stop_for": "PT300S",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       },
       {
         "at": "id11332",
         "arrival": null,
         "stop_for": "PT300S",
-        "on_stop_signal": true,
+        "reception_signal": "STOP",
         "locked": false
       },
       {
         "at": "id11013",
         "arrival": "PT6356S",
         "stop_for": "PT146S",
-        "on_stop_signal": false,
+        "reception_signal": "OPEN",
         "locked": false
       }
     ],
