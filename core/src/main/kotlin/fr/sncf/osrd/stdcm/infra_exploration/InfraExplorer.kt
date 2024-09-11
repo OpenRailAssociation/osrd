@@ -7,6 +7,7 @@ import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
@@ -148,7 +149,7 @@ private class InfraExplorerImpl(
     private var incrementalPath: IncrementalPath,
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
-    // TODO: Should evolve into a List of struct that contains duration, onStopSignal and a
+    // TODO: Should evolve into a List of struct that contains duration, receptionSignal and a
     //       collection of locations
     private val stops: List<Collection<PathfindingEdgeLocationId<Block>>>,
     private var predecessorLength: Length<Path> = Length(0.meters), // to avoid re-computing it
@@ -353,7 +354,9 @@ private class InfraExplorerImpl(
                         location.offset in
                             travelledPathBeginBlockOffset..travelledPathEndBlockOffset
                 ) {
-                    pathStops.add(PathStop(startCurrentBlock + location.offset.distance, true))
+                    pathStops.add(
+                        PathStop(startCurrentBlock + location.offset.distance, SHORT_SLIP_STOP)
+                    )
                 }
             }
         }

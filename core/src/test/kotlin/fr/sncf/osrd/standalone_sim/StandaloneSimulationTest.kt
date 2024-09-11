@@ -16,6 +16,9 @@ import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.STOP
 import fr.sncf.osrd.sim_infra.api.makePathProperties
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.*
@@ -113,7 +116,7 @@ class StandaloneSimulationTest {
                         .interpolateDepartureFrom(thirdDistance.distance.meters)
                         .seconds + 60.seconds,
                     null,
-                    false
+                    OPEN
                 ),
                 SimulationScheduleItem(
                     halfDistance,
@@ -121,14 +124,14 @@ class StandaloneSimulationTest {
                         .interpolateDepartureFrom(halfDistance.distance.meters)
                         .seconds + 120.seconds,
                     15.seconds,
-                    true
+                    STOP
                 ),
-                SimulationScheduleItem(twoThirdDistance, null, 30.seconds, true),
+                SimulationScheduleItem(twoThirdDistance, null, 30.seconds, SHORT_SLIP_STOP),
                 SimulationScheduleItem(
                     Offset<TravelledPath>(pathLength),
                     maxEffortEnvelope.totalTime.seconds + 300.seconds,
                     0.seconds,
-                    false
+                    OPEN
                 ),
             )
 

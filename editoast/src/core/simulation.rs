@@ -7,6 +7,7 @@ use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::MarginValue;
+use editoast_schemas::train_schedule::ReceptionSignal;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde::Serialize;
@@ -108,7 +109,7 @@ pub struct SimulationScheduleItem {
     /// Duration of the stop in ms
     pub stop_for: Option<u64>,
     /// Whether the next signal is expected to be blocking while stopping
-    pub on_stop_signal: bool,
+    pub reception_signal: ReceptionSignal,
 }
 
 #[derive(Debug, Serialize, Hash)]

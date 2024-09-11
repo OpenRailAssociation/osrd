@@ -7,6 +7,18 @@ use crate::primitives::PositiveDuration;
 
 editoast_common::schemas! {
     ScheduleItem,
+    ReceptionSignal,
+}
+
+/// State of the signal where the train is received for its stop.
+/// For (important) details, see https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields.
+#[derive(Default, Debug, Hash, Copy, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ReceptionSignal {
+    #[default]
+    Open,
+    Stop,
+    ShortSlipStop,
 }
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
@@ -21,13 +33,12 @@ pub struct ScheduleItem {
     pub arrival: Option<PositiveDuration>,
     /// Duration of the stop.
     /// Can be `None` if the train does not stop.
+    /// If `None`, `reception_signal` must be `Open`.
     /// `Some("PT0S")` means the train stops for 0 seconds.
     #[schema(value_type = Option<chrono::Duration>)]
     pub stop_for: Option<PositiveDuration>,
-    /// Whether the next signal is expected to be blocking while stopping
-    /// Can be true only if `stop_for` is `Some`
     #[serde(default)]
-    pub on_stop_signal: bool,
+    pub reception_signal: ReceptionSignal,
     /// Whether the schedule item is locked (only for display purposes)
     #[serde(default)]
     pub locked: bool,
@@ -45,16 +56,16 @@ impl<'de> Deserialize<'de> for ScheduleItem {
             pub arrival: Option<PositiveDuration>,
             pub stop_for: Option<PositiveDuration>,
             #[serde(default)]
-            pub on_stop_signal: bool,
+            pub reception_signal: ReceptionSignal,
             #[serde(default)]
             pub locked: bool,
         }
         let internal = Internal::deserialize(deserializer)?;
 
-        // Check that the stop_for duration is not None if on_stop_signal is true
-        if internal.on_stop_signal && internal.stop_for.is_none() {
+        // Check that the reception_signal is Open if stop_for duration is None
+        if internal.reception_signal != ReceptionSignal::Open && internal.stop_for.is_none() {
             return Err(serde::de::Error::custom(
-                "Field on_stop_signal can be true only if stop_for is Some",
+                "Field reception_signal must be `Open` if stop_for is None",
             ));
         }
 
@@ -62,7 +73,7 @@ impl<'de> Deserialize<'de> for ScheduleItem {
             at: internal.at,
             arrival: internal.arrival,
             stop_for: internal.stop_for,
-            on_stop_signal: internal.on_stop_signal,
+            reception_signal: internal.reception_signal,
             locked: internal.locked,
         })
     }
@@ -70,6 +81,7 @@ impl<'de> Deserialize<'de> for ScheduleItem {
 
 #[cfg(test)]
 mod tests {
+    use super::ReceptionSignal;
     use super::ScheduleItem;
 
     use serde_json::from_str;
@@ -81,7 +93,7 @@ mod tests {
             at: "a".into(),
             arrival: None,
             stop_for: None,
-            on_stop_signal: true,
+            reception_signal: ReceptionSignal::Stop,
             locked: false,
         };
         let invalid_str = to_string(&schedule_item).unwrap();

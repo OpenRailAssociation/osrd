@@ -31,6 +31,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainScheduleOptions;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.standalone_sim.result.PowerRestrictionRange;
 import fr.sncf.osrd.standalone_sim.result.ResultPosition;
@@ -149,10 +150,14 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // build the simulation request
         var noStops = new RJSTrainStop[] {
-            new RJSTrainStop(2000., 0, false), new RJSTrainStop(5000., 1, true), RJSTrainStop.lastStop(0.1)
+            new RJSTrainStop(2000., 0, RJSReceptionSignal.OPEN),
+            new RJSTrainStop(5000., 1, RJSReceptionSignal.STOP),
+            RJSTrainStop.lastStop(0.1)
         };
         var stops = new RJSTrainStop[] {
-            new RJSTrainStop(2000., 0, false), new RJSTrainStop(5000., 121, true), RJSTrainStop.lastStop(0.1)
+            new RJSTrainStop(2000., 0, RJSReceptionSignal.OPEN),
+            new RJSTrainStop(5000., 121, RJSReceptionSignal.SHORT_SLIP_STOP),
+            RJSTrainStop.lastStop(0.1)
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_stops", "fast_rolling_stock", 0, null, noStops, null));
@@ -242,7 +247,9 @@ public class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var stops = new RJSTrainStop[] {new RJSTrainStop(2000., 100, true), RJSTrainStop.lastStop(0.1)};
+        var stops = new RJSTrainStop[] {
+            new RJSTrainStop(2000., 100, RJSReceptionSignal.SHORT_SLIP_STOP), RJSTrainStop.lastStop(0.1)
+        };
         var scheduledPoints =
                 new RJSSchedulePoint[] {new RJSSchedulePoint(8000., 520.), new RJSSchedulePoint(-1., 800.)};
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();

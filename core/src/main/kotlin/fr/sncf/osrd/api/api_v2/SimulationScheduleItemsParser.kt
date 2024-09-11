@@ -1,6 +1,9 @@
 package fr.sncf.osrd.api.api_v2
 
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.STOP
 import fr.sncf.osrd.utils.units.TimeDelta
 import java.lang.Long.min
 import mu.KotlinLogging
@@ -13,7 +16,7 @@ val simulationScheduleItemParserLogger = KotlinLogging.logger {}
  * - arrival is the minimum value of all the concerned schedule items, null if they are all null.
  * - stopFor is the sum of all the stopFor values of all the schedule items, null if they are all
  *   null.
- * - onStopSignal is true if at least one schedule item's onStopSignal is true, false otherwise.
+ * - receptionSignal is the most constrained of all schedule item's receptionSignal
  */
 fun parseRawSimulationScheduleItems(
     rawSimulationScheduleItems: List<SimulationScheduleItem>
@@ -24,7 +27,7 @@ fun parseRawSimulationScheduleItems(
         val pathOffset = rawSimulationScheduleItems[i].pathOffset
         var arrival = rawSimulationScheduleItems[i].arrival
         var stopFor = rawSimulationScheduleItems[i].stopFor
-        var onStopSignal = rawSimulationScheduleItems[i].onStopSignal
+        var receptionSignal = rawSimulationScheduleItems[i].receptionSignal
         while (
             i < rawSimulationScheduleItems.size - 1 &&
                 rawSimulationScheduleItems[i + 1].pathOffset == pathOffset
@@ -44,10 +47,14 @@ fun parseRawSimulationScheduleItems(
                     nextStopFor != null -> nextStopFor
                     else -> stopFor
                 }
-            onStopSignal = onStopSignal || rawSimulationScheduleItems[i + 1].onStopSignal
+            val nextReceptionSignal = rawSimulationScheduleItems[i + 1].receptionSignal
+            receptionSignal =
+                if (receptionSignal == SHORT_SLIP_STOP || nextReceptionSignal == SHORT_SLIP_STOP)
+                    SHORT_SLIP_STOP
+                else if (receptionSignal == STOP || nextReceptionSignal == STOP) STOP else OPEN
             i++
         }
-        val newItem = SimulationScheduleItem(pathOffset, arrival, stopFor, onStopSignal)
+        val newItem = SimulationScheduleItem(pathOffset, arrival, stopFor, receptionSignal)
         if (simulationScheduleItems.lastOrNull() == newItem) {
             simulationScheduleItemParserLogger.warn { "duplicated schedule items: $newItem" }
         } else {

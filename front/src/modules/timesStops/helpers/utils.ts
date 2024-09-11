@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
-import { round, isEqual } from 'lodash';
+import { round, isEqual, isNil } from 'lodash';
 import { keyColumn, createTextColumn } from 'react-datasheet-grid';
 
+import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { IsoDateTimeString, IsoDurationString, TimeString } from 'common/types';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
@@ -68,7 +69,8 @@ export const formatSuggestedViasToRowVias = (
     const pathStep = pathSteps.find((step) => matchPathStepAndOp(step, op));
     const { name } = pathStep || op;
     const objectToUse = tableType === TableType.Input ? pathStep : op;
-    const { arrival, onStopSignal, stopFor, theoreticalMargin } = objectToUse || {};
+
+    const { arrival, receptionSignal, stopFor, theoreticalMargin } = objectToUse || {};
 
     const isMarginValid = theoreticalMargin ? marginRegExValidation.test(theoreticalMargin) : true;
     const durationArrivalTime = i === 0 ? 'PT0S' : arrival;
@@ -83,13 +85,14 @@ export const formatSuggestedViasToRowVias = (
     const formattedDeparture: TimeExtraDays | undefined = departureTime
       ? { time: departureTime }
       : undefined;
+    const { receptionSignal: _opReceptionSignal, ...filteredOp } = op;
     return {
-      ...op,
+      ...filteredOp,
       isMarginValid,
       arrival: formattedArrival,
       departure: formattedDeparture,
-      onStopSignal: onStopSignal || false,
-      name: name || t('waypoint', { id: op.opId }),
+      onStopSignal: receptionSignalToOnStopSignal(receptionSignal),
+      name: name || t('waypoint', { id: filteredOp.opId }),
       stopFor,
       theoreticalMargin,
       isWaypoint: pathStep !== undefined,
@@ -292,4 +295,30 @@ export function calculateStepTimeAndDays(
     time,
     daySinceDeparture,
   };
+}
+
+/** Convert onStopSignal boolean to receptionSignal enum */
+export function onStopSignalToReceptionSignal(
+  onStopSignal: boolean | undefined
+): ReceptionSignal | undefined {
+  if (isNil(onStopSignal)) {
+    return undefined;
+  }
+  if (onStopSignal === true) {
+    return 'STOP';
+  }
+  return 'OPEN';
+}
+
+/** Convert receptionSignal enum to onStopSignal boolean */
+export function receptionSignalToOnStopSignal(
+  receptionSignal: ReceptionSignal | undefined
+): boolean | undefined {
+  if (isNil(receptionSignal)) {
+    return undefined;
+  }
+  if (receptionSignal === 'STOP' || receptionSignal === 'SHORT_SLIP_STOP') {
+    return true;
+  }
+  return false;
 }

@@ -12,6 +12,7 @@ import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
@@ -136,8 +137,8 @@ fun makeTrainSchedule(
     trainStops: List<TrainStop>
 ): StandaloneTrainSchedule {
     val mutTrainStops = ArrayList(trainStops)
-    // Force the train to end its path at speed=0 and on closed signal
-    mutTrainStops.add(TrainStop(endPos, 0.1, true))
+    // Force the train to end its path at speed=0 and on closed signal with short slip distance
+    mutTrainStops.add(TrainStop(endPos, 0.1, SHORT_SLIP_STOP))
     return StandaloneTrainSchedule(
         rollingStock,
         0.0,

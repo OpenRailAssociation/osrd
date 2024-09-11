@@ -11,6 +11,7 @@ import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.TrackInfraKt;
 import fr.sncf.osrd.sim_infra.impl.ChunkPath;
@@ -134,7 +135,10 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock,
                 0,
                 new ArrayList<>(),
-                List.of(new TrainStop[] {new TrainStop(500., 1000, true), new TrainStop(501., 10, true)}),
+                List.of(new TrainStop[] {
+                    new TrainStop(500., 1000, RJSReceptionSignal.STOP),
+                    new TrainStop(501., 10, RJSReceptionSignal.SHORT_SLIP_STOP)
+                }),
                 List.of(),
                 "test",
                 Comfort.STANDARD,

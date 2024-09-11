@@ -255,7 +255,7 @@ private fun parseSimulationScheduleItems(
     return parseRawSimulationScheduleItems(
         trainStops.map {
             val duration = if (it.duration > 0.0) it.duration.seconds else null
-            SimulationScheduleItem(Offset(it.position.meters), null, duration, it.onStopSignal)
+            SimulationScheduleItem(Offset(it.position.meters), null, duration, it.receptionSignal)
         }
     )
 }

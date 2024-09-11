@@ -1,17 +1,18 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Objects;
 
 public class TrainStop {
     public double position;
     public double duration;
-    public boolean onStopSignal;
+    public RJSReceptionSignal receptionSignal;
 
-    public TrainStop(double position, double duration, boolean onStopSignal) {
+    public TrainStop(double position, double duration, RJSReceptionSignal receptionSignal) {
         this.position = position;
         this.duration = duration;
-        this.onStopSignal = onStopSignal;
+        this.receptionSignal = receptionSignal;
     }
 
     @Override
@@ -27,8 +28,8 @@ public class TrainStop {
     public String toString() {
         return "TrainStop{" + "position="
                 + position + ", duration="
-                + duration + ", onStopSignal="
-                + onStopSignal + '}';
+                + duration + ", receptionSignal="
+                + receptionSignal + '}';
     }
 
     @Override

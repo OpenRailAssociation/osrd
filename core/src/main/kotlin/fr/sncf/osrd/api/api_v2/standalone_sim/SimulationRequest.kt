@@ -10,6 +10,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.RJSModeEffortCurve
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
@@ -95,7 +96,7 @@ class SimulationScheduleItem(
     @Json(name = "path_offset") val pathOffset: Offset<TravelledPath>,
     val arrival: TimeDelta?,
     @Json(name = "stop_for") val stopFor: Duration?,
-    @Json(name = "on_stop_signal") val onStopSignal: Boolean,
+    @Json(name = "reception_signal") val receptionSignal: RJSReceptionSignal,
 )
 
 sealed class MarginValue {

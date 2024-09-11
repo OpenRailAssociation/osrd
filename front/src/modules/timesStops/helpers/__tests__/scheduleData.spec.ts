@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
+import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
+
 import { computeScheduleData } from '../scheduleData';
 
 describe('computeScheduleData', () => {
@@ -9,7 +11,7 @@ describe('computeScheduleData', () => {
         at: 'id325',
         arrival: 'PT3600S',
         stop_for: 'PT100S',
-        on_stop_signal: false,
+        reception_signal: 'OPEN' as ReceptionSignal,
         locked: false,
       };
 

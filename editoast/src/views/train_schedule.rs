@@ -563,7 +563,7 @@ fn build_simulation_request(
                 .stop_for
                 .as_ref()
                 .map(|t| t.num_milliseconds() as u64),
-            on_stop_signal: schedule_item.on_stop_signal,
+            reception_signal: schedule_item.reception_signal,
         })
         .collect();
 

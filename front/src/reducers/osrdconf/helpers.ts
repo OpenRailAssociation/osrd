@@ -164,7 +164,7 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       'arrival',
       'locked',
       'deleted',
-      'onStopSignal',
+      'receptionSignal',
       'theoreticalMargin',
     ]),
     id: nextId(),

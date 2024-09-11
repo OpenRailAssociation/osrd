@@ -19,21 +19,35 @@ public class RJSTrainStop {
     @SuppressFBWarnings("UWF_NULL_FIELD")
     public RJSTrackLocation location;
 
-    @Json(name = "on_stop_signal")
-    public boolean onStopSignal;
+    /**
+     * State of the signal where the train is received for its stops.
+     * For (important) details, see https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields
+     */
+    public enum RJSReceptionSignal {
+        OPEN,
+        STOP,
+        SHORT_SLIP_STOP;
+
+        public boolean isStopOnClosedSignal() {
+            return this == STOP || this == SHORT_SLIP_STOP;
+        }
+    }
+
+    @Json(name = "reception_signal")
+    public RJSReceptionSignal receptionSignal;
 
     /** Stop duration */
     public double duration;
 
     /** Constructor with position */
-    public RJSTrainStop(Double position, double duration, boolean onStopSignal) {
+    public RJSTrainStop(Double position, double duration, RJSReceptionSignal receptionSignal) {
         this.position = position;
         this.location = null;
         this.duration = duration;
-        this.onStopSignal = onStopSignal;
+        this.receptionSignal = receptionSignal;
     }
 
     public static RJSTrainStop lastStop(double duration) {
-        return new RJSTrainStop(-1., duration, true);
+        return new RJSTrainStop(-1., duration, RJSReceptionSignal.SHORT_SLIP_STOP);
     }
 }

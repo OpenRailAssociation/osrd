@@ -176,7 +176,7 @@ export const checkStdcmConf = (
       metadata,
       theoreticalMargin,
       kp,
-      onStopSignal,
+      receptionSignal,
       ...stepLocation
     } = step;
 

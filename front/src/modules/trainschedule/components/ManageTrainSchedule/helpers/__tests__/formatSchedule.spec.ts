@@ -34,7 +34,7 @@ describe('formatSchedule', () => {
           arrival: 'PT60S',
           stopFor: '0',
           locked: false,
-          onStopSignal: false,
+          receptionSignal: 'OPEN',
         },
       ];
       const result = formatSchedule(pathSteps);
@@ -43,7 +43,7 @@ describe('formatSchedule', () => {
           arrival: 'PT60S',
           at: 'id332',
           locked: false,
-          on_stop_signal: false,
+          reception_signal: 'OPEN',
           stop_for: 'PT0S',
         },
       ]);

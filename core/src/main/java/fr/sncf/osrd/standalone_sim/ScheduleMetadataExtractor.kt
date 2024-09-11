@@ -21,7 +21,10 @@ import fr.sncf.osrd.sim_infra.utils.BlockPathElement
 import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
-import fr.sncf.osrd.standalone_sim.result.*
+import fr.sncf.osrd.standalone_sim.result.ResultPosition
+import fr.sncf.osrd.standalone_sim.result.ResultSpeed
+import fr.sncf.osrd.standalone_sim.result.ResultStops
+import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingZoneRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
@@ -189,7 +192,7 @@ fun run(
         schedule.stops.map {
             PathStop(
                 pathOffsetBuilder.fromTravelledPath(Offset(it.position.meters)),
-                it.onStopSignal
+                it.receptionSignal
             )
         }
     incrementalPath.extend(
@@ -377,7 +380,10 @@ fun routingRequirements(
         for (stopIdx in stops.size - 1 downTo 0) {
             val stop = stops[stopIdx]
             val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
-            if (stop.onStopSignal && entrySignalOffset <= stopTravelledOffset) {
+            if (
+                stop.receptionSignal.isStopOnClosedSignal &&
+                    entrySignalOffset <= stopTravelledOffset
+            ) {
                 // stop duration is included in interpolateDepartureFromClamp()
                 criticalPos = stopTravelledOffset
                 break

@@ -18,13 +18,14 @@ def test_get_timetable(
 
 
 @pytest.mark.parametrize(
-    ["on_stop_signal", "expected_conflict_types"], [(False, {"Spacing", "Routing"}), (True, set())]
+    ["reception_signal", "expected_conflict_types"],
+    [("OPEN", {"Spacing", "Routing"}), ("STOP", set()), ("SHORT_SLIP_STOP", set())],
 )
 def test_conflicts(
     small_infra: Infra,
     timetable_id: int,
     fast_rolling_stock: int,
-    on_stop_signal: bool,
+    reception_signal: str,
     expected_conflict_types: set[str],
 ):
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
@@ -46,7 +47,7 @@ def test_conflicts(
                 {
                     "at": "start",
                 },
-                {"at": "stop", "on_stop_signal": on_stop_signal, "stop_for": "PT10M"},
+                {"at": "stop", "reception_signal": reception_signal, "stop_for": "PT10M"},
                 {
                     "at": "end",
                 },
@@ -56,7 +57,7 @@ def test_conflicts(
             "train_name": "with_stop",
         }
     ]
-    response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
+    requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
     train_schedule_payload = [
         {
             "comfort": "STANDARD",
@@ -83,7 +84,7 @@ def test_conflicts(
             "train_name": "pass",
         }
     ]
-    response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
+    requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
     response = requests.get(f"{EDITOAST_URL}/timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}")
     assert response.status_code == 200
     actual_conflicts = {conflict["conflict_type"] for conflict in response.json()}
