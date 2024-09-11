@@ -33,10 +33,8 @@ pub use rolling_stock_livery::RollingStockLiveryMetadata;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
-use utoipa::ToSchema;
 
 editoast_common::schemas! {
-    RollingStock,
     gamma::schemas(),
     effort_curves::schemas(),
     energy_source::schemas(),
@@ -49,12 +47,10 @@ editoast_common::schemas! {
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
-#[schema(as = RjsRollingStock)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct RollingStock {
     pub name: String,
     pub effort_curves: EffortCurves,
-    #[schema(example = "5", required)]
     pub base_power_class: Option<String>,
     pub length: f64,
     pub max_speed: f64,
@@ -68,16 +64,13 @@ pub struct RollingStock {
     pub loading_gauge: LoadingGaugeType,
     /// Mapping of power restriction code to power class
     #[serde(default)]
-    #[schema(required)]
     pub power_restrictions: HashMap<String, String>,
     #[serde(default)]
     pub energy_sources: Vec<EnergySource>,
     /// The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.
-    #[schema(example = 5.0)]
     pub electrical_power_startup_time: Option<f64>,
     /// The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
     #[serde(default)]
-    #[schema(example = 15.0)]
     pub raise_pantograph_time: Option<f64>,
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     pub railjson_version: String,
