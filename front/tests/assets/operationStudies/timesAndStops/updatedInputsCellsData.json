@@ -1,0 +1,18 @@
+[
+  {
+    "row": 1,
+    "values": ["West_station", "BV", "11:22:40", "", "", "3%"]
+  },
+  {
+    "row": 2,
+    "values": ["Mid_West_station", "BV", "", "", "", ""]
+  },
+  {
+    "row": 3,
+    "values": ["Mid_East_station", "BV", "12:58:19", "12:58:40", "21", ""]
+  },
+  {
+    "row": 4,
+    "values": ["North_East_station", "BV", "", "", "0", ""]
+  }
+]

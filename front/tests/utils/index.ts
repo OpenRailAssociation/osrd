@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { type APIResponse, type Page, expect, request } from '@playwright/test';
+import { type APIResponse, type Locator, type Page, expect, request } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Project, Scenario, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
@@ -145,4 +145,8 @@ export function handleApiResponse(response: APIResponse, errorMessage: string) {
   if (!response.ok()) {
     throw new Error(`${errorMessage}: ${response.status()} ${response.statusText()}`);
   }
+}
+export async function clickWithDelay(element: Locator, delay: number = 500): Promise<void> {
+  await element.click();
+  await element.page().waitForTimeout(delay);
 }

@@ -47,7 +47,7 @@ const createClearViaButton = ({
       rowData.onStopSignal === true);
   if (isClearBtnShown) {
     return (
-      <button type="button" onClick={removeVia}>
+      <button data-testid="remove-via-button" type="button" onClick={removeVia}>
         ❌
       </button>
     );
