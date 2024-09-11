@@ -52,7 +52,7 @@ const useLazyLoadTrains = ({
   const [postTrainScheduleSimulationSummary] =
     osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.useLazyQuery();
 
-  const { data: { results: rollingStocks } = { results: [] } } =
+  const { data: { results: rollingStocks } = { results: null } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
   const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
@@ -103,7 +103,7 @@ const useLazyLoadTrains = ({
             packageToFetch,
             rawSummaries,
             trainSchedulesById,
-            rollingStocks
+            rollingStocks!
           );
 
           // as formattedSummaries is a dictionary, we replace the previous values with the new ones
@@ -115,10 +115,10 @@ const useLazyLoadTrains = ({
       setAllTrainsLoaded(true);
     };
 
-    if (infraId && trainIdsToFetch && trainIdsToFetch.length > 0) {
+    if (infraId && trainIdsToFetch && rollingStocks && trainIdsToFetch.length > 0) {
       getTrainScheduleSummaries(infraId, trainIdsToFetch);
     }
-  }, [infraId, trainIdsToFetch]);
+  }, [infraId, trainIdsToFetch, rollingStocks]);
 
   return {
     trainScheduleSummariesById,
