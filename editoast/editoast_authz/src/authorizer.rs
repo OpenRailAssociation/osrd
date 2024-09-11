@@ -1,6 +1,7 @@
 use std::{collections::HashSet, future::Future, sync::Arc};
 
 use tracing::debug;
+use tracing::Level;
 
 use crate::roles::{BuiltinRoleSet, RoleConfig};
 
@@ -93,7 +94,7 @@ impl<S: StorageDriver> Authorizer<S> {
     }
 
     /// Check that the user has all the required builting roles
-    #[tracing::instrument(skip_all, fields(user = %self.user, user_roles = ?self.user_roles, ?required_roles), ret, err)]
+    #[tracing::instrument(skip_all, fields(user = %self.user, user_roles = ?self.user_roles, ?required_roles), ret(level = Level::DEBUG), err)]
     pub async fn check_roles(
         &self,
         required_roles: HashSet<S::BuiltinRole>,
