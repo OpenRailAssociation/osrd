@@ -1,0 +1,34 @@
+[
+  {
+    "stationName": "West_station",
+    "header": "theoreticalMargin",
+    "value": "5%",
+    "marginForm": "% ou min/100km"
+  },
+  {
+    "stationName": "Mid_West_station",
+    "header": "theoreticalMargin",
+    "value": "1min/100km",
+    "marginForm": "% ou min/100km"
+  },
+  {
+    "stationName": "Mid_West_station",
+    "header": "arrivalTime",
+    "value": "11:30:40"
+  },
+  {
+    "stationName": "Mid_West_station",
+    "header": "stopTime",
+    "value": "300"
+  },
+  {
+    "stationName": "Mid_East_station",
+    "header": "arrivalTime",
+    "value": "11:45:21"
+  },
+  {
+    "stationName": "Mid_East_station",
+    "header": "stopTime",
+    "value": "124"
+  }
+]

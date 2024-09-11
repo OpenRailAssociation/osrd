@@ -18,6 +18,8 @@ class OperationalStudiesTimetablePage {
 
   readonly spaceTimeChart: Locator;
 
+  readonly speedSpaceChart: Locator;
+
   readonly timeStopsDatasheet: Locator;
 
   readonly simulationMap: Locator;
@@ -35,7 +37,8 @@ class OperationalStudiesTimetablePage {
     this.selectedTimetableTrain = page.locator('[data-testid="scenario-timetable-train"].selected');
     this.simulationBar = page.locator('.osrd-simulation-sticky-bar');
     this.manchetteSpaceTimeChart = page.locator('.manchette-space-time-chart-wrapper');
-    this.spaceTimeChart = page.locator('#container-SpeedSpaceChart');
+    this.speedSpaceChart = page.locator('#container-SpeedSpaceChart');
+    this.spaceTimeChart = page.locator('.space-time-chart-container');
     this.timeStopsDatasheet = page.locator('.time-stops-datasheet');
     this.simulationMap = page.locator('.osrd-simulation-map');
     this.simulationDriverTrainSchedule = page.locator('.simulation-driver-train-schedule');
@@ -79,6 +82,7 @@ class OperationalStudiesTimetablePage {
     const simulationResultsLocators = [
       this.simulationBar,
       this.manchetteSpaceTimeChart,
+      this.speedSpaceChart,
       this.spaceTimeChart,
       this.timeStopsDatasheet,
       this.simulationMap,
@@ -188,6 +192,12 @@ class OperationalStudiesTimetablePage {
       await trainButton.click({ position: { x: 5, y: 5 } });
       await this.verifySimulationResultsVisibility();
     }
+  }
+
+  async verifyTimeStopsDatasheetVisibility(timeout = 30 * 1000): Promise<void> {
+    await this.timeStopsDatasheet.scrollIntoViewIfNeeded();
+    // Wait for the Times and Stops simulation datasheet to be fully loaded with a specified timeout (default: 30 seconds)
+    await expect(this.timeStopsDatasheet).toBeVisible({ timeout });
   }
 }
 

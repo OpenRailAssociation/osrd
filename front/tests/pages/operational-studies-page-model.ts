@@ -3,6 +3,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import RollingStockSelectorPage from './rollingstock-selector-page';
 import enTranslations from '../../public/locales/en/operationalStudies/manageTrainSchedule.json';
 import frTranslations from '../../public/locales/fr/operationalStudies/manageTrainSchedule.json';
+import { clickWithDelay } from '../utils';
 
 class OperationalStudiesPage {
   readonly page: Page;
@@ -61,6 +62,8 @@ class OperationalStudiesPage {
 
   readonly missingParamMessage: Locator;
 
+  readonly startTimeField: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.addScenarioTrainBtn = page.getByTestId('scenarios-add-train-schedule-button');
@@ -90,6 +93,7 @@ class OperationalStudiesPage {
     this.viaModal = page.locator('.manage-vias-modal');
     this.closeViaModalButton = page.getByLabel('Close');
     this.missingParamMessage = page.getByTestId('missing-params-info');
+    this.startTimeField = page.locator('#trainSchedule-startTime');
   }
 
   // Gets the name locator of a waypoint suggestion.
@@ -184,6 +188,15 @@ class OperationalStudiesPage {
     await this.getRollingStockSelector.click();
   }
 
+  // Set the train start time
+  async setTrainStartTime(departureTime: string) {
+    const currentDate = new Date().toISOString().split('T')[0];
+    const startTime = `${currentDate}T${departureTime}`;
+    await this.startTimeField.waitFor({ state: 'visible' });
+    await this.startTimeField.fill(startTime);
+    await expect(this.startTimeField).toHaveValue(startTime);
+  }
+
   // Clicks the button to submit the search by trigram.
   async clickSearchByTrigramSubmitButton() {
     await this.searchByTrigramSubmit.click();
@@ -248,16 +261,23 @@ class OperationalStudiesPage {
 
   // Clicks the buttons to delete origin, destination, and via waypoints and verifies missing parameters message.
   async clickOnDeleteOPButtons(selectedLanguage: string) {
-    await this.viaDeleteButton.click();
-    await this.originDeleteButton.click();
-    await this.destinationDeleteButton.click();
+    // Ensure all buttons are rendered and visible before proceeding
+    await Promise.all([
+      this.viaDeleteButton.waitFor({ state: 'visible' }),
+      this.originDeleteButton.waitFor({ state: 'visible' }),
+      this.destinationDeleteButton.waitFor({ state: 'visible' }),
+    ]);
 
+    // Click the buttons sequentially with waits to ensure UI stability
+    await clickWithDelay(this.viaDeleteButton);
+    await clickWithDelay(this.originDeleteButton);
+    await clickWithDelay(this.destinationDeleteButton);
     const translations = selectedLanguage === 'English' ? enTranslations : frTranslations;
     const expectedMessage = translations.pathfindingMissingParams.replace(
       ': {{missingElements}}.',
       ''
     );
-    await this.missingParamMessage.waitFor();
+    await this.missingParamMessage.waitFor({ state: 'visible' });
     const actualMessage = await this.missingParamMessage.innerText();
     expect(actualMessage).toContain(expectedMessage);
   }

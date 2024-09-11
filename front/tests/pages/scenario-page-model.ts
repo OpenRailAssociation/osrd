@@ -202,7 +202,7 @@ class ScenarioPage extends BasePage {
   }
 
   async checkInfraLoaded() {
-    await this.page.waitForSelector('.cached');
+    await this.page.waitForSelector('.cached', { timeout: 60 * 1000 }); // Wait for the infrastructure to be fully loaded with a timeout of 60 seconds
     await expect(this.getInfraLoadState).toHaveClass(/cached/);
   }
 

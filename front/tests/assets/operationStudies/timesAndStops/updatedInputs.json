@@ -1,0 +1,18 @@
+[
+  {
+    "stationName": "West_station",
+    "header": "theoreticalMargin",
+    "value": "3%",
+    "marginForm": "% ou min/100km"
+  },
+  {
+    "stationName": "Mid_East_station",
+    "header": "arrivalTime",
+    "value": "12:58:19"
+  },
+  {
+    "stationName": "Mid_East_station",
+    "header": "stopTime",
+    "value": "21"
+  }
+]
