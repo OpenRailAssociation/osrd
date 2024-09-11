@@ -414,6 +414,7 @@ fun getStopPositions(schedule: List<SimulationScheduleItem>): List<Double> {
     return schedule.filter { it.stopFor != null }.map { it.pathOffset.distance.meters }
 }
 
+// TODO: Get rid of this function, by propagating DistanceRangeMap to the whole codebase
 /**
  * Converts a DistanceRangeMap<T> into a legacy RangeMap<Double, T>. Distances are converted to
  * floats (m).
@@ -422,7 +423,7 @@ private fun <T> DistanceRangeMap<T>.toRangeMap(): RangeMap<Double, T> {
     val res = ImmutableRangeMap.builder<Double, T>()
     for (entry in this) {
         if (entry.value != null)
-            res.put(Range.closed(entry.lower.meters, entry.upper.meters), entry.value!!)
+            res.put(Range.closedOpen(entry.lower.meters, entry.upper.meters), entry.value!!)
     }
     return res.build()
 }

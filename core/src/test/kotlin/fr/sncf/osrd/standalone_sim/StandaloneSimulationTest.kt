@@ -18,14 +18,8 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.makePathProperties
 import fr.sncf.osrd.train.TestTrains
-import fr.sncf.osrd.utils.Helpers
-import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.pathFromRoutes
-import fr.sncf.osrd.utils.toIdxList
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.TimeDelta
-import fr.sncf.osrd.utils.units.seconds
+import fr.sncf.osrd.utils.*
+import fr.sncf.osrd.utils.units.*
 import java.util.stream.Stream
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -99,6 +93,7 @@ class StandaloneSimulationTest {
         val startSpeed: Double = 0.0,
         val margins: RangeValues<MarginValue> = RangeValues(),
         val pathLength: Distance,
+        val powerRestrictions: DistanceRangeMap<String> = distanceRangeMapOf()
     )
 
     /**
@@ -163,27 +158,52 @@ class StandaloneSimulationTest {
                 )
             )
 
+        // Power restriction values
+        val powerRestrictionRangeMaps: List<DistanceRangeMap<String>> =
+            listOf(
+                distanceRangeMapOf(),
+                distanceRangeMapOf(
+                    listOf(
+                        DistanceRangeMap.RangeMapEntry(0.meters, pathLength / 3.0, "Restrict1"),
+                        DistanceRangeMap.RangeMapEntry(
+                            pathLength / 3.0,
+                            pathLength * 2.0 / 3.0,
+                            "Restrict2"
+                        ),
+                        DistanceRangeMap.RangeMapEntry(
+                            pathLength * 2.0 / 3.0,
+                            pathLength,
+                            "Restrict1"
+                        )
+                    )
+                )
+            )
+
         // List all possible combinations
         val res = mutableListOf<TestCase>()
         for (schedule in schedules) {
             for (margin in margins) {
                 for (startSpeed in listOf(0.0, 15.0)) {
                     for (distribution in RJSAllowanceDistribution.entries) {
-                        res.add(
-                            TestCase(
-                                schedule = schedule,
-                                margins = margin,
-                                startSpeed = startSpeed,
-                                allowanceDistribution = distribution,
-                                pathLength = pathLength
+                        for (powerRestrictions in powerRestrictionRangeMaps) {
+                            res.add(
+                                TestCase(
+                                    schedule = schedule,
+                                    margins = margin,
+                                    startSpeed = startSpeed,
+                                    allowanceDistribution = distribution,
+                                    pathLength = pathLength,
+                                    powerRestrictions = powerRestrictions
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
         }
         return res.map { Arguments.of(it) }.stream()
     }
+
     /** Parametrized test, checks the interactions between margins and scheduled points */
     @ParameterizedTest
     @MethodSource("generateTestCases")
@@ -199,7 +219,7 @@ class StandaloneSimulationTest {
                 Comfort.STANDARD,
                 testCase.allowanceDistribution,
                 null,
-                distanceRangeMapOf(),
+                testCase.powerRestrictions,
                 false,
                 2.0,
                 testCase.schedule,
