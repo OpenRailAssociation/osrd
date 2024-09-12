@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
+import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
 import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import {
   osrdEditoastApi,
@@ -43,42 +44,12 @@ const useGetProjectedTrainOperationalPoints = (
           },
         }).unwrap();
 
-        const operationalPointsWithAllWaypoints = [...operational_points!];
-
-        // Check if there are vias added by map click and insert them in the operational points
-        let waypointCounter = 1;
-
-        trainScheduleUsedForProjection.path.forEach((step, i) => {
-          if (!('track' in step)) return;
-
-          const positionOnPath = pathfindingResult.path_item_positions[i];
-          const indexToInsert = operationalPointsWithAllWaypoints.findIndex(
-            (op) => op.position >= positionOnPath
-          );
-
-          const formattedStep: NonNullable<PathProperties['operational_points']>[number] = {
-            id: step.id,
-            extensions: {
-              identifier: {
-                name: t('requestedPoint', { count: waypointCounter }),
-                uic: 0,
-              },
-            },
-            part: { track: step.track, position: step.offset },
-            position: positionOnPath,
-          };
-
-          waypointCounter += 1;
-
-          // If we can't find any op position greater than the current step position, we add it at the end
-          // (happens if the last two steps are added by map click or if there isn't any op on the path)
-          if (indexToInsert === -1) {
-            operationalPointsWithAllWaypoints.push(formattedStep);
-            return;
-          }
-
-          operationalPointsWithAllWaypoints.splice(indexToInsert, 0, formattedStep);
-        });
+        const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+          trainScheduleUsedForProjection.path,
+          pathfindingResult.path_item_positions,
+          operational_points!,
+          t
+        );
 
         setOperationalPoints(operationalPointsWithAllWaypoints);
       }

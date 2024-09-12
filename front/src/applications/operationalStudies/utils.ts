@@ -1,6 +1,8 @@
+import type { TFunction } from 'i18next';
 import type { Dictionary } from 'lodash';
 
 import type {
+  PathfindingResultSuccess,
   PathProperties,
   SimulationSummaryResult,
   TrainScheduleResult,
@@ -12,6 +14,7 @@ import { mmToM, sToMs } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 import { ISO8601Duration2sec, ms2sec } from 'utils/timeManipulation';
 
+import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
   BoundariesData,
   ElectricalBoundariesData,
@@ -161,29 +164,28 @@ export const formatElectrificationRanges = (
 export const preparePathPropertiesData = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'],
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
-  pathLength: number
+  { path_item_positions, length }: PathfindingResultSuccess,
+  trainSchedulePath: TrainScheduleResult['path'],
+  t: TFunction
 ): PathPropertiesFormatted => {
   const formattedSlopes = transformBoundariesDataToPositionDataArray(
     slopes as NonNullable<PathProperties['slopes']>,
-    pathLength,
+    length,
     'gradient'
   );
 
   const formattedCurves = transformBoundariesDataToPositionDataArray(
     curves as NonNullable<PathProperties['curves']>,
-    pathLength,
+    length,
     'radius'
   );
 
   const electrificationsRanges = transformBoundariesDataToRangesData(
     electrifications as NonNullable<PathProperties['electrifications']>,
-    pathLength
+    length
   );
 
-  const electricalProfilesRanges = transformBoundariesDataToRangesData(
-    electricalProfiles,
-    pathLength
-  );
+  const electricalProfilesRanges = transformBoundariesDataToRangesData(electricalProfiles, length);
 
   const electrificationRanges = formatElectrificationRanges(
     electrificationsRanges,
@@ -192,14 +194,21 @@ export const preparePathPropertiesData = (
 
   const voltageRanges = getPathVoltages(
     electrifications as NonNullable<PathProperties['electrifications']>,
-    pathLength
+    length
+  );
+
+  const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
+    trainSchedulePath,
+    path_item_positions,
+    operational_points!,
+    t
   );
 
   return {
     electrifications: electrificationRanges,
     curves: formattedCurves,
     slopes: formattedSlopes,
-    operationalPoints: operational_points as NonNullable<PathProperties['operational_points']>,
+    operationalPoints: operationalPointsWithAllWaypoints,
     geometry: geometry as NonNullable<PathProperties['geometry']>,
     voltages: voltageRanges,
   };
