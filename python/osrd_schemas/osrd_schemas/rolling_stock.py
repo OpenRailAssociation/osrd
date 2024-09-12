@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional, Union, get_args
+from typing import Any, Dict, List, Literal, Mapping, Optional, Union, get_args
 
 from pydantic import (
     BaseModel,
@@ -31,6 +31,10 @@ class RollingResistance(BaseModel, extra="forbid"):
     A: NonNegativeFloat
     B: NonNegativeFloat
     C: NonNegativeFloat
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]):
+        return cls(type=d["type"], A=d["A"], B=d["B"], C=d["C"])
 
 
 class EffortCurve(BaseModel, extra="forbid"):
@@ -93,6 +97,10 @@ class GammaType(str, Enum):
 class Gamma(BaseModel, extra="forbid"):
     type: GammaType
     value: PositiveFloat
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]):
+        return cls(type=GammaType(d["type"]), value=d["value"])
 
 
 class RollingStockLivery(BaseModel):
