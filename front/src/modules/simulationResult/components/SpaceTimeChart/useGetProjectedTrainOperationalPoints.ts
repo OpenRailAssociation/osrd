@@ -8,7 +8,6 @@ import {
   type PathProperties,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
-import { addElementAtIndex } from 'utils/array';
 
 const useGetProjectedTrainOperationalPoints = (
   trainScheduleUsedForProjection?: TrainScheduleResult,
@@ -44,7 +43,7 @@ const useGetProjectedTrainOperationalPoints = (
           },
         }).unwrap();
 
-        let operationalPointsWithAllWaypoints = operational_points!;
+        const operationalPointsWithAllWaypoints = [...operational_points!];
 
         // Check if there are vias added by map click and insert them in the operational points
         let waypointCounter = 1;
@@ -72,16 +71,13 @@ const useGetProjectedTrainOperationalPoints = (
           waypointCounter += 1;
 
           // If we can't find any op position greater than the current step position, we add it at the end
+          // (happens if the last two steps are added by map click or if there isn't any op on the path)
           if (indexToInsert === -1) {
             operationalPointsWithAllWaypoints.push(formattedStep);
             return;
           }
 
-          operationalPointsWithAllWaypoints = addElementAtIndex(
-            operationalPointsWithAllWaypoints,
-            indexToInsert,
-            formattedStep
-          );
+          operationalPointsWithAllWaypoints.splice(indexToInsert, 0, formattedStep);
         });
 
         setOperationalPoints(operationalPointsWithAllWaypoints);
