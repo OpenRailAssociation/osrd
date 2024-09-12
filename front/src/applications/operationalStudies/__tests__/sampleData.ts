@@ -7,7 +7,11 @@ import type {
   ElectrificationValue,
   PositionData,
 } from 'applications/operationalStudies/types';
-import type { SimulationSummaryResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type {
+  PathProperties,
+  SimulationSummaryResult,
+  TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 
 export const pathLength = 4000;
 
@@ -551,3 +555,136 @@ export const trainSummaryHonored: Extract<SimulationSummaryResult, { status: 'su
   path_item_times_provisional: [0, 2186885],
   path_item_times_base: [0, 2186885],
 };
+
+// Data for upsertMapWaypointsInOperationalPoints
+
+export const pathInputsWithOneMapWaypoint: TrainScheduleResult['path'] = [
+  {
+    id: '1',
+    secondary_code: 'BV',
+    uic: 2,
+  },
+  {
+    id: '2',
+    offset: 7746000,
+    track: 'TA6',
+  },
+  {
+    id: '3',
+    secondary_code: 'BV',
+    uic: 4,
+  },
+];
+
+export const pathInputsWithNoMapWaypoint: TrainScheduleResult['path'] = [
+  {
+    id: '1',
+    secondary_code: 'BV',
+    uic: 2,
+  },
+  {
+    id: '2',
+    secondary_code: 'BV',
+    uic: 3,
+  },
+  {
+    id: '3',
+    secondary_code: 'BV',
+    uic: 4,
+  },
+];
+
+export const sampleWithMultipleOperationalPoints: NonNullable<
+  PathProperties['operational_points']
+> = [
+  {
+    id: 'West_station',
+    part: {
+      track: 'TA1',
+      position: 500,
+    },
+    extensions: {
+      identifier: {
+        name: 'West_station',
+        uic: 2,
+      },
+    },
+    position: 0,
+  },
+  {
+    id: 'Mid_West_station',
+    part: {
+      track: 'TC1',
+      position: 550,
+    },
+    extensions: {
+      identifier: {
+        name: 'Mid_West_station',
+        uic: 3,
+      },
+    },
+    position: 12050000,
+  },
+  {
+    id: 'Mid_East_station',
+    part: {
+      track: 'TD0',
+      position: 14000,
+    },
+    extensions: {
+      identifier: {
+        name: 'Mid_East_station',
+        uic: 4,
+      },
+    },
+    position: 26500000,
+  },
+];
+
+export const pathInputWithWaypointsByMapOnly: TrainScheduleResult['path'] = [
+  {
+    id: '1',
+    offset: 6481000,
+    track: 'TA6',
+  },
+  {
+    id: '2',
+    offset: 4733000,
+    track: 'TA6',
+  },
+];
+
+export const pathInputsEndingWithTwoWaypointsByMap: TrainScheduleResult['path'] = [
+  {
+    id: '1',
+    offset: 6481000,
+    track: 'TA6',
+  },
+  {
+    id: '2',
+    offset: 679000,
+    track: 'TC0',
+  },
+  {
+    id: '3',
+    offset: 883000,
+    track: 'TC0',
+  },
+];
+
+export const sampleWithOneOperationalPoint: NonNullable<PathProperties['operational_points']> = [
+  {
+    id: 'Mid_West_station',
+    part: {
+      track: 'TC0',
+      position: 550,
+    },
+    extensions: {
+      identifier: {
+        name: 'Mid_West_station',
+        uic: 3,
+      },
+    },
+    position: 4069000,
+  },
+];

@@ -100,8 +100,9 @@ export const formatStops = (operationalPoints: PathPropertiesFormatted['operatio
     position: {
       start: mmToKm(position),
     },
-    value:
-      identifier && sncf ? `${identifier.name} ${sncf.ch !== ('' || '00') ? sncf.ch : ''}` : '',
+    value: identifier
+      ? `${identifier.name} ${sncf?.ch && sncf.ch !== ('' || '00') ? sncf.ch : ''}`
+      : '',
   }));
 
 export const formatElectrifications = (

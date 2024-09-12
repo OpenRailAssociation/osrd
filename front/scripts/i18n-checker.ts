@@ -13,6 +13,8 @@ const IGNORE_MISSING: RegExp[] = [
   /translation:default/,
   /translation:error/,
   /translation:unspecified/,
+  // key used by upsertMapWaypointsInOperationalPoints
+  /translation:requestedPoint/,
 ];
 const IGNORE_UNUSED: RegExp[] = [
   /.*-generated$/,

@@ -4,6 +4,7 @@ import type {
   LayerData,
   PowerRestrictionValues,
 } from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+import { useTranslation } from 'react-i18next';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { preparePathPropertiesData } from 'applications/operationalStudies/utils';
@@ -26,6 +27,7 @@ const useSpeedSpaceChart = (
   simulation?: SimulationResponse,
   departureTime?: string
 ) => {
+  const { t } = useTranslation('simulation');
   const infraId = useInfraID();
 
   const [formattedPathProperties, setFormattedPathProperties] = useState<PathPropertiesFormatted>();
@@ -63,8 +65,11 @@ const useSpeedSpaceChart = (
         const formattedPathProps = preparePathPropertiesData(
           simulation.electrical_profiles,
           pathProperties,
-          pathfindingResult.length
+          pathfindingResult,
+          trainScheduleResult.path,
+          t
         );
+
         setFormattedPathProperties(formattedPathProps);
 
         // Format power restrictions
@@ -79,7 +84,7 @@ const useSpeedSpaceChart = (
     };
 
     getPathProperties();
-  }, [pathProperties, simulation, infraId, trainScheduleResult, rollingStock]);
+  }, [pathProperties, infraId, rollingStock]);
 
   // setup chart synchronizer
   useEffect(() => {
