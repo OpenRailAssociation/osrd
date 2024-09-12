@@ -1,15 +1,21 @@
-use crate::core::pathfinding::PathfindingResult;
-use crate::error::Result;
-use crate::models::TrackSectionModel;
-use crate::RetrieveBatchUnchecked;
-use editoast_schemas::infra::TrackOffset;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
 use editoast_models::DbConnection;
+use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::train_schedule::PathItemLocation;
 
+use crate::core::pathfinding::PathfindingResult;
+use crate::error::Result;
 use crate::models::OperationalPointModel;
+use crate::models::TrackSectionModel;
+use crate::RetrieveBatchUnchecked;
+
+use super::collect_path_item_ids;
+use super::retrieve_op_from_ids;
+use super::retrieve_op_from_trigrams;
+use super::retrieve_op_from_uic;
+use super::secondary_code_filter;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 
@@ -155,102 +161,6 @@ impl PathItemCache {
     }
 }
 
-/// Collect the ids of the operational points from the path items
-fn collect_path_item_ids(path_items: &[&PathItemLocation]) -> (Vec<String>, Vec<i64>, Vec<String>) {
-    let mut trigrams: Vec<String> = Vec::new();
-    let mut ops_uic: Vec<i64> = Vec::new();
-    let mut ops_id: Vec<String> = Vec::new();
-
-    for item in path_items {
-        match item {
-            PathItemLocation::OperationalPointDescription { trigram, .. } => {
-                trigrams.push(trigram.clone().0);
-            }
-            PathItemLocation::OperationalPointUic { uic, .. } => {
-                ops_uic.push(i64::from(*uic));
-            }
-            PathItemLocation::OperationalPointId {
-                operational_point, ..
-            } => {
-                ops_id.push(operational_point.clone().0);
-            }
-            _ => {}
-        }
-    }
-    (trigrams, ops_uic, ops_id)
-}
-
-/// Retrieve operational points from operational point uic codes
-async fn retrieve_op_from_uic(
-    conn: &mut DbConnection,
-    infra_id: i64,
-    ops_uic: &[i64],
-) -> Result<HashMap<i64, Vec<OperationalPointModel>>> {
-    let mut uic_to_ops: HashMap<i64, Vec<OperationalPointModel>> = HashMap::new();
-    OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic)
-        .await?
-        .into_iter()
-        .for_each(|op| {
-            uic_to_ops
-                .entry(op.extensions.identifier.clone().unwrap().uic)
-                .or_default()
-                .push(op)
-        });
-    Ok(uic_to_ops)
-}
-
-/// Retrieve operational points from operational point trigams
-async fn retrieve_op_from_trigrams(
-    conn: &mut DbConnection,
-    infra_id: i64,
-    trigrams: &[String],
-) -> Result<HashMap<String, Vec<OperationalPointModel>>> {
-    let mut trigrams_to_ops: HashMap<String, Vec<OperationalPointModel>> = HashMap::new();
-    OperationalPointModel::retrieve_from_trigrams(conn, infra_id, trigrams)
-        .await?
-        .into_iter()
-        .for_each(|op| {
-            trigrams_to_ops
-                .entry(op.extensions.sncf.clone().unwrap().trigram)
-                .or_default()
-                .push(op)
-        });
-    Ok(trigrams_to_ops)
-}
-
-/// Retrieve operational points from operational point ids
-async fn retrieve_op_from_ids(
-    conn: &mut DbConnection,
-    infra_id: i64,
-    ops_id: &[String],
-) -> Result<HashMap<String, OperationalPointModel>> {
-    let ops_id = ops_id.iter().map(|obj_id| (infra_id, obj_id.clone()));
-    // a check for missing ids is performed later
-    let ids_to_ops: HashMap<_, _> =
-        OperationalPointModel::retrieve_batch_unchecked::<_, Vec<_>>(conn, ops_id)
-            .await?
-            .into_iter()
-            .map(|op| (op.obj_id.clone(), op))
-            .collect();
-
-    Ok(ids_to_ops)
-}
-
 fn track_offsets_from_ops(ops: &[OperationalPointModel]) -> Vec<TrackOffset> {
     ops.iter().flat_map(|op| op.track_offset()).collect()
-}
-
-/// Filter operational points by secondary code
-/// If the secondary code is not provided, the original list is returned
-fn secondary_code_filter(
-    secondary_code: &Option<String>,
-    ops: Vec<OperationalPointModel>,
-) -> Vec<OperationalPointModel> {
-    if let Some(secondary_code) = secondary_code {
-        ops.into_iter()
-            .filter(|op| &op.extensions.sncf.as_ref().unwrap().ch == secondary_code)
-            .collect()
-    } else {
-        ops
-    }
 }
