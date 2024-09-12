@@ -1,12 +1,11 @@
-import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
+import { Blocked, ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
-import { GiElectric } from 'react-icons/gi';
 
-import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
-import infraLogo from 'assets/pictures/components/tracks.svg';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+
+import InfraLoadingState from './InfraLoadingState';
 
 type ScenarioDescriptionProps = {
   scenario: ScenarioResponse;
@@ -25,14 +24,30 @@ const ScenarioDescription = ({
   const { openModal } = useModal();
 
   return (
-    <div className="scenario-details">
+    <div>
       <div className="scenario-details-name">
         <span className="flex-grow-1 scenario-name text-truncate" title={scenario.name}>
           {scenario.name}
         </span>
+      </div>
+
+      <div className="scenario-description">
+        {scenario.description && (
+          <div className="scenario-details-description">{scenario.description}</div>
+        )}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className="scenario-collapse-button"
+            aria-label={t('toggleTimetable')}
+            onClick={() => collapseTimetable()}
+          >
+            <ChevronLeft />
+          </button>
+        </div>
         <button
           data-testid="editScenario"
-          className="scenario-details-modify-button"
+          className="update-scenario"
           type="button"
           aria-label={t('editScenario')}
           onClick={() =>
@@ -46,50 +61,41 @@ const ScenarioDescription = ({
         >
           <Pencil />
         </button>
-        <button
-          type="button"
-          className="scenario-details-modify-button"
-          aria-label={t('toggleTimetable')}
-          onClick={() => collapseTimetable()}
-        >
-          <ChevronLeft />
-        </button>
       </div>
-      <div className="row">
-        <div className="col-md-6">
-          <div className="scenario-details-infra-name">
-            <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
-            {infra && <InfraLoadingState infra={infra} />}
-            <span className="scenario-infra-name">{scenario.infra_name}</span>
-            <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="scenario-details-electrical-profile-set">
-            <span className="mr-2">
-              <GiElectric />
-            </span>
-            {scenario.electrical_profile_set_id
-              ? scenario.electrical_profile_set_id
-              : t('noElectricalProfileSet')}
-          </div>
-        </div>
+      <div className="scenario-details-electrical-profile-set">
+        {scenario.electrical_profile_set_id
+          ? scenario.electrical_profile_set_id
+          : t('noElectricalProfileSet')}
+      </div>
+
+      <div className="scenario-details-infra-name">
+        {t('infrastructure')} :&nbsp;
+        {infra && <InfraLoadingState infra={infra} />}
+        &nbsp;
+        <span className="scenario-infra-name">{scenario.infra_name}</span>&nbsp;| ID
+        {scenario.infra_id}
       </div>
       {infra &&
         infra.state === 'TRANSIENT_ERROR' &&
         (infraReloadCount <= 5 ? (
-          <div className="scenario-details-infra-error mt-1">
-            {t('errorMessages.unableToLoadInfra', { infraReloadCount })}
+          <div className="scenario-details-infra-error">
+            <Blocked variant="fill" />
+            <span className="error-description">
+              {t('errorMessages.unableToLoadInfra', { infraReloadCount })}
+            </span>
           </div>
         ) : (
-          <div className="scenario-details-infra-error mt-1">
-            {t('errorMessages.softErrorInfra')}
+          <div className="scenario-details-infra-error">
+            <Blocked variant="fill" />
+            <span className="error-description">{t('errorMessages.softErrorInfra')}</span>
           </div>
         ))}
       {infra && infra.state === 'ERROR' && (
-        <div className="scenario-details-infra-error mt-1">{t('errorMessages.hardErrorInfra')}</div>
+        <div className="scenario-details-infra-error">
+          <Blocked variant="fill" />
+          <span className="error-description">{t('errorMessages.hardErrorInfra')}</span>
+        </div>
       )}
-      <div className="scenario-details-description">{scenario.description}</div>
     </div>
   );
 };

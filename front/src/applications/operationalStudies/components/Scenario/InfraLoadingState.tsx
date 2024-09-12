@@ -29,7 +29,7 @@ export default function InfraLoadingState({ infra }: Props) {
       title={infra.state}
     >
       {infra.state && infra.state === 'CACHED' ? (
-        <span>•</span>
+        <span className="infra-loaded" />
       ) : (
         <>
           <span className="infra-loader">•</span>

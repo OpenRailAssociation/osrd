@@ -95,7 +95,7 @@ class ScenarioPage extends BasePage {
     super(page);
 
     this.getRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
-    this.getScenarioUpdateBtn = page.getByTitle('Modifier le scénario');
+    this.getScenarioUpdateBtn = page.getByTestId('editScenario');
     this.getScenarioDeleteConfirmBtn = page
       .locator('#modal-content')
       .getByText('Supprimer', { exact: true });
@@ -178,6 +178,8 @@ class ScenarioPage extends BasePage {
   }
 
   async openScenarioModalUpdate() {
+    // We need to hover the scenario description to make the update button visible
+    await this.getScenarioDescription.hover();
     await this.getScenarioUpdateBtn.click();
   }
 

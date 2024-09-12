@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 
-import { Download, Plus } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -98,34 +97,25 @@ const Timetable = ({
     <div className="scenario-timetable">
       <div className="scenario-timetable-addtrains-buttons">
         <button
-          className="btn btn-secondary btn-sm"
-          type="button"
-          data-testid="scenarios-import-train-schedule-button"
-          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.import)}
-        >
-          <span className="mr-2">
-            <Download />
-          </span>
-          {t('timetable.importTrainSchedule')}
-        </button>
-        <button
-          className="btn btn-primary btn-sm"
           type="button"
           data-testid="scenarios-add-train-schedule-button"
           onClick={() => {
             setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
           }}
         >
-          <span className="mr-2">
-            <Plus />
-          </span>
           {t('timetable.addTrainSchedule')}
+        </button>
+        <button
+          type="button"
+          data-testid="scenarios-import-train-schedule-button"
+          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.import)}
+        >
+          {t('timetable.importTrainSchedule')}
         </button>
       </div>
       <div
         className={cx('scenario-timetable-trains', {
           expanded: conflictsListExpanded,
-          'with-details': showTrainDetails,
         })}
       >
         <TimetableToolbar
