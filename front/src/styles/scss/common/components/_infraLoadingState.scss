@@ -1,14 +1,14 @@
 .infra-loading-state {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
-  margin-right: 0.5rem;
+  margin-bottom: 0.0625rem;
 
   &.cached {
-    color: var(--green);
+    color: var(--success30);
   }
   &.loading {
-    color: var(--orange);
+    color: var(--info60);
   }
 
   .infra-loader:first-child {
@@ -27,17 +27,17 @@
 
   @keyframes dot-flashing {
     0% {
-      color: var(--orange);
+      color: var(--info60);
     }
     50%,
     100% {
-      color: #f8e3d8;
+      color: var(--info30);
     }
   }
 
   .steps {
     font-weight: 500;
-    margin-left: 0.5rem;
+    margin-left: 0.25rem;
     margin-top: 0.1rem;
   }
 }

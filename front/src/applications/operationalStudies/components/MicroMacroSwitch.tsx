@@ -9,25 +9,24 @@ type MicroMacroSwitchProps = {
 const MicroMacroSwitch = ({ isMacro, setIsMacro }: MicroMacroSwitchProps) => {
   const { t } = useTranslation('operationalStudies/scenario');
   return (
-    <div className="tabs-container">
-      <div className="tabs">
-        <div
-          className={cx('tab', { active: !isMacro })}
-          role="button"
-          tabIndex={0}
-          onClick={() => setIsMacro(false)}
-        >
-          {t('microscopic')}
-        </div>
-        <div
-          className={cx('tab', { active: isMacro })}
-          role="button"
-          tabIndex={0}
-          onClick={() => setIsMacro(true)}
-        >
-          {t('macroscopic')}
-        </div>
-      </div>
+    <div className="micro-macro-buttons">
+      <button
+        type="button"
+        className={cx('micro-button', { active: !isMacro })}
+        tabIndex={0}
+        onClick={() => setIsMacro(false)}
+      >
+        {t('microscopic')}
+      </button>
+      <div className="micro-macro-separator" />
+      <button
+        type="button"
+        className={cx('macro-button', { active: isMacro })}
+        tabIndex={0}
+        onClick={() => setIsMacro(true)}
+      >
+        {t('macroscopic')}
+      </button>
     </div>
   );
 };
