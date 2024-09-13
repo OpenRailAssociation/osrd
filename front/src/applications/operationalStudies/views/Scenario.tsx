@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { ChevronLeft, ChevronRight, Eye, EyeClosed, Pencil } from '@osrd-project/ui-icons';
+import { ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
@@ -12,13 +12,10 @@ import importTimetableToNGE from 'applications/operationalStudies/components/Mac
 import MicroMacroSwitch from 'applications/operationalStudies/components/MicroMacroSwitch';
 import NGE from 'applications/operationalStudies/components/NGE/NGE';
 import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
-import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
@@ -30,6 +27,7 @@ import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
 import useScenarioData from '../hooks/useScenarioData';
+import ScenarioDescription from '../components/Scenario/ScenarioDescription';
 
 const Scenario = () => {
   const { t } = useTranslation('operationalStudies/scenario');
@@ -39,12 +37,10 @@ const Scenario = () => {
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
-  const [trainsWithDetails, setTrainsWithDetails] = useState(false);
+  const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [trainIdToEdit, setTrainIdToEdit] = useState<number>();
   const [isMacro, setIsMacro] = useState(false);
-
-  const { openModal } = useModal();
 
   const scenarioData = useScenarioData();
 
@@ -138,85 +134,14 @@ const Scenario = () => {
             >
               <div className="scenario-sidemenu">
                 {scenario && (
-                  <div className="scenario-details">
-                    <div className="scenario-details-name">
-                      <span
-                        className="flex-grow-1 scenario-name text-truncate"
-                        title={scenario.name}
-                      >
-                        {scenario.name}
-                      </span>
-                      <button
-                        data-testid="editScenario"
-                        className="scenario-details-modify-button"
-                        type="button"
-                        aria-label={t('editScenario')}
-                        onClick={() =>
-                          openModal(
-                            <AddAndEditScenarioModal editionMode scenario={scenario} />,
-                            'xl',
-                            'no-close-modal'
-                          )
-                        }
-                        title={t('editScenario')}
-                      >
-                        <Pencil />
-                      </button>
-                      <button
-                        type="button"
-                        className="scenario-details-modify-button"
-                        onClick={() => setTrainsWithDetails(!trainsWithDetails)}
-                        title={t('displayTrainsWithDetails')}
-                      >
-                        {trainsWithDetails ? <EyeClosed /> : <Eye />}
-                      </button>
-                      <button
-                        type="button"
-                        className="scenario-details-modify-button"
-                        aria-label={t('toggleTimetable')}
-                        onClick={() => setCollapsedTimetable(true)}
-                      >
-                        <ChevronLeft />
-                      </button>
-                    </div>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <div className="scenario-details-infra-name">
-                          <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
-                          {infra && <InfraLoadingState infra={infra} />}
-                          <span className="scenario-infra-name">{scenario.infra_name}</span>
-                          <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
-                        </div>
-                      </div>
-                      <div className="col-md-6">
-                        <div className="scenario-details-electrical-profile-set">
-                          <span className="mr-2">
-                            <GiElectric />
-                          </span>
-                          {scenario.electrical_profile_set_id
-                            ? scenario.electrical_profile_set_id
-                            : t('noElectricalProfileSet')}
-                        </div>
-                      </div>
-                    </div>
-                    {infra &&
-                      infra.state === 'TRANSIENT_ERROR' &&
-                      (reloadCount <= 5 ? (
-                        <div className="scenario-details-infra-error mt-1">
-                          {t('errorMessages.unableToLoadInfra', { reloadCount })}
-                        </div>
-                      ) : (
-                        <div className="scenario-details-infra-error mt-1">
-                          {t('errorMessages.softErrorInfra')}
-                        </div>
-                      ))}
-                    {infra && infra.state === 'ERROR' && (
-                      <div className="scenario-details-infra-error mt-1">
-                        {t('errorMessages.hardErrorInfra')}
-                      </div>
-                    )}
-                    <div className="scenario-details-description">{scenario.description}</div>
-                  </div>
+                  <ScenarioDescription
+                    scenario={scenario}
+                    infra={infra}
+                    infraReloadCount={reloadCount}
+                    showTrainDetails={showTrainDetails}
+                    toggleTrainDetails={() => setShowTrainDetails(!showTrainDetails)}
+                    collapseTimetable={() => setCollapsedTimetable(true)}
+                  />
                 )}
                 <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
                 {!isMacro && (
@@ -235,7 +160,7 @@ const Scenario = () => {
                     {infra && (
                       <Timetable
                         setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                        trainsWithDetails={trainsWithDetails}
+                        trainsWithDetails={showTrainDetails}
                         infraState={infra.state}
                         trainIds={timetable.train_ids}
                         selectedTrainId={selectedTrainId}
