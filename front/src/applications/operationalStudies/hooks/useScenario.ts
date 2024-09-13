@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { useEffect, useMemo } from 'react';
 
 import { useParams } from 'react-router-dom';
@@ -48,6 +49,13 @@ const useScenario = () => {
     }
   );
 
+  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
+    { id: scenario?.timetable_id! },
+    {
+      skip: !scenario,
+    }
+  );
+
   useEffect(() => {
     if (scenario) {
       dispatch(updateTimetableID(scenario.timetable_id));
@@ -71,7 +79,7 @@ const useScenario = () => {
     }
   }, [projectId, studyId, scenarioId]);
 
-  return scenario;
+  return { scenario, timetable };
 };
 
 export default useScenario;

@@ -1,11 +1,15 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { keyBy, sortBy } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
-import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
+import {
+  osrdEditoastApi,
+  type InfraWithState,
+  type ScenarioResponse,
+  type TimetableDetailedResult,
+  type TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import {
   updateSelectedTrainId,
@@ -17,11 +21,14 @@ import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';
 
 import useLazyLoadTrains from './useLazyLoadTrains';
-import useScenario from './useScenario';
 import useSimulationResults from './useSimulationResults';
 import selectTrainAndPathForProjection from '../helpers/selectTrainAndPathForProjection';
 
-const useScenarioData = () => {
+const useScenarioData = (
+  scenario: ScenarioResponse,
+  timetable: TimetableDetailedResult,
+  infra: InfraWithState
+) => {
   const dispatch = useAppDispatch();
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const selectedTrainId = useSelector(getSelectedTrainId);
@@ -29,41 +36,25 @@ const useScenarioData = () => {
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResult[]>();
   const [trainIdsToFetch, setTrainIdsToFetch] = useState<number[]>();
 
-  const scenario = useScenario();
-
-  const { infra, isInfraLoaded, reloadCount } = useInfraStatus();
-
-  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
-    { id: scenario?.timetable_id! },
-    {
-      skip: !scenario,
-    }
-  );
-
   const { data: rawTrainSchedules, error: fetchTrainSchedulesError } =
-    osrdEditoastApi.endpoints.postTrainSchedule.useQuery(
-      {
-        body: {
-          ids: timetable?.train_ids!,
-        },
+    osrdEditoastApi.endpoints.postTrainSchedule.useQuery({
+      body: {
+        ids: timetable.train_ids,
       },
-      {
-        skip: !timetable || !timetable.train_ids.length,
-      }
-    );
+    });
 
-  const { data: conflicts } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-    { id: scenario?.timetable_id!, infraId: scenario?.infra_id! },
-    { skip: !scenario }
-  );
+  const { data: conflicts } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery({
+    id: scenario.timetable_id,
+    infraId: scenario.infra_id,
+  });
 
   const { data: projectionPath } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
     {
       id: trainIdUsedForProjection!,
-      infraId: scenario?.infra_id!,
+      infraId: scenario.infra_id,
     },
     {
-      skip: !scenario || !trainIdUsedForProjection,
+      skip: !trainIdUsedForProjection,
     }
   );
 
@@ -75,7 +66,7 @@ const useScenarioData = () => {
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
   } = useLazyLoadTrains({
-    infraId: scenario?.infra_id,
+    infraId: scenario.infra_id,
     trainIdsToFetch,
     setTrainIdsToFetch,
     path: projectionPath?.status === 'success' ? projectionPath : undefined,
@@ -108,11 +99,11 @@ const useScenarioData = () => {
 
   // first load of the trainScheduleSummaries
   useEffect(() => {
-    if (trainSchedules && infra?.state === 'CACHED' && trainScheduleSummaries.length === 0) {
+    if (trainSchedules && infra.state === 'CACHED' && trainScheduleSummaries.length === 0) {
       const trainIds = trainSchedules.map((trainSchedule) => trainSchedule.id);
       setTrainIdsToFetch(trainIds);
     }
-  }, [trainSchedules, infra?.state]);
+  }, [trainSchedules, infra.state]);
 
   useEffect(() => {
     if (fetchTrainSchedulesError) {
@@ -122,7 +113,7 @@ const useScenarioData = () => {
 
   // TODO: refacto selectTrainAndPathForProjection
   useEffect(() => {
-    if (trainSchedules && infra?.state === 'CACHED' && trainSchedules.length > 0) {
+    if (trainSchedules && infra.state === 'CACHED' && trainSchedules.length > 0) {
       selectTrainAndPathForProjection(
         trainSchedules.map((trainSchedule) => trainSchedule.id),
         (id: number) => dispatch(updateSelectedTrainId(id)),
@@ -189,23 +180,17 @@ const useScenarioData = () => {
     dispatch(updateSelectedTrainId(undefined));
   }, []);
 
-  return scenario && timetable
-    ? {
-        scenario,
-        timetable,
-        infraId: scenario.infra_id,
-        selectedTrainId,
-        infra: { infra, isInfraLoaded, reloadCount },
-        trainScheduleSummaries,
-        trainSchedules,
-        trainScheduleUsedForProjection,
-        trainIdUsedForProjection,
-        projectedTrains,
-        simulationResults,
-        conflicts,
-        removeTrains,
-        upsertTrainSchedules,
-      }
-    : undefined;
+  return {
+    selectedTrainId,
+    trainScheduleSummaries,
+    trainSchedules,
+    trainScheduleUsedForProjection,
+    trainIdUsedForProjection,
+    projectedTrains,
+    simulationResults,
+    conflicts,
+    removeTrains,
+    upsertTrainSchedules,
+  };
 };
 export default useScenarioData;
