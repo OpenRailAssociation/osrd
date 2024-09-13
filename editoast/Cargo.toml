@@ -180,7 +180,7 @@ uuid.workspace = true
 validator = { version = "0.18.1", features = ["derive"] }
 
 [dev-dependencies]
-async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
+async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
 axum = { version = "0.7.5", default-features = false, features = [
   "macros",
   "multipart",
