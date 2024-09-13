@@ -42,7 +42,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .read_tag("maxspeed:forward")
         .read_tag("maxspeed:backward")
         .read_tag("voltage")
-        .read(osm_pbf_in.to_str().unwrap())?;
+        .read(&osm_pbf_in)?;
     info!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
     let rail_edges = edges
