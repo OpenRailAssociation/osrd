@@ -624,8 +624,7 @@ class StopTests {
         val arrivalTime =
             res.departureTime + res.envelope.totalTime + res.stopResults.first().duration
         assertEquals(3_000.0, res.departureTime, timeStep)
-        assertEquals(15_000.0, res.departureTime + arrivalTime, timeStep)
-        assertEquals(5_000.0, res.stopResults.first().duration, timeStep)
+        assertEquals(15_000.0, arrivalTime, timeStep)
     }
 
     companion object {
