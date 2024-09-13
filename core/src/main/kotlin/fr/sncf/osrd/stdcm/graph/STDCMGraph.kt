@@ -101,14 +101,12 @@ class STDCMGraph(
     override fun getAdjacentEdges(node: STDCMNode): Collection<STDCMEdge> {
         val res = ArrayList<STDCMEdge>()
         val maxMarginDuration = estimateMaxMarginDuration(node)
-        val baseNodeCost = node.timeData.timeSinceDeparture + node.remainingTimeEstimation
         val visitedNodesParameters =
             VisitedNodes.Parameters(
                 null,
-                node.timeData.earliestReachableTime,
-                node.timeData.maxDepartureDelayingWithoutConflict,
+                node.timeData,
                 maxMarginDuration,
-                baseNodeCost
+                node.remainingTimeEstimation,
             )
         if (node.locationOnEdge != null) {
             val explorer = node.infraExplorer.clone()

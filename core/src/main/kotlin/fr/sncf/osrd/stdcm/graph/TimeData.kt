@@ -62,6 +62,8 @@ data class TimeData(
      */
     val timeSinceDeparture = totalRunningTime + stopTimeData.sumOf { it.currentDuration }
 
+    val totalStopDuration = stopTimeData.sumOf { it.currentDuration }
+
     /** Returns a copy of the current instance, with added travel / stop time. */
     fun withAddedTime(
         extraTravelTime: Double,
