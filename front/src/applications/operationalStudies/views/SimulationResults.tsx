@@ -4,11 +4,7 @@ import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  SimulationResultsData,
-  TrainSpaceTimeData,
-} from 'applications/operationalStudies/types';
-import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { SimulationResultsData } from 'applications/operationalStudies/types';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
@@ -17,6 +13,7 @@ import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/comp
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
+import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
@@ -29,21 +26,15 @@ const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
 type SimulationResultsProps = {
   collapsedTimetable: boolean;
-  spaceTimeData?: TrainSpaceTimeData[];
   infraId?: number;
-  trainScheduleUsedForProjection?: TrainScheduleResult;
-  trainIdUsedForProjection?: number;
   simulationResults: SimulationResultsData;
+  projectionData?: ProjectionData;
   timetableTrainNb: number;
-  allTrainsProjected: boolean;
 };
 
 const SimulationResults = ({
   collapsedTimetable,
-  spaceTimeData,
   infraId,
-  trainScheduleUsedForProjection,
-  trainIdUsedForProjection,
   simulationResults: {
     selectedTrainSchedule,
     selectedTrainRollingStock,
@@ -52,8 +43,8 @@ const SimulationResults = ({
     pathProperties,
     path,
   },
+  projectionData,
   timetableTrainNb,
-  allTrainsProjected,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
@@ -79,23 +70,23 @@ const SimulationResults = ({
   );
 
   const projectedOperationalPoints = useGetProjectedTrainOperationalPoints(
-    trainScheduleUsedForProjection,
-    trainIdUsedForProjection,
+    projectionData?.trainSchedule,
+    projectionData?.trainSchedule.id,
     infraId
   );
 
   const trainUsedForProjectionSpaceTimeData = useMemo(
     () =>
-      selectedTrainSchedule && spaceTimeData
-        ? spaceTimeData.find((_train) => _train.id === selectedTrainSchedule.id)
-        : undefined,
-    [selectedTrainSchedule, spaceTimeData]
+      projectionData?.projectedTrains.find(
+        (_train) => _train.id === projectionData.trainSchedule.id
+      ),
+    [projectionData]
   );
 
   const projectPathTrainResult = useMemo(
     () =>
-      spaceTimeData ? spaceTimeData.filter((train) => train.space_time_curves.length > 0) : [],
-    [spaceTimeData]
+      projectionData?.projectedTrains.filter((train) => train.space_time_curves.length > 0) || [],
+    [projectionData]
   );
 
   useEffect(() => {
@@ -135,7 +126,7 @@ const SimulationResults = ({
       {/* SIMULATION : SPACE TIME CHART */}
 
       <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
-        {spaceTimeData && spaceTimeData.length > 0 && pathProperties && (
+        {projectionData && projectionData.projectedTrains.length > 0 && pathProperties && (
           <>
             <button
               type="button"
@@ -150,9 +141,9 @@ const SimulationResults = ({
 
             <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
               <div className="chart-container">
-                {!allTrainsProjected && (
+                {!projectionData.allTrainsProjected && (
                   <ProjectionLoadingMessage
-                    projectedTrainsNb={spaceTimeData.length}
+                    projectedTrainsNb={projectionData.projectedTrains.length}
                     totalTrains={timetableTrainNb}
                   />
                 )}
