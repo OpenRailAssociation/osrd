@@ -61,10 +61,7 @@ const ScenarioContent = ({
     selectedTrainId,
     trainScheduleSummaries,
     trainSchedules,
-    trainScheduleUsedForProjection,
-    trainIdUsedForProjection,
-    projectedTrains,
-    allTrainsProjected,
+    projection,
     simulationResults,
     conflicts,
     upsertTrainSchedules,
@@ -226,12 +223,9 @@ const ScenarioContent = ({
                 infra && (
                   <SimulationResults
                     collapsedTimetable={collapsedTimetable}
-                    spaceTimeData={projectedTrains}
+                    projectionData={projection}
                     simulationResults={simulationResults}
-                    trainScheduleUsedForProjection={trainScheduleUsedForProjection}
-                    trainIdUsedForProjection={trainIdUsedForProjection}
                     infraId={infra.id}
-                    allTrainsProjected={allTrainsProjected}
                     timetableTrainNb={timetable.train_ids.length}
                   />
                 )
