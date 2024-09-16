@@ -10,6 +10,7 @@ import {
   osrdEditoastApi,
   type LightRollingStockWithLiveries,
   type TrainScheduleBase,
+  type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { ImportTrainScheduleTrainDetail } from 'modules/trainschedule/components/ImportTrainSchedule';
@@ -34,6 +35,7 @@ type ImportTrainScheduleTrainsListProps = {
   isLoading: boolean;
   timetableId: number;
   trainsJsonData: TrainScheduleBase[];
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
 };
 
 const ImportTrainScheduleTrainsList = ({
@@ -42,6 +44,7 @@ const ImportTrainScheduleTrainsList = ({
   isLoading,
   timetableId,
   trainsJsonData,
+  upsertTrainSchedules,
 }: ImportTrainScheduleTrainsListProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
 
@@ -73,7 +76,8 @@ const ImportTrainScheduleTrainsList = ({
           ? trainsJsonData
           : generateTrainSchedulesPayloads(formattedTrainsList);
 
-      await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
+      const trainSchedules = await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
+      upsertTrainSchedules(trainSchedules);
       dispatch(
         setSuccess({
           title: t('success'),
