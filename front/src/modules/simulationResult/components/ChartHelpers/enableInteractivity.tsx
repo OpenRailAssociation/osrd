@@ -302,7 +302,8 @@ export const enableInteractivity = <
       setChart(newChart);
     })
     .filter(
-      (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
+      (event: MouseEvent) =>
+        (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
     );
 
   // Updates in real time the position of the pointer and the vertical/horizontal guidelines

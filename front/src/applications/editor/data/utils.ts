@@ -134,6 +134,7 @@ export function nestEntity(entity: EditorEntity, type: EditoastType): EditorEnti
 
       if (isLast) props[k] = oldProperties[key];
       else props[k] = props[k] || {};
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return props[k];
     }, newProperties);
   });

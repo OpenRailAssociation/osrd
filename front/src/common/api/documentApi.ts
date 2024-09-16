@@ -1,3 +1,4 @@
+import type { NewDocumentResponse } from 'common/api/osrdEditoastApi';
 import mainConfig from 'config/config';
 
 export const getDocument = async (documentKey: number): Promise<Blob> => {
@@ -13,6 +14,6 @@ export const postDocument = async (image: Blob) => {
     },
     body: image,
   });
-  const data = await res.json();
+  const data: NewDocumentResponse = await res.json();
   return data.document_key;
 };

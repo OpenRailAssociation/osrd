@@ -418,7 +418,7 @@ interface EditorSourceProps {
 export const EditorSource = ({ id, data, layers, layerOrder }: EditorSourceProps) => {
   const dataFingerPrint =
     data.type === 'FeatureCollection'
-      ? data.features.map((f) => f.properties?.id).concat()
+      ? data.features.map((f) => f.properties?.id as unknown).concat()
       : data.properties?.id;
   return (
     <Source type="geojson" id={id} data={data}>
