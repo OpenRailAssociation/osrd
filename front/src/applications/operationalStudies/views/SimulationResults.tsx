@@ -11,7 +11,11 @@ import type {
   SimulationResultsData,
   TrainSpaceTimeData,
 } from 'applications/operationalStudies/types';
-import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type {
+  PathfindingResultSuccess,
+  PathProperties,
+  TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import { getScaleDomainFromValues } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
@@ -42,6 +46,7 @@ type SimulationResultsProps = {
         trainSchedule: TrainScheduleResult;
         projectedTrains: TrainSpaceTimeData[];
         path: PathfindingResultSuccess;
+        pathGeometry?: PathProperties['geometry'];
         allTrainsProjected: boolean;
       }
     | undefined;
@@ -158,7 +163,6 @@ const SimulationResults = ({
       )}
 
       {/* SIMULATION : SPACE TIME CHART */}
-
       <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
         {projectionData && projectionData.projectedTrains.length > 0 && pathProperties && (
           <>
@@ -171,7 +175,10 @@ const SimulationResults = ({
             >
               {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
             </button>
-            <SimulationWarpedMap collapsed={!showWarpedMap} pathProperties={pathProperties} />
+            <SimulationWarpedMap
+              collapsed={!showWarpedMap}
+              pathGeometry={projectionData.pathGeometry}
+            />
 
             <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
               <div className="chart-container">
