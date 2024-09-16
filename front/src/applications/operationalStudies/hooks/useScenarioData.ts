@@ -65,6 +65,7 @@ const useScenarioData = (
     projectedTrainsById,
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
+    allTrainsProjected,
   } = useLazyLoadTrains({
     infraId: scenario.infra_id,
     trainIdsToFetch,
@@ -187,6 +188,7 @@ const useScenarioData = (
     trainScheduleUsedForProjection,
     trainIdUsedForProjection,
     projectedTrains,
+    allTrainsProjected,
     simulationResults,
     conflicts,
     removeTrains,

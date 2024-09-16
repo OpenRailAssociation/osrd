@@ -21,11 +21,11 @@ const BATCH_SIZE = 10;
 
 type useLazyLoadTrainsProp = {
   infraId?: number;
-  trainIdsToProject: number[];
+  trainIdsToProject: Set<number>;
   path?: PathfindingResultSuccess;
   trainSchedules?: TrainScheduleResult[];
   moreTrainsToCome?: boolean;
-  setTrainIdsToProject: Dispatch<SetStateAction<number[]>>;
+  setTrainIdsToProject: Dispatch<SetStateAction<Set<number>>>;
 };
 
 /**
@@ -90,9 +90,9 @@ const useLazyProjectTrains = ({
     const projectTrains = async (
       seqNum: number,
       _path: PathfindingResultSuccess,
-      _trainToProjectIds: number[]
+      _trainToProjectIds: Set<number>
     ) => {
-      const shouldProjectIds = _trainToProjectIds.filter(
+      const shouldProjectIds = Array.from(_trainToProjectIds).filter(
         (trainId) => !requestedProjectedTrainIds.current.has(trainId)
       );
 
@@ -120,10 +120,10 @@ const useLazyProjectTrains = ({
     // reset the state when all the trains have been projected
     if (
       !moreTrainsToCome &&
-      trainIdsToProject.length > 0 &&
-      requestedProjectedTrainIds.current.size === trainIdsToProject.length
+      trainIdsToProject.size > 0 &&
+      requestedProjectedTrainIds.current.size === trainIdsToProject.size
     ) {
-      setTrainIdsToProject([]);
+      setTrainIdsToProject(new Set());
       requestedProjectedTrainIds.current = new Set();
     }
   }, [moreTrainsToCome, projectedTrainsById]);
@@ -136,7 +136,7 @@ const useLazyProjectTrains = ({
       setProjectedTrainsById(new Map());
 
       const trainIds = trainSchedules.map((trainSchedule) => trainSchedule.id);
-      setTrainIdsToProject(trainIds);
+      setTrainIdsToProject(new Set(trainIds));
     }
   }, [path]);
 

@@ -46,7 +46,7 @@ const useLazyLoadTrains = ({
   const [trainScheduleSummariesById, setTrainScheduleSummariesById] = useState<
     Map<number, TrainScheduleWithDetails>
   >(new Map());
-  const [trainIdsToProject, setTrainIdsToProject] = useState<number[]>([]);
+  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<number>>(new Set());
   const [allTrainsLoaded, setAllTrainsLoaded] = useState(false);
 
   const [postTrainScheduleSimulationSummary] =
@@ -56,6 +56,8 @@ const useLazyLoadTrains = ({
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
   const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
+
+  const allTrainsProjected = useMemo(() => trainIdsToProject.size === 0, [trainIdsToProject]);
 
   const { projectedTrainsById, setProjectedTrainsById } = useLazyProjectTrains({
     infraId,
@@ -96,7 +98,7 @@ const useLazyLoadTrains = ({
 
         if (!outOfSync) {
           // launch the projection of the trains
-          setTrainIdsToProject((prev) => [...prev, ...packageToFetch]);
+          setTrainIdsToProject((prev) => new Set([...prev, ...packageToFetch]));
 
           // format the summaries to display them in the timetable
           const newFormattedSummaries = formatTrainScheduleSummaries(
@@ -125,6 +127,7 @@ const useLazyLoadTrains = ({
     projectedTrainsById,
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
+    allTrainsProjected,
   };
 };
 
