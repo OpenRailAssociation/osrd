@@ -238,12 +238,6 @@ All common code (and shared components) supposed to be in `common/`.
 
 - https://www.npmjs.com/package/@rjsf/core
 - https://www.npmjs.com/package/reselect
-- https://github.com/reduxjs/redux-thunk
-
-### Do not know where it is used
-
-- debounce
-- jwt-decode
 
 ### devDependencies
 
