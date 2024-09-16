@@ -178,10 +178,15 @@ const useScenarioData = (
     selectedTrainId,
     trainScheduleSummaries,
     trainSchedules,
-    trainScheduleUsedForProjection,
-    trainIdUsedForProjection,
-    projectedTrains,
-    allTrainsProjected,
+    projectionData:
+      trainScheduleUsedForProjection && projectionPath?.status === 'success'
+        ? {
+            trainSchedule: trainScheduleUsedForProjection,
+            path: projectionPath,
+            projectedTrains,
+            allTrainsProjected,
+          }
+        : undefined,
     simulationResults,
     conflicts,
     removeTrains,

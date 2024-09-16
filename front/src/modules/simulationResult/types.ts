@@ -6,8 +6,13 @@ import type {
 import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
+  TrainSpaceTimeData,
 } from 'applications/operationalStudies/types';
-import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type {
+  PathfindingResultSuccess,
+  RollingStockWithLiveries,
+  TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 import type { ArrayElement } from 'utils/types';
 
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
@@ -18,4 +23,11 @@ export type SpeedSpaceChartData = {
   simulation?: SimulationResponseSuccess;
   formattedPathProperties: PathPropertiesFormatted;
   departureTime: string;
+};
+
+export type ProjectionData = {
+  trainSchedule: TrainScheduleResult;
+  projectedTrains: TrainSpaceTimeData[];
+  path: PathfindingResultSuccess;
+  allTrainsProjected: boolean;
 };
