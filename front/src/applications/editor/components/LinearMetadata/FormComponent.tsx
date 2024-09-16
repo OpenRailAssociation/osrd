@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 import Form, { getDefaultRegistry } from '@rjsf/core';
-import type { FieldProps } from '@rjsf/utils';
+import type { FieldProps, RJSFSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
+import type { GeoJsonProperties, Geometry } from 'geojson';
 import type { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +35,13 @@ import HelpModal from './HelpModal';
 import { LinearMetadataTooltip } from './tooltip';
 import 'common/IntervalsDataViz/style.scss';
 
-const IntervalEditorComponent = (props: FieldProps) => {
+export type FormContext = {
+  geometry: Geometry;
+  length: number;
+  isCreation: boolean;
+};
+
+const IntervalEditorComponent = (props: FieldProps<GeoJsonProperties, RJSFSchema, FormContext>) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { openModal, closeModal } = useModal();
   const { t } = useTranslation();
@@ -59,10 +66,10 @@ const IntervalEditorComponent = (props: FieldProps) => {
 
   // Get the distance of the geometry
   const distance = useMemo(() => {
-    if (!isNil(formContext.length)) {
+    if (!isNil(formContext?.length)) {
       return formContext.length;
     }
-    if (formContext.geometry?.type === 'LineString') {
+    if (formContext?.geometry?.type === 'LineString') {
       return getLineStringDistance(formContext.geometry);
     }
     return 0;
@@ -414,16 +421,16 @@ const IntervalEditorComponent = (props: FieldProps) => {
   );
 };
 
-export const FormComponent = (props: FieldProps) => {
+export const FormComponent = (props: FieldProps<GeoJsonProperties, RJSFSchema, FormContext>) => {
   const { name, formContext, schema, registry } = props;
   const Fields = getDefaultRegistry().fields;
 
   // Get the distance of the geometry
   const distance = useMemo(() => {
-    if (!isNil(formContext.length)) {
-      return formContext.length!;
+    if (!isNil(formContext?.length)) {
+      return formContext.length;
     }
-    if (formContext.geometry?.type === 'LineString') {
+    if (formContext?.geometry?.type === 'LineString') {
       return getLineStringDistance(formContext.geometry);
     }
     return 0;
