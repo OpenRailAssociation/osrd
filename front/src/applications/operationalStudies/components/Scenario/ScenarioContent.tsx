@@ -187,7 +187,10 @@ const ScenarioContent = ({
             )}
             {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
               <div className="scenario-managetrainschedule">
-                <ImportTrainSchedule timetableId={scenario.timetable_id} />
+                <ImportTrainSchedule
+                  timetableId={scenario.timetable_id}
+                  upsertTrainSchedules={upsertTrainSchedules}
+                />
               </div>
             )}
             <div className="scenario-results">

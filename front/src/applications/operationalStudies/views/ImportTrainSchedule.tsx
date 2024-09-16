@@ -4,14 +4,20 @@ import { useTranslation } from 'react-i18next';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { ImportTrainScheduleConfig } from 'modules/trainschedule/components/ImportTrainSchedule';
 import ImportTrainScheduleTrainsList from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleTrainsList';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
-const ImportTrainSchedule = ({ timetableId }: { timetableId: number }) => {
+const ImportTrainSchedule = ({
+  timetableId,
+  upsertTrainSchedules,
+}: {
+  timetableId: number;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+}) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock']);
   const [trainsList, setTrainsList] = useState<ImportedTrainSchedule[]>([]);
@@ -47,6 +53,7 @@ const ImportTrainSchedule = ({ timetableId }: { timetableId: number }) => {
         timetableId={timetableId}
         trainsList={trainsList}
         trainsJsonData={trainsJsonData}
+        upsertTrainSchedules={upsertTrainSchedules}
       />
     </main>
   ) : (
