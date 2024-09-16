@@ -22,7 +22,7 @@ import { mapBy } from 'utils/types';
 
 import useLazyLoadTrains from './useLazyLoadTrains';
 import useSimulationResults from './useSimulationResults';
-import selectTrainAndPathForProjection from '../helpers/selectTrainAndPathForProjection';
+import useSelectedTrainAndPathForProjection from './useSelectedTrainAndPathForProjection';
 
 const useScenarioData = (
   scenario: ScenarioResponse,
@@ -89,6 +89,8 @@ const useScenarioData = (
     [trainIdUsedForProjection, trainSchedules]
   );
 
+  useSelectedTrainAndPathForProjection(infra, timetable.train_ids, trainScheduleSummaries);
+
   useEffect(() => {
     if (!rawTrainSchedules) {
       setTrainSchedules(undefined);
@@ -111,19 +113,6 @@ const useScenarioData = (
       dispatch(setFailure(castErrorToFailure(fetchTrainSchedulesError)));
     }
   }, [fetchTrainSchedulesError]);
-
-  // TODO: refacto selectTrainAndPathForProjection
-  useEffect(() => {
-    if (trainSchedules && infra.state === 'CACHED' && trainSchedules.length > 0) {
-      selectTrainAndPathForProjection(
-        trainSchedules.map((trainSchedule) => trainSchedule.id),
-        (id: number) => dispatch(updateSelectedTrainId(id)),
-        (id: number) => dispatch(updateTrainIdUsedForProjection(id)),
-        trainIdUsedForProjection,
-        selectedTrainId
-      );
-    }
-  }, [trainSchedules, infra]);
 
   const upsertTrainSchedules = useCallback(
     (trainSchedulesToUpsert: TrainScheduleResult[]) => {
@@ -179,6 +168,10 @@ const useScenarioData = (
   useEffect(() => {
     dispatch(updateTrainIdUsedForProjection(undefined));
     dispatch(updateSelectedTrainId(undefined));
+    return () => {
+      dispatch(updateTrainIdUsedForProjection(undefined));
+      dispatch(updateSelectedTrainId(undefined));
+    };
   }, []);
 
   return {
