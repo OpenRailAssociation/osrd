@@ -41,6 +41,7 @@ type SimulationResultsProps = {
   trainIdUsedForProjection?: number;
   simulationResults: SimulationResultsData;
   timetableTrainNb: number;
+  allTrainsProjected: boolean;
 };
 
 const SimulationResults = ({
@@ -58,6 +59,7 @@ const SimulationResults = ({
     path,
   },
   timetableTrainNb,
+  allTrainsProjected,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
@@ -170,7 +172,7 @@ const SimulationResults = ({
 
             <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
               <div className="chart-container">
-                {spaceTimeData.length !== timetableTrainNb && (
+                {!allTrainsProjected && (
                   <ProjectionLoadingMessage
                     projectedTrainsNb={spaceTimeData.length}
                     totalTrains={timetableTrainNb}

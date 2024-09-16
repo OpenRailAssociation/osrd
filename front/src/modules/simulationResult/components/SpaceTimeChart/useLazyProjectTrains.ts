@@ -50,6 +50,7 @@ const useLazyProjectTrains = ({
   const [projectedTrainsById, setProjectedTrainsById] = useState<Map<number, TrainSpaceTimeData>>(
     new Map()
   );
+  const [allTrainsProjected, setAllTrainsProjected] = useState(false);
 
   const requestedProjectedTrainIds = useRef<Set<number>>(new Set());
   const projectionSeqNum = useRef(0);
@@ -96,6 +97,10 @@ const useLazyProjectTrains = ({
         (trainId) => !requestedProjectedTrainIds.current.has(trainId)
       );
 
+      if (allTrainsProjected && shouldProjectIds.length > 0) {
+        setAllTrainsProjected(false);
+      }
+
       for (let i = 0; i < shouldProjectIds.length; i += BATCH_SIZE) {
         // If projection parameters have changed, bail out
         if (projectionSeqNum.current !== seqNum) break;
@@ -125,6 +130,7 @@ const useLazyProjectTrains = ({
     ) {
       setTrainIdsToProject([]);
       requestedProjectedTrainIds.current = new Set();
+      setAllTrainsProjected(true);
     }
   }, [moreTrainsToCome, projectedTrainsById]);
 
@@ -143,6 +149,7 @@ const useLazyProjectTrains = ({
   return {
     projectedTrainsById,
     setProjectedTrainsById,
+    allTrainsProjected,
   };
 };
 

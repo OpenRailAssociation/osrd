@@ -64,6 +64,7 @@ const ScenarioContent = ({
     trainScheduleUsedForProjection,
     trainIdUsedForProjection,
     projectedTrains,
+    allTrainsProjected,
     simulationResults,
     conflicts,
     upsertTrainSchedules,
@@ -230,6 +231,7 @@ const ScenarioContent = ({
                     trainScheduleUsedForProjection={trainScheduleUsedForProjection}
                     trainIdUsedForProjection={trainIdUsedForProjection}
                     infraId={infra.id}
+                    allTrainsProjected={allTrainsProjected}
                     timetableTrainNb={timetable.train_ids.length}
                   />
                 )

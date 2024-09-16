@@ -57,7 +57,7 @@ const useLazyLoadTrains = ({
 
   const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
 
-  const { projectedTrainsById, setProjectedTrainsById } = useLazyProjectTrains({
+  const { projectedTrainsById, setProjectedTrainsById, allTrainsProjected } = useLazyProjectTrains({
     infraId,
     trainIdsToProject,
     path,
@@ -125,6 +125,7 @@ const useLazyLoadTrains = ({
     projectedTrainsById,
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
+    allTrainsProjected,
   };
 };
 
