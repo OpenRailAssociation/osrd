@@ -53,7 +53,7 @@ openssl = "0.10.66"
 paste = "1.0.15"
 postgis_diesel = { version = "2.3.1", features = ["serde"] }
 postgres-openssl = "0.5.0"
-pretty_assertions = "1.4.0"
+pretty_assertions = "1.4.1"
 rand = "0.8.5"
 rangemap = "1.5.1"
 rstest = { version = "0.19.0", default-features = false }
