@@ -35,9 +35,9 @@ export const drawAxisTitle = (chart: Chart, slopes?: SpaceCurvesSlopesData['slop
       .append('text')
       .attr('class', 'axis-unit')
       .attr('text-anchor', 'end')
-      .attr('transform', 'rotate(0)')
-      .attr('x', chart.width - 10)
-      .attr('y', 30)
+      .attr('transform', 'rotate(-90)')
+      .attr('x', -30)
+      .attr('y', chart.width - 10)
       .text('m');
   }
 };
