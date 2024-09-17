@@ -112,7 +112,7 @@ def get_infra(editoast_url: str, infra_name: str) -> int:
 def create_scenario(editoast_url: str, infra_id: int) -> Scenario:
     # Create the timetable
     r = _post_with_timeout(editoast_url + "/timetable/", json={})
-    timetable_id = r.json()["id"]
+    timetable_id = r.json()["timetable_id"]
     return Scenario(-1, -1, -1, infra_id, timetable_id)
 
 
@@ -469,16 +469,14 @@ def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
 
     # Create a timetable
     r = _post_with_timeout(editoast_url + "/timetable/", json={})
-    timetable_id = r.json()["id"]
+    timetable_id = r.json()["timetable_id"]
     return Scenario(-1, -1, -1, infra_id, timetable_id)
 
 
 def _make_random_margin_value() -> str:
-    if random.randint(0, 3) == 0:
-        return f"{random.randint(3, 20)}%"
-    if random.randint(0, 3) == 0:
-        return f"{random.randint(3, 7)}min/100km"
-    return "None"
+    if random.randint(0, 2) == 0:
+        return f"{random.randint(0, 20)}%"
+    return f"{random.randint(0, 7)}min/100km"
 
 
 def _make_random_margins(n_steps: int) -> Dict:
