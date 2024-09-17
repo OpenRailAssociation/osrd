@@ -2,3 +2,4 @@ build
 Dockerfile
 .gradle
 .idea
+.kotlin
