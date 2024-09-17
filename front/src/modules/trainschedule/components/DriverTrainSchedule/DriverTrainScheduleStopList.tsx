@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
 import type { ReportTrain } from 'common/api/osrdEditoastApi';
-import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
 import { mmToM } from 'utils/physics';
 
 import DriverTrainScheduleStop from './DriverTrainScheduleStop';

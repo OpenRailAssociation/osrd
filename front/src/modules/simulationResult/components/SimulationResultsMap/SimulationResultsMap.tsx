@@ -50,7 +50,7 @@ import VirtualLayers from 'modules/simulationResult/components/SimulationResults
 import type { RootState } from 'reducers';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { getLayersSettings, getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
+import { getIsPlaying } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isoDateWithTimezoneToSec } from 'utils/date';
 import { kmToM, mmToM, msToKmh } from 'utils/physics';

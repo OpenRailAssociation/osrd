@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
-import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
+import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 
 import type { SimulationResultsData } from '../types';
 

@@ -9,7 +9,7 @@ import type {
   Position,
   SimulationD3Scale,
   PositionsSpeedTimes,
-} from 'reducers/osrdsimulation/types';
+} from 'reducers/simulationResults/types';
 import { datetime2time, sec2time } from 'utils/timeManipulation';
 
 export function sec2d3datetime(time: number) {

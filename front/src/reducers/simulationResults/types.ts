@@ -194,7 +194,7 @@ export interface SimulationTrain<DateType = Date> {
   eco_speed?: ConsolidatedPositionSpeedTime[];
 }
 
-export interface OsrdSimulationState {
+export interface SimulationResultsState {
   chart?: Chart;
   isPlaying: boolean;
   isUpdating: boolean;

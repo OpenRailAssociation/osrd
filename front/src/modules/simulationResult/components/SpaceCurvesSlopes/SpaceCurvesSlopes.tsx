@@ -22,8 +22,8 @@ import {
 import type { ReportTrainData } from 'modules/simulationResult/components/SpeedSpaceChart/types';
 import { CHART_AXES } from 'modules/simulationResult/consts';
 import type { PositionScaleDomain, SpaceCurvesSlopesData } from 'modules/simulationResult/types';
-import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
-import type { Chart, SpeedSpaceChart } from 'reducers/osrdsimulation/types';
+import { getIsPlaying } from 'reducers/simulationResults/selectors';
+import type { Chart, SpeedSpaceChart } from 'reducers/simulationResults/types';
 import { dateIsInRange, isoDateWithTimezoneToSec } from 'utils/date';
 import { mmToM } from 'utils/physics';
 

@@ -13,7 +13,7 @@ import {
   type TrackSection,
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
-import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
 import { store } from 'store';
 import { mmToM, msToKmhRounded } from 'utils/physics';
 import { ISO8601Duration2sec, ms2sec } from 'utils/timeManipulation';

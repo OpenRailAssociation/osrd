@@ -4,7 +4,7 @@ import type { Feature, LineString } from 'geojson';
 import { max, min } from 'lodash';
 
 import type { TrainCurrentInfo } from 'common/Map/components/TrainOnMap/TrainOnMap';
-import type { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
+import type { PositionsSpeedTimes } from 'reducers/simulationResults/types';
 import { mToKm } from 'utils/physics';
 
 const getSelectedTrainHoverPositions = (

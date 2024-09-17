@@ -26,7 +26,7 @@ import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
 import { updateViewport, type Viewport } from 'reducers/map';
-import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
+import { getIsUpdating } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
 const MAP_MIN_HEIGHT = 450;

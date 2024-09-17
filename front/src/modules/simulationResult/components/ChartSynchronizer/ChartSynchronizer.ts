@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 
 import { CHART_AXES, LIST_VALUES, type ListValues } from 'modules/simulationResult/consts';
-import type { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
+import type { PositionsSpeedTimes } from 'reducers/simulationResults/types';
 
 import { interpolateOnTime } from '../ChartHelpers/ChartHelpers';
 

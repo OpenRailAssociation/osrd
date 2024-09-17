@@ -4,7 +4,7 @@ import type {
   PositionSpeedTime,
   RadiusPosition,
   SpeedPosition,
-} from 'reducers/osrdsimulation/types';
+} from 'reducers/simulationResults/types';
 
 export type ReportTrainData = {
   position: number;

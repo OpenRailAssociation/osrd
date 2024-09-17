@@ -2,7 +2,7 @@ import type {
   PositionData,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { HeightPosition } from 'reducers/osrdsimulation/types';
+import type { HeightPosition } from 'reducers/simulationResults/types';
 import type { ArrayElement } from 'utils/types';
 
 import type { MergedBlock } from './components/ChartHelpers/ChartHelpers';
