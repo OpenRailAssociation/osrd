@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
-import { type OsrdSimulationState } from 'reducers/osrdsimulation/types';
+import { type SimulationResultsState } from 'reducers/simulationResults/types';
 
-export const simulationInitialState: OsrdSimulationState = {
+export const simulationResultsInitialState: SimulationResultsState = {
   chart: undefined,
   isPlaying: false,
   isUpdating: false,
@@ -11,24 +11,24 @@ export const simulationInitialState: OsrdSimulationState = {
   trainIdUsedForProjection: undefined,
 };
 
-export const simulationSlice = createSlice({
+export const simulationResultsSlice = createSlice({
   name: 'simulation',
-  initialState: simulationInitialState,
+  initialState: simulationResultsInitialState,
   reducers: {
-    updateIsPlaying(state: Draft<OsrdSimulationState>, action: PayloadAction<boolean>) {
+    updateIsPlaying(state: Draft<SimulationResultsState>, action: PayloadAction<boolean>) {
       state.isPlaying = action.payload;
     },
-    updateIsUpdating(state: Draft<OsrdSimulationState>, action: PayloadAction<boolean>) {
+    updateIsUpdating(state: Draft<SimulationResultsState>, action: PayloadAction<boolean>) {
       state.isUpdating = action.payload;
     },
     updateSelectedTrainId(
-      state: Draft<OsrdSimulationState>,
+      state: Draft<SimulationResultsState>,
       action: PayloadAction<number | undefined>
     ) {
       state.selectedTrainId = action.payload;
     },
     updateTrainIdUsedForProjection(
-      state: Draft<OsrdSimulationState>,
+      state: Draft<SimulationResultsState>,
       action: PayloadAction<number | undefined>
     ) {
       state.trainIdUsedForProjection = action.payload;
@@ -41,6 +41,6 @@ export const {
   updateIsUpdating,
   updateSelectedTrainId,
   updateTrainIdUsedForProjection,
-} = simulationSlice.actions;
+} = simulationResultsSlice.actions;
 
-export default simulationSlice.reducer;
+export default simulationResultsSlice.reducer;

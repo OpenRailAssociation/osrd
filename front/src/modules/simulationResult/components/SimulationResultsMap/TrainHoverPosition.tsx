@@ -11,7 +11,11 @@ import { Source, Marker } from 'react-map-gl/maplibre';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { Viewport } from 'reducers/map';
-import type { AllowancesSetting, AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
+import type {
+  AllowancesSetting,
+  AllowancesSettings,
+  Train,
+} from 'reducers/simulationResults/types';
 import { getCurrentBearing } from 'utils/geometry';
 import { clamp as boundedValue } from 'utils/numbers';
 import { datetime2time } from 'utils/timeManipulation';

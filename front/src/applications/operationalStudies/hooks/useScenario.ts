@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { updateTrainIdUsedForProjection } from 'reducers/osrdsimulation';
+import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { parseNumber } from 'utils/strings';
 

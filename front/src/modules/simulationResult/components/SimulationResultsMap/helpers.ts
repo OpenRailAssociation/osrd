@@ -2,7 +2,7 @@ import along from '@turf/along';
 import { lineString } from '@turf/helpers';
 import type { Feature, LineString } from 'geojson';
 
-import type { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
+import type { PositionsSpeedTimes } from 'reducers/simulationResults/types';
 
 import type { TrainPosition } from './types';
 

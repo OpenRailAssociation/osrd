@@ -8,7 +8,7 @@ import {
   gridY2,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import svgDefs from 'modules/simulationResult/components/ChartHelpers/svgDefs';
-import type { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
+import type { Chart, SimulationD3Scale } from 'reducers/simulationResults/types';
 
 // TODO: remove this when spaceCurvesSlopes chart will be deleted
 // keyValues ['position', 'gradient']

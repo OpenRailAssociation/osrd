@@ -21,7 +21,7 @@ import type { WarpingFunction } from 'common/Map/WarpedMap/getWarping';
 import getWarping from 'common/Map/WarpedMap/getWarping';
 import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
 import { useInfraID } from 'common/osrdContext';
-import { getOsrdSimulation } from 'reducers/osrdsimulation/selectors';
+import { getSimulationResults } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { clip } from 'utils/mapHelper';
 
@@ -79,7 +79,7 @@ const SimulationWarpedMap = ({
 
   const layers = useMemo(() => new Set<Layer>(['track_sections']), []);
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
-  const { chart } = useSelector(getOsrdSimulation);
+  const { chart } = useSelector(getSimulationResults);
   // TODO: fix warped map - uncomment the next commented lines
   // const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
   // const [localPositionValues, setLocalPositionValues] = useState<PositionsSpeedTimes<Date>>(

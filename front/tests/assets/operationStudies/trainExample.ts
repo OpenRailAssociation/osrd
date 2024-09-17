@@ -1,4 +1,4 @@
-import type { Train } from 'reducers/osrdsimulation/types';
+import type { Train } from 'reducers/simulationResults/types';
 
 const train: Train = {
   id: 395,

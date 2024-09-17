@@ -28,7 +28,7 @@ import type {
   SimulationTrain,
   PositionSpeedTime,
   PositionsSpeedTimes,
-} from 'reducers/osrdsimulation/types';
+} from 'reducers/simulationResults/types';
 import { dateIsInRange, isoDateWithTimezoneToSec } from 'utils/date';
 import type { typedEntries } from 'utils/types';
 

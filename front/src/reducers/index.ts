@@ -24,10 +24,10 @@ import stdcmConfReducer, {
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdConfState, OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import simulationReducer, {
-  simulationInitialState,
-  simulationSlice,
-} from 'reducers/osrdsimulation';
-import type { OsrdSimulationState } from 'reducers/osrdsimulation/types';
+  simulationResultsInitialState,
+  simulationResultsSlice,
+} from 'reducers/simulationResults';
+import type { SimulationResultsState } from 'reducers/simulationResults/types';
 import userReducer, { userInitialState, userSlice } from 'reducers/user';
 import type { UserState } from 'reducers/user';
 
@@ -90,7 +90,7 @@ export interface RootState {
   [mainSlice.name]: MainState;
   [stdcmConfSlice.name]: OsrdStdcmConfState;
   [operationalStudiesConfSlice.name]: OsrdConfState;
-  [simulationSlice.name]: OsrdSimulationState;
+  [simulationResultsSlice.name]: SimulationResultsState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
   [osrdGatewayApi.reducerPath]: ReturnType<typeof osrdGatewayApi.reducer>;
 }
@@ -103,7 +103,7 @@ export const rootInitialState: RootState = {
   [mainSlice.name]: mainInitialState,
   [stdcmConfSlice.name]: stdcmConfInitialState,
   [operationalStudiesConfSlice.name]: defaultCommonConf,
-  [simulationSlice.name]: simulationInitialState,
+  [simulationResultsSlice.name]: simulationResultsInitialState,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
   [osrdGatewayApi.reducerPath]: {} as ReturnType<typeof osrdGatewayApi.reducer>,
 };
@@ -116,7 +116,7 @@ export type AnyReducerState =
   | MainState
   | OsrdStdcmConfState
   | OsrdConfState
-  | OsrdSimulationState;
+  | SimulationResultsState;
 
 export const rootReducer: ReducersMapObject<RootState> = {
   [userSlice.name]: userReducer,
@@ -132,7 +132,7 @@ export const rootReducer: ReducersMapObject<RootState> = {
     buildOsrdConfPersistConfig<OsrdConfState>(operationalStudiesConfSlice),
     operationalStudiesConfReducer
   ) as unknown as Reducer<OsrdConfState, AnyAction>,
-  [simulationSlice.name]: simulationReducer,
+  [simulationResultsSlice.name]: simulationReducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
   [osrdGatewayApi.reducerPath]: osrdGatewayApi.reducer,
 };

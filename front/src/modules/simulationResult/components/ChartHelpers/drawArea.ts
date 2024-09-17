@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-import type { Chart } from 'reducers/osrdsimulation/types';
+import type { Chart } from 'reducers/simulationResults/types';
 
 import type { AreaBlock } from '../SpeedSpaceChart/types';
 

@@ -15,7 +15,7 @@ import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/pathfinding/utils';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
+import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 
 import { STDCM_TRAIN_ID } from '../consts';
 

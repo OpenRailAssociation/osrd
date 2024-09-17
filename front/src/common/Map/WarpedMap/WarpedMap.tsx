@@ -23,7 +23,7 @@ import type { TrainPosition } from 'modules/simulationResult/components/Simulati
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
-import type { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
+import type { AllowancesSettings, Train } from 'reducers/simulationResults/types';
 
 type WarpedMapProps = {
   bbox: BBox2d;

@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 
 import type { ChartAxes } from 'modules/simulationResult/consts';
-import type { Chart, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
+import type { Chart, ConsolidatedPosition } from 'reducers/simulationResults/types';
 import type { ArrayElement } from 'utils/types';
 
 import { getAxis } from './ChartHelpers';

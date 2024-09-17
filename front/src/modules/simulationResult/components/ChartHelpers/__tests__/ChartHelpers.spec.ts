@@ -1,5 +1,5 @@
 import { LIST_VALUES, CHART_AXES } from 'modules/simulationResult/consts';
-import type { SimulationTrain } from 'reducers/osrdsimulation/types';
+import type { SimulationTrain } from 'reducers/simulationResults/types';
 
 import simulationTrain from '../../../../../../tests/assets/operationStudies/simulationTrain';
 import train from '../../../../../../tests/assets/operationStudies/trainExample';

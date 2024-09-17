@@ -9,7 +9,7 @@ import type {
   HeightPosition,
   RadiusPosition,
   SpeedSpaceChart,
-} from 'reducers/osrdsimulation/types';
+} from 'reducers/simulationResults/types';
 
 export const drawAxisTitle = (chart: Chart, slopes?: SpaceCurvesSlopesData['slopesHistogram']) => {
   chart.drawZone

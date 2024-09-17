@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import type { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
+import type { PositionsSpeedTimes } from 'reducers/simulationResults/types';
 
 import { sec2d3datetime } from './ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from './ChartSynchronizer';

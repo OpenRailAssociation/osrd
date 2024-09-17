@@ -1,4 +1,4 @@
-import type { Chart } from 'reducers/osrdsimulation/types';
+import type { Chart } from 'reducers/simulationResults/types';
 
 // TODO: remove this when enableInteractivity will be deleted
 const drawGuideLines = (chart: Chart) => {

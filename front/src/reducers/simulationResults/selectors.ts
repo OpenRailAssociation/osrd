@@ -1,11 +1,11 @@
 import type { RootState } from 'reducers';
 import { makeSubSelector } from 'utils/selectors';
 
-import type { OsrdSimulationState } from './types';
+import type { SimulationResultsState } from './types';
 
-export const getOsrdSimulation = (state: RootState) => state.simulation;
+export const getSimulationResults = (state: RootState) => state.simulation;
 
-const makeOsrdSimulationSelector = makeSubSelector<OsrdSimulationState>(getOsrdSimulation);
+const makeOsrdSimulationSelector = makeSubSelector<SimulationResultsState>(getSimulationResults);
 
 export const getIsPlaying = makeOsrdSimulationSelector('isPlaying');
 export const getIsUpdating = makeOsrdSimulationSelector('isUpdating');

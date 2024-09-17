@@ -11,8 +11,11 @@ import {
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/osrdsimulation';
-import { getSelectedTrainId, getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
+import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import {
+  getSelectedTrainId,
+  getTrainIdUsedForProjection,
+} from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { mapBy } from 'utils/types';

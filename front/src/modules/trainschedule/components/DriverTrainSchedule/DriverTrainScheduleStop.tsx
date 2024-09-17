@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import cx from 'classnames';
 
-import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
 
 import type { OperationalPointWithTimeAndSpeed } from './types';
 import { getActualSpeed, getActualVmax, getAverageSpeed, getTime } from './utils';

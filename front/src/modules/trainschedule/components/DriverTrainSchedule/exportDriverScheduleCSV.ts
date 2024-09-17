@@ -4,7 +4,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import type { ReportTrain, TrainScheduleBase } from 'common/api/osrdEditoastApi';
-import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
 import { timestampToHHMMSS } from 'utils/date';
 import { mmToM, mToMm } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';

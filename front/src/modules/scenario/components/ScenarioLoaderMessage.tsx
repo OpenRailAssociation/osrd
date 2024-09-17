@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
-import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
+import { getIsUpdating } from 'reducers/simulationResults/selectors';
 
 type Props = {
   infraState?: InfraState;
