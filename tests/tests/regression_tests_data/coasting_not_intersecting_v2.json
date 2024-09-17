@@ -1,5 +1,4 @@
 {
-    "timetable_version": 2,
     "error_type": "STDCM",
     "code": 500,
     "error": "{\"status\":500,\"type\":\"core:assert_error\",\"context\":{\"stack_trace\":[\"CoastingGenerator.java:71\",\"AcceleratingSlopeCoast.java:120\",\"MarecoAllowance.java:95\",\"AbstractAllowanceWithRanges.java:341\",\"AbstractAllowanceWithRanges.java:300\",\"AbstractAllowanceWithRanges.java:267\",\"AbstractAllowanceWithRanges.java:195\",\"AbstractAllowanceWithRanges.java:131\",\"StandaloneSimulation.kt:326\",\"StandaloneSimulation.kt:91\",\"SimulationEndpoint.kt:56\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:840\"],\"url\":\"http://localhost:8080//standalone_simulation\",\"file_location\":\"CoastingGenerator.java:71\"},\"message\":\"assert check failed\"}",

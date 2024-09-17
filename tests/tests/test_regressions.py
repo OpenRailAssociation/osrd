@@ -14,7 +14,6 @@ REGRESSION_TESTS_DATA_FOLDER = Path(__file__).parent / "regression_tests_data"
 REGRESSION_TESTS_JSON_FILES = [
     str(json_file.relative_to(REGRESSION_TESTS_DATA_FOLDER))
     for json_file in REGRESSION_TESTS_DATA_FOLDER.rglob("*.json")
-    if json.loads(json_file.read_text()).get("timetable_version") == 2
 ]
 
 

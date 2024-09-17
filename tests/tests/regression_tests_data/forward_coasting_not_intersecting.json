@@ -1,5 +1,4 @@
 {
-    "timetable_version": 2,
     "error_type": "RESULT",
     "code": 200,
     "error": "{\"status\":\"simulation_failed\",\"core_error\":{\"status\":500,\"type\":\"core:impossible_simulation\",\"context\":{\"allowance_range_index\":1},\"message\":\"The requested train stopped before reaching its destination (not enough traction)\"}}",
