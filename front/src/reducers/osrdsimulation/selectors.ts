@@ -3,7 +3,7 @@ import { makeSubSelector } from 'utils/selectors';
 
 import type { OsrdSimulationState } from './types';
 
-export const getOsrdSimulation = (state: RootState) => state.osrdsimulation;
+export const getOsrdSimulation = (state: RootState) => state.simulation;
 
 const makeOsrdSimulationSelector = makeSubSelector<OsrdSimulationState>(getOsrdSimulation);
 

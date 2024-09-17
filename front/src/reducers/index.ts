@@ -23,8 +23,9 @@ import stdcmConfReducer, {
   stdcmConfSlice,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdConfState, OsrdStdcmConfState } from 'reducers/osrdconf/types';
-import osrdsimulationReducer, {
-  initialState as osrdSimulationInitialState,
+import simulationReducer, {
+  simulationInitialState,
+  simulationSlice,
 } from 'reducers/osrdsimulation';
 import type { OsrdSimulationState } from 'reducers/osrdsimulation/types';
 import userReducer, { userInitialState, userSlice } from 'reducers/user';
@@ -89,9 +90,9 @@ export interface RootState {
   [mainSlice.name]: MainState;
   [stdcmConfSlice.name]: OsrdStdcmConfState;
   [operationalStudiesConfSlice.name]: OsrdConfState;
+  [simulationSlice.name]: OsrdSimulationState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
   [osrdGatewayApi.reducerPath]: ReturnType<typeof osrdGatewayApi.reducer>;
-  osrdsimulation: OsrdSimulationState;
 }
 
 export const rootInitialState: RootState = {
@@ -102,9 +103,9 @@ export const rootInitialState: RootState = {
   [mainSlice.name]: mainInitialState,
   [stdcmConfSlice.name]: stdcmConfInitialState,
   [operationalStudiesConfSlice.name]: defaultCommonConf,
+  [simulationSlice.name]: simulationInitialState,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
   [osrdGatewayApi.reducerPath]: {} as ReturnType<typeof osrdGatewayApi.reducer>,
-  osrdsimulation: osrdSimulationInitialState,
 };
 
 export type AnyReducerState =
@@ -131,7 +132,7 @@ export const rootReducer: ReducersMapObject<RootState> = {
     buildOsrdConfPersistConfig<OsrdConfState>(operationalStudiesConfSlice),
     operationalStudiesConfReducer
   ) as unknown as Reducer<OsrdConfState, AnyAction>,
-  osrdsimulation: osrdsimulationReducer,
+  [simulationSlice.name]: simulationReducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
   [osrdGatewayApi.reducerPath]: osrdGatewayApi.reducer,
 };

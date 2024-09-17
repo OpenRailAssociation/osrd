@@ -7,7 +7,7 @@ import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import checkCurrentConfig from 'modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig';
 import { setFailure, setSuccess } from 'reducers/main';
-import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId } from 'reducers/osrdsimulation';
 import { useAppDispatch } from 'store';
 import { formatToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';

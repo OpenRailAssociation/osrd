@@ -11,10 +11,7 @@ import {
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import {
-  updateSelectedTrainId,
-  updateTrainIdUsedForProjection,
-} from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/osrdsimulation';
 import { getSelectedTrainId, getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';

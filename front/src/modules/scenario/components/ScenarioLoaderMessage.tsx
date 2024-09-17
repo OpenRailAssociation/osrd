@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
-import type { RootState } from 'reducers';
+import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
 
 type Props = {
   infraState?: InfraState;
@@ -11,7 +11,7 @@ type Props = {
 
 export default function ScenarioLoaderMessage({ infraState }: Props) {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
-  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
+  const isUpdating = useSelector(getIsUpdating);
   if (infraState === 'ERROR' || infraState === 'TRANSIENT_ERROR') {
     return <h1 className="text-center">{t('simulation:errorMessages.errorLoadingInfra')}</h1>;
   }

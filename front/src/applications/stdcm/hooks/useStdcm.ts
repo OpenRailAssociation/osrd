@@ -13,7 +13,7 @@ import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId } from 'reducers/osrdsimulation';
 import { getStdcmV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';

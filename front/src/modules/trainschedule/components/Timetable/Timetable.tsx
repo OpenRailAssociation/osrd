@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { Conflict, InfraState, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
-import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId } from 'reducers/osrdsimulation';
 import { getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 import { distributedIntervalsFromArrayOfValues, valueToInterval } from 'utils/numbers';

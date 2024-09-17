@@ -1,17 +1,9 @@
-import { produce } from 'immer';
-import type { AnyAction } from 'redux';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Draft } from 'immer';
 
 import { type OsrdSimulationState } from 'reducers/osrdsimulation/types';
 
-import {
-  UPDATE_IS_PLAYING,
-  UPDATE_IS_UPDATING,
-  UPDATE_SELECTED_TRAIN_ID,
-  UPDATE_TRAIN_ID_USED_FOR_PROJECTION,
-} from './actions';
-
-// Reducer
-export const initialState: OsrdSimulationState = {
+export const simulationInitialState: OsrdSimulationState = {
   chart: undefined,
   isPlaying: false,
   isUpdating: false,
@@ -19,25 +11,36 @@ export const initialState: OsrdSimulationState = {
   trainIdUsedForProjection: undefined,
 };
 
-// eslint-disable-next-line default-param-last
-export default function reducer(inputState: OsrdSimulationState | undefined, action: AnyAction) {
-  const state = inputState || initialState;
-  return produce(state, (draft) => {
-    switch (action.type) {
-      case UPDATE_IS_PLAYING:
-        draft.isPlaying = action.isPlaying;
-        break;
-      case UPDATE_IS_UPDATING:
-        draft.isUpdating = action.isUpdating;
-        break;
-      case UPDATE_SELECTED_TRAIN_ID:
-        draft.selectedTrainId = action.selectedTrainId;
-        break;
-      case UPDATE_TRAIN_ID_USED_FOR_PROJECTION:
-        draft.trainIdUsedForProjection = action.trainIdUsedForProjection;
-        break;
-      default:
-        break;
-    }
-  });
-}
+export const simulationSlice = createSlice({
+  name: 'simulation',
+  initialState: simulationInitialState,
+  reducers: {
+    updateIsPlaying(state: Draft<OsrdSimulationState>, action: PayloadAction<boolean>) {
+      state.isPlaying = action.payload;
+    },
+    updateIsUpdating(state: Draft<OsrdSimulationState>, action: PayloadAction<boolean>) {
+      state.isUpdating = action.payload;
+    },
+    updateSelectedTrainId(
+      state: Draft<OsrdSimulationState>,
+      action: PayloadAction<number | undefined>
+    ) {
+      state.selectedTrainId = action.payload;
+    },
+    updateTrainIdUsedForProjection(
+      state: Draft<OsrdSimulationState>,
+      action: PayloadAction<number | undefined>
+    ) {
+      state.trainIdUsedForProjection = action.payload;
+    },
+  },
+});
+
+export const {
+  updateIsPlaying,
+  updateIsUpdating,
+  updateSelectedTrainId,
+  updateTrainIdUsedForProjection,
+} = simulationSlice.actions;
+
+export default simulationSlice.reducer;

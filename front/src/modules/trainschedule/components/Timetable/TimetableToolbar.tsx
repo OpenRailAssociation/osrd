@@ -11,7 +11,7 @@ import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoa
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
-import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId } from 'reducers/osrdsimulation';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
