@@ -149,7 +149,7 @@ const useScenarioData = (
     [trainSchedules]
   );
 
-  const removeTrains = (_trainIdsToRemove: number[]) => {
+  const removeTrains = useCallback((_trainIdsToRemove: number[]) => {
     setTrainSchedules((prev) => {
       const trainSchedulesById = mapBy(prev, 'id');
       _trainIdsToRemove.forEach((trainId) => {
@@ -173,7 +173,7 @@ const useScenarioData = (
       });
       return newProjectedTrainsById;
     });
-  };
+  }, []);
 
   useEffect(() => {
     dispatch(updateTrainIdUsedForProjection(undefined));
