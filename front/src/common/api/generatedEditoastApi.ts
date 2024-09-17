@@ -1497,7 +1497,7 @@ export type PostWorkSchedulesProjectPathApiResponse =
     /** a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:
     - `a` is the distance from the beginning of the path to the beginning of the track range
     - `b` is the distance from the beginning of the path to the end of the track range */
-    path_position_ranges: (number & number)[][];
+    path_position_ranges: Intersection[];
     /** The date and time when the work schedule takes effect. */
     start_date_time: string;
     type: 'CATENARY' | 'TRACK';
@@ -3066,4 +3066,10 @@ export type WorkScheduleItemForm = {
 export type WorkScheduleCreateForm = {
   work_schedule_group_name: string;
   work_schedules: WorkScheduleItemForm[];
+};
+export type Intersection = {
+  /** Distance of the end of the intersection relative to the beginning of the path */
+  end: number;
+  /** Distance of the beginning of the intersection relative to the beginning of the path */
+  start: number;
 };

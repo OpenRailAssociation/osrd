@@ -5,6 +5,10 @@ use std::collections::HashMap;
 
 use super::TrackRange;
 
+editoast_common::schemas! {
+    Intersection,
+}
+
 /// This object is useful to:
 /// - Get the position in the path given a location (track section and offset).
 /// - Get the location (track section and offset) given a position in a path.
@@ -134,7 +138,7 @@ impl<'a> PathProjection<'a> {
     /// If there is no common track section range, the returned list is empty.
     /// The positions in the intersection list are guaranteed to increase. In other words `list[n].0 < list[n].1 <= list[n+1].0 < list[n+1].1`
     /// These positions can then be use in conjunction with [PathProjection::get_location].
-    pub fn get_intersections(&self, track_ranges: &[TrackRange]) -> Vec<(u64, u64)> {
+    pub fn get_intersections(&self, track_ranges: &[TrackRange]) -> Vec<Intersection> {
         // Handle the length computation in mm
         let mut next_pos: u64 = 0;
         let mut current_pos: u64;
@@ -206,10 +210,35 @@ impl<'a> PathProjection<'a> {
     }
 }
 
+/// Represent the intersection between a track range and a path, relative to the beginning of the path
+#[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq, utoipa::ToSchema)]
+pub struct Intersection {
+    /// Distance of the beginning of the intersection relative to the beginning of the path
+    start: u64,
+    /// Distance of the end of the intersection relative to the beginning of the path
+    end: u64,
+}
+impl From<(u64, u64)> for Intersection {
+    fn from((start, end): (u64, u64)) -> Self {
+        debug_assert!(
+            start <= end,
+            "intersection should have a 'start' ({start}) smaller than 'end' ({end})"
+        );
+        Self { start, end }
+    }
+}
+impl Intersection {
+    pub fn start(&self) -> u64 {
+        self.start
+    }
+    pub fn end(&self) -> u64 {
+        self.end
+    }
+}
 struct IntersectionBuilder {
     start: Option<u64>,
     current: u64,
-    intersections: Vec<(u64, u64)>,
+    intersections: Vec<Intersection>,
 }
 
 impl IntersectionBuilder {
@@ -224,7 +253,8 @@ impl IntersectionBuilder {
     fn finish(&mut self) {
         if let Some(start) = self.start {
             assert_ne!(start, self.current);
-            self.intersections.push((start, self.current));
+            self.intersections
+                .push(Intersection::from((start, self.current)));
         }
         self.start = None;
     }
@@ -396,7 +426,7 @@ mod tests {
         ];
 
         let boundaries = projection.get_intersections(&track_ranges);
-        let expected: Vec<(u64, u64)> = vec![(50, 730)];
+        let expected: Vec<Intersection> = vec![Intersection::from((50, 730))];
 
         assert_eq!(boundaries, expected);
     }
@@ -421,7 +451,10 @@ mod tests {
         ];
 
         let boundaries = projection.get_intersections(&track_ranges);
-        let expected: Vec<(u64, u64)> = vec![(100, 350), (350, 420)];
+        let expected: Vec<Intersection> = vec![
+            Intersection::from((100, 350)),
+            Intersection::from((350, 420)),
+        ];
 
         assert_eq!(boundaries, expected);
     }
@@ -447,7 +480,11 @@ mod tests {
         ];
 
         let boundaries = projection.get_intersections(&track_ranges);
-        let expected: Vec<(u64, u64)> = vec![(50, 300), (400, 450), (550, 620)];
+        let expected: Vec<Intersection> = vec![
+            Intersection::from((50, 300)),
+            Intersection::from((400, 450)),
+            Intersection::from((550, 620)),
+        ];
 
         assert_eq!(boundaries, expected);
     }
@@ -461,7 +498,7 @@ mod tests {
 
         let boundaries = projection.get_intersections(&track_ranges);
 
-        let expected: Vec<(u64, u64)> = vec![];
+        let expected: Vec<Intersection> = vec![];
         assert_eq!(boundaries, expected);
     }
 
@@ -474,7 +511,7 @@ mod tests {
 
         let boundaries = projection.get_intersections(&track_ranges);
 
-        let expected: Vec<(u64, u64)> = vec![];
+        let expected: Vec<Intersection> = vec![];
         assert_eq!(boundaries, expected);
     }
 }

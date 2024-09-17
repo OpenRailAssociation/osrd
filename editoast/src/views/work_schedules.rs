@@ -21,6 +21,7 @@ use crate::models::prelude::*;
 use crate::models::work_schedules::WorkSchedule;
 use crate::models::work_schedules::WorkScheduleGroup;
 use crate::models::work_schedules::WorkScheduleType;
+use crate::views::path::projection::Intersection;
 use crate::views::path::projection::PathProjection;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
@@ -202,7 +203,7 @@ struct WorkScheduleProjection {
     /// a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:
     /// - `a` is the distance from the beginning of the path to the beginning of the track range
     /// - `b` is the distance from the beginning of the path to the end of the track range
-    pub path_position_ranges: Vec<(u64, u64)>,
+    pub path_position_ranges: Vec<Intersection>,
 }
 
 #[utoipa::path(
@@ -498,7 +499,10 @@ pub mod test {
                 work_schedule_type: work_schedules[index].work_schedule_type,
                 start_date_time: work_schedules[index].start_date_time,
                 end_date_time: work_schedules[index].end_date_time,
-                path_position_ranges: position_ranges,
+                path_position_ranges: position_ranges
+                    .into_iter()
+                    .map(Intersection::from)
+                    .collect(),
             })
             .collect();
 

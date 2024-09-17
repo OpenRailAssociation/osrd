@@ -406,7 +406,8 @@ fn compute_space_time_curves(
 
     let mut space_time_curves = vec![];
     for intersection in intersections {
-        let (start, end) = intersection;
+        let start = intersection.start();
+        let end = intersection.end();
         let start_index = find_index_upper(positions, start);
         let end_index = find_index_upper(positions, end);
 
