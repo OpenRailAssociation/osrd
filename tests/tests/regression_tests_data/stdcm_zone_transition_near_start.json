@@ -1,5 +1,4 @@
 {
-    "timetable_version": 2,
     "error_type": "STDCM",
     "code": 500,
     "error": "{\"status\":500,\"type\":\"core:unknown_error\",\"context\":{\"exception_type\":\"class java.lang.RuntimeException\",\"message\":\"Failed to compute a standard allowance that wouldn't cause conflicts\",\"url\":\"http://host.docker.internal:8080//stdcm\",\"stack_trace\":[\"PostProcessingSimulation.kt:124\",\"PostProcessingSimulation.kt:129\",\"PostProcessingSimulation.kt:54\",\"STDCMPostProcessing.kt:69\",\"STDCMPathfinding.kt:125\",\"STDCMPathfinding.kt:59\",\"STDCMEndpointV2.kt:67\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:833\"]},\"message\":\"An unknown exception was thrown\"}",
