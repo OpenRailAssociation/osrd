@@ -4,16 +4,21 @@
   &-version {
     font-size: small;
   }
+
   .informations-modal-container {
     position: relative;
     height: 35rem;
+
     .license-attributions {
-      position: relative;
       background-color: var(--coolgray1);
       padding: 0.5rem;
       border-radius: 4px;
-      height: calc(100% - 3.8rem);
-      overflow: auto;
+
+      &.licenses {
+        flex-grow: 1;
+        overflow: auto;
+      }
+
       a[href^='http'] {
         h3,
         i,

@@ -1,6 +1,6 @@
 {
   "@osrd/example-library@0.4.2": {
-    "licenses": "The updated list is generated at build",
+    "license": "The updated list is generated at build",
     "publisher": "Joseph Marchand",
     "copyright": "This is an example",
     "name": "@osrd/example-library",

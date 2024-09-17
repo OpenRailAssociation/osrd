@@ -69,9 +69,7 @@ function ReleaseInformations() {
                 </tbody>
               </table>
             </div>
-            <div className="col-md-6 h-100">
-              <LicenseAttributions />
-            </div>
+            <LicenseAttributions />
           </div>
         </div>
       </ModalBodySNCF>
