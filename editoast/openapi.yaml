@@ -2792,15 +2792,7 @@ paths:
                     path_position_ranges:
                       type: array
                       items:
-                        type: array
-                        items:
-                          allOf:
-                          - type: integer
-                            format: int64
-                            minimum: 0
-                          - type: integer
-                            format: int64
-                            minimum: 0
+                        $ref: '#/components/schemas/Intersection'
                       description: |-
                         a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:
                         - `a` is the distance from the beginning of the path to the beginning of the track range
@@ -6039,6 +6031,23 @@ components:
           minimum: 100
         type:
           type: string
+    Intersection:
+      type: object
+      description: Represent the intersection between a track range and a path, relative to the beginning of the path
+      required:
+      - start
+      - end
+      properties:
+        end:
+          type: integer
+          format: int64
+          description: Distance of the end of the intersection relative to the beginning of the path
+          minimum: 0
+        start:
+          type: integer
+          format: int64
+          description: Distance of the beginning of the intersection relative to the beginning of the path
+          minimum: 0
     LevelValues:
       type: array
       items:

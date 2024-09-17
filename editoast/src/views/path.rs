@@ -21,6 +21,7 @@ crate::routes! {
 
 editoast_common::schemas! {
     pathfinding::schemas(),
+    projection::schemas(),
     properties::schemas(),
     TrackRange,
 }
