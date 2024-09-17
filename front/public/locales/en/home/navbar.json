@@ -5,7 +5,8 @@
   "help": "Help",
   "informations": {
     "application": "Application",
-    "releaseInformations": "Libraries & licenses",
+    "dataSources": "Data sources",
+    "librairies": "Libraries & licenses",
     "version": "Version"
   },
   "language": {
