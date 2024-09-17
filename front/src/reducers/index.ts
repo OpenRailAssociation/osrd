@@ -51,15 +51,11 @@ const userWhiteList = ['account', 'userPreferences', 'stdcmV2Activated'];
 
 const mainWhiteList = ['lastInterfaceVersion'];
 
-const simulationWhiteList = ['marginsSettings'];
-
 const saveMapFilter = createFilter('map', mapWhiteList);
 
 const saveUserFilter = createFilter('user', userWhiteList);
 
 const saveMainFilter = createFilter('main', mainWhiteList);
-
-const saveSimulationFilter = createFilter('osrdsimulation', simulationWhiteList);
 
 // Useful to only blacklist a sub-propertie of osrdconf
 const buildOsrdConfPersistConfig = <T extends OsrdConfState>(
@@ -73,7 +69,7 @@ const buildOsrdConfPersistConfig = <T extends OsrdConfState>(
 export const persistConfig = {
   key: 'root',
   storage,
-  transforms: [compressor, saveMapFilter, saveUserFilter, saveMainFilter, saveSimulationFilter],
+  transforms: [compressor, saveMapFilter, saveUserFilter, saveMainFilter],
   blacklist: [stdcmConfSlice.name, operationalStudiesConfSlice.name],
   whitelist: ['user', 'map', 'main', 'simulation', 'mapViewer'],
 };

@@ -6,7 +6,6 @@ import { type SimulationResultsState } from 'reducers/simulationResults/types';
 export const simulationResultsInitialState: SimulationResultsState = {
   chart: undefined,
   isPlaying: false,
-  isUpdating: false,
   selectedTrainId: undefined,
   trainIdUsedForProjection: undefined,
 };
@@ -17,9 +16,6 @@ export const simulationResultsSlice = createSlice({
   reducers: {
     updateIsPlaying(state: Draft<SimulationResultsState>, action: PayloadAction<boolean>) {
       state.isPlaying = action.payload;
-    },
-    updateIsUpdating(state: Draft<SimulationResultsState>, action: PayloadAction<boolean>) {
-      state.isUpdating = action.payload;
     },
     updateSelectedTrainId(
       state: Draft<SimulationResultsState>,
@@ -36,11 +32,7 @@ export const simulationResultsSlice = createSlice({
   },
 });
 
-export const {
-  updateIsPlaying,
-  updateIsUpdating,
-  updateSelectedTrainId,
-  updateTrainIdUsedForProjection,
-} = simulationResultsSlice.actions;
+export const { updateIsPlaying, updateSelectedTrainId, updateTrainIdUsedForProjection } =
+  simulationResultsSlice.actions;
 
 export default simulationResultsSlice.reducer;
