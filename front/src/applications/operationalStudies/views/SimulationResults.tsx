@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
 
 import type {
@@ -26,7 +25,6 @@ import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
 import { updateViewport, type Viewport } from 'reducers/map';
-import { getIsUpdating } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
 const MAP_MIN_HEIGHT = 450;
@@ -63,7 +61,6 @@ const SimulationResults = ({
 }: SimulationResultsProps) => {
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
-  const isUpdating = useSelector(getIsUpdating);
 
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
@@ -132,7 +129,7 @@ const SimulationResults = ({
 
   if (!trainSimulation) return null;
 
-  if (trainSimulation.status !== 'success' && !isUpdating) return null;
+  if (trainSimulation.status !== 'success') return null;
 
   return (
     <div className="simulation-results">

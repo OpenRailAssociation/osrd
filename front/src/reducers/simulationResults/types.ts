@@ -197,7 +197,6 @@ export interface SimulationTrain<DateType = Date> {
 export interface SimulationResultsState {
   chart?: Chart;
   isPlaying: boolean;
-  isUpdating: boolean;
   selectedTrainId?: number;
   trainIdUsedForProjection?: number;
 }

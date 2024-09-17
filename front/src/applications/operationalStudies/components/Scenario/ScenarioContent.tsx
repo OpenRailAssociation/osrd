@@ -4,7 +4,6 @@ import { ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
-import { useSelector } from 'react-redux';
 
 import handleOperation from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
 import importTimetableToNGE from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
@@ -26,7 +25,6 @@ import type {
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
-import { getIsUpdating } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { concatMap, mapBy } from 'utils/types';
 
@@ -47,7 +45,6 @@ const ScenarioContent = ({
 }: ScenarioDescriptionProps) => {
   const { t } = useTranslation('operationalStudies/scenario');
   const dispatch = useAppDispatch();
-  const isUpdating = useSelector(getIsUpdating);
 
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
@@ -175,7 +172,7 @@ const ScenarioContent = ({
           </div>
 
           <div className={collapsedTimetable ? 'col-12' : 'col-hdp-9 col-xl-8 col-lg-7 col-md-6'}>
-            {(!isInfraLoaded || isUpdating) &&
+            {!isInfraLoaded &&
               displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
               displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
                 <ScenarioLoaderMessage infraState={infra?.state} />

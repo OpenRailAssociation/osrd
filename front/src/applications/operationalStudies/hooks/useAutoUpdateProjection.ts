@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 
 import type { InfraWithState } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
-  updateSelectedTrainId,
-  updateTrainIdUsedForProjection,
-} from 'reducers/osrdsimulation/actions';
-import { getSelectedTrainId, getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
+  getSelectedTrainId,
+  getTrainIdUsedForProjection,
+} from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
 /**
