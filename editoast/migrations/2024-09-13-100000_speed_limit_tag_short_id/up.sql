@@ -32,6 +32,7 @@ SET "data" = jsonb_set(
 WHERE "data"->'speed_limit_by_tag' IS NOT NULL AND "data"->'speed_limit_by_tag'::TEXT != '{}';
 
 UPDATE infra SET "version" = ("version"::INT8 + 1)::TEXT;
+UPDATE infra SET generated_version = (generated_version::INT8 + 1)::TEXT;
 
 -- train-schedule
 UPDATE train_schedule
