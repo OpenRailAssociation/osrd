@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -70,10 +70,13 @@ const ScenarioContent = ({
     removeTrains,
   } = useScenarioData(scenario, timetable, infra);
 
-  const toggleMicroMacroButton = (isMacroMode: boolean) => {
-    setIsMacro(isMacroMode);
-    setCollapsedTimetable(isMacroMode);
-  };
+  const toggleMicroMacroButton = useCallback(
+    (isMacroMode: boolean) => {
+      setIsMacro(isMacroMode);
+      setCollapsedTimetable(isMacroMode);
+    },
+    [setIsMacro, setCollapsedTimetable]
+  );
 
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
   const [ngeUpsertedTrainSchedules, setNgeUpsertedTrainSchedules] = useState<
