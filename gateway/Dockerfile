@@ -3,7 +3,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.67-rust-1.79.0 AS chef
+FROM lukemathwalker/cargo-chef:0.1.67-rust-1.81.0 AS chef
 WORKDIR /gateway
 
 #######################
@@ -34,7 +34,7 @@ FROM chef AS testing_env
 RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
     rustup component add clippy && \
-    cargo install --locked grcov
+    cargo install grcov
 COPY --from=planner /gateway/recipe.json recipe.json
 
 ENV RUSTFLAGS="-Cinstrument-coverage"
