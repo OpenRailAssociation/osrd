@@ -5,7 +5,7 @@ import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
 
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
+import { updateIsPlaying } from 'reducers/osrdsimulation';
 import { useAppDispatch } from 'store';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
 

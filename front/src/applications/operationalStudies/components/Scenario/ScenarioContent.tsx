@@ -26,7 +26,7 @@ import type {
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
-import type { RootState } from 'reducers';
+import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 import { concatMap, mapBy } from 'utils/types';
 
@@ -47,7 +47,7 @@ const ScenarioContent = ({
 }: ScenarioDescriptionProps) => {
   const { t } = useTranslation('operationalStudies/scenario');
   const dispatch = useAppDispatch();
-  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
+  const isUpdating = useSelector(getIsUpdating);
 
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none

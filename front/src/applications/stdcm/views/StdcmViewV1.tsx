@@ -5,7 +5,7 @@ import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import StdcmConfig from 'applications/stdcm/views/StdcmConfig';
 import StdcmRequestModal from 'applications/stdcm/views/StdcmRequestModal';
-import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId } from 'reducers/osrdsimulation';
 import { useAppDispatch } from 'store';
 
 import useProjectedTrainsForStdcm from '../hooks/useProjectedTrainsForStdcm';

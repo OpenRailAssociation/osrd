@@ -48,9 +48,9 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import type { RootState } from 'reducers';
-import { updateViewport } from 'reducers/map';
-import type { Viewport } from 'reducers/map';
+import { updateViewport, type Viewport } from 'reducers/map';
 import { getLayersSettings, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 import { isoDateWithTimezoneToSec } from 'utils/date';
 import { kmToM, mmToM, msToKmh } from 'utils/physics';
@@ -72,7 +72,7 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
   const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(
     (state: RootState) => state.map
   );
-  const { isPlaying } = useSelector((state: RootState) => state.osrdsimulation);
+  const isPlaying = useSelector(getIsPlaying);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const layersSettings = useSelector(getLayersSettings);
 

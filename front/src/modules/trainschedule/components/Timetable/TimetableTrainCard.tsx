@@ -16,10 +16,7 @@ import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEdit
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
-import {
-  updateTrainIdUsedForProjection,
-  updateSelectedTrainId,
-} from 'reducers/osrdsimulation/actions';
+import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/osrdsimulation';
 import { useAppDispatch } from 'store';
 import {
   formatToIsoDate,
