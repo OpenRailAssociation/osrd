@@ -147,6 +147,11 @@ class OperationalStudiesPage {
     return this.page.getByTitle(viaName).getByTestId('suggested-via-add-button');
   }
 
+  // Gets the delete button locator by via name.
+  private getDeleteButtonLocatorByViaName(viaName: string): Locator {
+    return this.page.getByTitle(viaName).getByTestId('suggested-via-delete-button');
+  }
+
   // Gets the pathfinding marker on the map by marker name.
   private getMapPathfindingMarker(markerName: string): Locator {
     return this.page.locator('#map-container').getByText(markerName, { exact: true });
@@ -260,8 +265,11 @@ class OperationalStudiesPage {
   // Clicks the add buttons for the specified via names.
   async clickOnViaAddButtons(...viaNames: string[]) {
     for (const viaName of viaNames) {
-      const addButtonLocator = this.getAddButtonLocatorByViaName(viaName);
-      await addButtonLocator.click();
+      await this.getAddButtonLocatorByViaName(viaName).click();
+      await expect(this.getDeleteButtonLocatorByViaName(viaName)).toBeVisible();
+      // TODO: Remove the timeout when #8958 is fixed
+      // Add a delay to prevent rapid consecutive clicks from blocking the UI
+      await this.page.waitForTimeout(500);
     }
   }
 
