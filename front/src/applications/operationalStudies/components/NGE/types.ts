@@ -6,15 +6,15 @@ export type Haltezeit = {
   no_halt: boolean;
 };
 
-export type Node = {
+export type NodeDto = {
   id: number;
   /** Trigram */
   betriebspunktName: string;
   fullName: string;
   positionX: number;
   positionY: number;
-  ports: Port[];
-  transitions: Transition[];
+  ports: PortDto[];
+  transitions: TransitionDto[];
   connections: unknown[];
   resourceId: number;
   /** Number of tracks where train can stop */
@@ -27,14 +27,14 @@ export type Node = {
   labelIds: number[];
 };
 
-export type Port = {
+export type PortDto = {
   id: number;
   positionIndex: number;
   positionAlignment: PortAlignment;
   trainrunSectionId: number;
 };
 
-export type Transition = {
+export type TransitionDto = {
   id: number;
   port1Id: number;
   port2Id: number;
@@ -48,17 +48,16 @@ export enum PortAlignment {
   Right,
 }
 
-export type Trainrun = {
+export type TrainrunDto = {
   id: number;
   name: string;
   categoryId: number;
   frequencyId: number;
   trainrunTimeCategoryId: number;
   labelIds: (number | string)[];
-  trainrunFrequency: TrainrunFrequency;
 };
 
-export type TimeLock = {
+export type TimeLockDto = {
   time: number | null;
   consecutiveTime: number | null;
   lock: boolean;
@@ -66,18 +65,18 @@ export type TimeLock = {
   timeFormatter: null;
 };
 
-export type TrainrunSection = {
+export type TrainrunSectionDto = {
   id: number;
   sourceNodeId: number;
   sourcePortId: number;
   targetNodeId: number;
   targetPortId: number;
 
-  travelTime: TimeLock;
-  sourceDeparture: TimeLock;
-  sourceArrival: TimeLock;
-  targetDeparture: TimeLock;
-  targetArrival: TimeLock;
+  sourceDeparture: TimeLockDto;
+  sourceArrival: TimeLockDto;
+  targetDeparture: TimeLockDto;
+  targetArrival: TimeLockDto;
+  travelTime: TimeLockDto;
 
   numberOfStops: number;
 
@@ -128,7 +127,7 @@ export type TrainrunTimeCategory = {
   linePatternRef: string;
 };
 
-export type Resource = {
+export type ResourceDto = {
   id: number;
   capacity: number;
 };
@@ -137,10 +136,10 @@ export type Resource = {
  * The DTO contains the entire NGE state.
  */
 export type NetzgrafikDto = {
-  nodes: Node[];
-  trainrunSections: TrainrunSection[];
-  trainruns: Trainrun[];
-  resources: Resource[];
+  nodes: NodeDto[];
+  trainrunSections: TrainrunSectionDto[];
+  trainruns: TrainrunDto[];
+  resources: ResourceDto[];
   metadata: {
     netzgrafikColors: unknown[];
     trainrunCategories: TrainrunCategory[];
@@ -148,8 +147,8 @@ export type NetzgrafikDto = {
     trainrunTimeCategories: TrainrunTimeCategory[];
   };
   freeFloatingTexts: unknown[];
-  labels: Label[];
-  labelGroups: LabelGroup[];
+  labels: LabelDto[];
+  labelGroups: LabelGroupDto[];
   filterData: {
     filterSettings: unknown[];
   };
@@ -160,19 +159,20 @@ export type NGEEvent = {
 } & (
   | {
       objectType: 'trainrun';
-      trainrun: Trainrun;
+      trainrun: TrainrunDto;
     }
-  | { objectType: 'node'; node: Node }
+  | { objectType: 'node'; node: NodeDto }
+  | { objectType: 'label'; label: LabelDto }
 );
 
-export type Label = {
+export type LabelDto = {
   id: number | string;
   label: string;
   labelGroupId: number;
   labelRef: string;
 };
 
-export type LabelGroup = {
+export type LabelGroupDto = {
   id: number;
   name: string;
   labelRef: string;
