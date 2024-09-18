@@ -1,3 +1,5 @@
+import { compact } from 'lodash';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
   SearchResultItemOperationalPoint,
@@ -53,16 +55,38 @@ const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
   sectionHeadway: 0,
 };
 
-const DEFAULT_TRAINRUN_FREQUENCY: TrainrunFrequency = {
-  id: 3, // In NGE, Trainrun.DEFAULT_TRAINRUN_FREQUENCY
-  order: 0,
-  frequency: 60,
-  offset: 0,
-  name: 'Default',
-  /** Short name, needs to be unique */
-  shortName: 'D',
-  linePatternRef: '60',
-};
+const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
+  {
+    id: 2,
+    order: 0,
+    frequency: 30,
+    offset: 0,
+    name: 'Half-hourly',
+    shortName: '30',
+    linePatternRef: '30',
+  },
+  {
+    id: 3, // default NGE frequency takes id 3
+    order: 1,
+    frequency: 60,
+    offset: 0,
+    name: 'Hourly',
+    /** Short name, needs to be unique */
+    shortName: '60',
+    linePatternRef: '60',
+  },
+  {
+    id: 4,
+    order: 2,
+    frequency: 120,
+    offset: 0,
+    name: 'Two-hourly',
+    shortName: '120',
+    linePatternRef: '120',
+  },
+];
+
+export const DEFAULT_TRAINRUN_FREQUENCY: TrainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES[1];
 
 const DEFAULT_TRAINRUN_TIME_CATEGORY: TrainrunTimeCategory = {
   id: 0, // In NGE, Trainrun.DEFAULT_TRAINRUN_TIME_CATEGORY
@@ -82,7 +106,7 @@ const DEFAULT_DTO: NetzgrafikDto = {
   metadata: {
     netzgrafikColors: [],
     trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
-    trainrunFrequencies: [DEFAULT_TRAINRUN_FREQUENCY],
+    trainrunFrequencies: [...DEFAULT_TRAINRUN_FREQUENCIES],
     trainrunTimeCategories: [DEFAULT_TRAINRUN_TIME_CATEGORY],
   },
   freeFloatingTexts: [],
@@ -293,31 +317,46 @@ const importTimetable = async (
   // Create one NGE train run per OSRD train schedule
   let labelId = 0;
   const trainruns: Trainrun[] = trainSchedules.map((trainSchedule) => {
-    let formatedLabels: Label[] = [];
+    const formatedLabels: (Label | undefined)[] = [];
+    let trainrunFrequency: TrainrunFrequency | undefined;
     if (trainSchedule.labels) {
-      formatedLabels = trainSchedule.labels.map((label) => {
+      trainSchedule.labels.forEach((label) => {
+        // Frenquency labels management from OSRD (labels for moment manage 'frequency::30' and 'frequency::120')
+        if (label.includes('frequency')) {
+          const frequency = parseInt(label.split('::')[1], 10);
+          if (!trainrunFrequency || trainrunFrequency.frequency > frequency) {
+            const trainrunFrequencyFind = DEFAULT_TRAINRUN_FREQUENCIES.find(
+              (freq) => freq.frequency === frequency
+            );
+            trainrunFrequency = trainrunFrequencyFind || trainrunFrequency;
+          }
+          return;
+        }
         const DTOLabel = DTOLabels.find((DTOlabel) => DTOlabel.label === label);
         if (DTOLabel) {
-          return DTOLabel;
+          formatedLabels.push(DTOLabel);
+        } else {
+          const newDTOLabel: Label = {
+            id: labelId,
+            label,
+            labelGroupId: DEFAULT_LABEL_GROUP.id,
+            labelRef: 'Trainrun',
+          };
+          DTOLabels.push(newDTOLabel);
+          labelId += 1;
+          formatedLabels.push(newDTOLabel);
         }
-        const newDTOLabel: Label = {
-          id: labelId,
-          label,
-          labelGroupId: DEFAULT_LABEL_GROUP.id,
-          labelRef: 'Trainrun',
-        };
-        DTOLabels.push(newDTOLabel);
-        labelId += 1;
-        return newDTOLabel;
       });
     }
+
     return {
       id: trainSchedule.id,
       name: trainSchedule.train_name,
       categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
-      frequencyId: DEFAULT_TRAINRUN_FREQUENCY.id,
+      frequencyId: trainrunFrequency?.id || DEFAULT_TRAINRUN_FREQUENCY.id,
       trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
-      labelIds: formatedLabels.map((label) => label.id),
+      labelIds: compact(formatedLabels).map((label) => label.id),
+      trainrunFrequency: trainrunFrequency || DEFAULT_TRAINRUN_FREQUENCY,
     };
   });
 
@@ -477,7 +516,7 @@ const importTimetable = async (
     metadata: {
       netzgrafikColors: [],
       trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
-      trainrunFrequencies: [DEFAULT_TRAINRUN_FREQUENCY],
+      trainrunFrequencies: DEFAULT_TRAINRUN_FREQUENCIES,
       trainrunTimeCategories: [DEFAULT_TRAINRUN_TIME_CATEGORY],
     },
     nodes,

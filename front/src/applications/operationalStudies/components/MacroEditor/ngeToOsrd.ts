@@ -1,4 +1,4 @@
-import { compact } from 'lodash';
+import { compact, uniq } from 'lodash';
 
 import {
   osrdEditoastApi,
@@ -11,14 +11,15 @@ import { formatToIsoDate } from 'utils/date';
 import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils/timeManipulation';
 
 import nodeStore from './nodeStore';
-import type {
-  NetzgrafikDto,
-  NGEEvent,
-  TrainrunSection,
-  Node,
-  TimeLock,
-  Trainrun,
-  Label,
+import { DEFAULT_TRAINRUN_FREQUENCY } from './osrdToNge';
+import {
+  type NetzgrafikDto,
+  type NGEEvent,
+  type TrainrunSection,
+  type Node,
+  type TimeLock,
+  type Trainrun,
+  type Label,
 } from '../NGE/types';
 
 const createdTrainrun = new Map<number, number>();
@@ -157,15 +158,25 @@ const getTimeLockDate = (
 const formatDateDifference = (start: Date, stop: Date) =>
   formatDurationAsISO8601(calculateTimeDifferenceInSeconds(start, stop));
 
-const createTrainSchedulePayload = async (
-  trainrunSections: TrainrunSection[],
-  nodes: Node[],
-  trainrun: Trainrun,
-  infraId: number,
-  dispatch: AppDispatch,
-  labels: Label[],
-  oldStartDate: Date
-) => {
+const createTrainSchedulePayload = async ({
+  trainrunSections,
+  nodes,
+  trainrun,
+  infraId,
+  dispatch,
+  labels,
+  oldStartDate,
+  trainSchedule,
+}: {
+  trainrunSections: TrainrunSection[];
+  nodes: Node[];
+  trainrun: Trainrun;
+  infraId: number;
+  dispatch: AppDispatch;
+  labels: Label[];
+  oldStartDate: Date;
+  trainSchedule?: TrainScheduleBase;
+}) => {
   // TODO: check that the trainrunSections format is still compatible
   const pathPromise = trainrunSections.map(async (section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
@@ -186,9 +197,18 @@ const createTrainSchedulePayload = async (
 
   const path = await Promise.all(pathPromise);
 
-  const trainrunLabels = trainrun.labelIds.map(
+  let trainrunLabels = trainrun.labelIds.map(
     (labelId) => labels.find((label) => label.id === labelId)?.label
   );
+
+  if (trainrun.trainrunFrequency.id !== DEFAULT_TRAINRUN_FREQUENCY.id) {
+    trainrunLabels.push(`frequency::${trainrun.trainrunFrequency.frequency}`);
+  }
+
+  const trainScheduleLabels =
+    trainSchedule?.labels?.filter((label) => label.match(/^frequency::(?!30$|60$|120$)\d+$/)) || [];
+
+  trainrunLabels = uniq([...trainrunLabels, ...trainScheduleLabels]);
 
   // The departure time of the first section is guaranteed to be non-null
   const startTimeLock = trainrunSections[0].sourceDeparture;
@@ -259,15 +279,15 @@ const handleTrainrunOperation = async ({
           body: [
             {
               ...DEFAULT_PAYLOAD,
-              ...(await createTrainSchedulePayload(
-                trainrunSectionsByTrainrunId,
+              ...(await createTrainSchedulePayload({
+                trainrunSections: trainrunSectionsByTrainrunId,
                 nodes,
                 trainrun,
                 infraId,
                 dispatch,
                 labels,
-                startDate
-              )),
+                oldStartDate: startDate,
+              })),
             },
           ],
         })
@@ -304,15 +324,16 @@ const handleTrainrunOperation = async ({
           id: trainrunIdToUpdate,
           trainScheduleForm: {
             ...trainSchedule,
-            ...(await createTrainSchedulePayload(
-              trainrunSectionsByTrainrunId,
+            ...(await createTrainSchedulePayload({
+              trainrunSections: trainrunSectionsByTrainrunId,
               nodes,
               trainrun,
               infraId,
               dispatch,
               labels,
-              startDate
-            )),
+              oldStartDate: startDate,
+              trainSchedule,
+            })),
             // Reset margins because they contain references to path items
             margins: undefined,
           },
