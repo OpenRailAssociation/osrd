@@ -12,8 +12,6 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
-import fr.sncf.osrd.stdcm.infra_exploration.withEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
@@ -88,11 +86,9 @@ fun buildFinalEnvelope(
                 runSimulationWithFixedPoints(maxSpeedEnvelope, fixedPoints, context, isMareco)
             val conflictOffset =
                 findConflictOffsets(
-                    graph,
                     newEnvelope,
                     blockAvailability,
                     edges,
-                    stops,
                     updatedTimeData,
                 ) ?: return newEnvelope
             if (fixedPoints.any { it.offset == conflictOffset })
@@ -254,14 +250,11 @@ private fun getTimeOnEdges(
  * found, returns its offset. Otherwise, returns null.
  */
 private fun findConflictOffsets(
-    graph: STDCMGraph,
     envelope: Envelope,
     blockAvailability: BlockAvailabilityInterface,
     edges: List<STDCMEdge>,
-    stops: List<TrainStop>,
     updatedTimeData: TimeData,
 ): Offset<TravelledPath>? {
-    val envelopeWithStops = EnvelopeStopWrapper(envelope, stops)
     val startOffset = edges[0].envelopeStartOffset
     val endOffset =
         startOffset +
@@ -273,17 +266,12 @@ private fun findConflictOffsets(
         edges
             .last()
             .infraExplorer
-            .withEnvelope(
-                envelopeWithStops,
-                graph.fullInfra,
-                graph.rollingStock,
-                isSimulationComplete = true
+            .withNewEnvelope(
+                envelope,
             )
+            .updateStopDurations(updatedTimeData)
     assert(
-        TrainPhysicsIntegrator.arePositionsEqual(
-            envelopeWithStops.endPos,
-            (endOffset - startOffset).meters
-        )
+        TrainPhysicsIntegrator.arePositionsEqual(envelope.endPos, (endOffset - startOffset).meters)
     )
     val availability =
         blockAvailability.getAvailability(

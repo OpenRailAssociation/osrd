@@ -1,13 +1,10 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.isTimeStrictlyPositive
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
-import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -121,21 +118,8 @@ internal constructor(
                 if (envelope.endPos == 0.0) envelope
                 else LinearAllowance.scaleEnvelope(envelope, speedRatio)
             val stopDuration = getEndStopDuration()
-            val envelopeWithStop =
-                if (stopDuration == null) scaledEnvelope
-                else
-                    EnvelopeStopWrapper(
-                        scaledEnvelope,
-                        listOf(
-                            TrainStop(
-                                envelope.endPos,
-                                stopDuration,
-                                // TODO: forward and use onStopSignal param from request
-                                isTimeStrictlyPositive(stopDuration)
-                            )
-                        )
-                    )
-            explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(envelopeWithStop)
+            explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(scaledEnvelope)
+            if (stopDuration != null) explorerWithNewEnvelope!!.addStop(stopDuration)
         }
         return explorerWithNewEnvelope
     }

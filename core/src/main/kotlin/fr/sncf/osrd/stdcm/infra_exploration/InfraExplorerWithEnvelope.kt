@@ -3,8 +3,7 @@ package fr.sncf.osrd.stdcm.infra_exploration
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
-import fr.sncf.osrd.envelope.EnvelopeConcat
-import fr.sncf.osrd.envelope.EnvelopeInterpolate
+import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.graph.PathfindingConstraint
@@ -12,6 +11,8 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.result.ResultTrain
+import fr.sncf.osrd.stdcm.graph.TimeData
+import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -41,7 +42,21 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun getFullEnvelope(): EnvelopeTimeInterpolate
 
     /** Adds an envelope. This is done in-place. */
-    fun addEnvelope(envelope: EnvelopeInterpolate): InfraExplorerWithEnvelope
+    fun addEnvelope(envelope: Envelope): InfraExplorerWithEnvelope
+
+    /**
+     * Returns a copy with the given envelope, the previous one is ignored. This keeps stop data.
+     */
+    fun withNewEnvelope(envelope: Envelope): InfraExplorerWithEnvelope
+
+    /** Add a stop to the end of the last simulated envelope */
+    fun addStop(stopDuration: Double)
+
+    /** Just for debugging purposes. */
+    fun getStops(): List<TrainStop>
+
+    /** Update the stop durations, following the updated time data */
+    fun updateStopDurations(updatedTimeData: TimeData): InfraExplorerWithEnvelope
 
     /**
      * Calls `InterpolateDepartureFromClamp` on the underlying envelope, taking the travelled path
@@ -98,30 +113,4 @@ fun initInfraExplorerWithEnvelope(
                 rollingStock
             )
         }
-}
-
-/** Add an envelope to a simple InfraExplorer. */
-fun InfraExplorer.withEnvelope(
-    envelope: EnvelopeInterpolate,
-    fullInfra: FullInfra,
-    rollingStock: PhysicsRollingStock,
-    isSimulationComplete: Boolean = false,
-): InfraExplorerWithEnvelope {
-    return InfraExplorerWithEnvelopeImpl(
-        this,
-        appendOnlyLinkedListOf(EnvelopeConcat.LocatedEnvelope(envelope, 0.0, 0.0)),
-        SpacingRequirementAutomaton(
-            fullInfra.rawInfra,
-            fullInfra.loadedSignalInfra,
-            fullInfra.blockInfra,
-            fullInfra.signalingSimulator,
-            IncrementalRequirementEnvelopeAdapter(
-                rollingStock,
-                EnvelopeConcat.from(listOf(envelope)),
-                isSimulationComplete
-            ),
-            getIncrementalPath(),
-        ),
-        rollingStock,
-    )
 }
