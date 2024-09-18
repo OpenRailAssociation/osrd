@@ -11,20 +11,20 @@ import { formatToIsoDate } from 'utils/date';
 import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils/timeManipulation';
 
 import nodeStore from './nodeStore';
-import { DEFAULT_TRAINRUN_FREQUENCY } from './osrdToNge';
-import {
-  type NetzgrafikDto,
-  type NGEEvent,
-  type TrainrunSection,
-  type Node,
-  type TimeLock,
-  type Trainrun,
-  type Label,
+import { DEFAULT_TRAINRUN_FREQUENCIES, DEFAULT_TRAINRUN_FREQUENCY } from './osrdToNge';
+import type {
+  NetzgrafikDto,
+  NGEEvent,
+  TrainrunSectionDto,
+  NodeDto,
+  TimeLockDto,
+  TrainrunDto,
+  LabelDto,
 } from '../NGE/types';
 
 const createdTrainrun = new Map<number, number>();
 
-const getNodeById = (nodes: Node[], nodeId: number | string) =>
+const getNodeById = (nodes: NodeDto[], nodeId: number | string) =>
   nodes.find((node) => node.id === nodeId);
 
 const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunId: number) => {
@@ -53,8 +53,8 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   // Build a map of sections keyed by their previous section's target port ID.
   // Find the departure section: it's the one without a transition for its
   // source port.
-  let departureSection: TrainrunSection | undefined;
-  const sectionsByPrevTargetPortId = new Map<number, TrainrunSection>();
+  let departureSection: TrainrunSectionDto | undefined;
+  const sectionsByPrevTargetPortId = new Map<number, TrainrunSectionDto>();
   // eslint-disable-next-line no-restricted-syntax
   for (const section of sections) {
     const sourceNode = getNodeById(netzgrafikDto.nodes, section.sourceNodeId)!;
@@ -76,7 +76,7 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   // Start with the departure section and iterate over the path
   const orderedSections = [departureSection];
   const seenSectionIds = new Set<number>([departureSection.id]);
-  let section: TrainrunSection | undefined = departureSection;
+  let section: TrainrunSectionDto | undefined = departureSection;
   for (;;) {
     section = sectionsByPrevTargetPortId.get(section.targetPortId);
     if (!section) {
@@ -107,7 +107,7 @@ const DEFAULT_PAYLOAD: Pick<TrainScheduleBase, 'constraint_distribution' | 'roll
 };
 
 const createPathItemFromNode = async (
-  node: Node,
+  node: NodeDto,
   index: number,
   infraId: number,
   dispatch: AppDispatch
@@ -146,8 +146,8 @@ const createPathItemFromNode = async (
 };
 
 const getTimeLockDate = (
-  timeLock: TimeLock,
-  startTimeLock: TimeLock,
+  timeLock: TimeLockDto,
+  startTimeLock: TimeLockDto,
   startDate: Date
 ): Date | null => {
   if (timeLock.time === null) return null;
@@ -168,12 +168,12 @@ const createTrainSchedulePayload = async ({
   oldStartDate,
   trainSchedule,
 }: {
-  trainrunSections: TrainrunSection[];
-  nodes: Node[];
-  trainrun: Trainrun;
+  trainrunSections: TrainrunSectionDto[];
+  nodes: NodeDto[];
+  trainrun: TrainrunDto;
   infraId: number;
   dispatch: AppDispatch;
-  labels: Label[];
+  labels: LabelDto[];
   oldStartDate: Date;
   trainSchedule?: TrainScheduleBase;
 }) => {
@@ -201,8 +201,11 @@ const createTrainSchedulePayload = async ({
     (labelId) => labels.find((label) => label.id === labelId)?.label
   );
 
-  if (trainrun.trainrunFrequency.id !== DEFAULT_TRAINRUN_FREQUENCY.id) {
-    trainrunLabels.push(`frequency::${trainrun.trainrunFrequency.frequency}`);
+  if (trainrun.frequencyId !== DEFAULT_TRAINRUN_FREQUENCY.id) {
+    const trainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES.find(
+      (frequency) => frequency.id === trainrun.frequencyId
+    );
+    trainrunLabels.push(`frequency::${trainrunFrequency?.frequency}`);
   }
 
   const trainScheduleLabels =
@@ -246,6 +249,52 @@ const createTrainSchedulePayload = async ({
   };
 };
 
+const handleUpdateTrainSchedule = async ({
+  netzgrafikDto,
+  trainrun,
+  dispatch,
+  infraId,
+  addUpsertedTrainSchedules,
+}: {
+  netzgrafikDto: NetzgrafikDto;
+  trainrun: TrainrunDto;
+  dispatch: AppDispatch;
+  infraId: number;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+}) => {
+  const { nodes, labels } = netzgrafikDto;
+  const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
+  const trainrunIdToUpdate = createdTrainrun.get(trainrun.id) || trainrun.id;
+  const trainSchedule = await dispatch(
+    osrdEditoastApi.endpoints.getTrainScheduleById.initiate({
+      id: trainrunIdToUpdate,
+    })
+  ).unwrap();
+  const startDate = new Date(trainSchedule.start_time);
+  const trainSchedulePayload = await createTrainSchedulePayload({
+    trainrunSections: trainrunSectionsByTrainrunId,
+    nodes,
+    trainrun,
+    infraId,
+    dispatch,
+    labels,
+    oldStartDate: startDate,
+    trainSchedule,
+  });
+  const newTrainSchedule = await dispatch(
+    osrdEditoastApi.endpoints.putTrainScheduleById.initiate({
+      id: trainrunIdToUpdate,
+      trainScheduleForm: {
+        ...trainSchedule,
+        ...trainSchedulePayload,
+        // Reset margins because they contain references to path items
+        margins: undefined,
+      },
+    })
+  ).unwrap();
+  addUpsertedTrainSchedules([newTrainSchedule]);
+};
+
 const handleTrainrunOperation = async ({
   type,
   trainrun,
@@ -257,7 +306,7 @@ const handleTrainrunOperation = async ({
   addDeletedTrainIds,
 }: {
   type: NGEEvent['type'];
-  trainrun: Trainrun;
+  trainrun: TrainrunDto;
   dispatch: AppDispatch;
   infraId: number;
   timeTableId: number;
@@ -308,38 +357,13 @@ const handleTrainrunOperation = async ({
       break;
     }
     case 'update': {
-      const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(
+      await handleUpdateTrainSchedule({
         netzgrafikDto,
-        trainrun.id
-      );
-      const trainrunIdToUpdate = createdTrainrun.get(trainrun.id) || trainrun.id;
-      const trainSchedule = await dispatch(
-        osrdEditoastApi.endpoints.getTrainScheduleById.initiate({
-          id: trainrunIdToUpdate,
-        })
-      ).unwrap();
-      const startDate = new Date(trainSchedule.start_time);
-      const newTrainSchedule = await dispatch(
-        osrdEditoastApi.endpoints.putTrainScheduleById.initiate({
-          id: trainrunIdToUpdate,
-          trainScheduleForm: {
-            ...trainSchedule,
-            ...(await createTrainSchedulePayload({
-              trainrunSections: trainrunSectionsByTrainrunId,
-              nodes,
-              trainrun,
-              infraId,
-              dispatch,
-              labels,
-              oldStartDate: startDate,
-              trainSchedule,
-            })),
-            // Reset margins because they contain references to path items
-            margins: undefined,
-          },
-        })
-      ).unwrap();
-      addUpsertedTrainSchedules([newTrainSchedule]);
+        trainrun,
+        dispatch,
+        infraId,
+        addUpsertedTrainSchedules,
+      });
       break;
     }
     default:
@@ -347,7 +371,7 @@ const handleTrainrunOperation = async ({
   }
 };
 
-const handleUpdateNode = (timeTableId: number, node: Node) => {
+const handleUpdateNode = (timeTableId: number, node: NodeDto) => {
   const { betriebspunktName: trigram, positionX, positionY } = node;
   nodeStore.set(timeTableId, { trigram, positionX, positionY });
 };
@@ -358,7 +382,7 @@ const handleNodeOperation = ({
   timeTableId,
 }: {
   type: NGEEvent['type'];
-  node: Node;
+  node: NodeDto;
   timeTableId: number;
 }) => {
   switch (type) {
@@ -373,6 +397,44 @@ const handleNodeOperation = ({
     }
     default:
       break;
+  }
+};
+
+const handleLabelOperation = async ({
+  type,
+  label,
+  netzgrafikDto,
+  dispatch,
+  infraId,
+  addUpsertedTrainSchedules,
+}: {
+  type: NGEEvent['type'];
+  label: LabelDto;
+  netzgrafikDto: NetzgrafikDto;
+  dispatch: AppDispatch;
+  infraId: number;
+  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+}) => {
+  const { trainruns } = netzgrafikDto;
+  switch (type) {
+    case 'update': {
+      const trainrunUpdateLabels = trainruns.filter((trainrun) =>
+        trainrun.labelIds.includes(label.id)
+      );
+      trainrunUpdateLabels.forEach(async (trainrun) => {
+        await handleUpdateTrainSchedule({
+          netzgrafikDto,
+          trainrun,
+          dispatch,
+          infraId,
+          addUpsertedTrainSchedules,
+        });
+      });
+      break;
+    }
+    default: {
+      break;
+    }
   }
 };
 
@@ -394,20 +456,33 @@ const handleOperation = async ({
   addDeletedTrainIds: (trainIds: number[]) => void;
 }) => {
   const { type } = event;
+  const { trainruns } = netzgrafikDto;
   switch (event.objectType) {
     case 'node':
       handleNodeOperation({ type, node: event.node, timeTableId });
       break;
-    case 'trainrun':
+    case 'trainrun': {
+      const trainrun = trainruns.find((tr) => tr.id === event.trainrun.id)!;
       await handleTrainrunOperation({
         type,
-        trainrun: event.trainrun,
+        trainrun,
         dispatch,
         infraId,
         timeTableId,
         netzgrafikDto,
         addUpsertedTrainSchedules,
         addDeletedTrainIds,
+      });
+      break;
+    }
+    case 'label':
+      await handleLabelOperation({
+        type,
+        label: event.label,
+        netzgrafikDto,
+        dispatch,
+        infraId,
+        addUpsertedTrainSchedules,
       });
       break;
     default:

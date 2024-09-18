@@ -12,17 +12,17 @@ import type { AppDispatch } from 'store';
 import nodeStore from './nodeStore';
 import { findOpFromPathItem, addDurationToDate } from './utils';
 import type {
-  Node,
-  Port,
-  TimeLock,
-  Trainrun,
-  TrainrunSection,
+  NodeDto,
+  PortDto,
+  TimeLockDto,
+  TrainrunDto,
+  TrainrunSectionDto,
   TrainrunCategory,
   TrainrunFrequency,
   TrainrunTimeCategory,
   NetzgrafikDto,
-  Label,
-  LabelGroup,
+  LabelDto,
+  LabelGroupDto,
 } from '../NGE/types';
 import { PortAlignment } from '../NGE/types';
 
@@ -36,7 +36,7 @@ const TRAINRUN_CATEGORY_HALTEZEITEN = {
   HaltezeitUncategorized: { haltezeit: 0, no_halt: false },
 };
 
-const DEFAULT_LABEL_GROUP: LabelGroup = {
+const DEFAULT_LABEL_GROUP: LabelGroupDto = {
   id: 1,
   name: 'Default',
   labelRef: 'Trainrun',
@@ -55,7 +55,7 @@ const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
   sectionHeadway: 0,
 };
 
-const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
+export const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
   {
     id: 2,
     order: 0,
@@ -117,7 +117,7 @@ const DEFAULT_DTO: NetzgrafikDto = {
   },
 };
 
-const DEFAULT_TIME_LOCK: TimeLock = {
+const DEFAULT_TIME_LOCK: TimeLockDto = {
   time: null,
   consecutiveTime: null,
   lock: false,
@@ -203,7 +203,7 @@ const executeSearch = async (
  * Convert geographic coordinates (latitude/longitude) into screen coordinates
  * (pixels).
  */
-const convertGeoCoords = (nodes: Node[]) => {
+const convertGeoCoords = (nodes: NodeDto[]) => {
   const xCoords = nodes.map((node) => node.positionX);
   const yCoords = nodes.map((node) => node.positionY);
   const minX = Math.min(...xCoords);
@@ -255,8 +255,8 @@ const importTimetable = async (
     capacity: trainSchedules.length,
   };
 
-  let nodes: Node[] = [];
-  const nodesById = new Map<number, Node>();
+  let nodes: NodeDto[] = [];
+  const nodesById = new Map<number, NodeDto>();
   let nodeId = 0;
   let nodePositionX = 0;
   const createNode = ({
@@ -269,7 +269,7 @@ const importTimetable = async (
     fullName?: string;
     positionX?: number;
     positionY?: number;
-  }): Node => {
+  }): NodeDto => {
     if (positionX === undefined) {
       positionX = nodePositionX;
       nodePositionX += 200;
@@ -300,7 +300,7 @@ const importTimetable = async (
     return node;
   };
 
-  const nodesByOpId = new Map<string, Node>();
+  const nodesByOpId = new Map<string, NodeDto>();
   for (const op of searchResults) {
     const node = createNode({
       trigram: op.trigram + (op.ch ? `/${op.ch}` : ''),
@@ -313,11 +313,11 @@ const importTimetable = async (
 
   nodes = convertGeoCoords(nodes);
 
-  const DTOLabels: Label[] = [];
+  const DTOLabels: LabelDto[] = [];
   // Create one NGE train run per OSRD train schedule
   let labelId = 0;
-  const trainruns: Trainrun[] = trainSchedules.map((trainSchedule) => {
-    const formatedLabels: (Label | undefined)[] = [];
+  const trainruns: TrainrunDto[] = trainSchedules.map((trainSchedule) => {
+    const formatedLabels: (LabelDto | undefined)[] = [];
     let trainrunFrequency: TrainrunFrequency | undefined;
     if (trainSchedule.labels) {
       trainSchedule.labels.forEach((label) => {
@@ -336,7 +336,7 @@ const importTimetable = async (
         if (DTOLabel) {
           formatedLabels.push(DTOLabel);
         } else {
-          const newDTOLabel: Label = {
+          const newDTOLabel: LabelDto = {
             id: labelId,
             label,
             labelGroupId: DEFAULT_LABEL_GROUP.id,
@@ -356,7 +356,6 @@ const importTimetable = async (
       frequencyId: trainrunFrequency?.id || DEFAULT_TRAINRUN_FREQUENCY.id,
       trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
       labelIds: compact(formatedLabels).map((label) => label.id),
-      trainrunFrequency: trainrunFrequency || DEFAULT_TRAINRUN_FREQUENCY,
     };
   });
 
@@ -385,7 +384,7 @@ const importTimetable = async (
   };
 
   let trainrunSectionId = 0;
-  const trainrunSections: TrainrunSection[] = trainSchedules
+  const trainrunSections: TrainrunSectionDto[] = trainSchedules
     .map((trainSchedule) => {
       // Figure out the node ID for each path item
       const pathNodeIds = trainSchedule.path.map((pathItem) => {
@@ -407,7 +406,7 @@ const importTimetable = async (
       });
 
       const startTime = new Date(trainSchedule.start_time);
-      const createTimeLock = (time: Date): TimeLock => ({
+      const createTimeLock = (time: Date): TimeLockDto => ({
         time: time.getMinutes(),
         // getTime() is in milliseconds, consecutiveTime is in minutes
         consecutiveTime: (time.getTime() - startTime.getTime()) / (60 * 1000),
@@ -419,7 +418,7 @@ const importTimetable = async (
       // OSRD describes the path in terms of nodes, NGE describes it in terms
       // of sections between nodes. Iterate over path items two-by-two to
       // convert them.
-      let prevPort: Port | null = null;
+      let prevPort: PortDto | null = null;
       return pathNodeIds.slice(0, -1).map((sourceNodeId, i) => {
         const targetNodeId = pathNodeIds[i + 1];
 
