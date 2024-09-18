@@ -124,7 +124,9 @@ export const checkStdcmConf = (
     // If stdcmV2Activated is true, we use the arrival date from either the origin or the destination
     const firstArrival = pathSteps[0]?.arrival;
     const lastArrival = last(pathSteps)?.arrival;
-    startDateTime = new Date(firstArrival ?? lastArrival!);
+    const isDepartureScheduled = pathSteps[0]?.arrivalType === 'preciseTime';
+
+    startDateTime = isDepartureScheduled ? new Date(firstArrival!) : new Date(lastArrival!);
   } else if (!startTime) {
     error = true;
     dispatch(
