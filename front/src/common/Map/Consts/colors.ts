@@ -14,7 +14,7 @@ const speedOver220 = '#91d3ff';
 
 const colors: Record<string, Theme> = {
   normal: {
-    background: { color: '#eeeeee' },
+    background: { color: 'rgb(246, 245, 241)' },
     chantier: {
       text: '#2c457a',
       halo: '#ffffff',
@@ -150,7 +150,7 @@ const colors: Record<string, Theme> = {
     },
     track: {
       minor: '#777777',
-      major: '#003377',
+      major: '#6A707D',
     },
     trackname: {
       text: '#555555',
