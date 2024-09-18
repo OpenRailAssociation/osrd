@@ -55,6 +55,7 @@ export type Trainrun = {
   frequencyId: number;
   trainrunTimeCategoryId: number;
   labelIds: (number | string)[];
+  trainrunFrequency: TrainrunFrequency;
 };
 
 export type TimeLock = {
