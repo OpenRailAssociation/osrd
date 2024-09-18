@@ -162,7 +162,7 @@
     "storybook": "^7.6.12",
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3",
-    "vite": "^5.1.7",
+    "vite": "^5.2.14",
     "vite-plugin-checker": "^0.6.4",
     "vite-plugin-static-copy": "^1.0.6",
     "vite-tsconfig-paths": "^4.3.1",
