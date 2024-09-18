@@ -2759,6 +2759,8 @@ export type Conflict = {
   start_time: string;
   /** List of train ids involved in the conflict */
   train_ids: number[];
+  /** List of work schedule ids involved in the conflict */
+  work_schedule_ids: number[];
 };
 export type ReportTrain = {
   /** Total energy consumption */

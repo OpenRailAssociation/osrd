@@ -55,7 +55,7 @@ pub struct STDCMRequest {
     /// Margin to apply to the whole train
     pub margin: Option<MarginValue>,
     /// List of planned work schedules
-    pub work_schedules: Vec<STDCMWorkSchedule>,
+    pub work_schedules: Vec<LightWorkSchedule>,
 }
 
 #[derive(Debug, Serialize)]
@@ -81,7 +81,7 @@ pub struct STDCMStepTimingData {
 
 /// Lighter description of a work schedule, only contains what's relevant
 #[derive(Debug, Serialize)]
-pub struct STDCMWorkSchedule {
+pub struct LightWorkSchedule {
     /// Start time as a time delta from the stdcm start time in ms
     pub start_time: u64,
     /// End time as a time delta from the stdcm start time in ms

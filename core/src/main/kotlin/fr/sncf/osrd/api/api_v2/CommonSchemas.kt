@@ -63,3 +63,10 @@ class SpacingRequirement(
     @Json(name = "begin_time") val beginTime: TimeDelta,
     @Json(name = "end_time") val endTime: TimeDelta,
 )
+
+data class WorkSchedule(
+    /** List of affected track ranges */
+    @Json(name = "track_ranges") val trackRanges: Collection<UndirectedTrackRange> = listOf(),
+    @Json(name = "start_time") val startTime: TimeDelta,
+    @Json(name = "end_time") val endTime: TimeDelta,
+)

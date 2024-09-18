@@ -3,7 +3,8 @@ package fr.sncf.osrd.stdcm
 import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.api_v2.UndirectedTrackRange
-import fr.sncf.osrd.api.api_v2.stdcm.WorkSchedule
+import fr.sncf.osrd.api.api_v2.WorkSchedule
+import fr.sncf.osrd.api.api_v2.convertWorkScheduleCollection
 import fr.sncf.osrd.api.stdcm.makeTrainSchedule
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
@@ -103,7 +104,7 @@ class FullSTDCMTests {
                 .setStartTime(minDelay)
                 .setStartLocations(start)
                 .setEndLocations(end)
-                .setBlockAvailability(makeBlockAvailability(infra, requirements))
+                .setBlockAvailability(makeBlockAvailability(requirements))
                 .setMaxDepartureDelay(minDelay * 2)
                 .run()!!
         checkNoConflict(infra, requirements, res)
@@ -137,7 +138,7 @@ class FullSTDCMTests {
                 .setStartTime(300.0)
                 .setStartLocations(start)
                 .setEndLocations(end)
-                .setBlockAvailability(makeBlockAvailability(smallInfra, requirements))
+                .setBlockAvailability(makeBlockAvailability(requirements))
                 .setMaxDepartureDelay(600.0)
                 .run()!!
         checkNoConflict(smallInfra, requirements, res)
@@ -174,7 +175,7 @@ class FullSTDCMTests {
                 .setInfra(smallInfra)
                 .setStartLocations(start)
                 .setEndLocations(end)
-                .setBlockAvailability(makeBlockAvailability(smallInfra, requirements))
+                .setBlockAvailability(makeBlockAvailability(requirements))
                 .run()!!
         checkNoConflict(smallInfra, requirements, res)
     }
@@ -187,15 +188,23 @@ class FullSTDCMTests {
          */
         val blockAvailability =
             makeBlockAvailability(
-                smallInfra,
-                listOf(),
-                listOf(
-                    WorkSchedule(
-                        listOf(UndirectedTrackRange("TB0", Offset(0.meters), Offset(2000.meters))),
-                        0.seconds,
-                        3600.seconds
+                convertWorkScheduleCollection(
+                        smallInfra.rawInfra,
+                        listOf(
+                            WorkSchedule(
+                                listOf(
+                                    UndirectedTrackRange(
+                                        "TB0",
+                                        Offset(0.meters),
+                                        Offset(2000.meters)
+                                    )
+                                ),
+                                0.seconds,
+                                3600.seconds
+                            )
+                        )
                     )
-                )
+                    .spacingRequirements
             )
         val start =
             setOf(
@@ -228,8 +237,6 @@ class FullSTDCMTests {
     ) {
         val blockAvailability =
             makeBlockAvailability(
-                smallInfra,
-                listOf(),
                 listOf(),
                 listOf(
                     STDCMStep(start, 0.0, true, startPlannedTimingData),

@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.TrackLocation
-import fr.sncf.osrd.api.api_v2.UndirectedTrackRange
+import fr.sncf.osrd.api.api_v2.WorkSchedule
 import fr.sncf.osrd.api.api_v2.conflicts.TrainRequirementsRequest
 import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
 import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValueAdapter
@@ -65,13 +65,6 @@ data class StepTimingData(
     @Json(name = "arrival_time") val arrivalTime: ZonedDateTime,
     @Json(name = "arrival_time_tolerance_before") val arrivalTimeToleranceBefore: Duration,
     @Json(name = "arrival_time_tolerance_after") val arrivalTimeToleranceAfter: Duration,
-)
-
-data class WorkSchedule(
-    /** List of affected track ranges */
-    @Json(name = "track_ranges") val trackRanges: Collection<UndirectedTrackRange> = listOf(),
-    @Json(name = "start_time") val startTime: TimeDelta,
-    @Json(name = "end_time") val endTime: TimeDelta,
 )
 
 val stdcmRequestAdapter: JsonAdapter<STDCMRequestV2> =

@@ -2950,6 +2950,7 @@ components:
       type: object
       required:
       - train_ids
+      - work_schedule_ids
       - start_time
       - end_time
       - conflict_type
@@ -2979,6 +2980,12 @@ components:
             type: integer
             format: int64
           description: List of train ids involved in the conflict
+        work_schedule_ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          description: List of work schedule ids involved in the conflict
     ConflictDetectionResponse:
       type: object
       required:
@@ -2990,6 +2997,7 @@ components:
             type: object
             required:
             - train_ids
+            - work_schedule_ids
             - start_time
             - end_time
             - conflict_type
@@ -3019,6 +3027,12 @@ components:
                   type: integer
                   format: int64
                 description: List of train ids involved in the conflict
+              work_schedule_ids:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                description: List of work schedule ids involved in the conflict
           description: List of conflicts detected
     ConflictRequirement:
       type: object

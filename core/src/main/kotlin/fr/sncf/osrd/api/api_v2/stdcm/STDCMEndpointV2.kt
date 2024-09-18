@@ -86,7 +86,11 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                     request.rollingStockSupportedSignalingSystems
                 )
             val trainsRequirements =
-                parseRawTrainsRequirements(request.trainsRequirements, request.startTime)
+                parseTrainsRequirements(request.trainsRequirements, request.startTime)
+                    .toMutableList()
+            val convertedWorkSchedules =
+                convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
+            trainsRequirements.add(convertedWorkSchedules)
             val spacingRequirements = trainsRequirements.flatMap { it.spacingRequirements }
             val steps = parseSteps(infra, request.pathItems, request.startTime)
 
@@ -99,9 +103,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                     0.0,
                     steps,
                     makeBlockAvailability(
-                        infra,
                         spacingRequirements,
-                        workSchedules = request.workSchedules,
                         steps,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
                         gridMarginAfterTrain = request.timeGapAfter.seconds,
@@ -254,7 +256,7 @@ private fun parseSimulationScheduleItems(
 
 /** Sanity check, we assert that the result is not conflicting with the scheduled timetable */
 private fun checkForConflicts(
-    timetableTrainRequirements: List<TrainRequirements>,
+    timetableTrainRequirements: List<Requirements>,
     simResult: SimulationSuccess,
     departureTime: Double
 ) {
@@ -267,7 +269,7 @@ private fun checkForConflicts(
                 it.endTime + departureTime.seconds
             )
         }
-    val conflictDetector = incrementalConflictDetector(timetableTrainRequirements)
+    val conflictDetector = incrementalConflictDetectorFromRequirements(timetableTrainRequirements)
     val spacingRequirements = parseSpacingRequirements(newTrainSpacingRequirement)
     val conflicts = conflictDetector.checkConflicts(spacingRequirements, listOf())
     assert(conflicts.isEmpty()) { "STDCM result is conflicting with the scheduled timetable" }

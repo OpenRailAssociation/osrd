@@ -27,7 +27,7 @@ use crate::core::pathfinding::PathfindingResult;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::stdcm::STDCMResponse;
 use crate::core::stdcm::TrainRequirement;
-use crate::core::stdcm::{STDCMPathItem, STDCMWorkSchedule, UndirectedTrackRange};
+use crate::core::stdcm::{LightWorkSchedule, STDCMPathItem, UndirectedTrackRange};
 use crate::core::stdcm::{STDCMRequest, STDCMStepTimingData};
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
@@ -269,7 +269,6 @@ async fn stdcm(
                 build_work_schedules(
                     conn,
                     departure_time,
-                    maximum_departure_delay,
                     maximum_run_time,
                     work_schedule_group_id,
                 )
@@ -540,18 +539,16 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
 async fn build_work_schedules(
     conn: &mut DbConnection,
     time: DateTime<Utc>,
-    maximum_departure_delay: u64,
     maximum_run_time: u64,
     work_schedule_group_id: i64,
-) -> Result<Vec<STDCMWorkSchedule>> {
-    let maximum_simulation_time = maximum_run_time + maximum_departure_delay;
+) -> Result<Vec<LightWorkSchedule>> {
     let selection_setting: SelectionSettings<WorkSchedule> = SelectionSettings::new()
         .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(work_schedule_group_id));
     let res = Ok(WorkSchedule::list(conn, selection_setting)
         .await?
         .iter()
         .map(|ws| {
-            let schedule = STDCMWorkSchedule {
+            let schedule = LightWorkSchedule {
                 start_time: elapsed_since_time_ms(&ws.start_date_time, &time),
                 end_time: elapsed_since_time_ms(&ws.end_date_time, &time),
                 track_ranges: ws
@@ -566,7 +563,7 @@ async fn build_work_schedules(
             };
             schedule
         })
-        .filter(|ws| ws.end_time > 0 && ws.start_time < maximum_simulation_time)
+        .filter(|ws| ws.end_time > 0 && ws.start_time < maximum_run_time)
         .collect());
     res
 }

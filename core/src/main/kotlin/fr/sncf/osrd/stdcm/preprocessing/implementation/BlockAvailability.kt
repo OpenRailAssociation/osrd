@@ -1,14 +1,11 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
-import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.api_v2.stdcm.WorkSchedule
 import fr.sncf.osrd.conflicts.IncrementalConflictDetector
 import fr.sncf.osrd.conflicts.TrainRequirements
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.conflicts.incrementalConflictDetector
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
@@ -18,10 +15,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.max
 import kotlin.math.min
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
-val blockAvailabilityLogger: Logger = LoggerFactory.getLogger("BlockAvailability")
 
 data class BlockAvailability(
     val incrementalConflictDetector: IncrementalConflictDetector,
@@ -361,30 +354,20 @@ private data class AvailabilityProperties(
 )
 
 fun makeBlockAvailability(
-    infra: FullInfra,
     requirements: Collection<SpacingRequirement>,
-    workSchedules: Collection<WorkSchedule> = listOf(),
     steps: List<STDCMStep> = listOf(),
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
     timeStep: Double = 2.0,
 ): BlockAvailabilityInterface {
-    // Merge work schedules into train requirements
-    val convertedWorkSchedules = convertWorkSchedules(infra.rawInfra, workSchedules)
-    var allRequirements = requirements + convertedWorkSchedules
     if (gridMarginAfterTrain != 0.0 || gridMarginBeforeTrain != 0.0) {
         // The margin expected *after* the new train is added *before* the other train resource uses
-        allRequirements =
-            requirements.map {
-                SpacingRequirement(
-                    it.zone,
-                    it.beginTime - gridMarginAfterTrain,
-                    it.endTime + gridMarginBeforeTrain,
-                    it.isComplete
-                )
-            }
+        requirements.forEach {
+            it.beginTime -= gridMarginAfterTrain
+            it.endTime += gridMarginBeforeTrain
+        }
     }
-    val trainRequirements = listOf(TrainRequirements(0L, allRequirements, listOf()))
+    val trainRequirements = listOf(TrainRequirements(0L, requirements, listOf()))
 
     // Only keep steps with planned timing data
     val plannedSteps = steps.filter { it.plannedTimingData != null }
@@ -395,41 +378,4 @@ fun makeBlockAvailability(
         gridMarginAfterTrain,
         timeStep
     )
-}
-
-/**
- * Convert work schedules into timetable spacing requirements This is not entirely semantically
- * correct, but it lets us avoid work schedules like any other kind of time-bound constraint
- */
-private fun convertWorkSchedules(
-    infra: RawSignalingInfra,
-    workSchedules: Collection<WorkSchedule>
-): List<SpacingRequirement> {
-    val res = mutableListOf<SpacingRequirement>()
-    for (entry in workSchedules) {
-        for (range in entry.trackRanges) {
-            val track = infra.getTrackSectionFromName(range.trackSection) ?: continue
-            for (chunk in infra.getTrackSectionChunks(track)) {
-                val chunkStartOffset = infra.getTrackChunkOffset(chunk)
-                val chunkEndOffset = chunkStartOffset + infra.getTrackChunkLength(chunk).distance
-                if (chunkStartOffset > range.end || chunkEndOffset < range.begin) continue
-                val zone = infra.getTrackChunkZone(chunk)
-                if (zone == null) {
-                    blockAvailabilityLogger.info(
-                        "Skipping part of work schedule [${entry.startTime}; ${entry.endTime}] because it is on a track not fully covered by routes: $track",
-                    )
-                    continue
-                }
-                res.add(
-                    SpacingRequirement(
-                        infra.getZoneName(zone),
-                        entry.startTime.seconds,
-                        entry.endTime.seconds,
-                        true
-                    )
-                )
-            }
-        }
-    }
-    return res
 }
