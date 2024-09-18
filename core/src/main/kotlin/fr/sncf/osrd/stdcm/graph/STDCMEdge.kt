@@ -55,7 +55,7 @@ data class STDCMEdge(
         return if (!endAtStop) {
             // We move on to the next block
             STDCMNode(
-                timeData.withAddedTime(totalTime, null),
+                timeData.withAddedTime(totalTime, null, null),
                 endSpeed,
                 infraExplorerWithNewEnvelope,
                 this,
@@ -71,8 +71,16 @@ data class STDCMEdge(
             val firstStopAfterIndex = graph.getFirstStopAfterIndex(waypointIndex)!!
             val stopDuration = firstStopAfterIndex.duration!!
             val locationOnEdge = envelopeStartOffset + length.distance
+
             STDCMNode(
-                timeData.withAddedTime(totalTime, stopDuration),
+                timeData.withAddedTime(
+                    totalTime,
+                    stopDuration,
+                    graph.delayManager.getMaxAdditionalStopDuration(
+                        infraExplorerWithNewEnvelope,
+                        timeData.earliestReachableTime + totalTime
+                    )
+                ),
                 endSpeed,
                 infraExplorerWithNewEnvelope,
                 this,

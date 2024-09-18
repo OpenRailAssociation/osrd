@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.checkAllowanceResult
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.runWithAndWithoutAllowance
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
@@ -625,6 +626,74 @@ class StopTests {
             res.departureTime + res.envelope.totalTime + res.stopResults.first().duration
         assertEquals(3_000.0, res.departureTime, timeStep)
         assertEquals(15_000.0, arrivalTime, timeStep)
+    }
+
+    /**
+     * Checks that we properly account for stop durations when looking for conflicts, with two
+     * stops.
+     */
+    @Test
+    fun variableStopTimeWithConflicts() {
+        /*
+        a --> b --> c --> d --> e --> f
+                 ^           ^
+                stop        stop
+
+        space
+          ^
+        f |############################ / ###
+          |                            /
+        e |                           /
+          |                   __(___)/   <-- stop
+        d |                  /
+          |################ / ###############
+        c |                /
+          |        __(___)/   <-- stop
+          |       /
+        b |      /
+          |#### /############################
+        a |####/_############################_> time
+
+         */
+        val infra = DummyInfra()
+        val timeStep = 2.0
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d"),
+                infra.addBlock("d", "e"),
+                infra.addBlock("e", "f"),
+            )
+
+        val builder = ImmutableMultimap.builder<BlockId, OccupancySegment>()
+        builder.put(blocks[0], OccupancySegment(0.0, 1_000.0, 0.meters, 100.meters))
+        builder.put(
+            blocks[0],
+            OccupancySegment(2_000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+        )
+        builder.put(blocks[2], OccupancySegment(0.0, 10_000.0, 0.meters, 100.meters))
+        builder.put(
+            blocks[2],
+            OccupancySegment(12_000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+        )
+        builder.put(blocks[4], OccupancySegment(0.0, 20_000.0, 0.meters, 100.meters))
+        builder.put(
+            blocks[4],
+            OccupancySegment(22_000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+        )
+        val occupancy = builder.build()
+        var res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setUnavailableTimes(occupancy)
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters)))))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(50.meters))), 1.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[4], Offset(100.meters))), 0.0, true))
+                .setTimeStep(timeStep)
+                .run()!!
+        occupancyTest(res, occupancy)
     }
 
     companion object {

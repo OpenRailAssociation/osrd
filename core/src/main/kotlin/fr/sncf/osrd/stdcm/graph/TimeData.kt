@@ -68,9 +68,12 @@ data class TimeData(
     fun withAddedTime(
         extraTravelTime: Double,
         extraStopTime: Double?,
+        maxAdditionalStopTime: Double?
     ): TimeData {
         var newStopData = stopTimeData
         var maxDepartureDelayingWithoutConflict = maxDepartureDelayingWithoutConflict
+        val nextEarliestReachableTime =
+            earliestReachableTime + extraTravelTime + (extraStopTime ?: 0.0)
         if (extraStopTime != null) {
             val stopDataCopy = newStopData.toMutableList()
             stopDataCopy.add(
@@ -81,11 +84,10 @@ data class TimeData(
                 )
             )
             newStopData = stopDataCopy
-            maxDepartureDelayingWithoutConflict = Double.POSITIVE_INFINITY
+            maxDepartureDelayingWithoutConflict = maxAdditionalStopTime!!
         }
         return copy(
-            earliestReachableTime =
-                earliestReachableTime + extraTravelTime + (extraStopTime ?: 0.0),
+            earliestReachableTime = nextEarliestReachableTime,
             totalRunningTime = totalRunningTime + extraTravelTime,
             stopTimeData = newStopData,
             maxDepartureDelayingWithoutConflict = maxDepartureDelayingWithoutConflict,

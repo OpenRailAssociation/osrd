@@ -7,6 +7,7 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.Availability
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import java.util.*
 
 /**
@@ -129,5 +130,21 @@ internal constructor(
             endOffsetOnPath.cast(),
             startTime
         )
+    }
+
+    /** Return how much time we can add to the stop at the end of the explorer */
+    fun getMaxAdditionalStopDuration(
+        explorerWithNewEnvelope: InfraExplorerWithEnvelope,
+        endTime: Double,
+    ): Double {
+        val availability =
+            blockAvailability.getAvailability(
+                explorerWithNewEnvelope,
+                explorerWithNewEnvelope.getSimulatedLength() - 10.meters,
+                explorerWithNewEnvelope.getSimulatedLength(),
+                endTime,
+            )
+        if (availability is BlockAvailabilityInterface.Available) return availability.maximumDelay
+        return 0.0
     }
 }
