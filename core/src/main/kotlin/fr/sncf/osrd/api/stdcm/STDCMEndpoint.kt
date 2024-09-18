@@ -70,7 +70,6 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
                     startTime,
                     steps,
                     makeBlockAvailability(
-                        infra,
                         request.spacingRequirements,
                         gridMarginBeforeTrain = request.gridMarginBeforeSTDCM,
                         gridMarginAfterTrain = request.gridMarginAfterSTDCM
@@ -157,7 +156,7 @@ private fun checkForConflicts(
     departureTime: Double
 ) {
     val requirements = TrainRequirements(0, spacingRequirements, listOf())
-    val conflictDetector = IncrementalConflictDetectorImpl(listOf(requirements))
+    val conflictDetector = incrementalConflictDetector(listOf(requirements))
     val conflicts =
         conflictDetector.checkConflicts(
             simResult.spacingRequirements.map {

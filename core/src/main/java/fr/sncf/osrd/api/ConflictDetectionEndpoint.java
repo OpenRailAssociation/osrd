@@ -13,6 +13,7 @@ import fr.sncf.osrd.reporting.warnings.Warning;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -74,6 +75,8 @@ public class ConflictDetectionEndpoint implements Take {
             @Json(name = "train_ids")
             public final Collection<Long> trainIds;
 
+            public final transient Collection<Long> workScheduleIds;
+
             @Json(name = "start_time")
             public final double startTime;
 
@@ -87,6 +90,7 @@ public class ConflictDetectionEndpoint implements Take {
                 ROUTING,
             }
 
+            @NotNull
             @Json(name = "conflict_type")
             public final ConflictType conflictType;
 
@@ -96,9 +100,25 @@ public class ConflictDetectionEndpoint implements Take {
                     Collection<Long> trainIds,
                     double startTime,
                     double endTime,
-                    ConflictType conflictType,
+                    @NotNull ConflictType conflictType,
                     Collection<ConflictRequirement> requirements) {
                 this.trainIds = trainIds;
+                this.workScheduleIds = List.of();
+                this.startTime = startTime;
+                this.endTime = endTime;
+                this.conflictType = conflictType;
+                this.requirements = requirements;
+            }
+
+            public Conflict(
+                    Collection<Long> trainIds,
+                    Collection<Long> workScheduleIds,
+                    double startTime,
+                    double endTime,
+                    @NotNull ConflictType conflictType,
+                    Collection<ConflictRequirement> requirements) {
+                this.trainIds = trainIds;
+                this.workScheduleIds = workScheduleIds;
                 this.startTime = startTime;
                 this.endTime = endTime;
                 this.conflictType = conflictType;

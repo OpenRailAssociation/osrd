@@ -11,15 +11,14 @@ import static fr.sncf.osrd.utils.Helpers.fullInfraFromRJS;
 import static fr.sncf.osrd.utils.units.Distance.fromMeters;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict;
-import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement;
+import fr.sncf.osrd.api.ConflictDetectionEndpoint;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.conflicts.ConflictsKt;
-import fr.sncf.osrd.conflicts.TrainRequirements;
+import fr.sncf.osrd.conflicts.*;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
@@ -33,12 +32,15 @@ import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.Helpers;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.LongStream;
-import org.junit.jupiter.api.Assertions;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class ConflictDetectionTest {
 
@@ -71,19 +73,19 @@ public class ConflictDetectionTest {
 
         // ensure spacing requirements span the entire trip duration
         var firstSpacingRequirement = spacingRequirements.get(0);
-        Assertions.assertEquals(firstSpacingRequirement.beginTime, 0.0);
+        assertEquals(firstSpacingRequirement.beginTime, 0.0);
         for (int i = 0; i < spacingRequirements.size() - 1; i++) {
             var curReq = spacingRequirements.get(i);
             var nextReq = spacingRequirements.get(i + 1);
             assertTrue(curReq.endTime > nextReq.beginTime);
         }
         var lastSpacingRequirement = spacingRequirements.get(spacingRequirements.size() - 1);
-        Assertions.assertEquals(lastSpacingRequirement.endTime, simResult.envelope.getTotalTime(), 0.001);
+        assertEquals(lastSpacingRequirement.endTime, simResult.envelope.getTotalTime(), 0.001);
 
         // ensure routing requirements span the entire trip duration
         var routingRequirements = simResult.train.routingRequirements;
         var firstRoutingRequirement = routingRequirements.get(0);
-        Assertions.assertEquals(firstRoutingRequirement.beginTime, 0.0);
+        assertEquals(firstRoutingRequirement.beginTime, 0.0);
         // ensure route requirement times overlap
         for (int i = 0; i < routingRequirements.size() - 1; i++) {
             var curReq = routingRequirements.get(i);
@@ -96,7 +98,7 @@ public class ConflictDetectionTest {
         }
         var lastRoutingRequirement = routingRequirements.get(routingRequirements.size() - 1);
         var lastZoneReleaseTime = getLastZoneReleaseTime(lastRoutingRequirement);
-        Assertions.assertEquals(lastZoneReleaseTime, simResult.envelope.getTotalTime(), 0.001);
+        assertEquals(lastZoneReleaseTime, simResult.envelope.getTotalTime(), 0.001);
     }
 
     @Test
@@ -137,6 +139,7 @@ public class ConflictDetectionTest {
                     convertRequirements(0L, 0.0, simResultA.train), convertRequirements(1L, 0.0, simResultB.train)));
             assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
             assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+            assertFalse(conflicts.stream().anyMatch((conflict) -> !conflict.workScheduleIds.isEmpty()));
         }
 
         // no conflicts should occur if trains don't run at the same time
@@ -145,8 +148,7 @@ public class ConflictDetectionTest {
                     convertRequirements(0L, 0.0, simResultA.train),
                     // give enough time for switches to move (the default move time is 5)
                     convertRequirements(1L, simResultA.envelope.getTotalTime() + 5.1, simResultB.train)));
-            assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
-            assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+            assertTrue(conflicts.isEmpty());
         }
     }
 
@@ -248,6 +250,7 @@ public class ConflictDetectionTest {
                     convertRequirements(0L, 0.0, simResultA.train), convertRequirements(1L, 0.0, simResultB.train)));
             assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
             assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+            assertFalse(conflicts.stream().anyMatch((conflict) -> !conflict.workScheduleIds.isEmpty()));
         }
         // if both trains runs at the same time, but first one has an arrival on stop signal (before PC2 switch)
         // with a stop long enough for the other train to get out, there is no conflict
@@ -259,8 +262,7 @@ public class ConflictDetectionTest {
             var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
             var reqB = convertRequirements(1L, 0.0, simResultB.train);
             var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
-            assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
-            assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+            assertTrue(conflicts.isEmpty());
         }
     }
 
@@ -322,8 +324,9 @@ public class ConflictDetectionTest {
         var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
         var reqB = convertRequirements(1L, 0.0, simResultB.train);
         var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
-        assert (hasRoutingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
-        assert (hasSpacingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+        assertEquals(hasRoutingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == ROUTING));
+        assertEquals(hasSpacingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == SPACING));
+        assertFalse(conflicts.stream().anyMatch(conflict -> !conflict.workScheduleIds.isEmpty()));
     }
 
     /*
@@ -380,8 +383,9 @@ public class ConflictDetectionTest {
         var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
         var reqB = convertRequirements(1L, 0.0, simResultB.train);
         var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
-        assert (hasRoutingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
-        assert (hasSpacingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+        assertEquals(hasRoutingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == ROUTING));
+        assertEquals(hasSpacingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == SPACING));
+        assertFalse(conflicts.stream().anyMatch(conflict -> !conflict.workScheduleIds.isEmpty()));
     }
 
     /*
@@ -438,8 +442,90 @@ public class ConflictDetectionTest {
         var reqWithStop = convertRequirements(0L, 0.0, simResultCenterWithStop.train);
         var reqOvertaking = convertRequirements(1L, directStartTime, simResultNorthOvertaking.train);
         var conflicts = ConflictsKt.detectConflicts(List.of(reqWithStop, reqOvertaking));
-        assert (hasRoutingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
-        assert (hasSpacingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+        assertEquals(hasRoutingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == ROUTING));
+        assertEquals(hasSpacingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == SPACING));
+        assertFalse(conflicts.stream().anyMatch(conflict -> !conflict.workScheduleIds.isEmpty()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("workScheduleArgs")
+    public void testWorkSchedules(
+            Stream<Requirements> trainRequirements,
+            Stream<Requirements> workSchedules,
+            List<ConflictDetectionEndpoint.ConflictDetectionResult.Conflict> expectedConflicts) {
+        var requirements = Stream.concat(trainRequirements, workSchedules).toList();
+
+        var conflicts = ConflictsKt.detectRequirementConflicts(requirements);
+
+        assertFalse(conflicts.stream().anyMatch(conflict -> conflict.conflictType == ROUTING));
+        assertThat(conflicts.stream()
+                        .filter(conflict -> !conflict.workScheduleIds.isEmpty())
+                        .toList())
+                .usingRecursiveComparison()
+                .isEqualTo(expectedConflicts);
+    }
+
+    static Stream<Arguments> workScheduleArgs() {
+        // Non conflicting train requirements
+        var reqTrainA = new Requirements(
+                new RequirementId(0, RequirementType.TRAIN),
+                List.of(new ResultTrain.SpacingRequirement("zone1", 0, 100, true)),
+                List.of());
+        var reqTrainB = new Requirements(
+                new RequirementId(1, RequirementType.TRAIN),
+                List.of(new ResultTrain.SpacingRequirement("zone1", 100, 200, true)),
+                List.of());
+        return Stream.of(
+                // Non-conflicting work schedules
+                Arguments.of(
+                        Stream.of(reqTrainA, reqTrainB),
+                        Stream.of(
+                                createWorkScheduleRequirements(
+                                        0L,
+                                        List.of(
+                                                new ResultTrain.SpacingRequirement("zone1", 200, 300, true),
+                                                new ResultTrain.SpacingRequirement("zone2", 200, 300, true))),
+                                createWorkScheduleRequirements(
+                                        1L, List.of(new ResultTrain.SpacingRequirement("zone1", 300, 400, true)))),
+                        List.of()),
+                // Work schedules conflict with trains
+                Arguments.of(
+                        Stream.of(reqTrainA, reqTrainB),
+                        Stream.of(createWorkScheduleRequirements(
+                                0L, List.of(new ResultTrain.SpacingRequirement("zone1", 50, 150, true)))),
+                        List.of(new ConflictDetectionEndpoint.ConflictDetectionResult.Conflict(
+                                List.of(0L, 1L),
+                                List.of(0L),
+                                0.0,
+                                200.0,
+                                SPACING,
+                                List.of(new ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement(
+                                        "zone1", 0.0, 200.0))))),
+                // Work schedules conflict with each other and are ignored
+                Arguments.of(
+                        Stream.of(reqTrainA, reqTrainB),
+                        Stream.of(
+                                createWorkScheduleRequirements(
+                                        0L, List.of(new ResultTrain.SpacingRequirement("zone1", 200, 300, true))),
+                                createWorkScheduleRequirements(
+                                        1L, List.of(new ResultTrain.SpacingRequirement("zone1", 225, 325, true)))),
+                        List.of()),
+                // Work schedules conflict with trains and each other
+                Arguments.of(
+                        Stream.of(reqTrainA, reqTrainB),
+                        Stream.of(
+                                createWorkScheduleRequirements(
+                                        0L, List.of(new ResultTrain.SpacingRequirement("zone1", 150, 300, true))),
+                                createWorkScheduleRequirements(
+                                        1L, List.of(new ResultTrain.SpacingRequirement("zone1", 250, 350, true)))),
+                        List.of(new ConflictDetectionEndpoint.ConflictDetectionResult.Conflict(
+                                List.of(1L),
+                                List.of(0L, 1L),
+                                100.0,
+                                350.0,
+                                SPACING,
+                                List.of(new ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement(
+                                        "zone1", 100.0, 350.0))))));
     }
 
     /*
@@ -459,18 +545,22 @@ public class ConflictDetectionTest {
         var conflicts = ConflictsKt.detectConflicts(reqs);
 
         var expectedConflicts = List.of(
-                new Conflict(
+                new ConflictDetectionEndpoint.ConflictDetectionResult.Conflict(
                         LongStream.of(0, 1).boxed().toList(),
                         10,
                         35,
                         SPACING,
-                        List.of(new ConflictRequirement("A", 10, 25), new ConflictRequirement("B", 20, 35))),
-                new Conflict(
+                        List.of(
+                                new ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement("A", 10, 25),
+                                new ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement(
+                                        "B", 20, 35))),
+                new ConflictDetectionEndpoint.ConflictDetectionResult.Conflict(
                         LongStream.of(0, 1).boxed().toList(),
                         40,
                         55,
                         SPACING,
-                        List.of(new ConflictRequirement("C", 40, 55))));
+                        List.of(new ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement(
+                                "C", 40, 55))));
         assertThat(conflicts).usingRecursiveComparison().isEqualTo(expectedConflicts);
     }
 
@@ -532,5 +622,10 @@ public class ConflictDetectionTest {
                 .map(e -> e.endTime)
                 .reduce(Double::max)
                 .get();
+    }
+
+    private static Requirements createWorkScheduleRequirements(
+            Long id, Collection<ResultTrain.SpacingRequirement> spacingRequirements) {
+        return new Requirements(new RequirementId(id, RequirementType.WORK_SCHEDULE), spacingRequirements, List.of());
     }
 }

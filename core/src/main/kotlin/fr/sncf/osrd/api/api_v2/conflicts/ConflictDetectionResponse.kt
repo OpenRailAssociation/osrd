@@ -14,6 +14,7 @@ class ConflictDetectionResponse(
 
 class Conflict(
     @Json(name = "train_ids") val trainIds: Collection<Long>,
+    @Json(name = "work_schedule_ids") val workScheduleIds: Collection<Long>,
     @Json(name = "start_time") val startTime: ZonedDateTime,
     @Json(name = "end_time") val endTime: ZonedDateTime,
     @Json(name = "conflict_type")

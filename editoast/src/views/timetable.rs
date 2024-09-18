@@ -338,14 +338,16 @@ async fn conflicts(
         );
     }
     let conflict_detection_request = ConflictDetectionRequest {
+        infra: infra_id,
+        expected_version: infra.version,
         trains_requirements,
-        infra_id,
+        work_schedules: None,
     };
 
     // 3. Call core
-    let conflicts = conflict_detection_request.fetch(&core_client).await?;
+    let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
 
-    Ok(Json(conflicts.conflicts))
+    Ok(Json(conflict_detection_response.conflicts))
 }
 
 #[cfg(test)]

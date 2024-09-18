@@ -98,7 +98,7 @@ class WorkerCommand : CliCommand {
                 "/project_signals" to SignalProjectionEndpoint(infraManager),
                 "/v2/signal_projection" to SignalProjectionEndpointV2(infraManager),
                 "/detect_conflicts" to ConflictDetectionEndpoint(),
-                "/v2/conflict_detection" to ConflictDetectionEndpointV2(),
+                "/v2/conflict_detection" to ConflictDetectionEndpointV2(infraManager),
                 "/cache_status" to InfraCacheStatusEndpoint(infraManager),
                 "/version" to VersionEndpoint(),
                 "/stdcm" to STDCMEndpoint(infraManager),
