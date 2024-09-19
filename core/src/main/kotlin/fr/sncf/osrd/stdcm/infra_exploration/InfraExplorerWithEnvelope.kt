@@ -47,7 +47,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     /**
      * Returns a copy with the given envelope, the previous one is ignored. This keeps stop data.
      */
-    fun withNewEnvelope(envelope: Envelope): InfraExplorerWithEnvelope
+    fun withReplacedEnvelope(envelope: Envelope): InfraExplorerWithEnvelope
 
     /** Add a stop to the end of the last simulated envelope */
     fun addStop(stopDuration: Double)

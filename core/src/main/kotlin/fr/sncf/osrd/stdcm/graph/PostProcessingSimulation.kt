@@ -12,6 +12,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
@@ -21,6 +22,10 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
 import kotlin.math.max
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+val postProcessingLogger: Logger = LoggerFactory.getLogger("postprocessing-STDCM")
 
 private data class FixedTimePoint(
     val time: Double,
@@ -91,9 +96,29 @@ fun buildFinalEnvelope(
                     edges,
                     updatedTimeData,
                 ) ?: return newEnvelope
-            if (fixedPoints.any { it.offset == conflictOffset })
-                break // Error case, we exit and fallback to the linear envelope
-            logger.info(
+            if (fixedPoints.any { it.offset == conflictOffset }) {
+                // Error case: a conflict prevents us from finding a solution,
+                // despite the exploration data identifying a valid opening.
+                // This is not supposed to happen, but we can still fallback
+                // linear allowance, and log as much info as we can
+                return handlePostProcessingConflict(
+                    graph,
+                    maxSpeedEnvelope,
+                    edges,
+                    standardAllowance,
+                    envelopeSimPath,
+                    rollingStock,
+                    timeStep,
+                    comfort,
+                    blockAvailability,
+                    stops,
+                    updatedTimeData,
+                    fixedPoints,
+                    conflictOffset,
+                    isMareco,
+                )
+            }
+            postProcessingLogger.info(
                 "Conflict when running final stdcm simulation at offset {}, adding a fixed time point",
                 conflictOffset
             )
@@ -105,7 +130,9 @@ fun buildFinalEnvelope(
                 // Mareco allowances must have a non-zero capacity speed limit,
                 // which may cause "too much time" errors.
                 // We can ignore this exception and move on to the linear allowance as fallback
-                logger.info("Can't slow down enough to match the given standard allowance")
+                postProcessingLogger.warn(
+                    "Can't slow down enough to match the given standard allowance"
+                )
                 break
             } else throw e
         }
@@ -115,7 +142,9 @@ fun buildFinalEnvelope(
             "Failed to compute a standard allowance that wouldn't cause conflicts"
         )
     } else {
-        logger.info("Failed to compute a mareco standard allowance, fallback to linear allowance")
+        postProcessingLogger.warn(
+            "Failed to compute a mareco standard allowance, fallback to linear allowance"
+        )
         return buildFinalEnvelope(
             graph,
             maxSpeedEnvelope,
@@ -262,14 +291,7 @@ private fun findConflictOffsets(
                 millimeters =
                     edges.stream().mapToLong { edge -> edge.length.distance.millimeters }.sum()
             )
-    val explorer =
-        edges
-            .last()
-            .infraExplorer
-            .withNewEnvelope(
-                envelope,
-            )
-            .updateStopDurations(updatedTimeData)
+    val explorer = getUpdatedExplorer(edges, envelope, updatedTimeData)
     assert(
         TrainPhysicsIntegrator.arePositionsEqual(envelope.endPos, (endOffset - startOffset).meters)
     )
@@ -284,6 +306,21 @@ private fun findConflictOffsets(
         (availability as? BlockAvailabilityInterface.Unavailable)?.firstConflictOffset
             ?: return null
     return offsetDistance
+}
+
+/** Returns an infra explorer with envelope, with the given new envelope and updated time data */
+private fun getUpdatedExplorer(
+    edges: List<STDCMEdge>,
+    envelope: Envelope,
+    updatedTimeData: TimeData
+): InfraExplorerWithEnvelope {
+    return edges
+        .last()
+        .infraExplorer
+        .withReplacedEnvelope(
+            envelope,
+        )
+        .updateStopDurations(updatedTimeData)
 }
 
 /**
@@ -342,4 +379,89 @@ private fun makeAllowanceRanges(
         res.add(AllowanceRange(transition, envelope.endPos, AllowanceValue.FixedTime(0.0)))
 
     return res
+}
+
+/**
+ * This method handles the case where we find a conflict in post-processing that wasn't supposed to
+ * be present according to what has been. This isn't supposed to happen, but when it does we want to
+ * log as much data as possible. We can also fallback from mareco to linear margins.
+ */
+private fun handlePostProcessingConflict(
+    graph: STDCMGraph,
+    maxSpeedEnvelope: Envelope,
+    edges: List<STDCMEdge>,
+    standardAllowance: AllowanceValue?,
+    envelopeSimPath: EnvelopeSimPath,
+    rollingStock: RollingStock,
+    timeStep: Double,
+    comfort: Comfort?,
+    blockAvailability: BlockAvailabilityInterface,
+    stops: List<TrainStop>,
+    updatedTimeData: TimeData,
+    fixedPoints: TreeSet<FixedTimePoint>,
+    conflictOffset: Offset<TravelledPath>,
+    isMareco: Boolean
+): Envelope {
+    postProcessingLogger.error(
+        "Conflicts detected in post-processing, mismatch with the exploration data"
+    )
+    val conflictTime = fixedPoints.first { it.offset == conflictOffset }.time
+    postProcessingLogger.info(
+        "    conflict happened at offset=$conflictOffset/${maxSpeedEnvelope.endPos.toInt()} " +
+            "and t=${conflictTime.toInt()}/${updatedTimeData.timeSinceDeparture.toInt()}"
+    )
+
+    var remainingDistance = conflictOffset.distance
+    for ((i, edge) in edges.withIndex()) {
+        val atStop = edge.endAtStop && remainingDistance == edge.length.distance
+        if (remainingDistance < edge.length.distance || atStop) {
+            val updatedTimeAtConflict =
+                edge.getApproximateTimeAtLocation(Offset(remainingDistance), updatedTimeData)
+            val updatedExplorer = getUpdatedExplorer(edges, maxSpeedEnvelope, updatedTimeData)
+            postProcessingLogger.info("    edge $i/${edges.size}: $edge")
+            postProcessingLogger.info("        offset $remainingDistance/${edge.length}")
+            postProcessingLogger.info("        original time data: ${edge.timeData}")
+            postProcessingLogger.info("        updated time data: $updatedTimeData")
+            postProcessingLogger.info(
+                "        original explorer stops: ${edge.infraExplorerWithNewEnvelope.getStops()}"
+            )
+            postProcessingLogger.info(
+                "        updated explorer stops: ${updatedExplorer.getStops()}"
+            )
+            postProcessingLogger.info(
+                "        updated start time: ${edge.timeData.getUpdatedEarliestReachableTime(updatedTimeData)}"
+            )
+            postProcessingLogger.info(
+                "        updated time at conflict location: $updatedTimeAtConflict"
+            )
+            break
+        }
+        remainingDistance -= edge.length.distance
+    }
+
+    if (isMareco) {
+        postProcessingLogger.info(
+            "The error happened with mareco allowances, try to fallback on linear allowances"
+        )
+        postProcessingLogger.info("(reset of fixed time points)")
+        return buildFinalEnvelope(
+            graph,
+            maxSpeedEnvelope,
+            edges,
+            standardAllowance,
+            envelopeSimPath,
+            rollingStock,
+            timeStep,
+            comfort,
+            blockAvailability,
+            stops,
+            updatedTimeData,
+            false,
+        )
+    } else {
+        throw RuntimeException(
+            "Failed to compute a simulation that wouldn't cause conflicts: " +
+                "mismatch between exploration and postprocessing (please open a bug report)"
+        )
+    }
 }

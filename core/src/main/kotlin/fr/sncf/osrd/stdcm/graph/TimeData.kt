@@ -70,6 +70,9 @@ data class TimeData(
         extraStopTime: Double?,
         maxAdditionalStopTime: Double?
     ): TimeData {
+        assert((extraStopTime == null) == (maxAdditionalStopTime == null)) {
+            "Can't set just one of 'stop duration' or 'max additional stop duration' without the other"
+        }
         var newStopData = stopTimeData
         var maxDepartureDelayingWithoutConflict = maxDepartureDelayingWithoutConflict
         val nextEarliestReachableTime =
