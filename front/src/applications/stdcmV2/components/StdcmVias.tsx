@@ -80,9 +80,16 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                 name={t('trainPath.vias')}
                 title={
                   <div className="stdcm-v2-via-icons">
-                    <span>
-                      <img src={IntermediatePointIcon} alt="intermediate-point" />
-                    </span>
+                    <div className="icon-bundle mt-1">
+                      <span>
+                        <img
+                          src={IntermediatePointIcon}
+                          alt="intermediate-point"
+                          style={{ width: '45px' }}
+                        />
+                      </span>
+                      <span className="icon-index">{pathStepIndex}</span>
+                    </div>
                     <button type="button" onClick={() => deleteViaOnClick(index)}>
                       {t('translation:common.delete')}
                     </button>

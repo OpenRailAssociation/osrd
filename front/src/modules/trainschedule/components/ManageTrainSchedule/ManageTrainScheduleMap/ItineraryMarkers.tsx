@@ -8,6 +8,9 @@ import { useSelector } from 'react-redux';
 
 import destinationSVG from 'assets/pictures/destination.svg';
 import originSVG from 'assets/pictures/origin.svg';
+import stdcmDestination from 'assets/pictures/stdcmV2/destination.svg';
+import stdcmVia from 'assets/pictures/stdcmV2/intermediate-point.svg';
+import stdcmOrigin from 'assets/pictures/stdcmV2/start.svg';
 import viaSVG from 'assets/pictures/via.svg';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { PathStep } from 'reducers/osrdconf/types';
@@ -36,6 +39,7 @@ type MarkerInformation = {
 type ItineraryMarkersProps = {
   map: Map;
   simulationPathSteps?: PathStep[];
+  showStdcmAssets: boolean;
 };
 
 const formatPointWithNoName = (
@@ -53,7 +57,7 @@ const formatPointWithNoName = (
   </>
 );
 
-const extractMarkerInformation = (pathSteps: (PathStep | null)[]) =>
+const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAssets: boolean) =>
   pathSteps.reduce((acc, cur, index) => {
     if (cur && cur.coordinates) {
       if (index === 0) {
@@ -61,14 +65,14 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[]) =>
           coordinates: cur.coordinates,
           type: MARKER_TYPE.ORIGIN,
           marker: cur,
-          imageSource: originSVG,
+          imageSource: showStdcmAssets ? stdcmOrigin : originSVG,
         });
       } else if (index > 0 && index < pathSteps.length - 1) {
         acc.push({
           coordinates: cur.coordinates,
           type: MARKER_TYPE.VIA,
           marker: cur,
-          imageSource: viaSVG,
+          imageSource: showStdcmAssets ? stdcmVia : viaSVG,
           index,
         });
       } else if (index === pathSteps.length - 1) {
@@ -76,19 +80,19 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[]) =>
           coordinates: cur.coordinates,
           type: MARKER_TYPE.DESTINATION,
           marker: cur,
-          imageSource: destinationSVG,
+          imageSource: showStdcmAssets ? stdcmDestination : destinationSVG,
         });
       }
     }
     return acc;
   }, [] as MarkerInformation[]);
 
-const ItineraryMarkers = ({ map, simulationPathSteps }: ItineraryMarkersProps) => {
+const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: ItineraryMarkersProps) => {
   const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
 
   const markersInformation = useMemo(
-    () => extractMarkerInformation(simulationPathSteps || pathSteps),
+    () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets),
     [simulationPathSteps, pathSteps]
   );
 
@@ -148,16 +152,24 @@ const ItineraryMarkers = ({ map, simulationPathSteps }: ItineraryMarkersProps) =
           <Marker
             longitude={markerInfo.coordinates[0]}
             latitude={markerInfo.coordinates[1]}
-            offset={isDestination ? [0, -24] : [0, -12]}
+            offset={isDestination && !showStdcmAssets ? [0, -24] : [0, -12]}
             key={isVia ? `via-${markerInfo.index}` : markerInfo.type}
           >
             <img
               src={markerInfo.imageSource}
               alt={markerInfo.type}
-              style={{ height: isDestination ? '3rem' : '1.5rem' }}
+              style={showStdcmAssets ? {} : { height: isDestination ? '3rem' : '1.5rem' }}
             />
-            {isVia && <span className="map-pathfinding-marker via-number">{markerInfo.index}</span>}
-            {markerName}
+            {isVia && (
+              <span
+                className={cx('map-pathfinding-marker', 'via-number', {
+                  'stdcm-via': isVia && showStdcmAssets,
+                })}
+              >
+                {markerInfo.index}
+              </span>
+            )}
+            {!showStdcmAssets && markerName}
           </Marker>
         );
       }),

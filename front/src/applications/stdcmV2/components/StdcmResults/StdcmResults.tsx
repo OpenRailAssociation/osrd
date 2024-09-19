@@ -117,6 +117,7 @@ const StcdmResults = ({
             mapId="map-result"
             isReadOnly
             hideAttribution
+            showStdcmAssets
             setMapCanvas={setMapCanvas}
             pathProperties={selectedSimulation.outputs?.pathProperties}
             simulationPathSteps={selectedSimulation.outputs?.results.simulationPathSteps}

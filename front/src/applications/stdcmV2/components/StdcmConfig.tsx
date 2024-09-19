@@ -32,7 +32,6 @@ import checkStdcmConfigErrors from '../utils/checkStdcmConfigErrors';
 type StdcmConfigProps = {
   currentSimulationInputs?: StdcmSimulationInputs;
   selectedSimulation?: StdcmSimulation;
-  pathProperties?: ManageTrainSchedulePathProperties;
   isPending: boolean;
   retainedSimulationIndex: number;
   showBtnToLaunchSimulation: boolean;
@@ -45,7 +44,6 @@ type StdcmConfigProps = {
 
 const StdcmConfig = ({
   selectedSimulation,
-  pathProperties,
   isPending,
   retainedSimulationIndex,
   showBtnToLaunchSimulation,
@@ -71,9 +69,12 @@ const StdcmConfig = ({
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
 
-  const { pathfindingState } = usePathfinding(undefined, pathProperties);
+  const [pathfindingProperties, setPathfindingProperties] =
+    useState<ManageTrainSchedulePathProperties>();
 
-  const [formErrors, setFormErrors] = useState<StdcmConfigErrors | undefined>(undefined);
+  const { pathfindingState } = usePathfinding(setPathfindingProperties, pathfindingProperties);
+
+  const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
   const inputsProps = {
     disabled: isPending || retainedSimulationIndex > -1,
@@ -162,7 +163,13 @@ const StdcmConfig = ({
         </div>
       </div>
       <div className="osrd-config-item-container osrd-config-item-container-map stdcm-v2-map">
-        <Map hideAttribution hideItinerary preventPointSelection pathProperties={pathProperties} />
+        <Map
+          hideAttribution
+          hideItinerary
+          preventPointSelection
+          pathProperties={pathfindingProperties}
+          showStdcmAssets
+        />
       </div>
       <div />
     </div>

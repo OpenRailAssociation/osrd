@@ -1,5 +1,6 @@
 .stdcm-v2 {
   font-family: 'IBM Plex Sans';
+  min-width: 85rem;
 
   /* 
   We set the cursor to default to avoid the pointer cursor that appears due to role="button" on the div.
@@ -205,11 +206,12 @@
       border-radius: 0.5rem;
       border: 0.063rem solid rgba(255, 255, 255, 1);
       box-shadow:
-        0px 0px 0px 2px rgba(255, 255, 255, 0.75) inset,
-        0px 0px 0px 1px rgba(0, 0, 0, 0.25) inset;
+        0px 0px 0px 0.125rem rgba(255, 255, 255, 0.75) inset,
+        0px 0px 0px 0.0625rem rgba(0, 0, 0, 0.25) inset;
       margin-left: 2rem;
       width: 100%;
-      height: 48.5rem;
+      min-width: 28.125rem;
+      height: calc(100vh - 4rem);
     }
   }
 }

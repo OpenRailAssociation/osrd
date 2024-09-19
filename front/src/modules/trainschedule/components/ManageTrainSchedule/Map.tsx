@@ -63,6 +63,7 @@ type MapProps = {
   preventPointSelection?: boolean;
   mapId?: string;
   simulationPathSteps?: PathStep[];
+  showStdcmAssets?: boolean;
 };
 
 const Map = ({
@@ -74,6 +75,7 @@ const Map = ({
   preventPointSelection = false,
   mapId = 'map-container',
   simulationPathSteps,
+  showStdcmAssets = false,
   children,
 }: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
@@ -401,11 +403,13 @@ const Map = ({
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
               geometry={pathProperties?.geometry}
               hideItineraryLine={hideItinerary}
+              showStdcmAssets={showStdcmAssets}
             />
             {mapRef.current && (
               <ItineraryMarkers
                 simulationPathSteps={simulationPathSteps}
                 map={mapRef.current.getMap()}
+                showStdcmAssets={showStdcmAssets}
               />
             )}
           </>
