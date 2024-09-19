@@ -46,3 +46,9 @@ export type StdcmConfigErrors = {
   errorType: StdcmConfigErrorTypes;
   errorDetails?: { originTime: string; destinationTime: string };
 };
+
+export type ScheduleConstraint = {
+  date: Date;
+  hours: number;
+  minutes: number;
+};

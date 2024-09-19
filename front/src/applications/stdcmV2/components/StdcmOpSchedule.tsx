@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import { formatLocaleDateToIsoDate, isArrivalDateInSearchTimeWindow } from 'utils/date';
+import { isArrivalDateInSearchTimeWindow } from 'utils/date';
 
-import type { ArrivalTimeTypes } from '../types';
+import type { ArrivalTimeTypes, ScheduleConstraint } from '../types';
 
 type StdcmOpScheduleProps = {
   disabled: boolean;
-  onArrivalChange: (arrival: string) => void;
+  onArrivalChange: ({ date, hours, minutes }: ScheduleConstraint) => void;
   onArrivalTypeChange: (arrivalType: ArrivalTimeTypes) => void;
   onArrivalToleranceChange: ({
     toleranceBefore,
@@ -77,13 +77,6 @@ const StdcmOpSchedule = ({
       };
     }, [opTimingData, opToleranceValues, searchDatetimeWindow]);
 
-  const updateOpArrival = (date: Date, { hours, minutes }: { hours: number; minutes: number }) => {
-    date.setHours(hours);
-    date.setMinutes(minutes);
-    const newOpArrival = formatLocaleDateToIsoDate(date);
-    onArrivalChange(newOpArrival);
-  };
-
   return (
     <div className="d-flex flex-column">
       <div className="col-12 pr-1">
@@ -121,7 +114,8 @@ const StdcmOpSchedule = ({
                   : undefined,
               }}
               onDateChange={(e) => {
-                updateOpArrival(e, {
+                onArrivalChange({
+                  date: e,
                   hours: arrivalTimeHours || 0,
                   minutes: arrivalTimeMinutes || 0,
                 });
@@ -135,10 +129,7 @@ const StdcmOpSchedule = ({
               hours={arrivalTimeHours}
               minutes={arrivalTimeMinutes}
               onTimeChange={({ hours, minutes }) => {
-                updateOpArrival(arrivalDate, {
-                  hours,
-                  minutes,
-                });
+                onArrivalChange({ date: arrivalDate, hours, minutes });
               }}
               disabled={disabled}
               value={arrivalTime}

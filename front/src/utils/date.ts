@@ -4,6 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
+import type { ScheduleConstraint } from 'applications/stdcmV2/types';
 import type { IsoDateTimeString, IsoDurationString } from 'common/types';
 import i18n from 'i18n';
 
@@ -229,3 +230,14 @@ export function isArrivalDateInSearchTimeWindow(
   const arrivalDate = new Date(arrivalTime);
   return arrivalDate >= searchDatetimeWindow.begin && arrivalDate <= searchDatetimeWindow.end;
 }
+
+/**
+ * Generates an ISO date string from a given date and time.
+ * @param {ScheduleConstraint} - An object containing the base date, the hours, and the minutes.
+ * @returns {string} The ISO formatted date string.
+ */
+export const generateISODateFromDateTime = ({ date, hours, minutes }: ScheduleConstraint) => {
+  date.setHours(hours);
+  date.setMinutes(minutes);
+  return formatLocaleDateToIsoDate(date);
+};
