@@ -17,6 +17,14 @@
     button {
       display: none;
     }
+    .icon-index {
+      position: absolute;
+      width: 2.812rem;
+      text-align: center;
+      right: 1.02rem;
+      top: 0.32rem;
+      font-size: 0.7rem;
+    }
   }
 
   &.has-tip::after {

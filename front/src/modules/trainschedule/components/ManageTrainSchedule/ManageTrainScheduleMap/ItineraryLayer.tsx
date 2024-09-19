@@ -9,25 +9,29 @@ type ItineraryLayerProps = {
   layerOrder: number;
   geometry?: GeoJsonLineString;
   hideItineraryLine?: boolean;
+  showStdcmAssets: boolean;
 };
 
 export default function ItineraryLayer({
   layerOrder,
   geometry,
   hideItineraryLine = false,
+  showStdcmAssets,
 }: ItineraryLayerProps) {
   const { getOrigin, getDestination } = useOsrdConfSelectors();
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   if (geometry && origin && destination) {
+    const lineWidth = showStdcmAssets ? 3 : 5;
+    const lineColor = showStdcmAssets ? 'rgba(21, 141, 207, 1)' : 'rgba(210, 225, 0, 0.75)';
     return (
       <Source type="geojson" data={geometry}>
         {!hideItineraryLine && (
           <OrderedLayer
             type="line"
             paint={{
-              'line-width': 5,
-              'line-color': 'rgba(210, 225, 0, 0.75)',
+              'line-width': lineWidth,
+              'line-color': lineColor,
             }}
             layerOrder={layerOrder}
           />
