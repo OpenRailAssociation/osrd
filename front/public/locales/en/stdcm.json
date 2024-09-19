@@ -4,6 +4,8 @@
   "cancelRequest": "Cancel request",
   "consist": {
     "consist": "Consist",
+    "length": "Length",
+    "tonnage": "Tonnage",
     "tractionEngine": "Traction engine"
   },
   "datetimeOutsideWindow": "Date must be between {{low}} and {{high}}",

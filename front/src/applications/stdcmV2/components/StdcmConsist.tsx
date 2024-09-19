@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
+import { Input } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
-// import { Input } from '@osrd-project/ui-core';
 
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectSNCF';
@@ -140,10 +140,10 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
             onSelectSuggestion={onSelectSuggestion}
           />
         </div>
-        {/* <div className="stdcm-v2-consist__properties d-flex justify-content-between">
-          <Input id="tonnage" label="Tonnage" trailingContent="t" disabled />
-          <Input id="Longueur" label="longueur" trailingContent="m" disabled />
-        </div> */}
+        <div className="stdcm-v2-consist__properties d-flex justify-content-between">
+          <Input id="tonnage" label={t('consist.tonnage')} trailingContent="t" />
+          <Input id="length" label={t('consist.length')} trailingContent="m" />
+        </div>
         <p className="stdcm-v2-consist__title">{t('translation:Editor.nav.speed-limits')}</p>
         <SpeedLimitByTagSelector
           disabled={disabled}
