@@ -137,8 +137,9 @@ class STDCMPathfinding(
                     graph.tag
                 ) ?: return null
         logger.info(
-            "departure time = ${res.departureTime.toInt()}s, " +
-                "total travel time = ${res.envelope.totalTime.toInt()}s"
+            "departure time = +${res.departureTime.toInt()}s, " +
+                "total travel time = ${res.envelope.totalTime.toInt()}s, " +
+                "total stop time = ${res.stopResults.sumOf { it.duration }.toInt()}s"
         )
         return res
     }

@@ -70,7 +70,7 @@ data class InfraExplorerWithEnvelopeImpl(
         return this
     }
 
-    override fun withNewEnvelope(envelope: Envelope): InfraExplorerWithEnvelope {
+    override fun withReplacedEnvelope(envelope: Envelope): InfraExplorerWithEnvelope {
         return copy(
             envelopes =
                 appendOnlyLinkedListOf(
@@ -108,7 +108,7 @@ data class InfraExplorerWithEnvelopeImpl(
             envelopeCache = null
             spacingRequirementsCache = null
         } else {
-            assert(stops.isEmpty() || stops.last().duration == stopDuration)
+            assert(stops.last().duration == stopDuration)
         }
     }
 
