@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -8,12 +8,12 @@ import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { replaceElementAtIndex } from 'utils/array';
-import { extractDateAndTimefromISO } from 'utils/date';
+import { extractDateAndTimefromISO, generateISODateFromDateTime } from 'utils/date';
 
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmOpSchedule from './StdcmOpSchedule';
-import { ArrivalTimeTypes, type StdcmConfigCardProps } from '../types';
+import { ArrivalTimeTypes, type ScheduleConstraint, type StdcmConfigCardProps } from '../types';
 
 const StdcmOrigin = ({
   setCurrentSimulationInputs,
@@ -24,6 +24,10 @@ const StdcmOrigin = ({
 }) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
+
+  const [arrivalScheduleConstraint, setArrivalScheduleConstraint] = useState<
+    ScheduleConstraint | undefined
+  >();
 
   const { updateOrigin, updateOriginArrival, updateOriginArrivalType, updateOriginTolerances } =
     useOsrdConfActions() as StdcmConfSliceActions;
@@ -49,11 +53,23 @@ const StdcmOrigin = ({
   }, [origin]);
 
   const updateOriginPoint = (pathStep: PathStep | null) => {
-    dispatch(updateOrigin(pathStep));
+    if (!pathStep || !arrivalScheduleConstraint) {
+      dispatch(updateOrigin(pathStep));
+    } else {
+      dispatch(
+        updateOrigin({
+          ...pathStep,
+          arrival: generateISODateFromDateTime(arrivalScheduleConstraint),
+        })
+      );
+    }
   };
 
-  const onOriginArrivalChange = (arrival: string) => {
-    dispatch(updateOriginArrival(arrival));
+  const onOriginArrivalChange = (schedule: ScheduleConstraint) => {
+    setArrivalScheduleConstraint(schedule);
+
+    const newOpArrival = generateISODateFromDateTime(schedule);
+    dispatch(updateOriginArrival(newOpArrival));
   };
 
   const onOriginArrivalTypeChange = (arrivalType: ArrivalTimeTypes) => {

@@ -302,19 +302,21 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
       state.startTime = action.payload;
     },
     updateOrigin(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
+      const prevOriginArrivalType = state.pathSteps.at(0)?.arrivalType;
       const newPoint = action.payload
         ? {
             ...action.payload,
-            arrivalType: ArrivalTimeTypes.PRECISE_TIME,
+            arrivalType: prevOriginArrivalType || ArrivalTimeTypes.PRECISE_TIME,
           }
         : null;
       state.pathSteps = updateOriginPathStep(state.pathSteps, newPoint, true);
     },
     updateDestination(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
+      const prevDestinationArrivalType = state.pathSteps.at(-1)?.arrivalType;
       const newPoint = action.payload
         ? {
             ...action.payload,
-            arrivalType: ArrivalTimeTypes.ASAP,
+            arrivalType: prevDestinationArrivalType || ArrivalTimeTypes.ASAP,
           }
         : null;
       state.pathSteps = updateDestinationPathStep(state.pathSteps, newPoint, true);
