@@ -4,6 +4,8 @@
   "cancelRequest": "Annuler la requête",
   "consist": {
     "consist": "Convoi",
+    "length": "Longueur",
+    "tonnage": "Tonnage",
     "tractionEngine": "Engin de traction"
   },
   "datetimeOutsideWindow": "La date et l'heure doivent être comprises entre le {{low}} et le {{high}}",

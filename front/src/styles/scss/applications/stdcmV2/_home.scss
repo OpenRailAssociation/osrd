@@ -27,6 +27,17 @@
             height: 1.25rem;
           }
         }
+        .stdcm-v2-consist__properties {
+          .feed-back:nth-child(1) {
+            width: 7.4375rem;
+          }
+          .feed-back:nth-child(2) {
+            width: 7.9375rem;
+          }
+          * > .base-label-wrapper > label {
+            margin-bottom: 0;
+          }
+        }
       }
 
       .stdcm-v2__separator {
