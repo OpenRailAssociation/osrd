@@ -285,6 +285,29 @@ jobs:
 
         commit_titles | TERM=xterm-color .github/scripts/check-commit-titles.sh
 
+  check_osrd_schemas_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+      - name: Check OSRD Schemas version
+        run: |
+          # We don't have a base ref to check against if we aren't in a
+          # pull_request workflow.
+          BASE=${{ github.base_ref }}
+          if [[ -z "$BASE" ]]; then
+            exit 0
+          fi
+
+          changed_files() {
+            git diff --name-only origin/"$BASE"..HEAD
+          }
+
+          python3 .github/scripts/check-osrd-schemas-version.py "$(changed_files)" "${{ github.event.pull_request.title }}"
+
 
   final_newline_lint:
     runs-on: ubuntu-latest
