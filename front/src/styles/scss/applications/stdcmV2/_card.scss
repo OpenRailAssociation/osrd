@@ -63,9 +63,6 @@
   .stdcm-v2-card__body {
     padding: 0.688rem 1rem 0.8125rem 1rem;
     // TODO: remove this style after ui-core component is implemented
-    .suggestions > div:first-child {
-      padding-left: 0.5rem;
-    }
     .suggestions * label,
     .stdcm-v2-via-stop-for * label {
       margin-bottom: 0;
@@ -82,6 +79,14 @@
 
     .stop-time {
       padding-left: 0.125rem;
+      padding: 0.375rem 0.3rem 0.625rem 0rem;
+      padding-left: 0rem;
+      padding-right: 0rem;
+    }
+
+    .suggestions-list {
+      width: 99%;
+      left: 0;
     }
 
     .stdcm-v2-default-card-button {
