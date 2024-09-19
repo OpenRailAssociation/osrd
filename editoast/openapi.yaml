@@ -1294,6 +1294,12 @@ paths:
           default: 25
           nullable: true
           minimum: 1
+      - name: freight_compatible
+        in: query
+        required: false
+        schema:
+          type: boolean
+          nullable: true
       responses:
         '200':
           description: ''
@@ -6154,6 +6160,12 @@ components:
           format: double
         supported_signaling_systems:
           $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
+    LightRollingStockQuery:
+      type: object
+      properties:
+        freight_compatible:
+          type: boolean
+          nullable: true
     LightRollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/LightRollingStock'

@@ -129,8 +129,15 @@ export function computeFilter(filter: RollingStockFilterKeys, filters: RollingSt
   };
 }
 
-export default function useFilterRollingStock() {
+type RollingStockFetchArgs = {
+  freightCompatible?: boolean;
+  page?: number;
+  pageSize?: number;
+};
+
+export default function useFilterRollingStock(fetchArgs: RollingStockFetchArgs | undefined) {
   const dispatch = useAppDispatch();
+  const { freightCompatible, page = 1, pageSize = 1000 } = fetchArgs ?? {};
 
   const [filters, setFilters] = useState<RollingStockFilters>(initialFilters);
 
@@ -140,7 +147,9 @@ export default function useFilterRollingStock() {
     isError,
     error,
   } = osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
-    pageSize: 1000,
+    freightCompatible,
+    page,
+    pageSize,
   });
 
   const [searchIsLoading, setSearchIsLoading] = useState(true);

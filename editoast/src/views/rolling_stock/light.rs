@@ -16,8 +16,10 @@ use editoast_schemas::rolling_stock::RollingStockLivery;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use itertools::Itertools;
+use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::RollingStockError;
@@ -33,9 +35,6 @@ use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
 use crate::List;
 use crate::SelectionSettings;
-
-#[cfg(test)]
-use serde::Deserialize;
 
 use super::AuthorizationError;
 use super::AuthorizerExt;
@@ -53,6 +52,7 @@ editoast_common::schemas! {
     LightModeEffortCurves,
     LightRollingStock,
     LightRollingStockWithLiveries,
+    LightRollingStockQuery,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -95,11 +95,17 @@ struct LightRollingStockWithLiveriesCountList {
     stats: PaginationStats,
 }
 
+#[derive(Debug, Deserialize, ToSchema, IntoParams)]
+#[into_params(parameter_in = Query)]
+pub struct LightRollingStockQuery {
+    pub freight_compatible: Option<bool>,
+}
+
 /// Paginated list of rolling stock with a lighter response
 #[utoipa::path(
     get, path = "",
     tag = "rolling_stock",
-    params(PaginationQueryParam),
+    params(PaginationQueryParam, LightRollingStockQuery),
     responses(
         (status = 200, body = inline(LightRollingStockWithLiveriesCountList)),
     )
@@ -108,6 +114,7 @@ async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(authorizer): AuthorizerExt,
     Query(page_settings): Query<PaginationQueryParam>,
+    Query(query): Query<LightRollingStockQuery>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
     let authorized = authorizer
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
@@ -116,11 +123,19 @@ async fn list(
     if !authorized {
         return Err(AuthorizationError::Unauthorized.into());
     }
+
     let settings = page_settings
         .validate(1000)?
         .warn_page_size(100)
         .into_selection_settings()
         .order_by(|| RollingStockModel::ID.asc());
+
+    let settings = if let Some(true) = query.freight_compatible {
+        settings.filter(|| RollingStockModel::FREIGHT_COMPATIBLE.eq(true))
+    } else {
+        settings
+    };
+
     let (rolling_stocks, stats) =
         RollingStockModel::list_paginated(&mut db_pool.get().await?, settings).await?;
 

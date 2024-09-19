@@ -374,7 +374,11 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/light_rolling_stock`,
-          params: { page: queryArg.page, page_size: queryArg.pageSize },
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+            freight_compatible: queryArg.freightCompatible,
+          },
         }),
         providesTags: ['rolling_stock'],
       }),
@@ -1144,6 +1148,7 @@ export type GetLightRollingStockApiResponse = /** status 200  */ PaginationStats
 export type GetLightRollingStockApiArg = {
   page?: number;
   pageSize?: number | null;
+  freightCompatible?: boolean | null;
 };
 export type GetLightRollingStockNameByRollingStockNameApiResponse =
   /** status 200 The rolling stock with their simplified effort curves */ LightRollingStockWithLiveries;

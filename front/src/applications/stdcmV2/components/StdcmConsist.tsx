@@ -48,7 +48,7 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
   const { rollingStock } = useStoreDataForRollingStockSelector();
 
   const { filters, searchRollingStock, searchRollingStockById, filteredRollingStockList } =
-    useFilterRollingStock();
+    useFilterRollingStock(true);
 
   const getLabel = (rs: LightRollingStockWithLiveries) => {
     let res = '';
