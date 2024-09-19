@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { Select } from '@osrd-project/ui-core';
+import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
@@ -9,14 +9,14 @@ import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoi
 import type { PathStep } from 'reducers/osrdconf/types';
 import { createFixedSelectOptions } from 'utils/uiCoreHelpers';
 
-import StdcmSuggestions from './StdcmSuggestions';
-
 type StdcmOperationalPointProps = {
   updatePoint: (pathStep: PathStep | null) => void;
   point: PathStep | null;
   opPointId: string;
   disabled?: boolean;
 };
+
+type Option = { label: string; value: string; uic: number };
 
 function formatChCode(chCode: string) {
   return chCode === '' ? 'BV' : chCode;
@@ -30,30 +30,21 @@ const StdcmOperationalPoint = ({
 }: StdcmOperationalPointProps) => {
   const { t } = useTranslation('stdcm');
 
-  const {
-    searchTerm,
-    chCodeFilter,
-    sortedSearchResults,
-    filteredAndSortedSearchResults,
-    setSearchTerm,
-    setChCodeFilter,
-  } = useSearchOperationalPoint({ initialSearchTerm: point?.name, initialChCodeFilter: point?.ch });
+  const { searchTerm, chCodeFilter, sortedSearchResults, setSearchTerm, setChCodeFilter } =
+    useSearchOperationalPoint({ initialSearchTerm: point?.name, initialChCodeFilter: point?.ch });
 
   const operationalPointsSuggestions = useMemo(
     () =>
-      sortedSearchResults.reduce(
-        (acc, p) => {
-          const newObject = {
-            label: [p.trigram, p.name].join(' '),
-            value: p.name,
-            uic: p.uic,
-          };
-          const isDuplicate = acc.some((pr) => pr.label === newObject.label);
-          if (!isDuplicate) acc.push(newObject);
-          return acc;
-        },
-        [] as { label: string; value: string; uic: number }[]
-      ),
+      sortedSearchResults.reduce((acc, p) => {
+        const newObject = {
+          label: [p.trigram, p.name].join(' '),
+          value: p.name,
+          uic: p.uic,
+        };
+        const isDuplicate = acc.some((pr) => pr.label === newObject.label);
+        if (!isDuplicate) acc.push(newObject);
+        return acc;
+      }, [] as Option[]),
     [sortedSearchResults]
   );
 
@@ -90,24 +81,37 @@ const StdcmOperationalPoint = ({
     updatePoint(newPoint);
   };
 
+  const updateSelectedPoint = (
+    refList: SearchResultItemOperationalPoint[],
+    selectedUic: number,
+    selectedChCode?: string
+  ) => {
+    const newPoint = refList.find(
+      (pr) => pr.uic === selectedUic && (selectedChCode ? pr.ch === selectedChCode : true)
+    );
+    dispatchNewPoint(newPoint);
+  };
+
+  const onSelectSuggestion = (selectedSuggestion?: Option) => {
+    if (!selectedSuggestion) {
+      setSearchTerm('');
+      return;
+    }
+    const { value: suggestionName, uic } = selectedSuggestion;
+    setSearchTerm(suggestionName);
+    updateSelectedPoint(sortedSearchResults, uic);
+  };
+
+  const onSelectChCodeFilter = (selectedChCode?: { id: string }) => {
+    setChCodeFilter(selectedChCode?.id);
+    if (point && 'uic' in point)
+      updateSelectedPoint(sortedSearchResults, point.uic, selectedChCode?.id);
+  };
+
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     if (e.target.value.trim().length === 0) {
       dispatchNewPoint(undefined);
-    }
-  };
-
-  const onInputOnblur = () => {
-    const newPoint =
-      operationalPointsSuggestions.length === 1
-        ? filteredAndSortedSearchResults.find(
-            (pr) => pr.name === operationalPointsSuggestions[0].value
-          )
-        : undefined;
-    dispatchNewPoint(newPoint);
-    if (newPoint === undefined) {
-      setSearchTerm('');
-      setChCodeFilter(undefined);
     }
   };
 
@@ -121,41 +125,19 @@ const StdcmOperationalPoint = ({
     }
   }, [point]);
 
-  const updateSelectedPoint = (
-    refList: SearchResultItemOperationalPoint[],
-    selectedUic: number,
-    selectedChCode?: string
-  ) => {
-    const newPoint = refList.find(
-      (pr) => pr.uic === selectedUic && (selectedChCode ? pr.ch === selectedChCode : true)
-    );
-    dispatchNewPoint(newPoint);
-  };
-
-  const onSelectSuggestion = ({ value: suggestionName, uic }: { value: string; uic: number }) => {
-    setSearchTerm(suggestionName);
-    updateSelectedPoint(sortedSearchResults, uic);
-  };
-
-  const onSelectChCodeFilter = (selectedChCode?: { id: string }) => {
-    setChCodeFilter(selectedChCode?.id);
-    if (point && 'uic' in point)
-      updateSelectedPoint(sortedSearchResults, point.uic, selectedChCode?.id);
-  };
-
   return (
     <div className="flex">
       <div className="suggestions col-9">
-        {/* Those components will be replaced by their ui-core versions when they're ready (#7712) */}
-        <StdcmSuggestions
+        <ComboBox
           id={`${opPointId}-ci`}
           label={t('trainPath.ci')}
           value={searchTerm}
           onChange={onInputChange}
-          onBlur={onInputOnblur}
-          options={operationalPointsSuggestions}
-          onSelectSuggestion={onSelectSuggestion}
+          autoComplete="off"
+          suggestions={operationalPointsSuggestions}
           disabled={disabled}
+          getSuggestionLabel={(option: Option) => option?.label}
+          onSelectSuggestion={onSelectSuggestion}
         />
       </div>
       <div className="suggestions stdcm-v2-ch-selector w-100 px-1 pb-2 col-3">

@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 
-import { Input } from '@osrd-project/ui-core';
+import { Input, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
@@ -15,13 +14,7 @@ import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
 
 import StdcmCard from './StdcmCard';
-import StdcmSuggestions from './StdcmSuggestions';
 import type { StdcmConfigCardProps } from '../types';
-
-type StdcmSuggestionsConsistOption = SelectOptionObject &
-  Omit<LightRollingStockWithLiveries, 'id'> & {
-    value: LightRollingStockWithLiveries;
-  };
 
 const ConsistCardTitle = ({
   rollingStock,
@@ -75,18 +68,13 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     searchRollingStock(e.target.value);
-  };
-
-  const onInputOnBlur = () => {
-    if (filteredRollingStockList.length === 1) {
-      dispatch(updateRollingStockID(filteredRollingStockList[0].id));
-    } else {
-      dispatch(updateRollingStockID(undefined));
+    if (e.target.value.trim().length === 0) {
+      updateRollingStockID(undefined);
     }
   };
 
-  const onSelectSuggestion = (option: StdcmSuggestionsConsistOption) => {
-    dispatch(updateRollingStockID(option.value.id));
+  const onSelectSuggestion = (option?: LightRollingStockWithLiveries) => {
+    dispatch(updateRollingStockID(option?.id));
   };
 
   useEffect(() => {
@@ -123,20 +111,16 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
     >
       <div className="stdcm-v2-consist">
         <div className="suggestions">
-          <StdcmSuggestions
+          <ComboBox
             id="tractionEngine"
             label={t('consist.tractionEngine')}
             value={filters.text.toUpperCase()}
             onClick={onInputClick}
             onChange={onInputChange}
-            onBlur={onInputOnBlur}
+            autoComplete="off"
             disabled={disabled}
-            options={filteredRollingStockList.map((rs) => ({
-              value: rs,
-              label: getLabel(rs),
-              ...rs,
-              id: rs.id.toString(),
-            }))}
+            suggestions={filteredRollingStockList}
+            getSuggestionLabel={(suggestion: LightRollingStockWithLiveries) => getLabel(suggestion)}
             onSelectSuggestion={onSelectSuggestion}
           />
         </div>
