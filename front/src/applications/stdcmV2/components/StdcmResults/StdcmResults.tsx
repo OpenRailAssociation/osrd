@@ -14,7 +14,6 @@ import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
-import StdcmUpgrade from './StdcmUpgrade';
 
 type StcdmResultsV2Props = {
   simulationsList: StdcmSimulation[];
@@ -78,7 +77,7 @@ const StcdmResults = ({
               operationalPointsList={operationalPointsList}
               onRetainSimulation={onRetainSimulation}
             />
-            {isSelectedSimulationRetained ? (
+            {isSelectedSimulationRetained && (
               <div className="get-simulation">
                 <div className="download-simulation">
                   <PDFDownloadLink
@@ -97,8 +96,6 @@ const StcdmResults = ({
                 </div>
                 <div className="gesico-text">{t('gesicoRequest')}</div>
               </div>
-            ) : (
-              <StdcmUpgrade />
             )}
             {retainedSimulationIndex > -1 && (
               <div className="start-new-query">
