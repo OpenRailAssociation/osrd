@@ -12,7 +12,7 @@ from pydantic import (
 
 from .infra import LoadingGaugeType
 
-RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.2"]
+RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.3"]
 RAILJSON_ROLLING_STOCK_VERSION = get_args(RAILJSON_ROLLING_STOCK_VERSION_TYPE)[0]
 
 
