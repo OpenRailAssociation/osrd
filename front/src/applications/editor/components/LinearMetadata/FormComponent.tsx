@@ -41,7 +41,9 @@ export type FormContext = {
   isCreation: boolean;
 };
 
-const IntervalEditorComponent = (props: FieldProps<GeoJsonProperties, RJSFSchema, FormContext>) => {
+const IntervalEditorComponent = (
+  props: FieldProps<LinearMetadataItem[], RJSFSchema, FormContext>
+) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { openModal, closeModal } = useModal();
   const { t } = useTranslation();
@@ -421,7 +423,7 @@ const IntervalEditorComponent = (props: FieldProps<GeoJsonProperties, RJSFSchema
   );
 };
 
-export const FormComponent = (props: FieldProps<GeoJsonProperties, RJSFSchema, FormContext>) => {
+export const FormComponent = (props: FieldProps<unknown, RJSFSchema, FormContext>) => {
   const { name, formContext, schema, registry } = props;
   const Fields = getDefaultRegistry().fields;
 
@@ -471,10 +473,15 @@ export const FormComponent = (props: FieldProps<GeoJsonProperties, RJSFSchema, F
         jsonSchema={jsonSchema}
         distance={distance}
         requiredFilter={requiredFilter}
-        {...props}
+        {...(props as FieldProps<LinearMetadataItem[], RJSFSchema, FormContext>)}
       />
     );
-  return <Fields.ArrayField {...props} schema={jsonSchema} />;
+  return (
+    <Fields.ArrayField
+      {...(props as FieldProps<GeoJsonProperties, RJSFSchema, FormContext>)}
+      schema={jsonSchema}
+    />
+  );
 };
 
 export default FormComponent;

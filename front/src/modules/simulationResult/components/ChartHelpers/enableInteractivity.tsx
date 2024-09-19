@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { pointer } from 'd3-selection';
-import { zoom as d3zoom } from 'd3-zoom';
+import { zoom as d3zoom, type D3ZoomEvent } from 'd3-zoom';
 import { mapValues } from 'lodash';
 
 import {
@@ -282,8 +282,9 @@ export const enableInteractivity = <
     ])
     .wheelDelta(wheelDelta)
     // Allows evenements to be triggered on zoom and drag interactions for all graphs
-    .on('zoom', (event) => {
-      event.sourceEvent.preventDefault();
+    .on('zoom', (event: D3ZoomEvent<Element, ConsolidatedRouteAspect>) => {
+      const { sourceEvent }: { sourceEvent: Event } = event;
+      sourceEvent.preventDefault();
       const updatedAxis = updateChart(chart, keyValues, additionalValues, rotate, event);
       // Overide axis with new ones from updated chart
       const newChart = {
@@ -357,7 +358,7 @@ export const enableInteractivity = <
   chart.svg
     .on('mouseover', () => displayGuide(chart, 1))
     .on('mousemove', mousemove)
-    .on('wheel', (event) => {
+    .on('wheel', (event: WheelEvent) => {
       if (event.ctrlKey || event.shiftKey) {
         event.preventDefault();
       }
