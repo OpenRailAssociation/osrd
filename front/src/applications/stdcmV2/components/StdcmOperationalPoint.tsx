@@ -58,18 +58,20 @@ const StdcmOperationalPoint = ({
 
   const sortedChOptions = useMemo(
     () =>
-      sortedSearchResults.reduce(
-        (acc, pr) => {
-          const newObject = {
-            label: formatChCode(pr.ch),
-            id: pr.ch,
-          };
-          const isDuplicate = acc.some((option) => option.label === newObject.label);
-          if (!isDuplicate) acc.push(newObject);
-          return acc;
-        },
-        [] as { label: string; id: string }[]
-      ),
+      sortedSearchResults
+        .filter((pr) => pr.name === searchTerm)
+        .reduce(
+          (acc, pr) => {
+            const newObject = {
+              label: formatChCode(pr.ch),
+              id: pr.ch,
+            };
+            const isDuplicate = acc.some((option) => option.label === newObject.label);
+            if (!isDuplicate) acc.push(newObject);
+            return acc;
+          },
+          [] as { label: string; id: string }[]
+        ),
     [point, sortedSearchResults]
   );
 
