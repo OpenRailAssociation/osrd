@@ -1,4 +1,9 @@
 /* eslint-disable react/jsx-no-useless-fragment */
+import { useCallback, useEffect, useState } from 'react';
+
+import { isEqual } from 'lodash';
+import type { Operation } from 'react-datasheet-grid/dist/types';
+import { useTranslation } from 'react-i18next';
 
 import { useOsrdConfActions } from 'common/osrdContext';
 import { isVia } from 'modules/pathfinding/utils';
@@ -6,13 +11,19 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
+import {
+  durationSinceStartTime,
+  formatSuggestedViasToRowVias,
+  updateDaySinceDeparture,
+  updateRowTimesAndMargin,
+} from './helpers/utils';
 import TimesStops from './TimesStops';
-import { TableType, type PathWaypointRow } from './types';
+import { TableType, type TimesStopsInputRow } from './types';
 
 type ClearButtonProps = {
   removeVia: () => void;
   rowIndex: number;
-  rowData: PathWaypointRow;
+  rowData: TimesStopsInputRow;
   allWaypoints?: SuggestedOP[];
   pathSteps: PathStep[];
 };
@@ -49,11 +60,14 @@ type TimesStopsInputProps = {
   pathSteps: PathStep[];
 };
 
-const TimesStopsinput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInputProps) => {
+const TimesStopsInput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInputProps) => {
   const dispatch = useAppDispatch();
-  const { updatePathSteps } = useOsrdConfActions();
+  const { t } = useTranslation('timesStops');
+  const { updatePathSteps, upsertSeveralViasFromSuggestedOP } = useOsrdConfActions();
 
-  const clearPathStep = (rowData: PathWaypointRow) => {
+  const [rows, setRows] = useState<TimesStopsInputRow[]>([]);
+
+  const clearPathStep = (rowData: TimesStopsInputRow) => {
     const isMatchingUICStep = (step: PathStep) =>
       'uic' in step &&
       step.uic === rowData.uic &&
@@ -87,11 +101,59 @@ const TimesStopsinput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
     });
     dispatch(updatePathSteps({ pathSteps: updatedPathSteps }));
   };
+
+  const onChange = useCallback(
+    (newRows: TimesStopsInputRow[], operation: Operation) => {
+      let updatedRows = [...newRows];
+      updatedRows[operation.fromRowIndex] = updateRowTimesAndMargin(
+        newRows[operation.fromRowIndex],
+        rows[operation.fromRowIndex],
+        operation,
+        rows.length
+      );
+      updatedRows = updateDaySinceDeparture(updatedRows, startTime);
+
+      if (!updatedRows[operation.fromRowIndex].isMarginValid) {
+        newRows[operation.fromRowIndex].isMarginValid = false;
+        setRows(newRows);
+      } else if (
+        !rows[operation.fromRowIndex].isMarginValid &&
+        updatedRows[operation.fromRowIndex].isMarginValid
+      ) {
+        newRows[operation.fromRowIndex].isMarginValid = true;
+        setRows(newRows);
+      } else {
+        const newVias = updatedRows
+          .filter((row, index) => !isEqual(row, rows[index]))
+          .map(
+            (row) =>
+              ({
+                ...row,
+                ...(row.arrival && { arrival: durationSinceStartTime(startTime, row.arrival) }),
+              }) as SuggestedOP
+          );
+        dispatch(upsertSeveralViasFromSuggestedOP(newVias));
+      }
+    },
+    [rows, startTime]
+  );
+
+  useEffect(() => {
+    if (allWaypoints) {
+      const suggestedOPs = formatSuggestedViasToRowVias(
+        allWaypoints,
+        pathSteps || [],
+        t,
+        startTime,
+        TableType.Input
+      );
+      setRows(updateDaySinceDeparture(suggestedOPs, startTime, true));
+    }
+  }, [allWaypoints, pathSteps, startTime]);
+
   return (
     <TimesStops
-      allWaypoints={allWaypoints}
-      pathSteps={pathSteps}
-      startTime={startTime}
+      rows={rows}
       tableType={TableType.Input}
       stickyRightColumn={{
         component: ({ rowData, rowIndex }) =>
@@ -103,8 +165,9 @@ const TimesStopsinput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
             pathSteps,
           }),
       }}
+      onChange={onChange}
     />
   );
 };
 
-export default TimesStopsinput;
+export default TimesStopsInput;

@@ -9,11 +9,28 @@ export type TimeExtraDays = {
   dayDisplayed?: boolean;
 };
 
-export type PathWaypointRow = Omit<SuggestedOP, 'arrival' | 'departure'> & {
-  isMarginValid: boolean;
+export type TimeStopsRow = {
+  opId: string;
+  name?: string;
+  ch?: string;
+  isWaypoint: boolean;
+
   arrival?: TimeExtraDays; // value asked by user
   departure?: TimeExtraDays; // value asked by user
+  stopFor?: string | null; // value asked by user
+  onStopSignal?: boolean;
+  theoreticalMargin?: string; // value asked by user
+
+  theoreticalMarginSeconds?: string;
+  calculatedMargin?: string;
+  diffMargins?: string;
+  calculatedArrival?: string | null;
+  calculatedDeparture?: string | null;
+
+  isMarginValid?: boolean;
 };
+
+export type TimesStopsInputRow = Omit<SuggestedOP, 'arrival' | 'departure'> & TimeStopsRow;
 
 export enum TableType {
   Input = 'Input',

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { keyBy } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 import type {
   PathPropertiesFormatted,
@@ -10,13 +11,23 @@ import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/o
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import { convertIsoUtcToLocalTime } from 'utils/date';
 import { secToHoursString } from 'utils/timeManipulation';
 
 import { checkAndFormatCalculatedArrival } from '../helpers/arrivalTime';
 import computeMargins from '../helpers/computeMargins';
 import { computeScheduleData, formatScheduleData } from '../helpers/scheduleData';
-import { findNextScheduledOpPoint } from '../helpers/utils';
-import type { TrainScheduleBasePathWithUic, ScheduleEntry } from '../types';
+import {
+  findNextScheduledOpPoint,
+  formatSuggestedViasToRowVias,
+  updateDaySinceDeparture,
+} from '../helpers/utils';
+import {
+  type TrainScheduleBasePathWithUic,
+  type ScheduleEntry,
+  type TimeStopsRow,
+  TableType,
+} from '../types';
 
 function useOutputTableData(
   simulatedTrain: SimulationResponseSuccess,
@@ -24,7 +35,9 @@ function useOutputTableData(
   operationalPoints: OperationalPointWithTimeAndSpeed[],
   selectedTrainSchedule: TrainScheduleResult,
   path?: PathfindingResultSuccess
-) {
+): TimeStopsRow[] {
+  const { t } = useTranslation('timesStops');
+
   const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrainSchedule.schedule, 'at');
   const suggestedOperationalPoints: SuggestedOP[] = useMemo(
     () =>
@@ -107,7 +120,7 @@ function useOutputTableData(
               ? secToHoursString(opPoint.time + opPoint.duration, { withSeconds: true })
               : '',
           ...marginsData,
-        } as SuggestedOP;
+        };
       }
 
       return {
@@ -116,19 +129,29 @@ function useOutputTableData(
       };
     });
 
-    return suggestedOpRows.map((sugOpPoint) => {
+    const allWaypoints = suggestedOpRows.map((sugOpPoint) => {
       const matchingPathStep = pathStepRows.find(
         (pathStepRow) => sugOpPoint.positionOnPath === pathStepRow.positionOnPath
       );
-      if (matchingPathStep) {
-        return {
-          ...sugOpPoint,
-          ...matchingPathStep,
-        };
-      }
-      return sugOpPoint;
+      return {
+        ...sugOpPoint,
+        ...(matchingPathStep || {}),
+        isWaypoint: matchingPathStep !== undefined,
+      };
     });
+
+    const startTime = convertIsoUtcToLocalTime(selectedTrainSchedule.start_time);
+    const formattedWaypoints = formatSuggestedViasToRowVias(
+      allWaypoints as SuggestedOP[],
+      [],
+      t,
+      startTime,
+      TableType.Output
+    );
+    return updateDaySinceDeparture(formattedWaypoints, startTime, true);
   }, [simulatedTrain, operationalPoints, selectedTrainSchedule, pathStepsWithOpPointIndices]);
+
   return outputTableData;
 }
+
 export default useOutputTableData;

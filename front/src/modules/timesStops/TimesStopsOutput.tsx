@@ -7,12 +7,11 @@ import type {
 import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
-import { convertIsoUtcToLocalTime } from 'utils/date';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
 import useOutputTableData from './hooks/useOutputTableData';
 import TimesStops from './TimesStops';
-import { TableType, type PathWaypointRow } from './types';
+import { TableType, type TimeStopsRow } from './types';
 
 type TimesStopsOutputProps = {
   simulatedTrain: SimulationResponseSuccess;
@@ -31,7 +30,6 @@ const TimesStopsOutput = ({
   path,
   dataIsLoading,
 }: TimesStopsOutputProps) => {
-  const startTime = convertIsoUtcToLocalTime(selectedTrainSchedule.start_time);
   const enrichedOperationalPoints = useOutputTableData(
     simulatedTrain,
     pathProperties,
@@ -48,11 +46,10 @@ const TimesStopsOutput = ({
   }
   return (
     <TimesStops
-      allWaypoints={enrichedOperationalPoints}
-      startTime={startTime}
+      rows={enrichedOperationalPoints}
       tableType={TableType.Output}
       cellClassName={({ rowData: rowData_ }) => {
-        const rowData = rowData_ as PathWaypointRow;
+        const rowData = rowData_ as TimeStopsRow;
         const arrivalScheduleNotRespected = rowData.arrival?.time
           ? rowData.calculatedArrival !== rowData.arrival.time
           : false;

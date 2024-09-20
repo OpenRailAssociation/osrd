@@ -5,13 +5,11 @@ import { keyColumn, type Column, checkboxColumn, createTextColumn } from 'react-
 import type { CellComponent } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-
 import { marginRegExValidation } from '../consts';
 import { disabledTextColumn } from '../helpers/utils';
 import ReadOnlyTime from '../ReadOnlyTime';
 import TimeInput from '../TimeInput';
-import { TableType, type PathWaypointRow, type TimeExtraDays } from '../types';
+import { TableType, type TimeExtraDays, type TimeStopsRow } from '../types';
 
 const timeColumn = (isOutputTable: boolean) =>
   ({
@@ -28,9 +26,13 @@ const timeColumn = (isOutputTable: boolean) =>
 
 const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
 
-export const useTimeStopsColumns = (tableType: TableType, allWaypoints: SuggestedOP[] = []) => {
+export const useTimeStopsColumns = <T extends TimeStopsRow>(
+  tableType: TableType,
+  allWaypoints: T[] = []
+) => {
   const { t } = useTranslation('timesStops');
-  const columns = useMemo<Column<PathWaypointRow>[]>(() => {
+
+  const columns = useMemo<Column<T>[]>(() => {
     const isOutputTable = tableType === TableType.Output;
     const extraOutputColumns = (
       isOutputTable
@@ -61,7 +63,8 @@ export const useTimeStopsColumns = (tableType: TableType, allWaypoints: Suggeste
             },
           ]
         : []
-    ) as Column<PathWaypointRow>[];
+    ) as Column<T>[];
+
     return [
       {
         ...keyColumn('name', createTextColumn()),
@@ -111,7 +114,7 @@ export const useTimeStopsColumns = (tableType: TableType, allWaypoints: Suggeste
         // except for the destination
         ...fixedWidth(94),
         disabled: ({ rowData, rowIndex }) =>
-          isOutputTable || (rowIndex !== allWaypoints?.length - 1 && !rowData.stopFor),
+          isOutputTable || (rowIndex !== allWaypoints.length - 1 && !rowData.stopFor),
       },
       {
         ...keyColumn(
@@ -136,8 +139,9 @@ export const useTimeStopsColumns = (tableType: TableType, allWaypoints: Suggeste
         ...fixedWidth(110),
       },
       ...extraOutputColumns,
-    ] as Column<PathWaypointRow>[];
+    ] as Column<T>[];
   }, [tableType, t, allWaypoints.length]);
+
   return columns;
 };
 
