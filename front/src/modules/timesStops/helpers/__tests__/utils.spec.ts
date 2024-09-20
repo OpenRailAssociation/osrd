@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { type PathWaypointRow } from 'modules/timesStops/types';
+import { type TimesStopsInputRow } from 'modules/timesStops/types';
 
 import {
   updateRowTimesAndMargin,
@@ -20,14 +20,14 @@ describe('updateRowTimesAndMargin', () => {
         arrival: { time: '23:40:00' },
         departure: { time: '23:50:00' },
         stopFor: '300', // no longer correct, not yet updated by the function
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '23:40:00' },
         departure: { time: '23:45:00' },
         stopFor: '300',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
         opId: 'd94a2af4',
@@ -45,11 +45,11 @@ describe('updateRowTimesAndMargin', () => {
         opId: 'd94a2af4',
         name: 'Gr',
         theoreticalMargin: '10',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result.isMarginValid).toBe(false);
     });
@@ -59,12 +59,12 @@ describe('updateRowTimesAndMargin', () => {
       const rowData = {
         opId: 'd94a2af4',
         name: 'Gr',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         theoreticalMargin: '10%',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const operation = {
         fromRowIndex: 0,
       };
@@ -87,14 +87,14 @@ describe('updateRowTimesAndMargin', () => {
         arrival: { time: '23:40:00' },
         departure: { time: '00:20:00' },
         stopFor: '300',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '23:40:00' },
         departure: { time: '23:45:00' },
         stopFor: '300',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
         opId: 'd94a2af4',
@@ -114,14 +114,14 @@ describe('updateRowTimesAndMargin', () => {
         arrival: undefined,
         departure: { time: '00:20:00' },
         stopFor: '600',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '00:10:00' },
         departure: { time: '00:20:00' },
         stopFor: '600',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
         opId: 'd94a2af4',
@@ -139,14 +139,14 @@ describe('updateRowTimesAndMargin', () => {
         arrival: { time: '' },
         departure: { time: '00:20:00' },
         stopFor: '600',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '00:10:00' },
         departure: { time: '00:20:00' },
         stopFor: '600',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
         opId: 'd94a2af4',
@@ -166,14 +166,14 @@ describe('updateRowTimesAndMargin', () => {
         arrival: { time: '00:10:00' },
         departure: undefined,
         stopFor: '600',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '00:10:00' },
         departure: { time: '00:20:00' },
         stopFor: '600',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
         opId: 'd94a2af4',
@@ -194,14 +194,14 @@ describe('updateRowTimesAndMargin', () => {
         arrival: undefined,
         departure: { time: '00:20:00' },
         stopFor: '600',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: undefined,
         departure: undefined,
         stopFor: '600',
-      } as PathWaypointRow;
+      } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
         opId: 'd94a2af4',
@@ -218,7 +218,7 @@ describe('updateRowTimesAndMargin', () => {
 describe('updateDaySinceDeparture', () => {
   describe('1 day span', () => {
     it('should add the day since departure', () => {
-      const pathWaypointRows = [
+      const TimesStopsInputRows = [
         {
           opId: 'd9c92cb4',
           name: 'Ge',
@@ -226,9 +226,9 @@ describe('updateDaySinceDeparture', () => {
           ch: 'BV',
           arrival: { time: '10:00:00' },
         },
-      ] as PathWaypointRow[];
+      ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T10:00:00';
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -242,7 +242,7 @@ describe('updateDaySinceDeparture', () => {
       expect(result).toEqual(expected);
     });
     it('should format departure', () => {
-      const pathWaypointRows = [
+      const TimesStopsInputRows = [
         {
           opId: 'd9c92cb4',
           name: 'Ge',
@@ -258,9 +258,9 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '11:00:00' },
           stopFor: '1800',
         },
-      ] as PathWaypointRow[];
+      ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T10:00:00';
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -285,7 +285,7 @@ describe('updateDaySinceDeparture', () => {
   });
   describe('2 day span', () => {
     it('should add day 1 field', () => {
-      const pathWaypointRows = [
+      const TimesStopsInputRows = [
         {
           opId: 'd9c92cb4',
           name: 'Ge',
@@ -300,9 +300,9 @@ describe('updateDaySinceDeparture', () => {
           ch: 'BX',
           arrival: { time: '00:30:00' },
         },
-      ] as PathWaypointRow[];
+      ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T23:50:00';
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -324,7 +324,7 @@ describe('updateDaySinceDeparture', () => {
       expect(result).toEqual(expected);
     });
     it('should add display flag for the first time in the new day', () => {
-      const pathWaypointRows = [
+      const TimesStopsInputRows = [
         {
           opId: 'd9c92cb4',
           name: 'Ge',
@@ -353,9 +353,9 @@ describe('updateDaySinceDeparture', () => {
           ch: 'BV',
           arrival: { time: '00:50:00' },
         },
-      ] as PathWaypointRow[];
+      ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T23:50:00';
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -393,7 +393,7 @@ describe('updateDaySinceDeparture', () => {
       expect(result).toEqual(expected);
     });
     it('should handle stop on d+1', () => {
-      const pathWaypointRows = [
+      const TimesStopsInputRows = [
         {
           opId: 'd9c92cb4',
           name: 'Ge',
@@ -416,9 +416,9 @@ describe('updateDaySinceDeparture', () => {
           ch: 'BV',
           arrival: { time: '00:56:00' },
         },
-      ] as PathWaypointRow[];
+      ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T23:50:00';
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -451,7 +451,7 @@ describe('updateDaySinceDeparture', () => {
   });
   describe('3 day span', () => {
     it('should add display flag for the first time in the new day', () => {
-      const pathWaypointRows = [
+      const TimesStopsInputRows = [
         {
           opId: 'd9c92cb4',
           name: 'Ge',
@@ -494,9 +494,9 @@ describe('updateDaySinceDeparture', () => {
           arrival: { time: '23:30:00' },
           stopFor: '3600',
         },
-      ] as PathWaypointRow[];
+      ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T23:50:00';
-      const result = updateDaySinceDeparture(pathWaypointRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
       const expected = [
         {
           opId: 'd9c92cb4',

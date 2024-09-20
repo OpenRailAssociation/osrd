@@ -26,7 +26,7 @@ import {
   TableType,
   type TimeExtraDays,
   type PathStepOpPointCorrespondance,
-  type PathWaypointRow,
+  type TimesStopsInputRow,
 } from '../types';
 
 export const formatSuggestedViasToRowVias = (
@@ -35,7 +35,7 @@ export const formatSuggestedViasToRowVias = (
   t: TFunction<'timesStops', undefined>,
   startTime?: IsoDateTimeString,
   tableType?: TableType
-): PathWaypointRow[] => {
+): TimesStopsInputRow[] => {
   const formattedOps = [...operationalPoints];
 
   // If the origin is in the ops and isn't the first operational point, we need
@@ -92,6 +92,7 @@ export const formatSuggestedViasToRowVias = (
       name: name || t('waypoint', { id: op.opId }),
       stopFor,
       theoreticalMargin,
+      isWaypoint: pathStep !== undefined,
     };
   });
 };
@@ -149,11 +150,11 @@ export function disabledTextColumn(
  * updates isMarginValid and theoreticalMargin
  */
 export function updateRowTimesAndMargin(
-  rowData: PathWaypointRow,
-  previousRowData: PathWaypointRow,
+  rowData: TimesStopsInputRow,
+  previousRowData: TimesStopsInputRow,
   op: { fromRowIndex: number },
   allWaypointsLength: number
-): PathWaypointRow {
+): TimesStopsInputRow {
   const newRowData = { ...rowData };
   if (
     !isEqual(newRowData.arrival, previousRowData.arrival) ||
@@ -198,10 +199,10 @@ export function updateRowTimesAndMargin(
  * and updates the number of days since departure.
  */
 export function updateDaySinceDeparture(
-  pathWaypointRows: PathWaypointRow[],
+  pathWaypointRows: TimesStopsInputRow[],
   startTime?: IsoDateTimeString,
   keepFirstIndexArrival?: boolean
-): PathWaypointRow[] {
+): TimesStopsInputRow[] {
   let currentDaySinceDeparture = 0;
   let previousTime = startTime ? datetime2sec(new Date(startTime)) : Number.NEGATIVE_INFINITY;
 
