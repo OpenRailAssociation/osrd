@@ -6,6 +6,7 @@ use chrono::Utc;
 use editoast_authz::BuiltinRole;
 use editoast_schemas::primitives::Identifier;
 use futures::join;
+use itertools::izip;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::hash_map::DefaultHasher;
@@ -193,10 +194,10 @@ async fn project_path(
     .await?;
 
     // 1. Retrieve cached projection
-    let mut trains_hash_values = HashMap::new();
-    let mut trains_details = HashMap::new();
+    let mut trains_hash_values = vec![];
+    let mut trains_details = vec![];
 
-    for (train, (sim, pathfinding_result)) in trains.iter().zip(simulations) {
+    for (sim, pathfinding_result) in simulations {
         let track_ranges = match pathfinding_result {
             PathfindingResult::Success(PathfindingResultSuccess {
                 track_section_ranges,
@@ -234,18 +235,19 @@ async fn project_path(
             &path_routes,
             &path_blocks,
         );
-        trains_hash_values.insert(train.id, hash);
-        trains_details.insert(train.id, train_details);
+        trains_hash_values.push(hash);
+        trains_details.push(train_details);
     }
-    let cached_projections: Vec<Option<CachedProjectPathTrainResult>> = redis_conn
-        .json_get_bulk(&trains_hash_values.values().collect::<Vec<_>>())
-        .await?;
+    let cached_projections: Vec<Option<CachedProjectPathTrainResult>> =
+        redis_conn.json_get_bulk(&trains_hash_values).await?;
 
     let mut hit_cache: HashMap<i64, CachedProjectPathTrainResult> = HashMap::new();
     let mut miss_cache = HashMap::new();
-    for ((train_id, train_details), projection) in
-        trains_details.into_iter().zip(cached_projections)
-    {
+    for (train_details, projection, train_id) in izip!(
+        trains_details,
+        cached_projections,
+        trains.iter().map(|t| t.id)
+    ) {
         if let Some(cached) = projection {
             hit_cache.insert(train_id, cached);
         } else {
@@ -274,6 +276,11 @@ async fn project_path(
     let signal_updates = signal_updates?;
 
     // 3. Store the projection in the cache (using pipeline)
+    let trains_hash_values: HashMap<_, _> = trains
+        .iter()
+        .map(|t| t.id)
+        .zip(trains_hash_values)
+        .collect();
     let mut new_items = vec![];
     for id in miss_cache.keys() {
         let hash = &trains_hash_values[id];
