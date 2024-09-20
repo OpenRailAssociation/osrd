@@ -6095,6 +6095,7 @@ components:
       - power_restrictions
       - energy_sources
       - supported_signaling_systems
+      - freight_compatible
       properties:
         base_power_class:
           type: string
@@ -6110,7 +6111,6 @@ components:
             $ref: '#/components/schemas/EnergySource'
         freight_compatible:
           type: boolean
-          nullable: true
         gamma:
           $ref: '#/components/schemas/Gamma'
         id:
@@ -7675,6 +7675,7 @@ components:
       - raise_pantograph_time
       - version
       - supported_signaling_systems
+      - freight_compatible
       properties:
         base_power_class:
           type: string
@@ -7694,7 +7695,6 @@ components:
             $ref: '#/components/schemas/EnergySource'
         freight_compatible:
           type: boolean
-          nullable: true
         gamma:
           $ref: '#/components/schemas/Gamma'
         id:
@@ -7827,6 +7827,7 @@ components:
       - loading_gauge
       - power_restrictions
       - supported_signaling_systems
+      - freight_compatible
       properties:
         base_power_class:
           type: string
@@ -7849,7 +7850,6 @@ components:
             $ref: '#/components/schemas/EnergySource'
         freight_compatible:
           type: boolean
-          nullable: true
         gamma:
           $ref: '#/components/schemas/Gamma'
         inertia_coefficient:

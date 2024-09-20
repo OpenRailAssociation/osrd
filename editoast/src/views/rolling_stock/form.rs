@@ -51,7 +51,7 @@ pub struct RollingStockForm {
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     pub locked: Option<bool>,
     pub metadata: Option<RollingStockMetadata>,
-    pub freight_compatible: Option<bool>,
+    pub freight_compatible: bool,
 }
 
 impl From<RollingStockForm> for Changeset<RollingStockModel> {

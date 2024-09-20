@@ -75,7 +75,7 @@ pub struct RollingStockModel {
     #[schema(value_type = Vec<String>)]
     #[model(remote = "Vec<Option<String>>")]
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
-    pub freight_compatible: Option<bool>,
+    pub freight_compatible: bool,
 }
 
 impl RollingStockModel {

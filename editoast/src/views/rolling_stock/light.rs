@@ -229,7 +229,7 @@ struct LightRollingStock {
     power_restrictions: HashMap<String, String>,
     energy_sources: Vec<EnergySource>,
     supported_signaling_systems: RollingStockSupportedSignalingSystems,
-    freight_compatible: Option<bool>,
+    freight_compatible: bool,
 }
 
 impl From<RollingStockModel> for LightRollingStock {
