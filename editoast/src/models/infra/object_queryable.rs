@@ -3,6 +3,7 @@ use std::ops::DerefMut;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
+use diesel::sql_types::Double;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
@@ -71,5 +72,84 @@ impl Infra {
             .load::<ObjectQueryable>(conn.write().await.deref_mut())
             .await?;
         Ok(objects)
+    }
+
+    pub async fn get_ts_object_with_length(
+        &self,
+        conn: &mut DbConnection,
+        obj_id: &str,
+        length: f64,
+    ) -> Result<ObjectQueryable> {
+        let query = format!("
+            SELECT DISTINCT ON (object_table.obj_id)
+                object_table.obj_id as obj_id,
+                object_table.data as railjson,
+                ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic
+            FROM {} AS object_table
+            LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
+            WHERE object_table.infra_id = $1
+            AND object_table.obj_id = $2
+            AND (data->'length')::integer >= $3
+            ",
+            get_table(&ObjectType::TrackSection),
+            get_geometry_layer_table(&ObjectType::TrackSection).unwrap()
+        );
+
+        Ok(sql_query(query)
+            .bind::<BigInt, _>(self.id)
+            .bind::<Text, _>(obj_id)
+            .bind::<Double, _>(length)
+            .get_result::<ObjectQueryable>(conn.write().await.deref_mut())
+            .await?)
+    }
+
+    pub async fn get_op_objects_by_trigram(
+        &self,
+        conn: &mut DbConnection,
+        trigram: &str,
+    ) -> Result<Vec<ObjectQueryable>> {
+        let query = format!("
+            SELECT DISTINCT ON (object_table.obj_id)
+                object_table.obj_id as obj_id,
+                object_table.data as railjson,
+                ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic
+            FROM {} AS object_table
+            LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
+            WHERE object_table.infra_id = $1
+            AND (data->'extensions'->'sncf'->>'trigram')::text = $2",
+            get_table(&ObjectType::OperationalPoint),
+            get_geometry_layer_table(&ObjectType::OperationalPoint).unwrap(),
+        );
+
+        Ok(sql_query(query)
+            .bind::<BigInt, _>(self.id)
+            .bind::<Text, _>(trigram)
+            .load::<ObjectQueryable>(conn.write().await.deref_mut())
+            .await?)
+    }
+
+    pub async fn get_op_objects_by_uic(
+        &self,
+        conn: &mut DbConnection,
+        uic: i64,
+    ) -> Result<Vec<ObjectQueryable>> {
+        let query = format!("
+            SELECT DISTINCT ON (object_table.obj_id)
+                object_table.obj_id as obj_id,
+                object_table.data as railjson,
+                ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic
+            FROM {} AS object_table
+            LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
+            WHERE object_table.infra_id = $1
+            AND (data->'extensions'->'identifier'->'uic')::integer = $2",
+            get_table(&ObjectType::OperationalPoint),
+            get_geometry_layer_table(&ObjectType::OperationalPoint).unwrap()
+        );
+
+        Ok(sql_query(query)
+            .bind::<BigInt, _>(self.id)
+            .bind::<BigInt, _>(uic)
+            .load::<ObjectQueryable>(conn.write().await.deref_mut())
+            .await?)
     }
 }

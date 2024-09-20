@@ -94,6 +94,12 @@ impl OSRDIdentified for OperationalPoint {
     }
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum ParseError {
+    #[error("Invalid JSON format: {0}")]
+    JsonError(#[from] serde_json::Error),
+}
+
 impl OperationalPoint {
     pub fn track_offset(&self) -> Vec<TrackOffset> {
         self.parts
@@ -104,6 +110,17 @@ impl OperationalPoint {
                 offset: (el.position * 1000.0) as u64,
             })
             .collect()
+    }
+
+    pub fn from_railjson(railjson: serde_json::Value) -> Result<Self, ParseError> {
+        serde_json::from_value(railjson).map_err(ParseError::from)
+    }
+
+    pub fn matches_ch(&self, secondary_code: &str) -> bool {
+        if let Some(extensions) = &self.extensions.sncf {
+            return extensions.ch == secondary_code;
+        }
+        false
     }
 }
 

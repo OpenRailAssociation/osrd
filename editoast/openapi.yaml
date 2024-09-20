@@ -544,6 +544,35 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Operation'
+  /infra/{infra_id}/check-locations:
+    post:
+      tags:
+      - infra
+      parameters:
+      - name: infra_id
+        in: path
+        description: An existing infra ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PathItemLocation'
+        required: true
+      responses:
+        '200':
+          description: The list of locations
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/InfraObjectWithGeometry'
   /infra/{infra_id}/clone:
     post:
       tags:

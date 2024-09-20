@@ -51,6 +51,7 @@ pub use operational_point::OperationalPoint;
 pub use operational_point::OperationalPointExtensions;
 pub use operational_point::OperationalPointIdentifierExtension;
 pub use operational_point::OperationalPointPart;
+pub use operational_point::OperationalPointSncfExtension;
 pub use railjson::RailJson;
 pub use railjson::RAILJSON_VERSION;
 pub use route::Route;

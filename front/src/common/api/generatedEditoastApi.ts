@@ -173,6 +173,17 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/auto_fixes` }),
         providesTags: ['infra'],
       }),
+      postInfraByInfraIdCheckLocations: build.mutation<
+        PostInfraByInfraIdCheckLocationsApiResponse,
+        PostInfraByInfraIdCheckLocationsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/check-locations`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['infra'],
+      }),
       postInfraByInfraIdClone: build.mutation<
         PostInfraByInfraIdCloneApiResponse,
         PostInfraByInfraIdCloneApiArg
@@ -951,6 +962,14 @@ export type GetInfraByInfraIdAutoFixesApiResponse =
 export type GetInfraByInfraIdAutoFixesApiArg = {
   /** An existing infra ID */
   infraId: number;
+};
+export type PostInfraByInfraIdCheckLocationsApiResponse = /** status 200 The list of locations */ {
+  [key: string]: InfraObjectWithGeometry;
+};
+export type PostInfraByInfraIdCheckLocationsApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  body: PathItemLocation[];
 };
 export type PostInfraByInfraIdCloneApiResponse = unknown;
 export type PostInfraByInfraIdCloneApiArg = {
@@ -1982,6 +2001,63 @@ export type Operation =
     } & {
       operation_type: 'DELETE';
     });
+export type GeoJsonPoint = {
+  coordinates: GeoJsonPointValue;
+  type: 'Point';
+};
+export type GeoJsonMultiPointValue = GeoJsonPointValue[];
+export type GeoJsonMultiPoint = {
+  coordinates: GeoJsonMultiPointValue;
+  type: 'MultiPoint';
+};
+export type GeoJsonMultiLineStringValue = GeoJsonLineStringValue[];
+export type GeoJsonMultiLineString = {
+  coordinates: GeoJsonMultiLineStringValue;
+  type: 'MultiLineString';
+};
+export type GeoJsonPolygonValue = GeoJsonLineStringValue[];
+export type GeoJsonPolygon = {
+  coordinates: GeoJsonPolygonValue;
+  type: 'Polygon';
+};
+export type GeoJsonMultiPolygonValue = GeoJsonPolygonValue[];
+export type GeoJsonMultiPolygon = {
+  coordinates: GeoJsonMultiPolygonValue;
+  type: 'MultiPolygon';
+};
+export type GeoJson =
+  | GeoJsonPoint
+  | GeoJsonMultiPoint
+  | GeoJsonLineString
+  | GeoJsonMultiLineString
+  | GeoJsonPolygon
+  | GeoJsonMultiPolygon;
+export type InfraObjectWithGeometry = {
+  geographic: GeoJson;
+  obj_id: string;
+  railjson: object;
+};
+export type TrackOffset = {
+  /** Offset in mm */
+  offset: number;
+  track: string;
+};
+export type PathItemLocation =
+  | TrackOffset
+  | {
+      operational_point: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      trigram: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+      uic: number;
+    };
 export type ObjectRef = {
   obj_id: string;
   type: ObjectType;
@@ -2076,42 +2152,6 @@ export type InfraErrorTypeLabel =
   | 'unknown_port_name'
   | 'unused_port';
 export type BoundingBox = (number & number)[][];
-export type GeoJsonPoint = {
-  coordinates: GeoJsonPointValue;
-  type: 'Point';
-};
-export type GeoJsonMultiPointValue = GeoJsonPointValue[];
-export type GeoJsonMultiPoint = {
-  coordinates: GeoJsonMultiPointValue;
-  type: 'MultiPoint';
-};
-export type GeoJsonMultiLineStringValue = GeoJsonLineStringValue[];
-export type GeoJsonMultiLineString = {
-  coordinates: GeoJsonMultiLineStringValue;
-  type: 'MultiLineString';
-};
-export type GeoJsonPolygonValue = GeoJsonLineStringValue[];
-export type GeoJsonPolygon = {
-  coordinates: GeoJsonPolygonValue;
-  type: 'Polygon';
-};
-export type GeoJsonMultiPolygonValue = GeoJsonPolygonValue[];
-export type GeoJsonMultiPolygon = {
-  coordinates: GeoJsonMultiPolygonValue;
-  type: 'MultiPolygon';
-};
-export type GeoJson =
-  | GeoJsonPoint
-  | GeoJsonMultiPoint
-  | GeoJsonLineString
-  | GeoJsonMultiLineString
-  | GeoJsonPolygon
-  | GeoJsonMultiPolygon;
-export type InfraObjectWithGeometry = {
-  geographic: GeoJson;
-  obj_id: string;
-  railjson: object;
-};
 export type OperationalPointExtensions = {
   identifier?: {
     name: string;
@@ -2220,27 +2260,6 @@ export type IncompatibleConstraints = {
   incompatible_gauge_ranges: IncompatibleOffsetRange[];
   incompatible_signaling_system_ranges: IncompatibleOffsetRangeWithValue[];
 };
-export type TrackOffset = {
-  /** Offset in mm */
-  offset: number;
-  track: string;
-};
-export type PathItemLocation =
-  | TrackOffset
-  | {
-      operational_point: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      trigram: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-      uic: number;
-    };
 export type PathfindingResult =
   | (PathfindingResultSuccess & {
       status: 'success';
