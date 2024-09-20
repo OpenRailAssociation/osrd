@@ -7,6 +7,8 @@ export type ValidityFilter = 'both' | 'valid' | 'invalid';
 
 export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
 
+type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
+
 export type TrainScheduleWithDetails = {
   id: number;
   trainName: string;
@@ -24,6 +26,11 @@ export type TrainScheduleWithDetails = {
   notHonoredReason?: 'scheduleNotHonored' | 'trainTooFast';
   scheduledPointsNotHonored?: boolean;
   isValid: boolean;
+  pathItemTimes?: {
+    base: SimulationSummaryResultSuccess['path_item_times_base'];
+    provisional: SimulationSummaryResultSuccess['path_item_times_provisional'];
+    final: SimulationSummaryResultSuccess['path_item_times_final'];
+  };
 };
 
 export type InvalidReason = Exclude<SimulationSummaryResult['status'], 'success'>;

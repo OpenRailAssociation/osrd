@@ -2,7 +2,7 @@
 import { SECONDS_IN_A_DAY, secToHoursString } from 'utils/timeManipulation';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR_MS } from '../consts';
-import type { ComputedScheduleEntry } from '../types';
+import type { ComputedScheduleEntry, TimeExtraDays } from '../types';
 
 /**
  * we have a theoretical arrival value the user requested
@@ -23,4 +23,25 @@ export function checkAndFormatCalculatedArrival(
   const calculatedArrival = arrivalValuesAreClose ? scheduleData.arrival : operationalPointTime;
 
   return secToHoursString(calculatedArrival, { withSeconds: true });
+}
+
+export function computeDayTimeFromStartTime(
+  startTime: number,
+  durationInSeconds: number,
+  previousTime: number
+): { timeExtraDay: TimeExtraDays; previousTime: number } {
+  const arrivalTime = (startTime + durationInSeconds) % SECONDS_IN_A_DAY;
+  const isAfterMidnight = arrivalTime < previousTime;
+
+  const timeExtraDay = {
+    time: secToHoursString(arrivalTime, { withSeconds: true }),
+    daySinceDeparture: (startTime + durationInSeconds) / SECONDS_IN_A_DAY,
+    dayDisplayed: isAfterMidnight,
+  };
+
+  if (isAfterMidnight) {
+    previousTime = arrivalTime;
+  }
+
+  return { timeExtraDay, previousTime };
 }

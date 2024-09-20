@@ -1,11 +1,15 @@
 import type { IsoDurationString } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { ISO8601Duration2sec, formatDurationAsISO8601 } from 'utils/timeManipulation';
+import {
+  ISO8601Duration2sec,
+  formatDurationAsISO8601,
+  secToHoursString,
+} from 'utils/timeManipulation';
 
 import type { ComputedScheduleEntry, ScheduleEntry } from '../types';
+import { receptionSignalToOnStopSignal } from './utils';
 
 /**
- *
  * @param schedule for a given operational point
  */
 export function computeScheduleData(schedule: ScheduleEntry) {
@@ -40,3 +44,21 @@ export function formatScheduleData(
     stopFor,
   };
 }
+
+export const formatSchedule = (schedule: ScheduleEntry, arrivalTime: number) => {
+  if (!schedule) {
+    return { stopFor: null };
+  }
+
+  const stopForSeconds = schedule.stop_for ? ISO8601Duration2sec(schedule.stop_for) : null;
+
+  const calculatedDeparture = stopForSeconds
+    ? secToHoursString(arrivalTime + stopForSeconds, { withSeconds: true })
+    : '';
+
+  return {
+    stopFor: stopForSeconds ? `${stopForSeconds}` : undefined,
+    onStopSignal: receptionSignalToOnStopSignal(schedule.reception_signal),
+    calculatedDeparture,
+  };
+};

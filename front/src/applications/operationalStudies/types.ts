@@ -10,11 +10,13 @@ import type {
   ProjectPathTrainResult,
   RollingStockWithLiveries,
   SimulationResponse,
+  SimulationSummaryResult,
   TrainScheduleBase,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { ArrayElement } from 'utils/types';
 
 export interface Step {
@@ -141,6 +143,7 @@ export type SimulationResultsData = {
   selectedTrainSchedule?: TrainScheduleResult;
   selectedTrainRollingStock?: RollingStockWithLiveries;
   selectedTrainPowerRestrictions: LayerData<PowerRestrictionValues>[];
+  selectedTrainSummary?: TrainScheduleWithDetails;
   trainSimulation?: SimulationResponseSuccess;
   pathProperties?: PathPropertiesFormatted;
   pathLength?: number;

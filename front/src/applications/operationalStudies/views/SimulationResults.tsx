@@ -39,6 +39,7 @@ const SimulationResults = ({
     selectedTrainSchedule,
     selectedTrainRollingStock,
     selectedTrainPowerRestrictions,
+    selectedTrainSummary,
     trainSimulation,
     pathProperties,
     path,
@@ -182,22 +183,17 @@ const SimulationResults = ({
       )}
 
       {/* TIME STOPS TABLE */}
-      {selectedTrainSchedule &&
-        trainSimulation.status === 'success' &&
-        pathProperties &&
-        operationalPoints &&
-        infraId && (
-          <div className="osrd-simulation-container mb-2">
-            <TimesStopsOutput
-              simulatedTrain={trainSimulation}
-              pathProperties={pathProperties}
-              operationalPoints={operationalPoints.finalOutput}
-              selectedTrainSchedule={selectedTrainSchedule}
-              path={path}
-              dataIsLoading={formattedOpPointsLoading}
-            />
-          </div>
-        )}
+      {selectedTrainSchedule && pathProperties && selectedTrainSummary && (
+        <div className="osrd-simulation-container mb-2">
+          <TimesStopsOutput
+            trainSummary={selectedTrainSummary}
+            pathProperties={pathProperties}
+            selectedTrainSchedule={selectedTrainSchedule}
+            path={path}
+            dataIsLoading={formattedOpPointsLoading}
+          />
+        </div>
+      )}
 
       {/* SIMULATION : MAP */}
       <div ref={timeTableRef}>

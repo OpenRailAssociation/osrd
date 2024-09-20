@@ -1,39 +1,33 @@
 import cx from 'classnames';
 
-import type {
-  PathPropertiesFormatted,
-  SimulationResponseSuccess,
-} from 'applications/operationalStudies/types';
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
-import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
 import useOutputTableData from './hooks/useOutputTableData';
 import TimesStops from './TimesStops';
 import { TableType, type TimeStopsRow } from './types';
+import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 
 type TimesStopsOutputProps = {
-  simulatedTrain: SimulationResponseSuccess;
+  trainSummary: TrainScheduleWithDetails;
   pathProperties: PathPropertiesFormatted;
-  operationalPoints: OperationalPointWithTimeAndSpeed[];
   selectedTrainSchedule: TrainScheduleResult;
   path?: PathfindingResultSuccess;
   dataIsLoading: boolean;
 };
 
 const TimesStopsOutput = ({
-  simulatedTrain,
+  trainSummary,
   pathProperties,
-  operationalPoints,
   selectedTrainSchedule,
   path,
   dataIsLoading,
 }: TimesStopsOutputProps) => {
   const enrichedOperationalPoints = useOutputTableData(
-    simulatedTrain,
+    trainSummary,
     pathProperties,
-    operationalPoints,
     selectedTrainSchedule,
     path
   );

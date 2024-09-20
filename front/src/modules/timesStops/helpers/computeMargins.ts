@@ -1,10 +1,15 @@
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
-import type { ReportTrain, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type {
+  ReportTrain,
+  SimulationSummaryResult,
+  TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import { interpolateValue } from 'modules/trainschedule/components/DriverTrainSchedule/utils';
 import { mToMm, msToS } from 'utils/physics';
 
 import { formatDigitsAndUnit } from './utils';
+import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 
 function getTheoreticalMargin(selectedTrainSchedule: TrainScheduleResult, pathStepId: string) {
   if (selectedTrainSchedule.path.length === 0) {
@@ -66,6 +71,58 @@ function computeMargins(
 
   return {
     theoreticalMargin: theoreticalMarginWithUnit,
+    theoreticalMarginSeconds,
+    calculatedMargin,
+    diffMargins,
+  };
+}
+
+export function computeMarginsResults(
+  selectedTrainSchedule: TrainScheduleResult,
+  pathStepIndex: number,
+  pathItemTimes: NonNullable<TrainScheduleWithDetails['pathItemTimes']>
+) {
+  const { path, margins } = selectedTrainSchedule;
+  if (!margins) {
+    return {
+      theoreticalMargin: undefined,
+      theoreticalMarginSeconds: undefined,
+      calculatedMargin: undefined,
+      diffMargins: undefined,
+    };
+  }
+
+  const pathStepId = path[pathStepIndex].id;
+  const theoreticalMargin = getTheoreticalMargin(selectedTrainSchedule, pathStepId);
+
+  // find the previous pathStep where margin was defined
+  let previousPathStepIndexWithMargin = 0;
+  for (let index = 1; index < pathStepIndex; index++) {
+    if (margins.boundaries.includes(path[index].id)) {
+      previousPathStepIndexWithMargin = index;
+    }
+  }
+
+  // durations to go from the previous pathStep with margin to current one.
+  // base = no margin
+  // provisional = margins
+  // final = margin + requested arrival times
+  const { base, provisional, final } = pathItemTimes;
+  const baseDuration = base[pathStepIndex] - base[previousPathStepIndexWithMargin];
+  const provisionalDuration =
+    provisional[pathStepIndex] - provisional[previousPathStepIndexWithMargin];
+  const finalDuration = final[pathStepIndex] - final[previousPathStepIndexWithMargin];
+
+  // how much longer it took (s) with the margin than without
+  const provisionalLostTime = provisionalDuration - baseDuration;
+  const finalLostTime = finalDuration - baseDuration;
+
+  const theoreticalMarginSeconds = formatDigitsAndUnit(provisionalLostTime, 's');
+  const calculatedMargin = formatDigitsAndUnit(finalLostTime, 's');
+  const diffMargins = formatDigitsAndUnit(finalLostTime - provisionalLostTime, 's');
+
+  return {
+    theoreticalMargin: formatDigitsAndUnit(theoreticalMargin),
     theoreticalMarginSeconds,
     calculatedMargin,
     diffMargins,

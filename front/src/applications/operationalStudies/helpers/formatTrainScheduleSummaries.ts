@@ -47,6 +47,11 @@ const formatTrainScheduleSummaries = (
             duration: trainSummary.time,
             pathLength: formatKmValue(trainSummary.length, 'millimeters', 1),
             mechanicalEnergyConsumed: jouleToKwh(trainSummary.energy_consumption, true),
+            pathItemTimes: {
+              base: trainSummary.path_item_times_base,
+              provisional: trainSummary.path_item_times_provisional,
+              final: trainSummary.path_item_times_final,
+            },
           }
         : {
             isValid: false,

@@ -180,7 +180,12 @@ const useScenarioData = (
             allTrainsProjected,
           }
         : undefined,
-    simulationResults,
+    simulationResults: {
+      ...simulationResults,
+      selectedTrainSummary: selectedTrainId
+        ? trainScheduleSummariesById.get(selectedTrainId)
+        : undefined,
+    },
     conflicts,
     removeTrains,
     upsertTrainSchedules,
