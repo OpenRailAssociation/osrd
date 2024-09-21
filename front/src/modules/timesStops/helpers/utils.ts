@@ -211,11 +211,13 @@ export function updateDaySinceDeparture(
 
   return pathWaypointRows.map((pathWaypoint, index) => {
     const { arrival, stopFor } = pathWaypoint;
-
     const arrivalInSeconds = arrival?.time ? time2sec(arrival.time) : null;
     let formattedArrival: TimeExtraDays | undefined;
-    if (arrivalInSeconds) {
-      if (arrivalInSeconds < previousTime) {
+
+    if (arrivalInSeconds !== null) {
+      const isMidnight = arrival?.time === '00:00:00';
+
+      if ((arrivalInSeconds < previousTime || isMidnight) && !(isMidnight && index === 0)) {
         currentDaySinceDeparture += 1;
         formattedArrival = {
           time: arrival!.time,
@@ -228,14 +230,17 @@ export function updateDaySinceDeparture(
           daySinceDeparture: currentDaySinceDeparture,
         };
       }
-      previousTime = arrivalInSeconds;
+      previousTime = isMidnight ? 0 : arrivalInSeconds;
     }
 
     let formattedDeparture: TimeExtraDays | undefined;
-    if (stopFor && arrivalInSeconds) {
+
+    if (stopFor && arrivalInSeconds !== null) {
       const departureInSeconds = (arrivalInSeconds + Number(stopFor)) % SECONDS_IN_A_DAY;
       const isAfterMidnight = departureInSeconds < previousTime;
-      if (isAfterMidnight) {
+      const isDepartureMidnight = departureInSeconds === 0;
+
+      if (isAfterMidnight || isDepartureMidnight) {
         currentDaySinceDeparture += 1;
         formattedDeparture = {
           time: secToHoursString(departureInSeconds, { withSeconds: true }),
@@ -250,7 +255,6 @@ export function updateDaySinceDeparture(
       }
       previousTime = departureInSeconds;
     }
-
     return {
       ...pathWaypoint,
       arrival: keepFirstIndexArrival || index > 0 ? formattedArrival : undefined,

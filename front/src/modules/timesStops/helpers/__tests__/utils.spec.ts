@@ -286,6 +286,47 @@ describe('updateDaySinceDeparture', () => {
       ];
       expect(result).toEqual(expected);
     });
+    it('should handle departure exactly at midnight', () => {
+      const pathWaypointRows = [
+        {
+          opId: 'd9a382bc',
+          name: 'St',
+          uic: 75,
+          ch: 'BV',
+          arrival: { time: '00:00:00' },
+        },
+        {
+          opId: 'd9b38600',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BX',
+          arrival: { time: '01:00:00' },
+        },
+      ] as TimesStopsInputRow[];
+      const startTime = '2024-08-13T00:00:00';
+      const result = updateDaySinceDeparture(pathWaypointRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
+      const expected = [
+        {
+          opId: 'd9a382bc',
+          name: 'St',
+          uic: 75,
+          ch: 'BV',
+          arrival: { time: '00:00:00', daySinceDeparture: 0 },
+          departure: undefined,
+        },
+        {
+          opId: 'd9b38600',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BX',
+          arrival: { time: '01:00:00', daySinceDeparture: 0 },
+          departure: undefined,
+        },
+      ];
+      expect(result).toEqual(expected);
+    });
   });
   describe('2 day span', () => {
     it('should add day 1 field', () => {
@@ -324,6 +365,103 @@ describe('updateDaySinceDeparture', () => {
           uic: 86,
           ch: 'BX',
           arrival: { time: '00:30:00', daySinceDeparture: 1, dayDisplayed: true },
+          departure: undefined,
+        },
+      ];
+      expect(result).toEqual(expected);
+    });
+    it('should handle exactly midnight', () => {
+      const pathWaypointRows = [
+        {
+          opId: 'd9c92cb4',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BV',
+          arrival: { time: '23:50:00' },
+        },
+        {
+          opId: 'd9b38600',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BX',
+          arrival: { time: '00:00:00' },
+        },
+      ] as TimesStopsInputRow[];
+      const startTime = '2024-08-13T23:50:00';
+      const result = updateDaySinceDeparture(pathWaypointRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
+      const expected = [
+        {
+          opId: 'd9c92cb4',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BV',
+          arrival: { time: '23:50:00', daySinceDeparture: 0 },
+          departure: undefined,
+        },
+        {
+          opId: 'd9b38600',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BX',
+          arrival: { time: '00:00:00', daySinceDeparture: 1, dayDisplayed: true },
+          departure: undefined,
+        },
+      ];
+      expect(result).toEqual(expected);
+    });
+    it('should handle a waypoint exactly at midnight in the middle', () => {
+      const pathWaypointRows = [
+        {
+          opId: 'd9a382bc',
+          name: 'St',
+          uic: 75,
+          ch: 'BV',
+          arrival: { time: '23:45:00' },
+        },
+        {
+          opId: 'd9b38600',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BX',
+          arrival: { time: '00:00:00' },
+        },
+        {
+          opId: 'd9a382bd',
+          name: 'Fr',
+          uic: 87,
+          ch: 'BY',
+          arrival: { time: '01:30:00' },
+        },
+      ] as TimesStopsInputRow[];
+      const startTime = '2024-08-13T23:45:00';
+      const result = updateDaySinceDeparture(pathWaypointRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
+      const expected = [
+        {
+          opId: 'd9a382bc',
+          name: 'St',
+          uic: 75,
+          ch: 'BV',
+          arrival: { time: '23:45:00', daySinceDeparture: 0 },
+          departure: undefined,
+        },
+        {
+          opId: 'd9b38600',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BX',
+          arrival: { time: '00:00:00', daySinceDeparture: 1, dayDisplayed: true },
+          departure: undefined,
+        },
+        {
+          opId: 'd9a382bd',
+          name: 'Fr',
+          uic: 87,
+          ch: 'BY',
+          arrival: { time: '01:30:00', daySinceDeparture: 1 },
           departure: undefined,
         },
       ];
@@ -562,6 +700,109 @@ describe('updateDaySinceDeparture', () => {
             dayDisplayed: true,
           },
           stopFor: '3600',
+        },
+      ];
+      expect(result).toEqual(expected);
+    });
+    it('should handle a three-day span with two midnights', () => {
+      const pathWaypointRows = [
+        {
+          opId: 'd9a382bc',
+          name: 'St',
+          uic: 75,
+          ch: 'BV',
+          arrival: { time: '23:45:00' },
+        },
+        {
+          opId: 'd9b38600',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BX',
+          arrival: { time: '00:00:00' },
+        },
+        {
+          opId: 'd9a382bd',
+          name: 'Fr',
+          uic: 87,
+          ch: 'BY',
+          arrival: { time: '01:30:00' },
+        },
+        {
+          opId: 'd9a382be',
+          name: 'Lm',
+          uic: 88,
+          ch: 'BZ',
+          arrival: { time: '23:50:00' },
+        },
+        {
+          opId: 'd9a382bf',
+          name: 'Nc',
+          uic: 89,
+          ch: 'CA',
+          arrival: { time: '00:00:00' },
+        },
+        {
+          opId: 'd9a382c0',
+          name: 'Po',
+          uic: 90,
+          ch: 'CB',
+          arrival: { time: '03:00:00' },
+        },
+      ] as TimesStopsInputRow[];
+
+      const startTime = '2024-08-13T23:45:00';
+      const result = updateDaySinceDeparture(pathWaypointRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
+
+      const expected = [
+        {
+          opId: 'd9a382bc',
+          name: 'St',
+          uic: 75,
+          ch: 'BV',
+          arrival: { time: '23:45:00', daySinceDeparture: 0 },
+          departure: undefined,
+        },
+        {
+          opId: 'd9b38600',
+          name: 'Ge',
+          uic: 86,
+          ch: 'BX',
+          arrival: { time: '00:00:00', daySinceDeparture: 1, dayDisplayed: true },
+          departure: undefined,
+        },
+        {
+          opId: 'd9a382bd',
+          name: 'Fr',
+          uic: 87,
+          ch: 'BY',
+          arrival: { time: '01:30:00', daySinceDeparture: 1 },
+          departure: undefined,
+        },
+        {
+          opId: 'd9a382be',
+          name: 'Lm',
+          uic: 88,
+          ch: 'BZ',
+          arrival: { time: '23:50:00', daySinceDeparture: 1 },
+          departure: undefined,
+        },
+        {
+          opId: 'd9a382bf',
+          name: 'Nc',
+          uic: 89,
+          ch: 'CA',
+          arrival: { time: '00:00:00', daySinceDeparture: 2, dayDisplayed: true },
+          departure: undefined,
+        },
+        {
+          opId: 'd9a382c0',
+          name: 'Po',
+          uic: 90,
+          ch: 'CB',
+          arrival: { time: '03:00:00', daySinceDeparture: 2 },
+          departure: undefined,
         },
       ];
       expect(result).toEqual(expected);
