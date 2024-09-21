@@ -285,6 +285,12 @@ jobs:
 
         commit_titles | TERM=xterm-color .github/scripts/check-commit-titles.sh
 
+    - name: Check DCO
+      uses: christophebedard/dco-check@0.5.0
+      with:
+        args: --exclude-emails '49699333+dependabot[bot]@users.noreply.github.com'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   final_newline_lint:
     runs-on: ubuntu-latest
