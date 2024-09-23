@@ -69,6 +69,7 @@
         flex-wrap: wrap;
         button {
           display: flex;
+          justify-content: center;
           align-items: center;
           background-color: var(--white);
           border: none;
@@ -85,6 +86,8 @@
             color: var(--coolgray1);
           }
           &.remove {
+            width: 2.75rem;
+            height: 2rem;
             color: var(--red);
             &:hover {
               background-color: var(--red);
