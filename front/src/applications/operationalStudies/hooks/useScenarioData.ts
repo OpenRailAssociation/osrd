@@ -10,7 +10,7 @@ import {
   type TimetableDetailedResult,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -110,7 +110,7 @@ const useScenarioData = (
 
   useEffect(() => {
     if (fetchTrainSchedulesError) {
-      dispatch(setFailure(castErrorToFailure(fetchTrainSchedulesError)));
+      dispatch(notifyFailure(castErrorToFailure(fetchTrainSchedulesError)));
     }
   }, [fetchTrainSchedulesError]);
 

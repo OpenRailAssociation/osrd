@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -169,7 +169,7 @@ export default function useFilterRollingStock() {
 
   useEffect(() => {
     if (isError && error) {
-      dispatch(setFailure(castErrorToFailure(error)));
+      dispatch(notifyFailure(castErrorToFailure(error)));
     }
   }, [isError]);
 

@@ -13,7 +13,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
-import { setFailure, setSuccess } from 'reducers/main';
+import { notifyFailure, notifySuccess } from 'reducers/main';
 import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { formatToIsoDate, isoDateToMs } from 'utils/date';
@@ -72,14 +72,14 @@ const TimetableTrainCard = ({
       .then(() => {
         removeTrains([train.id]);
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: t('timetable.trainDeleted', { name: train.trainName }),
             text: '',
           })
         );
       })
       .catch((e) => {
-        dispatch(setFailure(castErrorToFailure(e)));
+        dispatch(notifyFailure(castErrorToFailure(e)));
         if (isSelected) {
           dispatch(updateSelectedTrainId(train.id));
         }
@@ -96,7 +96,7 @@ const TimetableTrainCard = ({
     const trainsResults = await getTrainSchedule({ body: { ids: [train.id] } })
       .unwrap()
       .catch((e) => {
-        dispatch(setFailure(castErrorToFailure(e)));
+        dispatch(notifyFailure(castErrorToFailure(e)));
       });
 
     if (trainsResults) {
@@ -116,13 +116,13 @@ const TimetableTrainCard = ({
         }).unwrap();
         upsertTrainSchedules([trainScheduleResult]);
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: t('timetable.trainAdded'),
             text: `${trainName}`,
           })
         );
       } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
+        dispatch(notifyFailure(castErrorToFailure(e)));
       }
     }
   };

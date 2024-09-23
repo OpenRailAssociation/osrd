@@ -14,7 +14,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -60,7 +60,7 @@ const ScenarioExplorerModal = ({
 
   useEffect(() => {
     if (isProjectsError) {
-      dispatch(setFailure(castErrorToFailure(projectsError)));
+      dispatch(notifyFailure(castErrorToFailure(projectsError)));
     }
   }, [isProjectsError]);
 

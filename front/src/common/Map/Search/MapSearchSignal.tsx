@@ -15,7 +15,7 @@ import SelectImproved from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import SignalCard from 'common/Map/Search/SignalCard';
 import { createMapSearchQuery, onResultSearchClick } from 'common/Map/utils';
 import { useInfraID } from 'common/osrdContext';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
@@ -140,7 +140,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
       .catch((e) => {
         setSearchResults([]);
         dispatch(
-          setFailure(
+          notifyFailure(
             castErrorToFailure(e, { name: t('map-search:errorMessages.unableToSearchSignal') })
           )
         );

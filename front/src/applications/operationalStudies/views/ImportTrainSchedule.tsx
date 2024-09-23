@@ -8,7 +8,7 @@ import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEdit
 import { Loader } from 'common/Loaders';
 import { ImportTrainScheduleConfig } from 'modules/trainschedule/components/ImportTrainSchedule';
 import ImportTrainScheduleTrainsList from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleTrainsList';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
 const ImportTrainSchedule = ({
@@ -32,7 +32,7 @@ const ImportTrainSchedule = ({
   useEffect(() => {
     if (isError) {
       dispatch(
-        setFailure({
+        notifyFailure({
           name: t('rollingstock:errorMessages.unableToRetrieveRollingStock'),
           message: t('rollingstock:errorMessages.unableToRetrieveRollingStockMessage'),
         })

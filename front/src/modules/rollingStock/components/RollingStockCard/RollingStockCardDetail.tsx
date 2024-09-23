@@ -12,7 +12,7 @@ import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurv
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import { convertUnits } from 'modules/rollingStock/helpers/utils';
 import type { EffortCurveForms } from 'modules/rollingStock/types';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -67,7 +67,7 @@ export default function RollingStockCardDetail({
   useEffect(() => {
     if (error) {
       dispatch(
-        setFailure(
+        notifyFailure(
           castErrorToFailure(error, {
             name: t('errorMessages.unableToRetrieveRollingStockMessage'),
             message: t('errorMessages.unableToRetrieveRollingStock'),

@@ -9,7 +9,7 @@ import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { Loader } from 'common/Loaders';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
@@ -59,7 +59,7 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
   useEffect(() => {
     if (isError && error) {
       dispatch(
-        setFailure(
+        notifyFailure(
           castErrorToFailure(error, {
             name: t('infraManagement:errorMessages.unableToRetrieveInfraList'),
           })

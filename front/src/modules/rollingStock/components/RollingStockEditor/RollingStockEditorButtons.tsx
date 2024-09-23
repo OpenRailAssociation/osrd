@@ -6,7 +6,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
-import { setSuccess, setFailure } from 'reducers/main';
+import { notifySuccess, notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure, getErrorStatus } from 'utils/error';
 
@@ -41,7 +41,7 @@ const RollingStockEditorButtons = ({
         .unwrap()
         .then(() => {
           dispatch(
-            setSuccess({
+            notifySuccess({
               title: t('messages.success'),
               text: t('messages.rollingStockDeleted'),
             })
@@ -57,7 +57,7 @@ const RollingStockEditorButtons = ({
             );
           }
           dispatch(
-            setFailure(
+            notifyFailure(
               castErrorToFailure(error, {
                 name: t('messages.failure'),
                 message: t('messages.rollingStockNotDeleted'),
@@ -80,14 +80,14 @@ const RollingStockEditorButtons = ({
         setIsEditing(true);
         resetFilters();
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: t('messages.success'),
             text: t('messages.rollingStockAdded'),
           })
         );
       })
       .catch((error) => {
-        dispatch(setFailure(castErrorToFailure(error, { name: t('messages.failure') })));
+        dispatch(notifyFailure(castErrorToFailure(error, { name: t('messages.failure') })));
       });
   };
 

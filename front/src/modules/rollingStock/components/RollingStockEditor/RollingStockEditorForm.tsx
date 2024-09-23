@@ -27,7 +27,7 @@ import {
   rollingStockEditorQueryArg,
 } from 'modules/rollingStock/helpers/utils';
 import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
-import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
+import { addFailureNotification, notifyFailure, notifySuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
@@ -103,7 +103,7 @@ const RollingStockEditorForm = ({
       .then((res) => {
         if (setOpenedRollingStockCardId) setOpenedRollingStockCardId(res.id);
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: t('messages.success'),
             text: t('messages.rollingStockAdded'),
           })
@@ -112,7 +112,7 @@ const RollingStockEditorForm = ({
       })
       .catch((error) => {
         dispatch(
-          setFailure(
+          notifyFailure(
             castErrorToFailure(error, {
               name: t('messages.failure'),
             })
@@ -130,7 +130,7 @@ const RollingStockEditorForm = ({
         .unwrap()
         .then(() => {
           dispatch(
-            setSuccess({
+            notifySuccess({
               title: t('messages.success'),
               text: t('messages.rollingStockUpdated'),
             })
@@ -139,7 +139,7 @@ const RollingStockEditorForm = ({
         })
         .catch((error) => {
           dispatch(
-            setFailure(
+            notifyFailure(
               castErrorToFailure(error, {
                 name: t('messages.failure'),
               })

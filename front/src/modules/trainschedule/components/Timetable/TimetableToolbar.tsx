@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { setFailure, setSuccess } from 'reducers/main';
+import { notifyFailure, notifySuccess } from 'reducers/main';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -107,7 +107,7 @@ const TimetableToolbar = ({
       .then(() => {
         removeTrains(selectedTrainIds);
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: t('timetable.trainsSelectionDeletedCount', { count: trainsCount }),
             text: '',
           })
@@ -117,7 +117,7 @@ const TimetableToolbar = ({
         if (selectedTrainId && selectedTrainIds.includes(selectedTrainId)) {
           dispatch(updateSelectedTrainId(selectedTrainId));
         } else {
-          dispatch(setFailure(castErrorToFailure(e)));
+          dispatch(notifyFailure(castErrorToFailure(e)));
         }
       });
   };

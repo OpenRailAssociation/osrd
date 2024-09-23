@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { StudyState } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { setSuccess } from 'reducers/main';
+import { notifySuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
 type Props = {
@@ -38,7 +38,7 @@ export default function StateStep({
         studyPatchForm: { name: studyName, state, tags },
       });
       dispatch(
-        setSuccess({
+        notifySuccess({
           title: t('studyUpdated'),
           text: t('studyUpdatedDetails', { name: studyName }),
         })

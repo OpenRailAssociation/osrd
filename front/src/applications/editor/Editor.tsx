@@ -30,7 +30,7 @@ import useInfra from 'modules/infra/useInfra';
 import type { EditorSliceActions } from 'reducers/editor';
 import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
 import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { getIsLoading } from 'reducers/main/mainSelector';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { useAppDispatch } from 'store';
@@ -208,7 +208,7 @@ const Editor = () => {
       const params = searchParams.get('selection');
       if (!params && searchParams.size !== 0) {
         dispatch(
-          setFailure({
+          notifyFailure({
             name: t('Editor.tools.select-items.errors.unable-to-select'),
             message: t('Editor.tools.select-items.errors.invalid-url'),
           })
@@ -245,7 +245,7 @@ const Editor = () => {
             if (mapRef.current) centerMapOnObject(+urlInfra, entities, dispatch, mapRef.current);
           } catch (e) {
             dispatch(
-              setFailure(
+              notifyFailure(
                 castErrorToFailure(e, {
                   name: t('Editor.tools.select-items.errors.unable-to-select'),
                   message: t('Editor.tools.select-items.errors.invalid-url'),

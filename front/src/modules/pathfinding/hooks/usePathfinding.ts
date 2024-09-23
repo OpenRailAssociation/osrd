@@ -21,7 +21,7 @@ import {
 } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { setFailure, setWarning } from 'reducers/main';
+import { notifyFailure, notifyWarning } from 'reducers/main';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { isEmptyArray } from 'utils/array';
@@ -215,7 +215,7 @@ export const usePathfinding = (
         const pathfindingInput = generatePathfindingParams();
         if (!pathfindingInput || !infraId) {
           dispatch(
-            setFailure({
+            notifyFailure({
               name: t('pathfinding'),
               message: t('pathfindingMissingParamsSimple'),
             })
@@ -283,7 +283,7 @@ export const usePathfinding = (
 
               if (!isEmptyArray(powerRestrictions)) {
                 dispatch(
-                  setWarning({
+                  notifyWarning({
                     title: t('warningMessages.pathfindingChange'),
                     text: t('warningMessages.powerRestrictionsReset'),
                   })
@@ -330,7 +330,7 @@ export const usePathfinding = (
         } catch (e) {
           if (isObject(e)) {
             if ('error' in e) {
-              dispatch(setFailure(castErrorToFailure(e, { name: t('pathfinding') })));
+              dispatch(notifyFailure(castErrorToFailure(e, { name: t('pathfinding') })));
               pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: 'failedRequest' });
             } else if ('data' in e && isObject(e.data) && 'message' in e.data) {
               pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message as string });

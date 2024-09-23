@@ -14,7 +14,7 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding/Pathfinding';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
-import { setWarning } from 'reducers/main';
+import { notifyWarning } from 'reducers/main';
 import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
@@ -71,7 +71,7 @@ const Itinerary = ({
   const notifyRestrictionResetWarning = () => {
     if (!isEmptyArray(powerRestrictions)) {
       dispatch(
-        setWarning({
+        notifyWarning({
           title: t('warningMessages.pathfindingChange'),
           text: t('warningMessages.powerRestrictionsReset'),
         })

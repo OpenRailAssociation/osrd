@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
-import { setFailure, setSuccess } from 'reducers/main';
+import { notifyFailure, notifySuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -30,7 +30,7 @@ export default function InfraSelectorEditionActionsBarDelete({
       await deleteInfra({ infraId: infra.id });
       setRunningDelete(false);
       dispatch(
-        setSuccess({
+        notifySuccess({
           title: t('infraDeleted', { name: infra.name }),
           text: '',
         })
@@ -40,7 +40,7 @@ export default function InfraSelectorEditionActionsBarDelete({
       }
     } catch (e) {
       if (e instanceof Error) {
-        dispatch(setFailure(castErrorToFailure(e)));
+        dispatch(notifyFailure(castErrorToFailure(e)));
       }
     }
   }

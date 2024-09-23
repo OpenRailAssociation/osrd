@@ -15,7 +15,7 @@ import {
 import { Loader } from 'common/Loaders';
 import { ImportTrainScheduleTrainDetail } from 'modules/trainschedule/components/ImportTrainSchedule';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
-import { setFailure, setSuccess } from 'reducers/main';
+import { notifyFailure, notifySuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
 import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
@@ -79,7 +79,7 @@ const ImportTrainScheduleTrainsList = ({
       const trainSchedules = await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
       upsertTrainSchedules(trainSchedules);
       dispatch(
-        setSuccess({
+        notifySuccess({
           title: t('success'),
           text: t('status.calculatingTrainScheduleCompleteAllSuccess', {
             trainsList,
@@ -89,7 +89,7 @@ const ImportTrainScheduleTrainsList = ({
       );
     } catch (error) {
       dispatch(
-        setFailure({
+        notifyFailure({
           name: t('failure'),
           message: t('status.calculatingTrainScheduleCompleteAllFailure', {
             trainsList,

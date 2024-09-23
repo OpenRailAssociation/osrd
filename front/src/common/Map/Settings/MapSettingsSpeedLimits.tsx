@@ -16,7 +16,7 @@ import {
   Icon2SVG,
 } from 'common/Map/Settings/MapSettingsLayers';
 import { useInfraID } from 'common/osrdContext';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { updateLayersSettings } from 'reducers/map';
 import type { MapState } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
@@ -79,7 +79,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
   useEffect(() => {
     if (isGetSpeedLimitTagsError && getSpeedLimitTagsError) {
       dispatch(
-        setFailure(
+        notifyFailure(
           castErrorToFailure(getSpeedLimitTagsError, {
             name: t('errorMessages.unableToRetrieveTags'),
           })
