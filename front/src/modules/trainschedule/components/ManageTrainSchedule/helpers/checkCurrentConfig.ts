@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { compact } from 'lodash';
+import { compact, omit } from 'lodash';
 import type { Dispatch } from 'redux';
 
 import type { ValidConfig } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { notifyFailure } from 'reducers/main';
-import type { OsrdConfState } from 'reducers/osrdconf/types';
+import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 import { isInvalidFloatNumber } from 'utils/numbers';
 import { kmhToMs, mToMm } from 'utils/physics';
 
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
+import type { TrainScheduleBase } from '../../../../../common/api/generatedEditoastApi';
 
 const checkCurrentConfig = (
   osrdconf: OsrdConfState,
@@ -145,22 +146,28 @@ const checkCurrentConfig = (
     rollingStockComfort,
     initialSpeed: initialSpeed ? kmhToMs(initialSpeed) : 0,
     usingElectricalProfiles,
-    path: compact(pathSteps).map((step) => {
-      // TODO use lodash pick
-      const {
-        arrival,
-        locked,
-        stopFor,
-        positionOnPath,
-        coordinates,
-        name,
-        ch,
-        metadata,
-        kp,
-        receptionSignal,
-        theoreticalMargin,
-        ...stepLocation
-      } = step;
+    path: compact(pathSteps).map((step: PathStep) => {
+      const { ch } = step;
+      const stepLocation = omit(
+        step,
+        // These are all the keys of PathStep that are in the path function
+        // expected results:
+        'arrival',
+        'arrivalType',
+        'arrivalToleranceBefore',
+        'arrivalToleranceAfter',
+        'locked',
+        'stopFor',
+        'stopType',
+        'theoreticalMargin',
+        'receptionSignal',
+        'kp',
+        'positionOnPath',
+        'coordinates',
+        'name',
+        'ch',
+        'metadata'
+      ) as TrainScheduleBase['path'][number];
 
       if ('track' in stepLocation) {
         return {
