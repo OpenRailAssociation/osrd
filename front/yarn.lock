@@ -2098,46 +2098,47 @@
   resolved "https://registry.yarnpkg.com/@osrd-project/netzgrafik-frontend/-/netzgrafik-frontend-0.0.0-snapshot.1f2fe60f93abd5fafa86e67aacbcc6eeae7dc0b5.tgz#9ca8f5c4c0c16b6478fa98116c99aca78d2c119e"
   integrity sha512-5HpHe2TLrNQ6vIpfZu5GDsv0nJlF1Nzf4HRWitWahWIFGfypbm6nCXZoDPNrZD9SQjchK782UfMf8OuHDVaijg==
 
-"@osrd-project/ui-core@^0.0.42":
-  version "0.0.42"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-core/-/ui-core-0.0.42.tgz#d5868e141aa1ccacc3e08fee051746d90339e50e"
-  integrity sha512-Ceu5xjyUxGR5TWl8GLBNtYKmzyrRwq7QwsSlcnMgD44wrAWxJpHSnIvmrp1y0BUtOo7MWKfb59xmV43OyeW2sw==
+"@osrd-project/ui-core@^0.0.43":
+  version "0.0.43"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-core/-/ui-core-0.0.43.tgz#6c286268a03e01b22b798ce271d69c6333fb6de8"
+  integrity sha512-m22Ax4QrgfueqawYRD7Kn1PE3dGzGO7iMUKt8JxM60roQH5796fnOkeVlivyhkusMj/DtKTZs8+pCw5E8G/cJQ==
   dependencies:
     classnames "^2.5.1"
     tailwindcss "^3.4.1"
 
-"@osrd-project/ui-icons@^0.0.42":
-  version "0.0.42"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-icons/-/ui-icons-0.0.42.tgz#5e187ac210d664f6b7085b9be901648fdb3fad51"
-  integrity sha512-PnOikd6LLAeEQs+KwrHVcibDnN5fPKVqooKvXdy4dbcQ9KPoLtPD0KcXlvfviL/n7eBa4hrWU2HTP68h1bXDKw==
+"@osrd-project/ui-icons@^0.0.43":
+  version "0.0.43"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-icons/-/ui-icons-0.0.43.tgz#dee06e4a17baebb3b09fae12f401bfa438049580"
+  integrity sha512-O/eJT4ojs/v3w1+KYZUfBIofkozaNA8Jb9LttzPN6KgOWJuqmOX3MDGIrDVK7fpr4szFVC2ebHHieqBc8ETaiA==
 
-"@osrd-project/ui-manchette@^0.0.42":
-  version "0.0.42"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-manchette/-/ui-manchette-0.0.42.tgz#31d84ea9c3f096b9694218817da1b753a72009d1"
-  integrity sha512-NBk+l11YcI01bPDcjcMYEZ3jAqiyfgIVVWQ0Utq2RZsU9tJz+1c1EtX6MuAP1B5QQNQ2/GLgvCusu46Q2p/ZjA==
+"@osrd-project/ui-manchette@^0.0.43":
+  version "0.0.43"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-manchette/-/ui-manchette-0.0.43.tgz#f24a2d392da8711c800934c33e534dbc561911f9"
+  integrity sha512-7fngzNdSTIcazMkyc+0RrcpIKUN5k/bP6IJaxusqTQevDMtb7KP3QDzuWzzRP7rjbp5EqeBO5RvqVE/rLQUJ+w==
   dependencies:
-    "@osrd-project/ui-spacetimechart" "^0.0.42"
+    "@osrd-project/ui-spacetimechart" "^0.0.43"
     classnames "^2.5.1"
     lodash.isequal "^4.5.0"
 
-"@osrd-project/ui-spacetimechart@^0.0.42":
-  version "0.0.42"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-spacetimechart/-/ui-spacetimechart-0.0.42.tgz#aa0f61404e6ad7deff973d23780f7d1b4cfea3cf"
-  integrity sha512-jLbh2WzceovHIgJ/HpQsseY/4f1vRs6Y0vtaR15E7SaLhNE7dKSzF58yCKuT1haJd61ty7oM9TYQ2+fIMfkYTQ==
+"@osrd-project/ui-spacetimechart@^0.0.43":
+  version "0.0.43"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-spacetimechart/-/ui-spacetimechart-0.0.43.tgz#d10faad445ae2d952851e5a9a9dce9f6efc81fa4"
+  integrity sha512-kCm3XsJZ3T83OYDiD00ZOlIM750hEFHFHACysGKlHh+9ErV67HwWNt8Esatg5CqIRtz2VHchz9nr5fHtuCK8BQ==
   dependencies:
     "@types/chroma-js" "^2.4.4"
     chroma-js "^2.4.2"
     lodash "^4.17.21"
     vitest "^1.5.0"
 
-"@osrd-project/ui-speedspacechart@^0.0.42":
-  version "0.0.42"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-speedspacechart/-/ui-speedspacechart-0.0.42.tgz#f4cda37cfe66a74dc9e6abc4e77ee703fc20cf54"
-  integrity sha512-xbNI2qlIILsYKkXjOSLQXeiXEp7BHotI4HOyrJPn+gFiJPc9UfTPG2oWAlxIbXH8tTQntKNjuXh9Vffs4FQNRg==
+"@osrd-project/ui-speedspacechart@^0.0.43":
+  version "0.0.43"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-speedspacechart/-/ui-speedspacechart-0.0.43.tgz#b8b3a665ab4ac3634bcc7846c7a9157802576443"
+  integrity sha512-cFTV/Mi/m/Yzkg76wnd7PJcWOkxkNUBTkEIte6TeefBJGNHu6R5Rnl/KKpEdiTjqYHLhXnVumQZQRb7/S6fjMw==
   dependencies:
-    "@osrd-project/ui-core" "^0.0.42"
-    "@osrd-project/ui-icons" "^0.0.42"
+    "@osrd-project/ui-core" "^0.0.43"
+    "@osrd-project/ui-icons" "^0.0.43"
     "@types/d3" "^7.4.3"
+    chroma-js "^3.1.1"
     classnames "^2.5.1"
     d3 "^7.9.0"
     tailwindcss "^3.4.1"
@@ -6062,6 +6063,11 @@ chroma-js@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chroma-js/-/chroma-js-2.4.2.tgz#dffc214ed0c11fa8eefca2c36651d8e57cbfb2b0"
   integrity sha512-U9eDw6+wt7V8z5NncY2jJfZa+hUH8XEj8FQHgFJTrUFnJfXYf4Ml4adI2vXZOjqRDpFWtYVWypDfZwnJ+HIR4A==
+
+chroma-js@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/chroma-js/-/chroma-js-3.1.1.tgz#380103ce1f8bb119be2b18303d598b3c113cf6b1"
+  integrity sha512-CGr6w73Gi86142RWqZ1RjED/CyduYw2vMTikQZUvr2jGIihnZlMo/Kzm9rYHWDP2pJc6eebwc8CkX0iteBon+A==
 
 ci-info@^3.2.0:
   version "3.9.0"
