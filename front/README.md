@@ -220,6 +220,8 @@ All common code (and shared components) supposed to be in `common/`.
   [Prettier - Code Formatter Extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
   and follow instructions.
 
+You may also use `yarn lint-fix` to format/lint.
+
 ## Dependencies
 
 ### Cross project
