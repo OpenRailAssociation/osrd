@@ -21,6 +21,11 @@ tracing_name = "front"
 upstream = "http://localhost:3000"
 require_auth = false
 
+[[targets]]
+tracing_name = "images"
+prefix = "/images"
+upstream = "http://localhost:8080"
+require_auth = false
 
 [auth]
 default_provider = "mock"
