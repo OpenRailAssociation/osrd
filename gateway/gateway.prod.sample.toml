@@ -13,6 +13,11 @@ prefix = "/api"
 upstream = "%EDITOAST_INTERNAL_URL%"
 require_auth = true
 
+[[targets]]
+prefix = "/images"
+upstream = "%OSRD_IMAGE_INTERNAL_URL%"
+require_auth = false
+
 [[auth.providers]]
 type = "Oidc"
 provider_id = "example_provider"
