@@ -44,6 +44,7 @@ services:
     network_mode: host
     environment:
       OSRDYNE__WORKER_DRIVER__HOST_NETWORKING: "true"
+      OSRDYNE__WORKER_DRIVER__NETWORK: ""
       OSRDYNE__WORKER_DRIVER__DEFAULT_ENV: > 
         [
         "CORE_EDITOAST_URL=http://127.0.0.1:8090",

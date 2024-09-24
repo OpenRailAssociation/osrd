@@ -14,9 +14,23 @@ if [ "$#" -ne 0 ]; then
   exit 1
 fi
 
+# These variables are necessary to load the infra on the correct instance (the pr-infra or the dev one)
+OSRD_POSTGRES="osrd-postgres"
+OSRD_EDITOAST="osrd-editoast"
+OSRD_REDIS="osrd-redis"
+OSRD_POSTGRES_PORT=5432
+OSRD_REDIS_PORT=6379
+if [ "$PR_TEST" -eq 1 ]; then
+  OSRD_POSTGRES="osrd-postgres-pr-tests"
+  OSRD_EDITOAST="osrd-editoast-pr-tests"
+  OSRD_REDIS="osrd-redis-pr-tests"
+  OSRD_POSTGRES_PORT=5433
+  OSRD_REDIS_PORT=6380
+fi
+
 # Check if the database exists
 echo "Checking database exists..."
-DB_EXISTS="$(docker exec osrd-postgres psql -c "SELECT EXISTS (SELECT FROM pg_stat_database WHERE datname = 'osrd');")"
+DB_EXISTS="$(docker exec $OSRD_POSTGRES psql -p $OSRD_POSTGRES_PORT -c "SELECT EXISTS (SELECT FROM pg_stat_database WHERE datname = 'osrd');")"
 DB_EXISTS="$(echo "$DB_EXISTS" | grep -o -E '[tf]$')"
 
 if [ $DB_EXISTS = 't' ]; then
@@ -30,12 +44,12 @@ if [ $DB_EXISTS = 't' ]; then
   echo "Checking database availability..."
 
   # if editoast is running, shut it down.
-  if [ "$(docker ps -q -f name=osrd-editoast)" ]; then
-    echo "Stopping editoast..."
-    docker stop osrd-editoast
+  if [ "$(docker ps -q -f name=$OSRD_EDITOAST)" ]; then
+    echo "Stopping $OSRD_EDITOAST..."
+    docker stop "$OSRD_EDITOAST"
   fi
 
-  DB_CONN="$(docker exec osrd-postgres psql -c "SELECT numbackends FROM pg_stat_database WHERE datname = 'osrd';")"
+  DB_CONN="$(docker exec "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -c "SELECT numbackends FROM pg_stat_database WHERE datname = 'osrd';")"
   DB_CONN="$(echo "$DB_CONN" | grep -o -E '[0-9]+$')"
 
   if [ $DB_CONN -ne 0 ]; then
@@ -47,17 +61,17 @@ if [ $DB_EXISTS = 't' ]; then
 
   # Drop database
   echo "Deleting osrd database..."
-  docker exec osrd-postgres psql -c 'DROP DATABASE osrd;' > /dev/null
+  docker exec "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -c 'DROP DATABASE osrd;' > /dev/null
 fi
 
 echo "Initialize new database (no migration)..."
 # Here I remove the first line of the script cause the user already exists
-docker exec osrd-postgres sh -c 'cat /docker-entrypoint-initdb.d/init.sql | tail -n 1 > /tmp/init.sql'
-docker exec osrd-postgres psql -f //tmp/init.sql > /dev/null
+docker exec "$OSRD_POSTGRES" sh -c 'cat /docker-entrypoint-initdb.d/init.sql | tail -n 1 > /tmp/init.sql'
+docker exec "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -f //tmp/init.sql > /dev/null
 
 # Clear Redis Cache
 echo "Deleting redis cache..."
-docker exec osrd-redis valkey-cli FLUSHALL > /dev/null 2>&1 || docker volume rm -f osrd_redis_data > /dev/null
+docker exec "$OSRD_REDIS" valkey-cli -p "$OSRD_REDIS_PORT" FLUSHALL > /dev/null 2>&1 || docker volume rm -f osrd_redis_data > /dev/null
 
 echo "Cleanup done!\n"
 echo "You may want to apply migrations if you don't load a backup:"
