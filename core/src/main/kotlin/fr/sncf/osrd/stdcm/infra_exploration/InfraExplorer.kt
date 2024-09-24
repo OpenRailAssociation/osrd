@@ -340,23 +340,15 @@ private class InfraExplorerImpl(
         travelledPathBeginBlockOffset: Offset<Block>,
         travelledPathEndBlockOffset: Offset<Block>
     ): List<PathStop> {
-        val startCurrentBlock =
-            if (incrementalPath.blockCount < 1) {
-                Offset.zero()
-            } else {
-                incrementalPath.getBlockEndOffset(incrementalPath.blockCount - 1)
-            }
         val pathStops = mutableListOf<PathStop>()
         for (stop in stops) {
             for (location in stop) {
-                if (
+                val isIncluded =
                     location.edge == block &&
                         location.offset in
                             travelledPathBeginBlockOffset..travelledPathEndBlockOffset
-                ) {
-                    pathStops.add(
-                        PathStop(startCurrentBlock + location.offset.distance, SHORT_SLIP_STOP)
-                    )
+                if (isIncluded) {
+                    pathStops.add(PathStop(location.offset.cast(), SHORT_SLIP_STOP))
                 }
             }
         }
