@@ -32,6 +32,8 @@ pub enum BuiltinRole {
 
     #[strum(serialize = "stdcm")]
     Stdcm,
+    #[strum(serialize = "stdcm:admin")]
+    StdcmAdmin,
 
     #[strum(serialize = "timetable:read")]
     TimetableRead,
@@ -43,8 +45,6 @@ pub enum BuiltinRole {
     #[strum(serialize = "document:write")]
     DocumentWrite,
 
-    #[strum(serialize = "admin")]
-    Admin,
 }
 
 impl BuiltinRoleSet for BuiltinRole {}
