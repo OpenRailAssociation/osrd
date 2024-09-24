@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
@@ -25,7 +24,6 @@ import { getOsrdSimulation } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 import { clip } from 'utils/mapHelper';
 
-const TIME_LABEL = 'Warping OSRD and OSM data';
 const WIDTH = 300;
 
 interface PathStatePayload {
@@ -268,7 +266,6 @@ const SimulationWarpedMap = ({
           bbox={state.pathBBox}
           layers={layers}
           getGeoJSONs={(osrdData, osmData) => {
-            console.time(TIME_LABEL);
             const transformed = {
               osm: transformDataStatePayload(osmData, state.transform) as DataStatePayload['osm'],
               osrd: transformDataStatePayload(
@@ -276,7 +273,6 @@ const SimulationWarpedMap = ({
                 state.transform
               ) as DataStatePayload['osrd'],
             };
-            console.timeEnd(TIME_LABEL);
             setState({ ...state, ...transformed, type: 'dataLoaded' });
           }}
         />

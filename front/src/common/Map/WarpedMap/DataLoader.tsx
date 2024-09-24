@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { featureCollection } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import type { FeatureCollection } from 'geojson';
-import { map, sum, uniqBy } from 'lodash';
+import { uniqBy } from 'lodash';
 import { createPortal } from 'react-dom';
 import type { LayerProps, MapRef } from 'react-map-gl/maplibre';
 import ReactMapGL, { Source } from 'react-map-gl/maplibre';
@@ -78,7 +78,6 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
 
       const querySources = () => {
         // Retrieve OSRD data:
-        let osrdFeaturesCount = 0;
         const osrdData: Partial<Record<Layer, FeatureCollection>> = {};
         layers.forEach((layer) => {
           osrdData[layer] = featureCollection(
@@ -89,7 +88,6 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
               (f) => f.id
             )
           );
-          osrdFeaturesCount += osrdData[layer]?.features.length || 0;
         });
 
         // Retrieve OSM data:
@@ -113,11 +111,6 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
               : iter,
           {}
         );
-        const osmFeaturesCount = sum(map(osmData, (collection) => collection.features.length));
-
-        console.timeEnd(TIME_LABEL);
-        console.log('  - OSRD features: ', osrdFeaturesCount);
-        console.log('  - OSM features: ', osmFeaturesCount);
 
         // Finalize:
         getGeoJSONs(osrdData, osmData);

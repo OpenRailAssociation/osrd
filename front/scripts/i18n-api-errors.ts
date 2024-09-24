@@ -82,7 +82,7 @@ async function run() {
     ).flat();
 
     if (errors.length > 0) {
-      console.log(errors);
+      console.error(errors);
       process.exit(1);
     } else {
       process.exit(0);
