@@ -13,6 +13,7 @@ use itertools::Itertools;
 
 use editoast_models::tables::*;
 
+#[derive(Clone)]
 pub struct PgAuthDriver<B: BuiltinRoleSet + Send + Sync> {
     pool: Arc<DbConnectionPoolV2>,
     _role_set: std::marker::PhantomData<B>,

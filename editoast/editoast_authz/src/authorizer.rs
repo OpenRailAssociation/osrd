@@ -8,22 +8,23 @@ use crate::roles::{BuiltinRoleSet, RoleConfig};
 pub type UserIdentity = String;
 pub type UserName = String;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UserInfo {
     pub identity: UserIdentity,
     pub name: UserName,
 }
 
+#[derive(Clone)]
 pub struct Authorizer<S: StorageDriver> {
     user: UserInfo,
     user_id: i64,
-    roles_config: Arc<RoleConfig<S::BuiltinRole>>,
+    pub roles_config: Arc<RoleConfig<S::BuiltinRole>>,
     user_roles: HashSet<S::BuiltinRole>,
     #[allow(unused)] // will be used soon
     storage: S,
 }
 
-pub trait StorageDriver {
+pub trait StorageDriver: Clone {
     type BuiltinRole: BuiltinRoleSet + std::fmt::Debug;
     type Error: std::error::Error;
 
