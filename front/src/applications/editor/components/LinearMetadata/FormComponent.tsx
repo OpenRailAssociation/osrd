@@ -209,7 +209,7 @@ const IntervalEditorComponent = (
                   }
                 }
               } catch (e) {
-                // TODO: should we display it ?
+                // Nothing to do here, no proper place to display the error
               }
             }}
           />
@@ -398,7 +398,7 @@ const IntervalEditorComponent = (
                     }
                     customOnChange(newData);
                   } catch (error) {
-                    // TODO: Should we display the resize error ?
+                    // Nothing to do here, no proper place to display the error
                   } finally {
                     setSelectedData(newItem);
                   }

@@ -44,9 +44,9 @@ const TrackSplitTool: Tool<TrackSplitState> = {
         isDisabled({ state, isLoading, isInfraLocked }) {
           return isLoading || isInfraLocked || false || !isOffsetValid(state.offset, state.track);
         },
-        async onClick({ setIsFormSubmited }) {
-          if (setIsFormSubmited) {
-            setIsFormSubmited(true);
+        async onClick({ setIsFormSubmitted }) {
+          if (setIsFormSubmitted) {
+            setIsFormSubmitted(true);
           }
         },
       },

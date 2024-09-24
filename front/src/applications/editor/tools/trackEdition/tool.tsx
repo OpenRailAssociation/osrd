@@ -43,9 +43,9 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         isDisabled({ isLoading, isInfraLocked, state }) {
           return isLoading || state.track.geometry.coordinates.length < 2 || isInfraLocked || false;
         },
-        async onClick({ setIsFormSubmited }) {
-          if (setIsFormSubmited) {
-            setIsFormSubmited(true);
+        async onClick({ setIsFormSubmitted }) {
+          if (setIsFormSubmitted) {
+            setIsFormSubmitted(true);
           }
         },
       },

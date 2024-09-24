@@ -29,7 +29,7 @@ const TrackEditionLeftPanel = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
-  const { state, setState, isFormSubmited, setIsFormSubmited, editorState } = useContext(
+  const { state, setState, isFormSubmitted, setIsFormSubmitted, editorState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
   const submitBtnRef = useRef<HTMLButtonElement>(null);
@@ -41,11 +41,11 @@ const TrackEditionLeftPanel = () => {
   // the toolbar button instead of the form one.
   // See https://github.com/rjsf-team/react-jsonschema-form/issues/500
   useEffect(() => {
-    if (isFormSubmited && setIsFormSubmited && submitBtnRef.current) {
+    if (isFormSubmitted && setIsFormSubmitted && submitBtnRef.current) {
       submitBtnRef.current.click();
-      setIsFormSubmited(false);
+      setIsFormSubmitted(false);
     }
-  }, [isFormSubmited]);
+  }, [isFormSubmitted]);
 
   const schema = useMemo(() => {
     let jsonschema = getJsonSchemaForLayer(

@@ -35,7 +35,7 @@ const RouteEditionPanel = () => {
   const infraID = useInfraID();
   const dispatch = useAppDispatch();
   const [postPathfinding] = osrdEditoastApi.endpoints.postInfraByInfraIdPathfinding.useMutation();
-  const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
+  const { state, setState, isFormSubmitted, setIsFormSubmitted } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<RouteEditionState>;
 
@@ -290,14 +290,14 @@ const RouteEditionPanel = () => {
    * When clicking on the save button in the toolbar
    */
   useEffect(() => {
-    if (isFormSubmited && setIsFormSubmited && state.entity) {
-      setIsFormSubmited(false);
+    if (isFormSubmitted && setIsFormSubmitted && state.entity) {
+      setIsFormSubmitted(false);
       saveEntity(
         state.entity,
         state.entity.properties.id !== NEW_ENTITY_ID ? state.initialEntity : undefined
       );
     }
-  }, [isFormSubmited, saveEntity, state.entity, state.initialEntity, setIsFormSubmited]);
+  }, [isFormSubmitted, saveEntity, state.entity, state.initialEntity, setIsFormSubmitted]);
 
   return (
     <div className="position-relative">

@@ -16,7 +16,7 @@ import { saveSplitTrackSection } from 'reducers/editor/thunkActions';
 const TrackSplitLeftPanel = () => {
   const { t } = useTranslation(['translation', 'infraEditor']);
   const infraID = useInfraID();
-  const { state, setState, isFormSubmited, setIsFormSubmited, switchTool, dispatch } = useContext(
+  const { state, setState, isFormSubmitted, setIsFormSubmitted, switchTool, dispatch } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackSplitState>;
 
@@ -43,11 +43,11 @@ const TrackSplitLeftPanel = () => {
    * When clicking on the save button in the toolbar
    */
   useEffect(() => {
-    if (isFormSubmited && setIsFormSubmited) {
-      setIsFormSubmited(false);
+    if (isFormSubmitted && setIsFormSubmitted) {
+      setIsFormSubmitted(false);
       submit(state);
     }
-  }, [isFormSubmited, setIsFormSubmited]);
+  }, [isFormSubmitted, setIsFormSubmitted]);
 
   const isValid = isOffsetValid(state.offset, state.track);
   const trackLength = state.track.properties.length;

@@ -65,7 +65,7 @@ const Editor = () => {
     setRenderingFingerprint(Date.now());
   }, [setRenderingFingerprint]);
 
-  const [isFormSubmited, setIsFormSubmited] = useState(false);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   const { data: infra } = useInfra(infraID);
   const { updateInfra } = useInfraActions();
 
@@ -152,8 +152,8 @@ const Editor = () => {
       infraID,
       isInfraLocked: isLocked,
       isLoading,
-      isFormSubmited,
-      setIsFormSubmited,
+      isFormSubmitted,
+      setIsFormSubmitted,
       switchTypes,
       mapState: {
         viewport,
@@ -170,8 +170,8 @@ const Editor = () => {
       viewport,
       isLoading,
       isLocked,
-      isFormSubmited,
-      setIsFormSubmited,
+      isFormSubmitted,
+      setIsFormSubmitted,
     ]
   );
 

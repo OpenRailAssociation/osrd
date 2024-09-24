@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
-
 import type { Point } from 'geojson';
 import type { JSONSchema7 } from 'json-schema';
-import { isNil, omit, omitBy, without } from 'lodash';
+import { omit, omitBy, without } from 'lodash';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { type SwitchType } from 'common/api/osrdEditoastApi';
 
-import type { SwitchEntity, SwitchType, TrackEndpoint } from './types';
+import type { SwitchEntity, TrackEndpoint } from './types';
 
 export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
   return {
@@ -20,10 +18,6 @@ export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
       id: NEW_ENTITY_ID,
     },
   };
-}
-
-export function isSwitchValid(entity: Partial<SwitchEntity>, type: SwitchType): boolean {
-  return type.ports.every((port) => !!entity.properties?.ports[port]);
 }
 
 /**
@@ -108,51 +102,4 @@ export function switchToFlatSwitch(
       ),
     },
   };
-}
-
-// Client prefered order
-const trackNodeTypeOrder = [
-  'link',
-  'point_switch',
-  'crossing',
-  'single_slip_switch',
-  'double_slip_switch',
-];
-
-export function useSwitchTypes(infraID: number | undefined) {
-  const [data, setData] = useState<SwitchType[]>([]);
-  const [getInfraSwitchTypes, { isLoading, error }] =
-    osrdEditoastApi.endpoints.getInfraByInfraIdSwitchTypes.useLazyQuery({});
-
-  const fetch = useCallback(
-    async (infraId?: number) => {
-      // reset
-      setData([]);
-      try {
-        if (!isNil(infraId)) {
-          const resp = getInfraSwitchTypes({ infraId });
-          const result = await resp.unwrap();
-          if (result) {
-            const orderedData = [...result] as SwitchType[];
-            orderedData.sort(
-              (a, b) => trackNodeTypeOrder.indexOf(a.id) - trackNodeTypeOrder.indexOf(b.id)
-            );
-            setData(orderedData);
-          } else {
-            setData([]);
-          }
-          resp.unsubscribe();
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    },
-    [getInfraSwitchTypes]
-  );
-
-  useEffect(() => {
-    fetch(infraID);
-  }, [infraID, fetch]);
-
-  return { data, isLoading, error };
 }

@@ -79,9 +79,9 @@ function getPointEditionTool<T extends EditorPoint>({
               false
             );
           },
-          async onClick({ setIsFormSubmited }) {
-            if (setIsFormSubmited) {
-              setIsFormSubmited(true);
+          async onClick({ setIsFormSubmitted }) {
+            if (setIsFormSubmitted) {
+              setIsFormSubmitted(true);
             }
           },
         },

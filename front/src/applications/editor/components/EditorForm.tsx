@@ -51,7 +51,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
 }: PropsWithChildren<EditorFormProps<T>>) {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
-  const [submited, setSubmited] = useState<boolean>(false);
+  const [submited, setsubmited] = useState<boolean>(false);
   const { t } = useTranslation('infraEditor');
 
   const editorState = useSelector(getEditorState);
@@ -110,7 +110,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
           length: data.properties?.length,
           isCreation: isNil(formData?.id) || formData?.id === NEW_ENTITY_ID,
         }}
-        onError={() => setSubmited(true)}
+        onError={() => setsubmited(true)}
         onSubmit={async () => {
           try {
             setError(null);
@@ -118,7 +118,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
           } catch (e) {
             setError(getErrorMessage(e));
           } finally {
-            setSubmited(true);
+            setsubmited(true);
           }
         }}
         onChange={(event) => {

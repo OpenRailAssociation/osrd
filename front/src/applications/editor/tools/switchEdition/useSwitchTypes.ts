@@ -2,9 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { isNil } from 'lodash';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-
-import type { SwitchType } from './types';
+import { osrdEditoastApi, type SwitchType } from 'common/api/osrdEditoastApi';
 
 // Client preferred order
 const trackNodeTypeOrder = [
