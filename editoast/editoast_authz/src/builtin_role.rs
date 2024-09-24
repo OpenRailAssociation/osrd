@@ -47,25 +47,4 @@ pub enum BuiltinRole {
     Admin,
 }
 
-impl BuiltinRoleSet for BuiltinRole {
-    fn implies_iter(&self) -> impl IntoIterator<Item = Self> {
-        use BuiltinRole::*;
-        match self {
-            OpsRead => vec![],
-            OpsWrite => vec![OpsRead],
-            InfraRead => vec![],
-            InfraWrite => vec![InfraRead],
-            RollingStockCollectionRead => vec![],
-            RollingStockCollectionWrite => vec![RollingStockCollectionRead],
-            WorkScheduleWrite => vec![WorkScheduleRead],
-            WorkScheduleRead => vec![],
-            MapRead => vec![],
-            Stdcm => vec![MapRead],
-            TimetableRead => vec![],
-            TimetableWrite => vec![TimetableRead],
-            DocumentRead => vec![],
-            DocumentWrite => vec![DocumentRead],
-            Admin => vec![],
-        }
-    }
-}
+impl BuiltinRoleSet for BuiltinRole {}
