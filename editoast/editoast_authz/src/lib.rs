@@ -20,17 +20,7 @@ pub mod fixtures {
         UserBan,
     }
 
-    impl roles::BuiltinRoleSet for TestBuiltinRole {
-        fn implies_iter(&self) -> impl IntoIterator<Item = Self> {
-            match self {
-                Self::DocRead => vec![],
-                Self::DocEdit => vec![Self::DocRead],
-                Self::DocDelete => vec![Self::DocEdit],
-                Self::UserAdd => vec![],
-                Self::UserBan => vec![],
-            }
-        }
-    }
+    impl roles::BuiltinRoleSet for TestBuiltinRole {}
 
     pub fn default_test_config() -> roles::RoleConfig<TestBuiltinRole> {
         const SOURCE: &str = r#"

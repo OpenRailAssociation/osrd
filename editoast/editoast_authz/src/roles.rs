@@ -6,8 +6,6 @@ use std::{
 pub trait BuiltinRoleSet:
     FromStr + AsRef<str> + Sized + Clone + std::hash::Hash + std::cmp::Eq + std::fmt::Debug
 {
-    fn implies_iter(&self) -> impl IntoIterator<Item = Self>;
-
     fn as_str(&self) -> &str {
         self.as_ref()
     }
