@@ -110,7 +110,7 @@ editoast_common::schemas! {
 }
 
 pub type Roles = editoast_authz::roles::RoleConfig<BuiltinRole>;
-pub type AuthorizerExt = axum::extract::Extension<Arc<Authorizer<PgAuthDriver<BuiltinRole>>>>;
+pub type AuthorizerExt = axum::extract::Extension<Authorizer<PgAuthDriver<BuiltinRole>>>;
 
 async fn make_authorizer(
     headers: &axum::http::HeaderMap,
@@ -154,7 +154,6 @@ pub async fn authorizer_middleware(
 ) -> Result<Response> {
     let headers = req.headers();
     let authorizer = make_authorizer(headers, role_config.clone(), db_pool).await?;
-    let authorizer = Arc::new(authorizer);
     req.extensions_mut().insert(authorizer);
     Ok(next.run(req).await)
 }
