@@ -130,18 +130,18 @@ async function run() {
 
     /* eslint-disable no-console */
     if (unusedKeys.length > 0) {
-      console.log(`Unused keys (${unusedKeys.length})`);
-      console.log('----------------------------------');
-      console.log(unusedKeys.map((e) => `${e.locale}:${e.key}`).join('\n'));
-      console.log();
+      console.warn(`Unused keys (${unusedKeys.length})`);
+      console.warn('----------------------------------');
+      console.warn(unusedKeys.map((e) => `${e.locale}:${e.key}`).join('\n'));
+      console.warn();
     }
 
     if (missingKeys.length > 0) {
-      console.log(`Missing keys (${missingKeys.length})`);
-      console.log('------------------------------------');
-      console.log(missingKeys.map((e) => `${e.locale}:${e.key}`).join('\n'));
-      console.log();
-      console.log('/!\\ Failed: missing keys are not allowed in fr & en');
+      console.warn(`Missing keys (${missingKeys.length})`);
+      console.warn('------------------------------------');
+      console.warn(missingKeys.map((e) => `${e.locale}:${e.key}`).join('\n'));
+      console.warn();
+      console.warn('/!\\ Failed: missing keys are not allowed in fr & en');
       process.exit(1);
     }
   } catch (err) {
