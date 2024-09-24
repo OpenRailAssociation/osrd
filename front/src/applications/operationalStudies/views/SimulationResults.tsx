@@ -131,6 +131,11 @@ const SimulationResults = ({
 
   if (trainSimulation.status !== 'success') return null;
 
+  // console.log(
+  //   projectedOperationalPoints.length,
+  //   spaceTimeData.filter((train) => train.space_time_curves.length > 0)[0]?.name,
+  //   selectedTrainSchedule?.train_name
+  // );
   return (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}

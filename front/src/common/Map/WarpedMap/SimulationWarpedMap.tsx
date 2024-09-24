@@ -268,7 +268,6 @@ const SimulationWarpedMap = ({
           bbox={state.pathBBox}
           layers={layers}
           getGeoJSONs={(osrdData, osmData) => {
-            console.time(TIME_LABEL);
             const transformed = {
               osm: transformDataStatePayload(osmData, state.transform) as DataStatePayload['osm'],
               osrd: transformDataStatePayload(
@@ -276,7 +275,6 @@ const SimulationWarpedMap = ({
                 state.transform
               ) as DataStatePayload['osrd'],
             };
-            console.timeEnd(TIME_LABEL);
             setState({ ...state, ...transformed, type: 'dataLoaded' });
           }}
         />

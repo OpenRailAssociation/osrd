@@ -11,6 +11,12 @@ const upsertNewProjectedTrains = (
   projectedTrainsToUpsert: Record<string, ProjectPathTrainResult>,
   trainSchedulesById: Map<number, TrainScheduleResult>
 ) => {
+  // console.log(
+  //   'upsertNewProjectedTrains',
+  //   projectedTrains,
+  //   projectedTrainsToUpsert,
+  //   trainSchedulesById
+  // );
   const newProjectedTrains = new Map(projectedTrains);
 
   // For each key (train id) in projectPathTrainResult, we either add it or update it in the state
@@ -32,6 +38,7 @@ const upsertNewProjectedTrains = (
     newProjectedTrains.set(trainId, projectedTrain);
   });
 
+  // console.log('upsertNewProjectedTrains', newProjectedTrains);
   return newProjectedTrains;
 };
 

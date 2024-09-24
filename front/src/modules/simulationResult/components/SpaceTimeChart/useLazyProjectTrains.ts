@@ -68,6 +68,7 @@ const useLazyProjectTrains = ({
       packageToProject.forEach((trainId) => requestedProjectedTrainIds.current.add(trainId));
 
       const { blocks, routes, track_section_ranges } = _path;
+      // console.log('track_section_ranges', track_section_ranges[0].track_section.substring(0, 8));
       const rawProjectedTrains = await postTrainScheduleProjectPath({
         projectPathForm: {
           infra_id: infraId!,
@@ -76,6 +77,13 @@ const useLazyProjectTrains = ({
           electrical_profile_set_id: electricalProfileSetId,
         },
       }).unwrap();
+      console.log(
+        'project_path',
+        Object.values(rawProjectedTrains).map(
+          (t) =>
+            t.space_time_curves.flatMap((c) => c.positions[c.positions.length - 1] / 1000000)[0]
+        )
+      );
 
       setProjectedTrainsById((prevTrains) => {
         const newProjectedTrains = upsertNewProjectedTrains(
