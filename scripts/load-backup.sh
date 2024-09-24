@@ -36,17 +36,25 @@ else
   exit 2
 fi
 
+# These variables are necessary to load the infra on the correct instance (the pr-infra or the dev one)
+OSRD_POSTGRES="osrd-postgres"
+OSRD_POSTGRES_PORT=5432
+if [ "$PR_TEST" -eq 1 ]; then
+  OSRD_POSTGRES="osrd-postgres-pr-tests"
+  OSRD_POSTGRES_PORT=5433
+fi
+
 $(dirname "$0")/cleanup-db.sh # Cleanup and init db (no migration)
 
 # Copy needed files to the container
-docker cp "$BACKUP_PATH" osrd-postgres:tmp/backup-osrd
+docker cp "$BACKUP_PATH" "$OSRD_POSTGRES:tmp/backup-osrd"
 
 # restoring the backend can partialy fail, and that's sometimes ok
 echo "Restore backup..."
-docker exec osrd-postgres pg_restore --if-exists -c -d osrd -x //tmp/backup-osrd > /dev/null
+docker exec "$OSRD_POSTGRES" pg_restore --if-exists -p "$OSRD_POSTGRES_PORT" -c -d osrd -x //tmp/backup-osrd > /dev/null
 
 # analyze db for performances
 echo "Analyze for performances..."
-docker exec osrd-postgres psql -d osrd -c 'ANALYZE;' > /dev/null
+docker exec "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -d osrd -c 'ANALYZE;' > /dev/null
 
 echo "Load backup done!"

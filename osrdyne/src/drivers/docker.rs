@@ -30,6 +30,8 @@ pub struct DockerDriverOptions {
     pub default_env: Vec<String>,
     // Should the containers be started in host networking mode
     pub host_networking: Option<bool>,
+    /// The network to start the worker container in
+    pub network: String,
 }
 
 pub struct DockerDriver {
@@ -95,7 +97,7 @@ impl WorkerDriver for DockerDriver {
 
             let mut networking_config = Some(NetworkingConfig {
                 endpoints_config: HashMap::from([(
-                    "osrd_default".to_string(),
+                    self.options.network.clone(),
                     bollard::models::EndpointSettings {
                         ..Default::default()
                     },

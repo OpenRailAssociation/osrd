@@ -1,0 +1,43 @@
+# This config file is copied into the default dev container
+
+# generate a production key with this command:
+# python3 -c "import secrets, base64; print(base64.standard_b64encode(secrets.token_bytes(64)).decode())"
+secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET"
+
+listen_addr = "0.0.0.0"
+port = 4001
+
+[telemetry.tracing]
+enable = true
+type = "Otlp"
+service_name = "gateway"
+endpoint = "http://osrd-jaeger-pr-tests:4319"
+
+
+[static_files]
+root_folder = "/srv/front"
+redirect_404_to_index = true
+
+
+[[targets]]
+tracing_name = "editoast"
+prefix = "/api"
+upstream = "http://osrd-editoast-pr-tests:8091"
+require_auth = true
+
+[[targets]]
+tracing_name = "images"
+prefix = "/images"
+upstream = "http://osrd-images:8080"
+require_auth = false
+
+
+[auth]
+default_provider = "mock"
+secure_cookies = false
+
+[[auth.providers]]
+type = "Mocked"
+provider_id = "mock"
+username = "Example User"
+require_login = false
