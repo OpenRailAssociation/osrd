@@ -131,7 +131,9 @@ private fun computeSignalAspectChangeEvents(
             )
             .toMutableMap()
 
-    val lastSignal = pathSignals.last().signal
+    val blockSignals = blockInfra.getBlockSignals(blockPath.last())
+    // We can't just `pathSignals.last().signal` as the simulation includes the whole block
+    val lastSignal = blockSignals[blockSignals.size - 1]
     val lastSignalDriver = loadedSignalInfra.getDrivers(lastSignal).lastOrNull()
     val lastSignalInputSystem =
         if (lastSignalDriver != null) {
