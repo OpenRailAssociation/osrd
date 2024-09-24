@@ -107,7 +107,7 @@ async fn overwrite(
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = authorizer
-        .check_roles([BuiltinRole::Admin].into())
+        .check_roles([BuiltinRole::StdcmAdmin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
