@@ -176,7 +176,7 @@ tower-http = { version = "0.6.1", features = [
   "trace",
 ] }
 tracing.workspace = true
-tracing-opentelemetry = { version = "0.24.0", default-features = false, features = [
+tracing-opentelemetry = { version = "0.26.0", default-features = false, features = [
   "tracing-log",
 ] }
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
