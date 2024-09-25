@@ -4,7 +4,7 @@ import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind
-import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -238,32 +238,33 @@ class MRSPTest {
                 Envelope.make(
                     // No speed section at first => train speed limit
                     EnvelopeTestUtils.makeFlatPart(
-                        LimitKind.TRAIN_LIMIT,
+                        listOf(LimitKind.TRAIN_LIMIT, CONSTANT_SPEED, HasMissingSpeedTag),
                         0.0,
                         POSITION1,
                         TestTrains.MAX_SPEED
                     ),
                     // Speed section with incorrect train tag => speed 1
                     EnvelopeTestUtils.makeFlatPart(
-                        listOf(LimitKind.SPEED_LIMIT, EnvelopeProfile.CONSTANT_SPEED, UnknownTag()),
+                        listOf(
+                            LimitKind.SPEED_LIMIT,
+                            CONSTANT_SPEED,
+                            UnknownTag(),
+                            HasMissingSpeedTag
+                        ),
                         POSITION1,
                         POSITION2,
                         SPEED1
                     ),
                     // Speed section with correct train tag => speed 3
                     EnvelopeTestUtils.makeFlatPart(
-                        listOf(
-                            LimitKind.SPEED_LIMIT,
-                            EnvelopeProfile.CONSTANT_SPEED,
-                            GivenTrainTag(TRAIN_TAG2)
-                        ),
+                        listOf(LimitKind.SPEED_LIMIT, CONSTANT_SPEED, GivenTrainTag(TRAIN_TAG2)),
                         POSITION2,
                         POSITION3,
                         SPEED3
                     ),
                     // No speed section at end => train speed limit
                     EnvelopeTestUtils.makeFlatPart(
-                        LimitKind.TRAIN_LIMIT,
+                        listOf(LimitKind.TRAIN_LIMIT, CONSTANT_SPEED, HasMissingSpeedTag),
                         POSITION3,
                         pathLength,
                         TestTrains.MAX_SPEED
@@ -313,8 +314,20 @@ class MRSPTest {
                 TRAIN_TAG1,
                 Envelope.make(
                     EnvelopeTestUtils.makeFlatPart(
-                        LimitKind.TRAIN_LIMIT,
+                        listOf(LimitKind.TRAIN_LIMIT, CONSTANT_SPEED, HasMissingSpeedTag),
                         0.0,
+                        POSITION1,
+                        TestTrains.MAX_SPEED
+                    ),
+                    EnvelopeTestUtils.makeFlatPart(
+                        LimitKind.TRAIN_LIMIT,
+                        POSITION1,
+                        POSITION2,
+                        TestTrains.MAX_SPEED
+                    ),
+                    EnvelopeTestUtils.makeFlatPart(
+                        listOf(LimitKind.TRAIN_LIMIT, CONSTANT_SPEED, HasMissingSpeedTag),
+                        POSITION2,
                         pathLength,
                         TestTrains.MAX_SPEED
                     )

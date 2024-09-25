@@ -44,6 +44,12 @@ sealed class SpeedLimitSource : SelfTypeHolder {
             return 1
         }
     }
+
+    /**
+     * The speed limit comes from a safety approach area: the train must slow down before reaching
+     * the next signal
+     */
+    data object SafetyApproachSpeed : SpeedLimitSource()
 }
 
 /**

@@ -23,6 +23,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
+import fr.sncf.osrd.envelope_sim_infra.HasMissingSpeedTag
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
@@ -202,12 +203,15 @@ fun makeMRSPResponse(speedLimits: Envelope): RangeValues<SpeedLimitProperty> {
         ) {
             "Each MRSP envelope-part can contain only one speed-limit range"
         }
-        sources.add(
-            SpeedLimitProperty(
-                part.beginSpeed.metersPerSecond,
-                part.getAttr(SpeedLimitSource::class.java)
-            )
-        )
+        var attr = part.getAttr(SpeedLimitSource::class.java)
+        if (part.getAttr(HasMissingSpeedTag::class.java) != null) {
+            // HasMissingSpeedTag is a special flag that enforces `UnknownTag` even if the speed
+            // limit comes from a defined source (e.g. rolling stock max speed). This ensures we
+            // never lose that important piece of information.
+            // TODO: change the API with better semantics to properly handle missing tags
+            attr = SpeedLimitSource.UnknownTag()
+        }
+        sources.add(SpeedLimitProperty(part.beginSpeed.metersPerSecond, attr))
     }
     internalBoundaries.removeLast()
     return RangeValues(internalBoundaries, sources)
