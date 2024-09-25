@@ -110,6 +110,7 @@ services:
       EDITOAST_PORT: 80
       REDIS_URL: "redis://redis"
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
+      OSRDYNE_API_URL: "http://osrd-osrdyne:4242/"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
       OSRD_MQ_URL: "amqp://osrd:password@osrd-rabbitmq:5672/%2f"
