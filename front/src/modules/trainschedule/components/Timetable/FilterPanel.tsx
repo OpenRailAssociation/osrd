@@ -1,9 +1,7 @@
+import { Input, Select } from '@osrd-project/ui-core';
 import { X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 
 import type { ValidityFilter, ScheduledPointsHonoredFilter } from './types';
 
@@ -66,12 +64,18 @@ const FilterPanel = ({
 
   return (
     <div className="filter-panel">
-      <button aria-label={t('timetable.closeFilter')} onClick={toggleFilterPanel} type="button">
-        <X iconColor="#B6B2AF" className="close-filter" />
+      <button
+        data-testid="timetable-filter-button-close"
+        aria-label={t('timetable.closeFilter')}
+        onClick={toggleFilterPanel}
+        type="button"
+        className="close-filter"
+      >
+        <X iconColor="#B6B2AF" />
       </button>
-      <div className="row">
-        <div className="col-5">
-          <InputSNCF
+      <div className="grid-template">
+        <div id="train-validity-and-label">
+          <Input
             type="text"
             id="timetable-label-filter"
             name="timetable-label-filter"
@@ -79,14 +83,30 @@ const FilterPanel = ({
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder={t('filterPlaceholder')}
-            noMargin
-            unit={<i className="icons-search" />}
-            sm
             data-testid="timetable-label-filter"
             title={t('filterPlaceholder')}
           />
-          <div className="my-3" />
-          <InputSNCF
+
+          <Select
+            getOptionLabel={(option) => option.label}
+            getOptionValue={(option) => option.value}
+            id="train-validity"
+            label={t('timetable.validityFilter')}
+            onChange={(selectedOption) => {
+              if (selectedOption) {
+                setValidityFilter(selectedOption.value);
+              }
+            }}
+            options={validityOptions}
+            value={
+              validityOptions.find((option) => option.value === validityFilter) ||
+              validityOptions[0]
+            }
+          />
+        </div>
+
+        <div id="schedule-point-honored-and-rollingstock">
+          <Input
             type="text"
             id="timetable-rollingstock-filter"
             name="timetable-rollingstock-filter"
@@ -94,56 +114,45 @@ const FilterPanel = ({
             value={rollingStockFilter}
             onChange={(e) => setRollingStockFilter(e.target.value)}
             placeholder={t('timetable.rollingStockFilterPlaceholder')}
-            noMargin
-            unit={<i className="icons-search" />}
-            sm
             data-testid="timetable-rollingstock-filter"
             title={t('timetable.rollingStockFilterPlaceholder')}
           />
-        </div>
 
-        <div className="col-7">
-          <label htmlFor="train-validity">{t('timetable.validityFilter')}</label>
-          <div className="validity-filter">
-            <OptionsSNCF
-              onChange={(event) => setValidityFilter(event.target.value as ValidityFilter)}
-              options={validityOptions}
-              name="train-validity"
-              selectedValue={validityFilter}
-            />
-          </div>
-
-          <label htmlFor="train-keep-timetable">
-            {t('timetable.scheduledPointsHonoredFilter')}
-          </label>
-          <div className="validity-filter">
-            <OptionsSNCF
-              onChange={(event) =>
-                setScheduledPointsHonoredFilter(event.target.value as ScheduledPointsHonoredFilter)
+          <Select
+            getOptionLabel={(option) => option.label}
+            getOptionValue={(option) => option.value}
+            id="train-keep-timetable"
+            label={t('timetable.punctuality')}
+            onChange={(selectedOption) => {
+              if (selectedOption) {
+                setScheduledPointsHonoredFilter(selectedOption.value);
               }
-              options={scheduledPointsHonoredOptions}
-              name="schedule-point-honored"
-              selectedValue={scheduledPointsHonoredFilter}
-            />
-          </div>
+            }}
+            options={scheduledPointsHonoredOptions}
+            value={
+              scheduledPointsHonoredOptions.find(
+                (option) => option.value === scheduledPointsHonoredFilter
+              ) || scheduledPointsHonoredOptions[0]
+            }
+          />
         </div>
-        <div className="col-5">
-          <label htmlFor="composition-tag-filter">{t('timetable.compositionCodes')}</label>
-          <div className="composition-tag-filter" id="composition-tag-filter">
-            {uniqueTags.map((tag) => {
-              const displayTag = tag !== 'NO CODE' ? tag : t('timetable.noSpeedLimitTags');
-              return (
-                <button
-                  className={cx('btn', 'btn-sm', { selectedTag: selectedTags.has(tag) })}
-                  type="button"
-                  key={tag}
-                  onClick={() => toggleTagSelection(tag)}
-                >
-                  {displayTag}
-                </button>
-              );
-            })}
-          </div>
+      </div>
+      <div className="compositions-code">
+        <label htmlFor="composition-tag-filter">{t('timetable.compositionCodes')}</label>
+        <div className="composition-tag-filter" id="composition-tag-filter">
+          {uniqueTags.map((tag) => {
+            const displayTag = tag !== 'NO CODE' ? tag : t('timetable.noSpeedLimitTagsShort');
+            return (
+              <button
+                className={cx('btn', 'btn-sm', { selectedTag: selectedTags.has(tag) })}
+                type="button"
+                key={tag}
+                onClick={() => toggleTagSelection(tag)}
+              >
+                {displayTag}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

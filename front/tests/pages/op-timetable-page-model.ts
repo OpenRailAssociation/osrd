@@ -28,6 +28,8 @@ class OperationalStudiesTimetablePage {
 
   readonly timetableFilterButton: Locator;
 
+  readonly timetableFilterButtonClose: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.invalidTrainsMessage = page.getByTestId('invalid-trains-message');
@@ -41,6 +43,7 @@ class OperationalStudiesTimetablePage {
     this.simulationMap = page.locator('.osrd-simulation-map');
     this.simulationDriverTrainSchedule = page.locator('.simulation-driver-train-schedule');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
+    this.timetableFilterButtonClose = page.getByTestId('timetable-filter-button-close');
   }
 
   // Function to wait for an element to be visible and then assert its visibility
@@ -94,41 +97,39 @@ class OperationalStudiesTimetablePage {
 
   // Clicks the train validity filter button based on the provided translation
   async clickValidityTrainFilterButton(filterTranslation: string): Promise<void> {
-    const filterButtonLocator = this.page
-      .locator('#train-validity')
-      .getByText(filterTranslation, { exact: true });
-    await filterButtonLocator.click();
+    // TODO: use id on the Select element
+    const filterButtonLocator = this.page.locator('#train-validity-and-label select');
+    await filterButtonLocator.selectOption({ label: filterTranslation });
   }
 
   // Clicks the train honored filter button based on the provided translation
   async clickHonoredTrainFilterButton(filterTranslation: string): Promise<void> {
-    const filterButtonLocator = this.page
-      .locator('#schedule-point-honored')
-      .getByText(filterTranslation, { exact: true });
-    await filterButtonLocator.click();
+    // TODO: use id on the Select element
+    const filterButtonLocator = this.page.locator(
+      '#schedule-point-honored-and-rollingstock select'
+    );
+    await filterButtonLocator.selectOption({ label: filterTranslation });
   }
 
   // Filter train using composition codes button based on the provided translation and verify train count
   async clickCodeCompoTrainFilterButton(
     selectedLanguage: string,
-    filterTranslation: string,
+    filterTranslation: string | null,
     expectedTrainCount: number
   ): Promise<void> {
     await this.timetableFilterButton.click();
     const translations = selectedLanguage === 'English' ? enTranslations : frTranslations;
 
-    const withoutCode = new Set(['Sans code', 'Without code']);
-
-    const filterButtonLocator = withoutCode.has(filterTranslation)
+    const filterButtonLocator = !filterTranslation
       ? this.page.getByRole('button', {
-          name: translations.timetable.noSpeedLimitTags,
+          name: translations.timetable.noSpeedLimitTagsShort,
         })
       : this.page.getByRole('button', { name: filterTranslation });
 
     await filterButtonLocator.click();
     await this.verifyTrainCount(expectedTrainCount);
     await filterButtonLocator.click();
-    await this.timetableFilterButton.click();
+    await this.timetableFilterButtonClose.click();
   }
 
   // Verifies that the imported train number is correct
@@ -154,7 +155,7 @@ class OperationalStudiesTimetablePage {
     };
 
     await this.clickValidityTrainFilterButton(validityFilters[validityFilter]);
-    await this.timetableFilterButton.click();
+    await this.timetableFilterButtonClose.click();
     await this.verifyTrainCount(expectedTrainCount);
   }
 
@@ -174,7 +175,7 @@ class OperationalStudiesTimetablePage {
     };
 
     await this.clickHonoredTrainFilterButton(honoredFilters[honoredFilter]);
-    await this.timetableFilterButton.click();
+    await this.timetableFilterButtonClose.click();
     await this.verifyTrainCount(expectedTrainCount);
   }
 
