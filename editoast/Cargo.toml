@@ -141,7 +141,7 @@ opentelemetry-otlp = { version = "0.16.0", default-features = false, features = 
   "grpc-tonic",
   "trace",
 ] }
-opentelemetry-semantic-conventions = "0.15.0"
+opentelemetry-semantic-conventions = "0.25.0"
 opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio", "trace"] }
 ordered-float = { version = "4.2.2", features = ["serde"] }
 osm_to_railjson = { path = "./osm_to_railjson" }

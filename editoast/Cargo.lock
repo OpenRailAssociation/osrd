@@ -1347,7 +1347,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry-datadog",
  "opentelemetry-otlp",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.25.0",
  "opentelemetry_sdk",
  "ordered-float",
  "osm_to_railjson",
@@ -2146,7 +2146,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.4.10",
+ "socket2 0.5.7",
  "tokio",
  "tower-service",
  "tracing",
@@ -2509,7 +2509,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e310b3a6b5907f99202fcdb4960ff45b93735d7c7d96b760fcff8db2dc0e103d"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -2889,7 +2889,7 @@ dependencies = [
  "once_cell",
  "opentelemetry",
  "opentelemetry-http",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.15.0",
  "opentelemetry_sdk",
  "reqwest",
  "rmp",
@@ -2946,6 +2946,12 @@ name = "opentelemetry-semantic-conventions"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1869fb4bb9b35c5ba8a1e40c9b128a7b4c010d07091e864a29da19e4fe2ca4d7"
+
+[[package]]
+name = "opentelemetry-semantic-conventions"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b8e442487022a943e2315740e443dc5ee95fd541c18f509a5a6251b408a9f95"
 
 [[package]]
 name = "opentelemetry_sdk"
