@@ -161,8 +161,8 @@ pub struct RunserverArgs {
     /// the superuser role is granted to all users.
     #[clap(long, env = "EDITOAST_ROLES_CONFIG")]
     pub roles_config: Option<PathBuf>,
-    #[derivative(Default(value = r#""http://osrd-osrdyne:4242/".into()"#))]
-    #[clap(long, env = "OSRDYNE_API_URL", default_value_t = String::from("http://osrd-osrdyne:4242/"))]
+    #[derivative(Default(value = r#""http://127.0.0.1:4242/".into()"#))]
+    #[clap(long, env = "OSRDYNE_API_URL", default_value_t = String::from("http://127.0.0.1:4242/"))]
     pub osrdyne_api_url: String,
 }
 
