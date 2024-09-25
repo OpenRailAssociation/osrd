@@ -6,10 +6,19 @@ import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
+import fr.sncf.osrd.sim_infra.api.SpeedLimitSource
+import fr.sncf.osrd.sim_infra.api.SpeedLimitSource.UnknownTag
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.SelfTypeHolder
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.rangeMapEntryToSpeedLimitProperty
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
+import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.Speed.Companion.toMetersPerSecond
+import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.math.min
 
 /**
@@ -27,14 +36,16 @@ fun computeMRSP(
     path: PathProperties,
     rollingStock: PhysicsRollingStock,
     addRollingStockLength: Boolean,
-    trainTag: String?
+    trainTag: String?,
+    safetySpeedRanges: DistanceRangeMap<Speed> = distanceRangeMapOf(),
 ): Envelope {
     return computeMRSP(
         path,
         rollingStock.getMaxSpeed(),
         rollingStock.getLength(),
         addRollingStockLength,
-        trainTag
+        trainTag,
+        safetySpeedRanges,
     )
 }
 
@@ -54,19 +65,11 @@ fun computeMRSP(
     rsMaxSpeed: Double,
     rsLength: Double,
     addRollingStockLength: Boolean,
-    trainTag: String?
+    trainTag: String?,
+    safetySpeedRanges: DistanceRangeMap<Speed> = distanceRangeMapOf(),
 ): Envelope {
     val builder = MRSPEnvelopeBuilder()
     val pathLength = toMeters(path.getLength())
-
-    // Add a limit corresponding to the hardware's maximum operational speed
-    builder.addPart(
-        EnvelopePart.generateTimes(
-            listOf(EnvelopeProfile.CONSTANT_SPEED, MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT),
-            doubleArrayOf(0.0, pathLength),
-            doubleArrayOf(rsMaxSpeed, rsMaxSpeed)
-        )
-    )
 
     val offset = if (addRollingStockLength) rsLength else 0.0
     val speedLimitProperties = path.getSpeedLimitProperties(trainTag)
@@ -84,6 +87,7 @@ fun computeMRSP(
         if (speedLimitProp.source != null) {
             attrs.add(speedLimitProp.source)
         }
+        if (attrs.any { it is UnknownTag }) attrs.add(HasMissingSpeedTag)
         if (speed != 0.0) // Add the envelope part corresponding to the restricted speed section
             builder.addPart(
                 EnvelopePart.generateTimes(
@@ -93,5 +97,87 @@ fun computeMRSP(
                 )
             )
     }
+
+    // Add a limit corresponding to the hardware's maximum operational speed
+    val attrs = listOf(EnvelopeProfile.CONSTANT_SPEED, MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT)
+    addSpeedSection(
+        builder,
+        0.meters,
+        pathLength.meters,
+        rsMaxSpeed.metersPerSecond,
+        attrs,
+        speedLimitProperties
+    )
+
+    // Add safety speeds
+    for (range in safetySpeedRanges) {
+        val speed = range.value
+        val attrs =
+            mutableListOf<SelfTypeHolder?>(
+                EnvelopeProfile.CONSTANT_SPEED,
+                MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT,
+                SpeedLimitSource.SafetyApproachSpeed,
+            )
+        addSpeedSection(
+            builder,
+            range.lower,
+            range.upper + offset.meters,
+            speed,
+            attrs,
+            speedLimitProperties
+        )
+    }
     return builder.build()
+}
+
+fun addSpeedSection(
+    builder: MRSPEnvelopeBuilder,
+    lower: Distance,
+    upper: Distance,
+    speed: Speed,
+    attrs: List<SelfTypeHolder?>,
+    propertyRangeMap: DistanceRangeMap<SpeedLimitProperty>,
+) {
+    val propsRanges = makeSpeedLimitAttributes(lower, upper, propertyRangeMap, attrs)
+    for (propsRange in propsRanges) {
+        builder.addPart(
+            EnvelopePart.generateTimes(
+                propsRange.value,
+                doubleArrayOf(propsRange.lower.meters, propsRange.upper.meters),
+                doubleArrayOf(speed.metersPerSecond, speed.metersPerSecond)
+            )
+        )
+    }
+}
+
+/**
+ * Build a range map of speed limit attributes, from base attribute list and a range map of
+ * properties. The goal is to pick important attributes that we want to forward to the envelope
+ * attributes no matter what. Specifically, unknown speed tag should always be carried over.
+ */
+fun makeSpeedLimitAttributes(
+    lower: Distance,
+    upper: Distance,
+    propertyRangeMap: DistanceRangeMap<SpeedLimitProperty>,
+    baseAttrs: List<SelfTypeHolder?>,
+): DistanceRangeMap<List<SelfTypeHolder?>> {
+    val result: DistanceRangeMap<List<SelfTypeHolder?>> =
+        distanceRangeMapOf(listOf(DistanceRangeMap.RangeMapEntry(lower, upper, baseAttrs)))
+
+    // Add important attributes from the old speed ranges
+    val attrsWithMissingRange = baseAttrs.toMutableList()
+    attrsWithMissingRange.add(HasMissingSpeedTag)
+    for (oldRange in propertyRangeMap.subMap(lower, upper)) {
+        if (oldRange.value.source is UnknownTag) {
+            result.put(oldRange.lower, oldRange.upper, attrsWithMissingRange)
+        }
+    }
+
+    return result
+}
+
+/** Envelope attribute flag, set if there is a missing speed tag in the range */
+data object HasMissingSpeedTag : SelfTypeHolder {
+    override val selfType: Class<out SelfTypeHolder>
+        get() = HasMissingSpeedTag::class.java
 }
