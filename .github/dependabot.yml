@@ -23,12 +23,14 @@ updates:
   - package-ecosystem: "npm"
     directory: "/front/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    groups:
+      all:
+        patterns:
+          - "*"
     commit-message:
       prefix: "front:"
-    # Security updates only:
-    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates#overriding-the-default-behavior-with-a-configuration-file
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 100
     labels:
       - "dependencies"
       - "area:front"
