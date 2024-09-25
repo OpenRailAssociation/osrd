@@ -39,7 +39,7 @@ public final class MRSPEnvelopeBuilder {
     public enum LimitKind implements SelfTypeHolder {
         SPEED_LIMIT,
         TRAIN_LIMIT,
-        ;
+        SAFETY_APPROACH_SPEED;
 
         @Override
         public @NotNull Class<? extends SelfTypeHolder> getSelfType() {

@@ -177,7 +177,7 @@ def test_mrsp_sources(
         "values": [
             {"speed": 27.778, "source": {"speed_limit_source_type": "given_train_tag", "tag": "E32C"}},
             {"speed": 22.222, "source": {"speed_limit_source_type": "fallback_tag", "tag": "MA100"}},
-            {"speed": 80, "source": None},
+            {"speed": 80, "source": {"speed_limit_source_type": "unknown_tag"}},
         ],
     }
 
@@ -188,7 +188,7 @@ def test_mrsp_sources(
         "values": [
             {"speed": 39.444, "source": {"speed_limit_source_type": "unknown_tag"}},
             {"speed": 31.111, "source": {"speed_limit_source_type": "unknown_tag"}},
-            {"speed": 80, "source": None},
+            {"speed": 80, "source": {"speed_limit_source_type": "unknown_tag"}},
         ],
     }
 

@@ -7,7 +7,6 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
-import fr.sncf.osrd.sim_infra.api.SpeedLimitSource
 import fr.sncf.osrd.sim_infra.api.SpeedLimitSource.UnknownTag
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.SelfTypeHolder
@@ -37,7 +36,7 @@ fun computeMRSP(
     rollingStock: PhysicsRollingStock,
     addRollingStockLength: Boolean,
     trainTag: String?,
-    safetySpeedRanges: DistanceRangeMap<Speed> = distanceRangeMapOf(),
+    safetySpeedRanges: DistanceRangeMap<Speed>? = null,
 ): Envelope {
     return computeMRSP(
         path,
@@ -66,7 +65,7 @@ fun computeMRSP(
     rsLength: Double,
     addRollingStockLength: Boolean,
     trainTag: String?,
-    safetySpeedRanges: DistanceRangeMap<Speed> = distanceRangeMapOf(),
+    safetySpeedRanges: DistanceRangeMap<Speed>? = null,
 ): Envelope {
     val builder = MRSPEnvelopeBuilder()
     val pathLength = toMeters(path.getLength())
@@ -110,22 +109,23 @@ fun computeMRSP(
     )
 
     // Add safety speeds
-    for (range in safetySpeedRanges) {
-        val speed = range.value
-        val attrs =
-            mutableListOf<SelfTypeHolder?>(
-                EnvelopeProfile.CONSTANT_SPEED,
-                MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT,
-                SpeedLimitSource.SafetyApproachSpeed,
+    if (safetySpeedRanges != null) {
+        for (range in safetySpeedRanges) {
+            val speed = range.value
+            val newAttrs =
+                listOf<SelfTypeHolder?>(
+                    EnvelopeProfile.CONSTANT_SPEED,
+                    MRSPEnvelopeBuilder.LimitKind.SAFETY_APPROACH_SPEED,
+                )
+            addSpeedSection(
+                builder,
+                range.lower,
+                Distance.min(range.upper + offset.meters, pathLength.meters),
+                speed,
+                newAttrs,
+                speedLimitProperties
             )
-        addSpeedSection(
-            builder,
-            range.lower,
-            range.upper + offset.meters,
-            speed,
-            attrs,
-            speedLimitProperties
-        )
+        }
     }
     return builder.build()
 }
@@ -169,6 +169,9 @@ fun makeSpeedLimitAttributes(
     attrsWithMissingRange.add(HasMissingSpeedTag)
     for (oldRange in propertyRangeMap.subMap(lower, upper)) {
         if (oldRange.value.source is UnknownTag) {
+            // TODO: ideally, it shouldn't be this method's job to figure out which attributes
+            // should be kept. Eventually we may look into reworking this, either with warnings or
+            // by making the builder handle this
             result.put(oldRange.lower, oldRange.upper, attrsWithMissingRange)
         }
     }
@@ -176,7 +179,14 @@ fun makeSpeedLimitAttributes(
     return result
 }
 
-/** Envelope attribute flag, set if there is a missing speed tag in the range */
+/**
+ * Envelope attribute flag, set if there is a missing speed tag in the range. This flag is carries
+ * over when building the MRSP. The "speed limit source" tags only refer to the enforced speed at a
+ * section of the MRSP, but this tag is always kept even if the actual enforced speed limit source
+ * is different. It shouldn't be interpreted as an attribute of the envelope part, but rather as a
+ * warning that affects a section of the MRSP. See
+ * https://github.com/OpenRailAssociation/osrd/issues/9281
+ */
 data object HasMissingSpeedTag : SelfTypeHolder {
     override val selfType: Class<out SelfTypeHolder>
         get() = HasMissingSpeedTag::class.java
