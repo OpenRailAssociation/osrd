@@ -147,7 +147,7 @@ const TimesStopsInput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
         startTime,
         TableType.Input
       );
-      setRows(updateDaySinceDeparture(suggestedOPs, startTime, true));
+      setRows(updateDaySinceDeparture(suggestedOPs, startTime, { keepFirstIndexArrival: true }));
     }
   }, [allWaypoints, pathSteps, startTime]);
 

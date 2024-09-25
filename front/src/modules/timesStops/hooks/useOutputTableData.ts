@@ -148,7 +148,7 @@ function useOutputTableData(
       startTime,
       TableType.Output
     );
-    return updateDaySinceDeparture(formattedWaypoints, startTime, true);
+    return updateDaySinceDeparture(formattedWaypoints, startTime, { keepFirstIndexArrival: true });
   }, [simulatedTrain, operationalPoints, selectedTrainSchedule, pathStepsWithOpPointIndices]);
 
   return outputTableData;

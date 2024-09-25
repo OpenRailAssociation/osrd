@@ -228,7 +228,9 @@ describe('updateDaySinceDeparture', () => {
         },
       ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T10:00:00';
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -260,7 +262,9 @@ describe('updateDaySinceDeparture', () => {
         },
       ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T10:00:00';
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -302,7 +306,9 @@ describe('updateDaySinceDeparture', () => {
         },
       ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T23:50:00';
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -355,7 +361,9 @@ describe('updateDaySinceDeparture', () => {
         },
       ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T23:50:00';
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -418,7 +426,9 @@ describe('updateDaySinceDeparture', () => {
         },
       ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T23:50:00';
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
       const expected = [
         {
           opId: 'd9c92cb4',
@@ -496,7 +506,9 @@ describe('updateDaySinceDeparture', () => {
         },
       ] as TimesStopsInputRow[];
       const startTime = '2024-08-13T23:50:00';
-      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, true);
+      const result = updateDaySinceDeparture(TimesStopsInputRows, startTime, {
+        keepFirstIndexArrival: true,
+      });
       const expected = [
         {
           opId: 'd9c92cb4',
