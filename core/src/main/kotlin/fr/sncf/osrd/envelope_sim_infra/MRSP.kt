@@ -87,7 +87,8 @@ fun computeMRSP(
             attrs.add(speedLimitProp.source)
         }
         if (attrs.any { it is UnknownTag }) attrs.add(HasMissingSpeedTag)
-        if (speed != 0.0) // Add the envelope part corresponding to the restricted speed section
+        if (speed != 0.0) {
+            // Add the envelope part corresponding to the restricted speed section
             builder.addPart(
                 EnvelopePart.generateTimes(
                     attrs,
@@ -95,6 +96,7 @@ fun computeMRSP(
                     doubleArrayOf(speed, speed)
                 )
             )
+        }
     }
 
     // Add a limit corresponding to the hardware's maximum operational speed
