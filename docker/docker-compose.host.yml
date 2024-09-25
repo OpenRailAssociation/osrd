@@ -17,7 +17,7 @@ services:
     environment:
       EDITOAST_PORT: 8090
       OSRD_BACKEND_URL: "http://localhost:8080"
-      OSRDYNE_API_URL: "http://127.0.0.1:4242"
+      OSRDYNE_API_URL: "http://localhost:4242"
       REDIS_URL: "redis://localhost"
       DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
       TELEMETRY_ENDPOINT: "http://localhost:4317"
