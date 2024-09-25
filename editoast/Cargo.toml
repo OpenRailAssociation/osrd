@@ -130,7 +130,7 @@ json-patch = { version = "2.0.0", default-features = false, features = [
 lapin = "2.5.0"
 mime = "0.3.17"
 mvt.workspace = true
-opentelemetry = { version = "0.23.0", default-features = false, features = [
+opentelemetry = { version = "0.25.0", default-features = false, features = [
   "trace",
 ] }
 opentelemetry-datadog = { version = "0.11.0", default-features = false, features = [
