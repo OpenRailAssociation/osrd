@@ -138,7 +138,7 @@ services:
     ports: ["4000:4000"]
 
   osrd-images:
-    image: ghcr.io/openrailassociation/osrd-stable/osrd-images:${TAG_IMAGES-latest}
+    image: ghcr.io/openrailassociation/osrd-stable/osrd-images:${TAG_IMAGES-v1.0.0}
     container_name: osrd-images
     restart: unless-stopped
     environment:
