@@ -34,6 +34,7 @@ type TimetableToolbarProps = {
   setSelectedTrainIds: (selectedTrainIds: number[]) => void;
   removeTrains: (trainIds: number[]) => void;
   trainSchedules: TrainScheduleResult[];
+  isInSelection: boolean;
 };
 
 const TimetableToolbar = ({
@@ -46,6 +47,7 @@ const TimetableToolbar = ({
   setSelectedTrainIds,
   removeTrains,
   trainSchedules,
+  isInSelection,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
   const dispatch = useAppDispatch();
@@ -214,7 +216,11 @@ const TimetableToolbar = ({
         )}
       </div>
       {trainSchedules.length > 0 && (
-        <div>
+        <div
+          className={cx('sticky-filter', {
+            'selection-mode-open': isInSelection,
+          })}
+        >
           {!isFilterPanelOpen ? (
             <div className="filter">
               <button

@@ -78,7 +78,7 @@ test.describe('Verifying that all elements in the train schedule are loaded corr
       { code: 'MA100', count: 7 },
       { code: 'HLP', count: 3 },
       { code: 'E32C', count: 1 },
-      { code: 'Without code', count: 9 },
+      { code: null, count: 9 },
     ];
 
     for (const filter of compositionFilters) {

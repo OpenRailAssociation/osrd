@@ -139,6 +139,7 @@ const Timetable = ({
           setSelectedTrainIds={setSelectedTrainIds}
           removeTrains={removeAndUnselectTrains}
           trainSchedules={trainSchedules}
+          isInSelection={selectedTrainIds.length > 0}
         />
         {trainsDurationsIntervals &&
           displayedTrainSchedules.map((train: TrainScheduleWithDetails) => (

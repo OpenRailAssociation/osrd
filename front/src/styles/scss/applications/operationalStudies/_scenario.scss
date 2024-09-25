@@ -517,22 +517,23 @@
         }
 
         .filter-panel {
+          padding: 0.4375rem 1.25rem 1.4375rem 0.4375rem;
           background-color: var(--ambiantB5);
-          padding: 0 1.438rem 0.25rem 0.313rem;
           border-top: solid 0.063rem var(--white);
           border-bottom: solid 0.063rem rgba(0, 0, 0, 0.25);
           display: flex;
           flex-direction: column;
-          align-items: end;
+          position: relative;
 
           .grid-template {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.625rem;
           }
 
           .close-filter {
-            transform: translateY(1rem);
+            position: absolute;
+            right: 0.75rem;
+            top: 0.5rem;
             z-index: 1;
           }
 
@@ -547,7 +548,8 @@
           }
 
           .compositions-code {
-            padding: 0.625rem 0.813rem 1rem 1rem;
+            align-self: start;
+            padding: 0.625rem 0 0rem 1rem;
             label {
               height: 1.5rem;
               line-height: 1.5rem;
@@ -559,7 +561,7 @@
             .composition-tag-filter {
               display: flex;
               flex-wrap: wrap;
-              gap: 0.25rem;
+              gap: 0.75rem;
 
               button {
                 border-radius: 0.25rem;
@@ -570,7 +572,6 @@
                 text-align: left;
                 line-height: 1.25rem;
                 padding: 0.125rem 0.5rem;
-                margin: 0 0.75rem 0.5rem 0;
               }
 
               button:hover {
