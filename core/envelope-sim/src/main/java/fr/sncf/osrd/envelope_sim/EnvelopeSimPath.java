@@ -9,7 +9,6 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.envelope_sim.electrification.Electrification;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 public final class EnvelopeSimPath implements PhysicsPath {
@@ -34,7 +33,7 @@ public final class EnvelopeSimPath implements PhysicsPath {
      * Mapping from rolling stock power class to mapping describing electrification on this path
      * (without restrictions)
      */
-    private final HashMap<String, ImmutableRangeMap<Double, Electrification>> electrificationMapByPowerClass;
+    private final Map<String, ImmutableRangeMap<Double, Electrification>> electrificationMapByPowerClass;
 
     /**
      * Creates a new envelope path, which can be used to perform envelope simulations.
@@ -51,7 +50,7 @@ public final class EnvelopeSimPath implements PhysicsPath {
             double[] gradePositions,
             double[] gradeValues,
             ImmutableRangeMap<Double, Electrification> defaultElectrificationMap,
-            HashMap<String, ImmutableRangeMap<Double, Electrification>> electrificationMapByPowerClass) {
+            Map<String, ImmutableRangeMap<Double, Electrification>> electrificationMapByPowerClass) {
         assert gradePositions.length == gradeValues.length + 1;
         assert gradePositions[0] == 0.0;
         assert gradePositions[gradePositions.length - 1] == length;

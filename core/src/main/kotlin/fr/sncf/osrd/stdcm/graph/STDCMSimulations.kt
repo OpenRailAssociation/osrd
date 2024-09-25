@@ -15,7 +15,7 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.envelope_sim_infra.MRSP
+import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
@@ -114,7 +114,7 @@ fun simulateBlock(
     val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
     val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
     val context = build(rollingStock, envelopePath, timeStep, comfort)
-    val mrsp = MRSP.computeMRSP(path, rollingStock, false, trainTag)
+    val mrsp = computeMRSP(path, rollingStock, false, trainTag)
     return try {
         val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp)
         MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope)

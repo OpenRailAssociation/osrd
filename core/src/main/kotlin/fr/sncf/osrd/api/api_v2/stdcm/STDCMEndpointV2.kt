@@ -13,7 +13,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.envelope_sim_infra.MRSP
+import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
@@ -166,7 +166,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                 reportTrain.energyConsumption,
                 reportTrain.pathItemTimes
             )
-        val speedLimits = MRSP.computeMRSP(path.trainPath, rollingStock, false, speedLimitTag)
+        val speedLimits = computeMRSP(path.trainPath, rollingStock, false, speedLimitTag)
 
         // All simulations are the same for now
         return SimulationSuccess(

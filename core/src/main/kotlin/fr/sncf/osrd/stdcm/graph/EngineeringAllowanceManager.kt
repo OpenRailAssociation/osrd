@@ -13,7 +13,7 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.envelope_sim_infra.MRSP.computeMRSP
+import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.units.meters

@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim_infra
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
@@ -216,20 +215,16 @@ class MRSPTest {
     @ParameterizedTest
     @MethodSource("testComputeMRSPArgs")
     fun testComputeMRSP(
-        path: PathProperties?,
-        rollingStock: RollingStock?,
+        path: PathProperties,
+        rollingStock: RollingStock,
         addRollingStockLength: Boolean,
         trainTag: String?,
         expectedEnvelope: Envelope?
     ) {
-        val mrsp = MRSP.computeMRSP(path, rollingStock, addRollingStockLength, trainTag)
+        val mrsp = computeMRSP(path, rollingStock, addRollingStockLength, trainTag)
         EnvelopeTestUtils.assertEquals(expectedEnvelope, mrsp, 0.001)
     }
 
-    @SuppressFBWarnings(
-        value = ["UPM_UNCALLED_PRIVATE_METHOD"],
-        justification = "called implicitly by MethodSource"
-    )
     private fun testComputeMRSPArgs(): Stream<Arguments> {
         val pathLength = toMeters(path!!.getLength())
         return Stream.of(

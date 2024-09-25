@@ -3,7 +3,7 @@ package fr.sncf.osrd.utils
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.envelope_sim_infra.MRSP
+import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
@@ -35,7 +35,7 @@ data class CachedBlockMRSPBuilder(
     fun getMRSP(block: BlockId): Envelope {
         return mrspCache.computeIfAbsent(block) {
             val pathProps = makePathProps(blockInfra, rawInfra, block, routes = listOf())
-            MRSP.computeMRSP(pathProps, rsMaxSpeed, rsLength, false, null)
+            computeMRSP(pathProps, rsMaxSpeed, rsLength, false, null)
         }
     }
 
