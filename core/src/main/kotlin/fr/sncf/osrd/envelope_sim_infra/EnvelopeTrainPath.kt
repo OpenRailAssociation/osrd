@@ -12,7 +12,6 @@ import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.buildElectrificationMap
 import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
-import java.util.function.BiFunction
 
 object EnvelopeTrainPath {
     /** Create EnvelopePath from a path and a ElectricalProfileMapping */
@@ -59,13 +58,12 @@ object EnvelopeTrainPath {
         val res = mutableMapOf<String, DistanceRangeMap<Electrification>>()
         for (entry in profileMap.entries) {
             val electrificationMapWithProfiles = electrificationMap.clone()
-            electrificationMapWithProfiles.updateMap<String>(
-                entry.value,
-                BiFunction { obj: Electrification, profile: String ->
-                    obj.withElectricalProfile(profile)
-                }
-            )
-            res.put(entry.key, electrificationMapWithProfiles)
+            electrificationMapWithProfiles.updateMap(entry.value) {
+                obj: Electrification,
+                profile: String ->
+                obj.withElectricalProfile(profile)
+            }
+            res[entry.key] = electrificationMapWithProfiles
         }
         return res
     }
@@ -76,9 +74,9 @@ object EnvelopeTrainPath {
     ): ImmutableRangeMap<Double, Electrification> {
         val res = TreeRangeMap.create<Double, Electrification>()
         for (entry in map.asList()) {
-            res.put(Range.closed<Double>(toMeters(entry.lower), toMeters(entry.upper)), entry.value)
+            res.put(Range.closed(toMeters(entry.lower), toMeters(entry.upper)), entry.value)
         }
-        return ImmutableRangeMap.copyOf<Double, Electrification>(res)
+        return ImmutableRangeMap.copyOf(res)
     }
 
     /** Converts an ElectrificationMapByPowerClass as a DistanceRangeMap into a RangeMap */
@@ -87,7 +85,7 @@ object EnvelopeTrainPath {
     ): Map<String, ImmutableRangeMap<Double, Electrification>> {
         val res = mutableMapOf<String, ImmutableRangeMap<Double, Electrification>>()
         for (entry in electrificationMapByPowerClass.entries) {
-            res.put(entry.key, convertElectrificationMap(entry.value))
+            res[entry.key] = convertElectrificationMap(entry.value)
         }
         return res
     }
