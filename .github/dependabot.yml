@@ -3,7 +3,11 @@ updates:
   - package-ecosystem: "cargo"
     directory: "/editoast/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    groups:
+      opentelemetry:
+        patterns:
+          - "*opentelemetry*"
     commit-message:
       prefix: "editoast:"
     open-pull-requests-limit: 100
