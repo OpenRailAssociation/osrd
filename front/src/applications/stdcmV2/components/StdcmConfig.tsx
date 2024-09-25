@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -15,10 +15,8 @@ import { extractHHMM } from 'utils/date';
 
 import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
-import StdcmLoader from './StdcmLoader';
 import StdcmOrigin from './StdcmOrigin';
 import StdcmSimulationParams from './StdcmSimulationParams';
-import StdcmStatusBanner from './StdcmStatusBanner';
 import StdcmVias from './StdcmVias';
 import StdcmWarningBox from './StdcmWarningBox';
 import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../types';
@@ -30,8 +28,6 @@ import checkStdcmConfigErrors from '../utils/checkStdcmConfigErrors';
  * SelectedSimulation is the simulation that is currently selected from the list of simulations.
  */
 type StdcmConfigProps = {
-  cancelStdcmRequest: () => void;
-  isCalculationFailed: boolean;
   isDebugMode: boolean;
   isPending: boolean;
   launchStdcmRequest: () => Promise<void>;
@@ -39,12 +35,9 @@ type StdcmConfigProps = {
   selectedSimulation?: StdcmSimulation;
   setCurrentSimulationInputs: React.Dispatch<React.SetStateAction<StdcmSimulationInputs>>;
   showBtnToLaunchSimulation: boolean;
-  showStatusBanner: boolean;
 };
 
 const StdcmConfig = ({
-  cancelStdcmRequest,
-  isCalculationFailed,
   isDebugMode,
   isPending,
   launchStdcmRequest,
@@ -52,10 +45,8 @@ const StdcmConfig = ({
   selectedSimulation,
   setCurrentSimulationInputs,
   showBtnToLaunchSimulation,
-  showStatusBanner,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
-  const loaderRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useAppDispatch();
   const {
@@ -103,12 +94,6 @@ const StdcmConfig = ({
   };
 
   useEffect(() => {
-    if (isPending) {
-      loaderRef?.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [isPending]);
-
-  useEffect(() => {
     const isPathfindingFailed = pathfindingState.error !== '';
     let formErrorsStatus = checkStdcmConfigErrors(isPathfindingFailed, origin, destination);
     if (formErrorsStatus?.errorType === StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED) {
@@ -143,6 +128,7 @@ const StdcmConfig = ({
           <StdcmSimulationParams {...{ disabled, projectID, studyID, scenarioID }} />
         </div>
       )}
+
       <div className="d-flex">
         <div className="stdcm-v2-simulation-inputs">
           <div className="stdcm-v2-consist-container">
@@ -159,7 +145,6 @@ const StdcmConfig = ({
             <div
               className={cx('stdcm-v2-launch-request', {
                 'wizz-effect': !pathfindingState.done || formErrors,
-                'pb-5': !pathfindingState.error && showBtnToLaunchSimulation,
               })}
             >
               {showBtnToLaunchSimulation && (
@@ -173,8 +158,6 @@ const StdcmConfig = ({
                 />
               )}
             </div>
-            {isPending && <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />}
-            {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
           </div>
         </div>
 
