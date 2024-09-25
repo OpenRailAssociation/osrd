@@ -1,4 +1,5 @@
 pub mod conflict_detection;
+pub mod conflict_projection;
 mod http_client;
 pub mod infra_loading;
 #[cfg(test)]

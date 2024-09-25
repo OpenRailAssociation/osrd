@@ -1,4 +1,5 @@
 mod authz;
+pub mod conflicts;
 mod documents;
 pub mod electrical_profiles;
 pub mod infra;
@@ -68,6 +69,7 @@ crate::routes! {
     "/version/core" => core_version,
 
     &authz,
+    &conflicts,
     &documents,
     &electrical_profiles,
     &infra,
