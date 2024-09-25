@@ -18,6 +18,10 @@ updates:
     directory: "/gateway/"
     schedule:
       interval: "daily"
+    groups:
+      opentelemetry:
+        patterns:
+          - "*opentelemetry*"
     commit-message:
       prefix: "gateway:"
     open-pull-requests-limit: 100
