@@ -10,7 +10,7 @@
   cursor: default !important;
 
   .stdcm-v2__body {
-    padding: 2rem 2rem 4rem;
+    padding: 2rem 2rem 3rem;
     background-color: rgb(239, 243, 245);
     display: flex;
     flex-direction: column;
@@ -69,10 +69,10 @@
         }
         .stdcm-v2-consist__properties {
           .feed-back:nth-child(1) {
-            width: 7.4375rem;
+            width: 7.75rem;
           }
           .feed-back:nth-child(2) {
-            width: 7.9375rem;
+            width: 8.25rem;
           }
           * > .base-label-wrapper > label {
             margin-bottom: 0;
@@ -81,11 +81,11 @@
       }
 
       .stdcm-v2__separator {
-        border-radius: 4px;
+        border-radius: 0.25rem;
         background-color: rgba(0, 0, 0, 0.05);
-        width: 6px;
-        height: 280px;
-        margin: 12px 0;
+        width: 0.375rem;
+        height: 17.5rem;
+        margin: 0.75rem 0;
       }
       .stdcm-v2-simulation-itinerary {
         display: flex;
@@ -94,6 +94,10 @@
         width: 28.125rem;
         position: relative;
         align-items: center;
+
+        & > div:not(:nth-last-child(-n + 2)) {
+          margin-bottom: 2rem;
+        }
 
         > div {
           width: 100%;
@@ -150,9 +154,9 @@
         .warning-box {
           border-radius: 0.5rem;
           box-shadow:
-            0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
-            0px 0px 0px 5px rgba(234, 167, 43, 1) inset,
-            0px 3px 7px -3px rgba(125, 82, 30, 0.55);
+            0rem 0rem 0rem 0.25rem rgba(255, 255, 255, 1) inset,
+            0rem 0rem 0rem 0.3125rem rgba(234, 167, 43, 1) inset,
+            0rem 0.1875rem 0.4375rem -0.1875rem rgba(125, 82, 30, 0.55);
           background-color: rgba(253, 245, 225, 1);
           color: #7d521e;
           display: flex;
@@ -163,7 +167,7 @@
           span {
             color: #eaa72b;
             align-self: center;
-            margin-bottom: 6px;
+            margin-bottom: 0.375rem;
           }
         }
 
@@ -202,52 +206,6 @@
             transform: rotate(0deg);
           }
         }
-
-        .simulation-status-banner {
-          position: absolute;
-          bottom: -6.5rem;
-          z-index: 1;
-          width: 33.125rem;
-
-          .status {
-            display: flex;
-            font-weight: 400;
-            letter-spacing: 0px;
-            text-align: center;
-            justify-content: center;
-            color: rgb(11, 114, 60);
-            padding-top: 1.438rem;
-            font-size: 1.5rem;
-            line-height: 2rem;
-            height: 5rem;
-            border-radius: 0.5rem;
-            background-color: rgb(230, 247, 238);
-            box-shadow:
-              0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
-              0px 0px 0px 5px rgb(60, 202, 128) inset,
-              0px 3px 7px -3px rgba(11, 114, 60, 0.4);
-
-            &.failed {
-              background-color: rgba(255, 238, 237, 1);
-              color: rgba(217, 28, 28);
-              box-shadow:
-                0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
-                0px 0px 0px 5px rgba(255, 104, 104, 1) inset,
-                0px 3px 7px -3px rgba(217, 28, 28, 0.4);
-            }
-          }
-
-          .error-message {
-            bottom: -5.875rem;
-            position: absolute;
-            color: rgba(49, 46, 43, 1);
-            font-size: 1rem;
-            font-weight: 400;
-            letter-spacing: 0;
-            text-align: left;
-            line-height: 1.5rem;
-          }
-        }
       }
     }
 
@@ -255,12 +213,54 @@
       border-radius: 0.5rem;
       border: 0.063rem solid rgba(255, 255, 255, 1);
       box-shadow:
-        0px 0px 0px 0.125rem rgba(255, 255, 255, 0.75) inset,
-        0px 0px 0px 0.0625rem rgba(0, 0, 0, 0.25) inset;
-      margin-left: 2rem;
+        0rem 0rem 0rem 2px rgba(255, 255, 255, 0.75) inset,
+        0rem 0rem 0rem 1px rgba(0, 0, 0, 0.25) inset;
+      margin-left: 3rem;
       width: 100%;
       min-width: 28.125rem;
       height: calc(100vh - 4rem);
+    }
+  }
+
+  .simulation-status-banner {
+    .banner-content {
+      padding: 0 0 1rem 21.125rem;
+      background: linear-gradient(180deg, rgba(239, 243, 245) 2.5rem, rgba(233, 239, 242) 2.5rem);
+      .status {
+        width: 34.125rem;
+        display: flex;
+        font-weight: 400;
+        letter-spacing: 0rem;
+        text-align: center;
+        justify-content: center;
+        color: rgb(11, 114, 60);
+        padding-top: 1.438rem;
+        font-size: 1.5rem;
+        line-height: 2rem;
+        height: 5rem;
+        border-radius: 0.5rem;
+        background-color: rgb(230, 247, 238);
+        box-shadow:
+          0rem 0rem 0rem 0.25rem rgba(255, 255, 255, 1) inset,
+          0rem 0rem 0rem 0.3125rem rgb(60, 202, 128) inset,
+          0rem 0.1875rem 0.4375rem -0.1875rem rgba(11, 114, 60, 0.4);
+
+        &.failed {
+          background-color: rgba(255, 238, 237, 1);
+          color: rgba(217, 28, 28);
+          box-shadow:
+            0rem 0rem 0rem 0.25rem rgba(255, 255, 255, 1) inset,
+            0rem 0rem 0rem 0.3125rem rgba(255, 104, 104, 1) inset,
+            0rem 0.1875rem 0.4375rem -0.1875rem rgba(217, 28, 28, 0.4);
+        }
+      }
+
+      .error-message {
+        padding-top: 1.375rem;
+        max-width: 34.125rem;
+        color: rgba(49, 46, 43, 1);
+        line-height: 1.5rem;
+      }
     }
   }
 }

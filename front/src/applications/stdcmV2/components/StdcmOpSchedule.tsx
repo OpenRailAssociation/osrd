@@ -116,7 +116,7 @@ const StdcmOpSchedule = ({
         />
       </div>
       {opScheduleTimeType === 'preciseTime' && (
-        <div className="d-flex">
+        <div className="d-flex pl-2 pr-1">
           {/* TODO: Remove empty onChange events once we fix the warning on ui-core side */}
           <DatePicker
             inputProps={{

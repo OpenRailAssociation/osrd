@@ -32,7 +32,7 @@ export default function SpeedLimitByTagSelector({
   if (!speedLimitsTagsList.length) return null;
 
   return (
-    <div className="osrd-config-item mb-2">
+    <div className="osrd-config-item mb-3">
       <div
         className={cx('osrd-config-item-container', {
           'd-flex align-items-center gap-10': condensed,

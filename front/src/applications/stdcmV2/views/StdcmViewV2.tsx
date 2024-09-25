@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import { isEqual, isNil } from 'lodash';
 
@@ -12,7 +12,9 @@ import { replaceElementAtIndex } from 'utils/array';
 import StdcmConfig from '../components/StdcmConfig';
 import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
 import StdcmHeader from '../components/StdcmHeader';
+import StdcmLoader from '../components/StdcmLoader';
 import StdcmResults from '../components/StdcmResults';
+import StdcmStatusBanner from '../components/StdcmStatusBanner';
 import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';
 import type { StdcmSimulation, StdcmSimulationInputs } from '../types';
 
@@ -47,6 +49,7 @@ const StdcmViewV2 = () => {
   const selectedSimulation = simulationsList[selectedSimulationIndex];
   const isCalculationFailed = isRejected && !isStdcmResultsEmpty;
   const showResults = !isPending && (showStatusBanner || simulationsList.length > 0);
+  const loaderRef = useRef<HTMLDivElement>(null);
 
   const handleRetainSimulation = () => setRetainedSimulationIndex(selectedSimulationIndex);
 
@@ -155,6 +158,12 @@ const StdcmViewV2 = () => {
     }
   }, [simulationsList]);
 
+  useEffect(() => {
+    if (isPending) {
+      loaderRef?.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [isPending]);
+
   // If we've got an error during the loading of the stdcm env which is not the "no config error" message,
   // we let the error boundary manage it
   if (error && error.message !== NO_CONFIG_FOUND_MSG) throw error;
@@ -168,17 +177,17 @@ const StdcmViewV2 = () => {
       ) : (
         <div>
           <StdcmConfig
-            cancelStdcmRequest={cancelStdcmRequest}
-            isCalculationFailed={isCalculationFailed}
-            isDebugMode={isDebugMode}
-            isPending={isPending}
-            launchStdcmRequest={launchStdcmRequest}
-            retainedSimulationIndex={retainedSimulationIndex}
             selectedSimulation={selectedSimulation}
-            setCurrentSimulationInputs={setCurrentSimulationInputs}
+            isPending={isPending}
+            isDebugMode={isDebugMode}
             showBtnToLaunchSimulation={showBtnToLaunchSimulation}
-            showStatusBanner={showStatusBanner}
+            retainedSimulationIndex={retainedSimulationIndex}
+            launchStdcmRequest={launchStdcmRequest}
+            setCurrentSimulationInputs={setCurrentSimulationInputs}
           />
+
+          {isPending && <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />}
+          {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
 
           {showResults && (
             <div className="stdcm-v2-results">

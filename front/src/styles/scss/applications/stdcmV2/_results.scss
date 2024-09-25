@@ -1,19 +1,7 @@
 .stdcm-v2-results {
   background-color: rgb(233, 239, 242);
-  padding: 1.25rem 2rem 10rem 2rem;
+  padding: 1.8125rem 2rem 10rem 2rem;
   position: relative;
-
-  .error-message {
-    display: flex;
-    width: 34.125rem;
-    margin: 1.375rem 0 3.438rem 21.125rem;
-    color: rgba(49, 46, 43, 1);
-    font-size: 1rem;
-    font-weight: 400;
-    letter-spacing: 0;
-    text-align: left;
-    line-height: 1.5rem;
-  }
 
   .simulation-navigator {
     position: relative;
@@ -22,7 +10,6 @@
     font-size: 1.125rem;
     line-height: 1.5rem;
     margin-bottom: 2.25rem;
-    margin-top: 4.063rem;
 
     &.with-error-status {
       margin-top: 10rem;

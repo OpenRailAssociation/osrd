@@ -21,7 +21,7 @@
     }
   },
   "leaveAt": "Partir à {{ time }}",
-  "loaderImageLegend": "La ligne TGV Nord",
+  "loaderImageLegend": "Vue matinale du relais de locomotives du dépôt du Bourget",
   "noConfigurationFound": {
     "title": "Un problème de configuration vous empêche de faire une recherche",
     "text": "Veuillez contacter l'équipe de maintenance pour qu'elle puisse vous remettre sur les rails."
