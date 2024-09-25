@@ -9,7 +9,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.envelope_sim_infra.MRSP
+import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
@@ -119,7 +119,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         stopAtEnd: Boolean,
     ): Envelope {
         val context = build(rollingStock, physicsPath, timeStep, comfort)
-        val mrsp = MRSP.computeMRSP(trainPath, rollingStock, false, trainTag)
+        val mrsp = computeMRSP(trainPath, rollingStock, false, trainTag)
         val stopPositions = stops.map { it.position }.toMutableList()
         if (stopAtEnd) stopPositions.add(physicsPath.length)
         val maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stopPositions.toDoubleArray(), mrsp)

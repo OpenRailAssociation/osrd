@@ -23,7 +23,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.envelope_sim_infra.MRSP
+import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
@@ -64,8 +64,8 @@ fun runStandaloneSimulation(
     pathItemPositions: List<Offset<Path>>
 ): SimulationSuccess {
     // MRSP & SpeedLimits
-    val mrsp = MRSP.computeMRSP(pathProps, rollingStock, true, speedLimitTag)
-    val speedLimits = MRSP.computeMRSP(pathProps, rollingStock, false, speedLimitTag)
+    val mrsp = computeMRSP(pathProps, rollingStock, true, speedLimitTag)
+    val speedLimits = computeMRSP(pathProps, rollingStock, false, speedLimitTag)
 
     // Build paths and contexts
     val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, pathProps, electricalProfileMap)

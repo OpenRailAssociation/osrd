@@ -7,7 +7,7 @@ import fr.sncf.osrd.api.pathfinding.convertPathfindingResult
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
-import fr.sncf.osrd.envelope_sim_infra.MRSP
+import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser
@@ -89,7 +89,7 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
             // Build the response
             val simResult = StandaloneSimResult()
             simResult.speedLimits.add(
-                ResultEnvelopePoint.from(MRSP.computeMRSP(res.trainPath, rollingStock, false, tag))
+                ResultEnvelopePoint.from(computeMRSP(res.trainPath, rollingStock, false, tag))
             )
             simResult.baseSimulations.add(
                 run(
