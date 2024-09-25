@@ -3,7 +3,6 @@ package fr.sncf.osrd.standalone_sim;
 import static fr.sncf.osrd.api.pathfinding.PathPropUtilsKt.makeChunkPath;
 import static fr.sncf.osrd.envelope_sim_infra.MRSPKt.computeMRSP;
 import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathPropertiesWithRouteNames;
-import static fr.sncf.osrd.utils.DistanceRangeMapKt.distanceRangeMapOf;
 
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.api.FullInfra;
@@ -62,10 +61,8 @@ public class StandaloneSim {
                 var rollingStock = trainSchedule.rollingStock;
 
                 // MRSP & SpeedLimits
-                var mrsp = computeMRSP(
-                        trainPath, rollingStock, true, trainSchedule.tag, distanceRangeMapOf(new ArrayList<>()));
-                var speedLimits = computeMRSP(
-                        trainPath, rollingStock, false, trainSchedule.tag, distanceRangeMapOf(new ArrayList<>()));
+                var mrsp = computeMRSP(trainPath, rollingStock, true, trainSchedule.tag, null);
+                var speedLimits = computeMRSP(trainPath, rollingStock, false, trainSchedule.tag, null);
                 mrsp = driverBehaviour.applyToMRSP(mrsp);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 

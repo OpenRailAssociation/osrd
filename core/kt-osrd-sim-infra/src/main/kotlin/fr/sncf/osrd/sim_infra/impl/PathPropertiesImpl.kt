@@ -20,7 +20,9 @@ data class ChunkPath(
     val chunks: DirStaticIdxList<TrackChunk>,
     val beginOffset: Offset<Path>,
     val endOffset: Offset<Path>
-)
+) {
+    val length: Distance = endOffset.distance - beginOffset.distance
+}
 
 data class PathPropertiesImpl(
     val infra: RawSignalingInfra,

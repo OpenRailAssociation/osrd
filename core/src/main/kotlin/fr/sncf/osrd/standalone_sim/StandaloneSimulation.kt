@@ -17,9 +17,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.*
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
@@ -65,7 +63,10 @@ fun runStandaloneSimulation(
     pathItemPositions: List<Offset<Path>>
 ): SimulationSuccess {
     // MRSP & SpeedLimits
-    val mrsp = computeMRSP(pathProps, rollingStock, true, speedLimitTag)
+    val safetySpeedRanges = makeSafetySpeedRanges(infra, chunkPath, routes, schedule)
+    val mrsp = computeMRSP(pathProps, rollingStock, true, speedLimitTag, safetySpeedRanges)
+    // We don't use speed safety ranges in the MRSP displayed in the front
+    // (just like we don't add the train length)
     val speedLimits = computeMRSP(pathProps, rollingStock, false, speedLimitTag)
 
     // Build paths and contexts
