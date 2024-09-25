@@ -201,7 +201,7 @@ export function updateRowTimesAndMargin(
 export function updateDaySinceDeparture(
   pathWaypointRows: TimesStopsInputRow[],
   startTime?: IsoDateTimeString,
-  keepFirstIndexArrival?: boolean
+  { keepFirstIndexArrival = false } = {}
 ): TimesStopsInputRow[] {
   let currentDaySinceDeparture = 0;
   let previousTime = startTime ? datetime2sec(new Date(startTime)) : Number.NEGATIVE_INFINITY;
