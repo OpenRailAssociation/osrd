@@ -50,6 +50,7 @@ pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct RollingStock {
     pub name: String,
+    pub locked: bool,
     pub effort_curves: EffortCurves,
     pub base_power_class: Option<String>,
     pub length: f64,

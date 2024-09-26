@@ -148,6 +148,7 @@ impl From<RollingStockModel> for RollingStock {
     fn from(rolling_stock_model: RollingStockModel) -> Self {
         RollingStock {
             railjson_version: rolling_stock_model.railjson_version,
+            locked: rolling_stock_model.locked,
             metadata: rolling_stock_model.metadata,
             name: rolling_stock_model.name,
             effort_curves: rolling_stock_model.effort_curves,
@@ -175,6 +176,7 @@ impl From<RollingStock> for RollingStockModelChangeset {
     fn from(rolling_stock: RollingStock) -> Self {
         RollingStockModel::changeset()
             .railjson_version(rolling_stock.railjson_version)
+            .locked(rolling_stock.locked)
             .metadata(rolling_stock.metadata)
             .name(rolling_stock.name)
             .effort_curves(rolling_stock.effort_curves)
