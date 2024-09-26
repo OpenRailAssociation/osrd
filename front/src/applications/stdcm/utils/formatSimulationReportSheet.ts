@@ -142,3 +142,41 @@ export function getOperationalPointsWithTimes(
 
   return opResults;
 }
+
+/**
+ * Converts a base64 image into a JPEG blob while reducing quality.
+ * @param base64Image - Image in base64
+ * @param quality - Image quality (between 0 and 1, where 1 is the best quality)
+ * @returns {Promise<Blob>} - Return an optimised JPEG Blob
+ */
+export const base64ToJpeg = (base64Image: string, quality: number): Promise<Blob> =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = base64Image;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.drawImage(img, 0, 0);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          }
+        },
+        'image/jpeg',
+        quality
+      );
+    };
+
+    img.onerror = (error) => {
+      reject(error);
+    };
+  });
