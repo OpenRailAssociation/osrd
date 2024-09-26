@@ -31,7 +31,7 @@ import {
 } from '../types';
 
 export const formatSuggestedViasToRowVias = (
-  operationalPoints: SuggestedOP[],
+  operationalPoints: (SuggestedOP & { isWaypoint?: boolean })[],
   pathSteps: PathStep[],
   t: TFunction<'timesStops', undefined>,
   startTime?: IsoDateTimeString,
@@ -95,7 +95,7 @@ export const formatSuggestedViasToRowVias = (
       name: name || t('waypoint', { id: filteredOp.opId }),
       stopFor,
       theoreticalMargin,
-      isWaypoint: pathStep !== undefined,
+      isWaypoint: op.isWaypoint || pathStep !== undefined,
     };
   });
 };
