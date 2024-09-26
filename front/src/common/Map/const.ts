@@ -5,7 +5,9 @@ export * from 'common/Map/Consts/SignalsNames';
 // Map constants
 export const MAP_URL = `${config.proxy_editoast}/layers`;
 export const SPRITES_URL = `${config.proxy_editoast}/sprites`;
-export const OSM_URL = 'https://osm.osrd.fr/data/v3.json';
+/* Put here the real url of PMTILES file */
+export const OSM_URL = 'pmtiles://http://localhost/temp/france.pmtiles';
+/************* LINTER WARNING TO THINK ABOUT IT */
 
 export const MAP_MODES = {
   display: 'display',

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { isNil } from 'lodash';
+import maplibregl from 'maplibre-gl';
+import { Protocol } from 'pmtiles';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
@@ -97,6 +99,16 @@ function Map() {
     if (Object.keys(newViewport).length > 0) updateViewportChange(newViewport);
     // we only do it at mount time
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Perhaps it should be tested that Map component is loaded ?
+  // cf https://github.com/visgl/react-map-gl/discussions/2165#discussioncomment-5871658
+  useEffect(() => {
+    const protocol = new Protocol();
+    maplibregl.addProtocol('pmtiles', protocol.tile);
+    return () => {
+      maplibregl.removeProtocol('pmtiles');
+    };
   }, []);
 
   return (
