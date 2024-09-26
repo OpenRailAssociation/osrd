@@ -144,7 +144,6 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
           <Input id="tonnage" label={t('consist.tonnage')} trailingContent="t" />
           <Input id="length" label={t('consist.length')} trailingContent="m" />
         </div>
-        <p className="stdcm-v2-consist__title">{t('translation:Editor.nav.speed-limits')}</p>
         <SpeedLimitByTagSelector
           disabled={disabled}
           selectedSpeedLimitByTag={speedLimitByTag}

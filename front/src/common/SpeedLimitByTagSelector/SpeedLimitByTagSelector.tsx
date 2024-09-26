@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 
+import { Select } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import icon from 'assets/pictures/components/speedometer.svg';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { createStringSelectOptions } from 'utils/uiCoreHelpers';
 
 type SpeedLimitByTagSelectorProps = {
   condensed?: boolean;
@@ -30,6 +30,7 @@ export default function SpeedLimitByTagSelector({
   );
 
   if (!speedLimitsTagsList.length) return null;
+
   return (
     <div className="osrd-config-item mb-2">
       <div
@@ -37,22 +38,20 @@ export default function SpeedLimitByTagSelector({
           'd-flex align-items-center gap-10': condensed,
         })}
       >
-        <img width="32px" src={icon} alt="speedometer" />
-        <span className="text-muted">{t('speedLimitByTag')}</span>
-        <SelectImprovedSNCF
-          sm
+        <Select
           disabled={disabled}
-          withSearch
-          dataTestId="speed-limit-by-tag-selector"
-          value={speedLimitByTag || t('noSpeedLimitByTag').toString()}
-          options={speedLimitsTagsList}
+          id="speed-limit-by-tag-selector"
+          value={speedLimitByTag || ''}
+          label={t('speedLimitByTagAbbrev')}
+          placeholder={t('noSpeedLimitByTag')}
           onChange={(e) => {
-            if (e && e !== t('noSpeedLimitByTag')) {
+            if (e) {
               dispatchUpdateSpeedLimitByTag(e);
             } else {
               dispatchUpdateSpeedLimitByTag(null);
             }
           }}
+          {...createStringSelectOptions(speedLimitsTagsList)}
         />
       </div>
     </div>

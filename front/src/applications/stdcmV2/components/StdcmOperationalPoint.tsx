@@ -7,6 +7,7 @@ import nextId from 'react-id-generator';
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
 import type { PathStep } from 'reducers/osrdconf/types';
+import { createFixedSelectOptions } from 'utils/uiCoreHelpers';
 
 import StdcmSuggestions from './StdcmSuggestions';
 
@@ -162,10 +163,8 @@ const StdcmOperationalPoint = ({
           label={t('trainPath.ch')}
           id={`${opPointId}-ch`}
           value={chCodeFilter ? { label: formatChCode(chCodeFilter), id: chCodeFilter } : undefined}
-          options={sortedChOptions}
           onChange={(e) => onSelectChCodeFilter(e)}
-          getOptionLabel={(option) => option?.label ?? ''}
-          getOptionValue={(option) => option?.id ?? ''}
+          {...createFixedSelectOptions(sortedChOptions)}
           disabled={disabled}
         />
       </div>
