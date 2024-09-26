@@ -91,7 +91,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   // Need to compute the full length of the segment, to compute size in %
   const [fullLength, setFullLength] = useState<number>(0);
   // If the user is doing a drag'n'drop
-  const [draginStartAt, setDraginStartAt] = useState<number | null>(null);
+  const [draggingStartAt, setDraggingStartAt] = useState<number | null>(null);
   // Store the data for the resizing:
   const [resizing, setResizing] = useState<{
     index: number | null;
@@ -233,20 +233,20 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     let fnUp: ((e: MouseEvent) => void) | undefined;
     let fnMove: ((e: MouseEvent) => void) | undefined;
 
-    if (onDragX && draginStartAt && wrapper.current) {
+    if (onDragX && draggingStartAt && wrapper.current) {
       const wrapperWidth = wrapper.current.offsetWidth;
 
       // function for key up
       fnUp = (e) => {
-        const delta = ((draginStartAt - e.clientX) / wrapperWidth) * fullLength;
+        const delta = ((draggingStartAt - e.clientX) / wrapperWidth) * fullLength;
         onDragX(delta, true);
-        setDraginStartAt(null);
+        setDraggingStartAt(null);
       };
       // function for move
       fnMove = (e) => {
-        const delta = ((draginStartAt - e.clientX) / wrapperWidth) * fullLength;
+        const delta = ((draggingStartAt - e.clientX) / wrapperWidth) * fullLength;
         onDragX(delta, false);
-        setDraginStartAt(e.clientX);
+        setDraggingStartAt(e.clientX);
       };
 
       document.addEventListener('mouseup', fnUp, true);
@@ -259,7 +259,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         document.removeEventListener('mousemove', fnMove, true);
       }
     };
-  }, [draginStartAt, onDragX, wrapper, fullLength]);
+  }, [draggingStartAt, onDragX, wrapper, fullLength]);
 
   /**
    * When resize starts
@@ -314,7 +314,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       <div
         className={cx(
           'data',
-          viewBox !== null && draginStartAt && 'dragging',
+          viewBox !== null && draggingStartAt && 'dragging',
           resizing && 'resizing',
           (viewBox === null || viewBox[0] === 0) && 'start-visible',
           (viewBox === null || viewBox[1] === last(data)?.end) && 'end-visible'
@@ -350,7 +350,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           // display vertical bar when hover element
           setHoverAtx(e.clientX - (wrapperObject ? wrapperObject.getBoundingClientRect().x : 0));
 
-          if (!draginStartAt && onMouseMove && wrapperObject) {
+          if (!draggingStartAt && onMouseMove && wrapperObject) {
             const point =
               (viewBox ? viewBox[0] : 0) + getPositionFromMouseEvent(e, fullLength, wrapperObject);
             const result = getHoveredItem(data, e.clientX);
@@ -363,7 +363,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         className={cx(
           'data',
           highlighted.length > 0 && 'has-highlight',
-          viewBox !== null && draginStartAt && 'dragging',
+          viewBox !== null && draggingStartAt && 'dragging',
           resizing && 'resizing',
           (viewBox === null || viewBox[0] === 0) && 'start-visible',
           (viewBox === null || viewBox[1] === last(data)?.end) && 'end-visible'
@@ -374,7 +374,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           <SimpleScale className="scale-y" begin={min} end={max} />
         )}
 
-        {!isNil(hoverAtx) && hoverAtx > 0 && !draginStartAt && (
+        {!isNil(hoverAtx) && hoverAtx > 0 && !draggingStartAt && (
           <div
             className="hover-x"
             style={{
@@ -393,7 +393,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           <IntervalItem
             creating={creating}
             data={data}
-            dragingStartAt={draginStartAt}
+            draggingStartAt={draggingStartAt}
             emptyValue={emptyValue}
             field={field}
             fullLength={fullLength}
@@ -411,7 +411,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             options={options}
             resizing={resizing}
             segment={segment}
-            setDraginStartAt={setDraginStartAt}
+            setDraggingStartAt={setDraggingStartAt}
             setResizing={setResizing}
             disableDrag={disableDrag}
           />

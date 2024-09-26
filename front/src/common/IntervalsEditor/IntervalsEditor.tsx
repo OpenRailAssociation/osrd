@@ -8,7 +8,7 @@ import {
   mergeIn,
   resizeSegment,
   splitAt,
-  transalteViewBox,
+  translateViewBox,
 } from 'common/IntervalsDataViz/data';
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
 import type { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
@@ -18,7 +18,7 @@ import IntervalsEditorCommonForm from './IntervalsEditorCommonForm';
 import IntervalsEditorMarginForm from './IntervalsEditorMarginForm';
 import IntervalsEditorSelectForm from './IntervalsEditorSelectForm';
 import ToolButtons from './IntervalsEditorToolButtons';
-import IntervalsEditorTootlip from './IntervalsEditorTooltip';
+import IntervalsEditorTooltip from './IntervalsEditorTooltip';
 import {
   type AdditionalDataItem,
   INTERVALS_EDITOR_TOOLS,
@@ -31,7 +31,7 @@ import { createEmptySegmentAt, removeSegment } from './utils';
 import ZoomButtons from './ZoomButtons';
 
 export type IntervalsEditorProps = {
-  /** Additionnal read-only data that will be displayed along the path, below the intervals editor */
+  /** Additional read-only data that will be displayed along the path, below the intervals editor */
   additionalData?: AdditionalDataItem[];
   /** Default value used when a new range is created */
   defaultValue: number | string;
@@ -285,7 +285,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
             onDragX={(gap, finalize) => {
               setMode(!finalize ? 'dragging' : null);
 
-              setViewBox((vb) => transalteViewBox(data, vb, gap));
+              setViewBox((vb) => translateViewBox(data, vb, gap));
             }}
             onResize={(index, gap, finalized) => {
               setMode(!finalized ? 'resizing' : null);
@@ -307,7 +307,6 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
                   }
                 }
               } catch (e) {
-                // TODO: should we display it ?
                 console.warn(e);
               }
             }}
@@ -327,7 +326,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
         {/* Data visualisation tooltip when item is hovered */}
         {mode !== 'dragging' && hovered !== null && data[hovered.index] && (
           <div className="tooltip" ref={tooltipRef}>
-            <IntervalsEditorTootlip item={data[hovered.index]} point={hovered.point} />
+            <IntervalsEditorTooltip item={data[hovered.index]} point={hovered.point} />
           </div>
         )}
 

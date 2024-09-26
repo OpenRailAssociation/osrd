@@ -1,3 +1,5 @@
+import type { MutableRefObject } from 'react';
+
 import { retrieveSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import fnLength from '@turf/length';
@@ -15,7 +17,6 @@ export const LINEAR_METADATA_FIELDS = ['slopes', 'curves'];
 // Min size of a linear metadata segment
 export const SEGMENT_MIN_SIZE = 1;
 // Delta error between the user length input and the length of the geometry
-export const DISTANCE_ERROR_RANGE = 0.01;
 // Zoom by 25%
 const ZOOM_RATIO = 0.75;
 // Min size (in meter) of the viewbox
@@ -54,18 +55,15 @@ export function getLineStringDistance(line: LineString): number {
 }
 
 /**
- * Given a array of linearMetadata and a position, returns the first item
+ * Given an array of linearMetadata and a position, returns the first item
  * containing the position
- *
- * @param linearMetadata linearMetadata in which we search
- * @param hoveredPostion hoveredPosition
  */
 export function getHoveredItem<T>(
   linearMetadata: Array<LinearMetadataItem<T>>,
-  hoveredPostion: number
+  hoveredPosition: number
 ): { hoveredItem: LinearMetadataItem<T>; hoveredItemIndex: number } | null {
   const hoveredItemIndex = linearMetadata.findIndex(
-    (item) => item.begin <= hoveredPostion && hoveredPostion <= item.end
+    (item) => item.begin <= hoveredPosition && hoveredPosition <= item.end
   );
   return hoveredItemIndex !== -1
     ? { hoveredItem: linearMetadata[hoveredItemIndex], hoveredItemIndex }
@@ -74,15 +72,7 @@ export function getHoveredItem<T>(
 
 /**
  * When you change the size of a segment, you need to impact it on the chain.
- * What we do is to substract the gap from its neighbor (see beginOrEnd).
- *
- * @param linearMetadata  The linear metadata we work on, already sorted
- * @param itemChangeIndex The index in the linearMetadata of the changed element
- * @param gap The size we need to add (or remove if negative)
- * @param beginOrEnd do the change at begin or the end of the item ?
- * @param opts Options of this functions (like the min size of segment)
- * @throws An error if the given index doesn't exist
- * @returns An object composed of the new linearMetadata and its new position
+ * What we do is to subtract the gap from its neighbor (see beginOrEnd).
  */
 export function resizeSegment<T>(
   linearMetadata: Array<LinearMetadataItem<T>>,
@@ -185,11 +175,6 @@ export function resizeSegment<T>(
 /**
  * Merge a segment with one of its sibling, define by the policy.
  * NOTE: Property of selected item will override the sibling one.
-
- * @param linearMetadata The linear metadata we work on
- * @param index The element that will be merged
- * @returns A new linear metadata with one segment merged
- * @throws An error when the index or the sibling element is outside
  */
 export function mergeIn<T>(
   linearMetadata: Array<LinearMetadataItem<T>>,
@@ -226,9 +211,6 @@ export function mergeIn<T>(
  * - if empty it generate one
  * - if there is a gap at begin/end or inside, it is created
  * - if there is an overlaps, remove it
- * @param items The linear metadata
- * @param lineLength The full length of the linearmetadata (should be computed from the LineString or given by the user)
- * @param opts If defined, it allows the function to fill gaps with default field value
  */
 export function fixLinearMetadataItems<T>(
   items: Array<LinearMetadataItem<T>> | undefined,
@@ -331,7 +313,7 @@ export function fixLinearMetadataItems<T>(
     }
   }
 
-  // if the fixed lm is bigger than the lineLeight (the opposite is not possible, we already fix gaps)
+  // if the fixed lm is bigger than the lineLength (the opposite is not possible, we already fix gaps)
   const tail = last(fixedLinearMetadata);
   if (tail && tail.end > lineLength) {
     let reduceLeft = tail.end - lineLength;
@@ -353,16 +335,9 @@ export function fixLinearMetadataItems<T>(
 
 /**
  * Do the impact on the linear metadata when the LineString changed.
- * (recompute all the begin / end).
+ * (recompute all the beginning / end).
  * We change only one segment, others stay the same or are just translated.
  * This method should be call at every (unitary) change on the LineString.
- * TODO: cases on extremities
- *
- * @param sourceLine The Geo lineString, before the unitary changement
- * @param targetLine The Geo lineString, after the unitary changement
- * @param wrapper The linear metadata array (should be sorted)
- * @returns The linear metadata array.
- * @throws an error if the from params is not found in the linear metadata array.
  */
 export function update<T>(
   sourceLine: LineString,
@@ -382,7 +357,6 @@ export function update<T>(
   if (diff.length === 0) return linearMetadata;
 
   // We take the first one
-  // TODO: an impovment can be to take the one in the middle if there are many
   const sourcePoint = diff[0];
 
   // Searching the closest segment (in distance) from the source point
@@ -430,11 +404,6 @@ export function update<T>(
 
 /**
  * Split the linear metadata at the given distance.
- *
- * @param linearMetadata The linear metadata we work on
- * @param distance The distance where we split the linear metadata
- * @returns A new linear metadata with one more segment
- * @throws An error when linear metadata is empty, or when the distance is outside
  */
 export function splitAt<T>(
   linearMetadata: Array<LinearMetadataItem<T>>,
@@ -458,42 +427,7 @@ export function splitAt<T>(
 }
 
 /**
- * Create a new segment
- *
- * @param linearMetadata The linear metadata we work on
- * @param distanceFrom The distance where the new segment will start from
- * @param distanceTo  The distance where the new segment will end to
- * @param lineLength  The full length of the linearmetadata (should be computed from the LineString or given by the user)
- * @param opts what is the valueFiled (nae of the value, and the default value - strongly recommended)
- * @returns An object composed of the new linearMetadata and its new position without the removed element
- */
-export function createSegmentAt<T>(
-  linearMetadata: Array<LinearMetadataItem<T>>,
-  distanceFrom: number,
-  distanceTo: number,
-  lineLength: number,
-  opts?: { fieldName: string; defaultValue: unknown; tagNew?: boolean }
-): Array<LinearMetadataItem<T>> {
-  // apply the modification on the segment
-  let result = cloneDeep(linearMetadata);
-  result.push({
-    ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
-    ...(opts && opts.tagNew ? { new: true } : {}),
-    begin: distanceFrom,
-    end: distanceTo,
-  } as LinearMetadataItem<T>);
-  result = fixLinearMetadataItems(result, lineLength);
-  return result;
-}
-
-/**
- * Compute the new viewbox after a zoom.
- *
- * @param data The linear data
- * @param currentViewBox The actual viewbox (so before the zoom)
- * @param zoom The zoom operation (in or out)
- * @param point The point on the line on which the user zoom (in meter from the point 0)
- * @returns The zoomed viewbox, or null if the newbox is equal to the full display
+ * Compute the new view-box after a zoom.
  */
 export function getZoomedViewBox<T>(
   data: Array<LinearMetadataItem<T>>,
@@ -528,10 +462,10 @@ export function getZoomedViewBox<T>(
     return [begin, end];
   }
 
-  // if begin < min, it means that the begin is outside
+  // if begin < min, it means that the beginning is outside
   // so we need to add the diff at the end
   // otherwise, it means that the end is outside
-  // so we need to add the diff at the begin
+  // so we need to add the diff at the beginning
   if (begin < min) {
     return [min, end + (min - begin)];
   }
@@ -539,14 +473,9 @@ export function getZoomedViewBox<T>(
 }
 
 /**
- * Compute the new viewbox after a translation.
- *
- * @param data The linear data
- * @param currentViewBox The actual viewbox (so before the zoom)
- * @param translation The translation in meter
- * @returns The zoomed viewbox, or null if the newbox is equal to the full display
+ * Compute the new view-box after a translation.
  */
-export function transalteViewBox<T>(
+export function translateViewBox<T>(
   data: Array<LinearMetadataItem<T>>,
   currentViewBox: [number, number] | null,
   translation: number
@@ -561,20 +490,20 @@ export function transalteViewBox<T>(
 
   // if translation on the left, we do it on the min
   if (translation < 0) {
-    // new min is the min minus the transaltion or 0
+    // new min is the min minus the translation or 0
     const newMin = currentViewBox[0] + translation > 0 ? currentViewBox[0] + translation : 0;
     return [newMin, newMin + distanceToDisplay];
   }
 
   // if translation on the right, we do it on the max
-  // new max is the max plus the transaltion or max
+  // new max is the max plus the translation or max
   const newMax = currentViewBox[1] + translation < max ? currentViewBox[1] + translation : max;
   return [newMax - distanceToDisplay, newMax];
 }
 
 /**
- * Given a linearmetadata and viewbox, this function returns
- * the cropped linearmetadata (and also add the index)
+ * Given a LinearMetadataItem and view-box, this function returns
+ * the cropped LinearMetadataItem (and also add the index)
  */
 export function cropForDatavizViewbox(
   data: Array<LinearMetadataItem>,
@@ -587,7 +516,7 @@ export function cropForDatavizViewbox(
       // we filter elements that cross or are inside the viewbox
       .filter((e) => {
         if (!currentViewBox) return true;
-        // if one extrimity is in (ie. overlaps or full in)
+        // if one extremity is in (i.e. overlaps or full in)
         if (currentViewBox[0] <= e.begin && e.begin <= currentViewBox[1]) return true;
         if (currentViewBox[0] <= e.end && e.end <= currentViewBox[1]) return true;
         // if include the viewbox
@@ -614,7 +543,7 @@ export function cropForDatavizViewbox(
 export function cropOperationPointsForDatavizViewbox(
   operationalPoints: Array<OperationalPoint>,
   currentViewBox: [number, number] | null,
-  wrapper: React.MutableRefObject<HTMLDivElement | null>,
+  wrapper: MutableRefObject<HTMLDivElement | null>,
   fullLength: number
 ): Array<OperationalPoint & { positionInPx: number }> {
   if (wrapper.current !== null && fullLength > 0) {
@@ -660,16 +589,11 @@ export function getClosestOperationalPoint(
 }
 
 /**
- * TODO: need to be check and tested (specially the underlying update function)
  * Do the impact on the linear metadata for a modification on lineString.
- *
- * @param entity The entity that has been modified and need to be impacted
- * @param sourceLine The original LineString (before the change)
- * @returns The entity modified in adquation
  */
-
 export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: LineString): T {
   const newProps: EditorEntity['properties'] = { id: entity.properties.id };
+
   // The modification of the linestring modifies the entity real properties only during initialization.
   const isInitialization = sourceLine.coordinates.length === 0;
   if (entity.geometry.type === 'LineString' && !isNil(entity.properties) && isInitialization) {
@@ -758,11 +682,11 @@ export function viewboxForSelection(
 
   // if the selected is left outside
   if (data[selected].end <= vb[0]) {
-    return transalteViewBox(data, vb, data[selected].begin - vb[0]);
+    return translateViewBox(data, vb, data[selected].begin - vb[0]);
   }
   // if the selected is right outside
   if (vb[1] <= data[selected].begin) {
-    return transalteViewBox(data, vb, data[selected].end - vb[1]);
+    return translateViewBox(data, vb, data[selected].end - vb[1]);
   }
   return vb;
 }

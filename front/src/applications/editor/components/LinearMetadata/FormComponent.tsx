@@ -15,7 +15,7 @@ import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import {
   getZoomedViewBox,
-  transalteViewBox,
+  translateViewBox,
   splitAt,
   mergeIn,
   resizeSegment,
@@ -191,7 +191,7 @@ const IntervalEditorComponent = (
             }}
             onDragX={(gap, finalize) => {
               setMode(!finalize ? 'dragging' : null);
-              setViewBox((vb) => transalteViewBox(data, vb, gap));
+              setViewBox((vb) => translateViewBox(data, vb, gap));
             }}
             onResize={(index, gap, finalized) => {
               setMode(!finalized ? 'resizing' : null);
