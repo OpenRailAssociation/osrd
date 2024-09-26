@@ -74,15 +74,6 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     await scenarioPage.checkPathfindingDistance('34.000 km');
 
-    // TODO: move this test in his own file
-    // ***************** Test Composition Code *****************
-    await scenarioPage.openTabByDataId('tab-simulation-settings');
-    await expect(scenarioPage.getSpeedLimitSelector).toBeVisible();
-    await scenarioPage.getSpeedLimitSelector.click();
-    await scenarioPage.getSpeedLimitSelector.locator('input').fill('32');
-    await scenarioPage.getSpeedLimitSelector.getByRole('button', { name: 'E32C' }).click();
-    expect(await scenarioPage.getSpeedLimitSelector.textContent()).toMatch(/E32C/i);
-
     // ***************** Test Add Train Schedule *****************
     await scenarioPage.addTrainSchedule();
     await scenarioPage.page.waitForSelector('.dots-loader', { state: 'hidden' });

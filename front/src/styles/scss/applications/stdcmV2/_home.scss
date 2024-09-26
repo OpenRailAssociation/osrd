@@ -59,6 +59,14 @@
             height: 1.25rem;
           }
         }
+        .stdcm-v2-consist {
+          .osrd-config-item-container {
+            padding: 0 0.6rem 0 0;
+            .feed-back {
+              padding: 0;
+            }
+          }
+        }
         .stdcm-v2-consist__properties {
           .feed-back:nth-child(1) {
             width: 7.4375rem;

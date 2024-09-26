@@ -14,8 +14,6 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
-  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('noSpeedLimitByTag'), [t]);
-
   const { getSpeedLimitByTag } = useOsrdConfSelectors();
   const speedLimitByTag = useSelector(getSpeedLimitByTag);
   const infraID = useInfraID();
@@ -43,12 +41,14 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
     }
   }, [error]);
 
-  let speedLimitsByTags = compact(uniq(concat(speedLimitTags, speedLimitsTagsByInfraId)));
+  const speedLimitsByTags = compact(uniq(concat(speedLimitTags, speedLimitsTagsByInfraId)));
   const speedLimitsByTagsOrdered = useMemo(() => speedLimitsByTags.sort(), [speedLimitsByTags]);
 
-  speedLimitsByTags = [DEFAULT_SPEED_LIMIT_TAG, ...speedLimitsByTagsOrdered];
-
-  return { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag };
+  return {
+    speedLimitByTag,
+    speedLimitsByTags: speedLimitsByTagsOrdered,
+    dispatchUpdateSpeedLimitByTag,
+  };
 };
 
 export default useStoreDataForSpeedLimitByTagSelector;

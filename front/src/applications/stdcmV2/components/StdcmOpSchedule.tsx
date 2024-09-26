@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { isArrivalDateInSearchTimeWindow } from 'utils/date';
+import { createStringSelectOptions } from 'utils/uiCoreHelpers';
 
 import type { ArrivalTimeTypes, ScheduleConstraint } from '../types';
 
@@ -77,20 +78,21 @@ const StdcmOpSchedule = ({
     }, [opTimingData, opToleranceValues, searchDatetimeWindow]);
 
   return (
-    <div className="d-flex flex-column selector">
-      <Select
-        id={`select-${opId}`}
-        value={opScheduleTimeType}
-        onChange={(e) => {
-          if (e) {
-            onArrivalTypeChange(e as ArrivalTimeTypes);
-          }
-        }}
-        options={['preciseTime', 'asSoonAsPossible']}
-        getOptionLabel={(option) => t(`trainPath.${option}`)}
-        getOptionValue={(option) => option}
-        disabled={disabled}
-      />
+    <div className="d-flex flex-column">
+      <div className="col-12 pr-1">
+        <Select
+          id={`select-${opId}`}
+          value={opScheduleTimeType}
+          onChange={(e) => {
+            if (e) {
+              onArrivalTypeChange(e as ArrivalTimeTypes);
+            }
+          }}
+          {...createStringSelectOptions(['preciseTime', 'asSoonAsPossible'])}
+          getOptionLabel={(option) => t(`trainPath.${option}`)}
+          disabled={disabled}
+        />
+      </div>
       {opScheduleTimeType === 'preciseTime' && (
         <div className="d-flex">
           {/* TODO: Remove empty onChange events once we fix the warning on ui-core side */}

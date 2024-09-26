@@ -116,6 +116,7 @@
   "saving": "Saving... please wait",
   "simulation": "Simulation",
   "speedLimitByTag": "Composition code",
+  "speedLimitByTagAbbrev": "Code compo.",
   "stopSimulation": "Stop",
   "tabs": {
     "rollingStock": "Rolling stock",

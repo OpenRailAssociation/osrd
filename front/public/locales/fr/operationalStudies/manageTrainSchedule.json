@@ -117,6 +117,7 @@
   "saving": "Enregistrement en cours... veuillez patienter",
   "simulation": "Simulation",
   "speedLimitByTag": "Code de composition",
+  "speedLimitByTagAbbrev": "Code compo.",
   "stopSimulation": "Stopper",
   "tabs": {
     "rollingStock": "Matériel",

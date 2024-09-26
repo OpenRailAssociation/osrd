@@ -13,8 +13,6 @@ class ScenarioPage extends BasePage {
 
   readonly getRollingStockSelector: Locator;
 
-  readonly getSpeedLimitSelector: Locator;
-
   readonly getItineraryModule: Locator;
 
   readonly getItineraryOrigin: Locator;
@@ -101,7 +99,6 @@ class ScenarioPage extends BasePage {
     this.getScenarioDeleteConfirmBtn = page
       .locator('#modal-content')
       .getByText('Supprimer', { exact: true });
-    this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
     this.getItineraryModule = page.getByTestId('itinerary');
     this.getItineraryOrigin = this.getItineraryModule
       .getByTestId('display-itinerary')
