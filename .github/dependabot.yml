@@ -42,6 +42,9 @@ updates:
     labels:
       - "dependencies"
       - "area:front"
+    ignore:
+      # Updates for NGE don't follow SemVer and are handled manually
+      - dependency-name: "@osrd-project/netzgrafik-frontend"
   # Poetry uses the "pip" value:
   # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#configuration-options-for-the-dependabotyml-file
   - package-ecosystem: "pip"
