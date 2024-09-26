@@ -113,7 +113,7 @@ function useOutputTableData(
         return {
           ...sugOpPoint,
           ...formattedScheduleData,
-          receptionSignal: schedule?.reception_signal || '',
+          receptionSignal: schedule?.reception_signal,
           calculatedArrival,
           calculatedDeparture:
             opPoint.duration > 0
@@ -142,7 +142,7 @@ function useOutputTableData(
 
     const startTime = convertIsoUtcToLocalTime(selectedTrainSchedule.start_time);
     const formattedWaypoints = formatSuggestedViasToRowVias(
-      allWaypoints as SuggestedOP[],
+      allWaypoints,
       [],
       t,
       startTime,
