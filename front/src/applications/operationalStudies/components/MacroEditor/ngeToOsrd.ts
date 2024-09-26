@@ -297,7 +297,7 @@ const handleUpdateTrainSchedule = async ({
 
 const handleTrainrunOperation = async ({
   type,
-  trainrun,
+  trainrunId,
   dispatch,
   infraId,
   timeTableId,
@@ -306,7 +306,7 @@ const handleTrainrunOperation = async ({
   addDeletedTrainIds,
 }: {
   type: NGEEvent['type'];
-  trainrun: TrainrunDto;
+  trainrunId: number;
   dispatch: AppDispatch;
   infraId: number;
   timeTableId: number;
@@ -314,12 +314,13 @@ const handleTrainrunOperation = async ({
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   addDeletedTrainIds: (trainIds: number[]) => void;
 }) => {
-  const { nodes, labels } = netzgrafikDto;
+  const { nodes, labels, trainruns } = netzgrafikDto;
+  const trainrun = trainruns.find((tr) => tr.id === trainrunId);
   switch (type) {
     case 'create': {
       const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(
         netzgrafikDto,
-        trainrun.id
+        trainrunId
       );
       const startDate = new Date();
       const newTrainSchedules = await dispatch(
@@ -331,7 +332,7 @@ const handleTrainrunOperation = async ({
               ...(await createTrainSchedulePayload({
                 trainrunSections: trainrunSectionsByTrainrunId,
                 nodes,
-                trainrun,
+                trainrun: trainrun!,
                 infraId,
                 dispatch,
                 labels,
@@ -341,25 +342,25 @@ const handleTrainrunOperation = async ({
           ],
         })
       ).unwrap();
-      createdTrainrun.set(trainrun.id, newTrainSchedules[0].id);
+      createdTrainrun.set(trainrunId, newTrainSchedules[0].id);
       addUpsertedTrainSchedules(newTrainSchedules);
       break;
     }
     case 'delete': {
-      const trainrunIdToDelete = createdTrainrun.get(trainrun.id) || trainrun.id;
+      const trainrunIdToDelete = createdTrainrun.get(trainrunId) || trainrunId;
       await dispatch(
         osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
           body: { ids: [trainrunIdToDelete] },
         })
       ).unwrap();
-      createdTrainrun.delete(trainrun.id);
+      createdTrainrun.delete(trainrunId);
       addDeletedTrainIds([trainrunIdToDelete]);
       break;
     }
     case 'update': {
       await handleUpdateTrainSchedule({
         netzgrafikDto,
-        trainrun,
+        trainrun: trainrun!,
         dispatch,
         infraId,
         addUpsertedTrainSchedules,
@@ -456,16 +457,14 @@ const handleOperation = async ({
   addDeletedTrainIds: (trainIds: number[]) => void;
 }) => {
   const { type } = event;
-  const { trainruns } = netzgrafikDto;
   switch (event.objectType) {
     case 'node':
       handleNodeOperation({ type, node: event.node, timeTableId });
       break;
     case 'trainrun': {
-      const trainrun = trainruns.find((tr) => tr.id === event.trainrun.id)!;
       await handleTrainrunOperation({
         type,
-        trainrun,
+        trainrunId: event.trainrun.id,
         dispatch,
         infraId,
         timeTableId,
