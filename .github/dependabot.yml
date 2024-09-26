@@ -33,9 +33,10 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      all:
-        patterns:
-          - "*"
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
     commit-message:
       prefix: "front:"
     open-pull-requests-limit: 100
