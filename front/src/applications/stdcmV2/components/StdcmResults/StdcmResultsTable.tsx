@@ -48,7 +48,10 @@ const StcdmResultsTable = ({
             const isFirstStep = index === 0;
             const isLastStep = index === operationalPointsList.length - 1;
             const prevStep = operationalPointsList[index - 1];
-            const shouldRenderRow = isFirstStep || step.duration > 0 || isLastStep;
+            const isRequestedPathStep = stdcmData.simulationPathSteps.some(
+              (pathStep) => pathStep?.name === step.name && pathStep?.ch === step.ch
+            );
+            const shouldRenderRow = isFirstStep || isRequestedPathStep || isLastStep;
             if (showAllOP || shouldRenderRow) {
               return (
                 <tr key={index}>
@@ -61,10 +64,11 @@ const StcdmResultsTable = ({
                   >
                     {index + 1}
                   </td>
-                  <td>
+                  <td style={{ color: 'rgb(49, 46, 43)' }}>
                     {!isFirstStep &&
                     !isLastStep &&
                     step.name === prevStep.name &&
+                    !isRequestedPathStep &&
                     step.duration === 0
                       ? '='
                       : step.name || 'Unknown'}
@@ -93,12 +97,12 @@ const StcdmResultsTable = ({
                   <td className="stop">
                     {isFirstStep || step.duration > 0 ? step.stopEndTime : ''}
                   </td>
-                  <td className="weight" style={{ color: isLastStep ? '#797671' : '#312E2B' }}>
+                  <td className="weight" style={{ color: !isFirstStep ? '#797671' : '#312E2B' }}>
                     {!isFirstStep && !isLastStep
                       ? '='
                       : `${Math.floor(stdcmData.rollingStock.mass / 1000)}t`}
                   </td>
-                  <td style={{ color: isLastStep ? '#797671' : '#312E2B' }}>
+                  <td style={{ color: !isFirstStep ? '#797671' : '#312E2B' }}>
                     {!isFirstStep && !isLastStep ? '=' : stdcmData.rollingStock.metadata?.reference}
                   </td>
                 </tr>

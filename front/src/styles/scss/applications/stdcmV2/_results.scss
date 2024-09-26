@@ -22,7 +22,7 @@
       .scroll-btn {
         position: absolute;
         border-radius: 0.375rem;
-        box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 1) inset;
+        box-shadow: 0rem 0rem 0rem 0.125rem rgba(255, 255, 255, 1) inset;
         background-color: rgba(246, 248, 249, 1);
         width: 3rem;
         height: 3rem;
@@ -132,12 +132,22 @@
       flex-direction: column;
       width: 70%;
 
+      .table-container::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
+      }
+
       .table-container {
         margin-right: 2rem;
 
         .table-results {
           border-radius: 0.375rem;
           background-color: rgba(0, 0, 0, 0.05);
+
+          thead {
+            position: sticky;
+            top: 0;
+            background-color: #dde3e6;
+          }
 
           th {
             height: 2rem;
@@ -191,7 +201,7 @@
           }
           .weight {
             padding-left: 2.063rem;
-            color: '#312E2B';
+            color: '#797671';
 
             &.lastStep {
               color: '#797671';
@@ -202,8 +212,10 @@
           }
         }
         .results-buttons {
+          position: sticky;
+          bottom: 0;
           height: 6.5rem;
-          background-color: rgba(0, 0, 0, 0.05);
+          background-color: #dde3e6;
           display: flex;
           justify-content: space-between;
           border-bottom-left-radius: 0.375rem;
@@ -321,6 +333,8 @@
     }
 
     .map-results {
+      position: sticky;
+      top: 0;
       width: 40%;
       height: 33.75rem;
       margin-right: 2rem;

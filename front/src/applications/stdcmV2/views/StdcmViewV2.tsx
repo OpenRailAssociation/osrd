@@ -84,11 +84,13 @@ const StdcmViewV2 = () => {
   }, [selectedSimulation]);
 
   useEffect(() => {
-    setShowBtnToLaunchSimulation(!isEqual(currentSimulationInputs, selectedSimulation?.inputs));
+    if (!isDebugMode) {
+      setShowBtnToLaunchSimulation(!isEqual(currentSimulationInputs, selectedSimulation?.inputs));
+    }
   }, [currentSimulationInputs]);
 
   useEffect(() => {
-    if (isPending) {
+    if (isPending && !isDebugMode) {
       setShowBtnToLaunchSimulation(false);
     }
   }, [isPending]);
