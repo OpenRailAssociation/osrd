@@ -464,8 +464,9 @@ const importTimetable = async (
         }
 
         const travelTime = { ...DEFAULT_TIME_LOCK };
-        if (targetArrival.time && sourceDeparture.time) {
-          travelTime.time = (targetArrival.time - sourceDeparture.time + 60) % 60;
+        if (targetArrival.consecutiveTime !== null && sourceDeparture.consecutiveTime !== null) {
+          travelTime.time = targetArrival.consecutiveTime - sourceDeparture.consecutiveTime;
+          travelTime.consecutiveTime = travelTime.time;
         }
 
         const trainrunSection = {
