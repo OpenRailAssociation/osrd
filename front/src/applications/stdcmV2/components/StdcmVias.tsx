@@ -56,7 +56,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
       updateViaStopTime({
         via: pathStepToUpdate,
         duration: formatDurationAsISO8601(Number(stopTime) * 60),
-        stopType: stopTypes[pathStepId],
+        stopType: stopTypes[pathStepId] ?? StdcmStopTypes.PASSAGE_TIME,
       })
     );
   };
@@ -75,19 +75,6 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
     });
   };
 
-  useEffect(() => {
-    pathSteps.forEach((pathStep, index) => {
-      const stopType = stopTypes[index];
-      if (pathStep && stopType && pathStep.stopType !== stopType) {
-        const updatedPathStep = {
-          ...pathStep,
-          stopType,
-        };
-        updatePathStepsList(updatedPathStep, index);
-      }
-    });
-  }, [stopTypes, pathSteps]);
-
   const deleteViaOnClick = (index: number, pathStepId: string) => {
     setStopTypes((prevStopTypes) => {
       delete prevStopTypes[pathStepId];
@@ -100,6 +87,21 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
     const newPathSteps = addElementAtIndex(pathSteps, pathStepIndex, { id: nextId(), uic: -1 });
     dispatch(updatePathSteps({ pathSteps: newPathSteps }));
   };
+
+  useEffect(() => {
+    pathSteps.forEach((pathStep, index) => {
+      if (pathStep) {
+        const stopType = stopTypes[pathStep.id];
+        if (stopType && pathStep.stopType !== stopType) {
+          const updatedPathStep = {
+            ...pathStep,
+            stopType,
+          };
+          updatePathStepsList(updatedPathStep, index);
+        }
+      }
+    });
+  }, [stopTypes, pathSteps]);
 
   useEffect(() => {
     setCurrentSimulationInputs((prevState) => ({

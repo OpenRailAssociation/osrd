@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next';
 
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
-import { formatDateToString, formatDay } from 'utils/date';
+import type { PathStep } from 'reducers/osrdconf/types';
+import { extractHHMM, formatDateToString, formatDay } from 'utils/date';
 import { capitalizeFirstLetter } from 'utils/strings';
 
 import styles from './SimulationReportStyleSheet';
@@ -55,6 +56,19 @@ const SimulationReportSheet = ({
     },
     [mapImageUrl]
   );
+
+  const getArrivalTime = (
+    step: PathStep,
+    { isFirstStep, isLastStep }: { isFirstStep?: boolean; isLastStep?: boolean }
+  ) => {
+    if (isFirstStep || isLastStep) {
+      if (step.arrival && step.arrivalType === 'preciseTime') {
+        return extractHHMM(step.arrival);
+      }
+      return t('asap');
+    }
+    return '';
+  };
 
   return (
     <Document>
@@ -163,56 +177,46 @@ const SimulationReportSheet = ({
                     <TD>{t('stopType')}</TD>
                   </View>
                 </TH>
-                {operationalPointsList.map((step, index) => {
+                {stdcmData.simulationPathSteps.map((step, index) => {
                   const isFirstStep = index === 0;
-                  const isLastStep = index === operationalPointsList.length - 1;
-                  const shouldRenderRow =
-                    isFirstStep ||
-                    step.duration > 0 ||
-                    stdcmData.simulationPathSteps[renderedIndex].stopType === 'passageTime' ||
-                    isLastStep;
-                  if (shouldRenderRow) {
-                    renderedIndex += 1;
-                    return (
-                      <TR key={index} style={styles.convoyAndRoute.stopTableTbody}>
-                        <View style={styles.convoyAndRoute.stopTableIndexWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableIndexColumn}>
-                            {renderedIndex}
-                          </TD>
-                        </View>
-                        <View style={styles.convoyAndRoute.stopTableOpWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableOpColumn}>
-                            {step.name || 'Unknown'}
-                          </TD>
-                        </View>
-                        <View style={styles.convoyAndRoute.stopTableChWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableChColumn}>{step.ch}</TD>
-                        </View>
-                        <View style={styles.convoyAndRoute.stopTableEndWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableItalicColumn}>
-                            {isLastStep ? t('asap') : ''}
-                          </TD>
-                        </View>
-                        <View style={styles.convoyAndRoute.stopTableStartWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableStartColumn}>
-                            {isFirstStep ? step.stopEndTime : ''}
-                          </TD>
-                        </View>
-                        <View style={styles.convoyAndRoute.stopTableStopTypeWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableItalicColumn}>
-                            {isFirstStep || isLastStep
-                              ? t('serviceStop')
-                              : capitalizeFirstLetter(
-                                  t(
-                                    `stdcm:trainPath.stopType.${stdcmData.simulationPathSteps[renderedIndex - 1].stopType}`
-                                  )
-                                )}
-                          </TD>
-                        </View>
-                      </TR>
-                    );
-                  }
-                  return null;
+                  const isLastStep = index === stdcmData.simulationPathSteps.length - 1;
+                  renderedIndex += 1;
+                  return (
+                    <TR key={index} style={styles.convoyAndRoute.stopTableTbody}>
+                      <View style={styles.convoyAndRoute.stopTableIndexWidth}>
+                        <TD style={styles.convoyAndRoute.stopTableIndexColumn}>{renderedIndex}</TD>
+                      </View>
+                      <View style={styles.convoyAndRoute.stopTableOpWidth}>
+                        <TD style={styles.convoyAndRoute.stopTableOpColumn}>
+                          {step.name || 'Unknown'}
+                        </TD>
+                      </View>
+                      <View style={styles.convoyAndRoute.stopTableChWidth}>
+                        <TD style={styles.convoyAndRoute.stopTableChColumn}>{step.ch}</TD>
+                      </View>
+                      <View style={styles.convoyAndRoute.stopTableEndWidth}>
+                        <TD style={styles.convoyAndRoute.stopTableItalicColumn}>
+                          {getArrivalTime(step, { isLastStep })}
+                        </TD>
+                      </View>
+                      <View style={styles.convoyAndRoute.stopTableStartWidth}>
+                        <TD style={styles.convoyAndRoute.stopTableStartColumn}>
+                          {getArrivalTime(step, { isFirstStep })}
+                        </TD>
+                      </View>
+                      <View style={styles.convoyAndRoute.stopTableStopTypeWidth}>
+                        <TD style={styles.convoyAndRoute.stopTableItalicColumn}>
+                          {isFirstStep || isLastStep
+                            ? t('serviceStop')
+                            : capitalizeFirstLetter(
+                                t(
+                                  `stdcm:trainPath.stopType.${stdcmData.simulationPathSteps[index].stopType}`
+                                )
+                              )}
+                        </TD>
+                      </View>
+                    </TR>
+                  );
                 })}
               </Table>
             </View>
@@ -281,34 +285,55 @@ const SimulationReportSheet = ({
                 const isFirstStep = index === 0;
                 const isLastStep = index === operationalPointsList.length - 1;
                 const prevStep = operationalPointsList[index - 1];
+                const isViaInSimulationPath = stdcmData.simulationPathSteps
+                  .slice(1, -1)
+                  .some((pathStep) => pathStep.name === step.name && pathStep.ch === step.ch);
+                const isViaWithoutStop = isViaInSimulationPath && step.duration === 0;
+                const isNotExtremity = !isFirstStep && !isLastStep;
+                const isStepWithDuration = step.duration !== 0 && !isLastStep;
+                const tdPassageStopStyle = !isViaWithoutStop
+                  ? styles.simulation.td
+                  : { ...styles.simulation.td, paddingLeft: '' };
                 return (
                   <TR
                     key={index}
-                    style={
-                      step.duration !== 0 && !isLastStep
-                        ? styles.simulation.blueRow
-                        : styles.simulation.tbody
-                    }
+                    style={isStepWithDuration ? styles.simulation.blueRow : styles.simulation.tbody}
                   >
-                    <TD style={styles.simulation.indexColumn}>{index + 1}</TD>
+                    <TD
+                      style={
+                        isViaWithoutStop
+                          ? styles.simulation.indexColumnPassageStop
+                          : styles.simulation.indexColumn
+                      }
+                    >
+                      {index + 1}
+                    </TD>
                     <View style={styles.simulation.opWidth}>
                       <TD
                         style={
-                          !isFirstStep && !isLastStep && step.duration !== 0
-                            ? styles.simulation.opStop
-                            : styles.simulation.td
+                          // eslint-disable-next-line no-nested-ternary
+                          isViaWithoutStop
+                            ? styles.simulation.opColumnPassageStop
+                            : isNotExtremity && step.duration !== 0
+                              ? styles.simulation.opStop
+                              : styles.simulation.td
                         }
                       >
-                        {!isFirstStep &&
-                        !isLastStep &&
-                        step.name === prevStep.name &&
-                        step.duration === 0
+                        {isNotExtremity && !isViaInSimulationPath && step.name === prevStep.name
                           ? '='
                           : step.name || 'Unknown'}
                       </TD>
                     </View>
                     <View style={styles.simulation.chWidth}>
-                      <TD style={styles.simulation.chColumn}>{step.ch}</TD>
+                      <TD
+                        style={
+                          isViaWithoutStop
+                            ? styles.simulation.chColumnPassageStop
+                            : styles.simulation.chColumn
+                        }
+                      >
+                        {step.ch}
+                      </TD>
                     </View>
                     <View style={styles.simulation.trackWidth}>
                       <TD style={styles.simulation.td}>{step.trackName}</TD>
@@ -321,17 +346,20 @@ const SimulationReportSheet = ({
                     <View style={styles.simulation.passageWidth}>
                       <TD
                         style={{
-                          ...(step.duration !== 0 && !isLastStep
+                          // eslint-disable-next-line no-nested-ternary
+                          ...(isStepWithDuration
                             ? {
                                 width: `${step.duration < 600 && step.duration >= 60 ? 60 : 70}px`,
                                 ...styles.simulation.blueStop,
                               }
-                            : styles.simulation.stopColumn),
+                            : !isViaWithoutStop
+                              ? styles.simulation.stopColumn
+                              : { ...styles.simulation.stopColumn, marginLeft: '' }),
                         }}
                       >
                         {
                           // eslint-disable-next-line no-nested-ternary
-                          !isFirstStep && !isLastStep
+                          isNotExtremity
                             ? step.duration !== 0
                               ? getStopDurationTime(step.duration)
                               : step.time
@@ -345,20 +373,20 @@ const SimulationReportSheet = ({
                       </TD>
                     </View>
                     <View style={styles.simulation.weightWidth}>
-                      <TD style={styles.simulation.td}>
+                      <TD style={tdPassageStopStyle}>
                         {!isFirstStep ? '=' : `${Math.floor(rollingStock.mass / 1000)} t`}
                       </TD>
                     </View>
                     <View style={styles.simulation.refEngineWidth}>
-                      <TD style={styles.simulation.td}>
+                      <TD style={tdPassageStopStyle}>
                         {!isFirstStep ? '=' : rollingStock.metadata?.reference}
                       </TD>
                     </View>
                     <View style={styles.simulation.convSignWidth}>
-                      <TD style={styles.simulation.td} aria-label="conventionalSign" />
+                      <TD style={tdPassageStopStyle} aria-label="conventionalSign" />
                     </View>
                     <View style={styles.simulation.crossedATEWidth}>
-                      <TD style={styles.simulation.td} aria-label="crossedATE" />
+                      <TD style={tdPassageStopStyle} aria-label="crossedATE" />
                     </View>
                   </TR>
                 );
