@@ -13,6 +13,7 @@ import type {
   SimulationResponseSuccess,
   PathPropertiesFormatted,
 } from 'applications/operationalStudies/types';
+import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 import { formatData } from './helpers';
 
@@ -21,6 +22,7 @@ export type SpeedSpaceChartContainerProps = {
   selectedTrainPowerRestrictions?: LayerData<PowerRestrictionValues>[];
   pathProperties: PathPropertiesFormatted;
   heightOfSpeedSpaceChartContainer: number;
+  rollingStock: RollingStockWithLiveries;
   setHeightOfSpeedSpaceChartContainer: React.Dispatch<React.SetStateAction<number>>;
 };
 
@@ -34,6 +36,7 @@ const SpeedSpaceChartContainer = ({
   selectedTrainPowerRestrictions,
   pathProperties,
   heightOfSpeedSpaceChartContainer,
+  rollingStock,
   setHeightOfSpeedSpaceChartContainer,
 }: SpeedSpaceChartContainerProps) => {
   const { t } = useTranslation('simulation');
@@ -46,6 +49,7 @@ const SpeedSpaceChartContainer = ({
 
   const speedSpaceChartData = formatData(
     trainSimulation,
+    rollingStock.length,
     selectedTrainPowerRestrictions,
     pathProperties
   );

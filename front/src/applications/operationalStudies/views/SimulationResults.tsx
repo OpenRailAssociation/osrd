@@ -172,6 +172,7 @@ const SimulationResults = ({
             <SpeedSpaceChartContainer
               trainSimulation={trainSimulation}
               selectedTrainPowerRestrictions={selectedTrainPowerRestrictions}
+              rollingStock={selectedTrainRollingStock}
               pathProperties={pathProperties}
               heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
               setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}

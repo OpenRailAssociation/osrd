@@ -173,6 +173,7 @@ const StcdmResults = ({
                   pathProperties={speedSpaceChartData.formattedPathProperties}
                   heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
                   setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
+                  rollingStock={speedSpaceChartData.rollingStock}
                 />
               )}
             </div>

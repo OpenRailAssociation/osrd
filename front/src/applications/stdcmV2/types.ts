@@ -14,15 +14,10 @@ export type StdcmSimulationInputs = {
   };
 };
 
-export type StdcmSpeedSpaceChartData = Pick<
-  SpeedSpaceChartData,
-  'formattedPathProperties' | 'formattedPowerRestrictions'
-> | null;
-
 export type StdcmSimulationOutputs = {
   results: StdcmV2SuccessResponse;
   pathProperties: ManageTrainSchedulePathProperties;
-  speedSpaceChartData: StdcmSpeedSpaceChartData;
+  speedSpaceChartData: SpeedSpaceChartData;
 };
 
 export type StdcmSimulation = {

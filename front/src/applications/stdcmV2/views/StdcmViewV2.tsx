@@ -118,6 +118,7 @@ const StdcmViewV2 = () => {
               inputs: currentSimulationInputs,
             }),
         ...(stdcmV2Results?.stdcmResponse &&
+          stdcmV2Results.speedSpaceChartData &&
           pathProperties && {
             outputs: {
               pathProperties,
