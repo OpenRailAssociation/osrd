@@ -12,7 +12,7 @@ if [ -z "$NOCOLOR" ]; then
 fi
 
 
-checks='check_fixup check_printable_ascii check_forbidden_chars check_structure'
+checks='check_fixup check_forbidden_chars check_structure'
 
 
 check_fixup() {
@@ -21,15 +21,9 @@ check_fixup() {
     fi
 }
 
-check_printable_ascii() {
-    if grep -q -P -v '^[\x20-\x7F]*$'; then
-        echo 'Commit titles must be printable ascii only'
-    fi
-}
-
 check_forbidden_chars() {
-    if grep -q -P -v '^[^#]*$'; then
-        echo 'Forbidden character found: #'
+    if grep -q -P -v '^[^#[:cntrl:]]*$'; then
+        echo 'Forbidden character found ("#" or control character)'
     fi
 }
 
