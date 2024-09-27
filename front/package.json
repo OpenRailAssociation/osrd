@@ -38,7 +38,7 @@
     "@turf/invariant": "^6.5.0",
     "@turf/length": "^6.5.0",
     "@turf/line-intersect": "^6.5.0",
-    "@turf/line-slice": "^6.5.0",
+    "@turf/line-slice": "^7.1.0",
     "@turf/line-slice-along": "^6.5.0",
     "@turf/line-split": "^6.5.0",
     "@turf/nearest-point": "^6.5.0",
