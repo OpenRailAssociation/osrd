@@ -14,6 +14,7 @@ mod views;
 use crate::core::CoreClient;
 use crate::models::Infra;
 use crate::views::OpenApiRoot;
+use axum::extract::DefaultBodyLimit;
 use axum::extract::FromRef;
 use axum::{Router, ServiceExt};
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
@@ -441,6 +442,7 @@ async fn runserver(
             authorizer_middleware,
         ))
         .layer(OtelAxumLayer::default())
+        .layer(DefaultBodyLimit::disable())
         .layer(request_payload_limit)
         .layer(cors)
         .layer(TraceLayer::new_for_http())
