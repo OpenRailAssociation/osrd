@@ -54,6 +54,15 @@ pub enum WorkerStatus {
     Error,
 }
 
+fn combine_worker_status(a: WorkerStatus, b: WorkerStatus) -> WorkerStatus {
+    match (a, b) {
+        (WorkerStatus::Ready, _) | (_, WorkerStatus::Ready) => WorkerStatus::Ready,
+        (WorkerStatus::Started, _) | (_, WorkerStatus::Started) => WorkerStatus::Started,
+        (WorkerStatus::Error, _) | (_, WorkerStatus::Error) => WorkerStatus::Error,
+        (WorkerStatus::Unscheduled, WorkerStatus::Unscheduled) => WorkerStatus::Unscheduled,
+    }
+}
+
 #[derive(Clone, Copy, Debug, Deserialize)]
 pub enum OsrdyneWorkerStatus {
     Loading,
@@ -110,6 +119,12 @@ struct OsrdyneStatusResponse {
 #[derive(Deserialize)]
 struct OsrdyneWorkerState {
     status: OsrdyneWorkerStatus,
+    worker_metadata: OsrdyneWorkerMetadata,
+}
+
+#[derive(Deserialize)]
+struct OsrdyneWorkerMetadata {
+    worker_key: String,
 }
 
 impl HTTPClient {
@@ -123,25 +138,28 @@ impl HTTPClient {
         #[expect(unstable_name_collisions)] // intersperse
         let encoded_keys = keys
             .iter()
-            .map(|key| urlencoding::encode(key.as_ref()))
-            .intersperse(std::borrow::Cow::Borrowed(","))
+            .map(|key| format!("keys={}", urlencoding::encode(key.as_ref())))
+            .intersperse("&".to_string())
             .collect::<String>();
 
-        let url = self
-            .base_url
-            .join(&format!("/status?keys={encoded_keys}"))?;
+        let url = self.base_url.join(&format!("/status?{encoded_keys}"))?;
         let response = self.client.get(url).send().await?;
         let response: OsrdyneStatusResponse = response.json().await?;
-        let response = response
-            .workers
-            .into_iter()
-            .map(|(k, v)| (k, v.status))
-            .collect::<HashMap<_, _>>();
+
+        // Build the map of worker status by key
+        let mut statuses = HashMap::new();
+        for worker in response.workers.into_values() {
+            let status = worker.status.into();
+            statuses
+                .entry(worker.worker_metadata.worker_key)
+                .and_modify(|s| *s = combine_worker_status(*s, status))
+                .or_insert(status);
+        }
 
         Ok(keys
             .iter()
             .map(|key| {
-                let status = response
+                let status = statuses
                     .get(key.as_ref())
                     .copied()
                     .map(WorkerStatus::from)
