@@ -37,6 +37,19 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      nivo:
+        patterns:
+          - "@nivo/*"
+      rjsf:
+        patterns:
+          - "@rjsf/*"
+      storybook:
+        patterns:
+          - "storybook"
+          - "@storybook/*"
+      turf:
+        patterns:
+          - "@turf/*"
     commit-message:
       prefix: "front:"
     open-pull-requests-limit: 100
