@@ -114,7 +114,7 @@
     "@storybook/preset-create-react-app": "^7.6.12",
     "@storybook/preset-scss": "^1.0.3",
     "@storybook/react": "^7.6.12",
-    "@storybook/react-vite": "^7.6.12",
+    "@storybook/react-vite": "^8.1.11",
     "@storybook/testing-library": "^0.2.2",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.4.2",
