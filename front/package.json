@@ -30,7 +30,7 @@
     "@turf/boolean-intersects": "^6.5.0",
     "@turf/boolean-point-in-polygon": "^6.5.0",
     "@turf/center": "^6.5.0",
-    "@turf/combine": "^6.5.0",
+    "@turf/combine": "^7.1.0",
     "@turf/destination": "^6.5.0",
     "@turf/distance": "^6.5.0",
     "@turf/explode": "^6.5.0",
