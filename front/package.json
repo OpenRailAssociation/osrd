@@ -22,7 +22,7 @@
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta4",
     "@turf/along": "^6.5.0",
     "@turf/bbox": "^6.5.0",
-    "@turf/bbox-clip": "^6.5.0",
+    "@turf/bbox-clip": "^7.1.0",
     "@turf/bearing": "^6.5.0",
     "@turf/bezier-spline": "^6.5.0",
     "@turf/boolean-intersects": "^6.5.0",
