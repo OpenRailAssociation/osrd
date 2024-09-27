@@ -68,10 +68,16 @@ const RollingStockCardButtons = ({
   }, [curvesComfortList]);
 
   useEffect(() => {
-    if (curvesComfortList.includes(currentComfortInStore)) {
-      setComfort(currentComfortInStore);
+    if (curvesComfortList.length === 0) {
+      setComfort('STANDARD');
+    } else {
+      setComfort(
+        curvesComfortList.includes(currentComfortInStore)
+          ? currentComfortInStore
+          : curvesComfortList[0]
+      );
     }
-  }, [currentComfortInStore]);
+  }, [curvesComfortList, currentComfortInStore]);
 
   return (
     <div className="rollingstock-footer-buttons">
