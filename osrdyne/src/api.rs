@@ -24,14 +24,14 @@ struct WorkerState {
 
 #[derive(Clone)]
 struct AppState {
-    known_workers: Arc<Mutex<HashMap<Vec<u8>, WorkerState>>>,
+    known_workers: Arc<Mutex<HashMap<String, WorkerState>>>,
     is_noop: bool,
 }
 
 pub async fn create_server(
     addr: String,
     known_workers: watch::Receiver<Arc<Vec<WorkerMetadata>>>,
-    worker_status: watch::Receiver<Arc<HashMap<Vec<u8>, WorkerStatus>>>,
+    worker_status: watch::Receiver<Arc<HashMap<String, WorkerStatus>>>,
     is_noop: bool,
 ) {
     let app_state = AppState {
@@ -67,7 +67,7 @@ pub async fn create_server(
 async fn app_state_updater(
     state: AppState,
     mut known_workers_recv: watch::Receiver<Arc<Vec<WorkerMetadata>>>,
-    mut worker_status_recv: watch::Receiver<Arc<HashMap<Vec<u8>, WorkerStatus>>>,
+    mut worker_status_recv: watch::Receiver<Arc<HashMap<String, WorkerStatus>>>,
 ) {
     let mut known_workers = Arc::new(vec![]);
     let mut worker_status = Arc::new(HashMap::new());
@@ -90,9 +90,9 @@ async fn app_state_updater(
         }
         let mut known_workers_with_status = HashMap::new();
         for worker in known_workers.iter() {
-            let status = worker_status.get(&worker.worker_id.to_string().into_bytes());
+            let status = worker_status.get(&worker.worker_id.to_string());
             known_workers_with_status.insert(
-                worker.worker_id.to_string().into_bytes(),
+                worker.worker_id.to_string(),
                 WorkerState {
                     worker_metadata: Some(worker.clone()),
                     status: status.cloned().unwrap_or(WorkerStatus::Loading),
@@ -115,7 +115,7 @@ async fn health_check() -> Json<HealthCheckResponse> {
 
 #[derive(Serialize)]
 struct ListWorkersResponse {
-    workers: HashMap<Key, WorkerState>,
+    workers: HashMap<String, WorkerState>,
 }
 
 #[derive(Deserialize)]
@@ -151,9 +151,13 @@ async fn list_workers(
             .into_iter()
             .map(|key| {
                 (
-                    key,
+                    key.encode(),
                     WorkerState {
-                        worker_metadata: None,
+                        worker_metadata: Some(WorkerMetadata {
+                            external_id: "noop".to_string(),
+                            worker_id: uuid::Uuid::nil(),
+                            worker_key: key,
+                        }),
                         // In noop mode, we can't track the worker states.
                         // We consider them always ready, as this mode is only used when debugging.
                         status: WorkerStatus::Ready,
@@ -161,10 +165,7 @@ async fn list_workers(
                 )
             })
             .collect(),
-        (None, _) => latest_known_workers
-            .into_iter()
-            .map(|(k, s)| (Key::from(k.as_ref()), s))
-            .collect(),
+        (None, _) => latest_known_workers.into_iter().collect(),
     };
     Ok(Json(ListWorkersResponse {
         workers: filtered_workers,
@@ -173,11 +174,11 @@ async fn list_workers(
 
 fn filter_workers(
     keys: Vec<Key>,
-    latest_known_workers: HashMap<Vec<u8>, WorkerState>,
-) -> Result<HashMap<Key, WorkerState>, ListWorkerError> {
+    latest_known_workers: HashMap<String, WorkerState>,
+) -> Result<HashMap<String, WorkerState>, ListWorkerError> {
     let keys_set: HashSet<_> = keys.into_iter().collect();
     let mut filtered_workers = HashMap::new();
-    for (_, s) in latest_known_workers.into_iter() {
+    for (k, s) in latest_known_workers.into_iter() {
         let worker_key = s
             .worker_metadata
             .as_ref()
@@ -185,7 +186,7 @@ fn filter_workers(
             .worker_key
             .clone();
         if keys_set.contains(&worker_key) {
-            filtered_workers.insert(worker_key, s);
+            filtered_workers.insert(k, s);
         }
     }
     Ok(filtered_workers)

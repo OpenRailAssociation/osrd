@@ -376,7 +376,7 @@ async fn orphan_processor(
 pub struct ActivityMessage {
     pub kind: ActivityMessageKind,
     pub worker_key: Key,
-    pub worker_id: Vec<u8>,
+    pub worker_id: String,
 }
 
 pub enum ActivityMessageKind {
@@ -431,6 +431,10 @@ async fn activity_processor(
             .and_then(|v| v.as_long_string().map(|s| s.as_bytes()));
 
         if let Some(worker_id) = worker_id {
+            let Ok(worker_id) = String::from_utf8(worker_id.to_vec()) else {
+                continue;
+            };
+
             let kind = headers
                 .as_ref()
                 .and_then(|h| h.inner().get("x-event"))
@@ -442,7 +446,7 @@ async fn activity_processor(
             let activity = ActivityMessage {
                 kind,
                 worker_key: key.clone(),
-                worker_id: worker_id.to_owned(),
+                worker_id,
             };
             status_tracker.send(activity).await?;
         }
