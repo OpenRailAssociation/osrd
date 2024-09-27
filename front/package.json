@@ -42,7 +42,7 @@
     "@turf/line-slice-along": "^6.5.0",
     "@turf/line-split": "^6.5.0",
     "@turf/nearest-point": "^6.5.0",
-    "@turf/simplify": "^6.5.0",
+    "@turf/simplify": "^7.1.0",
     "@turf/transform-translate": "^6.5.0",
     "@types/vinyl-fs": "^3.0.5",
     "ajv": "^8.12.0",
