@@ -179,7 +179,7 @@ export function saveOperations(
           body: operations,
         })
       );
-      if ('data' in response) {
+      if (response.data) {
         // success message
         dispatch(
           setSuccess({
@@ -236,7 +236,7 @@ export function saveSplitTrackSection(
           trackOffset: { track: trackId, offset },
         })
       );
-      if ('data' in response) {
+      if (response.data) {
         // success message
         dispatch(
           setSuccess({
