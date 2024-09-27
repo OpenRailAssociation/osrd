@@ -80,7 +80,7 @@
     "react-countdown": "^2.3.5",
     "react-datasheet-grid": "^4.11.4",
     "react-dom": "^18.2.0",
-    "react-i18next": "^14.0.3",
+    "react-i18next": "^15.0.2",
     "react-icons": "^5.0.1",
     "react-id-generator": "^3.0.2",
     "react-infinite-scroll-component": "^6.1.0",
