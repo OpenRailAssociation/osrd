@@ -59,6 +59,7 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
               <SpeedSpaceChartContainer
                 trainSimulation={stdcmResponse.simulation}
                 selectedTrainPowerRestrictions={speedSpaceChartData.formattedPowerRestrictions}
+                rollingStock={speedSpaceChartData.rollingStock}
                 pathProperties={speedSpaceChartData.formattedPathProperties}
                 heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
                 setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}

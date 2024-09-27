@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
-import type { StdcmSpeedSpaceChartData } from 'applications/stdcmV2/types';
 import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
@@ -49,7 +48,7 @@ const useStdcmResults = (
     [selectedTrainId, stdcmTrainResult, otherSelectedTrainSchedule]
   );
 
-  const speedSpaceChartData: StdcmSpeedSpaceChartData = useSpeedSpaceChart(
+  const speedSpaceChartData = useSpeedSpaceChart(
     stdcmTrainResult,
     stdcmResponse?.path,
     stdcmResponse?.simulation,

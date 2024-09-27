@@ -13,7 +13,7 @@
     "@osrd-project/ui-manchette": "^0.0.45",
     "@osrd-project/ui-manchette-with-spacetimechart": "^0.0.45",
     "@osrd-project/ui-spacetimechart": "^0.0.45",
-    "@osrd-project/ui-speedspacechart": "^0.0.44",
+    "@osrd-project/ui-speedspacechart": "^0.0.46",
     "@react-pdf/renderer": "^3.4.2",
     "@redux-devtools/extension": "^3.3.0",
     "@reduxjs/toolkit": "^2.1.0",

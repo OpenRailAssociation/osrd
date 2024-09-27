@@ -1,10 +1,10 @@
 /* eslint-disable import/prefer-default-export */
 import type {
-  LayerData,
   Data,
-  ElectrificationValues,
-  PowerRestrictionValues,
   ElectricalPofilelValues,
+  ElectrificationValues,
+  LayerData,
+  PowerRestrictionValues,
   SpeedLimitTagValues,
 } from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
 
@@ -94,6 +94,11 @@ export const formatSpeeds = (simulation: ReportTrain) => {
     value: msToKmh(value),
   }));
 };
+
+const formatMrsp = (mrsp: SimulationResponseSuccess['mrsp']) => ({
+  boundaries: mrsp.boundaries.map((pos) => mmToKm(pos)),
+  values: mrsp.values.map((speed) => ({ speed: msToKmh(speed.speed), isTemporary: false })),
+});
 
 export const formatStops = (operationalPoints: PathPropertiesFormatted['operationalPoints']) =>
   operationalPoints.map(({ position, extensions: { identifier, sncf } = {} }) => ({
@@ -192,6 +197,7 @@ export const formatElectricalProfiles = (
 
 export const formatData = (
   simulation: SimulationResponseSuccess,
+  trainLength: number,
   selectedTrainPowerRestrictions?: LayerData<PowerRestrictionValues>[],
   pathProperties?: PathPropertiesFormatted
 ) => {
@@ -211,6 +217,8 @@ export const formatData = (
     simulation.mrsp,
     pathLength
   );
+  const mrsp = formatMrsp(simulation.mrsp);
+
   return {
     speeds,
     ecoSpeeds,
@@ -220,5 +228,7 @@ export const formatData = (
     electricalProfiles,
     powerRestrictions,
     speedLimitTags,
+    mrsp,
+    trainLength,
   };
 };

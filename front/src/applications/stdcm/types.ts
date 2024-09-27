@@ -1,11 +1,11 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
-import type { StdcmSpeedSpaceChartData } from 'applications/stdcmV2/types';
 import type {
   LightRollingStock,
   PostTimetableByIdStdcmApiResponse,
   SimulationResponse,
 } from 'common/api/osrdEditoastApi';
+import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import type { ValueOf } from 'utils/types';
 
@@ -46,7 +46,7 @@ type StdcmResultsOperationalPoint = {
 
 export type StdcmV2Results = {
   stdcmResponse: StdcmV2SuccessResponse;
-  speedSpaceChartData: StdcmSpeedSpaceChartData;
+  speedSpaceChartData: SpeedSpaceChartData | null;
   spaceTimeData: TrainSpaceTimeData[] | null;
 };
 
