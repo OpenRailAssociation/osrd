@@ -97,7 +97,7 @@
     "redux-persist-transform-filter": "0.0.22",
     "remark-gfm": "^4.0.0",
     "reselect": "^5.1.0",
-    "uuid": "^9.0.1",
+    "uuid": "^10.0.0",
     "viewport-mercator-project": "^7.0.4"
   },
   "devDependencies": {
@@ -132,7 +132,7 @@
     "@types/react-modal": "^3.16.3",
     "@types/react-transition-group": "^4.4.10",
     "@types/tether": "^1.4.9",
-    "@types/uuid": "^9.0.8",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
     "@vitejs/plugin-react": "^4.2.1",
