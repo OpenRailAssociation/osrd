@@ -28,7 +28,7 @@
     "@turf/bearing": "^6.5.0",
     "@turf/bezier-spline": "^6.5.0",
     "@turf/boolean-intersects": "^6.5.0",
-    "@turf/boolean-point-in-polygon": "^6.5.0",
+    "@turf/boolean-point-in-polygon": "^7.1.0",
     "@turf/center": "^6.5.0",
     "@turf/combine": "^6.5.0",
     "@turf/destination": "^6.5.0",
