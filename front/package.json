@@ -137,7 +137,7 @@
     "@types/react-transition-group": "^4.4.10",
     "@types/tether": "^1.4.9",
     "@types/uuid": "^9.0.8",
-    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.20.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitejs/plugin-react-swc": "^3.6.0",
