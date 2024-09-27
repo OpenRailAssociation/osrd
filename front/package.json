@@ -112,7 +112,7 @@
     "@import-meta-env/unplugin": "^0.5.1",
     "@playwright/test": "^1.41.2",
     "@storybook/addon-actions": "^7.6.12",
-    "@storybook/addon-essentials": "^7.6.12",
+    "@storybook/addon-essentials": "^8.1.11",
     "@storybook/addon-interactions": "^7.6.12",
     "@storybook/addon-links": "^7.6.12",
     "@storybook/node-logger": "^7.6.12",
