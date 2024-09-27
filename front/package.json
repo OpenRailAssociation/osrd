@@ -23,7 +23,7 @@
     "@storybook/addon-postcss": "^2.0.0",
     "@storybook/preset-scss": "^1.0.3",
     "@turf/along": "^6.5.0",
-    "@turf/bbox": "^6.5.0",
+    "@turf/bbox": "^7.1.0",
     "@turf/bbox-clip": "^6.5.0",
     "@turf/bearing": "^6.5.0",
     "@turf/bezier-spline": "^6.5.0",
