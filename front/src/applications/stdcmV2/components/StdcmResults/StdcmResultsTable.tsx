@@ -49,24 +49,27 @@ const StcdmResultsTable = ({
             const isLastStep = index === operationalPointsList.length - 1;
             const prevStep = operationalPointsList[index - 1];
             const isRequestedPathStep = stdcmData.simulationPathSteps.some(
-              (pathStep) => pathStep?.name === step.name && pathStep?.ch === step.ch
+              (pathStep) => pathStep.name === step.name && pathStep.ch === step.ch
             );
             const shouldRenderRow = isFirstStep || isRequestedPathStep || isLastStep;
+            const isPathStep =
+              isFirstStep || isLastStep || (isRequestedPathStep && step.duration === 0);
+            const isNotExtremity = !isFirstStep && !isLastStep;
             if (showAllOP || shouldRenderRow) {
               return (
                 <tr key={index}>
                   <td
                     className="index"
                     style={{
-                      fontWeight: isFirstStep || isLastStep ? 600 : 'normal',
-                      color: isFirstStep || isLastStep ? '' : 'rgb(121, 118, 113)',
+                      fontWeight: isPathStep ? 600 : 'normal',
+                      color: isPathStep ? '' : 'rgb(121, 118, 113)',
                     }}
                   >
                     {index + 1}
                   </td>
                   <td style={{ color: 'rgb(49, 46, 43)' }}>
-                    {!isFirstStep &&
-                    !isLastStep &&
+                    {isNotExtremity &&
+                    !isRequestedPathStep &&
                     step.name === prevStep.name &&
                     !isRequestedPathStep &&
                     step.duration === 0
@@ -86,7 +89,7 @@ const StcdmResultsTable = ({
                     >
                       {
                         // eslint-disable-next-line no-nested-ternary
-                        !isFirstStep && !isLastStep
+                        isNotExtremity || !isRequestedPathStep
                           ? step.duration !== 0
                             ? getStopDurationTime(step.duration)
                             : step.time
@@ -98,12 +101,10 @@ const StcdmResultsTable = ({
                     {isFirstStep || step.duration > 0 ? step.stopEndTime : ''}
                   </td>
                   <td className="weight" style={{ color: !isFirstStep ? '#797671' : '#312E2B' }}>
-                    {!isFirstStep && !isLastStep
-                      ? '='
-                      : `${Math.floor(stdcmData.rollingStock.mass / 1000)}t`}
+                    {isNotExtremity ? '=' : `${Math.floor(stdcmData.rollingStock.mass / 1000)}t`}
                   </td>
                   <td style={{ color: !isFirstStep ? '#797671' : '#312E2B' }}>
-                    {!isFirstStep && !isLastStep ? '=' : stdcmData.rollingStock.metadata?.reference}
+                    {isNotExtremity ? '=' : stdcmData.rollingStock.metadata?.reference}
                   </td>
                 </tr>
               );
