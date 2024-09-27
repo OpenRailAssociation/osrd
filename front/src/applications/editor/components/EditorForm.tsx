@@ -51,7 +51,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
 }: PropsWithChildren<EditorFormProps<T>>) {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
-  const [submited, setsubmited] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
   const { t } = useTranslation('infraEditor');
 
   const editorState = useSelector(getEditorState);
@@ -89,15 +89,15 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
 
   return (
     <div>
-      {submited && error !== null && (
+      {submitted && error !== null && (
         <div className="form-error mt-3 mb-3">
           <p className="mb-0">{error}</p>
         </div>
       )}
       <Form
         fields={{ ...fields, ...(overrideFields || {}) }}
-        liveValidate={submited}
-        showErrorList={submited ? 'top' : false}
+        liveValidate={submitted}
+        showErrorList={submitted ? 'top' : false}
         action={undefined}
         noHtml5Validate
         validator={validator}
@@ -110,7 +110,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
           length: data.properties?.length,
           isCreation: isNil(formData?.id) || formData?.id === NEW_ENTITY_ID,
         }}
-        onError={() => setsubmited(true)}
+        onError={() => setSubmitted(true)}
         onSubmit={async () => {
           try {
             setError(null);
@@ -118,7 +118,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
           } catch (e) {
             setError(getErrorMessage(e));
           } finally {
-            setsubmited(true);
+            setSubmitted(true);
           }
         }}
         onChange={(event) => {

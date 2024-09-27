@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import crossing from 'assets/pictures/trackNodeTypes/crossing.svg';
 import doubleSlipSwitch from 'assets/pictures/trackNodeTypes/double_slip_switch.svg';
 import link from 'assets/pictures/trackNodeTypes/link.svg';
@@ -15,7 +13,7 @@ const SOURCES: Record<string, string> = {
 };
 
 const TrackNodeTypeDiagram = ({ trackNodeType }: { trackNodeType: string }) => {
-  const trackNodeTypeImage = useMemo(() => SOURCES[trackNodeType], [trackNodeType]);
+  const trackNodeTypeImage = SOURCES[trackNodeType];
   return trackNodeTypeImage && <img src={trackNodeTypeImage} alt={trackNodeType} />;
 };
 
