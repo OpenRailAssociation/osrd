@@ -12,7 +12,7 @@
     "@osrd-project/ui-icons": "^0.0.44",
     "@osrd-project/ui-manchette": "^0.0.44",
     "@osrd-project/ui-speedspacechart": "^0.0.44",
-    "@react-pdf/renderer": "^3.4.2",
+    "@react-pdf/renderer": "^3.4.5",
     "@redux-devtools/extension": "^3.3.0",
     "@reduxjs/toolkit": "^2.1.0",
     "@rjsf/core": "^5.17.0",
