@@ -2315,14 +2315,6 @@
   resolved "https://registry.yarnpkg.com/@osrd-project/netzgrafik-frontend/-/netzgrafik-frontend-0.0.0-snapshot.6d049b7244241254c33afc3818f40ec57ab57217.tgz#40e507bb3e05be9c6dc07f6ed5533c3db5426d24"
   integrity sha512-lK/r4qYPeibUtoumN/oaj1spoL7S7lK0J3ZLIf2pm/xCjbK/Gx+8QLNDz6PMoKlG19RUbFc765qybzADo3e3pg==
 
-"@osrd-project/ui-core@^0.0.44":
-  version "0.0.44"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-core/-/ui-core-0.0.44.tgz#24f9f91afb527e48cfa8751dcd25c261b21dd9d3"
-  integrity sha512-5tGa9pMv8LI0wYb/k2svjKKJljZu/7wgNc8dHP/XtrLiK8KuwZuy93g2tFqiR2LA0P+YwCq0PqRqvn9botEk3g==
-  dependencies:
-    classnames "^2.5.1"
-    tailwindcss "^3.4.1"
-
 "@osrd-project/ui-core@^0.0.46":
   version "0.0.46"
   resolved "https://registry.yarnpkg.com/@osrd-project/ui-core/-/ui-core-0.0.46.tgz#ab83dd5587280e8bdc11918eb9f028b4ca62f709"

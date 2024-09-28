@@ -236,3 +236,9 @@ export const generateISODateFromDateTime = ({ date, hours, minutes }: ScheduleCo
   date.setMinutes(minutes);
   return formatLocaleDateToIsoDate(date);
 };
+
+/** Format a date to a string 'DD/MM/YY', for instance '01/01/24' */
+export const formatDateString = (date?: Date | null) => {
+  if (!date) return '';
+  return dayjs(date).format('DD/MM/YY');
+};

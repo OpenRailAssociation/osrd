@@ -14,6 +14,12 @@
   },
   "departureTime": "Departure time",
   "destinationTime": "Destination time",
+  "form": {
+    "datePickerErrors": {
+      "invalidInput": "The date must be formatted as dd/mm/yy",
+      "invalidDate": "Select a date between {{startDate}} and {{endDate}}"
+    }
+  },
   "leaveAt": "Leave at {{ time }}",
   "loaderImageLegend": "The TGV Nord line",
   "noConfigurationFound": {

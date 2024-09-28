@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import { isArrivalDateInSearchTimeWindow } from 'utils/date';
+import { formatDateString, isArrivalDateInSearchTimeWindow } from 'utils/date';
 import { createStringSelectOptions } from 'utils/uiCoreHelpers';
 
 import type { ArrivalTimeTypes, ScheduleConstraint } from '../types';
@@ -77,6 +77,28 @@ const StdcmOpSchedule = ({
       };
     }, [opTimingData, opToleranceValues, searchDatetimeWindow]);
 
+  const selectableSlot = useMemo(
+    () =>
+      searchDatetimeWindow
+        ? {
+            start: searchDatetimeWindow.begin,
+            end: searchDatetimeWindow.end,
+          }
+        : undefined,
+    [searchDatetimeWindow]
+  );
+
+  const datePickerErrorMessages = useMemo(
+    () => ({
+      invalidInput: t('form.datePickerErrors.invalidInput'),
+      invalidDate: t('form.datePickerErrors.invalidDate', {
+        startDate: formatDateString(searchDatetimeWindow?.begin),
+        endDate: formatDateString(searchDatetimeWindow?.end),
+      }),
+    }),
+    [t, searchDatetimeWindow]
+  );
+
   return (
     <div className="d-flex flex-column">
       <div className="col-12 pr-1">
@@ -104,17 +126,8 @@ const StdcmOpSchedule = ({
               disabled,
               onChange: () => {},
             }}
+            selectableSlot={selectableSlot}
             value={arrivalDate}
-            calendarPickerProps={
-              searchDatetimeWindow
-                ? {
-                    selectableSlot: {
-                      start: searchDatetimeWindow.begin,
-                      end: searchDatetimeWindow.end,
-                    },
-                  }
-                : undefined
-            }
             onDateChange={(e) => {
               onArrivalChange({
                 date: e,
@@ -122,6 +135,7 @@ const StdcmOpSchedule = ({
                 minutes: arrivalTimeMinutes || 0,
               });
             }}
+            errorMessages={datePickerErrorMessages}
           />
           <TimePicker
             id={`time-${opId}`}
