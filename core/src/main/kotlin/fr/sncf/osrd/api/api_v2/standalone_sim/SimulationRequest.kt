@@ -4,6 +4,7 @@ import com.squareup.moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.api.api_v2.RangeValues
+
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.GammaType
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort

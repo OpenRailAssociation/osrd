@@ -3,6 +3,7 @@ package fr.sncf.osrd.pathfinding
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.api.api_v2.RangeValues
+
 import fr.sncf.osrd.api.api_v2.path_properties.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.utils.takes.TakesUtils
