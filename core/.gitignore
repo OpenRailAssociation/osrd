@@ -10,6 +10,7 @@ __pycache__/
 .project
 .settings/
 bin
+kls_database.db
 
 # vscode
 .project
