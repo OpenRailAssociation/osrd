@@ -52,14 +52,6 @@ const NGE = ({ dto, onOperation }: NGEProps) => {
       const ngeRoot = frame.contentDocument!.createElement('sbb-root') as NGEElement;
       frame.contentDocument!.body.appendChild(ngeRoot);
       setNgeRootElement(ngeRoot);
-
-      // listens to create, update and delete operations
-      ngeRoot.addEventListener('operation', (event: Event) => {
-        const customEvent = event as CustomEvent;
-        const op = customEvent.detail as NGEEvent;
-
-        if (onOperation) onOperation(op, ngeRoot.netzgrafikDto);
-      });
     };
 
     frame.addEventListener('load', handleFrameLoad);
@@ -74,6 +66,21 @@ const NGE = ({ dto, onOperation }: NGEProps) => {
       ngeRootElement.netzgrafikDto = dto;
     }
   }, [dto, ngeRootElement]);
+
+  useEffect(() => {
+    if (ngeRootElement && onOperation) {
+      const fnOpListener = (event: Event) => {
+        const customEvent = event as CustomEvent;
+        const op = customEvent.detail as NGEEvent;
+        if (onOperation) onOperation(op, ngeRootElement.netzgrafikDto);
+      };
+      ngeRootElement.addEventListener('operation', fnOpListener);
+      return () => {
+        ngeRootElement.removeEventListener('operation', fnOpListener);
+      };
+    }
+    return () => {};
+  }, [onOperation, ngeRootElement]);
 
   return <iframe ref={frameRef} srcDoc={frameSrc} title="NGE" className="nge-iframe-container" />;
 };

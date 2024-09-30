@@ -104,7 +104,8 @@
     "tslib": "^2.6.2",
     "tsx": "^4.7.1",
     "uuid": "^9.0.1",
-    "viewport-mercator-project": "^7.0.4"
+    "viewport-mercator-project": "^7.0.4",
+    "webcola": "^3.4.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.0",

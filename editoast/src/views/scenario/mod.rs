@@ -1,3 +1,5 @@
+mod macro_nodes;
+
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -11,6 +13,7 @@ use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
+use macro_nodes::{MacroNodeForm, MacroNodeListResponse, MacroNodeResponse};
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -45,6 +48,7 @@ crate::routes! {
             get,
             delete,
             patch,
+            &macro_nodes,
         },
     },
 }
@@ -55,6 +59,9 @@ editoast_common::schemas! {
     ScenarioWithDetails,
     ScenarioResponse,
     ScenarioCreateForm,
+    MacroNodeForm,
+    MacroNodeResponse,
+    MacroNodeListResponse,
 }
 
 #[derive(IntoParams, Deserialize)]

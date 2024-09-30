@@ -145,7 +145,10 @@ impl PaginationQueryParam {
 
     pub fn validate(self, max_page_size: i64) -> Result<PaginationQueryParam> {
         let (page, page_size) = self.unpack();
-        if page_size > max_page_size || page_size < 1 || page < 1 {
+        if page < 1 {
+            return Err(PaginationError::InvalidPage { page }.into());
+        }
+        if page_size > max_page_size || page_size < 1 {
             return Err(PaginationError::InvalidPageSize {
                 provided_page_size: page_size,
                 max_page_size,
@@ -189,6 +192,9 @@ pub enum PaginationError {
         provided_page_size: i64,
         max_page_size: i64,
     },
+    #[error("Invalid page ({page}), expected a positive integer ")]
+    #[editoast_error(status = 400)]
+    InvalidPage { page: i64 },
 }
 
 #[cfg(test)]
