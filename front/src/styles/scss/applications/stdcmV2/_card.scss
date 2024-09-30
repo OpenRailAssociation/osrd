@@ -114,16 +114,13 @@
       padding-bottom: 0.5rem;
 
       .stdcm-v2-consist__properties {
-        display: flex;
+        display: grid;
+        grid-template-columns: 7.4375rem 7.938rem;
         justify-content: space-between;
         padding-block: 0.6875rem;
 
-        .weight {
-          width: 7.4375rem;
-        }
-
-        .length {
-          width: 7.9375rem;
+        .osrd-config-item {
+          padding-right: 0.188rem;
         }
 
         * > .base-label-wrapper > label {

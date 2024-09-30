@@ -2512,6 +2512,11 @@ paths:
                   - 5%
                   - 2min/100km
                   nullable: true
+                max_speed:
+                  type: number
+                  format: double
+                  description: Maximum speed of the consist in km/h
+                  nullable: true
                 maximum_departure_delay:
                   type: integer
                   format: int64
@@ -2566,6 +2571,16 @@ paths:
                     Enforces that the path used by the train should be free and
                     available at least that many milliseconds before its passage.
                   minimum: 0
+                total_length:
+                  type: number
+                  format: double
+                  description: Total length of the consist in meters
+                  nullable: true
+                total_mass:
+                  type: number
+                  format: double
+                  description: Total mass of the consist in kg
+                  nullable: true
                 work_schedule_group_id:
                   type: integer
                   format: int64
@@ -8523,6 +8538,11 @@ components:
           - 5%
           - 2min/100km
           nullable: true
+        max_speed:
+          type: number
+          format: double
+          description: Maximum speed of the consist in km/h
+          nullable: true
         maximum_departure_delay:
           type: integer
           format: int64
@@ -8577,6 +8597,16 @@ components:
             Enforces that the path used by the train should be free and
             available at least that many milliseconds before its passage.
           minimum: 0
+        total_length:
+          type: number
+          format: double
+          description: Total length of the consist in meters
+          nullable: true
+        total_mass:
+          type: number
+          format: double
+          description: Total mass of the consist in kg
+          nullable: true
         work_schedule_group_id:
           type: integer
           format: int64

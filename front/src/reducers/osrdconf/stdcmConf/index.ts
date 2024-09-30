@@ -10,6 +10,9 @@ import { updateOriginPathStep, updateDestinationPathStep } from '../helpers';
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   maximumRunTime: 43200,
   standardStdcmAllowance: undefined,
+  totalMass: undefined,
+  totalLength: undefined,
+  maxSpeed: undefined,
   ...defaultCommonConf,
 };
 
@@ -24,6 +27,24 @@ export const stdcmConfSlice = createSlice({
       state.originDate = stdcmConfInitialState.originDate;
       state.originTime = stdcmConfInitialState.originTime;
       state.speedLimitByTag = stdcmConfInitialState.speedLimitByTag;
+    },
+    updateTotalMass(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<OsrdStdcmConfState['totalMass']>
+    ) {
+      state.totalMass = action.payload;
+    },
+    updateTotalLength(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<OsrdStdcmConfState['totalLength']>
+    ) {
+      state.totalLength = action.payload;
+    },
+    updateMaxSpeed(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<OsrdStdcmConfState['maxSpeed']>
+    ) {
+      state.maxSpeed = action.payload;
     },
     updateStdcmConfigWithData(
       state: Draft<OsrdStdcmConfState>,

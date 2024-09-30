@@ -85,7 +85,7 @@
   "noOriginChosen": "Departure undefined",
   "noDestinationChosen": "Arrival undefined",
   "noPowerRestriction": "No power restriction",
-  "noSpeedLimitByTag": "No composition code",
+  "noSpeedLimitByTag": "None",
   "noTimetable": "Select a timetable",
   "noTrainCompo": "No rolling stock defined…",
   "origin": "Origin",

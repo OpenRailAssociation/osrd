@@ -93,3 +93,11 @@ export function percentageToDecimal(value: number) {
 export function decimalToPercentage(value: number) {
   return value * 100;
 }
+
+/**
+ * ex: converts 12t to 12000
+ * @param value in ton
+ */
+export function tToKg(value: number) {
+  return value * 1000;
+}

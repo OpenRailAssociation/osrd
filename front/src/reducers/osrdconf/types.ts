@@ -53,6 +53,9 @@ export interface StandardAllowance {
 export interface OsrdStdcmConfState extends OsrdConfState {
   maximumRunTime: number;
   standardStdcmAllowance?: StandardAllowance;
+  totalMass?: number;
+  totalLength?: number;
+  maxSpeed?: number;
 }
 
 export type PathStep = PathItemLocation & {

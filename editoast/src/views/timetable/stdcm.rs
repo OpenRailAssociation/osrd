@@ -28,6 +28,8 @@ use super::SelectionSettings;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResult;
+use crate::core::simulation::PhysicsRollingStock;
+use crate::core::simulation::SimulationParameters;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::stdcm::STDCMResponse;
 use crate::core::stdcm::TemporarySpeedLimit as CoreTemporarySpeedLimit;
@@ -112,6 +114,22 @@ pub struct STDCMRequestPayload {
     #[serde(default)]
     #[schema(value_type = Option<String>, example = json!(["5%", "2min/100km"]))]
     margin: Option<MarginValue>,
+    /// Total mass of the consist in kg
+    total_mass: Option<f64>,
+    /// Total length of the consist in meters
+    total_length: Option<f64>,
+    /// Maximum speed of the consist in km/h
+    max_speed: Option<f64>,
+}
+
+impl STDCMRequestPayload {
+    pub fn simulation_parameters(&self) -> SimulationParameters {
+        SimulationParameters {
+            total_mass: self.total_mass,
+            total_length: self.total_length,
+            max_speed: self.max_speed,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
@@ -173,6 +191,7 @@ async fn stdcm(
     let core_client = app_state.core_client.clone();
     let timetable_id = id;
     let infra_id = query.infra;
+    let simulation_parameters = stdcm_request.simulation_parameters();
 
     // 1. Retrieve Timetable / Infra / Trains / Simulation / Rolling Stock
     let timetable_trains = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
@@ -268,7 +287,6 @@ async fn stdcm(
     let stdcm_response = STDCMRequest {
         infra: infra.id,
         expected_version: infra.version,
-        rolling_stock: rolling_stock.clone().into(),
         rolling_stock_loading_gauge: rolling_stock.loading_gauge,
         rolling_stock_supported_signaling_systems: rolling_stock
             .supported_signaling_systems
@@ -297,6 +315,7 @@ async fn stdcm(
             None => vec![],
         },
         temporary_speed_limits,
+        rolling_stock: PhysicsRollingStock::new(rolling_stock.into(), simulation_parameters),
     }
     .fetch(core_client.as_ref())
     .await?;
@@ -641,4 +660,90 @@ async fn parse_stdcm_steps(
 enum SimulationTimeResult {
     SimulationTime { value: u64 },
     Error { error: Box<SimulationResponse> },
+}
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+
+    use crate::views::rolling_stock::tests::fast_rolling_stock_form;
+
+    use super::*;
+
+    fn create_test_rolling_stock() -> RollingStockModel {
+        let rs_form = fast_rolling_stock_form("test_rolling_stock");
+        RollingStockModel {
+            id: 5656565,
+            name: rs_form.name,
+            loading_gauge: rs_form.loading_gauge,
+            supported_signaling_systems: rs_form.supported_signaling_systems,
+            version: 33,
+            base_power_class: rs_form.base_power_class,
+            comfort_acceleration: rs_form.comfort_acceleration,
+            inertia_coefficient: rs_form.inertia_coefficient,
+            startup_acceleration: rs_form.startup_acceleration,
+            startup_time: rs_form.startup_time,
+            effort_curves: rs_form.effort_curves,
+            electrical_power_startup_time: rs_form.electrical_power_startup_time,
+            raise_pantograph_time: rs_form.raise_pantograph_time,
+            energy_sources: rs_form.energy_sources,
+            gamma: rs_form.gamma,
+            locked: false,
+            metadata: rs_form.metadata,
+            power_restrictions: rs_form.power_restrictions,
+            railjson_version: "12".to_string(),
+            rolling_resistance: rs_form.rolling_resistance,
+            length: 140.0,   // m
+            mass: 150000.0,  // kg
+            max_speed: 20.0, // m/s
+        }
+    }
+
+    #[test]
+    fn simulation_with_parameters() {
+        let rolling_stock = create_test_rolling_stock();
+
+        let simulation_parameters = SimulationParameters {
+            total_mass: Some(123.0),
+            total_length: Some(455.0),
+            max_speed: Some(10.0), // m/s
+        };
+
+        let physics_rolling_stock: PhysicsRollingStock =
+            PhysicsRollingStock::new(rolling_stock.into(), simulation_parameters);
+
+        assert_eq!(physics_rolling_stock.mass, 123_u64);
+        assert_eq!(physics_rolling_stock.length, 455000_u64); // It should be converted in mm
+        assert_eq!(physics_rolling_stock.max_speed, 10_f64); // It should be in m/s
+    }
+
+    #[test]
+    fn simulation_without_parameters() {
+        let rolling_stock = create_test_rolling_stock();
+
+        let simulation_parameters = SimulationParameters::default();
+
+        let physics_rolling_stock: PhysicsRollingStock =
+            PhysicsRollingStock::new(rolling_stock.into(), simulation_parameters);
+
+        assert_eq!(physics_rolling_stock.mass, 150000_u64);
+        assert_eq!(physics_rolling_stock.length, 140000_u64); // It should be converted in mm
+        assert_eq!(physics_rolling_stock.max_speed, 20_f64);
+    }
+
+    #[test]
+    fn new_physics_rolling_stock_keeps_the_smallest_available_max_speed() {
+        let rolling_stock = create_test_rolling_stock();
+
+        let simulation_parameters = SimulationParameters {
+            total_mass: None,
+            total_length: None,
+            max_speed: Some(30.0), // m/s
+        };
+
+        let physics_rolling_stock: PhysicsRollingStock =
+            PhysicsRollingStock::new(rolling_stock.into(), simulation_parameters);
+
+        assert_eq!(physics_rolling_stock.max_speed, 20_f64);
+    }
 }
