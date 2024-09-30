@@ -55,7 +55,7 @@ impl DbConnection {
     //
     // :WARNING: If you ever need to modify this function, please take a look at the
     // original `diesel` function, they probably do it right more than us.
-    pub async fn transaction<'a, R, E, F>(self, callback: F) -> std::result::Result<R, E>
+    pub async fn transaction<'a, R, E, F>(&self, callback: F) -> std::result::Result<R, E>
     where
         F: FnOnce(Self) -> ScopedBoxFuture<'a, 'a, std::result::Result<R, E>> + Send + 'a,
         E: From<diesel::result::Error> + Send + 'a,

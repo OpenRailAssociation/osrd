@@ -124,7 +124,7 @@ async fn make_authorizer(
     if roles.is_superuser() {
         return Ok(Authorizer::new_superuser(
             roles,
-            PgAuthDriver::<BuiltinRole>::new(db_pool.clone()),
+            PgAuthDriver::<BuiltinRole>::new(db_pool.get().await?),
         ));
     }
     let Some(header) = headers.get("x-remote-user") else {
@@ -141,7 +141,7 @@ async fn make_authorizer(
             name: name.to_owned(),
         },
         roles,
-        PgAuthDriver::<BuiltinRole>::new(db_pool.clone()),
+        PgAuthDriver::<BuiltinRole>::new(db_pool.get().await?),
     )
     .await?;
     Ok(authorizer)
@@ -176,6 +176,9 @@ pub enum AuthorizationError {
     AuthError(
         #[from] <PgAuthDriver<BuiltinRole> as editoast_authz::authorizer::StorageDriver>::Error,
     ),
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    DbError(#[from] editoast_models::db_connection_pool::DatabasePoolError),
 }
 
 #[derive(Debug, Error, EditoastError)]

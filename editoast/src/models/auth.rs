@@ -1,14 +1,13 @@
 use std::collections::HashSet;
 use std::ops::DerefMut;
-use std::sync::Arc;
 
 use diesel::{dsl, prelude::*};
-use diesel_async::{scoped_futures::ScopedFutureExt, RunQueryDsl};
+use diesel_async::{scoped_futures::ScopedFutureExt as _, RunQueryDsl};
 use editoast_authz::{
     authorizer::{StorageDriver, UserInfo},
     roles::{BuiltinRoleSet, RoleConfig},
 };
-use editoast_models::DbConnectionPoolV2;
+use editoast_models::DbConnection;
 
 use editoast_models::tables::*;
 use itertools::Itertools as _;
@@ -16,14 +15,14 @@ use tracing::Level;
 
 #[derive(Clone)]
 pub struct PgAuthDriver<B: BuiltinRoleSet + Send + Sync> {
-    pool: Arc<DbConnectionPoolV2>,
+    conn: DbConnection,
     _role_set: std::marker::PhantomData<B>,
 }
 
 impl<B: BuiltinRoleSet + Send + Sync> PgAuthDriver<B> {
-    pub fn new(pool: Arc<DbConnectionPoolV2>) -> Self {
+    pub fn new(conn: DbConnection) -> Self {
         Self {
-            pool,
+            conn,
             _role_set: Default::default(),
         }
     }
@@ -33,8 +32,6 @@ impl<B: BuiltinRoleSet + Send + Sync> PgAuthDriver<B> {
 pub enum AuthDriverError {
     #[error(transparent)]
     DieselError(#[from] diesel::result::Error),
-    #[error(transparent)]
-    PoolError(#[from] editoast_models::db_connection_pool::DatabasePoolError),
 }
 
 impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
@@ -43,11 +40,10 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
 
     #[tracing::instrument(skip_all, fields(%user_info), ret(level = Level::DEBUG), err)]
     async fn get_user_id(&self, user_info: &UserInfo) -> Result<Option<i64>, Self::Error> {
-        let conn = self.pool.get().await?;
         let id = authn_user::table
             .select(authn_user::id)
             .filter(authn_user::identity_id.eq(&user_info.identity))
-            .first::<i64>(conn.write().await.deref_mut())
+            .first::<i64>(self.conn.write().await.deref_mut())
             .await
             .optional()?;
         Ok(id)
@@ -55,11 +51,10 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
 
     #[tracing::instrument(skip_all, fields(%user_id), ret(level = Level::DEBUG), err)]
     async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
-        let conn = self.pool.get().await?;
         let info = authn_user::table
             .select((authn_user::identity_id, authn_user::name))
             .filter(authn_user::id.eq(user_id))
-            .first::<(String, Option<String>)>(conn.write().await.deref_mut())
+            .first::<(String, Option<String>)>(self.conn.write().await.deref_mut())
             .await
             .optional()
             .map(|res| {
@@ -73,9 +68,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
 
     #[tracing::instrument(skip_all, fields(%user), ret(level = Level::DEBUG), err)]
     async fn ensure_user(&self, user: &UserInfo) -> Result<i64, Self::Error> {
-        self.pool
-            .get()
-            .await?
+        self.conn
             .transaction(|conn| {
                 async move {
                     let user_id = self.get_user_id(user).await?;
@@ -118,8 +111,6 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         subject_id: i64,
         roles_config: &RoleConfig<Self::BuiltinRole>,
     ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
-        let conn = self.pool.get().await?;
-
         let roles = authz_role::table
             .select(authz_role::role)
             .left_join(
@@ -127,7 +118,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
             )
             .filter(authz_role::subject.eq(subject_id))
             .or_filter(authz_role::subject.eq(authn_group_membership::group))
-            .load::<String>(conn.write().await.deref_mut())
+            .load::<String>(self.conn.write().await.deref_mut())
             .await?
             .into_iter()
             .map(|role| {
@@ -147,8 +138,6 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         roles_config: &RoleConfig<Self::BuiltinRole>,
         roles: HashSet<Self::BuiltinRole>,
     ) -> Result<(), Self::Error> {
-        let conn = self.pool.get().await?;
-
         dsl::insert_into(authz_role::table)
             .values(
                 roles
@@ -163,7 +152,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
             )
             .on_conflict((authz_role::subject, authz_role::role))
             .do_nothing()
-            .execute(conn.write().await.deref_mut())
+            .execute(self.conn.write().await.deref_mut())
             .await?;
 
         Ok(())
@@ -176,8 +165,6 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         roles_config: &RoleConfig<Self::BuiltinRole>,
         roles: HashSet<Self::BuiltinRole>,
     ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
-        let conn = self.pool.get().await?;
-
         let deleted_roles = dsl::delete(
             authz_role::table
                 .filter(authz_role::subject.eq(subject_id))
@@ -186,7 +173,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
                 ),
         )
         .returning(authz_role::role)
-        .load::<String>(conn.write().await.deref_mut())
+        .load::<String>(self.conn.write().await.deref_mut())
         .await?
         .into_iter()
         .map(|role| {
@@ -227,7 +214,7 @@ mod tests {
     #[rstest::rstest]
     async fn test_auth_driver() {
         let pool = DbConnectionPoolV2::for_tests();
-        let mut driver = PgAuthDriver::<TestBuiltinRole>::new(pool.into());
+        let mut driver = PgAuthDriver::<TestBuiltinRole>::new(pool.get_ok());
         let config = default_test_config();
 
         let uid = driver
