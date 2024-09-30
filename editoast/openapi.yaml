@@ -3868,7 +3868,7 @@ components:
       - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsLocked'
       - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsUsed'
       - $ref: '#/components/schemas/EditoastSTDCMErrorInfraNotFound'
-      - $ref: '#/components/schemas/EditoastSTDCMErrorInvalidPathItem'
+      - $ref: '#/components/schemas/EditoastSTDCMErrorInvalidPathItems'
       - $ref: '#/components/schemas/EditoastSTDCMErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastSTDCMErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
@@ -4767,7 +4767,7 @@ components:
           type: string
           enum:
           - editoast:stdcm_v2:InfraNotFound
-    EditoastSTDCMErrorInvalidPathItem:
+    EditoastSTDCMErrorInvalidPathItems:
       type: object
       required:
       - type
@@ -4777,13 +4777,10 @@ components:
         context:
           type: object
           required:
-          - index
-          - path_item
+          - items
           properties:
-            index:
-              type: integer
-            path_item:
-              type: object
+            items:
+              type: array
         message:
           type: string
         status:
@@ -4793,7 +4790,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:stdcm_v2:InvalidPathItem
+          - editoast:stdcm_v2:InvalidPathItems
     EditoastSTDCMErrorRollingStockNotFound:
       type: object
       required:
@@ -7063,19 +7060,26 @@ components:
             - incompatible_constraints
       - type: object
         required:
-        - index
-        - path_item
+        - items
         - status
         properties:
-          index:
-            type: integer
-            minimum: 0
-          path_item:
-            $ref: '#/components/schemas/PathItemLocation'
+          items:
+            type: array
+            items:
+              type: object
+              required:
+              - index
+              - path_item
+              properties:
+                index:
+                  type: integer
+                  minimum: 0
+                path_item:
+                  $ref: '#/components/schemas/PathItemLocation'
           status:
             type: string
             enum:
-            - invalid_path_item
+            - invalid_path_items
       - type: object
         required:
         - status

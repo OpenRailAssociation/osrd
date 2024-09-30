@@ -1,3 +1,4 @@
+use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResult;
 use crate::error::Result;
 use crate::models::TrackSectionModel;
@@ -87,6 +88,7 @@ impl PathItemCache {
         path_items: &[&PathItemLocation],
     ) -> TrackOffsetResult {
         let mut result: Vec<Vec<_>> = Vec::default();
+        let mut invalid_path_items = Vec::new();
         for (index, &path_item) in path_items.iter().enumerate() {
             let track_offsets = match path_item {
                 PathItemLocation::TrackOffset(track_offset) => {
@@ -96,10 +98,11 @@ impl PathItemCache {
                     match self.get_from_id(&operational_point.0) {
                         Some(op) => op.track_offset(),
                         None => {
-                            return Err(PathfindingResult::InvalidPathItem {
+                            invalid_path_items.push(InvalidPathItem {
                                 index,
                                 path_item: path_item.clone(),
                             });
+                            continue;
                         }
                     }
                 }
@@ -113,10 +116,11 @@ impl PathItemCache {
                         .unwrap_or_default();
                     let ops = secondary_code_filter(secondary_code, ops);
                     if ops.is_empty() {
-                        return Err(PathfindingResult::InvalidPathItem {
+                        invalid_path_items.push(InvalidPathItem {
                             index,
                             path_item: path_item.clone(),
                         });
+                        continue;
                     }
                     track_offsets_from_ops(&ops)
                 }
@@ -130,10 +134,11 @@ impl PathItemCache {
                         .unwrap_or_default();
                     let ops = secondary_code_filter(secondary_code, ops);
                     if ops.is_empty() {
-                        return Err(PathfindingResult::InvalidPathItem {
+                        invalid_path_items.push(InvalidPathItem {
                             index,
                             path_item: path_item.clone(),
                         });
+                        continue;
                     }
                     track_offsets_from_ops(&ops)
                 }
@@ -142,15 +147,23 @@ impl PathItemCache {
             // Check if tracks exist
             for track_offset in &track_offsets {
                 if !self.track_exists(&track_offset.track.0) {
-                    return Err(PathfindingResult::InvalidPathItem {
+                    invalid_path_items.push(InvalidPathItem {
                         index,
                         path_item: path_item.clone(),
                     });
+                    continue;
                 }
             }
 
             result.push(track_offsets);
         }
+
+        if !invalid_path_items.is_empty() {
+            return Err(PathfindingResult::InvalidPathItems {
+                items: invalid_path_items,
+            });
+        }
+
         Ok(result)
     }
 }

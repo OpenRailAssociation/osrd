@@ -332,3 +332,109 @@ fn path_input_hash(infra: i64, infra_version: &String, path_input: &PathfindingI
     let hash_path_input = hasher.finish();
     format!("pathfinding_{osrd_version}.{infra}.{infra_version}.{hash_path_input}")
 }
+
+#[cfg(test)]
+pub mod tests {
+    use axum::http::StatusCode;
+    use editoast_models::DbConnectionPoolV2;
+    use editoast_schemas::train_schedule::PathItemLocation;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+    use serde_json::json;
+
+    use crate::core::mocking::MockingClient;
+    use crate::core::pathfinding::InvalidPathItem;
+    use crate::core::pathfinding::PathfindingResult;
+    use crate::core::pathfinding::PathfindingResultSuccess;
+    use crate::models::fixtures::create_small_infra;
+    use crate::views::test_app::TestAppBuilder;
+
+    #[rstest]
+    async fn pathfinding_with_invalid_path_items_returns_invalid_path_items() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let request = app
+            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
+            .json(&json!({
+                "path_items":[
+                    {"trigram":"WS","secondary_code":"BV"},
+                    {"trigram":"NO_TRIGRAM","secondary_code":null},
+                    {"trigram":"SWS","secondary_code":"BV"}
+                ],
+                "rolling_stock_is_thermal":true,
+                "rolling_stock_loading_gauge":"G1",
+                "rolling_stock_supported_electrifications":[],
+                "rolling_stock_supported_signaling_systems":["BAL","BAPR"],
+                "rolling_stock_maximum_speed":22.00,
+                "rolling_stock_length":26.00
+            }));
+
+        let pathfinding_result: PathfindingResult =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert_eq!(
+            pathfinding_result,
+            PathfindingResult::InvalidPathItems {
+                items: vec![InvalidPathItem {
+                    index: 1,
+                    path_item: PathItemLocation::OperationalPointDescription {
+                        trigram: "NO_TRIGRAM".into(),
+                        secondary_code: None
+                    }
+                }]
+            }
+        );
+    }
+
+    #[rstest]
+    async fn pathfinding_with_valid_path_items_returns_successful_result() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "blocks":[],
+                "routes": [],
+                "track_section_ranges": [],
+                "path_item_positions": [],
+                "length": 0,
+                "status": "success"
+            }))
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let request = app
+            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
+            .json(&json!({
+                "path_items":[
+                    {"trigram":"WS","secondary_code":"BV"},
+                    {"trigram":"SWS","secondary_code":"BV"}
+                ],
+                "rolling_stock_is_thermal":true,
+                "rolling_stock_loading_gauge":"G1",
+                "rolling_stock_supported_electrifications":[],
+                "rolling_stock_supported_signaling_systems":["BAL","BAPR"],
+                "rolling_stock_maximum_speed":22.00,
+                "rolling_stock_length":26.00
+            }));
+
+        let pathfinding_result: PathfindingResult =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert_eq!(
+            pathfinding_result,
+            PathfindingResult::Success(PathfindingResultSuccess {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![],
+                length: 0,
+                path_item_positions: vec![]
+            })
+        );
+    }
+}

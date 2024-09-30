@@ -43,31 +43,37 @@ pub struct PathfindingRequest {
     pub rolling_stock_length: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct OffsetRange {
     start: u64,
     end: u64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleOffsetRangeWithValue {
     range: OffsetRange,
     value: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleOffsetRange {
     range: OffsetRange,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleConstraints {
     incompatible_electrification_ranges: Vec<IncompatibleOffsetRangeWithValue>,
     incompatible_gauge_ranges: Vec<IncompatibleOffsetRange>,
     incompatible_signaling_system_ranges: Vec<IncompatibleOffsetRangeWithValue>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub struct InvalidPathItem {
+    pub index: usize,
+    pub path_item: PathItemLocation,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum PathfindingResult {
     Success(PathfindingResultSuccess),
@@ -84,9 +90,9 @@ pub enum PathfindingResult {
         relaxed_constraints_path: Box<PathfindingResultSuccess>,
         incompatible_constraints: Box<IncompatibleConstraints>,
     },
-    InvalidPathItem {
-        index: usize,
-        path_item: PathItemLocation,
+    InvalidPathItems {
+        #[schema(inline)]
+        items: Vec<InvalidPathItem>,
     },
     NotEnoughPathItems,
     RollingStockNotFound {
@@ -98,7 +104,7 @@ pub enum PathfindingResult {
 }
 
 /// A successful pathfinding result. This is also used for STDCM response.
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 pub struct PathfindingResultSuccess {
     #[schema(inline)]
     /// Path description as block ids
