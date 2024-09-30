@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
-import { Duplicate, Pencil, Trash, Clock, Flame } from '@osrd-project/ui-icons';
+import { Duplicate, Pencil, Trash, Clock, Flame, Moon } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
@@ -131,6 +131,12 @@ const TimetableTrainCard = ({
     dispatch(updateTrainIdUsedForProjection(train.id));
   };
 
+  /* TODO: delete the format when the date management PR has been passed */
+  const isAfterMidnight = dayjs(train.arrivalTime, 'D/MM/YYYY').isAfter(
+    dayjs(train.startTime, 'D/MM/YYYY'),
+    'day'
+  );
+
   return (
     <div
       data-testid="scenario-timetable-train"
@@ -181,14 +187,14 @@ const TimetableTrainCard = ({
           </div>
           {!train.invalidReason && (
             <div className="train-time">
-              <div className="after-midnight" />
+              <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
               {train.isValid && (
                 <div className="scenario-timetable-train-departure" title={train.startTime}>
                   {/* TODO: delete the format when the date management `PR` has been passed */}
                   {dayjs(train.startTime, 'D/MM/YYYY HH:mm:ss').format('HH:mm')}
                 </div>
               )}
-              <div className="not-honored-or-too-fast">
+              <div className="status-icon not-honored-or-too-fast">
                 {train.notHonoredReason &&
                   (train.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
               </div>

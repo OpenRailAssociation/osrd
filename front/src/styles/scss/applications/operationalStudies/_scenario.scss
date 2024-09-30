@@ -352,20 +352,10 @@
               align-items: center;
               justify-content: right;
 
-              .after-midnight {
-                max-width: 1rem;
-                margin: 0 0.5rem;
-              }
-
-              .scenario-timetable-train-departure {
-                font-weight: 400;
-                font-size: 1rem;
-              }
-
-              .not-honored-or-too-fast {
+              .status-icon {
                 width: 1.5rem;
                 height: 1.5rem;
-                color: var(--warning60);
+                color: var(--info60);
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -373,6 +363,14 @@
                 span {
                   padding-bottom: 0.25rem;
                 }
+                &.not-honored-or-too-fast {
+                  color: var(--warning60);
+                }
+              }
+
+              .scenario-timetable-train-departure {
+                font-weight: 400;
+                font-size: 1rem;
               }
 
               .scenario-timetable-train-arrival {
