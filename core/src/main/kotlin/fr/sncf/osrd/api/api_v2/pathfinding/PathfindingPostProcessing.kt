@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.api_v2.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.api_v2.TrackRange
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.api.pathfinding.makeRoutePath
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
@@ -103,13 +103,13 @@ fun makePathItemPositions(path: Pathfinding.Result<StaticIdx<Block>, Block>): Li
     return res
 }
 
-fun makeTrackRanges(oldRoutePath: List<RJSRoutePath>): List<TrackRange> {
-    val res = mutableListOf<TrackRange>()
+fun makeTrackRanges(oldRoutePath: List<RJSRoutePath>): List<DirectionalTrackRange> {
+    val res = mutableListOf<DirectionalTrackRange>()
     for (routeRange in oldRoutePath) {
         for (trackRange in routeRange.trackSections) {
             if (res.isEmpty() || res[res.size - 1].trackSection != trackRange.trackSectionID) {
                 res.add(
-                    TrackRange(
+                    DirectionalTrackRange(
                         trackRange.trackSectionID,
                         Offset(trackRange.begin.meters),
                         Offset(trackRange.end.meters),

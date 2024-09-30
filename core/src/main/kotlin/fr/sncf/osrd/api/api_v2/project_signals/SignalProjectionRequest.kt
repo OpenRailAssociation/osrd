@@ -4,15 +4,15 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.api.api_v2.SignalSighting
-import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.api.api_v2.ZoneUpdate
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.TimeDelta
 
 class SignalProjectionRequest(
     val blocks: List<String>,
-    @Json(name = "track_section_ranges") var trackSectionRanges: List<TrackRange>,
+    @Json(name = "track_section_ranges") var trackSectionRanges: List<DirectionalTrackRange>,
     var routes: List<String>,
     @Json(name = "train_simulations") var trainSimulations: Map<Long, TrainSimulation>,
     var infra: String,

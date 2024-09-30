@@ -2,8 +2,8 @@ package fr.sncf.osrd.api.api_v2.standalone_sim
 
 import com.squareup.moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.api.api_v2.RangeValues
-import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.GammaType
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
@@ -88,7 +88,7 @@ class EffortCurve(
 class SimulationPath(
     val blocks: List<String>,
     val routes: List<String>,
-    @Json(name = "track_section_ranges") val trackSectionRanges: List<TrackRange>,
+    @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
     @Json(name = "path_item_positions") val pathItemPositions: List<Offset<Path>>
 )
 

@@ -6,7 +6,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.api_v2.TrackRange
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.graph.Pathfinding.Range
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -24,7 +24,7 @@ class PathfindingBlockSuccess(
 
     // Route ids
     val routes: List<String>,
-    @Json(name = "track_section_ranges") val trackSectionRanges: List<TrackRange>,
+    @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
     val length: Length<Path>,
 
     /** Offsets of the waypoints given as input */
@@ -49,12 +49,12 @@ class PathfindingBlockSuccess(
 }
 
 class NotFoundInBlocks(
-    @Json(name = "track_section_ranges") val trackSectionRanges: List<TrackRange>,
+    @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
     val length: Length<Path>,
 ) : PathfindingBlockResponse
 
 class NotFoundInRoutes(
-    @Json(name = "track_section_ranges") val trackSectionRanges: List<TrackRange>,
+    @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
     val length: Length<Path>,
 ) : PathfindingBlockResponse
 
