@@ -66,7 +66,7 @@ const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
           return page === 1 ? apiErrors : [...prev, ...apiErrors];
         });
         setTotal(response.data ? response.data.count || 0 : null);
-        setNext(response.data ? response.data.next ?? null : null);
+        setNext(response.data ? (response.data.next ?? null) : null);
       } catch (e) {
         console.error(e);
       } finally {
