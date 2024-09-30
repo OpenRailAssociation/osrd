@@ -1,8 +1,8 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.api.api_v2.TrackLocation
-import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.api.api_v2.pathfinding.*
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -51,19 +51,19 @@ class PathfindingV2Test : ApiTest() {
         assertEquals(2, parsed.routes.size)
         assertEquals(
             listOf(
-                TrackRange(
+                DirectionalTrackRange(
                     "ne.micro.foo_b",
                     Offset(50.meters),
                     Offset(200.meters),
                     EdgeDirection.START_TO_STOP
                 ),
-                TrackRange(
+                DirectionalTrackRange(
                     "ne.micro.foo_to_bar",
                     Offset(0.meters),
                     Offset(10_000.meters),
                     EdgeDirection.START_TO_STOP
                 ),
-                TrackRange(
+                DirectionalTrackRange(
                     "ne.micro.bar_a",
                     Offset(0.meters),
                     Offset(100.meters),

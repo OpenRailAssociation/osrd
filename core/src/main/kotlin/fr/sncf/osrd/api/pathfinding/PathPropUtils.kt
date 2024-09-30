@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding
 
 import com.google.common.collect.Iterables
-import fr.sncf.osrd.api.api_v2.TrackRange
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
@@ -82,7 +82,10 @@ fun makePathProps(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): PathPrope
 }
 
 /** Builds a PathProperties from a List<TrackRange> */
-fun makePathProps(rawInfra: RawSignalingInfra, trackRanges: List<TrackRange>): PathProperties {
+fun makePathProps(
+    rawInfra: RawSignalingInfra,
+    trackRanges: List<DirectionalTrackRange>
+): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, trackRanges)
     return makePathProperties(rawInfra, chunkPath)
 }
@@ -159,7 +162,10 @@ fun makeChunkPath(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): ChunkPath
     return buildChunkPath(rawInfra, chunks, Length(startOffset), Length(endOffset))
 }
 
-fun makeChunkPath(rawInfra: RawSignalingInfra, trackRanges: List<TrackRange>): ChunkPath {
+fun makeChunkPath(
+    rawInfra: RawSignalingInfra,
+    trackRanges: List<DirectionalTrackRange>
+): ChunkPath {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     val firstRange = trackRanges[0]
     var startOffset = firstRange.begin.distance

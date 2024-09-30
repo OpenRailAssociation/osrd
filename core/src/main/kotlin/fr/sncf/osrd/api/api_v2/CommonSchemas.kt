@@ -7,14 +7,14 @@ import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 
-data class TrackRange(
+data class DirectionalTrackRange(
     @Json(name = "track_section") val trackSection: String,
     var begin: Offset<TrackSection>,
     var end: Offset<TrackSection>,
     val direction: EdgeDirection,
 )
 
-data class UndirectedTrackRange(
+data class TrackRange(
     @Json(name = "track_section") val trackSection: String,
     var begin: Offset<TrackSection>,
     var end: Offset<TrackSection>,
@@ -66,7 +66,7 @@ class SpacingRequirement(
 
 data class WorkSchedule(
     /** List of affected track ranges */
-    @Json(name = "track_ranges") val trackRanges: Collection<UndirectedTrackRange> = listOf(),
+    @Json(name = "track_ranges") val trackRanges: Collection<TrackRange> = listOf(),
     @Json(name = "start_time") val startTime: TimeDelta,
     @Json(name = "end_time") val endTime: TimeDelta,
 )

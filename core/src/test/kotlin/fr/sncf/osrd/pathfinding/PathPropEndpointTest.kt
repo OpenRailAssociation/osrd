@@ -1,8 +1,8 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.api.api_v2.RangeValues
-import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.api.api_v2.path_properties.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.utils.takes.TakesUtils
@@ -19,13 +19,13 @@ class PathPropEndpointTest : ApiTest() {
     fun simpleSmallInfraTest() {
         val trackSectionRanges =
             listOf(
-                TrackRange(
+                DirectionalTrackRange(
                     "TA0",
                     Offset(50.meters),
                     Offset(2000.meters),
                     EdgeDirection.START_TO_STOP
                 ),
-                TrackRange(
+                DirectionalTrackRange(
                     "TA1",
                     Offset(0.meters),
                     Offset(1950.meters),

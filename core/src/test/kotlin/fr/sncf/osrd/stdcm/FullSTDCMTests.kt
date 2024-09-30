@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.api_v2.UndirectedTrackRange
+import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.api.api_v2.WorkSchedule
 import fr.sncf.osrd.api.api_v2.convertWorkScheduleCollection
 import fr.sncf.osrd.api.stdcm.makeTrainSchedule
@@ -192,13 +192,7 @@ class FullSTDCMTests {
                         smallInfra.rawInfra,
                         listOf(
                             WorkSchedule(
-                                listOf(
-                                    UndirectedTrackRange(
-                                        "TB0",
-                                        Offset(0.meters),
-                                        Offset(2000.meters)
-                                    )
-                                ),
+                                listOf(TrackRange("TB0", Offset(0.meters), Offset(2000.meters))),
                                 0.seconds,
                                 3600.seconds
                             )
