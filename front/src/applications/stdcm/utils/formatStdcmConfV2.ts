@@ -12,7 +12,7 @@ import type { InfraState } from 'reducers/infra';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
 import { dateTimeFormatting, dateTimeToIso } from 'utils/date';
-import { mToMm } from 'utils/physics';
+import { kmhToMs, mToMm, tToKg } from 'utils/physics';
 import { ISO8601Duration2sec, sec2ms, time2sec } from 'utils/timeManipulation';
 
 import createMargin from './createMargin';
@@ -26,6 +26,9 @@ type ValidStdcmConfig = {
   rollingStockComfort: TrainScheduleBase['comfort'];
   path: PathfindingItem[];
   speedLimitByTag?: string;
+  totalMass?: number;
+  totalLength?: number;
+  maxSpeed?: number;
   maximumRunTime?: number;
   startTime?: string; // must be a datetime
   latestStartTime?: string;
@@ -61,6 +64,9 @@ export const checkStdcmConf = (
     searchDatetimeWindow,
     workScheduleGroupId,
     electricalProfileSetId,
+    totalLength,
+    totalMass,
+    maxSpeed,
   } = osrdconf;
   let error = false;
   if (pathSteps[0] === null) {
@@ -224,6 +230,9 @@ export const checkStdcmConf = (
       maximumRunTime,
     }),
     speedLimitByTag,
+    totalMass,
+    totalLength,
+    maxSpeed,
     margin: standardStdcmAllowance,
     gridMarginBefore,
     gridMarginAfter,
@@ -246,6 +255,9 @@ export const formatStdcmPayload = (
     margin: createMargin(validConfig.margin),
     rolling_stock_id: validConfig.rollingStockId,
     speed_limit_tags: validConfig.speedLimitByTag,
+    total_mass: validConfig.totalMass ? tToKg(validConfig.totalMass) : undefined,
+    max_speed: validConfig.maxSpeed ? kmhToMs(validConfig.maxSpeed) : undefined,
+    total_length: validConfig.totalLength,
     ...(!stdcmV2Activated && {
       maximum_run_time: toMsOrUndefined(validConfig.maximumRunTime),
       maximum_departure_delay: sec2ms(

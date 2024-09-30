@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
+use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::MarginValue;
@@ -17,7 +18,6 @@ use super::pathfinding::TrackRange;
 use crate::core::pathfinding::PathfindingResult;
 use crate::core::{AsCoreRequest, Json};
 use crate::error::InternalError;
-use crate::RollingStockModel;
 use derivative::Derivative;
 use editoast_schemas::primitives::Identifier;
 use std::hash::Hash;
@@ -66,25 +66,47 @@ pub struct PhysicsRollingStock {
     pub raise_pantograph_time: Option<u64>,
 }
 
-impl From<RollingStockModel> for PhysicsRollingStock {
-    fn from(value: RollingStockModel) -> Self {
+#[derive(Debug, Default)]
+pub struct SimulationParameters {
+    pub total_mass: Option<f64>,
+    pub total_length: Option<f64>,
+    pub max_speed: Option<f64>,
+}
+
+impl PhysicsRollingStock {
+    pub fn new(traction_engine: RollingStock, params: SimulationParameters) -> Self {
+        let traction_engine_length = traction_engine.length * 1000.0;
+        let length = params
+            .total_length
+            .map(|tl| tl * 1000.0)
+            .unwrap_or(traction_engine_length)
+            .round() as u64;
+
+        let traction_engine_mass = traction_engine.mass;
+        let mass = params.total_mass.unwrap_or(traction_engine_mass).round() as u64;
+
+        let max_speed = f64::min(
+            traction_engine.max_speed,
+            params.max_speed.unwrap_or(traction_engine.max_speed),
+        );
+
         Self {
-            effort_curves: value.effort_curves,
-            base_power_class: value.base_power_class,
-            length: (value.length * 1000.0).round() as u64,
-            max_speed: value.max_speed,
-            startup_time: (value.startup_time * 1000.0).round() as u64,
-            startup_acceleration: value.startup_acceleration,
-            comfort_acceleration: value.comfort_acceleration,
-            gamma: value.gamma,
-            inertia_coefficient: value.inertia_coefficient,
-            mass: value.mass.round() as u64,
-            rolling_resistance: value.rolling_resistance,
-            power_restrictions: value.power_restrictions.into_iter().collect(),
-            electrical_power_startup_time: value
+            effort_curves: traction_engine.effort_curves,
+            base_power_class: traction_engine.base_power_class,
+            length,
+            mass,
+            max_speed,
+            startup_time: (traction_engine.startup_time * 1000.0).round() as u64,
+            startup_acceleration: traction_engine.startup_acceleration,
+            comfort_acceleration: traction_engine.comfort_acceleration,
+            gamma: traction_engine.gamma,
+            inertia_coefficient: traction_engine.inertia_coefficient,
+            rolling_resistance: traction_engine.rolling_resistance,
+            power_restrictions: traction_engine.power_restrictions.into_iter().collect(),
+            electrical_power_startup_time: traction_engine
                 .electrical_power_startup_time
                 .map(|v| (v * 1000.0).round() as u64),
-            raise_pantograph_time: value
+            raise_pantograph_time: traction_engine
                 .raise_pantograph_time
                 .map(|v| (v * 1000.0).round() as u64),
         }

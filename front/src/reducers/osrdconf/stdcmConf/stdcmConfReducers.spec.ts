@@ -160,6 +160,26 @@ describe('stdcmConfReducers', () => {
     });
   });
 
+  describe('Consist updates', () => {
+    const store = createStore();
+    it('should handle totalMass', () => {
+      store.dispatch(stdcmConfSliceActions.updateTotalMass(345));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.totalMass).toEqual(345);
+    });
+
+    it('should handle totalLength', () => {
+      store.dispatch(stdcmConfSliceActions.updateTotalLength(345));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.totalLength).toEqual(345);
+    });
+    it('should handle maxSpeed', () => {
+      store.dispatch(stdcmConfSliceActions.updateMaxSpeed(110));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.maxSpeed).toEqual(110);
+    });
+  });
+
   describe('Destination updates', () => {
     const store = createStore(initialStateSTDCMConfig);
     const newDestination = {

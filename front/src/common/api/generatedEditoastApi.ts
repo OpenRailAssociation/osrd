@@ -1531,6 +1531,8 @@ export type PostTimetableByIdStdcmApiArg = {
     electrical_profile_set_id?: number | null;
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
     margin?: string | null;
+    /** Maximum speed of the consist in km/h */
+    max_speed?: number | null;
     /** By how long we can shift the departure time in milliseconds
         Deprecated, first step data should be used instead */
     maximum_departure_delay?: number | null;
@@ -1554,6 +1556,10 @@ export type PostTimetableByIdStdcmApiArg = {
         Enforces that the path used by the train should be free and
         available at least that many milliseconds before its passage. */
     time_gap_before?: number;
+    /** Total length of the consist in meters */
+    total_length?: number | null;
+    /** Total mass of the consist in kg */
+    total_mass?: number | null;
     work_schedule_group_id?: number | null;
   };
 };

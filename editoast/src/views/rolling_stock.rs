@@ -807,7 +807,7 @@ pub mod tests {
         }
     }
 
-    fn fast_rolling_stock_form(name: &str) -> RollingStockForm {
+    pub fn fast_rolling_stock_form(name: &str) -> RollingStockForm {
         let mut form = serde_json::from_str::<RollingStockForm>(include_str!(
             "../tests/example_rolling_stock_1.json"
         ))

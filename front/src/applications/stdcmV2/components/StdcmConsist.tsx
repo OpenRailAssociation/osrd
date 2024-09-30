@@ -10,11 +10,12 @@ import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSe
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
-import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import { type StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
 
-import StdcmCard from './StdcmCard';
 import type { StdcmConfigCardProps } from '../types';
+import StdcmCard from './StdcmCard';
+import useStdcmConsist from '../hooks/useStdcmConsist';
 
 const ConsistCardTitle = ({
   rollingStock,
@@ -39,6 +40,15 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
   const dispatch = useAppDispatch();
 
   const { rollingStock } = useStoreDataForRollingStockSelector();
+
+  const {
+    totalMass,
+    onTotalMassChange,
+    totalLength,
+    onTotalLengthChange,
+    maxSpeed,
+    onMaxSpeedChange,
+  } = useStdcmConsist();
 
   const { filters, searchRollingStock, searchRollingStockById, filteredRollingStockList } =
     useFilterRollingStock({ isStdcm: true });
@@ -129,22 +139,38 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
           id="tonnage"
           label={t('consist.tonnage')}
           trailingContent="t"
-          inputFieldWrapperClassname="weight"
+          type="number"
+          min={0}
+          value={totalMass ?? ''}
+          onChange={onTotalMassChange}
         />
         <Input
           id="length"
           label={t('consist.length')}
           trailingContent="m"
-          inputFieldWrapperClassname="length"
+          type="number"
+          min={0}
+          value={totalLength ?? ''}
+          onChange={onTotalLengthChange}
         />
       </div>
-      <SpeedLimitByTagSelector
-        disabled={disabled}
-        selectedSpeedLimitByTag={speedLimitByTag}
-        speedLimitsByTags={speedLimitsByTags}
-        dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
-        className="speed-limit-by-tag-selector"
-      />
+      <div className="stdcm-v2-consist__properties">
+        <SpeedLimitByTagSelector
+          disabled={disabled}
+          selectedSpeedLimitByTag={speedLimitByTag}
+          speedLimitsByTags={speedLimitsByTags}
+          dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
+        />
+        <Input
+          id="maxSpeed"
+          label={t('consist.maxSpeed')}
+          trailingContent="km/h"
+          type="number"
+          min={0}
+          value={maxSpeed ?? ''}
+          onChange={onMaxSpeedChange}
+        />
+      </div>
     </StdcmCard>
   );
 };

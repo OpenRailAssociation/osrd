@@ -26,9 +26,11 @@ use crate::client::get_app_version;
 use crate::core::pathfinding::PathfindingResult;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::CompleteReportTrain;
+use crate::core::simulation::PhysicsRollingStock;
 use crate::core::simulation::ReportTrain;
 use crate::core::simulation::SignalSighting;
 use crate::core::simulation::SimulationMargins;
+use crate::core::simulation::SimulationParameters;
 use crate::core::simulation::SimulationPath;
 use crate::core::simulation::SimulationPowerRestrictionItem;
 use crate::core::simulation::SimulationRequest;
@@ -585,7 +587,10 @@ fn build_simulation_request(
         speed_limit_tag: train_schedule.speed_limit_tag.clone(),
         power_restrictions,
         options: train_schedule.options.clone(),
-        rolling_stock: rolling_stock.into(),
+        rolling_stock: PhysicsRollingStock::new(
+            rolling_stock.into(),
+            SimulationParameters::default(),
+        ),
         electrical_profile_set_id,
     }
 }
