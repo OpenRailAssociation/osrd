@@ -154,6 +154,31 @@ pub async fn create_scenario_fixtures_set(
     }
 }
 
+pub struct MacroNodeFixtureSet {
+    pub project: Project,
+    pub study: Study,
+    pub scenario: Scenario,
+    pub timetable: Timetable,
+    pub infra: Infra,
+}
+pub async fn create_macro_node_fixtures_set(
+    conn: &mut DbConnection,
+    name: &str,
+) -> ScenarioFixtureSet {
+    let project = create_project(conn, &format!("project_test_name_with_{name}")).await;
+    let study = create_study(conn, &format!("study_test_name_with_{name}"), project.id).await;
+    let infra = create_empty_infra(conn).await;
+    let timetable = create_timetable(conn).await;
+    let scenario = create_scenario(conn, name, study.id, timetable.id, infra.id).await;
+    ScenarioFixtureSet {
+        project,
+        study,
+        scenario,
+        timetable,
+        infra,
+    }
+}
+
 pub fn fast_rolling_stock_form(name: &str) -> RollingStockForm {
     let mut rolling_stock_form: RollingStockForm =
         serde_json::from_str(include_str!("../tests/example_rolling_stock_1.json"))
