@@ -3,3 +3,4 @@ Dockerfile
 .gradle
 .idea
 .kotlin
+kls_database.db
