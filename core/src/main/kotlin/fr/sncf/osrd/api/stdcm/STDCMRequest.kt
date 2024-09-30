@@ -76,6 +76,7 @@ constructor(
      * nor specify the allowance type (mareco / linear).
      */
     @Json(name = "standard_allowance") var standardAllowance: RJSAllowanceValue? = null
+
     /** Creates a STDCMRequest */
     /** Create a default STDCMRequest */
     init {

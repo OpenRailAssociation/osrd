@@ -25,7 +25,8 @@ data class ChunkPath(
 data class PathPropertiesImpl(
     val infra: RawSignalingInfra,
     val chunkPath: ChunkPath,
-    val pathRoutes: List<RouteId>?
+    val pathRoutes: List<RouteId>?,
+    val temporarySpeedLimitManager: TemporarySpeedLimitManager? = null,
 ) : PathProperties {
     override fun getSlopes(): DistanceRangeMap<Double> {
         return getRangeMap { dirChunkId -> infra.getTrackChunkSlope(dirChunkId) }
@@ -86,7 +87,18 @@ data class PathPropertiesImpl(
             //           \
             // - start - - - commonChunk - ->
             val route = routeOnChunk.firstOrNull()?.let { routeId -> infra.getRouteName(routeId) }
-            infra.getTrackChunkSpeedLimitProperties(dirChunkId, trainTag, route)
+            val permanentSpeedLimits = infra.getTrackChunkSpeedLimitProperties(dirChunkId, trainTag, route)
+            if (temporarySpeedLimitManager != null) {
+                val temporarySpeedLimits = temporarySpeedLimitManager.getSpeedLimits();
+                permanentSpeedLimits.updateMap(temporarySpeedLimits) { s1, s2 ->
+                    if (s1.speed < s2.speed) {
+                        s1
+                    } else {
+                        s2
+                    }
+                }
+            }
+            permanentSpeedLimits
         }
     }
 
@@ -251,8 +263,8 @@ data class PathPropertiesImpl(
         res: List<IdxWithPathOffset<T>>
     ): List<IdxWithPathOffset<T>> {
         return res.filter { element ->
-                element.offset >= chunkPath.beginOffset && element.offset <= chunkPath.endOffset
-            }
+            element.offset >= chunkPath.beginOffset && element.offset <= chunkPath.endOffset
+        }
             .map { element ->
                 IdxWithOffset(element.value, element.offset - chunkPath.beginOffset.distance)
             }
@@ -272,7 +284,7 @@ fun getOffsetOfTrackLocationOnChunks(
             val chunkOffset = infra.getTrackChunkOffset(dirChunk.value)
             if (
                 chunkOffset <= location.offset &&
-                    location.offset <= (chunkOffset + chunkLength.distance)
+                location.offset <= (chunkOffset + chunkLength.distance)
             ) {
                 val distanceToChunkStart =
                     if (dirChunk.direction == Direction.INCREASING) location.offset - chunkOffset

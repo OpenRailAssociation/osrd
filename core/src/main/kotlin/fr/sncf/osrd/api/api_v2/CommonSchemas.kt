@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.api_v2
 import com.squareup.moshi.Json
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
+import fr.sncf.osrd.sim_infra.api.SpeedLimit
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
@@ -69,4 +70,9 @@ data class WorkSchedule(
     @Json(name = "track_ranges") val trackRanges: Collection<TrackRange> = listOf(),
     @Json(name = "start_time") val startTime: TimeDelta,
     @Json(name = "end_time") val endTime: TimeDelta,
+)
+
+data class TemporarySpeedLimit(
+    @Json(name = "speed_limit") val speedLimit: SpeedLimit,
+    @Json(name = "track_ranges") val trackSections: List<DirectionalTrackRange>,
 )

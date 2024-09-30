@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.api_v2.stdcm.RJSTemporarySpeedLimit
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
@@ -132,7 +133,8 @@ fun initInfraExplorer(
                 incrementalPath,
                 blockToPathProperties,
                 stops = stops,
-                constraints = constraints
+                constraints = constraints,
+                temporarySpeedLimits = listOf(),
             )
         val infraExtended = infraExplorer.extend(it, location)
         if (infraExtended) infraExplorers.add(infraExplorer)
@@ -153,7 +155,8 @@ private class InfraExplorerImpl(
     //       collection of locations
     private val stops: List<Collection<PathfindingEdgeLocationId<Block>>>,
     private var predecessorLength: Length<Path> = Length(0.meters), // to avoid re-computing it
-    private var constraints: List<PathfindingConstraint<Block>>
+    private var constraints: List<PathfindingConstraint<Block>>,
+    private val temporarySpeedLimits: List<RJSTemporarySpeedLimit>,
 ) : InfraExplorer {
 
     override fun getIncrementalPath(): IncrementalPath {
@@ -257,7 +260,8 @@ private class InfraExplorerImpl(
             this.currentIndex,
             this.stops,
             this.predecessorLength,
-            this.constraints
+            this.constraints,
+            this.temporarySpeedLimits,
         )
     }
 

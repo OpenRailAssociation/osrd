@@ -4,17 +4,21 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.api.api_v2.WorkSchedule
 import fr.sncf.osrd.api.api_v2.conflicts.TrainRequirementsRequest
 import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
 import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValueAdapter
 import fr.sncf.osrd.api.api_v2.standalone_sim.PhysicsRollingStockModel
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
+import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimit
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Duration
+import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
 import java.time.ZonedDateTime
@@ -53,6 +57,8 @@ class STDCMRequestV2(
     /// Margin to apply to the whole train.
     val margin: MarginValue,
     @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
+    /// Temporary speed limits which are active between the train departure and arrival.
+    @Json(name = "spacing_requirements") var temporarySpeedLimits: Collection<TemporarySpeedLimit>,
 )
 
 class STDCMPathItem(
