@@ -3454,6 +3454,25 @@ components:
           type: string
           enum:
           - editoast:authz:AuthError
+    EditoastAuthorizationErrorDbError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:authz:DbError
     EditoastAuthorizationErrorUnauthenticated:
       type: object
       required:
@@ -3984,6 +4003,7 @@ components:
       - $ref: '#/components/schemas/EditoastAppHealthErrorTimeout'
       - $ref: '#/components/schemas/EditoastAttachedErrorTrackNotFound'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorAuthError'
+      - $ref: '#/components/schemas/EditoastAuthorizationErrorDbError'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthorized'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthz'
