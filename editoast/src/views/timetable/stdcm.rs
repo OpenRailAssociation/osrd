@@ -23,6 +23,7 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::SelectionSettings;
+use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResult;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::stdcm::STDCMResponse;
@@ -67,11 +68,8 @@ enum STDCMError {
     TimetableNotFound { timetable_id: i64 },
     #[error("Rolling stock {rolling_stock_id} does not exist")]
     RollingStockNotFound { rolling_stock_id: i64 },
-    #[error("Path item {index} is invalid")]
-    InvalidPathItem {
-        index: usize,
-        path_item: PathItemLocation,
-    },
+    #[error("Path items are invalid")]
+    InvalidPathItems { items: Vec<InvalidPathItem> },
 }
 
 /// An STDCM request
@@ -584,9 +582,7 @@ async fn parse_stdcm_steps(
     let track_offsets = path_item_cache
         .extract_location_from_path_items(&locations)
         .map_err(|path_res| match path_res {
-            PathfindingResult::InvalidPathItem { index, path_item } => {
-                STDCMError::InvalidPathItem { index, path_item }
-            }
+            PathfindingResult::InvalidPathItems { items } => STDCMError::InvalidPathItems { items },
             _ => panic!("Unexpected pathfinding result"),
         })?;
 

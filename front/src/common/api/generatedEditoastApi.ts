@@ -2264,9 +2264,11 @@ export type PathfindingResult =
       status: 'incompatible_constraints';
     }
   | {
-      index: number;
-      path_item: PathItemLocation;
-      status: 'invalid_path_item';
+      items: {
+        index: number;
+        path_item: PathItemLocation;
+      }[];
+      status: 'invalid_path_items';
     }
   | {
       status: 'not_enough_path_items';

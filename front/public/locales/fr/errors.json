@@ -175,7 +175,7 @@
     },
     "stdcm_v2": {
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "InvalidPathItem": "Élément '{{index}}' du chemin non valide",
+      "InvalidPathItems": "Point(s) de passage {{items}} invalide(s)",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },

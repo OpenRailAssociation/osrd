@@ -173,7 +173,7 @@
     },
     "stdcm_v2": {
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
-      "InvalidPathItem": "Path item '{{index}}' is invalid",
+      "InvalidPathItems": "Invalid waypoint(s) {{items}}",
       "RollingStockNotFound": "Rolling stock '{{rolling_stock_id}}' does not exist",
       "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist"
     },

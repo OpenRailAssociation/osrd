@@ -223,6 +223,14 @@ impl<'a> StubResponseBuilder<'a> {
         self
     }
 
+    #[allow(unused)]
+    #[must_use = "call .finish() to register the stub request"]
+    pub fn json<T: Serialize>(mut self, body: T) -> Self {
+        let json_body = serde_json::to_string(&body).expect("Failed to serialize JSON");
+        self.body = Some(Body::from(json_body));
+        self
+    }
+
     /// Builds the [StubResponse] and registers it into the [MockingClient]
     pub fn finish(self) {
         self.request_builder.finish_with_response(StubResponse {
