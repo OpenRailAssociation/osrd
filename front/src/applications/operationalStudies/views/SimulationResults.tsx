@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
-import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +10,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
+import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
 import ProjectionLoadingMessage from 'modules/simulationResult/components/SpaceTimeChart/ProjectionLoadingMessage';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
@@ -92,6 +92,12 @@ const SimulationResults = ({
     [selectedTrainSchedule, spaceTimeData]
   );
 
+  const projectPathTrainResult = useMemo(
+    () =>
+      spaceTimeData ? spaceTimeData.filter((train) => train.space_time_curves.length > 0) : [],
+    [spaceTimeData]
+  );
+
   useEffect(() => {
     if (extViewport !== undefined) {
       dispatch(
@@ -150,12 +156,10 @@ const SimulationResults = ({
                     totalTrains={timetableTrainNb}
                   />
                 )}
-                <SpaceTimeChartWithManchette
+                <ManchetteWithSpaceTimeChartWrapper
                   operationalPoints={projectedOperationalPoints}
-                  projectPathTrainResult={spaceTimeData.filter(
-                    (train) => train.space_time_curves.length > 0
-                  )}
-                  selectedProjection={selectedTrainSchedule?.id}
+                  projectPathTrainResult={projectPathTrainResult}
+                  selectedTrainScheduleId={selectedTrainSchedule?.id}
                 />
               </div>
             </div>

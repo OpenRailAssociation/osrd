@@ -50,8 +50,12 @@ const useGetProjectedTrainOperationalPoints = (
           operational_points!,
           t
         );
+        const operationalPointsWithUniqueIds = operationalPointsWithAllWaypoints.map((op, i) => ({
+          ...op,
+          id: `${op.id}-${op.position}-${i}`,
+        }));
 
-        setOperationalPoints(operationalPointsWithAllWaypoints);
+        setOperationalPoints(operationalPointsWithUniqueIds);
       }
     };
     getOperationalPoints();
