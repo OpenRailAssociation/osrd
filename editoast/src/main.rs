@@ -53,7 +53,7 @@ use diesel::sql_query;
 use diesel_async::RunQueryDsl;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::RailJson;
-use editoast_search::{SearchConfig, SearchConfigStore};
+use editoast_search::SearchConfigStore;
 use infra_cache::InfraCache;
 use map::MapLayers;
 use models::electrical_profiles::ElectricalProfileSet;
@@ -778,11 +778,9 @@ fn generate_openapi() {
 }
 
 fn list_search_objects() {
-    SearchConfigFinder::all()
-        .into_iter()
-        .for_each(|SearchConfig { name, .. }| {
-            println!("{name}");
-        });
+    SearchConfigFinder::all().into_iter().for_each(|(name, _)| {
+        println!("{name}");
+    });
 }
 
 fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -856,8 +854,7 @@ async fn refresh_search_tables(
     let objects = if args.objects.is_empty() {
         SearchConfigFinder::all()
             .into_iter()
-            .filter(|config| config.has_migration())
-            .map(|SearchConfig { name, .. }| name)
+            .filter_map(|(name, config)| config.has_migration().then(|| name.to_owned()))
             .collect()
     } else {
         args.objects

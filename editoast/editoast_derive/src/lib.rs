@@ -131,7 +131,7 @@ pub fn search(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 /// assert_eq!(Store::find("bar"), Some(Bar::search_config()));
 /// assert_eq!(Store::find("nope"), None);
 /// ```
-#[proc_macro_derive(SearchConfigStore, attributes(search))]
+#[proc_macro_derive(SearchConfigStore, attributes(search_config_store))]
 pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     search::expand_store(&input)

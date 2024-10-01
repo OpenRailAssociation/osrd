@@ -17,7 +17,6 @@ pub struct Property {
 }
 
 pub struct SearchConfig {
-    pub name: String,
     pub table: String,
     pub criterias: Vec<Criteria>,
     pub properties: Vec<Property>,
@@ -61,7 +60,7 @@ pub trait SearchConfigStore {
     fn find<S: AsRef<str>>(object_name: S) -> Option<SearchConfig>;
 
     /// Returns the search object configurations of all objects in the store
-    fn all() -> Vec<SearchConfig>;
+    fn all() -> Vec<(&'static str, SearchConfig)>;
 }
 
 impl SearchConfig {

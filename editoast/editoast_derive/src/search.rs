@@ -1,7 +1,5 @@
 #![allow(clippy::manual_unwrap_or_default)]
 
-use std::sync::OnceLock;
-
 use darling::{ast, util, Error, FromDeriveInput, FromField};
 use darling::{FromMeta, Result};
 use proc_macro2::TokenStream;
@@ -9,8 +7,6 @@ use quote::{quote, ToTokens};
 use syn::punctuated::Punctuated;
 use syn::token::Comma;
 use syn::DeriveInput;
-
-static mut SEARCH_STRUCTS: OnceLock<Vec<(String, String)>> = OnceLock::new();
 
 #[derive(FromDeriveInput)]
 #[darling(
@@ -21,7 +17,6 @@ static mut SEARCH_STRUCTS: OnceLock<Vec<(String, String)>> = OnceLock::new();
 struct SearchParams {
     table: String,
     migration: Option<Migration>,
-    name: Option<String>,
     #[darling(default)]
     joins: String,
     #[darling(multiple, rename = "column")]
@@ -170,9 +165,6 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
 
     let struct_name = &input.ident;
     let table = params.table;
-    let name = params
-        .name
-        .unwrap_or_else(|| struct_name.to_string().to_lowercase());
     let joins = match params.joins {
         ref joins if !joins.is_empty() => quote! { Some(#joins.to_owned()) },
         _ => quote! { None },
@@ -289,19 +281,10 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
     } else {
         quote! { None }
     };
-    // you can't stop me 😈
-    unsafe {
-        SEARCH_STRUCTS.get_or_init(Vec::new);
-        SEARCH_STRUCTS
-            .get_mut()
-            .unwrap()
-            .push((name.clone(), struct_name.to_string()));
-    }
     Ok(quote! {
         impl editoast_search::SearchObject for #struct_name {
             fn search_config() -> editoast_search::SearchConfig {
                 editoast_search::SearchConfig {
-                    name: #name.to_owned(),
                     table: #table.to_owned(),
                     joins: #joins,
                     criterias: vec![#criterias],
@@ -313,15 +296,34 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
     })
 }
 
+#[derive(FromDeriveInput)]
+#[darling(
+    attributes(search_config_store),
+    forward_attrs(allow, doc, cfg),
+    supports(struct_unit)
+)]
+struct SearchStoreParams {
+    #[darling(default, multiple, rename = "object")]
+    objects: Vec<SearchStoreObject>,
+}
+
+#[derive(FromMeta)]
+struct SearchStoreObject {
+    name: String,
+    config: syn::Path,
+}
+
 pub fn expand_store(input: &DeriveInput) -> Result<TokenStream> {
     let name = &input.ident;
-    let (object_name, ident): (Vec<_>, Vec<_>) = unsafe { SEARCH_STRUCTS.get() }
-        .unwrap()
+    let SearchStoreParams { objects } = SearchStoreParams::from_derive_input(input)?;
+    if objects.is_empty() {
+        return Err(Error::custom(
+            "no search objects configured — this is likely a mistake",
+        ));
+    }
+    let (object_name, ident): (Vec<_>, Vec<_>) = objects
         .iter()
-        .map(|(name, ident)| {
-            let struct_ident = syn::Ident::new(ident, input.ident.span());
-            (name, struct_ident)
-        })
+        .map(|SearchStoreObject { name, config }| (name, config))
         .unzip();
     Ok(quote! {
         impl editoast_search::SearchConfigStore for #name {
@@ -332,8 +334,13 @@ pub fn expand_store(input: &DeriveInput) -> Result<TokenStream> {
                 }
             }
 
-            fn all() -> Vec<editoast_search::SearchConfig> {
-                vec![#(< #ident as editoast_search::SearchObject > :: search_config()),*]
+            fn all() -> Vec<(&'static str, editoast_search::SearchConfig)> {
+                vec![#(
+                    (
+                        #object_name,
+                        < #ident as editoast_search::SearchObject > :: search_config()
+                    )
+                ),*]
             }
         }
 
