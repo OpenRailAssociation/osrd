@@ -54,12 +54,15 @@ impl Default for OsrdyneConfig {
 }
 
 pub fn parse_config(file: Option<PathBuf>) -> Result<OsrdyneConfig, figment::Error> {
-    let mut fig = Figment::from(Serialized::defaults(OsrdyneConfig::default()))
-        .merge(Yaml::file("osrdyne.yml"));
-    if let Some(file) = file {
+    let provider = if let Some(file) = file {
         log::info!("Using configuration file: {}", file.display());
-        fig = fig.merge(Yaml::file(file));
-    }
-    // We use `__` as a separator for nested keys
-    fig.merge(Env::prefixed("OSRDYNE__").split("__")).extract()
+        Yaml::file_exact(file)
+    } else {
+        Yaml::file("osrdyne.yml")
+    };
+    Figment::from(Serialized::defaults(OsrdyneConfig::default()))
+        .merge(provider)
+        // We use `__` as a separator for nested keys
+        .merge(Env::prefixed("OSRDYNE__").split("__"))
+        .extract()
 }
