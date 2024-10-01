@@ -134,6 +134,13 @@ fun buildFinalEnvelope(
                     "Can't slow down enough to match the given standard allowance"
                 )
                 break
+            } else if (e.osrdErrorType == ErrorType.AllowanceConvergenceDiscontinuity) {
+                // May be caused by this bug:
+                // https://github.com/OpenRailAssociation/osrd/issues/9037
+                // It's quite difficult to fix this issue for now, but we can
+                // still fallback on linear allowance to have a result
+                postProcessingLogger.warn("Discontinuity in mareco search space")
+                break
             } else throw e
         }
     }
