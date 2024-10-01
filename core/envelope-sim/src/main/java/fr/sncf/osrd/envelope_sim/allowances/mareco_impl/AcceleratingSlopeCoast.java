@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope_sim.allowances.mareco_impl;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
 import static java.lang.Double.NaN;
+import static java.lang.Math.max;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
@@ -64,7 +65,7 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
         // We use the train length to make sure the head of the train isn't on the slope.
         var accelerationStart = findExactStartAcceleratingSlope(context);
         var offset = context.rollingStock.getLength();
-        var estimatePosition = Math.max(0, accelerationStart - offset);
+        var estimatePosition = max(0, accelerationStart - offset);
         return Math.min(0, getNaturalAcceleration(context, estimatePosition, speedLimit));
     }
 
@@ -117,7 +118,8 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
         //       result. it should be probably be iteratively computed.
 
         double v = computeV(context.rollingStock, v1, vf);
-        return CoastingGenerator.coastFromEnd(base, context, endPos, v);
+        double minCoastingSpeed = max(v, vf); // We don't want to coast below vf nor v
+        return CoastingGenerator.coastFromEnd(base, context, endPos, minCoastingSpeed);
     }
 
     // TODO: rewrite as a method of the physics path
