@@ -46,6 +46,12 @@ pub struct KubernetesDeploymentOptions {
 
     /// The tolerations to use for the worker (passthrough to kubernetes deployment)
     pub tolerations: Option<Vec<Toleration>>,
+
+    /// The labels to add to the worker (passthrough to kubernetes deployment)
+    pub labels: Option<BTreeMap<String, String>>,
+
+    /// The annotations to add to the worker (passthrough to kubernetes deployment)
+    pub annotations: Option<BTreeMap<String, String>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -164,7 +170,16 @@ impl WorkerDriver for KubernetesDriver {
                     replicas: Some(1),
                     template: PodTemplateSpec {
                         metadata: Some(ObjectMeta {
-                            labels: Some(labels.clone()),
+                            labels: {
+                                let mut labels = labels.clone();
+                                if let Some(deployment_labels) =
+                                    &self.options.kube_deployment_options.labels
+                                {
+                                    labels.extend(deployment_labels.clone());
+                                }
+                                Some(labels)
+                            },
+                            annotations: self.options.kube_deployment_options.annotations.clone(),
                             ..Default::default()
                         }),
                         spec: Some(PodSpec {
