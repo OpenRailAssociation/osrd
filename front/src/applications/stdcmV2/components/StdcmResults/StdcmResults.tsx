@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
-import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
@@ -14,6 +13,7 @@ import {
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import type { StdcmSimulation } from 'applications/stdcmV2/types';
 import i18n from 'i18n';
+import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 
@@ -148,12 +148,12 @@ const StcdmResults = ({
                   {tWithoutPrefix('spaceTimeGraphic')}
                 </p>
                 <div className="chart-container mt-2">
-                  <SpaceTimeChartWithManchette
+                  <ManchetteWithSpaceTimeChartWrapper
                     operationalPoints={
                       selectedSimulation.outputs?.pathProperties.manchetteOperationalPoints
                     }
                     projectPathTrainResult={spaceTimeData}
-                    selectedProjection={STDCM_TRAIN_ID}
+                    selectedTrainScheduleId={STDCM_TRAIN_ID}
                   />
                 </div>
               </div>

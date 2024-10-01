@@ -1,0 +1,30 @@
+.manchette-space-time-chart-wrapper {
+  border-radius: 0.625rem;
+  box-shadow:
+    0 0.25rem 0.5625rem rgba(0, 0, 0, 0.06),
+    0 0.0625rem 0.125rem rgba(0, 0, 0, 0.19);
+  background-color: var(--white100);
+
+  .header {
+    height: 2.5rem;
+    background-color: var(--ambiantB5);
+    border-color: var(--black25);
+    border-bottom-width: 0.0625rem;
+    box-shadow: 0rem 0.0625rem 0rem var(--white100) inset;
+    border-radius: 0.625rem 0.625rem 0 0;
+  }
+  .header-separator {
+    height: 0.0625rem;
+    background-color: var(--white100);
+  }
+
+  .manchette {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .space-time-chart-container {
+    width: 100%;
+    position: sticky;
+  }
+}

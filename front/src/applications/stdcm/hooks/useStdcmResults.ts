@@ -74,6 +74,11 @@ const useStdcmResults = (
           positionOnPath: path.path_item_positions[i],
         }));
 
+        const operationalPointsWithUniqueIds = operational_points.map((op, index) => ({
+          ...op,
+          id: `${op.id}-${op.position}-${index}`,
+        }));
+
         const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
           operational_points,
           geometry,
@@ -86,7 +91,7 @@ const useStdcmResults = (
         );
 
         setPathProperties({
-          manchetteOperationalPoints: operational_points,
+          manchetteOperationalPoints: operationalPointsWithUniqueIds,
           electrifications,
           geometry,
           suggestedOperationalPoints: updatedSuggestedOPs,

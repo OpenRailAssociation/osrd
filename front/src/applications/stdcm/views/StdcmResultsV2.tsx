@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 
-import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
@@ -9,7 +8,6 @@ import { LoaderFill } from 'common/Loaders';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 
 import SimulationReportSheet from '../components/SimulationReportSheet';
-import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmV2Results } from '../types';
 import {
   generateCodeNumber,
@@ -32,7 +30,7 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
 
-  const { stdcmResponse, speedSpaceChartData, spaceTimeData } = stdcmV2Results;
+  const { stdcmResponse, speedSpaceChartData } = stdcmV2Results;
 
   const operationalPointsList = useMemo(
     () =>
@@ -49,20 +47,6 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
       <div className="osrd-simulation-container mb-2 simulation-results">
         <div className="osrd-simulation-container mb-2">
           <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('spaceTimeGraphic')}</p>
-          <div className="chart-container mt-2">
-            {spaceTimeData &&
-            spaceTimeData.length > 0 &&
-            pathProperties &&
-            pathProperties.manchetteOperationalPoints ? (
-              <SpaceTimeChartWithManchette
-                operationalPoints={pathProperties.manchetteOperationalPoints}
-                projectPathTrainResult={spaceTimeData}
-                selectedProjection={STDCM_TRAIN_ID}
-              />
-            ) : (
-              <LoaderFill />
-            )}
-          </div>
         </div>
         <div className="osrd-simulation-container mb-2 speedspacechart-container">
           <div
