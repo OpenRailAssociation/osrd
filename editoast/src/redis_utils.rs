@@ -45,6 +45,7 @@ fn no_cache_cmd_handler(cmd: &redis::Cmd) -> std::result::Result<redis::Value, R
         {
             Ok(redis::Value::Nil)
         },
+        redis::Arg::Simple(cmd_name_bytes) if cmd_name_bytes == "PING".as_bytes() => Ok(redis::Value::Status("PONG".to_string())),
         redis::Arg::Simple(cmd_name_bytes) => unimplemented!(
             "redis command '{}' is not supported by editoast::redis_utils::RedisConnection with '--no-cache'", String::from_utf8(cmd_name_bytes.to_vec())?
         ),
