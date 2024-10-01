@@ -934,58 +934,54 @@ mod tests {
         core.stub("/v2/pathfinding/blocks")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .body(
-                r#"{
+            .json(json!({
                 "blocks":[],
                 "routes": [],
                 "track_section_ranges": [],
                 "path_item_positions": [0,1,2,3],
                 "length": 0,
                 "status": "success"
-                }"#,
-            )
+            }))
             .finish();
         core.stub("/v2/standalone_simulation")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .body(
-                r#"{
-                    "status": "success",
-                    "base": {
-                        "positions": [],
-                        "times": [],
-                        "speeds": [],
-                        "energy_consumption": 0.0,
-                        "path_item_times": [0, 1000, 2000, 3000]
-                    },
-                    "provisional": {
-                        "positions": [],
-                        "times": [],
-                        "speeds": [],
-                        "energy_consumption": 0.0,
-                        "path_item_times": [0, 1000, 2000, 3000]
-                    },
-                    "final_output": {
-                        "positions": [0],
-                        "times": [0],
-                        "speeds": [],
-                        "energy_consumption": 0.0,
-                        "path_item_times": [0, 1000, 2000, 3000],
-                        "signal_sightings": [],
-                        "zone_updates": [],
-                        "spacing_requirements": [],
-                        "routing_requirements": []
-                    },
-                    "mrsp": {
-                        "boundaries": [],
-                        "values": []
-                    },
-                    "electrical_profiles": {
-                        "boundaries": [],
-                        "values": []
-                    }
-                }"#,
-            )
+            .json(json!({
+                "status": "success",
+                "base": {
+                    "positions": [],
+                    "times": [],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000]
+                },
+                "provisional": {
+                    "positions": [],
+                    "times": [],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000]
+                },
+                "final_output": {
+                    "positions": [0],
+                    "times": [0],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000],
+                    "signal_sightings": [],
+                    "zone_updates": [],
+                    "spacing_requirements": [],
+                    "routing_requirements": []
+                },
+                "mrsp": {
+                    "boundaries": [],
+                    "values": []
+                },
+                "electrical_profiles": {
+                    "boundaries": [],
+                    "values": []
+                }
+            }))
             .finish();
         let app = TestAppBuilder::new()
             .db_pool(db_pool.clone())

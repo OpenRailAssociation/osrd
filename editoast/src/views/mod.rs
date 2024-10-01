@@ -255,6 +255,7 @@ mod tests {
     use axum::http::StatusCode;
     use editoast_models::DbConnectionPoolV2;
     use rstest::rstest;
+    use serde_json::json;
 
     use super::test_app::TestAppBuilder;
     use crate::core::mocking::MockingClient;
@@ -280,7 +281,7 @@ mod tests {
         core.stub("/version")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .body(r#"{"git_describe": ""}"#)
+            .json(json!({"git_describe": ""}))
             .finish();
         let app = TestAppBuilder::new()
             .core_client(core.into())
