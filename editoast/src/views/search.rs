@@ -401,7 +401,6 @@ async fn search(
 
 #[derive(Search, Serialize, ToSchema)]
 #[search(
-    name = "track",
     table = "search_track",
     column(name = "infra_id", data_type = "INT"),
     column(name = "line_code", data_type = "INT"),
@@ -422,7 +421,6 @@ pub(super) struct SearchResultItemTrack {
 
 #[derive(Search, Serialize, ToSchema)]
 #[search(
-    name = "operationalpoint",
     table = "search_operational_point",
     migration(src_table = "infra_object_operational_point"),
     joins = "
@@ -500,7 +498,6 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
 
 #[derive(Search, Serialize, ToSchema)]
 #[search(
-    name = "signal",
     table = "search_signal",
     migration(
         src_table = "infra_object_signal",
@@ -578,7 +575,6 @@ pub(super) struct SearchResultItemSignal {
 
 #[derive(Search, Serialize, ToSchema)]
 #[search(
-    name = "project",
     table = "search_project",
     joins = "INNER JOIN project ON project.id = search_project.id",
     column(name = "id", data_type = "integer"),
@@ -610,7 +606,6 @@ pub(super) struct SearchResultItemProject {
 
 #[derive(Search, Serialize, ToSchema)]
 #[search(
-    name = "study",
     table = "search_study",
     migration(src_table = "study"),
     joins = "INNER JOIN study ON study.id = search_study.id",
@@ -650,7 +645,6 @@ pub(super) struct SearchResultItemStudy {
 
 #[derive(Search, Serialize, ToSchema)]
 #[search(
-    name = "scenario",
     table = "search_scenario",
     joins = "
         INNER JOIN scenario ON scenario.id = search_scenario.id
@@ -691,4 +685,12 @@ pub(super) struct SearchResultItemScenario {
 
 /// See [editoast_search::SearchConfigStore::find]
 #[derive(SearchConfigStore)]
+#[search_config_store(
+    object(name = "track", config = SearchResultItemTrack),
+    object(name = "operationalpoint", config = SearchResultItemOperationalPoint),
+    object(name = "signal", config = SearchResultItemSignal),
+    object(name = "project", config = SearchResultItemProject),
+    object(name = "study", config = SearchResultItemStudy),
+    object(name = "scenario", config = SearchResultItemScenario),
+)]
 pub struct SearchConfigFinder;
