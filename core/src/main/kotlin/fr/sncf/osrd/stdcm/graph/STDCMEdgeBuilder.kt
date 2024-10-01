@@ -178,6 +178,14 @@ internal constructor(
         }
         val endStopDuration = getEndStopDuration()
         val endAtStop = endStopDuration != null
+        if (endAtStop) {
+            // We don't use the result, just making sure that there's enough lookahead to compute it
+            // (otherwise there would be an error when computing the end node for this new edge)
+            graph.delayManager.getMaxAdditionalStopDuration(
+                getExplorerWithNewEnvelope()!!,
+                prevNode.timeData.earliestReachableTime
+            )
+        }
         val standardAllowanceSpeedRatio = graph.getStandardAllowanceSpeedRatio(envelope!!)
         var res: STDCMEdge? =
             STDCMEdge(
