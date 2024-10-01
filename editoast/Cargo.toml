@@ -91,7 +91,7 @@ axum-extra = { version = "0.9.3", default-features = false, features = [
   "typed-header",
 ] }
 axum-test = { version = "15.3.0", default-features = false }
-axum-tracing-opentelemetry = { version = "0.19.0", default-features = false }
+axum-tracing-opentelemetry = { version = "0.21.1", default-features = false }
 chashmap = "2.2.2"
 chrono.workspace = true
 clap = { version = "4.5.16", features = ["derive", "env"] }
@@ -130,18 +130,18 @@ json-patch = { version = "2.0.0", default-features = false, features = [
 lapin = "2.5.0"
 mime = "0.3.17"
 mvt.workspace = true
-opentelemetry = { version = "0.23.0", default-features = false, features = [
+opentelemetry = { version = "0.25.0", default-features = false, features = [
   "trace",
 ] }
-opentelemetry-datadog = { version = "0.11.0", default-features = false, features = [
+opentelemetry-datadog = { version = "0.13.0", default-features = false, features = [
   "intern-std",
   "reqwest-client",
 ], optional = true }
-opentelemetry-otlp = { version = "0.16.0", default-features = false, features = [
+opentelemetry-otlp = { version = "0.17.0", default-features = false, features = [
   "grpc-tonic",
   "trace",
 ] }
-opentelemetry-semantic-conventions = "0.15.0"
+opentelemetry-semantic-conventions = "0.25.0"
 opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio", "trace"] }
 ordered-float = { version = "4.3.0", features = ["serde"] }
 osm_to_railjson = { path = "./osm_to_railjson" }
@@ -176,7 +176,7 @@ tower-http = { version = "0.6.1", features = [
   "trace",
 ] }
 tracing.workspace = true
-tracing-opentelemetry = { version = "0.24.0", default-features = false, features = [
+tracing-opentelemetry = { version = "0.26.0", default-features = false, features = [
   "tracing-log",
 ] }
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
