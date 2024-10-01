@@ -47,4 +47,11 @@ public class BrakingPhaseCoast implements CoastingOpportunity {
         }
         return res;
     }
+
+    @Override
+    public String toString() {
+        return "BrakingPhaseCoast{" +
+            "endPos=" + endPos +
+            '}';
+    }
 }

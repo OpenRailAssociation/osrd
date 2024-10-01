@@ -11,6 +11,7 @@ import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeBuilder;
+import fr.sncf.osrd.envelope.EnvelopeDebug;
 import fr.sncf.osrd.envelope.EnvelopeSpeedCap;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -335,10 +336,14 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         OSRDError lastError = null;
         var search = new DoubleBinarySearch(initialLowBound, initialHighBound, targetTime, tolerance, true);
         double lastTime = 0.0;
+        var debug = EnvelopeDebug.plotBuilder();
         for (int i = 1; i < 30 && !search.complete(); i++) {
             var input = search.getInput();
             try {
                 res = computeIteration(envelopeSection, context, input, imposedBeginSpeed, imposedEndSpeed);
+                System.out.printf("%s: input=%s, out=%s%n", i, input, res.getTotalTime());
+                if (i >= 10)
+                    debug.add(res, Integer.toString(i));
                 lastTime = res.getTotalTime();
                 search.feedback(lastTime);
             } catch (OSRDError allowanceError) {
@@ -369,6 +374,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             } else {
                 logger.error("Couldn't reach target time for allowance section.");
                 logger.error("Closest time = {}, target time = {} +- {}", lastTime, targetTime, tolerance);
+                debug.plot();
                 if (lastError != null) {
                     // If we couldn't converge and an error happened, it has more info
                     // than a generic error

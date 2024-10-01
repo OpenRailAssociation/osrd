@@ -117,6 +117,7 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
         //       result. it should be probably be iteratively computed.
 
         double v = computeV(context.rollingStock, v1, vf);
+        System.out.printf("v=%s%n", v);
         return CoastingGenerator.coastFromEnd(base, context, endPos, v);
     }
 
@@ -185,5 +186,17 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
         var res = -y0 / factor;
         assert previousPosition <= res && res <= currentPosition;
         return res;
+    }
+
+    @Override
+    public String toString() {
+        return "AcceleratingSlopeCoast{" +
+            "endPos=" + endPos +
+            ", slopeAverageAcceleration=" + slopeAverageAcceleration +
+            ", previousAccelerationEstimate=" + previousAccelerationEstimate +
+            ", accelerationStartPosition=" + accelerationStartPosition +
+            ", speedLimit=" + speedLimit +
+            ", meanAccelerationBuilder=" + meanAccelerationBuilder +
+            '}';
     }
 }

@@ -77,6 +77,7 @@ public final class MarecoAllowance extends AbstractAllowanceWithRanges {
     @Override
     protected Envelope computeCore(Envelope coreBase, EnvelopeSimContext context, double v1) {
         double vf = computeVf(v1, context.rollingStock);
+        System.out.printf("vf=%s%n", vf);
 
         // 1) cap the core base envelope at v1 and check if v1 is physically reachable
         var cappedEnvelope = EnvelopeSpeedCap.from(coreBase, List.of(new MarecoSpeedLimit()), v1);
@@ -94,6 +95,10 @@ public final class MarecoAllowance extends AbstractAllowanceWithRanges {
         // 4) evaluate coasting opportunities in reverse order, thus skipping overlapping ones
         coastingOpportunities.sort(Comparator.comparing(CoastingOpportunity::getEndPosition));
         Collections.reverse(coastingOpportunities);
+
+        for (var x : coastingOpportunities) {
+            System.out.println(x);
+        }
 
         var builder = OverlayEnvelopeBuilder.backward(cappedEnvelope);
         double lastCoastBegin = Double.POSITIVE_INFINITY;

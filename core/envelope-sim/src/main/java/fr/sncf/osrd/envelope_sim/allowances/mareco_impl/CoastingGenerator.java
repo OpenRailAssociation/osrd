@@ -77,6 +77,7 @@ public final class CoastingGenerator {
             // which can happen if it should have intersected in the middle of a simulation step.
             // There's no good way to handle this with the current envelope framework,
             // returning null at least avoids crashing and keeps the binary search going
+            System.out.println("weird behavior there");
             return null;
         }
         return resultCoast;
