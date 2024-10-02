@@ -68,6 +68,7 @@ use std::io::{BufReader, IsTerminal};
 use std::path::PathBuf;
 use std::process::exit;
 use std::sync::Arc;
+use std::time::Duration;
 use std::{env, fs};
 use thiserror::Error;
 use tracing::{debug, error, info, warn};
@@ -346,6 +347,7 @@ pub struct AppState {
     pub role_config: Arc<Roles>,
     pub core_client: Arc<CoreClient>,
     pub osrdyne_client: Arc<OsrdyneClient>,
+    pub health_check_timeout: Duration,
 }
 
 impl AppState {
@@ -382,6 +384,8 @@ impl AppState {
 
         let osrdyne_client = Arc::new(OsrdyneClient::new(args.osrdyne_api_url.as_str())?);
 
+        let health_check_timeout = Duration::from_millis(args.health_check_timeout_ms);
+
         Ok(Self {
             redis,
             db_pool_v1,
@@ -393,6 +397,7 @@ impl AppState {
             map_layers_config: Arc::new(args.map_layers_config.clone()),
             speed_limit_tag_ids,
             role_config,
+            health_check_timeout,
         })
     }
 }

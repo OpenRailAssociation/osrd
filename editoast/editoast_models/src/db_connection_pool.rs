@@ -19,6 +19,7 @@ use futures_util::FutureExt as _;
 use openssl::ssl::SslConnector;
 use openssl::ssl::SslMethod;
 use openssl::ssl::SslVerifyMode;
+use tracing::trace;
 use url::Url;
 
 use tokio::sync::OwnedRwLockWriteGuard;
@@ -410,6 +411,7 @@ pub async fn ping_database(conn: &mut DbConnection) -> Result<(), PingError> {
     sql_query("SELECT 1")
         .execute(conn.write().await.deref_mut())
         .await?;
+    trace!("Database ping successful");
     Ok(())
 }
 

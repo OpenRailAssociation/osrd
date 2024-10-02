@@ -24,7 +24,6 @@ pub mod work_schedules;
 mod test_app;
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use axum::extract::Request;
 use axum::middleware::Next;
@@ -202,10 +201,11 @@ async fn health(
     State(AppState {
         db_pool_v2: db_pool,
         redis,
+        health_check_timeout,
         ..
     }): State<AppState>,
 ) -> Result<&'static str> {
-    timeout(Duration::from_millis(500), check_health(db_pool, redis))
+    timeout(health_check_timeout, check_health(db_pool, redis))
         .await
         .map_err(|_| AppHealthError::Timeout)??;
     Ok("ok")

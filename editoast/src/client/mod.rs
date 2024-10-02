@@ -164,6 +164,10 @@ pub struct RunserverArgs {
     #[derivative(Default(value = r#""http://127.0.0.1:4242/".into()"#))]
     #[clap(long, env = "OSRDYNE_API_URL", default_value_t = String::from("http://127.0.0.1:4242/"))]
     pub osrdyne_api_url: String,
+    /// The timeout to use when performing the healthcheck, in milliseconds
+    #[derivative(Default(value = "500"))]
+    #[clap(long, env = "EDITOAST_HEALTH_CHECK_TIMEOUT_MS", default_value_t = 500)]
+    pub health_check_timeout_ms: u64,
 }
 
 #[derive(Args, Debug)]

@@ -16,6 +16,7 @@ use redis::RedisResult;
 use redis::ToRedisArgs;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use tracing::trace;
 
 use crate::client::RedisConfig;
 use crate::error::Result;
@@ -232,6 +233,7 @@ impl RedisClient {
     pub async fn ping_redis(&self) -> RedisResult<()> {
         let mut conn = self.get_connection().await?;
         cmd("PING").query_async::<_, ()>(&mut conn).await?;
+        trace!("Redis ping successful");
         Ok(())
     }
 }

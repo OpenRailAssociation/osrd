@@ -2,7 +2,7 @@
 //! test actix server, database connection pool, and different mocking
 //! components.
 
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use axum::Router;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
@@ -155,6 +155,7 @@ impl TestAppBuilder {
             map_layers_config: MapLayersConfig::default().into(),
             speed_limit_tag_ids,
             role_config,
+            health_check_timeout: Duration::from_millis(500),
         };
 
         // Configure the axum router
