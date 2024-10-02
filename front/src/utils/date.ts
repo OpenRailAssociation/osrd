@@ -142,11 +142,6 @@ export const formatDateToString = (date: Date, shortYear: boolean = false) => {
   };
 };
 
-/** check whether a date is included in the range or not */
-export function dateIsInRange(date: Date, range: [Date, Date]) {
-  return range[0] <= date && date <= range[1];
-}
-
 export const formatDateForInput = (date?: string | null) => (date ? date.substring(0, 10) : '');
 
 export function getEarliestDate(date1: string | null | undefined, dat2: string | null | undefined) {

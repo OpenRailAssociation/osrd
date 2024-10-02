@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { Rnd } from 'react-rnd';
 
 import type {
   SimulationResultsData,
@@ -12,15 +11,12 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import { getScaleDomainFromValues } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
-import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes/SpaceCurvesSlopes';
 import ProjectionLoadingMessage from 'modules/simulationResult/components/SpaceTimeChart/ProjectionLoadingMessage';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
-import type { PositionScaleDomain } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
@@ -69,16 +65,6 @@ const SimulationResults = ({
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
   const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
-  const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
-  const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
-    useState(heightOfSpaceCurvesSlopesChart);
-
-  // X scale domain shared between SpeedSpace and SpaceCurvesSlopes charts.
-  const [positionScaleDomain, setPositionScaleDomain] = useState<PositionScaleDomain>({
-    initial: [],
-    current: [],
-    source: undefined,
-  });
 
   const {
     operationalPoints,
@@ -115,17 +101,6 @@ const SimulationResults = ({
       );
     }
   }, [extViewport]);
-
-  useEffect(() => {
-    if (trainSimulation && trainSimulation.status === 'success') {
-      const { positions } = trainSimulation.final_output;
-      const newPositionsScaleDomain = getScaleDomainFromValues(positions);
-      setPositionScaleDomain({
-        initial: newPositionsScaleDomain,
-        current: newPositionsScaleDomain,
-      });
-    }
-  }, [trainSimulation]);
 
   if (!trainSimulation) return null;
 
@@ -225,46 +200,6 @@ const SimulationResults = ({
             />
           </div>
         )}
-
-      {/* TRAIN : CURVES & SLOPES */}
-      {trainSimulation.status === 'success' && pathProperties && selectedTrainSchedule && (
-        <div className="osrd-simulation-container d-flex mb-2">
-          <div
-            className="chart-container"
-            style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
-          >
-            <Rnd
-              default={{
-                x: 0,
-                y: 0,
-                width: '100%',
-                height: `${heightOfSpaceCurvesSlopesChart}px`,
-              }}
-              disableDragging
-              enableResizing={{
-                bottom: true,
-              }}
-              onResizeStart={() =>
-                setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
-              }
-              onResize={(_e, _dir, _refToElement, delta) => {
-                setHeightOfSpaceCurvesSlopesChart(
-                  initialHeightOfSpaceCurvesSlopesChart + delta.height
-                );
-              }}
-            >
-              <SpaceCurvesSlopes
-                initialHeight={heightOfSpaceCurvesSlopesChart}
-                trainSimulation={trainSimulation}
-                pathProperties={pathProperties}
-                sharedXScaleDomain={positionScaleDomain}
-                setSharedXScaleDomain={setPositionScaleDomain}
-                departureTime={selectedTrainSchedule.start_time}
-              />
-            </Rnd>
-          </div>
-        </div>
-      )}
 
       {/* SIMULATION : MAP */}
       <div ref={timeTableRef}>
