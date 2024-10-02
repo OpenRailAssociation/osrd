@@ -56,7 +56,7 @@
       "simulation_failed": "Simulation impossible",
       "rolling_stock_not_found": "MR non trouvé"
     },
-    "invalidTrains": "La grille horaire comporte des trains invalides.",
+    "invalidTrains": "Certains trains sont invalides",
     "noSpeedLimitTags": "Sans code",
     "noSpeedLimitTagsShort": "Aucun",
     "noTrain": "Aucun train",

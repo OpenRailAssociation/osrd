@@ -181,6 +181,7 @@
         background: var(--ambiantB15);
         overflow: auto;
         min-height: 0;
+        margin-bottom: 1.5rem;
         border-radius: 0.625rem;
         box-shadow:
           0 0.125rem 0.25rem 0 rgba(0, 0, 0, 0.22),
@@ -220,12 +221,12 @@
         }
 
         .scenario-timetable-toolbar {
-          border-bottom: solid 0.063rem rgba(0, 0, 0, 0.1);
           padding: 0 1rem 0 0.625rem;
           position: sticky;
           top: 0;
           z-index: 2;
           background-color: var(--ambiantB15);
+
           .toolbar-header {
             display: flex;
             gap: 0.5rem;
@@ -257,9 +258,31 @@
           }
         }
 
+        .invalid-trains {
+          display: flex;
+          background: var(--warning5);
+          box-shadow: inset 0px 1px var(--white100);
+          height: 3rem;
+          font-size: 1rem;
+          font-weight: 600;
+          line-height: 1.5rem;
+          color: var(--warning60);
+          border-top: solid 0.0625rem var(--warning30);
+          border-bottom: solid 0.0625rem var(--warning30);
+          svg {
+            margin: 1rem;
+            color: var(--warning30);
+          }
+          .invalid-trains-message {
+            height: 1.5rem;
+            margin-top: 0.6875rem;
+          }
+        }
+
         .filter {
           background-color: var(--ambiantB5);
           height: 1.938rem;
+          border-top: solid 0.063rem rgba(0, 0, 0, 0.1);
           border-bottom: solid 0.063rem rgba(0, 0, 0, 0.25);
           display: flex;
           justify-content: center;
@@ -505,7 +528,7 @@
 
         .sticky-filter {
           position: sticky;
-          top: 3.3375rem;
+          top: 3.275rem;
           z-index: 2;
 
           &.selection-mode-open {
@@ -595,24 +618,6 @@
         }
         .empty-list {
           height: 7rem;
-        }
-      }
-
-      .scenario-timetable-warnings {
-        margin-top: auto;
-
-        .invalid-trains {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          justify-content: center;
-          padding: 0.5rem;
-          font-size: 0.9rem;
-          font-weight: 500;
-          border-radius: 0.25rem;
-          border: 0.125rem solid var(--red);
-          margin-block: 1rem;
-          color: var(--red);
         }
       }
     }

@@ -57,7 +57,7 @@
       "simulation_failed": "Simulation failed",
       "rolling_stock_not_found": "RS not found"
     },
-    "invalidTrains": "The timetable contains invalid trains.",
+    "invalidTrains": "Some trains are invalid",
     "noSpeedLimitTags": "Without code",
     "noSpeedLimitTagsShort": "None",
     "noTrain": "No train",
