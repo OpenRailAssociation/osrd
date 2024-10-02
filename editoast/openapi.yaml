@@ -75,7 +75,7 @@ paths:
                 roles:
                   type: array
                   items:
-                    type: string
+                    $ref: '#/components/schemas/BuiltinRole'
         required: true
       responses:
         '204':
@@ -102,7 +102,7 @@ paths:
                 roles:
                   type: array
                   items:
-                    type: string
+                    $ref: '#/components/schemas/BuiltinRole'
         required: true
       responses:
         '204':
@@ -4082,7 +4082,6 @@ components:
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
       - $ref: '#/components/schemas/EditoastInfraCacheEditoastErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastInfraStateErrorFetchError'
-      - $ref: '#/components/schemas/EditoastInvalidRoleTagInvalid'
       - $ref: '#/components/schemas/EditoastLayersErrorLayerNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorViewNotFound'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
@@ -4369,25 +4368,6 @@ components:
           type: string
           enum:
           - editoast:infra_state:FetchError
-    EditoastInvalidRoleTagInvalid:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:authz:role:Invalid
     EditoastLayersErrorLayerNotFound:
       type: object
       required:

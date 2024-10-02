@@ -889,7 +889,7 @@ export type PostAuthzRolesByUserIdApiArg = {
   /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
   userId: number;
   body: {
-    roles: string[];
+    roles: BuiltinRole[];
   };
 };
 export type DeleteAuthzRolesByUserIdApiResponse = unknown;
@@ -897,7 +897,7 @@ export type DeleteAuthzRolesByUserIdApiArg = {
   /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
   userId: number;
   body: {
-    roles: string[];
+    roles: BuiltinRole[];
   };
 };
 export type PostDocumentsApiResponse =

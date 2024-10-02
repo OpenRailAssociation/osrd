@@ -23,10 +23,7 @@
       "Driver": "Authentication/authorization internal error, try again or contact support",
       "NoSuchUser": "Unknown user",
       "Unauthenticated": "Unauthenticated user",
-      "Unauthorized": "Access denied",
-      "role": {
-        "Invalid": "Invalid role tag"
-      }
+      "Unauthorized": "Access denied"
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Conflicting fixes for the same object on the same fix-iteration",

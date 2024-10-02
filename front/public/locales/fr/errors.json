@@ -23,10 +23,7 @@
       "Driver": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "NoSuchUser": "Utilisateur inconnu",
       "Unauthenticated": "Utilisateur non authentifié",
-      "Unauthorized": "Accès refusé",
-      "role": {
-        "Invalid": "Libellé de rôle inconnu"
-      }
+      "Unauthorized": "Accès refusé"
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",
