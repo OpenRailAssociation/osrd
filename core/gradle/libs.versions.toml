@@ -44,7 +44,7 @@ hppc = { module = 'com.carrotsearch:hppc', version = '0.9.1' } # Apache 2.0
 moshi = { module = 'com.squareup.moshi:moshi', version.ref = 'moshi' } # Apache 2.0
 moshi-adapters = { module = 'com.squareup.moshi:moshi-adapters', version.ref = 'moshi' } # Apache 2.0
 moshi-kotlin = { module = 'com.squareup.moshi:moshi-kotlin', version.ref = 'moshi' } # Apache 2.0
-takes = { module = 'org.takes:takes', version = '1.24.+' } # MIT
+takes = { module = 'org.takes:takes', version = '1.24.4' } # MIT
 javax-json-api = { module = 'javax.json:javax.json-api', version = '1.1.4' } # GPLv2 with classpath exemption
 okhttp = { module = 'com.squareup.okhttp3:okhttp', version = '4.12.0' } # Apache 2.0
 classgraph = { module = 'io.github.classgraph:classgraph', version = '4.8.+' } # MIT
