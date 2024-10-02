@@ -57,7 +57,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: '$' # special user for authenticating as a gh actions worker
+          username: "$" # special user for authenticating as a gh actions worker
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # This action happens to randomly fail, so we retry it 3 times.
@@ -265,32 +265,32 @@ jobs:
   check_commits:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Fetch all history for all branches and tags
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
 
-    - name: Check commit names
-      run: |
-        # We don't have a base ref to check against if we aren't in a
-        # pull_request workflow.
-        BASE=${{ github.base_ref }}
-        if [[ -z "$BASE" ]]; then
-          exit 0
-        fi
+      - name: Check commit names
+        run: |
+          # We don't have a base ref to check against if we aren't in a
+          # pull_request workflow.
+          BASE=${{ github.base_ref }}
+          if [[ -z "$BASE" ]]; then
+            exit 0
+          fi
 
-        commit_titles() {
-          git log --format=%s origin/"$BASE"..HEAD --skip=1
-        }
+          commit_titles() {
+            git log --format=%s origin/"$BASE"..HEAD --skip=1
+          }
 
-        commit_titles | TERM=xterm-color .github/scripts/check-commit-titles.sh
+          commit_titles | TERM=xterm-color .github/scripts/check-commit-titles.sh
 
-    - name: Check DCO
-      uses: christophebedard/dco-check@0.5.0
-      with:
-        args: --exclude-emails '49699333+dependabot[bot]@users.noreply.github.com'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check DCO
+        uses: christophebedard/dco-check@0.5.0
+        with:
+          args: --exclude-emails '49699333+dependabot[bot]@users.noreply.github.com'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   final_newline_lint:
     runs-on: ubuntu-latest
@@ -400,20 +400,20 @@ jobs:
   check_infra_schema_sync:
     runs-on: ubuntu-latest
     steps:
-        - name: Checkout
-          uses: actions/checkout@v4
-        - name: Install poetry
-          run: pipx install poetry
-        - uses: actions/setup-python@v5
-          with:
-            python-version: "3.11"
-            cache: "poetry"
-        - name: Check infra_schema.json sync
-          run: |
-            cd python/osrd_schemas
-            poetry install --no-interaction --no-root
-            poetry run python -m osrd_schemas.infra_editor > current_infra_schema.json
-            diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "poetry"
+      - name: Check infra_schema.json sync
+        run: |
+          cd python/osrd_schemas
+          poetry install --no-interaction --no-root
+          poetry run python -m osrd_schemas.infra_editor > current_infra_schema.json
+          diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json
 
   check_front_rtk_sync:
     runs-on: ubuntu-latest
@@ -945,13 +945,13 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-            docker run --init --name=playwright-test --net=host \
-              -e CI=true \
-              -v $PWD/front/test-results:/app/test-results \
-              ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
-              /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests"
+          docker run --init --name=playwright-test --net=host \
+            -e CI=true \
+            -v $PWD/front/test-results:/app/test-results \
+            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests"
 
-            exit $(docker wait playwright-test)
+          exit $(docker wait playwright-test)
 
       - uses: actions/upload-artifact@v4
         if: always()
