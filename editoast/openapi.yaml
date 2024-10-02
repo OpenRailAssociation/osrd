@@ -7391,6 +7391,39 @@ components:
           items:
             $ref: '#/components/schemas/TrackRange'
           description: List of track sections
+    PathfindingFailure:
+      oneOf:
+      - allOf:
+        - $ref: '#/components/schemas/PathfindingInputError'
+        - type: object
+          required:
+          - failed_status
+          properties:
+            failed_status:
+              type: string
+              enum:
+              - pathfinding_input_error
+      - allOf:
+        - $ref: '#/components/schemas/PathfindingNotFound'
+        - type: object
+          required:
+          - failed_status
+          properties:
+            failed_status:
+              type: string
+              enum:
+              - pathfinding_not_found
+      - type: object
+        required:
+        - core_error
+        - failed_status
+        properties:
+          core_error:
+            $ref: '#/components/schemas/InternalError'
+          failed_status:
+            type: string
+            enum:
+            - internal_error
     PathfindingInput:
       type: object
       description: |-
@@ -7435,6 +7468,49 @@ components:
           items:
             type: string
           description: List of supported signaling systems
+    PathfindingInputError:
+      oneOf:
+      - type: object
+        required:
+        - items
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - invalid_path_items
+          items:
+            type: array
+            items:
+              type: object
+              required:
+              - index
+              - path_item
+              properties:
+                index:
+                  type: integer
+                  minimum: 0
+                path_item:
+                  $ref: '#/components/schemas/PathItemLocation'
+      - type: object
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_enough_path_items
+      - type: object
+        required:
+        - rolling_stock_name
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - rolling_stock_not_found
+          rolling_stock_name:
+            type: string
     PathfindingItem:
       type: object
       required:
@@ -7452,6 +7528,66 @@ components:
           allOf:
           - $ref: '#/components/schemas/StepTimingData'
           nullable: true
+    PathfindingNotFound:
+      oneOf:
+      - type: object
+        required:
+        - track_section_ranges
+        - length
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_blocks
+          length:
+            type: integer
+            format: int64
+            minimum: 0
+          track_section_ranges:
+            type: array
+            items:
+              $ref: '#/components/schemas/TrackRange'
+      - type: object
+        required:
+        - track_section_ranges
+        - length
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_routes
+          length:
+            type: integer
+            format: int64
+            minimum: 0
+          track_section_ranges:
+            type: array
+            items:
+              $ref: '#/components/schemas/TrackRange'
+      - type: object
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_tracks
+      - type: object
+        required:
+        - relaxed_constraints_path
+        - incompatible_constraints
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - incompatible_constraints
+          incompatible_constraints:
+            $ref: '#/components/schemas/IncompatibleConstraints'
+          relaxed_constraints_path:
+            $ref: '#/components/schemas/PathfindingResultSuccess'
     PathfindingOutput:
       type: object
       required:
@@ -7487,116 +7623,16 @@ components:
               type: string
               enum:
               - success
-      - type: object
-        required:
-        - track_section_ranges
-        - length
-        - status
-        properties:
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          status:
-            type: string
-            enum:
-            - not_found_in_blocks
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/TrackRange'
-      - type: object
-        required:
-        - track_section_ranges
-        - length
-        - status
-        properties:
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          status:
-            type: string
-            enum:
-            - not_found_in_routes
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/TrackRange'
-      - type: object
-        required:
-        - status
-        properties:
-          status:
-            type: string
-            enum:
-            - not_found_in_tracks
-      - type: object
-        required:
-        - relaxed_constraints_path
-        - incompatible_constraints
-        - status
-        properties:
-          incompatible_constraints:
-            $ref: '#/components/schemas/IncompatibleConstraints'
-          relaxed_constraints_path:
-            $ref: '#/components/schemas/PathfindingResultSuccess'
-          status:
-            type: string
-            enum:
-            - incompatible_constraints
-      - type: object
-        required:
-        - items
-        - status
-        properties:
-          items:
-            type: array
-            items:
-              type: object
-              required:
-              - index
-              - path_item
-              properties:
-                index:
-                  type: integer
-                  minimum: 0
-                path_item:
-                  $ref: '#/components/schemas/PathItemLocation'
-          status:
-            type: string
-            enum:
-            - invalid_path_items
-      - type: object
-        required:
-        - status
-        properties:
-          status:
-            type: string
-            enum:
-            - not_enough_path_items
-      - type: object
-        required:
-        - rolling_stock_name
-        - status
-        properties:
-          rolling_stock_name:
-            type: string
-          status:
-            type: string
-            enum:
-            - rolling_stock_not_found
-      - type: object
-        required:
-        - core_error
-        - status
-        properties:
-          core_error:
-            $ref: '#/components/schemas/InternalError'
-          status:
-            type: string
-            enum:
-            - pathfinding_failed
+      - allOf:
+        - $ref: '#/components/schemas/PathfindingFailure'
+        - type: object
+          required:
+          - status
+          properties:
+            status:
+              type: string
+              enum:
+              - failure
     PathfindingResultSuccess:
       type: object
       description: A successful pathfinding result. This is also used for STDCM response.
@@ -9562,11 +9598,11 @@ components:
             - success
       - type: object
         required:
-        - pathfinding_result
+        - pathfinding_failed
         - status
         properties:
-          pathfinding_result:
-            $ref: '#/components/schemas/PathfindingResult'
+          pathfinding_failed:
+            $ref: '#/components/schemas/PathfindingFailure'
           status:
             type: string
             enum:
@@ -9640,26 +9676,28 @@ components:
             format: int64
             description: Travel time in ms
             minimum: 0
-      - type: object
-        required:
-        - status
-        properties:
-          status:
-            type: string
-            enum:
-            - pathfinding_not_found
+      - allOf:
+        - $ref: '#/components/schemas/PathfindingNotFound'
+        - type: object
+          required:
+          - status
+          properties:
+            status:
+              type: string
+              enum:
+              - pathfinding_not_found
       - type: object
         description: An error has occured during pathfinding
         required:
-        - error_type
+        - core_error
         - status
         properties:
-          error_type:
-            type: string
+          core_error:
+            $ref: '#/components/schemas/InternalError'
           status:
             type: string
             enum:
-            - pathfinding_failed
+            - pathfinding_failure
       - type: object
         description: An error has occured during computing
         required:
@@ -9672,18 +9710,16 @@ components:
             type: string
             enum:
             - simulation_failed
-      - type: object
-        description: Rolling stock not found
-        required:
-        - rolling_stock_name
-        - status
-        properties:
-          rolling_stock_name:
-            type: string
-          status:
-            type: string
-            enum:
-            - rolling_stock_not_found
+      - allOf:
+        - $ref: '#/components/schemas/PathfindingInputError'
+        - type: object
+          required:
+          - status
+          properties:
+            status:
+              type: string
+              enum:
+              - pathfinding_input_error
     Slope:
       type: object
       required:

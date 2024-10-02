@@ -14,10 +14,11 @@ editoast_common::schemas! {
     IncompatibleConstraints,
     IncompatibleOffsetRangeWithValue,
     IncompatibleOffsetRange,
-    PathfindingResult,
     PathfindingResultSuccess,
     OffsetRange,
     TrackRange,
+    PathfindingInputError,
+    PathfindingNotFound,
 }
 
 #[derive(Debug, Serialize)]
@@ -73,9 +74,9 @@ pub struct InvalidPathItem {
     pub path_item: PathItemLocation,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(tag = "status", rename_all = "snake_case")]
-pub enum PathfindingResult {
+pub enum PathfindingCoreResult {
     Success(PathfindingResultSuccess),
     NotFoundInBlocks {
         track_section_ranges: Vec<TrackRange>,
@@ -91,14 +92,13 @@ pub enum PathfindingResult {
         incompatible_constraints: Box<IncompatibleConstraints>,
     },
     InvalidPathItems {
-        #[schema(inline)]
         items: Vec<InvalidPathItem>,
     },
     NotEnoughPathItems,
     RollingStockNotFound {
         rolling_stock_name: String,
     },
-    PathfindingFailed {
+    InternalError {
         core_error: InternalError,
     },
 }
@@ -119,6 +119,39 @@ pub struct PathfindingResultSuccess {
     /// The path offset in mm of each path item given as input of the pathfinding
     /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
     pub path_item_positions: Vec<u64>,
+}
+
+// Enum for input-related errors
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[serde(tag = "error_type", rename_all = "snake_case")]
+pub enum PathfindingInputError {
+    InvalidPathItems {
+        #[schema(inline)]
+        items: Vec<InvalidPathItem>,
+    },
+    NotEnoughPathItems,
+    RollingStockNotFound {
+        rolling_stock_name: String,
+    },
+}
+
+// Enum for not-found results and incompatible constraints
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[serde(tag = "error_type", rename_all = "snake_case")]
+pub enum PathfindingNotFound {
+    NotFoundInBlocks {
+        track_section_ranges: Vec<TrackRange>,
+        length: u64,
+    },
+    NotFoundInRoutes {
+        track_section_ranges: Vec<TrackRange>,
+        length: u64,
+    },
+    NotFoundInTracks,
+    IncompatibleConstraints {
+        relaxed_constraints_path: Box<PathfindingResultSuccess>,
+        incompatible_constraints: Box<IncompatibleConstraints>,
+    },
 }
 
 /// An oriented range on a track section.
@@ -216,7 +249,7 @@ impl TrackRangeOffset<'_> {
     }
 }
 
-impl AsCoreRequest<Json<PathfindingResult>> for PathfindingRequest {
+impl AsCoreRequest<Json<PathfindingCoreResult>> for PathfindingRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/v2/pathfinding/blocks";
 
