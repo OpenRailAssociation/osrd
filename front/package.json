@@ -103,17 +103,6 @@
     "@import-meta-env/prepare": "^0.1.13",
     "@import-meta-env/unplugin": "^0.5.1",
     "@playwright/test": "^1.41.2",
-    "@storybook/addon-actions": "^7.6.12",
-    "@storybook/addon-essentials": "^7.6.12",
-    "@storybook/addon-interactions": "^7.6.12",
-    "@storybook/addon-links": "^7.6.12",
-    "@storybook/addon-postcss": "^2.0.0",
-    "@storybook/node-logger": "^7.6.12",
-    "@storybook/preset-create-react-app": "^7.6.12",
-    "@storybook/preset-scss": "^1.0.3",
-    "@storybook/react": "^7.6.12",
-    "@storybook/react-vite": "^7.6.12",
-    "@storybook/testing-library": "^0.2.2",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
@@ -154,7 +143,6 @@
     "license-checker-rseidelsohn": "^4.4.2",
     "prettier": "^3.2.5",
     "sass": "^1.70.0",
-    "storybook": "^7.6.12",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
     "tsx": "^4.7.1",
@@ -181,8 +169,6 @@
     "lint-fix": "eslint --cache --ext .ts,.tsx,.js,.jsx src --fix",
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
     "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
     "e2e-tests": "yarn playwright test",
     "i18n-api-errors": "tsx ./scripts/i18n-api-errors.ts",
@@ -198,18 +184,6 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
-    ]
-  },
-  "eslintConfig": {
-    "overrides": [
-      {
-        "files": [
-          "**/*.stories.*"
-        ],
-        "rules": {
-          "import/no-anonymous-default-export": "off"
-        }
-      }
     ]
   },
   "jest": {

@@ -81,7 +81,6 @@ components requiring a specific design.
 | main/         | Landing & home pages                                                                              |
 | reducers/     | Redux store                                                                                       |
 | `Store.ts`    | Redux store config                                                                                |
-| stories/      | Storybook files                                                                                   |
 | styles/       | All SCSS code ([see below](#css-srcstyles))                                                       |
 | types/        | Typescript types configuration                                                                    |
 | utils/        | Some common generic helpers                                                                       |
