@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.api.*;
 import fr.sncf.osrd.api.api_v2.conflicts.ConflictDetectionEndpointV2;
+import fr.sncf.osrd.api.api_v2.conflicts.ConflictProjectionEndpoint;
 import fr.sncf.osrd.api.api_v2.path_properties.PathPropEndpoint;
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2;
 import fr.sncf.osrd.api.api_v2.project_signals.SignalProjectionEndpointV2;
@@ -91,6 +92,7 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/v2/signal_projection", new SignalProjectionEndpointV2(infraManager)),
                     new FkRegex("/detect_conflicts", new ConflictDetectionEndpoint()),
                     new FkRegex("/v2/conflict_detection", new ConflictDetectionEndpointV2(infraManager)),
+                    new FkRegex("/conflict_projection", new ConflictProjectionEndpoint(infraManager)),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),
                     new FkRegex("/version", new VersionEndpoint()),
                     new FkRegex("/stdcm", new STDCMEndpoint(infraManager)),
