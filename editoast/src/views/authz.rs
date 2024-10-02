@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::str::FromStr;
 
 use crate::error::Result;
 use crate::models::auth::{AuthDriverError, PgAuthDriver};
@@ -120,15 +119,7 @@ async fn list_user_roles(
 
 #[derive(serde::Deserialize, utoipa::ToSchema)]
 struct RoleListBody {
-    roles: Vec<String>,
-}
-
-#[derive(Debug, thiserror::Error, EditoastError)]
-#[editoast_error(base_id = "authz:role")]
-enum InvalidRoleTag {
-    #[error("Invalid role tag: {0}")]
-    #[editoast_error(status = 400)]
-    Invalid(String),
+    roles: Vec<BuiltinRole>,
 }
 
 #[utoipa::path(
@@ -155,15 +146,8 @@ async fn grant_roles(
 
     check_user_exists(user_id, &authorizer).await?;
 
-    let roles = roles
-        .iter()
-        .map(|role| {
-            BuiltinRole::from_str(role.as_str())
-                .map_err(|_| InvalidRoleTag::Invalid(role.to_owned()))
-        })
-        .collect::<Result<_, _>>()?;
     authorizer
-        .grant_roles(user_id, roles)
+        .grant_roles(user_id, HashSet::from_iter(roles))
         .await
         .map_err(AuthzError::from)?;
     Ok(axum::http::StatusCode::NO_CONTENT)
@@ -193,15 +177,8 @@ async fn strip_roles(
 
     check_user_exists(user_id, &authorizer).await?;
 
-    let roles = roles
-        .iter()
-        .map(|role| {
-            BuiltinRole::from_str(role.as_str())
-                .map_err(|_| InvalidRoleTag::Invalid(role.to_owned()))
-        })
-        .collect::<Result<_, _>>()?;
     authorizer
-        .strip_roles(user_id, roles)
+        .strip_roles(user_id, HashSet::from_iter(roles))
         .await
         .map_err(AuthzError::from)?;
     Ok(axum::http::StatusCode::NO_CONTENT)
