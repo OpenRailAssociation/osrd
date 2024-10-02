@@ -14,9 +14,9 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::pathfinding::TrackRange;
-use crate::core::pathfinding::PathfindingResult;
 use crate::core::{AsCoreRequest, Json};
 use crate::error::InternalError;
+use crate::views::path::pathfinding::PathfindingFailure;
 use crate::RollingStockModel;
 use derivative::Derivative;
 use editoast_schemas::primitives::Identifier;
@@ -299,7 +299,7 @@ pub enum SimulationResponse {
         electrical_profiles: ElectricalProfiles,
     },
     PathfindingFailed {
-        pathfinding_result: PathfindingResult,
+        pathfinding_failed: PathfindingFailure,
     },
     SimulationFailed {
         core_error: InternalError,
