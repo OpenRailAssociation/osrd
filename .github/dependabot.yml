@@ -43,10 +43,6 @@ updates:
       rjsf:
         patterns:
           - "@rjsf/*"
-      storybook:
-        patterns:
-          - "storybook"
-          - "@storybook/*"
       turf:
         patterns:
           - "@turf/*"
