@@ -74,6 +74,7 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
             <PDFDownloadLink
               document={
                 <SimulationReportSheet
+                  simulationType="stdcm"
                   stdcmData={stdcmResponse}
                   simulationReportSheetNumber={codeNumber}
                   mapCanvas={mapCanvas}
