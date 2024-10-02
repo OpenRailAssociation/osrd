@@ -39,6 +39,7 @@ class WorkerCommand : CliCommand {
     private var editoastAuthorization: String = "x-osrd-core"
 
     val WORKER_ID: String?
+    val WORKER_ID_USE_HOSTNAME: String?
     val WORKER_KEY: String?
     val WORKER_AMQP_URI: String
     val WORKER_POOL: String
@@ -46,7 +47,7 @@ class WorkerCommand : CliCommand {
     val WORKER_ACTIVITY_EXCHANGE: String
 
     init {
-        WORKER_ID = System.getenv("WORKER_ID")
+        WORKER_ID_USE_HOSTNAME = System.getenv("WORKER_ID_USE_HOSTNAME")
         WORKER_KEY = System.getenv("WORKER_KEY")
         WORKER_AMQP_URI =
             System.getenv("WORKER_AMQP_URI") ?: "amqp://osrd:password@127.0.0.1:5672/%2f"
@@ -55,6 +56,18 @@ class WorkerCommand : CliCommand {
             System.getenv("WORKER_REQUESTS_QUEUE") ?: "$WORKER_POOL-req-$WORKER_KEY"
         WORKER_ACTIVITY_EXCHANGE =
             System.getenv("WORKER_ACTIVITY_EXCHANGE") ?: "$WORKER_POOL-activity-xchg"
+
+        WORKER_ID =
+            if (
+                WORKER_ID_USE_HOSTNAME == null ||
+                    WORKER_ID_USE_HOSTNAME == "" ||
+                    WORKER_ID_USE_HOSTNAME == "0" ||
+                    WORKER_ID_USE_HOSTNAME.lowercase() == "false"
+            ) {
+                System.getenv("WORKER_ID")
+            } else {
+                java.net.InetAddress.getLocalHost().hostName
+            }
     }
 
     override fun run(): Int {
