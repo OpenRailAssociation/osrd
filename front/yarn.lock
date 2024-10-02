@@ -2323,39 +2323,34 @@
     classnames "^2.5.1"
     tailwindcss "^3.4.1"
 
-"@osrd-project/ui-icons@^0.0.45":
-  version "0.0.45"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-icons/-/ui-icons-0.0.45.tgz#14ede9d4b4027001bdcc7dcdf39bb52ffafbcb11"
-  integrity sha512-4nYMB79pJLukkmo5vzzpXdVtYWEJJLcXCa4lZGtgnqo8dSAoDo+W0QblMZTktXBbOoSUtI2A65F/8UNeyGoyKw==
-
 "@osrd-project/ui-icons@^0.0.46":
   version "0.0.46"
   resolved "https://registry.yarnpkg.com/@osrd-project/ui-icons/-/ui-icons-0.0.46.tgz#43ef869e87169ee1c8b8a99aefb198ce3b97518b"
   integrity sha512-2xuluW52ljzBbBF3O5imAVheFLVNV/IeEtiLANYSAuTKeRVz5qNU8/mz0Jz2Lns7rzgPsRfjeCY1ufZfKusEoA==
 
-"@osrd-project/ui-manchette-with-spacetimechart@^0.0.45":
-  version "0.0.45"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-manchette-with-spacetimechart/-/ui-manchette-with-spacetimechart-0.0.45.tgz#54c9381076881578350d1ecfecba22b5258e23c3"
-  integrity sha512-v0JIQjmRQKbDeRhCKU/beVzqMprWkCcPUcYPf5wmuZ/hu+gB0iSQDcJJZdJLkTHWJ2cmiDFuS7zYPotoAamOmg==
+"@osrd-project/ui-manchette-with-spacetimechart@^0.0.46":
+  version "0.0.46"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-manchette-with-spacetimechart/-/ui-manchette-with-spacetimechart-0.0.46.tgz#d1bd06122f9d487c2a261a39bbc142877e0578b4"
+  integrity sha512-sdMwOtJbeT2VXChMwHPld6O0vuhvBQTDXSf43x7YMfOoS1o9p41o43cX7X9WSdE+5fd5osToCPIk5z/MLyUr4Q==
   dependencies:
-    "@osrd-project/ui-manchette" "^0.0.45"
-    "@osrd-project/ui-spacetimechart" "^0.0.45"
+    "@osrd-project/ui-manchette" "^0.0.46"
+    "@osrd-project/ui-spacetimechart" "^0.0.46"
     classnames "^2.5.1"
     lodash.isequal "^4.5.0"
     vitest "^2.1.1"
 
-"@osrd-project/ui-manchette@^0.0.45":
-  version "0.0.45"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-manchette/-/ui-manchette-0.0.45.tgz#03051da4c524f85cd0a0083e12448718effbb596"
-  integrity sha512-mYROXG7Yjf1P+FVh6ZGmQbIkT7CqrMqSx2pq7jfg/SWgvy+KXtvyQwdIcqoLNf4sy0XuZsW8nQrEl97KhB5DuQ==
+"@osrd-project/ui-manchette@^0.0.46":
+  version "0.0.46"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-manchette/-/ui-manchette-0.0.46.tgz#09f6161874172b529fd0bf40c151f6a74b0d3116"
+  integrity sha512-LqWCdveC0gXRtWAvrzhfm1dzz/PcG2kyb6dLSyuoaqJ6TB+8XM0XMYAa4pUSYuAd3GP0LtAxyb42zF05ZVfC+A==
   dependencies:
     classnames "^2.5.1"
     lodash.isequal "^4.5.0"
 
-"@osrd-project/ui-spacetimechart@^0.0.45":
-  version "0.0.45"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-spacetimechart/-/ui-spacetimechart-0.0.45.tgz#31f252620ee65bcaf44cae7dc409f9db0ae93945"
-  integrity sha512-JSGBJ8GwRpIf5Xi/e8KnGMoYBQUOPa077pg7KYFw3SlPHJeDo+H9V1K5LaWV0DBQCkM8NGedBnFQU82rDQXh5w==
+"@osrd-project/ui-spacetimechart@^0.0.46":
+  version "0.0.46"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-spacetimechart/-/ui-spacetimechart-0.0.46.tgz#166c7fd0497306212e10915bceca809900195a8c"
+  integrity sha512-xkqqG2E4+09BaoNhKFq4Eyk+UisZEzIwYk/GPBhGaFNoKgfn46/TpKuH/Pp26oAj9VO3ayRdJV6NQZZkpoL1Ew==
   dependencies:
     "@types/chroma-js" "^2.4.4"
     chroma-js "^3.1.1"
