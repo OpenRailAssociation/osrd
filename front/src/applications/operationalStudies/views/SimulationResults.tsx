@@ -15,9 +15,9 @@ import useProjectedConflicts from 'modules/simulationResult/components/SpaceTime
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
+import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
-import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { useAppDispatch } from 'store';
@@ -237,6 +237,24 @@ const SimulationResults = ({
         </div>
       </div>
 
+      {/* TIME STOPS TABLE */}
+      {selectedTrainSchedule &&
+        trainSimulation.status === 'success' &&
+        pathProperties &&
+        operationalPoints &&
+        infraId && (
+          <div className="osrd-simulation-container mb-2">
+            <TimesStopsOutput
+              simulatedTrain={trainSimulation}
+              pathProperties={pathProperties}
+              operationalPoints={operationalPoints.finalOutput}
+              selectedTrainSchedule={selectedTrainSchedule}
+              path={path}
+              dataIsLoading={formattedOpPointsLoading}
+            />
+          </div>
+        )}
+
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
       {selectedTrainSchedule &&
         trainSimulation &&
@@ -244,18 +262,13 @@ const SimulationResults = ({
         selectedTrainRollingStock &&
         operationalPoints &&
         infraId && (
-          <div className="osrd-simulation-container mb-2">
-            <DriverTrainSchedule
-              train={selectedTrainSchedule}
-              simulatedTrain={trainSimulation}
-              pathProperties={pathProperties}
-              rollingStock={selectedTrainRollingStock}
-              operationalPoints={operationalPoints}
-              formattedOpPointsLoading={formattedOpPointsLoading}
-              baseOrEco={baseOrEco}
-              setBaseOrEco={setBaseOrEco}
-            />
-          </div>
+          <SimulationResultExport
+            train={selectedTrainSchedule}
+            simulatedTrain={trainSimulation}
+            pathProperties={pathProperties}
+            operationalPoints={operationalPoints}
+            baseOrEco={baseOrEco}
+          />
         )}
     </div>
   );
