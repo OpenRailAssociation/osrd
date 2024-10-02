@@ -45,7 +45,7 @@
     "@types/vinyl-fs": "^3.0.5",
     "ajv": "^8.12.0",
     "ajv-errors": "^3.0.0",
-    "ajv-formats": "^2.1.1",
+    "ajv-formats": "^3.0.1",
     "ajv-i18n": "^4.2.0",
     "chroma-js": "^2.4.2",
     "classnames": "^2.5.1",
