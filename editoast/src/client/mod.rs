@@ -79,8 +79,7 @@ pub enum TimetablesCommands {
     Export(ExportTimetableArgs),
 }
 
-#[derive(Args, Debug, Derivative)]
-#[derivative(Default)]
+#[derive(Args, Debug)]
 #[command(about, long_about = "Import a train schedule given a JSON file")]
 pub struct ImportTimetableArgs {
     /// The timetable id on which attach the trains to
@@ -90,8 +89,7 @@ pub struct ImportTimetableArgs {
     pub path: PathBuf,
 }
 
-#[derive(Args, Debug, Derivative)]
-#[derivative(Default)]
+#[derive(Args, Debug)]
 #[command(about, long_about = "Export the train schedules of a given timetable")]
 pub struct ExportTimetableArgs {
     /// The timetable id on which get the train schedules from
@@ -134,25 +132,19 @@ pub struct MapLayersConfig {
     pub max_tiles: u64,
 }
 
-#[derive(Args, Debug, Derivative)]
-#[derivative(Default)]
+#[derive(Args, Debug)]
 #[command(about, long_about = "Launch the server")]
 pub struct RunserverArgs {
     #[command(flatten)]
     pub map_layers_config: MapLayersConfig,
-    #[derivative(Default(value = "8090"))]
     #[arg(long, env = "EDITOAST_PORT", default_value_t = 8090)]
     pub port: u16,
-    #[derivative(Default(value = r#""0.0.0.0".into()"#))]
     #[arg(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
     pub address: String,
-    #[derivative(Default(value = r#""amqp://osrd:password@127.0.0.1:5672/%2f".into()"#))]
     #[clap(long, env = "OSRD_MQ_URL", default_value_t = String::from("amqp://osrd:password@127.0.0.1:5672/%2f"))]
     pub mq_url: String,
-    #[derivative(Default(value = "180"))]
     #[clap(long, env = "EDITOAST_CORE_TIMEOUT", default_value_t = 180)]
     pub core_timeout: u64,
-    #[derivative(Default(value = r#""".into()"#))]
     #[clap(long, env = "ROOT_PATH", default_value_t = String::new())]
     pub root_path: String,
     #[clap(long)]
@@ -164,11 +156,9 @@ pub struct RunserverArgs {
     // only recieve 401 responses.
     #[clap(long, env = "EDITOAST_DISABLE_AUTHORIZATION", default_value_t = true)]
     pub disable_authorization: bool,
-    #[derivative(Default(value = r#""http://127.0.0.1:4242/".into()"#))]
     #[clap(long, env = "OSRDYNE_API_URL", default_value_t = String::from("http://127.0.0.1:4242/"))]
     pub osrdyne_api_url: String,
     /// The timeout to use when performing the healthcheck, in milliseconds
-    #[derivative(Default(value = "500"))]
     #[clap(long, env = "EDITOAST_HEALTH_CHECK_TIMEOUT_MS", default_value_t = 500)]
     pub health_check_timeout_ms: u64,
 }
