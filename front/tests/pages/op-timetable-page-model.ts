@@ -20,8 +20,6 @@ class OperationalStudiesTimetablePage {
 
   readonly timeStopsDatasheet: Locator;
 
-  readonly spaceCurvesSlopesChart: Locator;
-
   readonly simulationMap: Locator;
 
   readonly simulationDriverTrainSchedule: Locator;
@@ -39,7 +37,6 @@ class OperationalStudiesTimetablePage {
     this.manchetteSpaceTimeChart = page.locator('.manchette-space-time-chart-wrapper');
     this.spaceTimeChart = page.locator('#container-SpeedSpaceChart');
     this.timeStopsDatasheet = page.locator('.time-stops-datasheet');
-    this.spaceCurvesSlopesChart = page.locator('#container-SpaceCurvesSlopes');
     this.simulationMap = page.locator('.osrd-simulation-map');
     this.simulationDriverTrainSchedule = page.locator('.simulation-driver-train-schedule');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
@@ -84,7 +81,6 @@ class OperationalStudiesTimetablePage {
       this.manchetteSpaceTimeChart,
       this.spaceTimeChart,
       this.timeStopsDatasheet,
-      this.spaceCurvesSlopesChart,
       this.simulationMap,
       this.simulationDriverTrainSchedule,
     ];

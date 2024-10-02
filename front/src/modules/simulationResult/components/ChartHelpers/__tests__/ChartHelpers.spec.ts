@@ -1,5 +1,4 @@
 import { LIST_VALUES, CHART_AXES } from 'modules/simulationResult/consts';
-import type { SimulationTrain } from 'reducers/simulationResults/types';
 
 import simulationTrain from '../../../../../../tests/assets/operationStudies/simulationTrain';
 import train from '../../../../../../tests/assets/operationStudies/trainExample';
@@ -28,7 +27,7 @@ describe('interpolateOnTime', () => {
   });
   describe('SimulationTrain', () => {
     it('should interpolate t=11:57:37 using values t=11:57:31 t=11:57:52', () => {
-      const dataSimulation: SimulationTrain = simulationTrain[0];
+      const dataSimulation = simulationTrain[0];
       const time = new Date('1900-01-01T11:57:37.000Z');
       const result = interpolateOnTime(
         dataSimulation,

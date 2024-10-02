@@ -45,7 +45,7 @@ const getTag = (source?: SpeedLimitTagValue['source']): { name: string; color: s
   return { name, color };
 };
 
-export const formatSpeedLimitTags = (
+const formatSpeedLimitTags = (
   rawSpeedLimitTags: SimulationResponseSuccess['mrsp'],
   pathLength: number
 ): LayerData<SpeedLimitTagValues>[] =>

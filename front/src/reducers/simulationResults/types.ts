@@ -1,24 +1,7 @@
-import type * as d3 from 'd3';
-
 import type { AllListValues } from 'modules/simulationResult/consts';
 
-export type MergedDataPoint<T = number> = {
-  [key: string]: number | T;
-  value0: number | T;
-  value1: number | T;
-};
-export type ConsolidatedMergeDataPoint = MergedDataPoint<Date | null>;
+type SimulationD3Scale = d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
 
-export type SimulationD3Scale = d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
-
-export interface SpeedSpaceChart extends Chart {
-  x: d3.ScaleLinear<number, number>;
-  y: d3.ScaleLinear<number, number>;
-  y2: d3.ScaleLinear<number, number>;
-  originalScaleX?: d3.ScaleLinear<number, number>;
-  originalScaleY?: d3.ScaleLinear<number, number>;
-  originalScaleY2?: d3.ScaleLinear<number, number>;
-}
 export interface Chart {
   width: number;
   height: number;
@@ -52,21 +35,15 @@ export interface AllowancesSetting {
 }
 
 export type AllowancesSettings = Record<string | number, AllowancesSetting>;
-export type Projection = {
-  id: number;
-  path: number;
-};
 
-export interface Position<Time = number> {
+interface Position<Time = number> {
   time: Time;
   position: number;
 }
-export type ConsolidatedPosition<DateType = Date> = Position<DateType | null>;
 
 export type PositionSpeedTime<Time = number> = Position<Time> & {
   speed: number;
 };
-export type ConsolidatedPositionSpeedTime = PositionSpeedTime<Date>;
 
 export type SpeedRanges = {
   // List of `n` internal boundaries of the ranges along the path in m (excluding start and end bounds).
@@ -75,7 +52,7 @@ export type SpeedRanges = {
   speeds: number[];
 };
 
-export interface Stop {
+interface Stop {
   id: string | null;
   name: string | null;
   time: number;
@@ -88,7 +65,7 @@ export interface Stop {
   ch?: string | null;
 }
 
-export interface RouteAspect<Time = number, Color = number> {
+interface RouteAspect<Time = number, Color = number> {
   signal_id?: string;
   route_id?: string;
   time_start: Time;
@@ -101,9 +78,8 @@ export interface RouteAspect<Time = number, Color = number> {
   track?: string;
   track_offset?: number;
 }
-export type ConsolidatedRouteAspect<DateType = Date> = RouteAspect<DateType | null, string>;
 
-export interface SignalAspect<Time = number, Color = number> {
+interface SignalAspect<Time = number, Color = number> {
   signal_id: string;
   time_start: Time;
   time_end: Time;
@@ -111,9 +87,8 @@ export interface SignalAspect<Time = number, Color = number> {
   blinking: boolean;
   aspect_label: string;
 }
-export type ConsolidatedSignalAspect<DateType = Date> = SignalAspect<DateType | null, string>;
 
-export interface Regime {
+interface Regime {
   head_positions: Position[][];
   tail_positions: Position[][];
   speeds: PositionSpeedTime[];
@@ -124,37 +99,25 @@ export interface Regime {
   mechanical_energy_consumed: number;
 }
 
-export type MechanicalEnergyConsumedBaseEco = {
+type MechanicalEnergyConsumedBaseEco = {
   base?: number;
   eco?: number | null;
 };
 
-export interface GradientPosition {
+interface GradientPosition {
   gradient: number;
   position: number;
 }
 
-export interface RadiusPosition {
+interface RadiusPosition {
   radius: number;
   position: number;
 }
 
-export interface SpeedPosition {
+interface SpeedPosition {
   speed: number;
   position: number;
 }
-
-export interface HeightPosition {
-  height: number;
-  position: number;
-}
-
-export interface SpeedTime<Time = number> {
-  speed: number;
-  time: Time;
-}
-
-export type ConsolidatedSpeedTime = SpeedTime<Date>;
 
 export interface Train {
   id: number;
@@ -175,24 +138,6 @@ export interface Train {
 }
 
 export type PositionsSpeedTimes<Time = number> = Record<AllListValues, PositionSpeedTime<Time>>;
-
-export interface SimulationTrain<DateType = Date> {
-  id: number;
-  isStdcm?: boolean;
-  name: string;
-  headPosition: ConsolidatedPosition<DateType>[][];
-  tailPosition: ConsolidatedPosition<DateType>[][];
-  routeAspects: ConsolidatedRouteAspect<DateType>[];
-  signalAspects: ConsolidatedSignalAspect[];
-  areaBlock?: ConsolidatedMergeDataPoint[][];
-  speed: ConsolidatedPositionSpeedTime[];
-  eco_headPosition?: ConsolidatedPosition<DateType>[][];
-  eco_tailPosition?: ConsolidatedPosition<DateType>[][];
-  eco_routeAspects?: ConsolidatedRouteAspect<DateType>[];
-  eco_signalAspects?: ConsolidatedSignalAspect[];
-  eco_areaBlock?: ConsolidatedMergeDataPoint[][];
-  eco_speed?: ConsolidatedPositionSpeedTime[];
-}
 
 export interface SimulationResultsState {
   chart?: Chart;
