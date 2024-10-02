@@ -470,20 +470,6 @@
       }
     },
     {
-      "id": "railway",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "transportation",
-      "minzoom": 8,
-      "maxzoom": 24,
-      "filter": ["==", "class", "rail"],
-      "layout": {"visibility": "visible"},
-      "paint": {
-        "line-color": "rgba(106, 112, 125, 1)",
-        "line-opacity": {"base": 1, "stops": [[5, 0.5], [10, 1]]}
-      }
-    },
-    {
       "id": "waterway-bridge-case",
       "type": "line",
       "source": "openmaptiles",
