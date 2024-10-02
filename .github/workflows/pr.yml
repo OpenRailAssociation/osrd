@@ -1,0 +1,14 @@
+name: pr
+on:
+  pull_request:
+jobs:
+  label_pr:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label PR
+        uses: actions/labeler@v5
+        with:
+          sync-labels: true

@@ -1,0 +1,32 @@
+"area:ci":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: ".github/*"
+"area:core":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "core/*"
+"area:editoast":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "editoast/*"
+"area:front":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "front/*"
+"area:gateway":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "gateway/*"
+"area:integration-tests":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "tests/*"
+"area:osrdyne":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "osrdyne/*"
+"area:railjson":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "python/*"
