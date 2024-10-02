@@ -106,7 +106,7 @@ impl<S: StorageDriver> Authorizer<S> {
     }
 
     pub fn is_superuser(&self) -> bool {
-        self.roles_config.is_superuser()
+        self.roles_config.is_superuser() || self.user_roles.contains(&S::BuiltinRole::superuser())
     }
 
     /// Returns whether a user with some id exists

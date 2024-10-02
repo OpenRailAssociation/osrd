@@ -11,6 +11,14 @@ use crate::roles::BuiltinRoleSet;
 )]
 #[strum(serialize_all = "snake_case")]
 pub enum BuiltinRole {
+    /// A user with this role short-circuits all role and permission checks
+    ///
+    /// Alternatively, especially for development, the `EDITOAST_DISABLE_AUTHORIZATION` environment variable can be set
+    /// when no user identity header is present. (This is the case when editoast is queried directly and
+    /// not through the gateway.)
+    #[strum(serialize = "superuser")]
+    Superuser,
+
     #[strum(serialize = "operational_studies:write")]
     OpsWrite,
     #[strum(serialize = "operational_studies:read")]
@@ -60,4 +68,8 @@ pub enum BuiltinRole {
     RoleWrite,
 }
 
-impl BuiltinRoleSet for BuiltinRole {}
+impl BuiltinRoleSet for BuiltinRole {
+    fn superuser() -> Self {
+        Self::Superuser
+    }
+}

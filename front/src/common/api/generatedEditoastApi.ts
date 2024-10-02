@@ -1607,6 +1607,7 @@ export type PostWorkSchedulesProjectPathApiArg = {
   };
 };
 export type BuiltinRole =
+  | 'Superuser'
   | 'OpsWrite'
   | 'OpsRead'
   | 'InfraRead'

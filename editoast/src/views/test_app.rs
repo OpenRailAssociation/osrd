@@ -131,7 +131,7 @@ impl TestAppBuilder {
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
 
         // Role configuration
-        let role_config = self.roles.unwrap_or_else(Roles::new_superuser).into();
+        let role_config = Arc::new(self.roles.unwrap_or_else(Roles::new_superuser));
 
         // Build Core client
         let core_client = Arc::new(self.core_client.expect(
@@ -154,6 +154,7 @@ impl TestAppBuilder {
             map_layers: MapLayers::parse().into(),
             map_layers_config: MapLayersConfig::default().into(),
             speed_limit_tag_ids,
+            superuser: role_config.is_superuser(),
             role_config,
             health_check_timeout: Duration::from_millis(500),
         };
