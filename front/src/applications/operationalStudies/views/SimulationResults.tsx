@@ -15,10 +15,10 @@ import useProjectedConflicts from 'modules/simulationResult/components/SpaceTime
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
+import { useFormattedOperationalPoints } from 'modules/simulationResult/hooks/useFormattedOperationalPoints';
+import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
-import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
-import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { useAppDispatch } from 'store';
 
@@ -27,6 +27,7 @@ const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
 type SimulationResultsProps = {
+  scenarioData: { name: string; infraName: string };
   collapsedTimetable: boolean;
   infraId?: number;
   simulationResults: SimulationResultsData;
@@ -36,6 +37,7 @@ type SimulationResultsProps = {
 };
 
 const SimulationResults = ({
+  scenarioData,
   collapsedTimetable,
   infraId,
   simulationResults: {
@@ -60,12 +62,12 @@ const SimulationResults = ({
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
   const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
+  const [mapCanvas, setMapCanvas] = useState<string>();
 
   const {
     operationalPoints,
     loading: formattedOpPointsLoading,
     baseOrEco,
-    setBaseOrEco,
   } = useFormattedOperationalPoints(
     selectedTrainSchedule,
     trainSimulation,
@@ -225,30 +227,49 @@ const SimulationResults = ({
                     }
                   : undefined
               }
+              setMapCanvas={setMapCanvas}
             />
           </div>
         </div>
       </div>
 
-      {/* TRAIN : DRIVER TRAIN SCHEDULE */}
+      {/* TIME STOPS TABLE */}
+      {selectedTrainSchedule &&
+        trainSimulation.status === 'success' &&
+        pathProperties &&
+        operationalPoints &&
+        infraId && (
+          <div className="osrd-simulation-container mb-2">
+            <TimesStopsOutput
+              simulatedTrain={trainSimulation}
+              pathProperties={pathProperties}
+              operationalPoints={operationalPoints.finalOutput}
+              selectedTrainSchedule={selectedTrainSchedule}
+              path={path}
+              dataIsLoading={formattedOpPointsLoading}
+            />
+          </div>
+        )}
+
+      {/* SIMULATION EXPORT BUTTONS */}
       {selectedTrainSchedule &&
         trainSimulation &&
         pathProperties &&
         selectedTrainRollingStock &&
         operationalPoints &&
+        path &&
         infraId && (
-          <div className="osrd-simulation-container mb-2">
-            <DriverTrainSchedule
-              train={selectedTrainSchedule}
-              simulatedTrain={trainSimulation}
-              pathProperties={pathProperties}
-              rollingStock={selectedTrainRollingStock}
-              operationalPoints={operationalPoints}
-              formattedOpPointsLoading={formattedOpPointsLoading}
-              baseOrEco={baseOrEco}
-              setBaseOrEco={setBaseOrEco}
-            />
-          </div>
+          <SimulationResultExport
+            path={path}
+            scenarioData={scenarioData}
+            train={selectedTrainSchedule}
+            simulatedTrain={trainSimulation}
+            pathElectrifications={pathProperties.electrifications}
+            operationalPoints={operationalPoints}
+            baseOrEco={baseOrEco}
+            rollingStock={selectedTrainRollingStock}
+            mapCanvas={mapCanvas}
+          />
         )}
     </div>
   );

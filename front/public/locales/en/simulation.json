@@ -57,6 +57,7 @@
     "temporarySpeedLimits": "Temporary speed limits",
     "tractionStatus": "Traction status"
   },
+  "simulationSheet": "Simulation sheet",
   "start": "Departure",
   "stop": "Arrival",
   "stopPlace": "Place",

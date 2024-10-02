@@ -8,6 +8,7 @@
   "endStop": "arrivée",
   "for": "pour",
   "formattedDate": "le {{day}}/{{month}}/{{year}} à {{hours}}:{{minutes}}",
+  "formattedDateScenario": "Fiche de simulation générée le {{day}}/{{month}}/{{year}} à {{hours}}:{{minutes}}",
   "from": "du",
   "maxLength": "longueur max.",
   "maxSpeed": "vitesse max.",

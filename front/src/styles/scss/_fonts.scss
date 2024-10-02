@@ -7,6 +7,12 @@
 
 @font-face {
   font-family: 'IBM Plex Sans';
+  src: inline('assets/newFonts/IBM-Plex-Sans/IBMPlexSans-Medium.ttf') format('truetype');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
   src: inline('assets/newFonts/IBM-Plex-Sans/IBMPlexSans-SemiBold.ttf') format('truetype');
   font-weight: 600;
 }
@@ -23,6 +29,7 @@
   src: inline('assets/newFonts/IBM-Plex-Serif/IBMPlexSerif-Regular.ttf') format('truetype');
   font-weight: 400;
 }
+
 @font-face {
   font-family: 'IBM Plex Serif', serif;
   src: inline('assets/newFonts/IBM-Plex-Serif/IBMPlexSerif-SemiBold.ttf') format('truetype');
