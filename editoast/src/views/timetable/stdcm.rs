@@ -27,7 +27,7 @@ use utoipa::ToSchema;
 use super::SelectionSettings;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
-use crate::core::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingInputError;
 use crate::core::simulation::PhysicsRollingStock;
 use crate::core::simulation::SimulationParameters;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
@@ -45,6 +45,8 @@ use crate::models::work_schedules::WorkSchedule;
 use crate::models::RollingStockModel;
 use crate::models::{Infra, List};
 use crate::views::path::path_item_cache::PathItemCache;
+use crate::views::path::pathfinding::PathfindingFailure;
+use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::train_schedule::train_simulation;
 use crate::views::train_schedule::train_simulation_batch;
 use crate::views::AuthorizationError;
@@ -636,7 +638,9 @@ async fn parse_stdcm_steps(
     let track_offsets = path_item_cache
         .extract_location_from_path_items(&locations)
         .map_err(|path_res| match path_res {
-            PathfindingResult::InvalidPathItems { items } => STDCMError::InvalidPathItems { items },
+            PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::InvalidPathItems { items },
+            )) => STDCMError::InvalidPathItems { items },
             _ => panic!("Unexpected pathfinding result"),
         })?;
 

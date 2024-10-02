@@ -23,7 +23,8 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
-use crate::core::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingInputError;
+use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::CompleteReportTrain;
 use crate::core::simulation::PhysicsRollingStock;
@@ -39,12 +40,15 @@ use crate::core::simulation::SimulationScheduleItem;
 use crate::core::simulation::ZoneUpdate;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::path::pathfinding::pathfinding_from_train;
+use crate::views::path::pathfinding::PathfindingFailure;
+use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::path::PathfindingError;
 use crate::views::AuthorizationError;
@@ -446,9 +450,9 @@ pub async fn train_simulation_batch(
                 },
                 path_item_positions,
             ),
-            _ => {
+            PathfindingResult::Failure(pathfinding_failed) => {
                 simulation_results[index] = SimulationResponse::PathfindingFailed {
-                    pathfinding_result: pathfinding.clone(),
+                    pathfinding_failed: pathfinding_failed.clone(),
                 };
                 continue;
             }
@@ -637,13 +641,13 @@ enum SimulationSummaryResult {
         path_item_times_base: Vec<u64>,
     },
     /// Pathfinding not found
-    PathfindingNotFound,
+    PathfindingNotFound(PathfindingNotFound),
     /// An error has occured during pathfinding
-    PathfindingFailed { error_type: String },
+    PathfindingFailure { core_error: InternalError },
     /// An error has occured during computing
     SimulationFailed { error_type: String },
-    /// Rolling stock not found
-    RollingStockNotFound { rolling_stock_name: String },
+    /// InputError
+    PathfindingInputError(PathfindingInputError),
 }
 
 /// Associate each train id with its simulation summary response
@@ -721,17 +725,19 @@ async fn simulation_summary(
                     path_item_times_base: base.path_item_times.clone(),
                 }
             }
-            SimulationResponse::PathfindingFailed { pathfinding_result } => {
-                match pathfinding_result {
-                    PathfindingResult::PathfindingFailed { core_error } => {
-                        SimulationSummaryResult::PathfindingFailed {
-                            error_type: core_error.get_type().into(),
-                        }
+            SimulationResponse::PathfindingFailed { pathfinding_failed } => {
+                match pathfinding_failed {
+                    PathfindingFailure::InternalError { core_error } => {
+                        SimulationSummaryResult::PathfindingFailure { core_error }
                     }
-                    PathfindingResult::RollingStockNotFound { rolling_stock_name } => {
-                        SimulationSummaryResult::RollingStockNotFound { rolling_stock_name }
+
+                    PathfindingFailure::PathfindingInputError(input_error) => {
+                        SimulationSummaryResult::PathfindingInputError(input_error)
                     }
-                    _ => SimulationSummaryResult::PathfindingNotFound,
+
+                    PathfindingFailure::PathfindingNotFound(not_found) => {
+                        SimulationSummaryResult::PathfindingNotFound(not_found)
+                    }
                 }
             }
             SimulationResponse::SimulationFailed { core_error } => {

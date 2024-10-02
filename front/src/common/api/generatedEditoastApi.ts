@@ -2412,22 +2412,6 @@ export type PathfindingResultSuccess = {
   /** Path description as track ranges */
   track_section_ranges: TrackRange[];
 };
-export type OffsetRange = {
-  end: number;
-  start: number;
-};
-export type IncompatibleOffsetRangeWithValue = {
-  range: OffsetRange;
-  value: string;
-};
-export type IncompatibleOffsetRange = {
-  range: OffsetRange;
-};
-export type IncompatibleConstraints = {
-  incompatible_electrification_ranges: IncompatibleOffsetRangeWithValue[];
-  incompatible_gauge_ranges: IncompatibleOffsetRange[];
-  incompatible_signaling_system_ranges: IncompatibleOffsetRangeWithValue[];
-};
 export type TrackOffset = {
   /** Offset in mm */
   offset: number;
@@ -2449,46 +2433,74 @@ export type PathItemLocation =
       /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
       uic: number;
     };
-export type PathfindingResult =
-  | (PathfindingResultSuccess & {
-      status: 'success';
-    })
+export type PathfindingInputError =
   | {
-      length: number;
-      status: 'not_found_in_blocks';
-      track_section_ranges: TrackRange[];
-    }
-  | {
-      length: number;
-      status: 'not_found_in_routes';
-      track_section_ranges: TrackRange[];
-    }
-  | {
-      status: 'not_found_in_tracks';
-    }
-  | {
-      incompatible_constraints: IncompatibleConstraints;
-      relaxed_constraints_path: PathfindingResultSuccess;
-      status: 'incompatible_constraints';
-    }
-  | {
+      error_type: 'invalid_path_items';
       items: {
         index: number;
         path_item: PathItemLocation;
       }[];
-      status: 'invalid_path_items';
     }
   | {
-      status: 'not_enough_path_items';
+      error_type: 'not_enough_path_items';
     }
   | {
+      error_type: 'rolling_stock_not_found';
       rolling_stock_name: string;
-      status: 'rolling_stock_not_found';
+    };
+export type OffsetRange = {
+  end: number;
+  start: number;
+};
+export type IncompatibleOffsetRangeWithValue = {
+  range: OffsetRange;
+  value: string;
+};
+export type IncompatibleOffsetRange = {
+  range: OffsetRange;
+};
+export type IncompatibleConstraints = {
+  incompatible_electrification_ranges: IncompatibleOffsetRangeWithValue[];
+  incompatible_gauge_ranges: IncompatibleOffsetRange[];
+  incompatible_signaling_system_ranges: IncompatibleOffsetRangeWithValue[];
+};
+export type PathfindingNotFound =
+  | {
+      error_type: 'not_found_in_blocks';
+      length: number;
+      track_section_ranges: TrackRange[];
     }
+  | {
+      error_type: 'not_found_in_routes';
+      length: number;
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      error_type: 'not_found_in_tracks';
+    }
+  | {
+      error_type: 'incompatible_constraints';
+      incompatible_constraints: IncompatibleConstraints;
+      relaxed_constraints_path: PathfindingResultSuccess;
+    };
+export type PathfindingFailure =
+  | (PathfindingInputError & {
+      failed_status: 'pathfinding_input_error';
+    })
+  | (PathfindingNotFound & {
+      failed_status: 'pathfinding_not_found';
+    })
   | {
       core_error: InternalError;
-      status: 'pathfinding_failed';
+      failed_status: 'internal_error';
     };
+export type PathfindingResult =
+  | (PathfindingResultSuccess & {
+      status: 'success';
+    })
+  | (PathfindingFailure & {
+      status: 'failure';
+    });
 export type PathfindingInput = {
   /** List of waypoints given to the pathfinding */
   path_items: PathItemLocation[];
@@ -3148,7 +3160,7 @@ export type SimulationResponse =
       status: 'success';
     }
   | {
-      pathfinding_result: PathfindingResult;
+      pathfinding_failed: PathfindingFailure;
       status: 'pathfinding_failed';
     }
   | {
@@ -3312,21 +3324,20 @@ export type SimulationSummaryResult =
       /** Travel time in ms */
       time: number;
     }
-  | {
+  | (PathfindingNotFound & {
       status: 'pathfinding_not_found';
-    }
+    })
   | {
-      error_type: string;
-      status: 'pathfinding_failed';
+      core_error: InternalError;
+      status: 'pathfinding_failure';
     }
   | {
       error_type: string;
       status: 'simulation_failed';
     }
-  | {
-      rolling_stock_name: string;
-      status: 'rolling_stock_not_found';
-    };
+  | (PathfindingInputError & {
+      status: 'pathfinding_input_error';
+    });
 export type TrainScheduleForm = TrainScheduleBase & {
   /** Timetable attached to the train schedule */
   timetable_id?: number | null;

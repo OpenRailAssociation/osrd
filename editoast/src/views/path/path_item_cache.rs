@@ -1,5 +1,5 @@
 use crate::core::pathfinding::InvalidPathItem;
-use crate::core::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingInputError;
 use crate::error::Result;
 use crate::models::TrackSectionModel;
 use crate::RetrieveBatchUnchecked;
@@ -11,6 +11,9 @@ use editoast_models::DbConnection;
 use editoast_schemas::train_schedule::PathItemLocation;
 
 use crate::models::OperationalPointModel;
+
+use super::pathfinding::PathfindingFailure;
+use super::pathfinding::PathfindingResult;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 
@@ -159,9 +162,13 @@ impl PathItemCache {
         }
 
         if !invalid_path_items.is_empty() {
-            return Err(PathfindingResult::InvalidPathItems {
-                items: invalid_path_items,
-            });
+            return Err(PathfindingResult::Failure(
+                PathfindingFailure::PathfindingInputError(
+                    PathfindingInputError::InvalidPathItems {
+                        items: invalid_path_items,
+                    },
+                ),
+            ));
         }
 
         Ok(result)
