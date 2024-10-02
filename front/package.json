@@ -47,7 +47,7 @@
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^3.0.1",
     "ajv-i18n": "^4.2.0",
-    "chroma-js": "^2.4.2",
+    "chroma-js": "^3.1.1",
     "classnames": "^2.5.1",
     "country-flag-icons": "^1.5.9",
     "d3": "^7.8.5",
