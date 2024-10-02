@@ -6,6 +6,9 @@ use std::{
 pub trait BuiltinRoleSet:
     FromStr + AsRef<str> + Sized + Clone + std::hash::Hash + std::cmp::Eq + std::fmt::Debug
 {
+    /// Returns the builtin role that short-circuits all role and permission checks.
+    fn superuser() -> Self;
+
     fn as_str(&self) -> &str {
         self.as_ref()
     }
@@ -30,7 +33,7 @@ impl<B: BuiltinRoleSet> RoleConfig<B> {
 
     pub fn new(resolved_roles: HashMap<RoleIdentifier, HashSet<B>>) -> Self {
         Self {
-            superuser: false,
+            superuser: std::env::var("EDITOAST_SUPERUSER").is_ok(),
             resolved_roles,
         }
     }

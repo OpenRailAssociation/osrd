@@ -18,9 +18,14 @@ pub mod fixtures {
         DocDelete,
         UserAdd,
         UserBan,
+        Superuser,
     }
 
-    impl roles::BuiltinRoleSet for TestBuiltinRole {}
+    impl roles::BuiltinRoleSet for TestBuiltinRole {
+        fn superuser() -> Self {
+            Self::Superuser
+        }
+    }
 
     pub fn default_test_config() -> roles::RoleConfig<TestBuiltinRole> {
         const SOURCE: &str = r#"

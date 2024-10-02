@@ -3139,6 +3139,7 @@ components:
     BuiltinRole:
       type: string
       enum:
+      - Superuser
       - OpsWrite
       - OpsRead
       - InfraRead

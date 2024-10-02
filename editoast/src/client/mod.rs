@@ -161,6 +161,13 @@ pub struct RunserverArgs {
     /// the superuser role is granted to all users.
     #[clap(long, env = "EDITOAST_ROLES_CONFIG")]
     pub roles_config: Option<PathBuf>,
+    /// If this option is set, any role and permission check will be bypassed. Even if no user is
+    /// provided by the request headers of if the provided user doesn't have the required privileges.
+    // TODO: once the whole role system will be deployed, the default value of this option should
+    // be set to false. It's currently set to true in order to pass integration tests, which otherwise
+    // only recieve 401 responses.
+    #[clap(long, env = "EDITOAST_DISABLE_AUTHORIZATION", default_value_t = true)]
+    pub disable_authorization: bool,
     #[derivative(Default(value = r#""http://127.0.0.1:4242/".into()"#))]
     #[clap(long, env = "OSRDYNE_API_URL", default_value_t = String::from("http://127.0.0.1:4242/"))]
     pub osrdyne_api_url: String,

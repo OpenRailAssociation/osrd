@@ -345,6 +345,7 @@ pub struct AppState {
     pub map_layers_config: Arc<MapLayersConfig>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
     pub role_config: Arc<Roles>,
+    pub superuser: bool,
     pub core_client: Arc<CoreClient>,
     pub osrdyne_client: Arc<OsrdyneClient>,
     pub health_check_timeout: Duration,
@@ -376,6 +377,9 @@ impl AppState {
 
         // Roles configuration
         let role_config = Arc::new(load_roles_config(args.roles_config.as_ref())?);
+        if role_config.is_superuser() || args.disable_authorization {
+            warn!("No roles configuration provided, superuser mode enabled");
+        }
 
         // Build Core client
         let core_client = CoreClient::new_mq(args.mq_url.clone(), "core".into(), args.core_timeout)
@@ -396,6 +400,7 @@ impl AppState {
             map_layers: Arc::new(MapLayers::parse()),
             map_layers_config: Arc::new(args.map_layers_config.clone()),
             speed_limit_tag_ids,
+            superuser: role_config.is_superuser() || args.disable_authorization,
             role_config,
             health_check_timeout,
         })
@@ -464,7 +469,6 @@ async fn runserver(
 
 fn load_roles_config(path: Option<&PathBuf>) -> Result<Roles, Box<dyn Error + Send + Sync>> {
     let Some(path) = path else {
-        warn!("No roles configuration provided, superuser mode enabled");
         return Ok(Roles::new_superuser());
     };
     info!(file = %path.display(), "Loading roles configuration");
