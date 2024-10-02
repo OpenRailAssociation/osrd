@@ -96,20 +96,3 @@ OpenApi when a change has been made to an endpoint, run the following command:
 ```sh
 cargo run openapi > openapi.yaml
 ```
-
-## Batch dependency updates
-
-We use dependabot on the project to notify when dependencies are outdated.
-We do not use dependabot to automatically update dependencies, as we want to merge all updates at
-once and review the changes (and avoid flooding `dev` branch with dependency-bump commits).
-
-Here is the process to update dependencies:
-
-1. Change the versions.
-   - _If you're using VSCode_ you can install the [`serayuzgur.crates`](https://marketplace.visualstudio.com/items?itemName=serayuzgur.crates) extension and run the "update all dependencies" command.
-     Make sure that the new chosen version is stable, and that loose constraints are not overwritten in your commit.
-   - _If you're not_, you can go check the versions used by dependabot in [its PRs](https://github.com/OpenRailAssociation/osrd/pulls?q=is%3Aopen+label%3Aarea%3Aeditoast+label%3Adependencies) and update the versions manually.
-2. Run `cargo update` to update the Cargo.lock file (even sub-dependencies).
-3. Check that all [dependabot editoast PRs](https://github.com/OpenRailAssociation/osrd/pulls?q=is%3Aopen+label%3Aarea%3Aeditoast+label%3Adependencies) are included in your update.
-4. Adapt the code to the new versions, if needed.
-5. Create a PR with your changes, and link all dependabot PRs in the description.
