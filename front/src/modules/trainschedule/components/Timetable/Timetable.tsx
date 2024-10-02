@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { Alert, Download, Plus } from '@osrd-project/ui-icons';
+import { Download, Plus } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,6 @@ import { distributedIntervalsFromArrayOfValues } from 'utils/numbers';
 import TimetableToolbar from './TimetableToolbar';
 import TimetableTrainCard from './TimetableTrainCard';
 import type { TrainScheduleWithDetails } from './types';
-import { timetableHasInvalidTrain } from './utils';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
@@ -162,15 +161,7 @@ const Timetable = ({
           })}
         />
       </div>
-      <div className="scenario-timetable-warnings">
-        {timetableHasInvalidTrain(displayedTrainSchedules) && (
-          <div className="invalid-trains">
-            <Alert size="lg" variant="fill" />
-            <span data-testid="invalid-trains-message" className="flex-grow-1">
-              {t('timetable.invalidTrains')}
-            </span>
-          </div>
-        )}
+      <div>
         {conflicts && (
           <ConflictsList
             conflicts={conflicts}

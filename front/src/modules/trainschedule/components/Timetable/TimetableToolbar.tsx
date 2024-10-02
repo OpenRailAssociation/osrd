@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 
 import { Button, Checkbox } from '@osrd-project/ui-core';
-import { Filter } from '@osrd-project/ui-icons';
+import { Alert, Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -23,6 +23,7 @@ import type {
   ValidityFilter,
 } from './types';
 import useFilterTrainSchedules from './useFilterTrainSchedules';
+import { timetableHasInvalidTrain } from './utils';
 
 type TimetableToolbarProps = {
   showTrainDetails: boolean;
@@ -215,6 +216,14 @@ const TimetableToolbar = ({
           </div>
         )}
       </div>
+      {timetableHasInvalidTrain(displayedTrainSchedules) && (
+        <div className="invalid-trains">
+          <Alert size="sm" variant="fill" />
+          <span data-testid="invalid-trains-message" className="invalid-trains-message">
+            {t('timetable.invalidTrains')}
+          </span>
+        </div>
+      )}
       {trainSchedules.length > 0 && (
         <div
           className={cx('sticky-filter', {
