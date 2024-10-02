@@ -48,6 +48,12 @@
     }
   }
 
+  .simulation-sheet-container {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 1rem;
+  }
+
   /* MAP */
   .train-speed-label {
     text-shadow: 0 0 3px #fff;
