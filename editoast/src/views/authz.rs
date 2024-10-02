@@ -1,9 +1,9 @@
 use std::collections::HashSet;
+use std::str::FromStr;
 
 use crate::error::Result;
 use crate::models::auth::{AuthDriverError, PgAuthDriver};
-use crate::AppState;
-use axum::extract::{Path, State};
+use axum::extract::Path;
 use axum::response::Json;
 use axum::Extension;
 use editoast_authz::authorizer::Authorizer;
@@ -13,10 +13,9 @@ use editoast_derive::EditoastError;
 use super::{AuthorizationError, AuthorizerExt};
 
 crate::routes! {
-    "/authz" => {
-        "/list_roles" => list_roles,
-        "/roles/me" => list_current_roles,
-        "/roles/{user_id}" => {
+    "/authz/roles" => {
+        "/me" => list_current_roles,
+        "/{user_id}" => {
             list_user_roles,
             grant_roles,
             strip_roles,
@@ -50,18 +49,6 @@ enum NoSuchUserError {
     #[error("No user with ID {user_id} found")]
     #[editoast_error(status = 404)]
     NoSuchUser { user_id: i64 },
-}
-
-#[utoipa::path(
-    get, path = "",
-    tag = "authz",
-    responses(
-        (status = 200, description = "List of supported application roles", body = Vec<String>, example = json!(["admin", "dev"])),
-    ),
-)]
-async fn list_roles(State(AppState { role_config, .. }): State<AppState>) -> Json<Vec<String>> {
-    let roles = role_config.application_roles().cloned().collect();
-    Json(roles)
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
@@ -168,10 +155,13 @@ async fn grant_roles(
 
     check_user_exists(user_id, &authorizer).await?;
 
-    let roles = authorizer
-        .roles_config
-        .resolve(roles.iter().map(String::as_str))
-        .map_err(|unknown| InvalidRoleTag::Invalid(unknown.to_owned()))?;
+    let roles = roles
+        .iter()
+        .map(|role| {
+            BuiltinRole::from_str(role.as_str())
+                .map_err(|_| InvalidRoleTag::Invalid(role.to_owned()))
+        })
+        .collect::<Result<_, _>>()?;
     authorizer
         .grant_roles(user_id, roles)
         .await
@@ -203,10 +193,13 @@ async fn strip_roles(
 
     check_user_exists(user_id, &authorizer).await?;
 
-    let roles = authorizer
-        .roles_config
-        .resolve(roles.iter().map(String::as_str))
-        .map_err(|unknown| InvalidRoleTag::Invalid(unknown.to_owned()))?;
+    let roles = roles
+        .iter()
+        .map(|role| {
+            BuiltinRole::from_str(role.as_str())
+                .map_err(|_| InvalidRoleTag::Invalid(role.to_owned()))
+        })
+        .collect::<Result<_, _>>()?;
     authorizer
         .strip_roles(user_id, roles)
         .await

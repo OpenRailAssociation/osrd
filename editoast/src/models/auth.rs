@@ -5,7 +5,7 @@ use diesel::{dsl, prelude::*};
 use diesel_async::{scoped_futures::ScopedFutureExt as _, RunQueryDsl};
 use editoast_authz::{
     authorizer::{StorageDriver, UserInfo},
-    roles::{BuiltinRoleSet, RoleConfig},
+    roles::BuiltinRoleSet,
 };
 use editoast_models::DbConnection;
 
@@ -105,11 +105,10 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
             .await
     }
 
-    #[tracing::instrument(skip_all, fields(%subject_id, %roles_config), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(%subject_id), ret(level = Level::DEBUG), err)]
     async fn fetch_subject_roles(
         &self,
         subject_id: i64,
-        roles_config: &RoleConfig<Self::BuiltinRole>,
     ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
         let roles = authz_role::table
             .select(authz_role::role)
@@ -131,11 +130,10 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         Ok(roles)
     }
 
-    #[tracing::instrument(skip_all, fields(%subject_id, %roles_config, ?roles), err)]
+    #[tracing::instrument(skip_all, fields(%subject_id, ?roles), err)]
     async fn ensure_subject_roles(
         &self,
         subject_id: i64,
-        roles_config: &RoleConfig<Self::BuiltinRole>,
         roles: HashSet<Self::BuiltinRole>,
     ) -> Result<(), Self::Error> {
         dsl::insert_into(authz_role::table)
@@ -158,11 +156,10 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(%subject_id, %roles_config, ?roles), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(%subject_id, ?roles), ret(level = Level::DEBUG), err)]
     async fn remove_subject_roles(
         &self,
         subject_id: i64,
-        roles_config: &RoleConfig<Self::BuiltinRole>,
         roles: HashSet<Self::BuiltinRole>,
     ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
         let deleted_roles = dsl::delete(
@@ -200,11 +197,10 @@ mod tests {
     async fn assert_roles(
         driver: &mut PgAuthDriver<TestBuiltinRole>,
         uid: i64,
-        config: &RoleConfig<TestBuiltinRole>,
         roles: &[TestBuiltinRole],
     ) {
         let fetched_roles = driver
-            .fetch_subject_roles(uid, config)
+            .fetch_subject_roles(uid)
             .await
             .expect("roles should be fetched successfully");
         let expected_roles = roles.iter().cloned().collect();
@@ -215,7 +211,6 @@ mod tests {
     async fn test_auth_driver() {
         let pool = DbConnectionPoolV2::for_tests();
         let mut driver = PgAuthDriver::<TestBuiltinRole>::new(pool.get_ok());
-        let config = default_test_config();
 
         let uid = driver
             .ensure_user(&UserInfo {
@@ -224,19 +219,19 @@ mod tests {
             })
             .await
             .expect("toto should be created successfully");
-        assert_roles(&mut driver, uid, &config, Default::default()).await;
+        assert_roles(&mut driver, uid, Default::default()).await;
 
         driver
-            .ensure_subject_roles(uid, &config, HashSet::from([DocRead, DocEdit]))
+            .ensure_subject_roles(uid, HashSet::from([DocRead, DocEdit]))
             .await
             .expect("roles should be updated successfully");
-        assert_roles(&mut driver, uid, &config, &[DocRead, DocEdit]).await;
+        assert_roles(&mut driver, uid, &[DocRead, DocEdit]).await;
 
         let deleted = driver
-            .remove_subject_roles(uid, &config, HashSet::from([DocEdit, UserBan]))
+            .remove_subject_roles(uid, HashSet::from([DocEdit, UserBan]))
             .await
             .expect("roles should be deleted successfully");
         assert_eq!(deleted, HashSet::from([DocEdit]));
-        assert_roles(&mut driver, uid, &config, &[DocRead]).await;
+        assert_roles(&mut driver, uid, &[DocRead]).await;
     }
 }

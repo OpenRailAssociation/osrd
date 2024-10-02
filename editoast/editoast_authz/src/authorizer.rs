@@ -1,10 +1,9 @@
-use itertools::Itertools as _;
-use std::{collections::HashSet, future::Future, sync::Arc};
+use std::{collections::HashSet, future::Future};
 
 use tracing::debug;
 use tracing::Level;
 
-use crate::roles::{BuiltinRoleSet, RoleConfig, RoleIdentifier};
+use crate::roles::BuiltinRoleSet;
 
 pub type UserIdentity = String;
 pub type UserName = String;
@@ -19,7 +18,6 @@ pub struct UserInfo {
 pub struct Authorizer<S: StorageDriver> {
     user: UserInfo,
     user_id: i64,
-    pub roles_config: Arc<RoleConfig<S::BuiltinRole>>,
     user_roles: HashSet<S::BuiltinRole>,
     #[allow(unused)] // will be used soon
     storage: S,
@@ -45,58 +43,43 @@ pub trait StorageDriver: Clone {
     fn fetch_subject_roles(
         &self,
         subject_id: i64,
-        roles_config: &RoleConfig<Self::BuiltinRole>,
     ) -> impl Future<Output = Result<HashSet<Self::BuiltinRole>, Self::Error>> + Send;
 
     fn ensure_subject_roles(
         &self,
         subject_id: i64,
-        roles_config: &RoleConfig<Self::BuiltinRole>,
         roles: HashSet<Self::BuiltinRole>,
     ) -> impl Future<Output = Result<(), Self::Error>> + Send;
 
     fn remove_subject_roles(
         &self,
         subject_id: i64,
-        roles_config: &RoleConfig<Self::BuiltinRole>,
         roles: HashSet<Self::BuiltinRole>,
     ) -> impl Future<Output = Result<HashSet<Self::BuiltinRole>, Self::Error>> + Send;
 }
 
 impl<S: StorageDriver> Authorizer<S> {
-    #[tracing::instrument(skip_all, fields(%user, roles_config = %roles_config.as_ref()), err)]
-    pub async fn try_initialize(
-        user: UserInfo,
-        roles_config: Arc<RoleConfig<S::BuiltinRole>>,
-        storage_driver: S,
-    ) -> Result<Self, S::Error> {
+    #[tracing::instrument(skip_all, fields(%user), err)]
+    pub async fn try_initialize(user: UserInfo, storage_driver: S) -> Result<Self, S::Error> {
         let user_id = storage_driver.ensure_user(&user).await?;
         debug!(%user, %user_id, "user authenticated");
-        let user_roles = storage_driver
-            .fetch_subject_roles(user_id, roles_config.as_ref())
-            .await?;
+        let user_roles = storage_driver.fetch_subject_roles(user_id).await?;
         Ok(Self {
             user,
             user_id,
-            roles_config,
             user_roles,
             storage: storage_driver,
         })
     }
 
-    pub fn new_superuser(roles_config: Arc<RoleConfig<S::BuiltinRole>>, storage_driver: S) -> Self {
-        debug_assert!(
-            roles_config.is_superuser(),
-            "Authorizer::new_superuser requires a superuser role config"
-        );
+    pub fn new_superuser(storage_driver: S) -> Self {
         Self {
             user: UserInfo {
                 identity: "superuser".to_string(),
                 name: "Super User".to_string(),
             },
             user_id: -1,
-            roles_config,
-            user_roles: Default::default(),
+            user_roles: HashSet::from([S::BuiltinRole::superuser()]),
             storage: storage_driver,
         }
     }
@@ -106,7 +89,7 @@ impl<S: StorageDriver> Authorizer<S> {
     }
 
     pub fn is_superuser(&self) -> bool {
-        self.roles_config.is_superuser() || self.user_roles.contains(&S::BuiltinRole::superuser())
+        self.user_roles.contains(&S::BuiltinRole::superuser())
     }
 
     /// Returns whether a user with some id exists
@@ -133,56 +116,28 @@ impl<S: StorageDriver> Authorizer<S> {
     }
 
     #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, user_roles = ?self.user_roles), ret(level = Level::DEBUG), err)]
-    pub async fn infer_application_roles(
-        &self,
-        user_id: i64,
-    ) -> Result<Vec<RoleIdentifier>, S::Error> {
-        if self.is_superuser() {
-            return Ok(self.roles_config.application_roles().cloned().collect_vec());
-        }
-
-        let resolved_roles = &self.roles_config.resolved_roles;
-        let user_roles = self
-            .storage
-            .fetch_subject_roles(user_id, &self.roles_config)
-            .await?;
-
-        let app_roles = resolved_roles
-            .iter()
-            .filter(|(_, builtins)| user_roles.is_superset(builtins))
-            .map(|(app_role, _)| app_role)
-            .cloned()
-            .collect_vec();
-
-        Ok(app_roles)
-    }
-
-    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, user_roles = ?self.user_roles), ret(level = Level::DEBUG), err)]
     pub async fn user_builtin_roles(
         &self,
         user_id: i64,
     ) -> Result<HashSet<S::BuiltinRole>, S::Error> {
-        let user_roles = self
-            .storage
-            .fetch_subject_roles(user_id, &self.roles_config)
-            .await?;
+        let user_roles = self.storage.fetch_subject_roles(user_id).await?;
         Ok(user_roles.clone())
     }
 
-    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, ?roles, role_config = ?self.roles_config), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn grant_roles(
         &mut self,
         user_id: i64,
         roles: HashSet<S::BuiltinRole>,
     ) -> Result<(), S::Error> {
         self.storage
-            .ensure_subject_roles(user_id, &self.roles_config, roles.clone())
+            .ensure_subject_roles(user_id, roles.clone())
             .await?;
         self.user_roles.extend(roles);
         Ok(())
     }
 
-    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, ?roles, role_config = ?self.roles_config), ret(level = Level::DEBUG), err)]
+    #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, ?roles), ret(level = Level::DEBUG), err)]
     pub async fn strip_roles(
         &mut self,
         user_id: i64,
@@ -190,7 +145,7 @@ impl<S: StorageDriver> Authorizer<S> {
     ) -> Result<(), S::Error> {
         let removed_roles = self
             .storage
-            .remove_subject_roles(user_id, &self.roles_config, roles.clone())
+            .remove_subject_roles(user_id, roles.clone())
             .await?;
         tracing::debug!(?removed_roles, "removed roles");
         self.user_roles.retain(|r| !roles.contains(r));
@@ -203,7 +158,6 @@ impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {
         f.debug_struct("Authorizer")
             .field("user", &self.user)
             .field("user_id", &self.user_id)
-            .field("roles_config", &self.roles_config)
             .field("user_roles", &self.user_roles)
             .finish()
     }
@@ -234,9 +188,8 @@ mod tests {
 
     #[tokio::test]
     async fn superuser() {
-        let config = RoleConfig::new_superuser();
         let storage = MockStorageDriver::default();
-        let authorizer = Authorizer::new_superuser(config.into(), storage);
+        let authorizer = Authorizer::new_superuser(storage);
         assert!(authorizer.is_superuser());
         // Check that the superuser has any role even if not explicitely granted
         assert_eq!(
@@ -249,7 +202,6 @@ mod tests {
 
     #[tokio::test]
     async fn check_roles() {
-        let config = default_test_config();
         let storage = MockStorageDriver::default();
 
         // insert some mocked roles
@@ -270,7 +222,6 @@ mod tests {
                 identity: "toto".to_owned(),
                 name: "Sir Toto, the One and Only".to_owned(),
             },
-            config.into(),
             storage,
         )
         .await
@@ -306,7 +257,7 @@ mod tests {
             .unwrap());
 
         assert!(!authorizer
-            .check_roles(HashSet::from([TestBuiltinRole::DocEdit,]))
+            .check_roles(HashSet::from([TestBuiltinRole::DocEdit]))
             .await
             .unwrap());
         assert!(!authorizer
@@ -334,7 +285,6 @@ mod tests {
         async fn fetch_subject_roles(
             &self,
             subject_id: i64,
-            _roles_config: &RoleConfig<Self::BuiltinRole>,
         ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
             let user_roles = self.user_roles.lock().unwrap();
             let roles = user_roles.get(&subject_id).cloned().expect("no user");
@@ -344,7 +294,6 @@ mod tests {
         async fn ensure_subject_roles(
             &self,
             subject_id: i64,
-            _roles_config: &RoleConfig<Self::BuiltinRole>,
             roles: HashSet<Self::BuiltinRole>,
         ) -> Result<(), Self::Error> {
             let mut user_roles = self.user_roles.lock().unwrap();
@@ -355,7 +304,6 @@ mod tests {
         async fn remove_subject_roles(
             &self,
             subject_id: i64,
-            _roles_config: &RoleConfig<Self::BuiltinRole>,
             roles: HashSet<Self::BuiltinRole>,
         ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
             let mut user_roles = self.user_roles.lock().unwrap();

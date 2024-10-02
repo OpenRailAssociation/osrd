@@ -157,10 +157,6 @@ pub struct RunserverArgs {
     pub root_path: String,
     #[clap(long)]
     pub workers: Option<usize>,
-    /// An application roles configuration file to apply. If none is provided (default behavior),
-    /// the superuser role is granted to all users.
-    #[clap(long, env = "EDITOAST_ROLES_CONFIG")]
-    pub roles_config: Option<PathBuf>,
     /// If this option is set, any role and permission check will be bypassed. Even if no user is
     /// provided by the request headers of if the provided user doesn't have the required privileges.
     // TODO: once the whole role system will be deployed, the default value of this option should

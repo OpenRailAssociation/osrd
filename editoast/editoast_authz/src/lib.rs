@@ -8,7 +8,7 @@ pub use builtin_role::BuiltinRole;
 pub mod fixtures {
     use strum::{AsRefStr, EnumString};
 
-    use crate::roles::{self, RoleConfig};
+    use crate::roles::BuiltinRoleSet;
 
     #[derive(Debug, Clone, PartialEq, Eq, Hash, AsRefStr, EnumString)]
     #[strum(serialize_all = "snake_case")]
@@ -21,26 +21,9 @@ pub mod fixtures {
         Superuser,
     }
 
-    impl roles::BuiltinRoleSet for TestBuiltinRole {
+    impl BuiltinRoleSet for TestBuiltinRole {
         fn superuser() -> Self {
             Self::Superuser
         }
-    }
-
-    pub fn default_test_config() -> roles::RoleConfig<TestBuiltinRole> {
-        const SOURCE: &str = r#"
-            [roles.doc_reader]
-            implies = ["doc_read"]
-
-            [roles.doc_provider]
-            implies = ["doc_delete", "doc_edit", "doc_read"]
-
-            [roles.admin]
-            implies = ["user_add", "user_ban"]
-
-            [roles.dev]
-            implies = ["admin", "doc_provider"]
-        "#;
-        RoleConfig::load(SOURCE).expect("should parse successfully")
     }
 }

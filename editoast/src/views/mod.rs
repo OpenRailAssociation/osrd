@@ -114,19 +114,17 @@ editoast_common::schemas! {
     scenario::schemas(),
 }
 
-pub type Roles = editoast_authz::roles::RoleConfig<BuiltinRole>;
 pub type AuthorizerExt = axum::extract::Extension<Authorizer<PgAuthDriver<BuiltinRole>>>;
 
 async fn make_authorizer(
+    disable_authorization: bool,
     headers: &axum::http::HeaderMap,
-    roles: Arc<Roles>,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<Authorizer<PgAuthDriver<BuiltinRole>>, AuthorizationError> {
-    if roles.is_superuser() {
-        return Ok(Authorizer::new_superuser(
-            roles,
-            PgAuthDriver::<BuiltinRole>::new(db_pool.get().await?),
-        ));
+    if disable_authorization {
+        return Ok(Authorizer::new_superuser(PgAuthDriver::<BuiltinRole>::new(
+            db_pool.get().await?,
+        )));
     }
     let Some(header) = headers.get("x-remote-user") else {
         return Err(AuthorizationError::Unauthenticated);
@@ -141,7 +139,6 @@ async fn make_authorizer(
             identity: identity.to_owned(),
             name: name.to_owned(),
         },
-        roles,
         PgAuthDriver::<BuiltinRole>::new(db_pool.get().await?),
     )
     .await?;
@@ -151,14 +148,14 @@ async fn make_authorizer(
 pub async fn authorizer_middleware(
     State(AppState {
         db_pool_v2: db_pool,
-        role_config,
+        disable_authorization,
         ..
     }): State<AppState>,
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
     let headers = req.headers();
-    let authorizer = make_authorizer(headers, role_config.clone(), db_pool).await?;
+    let authorizer = make_authorizer(disable_authorization, headers, db_pool).await?;
     req.extensions_mut().insert(authorizer);
     Ok(next.run(req).await)
 }

@@ -29,10 +29,6 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
-      getAuthzListRoles: build.query<GetAuthzListRolesApiResponse, GetAuthzListRolesApiArg>({
-        query: () => ({ url: `/authz/list_roles` }),
-        providesTags: ['authz'],
-      }),
       getAuthzRolesMe: build.query<GetAuthzRolesMeApiResponse, GetAuthzRolesMeApiArg>({
         query: () => ({ url: `/authz/roles/me` }),
         providesTags: ['authz'],
@@ -876,9 +872,6 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as generatedEditoastApi };
-export type GetAuthzListRolesApiResponse =
-  /** status 200 List of supported application roles */ string[];
-export type GetAuthzListRolesApiArg = void;
 export type GetAuthzRolesMeApiResponse =
   /** status 200 List the roles of the issuer of the request */ {
     builtin: BuiltinRole[];

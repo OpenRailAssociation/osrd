@@ -24,7 +24,7 @@ use crate::{
 use axum_test::TestRequest;
 use axum_test::TestServer;
 
-use super::{authorizer_middleware, Roles};
+use super::authorizer_middleware;
 
 /// A builder interface for [TestApp]
 ///
@@ -38,7 +38,6 @@ use super::{authorizer_middleware, Roles};
 pub(crate) struct TestAppBuilder {
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
-    roles: Option<Roles>,
     osrdyne_client: Option<OsrdyneClient>,
     db_pool_v1: bool,
 }
@@ -48,7 +47,6 @@ impl TestAppBuilder {
         Self {
             db_pool: None,
             core_client: None,
-            roles: None,
             osrdyne_client: None,
             db_pool_v1: false,
         }
@@ -73,20 +71,12 @@ impl TestAppBuilder {
         self
     }
 
-    pub fn roles(mut self, roles: Roles) -> Self {
-        assert!(self.roles.is_none());
-        self.roles = Some(roles);
-        self
-    }
-
     pub fn default_app() -> TestApp {
         let pool = DbConnectionPoolV2::for_tests();
         let core_client = CoreClient::default();
-        let roles = Roles::new_superuser();
         TestAppBuilder::new()
             .db_pool(pool)
             .core_client(core_client)
-            .roles(roles)
             .build()
     }
 
@@ -130,9 +120,6 @@ impl TestAppBuilder {
         // Load speed limit tag config
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
 
-        // Role configuration
-        let role_config = Arc::new(self.roles.unwrap_or_else(Roles::new_superuser));
-
         // Build Core client
         let core_client = Arc::new(self.core_client.expect(
             "No core client provided to TestAppBuilder, use Default or provide a core client",
@@ -154,8 +141,7 @@ impl TestAppBuilder {
             map_layers: MapLayers::parse().into(),
             map_layers_config: MapLayersConfig::default().into(),
             speed_limit_tag_ids,
-            superuser: role_config.is_superuser(),
-            role_config,
+            disable_authorization: true,
             health_check_timeout: Duration::from_millis(500),
         };
 
