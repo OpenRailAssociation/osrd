@@ -65,18 +65,17 @@ pub use redis_utils::{RedisClient, RedisConnection};
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, IsTerminal};
-use std::path::PathBuf;
 use std::process::exit;
 use std::sync::Arc;
 use std::time::Duration;
 use std::{env, fs};
 use thiserror::Error;
-use tracing::{debug, error, info, warn};
+use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _, Layer as _};
 use validator::ValidationErrorsKind;
+use views::authorizer_middleware;
 use views::infra::InfraApiError;
 use views::search::SearchConfigFinder;
-use views::{authorizer_middleware, Roles};
 
 /// The mode editoast is running in
 ///
@@ -344,8 +343,7 @@ pub struct AppState {
     pub map_layers: Arc<MapLayers>,
     pub map_layers_config: Arc<MapLayersConfig>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
-    pub role_config: Arc<Roles>,
-    pub superuser: bool,
+    pub disable_authorization: bool,
     pub core_client: Arc<CoreClient>,
     pub osrdyne_client: Arc<OsrdyneClient>,
     pub health_check_timeout: Duration,
@@ -375,10 +373,8 @@ impl AppState {
         // Static list of configured speed-limit tag ids
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
 
-        // Roles configuration
-        let role_config = Arc::new(load_roles_config(args.roles_config.as_ref())?);
-        if role_config.is_superuser() || args.disable_authorization {
-            warn!("No roles configuration provided, superuser mode enabled");
+        if args.disable_authorization {
+            warn!("authorization disabled — all role and permission checks are bypassed");
         }
 
         // Build Core client
@@ -400,8 +396,7 @@ impl AppState {
             map_layers: Arc::new(MapLayers::parse()),
             map_layers_config: Arc::new(args.map_layers_config.clone()),
             speed_limit_tag_ids,
-            superuser: role_config.is_superuser() || args.disable_authorization,
-            role_config,
+            disable_authorization: args.disable_authorization,
             health_check_timeout,
         })
     }
@@ -465,22 +460,6 @@ async fn runserver(
     let listener = tokio::net::TcpListener::bind((args.address.clone(), args.port)).await?;
     axum::serve(listener, service).await.expect("unreachable");
     Ok(())
-}
-
-fn load_roles_config(path: Option<&PathBuf>) -> Result<Roles, Box<dyn Error + Send + Sync>> {
-    let Some(path) = path else {
-        return Ok(Roles::new_superuser());
-    };
-    info!(file = %path.display(), "Loading roles configuration");
-    let content = fs::read_to_string(path).map_err(|e| {
-        Box::new(CliError::new(
-            1,
-            format!("Cannot read roles configuration file: {e}"),
-        ))
-    })?;
-    let roles_config = Roles::load(&content)?;
-    debug!("Roles configuration loaded");
-    Ok(roles_config)
 }
 
 async fn build_redis_pool_and_invalidate_all_cache(
