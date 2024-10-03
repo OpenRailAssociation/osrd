@@ -151,7 +151,7 @@ const Timetable = ({
           })}
         />
       </div>
-      <div>
+      <div className="mt-auto">
         {conflicts && (
           <ConflictsList
             conflicts={conflicts}
