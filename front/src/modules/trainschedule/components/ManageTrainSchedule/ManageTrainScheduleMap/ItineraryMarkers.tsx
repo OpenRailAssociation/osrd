@@ -15,6 +15,7 @@ import viaSVG from 'assets/pictures/via.svg';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getNearestTrack } from 'utils/mapHelper';
+import { usePathfinding } from 'modules/pathfinding/hooks/usePathfinding';
 
 enum MARKER_TYPE {
   ORIGIN = 'origin',
@@ -57,9 +58,13 @@ const formatPointWithNoName = (
   </>
 );
 
-const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAssets: boolean) =>
-  pathSteps.reduce((acc, cur, index) => {
-    if (cur && cur.coordinates) {
+const extractMarkerInformation = (
+  pathSteps: (PathStep | null)[],
+  showStdcmAssets: boolean,
+  invalidItems: string[] = []
+) => {
+  return pathSteps.reduce((acc, cur, index) => {
+    if (cur && cur.coordinates && (!('trigram' in cur) || !invalidItems.includes(cur.trigram))) {
       if (index === 0) {
         acc.push({
           coordinates: cur.coordinates,
@@ -73,7 +78,7 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAsset
           type: MARKER_TYPE.VIA,
           marker: cur,
           imageSource: showStdcmAssets ? stdcmVia : viaSVG,
-          index,
+          index: index,
         });
       } else if (index === pathSteps.length - 1) {
         acc.push({
@@ -86,14 +91,16 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAsset
     }
     return acc;
   }, [] as MarkerInformation[]);
+};
 
 const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: ItineraryMarkersProps) => {
   const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
+  const { invalidItems } = usePathfinding();
 
   const markersInformation = useMemo(
-    () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets),
-    [simulationPathSteps, pathSteps]
+    () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets, invalidItems),
+    [simulationPathSteps, pathSteps, showStdcmAssets, invalidItems]
   );
 
   const getMarkerDisplayInformation = useCallback(
@@ -173,9 +180,8 @@ const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: Itinera
           </Marker>
         );
       }),
-    [markersInformation]
+    [simulationPathSteps, pathSteps, showStdcmAssets, invalidItems]
   );
-
   return Markers;
 };
 

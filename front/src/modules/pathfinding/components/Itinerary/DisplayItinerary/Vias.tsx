@@ -16,9 +16,10 @@ import ViaStopDurationSelector from './ViaStopDurationSelector';
 type ViasProps = {
   shouldManageStopDuration?: boolean;
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
+  invalidPathItems?: string[];
 };
 
-const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration }: ViasProps) => {
+const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration, invalidPathItems }: ViasProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { getVias } = useOsrdConfSelectors();
   const dispatch = useAppDispatch();
@@ -51,6 +52,8 @@ const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration }: ViasProps) => {
                     {...providedDraggable.dragHandleProps}
                     className={cx('place via', {
                       'is-a-stop': via.arrival || via.stopFor,
+                      'invalid-path-item':
+                        'trigram' in via && invalidPathItems?.includes(via.trigram),
                     })}
                   >
                     <div className="ring" />
