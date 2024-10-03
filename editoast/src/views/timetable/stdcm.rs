@@ -205,6 +205,7 @@ async fn stdcm(
     .await?;
 
     // 2. Compute the earliest start time, maximum running time and maximum departure delay
+    // Simulation time without stop duration
     let simulation_run_time_result = get_simulation_run_time(
         db_pool.clone(),
         redis_client.clone(),
@@ -229,21 +230,14 @@ async fn stdcm(
         simulation_run_time,
         earliest_step_tolerance_window,
     );
-    let maximum_run_time_without_tolerance =
-        2 * simulation_run_time + get_total_stop_time(&stdcm_request);
-    let maximum_run_time = get_maximum_run_time(
-        &stdcm_request,
-        maximum_run_time_without_tolerance,
-        earliest_step_tolerance_window,
-    );
+    // Maximum duration between train departure and arrival, including all stops
+    let maximum_run_time = stdcm_request
+        .maximum_run_time
+        .unwrap_or(2 * simulation_run_time + get_total_stop_time(&stdcm_request));
 
-    let earliest_departure_time =
-        get_earliest_departure_time(&stdcm_request, maximum_run_time_without_tolerance);
-    let latest_simulation_end =
-        earliest_departure_time + Duration::milliseconds((maximum_run_time) as i64);
-
-    let latest_arrival_time =
-        get_latest_arrival_time(&stdcm_request, maximum_run_time_without_tolerance);
+    let earliest_departure_time = get_earliest_departure_time(&stdcm_request, maximum_run_time);
+    let latest_simulation_end = earliest_departure_time
+        + Duration::milliseconds((maximum_run_time + earliest_step_tolerance_window) as i64);
 
     // 3. Get scheduled train requirements
     let trains_requirements = build_train_requirements(
@@ -262,7 +256,7 @@ async fn stdcm(
             build_temporary_speed_limits(
                 conn,
                 earliest_departure_time,
-                latest_arrival_time,
+                latest_simulation_end,
                 group_id,
             )
             .await?
@@ -404,21 +398,8 @@ fn get_maximum_departure_delay(
         .unwrap_or(simulation_run_time + earliest_step_tolerance_window)
 }
 
-// Returns the maximum run time for the simulation.
-fn get_maximum_run_time(
-    data: &STDCMRequestPayload,
-    maximum_run_time_without_tolerance: u64,
-    earliest_step_tolerance_window: u64,
-) -> u64 {
-    data.maximum_run_time
-        .unwrap_or(maximum_run_time_without_tolerance + earliest_step_tolerance_window)
-}
-
 /// Returns the earliest time at which the train may start
-fn get_earliest_departure_time(
-    data: &STDCMRequestPayload,
-    maximum_run_time_without_tolerance: u64,
-) -> DateTime<Utc> {
+fn get_earliest_departure_time(data: &STDCMRequestPayload, maximum_run_time: u64) -> DateTime<Utc> {
     // Prioritize: start time, or first step time, or (first specified time - max run time)
     data.start_time.unwrap_or(
         data.steps
@@ -431,51 +412,9 @@ fn get_earliest_departure_time(
                 )
             })
             .unwrap_or(
-                get_earliest_step_time(data)
-                    - Duration::milliseconds(maximum_run_time_without_tolerance as i64),
+                get_earliest_step_time(data) - Duration::milliseconds(maximum_run_time as i64),
             ),
     )
-}
-
-/// Return the latest time at which the train may arrive, margins included.
-fn get_latest_arrival_time(
-    data: &STDCMRequestPayload,
-    maximum_run_time_without_tolerance: u64,
-) -> DateTime<Utc> {
-    // Return the maximum time between:
-    //   * latest step time + its tolerance after
-    //   * start time + maximum start delay + max runtime
-    //   * first step time + its tolerance after + max runtime
-    let result_from_last_step: Option<DateTime<Utc>> = get_last_step_with_timing(data)
-        .and_then(|step| step.timing_data.as_ref())
-        .map(|timing| {
-            timing.arrival_time + Duration::milliseconds(timing.arrival_time_tolerance_after as i64)
-        });
-    let result_from_start_time: Option<DateTime<Utc>> = data.start_time.map(|start| {
-        start
-            + Duration::milliseconds(
-                (data.maximum_departure_delay.unwrap_or(0) + maximum_run_time_without_tolerance)
-                    as i64,
-            )
-    });
-    let result_from_first_step: Option<DateTime<Utc>> = get_first_step_with_timing(data)
-        .and_then(|step| step.timing_data.as_ref())
-        .map(|timing| {
-            timing.arrival_time
-                + Duration::milliseconds(
-                    (timing.arrival_time_tolerance_after + maximum_run_time_without_tolerance)
-                        as i64,
-                )
-        });
-    [
-        result_from_first_step,
-        result_from_last_step,
-        result_from_start_time,
-    ]
-    .into_iter()
-    .flatten()
-    .max()
-    .expect("No arrival time specified in the STDCM request.")
 }
 
 /// Returns the earliest time that has been set on any step
@@ -493,19 +432,6 @@ fn get_earliest_step_time(data: &STDCMRequestPayload) -> DateTime<Utc> {
                 .next()
         })
         .expect("No time specified for stdcm request")
-}
-
-/// Return last step that has a timing defined.
-fn get_last_step_with_timing(data: &STDCMRequestPayload) -> Option<&PathfindingItem> {
-    data.steps
-        .iter()
-        .rev()
-        .find(|step| step.timing_data.is_some())
-}
-
-/// Return the first step that has a timing defined.
-fn get_first_step_with_timing(data: &STDCMRequestPayload) -> Option<&PathfindingItem> {
-    data.steps.iter().find(|step| step.timing_data.is_some())
 }
 
 /// Returns the earliest tolerance window that has been set on any step

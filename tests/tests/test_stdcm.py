@@ -106,7 +106,6 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int):
 
 
 def test_work_schedules(small_scenario: Scenario, fast_rolling_stock: int):
-    # This test is already using time schedules v2, it's required for work schedules
     requests.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
     start_time = datetime.datetime(2024, 1, 1, 14, 0, 0)
     end_time = start_time + datetime.timedelta(days=4)
@@ -196,6 +195,78 @@ def test_mrsp_sources(
             {"speed": 80, "source": None},
         ],
     }
+
+
+def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
+    """
+    We use work schedules to force a very long running time, which shouldn't be a valid solution.
+    We specifically try with a very large departure time window to reproduce a bug (#9164).
+                distance
+                   ^
+    destination  > |######################## /
+                   |########################/
+                   |                       /
+                   |    __________________/
+                   |   /
+                   |  /#########################
+        origin   > | / #########################
+                   +___________________________> time
+                       ^                   ^
+                      8:00               16:00
+                   [       ] <  max running time
+                   [                             ] < departure time window
+    """
+    requests.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
+    origin_start_time = datetime.datetime(2024, 1, 1, 8, 0, 0)
+    origin_end_time = datetime.datetime(2025, 1, 1, 8, 0, 0)
+    destination_start_time = datetime.datetime(2023, 1, 1, 8, 0, 0)
+    destination_end_time = datetime.datetime(2024, 1, 1, 16, 0, 0)
+    # TODO: we cannot delete work schedules for now, so let's give a unique name
+    # to avoid collisions
+    now = datetime.datetime.now()
+    work_schedules_r = requests.post(
+        EDITOAST_URL + "work_schedules/",
+        json={
+            "work_schedule_group_name": f"generic_group_{now}",
+            "work_schedules": [
+                {
+                    "start_date_time": origin_start_time.isoformat(),
+                    "end_date_time": origin_end_time.isoformat(),
+                    "obj_id": "string",
+                    "track_ranges": [{"begin": 0, "end": 100000, "track": _START["track"]}],
+                    "work_schedule_type": "CATENARY",
+                },
+                {
+                    "start_date_time": destination_start_time.isoformat(),
+                    "end_date_time": destination_end_time.isoformat(),
+                    "obj_id": "string",
+                    "track_ranges": [{"begin": 0, "end": 100000, "track": _STOP["track"]}],
+                    "work_schedule_type": "CATENARY",
+                },
+            ],
+        },
+    )
+    work_schedules_response = work_schedules_r.json()
+
+    payload = {
+        "rolling_stock_id": fast_rolling_stock,
+        "start_time": "2024-01-01T07:30:00+00:00",
+        "maximum_departure_delay": 3600 * 10,
+        "time_gap_before": 0,
+        "time_gap_after": 0,
+        "steps": [
+            {"duration": None, "location": _START},
+            {"duration": 1, "location": _STOP},
+        ],
+        "comfort": "STANDARD",
+        "margin": "0%",
+        "work_schedule_group_id": work_schedules_response["work_schedule_group_id"],
+    }
+    url = f"{EDITOAST_URL}timetable/{small_scenario.timetable}/stdcm/?infra={small_scenario.infra}"
+    r = requests.post(url, json=payload)
+    response = r.json()
+    assert r.status_code == 200
+    assert response == {"status": "path_not_found"}
 
 
 def _get_stdcm_response(infra: Infra, timetable_id: int, stdcm_payload: Dict[str, Any]):
