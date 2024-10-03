@@ -22,6 +22,7 @@
     "@rjsf/validator-ajv8": "^5.17.0",
     "@rtk-query/codegen-openapi": "^1.2.0",
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta4",
+    "@swc/core": "^1.7.39",
     "@turf/along": "^6.5.0",
     "@turf/bbox": "^6.5.0",
     "@turf/bbox-clip": "^6.5.0",
@@ -124,7 +125,7 @@
     "@vitejs/plugin-react-swc": "^3.6.0",
     "@vitest/coverage-v8": "^2.0.0",
     "dotenv": "^16.4.5",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -151,6 +152,9 @@
     "vite-tsconfig-paths": "^5.0.1",
     "vitest": "^2.0.0"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-arm64-gnu": "^4.23.0"
+  },
   "resolutions": {
     "react-error-overlay": "6.0.9",
     "@nivo/line": "^0.80.0",
@@ -168,7 +172,7 @@
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",
     "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
-    "e2e-tests": "yarn playwright test",
+    "e2e-tests": "playwright test",
     "i18n-api-errors": "tsx ./scripts/i18n-api-errors.ts",
     "i18n-checker": "tsx ./scripts/i18n-checker.ts"
   },
