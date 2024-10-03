@@ -916,7 +916,7 @@ pub mod tests {
         let pool = DbConnectionPoolV2::for_tests_no_transaction();
         let app = TestAppBuilder::new()
             .db_pool(pool)
-            .core_client(CoreClient::default())
+            .core_client(CoreClient::Mocked(MockingClient::default()))
             .build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1229,7 +1229,7 @@ pub mod tests {
             .build();
         let app = TestAppBuilder::new()
             .db_pool(db_pool)
-            .core_client(CoreClient::default())
+            .core_client(CoreClient::Mocked(MockingClient::default()))
             .osrdyne_client(osrdyne_client)
             .build();
 

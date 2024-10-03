@@ -1,5 +1,4 @@
 pub mod conflict_detection;
-mod http_client;
 pub mod infra_loading;
 #[cfg(test)]
 pub mod mocking;
@@ -17,12 +16,7 @@ use std::marker::PhantomData;
 
 use async_trait::async_trait;
 use axum::http::StatusCode;
-use colored::ColoredString;
-use colored::Colorize;
 use editoast_derive::EditoastError;
-pub use http_client::HttpClient;
-pub use http_client::HttpClientBuilder;
-use reqwest::Url;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde::Serialize;
@@ -30,7 +24,6 @@ use serde_json::Value;
 use thiserror::Error;
 use tracing::debug;
 use tracing::error;
-use tracing::info;
 
 #[cfg(test)]
 use crate::core::mocking::MockingError;
@@ -45,45 +38,14 @@ editoast_common::schemas! {
     conflict_detection::schemas(),
 }
 
-const MAX_RETRIES: u8 = 5;
-
-fn colored_method(method: &reqwest::Method) -> ColoredString {
-    let m = method.as_str();
-    match *method {
-        reqwest::Method::GET => m.green(),
-        reqwest::Method::POST => m.yellow(),
-        reqwest::Method::PUT => m.blue(),
-        reqwest::Method::PATCH => m.magenta(),
-        reqwest::Method::DELETE => m.red(),
-        _ => m.normal(),
-    }
-    .bold()
-}
-
 #[derive(Debug, Clone)]
 pub enum CoreClient {
-    Direct(HttpClient),
     MessageQueue(RabbitMQClient),
     #[cfg(test)]
     Mocked(mocking::MockingClient),
 }
 
 impl CoreClient {
-    pub fn new_direct(base_url: Url, bearer_token: String) -> Self {
-        let client = reqwest::Client::builder()
-            .default_headers({
-                let mut headers = reqwest::header::HeaderMap::new();
-                headers.insert(
-                    reqwest::header::AUTHORIZATION,
-                    reqwest::header::HeaderValue::from_str(&format!("Bearer {}", bearer_token))
-                        .expect("invalid bearer token"),
-                );
-                headers
-            })
-            .build_base_url(base_url);
-        Self::Direct(client)
-    }
-
     pub async fn new_mq(options: mq_client::Options) -> Result<Self> {
         let client = RabbitMQClient::new(options).await?;
 
@@ -122,54 +84,11 @@ impl CoreClient {
         body: Option<&B>,
         infra_id: Option<i64>,
     ) -> Result<R::Response> {
-        let method_s = colored_method(&method);
         debug!(
             target: "editoast::coreclient",
             body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
             "Request content");
         match self {
-            CoreClient::Direct(client) => {
-                let mut i_try = 0;
-                let response = loop {
-                    let mut request = client.request(method.clone(), path);
-                    if let Some(body) = body {
-                        request = request.json(body);
-                    }
-                    match request.send().await.map_err(Into::<CoreError>::into) {
-                        // This error occurs quite often in the CI.
-                        // It's linked to this issue https://github.com/hyperium/hyper/issues/2136.
-                        // This is why we retry the request here.
-                        // We also retry on broken pipe.
-                        Err(
-                            CoreError::ConnectionResetByPeer
-                            | CoreError::ConnectionClosedBeforeMessageCompleted
-                            | CoreError::BrokenPipe,
-                        ) if i_try < MAX_RETRIES => {
-                            i_try += 1;
-                            info!("Core request '{}: {}': Connection closed before message completed. Retry [{}/{}]", method, path, i_try, MAX_RETRIES);
-                            continue;
-                        }
-                        response => break response?,
-                    }
-                };
-
-                let url = response.url().to_string();
-                let status = response.status();
-                let bytes =
-                    response
-                        .bytes()
-                        .await
-                        .map_err(|err| CoreError::CannotExtractResponseBody {
-                            msg: err.to_string(),
-                        })?;
-                if status.is_success() {
-                    info!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().green());
-                    return R::from_bytes(bytes.as_ref());
-                }
-
-                error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
-                Err(self.handle_error(bytes.as_ref(), url))
-            }
             CoreClient::MessageQueue(client) => {
                 // TODO: maybe implement retry?
                 let infra_id = infra_id.unwrap_or(1); // FIXME: don't do that!!!
@@ -203,17 +122,6 @@ impl CoreClient {
                 }
             }
         }
-    }
-}
-
-impl Default for CoreClient {
-    fn default() -> Self {
-        let address = std::env::var("OSRD_BACKEND").unwrap_or("http://localhost:8080".to_owned());
-        let bearer_token = std::env::var("OSRD_BACKEND_TOKEN").unwrap_or_default();
-        Self::new_direct(
-            address.parse().expect("invalid OSRD_BACKEND URL format"),
-            bearer_token,
-        )
     }
 }
 
@@ -341,9 +249,6 @@ impl CoreResponse for () {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "coreclient")]
 enum CoreError {
-    #[error("Cannot extract Core response body: {msg}")]
-    #[editoast_error(status = 500)]
-    CannotExtractResponseBody { msg: String },
     #[error("Cannot parse Core response: {msg}")]
     #[editoast_error(status = 500)]
     CoreResponseFormatError { msg: String },
