@@ -7,10 +7,10 @@
     "stopTime": "",
     "signalReceptionClosed": false,
     "margin": {
-      "theoretical": "5 %",
-      "theoreticalS": "33 s",
-      "actual": "847 s",
-      "difference": "814 s"
+      "theoretical": "10 %",
+      "theoreticalS": "2 s",
+      "actual": "2 s",
+      "difference": "0 s"
     },
     "calculatedArrival": "11:22:40",
     "calculatedDeparture": ""
@@ -18,37 +18,37 @@
   {
     "stationName": "Mid_West_station",
     "stationCh": "BV",
-    "requestedArrival": "11:47:40",
-    "requestedDeparture": "11:52:40",
-    "stopTime": "300",
-    "signalReceptionClosed": true,
+    "requestedArrival": "",
+    "requestedDeparture": "",
+    "stopTime": "",
+    "signalReceptionClosed": false,
     "margin": {
-      "theoretical": "1 min/100km",
-      "theoreticalS": "9 s",
-      "actual": "294 s",
-      "difference": "286 s"
+      "theoretical": "",
+      "theoreticalS": "97 s",
+      "actual": "97 s",
+      "difference": "0 s"
     },
-    "calculatedArrival": "11:47:40",
-    "calculatedDeparture": "11:52:40"
+    "calculatedArrival": "11:31:56",
+    "calculatedDeparture": ""
   },
   {
     "stationName": "Mid_East_station",
     "stationCh": "BV",
-    "requestedArrival": "12:05:21",
-    "requestedDeparture": "12:07:25",
+    "requestedArrival": "",
+    "requestedDeparture": "",
     "stopTime": "124",
     "signalReceptionClosed": false,
     "margin": {
       "theoretical": "",
-      "theoreticalS": "12 s",
-      "actual": "12 s",
+      "theoreticalS": "62 s",
+      "actual": "62 s",
       "difference": "0 s"
     },
-    "calculatedArrival": "12:05:20",
-    "calculatedDeparture": "12:07:24"
+    "calculatedArrival": "11:40:55",
+    "calculatedDeparture": "11:42:59"
   },
   {
-    "stationName": "North_East_station",
+    "stationName": "South_East_station",
     "stationCh": "BV",
     "requestedArrival": "",
     "requestedDeparture": "",
@@ -60,7 +60,7 @@
       "actual": "",
       "difference": ""
     },
-    "calculatedArrival": "12:16:22",
+    "calculatedArrival": "11:54:12",
     "calculatedDeparture": ""
   }
 ]

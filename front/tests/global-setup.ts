@@ -16,13 +16,13 @@ import { readJsonFile } from './utils';
 import { getApiRequest, postApiRequest } from './utils/api-setup';
 
 async function createDataForTests() {
-  const smallInfraRailjson: RailJson = readJsonFile('../tests/data/infras/small_infra/infra.json');
+  const smallInfraRailjson: RailJson = readJsonFile('./tests/assets/infra/infra.json');
 
   // Prepare rolling stock data from multiple files
   const rollingStocks = [
     {
       json: readJsonFile('../tests/data/rolling_stocks/electric_rolling_stock.json'),
-      name: 'rollingstock_1500_25000_test_e2e',
+      name: 'electric_rolling_stock_test_e2e',
     },
     {
       json: readJsonFile('../tests/data/rolling_stocks/slow_rolling_stock.json'),
@@ -30,11 +30,15 @@ async function createDataForTests() {
     },
     {
       json: readJsonFile('./tests/assets/rollingStock/dual-mode_rolling_stock.json'),
-      name: 'dual-mode_rollingstock_test_e2e',
+      name: 'dual-mode_rolling_stock_test_e2e',
     },
     {
       json: readJsonFile('../tests/data/rolling_stocks/fast_rolling_stock.json'),
       name: 'fast_rolling_stock_test_e2e',
+    },
+    {
+      json: readJsonFile('./tests/assets/rollingStock/improbable_rolling_stock.json'),
+      name: 'improbable_rolling_stock_test_e2e',
     },
   ];
 

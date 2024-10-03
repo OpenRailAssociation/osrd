@@ -59,7 +59,7 @@ class HomePage {
     this.OSRDLanguage = page.getByTestId('language-info');
   }
 
-  // Completly remove VITE button & sign
+  // Completely remove VITE button & sign
   async removeViteOverlay() {
     if ((await this.getViteOverlay.count()) > 0) {
       await this.getViteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));

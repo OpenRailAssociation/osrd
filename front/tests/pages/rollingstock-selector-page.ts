@@ -121,7 +121,7 @@ class RollingStockSelectorPage extends BasePage {
     await this.getThermalRollingStockFilter.click();
   }
 
-  // Select Electic RS filter
+  // Select Electric RS filter
   async electricRollingStockFilter() {
     await this.getElectricRollingStockFilter.click();
   }

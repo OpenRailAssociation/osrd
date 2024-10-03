@@ -19,7 +19,7 @@ let project: Project;
 let study: Study;
 
 test.beforeAll(async () => {
-  project = await getProject();
+  project = await getProject('project_test_e2e');
 });
 
 test.beforeEach(async () => {
@@ -31,7 +31,7 @@ test.beforeEach(async () => {
   });
 });
 
-test.describe('Test if operationnal study: study creation workflow is working properly', () => {
+test.describe('Test if study creation workflow is working properly', () => {
   test('Create a new study', async ({ page }) => {
     const studyPage = new StudyPage(page);
     const commonPage = new CommonPage(page);

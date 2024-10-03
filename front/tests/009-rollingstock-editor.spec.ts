@@ -19,8 +19,8 @@ const rollingstockDetailsPath = path.resolve(
 );
 
 const rollingstockDetails = readJsonFile(rollingstockDetailsPath);
-const dualModeRollingStockName = 'dual-mode_rollingstock_test_e2e';
-const electricRollingStockName = 'rollingstock_1500_25000_test_e2e';
+const dualModeRollingStockName = 'dual-mode_rolling_stock_test_e2e';
+const electricRollingStockName = 'electric_rolling_stock_test_e2e';
 
 test.describe('Rollingstock editor page', () => {
   let uniqueRollingStockName: string;
@@ -176,7 +176,7 @@ test.describe('Rollingstock editor page', () => {
   });
   test('should correctly duplicate and delete a rolling stock', async ({ page }) => {
     const rollingStockEditorPage = new RollingstockEditorPage(page);
-
+    const rollingStockSelectorPage = new RollingStockSelectorPage(page);
     await rollingStockEditorPage.navigateToPage();
 
     // Select the rolling stock from global-setup
@@ -196,6 +196,13 @@ test.describe('Rollingstock editor page', () => {
     await expect(
       rollingStockEditorPage.page.getByTestId(uniqueDeletedRollingStockName)
     ).toBeHidden();
+
+    // Search for the deleted rolling stock
+    await rollingStockEditorPage.searchRollingStock(uniqueDeletedRollingStockName);
+
+    // Verify that the count of rolling stock is 0 (No results Found)
+    await expect(rollingStockSelectorPage.getNoRollingStockResult).toBeVisible();
+    expect(await rollingStockSelectorPage.getRollingStockSearchNumber()).toEqual(0);
   });
   test('should correctly filter a rolling stock', async ({ page }) => {
     const rollingStockEditorPage = new RollingstockEditorPage(page);

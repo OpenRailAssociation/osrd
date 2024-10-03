@@ -11,7 +11,7 @@ class SimulationConfPage extends RollingStockSelectorPage {
 
   readonly pathfindingDoneLabel: Locator;
 
-  readonly seachByTrigramRocketButton: Locator;
+  readonly searchByTrigramRocketButton: Locator;
 
   readonly searchByTrigramContainer: Locator;
 
@@ -24,7 +24,7 @@ class SimulationConfPage extends RollingStockSelectorPage {
     this.pathfindingResultDistance = page.getByTestId('result-pathfinding-distance');
     this.infraLoadingState = page.locator('.infra-loading-state');
     this.pathfindingState = page.locator('.pathfinding-state-main-container');
-    this.seachByTrigramRocketButton = page.getByTestId('rocket-button');
+    this.searchByTrigramRocketButton = page.getByTestId('rocket-button');
     this.searchByTrigramContainer = page.getByTestId('type-and-path-container');
     this.searchByTrigramInput = page.getByTestId('type-and-path-input');
     this.pathfindingDoneLabel = page.getByTestId('result-pathfinding-done');
@@ -41,12 +41,12 @@ class SimulationConfPage extends RollingStockSelectorPage {
     await expect(this.infraLoadingState).toHaveClass(/cached/);
   }
 
-  async checkPathfingingStateText(text: string | RegExp) {
+  async checkPathfindingStateText(text: string | RegExp) {
     await expect(this.pathfindingState).toHaveText(text);
   }
 
   async selectPathByTrigram(firstTrigram: string, secondTrigram: string) {
-    await this.seachByTrigramRocketButton.click();
+    await this.searchByTrigramRocketButton.click();
     await expect(this.searchByTrigramContainer).toBeVisible();
     await this.searchByTrigramInput.fill(`${firstTrigram} ${secondTrigram}`);
     await expect(

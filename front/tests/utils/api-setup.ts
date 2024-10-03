@@ -1,10 +1,6 @@
-import { request } from '@playwright/test';
+import { request, type APIResponse } from '@playwright/test';
 
 import type { Project, Study, RollingStock, Infra, Scenario } from 'common/api/osrdEditoastApi';
-
-import { handleApiResponse } from './index';
-
-// API requests
 
 export const getApiContext = async () =>
   request.newContext({
@@ -20,6 +16,13 @@ export const getApiRequest = async (
   return response.json();
 };
 
+// Helper function to handle API error responses
+export function handleErrorResponse(response: APIResponse, errorMessage = 'API Request Failed') {
+  if (response.ok()) return;
+
+  throw new Error(`${errorMessage}: ${response.status()} ${response.statusText()}`);
+}
+
 export const postApiRequest = async <T>(
   url: string,
   data?: T,
@@ -28,9 +31,7 @@ export const postApiRequest = async <T>(
 ) => {
   const apiContext = await getApiContext();
   const response = await apiContext.post(url, { data, params });
-  if (errorMessage) {
-    handleApiResponse(response, errorMessage);
-  }
+  handleErrorResponse(response, errorMessage);
   return response.json();
 };
 
@@ -45,35 +46,34 @@ export const deleteApiRequest = async (url: string) => {
 const findOneInResults = <T extends { name: string }>(results: T[], name: string) =>
   results.find((result) => result.name.includes(name));
 
-export const getInfra = async () => {
+export const getInfra = async (infraName: string) => {
   const { results } = await getApiRequest(`/api/infra/`);
-  const infra = findOneInResults(results, 'small_infra_test_e2e') as Infra;
+  const infra = findOneInResults(results, infraName) as Infra;
   return infra;
 };
 
-export const getProject = async () => {
+export const getProject = async (projectName: string) => {
   const { results } = await getApiRequest(`/api/projects/`);
-  const project = findOneInResults(results, 'project_test_e2e') as Project;
+  const project = findOneInResults(results, projectName) as Project;
   return project;
 };
 
-export const getStudy = async (projectId: number) => {
+export const getStudy = async (projectId: number, studyName: string) => {
   const { results } = await getApiRequest(`/api/projects/${projectId}/studies/`);
-  const study = findOneInResults(results, 'study_test_e2e') as Study;
+  const study = findOneInResults(results, studyName) as Study;
   return study;
 };
-export const getScenario = async (projectId: number, studyId: number) => {
+
+export const getScenario = async (projectId: number, studyId: number, scenarioName: string) => {
   const { results } = await getApiRequest(
     `/api/projects/${projectId}/studies/${studyId}/scenarios/`
   );
-  const scenario = findOneInResults(results, 'scenario_test_e2e') as Scenario;
+  const scenario = findOneInResults(results, scenarioName) as Scenario;
   return scenario;
 };
-export const getRollingStock = async () => {
+
+export const getRollingStock = async (rollingStockName: string) => {
   const { results } = await getApiRequest(`/api/light_rolling_stock/`, { page_size: 500 });
-  const rollingStock = findOneInResults(
-    results,
-    'rollingstock_1500_25000_test_e2e'
-  ) as RollingStock;
+  const rollingStock = findOneInResults(results, rollingStockName) as RollingStock;
   return rollingStock;
 };

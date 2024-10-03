@@ -17,7 +17,7 @@ test.beforeEach(async () => {
   ({ project, study, scenario } = await setupScenario());
 });
 
-test.describe('Test if operationnal study : scenario creation workflow is working properly', () => {
+test.describe('Test if scenario creation workflow is working properly', () => {
   test('Create a new scenario', async ({ page }) => {
     const homePage = new HomePage(page);
     const scenarioPage = new ScenarioPage(page);

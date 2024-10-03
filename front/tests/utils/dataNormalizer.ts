@@ -23,7 +23,7 @@ export function cleanWhitespace(text: string = ''): string {
 }
 
 // Clean whitespace for an array of strings
-export function cleanWhitespaces(headers: string[]): string[] {
+export function cleanWhitespaceInArray(headers: string[]): string[] {
   return headers.map(cleanWhitespace);
 }
 

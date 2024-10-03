@@ -124,6 +124,7 @@ const ScenarioContent = ({
       <div className="scenario">
         <div className="row scenario-container">
           <div
+            data-testid="scenario-sidemenu"
             className={`scenario-sidemenu ${collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}`}
           >
             <div className="scenario-sidemenu">
@@ -188,6 +189,7 @@ const ScenarioContent = ({
                 <>
                   <div className="scenario-timetable-collapsed">
                     <button
+                      data-testid="timetable-collapse-button"
                       className="timetable-collapse-button"
                       type="button"
                       aria-label={t('toggleTimetable')}

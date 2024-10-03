@@ -392,12 +392,12 @@ class OperationalStudiesPage {
     const rollingStockSelector = new RollingStockSelectorPage(this.page);
     await this.openEmptyRollingStockSelector();
     await rollingStockSelector.searchRollingstock(rollingStockName);
-    const electricRollingstockCard = rollingStockSelector.getRollingstockCardByTestID(
+    const rollingstockCard = rollingStockSelector.getRollingstockCardByTestID(
       `rollingstock-${rollingStockName}`
     );
-    await electricRollingstockCard.click();
-    await electricRollingstockCard.locator('button').click();
-    expect(await rollingStockSelector.getSelectedRollingStockName.innerText()).toEqual(
+    await rollingstockCard.first().click();
+    await rollingstockCard.locator('button').click();
+    expect(await rollingStockSelector.getSelectedRollingStockName.first().innerText()).toEqual(
       rollingStockName
     );
   }

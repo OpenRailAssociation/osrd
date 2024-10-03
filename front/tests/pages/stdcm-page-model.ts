@@ -5,7 +5,6 @@ import SimulationConfPage from './simulation-conf-page';
 class StdcmPage extends SimulationConfPage {
   readonly pathfindingNoState: Locator;
 
-  // Scenario Explorator
   private scenarioExplorerButton: Locator;
 
   readonly scenarioExplorerModal: Locator;
@@ -19,8 +18,6 @@ class StdcmPage extends SimulationConfPage {
     super(page);
 
     this.pathfindingNoState = page.getByTestId('pathfinding-no-state');
-
-    // Scenario Explorator
     this.scenarioExplorerButton = page.getByTestId('scenario-explorator');
     this.scenarioExplorerModal = page.locator('.scenario-explorator-modal');
     this.scenarioExplorerMinicards = page.locator('.minicard');
@@ -34,7 +31,7 @@ class StdcmPage extends SimulationConfPage {
     await this.removeViteOverlay();
   }
 
-  // Scenario Explorator
+  // Scenario Explorer
   async openScenarioExplorer() {
     await this.scenarioExplorerButton.click();
     await expect(this.scenarioExplorerModal).toBeVisible();

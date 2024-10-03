@@ -17,7 +17,7 @@ class BasePage {
     this.lastToast = page.getByTestId('toast-SNCF').last();
   }
 
-  // Completly remove VITE button & sign
+  // Completely remove VITE button & sign
   async removeViteOverlay() {
     if ((await this.viteOverlay.count()) > 0) {
       await this.viteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
