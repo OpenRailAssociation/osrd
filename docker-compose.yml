@@ -55,14 +55,27 @@ services:
 
   core:
     # This is a dummy container to build the core image
+    # and document/provide parameters to other compose files
     image: ghcr.io/openrailassociation/osrd-edge/osrd-core:${TAG-dev}
     container_name: osrd-core-dummy
+    depends_on:
+      rabbitmq: {condition: service_healthy}
     build:
       context: core
       dockerfile: Dockerfile
       additional_contexts:
         test_data: tests/data
         static_assets: assets
+    environment:
+      # Actual values in ./docker/osrdyne.yml (please maintain consistency)
+      # Provided here only for reuse in compose layers and doc
+      CORE_EDITOAST_URL: "http://osrd-editoast"
+      JAVA_TOOL_OPTIONS: "-javaagent:/app/opentelemetry-javaagent.jar"
+      CORE_MONITOR_TYPE: "opentelemetry"
+      OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://jaeger:4317"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
     restart: "no"
     command: "true"
 

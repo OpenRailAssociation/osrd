@@ -40,11 +40,14 @@ You'll need **Java 17**
 # on Windows
 gradlew.bat shadowJar
 
-# Run as service
-java -jar build/libs/osrd-all.jar api --editoast-url http://localhost:8090/ -p 8080
+# Run as a RabbitMQ single worker for all infra
+ALL_INFRA=true java -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 
 # Check that an infra can be loaded
 java -jar build/libs/osrd-all.jar load-infra --path RAILJSON_INFRA
+
+# Run as web-service (deprecated inside OSRD's stack)
+java -jar build/libs/osrd-all.jar api --editoast-url http://localhost:8090/ --port 8080
 ```
 
 ### CLI usage (alternative)
@@ -80,4 +83,36 @@ To auto-format all source code, run:
 
 ```sh
 ./gradlew spotlessApply
+```
+
+### Local run and debug
+
+It is recommended to pass additional Java options to enable the process of big infra:
+
+```sh
+-ea -Xmx12g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof
+```
+
+Using a specific script (just through `docker compose` CLI and a set of docker-compose files)
+allows to run a single core worker for all infra on localhost network:
+
+```sh
+./scripts/single-worker-compose.sh up -d
+
+# or exclude 'core' service straight away:
+./scripts/single-worker-compose.sh up -d --scale core=0
+```
+
+Then, it is easy to replace the desired component for debug purpose. \
+For core:
+
+```sh
+./scripts/single-worker-compose.sh down core # if 'core' is running
+./gradlew shadowJar && ALL_INFRA=true java -jar -ea -Xmx12g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
+```
+
+Clean or restart the whole stack can be necessary sometimes and is also available
+through docker compose CLI (the following wipes the database too):
+```sh
+./scripts/single-worker-compose.sh down -v
 ```

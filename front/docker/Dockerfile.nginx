@@ -33,8 +33,6 @@ COPY docker/nginx-entrypoint.sh /entrypoint.sh
 COPY --from=build /app/build /srv
 COPY --from=build /app/.env.example /
 
-ENV OSRD_BACKEND_URL=""
-
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 

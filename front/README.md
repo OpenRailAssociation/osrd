@@ -51,7 +51,7 @@ Now you can run the test with `cd front/ && yarn e2e-tests`.
 >
 > - run all the components locally (you might keep Postgres and Valkey in containers)
 > - if on Linux, you can also launch all the containers on the host network: you can replace the
-> `docker compose <something>` above with `osrd/scripts/osrd-compose.sh <something>`
+> `docker compose <something>` above with `osrd/scripts/host-compose.sh <something>`
 
 If the tests fail, you'll find a `front/test-results` folder that will contain videos of the fail
 test executions. They might be of help to understand what's going on. Note that the CI also exports

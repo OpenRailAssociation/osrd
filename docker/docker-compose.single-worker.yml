@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  editoast:
+    environment:
+      - EDITOAST_CORE_SINGLE_WORKER=true
+
+  osrdyne:
+    volumes: !reset []
+
+  core:
+    # Launch a single worker handling all infra
+    environment:
+      - ALL_INFRA=true
+    container_name: osrd-core-all-infra
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - "exec java $JAVA_OPTS -ea -jar /app/osrd_core.jar worker"
