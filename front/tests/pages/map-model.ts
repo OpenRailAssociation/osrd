@@ -9,9 +9,9 @@ export interface selectPointOnMapProps {
 }
 
 class MapPage {
-  readonly getBtnShearch: Locator;
+  readonly getBtnSearch: Locator;
 
-  readonly getBtnCloseShearch: Locator;
+  readonly getBtnCloseSearch: Locator;
 
   readonly getSearchedStation: Locator;
 
@@ -26,8 +26,8 @@ class MapPage {
   readonly homePage: HomePage;
 
   constructor(readonly page: Page) {
-    this.getBtnShearch = page.getByRole('button', { name: 'Search' });
-    this.getBtnCloseShearch = page.locator('.map-modal').getByRole('button', { name: '×' });
+    this.getBtnSearch = page.getByRole('button', { name: 'Search' });
+    this.getBtnCloseSearch = page.locator('.map-modal').getByRole('button', { name: '×' });
     this.getSearchedStation = page.locator('#map-search-station');
     this.getMap = page.locator('.maplibregl-map');
     this.getBtnOrigin = page.locator('.map-popup-click-select').getByTestId('map-origin-button');
@@ -48,11 +48,11 @@ class MapPage {
   }
 
   async openMapSearch() {
-    await this.getBtnShearch.click();
+    await this.getBtnSearch.click();
   }
 
   async closeMapSearch() {
-    await this.getBtnCloseShearch.click();
+    await this.getBtnCloseSearch.click();
   }
 
   async searchStation(station: string) {

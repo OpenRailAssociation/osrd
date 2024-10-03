@@ -23,7 +23,7 @@ test.afterEach(async () => {
   await deleteApiRequest(`/api/projects/${project.id}/`);
 });
 
-test.describe('Test if operationnal study : project workflow is working properly', () => {
+test.describe('Test if project workflow is working properly', () => {
   test('Create a new project', async ({ page }) => {
     const homePage = new HomePage(page);
     const projectPage = new ProjectPage(page);

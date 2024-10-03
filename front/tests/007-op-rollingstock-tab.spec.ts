@@ -13,11 +13,11 @@ let study: Study;
 let scenario: Scenario;
 let rollingStock: RollingStock;
 
-const dualModeRollingStockName = 'dual-mode_rollingstock_test_e2e';
-const electricRollingStockName = 'rollingstock_1500_25000_test_e2e';
+const dualModeRollingStockName = 'dual-mode_rolling_stock_test_e2e';
+const electricRollingStockName = 'electric_rolling_stock_test_e2e';
 
 test.beforeAll(async () => {
-  rollingStock = await getRollingStock();
+  rollingStock = await getRollingStock(electricRollingStockName);
 
   // Create a new scenario
   ({ project, study, scenario } = await setupScenario());

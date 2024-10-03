@@ -6,7 +6,7 @@ class ProjectPage {
   // The current page object
   readonly page: Page;
 
-  // Page informations
+  // Page information
   readonly getProjectName: Locator;
 
   readonly getProjectUpdateBtn: Locator;
@@ -78,7 +78,7 @@ class ProjectPage {
     this.getProjectDeleteConfirmBtn = page.locator('#modal-content').getByTestId('deleteProject');
   }
 
-  // Completly remove VITE button & sign
+  // Completely remove VITE button & sign
   async removeViteOverlay() {
     if ((await this.getViteOverlay.count()) > 0) {
       await this.getViteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));

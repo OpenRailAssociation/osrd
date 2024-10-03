@@ -1,9 +1,8 @@
-import type { APIResponse, APIRequestContext } from '@playwright/test';
+import type { APIRequestContext, APIResponse } from '@playwright/test';
 
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 
-import { getApiContext, postApiRequest } from './api-setup';
-import { handleApiResponse } from './index';
+import { getApiContext, handleErrorResponse, postApiRequest } from './api-setup';
 
 // Function to import train schedules and return the API response
 export async function sendTrainSchedules(
@@ -20,7 +19,7 @@ export async function sendTrainSchedules(
       },
     }
   );
-  handleApiResponse(trainSchedulesResponse, 'Failed to send train schedule');
+  handleErrorResponse(trainSchedulesResponse, 'Failed to send train schedule');
   return trainSchedulesResponse.json();
 }
 

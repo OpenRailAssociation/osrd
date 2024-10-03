@@ -10,12 +10,12 @@ import manageTrainScheduleTranslation from '../public/locales/fr/operationalStud
 const projectName = project.name;
 const studyName = study.name;
 const scenarioName = scenario.name;
-const rollingStockName = 'rollingstock_1500_25000_test_e2e';
+const rollingStockName = 'electric_rolling_stock_test_e2e';
 
 const emptyRouteTranslation = manageTrainScheduleTranslation.pathfindingNoState;
 
 test.describe('STDCM page', () => {
-  // TODO: Refacto this test for the new stdcm page
+  // TODO: Refactor this test for the new stdcm page
   test.skip('should configure and launch a stdcm', async ({ page }) => {
     const stdcmPage = new StdcmPage(page);
 

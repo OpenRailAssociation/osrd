@@ -14,14 +14,14 @@ let scenario: Scenario;
 let rollingStock: RollingStock;
 
 test.beforeAll(async () => {
-  rollingStock = await getRollingStock();
+  rollingStock = await getRollingStock('electric_rolling_stock_test_e2e');
 });
 
 test.beforeEach(async () => {
   ({ project, study, scenario } = await setupScenario());
 });
 
-test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
+test.describe('Testing if all mandatory elements simulation configuration are loaded in operational studies app', () => {
   test('Testing pathfinding with rollingstock and composition code', async ({ page }) => {
     // Add enough timeout to wait for the infra to be loaded
     test.slow();
@@ -47,7 +47,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await expect(rollingstockModal).toBeVisible();
 
     // Voluntarily add spaces and capital letters so we also test the normalization of the search functionality
-    await rollingstockModalPage.searchRollingstock(' rollingstock_1500_25000_test_E2E ');
+    await rollingstockModalPage.searchRollingstock(' electric_rolling_stock_test_e2e ');
 
     const rollingstockCard = rollingstockModalPage.getRollingstockCardByTestID(
       `rollingstock-${rollingStock.name}`
@@ -72,7 +72,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     await scenarioPage.getPathfindingByTriGramSearch('MWS', 'NES');
 
-    await scenarioPage.checkPathfindingDistance('34.000 km');
+    await scenarioPage.checkPathfindingDistance('33.950 km');
 
     // ***************** Test Add Train Schedule *****************
     await scenarioPage.addTrainSchedule();

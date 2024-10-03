@@ -21,6 +21,7 @@ class OperationalStudiesOutputTablePage {
 
   // Retrieve the cell value based on the locator type
   static async getCellValue(cell: Locator, isInput: boolean = true): Promise<string> {
+    await cell.waitFor({ state: 'visible' });
     return isInput
       ? (await cell.locator('input').getAttribute('value'))?.trim() || ''
       : (await cell.textContent())?.trim() || '';
