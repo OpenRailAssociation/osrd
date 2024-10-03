@@ -40,6 +40,9 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+// Reserve clear track with a margin for the reaction time of the driver
+const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
+
 // the start offset is the distance from the start of the first block to the start location
 class PathOffsetBuilder(val startOffset: Distance) {
     fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath> {
@@ -371,31 +374,30 @@ fun routingRequirements(
 
         // find the location at which establishing the route becomes necessary
         var criticalPos = blockOffset + limitingSignalOffset - sightDistance
+        var criticalTime = envelope.interpolateArrivalAtClamp(criticalPos.distance.meters)
 
         // check if an arrival on stop signal is scheduled between the critical position and the
-        // entry signal of the route
+        // entry signal of the route (both position and time, as there is a time margin)
         // in this case, just move the critical position to just after the stop
         val entrySignalOffset =
             blockOffset + blockInfra.getSignalsPositions(firstRouteBlock).first().distance
-        for (stopIdx in stops.size - 1 downTo 0) {
-            val stop = stops[stopIdx]
+        for (stop in stops.reversed()) {
             val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
             if (
                 stop.receptionSignal.isStopOnClosedSignal &&
                     entrySignalOffset <= stopTravelledOffset
             ) {
                 // stop duration is included in interpolateDepartureFromClamp()
-                criticalPos = stopTravelledOffset
-                break
-            }
-            if (stopTravelledOffset < criticalPos) {
+                val stopDepartureTime =
+                    envelope.interpolateDepartureFromClamp(stopTravelledOffset.distance.meters)
+                if (criticalTime < stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN) {
+                    criticalTime = stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN
+                }
                 break
             }
         }
 
-        // find last time when the train is at the critical location (including stop duration if at
-        // stop)
-        return envelope.interpolateDepartureFromClamp(criticalPos.distance.meters)
+        return maxOf(criticalTime, 0.0)
     }
 
     val res = mutableListOf<RoutingRequirement>()
