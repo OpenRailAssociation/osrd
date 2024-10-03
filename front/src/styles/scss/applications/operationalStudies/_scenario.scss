@@ -368,7 +368,7 @@
           .action-buttons {
             display: flex;
             justify-content: space-between;
-            margin: 0 0.6563rem 1.5rem 1.094rem;
+            padding: 0 0.6563rem 1.5rem 1.094rem;
           }
         }
 
@@ -646,7 +646,7 @@
           z-index: 2;
 
           &.selection-mode-open {
-            top: 6rem;
+            top: 5.9375rem;
           }
         }
 
