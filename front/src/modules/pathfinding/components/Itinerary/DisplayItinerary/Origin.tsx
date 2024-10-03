@@ -1,4 +1,5 @@
 import { XCircle } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { BiLink, BiUnlink } from 'react-icons/bi';
@@ -12,9 +13,10 @@ import { makeEnumBooleans } from 'utils/constants';
 
 type OriginProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
+  invalidPathItems?: string[];
 };
 
-const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
+const Origin = ({ zoomToFeaturePoint, invalidPathItems }: OriginProps) => {
   const {
     getOrigin,
     getOriginDate,
@@ -44,6 +46,9 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { isStdcm } = makeEnumBooleans(MODES, mode);
+
+  const isInvalid =
+    invalidPathItems && origin && 'trigram' in origin && invalidPathItems.includes(origin.trigram);
 
   const originPointName = (
     <div
@@ -89,7 +94,10 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
     );
 
   return (
-    <div className="mb-2 place" data-testid="itinerary-origin">
+    <div
+      className={cx('mb-2 place', { 'invalid-path-item': isInvalid })}
+      data-testid="itinerary-origin"
+    >
       <div className="pl-1 hover w-100 d-flex align-items-center">
         <span className="text-success mr-2">
           <RiMapPin2Fill />
