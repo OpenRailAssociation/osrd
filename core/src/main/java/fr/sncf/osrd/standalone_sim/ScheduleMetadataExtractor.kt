@@ -40,6 +40,8 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
+
 // the start offset is the distance from the start of the first block to the start location
 class PathOffsetBuilder(val startOffset: Distance) {
     fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath> {
@@ -371,6 +373,7 @@ fun routingRequirements(
 
         // find the location at which establishing the route becomes necessary
         var criticalPos = blockOffset + limitingSignalOffset - sightDistance
+        var reservationMargin = 0.0
 
         // check if an arrival on stop signal is scheduled between the critical position and the
         // entry signal of the route
@@ -386,6 +389,7 @@ fun routingRequirements(
             ) {
                 // stop duration is included in interpolateDepartureFromClamp()
                 criticalPos = stopTravelledOffset
+                reservationMargin = CLOSED_SIGNAL_RESERVATION_MARGIN
                 break
             }
             if (stopTravelledOffset < criticalPos) {
@@ -393,9 +397,12 @@ fun routingRequirements(
             }
         }
 
-        // find last time when the train is at the critical location (including stop duration if at
-        // stop)
-        return envelope.interpolateDepartureFromClamp(criticalPos.distance.meters)
+        // find last time when the train is at the critical location (adding stop duration and
+        // removing anticipation margin if at stop)
+        return maxOf(
+            envelope.interpolateDepartureFromClamp(criticalPos.distance.meters) - reservationMargin,
+            0.0
+        )
     }
 
     val res = mutableListOf<RoutingRequirement>()
