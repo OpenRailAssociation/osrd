@@ -37,6 +37,7 @@ const ScenarioDescription = ({
         )}
         <div className="flex justify-end">
           <button
+            data-testid="scenario-collapse-button"
             type="button"
             className="scenario-collapse-button"
             aria-label={t('toggleTimetable')}

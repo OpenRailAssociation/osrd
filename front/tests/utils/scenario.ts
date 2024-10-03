@@ -15,11 +15,13 @@ interface SetupResult {
 }
 
 // Define the setupScenario function
-export default async function setupScenario(): Promise<SetupResult> {
+export default async function setupScenario(
+  electricalProfileId: number | null = null
+): Promise<SetupResult> {
   // Fetch infrastructure, project, study, and timetable result
-  const smallInfra = await getInfra();
-  const project = await getProject();
-  const study = await getStudy(project.id);
+  const smallInfra = await getInfra('small_infra_test_e2e');
+  const project = await getProject('project_test_e2e');
+  const study = await getStudy(project.id, 'study_test_e2e');
   const timetableResult = await postApiRequest(`/api/timetable/`);
 
   // Create a new scenario with a unique name
@@ -31,6 +33,7 @@ export default async function setupScenario(): Promise<SetupResult> {
       study_id: study.id,
       infra_id: smallInfra.id,
       timetable_id: timetableResult.timetable_id,
+      electrical_profile_set_id: electricalProfileId,
     }
   );
 

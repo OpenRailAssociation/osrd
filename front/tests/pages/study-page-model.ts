@@ -3,10 +3,8 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import study from '../../public/locales/fr/operationalStudies/study.json';
 
 class StudyPage {
-  // The current page object
   readonly page: Page;
-
-  // Page informations
+  // Page information
 
   readonly getStudyUpdateBtn: Locator;
 

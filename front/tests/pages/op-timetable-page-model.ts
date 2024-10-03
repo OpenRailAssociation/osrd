@@ -2,6 +2,7 @@ import { type Locator, type Page, expect } from '@playwright/test';
 
 import enTranslations from '../../public/locales/en/operationalStudies/scenario.json';
 import frTranslations from '../../public/locales/fr/operationalStudies/scenario.json';
+import { clickWithDelay } from '../utils';
 
 class OperationalStudiesTimetablePage {
   readonly page: Page;
@@ -20,7 +21,7 @@ class OperationalStudiesTimetablePage {
 
   readonly speedSpaceChart: Locator;
 
-  readonly timeStopsDatasheet: Locator;
+  readonly timeStopsDataSheet: Locator;
 
   readonly simulationMap: Locator;
 
@@ -29,6 +30,18 @@ class OperationalStudiesTimetablePage {
   readonly timetableFilterButton: Locator;
 
   readonly timetableFilterButtonClose: Locator;
+
+  readonly editTrainButton: Locator;
+
+  readonly editTrainScheduleButton: Locator;
+
+  readonly trainArrivalTime: Locator;
+
+  readonly scenarioCollapseButton: Locator;
+
+  readonly timetableCollapseButton: Locator;
+
+  readonly scenarioSideMenu: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -39,11 +52,17 @@ class OperationalStudiesTimetablePage {
     this.manchetteSpaceTimeChart = page.locator('.manchette-space-time-chart-wrapper');
     this.speedSpaceChart = page.locator('#container-SpeedSpaceChart');
     this.spaceTimeChart = page.locator('.space-time-chart-container');
-    this.timeStopsDatasheet = page.locator('.time-stops-datasheet');
+    this.timeStopsDataSheet = page.locator('.time-stops-datasheet');
     this.simulationMap = page.locator('.osrd-simulation-map');
     this.simulationDriverTrainSchedule = page.locator('.simulation-driver-train-schedule');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
     this.timetableFilterButtonClose = page.getByTestId('timetable-filter-button-close');
+    this.editTrainButton = page.getByTestId('edit-train');
+    this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
+    this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
+    this.scenarioCollapseButton = page.getByTestId('scenario-collapse-button');
+    this.timetableCollapseButton = page.getByTestId('timetable-collapse-button');
+    this.scenarioSideMenu = page.getByTestId('scenario-sidemenu');
   }
 
   // Function to wait for an element to be visible and then assert its visibility
@@ -84,7 +103,7 @@ class OperationalStudiesTimetablePage {
       this.manchetteSpaceTimeChart,
       this.speedSpaceChart,
       this.spaceTimeChart,
-      this.timeStopsDatasheet,
+      this.timeStopsDataSheet,
       this.simulationMap,
       this.simulationDriverTrainSchedule,
     ];
@@ -135,8 +154,7 @@ class OperationalStudiesTimetablePage {
   // Verifies that the imported train number is correct
   async verifyTrainCount(trainCount: number): Promise<void> {
     await this.page.waitForLoadState('networkidle');
-    const trainCard = await this.timetableTrains;
-    expect(trainCard).toHaveCount(trainCount);
+    expect(this.timetableTrains).toHaveCount(trainCount);
   }
 
   // Filter trains validity and verify their count
@@ -194,10 +212,37 @@ class OperationalStudiesTimetablePage {
     }
   }
 
-  async verifyTimeStopsDatasheetVisibility(timeout = 30 * 1000): Promise<void> {
-    await this.timeStopsDatasheet.scrollIntoViewIfNeeded();
-    // Wait for the Times and Stops simulation datasheet to be fully loaded with a specified timeout (default: 30 seconds)
-    await expect(this.timeStopsDatasheet).toBeVisible({ timeout });
+  async verifyTimeStopsDataSheetVisibility(timeout = 60 * 1000): Promise<void> {
+    await this.timeStopsDataSheet.scrollIntoViewIfNeeded();
+    // Wait for the Times and Stops simulation dataSheet to be fully loaded with a specified timeout (default: 60 seconds)
+    await expect(this.timeStopsDataSheet).toBeVisible({ timeout });
+  }
+
+  async clickOnEditTrain() {
+    await this.timetableTrains.first().hover();
+    await this.editTrainButton.click();
+  }
+
+  async clickOnEditTrainSchedule() {
+    await this.editTrainScheduleButton.click();
+  }
+
+  async getTrainArrivalTime(expectedArrivalTime: string) {
+    await expect(this.trainArrivalTime).toBeVisible();
+    const actualArrivalTime = await this.trainArrivalTime.textContent();
+    expect(actualArrivalTime).toEqual(expectedArrivalTime);
+  }
+
+  async clickOnScenarioCollapseButton() {
+    await expect(this.scenarioCollapseButton).toBeVisible();
+    await clickWithDelay(this.scenarioCollapseButton);
+    await expect(this.scenarioSideMenu).toBeHidden();
+  }
+
+  async clickOnTimetableCollapseButton() {
+    await expect(this.timetableCollapseButton).toBeVisible();
+    await clickWithDelay(this.timetableCollapseButton);
+    await expect(this.scenarioSideMenu).toBeVisible();
   }
 }
 

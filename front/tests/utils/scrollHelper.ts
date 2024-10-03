@@ -15,15 +15,20 @@ const scrollContainer = async (
     (selector: string) => document.querySelector(selector),
     containerSelector
   );
-
   // Ensure the container exists and has scrollable content
-  const scrollWidth = await page.evaluate(
-    (containerElement) => (containerElement ? containerElement.scrollWidth : 0),
+  const { scrollWidth, clientWidth } = await page.evaluate(
+    (containerElement) =>
+      containerElement
+        ? {
+            scrollWidth: containerElement.scrollWidth,
+            clientWidth: containerElement.clientWidth,
+          }
+        : { scrollWidth: 0, clientWidth: 0 },
     container
   );
 
-  // Exit early if scrollWidth is 0
-  if (scrollWidth === 0) {
+  // Exit early if there is no significant scrollbar
+  if (scrollWidth <= clientWidth + 200) {
     await container.dispose();
     return;
   }

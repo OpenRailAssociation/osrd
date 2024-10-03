@@ -12,7 +12,7 @@ let study: Study;
 let scenario: Scenario;
 let selectedLanguage: string;
 
-const electricRollingStockName = 'rollingstock_1500_25000_test_e2e';
+const electricRollingStockName = 'electric_rolling_stock_test_e2e';
 
 test.beforeAll(async () => {
   // Create a new scenario

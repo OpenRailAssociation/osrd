@@ -19,10 +19,11 @@ setup('teardown', async () => {
 
   // Find specific rolling stocks
   const rollingStockNames = [
-    'rollingstock_1500_25000_test_e2e',
-    'dual-mode_rollingstock_test_e2e',
+    'electric_rolling_stock_test_e2e',
+    'dual-mode_rolling_stock_test_e2e',
     'slow_rolling_stock_test_e2e',
     'fast_rolling_stock_test_e2e',
+    'improbable_rolling_stock_test_e2e',
   ];
 
   const rollingStockIds: number[] = rollingStocks.results

@@ -17,7 +17,7 @@ class ScenarioPage extends BasePage {
 
   readonly getItineraryOrigin: Locator;
 
-  readonly getItinenaryDestination: Locator;
+  readonly getItineraryDestination: Locator;
 
   readonly getItineraryVias: Locator;
 
@@ -69,7 +69,7 @@ class ScenarioPage extends BasePage {
 
   readonly getSearchByTrigramInput: Locator;
 
-  readonly getSearchByTrigramsubmit: Locator;
+  readonly getSearchByTrigramSubmit: Locator;
 
   readonly getResultPathfindingDone: Locator;
 
@@ -103,7 +103,7 @@ class ScenarioPage extends BasePage {
     this.getItineraryOrigin = this.getItineraryModule
       .getByTestId('display-itinerary')
       .getByTestId('itinerary-origin');
-    this.getItinenaryDestination = this.getItineraryModule
+    this.getItineraryDestination = this.getItineraryModule
       .getByTestId('display-itinerary')
       .getByTestId('itinerary-destination');
     this.getItineraryVias = this.getItineraryModule
@@ -123,7 +123,7 @@ class ScenarioPage extends BasePage {
     this.getSearchByTrigramButton = page.getByTestId('rocket-button');
     this.getSearchByTrigramContainer = page.getByTestId('type-and-path-container');
     this.getSearchByTrigramInput = page.getByTestId('type-and-path-input');
-    this.getSearchByTrigramsubmit = page.getByTestId('submit-search-by-trigram');
+    this.getSearchByTrigramSubmit = page.getByTestId('submit-search-by-trigram');
     this.getResultPathfindingDone = page.getByTestId('result-pathfinding-done');
     this.getResultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
     this.getInfraLoadState = page.locator('.infra-loading-state');
@@ -202,7 +202,7 @@ class ScenarioPage extends BasePage {
   }
 
   async checkInfraLoaded() {
-    await this.page.waitForSelector('.cached', { timeout: 60 * 1000 }); // Wait for the infrastructure to be fully loaded with a timeout of 60 seconds
+    await this.page.waitForSelector('.cached', { timeout: 90 * 1000 }); // Wait for the infrastructure to be fully loaded with a timeout of 90 seconds
     await expect(this.getInfraLoadState).toHaveClass(/cached/);
   }
 
@@ -250,7 +250,7 @@ class ScenarioPage extends BasePage {
     return this.page.getByRole('button', { name });
   }
 
-  async checkPathfingingStateText(text: string | RegExp) {
+  async checkPathfindingStateText(text: string | RegExp) {
     await expect(this.getPathfindingState).toHaveText(text);
   }
 
@@ -262,7 +262,7 @@ class ScenarioPage extends BasePage {
       this.page.getByTestId(`typeandpath-op-${firstTrigram}`) &&
         this.page.getByTestId(`typeandpath-op-${secondTrigram}`)
     ).toBeVisible();
-    await this.getSearchByTrigramsubmit.click();
+    await this.getSearchByTrigramSubmit.click();
     await expect(this.getResultPathfindingDone).toBeVisible();
   }
 

@@ -9,7 +9,7 @@ import OperationalStudiesTimetablePage from './pages/op-timetable-page-model';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
 import ScenarioPage from './pages/scenario-page-model';
 import { readJsonFile } from './utils';
-import { cleanWhitespace, cleanWhitespaces, type StationData } from './utils/dataNormalizer';
+import { cleanWhitespace, cleanWhitespaceInArray, type StationData } from './utils/dataNormalizer';
 import setupScenario from './utils/scenario';
 import scrollContainer from './utils/scrollHelper';
 import enTranslations from '../public/locales/en/timesStops.json';
@@ -20,7 +20,17 @@ let study: Study;
 let scenario: Scenario;
 let selectedLanguage: string;
 
-const dualRollingStockName = 'dual-mode_rollingstock_test_e2e';
+type TranslationKeys = keyof typeof enTranslations;
+
+// Define CellData interface for table cell data
+interface CellData {
+  stationName: string;
+  header: TranslationKeys;
+  value: string;
+  marginForm?: string;
+}
+
+const dualRollingStockName = 'dual-mode_rolling_stock_test_e2e';
 
 const initialInputsData: CellData[] = readJsonFile(
   './tests/assets/operationStudies/timesAndStops/initialInputs.json'
@@ -42,16 +52,6 @@ const expectedViaValues = [
   { name: 'Mid_West_station', ch: 'BV', uic: '3', km: 'KM 11.850' },
   { name: 'Mid_East_station', ch: 'BV', uic: '4', km: 'KM 26.300' },
 ];
-
-type TranslationKeys = keyof typeof enTranslations;
-
-// Define CellData interface for table cell data
-interface CellData {
-  stationName: string;
-  header: TranslationKeys;
-  value: string;
-  marginForm?: string;
-}
 
 test.beforeEach(async ({ page }) => {
   // Create a new scenario
@@ -106,7 +106,7 @@ test.describe('Times and Stops Tab Verification', () => {
 
     // Set column names based on the selected language
     const translations = selectedLanguage === 'English' ? enTranslations : frTranslations;
-    const expectedColumnNames = cleanWhitespaces([
+    const expectedColumnNames = cleanWhitespaceInArray([
       translations.name,
       'Ch',
       translations.arrivalTime,
@@ -117,7 +117,7 @@ test.describe('Times and Stops Tab Verification', () => {
     ]);
 
     // Verify that the actual column headers match the expected headers
-    const actualColumnHeaders = cleanWhitespaces(
+    const actualColumnHeaders = cleanWhitespaceInArray(
       await opInputTablePage.columnHeaders.allInnerTexts()
     );
     expect(actualColumnHeaders).toEqual(expectedColumnNames);
@@ -157,7 +157,8 @@ test.describe('Times and Stops Tab Verification', () => {
     // Add the train schedule and verify simulation results
     await scenarioPage.addTrainSchedule();
     await scenarioPage.returnSimulationResult();
-    opTimetablePage.verifyTimeStopsDatasheetVisibility();
+    await opTimetablePage.clickOnScenarioCollapseButton();
+    await opTimetablePage.verifyTimeStopsDataSheetVisibility();
     // Scroll and extract data from output table
     await scrollContainer(page, '.osrd-simulation-container .time-stops-datasheet .dsg-container');
     await opOutputTablePage.getOutputTableData(outputExpectedCellData, selectedLanguage);
