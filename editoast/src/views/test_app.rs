@@ -15,7 +15,7 @@ use tower_http::trace::TraceLayer;
 
 use crate::{
     client::{MapLayersConfig, PostgresConfig, ValkeyConfig},
-    core::CoreClient,
+    core::{mocking::MockingClient, CoreClient},
     generated_data::speed_limit_tags_config::SpeedLimitTagIds,
     infra_cache::InfraCache,
     map::MapLayers,
@@ -73,7 +73,7 @@ impl TestAppBuilder {
 
     pub fn default_app() -> TestApp {
         let pool = DbConnectionPoolV2::for_tests();
-        let core_client = CoreClient::default();
+        let core_client = CoreClient::Mocked(MockingClient::default());
         TestAppBuilder::new()
             .db_pool(pool)
             .core_client(core_client)
