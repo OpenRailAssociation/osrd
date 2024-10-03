@@ -463,6 +463,86 @@ public class ConflictDetectionTest {
     }
 
     @ParameterizedTest
+    @CsvSource({
+        "OPEN, 213.458699", // first sight of the limiting signal for switch's zone
+        "STOP, 812.429826", // 20 s before the departure from the 10-min stop at Mid_West_station
+        "SHORT_SLIP_STOP, 812.429826",
+    })
+    public void resourceReservation(RJSReceptionSignal receptionSignal, double switchReqBegin) throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
+        var fullInfra = fullInfraFromRJS(rjsInfra);
+        var rawInfra = fullInfra.rawInfra();
+
+        var ta6 = getTrackSectionFromNameOrThrow("TA6", rawInfra);
+        var td0 = getTrackSectionFromNameOrThrow("TD0", rawInfra);
+
+        var chunkPathCenter = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DA0->DA5", "rt.DA5->DC5", "rt.DC5->DD2"),
+                makeTrackLocation(ta6, fromMeters(1000)), // start after DA3
+                makeTrackLocation(td0, fromMeters(24820)));
+        var pathPropsCenter = makePathProperties(rawInfra, chunkPathCenter, null);
+        var chunkPathNorth = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DA0->DA5", "rt.DA5->DC4", "rt.DC4->DD2"),
+                makeTrackLocation(ta6, fromMeters(1000)),
+                makeTrackLocation(td0, fromMeters(24820)));
+        var pathPropsNorth = makePathProperties(rawInfra, chunkPathNorth, null);
+
+        var stop = new TrainStop(9700, 600, receptionSignal);
+        var simResultCenterWithStop =
+                simpleSim(fullInfra, pathPropsCenter, chunkPathCenter, 0, Double.POSITIVE_INFINITY, List.of(stop));
+        var simResultNorthOvertaking =
+                simpleSim(fullInfra, pathPropsNorth, chunkPathNorth, 0, Double.POSITIVE_INFINITY, List.of());
+
+        var reqWithStop = convertRequirements(0L, 0.0, simResultCenterWithStop.train);
+        var directStartTime = 300; // 5 min after stopping train
+        var reqOvertaking = convertRequirements(1L, directStartTime, simResultNorthOvertaking.train);
+
+        // check spacing and routing requirements for the zone of the switch after (East) Mid_West_station
+        var switchZoneName = "zone.[DC4:INCREASING, DC5:INCREASING, DD0:DECREASING]";
+
+        // requirements for train with stop
+        var switchZoneExitTime = 844.837492;
+        var switchSpacingReqWithStop = reqWithStop.getSpacingRequirements().stream()
+                .filter(it -> it.zone.equals(switchZoneName))
+                .findFirst()
+                .get();
+        assertEquals(switchReqBegin, switchSpacingReqWithStop.beginTime);
+        assertEquals(switchZoneExitTime, switchSpacingReqWithStop.endTime);
+        var switchRouteReqWithStop = reqWithStop.getRoutingRequirements().stream()
+                .filter(it -> it.route.equals("rt.DC5->DD2"))
+                .findFirst()
+                .get();
+        var switchRouteCrossingZoneReqWithStop = switchRouteReqWithStop.zones.stream()
+                .filter(it -> it.zone.equals(switchZoneName))
+                .findFirst()
+                .get();
+        assertEquals(switchReqBegin, switchRouteReqWithStop.beginTime);
+        assertEquals(switchZoneExitTime, switchRouteCrossingZoneReqWithStop.endTime);
+
+        // requirements for overtaking train (no stop)
+        var overtakingSwitchZoneExitTime = 545.533259;
+        var overtakingSwitchLimitingSignalSight = 513.458699;
+        var overtakingSwitchSpacingReqWithStop = reqOvertaking.getSpacingRequirements().stream()
+                .filter(it -> it.zone.equals(switchZoneName))
+                .findFirst()
+                .get();
+        assertEquals(overtakingSwitchLimitingSignalSight, overtakingSwitchSpacingReqWithStop.beginTime);
+        assertEquals(overtakingSwitchZoneExitTime, overtakingSwitchSpacingReqWithStop.endTime);
+        var overtakingSwitchRouteReqWithStop = reqOvertaking.getRoutingRequirements().stream()
+                .filter(it -> it.route.equals("rt.DC4->DD2"))
+                .findFirst()
+                .get();
+        var overtakingSwitchRouteCrossingZoneReqWithStop = overtakingSwitchRouteReqWithStop.zones.stream()
+                .filter(it -> it.zone.equals(switchZoneName))
+                .findFirst()
+                .get();
+        assertEquals(overtakingSwitchLimitingSignalSight, overtakingSwitchRouteReqWithStop.beginTime);
+        assertEquals(overtakingSwitchZoneExitTime, overtakingSwitchRouteCrossingZoneReqWithStop.endTime);
+    }
+
+    @ParameterizedTest
     @MethodSource("workScheduleArgs")
     public void testWorkSchedules(
             Stream<Requirements> trainRequirements,
