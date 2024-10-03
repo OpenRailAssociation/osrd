@@ -25,12 +25,12 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::SelectionSettings;
+use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResult;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::stdcm::STDCMResponse;
 use crate::core::stdcm::TemporarySpeedLimit as CoreTemporarySpeedLimit;
-use crate::core::stdcm::TrainRequirement;
 use crate::core::stdcm::{STDCMPathItem, UndirectedTrackRange, WorkSchedule as CoreWorkSchedule};
 use crate::core::stdcm::{STDCMRequest, STDCMStepTimingData};
 use crate::core::AsCoreRequest;
@@ -317,7 +317,7 @@ fn build_train_requirements(
     simulations: Vec<(SimulationResponse, PathfindingResult)>,
     departure_time: DateTime<Utc>,
     latest_simulation_end: DateTime<Utc>,
-) -> HashMap<i64, TrainRequirement> {
+) -> HashMap<i64, TrainRequirements> {
     let mut trains_requirements = HashMap::new();
     for (train, (sim, _)) in trains.iter().zip(simulations) {
         let final_output = match sim {
@@ -370,7 +370,7 @@ fn build_train_requirements(
             .collect();
         trains_requirements.insert(
             train.id,
-            TrainRequirement {
+            TrainRequirements {
                 start_time,
                 spacing_requirements,
                 routing_requirements,

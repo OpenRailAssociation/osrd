@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use crate::core::simulation::RoutingRequirement;
-use crate::core::simulation::SpacingRequirement;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_schemas::infra::TrackOffset;
@@ -13,6 +11,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use super::conflict_detection::TrainRequirements;
 use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsRollingStock;
@@ -41,7 +40,7 @@ pub struct STDCMRequest {
     pub rolling_stock: PhysicsRollingStock,
 
     // STDCM search parameters
-    pub trains_requirements: HashMap<i64, TrainRequirement>,
+    pub trains_requirements: HashMap<i64, TrainRequirements>,
     /// Numerical integration time step in milliseconds. Use default value if not specified.
     pub time_step: Option<u64>,
     pub start_time: DateTime<Utc>,
@@ -112,14 +111,6 @@ pub struct UndirectedTrackRange {
     pub begin: u64,
     /// The end of the range in mm.
     pub end: u64,
-}
-
-#[derive(Debug, Serialize)]
-pub struct TrainRequirement {
-    /// The start datetime of the train
-    pub start_time: DateTime<Utc>,
-    pub spacing_requirements: Vec<SpacingRequirement>,
-    pub routing_requirements: Vec<RoutingRequirement>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
