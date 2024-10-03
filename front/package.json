@@ -168,7 +168,7 @@
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",
     "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
-    "e2e-tests": "yarn playwright test",
+    "e2e-tests": "playwright test",
     "i18n-api-errors": "tsx ./scripts/i18n-api-errors.ts",
     "i18n-checker": "tsx ./scripts/i18n-checker.ts"
   },

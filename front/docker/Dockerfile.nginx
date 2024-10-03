@@ -5,12 +5,12 @@ FROM node:20-bookworm as build
 WORKDIR /app
 
 # Build dependencies
-COPY package.json yarn.lock /app/
-RUN yarn install --frozen-lockfile
+COPY package.json package-lock.json /app/
+RUN npm install --frozen-lockfile --legacy-peer-deps
 
 # Generate the licenses file and build
 COPY . /app
-RUN yarn generate-licenses && yarn build
+RUN npm run generate-licenses && npm run build
 
 ### TESTS STAGE
 
