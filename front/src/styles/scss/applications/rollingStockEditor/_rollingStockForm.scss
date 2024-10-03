@@ -29,6 +29,10 @@
     max-height: 88vh;
     overflow-y: scroll;
 
+    width: 100%;
+    align-self: center;
+    overflow: auto;
+
     > .rollingstock-card-header {
       @media screen and (min-width: 1140px) {
         height: 3rem;
@@ -91,10 +95,6 @@
     .rollingstock-card-header {
       cursor: default;
     }
-
-    width: 100%;
-    align-self: center;
-    overflow: auto;
 
     @media screen and (min-width: 767px) {
       &-text {

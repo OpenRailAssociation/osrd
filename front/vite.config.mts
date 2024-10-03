@@ -50,6 +50,13 @@ export default defineConfig(({ mode }) => {
       outDir: 'build',
       sourcemap: true,
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern',
+        },
+      },
+    },
     server: {
       open: false,
       port: +env.OSRD_VITE_PORT || 3000,

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $colors: (
   'oldblue': #0088ce,
   'blue': #303383,
@@ -70,7 +72,8 @@ $colors: (
   --breakpoint-lg: 1024px;
   @each $color, $value in $colors {
     --#{$color}: #{$value};
-    --#{$color}-rgb: #{red($value)}, #{green($value)}, #{blue($value)};
+    --#{$color}-rgb: #{color.channel($value, 'red')}, #{color.channel($value, 'green')},
+      #{color.channel($value, 'blue')};
   }
 
   --modal-gray-transparent-background: rgba(0, 0, 0, 0.1);
