@@ -28,10 +28,10 @@
     align-items: center;
     height: 43px;
     .icons-arrow-up {
+      transition: all 0.2s ease-in-out;
       @media screen and (max-width: 1023px) {
         transform: rotate(180deg);
       }
-      transition: all 0.2s ease-in-out;
       &.expanded {
         transition: all 0.2s ease-in-out;
         transform: rotate(180deg);

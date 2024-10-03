@@ -197,6 +197,10 @@ body {
 }
 
 .btn-map-infras-blinking {
+  animation-name: blinking;
+  animation-duration: 0.5s;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
   @keyframes blinking {
     from {
       background-color: var(--orange);
@@ -207,10 +211,6 @@ body {
       color: var(--orange);
     }
   }
-  animation-name: blinking;
-  animation-duration: 0.5s;
-  animation-direction: alternate;
-  animation-iteration-count: infinite;
 }
 
 .maplibregl-map {
