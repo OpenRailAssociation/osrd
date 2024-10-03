@@ -19,6 +19,7 @@ pub struct RabbitMQClient {
     exchange: String,
     timeout: u64,
     hostname: String,
+    single_worker: bool,
 }
 
 pub struct Options {
@@ -29,6 +30,7 @@ pub struct Options {
     pub worker_pool_identifier: String,
     /// Default timeout for the response
     pub timeout: u64,
+    pub single_worker: bool,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -62,6 +64,8 @@ pub struct MQResponse {
     pub status: Vec<u8>,
 }
 
+const SINGLE_WORKER_KEY: &str = "all";
+
 impl RabbitMQClient {
     pub async fn new(options: Options) -> Result<Self, Error> {
         let hostname = hostname::get()
@@ -81,6 +85,7 @@ impl RabbitMQClient {
             exchange: format!("{}-req-xchg", options.worker_pool_identifier),
             timeout: options.timeout,
             hostname,
+            single_worker: options.single_worker,
         })
     }
 
@@ -123,7 +128,11 @@ impl RabbitMQClient {
         channel
             .basic_publish(
                 self.exchange.as_str(),
-                routing_key.as_str(),
+                if self.single_worker {
+                    SINGLE_WORKER_KEY
+                } else {
+                    routing_key.as_str()
+                },
                 options,
                 serialized_payload,
                 properties,
@@ -190,7 +199,11 @@ impl RabbitMQClient {
         channel
             .basic_publish(
                 self.exchange.as_str(),
-                routing_key.as_str(),
+                if self.single_worker {
+                    SINGLE_WORKER_KEY
+                } else {
+                    routing_key.as_str()
+                },
                 options,
                 serialized_payload,
                 properties,

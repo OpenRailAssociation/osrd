@@ -84,13 +84,7 @@ impl CoreClient {
         Self::Direct(client)
     }
 
-    pub async fn new_mq(uri: String, worker_pool_identifier: String, timeout: u64) -> Result<Self> {
-        let options = mq_client::Options {
-            uri,
-            worker_pool_identifier,
-            timeout,
-        };
-
+    pub async fn new_mq(options: mq_client::Options) -> Result<Self> {
         let client = RabbitMQClient::new(options).await?;
 
         Ok(Self::MessageQueue(client))

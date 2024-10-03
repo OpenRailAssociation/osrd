@@ -151,6 +151,8 @@ pub struct RunserverArgs {
     pub mq_url: String,
     #[clap(long, env = "EDITOAST_CORE_TIMEOUT", default_value_t = 180)]
     pub core_timeout: u64,
+    #[clap(long, env = "EDITOAST_CORE_SINGLE_WORKER", default_value_t = false)]
+    pub core_single_worker: bool,
     #[clap(long, env = "ROOT_PATH", default_value_t = String::new())]
     pub root_path: String,
     #[clap(long)]

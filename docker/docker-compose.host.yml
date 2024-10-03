@@ -16,7 +16,6 @@ services:
     network_mode: host
     environment:
       EDITOAST_PORT: 8090
-      OSRD_BACKEND_URL: "http://localhost:8080"
       OSRDYNE_API_URL: "http://localhost:4242"
       VALKEY_URL: "redis://localhost"
       DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
@@ -38,6 +37,13 @@ services:
   rabbitmq:
     ports: []
     network_mode: host
+
+  core:
+    ports: []
+    network_mode: host
+    environment:
+      CORE_EDITOAST_URL: "http://127.0.0.1:8090"
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://127.0.0.1:4317"
 
   osrdyne:
     ports: []

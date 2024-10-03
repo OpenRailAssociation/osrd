@@ -53,6 +53,7 @@ use views::check_health;
 use views::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
+use core::mq_client;
 use diesel::sql_query;
 use diesel_async::RunQueryDsl;
 use editoast_models::DbConnection;
@@ -414,9 +415,14 @@ impl AppState {
         }
 
         // Build Core client
-        let core_client = CoreClient::new_mq(args.mq_url.clone(), "core".into(), args.core_timeout)
-            .await?
-            .into();
+        let core_client = CoreClient::new_mq(mq_client::Options {
+            uri: args.mq_url.clone(),
+            worker_pool_identifier: "core".into(),
+            timeout: args.core_timeout,
+            single_worker: args.core_single_worker,
+        })
+        .await?
+        .into();
 
         let osrdyne_client = Arc::new(OsrdyneClient::new(args.osrdyne_api_url.as_str())?);
 

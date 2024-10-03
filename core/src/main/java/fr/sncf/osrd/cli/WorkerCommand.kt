@@ -2,7 +2,10 @@ package fr.sncf.osrd.cli
 
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
-import com.rabbitmq.client.*
+import com.rabbitmq.client.AMQP
+import com.rabbitmq.client.Channel
+import com.rabbitmq.client.ConnectionFactory
+import com.rabbitmq.client.DeliverCallback
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.api_v2.conflicts.ConflictDetectionEndpointV2
 import fr.sncf.osrd.api.api_v2.path_properties.PathPropEndpoint
@@ -39,16 +42,18 @@ class WorkerCommand : CliCommand {
     private var editoastAuthorization: String = "x-osrd-core"
 
     val WORKER_ID: String?
-    val WORKER_ID_USE_HOSTNAME: String?
+    val WORKER_ID_USE_HOSTNAME: Boolean
     val WORKER_KEY: String?
     val WORKER_AMQP_URI: String
     val WORKER_POOL: String
     val WORKER_REQUESTS_QUEUE: String
     val WORKER_ACTIVITY_EXCHANGE: String
+    val ALL_INFRA: Boolean
 
     init {
-        WORKER_ID_USE_HOSTNAME = System.getenv("WORKER_ID_USE_HOSTNAME")
-        WORKER_KEY = System.getenv("WORKER_KEY")
+        WORKER_ID_USE_HOSTNAME = getBooleanEnvvar("WORKER_ID_USE_HOSTNAME")
+        ALL_INFRA = getBooleanEnvvar("ALL_INFRA")
+        WORKER_KEY = if (ALL_INFRA) "all" else System.getenv("WORKER_KEY")
         WORKER_AMQP_URI =
             System.getenv("WORKER_AMQP_URI") ?: "amqp://osrd:password@127.0.0.1:5672/%2f"
         WORKER_POOL = System.getenv("WORKER_POOL") ?: "core"
@@ -58,16 +63,17 @@ class WorkerCommand : CliCommand {
             System.getenv("WORKER_ACTIVITY_EXCHANGE") ?: "$WORKER_POOL-activity-xchg"
 
         WORKER_ID =
-            if (
-                WORKER_ID_USE_HOSTNAME == null ||
-                    WORKER_ID_USE_HOSTNAME == "" ||
-                    WORKER_ID_USE_HOSTNAME == "0" ||
-                    WORKER_ID_USE_HOSTNAME.lowercase() == "false"
-            ) {
-                System.getenv("WORKER_ID")
-            } else {
+            if (WORKER_ID_USE_HOSTNAME) {
                 java.net.InetAddress.getLocalHost().hostName
+            } else if (ALL_INFRA) {
+                "all_infra_worker"
+            } else {
+                System.getenv("WORKER_ID")
             }
+    }
+
+    private fun getBooleanEnvvar(name: String): Boolean {
+        return System.getenv(name)?.lowercase() !in arrayOf(null, "", "0", "false")
     }
 
     override fun run(): Int {
@@ -123,7 +129,9 @@ class WorkerCommand : CliCommand {
         val connection = factory.newConnection()
         connection.createChannel().use { channel -> reportActivity(channel, "started") }
 
-        infraManager.load(infraId, null, diagnosticRecorder)
+        if (!ALL_INFRA) {
+            infraManager.load(infraId, null, diagnosticRecorder)
+        }
 
         connection.createChannel().use { channel -> reportActivity(channel, "ready") }
 
