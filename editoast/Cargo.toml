@@ -94,7 +94,7 @@ axum-test = { version = "15.3.0", default-features = false }
 axum-tracing-opentelemetry = { version = "0.19.0", default-features = false }
 chashmap = "2.2.2"
 chrono.workspace = true
-clap = { version = "4.5.16", features = ["derive", "env"] }
+clap = { version = "4.5.19", features = ["derive", "env"] }
 colored = "2.1.0"
 derivative.workspace = true
 diesel.workspace = true
