@@ -123,7 +123,6 @@
     "@typescript-eslint/parser": "^6.20.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitejs/plugin-react-swc": "^3.6.0",
-    "@vitest/coverage-c8": "^0.29.8",
     "@vitest/coverage-v8": "^1.2.2",
     "dotenv": "^16.4.5",
     "eslint": "^8.56.0",
