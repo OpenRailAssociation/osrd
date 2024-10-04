@@ -19,6 +19,8 @@ use axum::extract::FromRef;
 use axum::{Router, ServiceExt};
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use clap::Parser;
+use client::roles;
+use client::roles::RolesCommand;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
@@ -245,6 +247,25 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::STDCMSearchEnv(subcommand) => {
             handle_stdcm_search_env_command(subcommand, db_pool).await
         }
+        Commands::Roles(roles_command) => match roles_command {
+            RolesCommand::ListRoles => {
+                roles::list_roles();
+                Ok(())
+            }
+            RolesCommand::List(list_args) => {
+                roles::list_subject_roles(list_args, db_pool.get().await?)
+                    .await
+                    .map_err(Into::into)
+            }
+            RolesCommand::Add(add_args) => roles::add_roles(add_args, db_pool.get().await?)
+                .await
+                .map_err(Into::into),
+            RolesCommand::Remove(remove_args) => {
+                roles::remove_roles(remove_args, db_pool.get().await?)
+                    .await
+                    .map_err(Into::into)
+            }
+        },
     }
 }
 
@@ -888,6 +909,15 @@ impl CliError {
         CliError {
             exit_code,
             message: message.as_ref().to_string(),
+        }
+    }
+}
+
+impl From<anyhow::Error> for CliError {
+    fn from(err: anyhow::Error) -> Self {
+        CliError {
+            exit_code: 1,
+            message: format!("❌ {err}"),
         }
     }
 }

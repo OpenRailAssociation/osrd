@@ -81,8 +81,7 @@ utoipa = { version = "4.2.3", features = ["chrono", "uuid"] }
 uuid = { version = "1.10.0", features = ["serde", "v4"] }
 
 [dependencies]
-# For batch dependency updates, see editoast/README.md
-
+anyhow = "1.0"
 async-trait = "0.1.83"
 axum = { version = "0.7.7", default-features = false, features = [
   "multipart",
