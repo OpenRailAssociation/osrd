@@ -4101,11 +4101,11 @@ components:
       - $ref: '#/components/schemas/EditoastRollingStockErrorBasePowerClassEmpty'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotCreateCompoundImage'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotReadImage'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorIsLocked'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorIsUsed'
       - $ref: '#/components/schemas/EditoastRollingStockErrorKeyNotFound'
       - $ref: '#/components/schemas/EditoastRollingStockErrorLiveryMultipartError'
       - $ref: '#/components/schemas/EditoastRollingStockErrorNameAlreadyUsed'
-      - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsLocked'
-      - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsUsed'
       - $ref: '#/components/schemas/EditoastSTDCMErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastSTDCMErrorInvalidPathItems'
       - $ref: '#/components/schemas/EditoastSTDCMErrorRollingStockNotFound'
@@ -4889,6 +4889,57 @@ components:
           type: string
           enum:
           - editoast:rollingstocks:CannotReadImage
+    EditoastRollingStockErrorIsLocked:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - rolling_stock_id
+          properties:
+            rolling_stock_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:rollingstocks:IsLocked
+    EditoastRollingStockErrorIsUsed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - rolling_stock_id
+          - usage
+          properties:
+            rolling_stock_id:
+              type: integer
+            usage:
+              type: array
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:rollingstocks:IsUsed
     EditoastRollingStockErrorKeyNotFound:
       type: object
       required:
@@ -4956,57 +5007,6 @@ components:
           type: string
           enum:
           - editoast:rollingstocks:NameAlreadyUsed
-    EditoastRollingStockErrorRollingStockIsLocked:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - rolling_stock_id
-          properties:
-            rolling_stock_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 409
-        type:
-          type: string
-          enum:
-          - editoast:rollingstocks:RollingStockIsLocked
-    EditoastRollingStockErrorRollingStockIsUsed:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - rolling_stock_id
-          - usage
-          properties:
-            rolling_stock_id:
-              type: integer
-            usage:
-              type: array
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 409
-        type:
-          type: string
-          enum:
-          - editoast:rollingstocks:RollingStockIsUsed
     EditoastSTDCMErrorInfraNotFound:
       type: object
       required:
@@ -8103,9 +8103,9 @@ components:
                 type: string
       - type: object
         required:
-        - RollingStockIsLocked
+        - IsLocked
         properties:
-          RollingStockIsLocked:
+          IsLocked:
             type: object
             required:
             - rolling_stock_id
@@ -8115,9 +8115,9 @@ components:
                 format: int64
       - type: object
         required:
-        - RollingStockIsUsed
+        - IsUsed
         properties:
-          RollingStockIsUsed:
+          IsUsed:
             type: object
             required:
             - rolling_stock_id

@@ -130,13 +130,13 @@ pub enum RollingStockError {
     #[editoast_error(status = 400)]
     NameAlreadyUsed { name: String },
 
-    #[error("RollingStock '{rolling_stock_id}' is locked")]
+    #[error("Rolling stock '{rolling_stock_id}' is locked")]
     #[editoast_error(status = 409)]
-    RollingStockIsLocked { rolling_stock_id: i64 },
+    IsLocked { rolling_stock_id: i64 },
 
-    #[error("RollingStock '{rolling_stock_id}' is used")]
+    #[error("Rolling stock '{rolling_stock_id}' is used")]
     #[editoast_error(status = 409)]
-    RollingStockIsUsed {
+    IsUsed {
         rolling_stock_id: i64,
         usage: Vec<TrainScheduleScenarioStudyProject>,
     },
@@ -440,7 +440,7 @@ async fn delete(
         delete_rolling_stock(conn, rolling_stock_id).await?;
         return Ok(StatusCode::NO_CONTENT);
     }
-    Err(RollingStockError::RollingStockIsUsed {
+    Err(RollingStockError::IsUsed {
         rolling_stock_id,
         usage: trains,
     }
@@ -678,7 +678,7 @@ pub async fn retrieve_existing_rolling_stock(
 
 fn assert_rolling_stock_unlocked(rolling_stock: &RollingStockModel) -> Result<()> {
     if rolling_stock.locked {
-        return Err(RollingStockError::RollingStockIsLocked {
+        return Err(RollingStockError::IsLocked {
             rolling_stock_id: rolling_stock.id,
         }
         .into());
@@ -1183,10 +1183,7 @@ pub mod tests {
             .json_into();
 
         // THEN
-        assert_eq!(
-            response.error_type,
-            "editoast:rollingstocks:RollingStockIsLocked"
-        );
+        assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
     }
 
     #[rstest]
@@ -1293,10 +1290,7 @@ pub mod tests {
             .json_into();
 
         // THEN
-        assert_eq!(
-            response.error_type,
-            "editoast:rollingstocks:RollingStockIsLocked"
-        );
+        assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
 
         let rolling_stock_exists =
             RollingStockModel::exists(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)

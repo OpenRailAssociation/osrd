@@ -137,8 +137,8 @@
       "NameAlreadyUsed": "Name '{{name}}' already used",
       "KeyNotFound": "Rolling stock '{{rolling_stock_key.key}}' could not be found",
       "LiveryMultipartError": "Invalid multipart request while uploading livery",
-      "RollingStockIsLocked": "RollingStock '{{rolling_stock_id}}' is locked",
-      "RollingStockIsUsed": "RollingStock '{{rolling_stock_id}}' is used"
+      "IsLocked": "Rolling stock '{{rolling_stock_id}}' is locked",
+      "IsUsed": "Rolling stock '{{rolling_stock_id}}' is used"
     },
     "scenario": {
       "NotFound": "Scenario not found"
