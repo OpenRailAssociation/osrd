@@ -3,7 +3,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.67-rust-1.81.0 AS chef
+FROM lukemathwalker/cargo-chef:0.1.68-rust-1.81-alpine3.20 AS chef
 WORKDIR /gateway
 
 #######################
@@ -17,6 +17,8 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Cargo chef : build #
 ######################
 FROM chef as run_builder
+RUN apk add --no-cache musl-dev build-base jemalloc-dev openssl-dev mold
+ENV RUSTFLAGS="-C link-arg=-fuse-ld=mold"
 COPY --from=planner /gateway/recipe.json recipe.json
 ARG CARGO_PROFILE=release
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
@@ -45,17 +47,11 @@ COPY . .
 #######################
 # Running env : build #
 #######################
-FROM debian:bookworm-slim as running_env
-RUN apt update -yqq && \
-    apt install -yqq --no-install-recommends curl ca-certificates libjemalloc2 jq && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    rm -rf /var/lib/apt/lists/*
-
+FROM alpine:3.20 as running_env
+RUN apk add --no-cache curl ca-certificates bind-tools
 COPY --from=run_builder /usr/local/cargo/bin/osrd_gateway /usr/local/bin/osrd_gateway
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
-# We use jemalloc to reduce allocation fragmentation
-ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libjemalloc.so.2"
 
 CMD ["/usr/local/bin/osrd_gateway"]
