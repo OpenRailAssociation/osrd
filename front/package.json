@@ -123,7 +123,7 @@
     "@typescript-eslint/parser": "^6.20.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitejs/plugin-react-swc": "^3.6.0",
-    "@vitest/coverage-v8": "^1.2.2",
+    "@vitest/coverage-v8": "^2.0.0",
     "dotenv": "^16.4.5",
     "eslint": "^8.56.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -150,7 +150,7 @@
     "vite-plugin-checker": "^0.6.4",
     "vite-plugin-static-copy": "^1.0.6",
     "vite-tsconfig-paths": "^5.0.1",
-    "vitest": "^1.2.2"
+    "vitest": "^2.0.0"
   },
   "resolutions": {
     "react-error-overlay": "6.0.9",
