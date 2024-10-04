@@ -10,6 +10,7 @@ use figment::{
     providers::{Env, Format, Serialized, Yaml},
     Figment,
 };
+use url::Url;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "type")]
@@ -18,6 +19,14 @@ pub enum WorkerDriverConfig {
     DockerDriver(DockerDriverOptions),
     KubernetesDriver(KubernetesDriverOptions),
     ProcessComposeDriver(PCDriverOptions),
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+pub enum TelemetryKind {
+    #[default]
+    None,
+    Datadog,
+    Opentelemetry,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -33,6 +42,9 @@ pub struct OsrdyneConfig {
     pub max_length_bytes: Option<usize>,
     pub api_address: String,
     pub extra_lifetime: Option<Duration>,
+    pub telemetry_kind: TelemetryKind,
+    pub service_name: String,
+    pub telemetry_endpoint: Url,
 }
 
 impl Default for OsrdyneConfig {
@@ -49,6 +61,9 @@ impl Default for OsrdyneConfig {
             max_length_bytes: None,
             api_address: "0.0.0.0:4242".into(), // TODO: decide on the port
             extra_lifetime: None,
+            telemetry_kind: TelemetryKind::default(),
+            service_name: "osrd-osrdyne".into(),
+            telemetry_endpoint: Url::parse("http://localhost:4317").unwrap(),
         }
     }
 }
