@@ -1,6 +1,6 @@
 .scenario {
   --navbar-height: 4.0625rem;
-  --content-height: calc(100vh - var(--navbar-height) - 0.5rem);
+  --content-height: calc(100vh - var(--navbar-height));
   position: relative;
   background-color: var(--ambiantB10);
   font-family: 'IBM Plex Sans';
@@ -757,7 +757,7 @@
   }
 
   .scenario-results {
-    margin-top: 0.5rem;
+    padding-top: 0.5rem;
     position: relative;
     overflow: auto;
     width: 100%;
