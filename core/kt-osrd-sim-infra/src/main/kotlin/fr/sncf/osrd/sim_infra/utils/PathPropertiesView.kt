@@ -60,6 +60,10 @@ data class PathPropertiesView(
         return sliceRangeMap(base.getSpeedLimitProperties(trainTag))
     }
 
+    override fun getZones(): DistanceRangeMap<ZoneId> {
+        return sliceRangeMap(base.getZones())
+    }
+
     override fun getLength(): Distance {
         return endOffset - startOffset
     }

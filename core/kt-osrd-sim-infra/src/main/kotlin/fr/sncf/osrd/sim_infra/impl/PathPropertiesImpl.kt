@@ -90,6 +90,18 @@ data class PathPropertiesImpl(
         }
     }
 
+    override fun getZones(): DistanceRangeMap<ZoneId> {
+        return getRangeMapFromUndirected { chunkId ->
+            val zoneId = infra.getTrackChunkZone(chunkId)
+            if (zoneId != null) {
+                val chunkLength = infra.getTrackChunkLength(chunkId).distance
+                distanceRangeMapOf(listOf(DistanceRangeMap.RangeMapEntry(Distance.ZERO, chunkLength, zoneId)))
+            } else {
+                distanceRangeMapOf()
+            }
+        }
+    }
+
     override fun getLength(): Distance {
         return chunkPath.endOffset - chunkPath.beginOffset
     }
