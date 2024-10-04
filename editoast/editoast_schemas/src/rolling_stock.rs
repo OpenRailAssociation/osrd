@@ -35,14 +35,14 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 editoast_common::schemas! {
-    gamma::schemas(),
     effort_curves::schemas(),
     energy_source::schemas(),
-    rolling_stock_livery::schemas(),
-    rolling_resistance::schemas(),
-    supported_signaling_systems::schemas(),
-    rolling_stock_metadata::schemas(),
+    gamma::schemas(),
     loading_gauge_type::schemas(),
+    rolling_stock_metadata::schemas(),
+    rolling_resistance::schemas(),
+    rolling_stock_livery::schemas(),
+    supported_signaling_systems::schemas(),
 }
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
