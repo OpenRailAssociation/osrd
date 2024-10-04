@@ -30,6 +30,9 @@ mod rolling_stock_livery;
 pub use rolling_stock_livery::RollingStockLivery;
 pub use rolling_stock_livery::RollingStockLiveryMetadata;
 
+mod towed_rolling_stock;
+pub use towed_rolling_stock::TowedRollingStock;
+
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;

@@ -681,6 +681,28 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    towed_rolling_stock (id) {
+        id -> Int8,
+        #[max_length = 255]
+        name -> Varchar,
+        #[max_length = 16]
+        railjson_version -> Varchar,
+        locked -> Bool,
+        mass -> Float8,
+        length -> Float8,
+        comfort_acceleration -> Float8,
+        startup_acceleration -> Float8,
+        inertia_coefficient -> Float8,
+        rolling_resistance -> Jsonb,
+        gamma -> Jsonb,
+        version -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     train_schedule (id) {
         id -> Int8,
         #[max_length = 128]
@@ -829,6 +851,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     temporary_speed_limit,
     temporary_speed_limit_group,
     timetable,
+    towed_rolling_stock,
     train_schedule,
     work_schedule,
     work_schedule_group,
