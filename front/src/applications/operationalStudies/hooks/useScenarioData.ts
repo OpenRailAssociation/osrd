@@ -22,6 +22,7 @@ import { mapBy } from 'utils/types';
 
 import useAutoUpdateProjection from './useAutoUpdateProjection';
 import useLazyLoadTrains from './useLazyLoadTrains';
+import usePathProjection from './usePathProjection';
 import useSimulationResults from './useSimulationResults';
 
 const useScenarioData = (
@@ -48,15 +49,7 @@ const useScenarioData = (
     infraId: scenario.infra_id,
   });
 
-  const { data: projectionPath } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
-    {
-      id: trainIdUsedForProjection!,
-      infraId: scenario.infra_id,
-    },
-    {
-      skip: !trainIdUsedForProjection,
-    }
-  );
+  const projectionPath = usePathProjection(infra);
 
   const simulationResults = useSimulationResults();
 
@@ -70,7 +63,7 @@ const useScenarioData = (
     infraId: scenario.infra_id,
     trainIdsToFetch,
     setTrainIdsToFetch,
-    path: projectionPath?.status === 'success' ? projectionPath : undefined,
+    path: projectionPath?.path,
     trainSchedules,
   });
 
@@ -179,10 +172,10 @@ const useScenarioData = (
     trainScheduleSummaries,
     trainSchedules,
     projectionData:
-      trainScheduleUsedForProjection && projectionPath?.status === 'success'
+      trainScheduleUsedForProjection && projectionPath
         ? {
             trainSchedule: trainScheduleUsedForProjection,
-            path: projectionPath,
+            ...projectionPath,
             projectedTrains,
             allTrainsProjected,
           }
@@ -193,4 +186,5 @@ const useScenarioData = (
     upsertTrainSchedules,
   };
 };
+
 export default useScenarioData;

@@ -124,7 +124,6 @@ const SimulationResults = ({
       )}
 
       {/* SIMULATION : SPACE TIME CHART */}
-
       <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
         {projectionData && projectionData.projectedTrains.length > 0 && pathProperties && (
           <>
@@ -137,7 +136,10 @@ const SimulationResults = ({
             >
               {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
             </button>
-            <SimulationWarpedMap collapsed={!showWarpedMap} pathProperties={pathProperties} />
+            <SimulationWarpedMap
+              collapsed={!showWarpedMap}
+              pathGeometry={projectionData.geometry}
+            />
 
             <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
               <div className="chart-container">
