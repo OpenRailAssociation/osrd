@@ -2137,12 +2137,8 @@ paths:
               $ref: '#/components/schemas/RollingStockLockedUpdateForm'
         required: true
       responses:
-        '200':
-          description: The created rolling stock
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RollingStock'
+        '204':
+          description: No content when successful
   /rolling_stock/{rolling_stock_id}/usage:
     get:
       tags:

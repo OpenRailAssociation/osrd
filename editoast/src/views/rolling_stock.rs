@@ -471,7 +471,7 @@ struct RollingStockLockedUpdateForm {
     params(RollingStockIdParam),
     request_body = RollingStockLockedUpdateForm,
     responses(
-        (status = 200, description = "The created rolling stock", body = RollingStock)
+        (status = 204, description = "No content when successful")
     )
 )]
 async fn update_locked(
