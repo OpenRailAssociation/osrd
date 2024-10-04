@@ -7182,6 +7182,29 @@ components:
                   format: double
                 description: List of `n+1` values associated to the ranges
           nullable: true
+        zones:
+          allOf:
+          - type: object
+            description: Zones along a path. Each value is associated to a range of the path.
+            required:
+            - boundaries
+            - values
+            properties:
+              boundaries:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+              values:
+                type: array
+                items:
+                  type: string
+                description: List of `n+1` values associated to the ranges
+          nullable: true
     PathPropertiesInput:
       type: object
       required:
@@ -7748,6 +7771,7 @@ components:
       - electrifications
       - geometry
       - operational_points
+      - zones
     RailJson:
       type: object
       description: An infrastructure description in the RailJson format

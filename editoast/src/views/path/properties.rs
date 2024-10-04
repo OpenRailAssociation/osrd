@@ -25,6 +25,7 @@ use crate::core::path_properties::OperationalPointOnPath;
 use crate::core::path_properties::PathPropertiesRequest;
 use crate::core::path_properties::PropertyElectrificationValues;
 use crate::core::path_properties::PropertyValuesF64;
+use crate::core::path_properties::PropertyZoneValues;
 use crate::core::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
@@ -70,6 +71,9 @@ struct PathProperties {
     /// Operational points along the path
     #[schema(inline)]
     operational_points: Option<Vec<OperationalPointOnPath>>,
+    /// Zones along the path
+    #[schema(inline)]
+    zones: Option<PropertyZoneValues>,
 }
 
 impl PathProperties {
@@ -92,6 +96,10 @@ impl PathProperties {
         if self.operational_points.is_some() {
             properties.insert(Property::OperationalPoints);
         }
+        if self.zones.is_some() {
+            properties.insert(Property::Zones);
+        }
+
         properties
     }
 
@@ -105,6 +113,7 @@ impl PathProperties {
                 Property::Electrifications => self.electrifications = None,
                 Property::Geometry => self.geometry = None,
                 Property::OperationalPoints => self.operational_points = None,
+                Property::Zones => self.zones = None,
             }
         }
         self
@@ -135,6 +144,7 @@ enum Property {
     Electrifications,
     Geometry,
     OperationalPoints,
+    Zones,
 }
 
 type Properties = EnumSet<Property>;
@@ -196,6 +206,7 @@ async fn post(
             electrifications: Some(computed_path_properties.electrifications),
             geometry: Some(computed_path_properties.geometry),
             operational_points: Some(computed_path_properties.operational_points),
+            zones: Some(computed_path_properties.zones),
         };
 
         // Cache new properties

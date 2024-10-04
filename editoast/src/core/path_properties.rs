@@ -29,6 +29,8 @@ pub struct PathPropertiesResponse {
     pub geometry: GeoJsonLineString,
     /// Operational points along the path
     pub operational_points: Vec<OperationalPointOnPath>,
+    /// Zones along the path
+    pub zones: PropertyZoneValues,
 }
 
 /// Property f64 values along a path. Each value is associated to a range of the path.
@@ -76,6 +78,16 @@ pub struct OperationalPointOnPath {
     extensions: OperationalPointExtensions,
     /// Distance from the beginning of the path in mm
     position: u64,
+}
+
+/// Zones along a path. Each value is associated to a range of the path.
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct PropertyZoneValues {
+    /// List of `n` boundaries of the ranges.
+    /// A boundary is a distance from the beginning of the path in mm.
+    boundaries: Vec<u64>,
+    /// List of `n+1` values associated to the ranges
+    values: Vec<String>,
 }
 
 impl<'a> AsCoreRequest<Json<PathPropertiesResponse>> for PathPropertiesRequest<'a> {
