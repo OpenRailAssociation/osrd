@@ -1,5 +1,6 @@
 mod postgres_config;
 mod redis_config;
+pub mod roles;
 pub mod stdcm_search_env_commands;
 mod telemetry_config;
 
@@ -14,6 +15,7 @@ use derivative::Derivative;
 use editoast_derive::EditoastError;
 pub use postgres_config::PostgresConfig;
 pub use redis_config::RedisConfig;
+use roles::RolesCommand;
 use stdcm_search_env_commands::StdcmSearchEnvCommands;
 pub use telemetry_config::TelemetryConfig;
 pub use telemetry_config::TelemetryKind;
@@ -71,6 +73,8 @@ pub enum Commands {
         long_about = "STDCM search environment management commands"
     )]
     STDCMSearchEnv(StdcmSearchEnvCommands),
+    #[command(subcommand, about, long_about = "Roles related commands")]
+    Roles(RolesCommand),
 }
 
 #[derive(Subcommand, Debug)]

@@ -1,13 +1,27 @@
 use serde::Deserialize;
 use serde::Serialize;
 use strum::AsRefStr;
+use strum::Display;
+use strum::EnumIter;
 use strum::EnumString;
 use utoipa::ToSchema;
 
 use crate::roles::BuiltinRoleSet;
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumString, AsRefStr, ToSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    EnumString,
+    AsRefStr,
+    EnumIter,
+    Display,
+    ToSchema,
 )]
 pub enum BuiltinRole {
     /// A user with this role short-circuits all role and permission checks
