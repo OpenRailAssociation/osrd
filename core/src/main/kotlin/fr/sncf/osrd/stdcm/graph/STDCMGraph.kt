@@ -10,6 +10,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.meters
@@ -33,20 +34,18 @@ class STDCMGraph(
     val timeStep: Double,
     blockAvailability: BlockAvailabilityInterface,
     maxRunTime: Double,
-    val minScheduleTimeStart: Double,
-    steps: List<STDCMStep>,
-    tag: String?,
-    standardAllowance: AllowanceValue?
+    minScheduleTimeStart: Double,
+    val steps: List<STDCMStep>,
+    val tag: String?,
+    val standardAllowance: AllowanceValue?
 ) : Graph<STDCMNode, STDCMEdge, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra!!
     val blockInfra = fullInfra.blockInfra!!
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()
-    val steps: List<STDCMStep>
-    val delayManager: DelayManager
-    val allowanceManager: EngineeringAllowanceManager
-    val backtrackingManager: BacktrackingManager
-    val tag: String?
-    val standardAllowance: AllowanceValue?
+    val delayManager: DelayManager =
+        DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
+    val allowanceManager: EngineeringAllowanceManager = EngineeringAllowanceManager(this)
+    val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
 
     // min 4 minutes between two edges, determined empirically
     private val visitedNodes = VisitedNodes(4 * 60.0)
@@ -57,13 +56,6 @@ class STDCMGraph(
 
     /** Constructor */
     init {
-        this.steps = steps
-        delayManager =
-            DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
-        allowanceManager = EngineeringAllowanceManager(this)
-        backtrackingManager = BacktrackingManager(this)
-        this.tag = tag
-        this.standardAllowance = standardAllowance
         assert(standardAllowance !is FixedTime) {
             "Standard allowance cannot be a flat time for STDCM trains"
         }
@@ -132,7 +124,10 @@ class STDCMGraph(
                     )
                 if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()
                 visitedNodes.markAsVisited(visitedNodesParameters)
-                res.addAll(STDCMEdgeBuilder.fromNode(this, node, newPath).makeAllEdges())
+                res.addAll(
+                    STDCMEdgeBuilder.fromNode(this, node, newPath as InfraExplorerWithEnvelope)
+                        .makeAllEdges()
+                )
             }
         }
         return res

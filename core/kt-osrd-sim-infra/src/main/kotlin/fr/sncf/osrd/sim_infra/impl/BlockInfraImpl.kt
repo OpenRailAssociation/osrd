@@ -218,7 +218,7 @@ private fun buildBlockName(
     val detectors = mutableListOf<DirDetectorId>()
     detectors.add(rawInfra.getZonePathEntry(descriptor.path[0]))
     detectors.add(rawInfra.getZonePathExit(descriptor.path.last()))
-    val detectorStr = detectors.map { "${rawInfra.getDetectorName(it.value)}" }
+    val detectorStr = detectors.map { rawInfra.getDetectorName(it.value) }
     val rawStringId = "$signals;$detectorStr;$trackNodeConfigNames"
 
     // We need to hash the result, these strings are way too long for identifiers

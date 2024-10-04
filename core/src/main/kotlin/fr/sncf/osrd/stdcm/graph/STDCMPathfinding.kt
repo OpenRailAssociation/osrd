@@ -15,6 +15,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.ProgressLogger
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
@@ -83,8 +84,8 @@ class STDCMPathfinding(
     private val timeStep: Double,
     private val maxDepartureDelay: Double,
     private val maxRunTime: Double,
-    private val tag: String?,
-    private val standardAllowance: AllowanceValue?,
+    tag: String?,
+    standardAllowance: AllowanceValue?,
     private val pathfindingTimeout: Double = Pathfinding.TIMEOUT
 ) {
 
@@ -236,7 +237,7 @@ class STDCMPathfinding(
                             stopTimeData = listOf(),
                         ),
                         0.0,
-                        explorer,
+                        explorer as InfraExplorerWithEnvelope,
                         null,
                         0,
                         location.offset,
