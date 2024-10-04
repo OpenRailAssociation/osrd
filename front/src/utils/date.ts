@@ -18,6 +18,17 @@ const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
 
 /**
  * @param dateTimeString date string in ISO format
+ * @returns string "HH:MM"
+ */
+export function extractHHMMFromDate(date?: Date) {
+  if (!date) {
+    return '';
+  }
+  return dayjs.tz(date).format('HH:mm');
+}
+
+/**
+ * @param dateTimeString date string in ISO format
  * @returns string "HH:MM:SS"
  */
 export function extractHHMMSS(dateTimeString?: string) {
@@ -193,13 +204,9 @@ export function serializeDateTimeWithoutYear(date: Date): string {
   return dayjsDate.format('DD/MM HH:mm:ss');
 }
 
-/**
- * Convert an ISO date into a string formatted as 'DD/MM/YYYY' and extract the numeric values for hours and minutes.
- * @param {string} arrivalTime - Arrival time at which the train should arrive at the location. (Format: 'YYYY-MM-DDTHH:mm:ss+HH:mm')
- * @returns {object} An object containing the parsed date and time.
- */
-export function extractDateAndTimefromISO(arrivalTime: string) {
-  const dayjsDate = dayjs(arrivalTime);
+
+export function extractDateAndTimeFromDate(arrivalDatetime: Date) {
+  const dayjsDate = dayjs(arrivalDatetime);
   return {
     arrivalDate: dayjsDate.format('YYYY-MM-DD'), // ISO date part
     arrivalTime: dayjsDate.format('HH:mm'), // ISO time part
@@ -231,8 +238,8 @@ export function isArrivalDateInSearchTimeWindow(
  * @param {ScheduleConstraint} - An object containing the base date, the hours, and the minutes.
  * @returns {string} The ISO formatted date string.
  */
-export const generateISODateFromDateTime = ({ date, hours, minutes }: ScheduleConstraint) => {
+export const generateDatetimeFromDateAndTime = ({ date, hours, minutes }: ScheduleConstraint) => {
   date.setHours(hours);
   date.setMinutes(minutes);
-  return formatLocaleDateToIsoDate(date);
+  return date;
 };

@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { Location } from '@osrd-project/ui-icons';
-import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
@@ -9,10 +8,9 @@ import { useSelector } from 'react-redux';
 import IntermediatePointIcon from 'assets/pictures/stdcmV2/intermediate-point.svg';
 import { useOsrdConfSelectors, useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { addElementAtIndex, replaceElementAtIndex } from 'utils/array';
-import { formatDurationAsISO8601 } from 'utils/timeManipulation';
 
 import StdcmCard from './StdcmCard';
 import StdcmDefaultCard from './StdcmDefaultCard';
@@ -21,92 +19,46 @@ import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmStopType from './StdcmStopType';
 import { StdcmStopTypes } from '../types';
 import type { StdcmConfigCardProps } from '../types';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 
-const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfigCardProps) => {
+const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
-  const { getPathSteps } = useOsrdConfSelectors();
-  const { deleteVia, updatePathSteps, updateViaStopTime } =
+  const { getStdcmPathSteps } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const { deleteStdcmVia: deleteVia, updateStdcmPathSteps: updatePathSteps } =
     useOsrdConfActions() as StdcmConfSliceActions;
-  const pathSteps = useSelector(getPathSteps);
-
-  const [stopTypes, setStopTypes] = useState<Record<string, StdcmStopTypes>>(
-    compact(pathSteps).reduce(
-      (acc, cur) => {
-        acc[cur.id] = StdcmStopTypes.PASSAGE_TIME;
-        return acc;
-      },
-      {} as Record<string, StdcmStopTypes>
-    )
-  );
+  const pathSteps = useSelector(getStdcmPathSteps);
 
   const intermediatePoints = useMemo(() => pathSteps.slice(1, -1), [pathSteps]);
 
-  const updatePathStepsList = (pathStep: PathStep | null, index: number) => {
+  const updatePathStepsList = (pathStep: StdcmPathStep | null, index: number) => {
     if (!pathStep) return;
 
     const newPathSteps = replaceElementAtIndex(pathSteps, index, pathStep);
-    dispatch(updatePathSteps({ pathSteps: newPathSteps }));
+    dispatch(updatePathSteps(newPathSteps));
   };
 
-  const updatePathStepStopTime = (stopTime: string, index: number, pathStepId: string) => {
-    const pathStepToUpdate = pathSteps[index];
-    if (!pathStepToUpdate) return;
-    dispatch(
-      updateViaStopTime({
-        via: pathStepToUpdate,
-        duration: formatDurationAsISO8601(Number(stopTime) * 60),
-        stopType: stopTypes[pathStepId],
-      })
-    );
+  const updateStopType = (newStopType: StdcmStopTypes, index: number) => {
+    const pathStep = pathSteps[index];
+    if (!pathStep) return;
+
+    const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
+    const newPathStep = { ...pathStep, stopType: newStopType, stopFor: defaultStopTime };
+    const newPathSteps = replaceElementAtIndex(pathSteps, index, newPathStep);
+    dispatch(updatePathSteps(newPathSteps));
   };
 
-  const updateStopType = (newStopType: StdcmStopTypes, index: number, pathStepId: string) => {
-    setStopTypes((prevStopTypes) => {
-      const updatedStopTypes = {
-        ...prevStopTypes,
-        [pathStepId]: newStopType,
-      };
-
-      const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
-      updatePathStepStopTime(defaultStopTime, index, pathStepId);
-
-      return updatedStopTypes;
-    });
-  };
-
-  useEffect(() => {
-    pathSteps.forEach((pathStep, index) => {
-      const stopType = stopTypes[index];
-      if (pathStep && stopType && pathStep.stopType !== stopType) {
-        const updatedPathStep = {
-          ...pathStep,
-          stopType,
-        };
-        updatePathStepsList(updatedPathStep, index);
-      }
-    });
-  }, [stopTypes, pathSteps]);
-
-  const deleteViaOnClick = (index: number, pathStepId: string) => {
-    setStopTypes((prevStopTypes) => {
-      delete prevStopTypes[pathStepId];
-      return prevStopTypes;
-    });
+  const deleteViaOnClick = (index: number) => {
     dispatch(deleteVia(index));
   };
 
   const addViaOnClick = (pathStepIndex: number) => {
-    const newPathSteps = addElementAtIndex(pathSteps, pathStepIndex, null);
-    dispatch(updatePathSteps({ pathSteps: newPathSteps }));
+    const newPathSteps = addElementAtIndex(pathSteps, pathStepIndex, {
+      id: nextId(),
+      stopType: StdcmStopTypes.PASSAGE_TIME,
+    });
+    dispatch(updatePathSteps(newPathSteps));
   };
-
-  useEffect(() => {
-    setCurrentSimulationInputs((prevState) => ({
-      ...prevState,
-      pathSteps,
-    }));
-  }, [pathSteps]);
 
   return (
     <div className="stdcm-v2-vias-list">
@@ -114,7 +66,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
         intermediatePoints.map((pathStep, index) => {
           const pathStepIndex = index + 1;
           return (
-            <div className="stdcm-v2-vias-bundle" key={nextId('via-')}>
+            <div className="stdcm-v2-vias-bundle" key={pathStep.id}>
               <StdcmDefaultCard
                 hasTip
                 text={t('trainPath.addVia')}
@@ -130,7 +82,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                       <img src={IntermediatePointIcon} alt="intermediate-point" />
                       <span className="icon-index">{pathStepIndex}</span>
                     </div>
-                    <button type="button" onClick={() => deleteViaOnClick(index, pathStep!.id)}>
+                    <button type="button" onClick={() => deleteViaOnClick(index)}>
                       {t('translation:common.delete')}
                     </button>
                   </div>
@@ -141,27 +93,18 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                 <div className="stdcm-v2-vias">
                   <StdcmOperationalPoint
                     updatePoint={(e) => updatePathStepsList(e, pathStepIndex)}
-                    point={pathStep}
-                    opPointId={pathStep?.id || nextId('via-')}
+                    pathStep={pathStep}
                     disabled={disabled}
                   />
                 </div>
-                {pathStep && (
-                  <>
-                    <StdcmStopType
-                      stopTypes={stopTypes[pathStep.id]}
-                      updatePathStepStopType={(newStopType) =>
-                        updateStopType(newStopType, pathStepIndex, pathStep.id)
-                      }
-                    />
-                    <StdcmInputVia
-                      stopType={stopTypes[pathStep.id]}
-                      pathStep={pathStep}
-                      updatePathStepStopTime={(e) =>
-                        updatePathStepStopTime(e, pathStepIndex, pathStep.id)
-                      }
-                    />
-                  </>
+                <StdcmStopType
+                  stopType={pathStep.stopType || StdcmStopTypes.PASSAGE_TIME}
+                  updatePathStepStopType={(newStopType) =>
+                    updateStopType(newStopType, pathStepIndex)
+                  }
+                />
+                {pathStep.stopType && pathStep.stopType !== StdcmStopTypes.PASSAGE_TIME && (
+                  <StdcmInputVia stopType={pathStep.stopType} pathStep={pathStep} />
                 )}
               </StdcmCard>
             </div>

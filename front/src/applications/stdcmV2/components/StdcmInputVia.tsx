@@ -1,75 +1,72 @@
 import { useState, useMemo, useEffect } from 'react';
 
 import { Input } from '@osrd-project/ui-core';
-import { debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { PathStep } from 'reducers/osrdconf/types';
-import { ISO8601Duration2sec } from 'utils/timeManipulation';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 import { StdcmStopTypes } from '../types';
+import { useDebounce } from 'utils/helpers';
+import { useAppDispatch } from 'store';
+import { useOsrdConfActions } from 'common/osrdContext';
+import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 
-const StdcmInputVia = ({
-  stopType,
-  pathStep,
-  updatePathStepStopTime,
-}: {
-  stopType?: StdcmStopTypes;
-  pathStep: PathStep;
-  updatePathStepStopTime: (stopTime: string) => void;
-}) => {
+type StdcmInputViaProps = {
+  stopType: StdcmStopTypes.DRIVER_SWITCH | StdcmStopTypes.SERVICE_STOP;
+  pathStep: StdcmPathStep;
+};
+
+const StdcmInputVia = ({ stopType, pathStep }: StdcmInputViaProps) => {
   const { t } = useTranslation('stdcm');
+  const dispatch = useAppDispatch();
 
-  const [pathStepStopTime, setPathStepStopTime] = useState(
-    pathStep.stopFor ? `${ISO8601Duration2sec(pathStep.stopFor) / 60}` : ''
-  );
+  const { updateStdcmPathStep: updatePathStep } = useOsrdConfActions() as StdcmConfSliceActions;
 
-  const stopWarning = stopType === StdcmStopTypes.DRIVER_SWITCH && Number(pathStepStopTime) < 3;
+  const [inputValue, setInputValue] = useState('');
+  const debouncedInputValue = useDebounce(inputValue, 500);
 
-  const debounceUpdatePathStepStopTime = useMemo(
-    () => debounce((value) => updatePathStepStopTime(value), 500),
-    []
+  const stopWarning = useMemo(
+    () => stopType === StdcmStopTypes.DRIVER_SWITCH && Number(inputValue) < 3,
+    [inputValue]
   );
 
   useEffect(() => {
-    let newStopTime = pathStepStopTime;
-    const isPassageTime = stopType === StdcmStopTypes.PASSAGE_TIME || stopType === undefined;
-    if (isPassageTime && pathStepStopTime !== '0') {
-      newStopTime = '0';
+    if (Number.isNaN(+debouncedInputValue)) {
+      const newPathStep = { ...pathStep, stopFor: debouncedInputValue };
+      dispatch(updatePathStep(newPathStep));
     }
-    if (newStopTime !== pathStepStopTime) {
-      setPathStepStopTime(newStopTime);
-      updatePathStepStopTime(newStopTime);
+  }, [debouncedInputValue]);
+
+  useEffect(() => {
+    const { stopFor } = pathStep;
+    if (stopFor && stopFor !== inputValue) {
+      setInputValue(stopFor);
     }
-  }, [pathStep.stopFor, stopType]);
+  }, [pathStep.stopFor]);
 
   return (
-    stopType !== StdcmStopTypes.PASSAGE_TIME &&
-    stopType !== undefined && (
-      <div className="stdcm-v2-via-stop-for stop-time">
-        <Input
-          id="stdcm-v2-via-stop-time"
-          type="text"
-          label={t('trainPath.stopFor')}
-          onChange={(e) => {
-            // TODO: Find a better way to prevent user from entering decimal values
-            const value = e.target.value.replace(/[\D.,]/g, '');
-            setPathStepStopTime(value);
-            debounceUpdatePathStepStopTime(value);
-          }}
-          value={pathStepStopTime}
-          trailingContent="minutes"
-          statusWithMessage={
-            stopWarning
-              ? {
-                  status: 'warning',
-                  message: t('trainPath.warningMinStopTime'),
-                }
-              : undefined
-          }
-        />
-      </div>
-    )
+    <div className="stdcm-v2-via-stop-for stop-time">
+      <Input
+        id="stdcm-v2-via-stop-time"
+        type="text"
+        label={t('trainPath.stopFor')}
+        onChange={(e) => {
+          // TODO: Find a better way to prevent user from entering decimal values
+          const value = e.target.value.replace(/[\D.,]/g, '');
+          setInputValue(value);
+        }}
+        value={inputValue}
+        trailingContent="minutes"
+        statusWithMessage={
+          stopWarning
+            ? {
+                status: 'warning',
+                message: t('trainPath.warningMinStopTime'),
+              }
+            : undefined
+        }
+      />
+    </div>
   );
 };
 

@@ -102,6 +102,11 @@ export default function useSearchOperationalPoint({
     if (isEmpty(searchResults)) setChCodeFilter(undefined);
   }, [searchResults]);
 
+
+  useEffect(() => {
+    console.log('on monte le composant');
+  }, []);
+
   return {
     searchTerm,
     chCodeFilter,

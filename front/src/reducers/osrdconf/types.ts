@@ -51,6 +51,8 @@ export interface StandardAllowance {
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {
+  originDatetime?: Date;
+  stdcmPathSteps: StdcmPathStep[];
   maximumRunTime: number;
   standardStdcmAllowance?: StandardAllowance;
 }
@@ -62,12 +64,8 @@ export type PathStep = PathItemLocation & {
         If true, the train schedule is consider as invalid and must be edited */
   deleted?: boolean;
   arrival?: IsoDurationString | null;
-  arrivalType?: ArrivalTimeTypes;
-  arrivalToleranceBefore?: number;
-  arrivalToleranceAfter?: number;
   locked?: boolean;
   stopFor?: string | null;
-  stopType?: StdcmStopTypes;
   theoreticalMargin?: string;
   receptionSignal?: ReceptionSignal;
   kp?: string;
@@ -85,3 +83,16 @@ export type PathStep = PathItemLocation & {
     trackNumber: number;
   };
 };
+
+export type StdcmPathStep = {
+  id: string;
+  arrival?: Date;
+  stopFor?: string;
+  isVia: boolean;
+  location?: PathItemLocation & {
+    name: string;
+    coordinates: number[];
+  };
+  arrivalToleranceBefore?: number;
+  arrivalToleranceAfter?: number;
+} & ({ isVia: true; stopType?: StdcmStopTypes } | { isVia: false; arrivalType: ArrivalTimeTypes });
