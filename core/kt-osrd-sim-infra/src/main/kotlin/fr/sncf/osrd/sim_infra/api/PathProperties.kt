@@ -45,6 +45,8 @@ interface PathProperties {
     @JvmName("getSpeedLimitProperties")
     fun getSpeedLimitProperties(trainTag: String?): DistanceRangeMap<SpeedLimitProperty>
 
+    fun getZones(): DistanceRangeMap<ZoneId>
+
     @JvmName("getLength") fun getLength(): Distance
 
     @JvmName("getTrackLocationAtOffset")
