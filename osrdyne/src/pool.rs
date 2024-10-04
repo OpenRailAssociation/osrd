@@ -161,7 +161,7 @@ impl Pool {
             .await?;
 
         // setup the policy for request queues
-        let request_queues_policy_id = format!("{}-req-queues", self.pool_id);
+        let request_queues_policy_id = format!("{}-queues", self.pool_id);
         if self.request_queue_policy.is_empty() {
             management_client
                 .remove_policy(request_queues_policy_id)
@@ -171,7 +171,7 @@ impl Pool {
                 .set_policy(
                     request_queues_policy_id,
                     Policy {
-                        pattern: format!("^{}", self.pool_req_prefix),
+                        pattern: format!("^{}-", self.pool_id),
                         definition: self.request_queue_policy.clone(),
                         priority: Some(10),
                         apply_to: Some(PolicyScope::Queues),
