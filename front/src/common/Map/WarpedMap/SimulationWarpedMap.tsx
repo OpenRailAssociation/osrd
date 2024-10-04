@@ -11,8 +11,7 @@ import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
 
 import type { Layer } from 'applications/editor/consts';
-import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import { type GeoJsonLineStringValue } from 'common/api/osrdEditoastApi';
+import { type GeoJsonLineStringValue, type PathProperties } from 'common/api/osrdEditoastApi';
 import { LoaderFill } from 'common/Loaders';
 import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
 import DataLoader from 'common/Map/WarpedMap/DataLoader';
@@ -54,11 +53,11 @@ function transformDataStatePayload(
  */
 const SimulationWarpedMap = ({
   collapsed,
-  pathProperties,
+  pathGeometry,
   // TODO: fix warped map - pass the selected train simulation results (SimulationResponseSuccess) in props
 }: {
   collapsed?: boolean;
-  pathProperties?: PathPropertiesFormatted;
+  pathGeometry?: PathProperties['geometry'];
 }) => {
   const dispatch = useAppDispatch();
   const infraID = useInfraID();
@@ -169,9 +168,9 @@ const SimulationWarpedMap = ({
   }, [chart, state]);
 
   const itineraryState: Feature<LineString> | null = useMemo(() => {
-    if (pathProperties) return lineString(pathProperties.geometry.coordinates);
+    if (pathGeometry) return lineString(pathGeometry.coordinates);
     return null;
-  }, [pathProperties]);
+  }, [pathGeometry]);
 
   const warpedItinerary = useMemo(() => {
     if (itineraryState && state.type === 'dataLoaded')
@@ -230,8 +229,8 @@ const SimulationWarpedMap = ({
    */
   useEffect(() => {
     setState({ type: 'loading' });
-    if (pathProperties) updateWarpedMapState(pathProperties.geometry.coordinates);
-  }, [pathProperties]);
+    if (pathGeometry) updateWarpedMapState(pathGeometry.coordinates);
+  }, [pathGeometry]);
 
   /**
    * This effect tries to gradually improve the quality of the OSRD data.

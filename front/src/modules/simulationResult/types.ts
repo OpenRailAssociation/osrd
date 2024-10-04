@@ -9,6 +9,7 @@ import type {
   TrainSpaceTimeData,
 } from 'applications/operationalStudies/types';
 import type {
+  PathProperties,
   PathfindingResultSuccess,
   RollingStockWithLiveries,
   TrainScheduleResult,
@@ -29,5 +30,6 @@ export type ProjectionData = {
   trainSchedule: TrainScheduleResult;
   projectedTrains: TrainSpaceTimeData[];
   path: PathfindingResultSuccess;
+  geometry: PathProperties['geometry'];
   allTrainsProjected: boolean;
 };
