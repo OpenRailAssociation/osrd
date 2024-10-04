@@ -490,7 +490,8 @@ async fn update_locked(
 
     let conn = &mut db_pool.get().await?;
 
-    // FIXME: check that the rolling stock exists (the Option<RollingSrtockModel> is ignored here)
+    // FIXME: check that the rolling stock exists (the Option<RollingStockModel> is ignored here)
+    // should return a 404 instead of a 204 in case the identifier doesn't exist.
     RollingStockModel::changeset()
         .locked(locked)
         .update(conn, rolling_stock_id)
