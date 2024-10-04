@@ -2281,8 +2281,21 @@ export type PathProperties = {
     /** List of `n+1` values associated to the ranges */
     values: number[];
   } | null;
+  zones?: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: string[];
+  } | null;
 };
-export type Property = 'slopes' | 'curves' | 'electrifications' | 'geometry' | 'operational_points';
+export type Property =
+  | 'slopes'
+  | 'curves'
+  | 'electrifications'
+  | 'geometry'
+  | 'operational_points'
+  | 'zones';
 export type PathPropertiesInput = {
   /** List of track sections */
   track_section_ranges: TrackRange[];
