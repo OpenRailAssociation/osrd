@@ -21,7 +21,8 @@ fun makePathPropResponse(
         makeCurves(pathProperties),
         makeElectrifications(pathProperties),
         makeGeographic(pathProperties),
-        makeOperationalPoints(pathProperties, rawInfra)
+        makeOperationalPoints(pathProperties, rawInfra),
+        makeZones(pathProperties, rawInfra)
     )
 }
 
@@ -105,6 +106,11 @@ private fun makeOperationalPoints(
         res.add(opResult)
     }
     return res
+}
+
+private fun makeZones(path: PathProperties, rawInfra: RawSignalingInfra): RangeValues<String> {
+    val zoneIds = makeRangeValues(path.getZones())
+    return RangeValues(zoneIds.internalBoundaries, zoneIds.values.map { rawInfra.getZoneName(it) })
 }
 
 private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeValues<T> {
