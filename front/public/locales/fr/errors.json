@@ -137,8 +137,8 @@
       "NameAlreadyUsed": "Un matériel roulant avec le nom '{{name}}' existe déjà",
       "KeyNotFound": "Matériel roulant '{{rolling_stock_key.key}}' non trouvé",
       "LiveryMultipartError": "Requête multipart invalide pour upload de livrée",
-      "RollingStockIsLocked": "Matériel roulant '{{rolling_stock_id}}' est verrouillé",
-      "RollingStockIsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé"
+      "IsLocked": "Matériel roulant '{{rolling_stock_id}}' est verrouillé",
+      "IsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé"
     },
     "scenario": {
       "NotFound": "Scénario non trouvé",

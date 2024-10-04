@@ -2757,12 +2757,12 @@ export type RollingStockError =
       };
     }
   | {
-      RollingStockIsLocked: {
+      IsLocked: {
         rolling_stock_id: number;
       };
     }
   | {
-      RollingStockIsUsed: {
+      IsUsed: {
         rolling_stock_id: number;
         usage: TrainScheduleScenarioStudyProject[];
       };
