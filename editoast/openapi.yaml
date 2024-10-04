@@ -4979,7 +4979,7 @@ components:
         status:
           type: integer
           enum:
-          - 400
+          - 409
         type:
           type: string
           enum:

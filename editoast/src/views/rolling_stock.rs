@@ -131,7 +131,7 @@ pub enum RollingStockError {
     NameAlreadyUsed { name: String },
 
     #[error("RollingStock '{rolling_stock_id}' is locked")]
-    #[editoast_error(status = 400)]
+    #[editoast_error(status = 409)]
     RollingStockIsLocked { rolling_stock_id: i64 },
 
     #[error("RollingStock '{rolling_stock_id}' is used")]
@@ -1178,7 +1178,7 @@ pub mod tests {
         // WHEN
         let response: InternalError = app
             .fetch(request)
-            .assert_status(StatusCode::BAD_REQUEST)
+            .assert_status(StatusCode::CONFLICT)
             .json_into();
 
         // THEN
@@ -1288,7 +1288,7 @@ pub mod tests {
         // WHEN
         let response: InternalError = app
             .fetch(request)
-            .assert_status(StatusCode::BAD_REQUEST)
+            .assert_status(StatusCode::CONFLICT)
             .json_into();
 
         // THEN
