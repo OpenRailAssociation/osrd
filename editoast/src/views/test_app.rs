@@ -6,7 +6,7 @@ use std::{sync::Arc, time::Duration};
 
 use axum::Router;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
-use chashmap::CHashMap;
+use dashmap::DashMap;
 use editoast_models::db_connection_pool::create_connection_pool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
@@ -115,7 +115,7 @@ impl TestAppBuilder {
         };
 
         // Setup infra cache map
-        let infra_caches = CHashMap::<i64, InfraCache>::default().into();
+        let infra_caches = DashMap::<i64, InfraCache>::default().into();
 
         // Load speed limit tag config
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());

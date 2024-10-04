@@ -6,9 +6,9 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use chashmap::CHashMap;
-use chashmap::ReadGuard;
-use chashmap::WriteGuard;
+use dashmap::mapref::one::Ref;
+use dashmap::mapref::one::RefMut;
+use dashmap::DashMap;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Double;
@@ -526,15 +526,15 @@ impl InfraCache {
     /// If the infra is not found in the database, it returns `None`
     pub async fn get_or_load<'a>(
         conn: &mut DbConnection,
-        infra_caches: &'a CHashMap<i64, InfraCache>,
+        infra_caches: &'a DashMap<i64, InfraCache>,
         infra: &Infra,
-    ) -> Result<ReadGuard<'a, i64, InfraCache>> {
+    ) -> Result<Ref<'a, i64, InfraCache>> {
         // Cache hit
         if let Some(infra_cache) = infra_caches.get(&infra.id) {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
+        infra_caches.insert(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
         Ok(infra_caches.get(&infra.id).unwrap())
     }
 
@@ -542,15 +542,15 @@ impl InfraCache {
     /// If the infra is not found in the database, it returns `None`
     pub async fn get_or_load_mut<'a>(
         conn: &mut DbConnection,
-        infra_caches: &'a CHashMap<i64, InfraCache>,
+        infra_caches: &'a DashMap<i64, InfraCache>,
         infra: &Infra,
-    ) -> Result<WriteGuard<'a, i64, InfraCache>> {
+    ) -> Result<RefMut<'a, i64, InfraCache>> {
         // Cache hit
         if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
+        infra_caches.insert(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
         Ok(infra_caches.get_mut(&infra.id).unwrap())
     }
 
@@ -879,7 +879,7 @@ pub enum InfraCacheEditoastError {
 
 #[cfg(test)]
 pub mod tests {
-    use chashmap::CHashMap;
+    use dashmap::DashMap;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Waypoint;
@@ -1373,7 +1373,7 @@ pub mod tests {
     async fn load_infra_cache() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
-        let infra_caches = CHashMap::new();
+        let infra_caches = DashMap::new();
         InfraCache::get_or_load(&mut db_pool.get_ok(), &infra_caches, &infra)
             .await
             .unwrap();
@@ -1388,7 +1388,7 @@ pub mod tests {
     async fn load_infra_cache_mut() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
-        let infra_caches = CHashMap::new();
+        let infra_caches = DashMap::new();
         InfraCache::get_or_load_mut(&mut db_pool.get_ok(), &infra_caches, &infra)
             .await
             .unwrap();

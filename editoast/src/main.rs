@@ -18,7 +18,6 @@ use axum::extract::DefaultBodyLimit;
 use axum::extract::FromRef;
 use axum::{Router, ServiceExt};
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
-use chashmap::CHashMap;
 use clap::Parser;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::{
@@ -28,6 +27,7 @@ use client::{
     MakeMigrationArgs, RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
 };
 use client::{MapLayersConfig, PostgresConfig};
+use dashmap::DashMap;
 use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
@@ -339,7 +339,7 @@ pub struct AppState {
     pub db_pool_v1: Arc<DbConnectionPool>,
     pub db_pool_v2: Arc<DbConnectionPoolV2>,
     pub redis: Arc<RedisClient>,
-    pub infra_caches: Arc<CHashMap<i64, InfraCache>>,
+    pub infra_caches: Arc<DashMap<i64, InfraCache>>,
     pub map_layers: Arc<MapLayers>,
     pub map_layers_config: Arc<MapLayersConfig>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
@@ -368,7 +368,7 @@ impl AppState {
         let db_pool_v2 = Arc::new(db_pool_v2);
 
         // Setup infra cache map
-        let infra_caches = CHashMap::<i64, InfraCache>::default().into();
+        let infra_caches = DashMap::<i64, InfraCache>::default().into();
 
         // Static list of configured speed-limit tag ids
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
