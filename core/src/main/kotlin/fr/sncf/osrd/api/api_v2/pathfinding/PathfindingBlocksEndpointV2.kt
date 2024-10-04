@@ -4,19 +4,20 @@ import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.api_v2.TrackLocation
+import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.api.pathfinding.constraints.*
-import fr.sncf.osrd.api.pathfinding.makeHeuristics
-import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.stdcm.graph.extendLookaheadUntil
+import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -51,20 +52,20 @@ class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take
             val body = RqPrint(req).printBody()
             val request =
                 pathfindingRequestAdapter.fromJson(body)
-                    ?: return RsWithStatus(RsText("missing request body"), 400)
+                    ?: return RsWithStatus(RsText("Missing request body"), 400)
             // Load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
             val res = runPathfinding(infra, request)
-            pathfindingLogger.info("success")
+            pathfindingLogger.info("Success")
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(res)))
         } catch (error: NoPathFoundException) {
-            pathfindingLogger.info("no path found")
+            pathfindingLogger.info("No path found")
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(error.response)))
         } catch (error: OSRDError) {
             if (!error.osrdErrorType.isCacheable) {
                 ExceptionHandler.handle(error)
             } else {
-                pathfindingLogger.info("pathfinding failed: ${error.message}")
+                pathfindingLogger.info("Pathfinding failed: ${error.message}")
                 val response = PathfindingFailed(error)
                 RsJson(RsWithBody(pathfindingResponseAdapter.toJson(response)))
             }
@@ -75,7 +76,6 @@ class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take
 }
 
 /** Runs the pathfinding with the infra and request already parsed */
-@JvmName("runPathfinding")
 @Throws(OSRDError::class)
 fun runPathfinding(
     infra: FullInfra,
@@ -100,7 +100,8 @@ fun runPathfinding(
             request.rollingStockSupportedSignalingSystems,
         )
 
-    val heuristics = makeHeuristics(infra, waypoints, request.rollingStockMaximumSpeed)
+    val heuristics =
+        makeHeuristicsForPathfindingEdges(infra, waypoints, request.rollingStockMaximumSpeed)
 
     // Compute the paths from the entry waypoint to the exit waypoint
     val path = computePaths(infra, waypoints, constraints, heuristics, request, request.timeout)
@@ -138,7 +139,7 @@ private fun computePaths(
     infra: FullInfra,
     waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
     constraints: List<PathfindingConstraint<Block>>,
-    remainingDistanceEstimators: List<AStarHeuristicId<Block>>,
+    remainingDistanceEstimators: List<AStarHeuristic<PathfindingEdge, Block>>,
     initialRequest: PathfindingBlockRequest,
     timeout: Double?,
 ): PathfindingResultId<Block> {
@@ -150,36 +151,111 @@ private fun computePaths(
             initialRequest.rollingStockMaximumSpeed,
             initialRequest.rollingStockLength
         )
+    val constraintCombiner = ConstraintCombiner(constraints.toMutableList())
     val pathFound =
-        Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
+        Pathfinding(PathfindingGraph())
             .setTimeout(timeout)
-            .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
+            .setEdgeToLength { edge -> Offset(edge.length.distance) }
             .setRangeCost { range ->
-                mrspBuilder.getBlockTime(range.edge, range.end) -
-                    mrspBuilder.getBlockTime(range.edge, range.start)
+                mrspBuilder.getBlockTime(range.edge.block, Offset(range.end.distance)) -
+                    mrspBuilder.getBlockTime(range.edge.block, Offset(range.start.distance))
             }
             .setRemainingDistanceEstimator(remainingDistanceEstimators)
-            .addBlockedRangeOnEdges(constraints)
-            .runPathfinding(waypoints)
+            .runPathfinding(
+                getStartLocations(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    waypoints,
+                    listOf(constraintCombiner)
+                ),
+                getTargetsOnEdges(waypoints)
+            )
+
     if (pathFound != null) {
-        pathfindingLogger.info("path found in block graph, start postprocessing")
-        return pathFound
+        pathfindingLogger.info("Path found, start postprocessing")
+        return makeBlockPath(pathFound)!!
     }
-    pathfindingLogger.info("no path found, identifying issues")
 
     // Handling errors
     // Check if pathfinding failed due to incompatible constraints
+    pathfindingLogger.info("No path found, identifying issues")
     val elapsedSeconds = Duration.between(start, Instant.now()).toSeconds()
+    throwNoPathFoundException(
+        infra,
+        waypoints,
+        constraints,
+        mrspBuilder,
+        remainingDistanceEstimators,
+        initialRequest,
+        timeout?.minus(elapsedSeconds)
+    )
+}
+
+private fun getStartLocations(
+    rawInfra: RawSignalingInfra,
+    blockInfra: BlockInfra,
+    waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
+    constraints: List<PathfindingConstraint<Block>>,
+): Collection<EdgeLocation<PathfindingEdge, Block>> {
+    val res = mutableListOf<EdgeLocation<PathfindingEdge, Block>>()
+    val firstStep = waypoints[0]
+    val stops = listOf(waypoints.last())
+    for (location in firstStep) {
+        val infraExplorers = initInfraExplorer(rawInfra, blockInfra, location, stops, constraints)
+        val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 1) }
+        for (explorer in extended) {
+            val edge = PathfindingEdge(explorer)
+            res.add(EdgeLocation(edge, location.offset))
+        }
+    }
+    return res
+}
+
+private fun getTargetsOnEdges(
+    waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
+): List<TargetsOnEdge<PathfindingEdge, Block>> {
+    val targetsOnEdges = ArrayList<TargetsOnEdge<PathfindingEdge, Block>>()
+    for (i in 1 until waypoints.size) {
+        targetsOnEdges.add { edge: PathfindingEdge ->
+            val res = HashSet<EdgeLocation<PathfindingEdge, Block>>()
+            for (target in waypoints[i]) {
+                if (target.edge == edge.block) res.add(EdgeLocation(edge, target.offset))
+            }
+            res
+        }
+    }
+    return targetsOnEdges
+}
+
+private fun throwNoPathFoundException(
+    infra: FullInfra,
+    waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
+    constraints: Collection<PathfindingConstraint<Block>>,
+    mrspBuilder: CachedBlockMRSPBuilder,
+    remainingDistanceEstimators: List<AStarHeuristic<PathfindingEdge, Block>>,
+    initialRequest: PathfindingBlockRequest,
+    timeout: Double?
+): Nothing {
     try {
+        val possiblePathWithoutErrorNoConstraints =
+            Pathfinding(PathfindingGraph())
+                .setTimeout(timeout)
+                .setEdgeToLength { edge -> Offset(edge.length.distance) }
+                .setRangeCost { range ->
+                    mrspBuilder.getBlockTime(range.edge.block, Offset(range.end.distance)) -
+                        mrspBuilder.getBlockTime(range.edge.block, Offset(range.start.distance))
+                }
+                .setRemainingDistanceEstimator(remainingDistanceEstimators)
+                .runPathfinding(
+                    getStartLocations(infra.rawInfra, infra.blockInfra, waypoints, listOf()),
+                    getTargetsOnEdges(waypoints)
+                )
         val incompatibleConstraintsResponse =
             buildIncompatibleConstraintsResponse(
                 infra,
-                waypoints,
+                makeBlockPath(possiblePathWithoutErrorNoConstraints),
                 constraints,
-                remainingDistanceEstimators,
-                mrspBuilder,
-                initialRequest,
-                timeout?.minus(elapsedSeconds)
+                initialRequest
             )
         if (incompatibleConstraintsResponse != null) {
             throw NoPathFoundException(incompatibleConstraintsResponse)
@@ -194,152 +270,14 @@ private fun computePaths(
     throw NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))
 }
 
-private fun buildIncompatibleConstraintsResponse(
-    infra: FullInfra,
-    waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
-    constraints: List<PathfindingConstraint<Block>>,
-    remainingDistanceEstimators: List<AStarHeuristicId<Block>>,
-    mrspBuilder: CachedBlockMRSPBuilder,
-    initialRequest: PathfindingBlockRequest,
-    timeout: Double?
-): IncompatibleConstraintsPathResponse? {
-    val possiblePathWithoutErrorNoConstraints =
-        Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-            .setTimeout(timeout)
-            .setEdgeToLength { block -> infra.blockInfra.getBlockLength(block) }
-            .setRangeCost { range ->
-                mrspBuilder.getBlockTime(range.edge, range.end) -
-                    mrspBuilder.getBlockTime(range.edge, range.start)
-            }
-            .setRemainingDistanceEstimator(remainingDistanceEstimators)
-            .runPathfinding(waypoints)
-
-    if (
-        possiblePathWithoutErrorNoConstraints == null ||
-            possiblePathWithoutErrorNoConstraints.ranges.isEmpty()
-    ) {
-        return null
-    }
-
-    val pathRanges = possiblePathWithoutErrorNoConstraints.ranges
-    val pathProps =
-        makePathProps(infra.rawInfra, infra.blockInfra, pathRanges.map { it.edge }, Offset.zero())
-
-    val elecConstraints = constraints.filterIsInstance<ElectrificationConstraints>()
-    assert(elecConstraints.size < 2)
-    val elecBlockedRangeValues =
-        getConstraintsDistanceRange(
-                infra,
-                pathRanges,
-                pathProps.getElectrification(),
-                elecConstraints.firstOrNull()
-            )
-            .map { RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value) }
-
-    val gaugeConstraints = constraints.filterIsInstance<LoadingGaugeConstraints>()
-    assert(gaugeConstraints.size < 2)
-    val gaugeBlockedRanges =
-        getConstraintsDistanceRange(
-                infra,
-                pathRanges,
-                pathProps.getLoadingGauge(),
-                gaugeConstraints.firstOrNull()
-            )
-            .map { RangeValue<String>(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), null) }
-
-    val signalingSystemConstraints = constraints.filterIsInstance<SignalingSystemConstraints>()
-    assert(signalingSystemConstraints.size < 2)
-    val blockList = pathRanges.map { it.edge }
-    val pathSignalingSystem = getPathSignalingSystems(infra, blockList)
-    val signalingSystemBlockedRangeValues =
-        getConstraintsDistanceRange(
-                infra,
-                pathRanges,
-                pathSignalingSystem,
-                signalingSystemConstraints.firstOrNull()
-            )
-            .map { RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value) }
-
-    if (
-        listOf(elecBlockedRangeValues, gaugeBlockedRanges, signalingSystemBlockedRangeValues).all {
-            it.isEmpty()
-        }
-    ) {
-        return null
-    }
-
-    return IncompatibleConstraintsPathResponse(
-        runPathfindingPostProcessing(infra, initialRequest, possiblePathWithoutErrorNoConstraints),
-        IncompatibleConstraints(
-            elecBlockedRangeValues,
-            gaugeBlockedRanges,
-            signalingSystemBlockedRangeValues
-        )
+private fun makeBlockPath(
+    path: Pathfinding.Result<PathfindingEdge, Block>?
+): PathfindingResultId<Block>? {
+    if (path == null) return null
+    return Pathfinding.Result(
+        path.ranges.map { EdgeRange(it.edge.block, it.start, it.end) },
+        path.waypoints.map { EdgeLocation(it.edge.block, it.offset) }
     )
-}
-
-private fun <T> getConstraintsDistanceRange(
-    infra: FullInfra,
-    pathRanges: List<Pathfinding.EdgeRange<BlockId, Block>>,
-    pathConstrainedValues: DistanceRangeMap<T>,
-    constraint: PathfindingConstraint<Block>?
-): DistanceRangeMap<T> {
-    if (constraint == null) {
-        return distanceRangeMapOf()
-    }
-
-    val blockedRanges = getBlockedRanges(infra, pathRanges, constraint)
-    val filteredRangeValues = filterIntersection(pathConstrainedValues, blockedRanges)
-    val travelledPathOffset = pathRanges.first().start.distance
-    filteredRangeValues.shiftPositions(-travelledPathOffset)
-    return filteredRangeValues
-}
-
-private fun getBlockedRanges(
-    infra: FullInfra,
-    pathRanges: List<Pathfinding.EdgeRange<BlockId, Block>>,
-    currentConstraint: PathfindingConstraint<Block>
-): DistanceRangeMap<Boolean> {
-    val blockList = pathRanges.map { it.edge }
-    val blockedRanges = distanceRangeMapOf<Boolean>()
-    var startBlockPathOffset = Distance.ZERO
-    for (block in blockList) {
-        currentConstraint.apply(block).map {
-            blockedRanges.put(
-                startBlockPathOffset + it.start.distance,
-                startBlockPathOffset + it.end.distance,
-                true
-            )
-        }
-        startBlockPathOffset += infra.blockInfra.getBlockLength(block).distance
-    }
-    blockedRanges.truncate(
-        pathRanges.first().start.distance,
-        startBlockPathOffset - infra.blockInfra.getBlockLength(blockList.last()).distance +
-            pathRanges.last().end.distance
-    )
-    return blockedRanges
-}
-
-private fun getPathSignalingSystems(
-    infra: FullInfra,
-    blockList: List<BlockId>
-): DistanceRangeMap<String> {
-    val pathSignalingSystem = distanceRangeMapOf<String>()
-    var startBlockPathOffset = Distance.ZERO
-    for (block in blockList) {
-        val blockLength = infra.blockInfra.getBlockLength(block).distance
-        val blockSignalingSystemIdx = infra.blockInfra.getBlockSignalingSystem(block)
-        val blockSignalingSystemName =
-            infra.signalingSimulator.sigModuleManager.getName(blockSignalingSystemIdx)
-        pathSignalingSystem.put(
-            startBlockPathOffset,
-            startBlockPathOffset + blockLength,
-            blockSignalingSystemName
-        )
-        startBlockPathOffset += blockLength
-    }
-    return pathSignalingSystem
 }
 
 /**
