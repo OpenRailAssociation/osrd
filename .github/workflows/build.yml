@@ -557,7 +557,7 @@ jobs:
           docker run --name=editoast-test --net=host -v $PWD/output:/output \
             -e DATABASE_URL="postgres://osrd:password@localhost:5432/osrd" \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
-            /bin/bash -c "diesel migration run --locked-schema && RUST_BACKTRACE=1 cargo test --workspace --verbose -- --test-threads=4 && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+            /bin/sh -c "diesel migration run --locked-schema && RUST_BACKTRACE=1 cargo test --workspace --verbose -- --test-threads=4 && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
 
           exit $(docker wait editoast-test)
 
@@ -653,7 +653,7 @@ jobs:
         run: |
           docker run --name=editoast-test --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast }} \
-            /bin/bash -c 'editoast openapi > /output/openapi.yaml'
+            /bin/sh -c 'editoast openapi > /output/openapi.yaml'
 
       - name: Check for unexpected changes
         run: |
@@ -691,7 +691,7 @@ jobs:
         run: |
           docker run --name=gateway-test --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
-            /bin/bash -c "cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+            /bin/sh -c "cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
 
           exit $(docker wait gateway-test)
 
@@ -753,7 +753,7 @@ jobs:
         run: |
           docker run --name=osrdyne-test --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
-            /bin/bash -c "cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+            /bin/sh -c "cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
 
           exit $(docker wait osrdyne-test)
 
