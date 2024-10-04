@@ -16,7 +16,8 @@ class PathPropResponse(
     val curves: RangeValues<Double>,
     val electrifications: RangeValues<Electrification>,
     val geometry: RJSLineString,
-    @Json(name = "operational_points") val operationalPoints: List<OperationalPointResponse>
+    @Json(name = "operational_points") val operationalPoints: List<OperationalPointResponse>,
+    val zones: RangeValues<String>,
 )
 
 interface Electrification
