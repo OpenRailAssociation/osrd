@@ -769,6 +769,56 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetable', 'train_schedule'],
       }),
+      getTowedRollingStock: build.query<
+        GetTowedRollingStockApiResponse,
+        GetTowedRollingStockApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/towed_rolling_stock`,
+          params: { page: queryArg.page, page_size: queryArg.pageSize },
+        }),
+        providesTags: ['rolling_stock'],
+      }),
+      postTowedRollingStock: build.mutation<
+        PostTowedRollingStockApiResponse,
+        PostTowedRollingStockApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/towed_rolling_stock`,
+          method: 'POST',
+          body: queryArg.towedRollingStockForm,
+        }),
+        invalidatesTags: ['rolling_stock'],
+      }),
+      getTowedRollingStockByTowedRollingStockId: build.query<
+        GetTowedRollingStockByTowedRollingStockIdApiResponse,
+        GetTowedRollingStockByTowedRollingStockIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/towed_rolling_stock/${queryArg.towedRollingStockId}` }),
+        providesTags: ['rolling_stock'],
+      }),
+      patchTowedRollingStockByTowedRollingStockId: build.mutation<
+        PatchTowedRollingStockByTowedRollingStockIdApiResponse,
+        PatchTowedRollingStockByTowedRollingStockIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/towed_rolling_stock/${queryArg.towedRollingStockId}`,
+          method: 'PATCH',
+          body: queryArg.towedRollingStockForm,
+        }),
+        invalidatesTags: ['rolling_stock'],
+      }),
+      patchTowedRollingStockByTowedRollingStockIdLocked: build.mutation<
+        PatchTowedRollingStockByTowedRollingStockIdLockedApiResponse,
+        PatchTowedRollingStockByTowedRollingStockIdLockedApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/towed_rolling_stock/${queryArg.towedRollingStockId}/locked`,
+          method: 'PATCH',
+          body: queryArg.towedRollingStockLockedForm,
+        }),
+        invalidatesTags: ['rolling_stock'],
+      }),
       postTrainSchedule: build.query<PostTrainScheduleApiResponse, PostTrainScheduleApiArg>({
         query: (queryArg) => ({ url: `/train_schedule`, method: 'POST', body: queryArg.body }),
         providesTags: ['train_schedule'],
@@ -1513,6 +1563,34 @@ export type PostTimetableByIdTrainScheduleApiArg = {
   /** A timetable ID */
   id: number;
   body: TrainScheduleBase[];
+};
+export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
+  results: TowedRollingStock[];
+};
+export type GetTowedRollingStockApiArg = {
+  page?: number;
+  pageSize?: number | null;
+};
+export type PostTowedRollingStockApiResponse =
+  /** status 200 The created towed rolling stock */ TowedRollingStock;
+export type PostTowedRollingStockApiArg = {
+  towedRollingStockForm: TowedRollingStockForm;
+};
+export type GetTowedRollingStockByTowedRollingStockIdApiResponse =
+  /** status 200 The requested towed rolling stock */ TowedRollingStock;
+export type GetTowedRollingStockByTowedRollingStockIdApiArg = {
+  towedRollingStockId: number;
+};
+export type PatchTowedRollingStockByTowedRollingStockIdApiResponse =
+  /** status 200 The created towed rolling stock */ TowedRollingStock;
+export type PatchTowedRollingStockByTowedRollingStockIdApiArg = {
+  towedRollingStockId: number;
+  towedRollingStockForm: TowedRollingStockForm;
+};
+export type PatchTowedRollingStockByTowedRollingStockIdLockedApiResponse = unknown;
+export type PatchTowedRollingStockByTowedRollingStockIdLockedApiArg = {
+  towedRollingStockId: number;
+  towedRollingStockLockedForm: TowedRollingStockLockedForm;
 };
 export type PostTrainScheduleApiResponse =
   /** status 200 Retrieve a list of train schedule */ TrainScheduleResult[];
@@ -3134,6 +3212,34 @@ export type TrainScheduleBase = {
 export type TrainScheduleResult = TrainScheduleBase & {
   id: number;
   timetable_id: number;
+};
+export type TowedRollingStock = {
+  comfort_acceleration: number;
+  gamma: Gamma;
+  id: number;
+  inertia_coefficient: number;
+  length: number;
+  locked: boolean;
+  mass: number;
+  name: string;
+  railjson_version: string;
+  rolling_resistance: RollingResistance;
+  startup_acceleration: number;
+};
+export type TowedRollingStockForm = {
+  comfort_acceleration: number;
+  gamma: Gamma;
+  inertia_coefficient: number;
+  length: number;
+  locked: boolean;
+  mass: number;
+  name: string;
+  rolling_resistance: RollingResistance;
+  startup_acceleration: number;
+};
+export type TowedRollingStockLockedForm = {
+  /** New locked value */
+  locked: boolean;
 };
 export type ProjectPathTrainResult = {
   /** List of signal updates along the path */

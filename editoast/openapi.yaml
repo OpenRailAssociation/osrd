@@ -2646,6 +2646,122 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TrainScheduleResult'
+  /towed_rolling_stock:
+    get:
+      tags:
+      - rolling_stock
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 25
+          nullable: true
+          minimum: 1
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TowedRollingStock'
+    post:
+      tags:
+      - rolling_stock
+      summary: Create a rolling stock
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TowedRollingStockForm'
+        required: true
+      responses:
+        '200':
+          description: The created towed rolling stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TowedRollingStock'
+  /towed_rolling_stock/{towed_rolling_stock_id}:
+    get:
+      tags:
+      - rolling_stock
+      parameters:
+      - name: towed_rolling_stock_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The requested towed rolling stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TowedRollingStock'
+    patch:
+      tags:
+      - rolling_stock
+      parameters:
+      - name: towed_rolling_stock_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TowedRollingStockForm'
+        required: true
+      responses:
+        '200':
+          description: The created towed rolling stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TowedRollingStock'
+  /towed_rolling_stock/{towed_rolling_stock_id}/locked:
+    patch:
+      tags:
+      - rolling_stock
+      parameters:
+      - name: towed_rolling_stock_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TowedRollingStockLockedForm'
+        required: true
+      responses:
+        '204':
+          description: No content when successful
   /train_schedule:
     post:
       tags:
@@ -4123,6 +4239,8 @@ components:
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
+      - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
+      - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIsLocked'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
@@ -5397,6 +5515,54 @@ components:
           type: string
           enum:
           - editoast:timetable:NotFound
+    EditoastTowedRollingStockErrorIdNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - towed_rolling_stock_id
+          properties:
+            towed_rolling_stock_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:towedrollingstocks:IdNotFound
+    EditoastTowedRollingStockErrorIsLocked:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - towed_rolling_stock_id
+          properties:
+            towed_rolling_stock_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 409
+        type:
+          type: string
+          enum:
+          - editoast:towedrollingstocks:IsLocked
     EditoastTrainScheduleErrorBatchTrainScheduleNotFound:
       type: object
       required:
@@ -10033,6 +10199,105 @@ components:
         timetable_id:
           type: integer
           format: int64
+    TowedRollingStock:
+      type: object
+      required:
+      - id
+      - name
+      - railjson_version
+      - locked
+      - mass
+      - length
+      - comfort_acceleration
+      - startup_acceleration
+      - inertia_coefficient
+      - rolling_resistance
+      - gamma
+      properties:
+        comfort_acceleration:
+          type: number
+          format: double
+        gamma:
+          $ref: '#/components/schemas/Gamma'
+        id:
+          type: integer
+          format: int64
+        inertia_coefficient:
+          type: number
+          format: double
+        length:
+          type: number
+          format: double
+        locked:
+          type: boolean
+        mass:
+          type: number
+          format: double
+        name:
+          type: string
+        railjson_version:
+          type: string
+        rolling_resistance:
+          $ref: '#/components/schemas/RollingResistance'
+        startup_acceleration:
+          type: number
+          format: double
+    TowedRollingStockCountList:
+      allOf:
+      - $ref: '#/components/schemas/PaginationStats'
+      - type: object
+        required:
+        - results
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/TowedRollingStock'
+    TowedRollingStockForm:
+      type: object
+      required:
+      - name
+      - locked
+      - mass
+      - length
+      - comfort_acceleration
+      - startup_acceleration
+      - inertia_coefficient
+      - rolling_resistance
+      - gamma
+      properties:
+        comfort_acceleration:
+          type: number
+          format: double
+        gamma:
+          $ref: '#/components/schemas/Gamma'
+        inertia_coefficient:
+          type: number
+          format: double
+        length:
+          type: number
+          format: double
+        locked:
+          type: boolean
+        mass:
+          type: number
+          format: double
+        name:
+          type: string
+        rolling_resistance:
+          $ref: '#/components/schemas/RollingResistance'
+        startup_acceleration:
+          type: number
+          format: double
+    TowedRollingStockLockedForm:
+      type: object
+      required:
+      - locked
+      properties:
+        locked:
+          type: boolean
+          description: New locked value
+      additionalProperties: false
     TrackEndpoint:
       type: object
       required:

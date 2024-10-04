@@ -228,6 +228,48 @@ class RollingStock(BaseModel, extra="forbid"):
     supported_signaling_systems: List[str] = Field(default_factory=list)
 
 
+class TowedRollingStock(BaseModel, extra="forbid"):
+    """
+    Towed rolling stock don't have power. They therefore are alike a rolling stock without
+    all the traction properties.
+    """
+
+    railjson_version: RAILJSON_ROLLING_STOCK_VERSION_TYPE = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
+    name: str = Field(max_length=255)
+    locked: bool = Field(default=False, description="Whether the rolling stock can be edited/deleted or not")
+    effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
+    base_power_class: Optional[str] = Field(
+        description="The power usage class of the train (optional because it is specific to SNCF)", default=None
+    )
+    power_restrictions: Optional[PowerRestrictions] = Field(
+        description="Mapping from train's power restriction codes to power classes", default=None
+    )
+    length: PositiveFloat = Field(description="The length of the train, in m")
+    max_speed: PositiveFloat = Field(description="Maximum speed in m/s")
+    startup_time: float = Field(ge=0, description="The time the train takes before it can start accelerating in s")
+    startup_acceleration: float = Field(ge=0, description="The maximum acceleration during startup in m/s^2")
+    comfort_acceleration: PositiveFloat = Field(description="The maximum operational acceleration in m/s^2")
+    gamma: Gamma = Field(description="The max or const braking coefficient in m/s^2")
+    inertia_coefficient: float = Field(gt=0)
+    mass: PositiveFloat = Field(description="The mass of the train, in kg")
+    rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
+    loading_gauge: LoadingGaugeType
+    metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
+    energy_sources: List[EnergySource] = Field(default_factory=list)
+    electrical_power_startup_time: Optional[float] = Field(
+        description="The time the train takes before actually using electrical power (in s). "
+        + "Is null if the train is not electric.",
+        default=None,
+        ge=0,
+    )
+    raise_pantograph_time: Optional[float] = Field(
+        description="The time it takes to raise this train's pantograph in s. Is null if the train is not electric.",
+        default=None,
+        ge=0,
+    )
+    supported_signaling_systems: List[str] = Field(default_factory=list)
+
+
 if __name__ == "__main__":
     from json import dumps
 

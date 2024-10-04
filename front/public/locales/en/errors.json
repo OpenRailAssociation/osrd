@@ -142,6 +142,10 @@
       "IsLocked": "Rolling stock '{{rolling_stock_id}}' is locked",
       "IsUsed": "Rolling stock '{{rolling_stock_id}}' is used"
     },
+    "towedrollingstocks": {
+      "IdNotFound": "Towed rolling stock '{{towed_rolling_stock_id}}' could not be found",
+      "IsLocked": "Towed rolling stock '{{towed_rolling_stock_id}}' is locked"
+    },
     "scenario": {
       "NotFound": "Scenario not found"
     },

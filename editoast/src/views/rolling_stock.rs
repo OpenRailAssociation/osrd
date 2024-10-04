@@ -1,5 +1,6 @@
 pub mod form;
 pub mod light;
+mod towed;
 
 pub use form::RollingStockForm;
 
@@ -58,6 +59,7 @@ crate::routes! {
         },
     },
     &light,
+    &towed,
 }
 
 editoast_common::schemas! {
@@ -70,6 +72,7 @@ editoast_common::schemas! {
     RollingStockWithLiveries,
     ScenarioReference,
     light::schemas(),
+    towed::schemas(),
 }
 
 #[derive(Debug, Serialize, ToSchema)]

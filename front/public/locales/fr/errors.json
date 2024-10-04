@@ -142,6 +142,10 @@
       "IsLocked": "Matériel roulant '{{rolling_stock_id}}' est verrouillé",
       "IsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé"
     },
+    "towedrollingstocks": {
+      "IdNotFound": "Matériel remorqué '{{towed_rolling_stock_id}}' non trouvé",
+      "IsLocked": "Matériel remorqué '{{towed_rolling_stock_id}}' est verrouillé"
+    },
     "scenario": {
       "NotFound": "Scénario non trouvé",
       "InfraNotFound": "Infrastructure {{infra_id}} non trouvée",
