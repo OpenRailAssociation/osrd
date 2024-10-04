@@ -332,6 +332,22 @@
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          display: flex;
+          align-items: center;
+          .train-projected {
+            height: 1.25rem;
+            width: 1.25rem;
+            margin-right: 0.375rem;
+            background-color: var(--info30);
+            border-radius: 0.25rem;
+            position: relative;
+            svg {
+              position: absolute;
+              top: 0;
+              left: 0;
+              transform: translate(0.125rem, 0.125rem);
+            }
+          }
         }
 
         .scenario-timetable-toolbar {

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
-import { Duplicate, Pencil, Trash, Clock, Flame, Moon } from '@osrd-project/ui-icons';
+import { Duplicate, Pencil, Trash, Clock, Flame, Moon, Manchette } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
@@ -31,6 +31,7 @@ type TimetableTrainCardProps = {
   upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   setTrainIdToEdit: (trainIdToEdit?: number) => void;
   removeTrains: (trainIds: number[]) => void;
+  projectionPathIsUsed: boolean;
 };
 
 const TimetableTrainCard = ({
@@ -43,6 +44,7 @@ const TimetableTrainCard = ({
   upsertTrainSchedules,
   setTrainIdToEdit,
   removeTrains,
+  projectionPathIsUsed,
 }: TimetableTrainCardProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
@@ -168,6 +170,11 @@ const TimetableTrainCard = ({
                 />
               </div>
               <div title={train.trainName} className="checkbox-label">
+                {projectionPathIsUsed && (
+                  <div className="train-projected">
+                    <Manchette iconColor="var(--white100)" />
+                  </div>
+                )}
                 {train.trainName}
               </div>
             </div>
