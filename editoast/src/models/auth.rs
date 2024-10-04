@@ -4,7 +4,7 @@ use std::ops::DerefMut;
 use diesel::{dsl, prelude::*};
 use diesel_async::{scoped_futures::ScopedFutureExt as _, RunQueryDsl};
 use editoast_authz::{
-    authorizer::{StorageDriver, UserInfo},
+    authorizer::{StorageDriver, UserIdentity, UserInfo},
     roles::BuiltinRoleSet,
 };
 use editoast_models::DbConnection;
@@ -38,11 +38,11 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
     type BuiltinRole = B;
     type Error = AuthDriverError;
 
-    #[tracing::instrument(skip_all, fields(%user_info), ret(level = Level::DEBUG), err)]
-    async fn get_user_id(&self, user_info: &UserInfo) -> Result<Option<i64>, Self::Error> {
+    #[tracing::instrument(skip_all, fields(%user_identity), ret(level = Level::DEBUG), err)]
+    async fn get_user_id(&self, user_identity: &UserIdentity) -> Result<Option<i64>, Self::Error> {
         let id = authn_user::table
             .select(authn_user::id)
-            .filter(authn_user::identity_id.eq(&user_info.identity))
+            .filter(authn_user::identity_id.eq(&user_identity))
             .first::<i64>(self.conn.write().await.deref_mut())
             .await
             .optional()?;
@@ -71,7 +71,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         self.conn
             .transaction(|conn| {
                 async move {
-                    let user_id = self.get_user_id(user).await?;
+                    let user_id = self.get_user_id(&user.identity).await?;
                     match user_id {
                         Some(user_id) => {
                             tracing::debug!("user already exists in db");

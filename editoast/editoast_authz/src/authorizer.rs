@@ -29,7 +29,7 @@ pub trait StorageDriver: Clone {
 
     fn get_user_id(
         &self,
-        user_info: &UserInfo,
+        user_identity: &UserIdentity,
     ) -> impl Future<Output = Result<Option<i64>, Self::Error>> + Send;
 
     fn get_user_info(
@@ -316,8 +316,11 @@ mod tests {
             Ok(removed_roles)
         }
 
-        async fn get_user_id(&self, user_info: &UserInfo) -> Result<Option<i64>, Self::Error> {
-            Ok(self.users.lock().unwrap().get(&user_info.identity).copied())
+        async fn get_user_id(
+            &self,
+            user_identity: &UserIdentity,
+        ) -> Result<Option<i64>, Self::Error> {
+            Ok(self.users.lock().unwrap().get(user_identity).copied())
         }
 
         async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
