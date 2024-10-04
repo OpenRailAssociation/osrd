@@ -1384,8 +1384,7 @@ export type PostRollingStockByRollingStockIdLiveryApiArg = {
   rollingStockId: number;
   rollingStockLiveryCreateForm: RollingStockLiveryCreateForm;
 };
-export type PatchRollingStockByRollingStockIdLockedApiResponse =
-  /** status 200 The created rolling stock */ RollingStock;
+export type PatchRollingStockByRollingStockIdLockedApiResponse = unknown;
 export type PatchRollingStockByRollingStockIdLockedApiArg = {
   rollingStockId: number;
   rollingStockLockedUpdateForm: RollingStockLockedUpdateForm;
