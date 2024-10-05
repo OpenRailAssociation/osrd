@@ -794,9 +794,7 @@ pub mod tests {
     use crate::models::fixtures::create_study;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::fast_rolling_stock_changeset;
-    use crate::models::fixtures::fast_rolling_stock_form;
     use crate::models::fixtures::get_rolling_stock_with_invalid_effort_curves;
-    use crate::models::fixtures::rolling_stock_with_energy_sources_form;
     use crate::models::fixtures::simple_train_schedule_form;
     use crate::models::rolling_stock_model::RollingStockModel;
     use crate::models::train_schedule::TrainSchedule;
@@ -814,6 +812,15 @@ pub mod tests {
         fn rolling_stock_get_by_id_request(&self, rolling_stock_id: i64) -> axum_test::TestRequest {
             self.get(format!("/rolling_stock/{rolling_stock_id}").as_str())
         }
+    }
+
+    fn fast_rolling_stock_form(name: &str) -> RollingStockForm {
+        let mut form = serde_json::from_str::<RollingStockForm>(include_str!(
+            "../tests/example_rolling_stock_1.json"
+        ))
+        .expect("Unable to parse exemple rolling stock");
+        form.name = name.to_owned();
+        form
     }
 
     #[rstest]
@@ -1182,8 +1189,11 @@ pub mod tests {
             .await
             .expect("Failed to create rolling stock");
 
-        let second_rs_name = "second_fast_rolling_stock_name";
-        let second_fast_rolling_stock_form = rolling_stock_with_energy_sources_form(second_rs_name);
+        let mut second_fast_rolling_stock_form: RollingStockForm = serde_json::from_str(
+            include_str!("../tests/example_rolling_stock_2_energy_sources.json"),
+        )
+        .expect("Unable to parse rolling stock with energy sources");
+        second_fast_rolling_stock_form.name = "second_fast_rolling_stock_name".to_owned();
 
         let request = app
             .patch(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())

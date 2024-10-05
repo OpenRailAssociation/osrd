@@ -16,6 +16,7 @@ use postgis_diesel::types::LineString;
 use serde_json::Value;
 
 use crate::infra_cache::operation::create::apply_create_operation;
+use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::prelude::*;
 use crate::models::rolling_stock_livery::RollingStockLiveryModel;
 use crate::models::timetable::Timetable;
@@ -28,9 +29,7 @@ use crate::models::RollingStockModel;
 use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::Tags;
-use crate::views::rolling_stock::form::RollingStockForm;
 use crate::views::train_schedule::TrainScheduleForm;
-use crate::ElectricalProfileSet;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
@@ -154,19 +153,15 @@ pub async fn create_scenario_fixtures_set(
     }
 }
 
-pub fn fast_rolling_stock_form(name: &str) -> RollingStockForm {
-    let mut rolling_stock_form: RollingStockForm =
-        serde_json::from_str(include_str!("../tests/example_rolling_stock_1.json"))
-            .expect("Unable to parse exemple rolling stock");
-    rolling_stock_form.name = name.to_string();
-    rolling_stock_form
-}
-
 pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStockModel> {
-    let mut rolling_stock_form: RollingStockForm = fast_rolling_stock_form(name);
-    rolling_stock_form.name = name.to_string();
-    let rolling_stock_model: Changeset<RollingStockModel> = rolling_stock_form.into();
-    rolling_stock_model.version(0)
+    Changeset::<RollingStockModel>::from(
+        serde_json::from_str::<editoast_schemas::rolling_stock::RollingStock>(include_str!(
+            "../tests/example_rolling_stock_1.json"
+        ))
+        .expect("Unable to parse exemple rolling stock"),
+    )
+    .name(name.to_owned())
+    .version(0)
 }
 
 pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> RollingStockModel {
@@ -174,6 +169,17 @@ pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> R
         .create(conn)
         .await
         .expect("Failed to create rolling stock")
+}
+
+pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<RollingStockModel> {
+    Changeset::<RollingStockModel>::from(
+        serde_json::from_str::<editoast_schemas::rolling_stock::RollingStock>(include_str!(
+            "../tests/example_rolling_stock_2_energy_sources.json"
+        ))
+        .expect("Unable to parse rolling stock with energy sources"),
+    )
+    .name(name.to_owned())
+    .version(1)
 }
 
 pub async fn create_rolling_stock_with_energy_sources(
@@ -256,21 +262,6 @@ pub async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
         .create(conn)
         .await
         .expect("Failed to create empty infra")
-}
-
-pub fn rolling_stock_with_energy_sources_form(name: &str) -> RollingStockForm {
-    let mut rolling_stock_form: RollingStockForm = serde_json::from_str(include_str!(
-        "../tests/example_rolling_stock_2_energy_sources.json"
-    ))
-    .expect("Unable to parse rolling stock with energy sources");
-    rolling_stock_form.name = name.to_string();
-    rolling_stock_form
-}
-
-pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<RollingStockModel> {
-    let rolling_stock_model: Changeset<RollingStockModel> =
-        rolling_stock_with_energy_sources_form(name).into();
-    rolling_stock_model.name(name.to_owned()).version(1)
 }
 
 pub async fn create_infra_object<T>(
