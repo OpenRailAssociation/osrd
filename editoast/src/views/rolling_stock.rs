@@ -795,9 +795,8 @@ pub mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::fast_rolling_stock_changeset;
     use crate::models::fixtures::get_rolling_stock_with_invalid_effort_curves;
-    use crate::models::fixtures::simple_train_schedule_form;
+    use crate::models::fixtures::simple_train_schedule_changeset;
     use crate::models::rolling_stock_model::RollingStockModel;
-    use crate::models::train_schedule::TrainSchedule;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 
@@ -955,20 +954,13 @@ pub mod tests {
         )
         .await;
 
-        let mut schedule_form_1 = simple_train_schedule_form(timetable_1.id);
-        let mut schedule_form_2 = simple_train_schedule_form(timetable_1.id);
-        schedule_form_1
-            .train_schedule
-            .rolling_stock_name
-            .clone_from(&rolling_stock.name);
-        schedule_form_2.train_schedule.rolling_stock_name = rolling_stock.name;
-        let train_schedule_1: Changeset<TrainSchedule> = schedule_form_1.into();
-        let _ = train_schedule_1
+        simple_train_schedule_changeset(timetable_1.id)
+            .rolling_stock_name(rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();
-        let train_schedule_2: Changeset<TrainSchedule> = schedule_form_2.into();
-        let _ = train_schedule_2
+        simple_train_schedule_changeset(timetable_1.id)
+            .rolling_stock_name(rolling_stock.name)
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();

@@ -29,7 +29,6 @@ use crate::models::RollingStockModel;
 use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::Tags;
-use crate::views::train_schedule::TrainScheduleForm;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
@@ -74,23 +73,18 @@ pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
 
 pub fn simple_train_schedule_base() -> TrainScheduleBase {
     serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
-        .expect("Unable to parse")
+        .expect("Unable to parse test train schedule")
 }
 
-pub fn simple_train_schedule_form(timetable_id: i64) -> TrainScheduleForm {
-    let train_schedule: TrainScheduleBase = simple_train_schedule_base();
-    TrainScheduleForm {
-        timetable_id: Some(timetable_id),
-        train_schedule,
-    }
+pub fn simple_train_schedule_changeset(timetable_id: i64) -> Changeset<TrainSchedule> {
+    Changeset::<TrainSchedule>::from(simple_train_schedule_base()).timetable_id(timetable_id)
 }
 
 pub async fn create_simple_train_schedule(
     conn: &mut DbConnection,
     timetable_id: i64,
 ) -> TrainSchedule {
-    let train_schedule: Changeset<TrainSchedule> = simple_train_schedule_form(timetable_id).into();
-    train_schedule
+    simple_train_schedule_changeset(timetable_id)
         .create(conn)
         .await
         .expect("Failed to create train schedule")
