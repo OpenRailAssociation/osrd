@@ -142,27 +142,13 @@ pub struct TrainScheduleForm {
 }
 
 impl From<TrainScheduleForm> for TrainScheduleChangeset {
-    fn from(value: TrainScheduleForm) -> Self {
-        let TrainScheduleForm {
+    fn from(
+        TrainScheduleForm {
             timetable_id,
-            train_schedule: ts,
-        } = value;
-
-        TrainSchedule::changeset()
-            .flat_timetable_id(timetable_id)
-            .comfort(ts.comfort)
-            .constraint_distribution(ts.constraint_distribution)
-            .initial_speed(ts.initial_speed)
-            .labels(ts.labels.into_iter().map(Some).collect())
-            .margins(ts.margins)
-            .path(ts.path)
-            .power_restrictions(ts.power_restrictions)
-            .rolling_stock_name(ts.rolling_stock_name)
-            .schedule(ts.schedule)
-            .speed_limit_tag(ts.speed_limit_tag.map(|s| s.0))
-            .start_time(ts.start_time)
-            .train_name(ts.train_name)
-            .options(ts.options)
+            train_schedule,
+        }: TrainScheduleForm,
+    ) -> Self {
+        Self::from(train_schedule).flat_timetable_id(timetable_id)
     }
 }
 

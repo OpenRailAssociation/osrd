@@ -7,7 +7,10 @@ use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;
 use editoast_schemas::train_schedule::ScheduleItem;
+use editoast_schemas::train_schedule::TrainScheduleBase;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
+
+use super::Model as _;
 
 #[derive(Debug, Default, Clone, Model)]
 #[model(table = editoast_models::tables::train_schedule)]
@@ -35,4 +38,39 @@ pub struct TrainSchedule {
     pub power_restrictions: Vec<PowerRestrictionItem>,
     #[model(json)]
     pub options: TrainScheduleOptions,
+}
+
+impl From<TrainScheduleBase> for TrainScheduleChangeset {
+    fn from(
+        TrainScheduleBase {
+            train_name,
+            labels,
+            rolling_stock_name,
+            start_time,
+            path,
+            schedule,
+            margins,
+            initial_speed,
+            comfort,
+            constraint_distribution,
+            speed_limit_tag,
+            power_restrictions,
+            options,
+        }: TrainScheduleBase,
+    ) -> Self {
+        TrainSchedule::changeset()
+            .comfort(comfort)
+            .constraint_distribution(constraint_distribution)
+            .initial_speed(initial_speed)
+            .labels(labels.into_iter().map(Some).collect())
+            .margins(margins)
+            .path(path)
+            .power_restrictions(power_restrictions)
+            .rolling_stock_name(rolling_stock_name)
+            .schedule(schedule)
+            .speed_limit_tag(speed_limit_tag.map(|s| s.0))
+            .start_time(start_time)
+            .train_name(train_name)
+            .options(options)
+    }
 }

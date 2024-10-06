@@ -227,13 +227,9 @@ async fn show_stdcm_search_env(
 #[cfg(test)]
 mod tests {
     use crate::{
-        models::{
-            fixtures::{
-                create_electrical_profile_set, create_empty_infra, create_scenario_fixtures_set,
-                create_timetable, create_work_schedule_group, simple_train_schedule_form,
-            },
-            train_schedule::TrainSchedule,
-            Changeset,
+        models::fixtures::{
+            create_electrical_profile_set, create_empty_infra, create_scenario_fixtures_set,
+            create_timetable, create_work_schedule_group, simple_train_schedule_changeset,
         },
         Create,
     };
@@ -253,9 +249,7 @@ mod tests {
         conn: &mut DbConnection,
     ) {
         for start_time in start_times {
-            let train_schedule_changeset: Changeset<TrainSchedule> =
-                simple_train_schedule_form(timetable_id).into();
-            train_schedule_changeset
+            simple_train_schedule_changeset(timetable_id)
                 .start_time(start_time.and_utc())
                 .create(conn)
                 .await
