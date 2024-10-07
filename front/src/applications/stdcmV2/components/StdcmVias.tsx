@@ -97,7 +97,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
   };
 
   const addViaOnClick = (pathStepIndex: number) => {
-    const newPathSteps = addElementAtIndex(pathSteps, pathStepIndex, null);
+    const newPathSteps = addElementAtIndex(pathSteps, pathStepIndex, { id: nextId(), uic: -1 });
     dispatch(updatePathSteps({ pathSteps: newPathSteps }));
   };
 
@@ -113,8 +113,9 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
       {intermediatePoints.length > 0 &&
         intermediatePoints.map((pathStep, index) => {
           const pathStepIndex = index + 1;
+          if (!pathStep) return null;
           return (
-            <div className="stdcm-v2-vias-bundle" key={nextId('via-')}>
+            <div className="stdcm-v2-vias-bundle" key={pathStep.id}>
               <StdcmDefaultCard
                 hasTip
                 text={t('trainPath.addVia')}
@@ -130,7 +131,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                       <img src={IntermediatePointIcon} alt="intermediate-point" />
                       <span className="icon-index">{pathStepIndex}</span>
                     </div>
-                    <button type="button" onClick={() => deleteViaOnClick(index, pathStep!.id)}>
+                    <button type="button" onClick={() => deleteViaOnClick(index, pathStep.id)}>
                       {t('translation:common.delete')}
                     </button>
                   </div>
@@ -142,11 +143,11 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                   <StdcmOperationalPoint
                     updatePoint={(e) => updatePathStepsList(e, pathStepIndex)}
                     point={pathStep}
-                    opPointId={pathStep?.id || nextId('via-')}
+                    opPointId={pathStep.id}
                     disabled={disabled}
                   />
                 </div>
-                {pathStep && (
+                {'uic' in pathStep && pathStep.uic !== -1 && (
                   <>
                     <StdcmStopType
                       stopTypes={stopTypes[pathStep.id]}
