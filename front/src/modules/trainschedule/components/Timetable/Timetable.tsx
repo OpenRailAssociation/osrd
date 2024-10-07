@@ -119,6 +119,7 @@ const Timetable = ({
       <div
         className={cx('scenario-timetable-trains', {
           expanded: conflictsListExpanded,
+          'with-details': showTrainDetails,
         })}
       >
         <TimetableToolbar
