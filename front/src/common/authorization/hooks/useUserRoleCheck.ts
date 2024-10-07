@@ -1,14 +1,17 @@
+import { useSelector } from 'react-redux';
+
 import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+import { getIsSuperUser, getUserRoles } from 'reducers/user/userSelectors';
 
 const useUserRoleCheck = (allowedRoles: BuiltinRole[]) => {
-  if (allowedRoles.length === 0) {
+  const isSuperUser = useSelector(getIsSuperUser);
+  const userRoles = useSelector(getUserRoles);
+
+  if (allowedRoles.length === 0 || isSuperUser) {
     return true;
   }
 
-  // TODO AUTH:
-  // - get user role when it is implemented
-  // - return if the use has the right role
-  return false;
+  return allowedRoles.every((role) => userRoles.includes(role));
 };
 
 export default useUserRoleCheck;
