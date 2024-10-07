@@ -47,26 +47,28 @@ import RenderPopup from 'modules/trainschedule/components/ManageTrainSchedule/Ma
 import { updateViewport } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
-import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import ItineraryLayer from './ManageTrainScheduleMap/ItineraryLayer';
-import ItineraryMarkers from './ManageTrainScheduleMap/ItineraryMarkers';
+import ItineraryMarkers, { type CommonPathStep } from './ManageTrainScheduleMap/ItineraryMarkers';
+import type { PathProperties } from 'common/api/generatedEditoastApi';
 
-type MapProps = {
+type MapProps<T extends CommonPathStep> = {
   pathProperties?: ManageTrainSchedulePathProperties;
+  geometry?: NonNullable<PathProperties['geometry']>;
   setMapCanvas?: (mapCanvas: string) => void;
   isReadOnly?: boolean;
   hideAttribution?: boolean;
   hideItinerary?: boolean;
   preventPointSelection?: boolean;
   mapId?: string;
-  simulationPathSteps?: PathStep[];
+  simulationPathSteps?: T[];
   showStdcmAssets?: boolean;
 };
 
-const Map = ({
+const Map = <T extends CommonPathStep>({
+  geometry,
   pathProperties,
   setMapCanvas,
   isReadOnly = false,
@@ -74,21 +76,18 @@ const Map = ({
   hideItinerary = false,
   preventPointSelection = false,
   mapId = 'map-container',
-  simulationPathSteps,
+  simulationPathSteps = [],
   showStdcmAssets = false,
   children,
-}: PropsWithChildren<MapProps>) => {
+}: PropsWithChildren<MapProps<T>>) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
   const mapViewport = useMemo(
-    () =>
-      isReadOnly && pathProperties
-        ? computeBBoxViewport(bbox(pathProperties?.geometry), viewport)
-        : viewport,
-    [isReadOnly, pathProperties, viewport]
+    () => (isReadOnly && geometry ? computeBBoxViewport(bbox(geometry), viewport) : viewport),
+    [isReadOnly, geometry, viewport]
   );
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
@@ -108,8 +107,9 @@ const Map = ({
     bottom: 20,
   };
 
-  const { getFeatureInfoClick } = useOsrdConfSelectors();
+  const { getFeatureInfoClick, getPathSteps } = useOsrdConfSelectors();
   const featureInfoClick = useSelector(getFeatureInfoClick);
+  const pathSteps = useSelector(getPathSteps);
 
   const { updateFeatureInfoClick } = useOsrdConfActions();
 
@@ -210,16 +210,16 @@ const Map = ({
   }, []);
 
   useEffect(() => {
-    if (pathProperties) {
-      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapViewport);
+    if (geometry) {
+      const newViewport = computeBBoxViewport(bbox(geometry), mapViewport);
       dispatch(updateViewport(newViewport));
     }
-  }, [pathProperties]);
+  }, [geometry]);
 
   const captureMap = async () => {
-    if (!pathProperties) return;
+    if (!geometry) return;
 
-    const itineraryViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapViewport);
+    const itineraryViewport = computeBBoxViewport(bbox(geometry), mapViewport);
 
     if (setMapCanvas && isEqual(mapViewport, itineraryViewport)) {
       try {
@@ -401,13 +401,13 @@ const Map = ({
           <>
             <ItineraryLayer
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
-              geometry={pathProperties?.geometry}
+              geometry={geometry}
               hideItineraryLine={hideItinerary}
               showStdcmAssets={showStdcmAssets}
             />
             {mapRef.current && (
               <ItineraryMarkers
-                simulationPathSteps={simulationPathSteps}
+                simulationPathSteps={simulationPathSteps || pathSteps}
                 map={mapRef.current.getMap()}
                 showStdcmAssets={showStdcmAssets}
               />

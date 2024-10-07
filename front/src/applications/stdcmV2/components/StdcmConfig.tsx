@@ -5,13 +5,10 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { usePathfinding } from 'modules/pathfinding/hooks/usePathfinding';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
-import { extractHHMMFromDate } from 'utils/date';
 
 import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
@@ -21,11 +18,11 @@ import StdcmSimulationParams from './StdcmSimulationParams';
 import StdcmStatusBanner from './StdcmStatusBanner';
 import StdcmVias from './StdcmVias';
 import StdcmWarningBox from './StdcmWarningBox';
-import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../types';
+import { ArrivalTimeTypes } from '../types';
 import type { StdcmConfigErrors, StdcmSimulation } from '../types';
-import checkStdcmConfigErrors from '../utils/checkStdcmConfigErrors';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import usePathfindingIsPossible from '../hooks/usePathfindingIsPossible';
+import { compact } from 'lodash';
 
 /**
  * Inputs in different cards inside the StdcmConfig component come from the stdcm redux store.
@@ -65,18 +62,22 @@ const StdcmConfig = ({
     updateStdcmPathStep,
   } = useOsrdConfActions() as StdcmConfSliceActions;
 
-  const { getStdcmOrigin, getStdcmDestination, getProjectID, getScenarioID, getStudyID } =
-    useOsrdConfSelectors() as StdcmConfSelectors;
+  const {
+    getStdcmOrigin,
+    getStdcmDestination,
+    getStdcmPathSteps,
+    getProjectID,
+    getScenarioID,
+    getStudyID,
+  } = useOsrdConfSelectors() as StdcmConfSelectors;
   const origin = useSelector(getStdcmOrigin);
   const destination = useSelector(getStdcmDestination);
+  const pathSteps = useSelector(getStdcmPathSteps);
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
 
-  const [pathfindingProperties, setPathfindingProperties] =
-    useState<ManageTrainSchedulePathProperties>();
-
-  const pathfindingStatus = usePathfindingIsPossible();
+  const pathfinding = usePathfindingIsPossible();
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
@@ -88,7 +89,7 @@ const StdcmConfig = ({
   };
 
   const startSimulation = () => {
-    if (pathfindingStatus === 'success' && !formErrors) {
+    if (pathfinding?.status === 'success' && !formErrors) {
       launchStdcmRequest();
     }
   };
@@ -105,7 +106,7 @@ const StdcmConfig = ({
   }, [isPending]);
 
   useEffect(() => {
-    if (!pathfindingStatus || pathfindingStatus !== 'success') {
+    if (!pathfinding || pathfinding.status !== 'success') {
       return;
     }
     // const isPathfindingFailed = pathfindingStatus.error !== '';
@@ -124,7 +125,7 @@ const StdcmConfig = ({
     //   };s
     //
     // setFormErrors(formErrorsStatus);
-  }, [origin, destination, pathfindingStatus]);
+  }, [origin, destination, pathfinding]);
 
   // TODO: DROP STDCMV1: set those values by default in the store when <StdcmAllowances/> is not used anymore.
   useEffect(() => {
@@ -157,15 +158,17 @@ const StdcmConfig = ({
             {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
             <div
               className={cx('stdcm-v2-launch-request', {
-                'wizz-effect': pathfindingStatus === 'success' || formErrors,
+                'wizz-effect': pathfinding?.status === 'success' || formErrors,
                 'pb-5':
-                  !!pathfindingStatus &&
-                  pathfindingStatus !== 'success' &&
-                  showBtnToLaunchSimulation,
+                  !!pathfinding && pathfinding.status !== 'success' && showBtnToLaunchSimulation,
               })}
             >
               {showBtnToLaunchSimulation && (
-                <Button label={t('simulation.getSimulation')} onClick={startSimulation} />
+                <Button
+                  label={t('simulation.getSimulation')}
+                  onClick={startSimulation}
+                  isDisabled={!pathfinding}
+                />
               )}
               {formErrors && (
                 <StdcmWarningBox
@@ -185,7 +188,8 @@ const StdcmConfig = ({
             hideAttribution
             hideItinerary
             preventPointSelection
-            pathProperties={pathfindingProperties}
+            simulationPathSteps={compact(pathSteps.map((step) => step.location))}
+            geometry={pathfinding?.geometry}
             showStdcmAssets
           />
         </div>

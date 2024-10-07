@@ -91,7 +91,7 @@ export type StdcmPathStep = {
   isVia: boolean;
   location?: PathItemLocation & {
     name: string;
-    coordinates: number[];
+    coordinates: [number, number];
   };
   arrivalToleranceBefore?: number;
   arrivalToleranceAfter?: number;

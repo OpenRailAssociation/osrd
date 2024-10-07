@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { TFunction } from 'i18next';
 import { compact, last } from 'lodash';
 import type { Dispatch } from 'redux';
@@ -14,12 +13,7 @@ import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { dateTimeFormatting, dateTimeToIso } from 'utils/date';
 import { mToMm } from 'utils/physics';
-import {
-  ISO8601Duration2sec,
-  formatDurationAsISO8601,
-  sec2ms,
-  time2sec,
-} from 'utils/timeManipulation';
+import { ISO8601Duration2sec, sec2ms, time2sec } from 'utils/timeManipulation';
 
 import createMargin from './createMargin';
 
@@ -201,20 +195,16 @@ export const checkStdcmConf = (
     let timingData;
     if (step.arrival) {
       const { arrival } = step;
-      const timeFromDeparture = formatDurationAsISO8601(
-        startDateTime.getTime() - arrival.getTime()
-      );
-      console.log({ arrival, timeFromDeparture });
       if (step.isVia) {
         timingData = {
-          arrival_time: timeFromDeparture,
+          arrival_time: arrival.toISOString(),
           arrival_time_tolerance_before: sec2ms(step.arrivalToleranceBefore ?? 0),
           arrival_time_tolerance_after: sec2ms(step.arrivalToleranceAfter ?? 0),
         };
       } else {
         if (step.arrivalType === 'preciseTime') {
           timingData = {
-            arrival_time: timeFromDeparture,
+            arrival_time: arrival.toISOString(),
             arrival_time_tolerance_before: 0,
             arrival_time_tolerance_after: 0,
           };

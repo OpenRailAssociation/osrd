@@ -24,8 +24,6 @@ const StdcmOrigin = ({ disabled = false }: StdcmConfigCardProps) => {
 
   const origin = useSelector(getStdcmOrigin);
 
-  const [arrivalScheduleConstraint, setArrivalScheduleConstraint] = useState<ScheduleConstraint>();
-
   const { updateStdcmPathStep } = useOsrdConfActions() as StdcmConfSliceActions;
 
   const { originArrival, originToleranceValues } = useMemo(
@@ -39,19 +37,16 @@ const StdcmOrigin = ({ disabled = false }: StdcmConfigCardProps) => {
     [origin]
   );
 
-  const updateOriginPoint = (pathStep: StdcmPathStep) => {
+  const updateOriginLocation = (newLocation: StdcmPathStep['location']) => {
     dispatch(
       updateStdcmPathStep({
-        ...pathStep,
-        arrival: arrivalScheduleConstraint
-          ? generateDatetimeFromDateAndTime(arrivalScheduleConstraint)
-          : undefined,
+        ...origin,
+        location: newLocation,
       })
     );
   };
 
   const onOriginArrivalChange = (schedule: ScheduleConstraint) => {
-    setArrivalScheduleConstraint(schedule);
     const newPathStep = { ...origin, arrival: generateDatetimeFromDateAndTime(schedule) };
     dispatch(updateStdcmPathStep(newPathStep));
   };
@@ -84,11 +79,14 @@ const StdcmOrigin = ({ disabled = false }: StdcmConfigCardProps) => {
       hasTip
     >
       <div className="stdcm-v2-origin__parameters">
-        <StdcmOperationalPoint
-          updatePoint={updateOriginPoint}
-          pathStep={origin}
-          disabled={disabled}
-        />
+        {(!origin.location || 'uic' in origin.location) && (
+          <StdcmOperationalPoint
+            updatePathStepLocation={updateOriginLocation}
+            pathStepId={origin.id}
+            pathStepLocation={origin.location}
+            disabled={disabled}
+          />
+        )}
         <StdcmOpSchedule
           onArrivalChange={onOriginArrivalChange}
           onArrivalTypeChange={onOriginArrivalTypeChange}

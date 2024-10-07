@@ -11,6 +11,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
+import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 
 const usePathfindingIsPossible = () => {
   const { getStdcmPathSteps } = useOsrdConfSelectors() as StdcmConfSelectors;
@@ -19,16 +20,22 @@ const usePathfindingIsPossible = () => {
   const pathSteps = useSelector(getStdcmPathSteps);
   const { rollingStock } = useStoreDataForRollingStockSelector();
 
-  const [pathfindingStatus, setPathfindingStatus] = useState<PathfindingResult['status']>();
+  const [pathfinding, setPathfinding] = useState<PathfindingResult>();
 
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useMutation();
 
   const pathStepsLocation = useMemo(() => pathSteps.map((step) => step.location), [pathSteps]);
 
+  const pathProperties = usePathProperties(
+    infra?.id,
+    pathfinding?.status === 'success' ? pathfinding : undefined,
+    ['geometry']
+  );
+
   useEffect(() => {
     const launchPathfinding = async () => {
-      setPathfindingStatus(undefined);
+      setPathfinding(undefined);
       if (!infra || infra.state !== 'CACHED' || !rollingStock) {
         return;
       }
@@ -72,13 +79,15 @@ const usePathfindingIsPossible = () => {
       };
       const pathfindingResult = await postPathfindingBlocks(payload).unwrap();
 
-      setPathfindingStatus(pathfindingResult.status);
+      setPathfinding(pathfindingResult);
     };
 
     launchPathfinding();
   }, [pathStepsLocation, rollingStock, infra]);
 
-  return pathfindingStatus;
+  return pathfinding
+    ? { status: pathfinding.status, geometry: pathProperties?.geometry || undefined }
+    : null;
 };
 
 export default usePathfindingIsPossible;

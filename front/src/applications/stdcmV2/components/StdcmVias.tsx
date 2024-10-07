@@ -10,7 +10,7 @@ import { useOsrdConfSelectors, useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { addElementAtIndex, replaceElementAtIndex } from 'utils/array';
+import { addElementAtIndex } from 'utils/array';
 
 import StdcmCard from './StdcmCard';
 import StdcmDefaultCard from './StdcmDefaultCard';
@@ -31,21 +31,20 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
 
   const intermediatePoints = useMemo(() => pathSteps.slice(1, -1), [pathSteps]);
 
-  const updatePathStepsList = (pathStep: StdcmPathStep | null, index: number) => {
-    if (!pathStep) return;
-
-    const newPathSteps = replaceElementAtIndex(pathSteps, index, pathStep);
+  const updatePathStepsList = (pathStep: StdcmPathStep) => {
+    const newPathSteps = pathSteps.map((p) => (p.id === pathStep.id ? pathStep : p));
     dispatch(updatePathSteps(newPathSteps));
   };
 
-  const updateStopType = (newStopType: StdcmStopTypes, index: number) => {
-    const pathStep = pathSteps[index];
-    if (!pathStep) return;
-
+  const updateStopType = (newStopType: StdcmStopTypes, pathStep: StdcmPathStep) => {
     const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
     const newPathStep = { ...pathStep, stopType: newStopType, stopFor: defaultStopTime };
-    const newPathSteps = replaceElementAtIndex(pathSteps, index, newPathStep);
-    dispatch(updatePathSteps(newPathSteps));
+    updatePathStepsList(newPathStep);
+  };
+
+  const updateViaLocation = (newLocation: StdcmPathStep['location'], pathStep: StdcmPathStep) => {
+    const newPathStep = { ...pathStep, location: newLocation };
+    updatePathStepsList(newPathStep);
   };
 
   const deleteViaOnClick = (index: number) => {
@@ -56,6 +55,7 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
     const newPathSteps = addElementAtIndex(pathSteps, pathStepIndex, {
       id: nextId(),
       stopType: StdcmStopTypes.PASSAGE_TIME,
+      isVia: true,
     });
     dispatch(updatePathSteps(newPathSteps));
   };
@@ -64,6 +64,9 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
     <div className="stdcm-v2-vias-list">
       {intermediatePoints.length > 0 &&
         intermediatePoints.map((pathStep, index) => {
+          if (!pathStep.isVia) {
+            throw new Error('Path step is not a via');
+          }
           const pathStepIndex = index + 1;
           return (
             <div className="stdcm-v2-vias-bundle" key={pathStep.id}>
@@ -90,18 +93,19 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
                 hasTip
                 disabled={disabled}
               >
-                <div className="stdcm-v2-vias">
-                  <StdcmOperationalPoint
-                    updatePoint={(e) => updatePathStepsList(e, pathStepIndex)}
-                    pathStep={pathStep}
-                    disabled={disabled}
-                  />
-                </div>
+                {(!pathStep.location || 'uic' in pathStep.location) && (
+                  <div className="stdcm-v2-vias">
+                    <StdcmOperationalPoint
+                      updatePathStepLocation={(e) => updateViaLocation(e, pathStep)}
+                      pathStepId={pathStep.id}
+                      pathStepLocation={pathStep.location}
+                      disabled={disabled}
+                    />
+                  </div>
+                )}
                 <StdcmStopType
                   stopType={pathStep.stopType || StdcmStopTypes.PASSAGE_TIME}
-                  updatePathStepStopType={(newStopType) =>
-                    updateStopType(newStopType, pathStepIndex)
-                  }
+                  updatePathStepStopType={(newStopType) => updateStopType(newStopType, pathStep)}
                 />
                 {pathStep.stopType && pathStep.stopType !== StdcmStopTypes.PASSAGE_TIME && (
                   <StdcmInputVia stopType={pathStep.stopType} pathStep={pathStep} />

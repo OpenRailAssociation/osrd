@@ -7,7 +7,7 @@ import type { StdcmPathStep } from 'reducers/osrdconf/types';
 export type StdcmSimulationInputs = {
   departureDatetime?: Date;
   pathSteps: StdcmPathStep[];
-  consist?: {
+  consist: {
     tractionEngine?: RollingStockWithLiveries;
     speedLimitByTag?: string;
   };

@@ -19,6 +19,7 @@ import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
+import { compact } from 'lodash';
 
 type StcdmResultsV2Props = {
   isCalculationFailed: boolean;
@@ -131,8 +132,10 @@ const StcdmResults = ({
             hideAttribution
             showStdcmAssets
             setMapCanvas={setMapCanvas}
-            pathProperties={selectedSimulation.outputs?.pathProperties}
-            simulationPathSteps={selectedSimulation.outputs?.results.simulationPathSteps}
+            geometry={selectedSimulation.outputs?.pathProperties?.geometry}
+            simulationPathSteps={compact(
+              selectedSimulation.inputs.pathSteps.map((step) => step.location)
+            )}
           />
         </div>
       </div>

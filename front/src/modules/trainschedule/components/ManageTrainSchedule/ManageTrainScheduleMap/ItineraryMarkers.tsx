@@ -16,14 +16,25 @@ import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getNearestTrack } from 'utils/mapHelper';
 
+export type CommonPathStep = {
+  coordinates: [number, number];
+  name: string;
+  metadata?: {
+    lineCode: number;
+    lineName: string;
+    trackName: string;
+    trackNumber: number;
+  };
+};
+
 enum MARKER_TYPE {
   ORIGIN = 'origin',
   VIA = 'via',
   DESTINATION = 'destination',
 }
 
-type MarkerInformation = {
-  marker: PathStep;
+type MarkerInformation<T extends CommonPathStep> = {
+  marker: T;
   coordinates: number[] | Position;
   imageSource: string;
 } & (
@@ -36,17 +47,17 @@ type MarkerInformation = {
     }
 );
 
-type ItineraryMarkersProps = {
+type ItineraryMarkersProps<T extends CommonPathStep> = {
   map: Map;
-  simulationPathSteps?: PathStep[];
+  simulationPathSteps?: (T | null)[];
   showStdcmAssets: boolean;
 };
 
-const formatPointWithNoName = (
+const formatPointWithNoName = <T extends CommonPathStep>(
   lineCode: number,
   lineName: string,
   trackName: string,
-  markerType: MarkerInformation['type']
+  markerType: MarkerInformation<T>['type']
 ) => (
   <>
     <div className="main-line">
@@ -57,7 +68,10 @@ const formatPointWithNoName = (
   </>
 );
 
-const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAssets: boolean) =>
+const extractMarkerInformation = <T extends CommonPathStep>(
+  pathSteps: (T | null)[],
+  showStdcmAssets: boolean
+) =>
   pathSteps.reduce((acc, cur, index) => {
     if (cur && cur.coordinates) {
       if (index === 0) {
@@ -85,19 +99,20 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAsset
       }
     }
     return acc;
-  }, [] as MarkerInformation[]);
+  }, [] as MarkerInformation<T>[]);
 
-const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: ItineraryMarkersProps) => {
-  const { getPathSteps } = useOsrdConfSelectors();
-  const pathSteps = useSelector(getPathSteps);
-
+const ItineraryMarkers = <T extends CommonPathStep>({
+  map,
+  simulationPathSteps = [],
+  showStdcmAssets,
+}: ItineraryMarkersProps<T>) => {
   const markersInformation = useMemo(
-    () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets),
-    [simulationPathSteps, pathSteps]
+    () => extractMarkerInformation(simulationPathSteps, showStdcmAssets),
+    [simulationPathSteps]
   );
 
   const getMarkerDisplayInformation = useCallback(
-    (markerInfo: MarkerInformation) => {
+    (markerInfo: MarkerInformation<T>) => {
       const {
         marker: { coordinates: markerCoordinates, metadata: markerMetadata },
         type: markerType,

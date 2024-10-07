@@ -41,16 +41,13 @@ const StdcmDestination = ({ disabled = false }: StdcmConfigCardProps) => {
     [destination]
   );
 
-  const updateDestinationPoint = (pathStep: StdcmPathStep) => {
+  const updateDestinationLocation = (newLocation: StdcmPathStep['location']) => {
     const newPathStep = {
-      ...pathStep,
-      arrival: arrivalScheduleConstraint
-        ? generateDatetimeFromDateAndTime(arrivalScheduleConstraint)
-        : undefined,
+      ...destination,
+      location: newLocation,
     };
-    dispatch(
-      updateStdcmPathStep(newPathStep)
-    );
+    // Changes to check
+    dispatch(updateStdcmPathStep(newPathStep));
   };
 
   const onDestinationArrivalChange = (schedule: ScheduleConstraint) => {
@@ -86,11 +83,14 @@ const StdcmDestination = ({ disabled = false }: StdcmConfigCardProps) => {
       disabled={disabled}
     >
       <div className="stdcm-v2-destination">
-        <StdcmOperationalPoint
-          updatePoint={updateDestinationPoint}
-          pathStep={destination}
-          disabled={disabled}
-        />
+        {(!destination.location || 'uic' in destination.location) && (
+          <StdcmOperationalPoint
+            updatePathStepLocation={updateDestinationLocation}
+            pathStepId={destination.id}
+            pathStepLocation={destination.location}
+            disabled={disabled}
+          />
+        )}
         <StdcmOpSchedule
           onArrivalChange={onDestinationArrivalChange}
           onArrivalTypeChange={onDestinationArrivalTypeChange}
