@@ -12,12 +12,12 @@ import HomeMap from 'applications/referenceMap/Home';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
 import HomeStdcm from 'applications/stdcm/Home';
 import Error403 from 'common/authorization/components/Error403';
+import InitialRedirect from 'common/authorization/components/InitialRedirect';
 import ErrorBoundary from 'common/ErrorBoundary';
 import { Loader } from 'common/Loaders';
 import NotificationsState from 'common/Notifications';
 import { OsrdContextLayout } from 'common/osrdContext';
 import { MODES } from 'main/consts';
-import Home from 'main/home';
 import { editorSlice } from 'reducers/editor';
 import editorSelectors from 'reducers/editor/selectors';
 import { updateLastInterfaceVersion } from 'reducers/main';
@@ -35,7 +35,7 @@ import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Home />,
+    element: <InitialRedirect />,
   },
   {
     path: 'map/*',

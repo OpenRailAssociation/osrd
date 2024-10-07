@@ -1,3 +1,5 @@
+import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+import { REQUIRED_USER_ROLES_FOR } from 'common/authorization/roleBaseAccessControl';
 import type { RootState } from 'reducers';
 import type { UserState } from 'reducers/user';
 import { makeSubSelector } from 'utils/selectors';
@@ -14,3 +16,15 @@ export const getUserSafeWord = makeUserPreferencesSelector('safeWord');
 export const getUsername = makeUserSelector('username');
 export const getUserRoles = makeUserSelector('userRoles');
 export const getIsSuperUser = (state: RootState) => getUserRoles(state).includes('Superuser');
+
+const makeUserHasAllRequiredRolesSelector =
+  (requiredRoles: BuiltinRole[]) => (state: RootState) => {
+    const userRoles = getUserRoles(state);
+    return requiredRoles.every((role) => userRoles.includes(role));
+  };
+export const getIsStdcmProfile = makeUserHasAllRequiredRolesSelector(
+  REQUIRED_USER_ROLES_FOR.USER_PROFILE.STDCM
+);
+export const getIsOperationalStudyProfile = makeUserHasAllRequiredRolesSelector(
+  REQUIRED_USER_ROLES_FOR.USER_PROFILE.OPERATIONAL_STUDIES
+);
