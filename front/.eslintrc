@@ -147,6 +147,12 @@
       "rules": {
         "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
       }
+    },
+    {
+      "files": ["src/common/api/generatedEditoastApi.ts", "src/common/api/osrdGatewayApi.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": ["error", { "fixToUnknown": true }]
+      }
     }
   ]
 }
