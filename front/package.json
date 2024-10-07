@@ -150,7 +150,7 @@
     "vite-plugin-checker": "^0.6.4",
     "vite-plugin-static-copy": "^1.0.6",
     "vite-tsconfig-paths": "^5.0.1",
-    "vitest": "^1.2.2"
+    "vitest": "^2.1.2"
   },
   "resolutions": {
     "react-error-overlay": "6.0.9",
