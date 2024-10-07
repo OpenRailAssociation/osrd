@@ -1,7 +1,9 @@
+import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+
 import useUserRoleCheck from '../hooks/useUserRoleCheck';
 
 export type RoleBasedContentProps = {
-  requiredRoles: string[];
+  requiredRoles: BuiltinRole[];
   children: React.ReactNode;
 };
 

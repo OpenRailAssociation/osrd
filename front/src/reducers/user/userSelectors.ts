@@ -13,3 +13,4 @@ export const getIsUserLogged = makeUserSelector('isLogged');
 export const getLoginError = makeUserSelector('loginError');
 export const getUserSafeWord = makeUserPreferencesSelector('safeWord');
 export const getUsername = makeUserSelector('username');
+export const getUserRoles = makeUserSelector('userRoles');

@@ -122,12 +122,12 @@ export default function App() {
     // Blindly dispatch current front version for storage
     dispatch(updateLastInterfaceVersion(import.meta.env.OSRD_GIT_DESCRIBE));
   }, []);
-  const { isUserLogged } = useAuth();
+  const { isUserLogged, isUserRolesFetched } = useAuth();
   return (
     <Suspense fallback={<Loader />}>
       <NotificationsState />
-      {isUserLogged && <RouterProvider router={router} />}
-      {!isUserLogged && <Loader />}
+      {isUserLogged && isUserRolesFetched && <RouterProvider router={router} />}
+      {(!isUserLogged || !isUserRolesFetched) && <Loader />}
     </Suspense>
   );
 }
