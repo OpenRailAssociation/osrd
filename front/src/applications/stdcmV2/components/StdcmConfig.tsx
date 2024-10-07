@@ -5,9 +5,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { usePathfinding } from 'modules/pathfinding/hooks/usePathfinding';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
@@ -19,6 +17,7 @@ import StdcmOrigin from './StdcmOrigin';
 import StdcmSimulationParams from './StdcmSimulationParams';
 import StdcmVias from './StdcmVias';
 import StdcmWarningBox from './StdcmWarningBox';
+import useStaticPathfinding from '../hooks/useStaticPathfinding';
 import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../types';
 import type { StdcmConfigErrors, StdcmSimulation, StdcmSimulationInputs } from '../types';
 import checkStdcmConfigErrors from '../utils/checkStdcmConfigErrors';
@@ -65,10 +64,7 @@ const StdcmConfig = ({
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
 
-  const [pathfindingProperties, setPathfindingProperties] =
-    useState<ManageTrainSchedulePathProperties>();
-
-  const { pathfindingState } = usePathfinding(setPathfindingProperties, pathfindingProperties);
+  const pathfinding = useStaticPathfinding();
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
@@ -81,7 +77,7 @@ const StdcmConfig = ({
   };
 
   const startSimulation = () => {
-    if (pathfindingState.done && !formErrors) {
+    if (pathfinding?.status === 'success' && !formErrors) {
       launchStdcmRequest();
     }
   };
@@ -94,7 +90,7 @@ const StdcmConfig = ({
   };
 
   useEffect(() => {
-    const isPathfindingFailed = pathfindingState.error !== '';
+    const isPathfindingFailed = !!pathfinding && pathfinding.status !== 'success';
     let formErrorsStatus = checkStdcmConfigErrors(isPathfindingFailed, origin, destination);
     if (formErrorsStatus?.errorType === StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED) {
       formErrorsStatus = {
@@ -110,7 +106,7 @@ const StdcmConfig = ({
       };
     }
     setFormErrors(formErrorsStatus);
-  }, [origin, destination, pathfindingState.error]);
+  }, [origin, destination, pathfinding]);
 
   // TODO: DROP STDCMV1: set those values by default in the store when <StdcmAllowances/> is not used anymore.
   useEffect(() => {
@@ -144,7 +140,7 @@ const StdcmConfig = ({
             {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
             <div
               className={cx('stdcm-v2-launch-request', {
-                'wizz-effect': !pathfindingState.done || formErrors,
+                'wizz-effect': pathfinding?.status !== 'success' || formErrors,
               })}
             >
               {showBtnToLaunchSimulation && (
@@ -166,7 +162,7 @@ const StdcmConfig = ({
             hideAttribution
             hideItinerary
             preventPointSelection
-            pathProperties={pathfindingProperties}
+            pathGeometry={pathfinding?.geometry}
             showStdcmAssets
           />
         </div>

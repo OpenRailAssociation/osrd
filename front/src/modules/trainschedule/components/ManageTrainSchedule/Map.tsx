@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { PathProperties } from 'common/api/osrdEditoastApi';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
@@ -56,6 +57,7 @@ import ItineraryMarkers from './ManageTrainScheduleMap/ItineraryMarkers';
 
 type MapProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
+  pathGeometry?: NonNullable<PathProperties['geometry']>;
   setMapCanvas?: (mapCanvas: string) => void;
   isReadOnly?: boolean;
   hideAttribution?: boolean;
@@ -68,6 +70,7 @@ type MapProps = {
 
 const Map = ({
   pathProperties,
+  pathGeometry: geometry,
   setMapCanvas,
   isReadOnly = false,
   hideAttribution = false,
@@ -83,12 +86,13 @@ const Map = ({
   const infraID = useInfraID();
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
+
+  const pathGeometry = useMemo(() => geometry || pathProperties?.geometry, [pathProperties]);
+
   const mapViewport = useMemo(
     () =>
-      isReadOnly && pathProperties
-        ? computeBBoxViewport(bbox(pathProperties?.geometry), viewport)
-        : viewport,
-    [isReadOnly, pathProperties, viewport]
+      isReadOnly && pathGeometry ? computeBBoxViewport(bbox(pathGeometry), viewport) : viewport,
+    [isReadOnly, pathGeometry, viewport]
   );
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
@@ -210,16 +214,16 @@ const Map = ({
   }, []);
 
   useEffect(() => {
-    if (pathProperties) {
-      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapViewport);
+    if (pathGeometry) {
+      const newViewport = computeBBoxViewport(bbox(pathGeometry), mapViewport);
       dispatch(updateViewport(newViewport));
     }
-  }, [pathProperties]);
+  }, [pathGeometry]);
 
   const captureMap = async () => {
-    if (!pathProperties) return;
+    if (!pathGeometry) return;
 
-    const itineraryViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapViewport);
+    const itineraryViewport = computeBBoxViewport(bbox(pathGeometry), mapViewport);
 
     if (setMapCanvas && isEqual(mapViewport, itineraryViewport)) {
       try {
@@ -401,7 +405,7 @@ const Map = ({
           <>
             <ItineraryLayer
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
-              geometry={pathProperties?.geometry}
+              geometry={pathGeometry}
               hideItineraryLine={hideItinerary}
               showStdcmAssets={showStdcmAssets}
             />

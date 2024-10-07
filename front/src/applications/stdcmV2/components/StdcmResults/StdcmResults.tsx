@@ -131,7 +131,7 @@ const StcdmResults = ({
             hideAttribution
             showStdcmAssets
             setMapCanvas={setMapCanvas}
-            pathProperties={selectedSimulation.outputs?.pathProperties}
+            pathGeometry={selectedSimulation.outputs?.pathProperties.geometry}
             simulationPathSteps={selectedSimulation.outputs?.results.simulationPathSteps}
           />
         </div>

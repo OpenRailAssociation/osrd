@@ -1,3 +1,4 @@
+// /!\ This file will be removed soon, don't update it /!\
 import { useEffect, useMemo, useState } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
