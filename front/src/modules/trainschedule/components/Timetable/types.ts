@@ -1,5 +1,7 @@
 import type {
   LightRollingStockWithLiveries,
+  PathfindingInputError,
+  PathfindingNotFound,
   SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 
@@ -26,4 +28,7 @@ export type TrainScheduleWithDetails = {
   isValid: boolean;
 };
 
-export type InvalidReason = Exclude<SimulationSummaryResult['status'], 'success'>;
+export type InvalidReason =
+  | Extract<SimulationSummaryResult['status'], 'pathfinding_failure' | 'simulation_failed'>
+  | PathfindingNotFound['error_type']
+  | PathfindingInputError['error_type'];
