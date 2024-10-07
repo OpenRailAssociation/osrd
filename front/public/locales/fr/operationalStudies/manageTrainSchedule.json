@@ -104,7 +104,7 @@
     "not_found_in_routes": "Itinéraire manquant",
     "not_found_in_tracks": "Voie manquante",
     "not_enough_path_items": "Éléments manquants pour la recherche : Origine, Destination, Matériel roulant",
-    "pathfinding_failed": "Aucun chemin trouvé",
+    "pathfinding_failure": "Aucun chemin trouvé",
     "rolling_stock_not_found": "Matériel roulant non trouvé"
   },
   "pleaseWait": "Veuillez patientez…",

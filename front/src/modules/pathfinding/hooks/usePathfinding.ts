@@ -225,11 +225,12 @@ export const usePathfinding = (
 
         try {
           const pathfindingResult = await postPathfindingBlocks(pathfindingInput).unwrap();
+          const incompatibleConstraintsCheck =
+            pathfindingResult.status === 'failure' &&
+            pathfindingResult.failed_status === 'pathfinding_not_found' &&
+            pathfindingResult.error_type === 'incompatible_constraints';
 
-          if (
-            pathfindingResult.status === 'success' ||
-            pathfindingResult.status === 'incompatible_constraints'
-          ) {
+          if (pathfindingResult.status === 'success' || incompatibleConstraintsCheck) {
             const pathResult =
               pathfindingResult.status === 'success'
                 ? pathfindingResult
@@ -306,10 +307,9 @@ export const usePathfinding = (
                   allWaypoints,
                   length: pathResult.length,
                   trackSectionRanges: pathResult.track_section_ranges,
-                  incompatibleConstraints:
-                    pathfindingResult.status === 'incompatible_constraints'
-                      ? pathfindingResult.incompatible_constraints
-                      : undefined,
+                  incompatibleConstraints: incompatibleConstraintsCheck
+                    ? pathfindingResult.incompatible_constraints
+                    : undefined,
                 });
 
               if (pathfindingResult.status === 'success') {
@@ -317,14 +317,19 @@ export const usePathfinding = (
               } else {
                 pathfindingDispatch({
                   type: 'PATHFINDING_INCOMPATIBLE_CONSTRAINTS',
-                  message: `pathfindingErrors.${pathfindingResult.status}`,
+                  message: `pathfindingErrors.${pathfindingResult.error_type}`,
                 });
               }
             }
+          } else if (pathfindingResult.failed_status === 'internal_error') {
+            pathfindingDispatch({
+              type: 'PATHFINDING_ERROR',
+              message: `pathfindingErrors.${pathfindingResult.core_error.message}`,
+            });
           } else {
             pathfindingDispatch({
               type: 'PATHFINDING_ERROR',
-              message: `pathfindingErrors.${pathfindingResult.status}`,
+              message: `pathfindingErrors.${pathfindingResult.error_type}`,
             });
           }
         } catch (e) {

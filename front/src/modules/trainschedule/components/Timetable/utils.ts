@@ -1,4 +1,4 @@
-import { specialCodeDictionary } from './consts';
+import specialCodeDictionary from './consts';
 import type { TrainScheduleWithDetails } from './types';
 
 /** Filter train schedules by their names and labels */

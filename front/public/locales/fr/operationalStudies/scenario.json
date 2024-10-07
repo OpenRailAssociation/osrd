@@ -52,10 +52,16 @@
     "filterLabel": "Nom, étiquette",
     "importTrainSchedule": "Importer",
     "invalid": {
+      "invalid_path_items": "Point(s) de passage(s) invalide(s)",
+      "incompatible_constraints": "Contraintes incompatibles",
+      "not_enough_path_items": "Point(s) de passage(s) manquant(s)",
+      "not_found_in_blocks": "Canton manquant",
+      "not_found_in_routes": "Itinéraire manquant",
+      "not_found_in_tracks": "Voie manquante",
+      "pathfinding_failure": "Calcul non abouti",
       "pathfinding_not_found": "Chemin introuvable",
-      "pathfinding_failed": "Calcul non abouti",
-      "simulation_failed": "Simulation impossible",
-      "rolling_stock_not_found": "MR non trouvé"
+      "rolling_stock_not_found": "MR non trouvé",
+      "simulation_failed": "Simulation impossible"
     },
     "invalidTrains": "Certains trains sont invalides",
     "noSpeedLimitTags": "Sans code",

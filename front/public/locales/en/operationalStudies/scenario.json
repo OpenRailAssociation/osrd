@@ -53,10 +53,16 @@
     "filterLabel": "Name, label",
     "importTrainSchedule": "Import",
     "invalid": {
+      "incompatible_constraints": "Incompatible constraints",
+      "invalid_path_items": "Invalid path items",
+      "not_enough_path_items": "Not enough path items",
+      "not_found_in_blocks": "Missing block",
+      "not_found_in_routes": "Missing route",
+      "not_found_in_tracks": "Missing track",
+      "pathfinding_failure": "Pathfinding failed",
       "pathfinding_not_found": "Pathfinding not found",
-      "pathfinding_failed": "Pathfinding failed",
-      "simulation_failed": "Simulation failed",
-      "rolling_stock_not_found": "RS not found"
+      "rolling_stock_not_found": "RS not found",
+      "simulation_failed": "Simulation failed"
     },
     "invalidTrains": "Some trains are invalid",
     "noSpeedLimitTags": "Without code",
