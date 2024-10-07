@@ -1624,7 +1624,7 @@ export type NewDocumentResponse = {
 };
 export type InternalError = {
   context: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
   message: string;
   status?: number;
@@ -2019,7 +2019,7 @@ export type AddOperation = {
     within the target document where the operation is performed. */
   path: string;
   /** Value to add to the target location. */
-  value: any;
+  value: unknown;
 };
 export type RemoveOperation = {
   /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
@@ -2031,7 +2031,7 @@ export type ReplaceOperation = {
     within the target document where the operation is performed. */
   path: string;
   /** Value to replace with. */
-  value: any;
+  value: unknown;
 };
 export type MoveOperation = {
   /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
@@ -2054,7 +2054,7 @@ export type TestOperation = {
     within the target document where the operation is performed. */
   path: string;
   /** Value to test against. */
-  value: any;
+  value: unknown;
 };
 export type PatchOperation =
   | (AddOperation & {
