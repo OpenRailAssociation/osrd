@@ -46,7 +46,7 @@ editoast_schemas = { path = "./editoast_schemas" }
 editoast_search = { path = "./editoast_search" }
 enum-map = "2.7.3"
 futures = { version = "0.3.30" }
-futures-util = { version = "0.3.30" }
+futures-util = { version = "0.3.31" }
 geojson = { version = "0.24", default-features = false }
 geos = { version = "8.3.1", features = ["json"] }
 hostname = "0.4.0"
