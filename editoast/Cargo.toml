@@ -150,7 +150,7 @@ pathfinding = "4.11.0"
 postgis_diesel.workspace = true
 rand.workspace = true
 rangemap.workspace = true
-redis = { version = "0.25.4", default-features = false, features = [
+redis = { version = "0.27.3", default-features = false, features = [
   "cluster-async",
   "connection-manager",
   "tokio-comp",
