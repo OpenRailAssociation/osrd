@@ -1,4 +1,6 @@
-const useUserRoleCheck = (allowedRoles: string[]) => {
+import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+
+const useUserRoleCheck = (allowedRoles: BuiltinRole[]) => {
   if (allowedRoles.length === 0) {
     return true;
   }

@@ -1,12 +1,14 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { ApiError } from 'common/api/baseGeneratedApis';
+import type { BuiltinRole } from 'common/api/osrdEditoastApi';
 
 export interface UserState {
   isLogged: boolean;
   loginError?: ApiError;
   username: string;
   userPreferences: { safeWord: string };
+  userRoles: BuiltinRole[];
   account: Record<string, string>;
   stdcmV2Activated: boolean;
 }
@@ -16,6 +18,7 @@ export const userInitialState: UserState = {
   loginError: undefined,
   username: '',
   userPreferences: { safeWord: '' },
+  userRoles: [],
   account: {},
   stdcmV2Activated: true,
 };
@@ -41,6 +44,9 @@ export const userSlice = createSlice({
     logoutSuccess() {
       return userInitialState;
     },
+    setUserRoles(state, action: PayloadAction<{ userRoles: BuiltinRole[] | undefined }>) {
+      state.userRoles = action.payload.userRoles ?? [];
+    },
     updateUserPreferences(state, action: PayloadAction<{ safeWord: string }>) {
       state.userPreferences = action.payload;
     },
@@ -54,6 +60,7 @@ export const {
   loginSuccess,
   loginError,
   logoutSuccess,
+  setUserRoles,
   updateUserPreferences,
   switchStdcmV2Activated,
 } = userSlice.actions;
