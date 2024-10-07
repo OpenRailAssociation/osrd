@@ -124,7 +124,7 @@ image = { version = "0.25.2", default-features = false, features = [
 ] }
 inventory = "0.3"
 itertools.workspace = true
-json-patch = { version = "2.0.0", default-features = false, features = [
+json-patch = { version = "3.0.1", default-features = false, features = [
   "utoipa",
 ] }
 lapin = "2.5.0"
