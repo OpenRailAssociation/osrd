@@ -2,17 +2,20 @@ import { useEffect, useMemo } from 'react';
 
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
-import type { PathStep } from 'reducers/osrdconf/types';
 import { createFixedSelectOptions } from 'utils/uiCoreHelpers';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 type StdcmOperationalPointProps = {
-  updatePoint: (pathStep: PathStep | null) => void;
-  point: PathStep | null;
-  opPointId: string;
+  pathStepId: string;
+  updatePathStepLocation: (location: StdcmPathStep['location']) => void;
+  pathStepLocation?: {
+    secondaryCode?: string | null;
+    uic: number;
+    name: string;
+  };
   disabled?: boolean;
 };
 
@@ -23,15 +26,18 @@ function formatChCode(chCode: string) {
 }
 
 const StdcmOperationalPoint = ({
-  updatePoint,
-  point,
-  opPointId,
+  pathStepId,
   disabled,
+  pathStepLocation: point,
+  updatePathStepLocation,
 }: StdcmOperationalPointProps) => {
   const { t } = useTranslation('stdcm');
 
   const { searchTerm, chCodeFilter, sortedSearchResults, setSearchTerm, setChCodeFilter } =
-    useSearchOperationalPoint({ initialSearchTerm: point?.name, initialChCodeFilter: point?.ch });
+    useSearchOperationalPoint({
+      initialSearchTerm: point?.name,
+      initialChCodeFilter: point?.secondaryCode || undefined,
+    });
 
   const operationalPointsSuggestions = useMemo(
     () =>
@@ -68,17 +74,17 @@ const StdcmOperationalPoint = ({
   );
 
   const dispatchNewPoint = (p?: SearchResultItemOperationalPoint) => {
-    if (p && p.ch === point?.ch && 'uic' in point && p.uic === point?.uic) return;
-    const newPoint = p
+    if (p && p.ch === point?.secondaryCode && 'uic' in point && p.uic === point?.uic) return;
+
+    const newLocation = p
       ? {
           name: p.name,
-          ch: p.ch,
-          id: nextId(),
           uic: p.uic,
+          secondaryCode: p.ch,
           coordinates: p.geographic.coordinates,
         }
-      : null;
-    updatePoint(newPoint);
+      : undefined;
+    updatePathStepLocation(newLocation);
   };
 
   const updateSelectedPoint = (
@@ -110,17 +116,19 @@ const StdcmOperationalPoint = ({
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    if (e.target.value.trim().length === 0) {
+    if (point) {
       dispatchNewPoint(undefined);
     }
   };
 
   useEffect(() => {
     if (point) {
-      setSearchTerm(point.name || '');
-      setChCodeFilter(point.ch || '');
+      setSearchTerm(point.name);
+      setChCodeFilter(point.secondaryCode || undefined);
     } else {
-      setSearchTerm('');
+      if (searchTerm !== '') {
+        setSearchTerm('');
+      }
       setChCodeFilter(undefined);
     }
   }, [point]);
@@ -129,7 +137,7 @@ const StdcmOperationalPoint = ({
     <div className="flex">
       <div className="suggestions col-9">
         <ComboBox
-          id={`${opPointId}-ci`}
+          id={`${pathStepId}-ci`}
           label={t('trainPath.ci')}
           value={searchTerm}
           onChange={onInputChange}
@@ -143,7 +151,7 @@ const StdcmOperationalPoint = ({
       <div className="suggestions stdcm-v2-ch-selector w-100 px-1 pb-2 col-3">
         <Select
           label={t('trainPath.ch')}
-          id={`${opPointId}-ch`}
+          id={`${pathStepId}-ch`}
           value={chCodeFilter ? { label: formatChCode(chCodeFilter), id: chCodeFilter } : undefined}
           onChange={(e) => onSelectChCodeFilter(e)}
           {...createFixedSelectOptions(sortedChOptions)}

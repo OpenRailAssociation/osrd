@@ -14,19 +14,19 @@ import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
 import StdcmHeader from '../components/StdcmHeader';
 import StdcmResults from '../components/StdcmResults';
 import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';
-import type { StdcmSimulation, StdcmSimulationInputs } from '../types';
+import type { StdcmSimulation } from '../types';
+import useStdcmForm from '../hooks/useStdcmForm';
 
 const StdcmViewV2 = () => {
   // TODO : refacto. state useStdcm. Maybe we can merge some state together in order to reduce the number of refresh
-  const [currentSimulationInputs, setCurrentSimulationInputs] = useState<StdcmSimulationInputs>({
-    pathSteps: [null, null], // origin and destination are not set yet. We use the same logic as in the store.
-  });
   const [simulationsList, setSimulationsList] = useState<StdcmSimulation[]>([]);
   const [selectedSimulationIndex, setSelectedSimulationIndex] = useState(-1);
   const [showStatusBanner, setShowStatusBanner] = useState(false);
   const [retainedSimulationIndex, setRetainedSimulationIndex] = useState(-1);
   const [showBtnToLaunchSimulation, setShowBtnToLaunchSimulation] = useState(false);
   const [isDebugMode, setIsDebugMode] = useState(false);
+
+  const currentSimulationInputs = useStdcmForm();
 
   const {
     launchStdcmRequest,
@@ -67,16 +67,7 @@ const StdcmViewV2 = () => {
   // reset config data with the selected simulation data
   useEffect(() => {
     if (selectedSimulation) {
-      const { departureDate, departureTime, pathSteps, consist } = selectedSimulation.inputs;
-      dispatch(
-        updateStdcmConfigWithData({
-          rollingStockID: consist?.tractionEngine?.id,
-          speedLimitByTag: consist?.speedLimitByTag,
-          pathSteps: [...pathSteps],
-          originDate: departureDate,
-          originTime: departureTime,
-        })
-      );
+      dispatch(updateStdcmConfigWithData(selectedSimulation.inputs));
     }
   }, [selectedSimulation]);
 
@@ -175,7 +166,6 @@ const StdcmViewV2 = () => {
             launchStdcmRequest={launchStdcmRequest}
             retainedSimulationIndex={retainedSimulationIndex}
             selectedSimulation={selectedSimulation}
-            setCurrentSimulationInputs={setCurrentSimulationInputs}
             showBtnToLaunchSimulation={showBtnToLaunchSimulation}
             showStatusBanner={showStatusBanner}
           />

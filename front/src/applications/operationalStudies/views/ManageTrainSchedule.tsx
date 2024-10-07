@@ -119,7 +119,7 @@ const ManageTrainSchedule = ({ trainIdToEdit }: ManageTrainScheduleProps) => {
         <div className="floating-itinerary">
           <Itinerary pathProperties={pathProperties} setPathProperties={setPathProperties} />
         </div>
-        <Map pathProperties={pathProperties}>
+        <Map pathProperties={pathProperties} geometry={pathProperties?.geometry}>
           <IncompatibleConstraints pathProperties={pathProperties} />
         </Map>
       </div>

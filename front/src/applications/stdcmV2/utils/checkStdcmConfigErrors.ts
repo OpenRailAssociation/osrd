@@ -1,11 +1,11 @@
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 import { StdcmConfigErrorTypes, ArrivalTimeTypes, type StdcmConfigErrors } from '../types';
 
 const checkStdcmConfigErrors = (
   pathfindingStateError: boolean,
-  origin: PathStep | null,
-  destination: PathStep | null
+  origin: Extract<StdcmPathStep, { isVia: false }>,
+  destination: Extract<StdcmPathStep, { isVia: false }>
 ): StdcmConfigErrors | undefined => {
   const isOneOpPointMissing = !origin || !destination;
   if (isOneOpPointMissing) {

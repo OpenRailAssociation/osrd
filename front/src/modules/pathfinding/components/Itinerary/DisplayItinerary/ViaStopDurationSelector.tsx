@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useOsrdConfActions } from 'common/osrdContext';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';

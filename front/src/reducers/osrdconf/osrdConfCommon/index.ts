@@ -3,7 +3,7 @@ import type { Draft } from 'immer';
 import { omit } from 'lodash';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import { ArrivalTimeTypes, type StdcmStopTypes } from 'applications/stdcmV2/types';
+import { type StdcmStopTypes } from 'applications/stdcmV2/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import {
@@ -308,24 +308,10 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
       state.startTime = action.payload;
     },
     updateOrigin(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
-      const prevOriginArrivalType = state.pathSteps.at(0)?.arrivalType;
-      const newPoint = action.payload
-        ? {
-            ...action.payload,
-            arrivalType: prevOriginArrivalType || ArrivalTimeTypes.PRECISE_TIME,
-          }
-        : null;
-      state.pathSteps = updateOriginPathStep(state.pathSteps, newPoint, true);
+      state.pathSteps = updateOriginPathStep(state.pathSteps, action.payload, true);
     },
     updateDestination(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
-      const prevDestinationArrivalType = state.pathSteps.at(-1)?.arrivalType;
-      const newPoint = action.payload
-        ? {
-            ...action.payload,
-            arrivalType: prevDestinationArrivalType || ArrivalTimeTypes.ASAP,
-          }
-        : null;
-      state.pathSteps = updateDestinationPathStep(state.pathSteps, newPoint, true);
+      state.pathSteps = updateDestinationPathStep(state.pathSteps, action.payload, true);
     },
   };
 }
