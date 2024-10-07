@@ -53,8 +53,9 @@
     "filterLabel": "Name, label",
     "importTrainSchedule": "Import",
     "invalid": {
+      "pathfinding_input_error": "Incorrect pathfinding inputs",
       "pathfinding_not_found": "Pathfinding not found",
-      "pathfinding_failed": "Pathfinding failed",
+      "failed": "Pathfinding failed",
       "simulation_failed": "Simulation failed",
       "rolling_stock_not_found": "RS not found"
     },
