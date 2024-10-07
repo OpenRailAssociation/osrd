@@ -108,33 +108,43 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
       name={t('consist.consist')}
       title={<ConsistCardTitle rollingStock={rollingStock} />}
       disabled={disabled}
+      className="consist"
     >
-      <div className="stdcm-v2-consist">
-        <div className="suggestions">
-          <ComboBox
-            id="tractionEngine"
-            label={t('consist.tractionEngine')}
-            value={filters.text.toUpperCase()}
-            onClick={onInputClick}
-            onChange={onInputChange}
-            autoComplete="off"
-            disabled={disabled}
-            suggestions={filteredRollingStockList}
-            getSuggestionLabel={(suggestion: LightRollingStockWithLiveries) => getLabel(suggestion)}
-            onSelectSuggestion={onSelectSuggestion}
-          />
-        </div>
-        <div className="stdcm-v2-consist__properties d-flex justify-content-between">
-          <Input id="tonnage" label={t('consist.tonnage')} trailingContent="t" />
-          <Input id="length" label={t('consist.length')} trailingContent="m" />
-        </div>
-        <SpeedLimitByTagSelector
+      <div className="traction-engine">
+        <ComboBox
+          id="tractionEngine"
+          label={t('consist.tractionEngine')}
+          value={filters.text.toUpperCase()}
+          onClick={onInputClick}
+          onChange={onInputChange}
+          autoComplete="off"
           disabled={disabled}
-          selectedSpeedLimitByTag={speedLimitByTag}
-          speedLimitsByTags={speedLimitsByTags}
-          dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
+          suggestions={filteredRollingStockList}
+          getSuggestionLabel={(suggestion: LightRollingStockWithLiveries) => getLabel(suggestion)}
+          onSelectSuggestion={onSelectSuggestion}
         />
       </div>
+      <div className="stdcm-v2-consist__properties">
+        <Input
+          id="tonnage"
+          label={t('consist.tonnage')}
+          trailingContent="t"
+          inputFieldWrapperClassname="weight"
+        />
+        <Input
+          id="length"
+          label={t('consist.length')}
+          trailingContent="m"
+          inputFieldWrapperClassname="length"
+        />
+      </div>
+      <SpeedLimitByTagSelector
+        disabled={disabled}
+        selectedSpeedLimitByTag={speedLimitByTag}
+        speedLimitsByTags={speedLimitsByTags}
+        dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
+        className="speed-limit-by-tag-selector"
+      />
     </StdcmCard>
   );
 };

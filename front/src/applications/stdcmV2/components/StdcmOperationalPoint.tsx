@@ -133,8 +133,8 @@ const StdcmOperationalPoint = ({
   }, [point]);
 
   return (
-    <div className="flex">
-      <div className="suggestions col-9">
+    <div className="location-line">
+      <div className="col-9 ci-input">
         <ComboBox
           id={`${opPointId}-ci`}
           label={t('trainPath.ci')}
@@ -148,7 +148,7 @@ const StdcmOperationalPoint = ({
           disableDefaultFilter
         />
       </div>
-      <div className="suggestions stdcm-v2-ch-selector w-100 px-1 pb-2 col-3">
+      <div className="col-3 p-0">
         <Select
           label={t('trainPath.ch')}
           id={`${opPointId}-ch`}

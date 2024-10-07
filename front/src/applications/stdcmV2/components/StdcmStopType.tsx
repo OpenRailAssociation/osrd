@@ -12,7 +12,7 @@ const StdcmStopType = ({ stopTypes, updatePathStepStopType }: StdcmStopTypeProps
   const { t } = useTranslation('stdcm');
 
   return (
-    <div className="stdcm-v2-via-stop-for selector">
+    <div className="stop-type-selector">
       <Select
         label={t('trainPath.type')}
         id="type"
