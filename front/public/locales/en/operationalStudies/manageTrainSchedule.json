@@ -104,7 +104,7 @@
     "not_found_in_routes": "Missing route",
     "not_found_in_tracks": "Missing track",
     "not_enough_path_items": "Missing parameters for pathfinding: Departure, Arrival, Rolling stock",
-    "pathfinding_failed": "No path found",
+    "pathfinding_failure": "No path found",
     "rolling_stock_not_found": "Rolling stock not found"
   },
   "powerRestriction": "Power restriction code",

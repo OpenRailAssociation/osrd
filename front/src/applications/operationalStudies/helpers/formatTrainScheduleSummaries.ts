@@ -54,7 +54,11 @@ const formatTrainScheduleSummaries = (
             duration: 0,
             pathLength: '',
             mechanicalEnergyConsumed: 0,
-            invalidReason: trainSummary.status,
+            invalidReason:
+              trainSummary.status === 'pathfinding_not_found' ||
+              trainSummary.status === 'pathfinding_input_error'
+                ? trainSummary.error_type
+                : trainSummary.status,
           };
 
     return {
