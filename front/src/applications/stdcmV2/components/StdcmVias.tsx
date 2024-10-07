@@ -140,15 +140,14 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                 }
                 hasTip
                 disabled={disabled}
+                className="via"
               >
-                <div className="stdcm-v2-vias">
-                  <StdcmOperationalPoint
-                    updatePoint={(e) => updatePathStepsList(e, pathStepIndex)}
-                    point={pathStep}
-                    opPointId={pathStep.id}
-                    disabled={disabled}
-                  />
-                </div>
+                <StdcmOperationalPoint
+                  updatePoint={(e) => updatePathStepsList(e, pathStepIndex)}
+                  point={pathStep}
+                  opPointId={pathStep.id}
+                  disabled={disabled}
+                />
                 {'uic' in pathStep && pathStep.uic !== -1 && (
                   <>
                     <StdcmStopType

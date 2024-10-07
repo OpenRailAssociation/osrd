@@ -100,8 +100,8 @@ const StdcmOpSchedule = ({
   );
 
   return (
-    <div className="d-flex flex-column">
-      <div className="col-12 pr-1">
+    <>
+      <div className="arrival-type-select">
         <Select
           id={`select-${opId}`}
           value={opScheduleTimeType}
@@ -116,7 +116,7 @@ const StdcmOpSchedule = ({
         />
       </div>
       {opScheduleTimeType === 'preciseTime' && (
-        <div className="d-flex pl-2 pr-1">
+        <div className="schedule">
           {/* TODO: Remove empty onChange events once we fix the warning on ui-core side */}
           <DatePicker
             inputProps={{
@@ -166,7 +166,7 @@ const StdcmOpSchedule = ({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

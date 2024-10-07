@@ -13,6 +13,7 @@ type SpeedLimitByTagSelectorProps = {
   selectedSpeedLimitByTag?: string;
   speedLimitsByTags: string[];
   dispatchUpdateSpeedLimitByTag: (newTag: string | null) => void;
+  className?: string;
 };
 
 export default function SpeedLimitByTagSelector({
@@ -21,6 +22,7 @@ export default function SpeedLimitByTagSelector({
   selectedSpeedLimitByTag: speedLimitByTag,
   speedLimitsByTags,
   dispatchUpdateSpeedLimitByTag,
+  className = '',
 }: SpeedLimitByTagSelectorProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
@@ -34,9 +36,12 @@ export default function SpeedLimitByTagSelector({
   return (
     <div className="osrd-config-item mb-3">
       <div
-        className={cx('osrd-config-item-container', {
-          'd-flex align-items-center gap-10': condensed,
-        })}
+        className={
+          (cx('osrd-config-item-container', {
+            'd-flex align-items-center gap-10': condensed,
+          }),
+          className)
+        }
       >
         <Select
           disabled={disabled}

@@ -6,9 +6,17 @@ export type StdcmCardProps = {
   disabled?: boolean;
   title?: React.ReactNode;
   children: React.ReactNode;
+  className?: string;
 };
 
-const StdcmCard = ({ name, hasTip = false, disabled = false, title, children }: StdcmCardProps) => (
+const StdcmCard = ({
+  name,
+  hasTip = false,
+  disabled = false,
+  title,
+  children,
+  className = '',
+}: StdcmCardProps) => (
   <div className={cx('stdcm-v2-card', { 'has-tip': hasTip, disabled })}>
     {name && (
       <div
@@ -23,7 +31,7 @@ const StdcmCard = ({ name, hasTip = false, disabled = false, title, children }: 
         {title}
       </div>
     )}
-    <div className="stdcm-v2-card__body">{children}</div>
+    <div className={cx('stdcm-v2-card__body', `${className}`)}>{children}</div>
   </div>
 );
 

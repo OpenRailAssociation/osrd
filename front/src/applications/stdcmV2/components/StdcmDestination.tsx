@@ -101,6 +101,7 @@ const StdcmDestination = ({
       name={t('trainPath.destination')}
       title={<img src={DestinationIcon} alt="destination" className="stdcm-destination-icon" />}
       disabled={disabled}
+      className="extremity"
     >
       <div className="stdcm-v2-destination">
         <StdcmOperationalPoint

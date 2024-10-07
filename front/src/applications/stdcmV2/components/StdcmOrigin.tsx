@@ -90,29 +90,28 @@ const StdcmOrigin = ({
     <StdcmCard
       name={t('trainPath.origin')}
       title={<img src={OriginIcon} alt="origin" className="stdcm-origin-icon" />}
+      className="extremity"
       disabled={disabled}
       hasTip
     >
-      <div className="stdcm-v2-origin__parameters">
-        <StdcmOperationalPoint
-          updatePoint={updateOriginPoint}
-          point={origin}
-          opPointId={origin?.id || 'origin'}
+      <StdcmOperationalPoint
+        updatePoint={updateOriginPoint}
+        point={origin}
+        opPointId={origin?.id || 'origin'}
+        disabled={disabled}
+      />
+      {origin && (
+        <StdcmOpSchedule
+          onArrivalChange={onOriginArrivalChange}
+          onArrivalTypeChange={onOriginArrivalTypeChange}
+          onArrivalToleranceChange={onOriginToleranceChange}
+          opTimingData={originArrival}
+          opToleranceValues={originToleranceValues}
+          opScheduleTimeType={origin?.arrivalType || ArrivalTimeTypes.PRECISE_TIME}
           disabled={disabled}
+          opId="origin-arrival"
         />
-        {origin && (
-          <StdcmOpSchedule
-            onArrivalChange={onOriginArrivalChange}
-            onArrivalTypeChange={onOriginArrivalTypeChange}
-            onArrivalToleranceChange={onOriginToleranceChange}
-            opTimingData={originArrival}
-            opToleranceValues={originToleranceValues}
-            opScheduleTimeType={origin?.arrivalType || ArrivalTimeTypes.PRECISE_TIME}
-            disabled={disabled}
-            opId="origin-arrival"
-          />
-        )}
-      </div>
+      )}
     </StdcmCard>
   );
 };

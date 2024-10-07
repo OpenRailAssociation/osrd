@@ -2,7 +2,7 @@
   font-family: 'IBM Plex Sans';
   min-width: 85rem;
 
-  /* 
+  /*
   We set the cursor to default to avoid the pointer cursor that appears due to role="button" on the div.
   The role="button" makes the div appear clickable, which causes the cursor to change to a pointer on hover.
   Using !important ensures that the cursor remains in its default state.
@@ -59,25 +59,6 @@
             height: 1.25rem;
           }
         }
-        .stdcm-v2-consist {
-          .osrd-config-item-container {
-            padding: 0 0.6rem 0 0;
-            .feed-back {
-              padding: 0;
-            }
-          }
-        }
-        .stdcm-v2-consist__properties {
-          .feed-back:nth-child(1) {
-            width: 7.75rem;
-          }
-          .feed-back:nth-child(2) {
-            width: 8.25rem;
-          }
-          * > .base-label-wrapper > label {
-            margin-bottom: 0;
-          }
-        }
       }
 
       .stdcm-v2__separator {
@@ -94,10 +75,6 @@
         width: 28.125rem;
         position: relative;
         align-items: center;
-
-        & > div:not(:nth-last-child(-n + 2)) {
-          margin-bottom: 2rem;
-        }
 
         > div {
           width: 100%;
