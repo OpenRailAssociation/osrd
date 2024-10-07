@@ -8,9 +8,9 @@ export const getUserPreferences = makeUserSelector('userPreferences');
 export const getStdcmV2Activated = makeUserSelector('stdcmV2Activated');
 const makeUserPreferencesSelector =
   makeSubSelector<UserState['userPreferences']>(getUserPreferences);
-
 export const getIsUserLogged = makeUserSelector('isLogged');
 export const getLoginError = makeUserSelector('loginError');
 export const getUserSafeWord = makeUserPreferencesSelector('safeWord');
 export const getUsername = makeUserSelector('username');
 export const getUserRoles = makeUserSelector('userRoles');
+export const getIsSuperUser = (state: RootState) => getUserRoles(state).includes('Superuser');
