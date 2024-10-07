@@ -46,6 +46,10 @@ updates:
       turf:
         patterns:
           - "@turf/*"
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
     commit-message:
       prefix: "front:"
     open-pull-requests-limit: 100
