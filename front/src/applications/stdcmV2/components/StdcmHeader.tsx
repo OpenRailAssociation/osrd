@@ -2,6 +2,8 @@ import { Bug } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import RoleBasedContent from 'common/authorization/components/RoleBasedContent';
+
 type StdcmHeaderProps = {
   isDebugMode: boolean;
   onDebugModeToggle: React.Dispatch<React.SetStateAction<boolean>>;
@@ -18,16 +20,18 @@ const StdcmHeader = ({ isDebugMode, onDebugModeToggle }: StdcmHeaderProps) => {
           {t('notificationTitle')}
         </span>
       </div>
-      <div className="stdcm-v2-header_debug">
-        <button
-          type="button"
-          aria-label="stdcm-debug"
-          className={cx({ 'debug-on': isDebugMode, 'debug-off': !isDebugMode })}
-          onClick={() => onDebugModeToggle(!isDebugMode)}
-        >
-          <Bug />
-        </button>
-      </div>
+      <RoleBasedContent requiredRoles={['Superuser']}>
+        <div className="stdcm-v2-header_debug">
+          <button
+            type="button"
+            aria-label="stdcm-debug"
+            className={cx({ 'debug-on': isDebugMode, 'debug-off': !isDebugMode })}
+            onClick={() => onDebugModeToggle(!isDebugMode)}
+          >
+            <Bug />
+          </button>
+        </div>
+      </RoleBasedContent>
     </div>
   );
 };
