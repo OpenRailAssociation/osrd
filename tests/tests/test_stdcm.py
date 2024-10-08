@@ -266,7 +266,75 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
     r = requests.post(url, json=payload)
     response = r.json()
     assert r.status_code == 200
-    assert response == {"status": "path_not_found"}
+    assert response == {
+        "status": "conflicts",
+        "conflicts": [
+            {
+                "conflict_type": "Spacing",
+                "start_time": "2024-01-01T07:30:00Z",
+                "end_time": "2024-01-01T16:00:00Z",
+                "train_ids": [],
+                "work_schedule_ids": [3],
+                "requirements": [
+                    {
+                        "start_time": "2024-01-01T07:30:00Z",
+                        "end_time": "2024-01-01T16:00:00Z",
+                        "zone": "zone.[DG2:DECREASING, DH2:INCREASING, DH3:DECREASING]",
+                    },
+                    {
+                        "start_time": "2024-01-01T07:30:00Z",
+                        "end_time": "2024-01-01T16:00:00Z",
+                        "zone": "zone.[DH1_1:DECREASING, DH3:INCREASING]",
+                    },
+                    {
+                        "start_time": "2024-01-01T07:30:00Z",
+                        "end_time": "2024-01-01T16:00:00Z",
+                        "zone": "zone.[DH1_1:INCREASING, DH1_2:DECREASING]",
+                    },
+                ],
+            }
+        ],
+        "pathfinding_result": {
+            "blocks": [
+                "block.257fce538543c5f960490c7606bbc603",
+                "block.1dbf71a8896e98cd71157a44bb918a9e",
+                "block.97661cd54d96453abdc191d1be184af5",
+                "block.52b46c47a8253001dad72b6907da3a07",
+                "block.26351683b3a305dab1fb15183e256f82",
+                "block.9fd6806a7f1c25dbc9809036f8799c50",
+                "block.6eac7803d789741b4aab9b9d347ab7b0",
+                "block.077f958857f85779fd13430750bfdd80",
+                "block.99f89fff7dabab637ca7e7fb823faa8c",
+                "block.7a8dbf58fefc7795eb972d52f931ee3f",
+                "block.ddd4e5a371d90d2522e86eb3ced76206",
+                "block.1345e674f8d1c39dae0cd05951af5d8d",
+                "block.a69d6a804dfee71d0cc91314b915e0c7",
+                "block.f2b0ac13a7f1d9149ee6df4004cbaac3",
+            ],
+            "length": 42000000,
+            "path_item_positions": [0, 42000000],
+            "routes": [
+                "rt.buffer_stop.2->DA1",
+                "rt.DA1->DA6",
+                "rt.DA6->DC6",
+                "rt.DC6->DD3",
+                "rt.DD3->DH0",
+                "rt.DH0->DH2",
+                "rt.DH2->buffer_stop.7",
+            ],
+            "status": "success",
+            "track_section_ranges": [
+                {"begin": 0, "end": 1950000, "track_section": "TA2", "direction": "START_TO_STOP"},
+                {"begin": 0, "end": 50000, "track_section": "TA5", "direction": "START_TO_STOP"},
+                {"begin": 0, "end": 10000000, "track_section": "TA7", "direction": "START_TO_STOP"},
+                {"begin": 0, "end": 1000000, "track_section": "TC2", "direction": "START_TO_STOP"},
+                {"begin": 0, "end": 25000000, "track_section": "TD1", "direction": "START_TO_STOP"},
+                {"begin": 0, "end": 3000000, "track_section": "TD3", "direction": "START_TO_STOP"},
+                {"begin": 0, "end": 1000000, "track_section": "TH0", "direction": "START_TO_STOP"},
+                {"begin": 0, "end": 0, "track_section": "TH1", "direction": "START_TO_STOP"},
+            ],
+        },
+    }
 
 
 def _get_stdcm_response(infra: Infra, timetable_id: int, stdcm_payload: Dict[str, Any]):

@@ -2472,7 +2472,16 @@ paths:
     post:
       tags:
       - stdcm
-      summary: Compute a STDCM and return the simulation result
+      summary: This function computes a STDCM and returns the result.
+      description: |-
+        It first checks user authorization, then retrieves timetable, infrastructure,
+        train schedules, and rolling stock data, and runs train simulations.
+        The result contains the simulation output based on the train schedules
+        and infrastructure provided.
+
+        If the simulation fails, the function uses a virtual train to detect conflicts
+        with existing train schedules. It then returns both the conflict information
+        and the pathfinding result from the virtual train's simulation.
       parameters:
       - name: infra
         in: query
@@ -2619,6 +2628,22 @@ paths:
                       type: string
                       enum:
                       - path_not_found
+                - type: object
+                  required:
+                  - pathfinding_result
+                  - conflicts
+                  - status
+                  properties:
+                    conflicts:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Conflict'
+                    pathfinding_result:
+                      $ref: '#/components/schemas/PathfindingResult'
+                    status:
+                      type: string
+                      enum:
+                      - conflicts
                 - type: object
                   required:
                   - error
