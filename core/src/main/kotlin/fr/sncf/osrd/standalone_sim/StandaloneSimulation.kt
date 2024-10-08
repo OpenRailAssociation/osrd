@@ -17,9 +17,8 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.*
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
@@ -103,7 +102,14 @@ fun runStandaloneSimulation(
     // Provisional envelope: the train matches the standard allowances
     val provisionalEnvelope =
         if (margins.values.isEmpty()) maxEffortEnvelope
-        else buildProvisionalEnvelope(maxEffortEnvelope, context, margins, constraintDistribution)
+        else
+            buildProvisionalEnvelope(
+                maxEffortEnvelope,
+                context,
+                margins,
+                constraintDistribution,
+                schedule
+            )
     // Final envelope: the train matches the standard allowances and given scheduled points
     val finalEnvelope =
         buildFinalEnvelope(
@@ -379,7 +385,8 @@ fun buildProvisionalEnvelope(
     maxEffortEnvelope: Envelope,
     context: EnvelopeSimContext,
     rawMargins: RangeValues<MarginValue>,
-    constraintDistribution: RJSAllowanceDistribution
+    constraintDistribution: RJSAllowanceDistribution,
+    schedule: List<SimulationScheduleItem>
 ): Envelope {
     val marginRanges = mutableListOf<AllowanceRange>()
     // Add path extremities to boundaries
@@ -387,6 +394,11 @@ fun buildProvisionalEnvelope(
     boundaries.add(Offset(Distance.ZERO))
     boundaries.addAll(rawMargins.internalBoundaries)
     boundaries.add(Offset(Distance.fromMeters(context.path.length)))
+
+    // These boundaries don't delimit different margin values, but they limit
+    // the ranges where they're applied
+    val extraBoundaries = schedule.map { it.pathOffset }
+
     for (i in 0 until rawMargins.values.size) {
         val start = boundaries[i]
         val end = boundaries[i + 1]
@@ -401,13 +413,34 @@ fun buildProvisionalEnvelope(
                 is MarginValue.Percentage -> Percentage(rawValue.percentage)
                 is MarginValue.None -> Percentage(0.0)
             }
-        marginRanges.add(AllowanceRange(start.distance.meters, end.distance.meters, value))
+        marginRanges.addAll(splitAllowanceRange(extraBoundaries, start, end, value))
     }
     val margin =
         if (constraintDistribution == RJSAllowanceDistribution.MARECO)
             MarecoAllowance(0.0, maxEffortEnvelope.endPos, 1.0, marginRanges)
         else LinearAllowance(0.0, maxEffortEnvelope.endPos, 0.0, marginRanges)
     return margin.apply(maxEffortEnvelope, context)
+}
+
+/**
+ * Add the allowance value over the given ranges, splitting it into different ranges for any
+ * boundary inside.
+ */
+fun splitAllowanceRange(
+    extraBoundaries: List<Offset<TravelledPath>>,
+    start: Offset<TravelledPath>,
+    end: Offset<TravelledPath>,
+    value: AllowanceValue
+): Collection<AllowanceRange> {
+    val res = mutableListOf<AllowanceRange>()
+    val boundaries = extraBoundaries.filter { it > start && it < end }
+    var currentStart = start
+    for (boundary in boundaries) {
+        res.add(AllowanceRange(currentStart.distance.meters, boundary.distance.meters, value))
+        currentStart = boundary
+    }
+    res.add(AllowanceRange(currentStart.distance.meters, end.distance.meters, value))
+    return res
 }
 
 fun getStopPositions(schedule: List<SimulationScheduleItem>): List<Double> {
