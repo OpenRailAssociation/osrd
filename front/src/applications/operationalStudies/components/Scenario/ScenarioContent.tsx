@@ -227,6 +227,7 @@ const ScenarioContent = ({
                     simulationResults={simulationResults}
                     infraId={infra.id}
                     timetableTrainNb={timetable.train_ids.length}
+                    conflicts={conflicts}
                   />
                 )
               )}
