@@ -160,7 +160,7 @@ pub struct SimulationPath {
     pub path_item_positions: Vec<u64>,
 }
 
-#[derive(Deserialize, Default, Serialize, Clone, Debug, ToSchema)]
+#[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 pub struct ReportTrain {
     /// List of positions of a train
     /// Both positions (in mm) and times (in ms) must have the same length
@@ -175,7 +175,7 @@ pub struct ReportTrain {
     pub path_item_times: Vec<u64>,
 }
 
-#[derive(Deserialize, Default, Serialize, Clone, Debug, ToSchema)]
+#[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 pub struct CompleteReportTrain {
     #[serde(flatten)]
     pub report_train: ReportTrain,
@@ -301,7 +301,7 @@ pub struct SimulationRequest {
     pub electrical_profile_set_id: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases

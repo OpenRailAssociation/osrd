@@ -1518,6 +1518,11 @@ export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation re
       status: 'path_not_found';
     }
   | {
+      conflicts: Conflict[];
+      pathfinding_result: PathfindingResult;
+      status: 'conflicts';
+    }
+  | {
       error: SimulationResponse;
       status: 'preprocessing_simulation_error';
     };

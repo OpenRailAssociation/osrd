@@ -25,16 +25,19 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::SelectionSettings;
+use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::TrainRequirements;
+use crate::core::conflict_detection::WorkSchedulesRequest;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResult;
 use crate::core::simulation::PhysicsRollingStock;
 use crate::core::simulation::SimulationParameters;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
+use crate::core::stdcm::STDCMPathItem;
+use crate::core::stdcm::STDCMRequest;
 use crate::core::stdcm::STDCMResponse;
-use crate::core::stdcm::TemporarySpeedLimit as CoreTemporarySpeedLimit;
-use crate::core::stdcm::{STDCMPathItem, UndirectedTrackRange, WorkSchedule as CoreWorkSchedule};
-use crate::core::stdcm::{STDCMRequest, STDCMStepTimingData};
+use crate::core::stdcm::STDCMStepTimingData;
+use crate::core::stdcm::UndirectedTrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -157,7 +160,15 @@ struct InfraIdQueryParam {
     infra: i64,
 }
 
-/// Compute a STDCM and return the simulation result
+/// This function computes a STDCM and returns the result.
+/// It first checks user authorization, then retrieves timetable, infrastructure,
+/// train schedules, and rolling stock data, and runs train simulations.
+/// The result contains the simulation output based on the train schedules
+/// and infrastructure provided.
+///
+/// If the simulation fails, the function uses a virtual train to detect conflicts
+/// with existing train schedules. It then returns both the conflict information
+/// and the pathfinding result from the virtual train's simulation.
 #[utoipa::path(
     post, path = "",
     tag = "stdcm",
@@ -202,8 +213,8 @@ async fn stdcm(
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || STDCMError::InfraNotFound { infra_id }).await?;
 
-    let (trains, _): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(conn, timetable_trains.train_ids).await?;
+    let (train_schedules, _): (Vec<_>, _) =
+        TrainSchedule::retrieve_batch(conn, timetable_trains.train_ids.clone()).await?;
 
     let rolling_stock =
         RollingStockModel::retrieve_or_fail(conn, stdcm_request.rolling_stock_id, || {
@@ -217,7 +228,7 @@ async fn stdcm(
         conn,
         valkey_client.clone(),
         core_client.clone(),
-        &trains,
+        &train_schedules,
         &infra,
         stdcm_request.electrical_profile_set_id,
     )
@@ -225,7 +236,12 @@ async fn stdcm(
 
     // 2. Compute the earliest start time, maximum running time and maximum departure delay
     // Simulation time without stop duration
-    let simulation_run_time_result = get_simulation_run_time(
+    let (
+        simulation_run_time,
+        virtual_train_schedule,
+        virtual_train_sim_result,
+        virtual_train_pathfinding_result,
+    ) = simulate_train_run(
         db_pool.clone(),
         valkey_client.clone(),
         core_client.clone(),
@@ -235,7 +251,7 @@ async fn stdcm(
         timetable_id,
     )
     .await?;
-    let simulation_run_time = match simulation_run_time_result {
+    let simulation_run_time = match simulation_run_time {
         SimulationTimeResult::SimulationTime { value } => value,
         SimulationTimeResult::Error { error } => {
             return Ok(Json(STDCMResponse::PreprocessingSimulationError {
@@ -243,6 +259,7 @@ async fn stdcm(
             }))
         }
     };
+
     let earliest_step_tolerance_window = get_earliest_step_tolerance_window(&stdcm_request);
     let maximum_departure_delay = get_maximum_departure_delay(
         &stdcm_request,
@@ -260,8 +277,8 @@ async fn stdcm(
 
     // 3. Get scheduled train requirements
     let trains_requirements = build_train_requirements(
-        trains,
-        simulations,
+        train_schedules.clone(),
+        simulations.clone(),
         earliest_departure_time,
         latest_simulation_end,
     );
@@ -283,10 +300,20 @@ async fn stdcm(
         None => vec![],
     };
 
-    // 6. Build STDCM request
-    let stdcm_response = STDCMRequest {
+    // 6. Retrieve work schedules
+    let work_schedules = match stdcm_request.work_schedule_group_id {
+        Some(work_schedule_group_id) => {
+            let selection_setting = SelectionSettings::new()
+                .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(work_schedule_group_id));
+            WorkSchedule::list(conn, selection_setting).await?
+        }
+        None => vec![],
+    };
+
+    // 7. Build STDCM request
+    let stdcm_request = STDCMRequest {
         infra: infra.id,
-        expected_version: infra.version,
+        expected_version: infra.version.clone(),
         rolling_stock_loading_gauge: rolling_stock.loading_gauge,
         rolling_stock_supported_signaling_systems: rolling_stock
             .supported_signaling_systems
@@ -294,7 +321,7 @@ async fn stdcm(
         comfort: stdcm_request.comfort,
         path_items,
         start_time: earliest_departure_time,
-        trains_requirements,
+        trains_requirements: trains_requirements.clone(),
         maximum_departure_delay,
         maximum_run_time,
         speed_limit_tag: stdcm_request.speed_limit_tags,
@@ -302,37 +329,124 @@ async fn stdcm(
         time_gap_after: stdcm_request.time_gap_after,
         margin: stdcm_request.margin,
         time_step: Some(2000),
-        work_schedules: match stdcm_request.work_schedule_group_id {
-            Some(work_schedule_group_id) => {
-                build_work_schedules(
-                    conn,
-                    earliest_departure_time,
-                    maximum_run_time,
-                    work_schedule_group_id,
-                )
-                .await?
-            }
-            None => vec![],
-        },
+        work_schedules: filter_stdcm_work_schedules(
+            &work_schedules,
+            earliest_departure_time,
+            maximum_run_time,
+        ),
         temporary_speed_limits,
         rolling_stock: PhysicsRollingStock::new(rolling_stock.into(), simulation_parameters),
+    };
+
+    let stdcm_response = stdcm_request.fetch(core_client.as_ref()).await?;
+
+    // 8. Handle PathNotFound response of STDCM
+    if let STDCMResponse::PathNotFound = stdcm_response {
+        let stdcm_response = handle_path_not_found(
+            virtual_train_schedule,
+            train_schedules,
+            simulations,
+            virtual_train_sim_result,
+            virtual_train_pathfinding_result,
+            earliest_departure_time,
+            maximum_run_time,
+            latest_simulation_end,
+            &work_schedules,
+            infra_id,
+            infra.version,
+            core_client,
+        )
+        .await?;
+
+        return Ok(Json(stdcm_response));
     }
-    .fetch(core_client.as_ref())
-    .await?;
 
     Ok(Json(stdcm_response))
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn handle_path_not_found(
+    virtual_train_schedule: TrainSchedule,
+    train_schedules: Vec<TrainSchedule>,
+    simulations: Vec<(SimulationResponse, PathfindingResult)>,
+    virtual_train_sim_result: SimulationResponse,
+    virtual_train_pathfinding_result: PathfindingResult,
+    earliest_departure_time: DateTime<Utc>,
+    maximum_run_time: u64,
+    latest_simulation_end: DateTime<Utc>,
+    work_schedules: &[WorkSchedule],
+    infra_id: i64,
+    infra_version: String,
+    core_client: Arc<CoreClient>,
+) -> Result<STDCMResponse> {
+    let virtual_train_id = virtual_train_schedule.id;
+
+    // Combine the original train schedules with the virtual train schedule.
+    let train_schedules = [train_schedules, vec![virtual_train_schedule]].concat();
+
+    // Combine the original simulations with the virtual train's simulation results.
+    let simulations = [
+        simulations,
+        vec![(
+            virtual_train_sim_result,
+            virtual_train_pathfinding_result.clone(),
+        )],
+    ]
+    .concat();
+
+    // Build train requirements based on the combined train schedules and simulations
+    // This prepares the data structure required for conflict detection.
+    let trains_requirements = build_train_requirements(
+        train_schedules,
+        simulations,
+        earliest_departure_time,
+        latest_simulation_end,
+    );
+
+    // Filter the provided work schedules to find those that conflict with the given parameters
+    // This identifies any work schedules that may overlap with the earliest departure time and maximum run time.
+    let conflict_work_schedules =
+        filter_conflict_work_schedules(work_schedules, earliest_departure_time, maximum_run_time);
+
+    // Prepare the conflict detection request.
+    let conflict_detection_request = ConflictDetectionRequest {
+        infra: infra_id,
+        expected_version: infra_version,
+        trains_requirements,
+        work_schedules: conflict_work_schedules,
+    };
+
+    // Send the conflict detection request and await the response.
+    let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
+
+    // Filter the conflicts to find those specifically related to the virtual train.
+    let conflicts: Vec<_> = conflict_detection_response
+        .conflicts
+        .into_iter()
+        .filter(|conflict| conflict.train_ids.contains(&virtual_train_id))
+        .map(|mut conflict| {
+            conflict.train_ids.retain(|id| id != &virtual_train_id);
+            conflict
+        })
+        .collect();
+
+    // Return the conflicts found along with the pathfinding result for the virtual train.
+    Ok(STDCMResponse::Conflicts {
+        pathfinding_result: virtual_train_pathfinding_result,
+        conflicts,
+    })
 }
 
 /// Build the list of scheduled train requirements, only including requirements
 /// that overlap with the possible simulation times.
 fn build_train_requirements(
-    trains: Vec<TrainSchedule>,
+    train_schedules: Vec<TrainSchedule>,
     simulations: Vec<(SimulationResponse, PathfindingResult)>,
     departure_time: DateTime<Utc>,
     latest_simulation_end: DateTime<Utc>,
 ) -> HashMap<i64, TrainRequirements> {
     let mut trains_requirements = HashMap::new();
-    for (train, (sim, _)) in trains.iter().zip(simulations) {
+    for (train, (sim, _)) in train_schedules.iter().zip(simulations) {
         let final_output = match sim {
             SimulationResponse::Success { final_output, .. } => final_output,
             _ => continue,
@@ -464,9 +578,12 @@ fn get_earliest_step_tolerance_window(data: &STDCMRequestPayload) -> u64 {
         .unwrap_or(0)
 }
 
-/// Computes the simulation run time
-/// Returns an enum with either the result or a SimulationResponse if it failed
-async fn get_simulation_run_time(
+/// Returns a `Result` containing:
+/// * `SimulationTimeResult` - The result of the simulation time calculation.
+/// * `TrainSchedule` - The generated train schedule based on the provided data.
+/// * `SimulationResponse` - Simulation response.
+/// * `PathfindingResult` - Pathfinding result.
+async fn simulate_train_run(
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_client: Arc<ValkeyClient>,
     core_client: Arc<CoreClient>,
@@ -474,7 +591,12 @@ async fn get_simulation_run_time(
     infra: &Infra,
     rolling_stock: &RollingStockModel,
     timetable_id: i64,
-) -> Result<SimulationTimeResult> {
+) -> Result<(
+    SimulationTimeResult,
+    TrainSchedule,
+    SimulationResponse,
+    PathfindingResult,
+)> {
     // Doesn't matter for now, but eventually it will affect tmp speed limits
     let approx_start_time = get_earliest_step_time(data);
 
@@ -506,45 +628,50 @@ async fn get_simulation_run_time(
         options: Default::default(),
     };
 
-    let (sim_result, _) = train_simulation(
+    let (sim_result, pathfinding_result) = train_simulation(
         &mut db_pool.get().await?,
         valkey_client,
         core_client,
-        train_schedule,
+        train_schedule.clone(),
         infra,
         None,
     )
     .await?;
 
-    return Ok(match sim_result {
+    let simulation_run_time = match sim_result.clone() {
         SimulationResponse::Success { provisional, .. } => SimulationTimeResult::SimulationTime {
             value: *provisional.times.last().expect("empty simulation result"),
         },
         err => SimulationTimeResult::Error {
             error: Box::from(err),
         },
-    });
+    };
+    Ok((
+        simulation_run_time,
+        train_schedule,
+        sim_result,
+        pathfinding_result,
+    ))
 }
 
 /// Returns the request's total stop time
 fn get_total_stop_time(data: &STDCMRequestPayload) -> u64 {
-    return data
-        .steps
+    data.steps
         .iter()
         .map(|step: &PathfindingItem| step.duration.unwrap_or_default())
-        .sum();
+        .sum()
 }
 
 /// Convert the list of pathfinding items into a list of path item
 fn convert_steps(steps: &[PathfindingItem]) -> Vec<PathItem> {
-    return steps
+    steps
         .iter()
         .map(|step| PathItem {
             id: Default::default(),
             deleted: false,
             location: step.location.clone(),
         })
-        .collect();
+        .collect()
 }
 
 /// Build a margins object with one margin value covering the entire range
@@ -561,37 +688,56 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
     }
 }
 
-/// Build the list of work schedules for the given time range
-async fn build_work_schedules(
-    conn: &mut DbConnection,
-    time: DateTime<Utc>,
+fn filter_core_work_schedule(
+    ws: &WorkSchedule,
+    start_time: DateTime<Utc>,
+) -> crate::core::stdcm::WorkSchedule {
+    crate::core::stdcm::WorkSchedule {
+        start_time: elapsed_since_time_ms(&ws.start_date_time, &start_time),
+        end_time: elapsed_since_time_ms(&ws.end_date_time, &start_time),
+        track_ranges: ws
+            .track_ranges
+            .iter()
+            .map(|track| UndirectedTrackRange {
+                track_section: track.track.to_string(),
+                begin: (track.begin * 1000.0) as u64,
+                end: (track.end * 1000.0) as u64,
+            })
+            .collect(),
+    }
+}
+
+fn filter_stdcm_work_schedules(
+    work_schedules: &[WorkSchedule],
+    start_time: DateTime<Utc>,
     maximum_run_time: u64,
-    work_schedule_group_id: i64,
-) -> Result<Vec<CoreWorkSchedule>> {
-    let selection_setting: SelectionSettings<WorkSchedule> = SelectionSettings::new()
-        .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(work_schedule_group_id));
-    let res = Ok(WorkSchedule::list(conn, selection_setting)
-        .await?
+) -> Vec<crate::core::stdcm::WorkSchedule> {
+    work_schedules
         .iter()
-        .map(|ws| {
-            let schedule = CoreWorkSchedule {
-                start_time: elapsed_since_time_ms(&ws.start_date_time, &time),
-                end_time: elapsed_since_time_ms(&ws.end_date_time, &time),
-                track_ranges: ws
-                    .track_ranges
-                    .iter()
-                    .map(|track| UndirectedTrackRange {
-                        track_section: track.track.to_string(),
-                        begin: (track.begin * 1000.0) as u64,
-                        end: (track.end * 1000.0) as u64,
-                    })
-                    .collect(),
-            };
-            schedule
-        })
+        .map(|ws| filter_core_work_schedule(ws, start_time))
         .filter(|ws| ws.end_time > 0 && ws.start_time < maximum_run_time)
-        .collect());
-    res
+        .collect()
+}
+
+fn filter_conflict_work_schedules(
+    work_schedules: &[WorkSchedule],
+    start_time: DateTime<Utc>,
+    maximum_run_time: u64,
+) -> Option<WorkSchedulesRequest> {
+    if work_schedules.is_empty() {
+        return None;
+    }
+
+    let work_schedule_requirements = work_schedules
+        .iter()
+        .map(|ws| (ws.id, filter_core_work_schedule(ws, start_time)))
+        .filter(|(_, ws)| ws.end_time > 0 && ws.start_time < maximum_run_time)
+        .collect();
+
+    Some(WorkSchedulesRequest {
+        start_time,
+        work_schedule_requirements,
+    })
 }
 
 /// Return the list of speed limits that are active at any point in a given time range
@@ -600,7 +746,7 @@ async fn build_temporary_speed_limits(
     start_date_time: DateTime<Utc>,
     end_date_time: DateTime<Utc>,
     temporary_speed_limit_group_id: i64,
-) -> Result<Vec<CoreTemporarySpeedLimit>> {
+) -> Result<Vec<crate::core::stdcm::TemporarySpeedLimit>> {
     if end_date_time <= start_date_time {
         return Ok(Vec::new());
     }
@@ -657,6 +803,7 @@ async fn parse_stdcm_steps(
         .collect())
 }
 
+#[derive(Debug)]
 enum SimulationTimeResult {
     SimulationTime { value: u64 },
     Error { error: Box<SimulationResponse> },
@@ -664,9 +811,31 @@ enum SimulationTimeResult {
 
 #[cfg(test)]
 mod tests {
+    use axum::http::StatusCode;
+    use chrono::DateTime;
+    use editoast_models::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
+    use rstest::rstest;
+    use serde_json::json;
+    use std::str::FromStr;
+    use uuid::Uuid;
 
+    use crate::core::conflict_detection::Conflict;
+    use crate::core::conflict_detection::ConflictType;
+    use crate::core::mocking::MockingClient;
+    use crate::core::pathfinding::PathfindingResult;
+    use crate::core::pathfinding::PathfindingResultSuccess;
+    use crate::core::simulation::CompleteReportTrain;
+    use crate::core::simulation::ElectricalProfiles;
+    use crate::core::simulation::ReportTrain;
+    use crate::core::simulation::SimulationResponse;
+    use crate::core::simulation::SpeedLimitProperties;
+    use crate::core::stdcm::STDCMResponse;
+    use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::models::fixtures::create_small_infra;
+    use crate::models::fixtures::create_timetable;
     use crate::views::rolling_stock::tests::fast_rolling_stock_form;
+    use crate::views::test_app::TestAppBuilder;
 
     use super::*;
 
@@ -745,5 +914,194 @@ mod tests {
             PhysicsRollingStock::new(rolling_stock.into(), simulation_parameters);
 
         assert_eq!(physics_rolling_stock.max_speed, 20_f64);
+    }
+
+    fn pathfinding_result_success() -> PathfindingResult {
+        PathfindingResult::Success(PathfindingResultSuccess {
+            blocks: vec![],
+            routes: vec![],
+            track_section_ranges: vec![],
+            length: 0,
+            path_item_positions: vec![0, 10],
+        })
+    }
+
+    fn simulation_response() -> SimulationResponse {
+        SimulationResponse::Success {
+            base: ReportTrain {
+                positions: vec![],
+                times: vec![],
+                speeds: vec![],
+                energy_consumption: 0.0,
+                path_item_times: vec![0, 10],
+            },
+            provisional: ReportTrain {
+                positions: vec![],
+                times: vec![0, 10],
+                speeds: vec![],
+                energy_consumption: 0.0,
+                path_item_times: vec![0, 10],
+            },
+            final_output: CompleteReportTrain {
+                report_train: ReportTrain {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 10],
+                },
+                signal_sightings: vec![],
+                zone_updates: vec![],
+                spacing_requirements: vec![],
+                routing_requirements: vec![],
+            },
+            mrsp: SpeedLimitProperties {
+                boundaries: vec![],
+                values: vec![],
+            },
+            electrical_profiles: ElectricalProfiles {
+                boundaries: vec![],
+                values: vec![],
+            },
+        }
+    }
+
+    fn stdcm_payload(rolling_stock_id: i64) -> serde_json::Value {
+        json!({
+          "comfort": "STANDARD",
+          "margin": "4.5min/100km",
+          "rolling_stock_id": rolling_stock_id,
+          "speed_limit_tags": "AR120",
+          "steps": [
+            {
+              "duration": 0,
+              "location": { "trigram": "WS", "secondary_code": "BV" },
+              "timing_data": {
+                "arrival_time": "2024-09-17T20:05:00+02:00",
+                "arrival_time_tolerance_before": 0,
+                "arrival_time_tolerance_after": 0
+              }
+            },
+            { "duration": 0, "location": { "trigram": "MWS", "secondary_code": "BV" } }
+          ],
+          "time_gap_after": 35000,
+          "time_gap_before": 35000
+        })
+    }
+
+    fn core_mocking_client() -> MockingClient {
+        let mut core = MockingClient::new();
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(pathfinding_result_success())
+            .finish();
+        core.stub("/v2/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(serde_json::to_value(simulation_response()).unwrap())
+            .finish();
+        core
+    }
+
+    fn conflict_data() -> Conflict {
+        Conflict {
+            train_ids: vec![0, 1],
+            work_schedule_ids: vec![],
+            start_time: DateTime::from_str("2024-01-01T00:00:00Z")
+                .expect("Failed to parse datetime"),
+            end_time: DateTime::from_str("2024-01-02T00:00:00Z").expect("Failed to parse datetime"),
+            conflict_type: ConflictType::Spacing,
+            requirements: vec![],
+        }
+    }
+
+    #[rstest]
+    async fn stdcm_return_success() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = core_mocking_client();
+        core.stub("/v2/stdcm")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "status": "success",
+                "simulation": serde_json::to_value(simulation_response()).unwrap(),
+                "path": serde_json::to_value(pathfinding_result_success()).unwrap(),
+                "departure_time": "2024-01-02T00:00:00Z"
+            }))
+            .finish();
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&stdcm_payload(rolling_stock.id));
+
+        let stdcm_response: STDCMResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        if let PathfindingResult::Success(path) = pathfinding_result_success() {
+            assert_eq!(
+                stdcm_response,
+                STDCMResponse::Success {
+                    simulation: simulation_response(),
+                    path,
+                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                        .expect("Failed to parse datetime")
+                }
+            );
+        }
+    }
+
+    #[rstest]
+    async fn stdcm_return_conflicts() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = core_mocking_client();
+        core.stub("/v2/stdcm")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({"status": "path_not_found"}))
+            .finish();
+        core.stub("/v2/conflict_detection")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({"conflicts": [
+                serde_json::to_value(conflict_data()).unwrap()
+            ]}))
+            .finish();
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&stdcm_payload(rolling_stock.id));
+
+        let stdcm_response: STDCMResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let mut conflict = conflict_data();
+        conflict.train_ids = vec![1];
+
+        assert_eq!(
+            stdcm_response,
+            STDCMResponse::Conflicts {
+                pathfinding_result: pathfinding_result_success(),
+                conflicts: vec![conflict],
+            }
+        );
     }
 }

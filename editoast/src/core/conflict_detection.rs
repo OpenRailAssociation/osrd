@@ -29,7 +29,7 @@ pub struct ConflictDetectionRequest {
     pub work_schedules: Option<WorkSchedulesRequest>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TrainRequirements {
     pub start_time: DateTime<Utc>,
     pub spacing_requirements: Vec<SpacingRequirement>,
@@ -49,7 +49,7 @@ pub struct ConflictDetectionResponse {
     pub conflicts: Vec<Conflict>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct Conflict {
     /// List of train ids involved in the conflict
     pub train_ids: Vec<i64>,
@@ -70,7 +70,7 @@ pub struct Conflict {
 ///
 /// The start and end time describe the conflicting time span (not the full
 /// requirement's time span).
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct ConflictRequirement {
     pub zone: String,
     pub start_time: DateTime<Utc>,
