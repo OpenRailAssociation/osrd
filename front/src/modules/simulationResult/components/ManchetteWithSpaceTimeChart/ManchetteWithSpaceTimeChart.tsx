@@ -2,7 +2,8 @@ import { useRef, useState } from 'react';
 
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
-import { PathLayer, SpaceTimeChart } from '@osrd-project/ui-spacetimechart';
+import { ConflictLayer, PathLayer, SpaceTimeChart } from '@osrd-project/ui-spacetimechart';
+import type { Conflict } from '@osrd-project/ui-spacetimechart';
 
 import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
@@ -15,6 +16,7 @@ type ManchetteWithSpaceTimeChartProps = {
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainScheduleId?: number;
   waypointsPanelData?: WaypointsPanelData;
+  conflicts?: Conflict[];
 };
 const DEFAULT_HEIGHT = 561;
 
@@ -23,6 +25,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   projectPathTrainResult,
   selectedTrainScheduleId,
   waypointsPanelData,
+  conflicts = [],
 }: ManchetteWithSpaceTimeChartProps) => {
   const [heightOfManchetteWithSpaceTimeChart] = useState(DEFAULT_HEIGHT);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -82,6 +85,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               {spaceTimeChartProps.paths.map((path) => (
                 <PathLayer key={path.id} path={path} color={path.color} />
               ))}
+              <ConflictLayer conflicts={conflicts} />
             </SpaceTimeChart>
           )}
         </div>
