@@ -37,7 +37,6 @@ use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::rolling_stock_livery::RollingStockLiveryModel;
 use crate::models::rolling_stock_model::ScenarioReference;
-use crate::models::rolling_stock_model::TrainScheduleScenarioStudyProject;
 use crate::models::Document;
 use crate::models::RollingStockModel;
 use crate::models::RollingStockSeparatedImageModel;
@@ -139,7 +138,7 @@ pub enum RollingStockError {
     #[editoast_error(status = 409)]
     IsUsed {
         rolling_stock_id: i64,
-        usage: Vec<TrainScheduleScenarioStudyProject>,
+        usage: Vec<ScenarioReference>,
     },
 
     #[error("Base power class is an empty string")]
@@ -439,23 +438,28 @@ async fn delete(
         return Err(AuthorizationError::Unauthorized.into());
     }
     let conn = &mut db_pool.get().await?;
-    assert_rolling_stock_unlocked(
-        &retrieve_existing_rolling_stock(conn, RollingStockKey::Id(rolling_stock_id)).await?,
-    )?;
+
+    let rolling_stock = RollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
+        RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        }
+    })
+    .await?;
+    assert_rolling_stock_unlocked(&rolling_stock)?;
 
     if force {
         delete_rolling_stock(conn, rolling_stock_id).await?;
         return Ok(StatusCode::NO_CONTENT);
     }
 
-    let trains = get_rolling_stock_usage(conn, rolling_stock_id).await?;
-    if trains.is_empty() {
+    let scenarios_using_rs = rolling_stock.get_usage(conn).await?;
+    if scenarios_using_rs.is_empty() {
         delete_rolling_stock(conn, rolling_stock_id).await?;
         return Ok(StatusCode::NO_CONTENT);
     }
     Err(RollingStockError::IsUsed {
         rolling_stock_id,
-        usage: trains,
+        usage: scenarios_using_rs,
     }
     .into())
 }
@@ -511,20 +515,6 @@ async fn update_locked(
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
-}
-
-async fn get_rolling_stock_usage(
-    conn: &mut DbConnection,
-    rolling_stock_id: i64,
-) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
-    let rolling_stock = RollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
-        RollingStockError::KeyNotFound {
-            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-        }
-    })
-    .await?;
-
-    rolling_stock.get_rolling_stock_usage(conn).await
 }
 
 #[derive(ToSchema)]

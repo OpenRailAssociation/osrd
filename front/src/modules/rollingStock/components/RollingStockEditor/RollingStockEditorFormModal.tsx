@@ -1,7 +1,7 @@
 import { groupBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { TrainScheduleScenarioStudyProject } from 'common/api/osrdEditoastApi';
+import type { ScenarioReference } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 type RollingStockEditorFormModalProps = {
@@ -9,7 +9,7 @@ type RollingStockEditorFormModalProps = {
   // request can be a POST, PUT, PATCH or DELETE request
   request?: () => void;
   mainText: string;
-  errorObject?: TrainScheduleScenarioStudyProject[];
+  errorObject?: ScenarioReference[];
   buttonText?: string;
   deleteAction?: boolean;
 };
@@ -25,7 +25,7 @@ const RollingStockEditorFormModal = ({
   const { closeModal } = useModal();
   const { t } = useTranslation(['translation', 'rollingstock']);
 
-  const displayErrorObject = (errorList: TrainScheduleScenarioStudyProject[]) => {
+  const displayErrorObject = (errorList: ScenarioReference[]) => {
     const projectList = groupBy(errorList, 'project_name');
     const scenarioList = Object.keys(projectList).map((projectName) =>
       groupBy(projectList[projectName], 'scenario_name')
