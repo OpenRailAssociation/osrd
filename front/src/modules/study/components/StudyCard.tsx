@@ -75,13 +75,13 @@ export default function StudyCard({
           <div className="study-card-financials-infos">
             {study.service_code && (
               <div className="study-card-financials-infos-item">
-                <h3>{t('geremiCode')}</h3>
+                <h3>{t('studyServiceCode')}</h3>
                 <div>{study.service_code}</div>
               </div>
             )}
             {study.business_code && (
               <div className="study-card-financials-infos-item">
-                <h3>{t('affairCode')}</h3>
+                <h3>{t('studyBusinessCode')}</h3>
                 <div>{study.business_code}</div>
               </div>
             )}

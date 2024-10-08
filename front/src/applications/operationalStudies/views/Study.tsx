@@ -293,7 +293,7 @@ export default function Study() {
                   <div className="study-details-financials-infos">
                     {study.service_code && (
                       <div className="study-details-financials-infos-item">
-                        <h3>{t('geremiCode')}</h3>
+                        <h3>{t('studyServiceCode')}</h3>
                         <div data-testid="study-service-code-info" className="code">
                           {study.service_code}
                         </div>
@@ -301,7 +301,7 @@ export default function Study() {
                     )}
                     {study.business_code && (
                       <div className="study-details-financials-infos-item">
-                        <h3>{t('affairCode')}</h3>
+                        <h3>{t('studyBusinessCode')}</h3>
                         <div data-testid="study-business-code-info" className="code">
                           {study.business_code}
                         </div>
