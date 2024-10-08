@@ -85,7 +85,7 @@ class StudyPage {
     this.getStudyEstimatedEndDateInput = page.getByLabel('Fin estimée');
     this.getStudyEndDateInput = page.getByLabel('Fin réalisée');
     this.getStudyServiceCodeInput = page.getByLabel('Code service');
-    this.getStudyBusinessCodeInput = page.getByLabel('Code business');
+    this.getStudyBusinessCodeInput = page.getByLabel('Code affaire');
     this.getStudyBudgetInput = page.getByLabel('Budget');
     this.getStudyUpdateConfirmBtn = page.locator('#modal-content').getByTestId('update-study');
     this.getStudyDeleteConfirmBtn = page.locator('#modal-content').getByTestId('delete-study');

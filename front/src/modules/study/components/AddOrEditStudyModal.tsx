@@ -327,15 +327,15 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               max={getEarliestDate(currentStudy?.expected_end_date, currentStudy?.actual_end_date)}
             />
             <InputSNCF
-              id="studyInputEstimatedEndingDate"
+              id="studyInputEstimatedEndDate"
               type="date"
-              name="studyInputEstimatedEndingDate"
+              name="studyInputEstimatedEndDate"
               label={
                 <div className="d-flex align-items-center">
                   <span className="mr-2 text-warning">
                     <RiCalendarLine />
                   </span>
-                  {t('studyEstimatedEndingDate')}
+                  {t('studyEstimatedEndDate')}
                 </div>
               }
               value={formatDateForInput(currentStudy?.expected_end_date)}
@@ -344,15 +344,15 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               isInvalid={!isExpectedEndDateValid}
             />
             <InputSNCF
-              id="studyInputRealEndingDate"
+              id="studyInputRealEndDate"
               type="date"
-              name="studyInputRealEndingDate"
+              name="studyInputRealEndDate"
               label={
                 <div className="d-flex align-items-center">
                   <span className="mr-2 text-danger">
                     <RiCalendarLine />
                   </span>
-                  {t('studyRealEndingDate')}
+                  {t('studyRealEndDate')}
                 </div>
               }
               value={formatDateForInput(currentStudy?.actual_end_date)}

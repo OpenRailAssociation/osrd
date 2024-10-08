@@ -1,6 +1,5 @@
 {
   "addImage": "Ajouter une image",
-  "affairCode": "Code affaire",
   "budget": "Budget",
   "createdOn": "Créée le",
   "createStudy": "Créer une étude",
@@ -23,7 +22,6 @@
   },
   "filterPlaceholder": "Rechercher…",
   "fundedBy": "Financement",
-  "geremiCode": "Code GEREMI",
   "updatedOn": "Modifiée le",
   "modifyProject": "Modifier le projet",
   "noImage": "Aucune image",
@@ -71,6 +69,8 @@
   "studiesCount_one": "1 étude",
   "studiesCount_other": "{{count}} études",
   "studiesCount_zero": "Aucune étude",
+  "studyBusinessCode": "Code affaire",
+  "studyServiceCode": "Code service",
   "studyDeleted": "Suppression réussie",
   "studyDeleted_one": "Une étude a été supprimée",
   "studyDeleted_other": "{{count}} études ont été supprimées",
