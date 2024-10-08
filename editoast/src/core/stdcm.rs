@@ -11,12 +11,14 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use super::conflict_detection::Conflict;
 use super::conflict_detection::TrainRequirements;
 use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsRollingStock;
 use super::simulation::SimulationResponse;
 use crate::core::{AsCoreRequest, Json};
+use crate::views::path::pathfinding::PathfindingResult;
 
 #[derive(Debug, Serialize)]
 pub struct STDCMRequest {
@@ -113,7 +115,7 @@ pub struct UndirectedTrackRange {
     pub end: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
 // Since there is only on success and others are error cases
@@ -125,6 +127,10 @@ pub enum STDCMResponse {
         departure_time: DateTime<Utc>,
     },
     PathNotFound,
+    Conflicts {
+        pathfinding_result: PathfindingResult,
+        conflicts: Vec<Conflict>,
+    },
     PreprocessingSimulationError {
         error: SimulationResponse,
     },
