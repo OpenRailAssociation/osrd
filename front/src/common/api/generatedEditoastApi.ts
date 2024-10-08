@@ -2746,15 +2746,13 @@ export type RollingStockKey =
       key: string;
       type: 'Name';
     };
-export type TrainScheduleScenarioStudyProject = {
+export type ScenarioReference = {
   project_id: number;
   project_name: string;
   scenario_id: number;
   scenario_name: string;
   study_id: number;
   study_name: string;
-  train_name: string;
-  train_schedule_id: number;
 };
 export type RollingStockError =
   | 'CannotReadImage'
@@ -2777,7 +2775,7 @@ export type RollingStockError =
   | {
       IsUsed: {
         rolling_stock_id: number;
-        usage: TrainScheduleScenarioStudyProject[];
+        usage: ScenarioReference[];
       };
     }
   | 'BasePowerClassEmpty';
@@ -2788,14 +2786,6 @@ export type RollingStockLiveryCreateForm = {
 export type RollingStockLockedUpdateForm = {
   /** New locked value */
   locked: boolean;
-};
-export type ScenarioReference = {
-  project_id: number;
-  project_name: string;
-  scenario_id: number;
-  scenario_name: string;
-  study_id: number;
-  study_name: string;
 };
 export type SearchResultItemTrack = {
   infra_id: number;

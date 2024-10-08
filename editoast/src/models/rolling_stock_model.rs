@@ -1,6 +1,4 @@
 mod power_restrictions;
-mod rolling_stock_usage;
-pub use rolling_stock_usage::TrainScheduleScenarioStudyProject;
 
 use std::collections::HashMap;
 
@@ -29,7 +27,6 @@ pub use schedules_from_rolling_stock::ScenarioReference;
 editoast_common::schemas! {
     RollingStockModel,
     PowerRestriction,
-    TrainScheduleScenarioStudyProject,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, ToSchema)]

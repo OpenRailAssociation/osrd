@@ -8153,7 +8153,7 @@ components:
               usage:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TrainScheduleScenarioStudyProject'
+                  $ref: '#/components/schemas/ScenarioReference'
       - type: string
         enum:
         - BasePowerClassEmpty
@@ -10226,38 +10226,6 @@ components:
           timetable_id:
             type: integer
             format: int64
-    TrainScheduleScenarioStudyProject:
-      type: object
-      required:
-      - train_schedule_id
-      - train_name
-      - project_id
-      - project_name
-      - study_id
-      - study_name
-      - scenario_id
-      - scenario_name
-      properties:
-        project_id:
-          type: integer
-          format: int64
-        project_name:
-          type: string
-        scenario_id:
-          type: integer
-          format: int64
-        scenario_name:
-          type: string
-        study_id:
-          type: integer
-          format: int64
-        study_name:
-          type: string
-        train_name:
-          type: string
-        train_schedule_id:
-          type: integer
-          format: int64
     Version:
       type: object
       required:
