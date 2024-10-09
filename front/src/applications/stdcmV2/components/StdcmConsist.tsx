@@ -31,7 +31,7 @@ const ConsistCardTitle = ({
   );
 };
 
-const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmConfigCardProps) => {
+const StdcmConsist = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
     useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
@@ -79,12 +79,14 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     searchRollingStock(e.target.value);
     if (e.target.value.trim().length === 0) {
-      updateRollingStockID(undefined);
+      dispatch(updateRollingStockID(undefined));
+      dispatchUpdateSpeedLimitByTag(null);
     }
   };
 
   const onSelectSuggestion = (option?: LightRollingStockWithLiveries) => {
     dispatch(updateRollingStockID(option?.id));
+    dispatchUpdateSpeedLimitByTag(null);
   };
 
   useEffect(() => {
@@ -93,25 +95,7 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
     } else {
       searchRollingStock('');
     }
-    setCurrentSimulationInputs((prevState) => ({
-      ...prevState,
-      consist: {
-        tractionEngine: rollingStock,
-      },
-    }));
   }, [rollingStock]);
-
-  useEffect(() => {
-    if (speedLimitByTag) {
-      setCurrentSimulationInputs((prevState) => ({
-        ...prevState,
-        consist: {
-          ...prevState?.consist,
-          speedLimitByTag,
-        },
-      }));
-    }
-  }, [speedLimitByTag]);
 
   return (
     <StdcmCard
