@@ -63,6 +63,7 @@ struct Roles {
     ),
 )]
 async fn list_current_roles(Extension(authorizer): AuthorizerExt) -> Result<Json<Roles>> {
+    let authorizer = authorizer.authorizer()?;
     Ok(Json(Roles {
         builtin: authorizer
             .user_builtin_roles(authorizer.user_id())
@@ -98,15 +99,15 @@ async fn list_user_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
     Extension(authorizer): AuthorizerExt,
 ) -> Result<Json<Roles>> {
-    if user_id != authorizer.user_id()
-        && !authorizer
-            .check_roles([BuiltinRole::SubjectRead, BuiltinRole::RoleRead].into())
-            .await
-            .map_err(AuthorizationError::from)?
+    if !authorizer
+        .check_roles([BuiltinRole::SubjectRead, BuiltinRole::RoleRead].into())
+        .await
+        .map_err(AuthorizationError::from)?
     {
         return Err(AuthorizationError::Unauthorized.into());
     }
 
+    let authorizer = authorizer.authorizer()?;
     check_user_exists(user_id, &authorizer).await?;
 
     Ok(Json(Roles {
@@ -133,7 +134,7 @@ struct RoleListBody {
 )]
 async fn grant_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
-    Extension(mut authorizer): AuthorizerExt,
+    Extension(authorizer): AuthorizerExt,
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
     if !authorizer
@@ -144,6 +145,7 @@ async fn grant_roles(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
+    let mut authorizer = authorizer.authorizer()?;
     check_user_exists(user_id, &authorizer).await?;
 
     authorizer
@@ -164,7 +166,7 @@ async fn grant_roles(
 )]
 async fn strip_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
-    Extension(mut authorizer): AuthorizerExt,
+    Extension(authorizer): AuthorizerExt,
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
     if !authorizer
@@ -175,6 +177,7 @@ async fn strip_roles(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
+    let mut authorizer = authorizer.authorizer()?;
     check_user_exists(user_id, &authorizer).await?;
 
     authorizer

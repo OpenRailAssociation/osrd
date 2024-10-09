@@ -75,7 +75,7 @@ use thiserror::Error;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _, Layer as _};
 use validator::ValidationErrorsKind;
-use views::authorizer_middleware;
+use views::authentication_middleware;
 use views::infra::InfraApiError;
 use views::search::SearchConfigFinder;
 
@@ -465,7 +465,7 @@ async fn runserver(
         .merge(views::router())
         .route_layer(axum::middleware::from_fn_with_state(
             app_state.clone(),
-            authorizer_middleware,
+            authentication_middleware,
         ))
         .layer(OtelAxumLayer::default())
         .layer(DefaultBodyLimit::disable())
