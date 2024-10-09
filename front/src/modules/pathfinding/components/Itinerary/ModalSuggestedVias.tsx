@@ -37,7 +37,8 @@ const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
   const removeViaFromPath = (op: SuggestedOP) => {
     const updatedPathSteps = compact(pathSteps).filter(
       (step) =>
-        ('uic' in step && step.uic !== op.uic) || ('track' in step && step.track !== op.track)
+        ('uic' in step && (step.uic !== op.uic || step.ch !== op.ch)) ||
+        ('track' in step && (step.track !== op.track || step.offset !== op.offsetOnTrack))
     );
     dispatch(
       updatePathSteps({
