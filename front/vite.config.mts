@@ -62,7 +62,6 @@ export default defineConfig(({ mode }) => {
       port: +env.OSRD_VITE_PORT || 3000,
     },
     test: {
-      globals: true,
       globalSetup: './vitest.global-setup.ts',
       include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       environment: 'happy-dom',

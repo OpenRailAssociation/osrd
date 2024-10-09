@@ -1,6 +1,7 @@
 import { lineString } from '@turf/helpers';
 import length from '@turf/length';
 import type { LineString, Point, Position } from 'geojson';
+import { describe, it, expect } from 'vitest';
 
 import { editoastToEditorEntity } from 'applications/editor/data/utils';
 import type { DetectorEntity } from 'applications/editor/tools/pointEdition/types';

@@ -1,4 +1,4 @@
-import { describe, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';

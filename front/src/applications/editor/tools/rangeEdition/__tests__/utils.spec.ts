@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import type { ApplicableTrackRange } from '../types';
 import { makeSpeedRestrictionTrackRanges } from '../utils';
 

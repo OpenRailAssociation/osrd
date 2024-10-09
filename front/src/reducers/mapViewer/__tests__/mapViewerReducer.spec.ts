@@ -1,3 +1,5 @@
+import { describe, beforeEach, it, expect } from 'vitest';
+
 import { mapViewerInitialState, mapViewerSlice, mapViewerSliceActions } from 'reducers/mapViewer';
 import { createStoreWithoutMiddleware } from 'store';
 

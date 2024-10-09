@@ -1,4 +1,4 @@
-import { describe, expect } from 'vitest';
+import { describe, beforeEach, it, expect } from 'vitest';
 
 import type { MapState, Viewport } from 'reducers/map';
 import {

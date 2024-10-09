@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 

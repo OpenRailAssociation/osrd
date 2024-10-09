@@ -2,6 +2,7 @@ import along from '@turf/along';
 import distance from '@turf/distance';
 import type { LineString, FeatureCollection } from 'geojson';
 import { tail, last } from 'lodash';
+import { describe, it, expect } from 'vitest';
 
 import { getLineStringDistance, update, resizeSegment, splitAt, mergeIn } from './data';
 import type { LinearMetadataItem } from './types';

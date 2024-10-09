@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 
 import { getSupportedElectrification } from '../electric';

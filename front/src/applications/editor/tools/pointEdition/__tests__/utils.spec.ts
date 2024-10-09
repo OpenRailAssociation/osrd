@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { formatSignalingSystem } from 'applications/editor/tools/pointEdition/utils';
 
 import type { SignalingSystemForm } from '../types';

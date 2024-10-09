@@ -1,5 +1,5 @@
 import { last } from 'lodash';
-import { describe, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
 import {
