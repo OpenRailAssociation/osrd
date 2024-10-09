@@ -87,7 +87,10 @@ const Map = ({
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
 
-  const pathGeometry = useMemo(() => geometry || pathProperties?.geometry, [pathProperties]);
+  const pathGeometry = useMemo(
+    () => geometry || pathProperties?.geometry,
+    [pathProperties, geometry]
+  );
 
   const mapViewport = useMemo(
     () =>
