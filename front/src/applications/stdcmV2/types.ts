@@ -29,7 +29,6 @@ export type StdcmSimulation = {
 
 /** This type is used for StdcmConsist, StdcmOrigin, StdcmDestination and StdcmVias components */
 export type StdcmConfigCardProps = {
-  setCurrentSimulationInputs: React.Dispatch<React.SetStateAction<StdcmSimulationInputs>>;
   disabled?: boolean;
 };
 
