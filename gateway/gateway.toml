@@ -14,6 +14,7 @@ endpoint = "http://localhost:4317"
 prefix = "/api"
 upstream = "http://localhost:8090"
 require_auth = true
+blocked_headers = ["x-osrd-core"]
 
 [[targets]]
 upstream = "http://localhost:3000"

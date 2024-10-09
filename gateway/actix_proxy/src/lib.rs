@@ -31,7 +31,7 @@ use percent_encoding::{utf8_percent_encode, AsciiSet};
 
 use awc::error::{ConnectError, SendRequestError as AwcSendRequestError};
 use futures_util::StreamExt;
-use std::net::IpAddr;
+use std::{collections::HashSet, net::IpAddr};
 use std::{fmt, rc::Rc};
 use std::{
     future::{ready, Ready},
@@ -72,6 +72,7 @@ pub struct Proxy {
     mount_path: String,
     trusted_proxies: Vec<IpNet>,
     forwarded_headers: Option<Vec<HeaderName>>,
+    blocked_headers: HashSet<HeaderName>,
     request_modifier: Option<Box<dyn RequestModifier + Send>>,
     upstream_scheme: String,
     upstream_authority: Authority,
@@ -113,11 +114,13 @@ fn get_tracer() -> BoxedTracer {
 }
 
 impl Proxy {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         mount_path: Option<String>,
         upstream: Uri,
         trusted_proxies: Vec<IpNet>,
         forwarded_headers: Option<Vec<HeaderName>>,
+        blocked_headers: HashSet<HeaderName>,
         request_modifier: Option<Box<dyn RequestModifier + Send>>,
         timeout: Option<Duration>,
         tracing_name: Option<String>,
@@ -143,6 +146,7 @@ impl Proxy {
             upstream_path_prefix,
             trusted_proxies,
             forwarded_headers,
+            blocked_headers,
             request_modifier,
             timeout,
         }
@@ -335,7 +339,9 @@ impl InnerProxyService {
             // forward request headers
             let header_classifier = HeaderClassifier::from_headermap(req.headers());
             for (header_name, header) in self.iter_forwarded_req_headers(req.headers()) {
-                if header_classifier.forwardable(header_name) {
+                if header_classifier.forwardable(header_name)
+                    && !self.proxy.blocked_headers.contains(header_name)
+                {
                     back_request = back_request.header(header_name, header);
                 }
             }
@@ -405,7 +411,9 @@ impl InnerProxyService {
             // forward request headers
             let header_classifier = HeaderClassifier::from_headermap(req.headers());
             for (header_name, header_value) in self.iter_forwarded_req_headers(req.headers()) {
-                if header_classifier.forwardable(header_name) {
+                if header_classifier.forwardable(header_name)
+                    && !self.proxy.blocked_headers.contains(header_name)
+                {
                     back_request = back_request.append_header((header_name, header_value));
                 }
             }

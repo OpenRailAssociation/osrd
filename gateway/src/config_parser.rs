@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     path::{Path, PathBuf},
     process::exit,
 };
@@ -57,11 +58,29 @@ pub fn parse_targets(
                 .collect::<Vec<HeaderName>>()
         });
 
+        let blocked_headers = target
+            .blocked_headers
+            .as_ref()
+            .map(|headers| {
+                headers
+                    .iter()
+                    .map(|header_name| match header_name.parse() {
+                        Ok(header_name) => header_name,
+                        Err(_) => {
+                            error!("invalid header name: {}", header_name);
+                            exit(1);
+                        }
+                    })
+                    .collect::<HashSet<HeaderName>>()
+            })
+            .unwrap_or_default();
+
         let parsed_target = Proxy::new(
             target.prefix.clone(),
             parse_and_check_uri(target.upstream.as_str()).unwrap(),
             trusted_proxies.clone(),
             forwarded_headers,
+            blocked_headers,
             if target.require_auth {
                 Some(Box::new(ProxyAuthAdapter))
             } else {

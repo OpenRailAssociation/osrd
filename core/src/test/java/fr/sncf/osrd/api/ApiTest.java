@@ -59,8 +59,8 @@ public class ApiTest {
     /** Setup infra handler mock */
     @BeforeEach
     public void setUp() throws IOException {
-        infraManager = new InfraManager("http://test.com/", "", mockHttpClient(".*/infra/(.*)/railjson.*"));
+        infraManager = new InfraManager("http://test.com/", null, mockHttpClient(".*/infra/(.*)/railjson.*"));
         electricalProfileSetManager = new ElectricalProfileSetManager(
-                "http://test.com/", "", mockHttpClient(".*/electrical_profile_set/(.*)/"));
+                "http://test.com/", null, mockHttpClient(".*/electrical_profile_set/(.*)/"));
     }
 }
