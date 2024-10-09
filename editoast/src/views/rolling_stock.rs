@@ -769,6 +769,7 @@ async fn create_compound_image(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
+    use itertools::Itertools;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -916,6 +917,12 @@ pub mod tests {
             .fetch(create_rolling_stock_request)
             .assert_status(StatusCode::OK)
             .json_into();
+        let create_other_rolling_stock_request =
+            app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
+        let other_rolling_stock: RollingStockModel = app
+            .fetch(create_other_rolling_stock_request)
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let project = create_project(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
         let study = create_study(
@@ -926,6 +933,7 @@ pub mod tests {
         .await;
         let timetable_1 = create_timetable(&mut db_pool.get_ok()).await;
         let timetable_2 = create_timetable(&mut db_pool.get_ok()).await;
+        let timetable_3 = create_timetable(&mut db_pool.get_ok()).await;
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let scenario_1 = create_scenario(
             &mut db_pool.get_ok(),
@@ -943,22 +951,36 @@ pub mod tests {
             infra.id,
         )
         .await;
+        // scenario_3 will not use the required rolling stock and should thus not be queried
+        let _scenario_3 = create_scenario(
+            &mut db_pool.get_ok(),
+            &Uuid::new_v4().to_string(),
+            study.id,
+            timetable_3.id,
+            infra.id,
+        )
+        .await;
 
         simple_train_schedule_changeset(timetable_1.id)
             .rolling_stock_name(rolling_stock.name.clone())
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();
-        simple_train_schedule_changeset(timetable_1.id)
+        simple_train_schedule_changeset(timetable_2.id)
             .rolling_stock_name(rolling_stock.name)
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        simple_train_schedule_changeset(timetable_3.id)
+            .rolling_stock_name(other_rolling_stock.name)
             .create(&mut db_pool.get_ok())
             .await
             .unwrap();
 
         let request = app.get(&format!("/rolling_stock/{}/usage", rolling_stock.id));
-        let mut related_scenarios: Vec<ScenarioReference> =
+        let related_scenarios: Vec<ScenarioReference> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-        let mut expected_scenarios = [
+        let expected_scenarios = [
             ScenarioReference {
                 project_id: project.id,
                 project_name: project.name.clone(),
@@ -976,7 +998,7 @@ pub mod tests {
                 scenario_name: scenario_2.name.clone(),
             },
         ];
-        assert_eq!(related_scenarios.sort(), expected_scenarios.sort());
+        assert_eq!(related_scenarios.iter().sorted().collect_vec(), expected_scenarios.iter().sorted().collect_vec());
     }
 
     #[rstest]

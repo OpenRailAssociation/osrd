@@ -47,7 +47,7 @@ impl RollingStockModel {
                 rolling_stock::table.on(train_schedule::rolling_stock_name.eq(rolling_stock::name)),
             )
             .inner_join(
-                (scenario::table.on(scenario::timetable_id.eq(scenario::timetable_id)))
+                (scenario::table.on(scenario::timetable_id.eq(train_schedule::timetable_id)))
                     .inner_join(study::table.inner_join(project::table)),
             )
             .select((
