@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import AddNewCard from 'common/AddNewCard';
 import {
   osrdEditoastApi,
   type PostSearchApiArg,
@@ -14,8 +15,8 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loaders';
 import SelectionToolbar from 'common/SelectionToolbar';
+import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import ProjectCard from 'modules/project/components/ProjectCard';
-import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { getLogo } from 'utils/logo';
 
@@ -117,7 +118,13 @@ export default function HomeOperationalStudies() {
     return !isLoading ? (
       <div className="projects-list row">
         <div className="col-hdp-2 col-lg-3 col-md-4 col-sm-6">
-          <ProjectCardEmpty />
+          <AddNewCard
+            translationNamespaces="operationalStudies/home"
+            testId="addProject"
+            className="project-card empty"
+            modalComponent={<AddOrEditProjectModal />}
+            legendTranslationKey="createProject"
+          />
         </div>
         {projectsList.map((project) => (
           <div
