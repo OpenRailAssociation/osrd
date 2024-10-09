@@ -1,3 +1,5 @@
+import { describe, it } from 'vitest';
+
 // TODO: fix warped map - adapt this test
 describe('getSimulationHoverPositions', () => {
   it.skip('should not crash when headPosition exists but tailPosition does not', () => {

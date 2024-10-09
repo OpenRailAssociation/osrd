@@ -1,4 +1,4 @@
-import { describe } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { time2sec } from 'utils/timeManipulation';
 

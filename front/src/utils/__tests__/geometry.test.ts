@@ -1,5 +1,6 @@
 import { point, lineString, featureCollection } from '@turf/helpers';
 import type { Feature, Point } from 'geojson';
+import { describe, it, expect } from 'vitest';
 
 import type { GeoJsonLineString as LineString } from 'common/api/osrdEditoastApi';
 import { getTangent, getCurrentBearing, nearestPointOnLine } from 'utils/geometry';

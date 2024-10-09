@@ -3,6 +3,7 @@ import type {
   ElectrificationValues,
   LayerData,
 } from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+import { describe, it, expect } from 'vitest';
 
 import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
 

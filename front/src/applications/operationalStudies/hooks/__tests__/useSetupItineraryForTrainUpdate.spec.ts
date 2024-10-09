@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import type { PathfindingResult } from 'common/api/osrdEditoastApi';
 
 import { updatePathStepsFromOperationalPoints } from '../useSetupItineraryForTrainUpdate';

@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
 describe('ISO8601Duration2sec', () => {

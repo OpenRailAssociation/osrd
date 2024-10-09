@@ -1,4 +1,5 @@
 import { compact, last, omit } from 'lodash';
+import { describe, beforeEach, it, expect } from 'vitest';
 
 import { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcmV2/types';
 import type { Distribution, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';

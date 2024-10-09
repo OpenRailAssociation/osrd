@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { addElementAtIndex, isEmptyArray, splitArrayByFirstLetter } from 'utils/array';
 
 describe('isEmptyArray', () => {

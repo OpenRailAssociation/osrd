@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { effortCurves } from 'modules/powerRestriction/helpers/__tests__/sampleData';
 
 import { getRollingStockPowerRestrictionsByMode } from '../powerRestrictions';

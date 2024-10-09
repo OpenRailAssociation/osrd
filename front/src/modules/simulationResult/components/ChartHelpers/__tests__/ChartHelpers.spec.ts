@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { LIST_VALUES, CHART_AXES } from 'modules/simulationResult/consts';
 
 import simulationTrain from '../../../../../../tests/assets/operationStudies/simulationTrain';

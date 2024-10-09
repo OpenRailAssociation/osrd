@@ -1,3 +1,5 @@
+import { describe, beforeEach, it, expect } from 'vitest';
+
 import { editorInitialState, editorSliceActions, editorSlice } from 'reducers/editor';
 import { createStoreWithoutMiddleware } from 'store';
 

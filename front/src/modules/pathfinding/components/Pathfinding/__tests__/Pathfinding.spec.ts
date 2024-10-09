@@ -1,3 +1,5 @@
+import { describe, test, expect } from 'vitest';
+
 import { initialState } from 'modules/pathfinding/consts';
 import { reducer } from 'modules/pathfinding/hooks/usePathfinding';
 import type { PathfindingAction } from 'modules/pathfinding/types';

@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import type { LightRollingStock } from 'common/api/osrdEditoastApi';
 import { rollingStockPassesEnergeticModeFilters } from 'modules/rollingStock/hooks/useFilterRollingStock';
 

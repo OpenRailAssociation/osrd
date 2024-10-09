@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { budgetFormat, isFloat, isInvalidFloatNumber, stripDecimalDigits } from 'utils/numbers';
 import { NARROW_NO_BREAK_SPACE, NO_BREAK_SPACE } from 'utils/strings';
 

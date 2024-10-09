@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import { floor } from 'lodash';
+import { describe, it, expect } from 'vitest';
 
 import type { EffortCurves } from 'common/api/osrdEditoastApi';
 import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';

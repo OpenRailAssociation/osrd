@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { computeFilter, type RollingStockFilters } from '../useFilterRollingStock';
 
 describe('computeFilter', () => {

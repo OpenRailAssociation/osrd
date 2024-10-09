@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { describe, it, expect } from 'vitest';
 
 import {
   pathInputsEndingWithTwoWaypointsByMap,

@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { getBatchPackage } from '../batch';
 
 const trainIds = [...Array(25)].map((_, i) => i);

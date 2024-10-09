@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import type { TrackRange } from 'common/api/osrdEditoastApi';
 
 import { findTrackSectionOffset } from '../createPathStep';
