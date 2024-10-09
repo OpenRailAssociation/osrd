@@ -24,6 +24,7 @@ pub mod work_schedules;
 #[cfg(test)]
 mod test_app;
 
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use axum::extract::Request;
@@ -114,20 +115,57 @@ editoast_common::schemas! {
     scenario::schemas(),
 }
 
-pub type AuthorizerExt = axum::extract::Extension<Authorizer<PgAuthDriver<BuiltinRole>>>;
+/// Represents the bundle of information about the issuer of a request
+/// that can be extracted form recognized headers.
+#[derive(Debug, Clone)]
+pub enum Authentication {
+    /// The issuer of the request did not provide any authentication information.
+    Unauthenticated,
+    /// The issuer of the request provided the 'x-remote-user' header, which contains the
+    /// identity and name of the user.
+    Authenticated(Authorizer<PgAuthDriver<BuiltinRole>>),
+}
 
-async fn make_authorizer(
+impl Authentication {
+    /// Checks if the issuer of the request has the required roles. Always returns `false` if the
+    /// request is unauthenticated.
+    pub async fn check_roles(
+        &self,
+        required_roles: HashSet<BuiltinRole>,
+    ) -> Result<bool, <PgAuthDriver<BuiltinRole> as editoast_authz::authorizer::StorageDriver>::Error>
+    {
+        match self {
+            Authentication::Unauthenticated => Ok(false),
+            Authentication::Authenticated(authorizer) => {
+                authorizer.check_roles(required_roles).await
+            }
+        }
+    }
+
+    /// Returns the underlying authorizer if the request is authenticated, otherwise returns an
+    /// error.
+    pub fn authorizer(self) -> Result<Authorizer<PgAuthDriver<BuiltinRole>>, AuthorizationError> {
+        match self {
+            Authentication::Authenticated(authorizer) => Ok(authorizer),
+            Authentication::Unauthenticated => Err(AuthorizationError::Unauthenticated),
+        }
+    }
+}
+
+pub type AuthorizerExt = axum::extract::Extension<Authentication>;
+
+async fn authenticate(
     disable_authorization: bool,
     headers: &axum::http::HeaderMap,
     db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<Authorizer<PgAuthDriver<BuiltinRole>>, AuthorizationError> {
+) -> Result<Authentication, AuthorizationError> {
     if disable_authorization {
-        return Ok(Authorizer::new_superuser(PgAuthDriver::<BuiltinRole>::new(
-            db_pool.get().await?,
+        return Ok(Authentication::Authenticated(Authorizer::new_superuser(
+            PgAuthDriver::<BuiltinRole>::new(db_pool.get().await?),
         )));
     }
     let Some(header) = headers.get("x-remote-user") else {
-        return Err(AuthorizationError::Unauthenticated);
+        return Ok(Authentication::Unauthenticated);
     };
     let (identity, name) = header
         .to_str()
@@ -142,10 +180,10 @@ async fn make_authorizer(
         PgAuthDriver::<BuiltinRole>::new(db_pool.get().await?),
     )
     .await?;
-    Ok(authorizer)
+    Ok(Authentication::Authenticated(authorizer))
 }
 
-pub async fn authorizer_middleware(
+pub async fn authentication_middleware(
     State(AppState {
         db_pool_v2: db_pool,
         disable_authorization,
@@ -155,7 +193,7 @@ pub async fn authorizer_middleware(
     next: Next,
 ) -> Result<Response> {
     let headers = req.headers();
-    let authorizer = make_authorizer(disable_authorization, headers, db_pool).await?;
+    let authorizer = authenticate(disable_authorization, headers, db_pool).await?;
     req.extensions_mut().insert(authorizer);
     Ok(next.run(req).await)
 }
