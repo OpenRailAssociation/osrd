@@ -58,7 +58,6 @@ export function genOSMLayerProps(
       ...acc,
       {
         ...layer,
-        key: `${layer.id}-${mapStyle}`,
         id: `osm/${layer.id}`,
         layerOrder,
       },
@@ -68,7 +67,7 @@ export function genOSMLayerProps(
 
 export function genOSMLayers(mapStyle: string, toggledLayers: ToggledLayers, layerOrder?: number) {
   return genOSMLayerProps(mapStyle, toggledLayers, layerOrder).map((props) => (
-    <OrderedLayer {...props} />
+    <OrderedLayer key={`${props.id}-${mapStyle}`} {...props} />
   ));
 }
 

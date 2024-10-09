@@ -53,13 +53,10 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
     const osmStyle = (mapStyleJson as LayerProps[]).filter(
       (layer) => layer.id && OSM_LAYERS.has(layer.id)
     );
-    return osmStyle
-      .map((layer) => ({
-        ...layer,
-        key: layer.id,
-        id: `osm/${layer.id}`,
-      }))
-      .map((layer) => <OrderedLayer {...layer} />);
+    return osmStyle.map((layer) => ({
+      ...layer,
+      id: `osm/${layer.id}`,
+    }));
   }, []);
 
   useEffect(() => {
@@ -145,7 +142,9 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
         {state === 'render' && (
           <>
             <Source id="osm" type="vector" url={OSM_URL}>
-              {osmLayers}
+              {osmLayers.map((layer) => (
+                <OrderedLayer key={layer.id} {...layer} />
+              ))}
             </Source>
             <GeoJSONs
               colors={colors[mapStyle]}
