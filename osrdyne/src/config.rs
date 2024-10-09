@@ -38,7 +38,7 @@ impl Default for OsrdyneConfig {
     fn default() -> Self {
         Self {
             amqp_uri: "amqp://osrd:password@osrd-rabbitmq:5672/%2f".into(),
-            management_uri: "http://osrd:password@osrd-rabbitmq:15672/%2f".into(),
+            management_uri: "http://osrd:password@osrd-rabbitmq:15672".into(),
             pool_id: "core".to_string(),
             worker_driver: WorkerDriverConfig::Noop,
             worker_loop_interval: Duration::from_millis(500),
