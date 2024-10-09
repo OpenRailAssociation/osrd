@@ -9,6 +9,7 @@
   "noPathLoaded": "Aucun chemin chargé",
   "realMargin": "Marge réelle",
   "receptionOnClosedSignal": "Réception sur signal fermé",
+  "shortSlipDistance": "Faible glissement",
   "stopTime": "Temps d'arrêt (s)",
   "theoreticalMargin": "Marge théorique",
   "theoreticalMarginPlaceholder": "% ou min/100km",

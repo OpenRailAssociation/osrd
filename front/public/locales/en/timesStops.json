@@ -9,6 +9,7 @@
   "noPathLoaded": "No path loaded",
   "realMargin": "Real margin",
   "receptionOnClosedSignal": "Reception on Closed Signal",
+  "shortSlipDistance": "Short Slip Distance",
   "stopTime": "Stopping Time (s)",
   "theoreticalMargin": "Theoretical Margin",
   "theoreticalMarginPlaceholder": "% or min/100km",
