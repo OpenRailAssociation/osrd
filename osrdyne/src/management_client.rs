@@ -68,18 +68,16 @@ pub struct Policy {
 
 impl ManagementClient {
     pub fn try_from(config: &OsrdyneConfig) -> Result<Self, anyhow::Error> {
-        let parsed_uri = url::Url::parse(&config.amqp_uri)?;
+        // Parse the AMQP URI to extract the vhost
+        let parsed_amqp_uri = url::Url::parse(&config.amqp_uri)?;
+        // Parse the management URI to extract the base URL, user and password
+        let parsed_uri = url::Url::parse(&config.management_uri)?;
+
         if parsed_uri.cannot_be_a_base() {
             anyhow::bail!("invalid URL format");
         }
 
-        let host = match config.management_host.as_ref() {
-            Some(s) => s.as_str(),
-            None => parsed_uri.host_str().unwrap(),
-        };
-        let port = config.management_port;
-
-        let vhost = match parsed_uri.path() {
+        let vhost = match parsed_amqp_uri.path() {
             "" => "%2f", // that's the default
             s => &s[1..],
         };
@@ -90,9 +88,16 @@ impl ManagementClient {
             username => username,
         };
 
+        let recomposed_base_uri = format!(
+            "{}://{}:{}",
+            parsed_uri.scheme(),
+            parsed_uri.host_str().unwrap(),
+            parsed_uri.port().unwrap_or(15672)
+        );
+
         Ok(Self {
             client: reqwest::Client::new(),
-            base: format!("http://{host}:{port}").parse()?,
+            base: recomposed_base_uri.parse()?,
             user: user.into(),
             password: password.into(),
             vhost: vhost.into(),
@@ -154,33 +159,52 @@ mod tests {
 
     #[test]
     fn try_from_standard_config() {
-        let uri = "amqp://osrd:password@osrd-rabbitmq:5672/%2f";
+        let amqp_uri = "amqp://osrd:password@osrd-rabbitmq:5672/%2f";
+        let mgmt_uri = "http://osrd1:password1@osrd-rabbitmq:15672";
         let config = OsrdyneConfig {
-            amqp_uri: uri.into(),
-            management_port: 15672,
+            amqp_uri: amqp_uri.into(),
+            management_uri: mgmt_uri.into(),
             ..Default::default()
         };
 
         let client = ManagementClient::try_from(&config).expect("failed to create client");
 
-        assert_eq!(client.user, "osrd");
-        assert_eq!(client.password, "password");
+        assert_eq!(client.user, "osrd1");
+        assert_eq!(client.password, "password1");
         assert_eq!(client.vhost, "%2f");
         assert_eq!("http://osrd-rabbitmq:15672/", client.base.as_str());
     }
 
     #[test]
     fn try_from_host_mode_config() {
-        let uri = "amqp://osrd:password@127.0.0.1:5672/%2f";
+        let amqp_uri = "amqp://osrd:password@127.0.0.1:5672/%2f";
+        let mgmt_uri = "http://osrd1:password1@127.0.0.1:15672";
         let config = OsrdyneConfig {
-            amqp_uri: uri.into(),
-            management_port: 15672,
+            amqp_uri: amqp_uri.into(),
+            management_uri: mgmt_uri.into(),
             ..Default::default()
         };
 
         let client = ManagementClient::try_from(&config).expect("failed to create client");
-        assert_eq!(client.user, "osrd");
-        assert_eq!(client.password, "password");
+        assert_eq!(client.user, "osrd1");
+        assert_eq!(client.password, "password1");
+        assert_eq!(client.vhost, "%2f");
+        assert_eq!("http://127.0.0.1:15672/", client.base.as_str());
+    }
+
+    #[test]
+    fn try_from_no_port_given() {
+        let amqp_uri = "amqp://osrd:password@127.0.0.1:5672/%2f";
+        let mgmt_uri = "http://osrd1:password1@127.0.0.1";
+        let config = OsrdyneConfig {
+            amqp_uri: amqp_uri.into(),
+            management_uri: mgmt_uri.into(),
+            ..Default::default()
+        };
+
+        let client = ManagementClient::try_from(&config).expect("failed to create client");
+        assert_eq!(client.user, "osrd1");
+        assert_eq!(client.password, "password1");
         assert_eq!(client.vhost, "%2f");
         assert_eq!("http://127.0.0.1:15672/", client.base.as_str());
     }

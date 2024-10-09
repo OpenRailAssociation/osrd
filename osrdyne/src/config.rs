@@ -23,8 +23,7 @@ pub enum WorkerDriverConfig {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OsrdyneConfig {
     pub amqp_uri: String,
-    pub management_port: u16,
-    pub management_host: Option<String>,
+    pub management_uri: String,
     pub pool_id: String,
     pub worker_driver: WorkerDriverConfig,
     pub worker_loop_interval: Duration,
@@ -39,8 +38,7 @@ impl Default for OsrdyneConfig {
     fn default() -> Self {
         Self {
             amqp_uri: "amqp://osrd:password@osrd-rabbitmq:5672/%2f".into(),
-            management_port: 15672,
-            management_host: None,
+            management_uri: "http://osrd:password@osrd-rabbitmq:15672/%2f".into(),
             pool_id: "core".to_string(),
             worker_driver: WorkerDriverConfig::Noop,
             worker_loop_interval: Duration::from_millis(500),
