@@ -25,8 +25,8 @@
     "margin": {
       "theoretical": "1 min/100km",
       "theoreticalS": "9 s",
-      "actual": "167 s",
-      "difference": "159 s"
+      "actual": "114 s",
+      "difference": "106 s"
     },
     "calculatedArrival": "11:30:39",
     "calculatedDeparture": "11:35:39"
