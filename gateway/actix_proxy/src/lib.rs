@@ -301,7 +301,7 @@ impl InnerProxyService {
     fn iter_forwarded_req_headers<'a>(
         &'a self,
         headers: &'a HeaderMap,
-    ) -> impl Iterator<Item = (&HeaderName, &HeaderValue)> + 'a {
+    ) -> impl Iterator<Item = (&'a HeaderName, &'a HeaderValue)> + 'a {
         if let Some(forwarded_headers) = &self.proxy.forwarded_headers {
             Either::Left(forwarded_headers.iter().filter_map(|header_name| {
                 headers.get(header_name).map(|value| (header_name, value))
