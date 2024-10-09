@@ -9,11 +9,11 @@ public abstract class APIClient {
 
     final OkHttpClient httpClient;
     final HttpUrl baseUrl;
-    final String authorizationToken;
+    final String authenticationHeader;
 
-    APIClient(String baseUrl, String authorizationToken, OkHttpClient httpClient) {
+    APIClient(String baseUrl, String authenticationHeader, OkHttpClient httpClient) {
         this.baseUrl = HttpUrl.parse(baseUrl);
-        this.authorizationToken = authorizationToken;
+        this.authenticationHeader = authenticationHeader;
         this.httpClient = httpClient;
     }
 
@@ -23,7 +23,7 @@ public abstract class APIClient {
                 .encodedQuery(queryParameters)
                 .build();
         var builder = new Request.Builder().url(url);
-        if (authorizationToken != null) builder = builder.header("Authorization", authorizationToken);
+        if (authenticationHeader != null) builder = builder.header(authenticationHeader, "");
         return builder.build();
     }
 

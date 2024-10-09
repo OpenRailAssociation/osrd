@@ -136,6 +136,8 @@ pub struct ProxyTarget {
     /// A list of headers that need to be forwarded. If omitted, all headers are forwarded.
     /// Omitting this field is not recommended, as it can introduce normalization induced priviledge escalation.
     pub forwarded_headers: Option<Vec<String>>,
+    /// A list of headers that will be removed from the request before being forwarded.
+    pub blocked_headers: Option<Vec<String>>,
     /// A connection, send and read timeout
     #[serde(default, with = "humantime_serde")]
     pub timeout: Option<Duration>,

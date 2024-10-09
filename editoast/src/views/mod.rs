@@ -124,6 +124,8 @@ pub enum Authentication {
     /// The issuer of the request provided the 'x-remote-user' header, which contains the
     /// identity and name of the user.
     Authenticated(Authorizer<PgAuthDriver<BuiltinRole>>),
+    /// The requests comes from a Core instance. All requests are considered safe.
+    Core,
 }
 
 impl Authentication {
@@ -135,6 +137,7 @@ impl Authentication {
     ) -> Result<bool, <PgAuthDriver<BuiltinRole> as editoast_authz::authorizer::StorageDriver>::Error>
     {
         match self {
+            Authentication::Core => Ok(true),
             Authentication::Unauthenticated => Ok(false),
             Authentication::Authenticated(authorizer) => {
                 authorizer.check_roles(required_roles).await
@@ -143,11 +146,14 @@ impl Authentication {
     }
 
     /// Returns the underlying authorizer if the request is authenticated, otherwise returns an
-    /// error.
+    /// error. If the request comes from Core, this returns false as well as it makes no sense to
+    /// have an Authorizer without an authenticated user.
     pub fn authorizer(self) -> Result<Authorizer<PgAuthDriver<BuiltinRole>>, AuthorizationError> {
         match self {
             Authentication::Authenticated(authorizer) => Ok(authorizer),
-            Authentication::Unauthenticated => Err(AuthorizationError::Unauthenticated),
+            Authentication::Unauthenticated | Authentication::Core => {
+                Err(AuthorizationError::Unauthenticated)
+            }
         }
     }
 }
@@ -165,6 +171,9 @@ async fn authenticate(
         )));
     }
     let Some(header) = headers.get("x-remote-user") else {
+        if headers.contains_key("x-osrd-core") {
+            return Ok(Authentication::Core);
+        }
         return Ok(Authentication::Unauthenticated);
     };
     let (identity, name) = header
