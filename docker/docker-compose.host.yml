@@ -5,7 +5,7 @@ services:
     ports: []
     network_mode: host
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "postgres://osrd:password@localhost:5432/osrd"]
+      test: [ "CMD", "pg_isready", "-d", "postgres://osrd:password@localhost:5432/osrd" ]
 
   redis:
     ports: []
@@ -23,14 +23,14 @@ services:
       TELEMETRY_ENDPOINT: "http://localhost:4317"
       OSRD_MQ_URL: "amqp://osrd:password@127.0.0.1:5672/%2f"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8090/health" ]
 
   gateway:
     ports: []
     network_mode: host
     volumes:
       - "./docker/gateway.dev.host.toml:/gateway.toml"
-  
+
   osrd-images:
     ports: []
     network_mode: host
@@ -45,25 +45,18 @@ services:
     environment:
       OSRDYNE__WORKER_DRIVER__HOST_NETWORKING: "true"
       OSRDYNE__WORKER_DRIVER__NETWORK: ""
-      OSRDYNE__WORKER_DRIVER__DEFAULT_ENV: > 
-        [
-        "CORE_EDITOAST_URL=http://127.0.0.1:8090",
-        "JAVA_TOOL_OPTIONS=-javaagent:/app/opentelemetry-javaagent.jar",
-        "CORE_MONITOR_TYPE=opentelemetry",
-        "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc",
-        "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://127.0.0.1:4317",
-        "OTEL_METRICS_EXPORTER=none",
-        "OTEL_LOGS_EXPORTER=none"
-        ]
+      OSRDYNE__WORKER_DRIVER__DEFAULT_ENV: >
+        [ "CORE_EDITOAST_URL=http://127.0.0.1:8090", "JAVA_TOOL_OPTIONS=-javaagent:/app/opentelemetry-javaagent.jar", "CORE_MONITOR_TYPE=opentelemetry", "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc", "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://127.0.0.1:4317", "OTEL_METRICS_EXPORTER=none", "OTEL_LOGS_EXPORTER=none" ]
       OSRDYNE__AMQP_URI: "amqp://osrd:password@127.0.0.1:5672/%2f"
-      
+      OSRDYNE__MANAGEMENT_URI: "http://osrd:password@127.0.0.1:5672/"
+
   jaeger:
     ports: []
     network_mode: host
 
   wait-healthy:
     depends_on:
-      editoast: {condition: service_healthy}
+      editoast: { condition: service_healthy }
     restart: "no"
     image: alpine:latest
     command: "true"

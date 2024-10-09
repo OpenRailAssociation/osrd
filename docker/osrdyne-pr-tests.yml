@@ -12,5 +12,5 @@ worker_driver:
       - "OTEL_METRICS_EXPORTER=none"
       - "OTEL_LOGS_EXPORTER=none"
 amqp_uri: "amqp://osrd:password@osrd-rabbitmq-pr-tests:5673/%2f"
-management_port: 15673
+management_uri: "http://osrd:password@osrd-rabbitmq-pr-tests:15673"
 api_address: "0.0.0.0:4243"
