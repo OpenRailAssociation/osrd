@@ -12,6 +12,10 @@ export type RequiredUserRolesFor = {
     STDCM: BuiltinRole[];
     OPERATIONAL_STUDIES: BuiltinRole[];
   };
+  FEATURES: {
+    ACCESS_STDCM_DEBUG: BuiltinRole[];
+    CREATE_NEW_PROJECT_STUDY_SCENARIO: BuiltinRole[];
+  };
 };
 
 export const REQUIRED_USER_ROLES_FOR: RequiredUserRolesFor = {
@@ -46,5 +50,9 @@ export const REQUIRED_USER_ROLES_FOR: RequiredUserRolesFor = {
       'DocumentRead',
       'DocumentWrite',
     ],
+  },
+  FEATURES: {
+    ACCESS_STDCM_DEBUG: ['Superuser'],
+    CREATE_NEW_PROJECT_STUDY_SCENARIO: ['OpsWrite'],
   },
 };
