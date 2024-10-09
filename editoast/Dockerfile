@@ -56,7 +56,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 # Running env #
 ###############
 FROM alpine:3.20 AS running_env
-RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl
+RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl postgresql16-client 
 
 COPY --from=run_builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel

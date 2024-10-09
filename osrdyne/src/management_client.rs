@@ -9,8 +9,6 @@ use crate::config::OsrdyneConfig;
 pub struct ManagementClient {
     client: reqwest::Client,
     base: url::Url,
-    user: String,
-    password: String,
     vhost: String,
 }
 
@@ -82,24 +80,9 @@ impl ManagementClient {
             s => &s[1..],
         };
 
-        let password = parsed_uri.password().unwrap_or("guest");
-        let user = match parsed_uri.username() {
-            "" => "guest",
-            username => username,
-        };
-
-        let recomposed_base_uri = format!(
-            "{}://{}:{}",
-            parsed_uri.scheme(),
-            parsed_uri.host_str().unwrap(),
-            parsed_uri.port().unwrap_or(15672)
-        );
-
         Ok(Self {
             client: reqwest::Client::new(),
-            base: recomposed_base_uri.parse()?,
-            user: user.into(),
-            password: password.into(),
+            base: parsed_uri.clone(),
             vhost: vhost.into(),
         })
     }
@@ -110,13 +93,7 @@ impl ManagementClient {
         rel_url: impl AsRef<str>,
     ) -> anyhow::Result<Request> {
         let url = self.base.join(rel_url.as_ref())?;
-        let username = self.user.clone();
-        let password = self.password.clone();
-        let request = self
-            .client
-            .request(method, url)
-            .basic_auth(username, Some(password))
-            .build()?;
+        let request = self.client.request(method, url).build()?;
         Ok(request)
     }
 
@@ -169,10 +146,11 @@ mod tests {
 
         let client = ManagementClient::try_from(&config).expect("failed to create client");
 
-        assert_eq!(client.user, "osrd1");
-        assert_eq!(client.password, "password1");
         assert_eq!(client.vhost, "%2f");
-        assert_eq!("http://osrd-rabbitmq:15672/", client.base.as_str());
+        assert_eq!(
+            "http://osrd1:password1@osrd-rabbitmq:15672/",
+            client.base.as_str()
+        );
     }
 
     #[test]
@@ -186,26 +164,10 @@ mod tests {
         };
 
         let client = ManagementClient::try_from(&config).expect("failed to create client");
-        assert_eq!(client.user, "osrd1");
-        assert_eq!(client.password, "password1");
         assert_eq!(client.vhost, "%2f");
-        assert_eq!("http://127.0.0.1:15672/", client.base.as_str());
-    }
-
-    #[test]
-    fn try_from_no_port_given() {
-        let amqp_uri = "amqp://osrd:password@127.0.0.1:5672/%2f";
-        let mgmt_uri = "http://osrd1:password1@127.0.0.1";
-        let config = OsrdyneConfig {
-            amqp_uri: amqp_uri.into(),
-            management_uri: mgmt_uri.into(),
-            ..Default::default()
-        };
-
-        let client = ManagementClient::try_from(&config).expect("failed to create client");
-        assert_eq!(client.user, "osrd1");
-        assert_eq!(client.password, "password1");
-        assert_eq!(client.vhost, "%2f");
-        assert_eq!("http://127.0.0.1:15672/", client.base.as_str());
+        assert_eq!(
+            "http://osrd1:password1@127.0.0.1:15672/",
+            client.base.as_str()
+        );
     }
 }
