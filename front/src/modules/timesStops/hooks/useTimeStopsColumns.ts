@@ -117,6 +117,13 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
           isOutputTable || (rowIndex !== allWaypoints.length - 1 && !rowData.stopFor),
       },
       {
+        ...keyColumn('shortSlipDistance', checkboxColumn as Partial<Column<boolean | undefined>>),
+        title: t('shortSlipDistance'),
+        ...fixedWidth(94),
+        disabled: ({ rowData, rowIndex }) =>
+          isOutputTable || (rowIndex !== allWaypoints.length - 1 && !rowData.onStopSignal),
+      },
+      {
         ...keyColumn(
           'theoreticalMargin',
           createTextColumn({

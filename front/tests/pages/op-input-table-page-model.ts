@@ -74,9 +74,18 @@ class OperationalStudiesInputTablePage {
         await cell.locator('.dsg-input').press('Enter');
 
         if (stationName === 'Mid_West_station') {
-          const signalReceptionCheckbox = rowLocator.locator('.dsg-cell .dsg-checkbox');
+          const signalReceptionCheckbox = rowLocator.locator('input[type="checkbox"]').nth(0);
           await signalReceptionCheckbox.click();
           await expect(signalReceptionCheckbox).toBeChecked();
+
+          const shortSlipCheckbox = rowLocator.locator('input[type="checkbox"]').nth(1);
+          const isShortSlipEnabled = await shortSlipCheckbox.isEnabled();
+          if (!isShortSlipEnabled) {
+            throw new Error('The shortSlipDistance checkbox is not enabled');
+          }
+
+          await shortSlipCheckbox.click();
+          await expect(shortSlipCheckbox).toBeChecked();
         }
       }
     }

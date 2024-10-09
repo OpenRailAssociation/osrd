@@ -22,11 +22,12 @@
     "requestedDeparture": "11:52:40",
     "stopTime": "300",
     "signalReceptionClosed": true,
+    "shortSlipDistance": true,
     "margin": {
       "theoretical": "1 min/100km",
       "theoreticalS": "9 s",
-      "actual": "294 s",
-      "difference": "286 s"
+      "actual": "174 s",
+      "difference": "165 s"
     },
     "calculatedArrival": "11:47:40",
     "calculatedDeparture": "11:52:40"
@@ -44,8 +45,8 @@
       "actual": "12 s",
       "difference": "0 s"
     },
-    "calculatedArrival": "12:05:20",
-    "calculatedDeparture": "12:07:24"
+    "calculatedArrival": "12:05:21",
+    "calculatedDeparture": "12:07:25"
   },
   {
     "stationName": "North_East_station",
@@ -60,7 +61,7 @@
       "actual": "",
       "difference": ""
     },
-    "calculatedArrival": "12:16:22",
+    "calculatedArrival": "12:16:23",
     "calculatedDeparture": ""
   }
 ]
