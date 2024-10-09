@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 
+import RoleBasedContent from './authorization/components/RoleBasedContent';
 import { useModal } from './BootstrapSNCF/ModalSNCF';
 
 type AddNewCardProps = {
@@ -24,16 +25,18 @@ const AddNewCard = ({
   const { openModal } = useModal();
 
   return (
-    <div
-      data-testid={testId}
-      className={className}
-      role="button"
-      tabIndex={0}
-      onClick={() => openModal(modalComponent, 'xl', 'no-close-modal')}
-    >
-      <FaPlus />
-      <div className="legend">{t(legendTranslationKey)}</div>
-    </div>
+    <RoleBasedContent requiredRoles={['OpsWrite']} disableIfUnauthorized>
+      <div
+        data-testid={testId}
+        className={className}
+        role="button"
+        tabIndex={0}
+        onClick={() => openModal(modalComponent, 'xl', 'no-close-modal')}
+      >
+        <FaPlus />
+        <div className="legend">{t(legendTranslationKey)}</div>
+      </div>
+    </RoleBasedContent>
   );
 };
 
