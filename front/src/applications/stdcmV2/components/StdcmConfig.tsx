@@ -20,7 +20,7 @@ import StdcmVias from './StdcmVias';
 import StdcmWarningBox from './StdcmWarningBox';
 import useStaticPathfinding from '../hooks/useStaticPathfinding';
 import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../types';
-import type { StdcmConfigErrors, StdcmSimulation, StdcmSimulationInputs } from '../types';
+import type { StdcmConfigErrors } from '../types';
 import checkStdcmConfigErrors from '../utils/checkStdcmConfigErrors';
 
 /**
@@ -32,8 +32,6 @@ type StdcmConfigProps = {
   isPending: boolean;
   launchStdcmRequest: () => Promise<void>;
   retainedSimulationIndex: number;
-  selectedSimulation?: StdcmSimulation;
-  setCurrentSimulationInputs: React.Dispatch<React.SetStateAction<StdcmSimulationInputs>>;
   showBtnToLaunchSimulation: boolean;
 };
 
@@ -42,8 +40,6 @@ const StdcmConfig = ({
   isPending,
   launchStdcmRequest,
   retainedSimulationIndex,
-  selectedSimulation,
-  setCurrentSimulationInputs,
   showBtnToLaunchSimulation,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
@@ -72,12 +68,6 @@ const StdcmConfig = ({
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
   const disabled = isPending || retainedSimulationIndex > -1;
-
-  const inputsProps = {
-    disabled,
-    selectedSimulation,
-    setCurrentSimulationInputs,
-  };
 
   const startSimulation = () => {
     const isPathfindingFailed = !!pathfinding && pathfinding.status !== 'success';
@@ -144,15 +134,15 @@ const StdcmConfig = ({
       <div className="d-flex">
         <div className="stdcm-v2-simulation-inputs">
           <div className="stdcm-v2-consist-container">
-            <StdcmConsist {...inputsProps} />
+            <StdcmConsist disabled={disabled} />
           </div>
           <div className="stdcm-v2__separator" />
           <div className="stdcm-v2-simulation-itinerary">
             {/* //TODO: use them when we implement this feature #403 */}
             {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
-            <StdcmOrigin {...inputsProps} origin={origin} />
-            <StdcmVias {...inputsProps} />
-            <StdcmDestination {...inputsProps} destination={destination} />
+            <StdcmOrigin disabled={disabled} origin={origin} />
+            <StdcmVias disabled={disabled} />
+            <StdcmDestination disabled={disabled} destination={destination} />
             {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
             <div
               className={cx('stdcm-v2-launch-request', {

@@ -16,13 +16,12 @@ import StdcmLoader from '../components/StdcmLoader';
 import StdcmResults from '../components/StdcmResults';
 import StdcmStatusBanner from '../components/StdcmStatusBanner';
 import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';
-import type { StdcmSimulation, StdcmSimulationInputs } from '../types';
+import useStdcmForm from '../hooks/useStdcmForm';
+import type { StdcmSimulation } from '../types';
 
 const StdcmViewV2 = () => {
   // TODO : refacto. state useStdcm. Maybe we can merge some state together in order to reduce the number of refresh
-  const [currentSimulationInputs, setCurrentSimulationInputs] = useState<StdcmSimulationInputs>({
-    pathSteps: [null, null], // origin and destination are not set yet. We use the same logic as in the store.
-  });
+  const currentSimulationInputs = useStdcmForm();
   const [simulationsList, setSimulationsList] = useState<StdcmSimulation[]>([]);
   const [selectedSimulationIndex, setSelectedSimulationIndex] = useState(-1);
   const [showStatusBanner, setShowStatusBanner] = useState(false);
@@ -181,13 +180,11 @@ const StdcmViewV2 = () => {
       ) : (
         <div>
           <StdcmConfig
-            selectedSimulation={selectedSimulation}
             isPending={isPending}
             isDebugMode={isDebugMode}
             showBtnToLaunchSimulation={showBtnToLaunchSimulation}
             retainedSimulationIndex={retainedSimulationIndex}
             launchStdcmRequest={launchStdcmRequest}
-            setCurrentSimulationInputs={setCurrentSimulationInputs}
           />
 
           {isPending && <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />}

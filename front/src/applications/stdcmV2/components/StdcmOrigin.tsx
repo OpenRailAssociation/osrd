@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -7,7 +7,6 @@ import { useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { replaceElementAtIndex } from 'utils/array';
 import { extractDateAndTimefromISO, generateISODateFromDateTime } from 'utils/date';
 
 import StdcmCard from './StdcmCard';
@@ -16,7 +15,6 @@ import StdcmOpSchedule from './StdcmOpSchedule';
 import { ArrivalTimeTypes, type ScheduleConstraint, type StdcmConfigCardProps } from '../types';
 
 const StdcmOrigin = ({
-  setCurrentSimulationInputs,
   disabled = false,
   origin,
 }: StdcmConfigCardProps & {
@@ -25,9 +23,7 @@ const StdcmOrigin = ({
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const [arrivalScheduleConstraint, setArrivalScheduleConstraint] = useState<
-    ScheduleConstraint | undefined
-  >();
+  const [arrivalScheduleConstraint, setArrivalScheduleConstraint] = useState<ScheduleConstraint>();
 
   const { updateOrigin, updateOriginArrival, updateOriginArrivalType, updateOriginTolerances } =
     useOsrdConfActions() as StdcmConfSliceActions;
@@ -42,15 +38,6 @@ const StdcmOrigin = ({
     }),
     [origin]
   );
-
-  useEffect(() => {
-    setCurrentSimulationInputs((prevState) => ({
-      ...prevState,
-      pathSteps: replaceElementAtIndex(prevState?.pathSteps, 0, origin),
-      departureDate: originArrival?.arrivalDate,
-      departureTime: originArrival?.arrivalTime,
-    }));
-  }, [origin]);
 
   const updateOriginPoint = (pathStep: PathStep | null) => {
     if (!pathStep || !arrivalScheduleConstraint) {
