@@ -126,11 +126,11 @@ const TimesStopsInput = ({ allWaypoints, startTime, pathSteps }: TimesStopsInput
       } else {
         const newVias = updatedRows
           .filter((row, index) => !isEqual(row, rows[index]))
-          .map(({ onStopSignal, arrival, departure, ...row }) => ({
+          .map(({ shortSlipDistance, onStopSignal, arrival, departure, ...row }) => ({
             ...row,
             arrival: durationSinceStartTime(startTime, arrival),
             departure: durationSinceStartTime(startTime, departure),
-            receptionSignal: onStopSignalToReceptionSignal(onStopSignal),
+            receptionSignal: onStopSignalToReceptionSignal(onStopSignal, shortSlipDistance),
           }));
         dispatch(upsertSeveralViasFromSuggestedOP(newVias));
       }

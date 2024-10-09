@@ -19,6 +19,7 @@ export type TimeStopsRow = {
   departure?: TimeExtraDays; // value asked by user
   stopFor?: string | null; // value asked by user
   onStopSignal?: boolean;
+  shortSlipDistance?: boolean;
   theoreticalMargin?: string; // value asked by user
 
   theoreticalMarginSeconds?: string;
