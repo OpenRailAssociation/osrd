@@ -3,6 +3,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import RoleBasedContent from 'common/authorization/components/RoleBasedContent';
+import { REQUIRED_USER_ROLES_FOR } from 'common/authorization/roleBaseAccessControl';
 
 type StdcmHeaderProps = {
   isDebugMode: boolean;
@@ -20,7 +21,7 @@ const StdcmHeader = ({ isDebugMode, onDebugModeToggle }: StdcmHeaderProps) => {
           {t('notificationTitle')}
         </span>
       </div>
-      <RoleBasedContent requiredRoles={['Superuser']}>
+      <RoleBasedContent requiredRoles={REQUIRED_USER_ROLES_FOR.FEATURES.ACCESS_STDCM_DEBUG}>
         <div className="stdcm-v2-header_debug">
           <button
             type="button"
