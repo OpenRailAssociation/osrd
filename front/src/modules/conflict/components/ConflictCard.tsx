@@ -1,7 +1,7 @@
+import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { BsLightningFill } from 'react-icons/bs';
 
-import { formatToIsoDate } from 'utils/date';
+import { extractHHMMSS } from 'utils/date';
 
 import type { ConflictWithTrainNames } from '../types';
 
@@ -13,8 +13,10 @@ const ConflictCard = ({
   onConflictClick: (conflict: ConflictWithTrainNames) => void;
 }) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
-  const start_time = formatToIsoDate(conflict.start_time, true);
-  const end_time = formatToIsoDate(conflict.end_time, true);
+  const start_time = extractHHMMSS(conflict.start_time);
+  const end_time = extractHHMMSS(conflict.end_time);
+  const start_date = dayjs(conflict.start_time).format('DD/MM/YYYY');
+
   return (
     <div
       className="conflict-card"
@@ -22,24 +24,26 @@ const ConflictCard = ({
       role="button"
       tabIndex={0}
     >
-      <BsLightningFill color="red" />
-      <div className="conflict-trains">
+      <div className="trains-info">
+        <p className="conflict-type">{t(`${conflict.conflict_type}`)}</p>
+        <div className="start-and-end-time">
+          <div className="start-time" title={start_time}>
+            {start_time}
+          </div>
+          <div className="end-time" title={end_time}>
+            {end_time}
+          </div>
+        </div>
+        <div className="departure-date" title={start_date}>
+          {start_date}
+        </div>
+      </div>
+      <div className="trains-name">
         {conflict.trainNames.map((trainName, idx) => (
-          <div className="card-text" key={`train-${idx}-${trainName}`}>
+          <div className="train-name-card" key={`train-${idx}-${trainName}`} title={trainName}>
             {trainName}
           </div>
         ))}
-      </div>
-      <div className="conflict-type">
-        <p>{t(`${conflict.conflict_type}`)}</p>
-      </div>
-      <div className="conflict-times">
-        <div className="start-time" title={start_time}>
-          {start_time}
-        </div>
-        <div className="end-time" title={end_time}>
-          {end_time}
-        </div>
       </div>
     </div>
   );
