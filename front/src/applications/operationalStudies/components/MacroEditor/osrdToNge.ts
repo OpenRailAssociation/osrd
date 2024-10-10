@@ -297,19 +297,6 @@ const importTimetable = async (
     return node;
   };
 
-  const nodesByOpId = new Map<string, NodeDto>();
-  for (const op of searchResults) {
-    const node = createNode({
-      trigram: op.trigram + (op.ch ? `/${op.ch}` : ''),
-      fullName: op.name,
-      positionX: op.geographic.coordinates[0],
-      positionY: op.geographic.coordinates[1],
-    });
-    nodesByOpId.set(op.obj_id, node);
-  }
-
-  convertGeoCoords(nodes);
-
   const DTOLabels: LabelDto[] = [];
   // Create one NGE train run per OSRD train schedule
   let labelId = 0;
@@ -381,13 +368,25 @@ const importTimetable = async (
   };
 
   let trainrunSectionId = 0;
+  const nodesByOpId = new Map<string, NodeDto>();
   const trainrunSections: TrainrunSectionDto[] = trainSchedules
     .map((trainSchedule) => {
       // Figure out the node ID for each path item
       const pathNodeIds = trainSchedule.path.map((pathItem) => {
         const op = findOpFromPathItem(pathItem, searchResults);
         if (op) {
-          return nodesByOpId.get(op.obj_id)!.id;
+          let node = nodesByOpId.get(op.obj_id);
+          if (!node) {
+            node = createNode({
+              trigram: op.trigram + (op.ch ? `/${op.ch}` : ''),
+              fullName: op.name,
+              positionX: op.geographic.coordinates[0],
+              positionY: op.geographic.coordinates[1],
+            });
+            nodesByOpId.set(op.obj_id, node);
+          }
+
+          return node.id;
         }
 
         let trigram: string | undefined;
@@ -493,6 +492,8 @@ const importTimetable = async (
       });
     })
     .flat();
+
+  convertGeoCoords([...nodesByOpId.values()]);
 
   // eslint-disable-next-line no-restricted-syntax
   for (const node of nodes) {
