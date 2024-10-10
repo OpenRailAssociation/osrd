@@ -30,6 +30,20 @@ import {
   type TimesStopsInputRow,
 } from '../types';
 
+const matchPathStepAndOpWithKP = (step: PathStep, op: SuggestedOP) => {
+  if (!matchPathStepAndOp(step, op)) {
+    // TODO: we abuse the PathStep.id field here, the backend also sets it to an
+    // ID which has nothing to do with OPs
+    return step.id === op.opId;
+  }
+  // We match the kp in case two OPs have the same uic+ch (can happen when the
+  // infra is imported)
+  if ('uic' in step || 'trigram' in step) {
+    return step.kp === op.kp;
+  }
+  return true;
+};
+
 export const formatSuggestedViasToRowVias = (
   operationalPoints: (SuggestedOP & { isWaypoint?: boolean })[],
   pathSteps: PathStep[],
@@ -43,7 +57,7 @@ export const formatSuggestedViasToRowVias = (
   // to move it to the first position
   const origin = pathSteps[0];
   const originIndexInOps = origin
-    ? operationalPoints.findIndex((op) => matchPathStepAndOp(origin, op))
+    ? operationalPoints.findIndex((op) => matchPathStepAndOpWithKP(origin, op))
     : -1;
   if (originIndexInOps !== -1) {
     [formattedOps[0], formattedOps[originIndexInOps]] = [
@@ -55,7 +69,7 @@ export const formatSuggestedViasToRowVias = (
   // Ditto: destination should be last
   const dest = pathSteps[pathSteps.length - 1];
   const destIndexInOps = dest
-    ? operationalPoints.findIndex((op) => matchPathStepAndOp(dest, op))
+    ? operationalPoints.findIndex((op) => matchPathStepAndOpWithKP(dest, op))
     : -1;
   if (destIndexInOps !== -1) {
     const lastOpIndex = formattedOps.length - 1;
@@ -66,7 +80,7 @@ export const formatSuggestedViasToRowVias = (
   }
 
   return formattedOps.map((op, i) => {
-    const pathStep = pathSteps.find((step) => matchPathStepAndOp(step, op));
+    const pathStep = pathSteps.find((step) => matchPathStepAndOpWithKP(step, op));
     const { name } = pathStep || op;
     const objectToUse = tableType === TableType.Input ? pathStep : op;
 
