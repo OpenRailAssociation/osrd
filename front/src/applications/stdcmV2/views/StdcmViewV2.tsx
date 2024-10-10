@@ -98,6 +98,8 @@ const StdcmViewV2 = () => {
   useEffect(() => {
     if (!isDebugMode) {
       loadStdcmEnvironment();
+    } else {
+      setShowBtnToLaunchSimulation(true);
     }
   }, [isDebugMode]);
 
