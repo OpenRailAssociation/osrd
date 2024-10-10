@@ -217,17 +217,14 @@ const convertGeoCoords = (nodes: NodeDto[]) => {
   const scaleY = 500;
   const padding = 0.1;
 
-  return nodes.map((node) => {
+  for (const node of nodes) {
     const normalizedX = (node.positionX - minX) / (width || 1);
     const normalizedY = 1 - (node.positionY - minY) / (height || 1);
     const paddedX = normalizedX * (1 - 2 * padding) + padding;
     const paddedY = normalizedY * (1 - 2 * padding) + padding;
-    return {
-      ...node,
-      positionX: scaleX * paddedX,
-      positionY: scaleY * paddedY,
-    };
-  });
+    node.positionX = scaleX * paddedX;
+    node.positionY = scaleY * paddedY;
+  }
 };
 
 const importTimetable = async (
@@ -255,7 +252,7 @@ const importTimetable = async (
     capacity: trainSchedules.length,
   };
 
-  let nodes: NodeDto[] = [];
+  const nodes: NodeDto[] = [];
   const nodesById = new Map<number, NodeDto>();
   let nodeId = 0;
   let nodePositionX = 0;
@@ -311,7 +308,7 @@ const importTimetable = async (
     nodesByOpId.set(op.obj_id, node);
   }
 
-  nodes = convertGeoCoords(nodes);
+  convertGeoCoords(nodes);
 
   const DTOLabels: LabelDto[] = [];
   // Create one NGE train run per OSRD train schedule
