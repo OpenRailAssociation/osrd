@@ -16,6 +16,15 @@ import fr.sncf.osrd.utils.units.kilometersPerHour
 import fr.sncf.osrd.utils.units.meters
 
 /**
+ * Simple internal class representing a stop with safety speed. Makes the function logic more
+ * straightforward.
+ */
+private data class SafetySpeedStop(
+    val offset: Offset<TravelledPath>,
+    val isShortSlip: Boolean,
+)
+
+/**
  * Compute safety speed ranges, areas where the train has a lower speed limit because of a scheduled
  * stop. For details, see https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields
  * (or google "VISA (VItesse Sécuritaire d'Approche)" for resources in French)
@@ -31,19 +40,28 @@ fun makeSafetySpeedRanges(
     val zonePathStartOffset = getRoutePathStartOffset(rawInfra, chunkPath, zonePaths)
     val signalOffsets = getSignalOffsets(infra, zonePaths, zonePathStartOffset)
 
-    val stopsWithSafetySpeed = schedule.filter { it.receptionSignal.isStopOnClosedSignal }
+    val stopsWithSafetySpeed =
+        schedule
+            .filter { it.receptionSignal.isStopOnClosedSignal }
+            .map {
+                SafetySpeedStop(
+                    it.pathOffset,
+                    it.receptionSignal == RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+                )
+            }
+            .toMutableList()
+    makeEndOfPathStop(rawInfra, routes, signalOffsets)?.let { stopsWithSafetySpeed.add(it) }
 
     val res = distanceRangeMapOf<Speed>()
     for (stop in stopsWithSafetySpeed) {
         // Currently, safety speed is applied to the next signal no matter the sight distance
-        val nextSignalOffset =
-            signalOffsets.firstOrNull { it >= stop.pathOffset }?.distance ?: chunkPath.length
+        val nextSignalOffset = signalOffsets.first { it >= stop.offset }.distance
         res.put(
             lower = nextSignalOffset - 200.meters,
             upper = nextSignalOffset,
             value = 30.kilometersPerHour,
         )
-        if (stop.receptionSignal == RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP) {
+        if (stop.isShortSlip) {
             res.put(
                 lower = nextSignalOffset - 100.meters,
                 upper = nextSignalOffset,
@@ -53,6 +71,21 @@ fun makeSafetySpeedRanges(
     }
     // Safety speed areas may extend outside the path
     return res.subMap(0.meters, chunkPath.length)
+}
+
+/**
+ * Create a safety speed range at the end of the last route, either short slip or normal stop
+ * depending on whether it ends at a buffer stop.
+ */
+private fun makeEndOfPathStop(
+    infra: RawSignalingInfra,
+    routes: StaticIdxList<Route>,
+    signalOffsets: List<Offset<TravelledPath>>
+): SafetySpeedStop? {
+    val lastRouteExit = infra.getRouteExit(routes.last())
+    val isBufferStop = infra.isBufferStop(lastRouteExit.value)
+    if (isBufferStop) return SafetySpeedStop(signalOffsets.last(), true)
+    return null
 }
 
 /** Return the offsets of block-delimiting signals on the path. */
@@ -79,6 +112,9 @@ fun getSignalOffsets(
         }
         prevZonePathsLength += rawInfra.getZonePathLength(zonePath).distance
     }
+    // Add one "signal" at the end of the last route no matter what.
+    // There must be either a signal or a buffer stop, on which we may end safety speed ranges.
+    res.add(Offset(prevZonePathsLength - pathStartOffset.distance))
     return res.filter { it.distance >= 0.meters }
 }
 

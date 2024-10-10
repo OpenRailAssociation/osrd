@@ -324,8 +324,14 @@ class StandaloneSimulationTest {
                     DistanceRangeMap.RangeMapEntry(50.meters, 150.meters, 10.kilometersPerHour),
                     DistanceRangeMap.RangeMapEntry(
                         10_200.meters,
-                        10_400.meters,
+                        10_300.meters,
                         30.kilometersPerHour
+                    ),
+                    // Last buffer stop short slip range
+                    DistanceRangeMap.RangeMapEntry(
+                        10_300.meters,
+                        10_400.meters,
+                        10.kilometersPerHour
                     ),
                 ),
             )
