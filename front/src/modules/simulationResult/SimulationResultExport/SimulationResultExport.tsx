@@ -2,19 +2,56 @@ import { useMemo } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { Download, File } from '@osrd-project/ui-icons';
+import { BlobProvider } from '@react-pdf/renderer';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { RollingStockWithLiveries, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import {
   BaseOrEco,
   type BaseOrEcoType,
 } from 'modules/trainschedule/components/DriverTrainSchedule/consts';
 import exportTrainCSV from 'modules/trainschedule/components/DriverTrainSchedule/exportDriverScheduleCSV';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
+
+import SimulationReportSheetScenario, {
+  type SimulationReportSheetScenarioProps,
+  type SimulationSheetData,
+} from './SimulationReportSheetScenario';
+
+const Blob = ({
+  simulationType,
+  scenarioData,
+  simulationReportSheetNumber,
+  mapCanvas,
+  operationalPointsList,
+  t,
+}: SimulationReportSheetScenarioProps & { t: TFunction }) => (
+  <BlobProvider
+    document={
+      <SimulationReportSheetScenario
+        simulationType={simulationType}
+        scenarioData={scenarioData}
+        simulationReportSheetNumber={simulationReportSheetNumber}
+        operationalPointsList={operationalPointsList}
+        mapCanvas={mapCanvas}
+      />
+    }
+  >
+    {({ url }) => (
+      <Button
+        onClick={() => window.open(url as string, '_blank')}
+        variant="Quiet"
+        label={t('simulationSheet')}
+        leadingIcon={<File />}
+      />
+    )}
+  </BlobProvider>
+);
 
 type SimulationResultExportProps = {
   train: TrainScheduleBase;
@@ -25,6 +62,8 @@ type SimulationResultExportProps = {
     finalOutput: OperationalPointWithTimeAndSpeed[];
   };
   baseOrEco: BaseOrEcoType;
+  rollingStock: RollingStockWithLiveries;
+  mapCanvas?: string;
 };
 
 const SimulationResultExport = ({
@@ -33,20 +72,36 @@ const SimulationResultExport = ({
   pathProperties,
   operationalPoints,
   baseOrEco,
+  rollingStock,
+  mapCanvas,
 }: SimulationResultExportProps) => {
   const { t } = useTranslation('simulation');
+
+  const simulationSheetData: SimulationSheetData = useMemo(
+    () => ({
+      departure_time: '',
+      simulation: simulatedTrain,
+      creationDate: new Date(),
+      rollingStock,
+      speedLimitByTag: 'speedLimitByTag',
+    }),
+    [simulatedTrain]
+  );
 
   const operationalPointsToUse = useMemo(
     () => (baseOrEco === BaseOrEco.eco ? operationalPoints?.finalOutput : operationalPoints?.base),
     [baseOrEco, operationalPoints]
   );
+
   return (
     <div className="simulation-sheet-container">
-      <Button
-        onClick={() => console.log('Simulation Sheet')}
-        variant="Quiet"
-        label={t('simulationSheet')}
-        leadingIcon={<File />}
+      <Blob
+        simulationType="scenario"
+        scenarioData={simulationSheetData}
+        simulationReportSheetNumber="123"
+        operationalPointsList={operationalPointsToUse}
+        t={t}
+        mapCanvas={mapCanvas}
       />
       <Button
         onClick={() =>

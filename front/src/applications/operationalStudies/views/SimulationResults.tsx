@@ -56,12 +56,12 @@ const SimulationResults = ({
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
   const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
+  const [mapCanvas, setMapCanvas] = useState<string>();
 
   const {
     operationalPoints,
     loading: formattedOpPointsLoading,
     baseOrEco,
-    setBaseOrEco,
   } = useFormattedOperationalPoints(
     selectedTrainSchedule,
     trainSimulation,
@@ -225,6 +225,8 @@ const SimulationResults = ({
                     }
                   : undefined
               }
+              pathProperties={pathProperties}
+              setMapCanvas={setMapCanvas}
             />
           </div>
         </div>
@@ -261,6 +263,8 @@ const SimulationResults = ({
             pathProperties={pathProperties}
             operationalPoints={operationalPoints}
             baseOrEco={baseOrEco}
+            rollingStock={selectedTrainRollingStock}
+            mapCanvas={mapCanvas}
           />
         )}
     </div>

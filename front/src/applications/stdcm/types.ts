@@ -23,7 +23,7 @@ export type StdcmV2SuccessResponse = Omit<
 };
 
 export type SimulationReportSheetProps = {
-  simulationType: 'stdcm' | 'operationalStudies';
+  simulationType?: 'stdcm' | 'scenario';
   stdcmData: StdcmV2SuccessResponse;
   simulationReportSheetNumber: string;
   mapCanvas?: string;
