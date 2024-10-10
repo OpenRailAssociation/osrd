@@ -198,24 +198,6 @@ const SimulationResults = ({
         </div>
       )}
 
-      {/* TIME STOPS TABLE */}
-      {selectedTrainSchedule &&
-        trainSimulation.status === 'success' &&
-        pathProperties &&
-        operationalPoints &&
-        infraId && (
-          <div className="osrd-simulation-container mb-2">
-            <TimesStopsOutput
-              simulatedTrain={trainSimulation}
-              pathProperties={pathProperties}
-              operationalPoints={operationalPoints.finalOutput}
-              selectedTrainSchedule={selectedTrainSchedule}
-              path={path}
-              dataIsLoading={formattedOpPointsLoading}
-            />
-          </div>
-        )}
-
       {/* SIMULATION : MAP */}
       <div ref={timeTableRef}>
         <div className="osrd-simulation-container mb-2">
