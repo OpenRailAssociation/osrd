@@ -2848,13 +2848,67 @@ export type SearchResultItemScenario = {
   tags: string[];
   trains_count: number;
 };
+export type Margins = {
+  boundaries: string[];
+  /** The values of the margins. Must contains one more element than the boundaries
+    Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
+  values: string[];
+};
+export type TrainScheduleOptions = {
+  use_electrical_profiles?: boolean;
+};
+export type PathItem = PathItemLocation & {
+  /** Metadata given to mark a point as wishing to be deleted by the user.
+    It's useful for soft deleting the point (waiting to fix / remove all references)
+    If true, the train schedule is consider as invalid and must be edited */
+  deleted?: boolean;
+  id: string;
+};
+export type PowerRestrictionItem = {
+  from: string;
+  to: string;
+  value: string;
+};
+export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
+export type ScheduleItem = {
+  /** The expected arrival time at the stop.
+    This will be used to compute the final simulation time. */
+  arrival?: string | null;
+  at: string;
+  /** Whether the schedule item is locked (only for display purposes) */
+  locked?: boolean;
+  reception_signal?: ReceptionSignal;
+  /** Duration of the stop.
+    Can be `None` if the train does not stop.
+    If `None`, `reception_signal` must be `Open`.
+    `Some("PT0S")` means the train stops for 0 seconds. */
+  stop_for?: string | null;
+};
+export type SearchResultItemTrainSchedule = {
+  comfort: number;
+  constraint_distribution: number;
+  id: number;
+  initial_speed: number;
+  labels: (string | null)[];
+  margins: Margins;
+  options: TrainScheduleOptions;
+  path: PathItem[];
+  power_restrictions: PowerRestrictionItem[];
+  rolling_stock_name: string;
+  schedule: ScheduleItem[];
+  speed_limit_tag?: string | null;
+  start_time: string;
+  timetable_id: number;
+  train_name: string;
+};
 export type SearchResultItem =
   | SearchResultItemTrack
   | SearchResultItemOperationalPoint
   | SearchResultItemSignal
   | SearchResultItemProject
   | SearchResultItemStudy
-  | SearchResultItemScenario;
+  | SearchResultItemScenario
+  | SearchResultItemTrainSchedule;
 export type SearchQuery = boolean | number | number | string | (SearchQuery | null)[];
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it
@@ -3032,7 +3086,6 @@ export type PathfindingItem = {
   timing_data?: StepTimingData | null;
 };
 export type Distribution = 'STANDARD' | 'MARECO';
-export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
 export type TrainScheduleBase = {
   comfort?: Comfort;
   constraint_distribution: Distribution;

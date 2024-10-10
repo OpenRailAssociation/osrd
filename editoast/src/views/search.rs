@@ -203,7 +203,9 @@ use axum::extract::Json;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::Extension;
+use chrono::DateTime;
 use chrono::NaiveDateTime;
+use chrono::Utc;
 use diesel::pg::Pg;
 use diesel::sql_query;
 use diesel::sql_types::Jsonb;
@@ -215,6 +217,11 @@ use editoast_common::geometry::GeoJsonPoint;
 use editoast_derive::EditoastError;
 use editoast_derive::Search;
 use editoast_derive::SearchConfigStore;
+use editoast_schemas::train_schedule::Margins;
+use editoast_schemas::train_schedule::PathItem;
+use editoast_schemas::train_schedule::PowerRestrictionItem;
+use editoast_schemas::train_schedule::ScheduleItem;
+use editoast_schemas::train_schedule::TrainScheduleOptions;
 use editoast_search::query_into_sql;
 use editoast_search::SearchConfigStore as _;
 use editoast_search::SearchError;
@@ -345,6 +352,7 @@ async fn search(
 ) -> Result<Json<serde_json::Value>> {
     let roles: HashSet<BuiltinRole> = match object.as_str() {
         "track" | "operationalpoint" | "signal" => HashSet::from([BuiltinRole::InfraRead]),
+        "trainschedule" => HashSet::from([BuiltinRole::TimetableRead]),
         "project" | "study" | "scenario" => HashSet::from([BuiltinRole::OpsRead]),
         _ => {
             return Err(SearchApiError::ObjectType {
@@ -683,6 +691,48 @@ pub(super) struct SearchResultItemScenario {
     tags: Vec<String>,
 }
 
+#[derive(Search, Serialize, ToSchema)]
+#[cfg_attr(test, derive(serde::Deserialize))]
+#[search(
+    table = "train_schedule",
+    column(name = "timetable_id", data_type = "integer"),
+    column(name = "train_name", data_type = "string")
+)]
+#[allow(unused)]
+/// A search result item for a query with `object = "trainschedule"`
+pub(super) struct SearchResultItemTrainSchedule {
+    #[search(sql = "train_schedule.id")]
+    id: u64,
+    #[search(sql = "train_schedule.train_name")]
+    train_name: String,
+    #[search(sql = "train_schedule.labels")]
+    labels: Vec<Option<String>>,
+    #[search(sql = "train_schedule.rolling_stock_name")]
+    rolling_stock_name: String,
+    #[search(sql = "train_schedule.timetable_id")]
+    timetable_id: i64,
+    #[search(sql = "train_schedule.start_time")]
+    start_time: DateTime<Utc>,
+    #[search(sql = "train_schedule.schedule")]
+    schedule: Vec<ScheduleItem>,
+    #[search(sql = "train_schedule.margins")]
+    margins: Margins,
+    #[search(sql = "train_schedule.initial_speed")]
+    initial_speed: f64,
+    #[search(sql = "train_schedule.comfort")]
+    comfort: i64,
+    #[search(sql = "train_schedule.path")]
+    path: Vec<PathItem>,
+    #[search(sql = "train_schedule.constraint_distribution")]
+    constraint_distribution: i64,
+    #[search(sql = "train_schedule.speed_limit_tag")]
+    speed_limit_tag: Option<String>,
+    #[search(sql = "train_schedule.power_restrictions")]
+    power_restrictions: Vec<PowerRestrictionItem>,
+    #[search(sql = "train_schedule.options")]
+    options: TrainScheduleOptions,
+}
+
 /// See [editoast_search::SearchConfigStore::find]
 #[derive(SearchConfigStore)]
 #[search_config_store(
@@ -692,5 +742,72 @@ pub(super) struct SearchResultItemScenario {
     object(name = "project", config = SearchResultItemProject),
     object(name = "study", config = SearchResultItemStudy),
     object(name = "scenario", config = SearchResultItemScenario),
+    object(name = "trainschedule", config = SearchResultItemTrainSchedule),
 )]
 pub struct SearchConfigFinder;
+
+#[cfg(test)]
+pub mod test {
+
+    use axum::http::StatusCode;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+    use serde_json::json;
+
+    use super::*;
+    use crate::models::fixtures::{create_simple_train_schedule, create_timetable};
+    use crate::views::test_app::TestAppBuilder;
+
+    #[rstest]
+    async fn search_trainschedule_post_found() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        // Create the timetable in the database
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let timetable_id = timetable.id;
+
+        // Add a train_schedule in the database
+        let train = create_simple_train_schedule(&mut pool.get_ok(), timetable_id).await;
+
+        // The body
+        let request = app.post("/search").json(&json!({
+            "object": "trainschedule",
+            "query": ["and", ["=", ["train_name"], train.train_name],
+                             ["=", ["timetable_id"], timetable_id]],
+        }));
+
+        let response: Vec<SearchResultItemTrainSchedule> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(response.len(), 1);
+        assert_eq!(response[0].train_name, train.train_name);
+    }
+
+    #[rstest]
+    async fn search_trainschedule_post_not_found() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        // Create the timetable in the database
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let timetable_id = timetable.id;
+
+        // Add a train_schedule in the database
+        create_simple_train_schedule(&mut pool.get_ok(), timetable_id).await;
+
+        let train_name = "NonExistingTrain";
+
+        // The body
+        let request = app.post("/search").json(&json!({
+            "object": "trainschedule",
+            "query": ["and", ["=", ["train_name"], train_name],
+                             ["=", ["timetable_id"], timetable_id]],
+        }));
+
+        let response: Vec<SearchResultItemTrainSchedule> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(response.len(), 0);
+    }
+}

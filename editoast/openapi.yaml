@@ -8770,6 +8770,7 @@ components:
       - $ref: '#/components/schemas/SearchResultItemProject'
       - $ref: '#/components/schemas/SearchResultItemStudy'
       - $ref: '#/components/schemas/SearchResultItemScenario'
+      - $ref: '#/components/schemas/SearchResultItemTrainSchedule'
       description: A search result item that depends on the query's `object`
     SearchResultItemOperationalPoint:
       type: object
@@ -9002,6 +9003,72 @@ components:
           type: integer
           format: int64
         line_name:
+          type: string
+    SearchResultItemTrainSchedule:
+      type: object
+      description: A search result item for a query with `object = "trainschedule"`
+      required:
+      - id
+      - train_name
+      - labels
+      - rolling_stock_name
+      - timetable_id
+      - start_time
+      - schedule
+      - margins
+      - initial_speed
+      - comfort
+      - path
+      - constraint_distribution
+      - power_restrictions
+      - options
+      properties:
+        comfort:
+          type: integer
+          format: int64
+        constraint_distribution:
+          type: integer
+          format: int64
+        id:
+          type: integer
+          format: int64
+          minimum: 0
+        initial_speed:
+          type: number
+          format: double
+        labels:
+          type: array
+          items:
+            type: string
+            nullable: true
+        margins:
+          $ref: '#/components/schemas/Margins'
+        options:
+          $ref: '#/components/schemas/TrainScheduleOptions'
+        path:
+          type: array
+          items:
+            $ref: '#/components/schemas/PathItem'
+        power_restrictions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PowerRestrictionItem'
+        rolling_stock_name:
+          type: string
+        schedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleItem'
+        speed_limit_tag:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          format: date-time
+        timetable_id:
+          type: integer
+          format: int64
+        train_name:
           type: string
     Side:
       type: string
@@ -10206,7 +10273,7 @@ components:
             format: int64
             description: Timetable attached to the train schedule
             nullable: true
-    TrainScheduleOptionsV2:
+    TrainScheduleOptions:
       type: object
       properties:
         use_electrical_profiles:

@@ -9,7 +9,6 @@ editoast_common::schemas! {
 
 #[derive(Debug, Derivative, Clone, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
-#[schema(as = TrainScheduleOptionsV2)] // Avoiding conflict with v1. TODO: remove after migration to v2
 #[derivative(Default)]
 pub struct TrainScheduleOptions {
     #[derivative(Default(value = "true"))]
