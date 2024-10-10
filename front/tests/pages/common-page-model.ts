@@ -1,34 +1,42 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import BasePage from './base-page';
-import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
+class CommonPage {
+  readonly page: Page;
 
-class CommonPage extends BasePage {
-  readonly rollingstockTranslation: typeof rollingstockTranslation;
+  readonly toastContainer: Locator;
 
-  readonly getToastSNCF: Locator;
+  readonly toastTitle: Locator;
 
-  constructor(readonly page: Page) {
-    super(page);
-    this.rollingstockTranslation = rollingstockTranslation;
-    this.getToastSNCF = page.getByTestId('toast-SNCF');
+  readonly tagField: Locator;
+
+  readonly viteOverlay: Locator;
+
+  readonly toastSNCF: Locator;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.toastContainer = page.getByTestId('toast-SNCF');
+    this.toastTitle = this.toastContainer.locator('[data-testid="toast-SNCF-title"]');
+    this.tagField = page.getByTestId('chips-input');
+    this.viteOverlay = page.locator('vite-plugin-checker-error-overlay');
+    this.toastSNCF = page.getByTestId('toast-SNCF');
   }
 
-  getRollingstockTranslation(key: keyof typeof rollingstockTranslation) {
-    return this.rollingstockTranslation[key];
-  }
-
+  // Set the tag of project, study or scenario
   async setTag(tag: string) {
-    await this.page.getByTestId('chips-input').fill(tag);
-    await this.page.getByTestId('chips-input').press('Enter');
+    await this.tagField.fill(tag);
+    await this.tagField.press('Enter');
   }
 
-  async checkToastSNCFBody(text: string | RegExp) {
-    await expect(this.getToastSNCF.locator('.toast-body')).toHaveText(text);
+  // Verify the text of the last toast notification title
+  async checkLastToastTitle(expectedText: string | RegExp): Promise<void> {
+    await expect(this.toastTitle.last()).toHaveText(expectedText);
   }
 
-  async checkToastSNCFTitle(text: string | RegExp) {
-    await expect(this.getToastSNCF.locator('strong')).toHaveText(text);
+  async removeViteOverlay() {
+    if ((await this.viteOverlay.count()) > 0) {
+      await this.viteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
+    }
   }
 }
 

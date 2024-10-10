@@ -31,7 +31,7 @@ export default function BreadCrumbs({ project, study, scenario }: Props) {
 
       {project && study && (
         <>
-          <div className="text-truncate" title={project.name}>
+          <div data-testid="project-breadcrumbs" className="text-truncate" title={project.name}>
             <Link to={`/operational-studies/projects/${project.id}`}> {project.name}</Link>
           </div>
           <span className="text-muted">

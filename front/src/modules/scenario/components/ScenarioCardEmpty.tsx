@@ -10,7 +10,7 @@ export default function StudyCard() {
 
   return (
     <div
-      data-testid="addScenario"
+      data-testid="add-scenario-button"
       className="scenario-card empty"
       role="button"
       tabIndex={0}

@@ -38,7 +38,12 @@ export default function ChipsSNCF({
     return (
       <div role="list" key={nextId()}>
         <div className="chips-group" role="listitem">
-          <span className={`chips chips-label pr-1 ${chipColor}`}>{label}</span>
+          <span
+            data-testid="scenario-details-tag"
+            className={`chips chips-label pr-1 ${chipColor}`}
+          >
+            {label}
+          </span>
           <button
             type="button"
             className={`chips chips-btn chips-only-icon ${chipColor}`}
