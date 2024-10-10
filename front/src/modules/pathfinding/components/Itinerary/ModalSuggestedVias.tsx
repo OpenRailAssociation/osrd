@@ -10,7 +10,7 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { isVia } from 'modules/pathfinding/utils';
+import { isVia, matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { useAppDispatch } from 'store';
 import { formatUicToCi } from 'utils/strings';
@@ -35,11 +35,7 @@ const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
   );
 
   const removeViaFromPath = (op: SuggestedOP) => {
-    const updatedPathSteps = compact(pathSteps).filter(
-      (step) =>
-        ('uic' in step && (step.uic !== op.uic || step.ch !== op.ch)) ||
-        ('track' in step && (step.track !== op.track || step.offset !== op.offsetOnTrack))
-    );
+    const updatedPathSteps = compact(pathSteps).filter((step) => !matchPathStepAndOp(step, op));
     dispatch(
       updatePathSteps({
         pathSteps: updatedPathSteps,
