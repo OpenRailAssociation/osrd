@@ -111,9 +111,8 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
   return (
     <div className="stdcm-v2-vias-list">
       {intermediatePoints.length > 0 &&
-        intermediatePoints.map((pathStep, index) => {
+        compact(intermediatePoints).map((pathStep, index) => {
           const pathStepIndex = index + 1;
-          if (!pathStep) return null;
           return (
             <div className="stdcm-v2-vias-bundle" key={pathStep.id}>
               <StdcmDefaultCard
