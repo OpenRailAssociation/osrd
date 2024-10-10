@@ -35,16 +35,23 @@ const StdcmOperationalPoint = ({
 
   const operationalPointsSuggestions = useMemo(
     () =>
-      sortedSearchResults.reduce((acc, p) => {
-        const newObject = {
-          label: [p.trigram, p.name].join(' '),
-          value: p.name,
-          uic: p.uic,
-        };
-        const isDuplicate = acc.some((pr) => pr.label === newObject.label);
-        if (!isDuplicate) acc.push(newObject);
-        return acc;
-      }, [] as Option[]),
+      // Temporary filter added to show a more restrictive list of suggestions inside the stdcm app.
+      sortedSearchResults
+        .filter(
+          (op) =>
+            op.name.toLowerCase().startsWith(searchTerm.toLowerCase()) ||
+            op.trigram === searchTerm.toUpperCase()
+        )
+        .reduce((acc, p) => {
+          const newObject = {
+            label: [p.trigram, p.name].join(' '),
+            value: p.name,
+            uic: p.uic,
+          };
+          const isDuplicate = acc.some((pr) => pr.label === newObject.label);
+          if (!isDuplicate) acc.push(newObject);
+          return acc;
+        }, [] as Option[]),
     [sortedSearchResults]
   );
 
@@ -138,6 +145,7 @@ const StdcmOperationalPoint = ({
           disabled={disabled}
           getSuggestionLabel={(option: Option) => option?.label}
           onSelectSuggestion={onSelectSuggestion}
+          disableDefaultFilter
         />
       </div>
       <div className="suggestions stdcm-v2-ch-selector w-100 px-1 pb-2 col-3">

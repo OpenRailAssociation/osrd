@@ -55,10 +55,33 @@ export default function useSearchOperationalPoint({
     }
   };
 
-  const sortByMainOperationalPoints = (
+  const sortOperationalPoints = (
     a: SearchResultItemOperationalPoint,
     b: SearchResultItemOperationalPoint
   ) => {
+    const upperCaseSearchTerm = debouncedSearchTerm.toUpperCase();
+    const lowerCaseSearchTerm = debouncedSearchTerm.toLowerCase();
+
+    // ops with trigram match first
+    if (a.trigram === upperCaseSearchTerm && b.trigram !== upperCaseSearchTerm) {
+      return -1;
+    }
+    if (b.trigram === upperCaseSearchTerm && a.trigram !== upperCaseSearchTerm) {
+      return 1;
+    }
+
+    // ops whose name starts by the searchTerm
+    const aStartsWithSearchTerm = a.name.toLowerCase().startsWith(lowerCaseSearchTerm);
+    const bStartsWithSearchTerm = b.name.toLowerCase().startsWith(lowerCaseSearchTerm);
+
+    if (aStartsWithSearchTerm && !bStartsWithSearchTerm) {
+      return -1;
+    }
+    if (!aStartsWithSearchTerm && bStartsWithSearchTerm) {
+      return 1;
+    }
+
+    // other matching ops alphabetically ordered
     const nameComparison = a.name.localeCompare(b.name);
     if (nameComparison !== 0) {
       return nameComparison;
@@ -73,7 +96,7 @@ export default function useSearchOperationalPoint({
   };
 
   const sortedSearchResults = useMemo(
-    () => [...searchResults].sort(sortByMainOperationalPoints),
+    () => [...searchResults].sort(sortOperationalPoints),
     [searchResults]
   );
 
