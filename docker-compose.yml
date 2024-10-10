@@ -37,7 +37,7 @@ services:
       interval: 5s
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:4-management
     container_name: osrd-rabbitmq
     ports:
       - "5672:5672"
