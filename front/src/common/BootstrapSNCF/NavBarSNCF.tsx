@@ -34,7 +34,7 @@ const LegacyNavBarSNCF = ({ appName, logo = getLogo() }: Props) => {
     <div className="mastheader">
       <div className="mastheader-logo flex-grow-0">
         <Link to="/">
-          <img src={logo} alt="OSRD Logo" />
+          <img src={logo} data-testid="osrd-logo" alt="OSRD Logo" />
         </Link>
       </div>
       <header role="banner" className="mastheader-title d-flex flex-grow-1">

@@ -222,6 +222,7 @@ export default function Project() {
                       <div className="project-details-title-name">
                         {project.name}
                         <button
+                          data-testid="project-update-button"
                           className="project-details-title-modify-button"
                           type="button"
                           onClick={() =>
