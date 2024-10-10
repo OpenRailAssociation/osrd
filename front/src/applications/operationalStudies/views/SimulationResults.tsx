@@ -64,11 +64,7 @@ const SimulationResults = ({
   const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
   const [mapCanvas, setMapCanvas] = useState<string>();
 
-  const {
-    operationalPoints,
-    loading: formattedOpPointsLoading,
-    baseOrEco,
-  } = useFormattedOperationalPoints(
+  const { operationalPoints, loading: formattedOpPointsLoading } = useFormattedOperationalPoints(
     selectedTrainSchedule,
     trainSimulation,
     pathProperties,
@@ -193,24 +189,6 @@ const SimulationResults = ({
         </div>
       )}
 
-      {/* TIME STOPS TABLE */}
-      {selectedTrainSchedule &&
-        trainSimulation.status === 'success' &&
-        pathProperties &&
-        operationalPoints &&
-        infraId && (
-          <div className="osrd-simulation-container mb-2">
-            <TimesStopsOutput
-              simulatedTrain={trainSimulation}
-              pathProperties={pathProperties}
-              operationalPoints={operationalPoints.finalOutput}
-              selectedTrainSchedule={selectedTrainSchedule}
-              path={path}
-              dataIsLoading={formattedOpPointsLoading}
-            />
-          </div>
-        )}
-
       {/* SIMULATION : MAP */}
       <div ref={timeTableRef}>
         <div className="osrd-simulation-container mb-2">
@@ -243,7 +221,7 @@ const SimulationResults = ({
             <TimesStopsOutput
               simulatedTrain={trainSimulation}
               pathProperties={pathProperties}
-              operationalPoints={operationalPoints.finalOutput}
+              operationalPoints={operationalPoints}
               selectedTrainSchedule={selectedTrainSchedule}
               path={path}
               dataIsLoading={formattedOpPointsLoading}
@@ -266,7 +244,6 @@ const SimulationResults = ({
             simulatedTrain={trainSimulation}
             pathElectrifications={pathProperties.electrifications}
             operationalPoints={operationalPoints}
-            baseOrEco={baseOrEco}
             rollingStock={selectedTrainRollingStock}
             mapCanvas={mapCanvas}
           />

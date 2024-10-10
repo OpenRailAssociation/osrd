@@ -1,7 +1,9 @@
-import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
+import type {
+  OperationalPointWithTimeAndSpeed,
+  SimulationResponseSuccess,
+} from 'applications/operationalStudies/types';
 import type { ReportTrain, TrainScheduleResult } from 'common/api/osrdEditoastApi';
-import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
-import { interpolateValue } from 'modules/trainschedule/components/DriverTrainSchedule/utils';
+import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import { mToMm, msToS } from 'utils/physics';
 
 import { formatDigitsAndUnit } from './utils';

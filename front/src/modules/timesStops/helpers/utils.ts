@@ -4,10 +4,10 @@ import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
 import { keyColumn, createTextColumn } from 'react-datasheet-grid';
 
+import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { IsoDateTimeString, IsoDurationString, TimeString } from 'common/types';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { NO_BREAK_SPACE } from 'utils/strings';
