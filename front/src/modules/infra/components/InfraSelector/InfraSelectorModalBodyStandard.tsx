@@ -84,7 +84,7 @@ export default function InfraSelectorModalBodyStandard({
       <div className="text-center small text-muted infras-count">
         {infrasList && t('infraManagement:infrasFound', { count: infrasList.length })}
       </div>
-      <div className="infraslist" data-testid="infraslist">
+      <div className="infraslist" data-testid="infra-list">
         {infrasList.map((infra) => (
           <button
             data-testid={`infraslist-item-${infra.id}`}

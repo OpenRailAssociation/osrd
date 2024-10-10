@@ -4,10 +4,16 @@ import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 
 import { getApiContext, handleErrorResponse, postApiRequest } from './api-setup';
 
-// Function to import train schedules and return the API response
+/**
+ * Sends train schedules to the API for a specific timetable and returns the result.
+ *
+ * @param {number} timetableId - The ID of the timetable for which the train schedules are being sent.
+ * @param {object} body - The request payload containing train schedule data.
+ * @returns {Promise<TrainScheduleResult[]>} - The API response containing the train schedule results.
+ */
 export async function sendTrainSchedules(
   timetableId: number,
-  body: object
+  body: JSON
 ): Promise<TrainScheduleResult[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const trainSchedulesResponse: APIResponse = await apiContext.post(
@@ -20,14 +26,28 @@ export async function sendTrainSchedules(
     }
   );
   handleErrorResponse(trainSchedulesResponse, 'Failed to send train schedule');
-  return trainSchedulesResponse.json();
+  const responseData = (await trainSchedulesResponse.json()) as TrainScheduleResult[];
+
+  return responseData;
 }
 
-// Function to extract train IDs from the train schedules
+/**
+ * Extracts the train IDs from an array of train schedule results.
+ *
+ * @param {TrainScheduleResult[]} trainSchedules - An array of train schedule results.
+ * @returns {number[]} - An array of train IDs extracted from the train schedules.
+ */
 export function getTrainIds(trainSchedules: TrainScheduleResult[]) {
   return trainSchedules.map((item: TrainScheduleResult) => item.id);
 }
-// Function to post simulation using extracted train IDs
+
+/**
+ * Posts a simulation summary for the provided train IDs and infrastructure ID.
+ *
+ * @param {TrainScheduleResult[]} response - The train schedule results from which to extract train IDs.
+ * @param {number} infraId - The infrastructure ID for the simulation.
+ * @returns {Promise<void>} - A promise that resolves once the simulation is posted.
+ */
 export async function postSimulation(
   response: TrainScheduleResult[],
   infraId: number

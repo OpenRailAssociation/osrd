@@ -1,18 +1,17 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
+import OperationalStudiesTimetablePage from './op-timetable-page-model';
 import enTranslations from '../../public/locales/en/timesStops.json';
 import frTranslations from '../../public/locales/fr/timesStops.json';
 import { normalizeData, type StationData } from '../utils/dataNormalizer';
 
-class OperationalStudiesOutputTablePage {
-  readonly page: Page;
-
+class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage {
   readonly columnHeaders: Locator;
 
   readonly tableRows: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.columnHeaders = page.locator(
       '[class="dsg-cell dsg-cell-header"] .dsg-cell-header-container'
     );
@@ -129,6 +128,12 @@ class OperationalStudiesOutputTablePage {
     const normalizedActualData = normalizeData(actualTableData);
     const normalizedExpectedData = normalizeData(expectedTableData);
     expect(normalizedActualData).toEqual(normalizedExpectedData);
+  }
+
+  // Wait for the Times and Stops simulation data sheet to be fully loaded with a specified timeout (default: 30 seconds)
+  async verifyTimeStopsDataSheetVisibility(timeout = 30 * 1000): Promise<void> {
+    await expect(this.timeStopsDataSheet).toBeVisible({ timeout });
+    await this.timeStopsDataSheet.scrollIntoViewIfNeeded();
   }
 }
 
