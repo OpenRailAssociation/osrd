@@ -7921,12 +7921,12 @@ components:
                 time_end:
                   type: integer
                   format: int64
-                  description: The aspects stop being displayed at this time (number of seconds since `departure_time`)
+                  description: The aspects stop being displayed at this time (number of ms since `departure_time`)
                   minimum: 0
                 time_start:
                   type: integer
                   format: int64
-                  description: The aspects start being displayed at this time (number of mseconds since `departure_time`)
+                  description: The aspects start being displayed at this time (number of ms since `departure_time`)
                   minimum: 0
             description: List of signal updates along the path
           space_time_curves:

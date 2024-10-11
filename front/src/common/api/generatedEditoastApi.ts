@@ -3277,9 +3277,9 @@ export type ProjectPathTrainResult = {
     signal_id: string;
     /** The name of the signaling system of the signal */
     signaling_system: string;
-    /** The aspects stop being displayed at this time (number of seconds since `departure_time`) */
+    /** The aspects stop being displayed at this time (number of ms since `departure_time`) */
     time_end: number;
-    /** The aspects start being displayed at this time (number of mseconds since `departure_time`) */
+    /** The aspects start being displayed at this time (number of ms since `departure_time`) */
     time_start: number;
   }[];
   /** List of space-time curves sections along the path */

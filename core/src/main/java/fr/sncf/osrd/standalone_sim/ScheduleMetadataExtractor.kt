@@ -219,7 +219,7 @@ fun run(
             routePath,
             blockPath,
             detailedBlockPath,
-            pathStops,
+            pathStops.filter { it.receptionSignal.isStopOnClosedSignal },
             loadedSignalInfra,
             blockInfra,
             envelopeWithStops,
@@ -260,7 +260,7 @@ fun routingRequirements(
     routePath: StaticIdxList<Route>,
     blockPath: StaticIdxList<Block>,
     detailedBlockPath: List<BlockPathElement>,
-    stops: List<PathStop>,
+    sortedClosedSignalStops: List<PathStop>,
     loadedSignalInfra: LoadedSignalInfra,
     blockInfra: BlockInfra,
     envelope: EnvelopeInterpolate,
@@ -383,12 +383,9 @@ fun routingRequirements(
         val entrySignalOffset =
             blockOffsets[routeStartBlockIndex] +
                 blockInfra.getSignalsPositions(firstRouteBlock).first().distance
-        for (stop in stops.reversed()) {
+        for (stop in sortedClosedSignalStops.reversed()) {
             val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
-            if (
-                stop.receptionSignal.isStopOnClosedSignal &&
-                    stopTravelledOffset <= entrySignalOffset
-            ) {
+            if (stopTravelledOffset <= entrySignalOffset) {
                 // stop duration is included in interpolateDepartureFromClamp()
                 val stopDepartureTime =
                     envelope.interpolateDepartureFromClamp(stopTravelledOffset.distance.meters)
