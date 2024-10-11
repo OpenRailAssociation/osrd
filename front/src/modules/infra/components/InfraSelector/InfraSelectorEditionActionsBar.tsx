@@ -7,7 +7,7 @@ import { MdCancel, MdCheck } from 'react-icons/md';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import InfraLockState from 'modules/infra/consts';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -41,7 +41,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         }
       } catch (e) {
         if (e instanceof Error) {
-          dispatch(setFailure(castErrorToFailure(e)));
+          dispatch(notifyFailure(castErrorToFailure(e)));
         }
       } finally {
         setIsWaiting(false);
@@ -58,7 +58,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       } catch (e) {
         if (e instanceof Error) {
           dispatch(
-            setFailure({
+            notifyFailure({
               name: e.name,
               message: e.message,
             })
@@ -78,7 +78,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       } catch (e) {
         if (e instanceof Error) {
           dispatch(
-            setFailure({
+            notifyFailure({
               name: e.name,
               message: e.message,
             })
@@ -99,7 +99,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       } catch (e) {
         if (e instanceof Error) {
           dispatch(
-            setFailure({
+            notifyFailure({
               name: e.name,
               message: e.message,
             })

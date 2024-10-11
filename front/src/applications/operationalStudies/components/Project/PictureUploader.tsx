@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { getDocument } from 'common/api/documentApi';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 
@@ -201,7 +201,7 @@ export default function PictureUploader({
 
       if (isSizeTooLarge || isWrongType) {
         dispatch(
-          setFailure({
+          notifyFailure({
             name: isSizeTooLarge
               ? t('error.uploadImageSizeTitle')
               : t('error.uploadImageTypeTitle'),

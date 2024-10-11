@@ -11,7 +11,7 @@ import type {
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
-import { setFailure, setSuccess } from 'reducers/main';
+import { notifyFailure, notifySuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatToIsoDate, isoDateToMs, isoDateWithTimezoneToSec } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
@@ -77,7 +77,7 @@ const AddTrainScheduleButton = ({
         }).unwrap();
 
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: t('trainAdded'),
             text: `${baseTrainName}: ${sec2time(isoDateWithTimezoneToSec(firstStartTime))}`,
           })
@@ -86,7 +86,7 @@ const AddTrainScheduleButton = ({
         upsertTrainSchedules(newTrainSchedules);
       } catch (e) {
         setIsWorking(false);
-        dispatch(setFailure(castErrorToFailure(e)));
+        dispatch(notifyFailure(castErrorToFailure(e)));
       }
     }
   };

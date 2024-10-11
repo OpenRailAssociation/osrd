@@ -21,7 +21,7 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
-import { setFailure, setSuccess } from 'reducers/main';
+import { notifyFailure, notifySuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
@@ -180,7 +180,7 @@ export default function AddOrEditScenarioModal({
           closeModal();
         })
         .catch((error) => {
-          dispatch(setFailure(castErrorToFailure(error)));
+          dispatch(notifyFailure(castErrorToFailure(error)));
         });
     }
   };
@@ -203,7 +203,7 @@ export default function AddOrEditScenarioModal({
         .unwrap()
         .then(() => {
           dispatch(
-            setSuccess({
+            notifySuccess({
               title: t('scenarioUpdated'),
               text: t('scenarioUpdatedDetails', { name: currentScenario.name }),
             })
@@ -211,7 +211,7 @@ export default function AddOrEditScenarioModal({
           closeModal();
         })
         .catch((error) => {
-          dispatch(setFailure(castErrorToFailure(error)));
+          dispatch(notifyFailure(castErrorToFailure(error)));
         });
     }
   };
@@ -225,7 +225,7 @@ export default function AddOrEditScenarioModal({
           navigate(`projects/${projectId}/studies/${studyId}`);
           closeModal();
           dispatch(
-            setSuccess({
+            notifySuccess({
               title: t('scenarioDeleted'),
               text: t('scenarioDeletedDetails', { name: scenario.name }),
             })
@@ -234,7 +234,7 @@ export default function AddOrEditScenarioModal({
         .catch((error) => {
           console.error(error);
           dispatch(
-            setFailure({
+            notifyFailure({
               name: t('errorMessages.error'),
               message: t('errorMessages.unableToDeleteScenarioMessage'),
             })

@@ -18,7 +18,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard, { type ImportStation } from 'common/StationCard';
 import UploadFileModal from 'common/uploadFileModal';
 import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatIsoDate } from 'utils/date';
 
@@ -72,7 +72,7 @@ const ImportTrainScheduleConfig = ({
     });
     if (isInvalidTrainSchedules) {
       dispatch(
-        setFailure({
+        notifyFailure({
           name: t('errorMessages.error'),
           message: t('errorMessages.errorImport'),
         })
@@ -124,22 +124,25 @@ const ImportTrainScheduleConfig = ({
     let error = false;
     if (!from) {
       dispatch(
-        setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoFrom') })
+        notifyFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoFrom') })
       );
     }
     if (!to) {
       dispatch(
-        setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoTo') })
+        notifyFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoTo') })
       );
     }
     if (!date) {
       dispatch(
-        setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoDate') })
+        notifyFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoDate') })
       );
     }
     if (JSON.stringify(from) === JSON.stringify(to)) {
       dispatch(
-        setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorSameFromTo') })
+        notifyFailure({
+          name: t('errorMessages.error'),
+          message: t('errorMessages.errorSameFromTo'),
+        })
       );
       error = true;
     }

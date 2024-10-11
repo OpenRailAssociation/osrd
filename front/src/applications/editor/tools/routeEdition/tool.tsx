@@ -29,9 +29,9 @@ const RouteEditionTool: Tool<RouteEditionState> = {
         isDisabled({ state: { isComplete } }) {
           return !isComplete;
         },
-        async onClick({ setIsFormSubmited }) {
-          if (setIsFormSubmited) {
-            setIsFormSubmited(true);
+        async onClick({ setIsFormSubmitted }) {
+          if (setIsFormSubmitted) {
+            setIsFormSubmitted(true);
           }
         },
       },

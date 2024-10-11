@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { compact } from 'lodash';
+import { compact, omit } from 'lodash';
 import type { Dispatch } from 'redux';
 
 import type { ValidConfig } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { setFailure } from 'reducers/main';
-import type { OsrdConfState } from 'reducers/osrdconf/types';
+import { notifyFailure } from 'reducers/main';
+import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 import { isInvalidFloatNumber } from 'utils/numbers';
 import { kmhToMs, mToMm } from 'utils/physics';
 
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
+import type { TrainScheduleBase } from '../../../../../common/api/generatedEditoastApi';
 
 const checkCurrentConfig = (
   osrdconf: OsrdConfState,
@@ -39,7 +40,7 @@ const checkCurrentConfig = (
   if (pathSteps[0] === null) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noOrigin'),
       })
@@ -48,7 +49,7 @@ const checkCurrentConfig = (
   if (!startTime) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noDepartureTime'),
       })
@@ -57,7 +58,7 @@ const checkCurrentConfig = (
   if (pathSteps[pathSteps.length - 1] === null) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noDestination'),
       })
@@ -66,7 +67,7 @@ const checkCurrentConfig = (
   if (!rollingStockName) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noRollingStock'),
       })
@@ -75,7 +76,7 @@ const checkCurrentConfig = (
   if (!trainName) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noName'),
       })
@@ -84,7 +85,7 @@ const checkCurrentConfig = (
   if (!timetableID) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.noTimetable'),
       })
@@ -94,7 +95,7 @@ const checkCurrentConfig = (
   if (isInvalidFloatNumber(initialSpeed!, 1)) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('errorMessages.trainScheduleTitle'),
         message: t('errorMessages.invalidInitialSpeed'),
       })
@@ -106,7 +107,7 @@ const checkCurrentConfig = (
     if (trainCount < 1) {
       error = true;
       dispatch(
-        setFailure({
+        notifyFailure({
           name: t('errorMessages.trainScheduleTitle'),
           message: t('errorMessages.noTrainCount'),
         })
@@ -115,7 +116,7 @@ const checkCurrentConfig = (
     if (trainDelta < 1) {
       error = true;
       dispatch(
-        setFailure({
+        notifyFailure({
           name: t('errorMessages.trainScheduleTitle'),
           message: t('errorMessages.noDelta'),
         })
@@ -124,7 +125,7 @@ const checkCurrentConfig = (
     if (trainStep < 1) {
       error = true;
       dispatch(
-        setFailure({
+        notifyFailure({
           name: t('errorMessages.trainScheduleTitle'),
           message: t('errorMessages.noTrainStep'),
         })
@@ -145,22 +146,28 @@ const checkCurrentConfig = (
     rollingStockComfort,
     initialSpeed: initialSpeed ? kmhToMs(initialSpeed) : 0,
     usingElectricalProfiles,
-    path: compact(pathSteps).map((step) => {
-      // TODO use lodash pick
-      const {
-        arrival,
-        locked,
-        stopFor,
-        positionOnPath,
-        coordinates,
-        name,
-        ch,
-        metadata,
-        kp,
-        receptionSignal,
-        theoreticalMargin,
-        ...stepLocation
-      } = step;
+    path: compact(pathSteps).map((step: PathStep) => {
+      const { ch } = step;
+      const stepLocation = omit(
+        step,
+        // These are all the keys of PathStep that are in the path function
+        // expected results:
+        'arrival',
+        'arrivalType',
+        'arrivalToleranceBefore',
+        'arrivalToleranceAfter',
+        'locked',
+        'stopFor',
+        'stopType',
+        'theoreticalMargin',
+        'receptionSignal',
+        'kp',
+        'positionOnPath',
+        'coordinates',
+        'name',
+        'ch',
+        'metadata'
+      ) as TrainScheduleBase['path'][number];
 
       if ('track' in stepLocation) {
         return {

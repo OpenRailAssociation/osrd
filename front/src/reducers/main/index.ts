@@ -20,11 +20,13 @@ export const mainSlice = createSlice({
   name: 'main',
   initialState: mainInitialState,
   reducers: {
-    // TODO rename setLoading, setSucess with more meaningful names like pushLoadingNotification, pushSucessNotification, ...
-    setLoading(state) {
+    notifyLoadingStart(state) {
       state.loading += 1;
     },
-    setSuccess(state, action: PayloadAction<{ title: string; text: string }>) {
+    notifyLoadingEnd(state) {
+      state.loading = state.loading > 0 ? state.loading - 1 : 0;
+    },
+    notifySuccess(state, action: PayloadAction<{ title: string; text: string }>) {
       state.loading = state.loading > 0 ? state.loading - 1 : 0;
       state.notifications.push({
         type: 'success',
@@ -33,10 +35,7 @@ export const mainSlice = createSlice({
         date: new Date(),
       });
     },
-    setSuccessWithoutMessage(state) {
-      state.loading = state.loading > 0 ? state.loading - 1 : 0;
-    },
-    setWarning(state, action: PayloadAction<{ title: string; text: string }>) {
+    notifyWarning(state, action: PayloadAction<{ title: string; text: string }>) {
       state.loading = state.loading > 0 ? state.loading - 1 : 0;
       state.notifications.push({
         type: 'warning',
@@ -45,7 +44,7 @@ export const mainSlice = createSlice({
         date: new Date(),
       });
     },
-    setFailure(state, action: PayloadAction<Error>) {
+    notifyFailure(state, action: PayloadAction<Error>) {
       state.loading = state.loading > 0 ? state.loading - 1 : 0;
       state.notifications.push({
         type: 'error',
@@ -88,11 +87,11 @@ export const mainSlice = createSlice({
 });
 
 export const {
-  setLoading,
-  setSuccess,
-  setSuccessWithoutMessage,
-  setWarning,
-  setFailure,
+  notifyLoadingStart,
+  notifySuccess,
+  notifyLoadingEnd,
+  notifyWarning,
+  notifyFailure,
   addSuccessNotification,
   addFailureNotification,
   deleteNotification,

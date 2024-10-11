@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq, concat, compact } from 'lodash';
+import { sum, isString, isArray, uniq, concat, compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
@@ -78,18 +78,27 @@ const LayersModal = ({ initialLayers, selection, frozenLayers, onChange }: Layer
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);
-  const selectionCounts = useMemo(
-    () =>
-      selection
-        ? mapKeys(
-            // TODO: ATM we don't know if a selected speed section should be considered as SpeedSection or PSL,
-            // which are two different layers.
-            mapValues(groupBy(selection, 'objType'), (values) => values.length),
-            (_values, key) => EDITOAST_TO_LAYER_DICT[key as EditoastType]
-          )
-        : {},
-    [selection]
-  );
+  const selectionCounts = useMemo(() => {
+    if (!selection) return {};
+
+    const counts: Partial<Record<Layer, number>> = {};
+    selection.forEach((entity) => {
+      let key: Layer | null = null;
+      if (entity.objType === 'SpeedSection') {
+        if (entity.properties.extensions?.psl_sncf) {
+          key = 'psl';
+        } else {
+          key = 'speed_sections';
+        }
+      } else {
+        [key] = EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType];
+      }
+
+      if (key) counts[key] = (counts[key] || 0) + 1;
+    });
+
+    return counts;
+  }, [selection]);
 
   /**
    * When selection changed, we check that all needed layers are enabled.

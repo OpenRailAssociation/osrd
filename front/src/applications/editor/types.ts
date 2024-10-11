@@ -5,8 +5,7 @@ import type { Map, MapLayerMouseEvent } from 'maplibre-gl';
 import type { IconType } from 'react-icons/lib/iconBase';
 import type { ViewState } from 'react-map-gl/maplibre';
 
-import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
-import type { Operation } from 'common/api/osrdEditoastApi';
+import type { Operation, SwitchType } from 'common/api/osrdEditoastApi';
 import type { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import type { EditorState } from 'reducers/editor';
 import type { AppDispatch } from 'store';
@@ -58,9 +57,9 @@ export type ExtendedEditorContextType<S> = EditorContextType<S> & {
   infraID: number | undefined;
   switchTypes: SwitchType[] | undefined;
   isLoading?: boolean;
-  isFormSubmited?: boolean;
+  isFormSubmitted?: boolean;
   isInfraLocked?: boolean;
-  setIsFormSubmited?: (isSubmit: boolean) => void;
+  setIsFormSubmitted?: (isSubmit: boolean) => void;
 };
 
 export type ReadOnlyEditorContextType<S> = Omit<
@@ -93,7 +92,7 @@ export type Tool<S> = {
     infraID: number | undefined;
     switchTypes: SwitchType[] | undefined;
   }) => S;
-  // When user click on tool button on the side bar.
+  // When user click on tool button on the sidebar:
   onClick?: (context: ReadOnlyEditorContextType<CommonToolState>) => void;
   requiredLayers?: Set<Layer>;
   incompatibleLayers?: Layer[];

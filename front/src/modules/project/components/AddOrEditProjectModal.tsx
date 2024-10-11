@@ -24,7 +24,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { setFailure, setSuccess } from 'reducers/main';
+import { notifyFailure, notifySuccess } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -113,7 +113,7 @@ export default function AddOrEditProjectModal({
       return await postDocument(image);
     } catch (error) {
       dispatch(
-        setFailure(castErrorToFailure(error, { name: t('error.unableToPostDocumentTitle') }))
+        notifyFailure(castErrorToFailure(error, { name: t('error.unableToPostDocumentTitle') }))
       );
       return null;
     }
@@ -143,7 +143,7 @@ export default function AddOrEditProjectModal({
           })
           .catch((error) => {
             dispatch(
-              setFailure(
+              notifyFailure(
                 castErrorToFailure(error, {
                   name: t('error.unableToCreateProjectTitle'),
                 })
@@ -189,7 +189,7 @@ export default function AddOrEditProjectModal({
           })
           .catch((error) => {
             dispatch(
-              setFailure(
+              notifyFailure(
                 castErrorToFailure(error, {
                   name: t('error.unableToUpdateProjectTitle'),
                 })
@@ -212,7 +212,7 @@ export default function AddOrEditProjectModal({
           navigate(`/operational-studies/projects/`);
           closeModal();
           dispatch(
-            setSuccess({
+            notifySuccess({
               title: t('projectDeleted'),
               text: t('projectDeletedDetails', { name: project.name }),
             })
@@ -220,7 +220,7 @@ export default function AddOrEditProjectModal({
         })
         .catch((e) => {
           dispatch(
-            setFailure(
+            notifyFailure(
               castErrorToFailure(e, {
                 name: t('error.unableToDeleteProject'),
               })

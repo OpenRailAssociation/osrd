@@ -14,7 +14,7 @@ import {
 import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
+import { notifyLoadingStart, notifySuccess, notifyFailure, notifyLoadingEnd } from 'reducers/main';
 import { updateIssuesSettings } from 'reducers/map';
 import infra_schema from 'reducers/osrdconf/infra_schema.json';
 import type { AppDispatch, GetState } from 'store';
@@ -29,7 +29,7 @@ export function loadDataModel() {
   return async (dispatch: AppDispatch, getState: GetState) => {
     // check if we need to load the model
     if (!Object.keys(getState().editor.editorSchema).length) {
-      dispatch(setLoading());
+      dispatch(notifyLoadingStart());
       try {
         const schemaResponse = infra_schema as JSONSchema7;
         // parse the schema
@@ -61,10 +61,10 @@ export function loadDataModel() {
               },
             } as EditorSchema[0];
           });
-        dispatch(setSuccessWithoutMessage());
+        dispatch(notifyLoadingEnd());
         dispatch(loadDataModelAction(schema));
       } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
+        dispatch(notifyFailure(castErrorToFailure(e)));
       }
     }
   };
@@ -73,7 +73,7 @@ export function loadDataModel() {
 export function updateTotalsIssue(infraID: number | undefined) {
   return async (dispatch: AppDispatch, getState: GetState) => {
     const { editor } = getState();
-    dispatch(setLoading());
+    dispatch(notifyLoadingStart());
     try {
       let total = 0;
       let filterTotal = 0;
@@ -113,9 +113,9 @@ export function updateTotalsIssue(infraID: number | undefined) {
       }
       dispatch(updateTotalsIssueAction({ total, filterTotal }));
     } catch (e) {
-      dispatch(setFailure(castErrorToFailure(e)));
+      dispatch(notifyFailure(castErrorToFailure(e)));
     } finally {
-      dispatch(setSuccessWithoutMessage());
+      dispatch(notifyLoadingEnd());
     }
   };
 }
@@ -169,7 +169,7 @@ export function saveOperations(
 ) {
   return async (dispatch: AppDispatch) => {
     if (shouldLoad) {
-      dispatch(setLoading());
+      dispatch(notifyLoadingStart());
     }
     try {
       if (isNil(infraId)) throw new Error('No infrastructure');
@@ -182,7 +182,7 @@ export function saveOperations(
       if (response.data) {
         // success message
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: i18next.t('common.success.save.title'),
             text: i18next.t('common.success.save.text'),
           })
@@ -192,7 +192,7 @@ export function saveOperations(
       throw response.error;
     } catch (e) {
       dispatch(
-        setFailure(
+        notifyFailure(
           castErrorToFailure(e, {
             name: i18next.t('common.failure.save.title'),
             message: i18next.t('common.failure.save.text'),
@@ -227,7 +227,7 @@ export function saveSplitTrackSection(
   offset: number
 ) {
   return async (dispatch: AppDispatch): Promise<string[]> => {
-    dispatch(setLoading());
+    dispatch(notifyLoadingStart());
     try {
       if (isNil(infraId)) throw new Error('No infrastructure');
       const response = await dispatch(
@@ -239,7 +239,7 @@ export function saveSplitTrackSection(
       if (response.data) {
         // success message
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: i18next.t('common.success.save.title'),
             text: i18next.t('common.success.save.text'),
           })
@@ -249,7 +249,7 @@ export function saveSplitTrackSection(
       throw response.error;
     } catch (e) {
       dispatch(
-        setFailure(
+        notifyFailure(
           castErrorToFailure(e, {
             name: i18next.t('common.failure.save.title'),
             message: i18next.t('common.failure.save.text'),

@@ -2,14 +2,14 @@ import { describe, it, expect } from 'vitest';
 
 import {
   mainInitialState,
-  setLoading,
-  setSuccess,
-  setWarning,
-  setFailure,
+  notifyLoadingStart,
+  notifySuccess,
+  notifyWarning,
+  notifyFailure,
   deleteNotification,
   updateLastInterfaceVersion,
   type MainState,
-  setSuccessWithoutMessage,
+  notifyLoadingEnd,
   addFailureNotification,
   addSuccessNotification,
 } from 'reducers/main';
@@ -30,7 +30,7 @@ describe('mainReducer', () => {
 
   it('should handle setLoading', () => {
     const store = createStore(mainInitialState);
-    const action = setLoading();
+    const action = notifyLoadingStart();
     store.dispatch(action);
     const mainState = store.getState().main;
     expect(mainState).toEqual({
@@ -42,7 +42,7 @@ describe('mainReducer', () => {
 
   it('should handle setSuccess', () => {
     const store = createStore(mainStateWithSinglePendingRequest);
-    const action = setSuccess({
+    const action = notifySuccess({
       title: 'Test title',
       text: 'Test text',
     });
@@ -64,7 +64,7 @@ describe('mainReducer', () => {
 
   it('should handle setSuccessWithoutMessage', () => {
     const store = createStore(mainStateWithSinglePendingRequest);
-    const action = setSuccessWithoutMessage();
+    const action = notifyLoadingEnd();
     store.dispatch(action);
     const mainState = store.getState().main;
     expect(mainState).toEqual({
@@ -76,7 +76,7 @@ describe('mainReducer', () => {
 
   it('should handle setWarning', () => {
     const store = createStore(mainStateWithSinglePendingRequest);
-    const action = setWarning({
+    const action = notifyWarning({
       title: 'Test title',
       text: 'Test text',
     });
@@ -98,7 +98,7 @@ describe('mainReducer', () => {
 
   it('should handle setFailure', () => {
     const store = createStore(mainStateWithSinglePendingRequest);
-    const action = setFailure(new Error('Test error'));
+    const action = notifyFailure(new Error('Test error'));
     store.dispatch(action);
     const mainState = store.getState().main;
     expect(mainState).toEqual({

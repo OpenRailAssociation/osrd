@@ -11,7 +11,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getStdcmV2Activated } from 'reducers/user/userSelectors';
@@ -67,7 +67,7 @@ const useStdcm = (
 
   const triggerShowFailureNotification = (error: Error) => {
     if (showFailureNotification) {
-      dispatch(setFailure(error));
+      dispatch(notifyFailure(error));
     }
   };
 

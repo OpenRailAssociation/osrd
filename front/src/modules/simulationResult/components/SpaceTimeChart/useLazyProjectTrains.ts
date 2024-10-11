@@ -11,7 +11,7 @@ import {
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { getBatchPackage } from 'utils/batch';
 import { castErrorToFailure } from 'utils/error';
@@ -105,7 +105,7 @@ const useLazyProjectTrains = ({
           await projectNextPackage(_path, packageToProject);
         } catch (e) {
           console.error('error', e);
-          dispatch(setFailure(castErrorToFailure(e)));
+          dispatch(notifyFailure(castErrorToFailure(e)));
         }
       }
     };

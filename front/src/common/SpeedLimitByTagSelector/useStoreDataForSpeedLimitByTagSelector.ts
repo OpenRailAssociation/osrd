@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors, useOsrdConfActions, useInfraID } from 'common/osrdContext';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -36,7 +36,7 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
     // Update the document title using the browser API
     if (error) {
       dispatch(
-        setFailure(castErrorToFailure(error, { name: t('errorMessages.unableToRetrieveTags') }))
+        notifyFailure(castErrorToFailure(error, { name: t('errorMessages.unableToRetrieveTags') }))
       );
     }
   }, [error]);

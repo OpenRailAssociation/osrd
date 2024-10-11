@@ -18,7 +18,7 @@ import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
 import { adjustConfWithTrainToModify } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -251,7 +251,7 @@ const useSetupItineraryForTrainUpdate = (
             setPathProperties(itinerary.pathProperties);
           }
         } catch (e) {
-          dispatch(setFailure(castErrorToFailure(e)));
+          dispatch(notifyFailure(castErrorToFailure(e)));
         }
       }
 

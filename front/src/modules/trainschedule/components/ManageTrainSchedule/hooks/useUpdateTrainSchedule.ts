@@ -6,7 +6,7 @@ import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoa
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import checkCurrentConfig from 'modules/trainschedule/components/ManageTrainSchedule/helpers/checkCurrentConfig';
-import { setFailure, setSuccess } from 'reducers/main';
+import { notifyFailure, notifySuccess } from 'reducers/main';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { formatToIsoDate } from 'utils/date';
@@ -53,7 +53,7 @@ const useUpdateTrainSchedule = (
 
         upsertTrainSchedules([trainScheduleResult]);
         dispatch(
-          setSuccess({
+          notifySuccess({
             title: t('trainUpdated'),
             text: `${confName}: ${formatToIsoDate(startTime, true)}`,
           })
@@ -62,7 +62,7 @@ const useUpdateTrainSchedule = (
         setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
         setTrainIdToEdit(undefined);
       } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
+        dispatch(notifyFailure(castErrorToFailure(e)));
       } finally {
         setIsWorking(false);
       }

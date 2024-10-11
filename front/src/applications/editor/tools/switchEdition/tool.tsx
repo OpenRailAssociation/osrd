@@ -6,11 +6,12 @@ import { TbSwitch2 } from 'react-icons/tb';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type { Tool } from 'applications/editor/types';
+import type { SwitchType } from 'common/api/osrdEditoastApi';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
 
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
-import type { SwitchEditionState, SwitchEntity, SwitchType } from './types';
+import type { SwitchEditionState, SwitchEntity } from './types';
 import { getNewSwitch } from './utils';
 
 function getInitialState({
@@ -63,9 +64,9 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
             false
           );
         },
-        async onClick({ setIsFormSubmited }) {
-          if (setIsFormSubmited) {
-            setIsFormSubmited(true);
+        async onClick({ setIsFormSubmitted }) {
+          if (setIsFormSubmitted) {
+            setIsFormSubmitted(true);
           }
         },
       },
@@ -115,7 +116,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
               onConfirm={async () => {
                 await dispatch(
                   // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
-                  // The cast is required because of the Partial<SwitchEntity> returned by getNewSwitch which doesnt fit with EditorEntity
+                  // The cast is required because of the Partial<SwitchEntity> returned by getNewSwitch which doesn't fit with EditorEntity
                   save(infraID, { delete: [state.initialEntity as SwitchEntity] })
                 );
                 setState(getInitialState({ switchTypes }));

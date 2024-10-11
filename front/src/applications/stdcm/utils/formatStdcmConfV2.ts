@@ -9,7 +9,7 @@ import type {
   TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
-import { setFailure } from 'reducers/main';
+import { notifyFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
 import { dateTimeFormatting, dateTimeToIso } from 'utils/date';
 import { mToMm } from 'utils/physics';
@@ -66,7 +66,7 @@ export const checkStdcmConf = (
   if (pathSteps[0] === null) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noOrigin'),
       })
@@ -76,7 +76,7 @@ export const checkStdcmConf = (
   if (!(osrdconf.originTime && osrdconf.originUpperBoundTime) && !stdcmV2Activated) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noOriginTime'),
       })
@@ -85,7 +85,7 @@ export const checkStdcmConf = (
   if (pathSteps[pathSteps.length - 1] === null) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noDestination'),
       })
@@ -94,7 +94,7 @@ export const checkStdcmConf = (
   if (!rollingStockID) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noRollingStock'),
       })
@@ -103,7 +103,7 @@ export const checkStdcmConf = (
   if (!infraID) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noName'),
       })
@@ -112,7 +112,7 @@ export const checkStdcmConf = (
   if (!timetableID) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noTimetable'),
       })
@@ -133,7 +133,7 @@ export const checkStdcmConf = (
   } else if (!startTime) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noOriginTime'),
       })
@@ -151,7 +151,7 @@ export const checkStdcmConf = (
   ) {
     error = true;
     dispatch(
-      setFailure({
+      notifyFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.originTimeOutsideWindow', {
           low: dateTimeFormatting(searchDatetimeWindow.begin, false, false),
