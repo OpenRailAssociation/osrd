@@ -1,4 +1,5 @@
 pub mod electrical_profiles_commands;
+pub mod infra_commands;
 mod postgres_config;
 pub mod roles;
 pub mod search_commands;
@@ -15,6 +16,7 @@ use clap::Subcommand;
 use clap::ValueEnum;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
+use infra_commands::InfraCommands;
 pub use postgres_config::PostgresConfig;
 use roles::RolesCommand;
 use search_commands::SearchCommands;
@@ -107,14 +109,6 @@ pub struct ExportTimetableArgs {
     pub path: PathBuf,
 }
 
-#[derive(Subcommand, Debug)]
-pub enum InfraCommands {
-    Clone(InfraCloneArgs),
-    Clear(ClearArgs),
-    Generate(GenerateArgs),
-    ImportRailjson(ImportRailjsonArgs),
-}
-
 #[derive(Args, Debug, Derivative, Clone)]
 #[derivative(Default)]
 pub struct MapLayersConfig {
@@ -161,44 +155,6 @@ pub struct RunserverArgs {
 }
 
 #[derive(Args, Debug)]
-#[command(about, long_about = "Refresh infra generated data")]
-pub struct GenerateArgs {
-    /// List of infra ids
-    pub infra_ids: Vec<u64>,
-    #[arg(short, long)]
-    /// Force the refresh of an infra (even if the generated version is up to date)
-    pub force: bool,
-}
-
-#[derive(Args, Debug)]
-#[command(about, long_about = "Clear infra generated data")]
-pub struct ClearArgs {
-    /// List of infra ids
-    pub infra_ids: Vec<u64>,
-}
-
-#[derive(Args, Debug, Clone)]
-#[command(about, long_about = "Import an infra given a railjson file")]
-pub struct ImportRailjsonArgs {
-    /// Infra name
-    pub infra_name: String,
-    /// Railjson file path
-    pub railjson_path: PathBuf,
-    /// Whether the import should refresh generated data
-    #[arg(short = 'g', long)]
-    pub generate: bool,
-}
-
-#[derive(Args, Debug, Clone)]
-#[command(about, long_about = "Clone an infrastructure")]
-pub struct InfraCloneArgs {
-    /// Infrastructure ID
-    pub id: u64,
-    /// Infrastructure new name
-    pub new_name: Option<String>,
-}
-
-#[derive(Args, Debug)]
 #[command(about, long_about = "Import a rolling stock given a json file")]
 pub struct ImportRollingStockArgs {
     /// Rolling stock file path
@@ -239,4 +195,12 @@ pub enum EditoastUrlError {
     #[error("Invalid url '{url}'")]
     #[editoast_error(status = 500)]
     InvalidUrl { url: String },
+}
+
+#[cfg(test)]
+pub fn generate_temp_file<T: serde::Serialize>(object: &T) -> tempfile::NamedTempFile {
+    use std::io::Write as _;
+    let mut tmp_file = tempfile::NamedTempFile::new().unwrap();
+    write!(tmp_file, "{}", serde_json::to_string(object).unwrap()).unwrap();
+    tmp_file
 }
