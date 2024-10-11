@@ -15,6 +15,11 @@ const IGNORE_MISSING: RegExp[] = [
   /translation:unspecified/,
   // key used by upsertMapWaypointsInOperationalPoints
   /translation:requestedPoint/,
+  // key used by checkStdcmConfigErrors
+  /translation:arriveAt/,
+  /translation:departureTime/,
+  /translation:destinationTime/,
+  /translation:leaveAt/,
 ];
 const IGNORE_UNUSED: RegExp[] = [
   /.*-generated$/,

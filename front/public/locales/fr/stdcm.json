@@ -70,6 +70,8 @@
   "stdcmComputation": "Recherche de sillon",
   "stdcmErrors": {
     "bothPointAreScheduled": "Le calcul ne peut pas prendre en compte à la fois un horaire d'origine et un horaire de destination. Il faut choisir l'un ou l'autre :",
+    "infraNotLoaded": "Infrastructure en cours de chargement",
+    "missingLocation": "Localisation manquante",
     "noPaths": "Incompatibilité avec d'autres sillons.",
     "noResults": "Aucun sillon trouvé",
     "noScheduledPoint": "Le calcul a besoin de l'horaire d'origine ou de celui de la destination.",

@@ -39,6 +39,8 @@ export enum ArrivalTimeTypes {
 }
 
 export enum StdcmConfigErrorTypes {
+  INFRA_NOT_LOADED = 'infraNotLoaded',
+  MISSING_LOCATION = 'missingLocation',
   PATHFINDING_FAILED = 'pathfindingFailed',
   BOTH_POINT_SCHEDULED = 'bothPointAreScheduled',
   NO_SCHEDULED_POINT = 'noScheduledPoint',

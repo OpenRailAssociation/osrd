@@ -70,6 +70,8 @@
   "stdcmComputation": "Search for a train path",
   "stdcmErrors": {
     "bothPointAreScheduled": "The calculation cannot take into account both an origin and a destination schedule. You have to choose one or the other:",
+    "infraNotLoaded": "Infrastructure is loading",
+    "missingLocation": "Missing location",
     "noPaths": "Incompatibility with other train paths.",
     "noResults": "No path found",
     "noScheduledPoint": "The calculation requires either the origin or destination schedule.",
