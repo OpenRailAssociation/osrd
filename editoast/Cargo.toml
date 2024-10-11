@@ -96,6 +96,7 @@ chrono.workspace = true
 clap = { version = "4.5.19", features = ["derive", "env"] }
 colored = "2.1.0"
 dashmap = "6.1.0"
+deadpool-lapin = "0.12.1"
 derivative.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }

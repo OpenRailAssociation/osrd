@@ -1,23 +1,21 @@
+use deadpool_lapin::{Config, CreatePoolError, Pool, PoolError, Runtime};
 use editoast_derive::EditoastError;
 use futures_util::StreamExt;
 use itertools::Itertools;
 use lapin::{
     options::{BasicConsumeOptions, BasicPublishOptions},
     types::{ByteArray, FieldTable, ShortString},
-    BasicProperties, Connection, ConnectionProperties,
+    BasicProperties,
 };
 use serde::Serialize;
 use serde_json::to_vec;
-use std::{fmt::Debug, sync::Arc};
+use std::fmt::Debug;
 use thiserror::Error;
-use tokio::{
-    sync::RwLock,
-    time::{timeout, Duration},
-};
+use tokio::time::{timeout, Duration};
 
 #[derive(Debug, Clone)]
 pub struct RabbitMQClient {
-    connection: Arc<RwLock<Option<Connection>>>,
+    pub pool: Pool,
     exchange: String,
     timeout: u64,
     hostname: String,
@@ -51,6 +49,12 @@ pub enum Error {
     #[error("Connection does not exist")]
     #[editoast_error(status = "500")]
     ConnectionDoesNotExist,
+    #[error("Cannot create the pool")]
+    #[editoast_error(status = "500")]
+    CreatePoolLapin(CreatePoolError),
+    #[error("Cannot acquire connection from pool")]
+    #[editoast_error(status = "500")]
+    DeadpoolLapin(PoolError),
 }
 
 pub struct MQResponse {
@@ -64,59 +68,20 @@ impl RabbitMQClient {
             .map(|name| name.to_string_lossy().into_owned())
             .unwrap_or_else(|_| "unknown".to_string());
 
-        let conn = Arc::new(RwLock::new(None));
-
-        tokio::spawn(Self::connection_loop(options.uri, conn.clone()));
+        let cfg = Config {
+            url: Some(options.uri),
+            ..Default::default()
+        };
+        let pool = cfg
+            .create_pool(Some(Runtime::Tokio1))
+            .map_err(Error::CreatePoolLapin)?;
 
         Ok(RabbitMQClient {
-            connection: conn,
+            pool,
             exchange: format!("{}-req-xchg", options.worker_pool_identifier),
             timeout: options.timeout,
             hostname,
         })
-    }
-
-    async fn connection_ok(connection: &Arc<RwLock<Option<Connection>>>) -> bool {
-        let guard = connection.as_ref().read().await;
-        let conn = guard.as_ref();
-        let status = match conn {
-            None => return false,
-            Some(conn) => conn.status().state(),
-        };
-        match status {
-            lapin::ConnectionState::Initial => true,
-            lapin::ConnectionState::Connecting => true,
-            lapin::ConnectionState::Connected => true,
-            lapin::ConnectionState::Closing => true,
-            lapin::ConnectionState::Closed => false,
-            lapin::ConnectionState::Error => false,
-        }
-    }
-
-    async fn connection_loop(uri: String, connection: Arc<RwLock<Option<Connection>>>) {
-        loop {
-            if Self::connection_ok(&connection).await {
-                tokio::time::sleep(Duration::from_secs(2)).await;
-                continue;
-            }
-
-            tracing::info!("Reconnecting to RabbitMQ");
-
-            // Connection should be re-established
-            let new_connection = Connection::connect(&uri, ConnectionProperties::default()).await;
-
-            match new_connection {
-                Ok(new_connection) => {
-                    *connection.write().await = Some(new_connection);
-                    tracing::info!("Reconnected to RabbitMQ");
-                }
-                Err(e) => {
-                    tracing::error!("Error while reconnecting to RabbitMQ: {:?}", e);
-                }
-            }
-
-            tokio::time::sleep(Duration::from_secs(2)).await;
-        }
     }
 
     #[allow(dead_code)]
@@ -131,14 +96,8 @@ impl RabbitMQClient {
     where
         T: Serialize,
     {
-        // Get current connection
-        let connection = self.connection.read().await;
-        if connection.is_none() {
-            return Err(Error::ConnectionDoesNotExist);
-        }
-        let connection = connection.as_ref().unwrap();
-
         // Create a channel
+        let connection = self.pool.get().await.map_err(Error::DeadpoolLapin)?;
         let channel = connection.create_channel().await.map_err(Error::Lapin)?;
 
         let serialized_payload_vec = to_vec(published_payload).map_err(Error::Serialization)?;
@@ -172,6 +131,12 @@ impl RabbitMQClient {
             .await
             .map_err(Error::Lapin)?;
 
+        // Explicitly close the channel
+        channel
+            .close(200, "Normal shutdown")
+            .await
+            .map_err(Error::Lapin)?;
+
         Ok(())
     }
 
@@ -186,14 +151,8 @@ impl RabbitMQClient {
     where
         T: Serialize,
     {
-        // Get current connection
-        let connection = self.connection.read().await;
-        if connection.is_none() {
-            return Err(Error::ConnectionDoesNotExist);
-        }
-        let connection = connection.as_ref().unwrap();
-
         // Create a channel
+        let connection = self.pool.get().await.map_err(Error::DeadpoolLapin)?;
         let channel = connection.create_channel().await.map_err(Error::Lapin)?;
 
         let serialized_payload_vec = to_vec(published_payload).map_err(Error::Serialization)?;
@@ -244,10 +203,20 @@ impl RabbitMQClient {
             Duration::from_secs(override_timeout.unwrap_or(self.timeout)),
             consumer.next(),
         )
-        .await
-        .map_err(|_| Error::ResponseTimeout)?;
+        .await;
 
-        match response_delivery {
+        if response_delivery.is_err() {
+            channel
+                .close(200, "Normal shutdown")
+                .await
+                .map_err(Error::Lapin)?;
+
+            return Err(Error::ResponseTimeout);
+        }
+
+        let response_delivery = response_delivery.unwrap();
+
+        let result = match response_delivery {
             Some(Ok(delivery)) => {
                 let status = delivery
                     .properties
@@ -265,7 +234,15 @@ impl RabbitMQClient {
             }
             Some(Err(e)) => Err(e.into()),
             None => panic!("Rabbitmq consumer was cancelled unexpectedly"),
-        }
+        };
+
+        // Explicitly close the channel
+        channel
+            .close(200, "Normal shutdown")
+            .await
+            .map_err(Error::Lapin)?;
+
+        result
     }
 }
 

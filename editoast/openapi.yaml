@@ -4068,6 +4068,8 @@ components:
       - $ref: '#/components/schemas/EditoastEditoastUrlErrorInvalidUrl'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
       - $ref: '#/components/schemas/EditoastErrorConnectionDoesNotExist'
+      - $ref: '#/components/schemas/EditoastErrorCreatePoolLapin'
+      - $ref: '#/components/schemas/EditoastErrorDeadpoolLapin'
       - $ref: '#/components/schemas/EditoastErrorLapin'
       - $ref: '#/components/schemas/EditoastErrorResponseTimeout'
       - $ref: '#/components/schemas/EditoastErrorSerialization'
@@ -4148,6 +4150,44 @@ components:
           type: string
           enum:
           - editoast:coreclient:ConnectionDoesNotExist
+    EditoastErrorCreatePoolLapin:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:CreatePoolLapin
+    EditoastErrorDeadpoolLapin:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:DeadpoolLapin
     EditoastErrorLapin:
       type: object
       required:
