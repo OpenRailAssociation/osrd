@@ -12,7 +12,6 @@ mod valkey_utils;
 mod views;
 
 use crate::core::CoreClient;
-use crate::models::Infra;
 use crate::views::OpenApiRoot;
 use axum::extract::DefaultBodyLimit;
 use axum::extract::FromRef;
@@ -20,14 +19,14 @@ use axum::{Router, ServiceExt};
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use clap::Parser;
 use client::electrical_profiles_commands::*;
+use client::infra_commands::*;
 use client::roles;
 use client::roles::RolesCommand;
 use client::search_commands::*;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::{
-    ClearArgs, Client, Color, Commands, ExportTimetableArgs, GenerateArgs, ImportRailjsonArgs,
-    ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, RunserverArgs,
-    TimetablesCommands, ValkeyConfig,
+    Client, Color, Commands, ExportTimetableArgs, ImportRollingStockArgs, ImportTimetableArgs,
+    RunserverArgs, TimetablesCommands, ValkeyConfig,
 };
 use client::{MapLayersConfig, PostgresConfig};
 use dashmap::DashMap;
@@ -37,6 +36,7 @@ use editoast_osrdyne_client::OsrdyneClient;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use generated_data::speed_limit_tags_config::SpeedLimitTagIds;
+use infra_cache::InfraCache;
 use models::{
     timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
     train_schedule::TrainScheduleChangeset,
@@ -53,9 +53,6 @@ use views::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
 use core::mq_client;
-use editoast_models::DbConnection;
-use editoast_schemas::infra::RailJson;
-use infra_cache::InfraCache;
 use map::MapLayers;
 use models::prelude::*;
 use opentelemetry::KeyValue;
@@ -74,7 +71,6 @@ use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _
 use validator::ValidationErrorsKind;
 pub use valkey_utils::{ValkeyClient, ValkeyConnection};
 use views::authentication_middleware;
-use views::infra::InfraApiError;
 
 /// The mode editoast is running in
 ///
@@ -498,93 +494,6 @@ async fn runserver(
     Ok(())
 }
 
-async fn build_valkey_pool_and_invalidate_all_cache(
-    valkey_config: ValkeyConfig,
-    infra_id: i64,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let valkey = ValkeyClient::new(valkey_config).unwrap();
-    let mut conn = valkey.get_connection().await.unwrap();
-    Ok(map::invalidate_all(
-        &mut conn,
-        &MapLayers::parse().layers.keys().cloned().collect(),
-        infra_id,
-    )
-    .await
-    .map_err(|e| {
-        Box::new(CliError::new(
-            1,
-            format!("Couldn't refresh valkey cache layers: {e}"),
-        ))
-    })?)
-}
-
-async fn batch_retrieve_infras(
-    conn: &mut DbConnection,
-    ids: &[u64],
-) -> Result<Vec<Infra>, Box<dyn Error + Send + Sync>> {
-    let (infras, missing) = Infra::retrieve_batch(conn, ids.iter().map(|id| *id as i64)).await?;
-    if !missing.is_empty() {
-        let error = CliError::new(
-            1,
-            format!(
-                "❌ Infrastructures not found: {missing}",
-                missing = missing
-                    .iter()
-                    .map(|id| id.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
-        );
-        return Err(Box::new(error));
-    }
-    Ok(infras)
-}
-
-/// Run the generate sub command
-/// This command refresh all infra given as input (if no infra given then refresh all of them)
-async fn generate_infra(
-    args: GenerateArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-    valkey_config: ValkeyConfig,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut infras = vec![];
-    if args.infra_ids.is_empty() {
-        // Retrieve all available infra
-        for infra in Infra::all(&mut db_pool.get().await?).await {
-            infras.push(infra);
-        }
-    } else {
-        // Retrieve given infras
-        infras = batch_retrieve_infras(&mut db_pool.get().await?, &args.infra_ids).await?;
-    }
-    for mut infra in infras {
-        println!(
-            "🍞 Infra {}[{}] is generating:",
-            infra.name.clone().bold(),
-            infra.id
-        );
-        let infra_cache = InfraCache::load(&mut db_pool.get().await?, &infra).await?;
-        if infra
-            .refresh(db_pool.clone(), args.force, &infra_cache)
-            .await?
-        {
-            build_valkey_pool_and_invalidate_all_cache(valkey_config.clone(), infra.id).await?;
-            println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
-        } else {
-            println!(
-                "✅ Infra {}[{}] already generated!",
-                infra.name.bold(),
-                infra.id
-            );
-        }
-    }
-    println!(
-        "🚨 You may want to refresh the search caches. If so, use {}.",
-        "editoast search refresh".bold()
-    );
-    Ok(())
-}
-
 async fn import_rolling_stock(
     args: ImportRollingStockArgs,
     db_pool: Arc<DbConnectionPoolV2>,
@@ -638,109 +547,6 @@ async fn import_rolling_stock(
     Ok(())
 }
 
-async fn clone_infra(
-    infra_args: InfraCloneArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let infra = Infra::retrieve(&mut db_pool.get().await?, infra_args.id as i64)
-        .await?
-        .ok_or_else(|| {
-            // When EditoastError will be removed from the models crate,
-            // this can become a retrieve_or_fail
-            CliError::new(
-                1,
-                format!("❌ Infrastructure not found, ID: {}", infra_args.id),
-            )
-        })?;
-    let new_name = infra_args
-        .new_name
-        .unwrap_or_else(|| format!("{} (clone)", infra.name));
-    let cloned_infra = infra.clone(&mut db_pool.get().await?, new_name).await?;
-    println!(
-        "✅ Infra {} (ID: {}) was successfully cloned",
-        cloned_infra.name.bold(),
-        cloned_infra.id
-    );
-    Ok(())
-}
-
-async fn import_railjson(
-    args: ImportRailjsonArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let railjson_file = match File::open(args.railjson_path.clone()) {
-        Ok(file) => file,
-        Err(_) => {
-            let error = CliError::new(
-                1,
-                format!(
-                    "❌ Railjson file not found, Path: {}",
-                    args.railjson_path.to_string_lossy()
-                ),
-            );
-            return Err(Box::new(error));
-        }
-    };
-
-    let infra_name = args.infra_name.clone().bold();
-
-    let infra = Infra::changeset()
-        .name(args.infra_name)
-        .last_railjson_version();
-    let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
-
-    println!("🍞 Importing infra {infra_name}");
-    let mut infra = infra.persist(railjson, &mut db_pool.get().await?).await?;
-
-    infra
-        .bump_version(&mut db_pool.get().await?)
-        .await
-        .map_err(|_| InfraApiError::NotFound { infra_id: infra.id })?;
-
-    println!("✅ Infra {infra_name}[{}] saved!", infra.id);
-    // Generate only if the was set
-    if args.generate {
-        let infra_cache = InfraCache::load(&mut db_pool.get().await?, &infra).await?;
-        infra.refresh(db_pool, true, &infra_cache).await?;
-        println!(
-            "✅ Infra {infra_name}[{}] generated data refreshed!",
-            infra.id
-        );
-    };
-    Ok(())
-}
-
-/// Run the clear subcommand
-/// This command clear all generated data for the given infra
-async fn clear_infra(
-    args: ClearArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-    valkey_config: ValkeyConfig,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut infras = vec![];
-    if args.infra_ids.is_empty() {
-        // Retrieve all available infra
-        for infra in Infra::all(&mut db_pool.get().await?).await {
-            infras.push(infra);
-        }
-    } else {
-        // Retrieve given infras
-        infras = batch_retrieve_infras(&mut db_pool.get().await?, &args.infra_ids).await?;
-    };
-
-    for mut infra in infras {
-        println!(
-            "🍞 Infra {}[{}] is clearing:",
-            infra.name.clone().bold(),
-            infra.id
-        );
-        build_valkey_pool_and_invalidate_all_cache(valkey_config.clone(), infra.id).await?;
-        infra.clear(&mut db_pool.get().await?).await?;
-        println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
-    }
-    Ok(())
-}
-
 /// Prints the OpenApi to stdout
 fn generate_openapi() {
     let openapi = OpenApiRoot::build_openapi();
@@ -781,14 +587,12 @@ impl From<anyhow::Error> for CliError {
 mod tests {
     use super::*;
 
+    use crate::client::generate_temp_file;
     use crate::models::RollingStockModel;
 
     use editoast_models::DbConnectionPoolV2;
     use models::DeleteStatic;
-    use rand::distributions::Alphanumeric;
-    use rand::{thread_rng, Rng};
     use rstest::rstest;
-    use serde::Serialize;
     use std::io::Write;
     use tempfile::NamedTempFile;
 
@@ -983,61 +787,5 @@ mod tests {
         } = created_rs;
         assert!(electrical_power_startup_time.is_some());
         assert!(raise_pantograph_time.is_some());
-    }
-
-    #[rstest]
-    async fn import_railjson_ko_file_not_found() {
-        // GIVEN
-        let railjson_path = "non/existing/railjson/file/location";
-        let args: ImportRailjsonArgs = ImportRailjsonArgs {
-            infra_name: "test".into(),
-            railjson_path: railjson_path.into(),
-            generate: false,
-        };
-
-        // WHEN
-        let result = import_railjson(args.clone(), DbConnectionPoolV2::for_tests().into()).await;
-
-        // THEN
-        assert!(result.is_err());
-        assert_eq!(
-            result
-                .unwrap_err()
-                .downcast_ref::<CliError>()
-                .unwrap()
-                .exit_code,
-            1
-        );
-    }
-
-    #[rstest]
-    async fn import_railjson_ok() {
-        // GIVEN
-        let railjson = Default::default();
-        let file = generate_temp_file::<RailJson>(&railjson);
-        let infra_name = format!(
-            "{}_{}",
-            "infra",
-            (0..10)
-                .map(|_| thread_rng().sample(Alphanumeric) as char)
-                .collect::<String>(),
-        );
-        let args: ImportRailjsonArgs = ImportRailjsonArgs {
-            infra_name: infra_name.clone(),
-            railjson_path: file.path().into(),
-            generate: false,
-        };
-
-        // WHEN
-        let result = import_railjson(args, DbConnectionPoolV2::for_tests().into()).await;
-
-        // THEN
-        assert!(result.is_ok());
-    }
-
-    fn generate_temp_file<T: Serialize>(object: &T) -> NamedTempFile {
-        let mut tmp_file = NamedTempFile::new().unwrap();
-        write!(tmp_file, "{}", serde_json::to_string(object).unwrap()).unwrap();
-        tmp_file
     }
 }
