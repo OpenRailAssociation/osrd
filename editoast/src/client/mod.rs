@@ -1,5 +1,6 @@
 mod postgres_config;
 pub mod roles;
+pub mod search_commands;
 pub mod stdcm_search_env_commands;
 mod telemetry_config;
 mod valkey_config;
@@ -15,6 +16,7 @@ use derivative::Derivative;
 use editoast_derive::EditoastError;
 pub use postgres_config::PostgresConfig;
 use roles::RolesCommand;
+use search_commands::SearchCommands;
 use stdcm_search_env_commands::StdcmSearchEnvCommands;
 pub use telemetry_config::TelemetryConfig;
 pub use telemetry_config::TelemetryKind;
@@ -109,13 +111,6 @@ pub enum ElectricalProfilesCommands {
     Import(ImportProfileSetArgs),
     Delete(DeleteProfileSetArgs),
     List(ListProfileSetArgs),
-}
-
-#[derive(Subcommand, Debug)]
-pub enum SearchCommands {
-    List,
-    MakeMigration(MakeMigrationArgs),
-    Refresh(RefreshArgs),
 }
 
 #[derive(Subcommand, Debug)]
@@ -253,31 +248,6 @@ pub struct OsmToRailjsonArgs {
     pub osm_pbf_in: PathBuf,
     /// Output file in Railjson format
     pub railjson_out: PathBuf,
-}
-
-#[derive(Args, Debug)]
-#[command(
-    about,
-    long_about = "Generate a migration's up.sql and down.sql content for a search object"
-)]
-pub struct MakeMigrationArgs {
-    /// The search object to generate a migration for
-    pub object: String,
-    /// The directory of the migration
-    pub migration: PathBuf,
-    #[arg(short, long)]
-    /// Overwrites the existing up.sql and down.sql files' content
-    pub force: bool,
-    #[arg(long)]
-    /// Skips the default generation of down.sql to have smarter rollbacks
-    pub skip_down: bool,
-}
-
-#[derive(Args, Debug)]
-#[command(about, long_about = "Updates the content of the search cache tables")]
-pub struct RefreshArgs {
-    /// The search objects to refresh. If none, all search objects are refreshed
-    pub objects: Vec<String>,
 }
 
 /// Retrieve the ROOT_URL env var. If not found returns default local url.

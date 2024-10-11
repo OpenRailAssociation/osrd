@@ -21,13 +21,13 @@ use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use clap::Parser;
 use client::roles;
 use client::roles::RolesCommand;
+use client::search_commands::*;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
     ExportTimetableArgs, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
     ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs,
-    MakeMigrationArgs, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
-    ValkeyConfig,
+    RunserverArgs, TimetablesCommands, ValkeyConfig,
 };
 use client::{MapLayersConfig, PostgresConfig};
 use dashmap::DashMap;
@@ -54,11 +54,8 @@ use views::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
 use core::mq_client;
-use diesel::sql_query;
-use diesel_async::RunQueryDsl;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::RailJson;
-use editoast_search::SearchConfigStore;
 use infra_cache::InfraCache;
 use map::MapLayers;
 use models::electrical_profiles::ElectricalProfileSet;
@@ -66,13 +63,13 @@ use models::prelude::*;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig as _;
 use opentelemetry_sdk::Resource;
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, IsTerminal};
 use std::process::exit;
 use std::sync::Arc;
 use std::time::Duration;
-use std::{env, fs};
 use thiserror::Error;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _, Layer as _};
@@ -80,7 +77,6 @@ use validator::ValidationErrorsKind;
 pub use valkey_utils::{ValkeyClient, ValkeyConnection};
 use views::authentication_middleware;
 use views::infra::InfraApiError;
-use views::search::SearchConfigFinder;
 
 /// The mode editoast is running in
 ///
@@ -805,112 +801,6 @@ async fn clear_infra(
 fn generate_openapi() {
     let openapi = OpenApiRoot::build_openapi();
     print!("{}", serde_yaml::to_string(&openapi).unwrap());
-}
-
-fn list_search_objects() {
-    SearchConfigFinder::all().into_iter().for_each(|(name, _)| {
-        println!("{name}");
-    });
-}
-
-fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let MakeMigrationArgs {
-        object,
-        migration,
-        force,
-        skip_down,
-    } = args;
-    let Some(search_config) = SearchConfigFinder::find(&object) else {
-        let error = format!("❌ No search object found for {object}");
-        return Err(Box::new(CliError::new(2, error)));
-    };
-    if !search_config.has_migration() {
-        let error = format!("❌ No migration defined for {object}");
-        return Err(Box::new(CliError::new(2, error)));
-    }
-    if !migration.is_dir() {
-        let error = format!(
-            "❌ {} is not a directory",
-            migration.to_str().unwrap_or("<unprintable path>")
-        );
-        return Err(Box::new(CliError::new(2, error)));
-    }
-    let up_path = migration.join("up.sql");
-    let down_path = migration.join("down.sql");
-    let up_path_str = up_path.to_str().unwrap_or("<unprintable path>").to_owned();
-    let down_path_str = down_path
-        .to_str()
-        .unwrap_or("<unprintable path>")
-        .to_owned();
-    if !force
-        && (up_path.exists() && fs::read(up_path.clone()).is_ok_and(|v| !v.is_empty())
-            || down_path.exists() && fs::read(down_path.clone()).is_ok_and(|v| !v.is_empty()))
-    {
-        let error = format!("❌ Migration {} already has content\nCowardly refusing to overwrite it\nUse {} at your own risk",
-        migration.to_str().unwrap_or("<unprintable path>"),
-        "--force".bold());
-        return Err(Box::new(CliError::new(2, error)));
-    }
-    println!(
-        "🤖 Generating migration {}",
-        migration.to_str().unwrap_or("<unprintable path>")
-    );
-    let (up, down) = search_config.make_up_down();
-    if let Err(err) = fs::write(up_path, up) {
-        let error = format!("❌ Failed to write to {up_path_str}: {err}");
-        return Err(Box::new(CliError::new(2, error)));
-    }
-    println!("➡️  Wrote to {up_path_str}");
-    if !skip_down {
-        if let Err(err) = fs::write(down_path, down) {
-            let error = format!("❌ Failed to write to {down_path_str}: {err}");
-            return Err(Box::new(CliError::new(2, error)));
-        }
-        println!("➡️  Wrote to {down_path_str}");
-    }
-    println!(
-        "✅ Migration {} generated!\n🚨 Don't forget to run {} or {} to apply it",
-        migration.to_str().unwrap_or("<unprintable path>"),
-        "diesel migration run".bold(),
-        "diesel migration redo".bold(),
-    );
-    Ok(())
-}
-
-async fn refresh_search_tables(
-    args: RefreshArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let objects = if args.objects.is_empty() {
-        SearchConfigFinder::all()
-            .into_iter()
-            .filter_map(|(name, config)| config.has_migration().then(|| name.to_owned()))
-            .collect()
-    } else {
-        args.objects
-    };
-
-    for object in objects {
-        let Some(search_config) = SearchConfigFinder::find(&object) else {
-            eprintln!("❌ No search object found for {object}");
-            continue;
-        };
-        if !search_config.has_migration() {
-            eprintln!("❌ No migration defined for {object}");
-            continue;
-        }
-        println!("🤖 Refreshing search table for {}", object);
-        println!("🚮 Dropping {} content", search_config.table);
-        sql_query(search_config.clear_sql())
-            .execute(&mut db_pool.get().await?.write().await)
-            .await?;
-        println!("♻️  Regenerating {}", search_config.table);
-        sql_query(search_config.refresh_table_sql())
-            .execute(&mut db_pool.get().await?.write().await)
-            .await?;
-        println!("✅ Search table for {} refreshed!", object);
-    }
-    Ok(())
 }
 
 #[derive(Debug, Error, PartialEq)]
