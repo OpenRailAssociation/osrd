@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import { KebabHorizontal } from '@osrd-project/ui-icons';
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
 import { ConflictLayer, PathLayer, SpaceTimeChart } from '@osrd-project/ui-spacetimechart';
@@ -8,6 +9,7 @@ import type { Conflict } from '@osrd-project/ui-spacetimechart';
 import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
 
+import SettingsPanel from './SettingsPanel';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 
@@ -39,6 +41,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     selectedTrainScheduleId
   );
 
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [settings, setSettings] = useState({ showConflicts: false });
+
   return (
     <div className="manchette-space-time-chart-wrapper">
       <div className="header">
@@ -69,6 +74,18 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             height: `${heightOfManchetteWithSpaceTimeChart - 6}px`,
           }}
         >
+          <div className="toolbar">
+            <button type="button" onClick={() => setShowSettingsPanel(true)}>
+              <KebabHorizontal />
+            </button>
+          </div>
+          {showSettingsPanel && (
+            <SettingsPanel
+              settings={settings}
+              onChange={setSettings}
+              onClose={() => setShowSettingsPanel(false)}
+            />
+          )}
           {/* TODO: remove this condition after closing
           https://github.com/OpenRailAssociation/osrd-ui/issues/648 */}
           {spaceTimeChartProps.spaceScales.length > 0 && (
@@ -85,7 +102,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               {spaceTimeChartProps.paths.map((path) => (
                 <PathLayer key={path.id} path={path} color={path.color} />
               ))}
-              <ConflictLayer conflicts={conflicts} />
+              {settings.showConflicts && <ConflictLayer conflicts={conflicts} />}
             </SpaceTimeChart>
           )}
         </div>
