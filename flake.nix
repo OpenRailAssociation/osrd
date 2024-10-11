@@ -80,7 +80,6 @@
                 # Front
                 fixedNodePackages.create-react-app
                 fixedNodePackages.eslint
-                fixedNodePackages.yarn
                 fixedNode
 
                 # Nix formatter
