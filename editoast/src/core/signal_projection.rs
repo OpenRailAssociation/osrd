@@ -30,9 +30,9 @@ pub struct SignalUpdatesRequest<'a> {
 pub struct SignalUpdate {
     /// The id of the updated signal
     pub signal_id: String,
-    /// The aspects start being displayed at this time (number of mseconds since `departure_time`)
+    /// The aspects start being displayed at this time (number of ms since `departure_time`)
     pub time_start: u64,
-    /// The aspects stop being displayed at this time (number of seconds since `departure_time`)
+    /// The aspects stop being displayed at this time (number of ms since `departure_time`)
     pub time_end: u64,
     /// The route starts at this position in mm on the train path
     pub position_start: u64,
