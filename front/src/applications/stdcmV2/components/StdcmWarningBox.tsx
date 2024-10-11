@@ -1,8 +1,14 @@
 import { Button } from '@osrd-project/ui-core';
 import { Alert } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { StdcmConfigErrorTypes, StdcmConfigErrors } from '../types';
+import { StdcmConfigErrorTypes, type StdcmConfigErrors } from '../types';
+
+const SHORT_TEXT_ERRORS = [
+  StdcmConfigErrorTypes.INFRA_NOT_LOADED,
+  StdcmConfigErrorTypes.MISSING_LOCATION,
+];
 
 type StdcmWarningBoxProps = {
   errorInfos: {
@@ -22,9 +28,16 @@ const StdcmWarningBox = ({
   return (
     <div className="warning-box">
       <span>
-        <Alert variant="fill" />
+        <Alert variant="fill" size="lg" />
       </span>
-      <p className="mb-0 text-justify">{t(`stdcmErrors.${errorType}`)}</p>
+      <p
+        className={cx('mb-0', {
+          'text-center': SHORT_TEXT_ERRORS.includes(errorType),
+          'text-justify': !SHORT_TEXT_ERRORS.includes(errorType),
+        })}
+      >
+        {t(`stdcmErrors.${errorType}`)}
+      </p>
       {errorType === 'bothPointAreScheduled' && errorDetails && (
         <div className="stdcm-warning-buttons">
           <Button

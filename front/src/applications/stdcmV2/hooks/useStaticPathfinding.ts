@@ -3,17 +3,19 @@ import { useEffect, useMemo, useState } from 'react';
 import { compact } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type PathfindingResult } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type InfraWithState,
+  type PathfindingResult,
+} from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 
-const useStaticPathfinding = () => {
+const useStaticPathfinding = (infra?: InfraWithState) => {
   const { getPathSteps } = useOsrdConfSelectors();
 
-  const { infra } = useInfraStatus();
   const pathSteps = useSelector(getPathSteps);
   const { rollingStock } = useStoreDataForRollingStockSelector();
 

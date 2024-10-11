@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
+import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
-import { extractHHMM } from 'utils/date';
 
 import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
@@ -47,6 +48,7 @@ const StdcmConfig = ({
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
 
+  const { infra } = useInfraStatus();
   const dispatch = useAppDispatch();
   const {
     updateGridMarginAfter,
@@ -56,15 +58,16 @@ const StdcmConfig = ({
     updateDestinationArrivalType,
   } = useOsrdConfActions() as StdcmConfSliceActions;
 
-  const { getOrigin, getDestination, getProjectID, getScenarioID, getStudyID } =
+  const { getOrigin, getDestination, getPathSteps, getProjectID, getScenarioID, getStudyID } =
     useOsrdConfSelectors();
   const origin = useSelector(getOrigin);
+  const pathSteps = useSelector(getPathSteps);
   const destination = useSelector(getDestination);
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
 
-  const pathfinding = useStaticPathfinding();
+  const pathfinding = useStaticPathfinding(infra);
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
@@ -77,8 +80,20 @@ const StdcmConfig = ({
   };
 
   const startSimulation = () => {
-    if (pathfinding?.status === 'success' && !formErrors) {
+    const isPathfindingFailed = !!pathfinding && pathfinding.status !== 'success';
+    const formErrorsStatus = checkStdcmConfigErrors(
+      isPathfindingFailed,
+      origin,
+      destination,
+      compact(pathSteps),
+      t
+    );
+    if (pathfinding?.status === 'success' && !formErrorsStatus) {
       launchStdcmRequest();
+    } else {
+      // The console error is only for debugging the user tests (temporary)
+      console.warn('The form is not valid:', { pathfinding, formErrorsStatus });
+      setFormErrors(formErrorsStatus);
     }
   };
 
@@ -91,20 +106,13 @@ const StdcmConfig = ({
 
   useEffect(() => {
     const isPathfindingFailed = !!pathfinding && pathfinding.status !== 'success';
-    let formErrorsStatus = checkStdcmConfigErrors(isPathfindingFailed, origin, destination);
-    if (formErrorsStatus?.errorType === StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED) {
-      formErrorsStatus = {
-        ...formErrorsStatus,
-        errorDetails: {
-          originTime: origin?.arrival
-            ? t('leaveAt', { time: extractHHMM(origin.arrival) })
-            : t('departureTime'),
-          destinationTime: destination?.arrival
-            ? t('arriveAt', { time: extractHHMM(destination.arrival) })
-            : t('destinationTime'),
-        },
-      };
-    }
+    const formErrorsStatus = checkStdcmConfigErrors(
+      isPathfindingFailed,
+      origin,
+      destination,
+      [],
+      t
+    );
     setFormErrors(formErrorsStatus);
   }, [origin, destination, pathfinding]);
 
@@ -116,6 +124,14 @@ const StdcmConfig = ({
       dispatch(updateStdcmStandardAllowance({ type: 'time_per_distance', value: 4.5 }));
     }
   }, [isDebugMode]);
+
+  useEffect(() => {
+    if (!infra || infra.state === 'CACHED') {
+      setFormErrors(undefined);
+    } else {
+      setFormErrors({ errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED });
+    }
+  }, [infra]);
 
   return (
     <div className="stdcm-v2__body">
