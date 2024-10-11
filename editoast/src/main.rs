@@ -19,22 +19,21 @@ use axum::extract::FromRef;
 use axum::{Router, ServiceExt};
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use clap::Parser;
+use client::electrical_profiles_commands::*;
 use client::roles;
 use client::roles::RolesCommand;
 use client::search_commands::*;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::{
-    ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
-    ExportTimetableArgs, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
-    ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs,
-    RunserverArgs, TimetablesCommands, ValkeyConfig,
+    ClearArgs, Client, Color, Commands, ExportTimetableArgs, GenerateArgs, ImportRailjsonArgs,
+    ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, RunserverArgs,
+    TimetablesCommands, ValkeyConfig,
 };
 use client::{MapLayersConfig, PostgresConfig};
 use dashmap::DashMap;
 use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
-use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use generated_data::speed_limit_tags_config::SpeedLimitTagIds;
@@ -58,7 +57,6 @@ use editoast_models::DbConnection;
 use editoast_schemas::infra::RailJson;
 use infra_cache::InfraCache;
 use map::MapLayers;
-use models::electrical_profiles::ElectricalProfileSet;
 use models::prelude::*;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig as _;
@@ -712,60 +710,6 @@ async fn import_railjson(
     Ok(())
 }
 
-async fn electrical_profile_set_import(
-    args: ImportProfileSetArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let electrical_profile_set_file = File::open(args.electrical_profile_set_path)?;
-
-    let electrical_profile_set_data: ElectricalProfileSetData =
-        serde_json::from_reader(BufReader::new(electrical_profile_set_file))?;
-    let ep_set = ElectricalProfileSet::changeset()
-        .name(args.name)
-        .data(electrical_profile_set_data);
-
-    let created_ep_set = ep_set.create(&mut db_pool.get().await?).await?;
-    println!("✅ Electrical profile set {} created", created_ep_set.id);
-    Ok(())
-}
-
-async fn electrical_profile_set_list(
-    args: ListProfileSetArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let electrical_profile_sets = ElectricalProfileSet::list_light(&mut db_pool.get().await?)
-        .await
-        .unwrap();
-    if !args.quiet {
-        println!("Electrical profile sets:\nID - Name");
-    }
-    for electrical_profile_set in electrical_profile_sets {
-        println!(
-            "{:<2} - {}",
-            electrical_profile_set.id, electrical_profile_set.name
-        );
-    }
-    Ok(())
-}
-
-async fn electrical_profile_set_delete(
-    args: DeleteProfileSetArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    for profile_set_id in args.profile_set_ids {
-        let deleted =
-            ElectricalProfileSet::delete_static(&mut db_pool.get().await?, profile_set_id)
-                .await
-                .unwrap();
-        if !deleted {
-            println!("❎ Electrical profile set {} not found", profile_set_id);
-        } else {
-            println!("✅ Electrical profile set {} deleted", profile_set_id);
-        }
-    }
-    Ok(())
-}
-
 /// Run the clear subcommand
 /// This command clear all generated data for the given infra
 async fn clear_infra(
@@ -837,7 +781,6 @@ impl From<anyhow::Error> for CliError {
 mod tests {
     use super::*;
 
-    use crate::models::fixtures::create_electrical_profile_set;
     use crate::models::RollingStockModel;
 
     use editoast_models::DbConnectionPoolV2;
@@ -1096,41 +1039,5 @@ mod tests {
         let mut tmp_file = NamedTempFile::new().unwrap();
         write!(tmp_file, "{}", serde_json::to_string(object).unwrap()).unwrap();
         tmp_file
-    }
-
-    #[rstest]
-    async fn test_electrical_profile_set_delete() {
-        // GIVEN
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let electrical_profile_set = create_electrical_profile_set(&mut db_pool.get_ok()).await;
-
-        let args = DeleteProfileSetArgs {
-            profile_set_ids: vec![electrical_profile_set.id],
-        };
-
-        // WHEN
-        electrical_profile_set_delete(args, db_pool.clone().into())
-            .await
-            .unwrap();
-
-        // THEN
-        let empty = !ElectricalProfileSet::list_light(&mut db_pool.get_ok())
-            .await
-            .unwrap()
-            .iter()
-            .any(|eps| eps.id == electrical_profile_set.id);
-        assert!(empty);
-    }
-
-    #[rstest]
-    async fn test_electrical_profile_set_list_doesnt_fail() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let _ = create_electrical_profile_set(&mut db_pool.get_ok()).await;
-        for quiet in [true, false] {
-            let args = ListProfileSetArgs { quiet };
-            electrical_profile_set_list(args, db_pool.clone().into())
-                .await
-                .unwrap();
-        }
     }
 }

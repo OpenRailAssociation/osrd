@@ -1,3 +1,4 @@
+pub mod electrical_profiles_commands;
 mod postgres_config;
 pub mod roles;
 pub mod search_commands;
@@ -58,7 +59,7 @@ pub enum Commands {
         about,
         long_about = "Commands related to electrical profile sets"
     )]
-    ElectricalProfiles(ElectricalProfilesCommands),
+    ElectricalProfiles(electrical_profiles_commands::ElectricalProfilesCommands),
     ImportRollingStock(ImportRollingStockArgs),
     OsmToRailjson(OsmToRailjsonArgs),
     #[command(about, long_about = "Prints the OpenApi of the service")]
@@ -104,13 +105,6 @@ pub struct ExportTimetableArgs {
     pub id: i64,
     /// The output file path
     pub path: PathBuf,
-}
-
-#[derive(Subcommand, Debug)]
-pub enum ElectricalProfilesCommands {
-    Import(ImportProfileSetArgs),
-    Delete(DeleteProfileSetArgs),
-    List(ListProfileSetArgs),
 }
 
 #[derive(Subcommand, Debug)]
@@ -195,15 +189,6 @@ pub struct ImportRailjsonArgs {
     pub generate: bool,
 }
 
-#[derive(Args, Debug)]
-#[command(about, long_about = "Add a set of electrical profiles")]
-pub struct ImportProfileSetArgs {
-    /// Electrical profile set name
-    pub name: String,
-    /// Electrical profile set file path
-    pub electrical_profile_set_path: PathBuf,
-}
-
 #[derive(Args, Debug, Clone)]
 #[command(about, long_about = "Clone an infrastructure")]
 pub struct InfraCloneArgs {
@@ -211,27 +196,6 @@ pub struct InfraCloneArgs {
     pub id: u64,
     /// Infrastructure new name
     pub new_name: Option<String>,
-}
-
-#[derive(Args, Debug)]
-#[command(
-    about,
-    long_about = "Delete electrical profile sets corresponding to the given ids"
-)]
-pub struct DeleteProfileSetArgs {
-    /// List of infra ids
-    pub profile_set_ids: Vec<i64>,
-}
-
-#[derive(Args, Debug)]
-#[command(
-    about,
-    long_about = "List electrical profile sets in the database, <id> - <name>"
-)]
-pub struct ListProfileSetArgs {
-    // Wether to display the list in a ready to parse format
-    #[arg(long, default_value_t = false)]
-    pub quiet: bool,
 }
 
 #[derive(Args, Debug)]
