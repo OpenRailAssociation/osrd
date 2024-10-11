@@ -5,6 +5,7 @@ pub mod roles;
 pub mod search_commands;
 pub mod stdcm_search_env_commands;
 mod telemetry_config;
+pub mod timetables_commands;
 mod valkey_config;
 
 use std::env;
@@ -24,6 +25,7 @@ use stdcm_search_env_commands::StdcmSearchEnvCommands;
 pub use telemetry_config::TelemetryConfig;
 pub use telemetry_config::TelemetryKind;
 use thiserror::Error;
+use timetables_commands::TimetablesCommands;
 use url::Url;
 pub use valkey_config::ValkeyConfig;
 
@@ -82,31 +84,6 @@ pub enum Commands {
     Roles(RolesCommand),
     #[command(about, long_about = "Healthcheck")]
     Healthcheck,
-}
-
-#[derive(Subcommand, Debug)]
-pub enum TimetablesCommands {
-    Import(ImportTimetableArgs),
-    Export(ExportTimetableArgs),
-}
-
-#[derive(Args, Debug)]
-#[command(about, long_about = "Import a train schedule given a JSON file")]
-pub struct ImportTimetableArgs {
-    /// The timetable id on which attach the trains to
-    #[arg(long)]
-    pub id: Option<i64>,
-    /// The input file path
-    pub path: PathBuf,
-}
-
-#[derive(Args, Debug)]
-#[command(about, long_about = "Export the train schedules of a given timetable")]
-pub struct ExportTimetableArgs {
-    /// The timetable id on which get the train schedules from
-    pub id: i64,
-    /// The output file path
-    pub path: PathBuf,
 }
 
 #[derive(Args, Debug, Derivative, Clone)]
