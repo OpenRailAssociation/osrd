@@ -417,8 +417,7 @@ class SpacingRequirementAutomaton(
 
         // TODO: use a lookup table
         fun findLastStopBeforeZone(): ProcessedStop? {
-            for (i in processedStops.size - 1 downTo 0) {
-                val stop = processedStops[i]
+            for (stop in processedStops.reversed()) {
                 if (stop.nextZoneIdx <= pendingRequirement.zoneIndex) {
                     return stop
                 }
