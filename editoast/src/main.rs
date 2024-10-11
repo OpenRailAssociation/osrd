@@ -24,23 +24,16 @@ use client::roles;
 use client::roles::RolesCommand;
 use client::search_commands::*;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
-use client::{
-    Client, Color, Commands, ExportTimetableArgs, ImportRollingStockArgs, ImportTimetableArgs,
-    RunserverArgs, TimetablesCommands, ValkeyConfig,
-};
+use client::timetables_commands::*;
+use client::{Client, Color, Commands, ImportRollingStockArgs, RunserverArgs, ValkeyConfig};
 use client::{MapLayersConfig, PostgresConfig};
 use dashmap::DashMap;
 use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
 use editoast_schemas::rolling_stock::RollingStock;
-use editoast_schemas::train_schedule::TrainScheduleBase;
 use generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use infra_cache::InfraCache;
-use models::{
-    timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
-    train_schedule::TrainScheduleChangeset,
-};
 use models::{Changeset, RollingStockModel};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use tower::Layer as _;
@@ -49,7 +42,6 @@ use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::normalize_path::NormalizePathLayer;
 use tower_http::trace::TraceLayer;
 use views::check_health;
-use views::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
 use core::mq_client;
@@ -272,89 +264,6 @@ async fn healthcheck_cmd(
         .await
         .map_err(|e| CliError::new(1, format!("❌ healthcheck failed: {0}", e)))?;
     println!("✅ Healthcheck passed");
-    Ok(())
-}
-
-async fn trains_export(
-    args: ExportTimetableArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let train_ids = match TimetableWithTrains::retrieve(&mut db_pool.get().await?, args.id).await? {
-        Some(timetable) => timetable.train_ids,
-        None => {
-            let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", args.id));
-            return Err(Box::new(error));
-        }
-    };
-
-    let (train_schedules, missing): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(&mut db_pool.get().await?, train_ids).await?;
-
-    assert!(missing.is_empty());
-
-    let train_schedules: Vec<TrainScheduleBase> = train_schedules
-        .into_iter()
-        .map(|ts| Into::<TrainScheduleResult>::into(ts).train_schedule)
-        .collect();
-
-    let file = File::create(args.path.clone())?;
-    serde_json::to_writer_pretty(file, &train_schedules)?;
-
-    println!(
-        "✅ Train schedules exported to {0}",
-        args.path.to_string_lossy()
-    );
-
-    Ok(())
-}
-
-async fn trains_import(
-    args: ImportTimetableArgs,
-    db_pool: Arc<DbConnectionPoolV2>,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let train_file = match File::open(args.path.clone()) {
-        Ok(file) => file,
-        Err(e) => {
-            let error = CliError::new(
-                1,
-                format!("❌ Could not open file {:?} ({:?})", args.path, e),
-            );
-            return Err(Box::new(error));
-        }
-    };
-
-    let timetable = match args.id {
-        Some(timetable) => match Timetable::retrieve(&mut db_pool.get().await?, timetable).await? {
-            Some(timetable) => timetable,
-            None => {
-                let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", timetable));
-                return Err(Box::new(error));
-            }
-        },
-        None => Timetable::create(&mut db_pool.get().await?).await?,
-    };
-
-    let train_schedules: Vec<TrainScheduleBase> =
-        serde_json::from_reader(BufReader::new(train_file))?;
-    let changesets: Vec<TrainScheduleChangeset> = train_schedules
-        .into_iter()
-        .map(|train_schedule| {
-            TrainScheduleForm {
-                timetable_id: Some(timetable.id),
-                train_schedule,
-            }
-            .into()
-        })
-        .collect();
-    let inserted: Vec<_> =
-        TrainSchedule::create_batch(&mut db_pool.get().await?, changesets).await?;
-
-    println!(
-        "✅ {} train schedules created for timetable with id {}",
-        inserted.len(),
-        timetable.id
-    );
-
     Ok(())
 }
 
@@ -591,14 +500,7 @@ mod tests {
     use crate::models::RollingStockModel;
 
     use editoast_models::DbConnectionPoolV2;
-    use models::DeleteStatic;
     use rstest::rstest;
-    use std::io::Write;
-    use tempfile::NamedTempFile;
-
-    pub fn get_trainschedule_json_array() -> &'static str {
-        include_str!("./tests/train_schedules/simple_array.json")
-    }
 
     fn get_fast_rolling_stock_schema(name: &str) -> RollingStock {
         let mut rolling_stock_form: RollingStock =
@@ -606,46 +508,6 @@ mod tests {
                 .expect("Unable to parse");
         rolling_stock_form.name = name.to_string();
         rolling_stock_form
-    }
-
-    #[rstest]
-    async fn import_export_timetable_schedule() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-
-        let timetable = Timetable::create(&mut db_pool.get_ok()).await.unwrap();
-
-        let mut file = NamedTempFile::new().unwrap();
-        file.write_all(get_trainschedule_json_array().as_bytes())
-            .unwrap();
-
-        // Test import
-        let args = ImportTimetableArgs {
-            path: file.path().into(),
-            id: Some(timetable.id),
-        };
-        let result = trains_import(args, db_pool.clone().into()).await;
-        assert!(result.is_ok(), "{:?}", result);
-
-        // Test to export the import
-        let export_file = NamedTempFile::new().unwrap();
-        let args = ExportTimetableArgs {
-            path: export_file.path().into(),
-            id: timetable.id,
-        };
-        let export_result = trains_export(args, db_pool.clone().into()).await;
-        assert!(export_result.is_ok(), "{:?}", export_result);
-
-        // Test to reimport the exported import
-        let reimport_args = ImportTimetableArgs {
-            path: export_file.path().into(),
-            id: Some(timetable.id),
-        };
-        let reimport_result = trains_import(reimport_args, db_pool.clone().into()).await;
-        assert!(reimport_result.is_ok(), "{:?}", reimport_result);
-
-        Timetable::delete_static(&mut db_pool.get_ok(), timetable.id)
-            .await
-            .unwrap();
     }
 
     #[rstest]
