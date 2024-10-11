@@ -48,6 +48,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
 use tower_http::normalize_path::NormalizePathLayer;
 use tower_http::trace::TraceLayer;
+use views::check_health;
 use views::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
@@ -266,7 +267,20 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                     .map_err(Into::into)
             }
         },
+        Commands::Healthcheck => healthcheck_cmd(db_pool.into(), redis_config).await,
     }
+}
+
+async fn healthcheck_cmd(
+    db_pool: Arc<DbConnectionPoolV2>,
+    redis_config: RedisConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let redis = RedisClient::new(redis_config).unwrap();
+    check_health(db_pool, redis.into())
+        .await
+        .map_err(|e| CliError::new(1, format!("❌ healthcheck failed: {0}", e)))?;
+    println!("✅ Healthcheck passed");
+    Ok(())
 }
 
 async fn trains_export(

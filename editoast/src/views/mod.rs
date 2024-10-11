@@ -257,7 +257,7 @@ async fn health(
     Ok("ok")
 }
 
-async fn check_health(
+pub async fn check_health(
     db_pool: Arc<DbConnectionPoolV2>,
     redis_client: Arc<RedisClient>,
 ) -> Result<()> {
