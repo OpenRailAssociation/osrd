@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import { KebabHorizontal } from '@osrd-project/ui-icons';
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
 import { ConflictLayer, SpaceTimeChart, PathLayer } from '@osrd-project/ui-spacetimechart';
@@ -7,6 +8,7 @@ import type { Conflict } from '@osrd-project/ui-spacetimechart';
 
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { OperationalPointExtensions, OperationalPointPart } from 'common/api/osrdEditoastApi';
+import SettingsPanel from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/SettingsPanel';
 
 type ManchetteWithSpaceTimeChartProps = {
   operationalPoints: {
@@ -37,11 +39,26 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     selectedTrainScheduleId
   );
 
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [settings, setSettings] = useState({ showConflicts: false });
+
   return (
     <div className="manchette-space-time-chart-wrapper">
+      {showSettingsPanel && (
+        <SettingsPanel
+          settings={settings}
+          onChange={setSettings}
+          onClose={() => setShowSettingsPanel(false)}
+        />
+      )}
       <div className="header">
-        {/* TODO : uncomment this component in #8628 */}
-        {/* <ManchetteMenuButton /> */}
+        <button
+          type="button"
+          className="settings-btn"
+          onClick={() => setShowSettingsPanel((current) => !current)}
+        >
+          <KebabHorizontal />
+        </button>
       </div>
       <div className="header-separator" />
       <div
@@ -69,7 +86,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             {spaceTimeChartProps.paths.map((path) => (
               <PathLayer key={path.id} path={path} color={path.color} />
             ))}
-            <ConflictLayer conflicts={conflicts} />
+            {settings.showConflicts && <ConflictLayer conflicts={conflicts} />}
           </SpaceTimeChart>
         </div>
       </div>
