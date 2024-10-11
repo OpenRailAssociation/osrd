@@ -289,7 +289,13 @@ private class InfraExplorerImpl(
             } else {
                 // If a block cannot be explored, give up
                 val isRouteBlocked =
-                    constraints.any { constraint -> constraint.apply(block).isNotEmpty() }
+                    constraints.any { constraint ->
+                        constraint.apply(block).any {
+                            if (firstLocation != null && firstLocation.edge == block)
+                                firstLocation.offset.distance < it.end.distance
+                            else true
+                        }
+                    }
                 if (isRouteBlocked) return false
                 val endLocationsOnBlock = stops.last().filter { it.edge == block }
                 val endPath = endLocationsOnBlock.isNotEmpty()
