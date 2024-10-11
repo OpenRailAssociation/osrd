@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
+import FREIGHT_ROLLING_STOCKS from 'assets/rollingStock/freightRollingStocks';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
@@ -129,7 +130,7 @@ export function computeFilter(filter: RollingStockFilterKeys, filters: RollingSt
   };
 }
 
-export default function useFilterRollingStock() {
+const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
   const dispatch = useAppDispatch();
 
   const [filters, setFilters] = useState<RollingStockFilters>(initialFilters);
@@ -143,10 +144,19 @@ export default function useFilterRollingStock() {
     pageSize: 1000,
   });
 
+  const usefulRollingStocks = useMemo(
+    () =>
+      isStdcm
+        ? allRollingStocks.filter((rs) => FREIGHT_ROLLING_STOCKS.includes(rs.name))
+        : allRollingStocks,
+    [isStdcm, allRollingStocks]
+  );
+
   const [searchIsLoading, setSearchIsLoading] = useState(true);
 
-  const [filteredRollingStockList, setFilteredRollingStockList] =
-    useState<LightRollingStockWithLiveries[]>(allRollingStocks);
+  const [filteredRollingStockList, setFilteredRollingStockList] = useState<
+    LightRollingStockWithLiveries[]
+  >([]);
 
   const searchRollingStock = (value: string) => {
     setFilters({ ...filters, id: undefined, text: value });
@@ -174,18 +184,18 @@ export default function useFilterRollingStock() {
   }, [isError]);
 
   useEffect(() => {
-    const newFilteredRollingStock = filterRollingStocks(allRollingStocks, filters);
+    const newFilteredRollingStock = filterRollingStocks(usefulRollingStocks, filters);
     setFilteredRollingStockList(newFilteredRollingStock);
   }, [isSuccess]);
 
   useEffect(() => {
-    const newFilteredRollingStock = filterRollingStocks(allRollingStocks, filters);
+    const newFilteredRollingStock = filterRollingStocks(usefulRollingStocks, filters);
     setTimeout(() => {
       setFilteredRollingStockList(newFilteredRollingStock);
       setSearchIsLoading(false);
     }, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, allRollingStocks]);
+  }, [filters, usefulRollingStocks]);
 
   return {
     filteredRollingStockList,
@@ -196,4 +206,6 @@ export default function useFilterRollingStock() {
     searchRollingStockById,
     toggleFilter,
   };
-}
+};
+
+export default useFilterRollingStock;
