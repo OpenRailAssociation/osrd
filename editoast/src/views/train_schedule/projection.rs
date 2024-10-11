@@ -159,7 +159,6 @@ async fn project_path(
         routes: path_routes,
         blocks: path_blocks,
     } = path;
-    let path_projection = PathProjection::new(&path_track_ranges);
     let mut redis_conn = redis_client.get_connection().await?;
 
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
@@ -248,11 +247,11 @@ async fn project_path(
         cached_projections,
         trains.iter().map(|t| t.id)
     ) {
-        if let Some(cached) = projection {
-            hit_cache.insert(train_id, cached);
-        } else {
-            miss_cache.insert(train_id, train_details.clone());
-        }
+        // if let Some(cached) = projection {
+        //     hit_cache.insert(train_id, cached);
+        // } else {
+        miss_cache.insert(train_id, train_details.clone());
+        // }
     }
 
     info!(
@@ -263,7 +262,16 @@ async fn project_path(
 
     // 2 Compute space time curves and signal updates for all miss cache
     let (space_time_curves, signal_updates) = join!(
-        compute_batch_space_time_curves(&miss_cache, &path_projection),
+        {
+            let miss_cache = miss_cache.clone();
+            let path_track_ranges = path_track_ranges.clone();
+            let span = tracing::Span::current();
+            tokio::task::spawn_blocking(move || {
+                let _enter = span.enter();
+                let path_projection = PathProjection::new(&path_track_ranges);
+                compute_batch_space_time_curves(&miss_cache, &path_projection)
+            })
+        },
         compute_batch_signal_updates(
             core_client.clone(),
             &infra,
@@ -273,6 +281,7 @@ async fn project_path(
             &miss_cache
         )
     );
+    let space_time_curves = space_time_curves.expect("spawn_blocking was killed in-flight");
     let signal_updates = signal_updates?;
 
     // 3. Store the projection in the cache (using pipeline)
@@ -339,6 +348,7 @@ struct TrainSimulationDetails {
 }
 
 /// Compute the signal updates of a list of train schedules
+#[tracing::instrument(level = "info", skip_all)]
 async fn compute_batch_signal_updates<'a>(
     core: Arc<CoreClient>,
     infra: &Infra,
@@ -375,7 +385,8 @@ async fn compute_batch_signal_updates<'a>(
 }
 
 /// Compute space time curves of a list of train schedules
-async fn compute_batch_space_time_curves<'a>(
+#[tracing::instrument(level = "info", skip_all, fields(train_details_count = trains_details.len()))]
+fn compute_batch_space_time_curves<'a>(
     trains_details: &HashMap<i64, TrainSimulationDetails>,
     path_projection: &PathProjection<'a>,
 ) -> HashMap<i64, Vec<SpaceTimeCurve>> {
@@ -391,6 +402,7 @@ async fn compute_batch_space_time_curves<'a>(
 }
 
 /// Compute the space time curves of a train schedule on a path
+#[tracing::instrument(level = "info", skip_all)]
 fn compute_space_time_curves(
     project_path_input: &TrainSimulationDetails,
     path_projection: &PathProjection,
