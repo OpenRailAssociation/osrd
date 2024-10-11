@@ -47,7 +47,9 @@
       "Serialization": "Core: impossible de sérialiser la requête",
       "StatusParsing": "Core: impossible d'obtenir le status",
       "UnparsableErrorOutput": "Core: a renvoyé une erreur dans un format inconnu",
-      "ConnectionDoesNotExist": "Core: file d'attente de messages: connexion non établie"
+      "ConnectionDoesNotExist": "Core: file d'attente de messages: connexion non établie",
+      "CreatePoolLapin": "Core: file d'attente de messages: erreur de création de pool",
+      "DeadpoolLapin": "Core: file d'attente de messages: erreur de pool"
     },
     "document": {
       "NotFound": "Document '{{document_key}}' non trouvé"
