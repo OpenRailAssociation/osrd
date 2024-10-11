@@ -31,6 +31,8 @@
 
         pythonPackages = ps: (import ./nix/python_env.nix {inherit ps;});
 
+        playwright = import ./nix/playwright.nix;
+
         fixedNode = pkgs.nodejs_20;
         fixedNodePackages = pkgs.nodePackages.override {
           nodejs = fixedNode;
