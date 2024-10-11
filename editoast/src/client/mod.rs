@@ -75,6 +75,8 @@ pub enum Commands {
     STDCMSearchEnv(StdcmSearchEnvCommands),
     #[command(subcommand, about, long_about = "Roles related commands")]
     Roles(RolesCommand),
+    #[command(about, long_about = "Healthcheck")]
+    Healthcheck,
 }
 
 #[derive(Subcommand, Debug)]
