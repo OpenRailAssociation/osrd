@@ -1,5 +1,8 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
+import { Checkbox } from '@osrd-project/ui-core';
+import { KebabHorizontal, X } from '@osrd-project/ui-icons';
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
 import { SpaceTimeChart, PathLayer } from '@osrd-project/ui-spacetimechart';
@@ -24,6 +27,8 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   projectPathTrainResult,
   selectedTrainScheduleId,
 }: ManchetteWithSpaceTimeChartProps) => {
+  const { t } = useTranslation('simulation');
+
   const [heightOfManchetteWithSpaceTimeChart] = useState(DEFAULT_HEIGHT);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
 
@@ -34,11 +39,31 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     selectedTrainScheduleId
   );
 
+  const [showSettings, setShowSettings] = useState(false);
+
   return (
     <div className="manchette-space-time-chart-wrapper">
+      {showSettings && (
+        <div id="settings-panel" className="flex justify-end absolute">
+          <div className="settings-panel-section">
+            <div className="settings-panel-section-title">{t('timeSpaceChartSettings.paths')}</div>
+            <div className="selection">
+              <Checkbox label={t('timeSpaceChartSettings.conflicts')} />
+            </div>
+          </div>
+          <button type="button" id="close-settings-panel" onClick={() => setShowSettings(false)}>
+            <X />
+          </button>
+        </div>
+      )}
       <div className="header">
-        {/* TODO : uncomment this component in #8628 */}
-        {/* <ManchetteMenuButton /> */}
+        <button
+          type="button"
+          className="settings-btn"
+          onClick={() => setShowSettings((current) => !current)}
+        >
+          <KebabHorizontal />
+        </button>
       </div>
       <div className="header-separator" />
       <div

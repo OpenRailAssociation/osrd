@@ -1,0 +1,20 @@
+.manchette-space-time-chart-wrapper {
+  position: relative;
+  overflow: hidden;
+
+  #settings-panel {
+    right: 0;
+    margin-right: 0;
+    width: 16.4375rem;
+    height: 100%;
+  }
+
+  .header {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .settings-btn {
+    vertical-align: middle;
+  }
+}
