@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 
-import IntermediatePointIcon from 'assets/pictures/stdcmV2/intermediate-point.svg';
+import IntermediatePointIcon from 'assets/pictures/stdcm/intermediate-point.svg';
 import { useOsrdConfSelectors, useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';
@@ -111,12 +111,12 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
   }, [pathSteps]);
 
   return (
-    <div className="stdcm-v2-vias-list">
+    <div className="stdcm-vias-list">
       {intermediatePoints.length > 0 &&
         compact(intermediatePoints).map((pathStep, index) => {
           const pathStepIndex = index + 1;
           return (
-            <div className="stdcm-v2-vias-bundle" key={pathStep.id}>
+            <div className="stdcm-vias-bundle" key={pathStep.id}>
               <StdcmDefaultCard
                 hasTip
                 text={t('trainPath.addVia')}
@@ -127,7 +127,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
               <StdcmCard
                 name={t('trainPath.vias')}
                 title={
-                  <div className="stdcm-v2-via-icons">
+                  <div className="stdcm-via-icons">
                     <div className="icon-bundle mt-1">
                       <img src={IntermediatePointIcon} alt="intermediate-point" />
                       <span className="icon-index">{pathStepIndex}</span>

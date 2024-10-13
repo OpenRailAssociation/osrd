@@ -6,12 +6,12 @@ import { useTranslation } from 'react-i18next';
 
 import type {
   StdcmResultsOperationalPointsList,
-  StdcmV2SuccessResponse,
+  StdcmSuccessResponse,
 } from 'applications/stdcm/types';
 import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationReportSheet';
 
 type SimulationTableProps = {
-  stdcmData: StdcmV2SuccessResponse;
+  stdcmData: StdcmSuccessResponse;
   isSimulationRetained: boolean;
   operationalPointsList: StdcmResultsOperationalPointsList;
   onRetainSimulation: () => void;

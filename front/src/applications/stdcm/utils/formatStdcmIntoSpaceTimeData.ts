@@ -2,10 +2,10 @@ import { formatDatetimeForSpaceTimeChart } from 'applications/operationalStudies
 import type { ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 
 import { STDCM_TRAIN_ID } from '../consts';
-import type { StdcmV2SuccessResponse } from '../types';
+import type { StdcmSuccessResponse } from '../types';
 
 const formatStdcmTrainIntoSpaceTimeData = (
-  stdcmResponse: StdcmV2SuccessResponse
+  stdcmResponse: StdcmSuccessResponse
 ): ProjectPathTrainResult & { id: number; name: string } => {
   const { simulation, rollingStock, departure_time } = stdcmResponse;
   return {

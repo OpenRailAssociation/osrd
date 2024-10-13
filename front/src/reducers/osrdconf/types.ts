@@ -1,8 +1,7 @@
 import type { Feature, Position } from 'geojson';
 
 import type { PowerRestriction } from 'applications/operationalStudies/types';
-import type { AllowanceValue } from 'applications/stdcm/types';
-import type { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcmV2/types';
+import type { AllowanceValue, ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcm/types';
 import type {
   Comfort,
   Distribution,
@@ -33,9 +32,6 @@ export interface OsrdConfState extends InfraState {
   initialSpeed?: number;
   originDate?: string;
   originTime?: string;
-  originUpperBoundDate?: string;
-  originUpperBoundTime?: string;
-  originLinkedBounds: boolean;
   gridMarginBefore?: number;
   gridMarginAfter?: number;
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
@@ -51,7 +47,6 @@ export interface StandardAllowance {
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {
-  maximumRunTime: number;
   standardStdcmAllowance?: StandardAllowance;
 }
 

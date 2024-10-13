@@ -1,4 +1,4 @@
-.stdcm-v2-card {
+.stdcm-card {
   border-radius: 8px;
   box-shadow:
     0px 1px 0px rgba(255, 255, 255, 1) inset,
@@ -8,11 +8,11 @@
   height: fit-content;
   position: relative;
 
-  .stdcm-v2-default-card-icon {
+  .stdcm-default-card-icon {
     color: #1844ef;
   }
 
-  .stdcm-v2-via-icons {
+  .stdcm-via-icons {
     button {
       display: none;
     }
@@ -43,7 +43,7 @@
     filter: drop-shadow(0px 2px 1px #d0d7e7);
   }
 
-  .stdcm-v2-card__header {
+  .stdcm-card__header {
     border-radius: 8px 8px 0px 0px;
     box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.75) inset;
     background-color: rgba(235, 235, 234, 1);
@@ -60,7 +60,7 @@
     }
   }
 
-  .stdcm-v2-card__body {
+  .stdcm-card__body {
     padding: 0.875rem 1.5rem 1.5rem 0.5rem;
 
     .location-line {
@@ -113,7 +113,7 @@
       padding-left: 1.5rem;
       padding-bottom: 0.5rem;
 
-      .stdcm-v2-consist__properties {
+      .stdcm-consist__properties {
         display: flex;
         justify-content: space-between;
         padding-block: 0.6875rem;
@@ -173,7 +173,7 @@
       padding: 0.6875rem 1.5rem 0.8125rem 0.75rem;
     }
 
-    .stdcm-v2-default-card-button {
+    .stdcm-default-card-button {
       color: var(--primary60);
       line-height: 1.5rem;
       margin-left: 0.75rem;
@@ -195,8 +195,8 @@
   }
 }
 
-.stdcm-v2-card:hover {
-  .stdcm-v2-via-icons {
+.stdcm-card:hover {
+  .stdcm-via-icons {
     .icon-bundle {
       display: none;
     }

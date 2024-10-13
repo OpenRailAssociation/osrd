@@ -11,8 +11,8 @@ import { extractHHMM, formatDateToString, formatDay } from 'utils/date';
 import { capitalizeFirstLetter } from 'utils/strings';
 
 import styles from './SimulationReportStyleSheet';
-import type { SimulationReportSheetProps } from '../types';
-import { base64ToJpeg, getStopDurationTime } from '../utils/formatSimulationReportSheet';
+import type { SimulationReportSheetProps } from '../../types';
+import { base64ToJpeg, getStopDurationTime } from '../../utils/formatSimulationReportSheet';
 
 const SimulationReportSheet = ({
   stdcmData,

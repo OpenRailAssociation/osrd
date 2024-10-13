@@ -1,7 +1,7 @@
 import { last } from 'lodash';
 import { describe, it, expect } from 'vitest';
 
-import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
+import { ArrivalTimeTypes } from 'applications/stdcm/types';
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
@@ -54,15 +54,6 @@ describe('stdcmConfReducers', () => {
     const store = createStore();
     const state = store.getState()[stdcmConfSlice.name];
     expect(state).toEqual(stdcmConfInitialState);
-  });
-
-  it('should handle updateMaximumRunTime', () => {
-    const store = createStore();
-    const newMaximumRunTime = 10;
-    store.dispatch(stdcmConfSliceActions.updateMaximumRunTime(newMaximumRunTime));
-
-    const state = store.getState()[stdcmConfSlice.name];
-    expect(state.maximumRunTime).toBe(newMaximumRunTime);
   });
 
   it('should handle updateStdcmStandardAllowance', () => {

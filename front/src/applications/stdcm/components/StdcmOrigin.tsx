@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import OriginIcon from 'assets/pictures/stdcmV2/start.svg';
+import OriginIcon from 'assets/pictures/stdcm/start.svg';
 import { useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';

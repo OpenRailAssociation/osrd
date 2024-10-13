@@ -17,11 +17,11 @@ const StdcmCard = ({
   children,
   className = '',
 }: StdcmCardProps) => (
-  <div className={cx('stdcm-v2-card', { 'has-tip': hasTip, disabled })}>
+  <div className={cx('stdcm-card', { 'has-tip': hasTip, disabled })}>
     {name && (
       <div
         className={cx(
-          'stdcm-v2-card__header',
+          'stdcm-card__header',
           'd-flex',
           'justify-content-between',
           'align-items-center'
@@ -31,7 +31,7 @@ const StdcmCard = ({
         {title}
       </div>
     )}
-    <div className={cx('stdcm-v2-card__body', `${className}`)}>{children}</div>
+    <div className={cx('stdcm-card__body', `${className}`)}>{children}</div>
   </div>
 );
 

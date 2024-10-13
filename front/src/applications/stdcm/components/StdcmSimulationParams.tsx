@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 
-import StdcmCard from './StdcmCard';
+import StdcmCard from '../../stdcm/components/StdcmCard';
 
 type StdcmSimulationParamsProps = {
   disabled?: boolean;

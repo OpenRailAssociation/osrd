@@ -1,14 +1,13 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
-import type { ArrivalTimeTypes } from 'applications/stdcmV2/types';
+import type { ArrivalTimeTypes } from 'applications/stdcm/types';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 
 import { updateOriginPathStep, updateDestinationPathStep } from '../helpers';
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
-  maximumRunTime: 43200,
   standardStdcmAllowance: undefined,
   ...defaultCommonConf,
 };
@@ -39,12 +38,6 @@ export const stdcmConfSlice = createSlice({
       state.originDate = action.payload.originDate;
       state.originTime = action.payload.originTime;
       state.speedLimitByTag = action.payload.speedLimitByTag;
-    },
-    updateMaximumRunTime(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['maximumRunTime']>
-    ) {
-      state.maximumRunTime = action.payload;
     },
     updateStdcmStandardAllowance(
       state: Draft<OsrdStdcmConfState>,

@@ -3,11 +3,10 @@ import type { Draft } from 'immer';
 import { omit } from 'lodash';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import { ArrivalTimeTypes, type StdcmStopTypes } from 'applications/stdcmV2/types';
+import { ArrivalTimeTypes, type StdcmStopTypes } from 'applications/stdcm/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import {
-  computeLinkedOriginTimes,
   insertViaFromMap,
   updateDestinationPathStep,
   updateOriginPathStep,
@@ -44,9 +43,6 @@ export const defaultCommonConf: OsrdConfState = {
   initialSpeed: 0,
   originDate: formatIsoDate(new Date()),
   originTime: '08:00:00',
-  originUpperBoundDate: formatIsoDate(new Date()),
-  originUpperBoundTime: '10:00:00',
-  originLinkedBounds: true,
   gridMarginBefore: undefined,
   gridMarginAfter: undefined,
   ...infraState,
@@ -74,10 +70,7 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updateSpeedLimitByTag']: CaseReducer<S, PayloadAction<S['speedLimitByTag'] | null>>;
   ['updateInitialSpeed']: CaseReducer<S, PayloadAction<S['initialSpeed']>>;
   ['updateOriginTime']: CaseReducer<S, PayloadAction<S['originTime']>>;
-  ['updateOriginUpperBoundTime']: CaseReducer<S, PayloadAction<S['originUpperBoundTime']>>;
-  ['toggleOriginLinkedBounds']: CaseReducer<S>;
   ['updateOriginDate']: CaseReducer<S, PayloadAction<S['originDate']>>;
-  ['updateOriginUpperBoundDate']: CaseReducer<S, PayloadAction<S['originUpperBoundDate']>>;
   ['updateViaStopTime']: CaseReducer<
     S,
     PayloadAction<{ via: PathStep; duration: string; stopType?: StdcmStopTypes }>
@@ -164,59 +157,11 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     updateOriginTime(state: Draft<S>, action: PayloadAction<S['originTime']>) {
       if (action.payload) {
-        const { originLinkedBounds } = state;
-        if (!originLinkedBounds) {
-          state.originTime = action.payload;
-        } else {
-          const { originDate, originTime, originUpperBoundDate, originUpperBoundTime } = state;
-          const { newOriginTime, newOriginUpperBoundDate, newOriginUpperBoundTime } =
-            computeLinkedOriginTimes(
-              originDate,
-              originTime,
-              originUpperBoundDate,
-              originUpperBoundTime,
-              action.payload
-            );
-          if (newOriginUpperBoundDate) {
-            state.originUpperBoundDate = newOriginUpperBoundDate;
-          }
-          state.originTime = newOriginTime;
-          state.originUpperBoundTime = newOriginUpperBoundTime;
-        }
+        state.originTime = action.payload;
       }
-    },
-    updateOriginUpperBoundTime(state: Draft<S>, action: PayloadAction<S['originUpperBoundTime']>) {
-      if (action.payload) {
-        const { originLinkedBounds } = state;
-        if (!originLinkedBounds) {
-          state.originUpperBoundTime = action.payload;
-        } else {
-          const { originDate, originTime, originUpperBoundDate, originUpperBoundTime } = state;
-          const { newOriginTime, newOriginUpperBoundDate, newOriginUpperBoundTime } =
-            computeLinkedOriginTimes(
-              originDate,
-              originTime,
-              originUpperBoundDate,
-              originUpperBoundTime,
-              undefined,
-              action.payload
-            );
-          if (newOriginUpperBoundDate) {
-            state.originUpperBoundDate = newOriginUpperBoundDate;
-          }
-          state.originTime = newOriginTime;
-          state.originUpperBoundTime = newOriginUpperBoundTime;
-        }
-      }
-    },
-    toggleOriginLinkedBounds(state: Draft<S>) {
-      state.originLinkedBounds = !state.originLinkedBounds;
     },
     updateOriginDate(state: Draft<S>, action: PayloadAction<S['originDate']>) {
       state.originDate = action.payload;
-    },
-    updateOriginUpperBoundDate(state: Draft<S>, action: PayloadAction<S['originUpperBoundDate']>) {
-      state.originUpperBoundDate = action.payload;
     },
     // TODO: Change the type of duration to number. It is preferable to keep this value in seconds in the store
     //* to avoid multiple conversions between seconds and ISO8601 format across the front.

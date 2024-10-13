@@ -8,7 +8,6 @@ export interface UserState {
   username: string;
   userPreferences: { safeWord: string };
   account: Record<string, string>;
-  stdcmV2Activated: boolean;
 }
 
 export const userInitialState: UserState = {
@@ -17,7 +16,6 @@ export const userInitialState: UserState = {
   username: '',
   userPreferences: { safeWord: '' },
   account: {},
-  stdcmV2Activated: true,
 };
 
 export const userSlice = createSlice({
@@ -44,18 +42,9 @@ export const userSlice = createSlice({
     updateUserPreferences(state, action: PayloadAction<{ safeWord: string }>) {
       state.userPreferences = action.payload;
     },
-    switchStdcmV2Activated(state) {
-      state.stdcmV2Activated = !state.stdcmV2Activated;
-    },
   },
 });
 
-export const {
-  loginSuccess,
-  loginError,
-  logoutSuccess,
-  updateUserPreferences,
-  switchStdcmV2Activated,
-} = userSlice.actions;
+export const { loginSuccess, loginError, logoutSuccess, updateUserPreferences } = userSlice.actions;
 
 export default userSlice.reducer;

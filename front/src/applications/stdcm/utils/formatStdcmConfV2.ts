@@ -11,24 +11,19 @@ import type {
 import type { InfraState } from 'reducers/infra';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
-import { dateTimeFormatting, dateTimeToIso } from 'utils/date';
+import { dateTimeFormatting } from 'utils/date';
 import { mToMm } from 'utils/physics';
-import { ISO8601Duration2sec, sec2ms, time2sec } from 'utils/timeManipulation';
+import { ISO8601Duration2sec, sec2ms } from 'utils/timeManipulation';
 
 import createMargin from './createMargin';
 
-// TODO: DROP STDCM V1: remove formattedStartTime, startTime and latestStartTime
 type ValidStdcmConfig = {
-  formattedStartTime?: string;
   rollingStockId: number;
   timetableId: number;
   infraId: number;
   rollingStockComfort: TrainScheduleBase['comfort'];
   path: PathfindingItem[];
   speedLimitByTag?: string;
-  maximumRunTime?: number;
-  startTime?: string; // must be a datetime
-  latestStartTime?: string;
   margin?: StandardAllowance;
   gridMarginBefore?: number;
   gridMarginAfter?: number;
@@ -39,10 +34,7 @@ type ValidStdcmConfig = {
 export const checkStdcmConf = (
   dispatch: Dispatch,
   t: TFunction,
-  osrdconf: OsrdStdcmConfState & InfraState,
-  // TODO: Remove this parameter when we drop V1
-  stdcmV2Activated = true,
-  isDebugMode = false
+  osrdconf: OsrdStdcmConfState & InfraState
 ): ValidStdcmConfig | null => {
   const {
     pathSteps,
@@ -51,13 +43,9 @@ export const checkStdcmConf = (
     rollingStockComfort,
     infraID,
     rollingStockID,
-    maximumRunTime,
     standardStdcmAllowance,
     gridMarginBefore,
     gridMarginAfter,
-    originUpperBoundTime,
-    originDate,
-    originTime,
     searchDatetimeWindow,
     workScheduleGroupId,
     electricalProfileSetId,
@@ -69,16 +57,6 @@ export const checkStdcmConf = (
       setFailure({
         name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
         message: t('operationalStudies/manageTrainSchedule:errorMessages.noOrigin'),
-      })
-    );
-  }
-  // TODO: remove this condition when we drop V1
-  if (!(osrdconf.originTime && osrdconf.originUpperBoundTime) && !stdcmV2Activated) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
-        message: t('operationalStudies/manageTrainSchedule:errorMessages.noOriginTime'),
       })
     );
   }
@@ -119,32 +97,13 @@ export const checkStdcmConf = (
     );
   }
 
-  const startTime = dateTimeToIso(`${originDate}T${originTime}`);
+  const firstArrival = pathSteps[0]?.arrival;
+  const lastArrival = last(pathSteps)?.arrival;
+  const isDepartureScheduled = pathSteps[0]?.arrivalType === 'preciseTime';
 
-  let startDateTime: Date | null;
-
-  if (stdcmV2Activated) {
-    // If stdcmV2Activated is true, we use the arrival date from either the origin or the destination
-    const firstArrival = pathSteps[0]?.arrival;
-    const lastArrival = last(pathSteps)?.arrival;
-    const isDepartureScheduled = pathSteps[0]?.arrivalType === 'preciseTime';
-
-    startDateTime = isDepartureScheduled ? new Date(firstArrival!) : new Date(lastArrival!);
-  } else if (!startTime) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
-        message: t('operationalStudies/manageTrainSchedule:errorMessages.noOriginTime'),
-      })
-    );
-    startDateTime = null;
-  } else {
-    startDateTime = new Date(startTime);
-  }
+  const startDateTime = isDepartureScheduled ? new Date(firstArrival!) : new Date(lastArrival!);
 
   if (
-    !isDebugMode &&
     searchDatetimeWindow &&
     startDateTime &&
     (startDateTime < searchDatetimeWindow.begin || searchDatetimeWindow.end < startDateTime)
@@ -217,12 +176,6 @@ export const checkStdcmConf = (
     timetableId: timetableID!,
     rollingStockComfort,
     path,
-    ...(!stdcmV2Activated && {
-      startTime: originTime!,
-      formattedStartTime: startTime!,
-      latestStartTime: originUpperBoundTime!,
-      maximumRunTime,
-    }),
     speedLimitByTag,
     margin: standardStdcmAllowance,
     gridMarginBefore,
@@ -236,8 +189,7 @@ const toMsOrUndefined = (value: number | undefined): number | undefined =>
   value ? sec2ms(value) : undefined;
 
 export const formatStdcmPayload = (
-  validConfig: ValidStdcmConfig,
-  stdcmV2Activated: boolean
+  validConfig: ValidStdcmConfig
 ): PostTimetableByIdStdcmApiArg => ({
   infra: validConfig.infraId,
   id: validConfig.timetableId,
@@ -246,13 +198,6 @@ export const formatStdcmPayload = (
     margin: createMargin(validConfig.margin),
     rolling_stock_id: validConfig.rollingStockId,
     speed_limit_tags: validConfig.speedLimitByTag,
-    ...(!stdcmV2Activated && {
-      maximum_run_time: toMsOrUndefined(validConfig.maximumRunTime),
-      maximum_departure_delay: sec2ms(
-        time2sec(validConfig.latestStartTime!) - time2sec(validConfig.startTime!)
-      ),
-      start_time: validConfig.formattedStartTime,
-    }),
     steps: validConfig.path,
     time_gap_after: toMsOrUndefined(validConfig.gridMarginBefore),
     time_gap_before: toMsOrUndefined(validConfig.gridMarginAfter),

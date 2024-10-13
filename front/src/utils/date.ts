@@ -4,7 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
-import type { ScheduleConstraint } from 'applications/stdcmV2/types';
+import type { ScheduleConstraint } from 'applications/stdcm/types';
 import type { IsoDateTimeString, IsoDurationString } from 'common/types';
 import i18n from 'i18n';
 

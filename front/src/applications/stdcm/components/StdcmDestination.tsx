@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import DestinationIcon from 'assets/pictures/stdcmV2/destination.svg';
+import DestinationIcon from 'assets/pictures/stdcm/destination.svg';
 import { useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';
@@ -103,7 +103,7 @@ const StdcmDestination = ({
       disabled={disabled}
       className="extremity"
     >
-      <div className="stdcm-v2-destination">
+      <div className="stdcm-destination">
         <StdcmOperationalPoint
           updatePoint={updateDestinationPoint}
           point={destination}

@@ -11,14 +11,14 @@ const StdcmHeader = ({ isDebugMode, onDebugModeToggle }: StdcmHeaderProps) => {
   const { t } = useTranslation('stdcm');
 
   return (
-    <div className="stdcm-v2-header d-flex">
-      <span className="stdcm-v2-header__title pl-5">ST DCM</span>
+    <div className="stdcm-header d-flex">
+      <span className="stdcm-header__title pl-5">ST DCM</span>
       <div className="flex-grow-1 d-flex justify-content-center">
-        <span className="stdcm-v2-header__notification " id="notification">
+        <span className="stdcm-header__notification " id="notification">
           {t('notificationTitle')}
         </span>
       </div>
-      <div className="stdcm-v2-header_debug">
+      <div className="stdcm-header_debug">
         <button
           type="button"
           aria-label="stdcm-debug"

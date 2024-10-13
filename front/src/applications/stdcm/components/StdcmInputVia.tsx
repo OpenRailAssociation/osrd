@@ -46,9 +46,9 @@ const StdcmInputVia = ({
   return (
     stopType !== StdcmStopTypes.PASSAGE_TIME &&
     stopType !== undefined && (
-      <div className="stdcm-v2-via-stop-for stop-time">
+      <div className="stdcm-via-stop-for stop-time">
         <Input
-          id="stdcm-v2-via-stop-time"
+          id="stdcm-via-stop-time"
           type="text"
           label={t('trainPath.stopFor')}
           onChange={(e) => {
