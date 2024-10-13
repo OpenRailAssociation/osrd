@@ -9,8 +9,6 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
 
 export const STDCM_TRAIN_ID = -10;
 
-export const RUNTIME_CAP = 43200;
-
 export const COMPOSITION_CODES = [
   'HLP',
   'MA100',
@@ -30,3 +28,5 @@ export const COMPOSITION_CODES = [
   'Messagerie - ME140',
   'Messagerie - MVGV',
 ];
+
+export const DEFAULT_TOLERANCE = 1800; // 30min

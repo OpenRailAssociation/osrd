@@ -1,0 +1,213 @@
+.stdcm-card {
+  border-radius: 8px;
+  box-shadow:
+    0px 1px 0px rgba(255, 255, 255, 1) inset,
+    0px 4px 7px -3px rgba(24, 68, 239, 0.19),
+    0px 1px 3px rgba(49, 46, 43, 0.2);
+  background-color: rgba(255, 255, 255, 1);
+  height: fit-content;
+  position: relative;
+
+  .stdcm-default-card-icon {
+    color: #1844ef;
+  }
+
+  .stdcm-via-icons {
+    button {
+      display: none;
+    }
+    .icon-bundle {
+      img {
+        width: 2.8125rem;
+      }
+    }
+    .icon-index {
+      position: absolute;
+      width: 2.812rem;
+      text-align: center;
+      right: 1.02rem;
+      top: 0.32rem;
+      font-size: 0.7rem;
+    }
+  }
+
+  &.has-tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0.75rem;
+    border-top: 8px solid transparent;
+    border-top-color: rgba(255, 255, 255, 1);
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    filter: drop-shadow(0px 2px 1px #d0d7e7);
+  }
+
+  .stdcm-card__header {
+    border-radius: 8px 8px 0px 0px;
+    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.75) inset;
+    background-color: rgba(235, 235, 234, 1);
+    color: rgba(0, 0, 0, 1);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0px;
+    text-align: left;
+    line-height: 24px;
+    padding: 7px 16px 0px 16px;
+    height: 2.5rem;
+    span {
+      padding-bottom: 6px;
+    }
+  }
+
+  .stdcm-card__body {
+    padding: 0.875rem 1.5rem 1.5rem 0.5rem;
+
+    .stdcm-simulation-params {
+      height: 7.1875rem;
+      padding-left: 1rem;
+    }
+
+    .location-line {
+      padding-left: 1rem;
+      display: flex;
+
+      .ci-input {
+        padding-inline: 0 0.625rem;
+      }
+    }
+
+    // Fix osrd-ui styles
+    label {
+      margin-bottom: 0;
+    }
+
+    .feed-back {
+      padding: 0;
+    }
+
+    .date-picker {
+      .feed-back {
+        padding-inline: 1rem 0.625rem;
+      }
+    }
+
+    .time-picker {
+      .feed-back {
+        padding-right: 0.625rem;
+        width: 7.5rem;
+      }
+    }
+
+    .tolerance-picker {
+      .feed-back {
+        width: 7.5rem;
+      }
+    }
+
+    .combo-box {
+      .suggestions-list {
+        width: 99%;
+        left: 0;
+        margin-top: 1rem;
+      }
+    }
+
+    // cards styles
+    &.consist {
+      padding-left: 1.5rem;
+      padding-bottom: 0.5rem;
+
+      .stdcm-consist__properties {
+        display: grid;
+        grid-template-columns: 7.4375rem 7.938rem;
+        justify-content: space-between;
+        padding-block: 0.6875rem;
+
+        .osrd-config-item {
+          padding-right: 0.188rem;
+        }
+
+        * > .base-label-wrapper > label {
+          margin-bottom: 0;
+        }
+      }
+
+      .speed-limit-by-tag-selector {
+        padding-right: 0.1875rem;
+      }
+    }
+
+    &.extremity {
+      padding-bottom: 1.5rem;
+
+      .arrival-type-select {
+        padding: 2.125rem 0 0 1rem;
+      }
+
+      .schedule {
+        display: flex;
+        flex-direction: row;
+        padding-top: 1rem;
+      }
+    }
+
+    &.via {
+      padding-right: 0.5rem;
+      padding-bottom: 0.8125rem;
+
+      .location-line {
+        padding-right: 1rem;
+      }
+
+      .stop-type-selector {
+        padding: 0.8125rem 1rem;
+      }
+
+      .stop-time {
+        .feed-back {
+          padding: 0 1rem 0.8125rem 1rem;
+        }
+      }
+    }
+
+    &.add-via {
+      padding: 0.6875rem 1.5rem 0.8125rem 0.75rem;
+    }
+
+    .stdcm-default-card-button {
+      color: var(--primary60);
+      line-height: 1.5rem;
+      margin-left: 0.75rem;
+    }
+
+    button:focus {
+      outline: none;
+    }
+  }
+
+  &.disabled,
+  * > .disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  &-via-button {
+    padding: 0.5rem;
+  }
+}
+
+.stdcm-card:hover {
+  .stdcm-via-icons {
+    .icon-bundle {
+      display: none;
+    }
+    button {
+      display: contents;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--primary60);
+    }
+  }
+}

@@ -7,15 +7,13 @@ import { useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import { updateUserPreferences, switchStdcmV2Activated } from 'reducers/user';
-import { getUserPreferences, getStdcmV2Activated } from 'reducers/user/userSelectors';
+import { updateUserPreferences } from 'reducers/user';
+import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 
 const UserSettings = () => {
   const userPreferences = useSelector(getUserPreferences);
-  const stdcmV2Activated = useSelector(getStdcmV2Activated);
   const [safeWordText, setSafeWordText] = useState(userPreferences.safeWord);
   const dispatch = useAppDispatch();
 
@@ -57,21 +55,6 @@ const UserSettings = () => {
         <small id="safeWordHelpBlock" className="form-text text-muted">
           {t('safeWordHelp')}
         </small>
-
-        <div className="col-lg-8">
-          <div className="d-flex align-items-center mt-3">
-            <SwitchSNCF
-              id="stdcm-version-switch"
-              type={SWITCH_TYPES.switch}
-              name="stdcm-version-switch"
-              onChange={() => {
-                dispatch(switchStdcmV2Activated());
-              }}
-              checked={stdcmV2Activated}
-            />
-            <p className="ml-3">{t('stdcmToggle')}</p>
-          </div>
-        </div>
       </ModalBodySNCF>
     </>
   );

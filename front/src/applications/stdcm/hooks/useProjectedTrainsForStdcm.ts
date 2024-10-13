@@ -3,14 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
+import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
 
-const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmV2SuccessResponse) => {
+const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const infraId = useInfraID();
   const { getTimetableID } = useOsrdConfSelectors();
   const timetableId = useSelector(getTimetableID);
