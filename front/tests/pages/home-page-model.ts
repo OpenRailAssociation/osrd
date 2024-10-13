@@ -36,8 +36,6 @@ class HomePage {
 
   readonly OSRDLanguage: Locator;
 
-  private stdcmSwitch: Locator;
-
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -53,7 +51,6 @@ class HomePage {
     this.getBody = page.locator('body');
     this.translation = home;
     this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
-    this.stdcmSwitch = page.getByTestId('stdcm-version-switch');
     this.dropDown = page.getByTestId('dropdown-sncf');
     this.userSettings = page.getByTestId('user-settings-btn');
     this.OSRDLanguage = page.getByTestId('language-info');
@@ -111,15 +108,6 @@ class HomePage {
 
   getTranslations(key: keyof typeof home) {
     return this.translation[key];
-  }
-
-  // Check Stdcm Version
-  async toggleStdcmV1() {
-    await this.dropDown.click();
-    await this.userSettings.click();
-    if ((await this.stdcmSwitch.isChecked()) && (await this.stdcmSwitch.isVisible())) {
-      await this.stdcmSwitch.click();
-    }
   }
 
   // Get OSRD selected language

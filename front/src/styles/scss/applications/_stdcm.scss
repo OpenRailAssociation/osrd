@@ -1,27 +1,6 @@
-.osrd-config-mastcontainer {
-  min-height: 80vh;
-}
-
-.osrd-config-stdcm-apply {
-  text-align: right;
-  margin-bottom: 0.5rem;
-}
-
-.stdcm-map {
-  &-noSimulation {
-    height: 85vh;
-  }
-  &-withSimulation {
-    height: 60vh;
-  }
-}
-
-.stdcm-allowance-icon {
-  max-width: fit-content;
-}
-
-.maximum-run-time-input {
-  .invalid-feedback {
-    font-size: 0.7rem;
-  }
-}
+@import 'stdcm/card';
+@import 'stdcm/configError';
+@import 'stdcm/header';
+@import 'stdcm/home';
+@import 'stdcm/loader';
+@import 'stdcm/results';

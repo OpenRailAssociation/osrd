@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { STDCM_REQUEST_STATUS, STDCM_TRAIN_ID } from 'applications/stdcm/consts';
-import type { StdcmRequestStatus, StdcmV2SuccessResponse } from 'applications/stdcm/types';
+import type { StdcmRequestStatus, StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
@@ -14,12 +14,11 @@ import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSe
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
-import { getStdcmV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 import useStdcmResults from './useStdcmResults';
-import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConfV2';
+import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConf';
 
 /**
  * Hook to manage the stdcm request
@@ -29,12 +28,11 @@ import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConfV2';
  *
  * @returns object with all the necessary information to manage the stdcm request/response
  */
-const useStdcm = (
-  isDebugMode = false,
-  { showFailureNotification = true }: { showFailureNotification?: boolean } = {}
-) => {
+const useStdcm = ({
+  showFailureNotification = true,
+}: { showFailureNotification?: boolean } = {}) => {
   const [stdcmTrainResult, setStdcmTrainResult] = useState<TrainScheduleResult>();
-  const [stdcmV2Response, setStdcmV2Response] = useState<StdcmV2SuccessResponse>();
+  const [stdcmResponse, setStdcmResponse] = useState<StdcmSuccessResponse>();
   const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState<StdcmRequestStatus>(
     STDCM_REQUEST_STATUS.idle
   );
@@ -46,9 +44,8 @@ const useStdcm = (
   const { getConf, getTimetableID } = useOsrdConfSelectors();
   const osrdconf = useSelector(getConf);
   const timetableId = useSelector(getTimetableID);
-  const stdcmV2Activated = useSelector(getStdcmV2Activated);
 
-  const stdcmV2Results = useStdcmResults(stdcmV2Response, stdcmTrainResult, setPathProperties);
+  const stdcmResults = useStdcmResults(stdcmResponse, stdcmTrainResult, setPathProperties);
 
   const [postTimetableByIdStdcm] = osrdEditoastApi.endpoints.postTimetableByIdStdcm.useMutation();
 
@@ -74,17 +71,11 @@ const useStdcm = (
   const launchStdcmRequest = async () => {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
     setIsStdcmResultsEmpty(false);
-    setStdcmV2Response(undefined);
+    setStdcmResponse(undefined);
 
-    const validConfig = checkStdcmConf(
-      dispatch,
-      t,
-      osrdconf as OsrdStdcmConfState,
-      stdcmV2Activated,
-      isDebugMode
-    );
+    const validConfig = checkStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
     if (validConfig) {
-      const payload = formatStdcmPayload(validConfig, stdcmV2Activated);
+      const payload = formatStdcmPayload(validConfig);
       try {
         const response = await postTimetableByIdStdcm(payload).unwrap();
         if (
@@ -93,13 +84,13 @@ const useStdcm = (
           stdcmRollingStock
         ) {
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
-          setStdcmV2Response({
+          setStdcmResponse({
             ...response,
             rollingStock: stdcmRollingStock,
             creationDate: new Date(),
             speedLimitByTag,
             simulationPathSteps: osrdconf.pathSteps,
-          } as StdcmV2SuccessResponse);
+          } as StdcmSuccessResponse);
 
           const stdcmTrain: TrainScheduleResult = {
             id: STDCM_TRAIN_ID,
@@ -145,7 +136,7 @@ const useStdcm = (
   const isRejected = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.rejected;
 
   return {
-    stdcmV2Results,
+    stdcmResults,
     launchStdcmRequest,
     currentStdcmRequestStatus,
     cancelStdcmRequest,

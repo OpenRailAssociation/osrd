@@ -1,14 +1,13 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
-import type { ArrivalTimeTypes } from 'applications/stdcmV2/types';
+import type { ArrivalTimeTypes } from 'applications/stdcm/types';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 
 import { updateOriginPathStep, updateDestinationPathStep } from '../helpers';
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
-  maximumRunTime: 43200,
   standardStdcmAllowance: undefined,
   totalMass: undefined,
   totalLength: undefined,
@@ -24,8 +23,6 @@ export const stdcmConfSlice = createSlice({
     resetStdcmConfig(state: Draft<OsrdStdcmConfState>) {
       state.rollingStockID = stdcmConfInitialState.rollingStockID;
       state.pathSteps = stdcmConfInitialState.pathSteps;
-      state.originDate = stdcmConfInitialState.originDate;
-      state.originTime = stdcmConfInitialState.originTime;
       state.speedLimitByTag = stdcmConfInitialState.speedLimitByTag;
     },
     updateTotalMass(
@@ -49,23 +46,12 @@ export const stdcmConfSlice = createSlice({
     updateStdcmConfigWithData(
       state: Draft<OsrdStdcmConfState>,
       action: PayloadAction<
-        Pick<
-          OsrdStdcmConfState,
-          'rollingStockID' | 'pathSteps' | 'originDate' | 'originTime' | 'speedLimitByTag'
-        >
+        Pick<OsrdStdcmConfState, 'rollingStockID' | 'pathSteps' | 'speedLimitByTag'>
       >
     ) {
       state.rollingStockID = action.payload.rollingStockID;
       state.pathSteps = action.payload.pathSteps;
-      state.originDate = action.payload.originDate;
-      state.originTime = action.payload.originTime;
       state.speedLimitByTag = action.payload.speedLimitByTag;
-    },
-    updateMaximumRunTime(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['maximumRunTime']>
-    ) {
-      state.maximumRunTime = action.payload;
     },
     updateStdcmStandardAllowance(
       state: Draft<OsrdStdcmConfState>,

@@ -79,8 +79,6 @@
   "launchPathFinding": "Launch pathfinding",
   "launchSimulation": "Start",
   "manageVias": "Steps management",
-  "maximumRunTime": "Maximum running time",
-  "maximumRunTimeError": "Travel time must not exceed 12h",
   "noPlaceChosen": "No stop/waypoint defined",
   "noOriginChosen": "Departure undefined",
   "noDestinationChosen": "Arrival undefined",

@@ -3,7 +3,7 @@ import { createContext, useContext, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { MODES } from 'main/consts';
+import { type MODES } from 'main/consts';
 import type { OsrdSlice } from 'reducers';
 import type { EditorSelectors } from 'reducers/editor/selectors';
 import type { MapViewerSelectors } from 'reducers/mapViewer/selectors';
@@ -16,8 +16,6 @@ export type OsrdContext = {
   slice: OsrdSlice;
   selectors: OsrdSelectors;
   mode: ValueOf<typeof MODES>;
-  isStdcm: boolean;
-  isSimulation: boolean;
 } | null;
 
 const osrdContext = createContext<OsrdContext>(null);
@@ -104,8 +102,6 @@ export const OsrdContextLayout = ({ slice, selectors, mode }: OsrdContextLayoutP
       slice,
       selectors,
       mode,
-      isStdcm: mode === MODES.stdcm,
-      isSimulation: mode === MODES.simulation,
     }),
     [slice, selectors]
   );

@@ -1,8 +1,12 @@
-import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import type {
+  ManageTrainSchedulePathProperties,
+  TrainSpaceTimeData,
+} from 'applications/operationalStudies/types';
 import type { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import type {
   LightRollingStock,
   PostTimetableByIdStdcmApiResponse,
+  RollingStockWithLiveries,
   SimulationResponse,
 } from 'common/api/osrdEditoastApi';
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
@@ -11,7 +15,7 @@ import type { ValueOf } from 'utils/types';
 
 export type StdcmRequestStatus = ValueOf<typeof STDCM_REQUEST_STATUS>;
 
-export type StdcmV2SuccessResponse = Omit<
+export type StdcmSuccessResponse = Omit<
   Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' }>,
   'simulation'
 > & {
@@ -23,7 +27,7 @@ export type StdcmV2SuccessResponse = Omit<
 };
 
 export type SimulationReportSheetProps = {
-  stdcmData: StdcmV2SuccessResponse;
+  stdcmData: StdcmSuccessResponse;
   simulationReportSheetNumber: string;
   mapCanvas?: string;
   operationalPointsList: StdcmResultsOperationalPointsList;
@@ -44,8 +48,8 @@ type StdcmResultsOperationalPoint = {
   trackName?: string;
 };
 
-export type StdcmV2Results = {
-  stdcmResponse: StdcmV2SuccessResponse;
+export type StdcmResults = {
+  stdcmResponse: StdcmSuccessResponse;
   speedSpaceChartData: SpeedSpaceChartData | null;
   spaceTimeData: TrainSpaceTimeData[] | null;
 };
@@ -63,3 +67,61 @@ export type AllowanceValue =
       percentage: number;
       value_type: 'percentage';
     };
+
+export type StdcmSimulationInputs = {
+  departureDate?: string;
+  departureTime?: string;
+  pathSteps: (PathStep | null)[];
+  consist?: {
+    tractionEngine?: RollingStockWithLiveries;
+    speedLimitByTag?: string;
+  };
+};
+
+export type StdcmSimulationOutputs = {
+  results: StdcmSuccessResponse;
+  pathProperties: ManageTrainSchedulePathProperties;
+  speedSpaceChartData: SpeedSpaceChartData;
+};
+
+export type StdcmSimulation = {
+  id: number;
+  creationDate: Date;
+  inputs: StdcmSimulationInputs;
+  outputs?: StdcmSimulationOutputs;
+};
+
+/** This type is used for StdcmConsist, StdcmOrigin, StdcmDestination and StdcmVias components */
+export type StdcmConfigCardProps = {
+  disabled?: boolean;
+};
+
+export enum ArrivalTimeTypes {
+  PRECISE_TIME = 'preciseTime',
+  ASAP = 'asSoonAsPossible',
+}
+
+export enum StdcmConfigErrorTypes {
+  INFRA_NOT_LOADED = 'infraNotLoaded',
+  MISSING_LOCATION = 'missingLocation',
+  PATHFINDING_FAILED = 'pathfindingFailed',
+  BOTH_POINT_SCHEDULED = 'bothPointAreScheduled',
+  NO_SCHEDULED_POINT = 'noScheduledPoint',
+}
+
+export type StdcmConfigErrors = {
+  errorType: StdcmConfigErrorTypes;
+  errorDetails?: { originTime: string; destinationTime: string };
+};
+
+export type ScheduleConstraint = {
+  date: Date;
+  hours: number;
+  minutes: number;
+};
+
+export enum StdcmStopTypes {
+  PASSAGE_TIME = 'passageTime',
+  DRIVER_SWITCH = 'driverSwitch',
+  SERVICE_STOP = 'serviceStop',
+}

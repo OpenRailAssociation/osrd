@@ -1,7 +1,7 @@
 import { last } from 'lodash';
 import { describe, it, expect } from 'vitest';
 
-import { ArrivalTimeTypes } from 'applications/stdcmV2/types';
+import { ArrivalTimeTypes } from 'applications/stdcm/types';
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
@@ -44,8 +44,6 @@ const [brest, rennes, lemans, paris] = testDataBuilder.buildPathSteps();
 const initialStateSTDCMConfig = {
   rollingStockID: 10,
   pathSteps: [paris, lemans, rennes, brest],
-  originDate: '2024-07-24',
-  originTime: '12:00',
   speedLimitByTag: 'init-tag',
 };
 
@@ -54,15 +52,6 @@ describe('stdcmConfReducers', () => {
     const store = createStore();
     const state = store.getState()[stdcmConfSlice.name];
     expect(state).toEqual(stdcmConfInitialState);
-  });
-
-  it('should handle updateMaximumRunTime', () => {
-    const store = createStore();
-    const newMaximumRunTime = 10;
-    store.dispatch(stdcmConfSliceActions.updateMaximumRunTime(newMaximumRunTime));
-
-    const state = store.getState()[stdcmConfSlice.name];
-    expect(state.maximumRunTime).toBe(newMaximumRunTime);
   });
 
   it('should handle updateStdcmStandardAllowance', () => {
@@ -88,8 +77,6 @@ describe('stdcmConfReducers', () => {
     const state = store.getState()[stdcmConfSlice.name];
     expect(state.rollingStockID).toBe(stdcmConfInitialState.rollingStockID);
     expect(state.pathSteps).toBe(stdcmConfInitialState.pathSteps);
-    expect(state.originDate).toBe(stdcmConfInitialState.originDate);
-    expect(state.originTime).toBe(stdcmConfInitialState.originTime);
     expect(state.speedLimitByTag).toBe(stdcmConfInitialState.speedLimitByTag);
   });
 
@@ -99,8 +86,6 @@ describe('stdcmConfReducers', () => {
       stdcmConfSliceActions.updateStdcmConfigWithData({
         rollingStockID: 20,
         pathSteps: [paris, rennes],
-        originDate: '2024-07-25',
-        originTime: '13:00',
         speedLimitByTag: 'new-tag',
       })
     );
@@ -108,8 +93,6 @@ describe('stdcmConfReducers', () => {
     const state = store.getState()[stdcmConfSlice.name];
     expect(state.rollingStockID).toBe(20);
     expect(state.pathSteps).toEqual([paris, rennes]);
-    expect(state.originDate).toBe('2024-07-25');
-    expect(state.originTime).toBe('13:00');
     expect(state.speedLimitByTag).toBe('new-tag');
   });
 

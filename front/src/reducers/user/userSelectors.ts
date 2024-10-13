@@ -5,7 +5,6 @@ import { makeSubSelector } from 'utils/selectors';
 export const getUser = (state: RootState) => state.user;
 const makeUserSelector = makeSubSelector<UserState>(getUser);
 export const getUserPreferences = makeUserSelector('userPreferences');
-export const getStdcmV2Activated = makeUserSelector('stdcmV2Activated');
 const makeUserPreferencesSelector =
   makeSubSelector<UserState['userPreferences']>(getUserPreferences);
 

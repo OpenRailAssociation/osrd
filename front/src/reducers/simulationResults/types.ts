@@ -132,7 +132,6 @@ export interface Train {
   eco?: Regime;
   margins?: Regime;
   stopsCount?: number;
-  isStdcm?: boolean;
   mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
   speed_limit_tags?: string;
 }
