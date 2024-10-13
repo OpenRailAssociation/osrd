@@ -16,7 +16,6 @@
   };
 
   outputs = {
-    self,
     nixpkgs,
     fenix,
     flake-utils,
@@ -85,6 +84,7 @@
 
                 # Nix formatter
                 alejandra.defaultPackage.${system}
+                nixd
 
                 # OSRD dev scripts
                 osrd-dev-scripts
