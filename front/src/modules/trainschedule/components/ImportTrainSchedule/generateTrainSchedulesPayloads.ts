@@ -8,13 +8,13 @@ import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils
 
 export function generateTrainSchedulesPayloads(
   trains: ImportedTrainSchedule[],
-  checkFirstStepUIC: boolean = true
+  checkChAndUIC: boolean = true
 ): TrainScheduleBase[] {
   return trains.reduce((payloads, train) => {
     const firstStep = train.steps[0];
 
     // Conditionally check for valid UIC in the first step
-    if (checkFirstStepUIC && (!firstStep || !firstStep.uic)) {
+    if (checkChAndUIC && (!firstStep || !firstStep.uic)) {
       console.warn(`Skipping train ${train.trainNumber} due to invalid first step UIC`);
       return payloads; // Skip this train
     }
@@ -24,11 +24,11 @@ export function generateTrainSchedulesPayloads(
         const stepId = nextId();
 
         // Conditionally skip invalid UIC or CH code steps
-        if (!step.uic) {
+        if (checkChAndUIC && !step.uic) {
           console.error(`Invalid UIC for step ${step.name}`);
           return acc; // Skip invalid step
         }
-        if (checkFirstStepUIC && !step.chCode) {
+        if (checkChAndUIC && !step.chCode) {
           console.error(`Invalid CH code for step ${step.name}`);
           return acc; // Skip invalid step
         }

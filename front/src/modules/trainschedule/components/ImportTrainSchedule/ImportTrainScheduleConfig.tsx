@@ -33,14 +33,14 @@ interface ImportTrainScheduleConfigProps {
   setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TrainScheduleBase[]) => void;
-  setTrainsViriatoData: (trainsViriatoData: ImportedTrainSchedule[]) => void;
+  setTrainsXmlData: (trainsXmlData: ImportedTrainSchedule[]) => void;
 }
 
 const ImportTrainScheduleConfig = ({
   setTrainsList,
   setIsLoading,
   setTrainsJsonData,
-  setTrainsViriatoData,
+  setTrainsXmlData,
 }: ImportTrainScheduleConfigProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [from, setFrom] = useState<ImportStation | undefined>();
@@ -112,7 +112,7 @@ const ImportTrainScheduleConfig = ({
     setTrainsList([]);
     setIsLoading(true);
     setTrainsJsonData([]);
-    setTrainsViriatoData([]);
+    setTrainsXmlData([]);
 
     const result = await getGraouTrainSchedules(config);
     const importedTrainSchedules = validateImportedTrainSchedules(result);
@@ -302,7 +302,7 @@ const ImportTrainScheduleConfig = ({
     });
     const trains = Array.from(xmlDoc.getElementsByTagName('train'));
     const updatedTrainSchedules = mapTrainNames(trainSchedules, trains);
-    setTrainsViriatoData(updatedTrainSchedules);
+    setTrainsXmlData(updatedTrainSchedules);
     return updatedTrainSchedules;
   };
 
