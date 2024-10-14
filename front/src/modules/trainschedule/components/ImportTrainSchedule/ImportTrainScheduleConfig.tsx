@@ -33,12 +33,14 @@ interface ImportTrainScheduleConfigProps {
   setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TrainScheduleBase[]) => void;
+  setTrainsXmlData: (trainsXmlData: ImportedTrainSchedule[]) => void;
 }
 
 const ImportTrainScheduleConfig = ({
   setTrainsList,
   setIsLoading,
   setTrainsJsonData,
+  setTrainsXmlData,
 }: ImportTrainScheduleConfigProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [from, setFrom] = useState<ImportStation | undefined>();
@@ -110,6 +112,7 @@ const ImportTrainScheduleConfig = ({
     setTrainsList([]);
     setIsLoading(true);
     setTrainsJsonData([]);
+    setTrainsXmlData([]);
 
     const result = await getGraouTrainSchedules(config);
     const importedTrainSchedules = validateImportedTrainSchedules(result);
@@ -168,7 +171,6 @@ const ImportTrainScheduleConfig = ({
   ): Step[] =>
     ocpTTs
       .map((ocpTT, index): Step | null => {
-        // Add explicit typing for return value
         const ocpRef = ocpTT.getAttribute('ocpRef');
         const times = ocpTT.getElementsByTagName('times')[0];
         let departureTime = times?.getAttribute('departure') || '';
@@ -300,7 +302,7 @@ const ImportTrainScheduleConfig = ({
     });
     const trains = Array.from(xmlDoc.getElementsByTagName('train'));
     const updatedTrainSchedules = mapTrainNames(trainSchedules, trains);
-
+    setTrainsXmlData(updatedTrainSchedules);
     return updatedTrainSchedules;
   };
 
