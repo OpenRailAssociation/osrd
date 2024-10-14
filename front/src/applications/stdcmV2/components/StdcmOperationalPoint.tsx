@@ -7,6 +7,7 @@ import nextId from 'react-id-generator';
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
 import type { PathStep } from 'reducers/osrdconf/types';
+import { normalized } from 'utils/strings';
 import { createFixedSelectOptions } from 'utils/uiCoreHelpers';
 
 type StdcmOperationalPointProps = {
@@ -39,7 +40,7 @@ const StdcmOperationalPoint = ({
       sortedSearchResults
         .filter(
           (op) =>
-            op.name.toLowerCase().startsWith(searchTerm.toLowerCase()) ||
+            normalized(op.name).startsWith(normalized(searchTerm)) ||
             op.trigram === searchTerm.toUpperCase()
         )
         .reduce((acc, p) => {
