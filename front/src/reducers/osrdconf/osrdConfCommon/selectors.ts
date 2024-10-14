@@ -43,8 +43,6 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
     getRollingStockID: makeOsrdConfSelector('rollingStockID'),
     getSpeedLimitByTag: makeOsrdConfSelector('speedLimitByTag'),
     getInitialSpeed: makeOsrdConfSelector('initialSpeed'),
-    getOriginDate: makeOsrdConfSelector('originDate'),
-    getOriginTime: makeOsrdConfSelector('originTime'),
     getGridMarginBefore: makeOsrdConfSelector('gridMarginBefore'),
     getGridMarginAfter: makeOsrdConfSelector('gridMarginAfter'),
     getPowerRestriction: makeOsrdConfSelector('powerRestriction'),

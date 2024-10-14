@@ -30,8 +30,6 @@ export interface OsrdConfState extends InfraState {
   speedLimitByTag?: string;
   powerRestriction: PowerRestriction[];
   initialSpeed?: number;
-  originDate?: string;
-  originTime?: string;
   gridMarginBefore?: number;
   gridMarginAfter?: number;
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };

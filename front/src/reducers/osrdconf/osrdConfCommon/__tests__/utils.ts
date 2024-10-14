@@ -190,20 +190,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     expect(state.initialSpeed).toBe(newInitialSpeed);
   });
 
-  it('should handle updateOriginTime', () => {
-    const newOriginTime = '11:00:00';
-    defaultStore.dispatch(slice.actions.updateOriginTime(newOriginTime));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.originTime).toBe(newOriginTime);
-  });
-
-  it('should handle updateOriginDate', () => {
-    const newOriginDate = '13/12/2023';
-    defaultStore.dispatch(slice.actions.updateOriginDate(newOriginDate));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.originDate).toBe(newOriginDate);
-  });
-
   it('should handle updateViaStopTime', () => {
     const pathSteps = testDataBuilder.buildPathSteps();
     const via = pathSteps[1];

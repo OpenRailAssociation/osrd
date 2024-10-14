@@ -70,14 +70,12 @@ const StdcmView = () => {
   // reset config data with the selected simulation data
   useEffect(() => {
     if (selectedSimulation) {
-      const { departureDate, departureTime, pathSteps, consist } = selectedSimulation.inputs;
+      const { pathSteps, consist } = selectedSimulation.inputs;
       dispatch(
         updateStdcmConfigWithData({
           rollingStockID: consist?.tractionEngine?.id,
           speedLimitByTag: consist?.speedLimitByTag,
           pathSteps: [...pathSteps],
-          originDate: departureDate,
-          originTime: departureTime,
         })
       );
     }
