@@ -4,13 +4,14 @@ import { compact, concat, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { COMPOSITION_CODES } from 'applications/stdcm/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors, useOsrdConfActions, useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-export const useStoreDataForSpeedLimitByTagSelector = () => {
+export const useStoreDataForSpeedLimitByTagSelector = ({ isStdcm } = { isStdcm: false }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
@@ -23,15 +24,18 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
     dispatch(updateSpeedLimitByTag(newTag));
   };
 
-  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery();
+  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getSpeedLimitTags.useQuery(undefined, {
+    skip: isStdcm,
+  });
 
   const { data: speedLimitsTagsByInfraId = [], error } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
       {
         infraId: infraID!,
       },
-      { skip: !infraID }
+      { skip: !infraID || isStdcm }
     );
+
   useEffect(() => {
     // Update the document title using the browser API
     if (error) {
@@ -41,7 +45,9 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
     }
   }, [error]);
 
-  const speedLimitsByTags = compact(uniq(concat(speedLimitTags, speedLimitsTagsByInfraId)));
+  const speedLimitsByTags = isStdcm
+    ? COMPOSITION_CODES
+    : compact(uniq(concat(speedLimitTags, speedLimitsTagsByInfraId)));
   const speedLimitsByTagsOrdered = useMemo(() => speedLimitsByTags.sort(), [speedLimitsByTags]);
 
   return {
