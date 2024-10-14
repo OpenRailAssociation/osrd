@@ -33,7 +33,7 @@ const ConsistCardTitle = ({
 const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
-    useStoreDataForSpeedLimitByTagSelector();
+    useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
 
   const { updateRollingStockID } = useOsrdConfActions() as StdcmConfSliceActions;
   const dispatch = useAppDispatch();

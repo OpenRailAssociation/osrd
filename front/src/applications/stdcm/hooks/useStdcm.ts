@@ -63,7 +63,7 @@ const useStdcm = (
   // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
   const controller = new AbortController();
 
-  const { speedLimitByTag } = useStoreDataForSpeedLimitByTagSelector();
+  const { speedLimitByTag } = useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
 
   const triggerShowFailureNotification = (error: Error) => {
     if (showFailureNotification) {
