@@ -60,6 +60,7 @@ class OperationalStudiesOutputTablePage {
         requestedDeparture,
         stopTime,
         signalReceptionClosed,
+        shortSlipDistance,
         theoreticalMargin,
         theoreticalMarginS,
         actualMargin,
@@ -84,6 +85,10 @@ class OperationalStudiesOutputTablePage {
         ),
         await cells
           .nth(headerIndexMap[translations.receptionOnClosedSignal])
+          .locator('input.dsg-checkbox')
+          .isChecked(),
+        await cells
+          .nth(headerIndexMap[translations.shortSlipDistance])
           .locator('input.dsg-checkbox')
           .isChecked(),
         await OperationalStudiesOutputTablePage.getCellValue(
@@ -114,6 +119,7 @@ class OperationalStudiesOutputTablePage {
         requestedDeparture,
         stopTime,
         signalReceptionClosed,
+        shortSlipDistance,
         margin: {
           theoretical: theoreticalMargin,
           theoreticalS: theoreticalMarginS,
