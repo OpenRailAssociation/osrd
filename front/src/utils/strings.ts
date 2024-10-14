@@ -71,6 +71,20 @@ export function formatUicToCi(uic: number) {
   return uic.toString().replace(/^87/, '');
 }
 
+/**
+ * Normalizes a string by removing accents and converting to lowercase.
+ *
+ * Accent removal is done using `String.normalize` which converts accented characters to their
+ * decomposed form (e.g. é -> e + ´). We then remove all characters in the range of U+0300 to U+036f
+ * which contains all unicode combining diacritical marks (https://en.wikipedia.org/wiki/Combining_Diacritical_Marks).
+ */
+export function normalized(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 export const TEXT_AREA_MAX_LENGTH = 4096;
 export const SMALL_TEXT_AREA_MAX_LENGTH = 1024;
 export const TEXT_INPUT_MAX_LENGTH = 255;
