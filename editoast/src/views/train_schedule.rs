@@ -48,8 +48,8 @@ use crate::views::path::PathfindingError;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;
-use crate::RedisClient;
 use crate::RollingStockModel;
+use crate::ValkeyClient;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
@@ -332,7 +332,7 @@ async fn simulation(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let redis_client = app_state.redis.clone();
+    let valkey_client = app_state.valkey.clone();
     let core_client = app_state.core_client.clone();
     let db_pool = app_state.db_pool_v2.clone();
 
@@ -356,7 +356,7 @@ async fn simulation(
     Ok(Json(
         train_simulation(
             &mut db_pool.get().await?,
-            redis_client,
+            valkey_client,
             core_client,
             train_schedule,
             &infra,
@@ -370,7 +370,7 @@ async fn simulation(
 /// Compute simulation of a train schedule
 pub async fn train_simulation(
     conn: &mut DbConnection,
-    redis_client: Arc<RedisClient>,
+    valkey_client: Arc<ValkeyClient>,
     core: Arc<CoreClient>,
     train_schedule: TrainSchedule,
     infra: &Infra,
@@ -378,7 +378,7 @@ pub async fn train_simulation(
 ) -> Result<(SimulationResponse, PathfindingResult)> {
     Ok(train_simulation_batch(
         conn,
-        redis_client,
+        valkey_client,
         core,
         &[train_schedule],
         infra,
@@ -394,13 +394,13 @@ pub async fn train_simulation(
 /// Note: The order of the returned simulations is the same as the order of the train schedules.
 pub async fn train_simulation_batch(
     conn: &mut DbConnection,
-    redis_client: Arc<RedisClient>,
+    valkey_client: Arc<ValkeyClient>,
     core: Arc<CoreClient>,
     train_schedules: &[TrainSchedule],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
-    let mut redis_conn = redis_client.get_connection().await?;
+    let mut valkey_conn = valkey_client.get_connection().await?;
     // Compute path
     let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
         conn,
@@ -415,7 +415,7 @@ pub async fn train_simulation_batch(
         .collect();
     let pathfinding_results = pathfinding_from_train_batch(
         conn,
-        &mut redis_conn,
+        &mut valkey_conn,
         core.clone(),
         infra,
         train_schedules,
@@ -469,7 +469,7 @@ pub async fn train_simulation_batch(
         to_sim.push((index, simulation_hash, simulation_request));
     }
 
-    let cached_results: Vec<Option<SimulationResponse>> = redis_conn
+    let cached_results: Vec<Option<SimulationResponse>> = valkey_conn
         .json_get_bulk(&to_sim.iter().map(|(_, hash, _)| hash).collect::<Vec<_>>())
         .await?;
 
@@ -510,7 +510,7 @@ pub async fn train_simulation_batch(
         .collect();
 
     // Cache the simulation response
-    redis_conn.json_set_bulk(&to_cache).await?;
+    valkey_conn.json_set_bulk(&to_cache).await?;
 
     // Return the response
     Ok(simulation_results
@@ -670,7 +670,7 @@ async fn simulation_summary(
 
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
-    let redis_client = app_state.redis.clone();
+    let valkey_client = app_state.valkey.clone();
     let core = app_state.core_client.clone();
 
     let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
@@ -687,7 +687,7 @@ async fn simulation_summary(
 
     let simulations = train_simulation_batch(
         conn,
-        redis_client,
+        valkey_client,
         core,
         &train_schedules,
         &infra,
@@ -768,11 +768,11 @@ async fn get_path(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let redis_client = app_state.redis.clone();
+    let valkey_client = app_state.valkey.clone();
     let core = app_state.core_client.clone();
 
     let conn = &mut db_pool.get().await?;
-    let mut redis_conn = redis_client.get_connection().await?;
+    let mut valkey_conn = valkey_client.get_connection().await?;
 
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
@@ -783,7 +783,7 @@ async fn get_path(
     })
     .await?;
     Ok(Json(
-        pathfinding_from_train(conn, &mut redis_conn, core, &infra, train_schedule).await?,
+        pathfinding_from_train(conn, &mut valkey_conn, core, &infra, train_schedule).await?,
     ))
 }
 

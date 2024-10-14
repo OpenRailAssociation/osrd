@@ -2,7 +2,7 @@ version: '3'
 
 volumes:
   psql_data:
-  redis_data:
+  valkey_data:
   rabbitmq_data:
 
 services:
@@ -22,13 +22,13 @@ services:
       start_period: 4s
       interval: 5s
 
-  redis:
+  valkey:
     image: valkey/valkey:alpine
-    container_name: osrd-redis
+    container_name: osrd-valkey
     restart: unless-stopped
     ports: ["6379:6379"]
     volumes:
-      - "redis_data:/data"
+      - "valkey_data:/data"
       - "./docker/valkey.conf:/etc/valkey.conf"
     command: "valkey-server /etc/valkey.conf --save 30 1 --loglevel warning"
     healthcheck:
@@ -94,7 +94,7 @@ services:
     container_name: osrd-editoast
     depends_on:
       postgres: {condition: service_healthy}
-      redis: {condition: service_healthy}
+      valkey: {condition: service_healthy}
       rabbitmq: {condition: service_healthy}
     build:
       context: editoast
@@ -108,7 +108,7 @@ services:
     ports: ["8090:80"]
     environment:
       EDITOAST_PORT: 80
-      REDIS_URL: "redis://redis"
+      VALKEY_URL: "redis://valkey"
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
       OSRDYNE_API_URL: "http://osrd-osrdyne:4242/"
       TELEMETRY_KIND: "opentelemetry"

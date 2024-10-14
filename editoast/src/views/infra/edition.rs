@@ -73,7 +73,7 @@ async fn edit<'a>(
     State(AppState {
         db_pool_v2: db_pool,
         infra_caches,
-        redis,
+        valkey,
         map_layers,
         ..
     }): State<AppState>,
@@ -103,7 +103,7 @@ async fn edit<'a>(
     )
     .await?;
 
-    let mut conn = redis.get_connection().await?;
+    let mut conn = valkey.get_connection().await?;
     map::invalidate_all(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
@@ -128,7 +128,7 @@ pub async fn split_track_section<'a>(
     State(AppState {
         db_pool_v2: db_pool,
         infra_caches,
-        redis,
+        valkey,
         map_layers,
         ..
     }): State<AppState>,
@@ -334,7 +334,7 @@ pub async fn split_track_section<'a>(
         &mut infra_cache,
     )
     .await?;
-    let mut conn = redis.get_connection().await?;
+    let mut conn = valkey.get_connection().await?;
     map::invalidate_all(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),

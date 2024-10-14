@@ -40,7 +40,7 @@ Launches end to end tests.
 It requires:
 
 - Install playwright dependencies `cd ./front/ && yarn playwright install --with-deps`
-- Backend containers to be up: `docker compose up --no-build --detach redis postgres gateway core editoast`
+- Backend containers to be up: `docker compose up --no-build --detach valkey postgres gateway core editoast`
 - Running front with `docker compose up --build --detach front`
 
 Now you can run the test with `cd front/ && yarn e2e-tests`.
@@ -49,7 +49,7 @@ Now you can run the test with `cd front/ && yarn e2e-tests`.
 > If you try to run `yarn start` instead of running it through docker, you'll notice it doesn't
 > work because the gateway can't access your local port from inside a container. 2 solutions:
 >
-> - run all the components locally (you might keep Postgres and Redis in containers)
+> - run all the components locally (you might keep Postgres and Valkey in containers)
 > - if on Linux, you can also launch all the containers on the host network: you can replace the
 > `docker compose <something>` above with `osrd/scripts/osrd-compose.sh <something>`
 

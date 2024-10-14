@@ -1,5 +1,5 @@
 //! This module handles the path properties endpoint.
-//! The computation of the properties is done by the core but editoast caches the results in Redis.
+//! The computation of the properties is done by the core but editoast caches the results in Valkey.
 //!
 //! The cache system handles partial path properties, meaning that :
 //! - If a user requests only the slopes, the core will only compute the slopes and editoast will cache the result.
@@ -31,7 +31,7 @@ use crate::core::AsCoreRequest;
 use crate::error::Result;
 use crate::views::path::retrieve_infra_version;
 use crate::AppState;
-use crate::RedisConnection;
+use crate::ValkeyConnection;
 use editoast_common::geometry::GeoJsonLineString;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
@@ -165,7 +165,7 @@ type Properties = EnumSet<Property>;
 async fn post(
     State(AppState {
         db_pool_v2: db_pool,
-        redis,
+        valkey,
         core_client,
         ..
     }): State<AppState>,
@@ -177,11 +177,11 @@ async fn post(
     let conn = &mut db_pool.get().await?;
     let infra_version = retrieve_infra_version(conn, infra_id).await?;
     let query_props: Properties = props.into();
-    let mut redis_conn = redis.get_connection().await?;
+    let mut valkey_conn = valkey.get_connection().await?;
 
-    // 1) Try to retrieve all the informations from Redis
+    // 1) Try to retrieve all the informations from Valkey
     let mut path_properties = retrieve_path_properties(
-        &mut redis_conn,
+        &mut valkey_conn,
         infra_id,
         &infra_version,
         &path_properties_input,
@@ -211,7 +211,7 @@ async fn post(
 
         // Cache new properties
         cache_path_properties(
-            &mut redis_conn,
+            &mut valkey_conn,
             infra_id,
             &infra_version,
             &path_properties_input,
@@ -230,7 +230,7 @@ async fn post(
 
 /// Retrieves path properties from cache.
 async fn retrieve_path_properties(
-    redis_conn: &mut RedisConnection,
+    valkey_conn: &mut ValkeyConnection,
     infra: i64,
     infra_version: &String,
     path_properties_input: &PathPropertiesInput,
@@ -238,14 +238,14 @@ async fn retrieve_path_properties(
     let track_ranges = &path_properties_input.track_section_ranges;
     let hash = path_properties_input_hash(infra, infra_version, track_ranges);
 
-    let path_properties: PathProperties = redis_conn.json_get(&hash).await?.unwrap_or_default();
+    let path_properties: PathProperties = valkey_conn.json_get(&hash).await?.unwrap_or_default();
 
     Ok(path_properties)
 }
 
 /// Set the cache of path properties.
 async fn cache_path_properties(
-    redis_conn: &mut RedisConnection,
+    valkey_conn: &mut ValkeyConnection,
     infra: i64,
     infra_version: &String,
     path_properties_input: &PathPropertiesInput,
@@ -256,7 +256,7 @@ async fn cache_path_properties(
     let hash = path_properties_input_hash(infra, infra_version, track_ranges);
 
     // Cache all properties except electrifications
-    redis_conn.json_set(&hash, &path_properties).await?;
+    valkey_conn.json_set(&hash, &path_properties).await?;
 
     Ok(())
 }

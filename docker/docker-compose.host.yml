@@ -7,7 +7,7 @@ services:
     healthcheck:
       test: [ "CMD", "pg_isready", "-d", "postgres://osrd:password@localhost:5432/osrd" ]
 
-  redis:
+  valkey:
     ports: []
     network_mode: host
 
@@ -18,7 +18,7 @@ services:
       EDITOAST_PORT: 8090
       OSRD_BACKEND_URL: "http://localhost:8080"
       OSRDYNE_API_URL: "http://localhost:4242"
-      REDIS_URL: "redis://localhost"
+      VALKEY_URL: "redis://localhost"
       DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
       TELEMETRY_ENDPOINT: "http://localhost:4317"
       OSRD_MQ_URL: "amqp://osrd:password@127.0.0.1:5672/%2f"

@@ -8,7 +8,7 @@ mod generated_data;
 mod infra_cache;
 mod map;
 mod models;
-mod redis_utils;
+mod valkey_utils;
 mod views;
 
 use crate::core::CoreClient;
@@ -26,7 +26,8 @@ use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
     ExportTimetableArgs, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
     ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs,
-    MakeMigrationArgs, RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
+    MakeMigrationArgs, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
+    ValkeyConfig,
 };
 use client::{MapLayersConfig, PostgresConfig};
 use dashmap::DashMap;
@@ -64,7 +65,6 @@ use models::prelude::*;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig as _;
 use opentelemetry_sdk::Resource;
-pub use redis_utils::{RedisClient, RedisConnection};
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, IsTerminal};
@@ -76,6 +76,7 @@ use thiserror::Error;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _, Layer as _};
 use validator::ValidationErrorsKind;
+pub use valkey_utils::{ValkeyClient, ValkeyConnection};
 use views::authentication_middleware;
 use views::infra::InfraApiError;
 use views::search::SearchConfigFinder;
@@ -196,7 +197,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let pg_config = client.postgres_config;
     let db_pool = DbConnectionPoolV2::try_initialize(pg_config.url()?, pg_config.pool_size).await?;
 
-    let redis_config = client.redis_config;
+    let valkey_config = client.valkey_config;
 
     match client.color {
         Color::Never => colored::control::set_override(false),
@@ -205,7 +206,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 
     match client.command {
-        Commands::Runserver(args) => runserver(args, pg_config, redis_config).await,
+        Commands::Runserver(args) => runserver(args, pg_config, valkey_config).await,
         Commands::ImportRollingStock(args) => import_rolling_stock(args, db_pool.into()).await,
         Commands::OsmToRailjson(args) => {
             osm_to_railjson::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
@@ -235,9 +236,9 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         },
         Commands::Infra(subcommand) => match subcommand {
             InfraCommands::Clone(args) => clone_infra(args, db_pool.into()).await,
-            InfraCommands::Clear(args) => clear_infra(args, db_pool.into(), redis_config).await,
+            InfraCommands::Clear(args) => clear_infra(args, db_pool.into(), valkey_config).await,
             InfraCommands::Generate(args) => {
-                generate_infra(args, db_pool.into(), redis_config).await
+                generate_infra(args, db_pool.into(), valkey_config).await
             }
             InfraCommands::ImportRailjson(args) => import_railjson(args, db_pool.into()).await,
         },
@@ -267,16 +268,16 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                     .map_err(Into::into)
             }
         },
-        Commands::Healthcheck => healthcheck_cmd(db_pool.into(), redis_config).await,
+        Commands::Healthcheck => healthcheck_cmd(db_pool.into(), valkey_config).await,
     }
 }
 
 async fn healthcheck_cmd(
     db_pool: Arc<DbConnectionPoolV2>,
-    redis_config: RedisConfig,
+    valkey_config: ValkeyConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let redis = RedisClient::new(redis_config).unwrap();
-    check_health(db_pool, redis.into())
+    let valkey = ValkeyClient::new(valkey_config).unwrap();
+    check_health(db_pool, valkey.into())
         .await
         .map_err(|e| CliError::new(1, format!("❌ healthcheck failed: {0}", e)))?;
     println!("✅ Healthcheck passed");
@@ -373,7 +374,7 @@ async fn trains_import(
 pub struct AppState {
     pub db_pool_v1: Arc<DbConnectionPool>,
     pub db_pool_v2: Arc<DbConnectionPoolV2>,
-    pub redis: Arc<RedisClient>,
+    pub valkey: Arc<ValkeyClient>,
     pub infra_caches: Arc<DashMap<i64, InfraCache>>,
     pub map_layers: Arc<MapLayers>,
     pub map_layers_config: Arc<MapLayersConfig>,
@@ -388,12 +389,12 @@ impl AppState {
     async fn init(
         args: &RunserverArgs,
         postgres_config: PostgresConfig,
-        redis_config: RedisConfig,
+        valkey_config: ValkeyConfig,
     ) -> Result<Self, Box<dyn Error + Send + Sync>> {
         info!("Building application state...");
 
         // Config database
-        let redis = RedisClient::new(redis_config)?.into();
+        let valkey = ValkeyClient::new(valkey_config)?.into();
 
         // Create both database pools
         let db_pool_v2 =
@@ -422,7 +423,7 @@ impl AppState {
         let health_check_timeout = Duration::from_millis(args.health_check_timeout_ms);
 
         Ok(Self {
-            redis,
+            valkey,
             db_pool_v1,
             db_pool_v2,
             infra_caches,
@@ -447,7 +448,7 @@ impl FromRef<AppState> for DbConnectionPoolV2 {
 async fn runserver(
     args: RunserverArgs,
     postgres_config: PostgresConfig,
-    redis_config: RedisConfig,
+    valkey_config: ValkeyConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Building server...");
     // Custom Bytes and String extractor configuration
@@ -472,7 +473,7 @@ async fn runserver(
         }
     };
 
-    let app_state = AppState::init(&args, postgres_config, redis_config).await?;
+    let app_state = AppState::init(&args, postgres_config, valkey_config).await?;
 
     // Configure the axum router
     let router: Router<()> = axum::Router::<AppState>::new()
@@ -497,12 +498,12 @@ async fn runserver(
     Ok(())
 }
 
-async fn build_redis_pool_and_invalidate_all_cache(
-    redis_config: RedisConfig,
+async fn build_valkey_pool_and_invalidate_all_cache(
+    valkey_config: ValkeyConfig,
     infra_id: i64,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let redis = RedisClient::new(redis_config).unwrap();
-    let mut conn = redis.get_connection().await.unwrap();
+    let valkey = ValkeyClient::new(valkey_config).unwrap();
+    let mut conn = valkey.get_connection().await.unwrap();
     Ok(map::invalidate_all(
         &mut conn,
         &MapLayers::parse().layers.keys().cloned().collect(),
@@ -512,7 +513,7 @@ async fn build_redis_pool_and_invalidate_all_cache(
     .map_err(|e| {
         Box::new(CliError::new(
             1,
-            format!("Couldn't refresh redis cache layers: {e}"),
+            format!("Couldn't refresh valkey cache layers: {e}"),
         ))
     })?)
 }
@@ -544,7 +545,7 @@ async fn batch_retrieve_infras(
 async fn generate_infra(
     args: GenerateArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-    redis_config: RedisConfig,
+    valkey_config: ValkeyConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
@@ -567,7 +568,7 @@ async fn generate_infra(
             .refresh(db_pool.clone(), args.force, &infra_cache)
             .await?
         {
-            build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id).await?;
+            build_valkey_pool_and_invalidate_all_cache(valkey_config.clone(), infra.id).await?;
             println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
         } else {
             println!(
@@ -768,7 +769,7 @@ async fn electrical_profile_set_delete(
 async fn clear_infra(
     args: ClearArgs,
     db_pool: Arc<DbConnectionPoolV2>,
-    redis_config: RedisConfig,
+    valkey_config: ValkeyConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
@@ -787,7 +788,7 @@ async fn clear_infra(
             infra.name.clone().bold(),
             infra.id
         );
-        build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id).await?;
+        build_valkey_pool_and_invalidate_all_cache(valkey_config.clone(), infra.id).await?;
         infra.clear(&mut db_pool.get().await?).await?;
         println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }

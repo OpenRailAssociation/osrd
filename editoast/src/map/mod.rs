@@ -11,28 +11,28 @@ pub use self::layer_cache::get_layer_cache_prefix;
 pub use self::layer_cache::get_view_cache_prefix;
 pub use self::layer_cache::Tile;
 use crate::error::Result;
-use crate::RedisConnection;
+use crate::ValkeyConnection;
 
 /// Invalidates layer cache for a specific infra and view if provided
 ///
 /// # Arguments
 ///
-/// * `redis_pool` - Pool to use to connect to the redis
+/// * `valkey` - Pool to use to connect to the valkey
 /// * `infra_id` - Infra on which the layer must be invalidated
 /// * `layer_name` - Layer to invalidate
 ///
 /// Returns the number of deleted keys
 async fn invalidate_full_layer_cache(
-    redis: &mut RedisConnection,
+    valkey: &mut ValkeyConnection,
     infra_id: i64,
     layer_name: &str,
 ) -> Result<u64> {
     let prefix: String = get_layer_cache_prefix(layer_name, infra_id);
-    let matching_keys: Vec<String> = redis.keys(format!("{prefix}.*")).await?;
+    let matching_keys: Vec<String> = valkey.keys(format!("{prefix}.*")).await?;
     if matching_keys.is_empty() {
         return Ok(0);
     }
-    let number_of_deleted_keys = redis.del(matching_keys).await?;
+    let number_of_deleted_keys = valkey.del(matching_keys).await?;
     Ok(number_of_deleted_keys)
 }
 
@@ -40,18 +40,18 @@ async fn invalidate_full_layer_cache(
 ///
 /// # Arguments
 ///
-/// * `redis_pool` - Pool to use to connect to the redis
+/// * `valkey` - Pool to use to connect to the valkey
 /// * `layers` - Layers to invalidate
 /// * `infra_id` - Infra to on which layers must be invalidated
 ///
 /// Panics if fail
 pub async fn invalidate_all(
-    redis: &mut RedisConnection,
+    valkey: &mut ValkeyConnection,
     layers: &Vec<String>,
     infra_id: i64,
 ) -> Result<()> {
     for layer_name in layers {
-        invalidate_full_layer_cache(redis, infra_id, layer_name).await?;
+        invalidate_full_layer_cache(valkey, infra_id, layer_name).await?;
     }
     Ok(())
 }

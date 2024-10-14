@@ -151,7 +151,7 @@ async fn project_path(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let redis_client = app_state.redis.clone();
+    let valkey_client = app_state.valkey.clone();
     let core_client = app_state.core_client.clone();
 
     let ProjectPathInput {
@@ -160,7 +160,7 @@ async fn project_path(
         blocks: path_blocks,
     } = path;
     let path_projection = PathProjection::new(&path_track_ranges);
-    let mut redis_conn = redis_client.get_connection().await?;
+    let mut valkey_conn = valkey_client.get_connection().await?;
 
     let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
@@ -185,7 +185,7 @@ async fn project_path(
 
     let simulations = train_simulation_batch(
         &mut db_pool.get().await?,
-        redis_client.clone(),
+        valkey_client.clone(),
         core_client.clone(),
         &trains,
         &infra,
@@ -239,7 +239,7 @@ async fn project_path(
         trains_details.push(train_details);
     }
     let cached_projections: Vec<Option<CachedProjectPathTrainResult>> =
-        redis_conn.json_get_bulk(&trains_hash_values).await?;
+        valkey_conn.json_get_bulk(&trains_hash_values).await?;
 
     let mut hit_cache: HashMap<i64, CachedProjectPathTrainResult> = HashMap::new();
     let mut miss_cache = HashMap::new();
@@ -297,7 +297,7 @@ async fn project_path(
         hit_cache.insert(*id, cached_value.clone());
         new_items.push((hash, cached_value));
     }
-    redis_conn.json_set_bulk(&new_items).await?;
+    valkey_conn.json_set_bulk(&new_items).await?;
 
     let train_map: HashMap<i64, TrainSchedule> = trains.into_iter().map(|ts| (ts.id, ts)).collect();
 
