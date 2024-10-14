@@ -14,12 +14,12 @@ use serde::de::DeserializeOwned;
 use tower_http::trace::TraceLayer;
 
 use crate::{
-    client::{MapLayersConfig, PostgresConfig, RedisConfig},
+    client::{MapLayersConfig, PostgresConfig, ValkeyConfig},
     core::CoreClient,
     generated_data::speed_limit_tags_config::SpeedLimitTagIds,
     infra_cache::InfraCache,
     map::MapLayers,
-    AppState, RedisClient,
+    AppState, ValkeyClient,
 };
 use axum_test::TestRequest;
 use axum_test::TestServer;
@@ -92,9 +92,9 @@ impl TestAppBuilder {
             .finish();
         let tracing_guard = tracing::subscriber::set_default(sub);
 
-        // Config redis
-        let redis = RedisClient::new(RedisConfig::default())
-            .expect("Could not build Redis client")
+        // Config valkey
+        let valkey = ValkeyClient::new(ValkeyConfig::default())
+            .expect("Could not build Valkey client")
             .into();
 
         // Create both database pools
@@ -136,7 +136,7 @@ impl TestAppBuilder {
             db_pool_v2: db_pool_v2.clone(),
             core_client: core_client.clone(),
             osrdyne_client,
-            redis,
+            valkey,
             infra_caches,
             map_layers: MapLayers::parse().into(),
             map_layers_config: MapLayersConfig::default().into(),

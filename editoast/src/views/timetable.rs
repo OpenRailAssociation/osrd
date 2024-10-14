@@ -287,7 +287,7 @@ async fn conflicts(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let redis_client = app_state.redis.clone();
+    let valkey_client = app_state.valkey.clone();
     let core_client = app_state.core_client.clone();
 
     let timetable_id = timetable_id.id;
@@ -312,7 +312,7 @@ async fn conflicts(
 
     let simulations = train_simulation_batch(
         &mut db_pool.get().await?,
-        redis_client.clone(),
+        valkey_client.clone(),
         core_client.clone(),
         &trains,
         &infra,

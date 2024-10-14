@@ -26,7 +26,7 @@ use crate::models::train_schedule::TrainSchedule;
 use crate::models::Infra;
 use crate::models::Retrieve;
 use crate::models::RollingStockModel;
-use crate::redis_utils::RedisConnection;
+use crate::valkey_utils::ValkeyConnection;
 use crate::views::get_app_version;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::PathfindingError;
@@ -81,7 +81,7 @@ struct PathfindingInput {
 async fn post(
     State(AppState {
         db_pool_v2: db_pool,
-        redis,
+        valkey,
         core_client,
         ..
     }): State<AppState>,
@@ -98,33 +98,33 @@ async fn post(
     }
 
     let conn = &mut db_pool.get().await?;
-    let mut redis_conn = redis.get_connection().await?;
+    let mut valkey_conn = valkey.get_connection().await?;
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
     })
     .await?;
 
     Ok(Json(
-        pathfinding_blocks(conn, &mut redis_conn, core_client, &infra, path_input).await?,
+        pathfinding_blocks(conn, &mut valkey_conn, core_client, &infra, path_input).await?,
     ))
 }
 
 /// Pathfinding computation given a path input
 async fn pathfinding_blocks(
     conn: &mut DbConnection,
-    redis_conn: &mut RedisConnection,
+    valkey_conn: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
     path_input: PathfindingInput,
 ) -> Result<PathfindingResult> {
-    let mut path = pathfinding_blocks_batch(conn, redis_conn, core, infra, &[path_input]).await?;
+    let mut path = pathfinding_blocks_batch(conn, valkey_conn, core, infra, &[path_input]).await?;
     Ok(path.pop().unwrap())
 }
 
 /// Pathfinding batch computation given a list of path inputs
 async fn pathfinding_blocks_batch(
     conn: &mut DbConnection,
-    redis_conn: &mut RedisConnection,
+    valkey_conn: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
     pathfinding_inputs: &[PathfindingInput],
@@ -135,9 +135,9 @@ async fn pathfinding_blocks_batch(
         .map(|input| path_input_hash(infra.id, &infra.version, input))
         .collect();
 
-    // Try to retrieve the result from Redis
+    // Try to retrieve the result from Valkey
     let mut pathfinding_results: Vec<Option<PathfindingResult>> =
-        redis_conn.json_get_bulk(&hashes).await?;
+        valkey_conn.json_get_bulk(&hashes).await?;
 
     // Report number of hit cache
     let nb_hit = pathfinding_results.iter().flatten().count();
@@ -212,7 +212,7 @@ async fn pathfinding_blocks_batch(
     }
 
     debug!(nb_results = to_cache.len(), "Caching pathfinding response");
-    redis_conn.json_set_bulk(&to_cache).await?;
+    valkey_conn.json_set_bulk(&to_cache).await?;
 
     Ok(pathfinding_results.into_iter().flatten().collect())
 }
@@ -249,7 +249,7 @@ fn build_pathfinding_request(
 /// Compute a path given a train schedule and an infrastructure.
 pub async fn pathfinding_from_train(
     conn: &mut DbConnection,
-    redis: &mut RedisConnection,
+    valkey: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedule: TrainSchedule,
@@ -261,18 +261,23 @@ pub async fn pathfinding_from_train(
             .map(|rs| (rs.name.clone(), rs))
             .collect();
 
-    Ok(
-        pathfinding_from_train_batch(conn, redis, core, infra, &[train_schedule], &rolling_stocks)
-            .await?
-            .pop()
-            .unwrap(),
+    Ok(pathfinding_from_train_batch(
+        conn,
+        valkey,
+        core,
+        infra,
+        &[train_schedule],
+        &rolling_stocks,
     )
+    .await?
+    .pop()
+    .unwrap())
 }
 
 /// Compute a path given a batch of trainschedule and an infrastructure.
 pub async fn pathfinding_from_train_batch(
     conn: &mut DbConnection,
-    redis: &mut RedisConnection,
+    valkey: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedules: &[TrainSchedule],
@@ -309,7 +314,7 @@ pub async fn pathfinding_from_train_batch(
         to_compute_index.push(index);
     }
 
-    for (index, res) in pathfinding_blocks_batch(conn, redis, core, infra, &to_compute)
+    for (index, res) in pathfinding_blocks_batch(conn, valkey, core, infra, &to_compute)
         .await?
         .into_iter()
         .enumerate()

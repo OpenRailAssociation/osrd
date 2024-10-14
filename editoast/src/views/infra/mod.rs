@@ -133,7 +133,7 @@ async fn refresh(
     }
 
     let db_pool = app_state.db_pool_v2.clone();
-    let redis_client = app_state.redis.clone();
+    let valkey_client = app_state.valkey.clone();
     let infra_caches = app_state.infra_caches.clone();
     let map_layers = app_state.map_layers.clone();
 
@@ -168,7 +168,7 @@ async fn refresh(
         }
     }
 
-    let mut conn = redis_client.get_connection().await?;
+    let mut conn = valkey_client.get_connection().await?;
     for infra_id in infra_refreshed.iter() {
         map::invalidate_all(
             &mut conn,

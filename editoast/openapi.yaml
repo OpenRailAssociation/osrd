@@ -1324,7 +1324,7 @@ paths:
     get:
       tags:
       - layers
-      summary: Mvt tile from the cache if possible, otherwise gets data from the database and caches it in redis
+      summary: Mvt tile from the cache if possible, otherwise gets data from the database and caches it in valkey
       parameters:
       - name: infra
         in: query
@@ -3413,25 +3413,6 @@ components:
           type: string
           enum:
           - editoast:app_health:Database
-    EditoastAppHealthErrorRedis:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:app_health:Redis
     EditoastAppHealthErrorTimeout:
       type: object
       required:
@@ -3451,6 +3432,25 @@ components:
           type: string
           enum:
           - editoast:app_health:Timeout
+    EditoastAppHealthErrorValkey:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:app_health:Valkey
     EditoastAttachedErrorTrackNotFound:
       type: object
       required:
@@ -4039,8 +4039,8 @@ components:
     EditoastError:
       oneOf:
       - $ref: '#/components/schemas/EditoastAppHealthErrorDatabase'
-      - $ref: '#/components/schemas/EditoastAppHealthErrorRedis'
       - $ref: '#/components/schemas/EditoastAppHealthErrorTimeout'
+      - $ref: '#/components/schemas/EditoastAppHealthErrorValkey'
       - $ref: '#/components/schemas/EditoastAttachedErrorTrackNotFound'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorAuthError'
       - $ref: '#/components/schemas/EditoastAuthorizationErrorDbError'
@@ -4099,7 +4099,6 @@ components:
       - $ref: '#/components/schemas/EditoastProjectErrorImageNotFound'
       - $ref: '#/components/schemas/EditoastProjectErrorNotFound'
       - $ref: '#/components/schemas/EditoastRailJsonErrorUnsupportedVersion'
-      - $ref: '#/components/schemas/EditoastRedisConfigErrorUrl'
       - $ref: '#/components/schemas/EditoastRollingStockErrorBasePowerClassEmpty'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotCreateCompoundImage'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotReadImage'
@@ -4127,6 +4126,7 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
+      - $ref: '#/components/schemas/EditoastValkeyConfigErrorUrl'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       description: Generated error type for Editoast
       discriminator:
@@ -4848,30 +4848,6 @@ components:
           type: string
           enum:
           - editoast:railjson:UnsupportedVersion
-    EditoastRedisConfigErrorUrl:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - url
-          properties:
-            url:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:redis:Url
     EditoastRollingStockErrorBasePowerClassEmpty:
       type: object
       required:
@@ -5493,6 +5469,30 @@ components:
           type: string
           enum:
           - editoast:train_schedule:NotFound
+    EditoastValkeyConfigErrorUrl:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - url
+          properties:
+            url:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:valkey:Url
     EditoastWorkScheduleErrorNameAlreadyUsed:
       type: object
       required:

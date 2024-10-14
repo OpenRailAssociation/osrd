@@ -169,7 +169,7 @@ struct TileParams {
     z: u64,
 }
 
-/// Mvt tile from the cache if possible, otherwise gets data from the database and caches it in redis
+/// Mvt tile from the cache if possible, otherwise gets data from the database and caches it in valkey
 #[utoipa::path(
     get, path = "",
     tag = "layers",
@@ -182,7 +182,7 @@ async fn cache_and_get_mvt_tile(
     State(AppState {
         map_layers,
         db_pool_v2: db_pool,
-        redis,
+        valkey,
         ..
     }): State<AppState>,
     Extension(authorizer): AuthorizerExt,
@@ -210,8 +210,8 @@ async fn cache_and_get_mvt_tile(
         &Tile { x, y, z },
     );
 
-    let mut redis = redis.get_connection().await?;
-    let cached_value: Option<Vec<u8>> = redis.get(&cache_key).await?;
+    let mut valkey = valkey.get_connection().await?;
+    let cached_value: Option<Vec<u8>> = valkey.get(&cache_key).await?;
 
     if let Some(value) = cached_value {
         return Ok(([(CONTENT_TYPE, "application/x-protobuf")], value));
@@ -223,10 +223,10 @@ async fn cache_and_get_mvt_tile(
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)
         .to_bytes()
         .unwrap();
-    redis
+    valkey
         .set(&cache_key, mvt_bytes.clone())
         .await
-        .unwrap_or_else(|_| panic!("Failed to set value in redis with key {cache_key}"));
+        .unwrap_or_else(|_| panic!("Failed to set value in valkey with key {cache_key}"));
 
     Ok(([(CONTENT_TYPE, "application/x-protobuf")], mvt_bytes))
 }

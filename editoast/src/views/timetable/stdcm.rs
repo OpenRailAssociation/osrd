@@ -48,9 +48,9 @@ use crate::views::train_schedule::train_simulation_batch;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;
-use crate::RedisClient;
 use crate::Retrieve;
 use crate::RetrieveBatch;
+use crate::ValkeyClient;
 
 crate::routes! {
     "/stdcm" => stdcm,
@@ -169,7 +169,7 @@ async fn stdcm(
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
 
-    let redis_client = app_state.redis.clone();
+    let valkey_client = app_state.valkey.clone();
     let core_client = app_state.core_client.clone();
     let timetable_id = id;
     let infra_id = query.infra;
@@ -196,7 +196,7 @@ async fn stdcm(
 
     let simulations = train_simulation_batch(
         conn,
-        redis_client.clone(),
+        valkey_client.clone(),
         core_client.clone(),
         &trains,
         &infra,
@@ -208,7 +208,7 @@ async fn stdcm(
     // Simulation time without stop duration
     let simulation_run_time_result = get_simulation_run_time(
         db_pool.clone(),
-        redis_client.clone(),
+        valkey_client.clone(),
         core_client.clone(),
         &stdcm_request,
         &infra,
@@ -449,7 +449,7 @@ fn get_earliest_step_tolerance_window(data: &STDCMRequestPayload) -> u64 {
 /// Returns an enum with either the result or a SimulationResponse if it failed
 async fn get_simulation_run_time(
     db_pool: Arc<DbConnectionPoolV2>,
-    redis_client: Arc<RedisClient>,
+    valkey_client: Arc<ValkeyClient>,
     core_client: Arc<CoreClient>,
     data: &STDCMRequestPayload,
     infra: &Infra,
@@ -489,7 +489,7 @@ async fn get_simulation_run_time(
 
     let (sim_result, _) = train_simulation(
         &mut db_pool.get().await?,
-        redis_client,
+        valkey_client,
         core_client,
         train_schedule,
         infra,

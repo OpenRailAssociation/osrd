@@ -8,7 +8,7 @@
 
 volumes:
   psql_data:
-  redis_data:
+  valkey_data:
   rabbitmq_data:
 
 networks:
@@ -35,13 +35,13 @@ services:
     networks:
       - pr-tests
 
-  redis:
+  valkey:
     image: valkey/valkey:alpine
-    container_name: osrd-redis-pr-tests
+    container_name: osrd-valkey-pr-tests
     restart: unless-stopped
     ports: ["6380:6380"]
     volumes:
-      - "redis_data:/data"
+      - "valkey_data:/data"
       - "../docker/valkey.conf:/etc/valkey.conf"
     command: "valkey-server /etc/valkey.conf --port 6380 --save 30 1 --loglevel warning"
     healthcheck:
@@ -86,14 +86,14 @@ services:
     container_name: osrd-editoast-pr-tests
     depends_on:
       postgres: {condition: service_healthy}
-      redis: {condition: service_healthy}
+      valkey: {condition: service_healthy}
       rabbitmq: {condition: service_healthy}
     restart: unless-stopped
     ports: ["8091:8091"]
     environment:
       EDITOAST_PORT: 8091
       ROOT_URL: "http://localhost:8091"
-      REDIS_URL: "redis://redis:6380"
+      VALKEY_URL: "redis://valkey:6380"
       DATABASE_URL: "postgres://osrd:password@postgres:5433/osrd"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4319"

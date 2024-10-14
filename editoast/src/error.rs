@@ -160,14 +160,14 @@ impl EditoastError for DatabaseError {
     }
 }
 
-/// Handle all redis errors
+/// Handle all valkey errors
 impl EditoastError for RedisError {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
     }
 
     fn get_type(&self) -> &str {
-        "editoast:RedisError"
+        "editoast:ValkeyError"
     }
 }
 

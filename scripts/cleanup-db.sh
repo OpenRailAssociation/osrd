@@ -17,15 +17,15 @@ fi
 # These variables are necessary to load the infra on the correct instance (the pr-infra or the dev one)
 OSRD_POSTGRES="osrd-postgres"
 OSRD_EDITOAST="osrd-editoast"
-OSRD_REDIS="osrd-redis"
+OSRD_VALKEY="osrd-valkey"
 OSRD_POSTGRES_PORT=5432
-OSRD_REDIS_PORT=6379
+OSRD_VALKEY_PORT=6379
 if [ "$PR_TEST" -eq 1 ]; then
   OSRD_POSTGRES="osrd-postgres-pr-tests"
   OSRD_EDITOAST="osrd-editoast-pr-tests"
-  OSRD_REDIS="osrd-redis-pr-tests"
+  OSRD_VALKEY="osrd-valkey-pr-tests"
   OSRD_POSTGRES_PORT=5433
-  OSRD_REDIS_PORT=6380
+  OSRD_VALKEY_PORT=6380
 fi
 
 # Check if the database exists
@@ -69,9 +69,9 @@ echo "Initialize new database (no migration)..."
 docker exec "$OSRD_POSTGRES" sh -c 'cat /docker-entrypoint-initdb.d/init.sql | tail -n 1 > /tmp/init.sql'
 docker exec "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -f //tmp/init.sql > /dev/null
 
-# Clear Redis Cache
-echo "Deleting redis cache..."
-docker exec "$OSRD_REDIS" valkey-cli -p "$OSRD_REDIS_PORT" FLUSHALL > /dev/null 2>&1 || docker volume rm -f osrd_redis_data > /dev/null
+# Clear Valkey Cache
+echo "Deleting valkey cache..."
+docker exec "$OSRD_VALKEY" valkey-cli -p "$OSRD_VALKEY_PORT" FLUSHALL > /dev/null 2>&1 || docker volume rm -f osrd_valkey_data > /dev/null
 
 echo "Cleanup done!\n"
 echo "You may want to apply migrations if you don't load a backup:"

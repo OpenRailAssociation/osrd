@@ -18,10 +18,10 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use tracing::trace;
 
-use crate::client::RedisConfig;
+use crate::client::ValkeyConfig;
 use crate::error::Result;
 
-pub enum RedisConnection {
+pub enum ValkeyConnection {
     Cluster(ClusterConnection),
     Tokio(ConnectionManager),
     NoCache,
@@ -48,20 +48,20 @@ fn no_cache_cmd_handler(cmd: &redis::Cmd) -> std::result::Result<redis::Value, R
         },
         redis::Arg::Simple(cmd_name_bytes) if cmd_name_bytes == "PING".as_bytes() => Ok(redis::Value::Status("PONG".to_string())),
         redis::Arg::Simple(cmd_name_bytes) => unimplemented!(
-            "redis command '{}' is not supported by editoast::redis_utils::RedisConnection with '--no-cache'", String::from_utf8(cmd_name_bytes.to_vec())?
+            "valkey command '{}' is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'", String::from_utf8(cmd_name_bytes.to_vec())?
         ),
         redis::Arg::Cursor => unimplemented!(
-            "redis cursor mode is not supported by editoast::redis_utils::RedisConnection with '--no-cache'"
+            "valkey cursor mode is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'"
         ),
     }
 }
 
-impl ConnectionLike for RedisConnection {
+impl ConnectionLike for ValkeyConnection {
     fn req_packed_command<'a>(&'a mut self, cmd: &'a redis::Cmd) -> RedisFuture<'a, redis::Value> {
         match self {
-            RedisConnection::Cluster(connection) => connection.req_packed_command(cmd),
-            RedisConnection::Tokio(connection) => connection.req_packed_command(cmd),
-            RedisConnection::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
+            ValkeyConnection::Cluster(connection) => connection.req_packed_command(cmd),
+            ValkeyConnection::Tokio(connection) => connection.req_packed_command(cmd),
+            ValkeyConnection::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
         }
     }
 
@@ -72,13 +72,13 @@ impl ConnectionLike for RedisConnection {
         count: usize,
     ) -> RedisFuture<'a, Vec<redis::Value>> {
         match self {
-            RedisConnection::Cluster(connection) => {
+            ValkeyConnection::Cluster(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
             }
-            RedisConnection::Tokio(connection) => {
+            ValkeyConnection::Tokio(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
             }
-            RedisConnection::NoCache => {
+            ValkeyConnection::NoCache => {
                 let responses = cmd
                     .cmd_iter()
                     .skip(offset)
@@ -92,15 +92,15 @@ impl ConnectionLike for RedisConnection {
 
     fn get_db(&self) -> i64 {
         match self {
-            RedisConnection::Cluster(connection) => connection.get_db(),
-            RedisConnection::Tokio(connection) => connection.get_db(),
-            RedisConnection::NoCache => 0,
+            ValkeyConnection::Cluster(connection) => connection.get_db(),
+            ValkeyConnection::Tokio(connection) => connection.get_db(),
+            ValkeyConnection::NoCache => 0,
         }
     }
 }
 
-impl RedisConnection {
-    /// Get a deserializable value from redis
+impl ValkeyConnection {
+    /// Get a deserializable value from valkey
     #[tracing::instrument(name = "cache:json_get", skip(self), err)]
     pub async fn json_get<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
@@ -118,7 +118,7 @@ impl RedisConnection {
         }
     }
 
-    /// Get a list of deserializable value from redis
+    /// Get a list of deserializable value from valkey
     #[tracing::instrument(name = "cache:get_bulk", skip(self), err)]
     pub async fn json_get_bulk<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
@@ -143,7 +143,7 @@ impl RedisConnection {
             .collect()
     }
 
-    /// Set a serializable value to redis with expiry time
+    /// Set a serializable value to valkey with expiry time
     #[tracing::instrument(name = "cache:json_set", skip(self, value), err)]
     pub async fn json_set<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
         &mut self,
@@ -164,7 +164,7 @@ impl RedisConnection {
         Ok(())
     }
 
-    /// Set a list of serializable values to redis
+    /// Set a list of serializable values to valkey
     #[tracing::instrument(name = "cache:set_bulk", skip(self, items), err)]
     pub async fn json_set_bulk<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
         &mut self,
@@ -195,45 +195,45 @@ impl RedisConnection {
 }
 
 #[derive(Clone)]
-pub enum RedisClient {
+pub enum ValkeyClient {
     Cluster(ClusterClient),
     Tokio(Client),
     /// This doesn't cache anything. It has no backend.
     NoCache,
 }
 
-impl RedisClient {
-    pub fn new(redis_config: RedisConfig) -> Result<RedisClient> {
-        if redis_config.no_cache {
-            return Ok(RedisClient::NoCache);
+impl ValkeyClient {
+    pub fn new(valkey_config: ValkeyConfig) -> Result<ValkeyClient> {
+        if valkey_config.no_cache {
+            return Ok(ValkeyClient::NoCache);
         }
-        let redis_config_url = redis_config.url()?;
-        if redis_config.is_cluster_client {
-            return Ok(RedisClient::Cluster(
-                redis::cluster::ClusterClient::new(vec![redis_config_url.as_str()]).unwrap(),
+        let valkey_config_url = valkey_config.url()?;
+        if valkey_config.is_cluster_client {
+            return Ok(ValkeyClient::Cluster(
+                redis::cluster::ClusterClient::new(vec![valkey_config_url.as_str()]).unwrap(),
             ));
         }
-        Ok(RedisClient::Tokio(
-            redis::Client::open(redis_config_url.as_str()).unwrap(),
+        Ok(ValkeyClient::Tokio(
+            redis::Client::open(valkey_config_url.as_str()).unwrap(),
         ))
     }
 
-    pub async fn get_connection(&self) -> RedisResult<RedisConnection> {
+    pub async fn get_connection(&self) -> RedisResult<ValkeyConnection> {
         match self {
-            RedisClient::Cluster(client) => Ok(RedisConnection::Cluster(
+            ValkeyClient::Cluster(client) => Ok(ValkeyConnection::Cluster(
                 client.get_async_connection().await?,
             )),
-            RedisClient::Tokio(client) => Ok(RedisConnection::Tokio(
+            ValkeyClient::Tokio(client) => Ok(ValkeyConnection::Tokio(
                 client.get_connection_manager().await?,
             )),
-            RedisClient::NoCache => Ok(RedisConnection::NoCache),
+            ValkeyClient::NoCache => Ok(ValkeyConnection::NoCache),
         }
     }
 
-    pub async fn ping_redis(&self) -> RedisResult<()> {
+    pub async fn ping_valkey(&self) -> RedisResult<()> {
         let mut conn = self.get_connection().await?;
         cmd("PING").query_async::<_, ()>(&mut conn).await?;
-        trace!("Redis ping successful");
+        trace!("Valkey ping successful");
         Ok(())
     }
 }

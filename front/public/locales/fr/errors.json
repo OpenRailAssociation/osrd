@@ -129,7 +129,7 @@
     "railjson": {
       "UnsupportedVersion": "Version de railjson non supportée"
     },
-    "redis": {
+    "valkey": {
       "Url": "Url invalide '{{url}}'"
     },
     "rollingstocks": {
@@ -218,7 +218,7 @@
     "app_health": {
       "Timeout": "Le serveur n'a pas répondu à temps",
       "Database": "Erreur de base de données",
-      "Redis": "Erreur de Redis"
+      "Valkey": "Erreur de Valkey"
     }
   }
 }

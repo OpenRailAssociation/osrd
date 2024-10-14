@@ -13,7 +13,7 @@ For both tests or run:
 - [libpq](https://www.postgresql.org/docs/current/libpq.html) (may be packaged as `libpq-dev`)
 - [openssl](https://www.openssl.org)
 - [libgeos](https://libgeos.org/usage/install/) (may be packaged as `libgeos-dev`)
-- A properly initialized postgresql database and a redis server: `docker compose up --no-build --detach postgres redis`
+- A properly initialized postgresql database and a valkey server: `docker compose up --no-build --detach postgres valkey`
 
 ## Steps
 

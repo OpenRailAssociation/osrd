@@ -58,7 +58,7 @@ use crate::infra_cache::operation;
 use crate::models;
 use crate::models::auth::PgAuthDriver;
 use crate::AppState;
-use crate::RedisClient;
+use crate::ValkeyClient;
 
 crate::routes! {
     pub fn router();
@@ -234,7 +234,7 @@ pub enum AppHealthError {
     #[error(transparent)]
     Database(#[from] editoast_models::db_connection_pool::PingError),
     #[error(transparent)]
-    Redis(#[from] redis::RedisError),
+    Valkey(#[from] redis::RedisError),
 }
 
 #[utoipa::path(
@@ -246,12 +246,12 @@ pub enum AppHealthError {
 async fn health(
     State(AppState {
         db_pool_v2: db_pool,
-        redis,
+        valkey,
         health_check_timeout,
         ..
     }): State<AppState>,
 ) -> Result<&'static str> {
-    timeout(health_check_timeout, check_health(db_pool, redis))
+    timeout(health_check_timeout, check_health(db_pool, valkey))
         .await
         .map_err(|_| AppHealthError::Timeout)??;
     Ok("ok")
@@ -259,12 +259,12 @@ async fn health(
 
 pub async fn check_health(
     db_pool: Arc<DbConnectionPoolV2>,
-    redis_client: Arc<RedisClient>,
+    valkey_client: Arc<ValkeyClient>,
 ) -> Result<()> {
     let mut db_connection = db_pool.clone().get().await?;
     tokio::try_join!(
         ping_database(&mut db_connection).map_err(AppHealthError::Database),
-        redis_client.ping_redis().map_err(|e| e.into())
+        valkey_client.ping_valkey().map_err(|e| e.into())
     )?;
     Ok(())
 }

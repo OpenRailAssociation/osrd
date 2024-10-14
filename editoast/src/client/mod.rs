@@ -1,8 +1,8 @@
 mod postgres_config;
-mod redis_config;
 pub mod roles;
 pub mod stdcm_search_env_commands;
 mod telemetry_config;
+mod valkey_config;
 
 use std::env;
 use std::path::PathBuf;
@@ -14,13 +14,13 @@ use clap::ValueEnum;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 pub use postgres_config::PostgresConfig;
-pub use redis_config::RedisConfig;
 use roles::RolesCommand;
 use stdcm_search_env_commands::StdcmSearchEnvCommands;
 pub use telemetry_config::TelemetryConfig;
 pub use telemetry_config::TelemetryKind;
 use thiserror::Error;
 use url::Url;
+pub use valkey_config::ValkeyConfig;
 
 use crate::error::Result;
 
@@ -30,7 +30,7 @@ pub struct Client {
     #[command(flatten)]
     pub postgres_config: PostgresConfig,
     #[command(flatten)]
-    pub redis_config: RedisConfig,
+    pub valkey_config: ValkeyConfig,
     #[command(flatten)]
     pub telemetry_config: TelemetryConfig,
     #[arg(long, env, value_enum, default_value_t = Color::Auto)]
@@ -132,7 +132,7 @@ pub struct MapLayersConfig {
     #[derivative(Default(value = "18"))]
     #[arg(long, env, default_value_t = 18)]
     pub max_zoom: u64,
-    /// Number maximum of tiles before we consider invalidating full Redis cache is required
+    /// Number maximum of tiles before we consider invalidating full Valkey cache is required
     #[derivative(Default(value = "250_000"))]
     #[arg(long, env, default_value_t = 250_000)]
     pub max_tiles: u64,
