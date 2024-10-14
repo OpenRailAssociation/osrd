@@ -11,6 +11,7 @@ import ConflictsList from 'modules/conflict/components/ConflictsList';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { sortTrainSchedulesByStartTime } from 'utils/date';
 import { distributedIntervalsFromArrayOfValues } from 'utils/numbers';
 
 import TimetableToolbar from './TimetableToolbar';
@@ -125,7 +126,7 @@ const Timetable = ({
         <TimetableToolbar
           showTrainDetails={showTrainDetails}
           toggleShowTrainDetails={toggleShowTrainDetails}
-          trainSchedulesWithDetails={trainSchedulesWithDetails}
+          trainSchedulesWithDetails={sortTrainSchedulesByStartTime(trainSchedulesWithDetails)}
           displayedTrainSchedules={displayedTrainSchedules}
           setDisplayedTrainSchedules={setDisplayedTrainSchedules}
           selectedTrainIds={selectedTrainIds}

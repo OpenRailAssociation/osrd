@@ -7,6 +7,7 @@ import utc from 'dayjs/plugin/utc';
 import type { ScheduleConstraint } from 'applications/stdcmV2/types';
 import type { IsoDateTimeString, IsoDurationString } from 'common/types';
 import i18n from 'i18n';
+import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 
 import { ISO8601Duration2sec } from './timeManipulation';
 
@@ -242,3 +243,10 @@ export const formatDateString = (date?: Date | null) => {
   if (!date) return '';
   return dayjs(date).format('DD/MM/YY');
 };
+
+export const sortTrainSchedulesByStartTime = (
+  trainSchedulesWithDetails: TrainScheduleWithDetails[]
+) =>
+  [...trainSchedulesWithDetails].sort((a, b) =>
+    dayjs(a.startTime, 'D/MM/YYYY HH:mm:ss').diff(dayjs(b.startTime, 'D/MM/YYYY HH:mm:ss'))
+  );
