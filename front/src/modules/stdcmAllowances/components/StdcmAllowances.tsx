@@ -46,7 +46,7 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
   return (
     <div className="d-flex mb-2 osrd-config-item-container px-0">
       <div className="d-flex flex-column">
-        <span className="ml-1 mb-2">{t('allowances:gridMarginBeforeAfter')}</span>
+        <span className="ml-1">{t('allowances:gridMarginBeforeAfter')}</span>
         <div className="d-flex">
           <div className="col-6">
             <InputSNCF

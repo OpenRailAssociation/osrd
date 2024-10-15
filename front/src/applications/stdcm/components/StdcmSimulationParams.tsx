@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 
-import StdcmCard from '../../stdcm/components/StdcmCard';
+import StdcmCard from './StdcmCard';
 
 type StdcmSimulationParamsProps = {
   disabled?: boolean;
@@ -21,7 +21,7 @@ const StdcmSimulationParams = ({
   const { t } = useTranslation('stdcm');
   return (
     <StdcmCard name={t('debug.simulationSettings')} disabled={disabled}>
-      <div className="d-flex">
+      <div className="d-flex stdcm-simulation-params">
         <div className="stdcm-scenario-explorer">
           <ScenarioExplorer
             globalProjectId={projectID}
