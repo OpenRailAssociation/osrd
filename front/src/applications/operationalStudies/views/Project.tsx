@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import AddNewCard from 'common/AddNewCard';
 import { getDocument } from 'common/api/documentApi';
 import {
   type PostSearchApiArg,
@@ -22,8 +23,8 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
+import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import StudyCard from 'modules/study/components/StudyCard';
-import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';
 import { budgetFormat } from 'utils/numbers';
 
 import useMultiSelection from '../hooks/useMultiSelection';
@@ -159,7 +160,13 @@ export default function Project() {
     return !isLoading ? (
       <div className="row no-gutters mt-2">
         <div className="col-hdp-3 col-hd-4 col-lg-6">
-          <StudyCardEmpty />
+          <AddNewCard
+            translationNamespaces={['operationalStudies/project', 'operationalStudies/study']}
+            testId="add-study-button"
+            className="study-card empty"
+            modalComponent={<AddOrEditStudyModal />}
+            legendTranslationKey="createStudy"
+          />
         </div>
         {studiesList.map((study) => (
           <div
