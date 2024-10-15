@@ -94,7 +94,7 @@ val polymorphicPathfindingResponseAdapter: PolymorphicJsonAdapterFactory<Pathfin
         .withSubtype(NotFoundInTracks::class.java, "not_found_in_tracks")
         .withSubtype(IncompatibleConstraintsPathResponse::class.java, "incompatible_constraints")
         .withSubtype(NotEnoughPathItems::class.java, "not_enough_path_items")
-        .withSubtype(PathfindingFailed::class.java, "pathfinding_failed")
+        .withSubtype(PathfindingFailed::class.java, "internal_error")
 
 val pathfindingResponseAdapter: JsonAdapter<PathfindingBlockResponse> =
     Moshi.Builder()
