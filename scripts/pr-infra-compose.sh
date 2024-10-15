@@ -42,7 +42,7 @@ if [ "$2" = "up" ] || [ "$2" = "up-and-load-backup" ]; then
         docker compose \
             -p "osrd-pr-tests" \
             -f "docker/docker-compose.pr-tests.yml" \
-            up -d postgres valkey
+            up --wait valkey postgres -d
 
         # Load backup
         export PR_TEST=1
