@@ -1,4 +1,6 @@
-import { Blocked, ChevronLeft, Pencil } from '@osrd-project/ui-icons';
+import { useEffect, useRef, useState } from 'react';
+
+import { Blocked, ChevronLeft, Pencil, X } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
@@ -22,6 +24,29 @@ const ScenarioDescription = ({
 }: ScenarioDescriptionProps) => {
   const { t } = useTranslation('operationalStudies/scenario');
   const { openModal } = useModal();
+  const [isOpenedDescription, setIsOpenedDescription] = useState<boolean>(false);
+  const [width, setWidth] = useState<number>(0);
+  const ref = useRef<HTMLInputElement | null>(null);
+
+  const showDescription = () => {
+    setIsOpenedDescription(!isOpenedDescription);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (ref.current) {
+        setWidth(ref.current.offsetWidth);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   return (
     <div>
@@ -31,9 +56,23 @@ const ScenarioDescription = ({
         </span>
       </div>
 
-      <div className="scenario-description">
+      <div ref={ref} className="scenario-description">
         {scenario.description && (
-          <div className="scenario-details-description">{scenario.description}</div>
+          <div
+            title={isOpenedDescription ? '' : scenario.description}
+            className={`scenario-details-description ${isOpenedDescription ? 'opened' : 'not-opened'}`}
+            style={{ width: isOpenedDescription ? width + 120 : width }}
+          >
+            {scenario.description}
+            <span
+              onClick={showDescription}
+              role="button"
+              tabIndex={0}
+              className={isOpenedDescription ? 'displayed-description' : 'display-description'}
+            >
+              {isOpenedDescription ? <X /> : '(plus)'}
+            </span>
+          </div>
         )}
         <div className="flex justify-end">
           <button
