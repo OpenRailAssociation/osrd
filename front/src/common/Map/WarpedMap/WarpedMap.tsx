@@ -156,8 +156,8 @@ const WarpedMap = ({
           type="geojson"
           data={osmData[sourceLayer] || featureCollection([])}
         >
-          {layers.map((layer) => (
-            <OrderedLayer key={layer.id} {...(omit(layer, 'source-layer') as OrderedLayerProps)} />
+          {layers.map(({ id, ...layerProps }) => (
+            <OrderedLayer key={id} {...(omit(layerProps, 'source-layer') as OrderedLayerProps)} />
           ))}
         </Source>
       ))}
