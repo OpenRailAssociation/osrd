@@ -1,9 +1,12 @@
-import { Blocked, ChevronLeft, Pencil } from '@osrd-project/ui-icons';
+import { useEffect, useRef, useState } from 'react';
+
+import { Blocked, ChevronLeft, Pencil, X } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import InfraLoadingState from './InfraLoadingState';
 
@@ -22,6 +25,34 @@ const ScenarioDescription = ({
 }: ScenarioDescriptionProps) => {
   const { t } = useTranslation('operationalStudies/scenario');
   const { openModal } = useModal();
+  const [isOpenedDescription, setIsOpenedDescription] = useState<boolean>(false);
+  const expandedDescriptionRef = useRef<HTMLDivElement | null>(null);
+  const collapsedDescriptionRef = useRef<HTMLDivElement | null>(null);
+  const [isTooLongDescription, setIsTooLongDescription] = useState<boolean>(false);
+
+  const toggleDescription = () => {
+    setIsOpenedDescription(!isOpenedDescription);
+  };
+
+  const checkIfDescriptionIsTooLong = () => {
+    if (collapsedDescriptionRef.current)
+      setIsTooLongDescription(
+        collapsedDescriptionRef.current.scrollHeight > collapsedDescriptionRef.current.clientHeight
+      );
+  };
+
+  useOutsideClick(expandedDescriptionRef, () => setIsOpenedDescription(false));
+
+  useEffect(() => {
+    checkIfDescriptionIsTooLong();
+    window.addEventListener('resize', checkIfDescriptionIsTooLong);
+
+    return () => {
+      window.removeEventListener('resize', checkIfDescriptionIsTooLong);
+    };
+  }, []);
+
+  useEffect(checkIfDescriptionIsTooLong, [scenario.description]);
 
   return (
     <div>
@@ -30,10 +61,29 @@ const ScenarioDescription = ({
           {scenario.name}
         </span>
       </div>
-
       <div className="scenario-description">
         {scenario.description && (
-          <div className="scenario-details-description">{scenario.description}</div>
+          <div ref={collapsedDescriptionRef} className="scenario-details-description not-opened">
+            {scenario.description}
+            {isTooLongDescription && (
+              <span role="button" onClick={toggleDescription} tabIndex={0}>
+                (plus)
+              </span>
+            )}
+          </div>
+        )}
+        {isOpenedDescription && (
+          <div ref={expandedDescriptionRef} className="scenario-details-description opened">
+            {scenario.description}
+            <span
+              onClick={toggleDescription}
+              role="button"
+              tabIndex={0}
+              className="displayed-description"
+            >
+              <X />
+            </span>
+          </div>
         )}
         <div className="flex justify-end">
           <button
