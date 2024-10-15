@@ -13,7 +13,9 @@ import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
+import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
+import fr.sncf.osrd.utils.appendOnlyMapOf
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
@@ -128,7 +130,7 @@ fun initInfraExplorer(
                 blockInfra,
                 appendOnlyLinkedListOf(),
                 appendOnlyLinkedListOf(),
-                mutableMapOf(),
+                appendOnlyMapOf(),
                 incrementalPath,
                 blockToPathProperties,
                 stops = stops,
@@ -145,7 +147,7 @@ private class InfraExplorerImpl(
     private val blockInfra: BlockInfra,
     private var blocks: AppendOnlyLinkedList<BlockId>,
     private var routes: AppendOnlyLinkedList<RouteId>,
-    private var blockRoutes: MutableMap<BlockId, RouteId>,
+    private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
     private var incrementalPath: IncrementalPath,
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
@@ -251,7 +253,7 @@ private class InfraExplorerImpl(
             this.blockInfra,
             this.blocks.shallowCopy(),
             this.routes.shallowCopy(),
-            this.blockRoutes.toMutableMap(),
+            this.blockRoutes.shallowCopy(),
             this.incrementalPath.clone(),
             this.pathPropertiesCache,
             this.currentIndex,
@@ -335,7 +337,6 @@ private class InfraExplorerImpl(
         blocks.addAll(addedBlocks)
         routes.add(route)
         for (block in addedBlocks) {
-            assert(!blockRoutes.containsKey(block))
             blockRoutes[block] = route
         }
         for (i in 0 ..< nBlocksToSkip) moveForward()
