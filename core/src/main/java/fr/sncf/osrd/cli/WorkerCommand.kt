@@ -13,8 +13,6 @@ import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2
 import fr.sncf.osrd.api.api_v2.project_signals.SignalProjectionEndpointV2
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint
 import fr.sncf.osrd.api.api_v2.stdcm.STDCMEndpointV2
-import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
-import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.Context
@@ -105,20 +103,14 @@ class WorkerCommand : CliCommand {
 
         val endpoints =
             mapOf(
-                "/pathfinding/routes" to PathfindingBlocksEndpoint(infraManager),
                 "/v2/pathfinding/blocks" to PathfindingBlocksEndpointV2(infraManager),
                 "/v2/path_properties" to PathPropEndpoint(infraManager),
-                "/standalone_simulation" to
-                    StandaloneSimulationEndpoint(infraManager, electricalProfileSetManager),
                 "/v2/standalone_simulation" to
                     SimulationEndpoint(infraManager, electricalProfileSetManager),
-                "/project_signals" to SignalProjectionEndpoint(infraManager),
                 "/v2/signal_projection" to SignalProjectionEndpointV2(infraManager),
-                "/detect_conflicts" to ConflictDetectionEndpoint(),
                 "/v2/conflict_detection" to ConflictDetectionEndpointV2(infraManager),
                 "/cache_status" to InfraCacheStatusEndpoint(infraManager),
                 "/version" to VersionEndpoint(),
-                "/stdcm" to STDCMEndpoint(infraManager),
                 "/v2/stdcm" to STDCMEndpointV2(infraManager),
                 "/infra_load" to InfraLoadEndpoint(infraManager),
             )
