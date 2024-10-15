@@ -219,7 +219,17 @@ fun run(
             routePath,
             blockPath,
             detailedBlockPath,
-            pathStops.filter { it.receptionSignal.isStopOnClosedSignal },
+            signalSightings.associateBy(
+                { it.signal },
+                {
+                    fr.sncf.osrd.api.api_v2.SignalSighting(
+                        it.signal,
+                        it.time.seconds,
+                        Offset(it.offset.meters),
+                        it.state
+                    )
+                }
+            ),
             loadedSignalInfra,
             blockInfra,
             envelopeWithStops,
@@ -260,7 +270,7 @@ fun routingRequirements(
     routePath: StaticIdxList<Route>,
     blockPath: StaticIdxList<Block>,
     detailedBlockPath: List<BlockPathElement>,
-    sortedClosedSignalStops: List<PathStop>,
+    signalSightings: Map<String, fr.sncf.osrd.api.api_v2.SignalSighting>,
     loadedSignalInfra: LoadedSignalInfra,
     blockInfra: BlockInfra,
     envelope: EnvelopeInterpolate,
@@ -366,7 +376,15 @@ fun routingRequirements(
             ) ?: return null
         val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
         val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
-        val limitingSignalOffsetInBlock =
+
+        val physicalSignalId = loadedSignalInfra.getPhysicalSignal(signal)
+        val physicalSignalName = rawInfra.getPhysicalSignalName(physicalSignalId)
+        assert(signalSightings.containsKey(physicalSignalName)) {
+            "Using a signal not processed for critical positions"
+        }
+        return signalSightings[physicalSignalName]!!.time.seconds
+
+        /*val limitingSignalOffsetInBlock =
             blockInfra.getSignalsPositions(limitingBlock)[limitingSignalSpec.signalIndex].distance
 
         val limitingBlockOffset = blockOffsets[limitingSignalSpec.blockIndex]
@@ -396,7 +414,7 @@ fun routingRequirements(
             }
         }
 
-        return maxOf(criticalTime, 0.0)
+        return maxOf(criticalTime, 0.0)*/
     }
 
     val res = mutableListOf<RoutingRequirement>()
