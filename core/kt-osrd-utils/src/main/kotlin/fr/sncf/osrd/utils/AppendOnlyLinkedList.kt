@@ -93,6 +93,18 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
         return AppendOnlyLinkedList(node, untilIndex)
     }
 
+    /**
+     * Iterate over the list backwards, returning the first seen element that fits the predicate.
+     */
+    fun findLast(predicate: (T) -> Boolean): T? {
+        var node = lastNode
+        while (node != null) {
+            if (predicate.invoke(node.element)) return node.element
+            node = node.prev
+        }
+        return null
+    }
+
     /** Utility function for debugger views. */
     override fun toString(): String {
         return toList().toString()
