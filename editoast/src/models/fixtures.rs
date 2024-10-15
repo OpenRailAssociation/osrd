@@ -153,7 +153,7 @@ pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStockModel> 
         serde_json::from_str::<editoast_schemas::rolling_stock::RollingStock>(include_str!(
             "../tests/example_rolling_stock_1.json"
         ))
-        .expect("Unable to parse exemple rolling stock"),
+        .expect("Unable to parse example rolling stock"),
     )
     .name(name.to_owned())
     .version(0)
