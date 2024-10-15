@@ -1,4 +1,5 @@
 pub mod electrical_profiles_commands;
+pub mod import_rolling_stock;
 pub mod infra_commands;
 mod postgres_config;
 pub mod roles;
@@ -17,6 +18,7 @@ use clap::Subcommand;
 use clap::ValueEnum;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
+use import_rolling_stock::ImportRollingStockArgs;
 use infra_commands::InfraCommands;
 pub use postgres_config::PostgresConfig;
 use roles::RolesCommand;
@@ -129,13 +131,6 @@ pub struct RunserverArgs {
     /// The timeout to use when performing the healthcheck, in milliseconds
     #[clap(long, env = "EDITOAST_HEALTH_CHECK_TIMEOUT_MS", default_value_t = 500)]
     pub health_check_timeout_ms: u64,
-}
-
-#[derive(Args, Debug)]
-#[command(about, long_about = "Import a rolling stock given a json file")]
-pub struct ImportRollingStockArgs {
-    /// Rolling stock file path
-    pub rolling_stock_path: Vec<PathBuf>,
 }
 
 #[derive(Args, Debug)]
