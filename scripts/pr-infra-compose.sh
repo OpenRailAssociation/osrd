@@ -7,6 +7,12 @@
 
 set -e
 
+# For Macos ARM chip users set a postgis image compiled to run on ARM, it makes their DB runs faster as their computer don't have to emulate x86_64's architecture.
+case "$(uname -s)" in
+    Darwin*) export OSRD_POSTGIS_IMAGE='nickblah/postgis:16-postgis-3';;
+    *) :;;
+esac
+
 # Usage
 
 if  {
