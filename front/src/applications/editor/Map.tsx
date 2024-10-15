@@ -309,7 +309,6 @@ const MapUnplugged = ({
               <Hillshade
                 mapStyle={mapStyle}
                 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-                display={terrain3DExaggeration > 0}
               />
             </>
           )}

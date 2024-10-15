@@ -245,7 +245,6 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
             <Hillshade
               mapStyle={mapStyle}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-              display={terrain3DExaggeration > 0}
             />
           </>
         )}

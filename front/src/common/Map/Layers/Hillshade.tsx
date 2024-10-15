@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 
 interface HillshadeProps {
   mapStyle: string;
@@ -9,7 +11,9 @@ interface HillshadeProps {
   display?: boolean;
 }
 
-function Hillshade({ mapStyle, layerOrder, display = true }: HillshadeProps) {
+function Hillshade({ mapStyle, layerOrder }: HillshadeProps) {
+  const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
+
   const hillshadeParams: LayerProps = {
     id: 'osm/hillshade',
     source: 'hillshade',
@@ -17,7 +21,7 @@ function Hillshade({ mapStyle, layerOrder, display = true }: HillshadeProps) {
     paint: {},
   };
 
-  return mapStyle !== 'normal' ? null : (
+  return mapStyle !== 'normal' || terrain3DExaggeration === 0 ? null : (
     <Source
       id="hillshade"
       type="raster-dem"
@@ -26,7 +30,7 @@ function Hillshade({ mapStyle, layerOrder, display = true }: HillshadeProps) {
       tileSize={256}
       maxzoom={12}
     >
-      {display && <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />}
+      <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />
     </Source>
   );
 }
