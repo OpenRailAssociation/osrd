@@ -19,6 +19,9 @@
 /front/src/common/api/osrdMiddlewareApi.ts
 /front/src/reducers/osrdconf/infra_schema.json
 
+# --- INTEGRATION E2E TESTS  ---
+/front/tests                                             @openrailassociation/OSRD-e2e-Tests
+
 # --- EDITOAST ---
 /editoast                                                @openrailassociation/OSRD-Editoast
 /editoast/openapi.yaml
