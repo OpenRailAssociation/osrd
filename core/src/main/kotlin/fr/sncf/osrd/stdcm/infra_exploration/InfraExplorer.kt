@@ -288,11 +288,14 @@ private class InfraExplorerImpl(
                 nBlocksToSkip++
             } else {
                 // If a block cannot be explored, give up
+                val endLocation = stops.last().firstOrNull { it.edge == block }
                 val isRouteBlocked =
                     constraints.any { constraint ->
                         constraint.apply(block).any {
                             if (firstLocation != null && firstLocation.edge == block)
                                 firstLocation.offset.distance < it.end.distance
+                            else if (endLocation != null)
+                                endLocation.offset.distance > it.start.distance
                             else true
                         }
                     }
