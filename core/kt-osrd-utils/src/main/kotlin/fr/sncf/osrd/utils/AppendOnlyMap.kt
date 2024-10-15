@@ -5,7 +5,10 @@ package fr.sncf.osrd.utils
  * diverging paths while minimizing copies. See also `AppendOnlyLinkedList`. On duplicates, the
  * previous value is effectively replaced, but it still takes some space in the list.
  */
-class AppendOnlyMap<K, V>(private val list: AppendOnlyLinkedList<Pair<K, V>>) {
+class AppendOnlyMap<K, V>(
+    private val list: AppendOnlyLinkedList<Pair<K, V>>,
+    private val keyFilter: BloomFilter<K>,
+) {
     /**
      * Returns the value associated with the key. O(n) in worst case, O(1) if the value is near the
      * end.
@@ -16,20 +19,21 @@ class AppendOnlyMap<K, V>(private val list: AppendOnlyLinkedList<Pair<K, V>>) {
 
     /** Add the given pair of values to the map. O(1). */
     operator fun set(k: K, v: V) {
+        keyFilter.add(k)
         list.add(Pair(k, v))
     }
 
     /** Returns a copy of the map. The underlying structure is *not* copied. O(1). */
     fun shallowCopy(): AppendOnlyMap<K, V> {
-        return AppendOnlyMap(list.shallowCopy())
+        return AppendOnlyMap(list.shallowCopy(), keyFilter.copy())
     }
 
     /**
      * Returns true if the key is in the key set. O(n) in worst case, O(1) if the value is near the
-     * end. It would be nice to optimize this with a pre-filter similar to bloom filters (though
-     * likely overkill here)
+     * end. Pre-filtered using a bloom filter.
      */
     fun containsKey(key: K): Boolean {
+        if (!keyFilter.mayContain(key)) return false
         return list.findLast { it.first == key } != null
     }
 
@@ -48,5 +52,5 @@ class AppendOnlyMap<K, V>(private val list: AppendOnlyLinkedList<Pair<K, V>>) {
 
 /** Returns a new empty list */
 fun <K, V> appendOnlyMapOf(): AppendOnlyMap<K, V> {
-    return AppendOnlyMap(appendOnlyLinkedListOf())
+    return AppendOnlyMap(appendOnlyLinkedListOf(), emptyBloomFilter())
 }
