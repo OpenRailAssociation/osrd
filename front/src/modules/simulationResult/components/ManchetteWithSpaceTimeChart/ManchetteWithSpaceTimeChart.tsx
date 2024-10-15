@@ -66,18 +66,24 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             height: `${heightOfManchetteWithSpaceTimeChart - 6}px`,
           }}
         >
-          <SpaceTimeChart
-            className="inset-0 absolute h-full"
-            spaceOrigin={
-              (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
-            }
-            timeOrigin={Math.min(...projectPathTrainResult.map((p) => +new Date(p.departure_time)))}
-            {...spaceTimeChartProps}
-          >
-            {spaceTimeChartProps.paths.map((path) => (
-              <PathLayer key={path.id} path={path} color={path.color} />
-            ))}
-          </SpaceTimeChart>
+          {/* TODO: remove this condition after closing
+          https://github.com/OpenRailAssociation/osrd-ui/issues/648 */}
+          {spaceTimeChartProps.spaceScales.length > 0 && (
+            <SpaceTimeChart
+              className="inset-0 absolute h-full"
+              spaceOrigin={
+                (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
+              }
+              timeOrigin={Math.min(
+                ...projectPathTrainResult.map((p) => +new Date(p.departure_time))
+              )}
+              {...spaceTimeChartProps}
+            >
+              {spaceTimeChartProps.paths.map((path) => (
+                <PathLayer key={path.id} path={path} color={path.color} />
+              ))}
+            </SpaceTimeChart>
+          )}
         </div>
       </div>
     </div>
