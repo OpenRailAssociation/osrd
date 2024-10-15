@@ -4,7 +4,7 @@ import { compact } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
+import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
@@ -20,7 +20,7 @@ import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { STDCM_TRAIN_ID } from '../consts';
 
 const useStdcmResults = (
-  stdcmResponse: StdcmV2SuccessResponse | undefined,
+  stdcmResponse: StdcmSuccessResponse | undefined,
   stdcmTrainResult: TrainScheduleResult | undefined,
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void
 ) => {

@@ -2,8 +2,8 @@ import { CheckCircle, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import useHorizontalScroll from 'applications/stdcmV2/hooks/useHorizontalScroll';
-import type { StdcmSimulation } from 'applications/stdcmV2/types';
+import useHorizontalScroll from 'applications/stdcm/hooks/useHorizontalScroll';
+import type { StdcmSimulation } from 'applications/stdcm/types';
 import { formatDateToString } from 'utils/date';
 
 export const SIMULATION_ITEM_CLASSNAME = 'simulation-item';

@@ -16,7 +16,6 @@ export type OsrdContext = {
   slice: OsrdSlice;
   selectors: OsrdSelectors;
   mode: ValueOf<typeof MODES>;
-  isStdcm: boolean;
   isSimulation: boolean;
 } | null;
 
@@ -104,7 +103,6 @@ export const OsrdContextLayout = ({ slice, selectors, mode }: OsrdContextLayoutP
       slice,
       selectors,
       mode,
-      isStdcm: mode === MODES.stdcm,
       isSimulation: mode === MODES.simulation,
     }),
     [slice, selectors]

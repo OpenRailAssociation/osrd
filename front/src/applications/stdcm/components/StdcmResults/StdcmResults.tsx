@@ -4,14 +4,12 @@ import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
-import SimulationReportSheet from 'applications/stdcm/components/SimulationReportSheet';
 import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import useProjectedTrainsForStdcm from 'applications/stdcm/hooks/useProjectedTrainsForStdcm';
 import {
   generateCodeNumber,
   getOperationalPointsWithTimes,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
-import type { StdcmSimulation } from 'applications/stdcmV2/types';
 import i18n from 'i18n';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
@@ -19,8 +17,10 @@ import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
+import type { StdcmSimulation } from 'applications/stdcm/types';
+import SimulationReportSheet from './SimulationReportSheet';
 
-type StcdmResultsV2Props = {
+type StcdmResultsProps = {
   isCalculationFailed: boolean;
   isDebugMode: boolean;
   onRetainSimulation: () => void;
@@ -45,7 +45,7 @@ const StcdmResults = ({
   selectedSimulationIndex,
   showStatusBanner,
   simulationsList,
-}: StcdmResultsV2Props) => {
+}: StcdmResultsProps) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const tWithoutPrefix = i18n.getFixedT(null, 'stdcm');
 

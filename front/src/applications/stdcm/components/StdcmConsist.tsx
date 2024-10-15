@@ -24,7 +24,7 @@ const ConsistCardTitle = ({
   if (!rollingStock) return null;
 
   return (
-    <div className="stdcm-v2-consist-img w-75 d-flex justify-content-end align-self-end">
+    <div className="stdcm-consist-img w-75 d-flex justify-content-end align-self-end">
       <RollingStock2Img rollingStock={rollingStock} />
     </div>
   );
@@ -124,7 +124,7 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
           onSelectSuggestion={onSelectSuggestion}
         />
       </div>
-      <div className="stdcm-v2-consist__properties">
+      <div className="stdcm-consist__properties">
         <Input
           id="tonnage"
           label={t('consist.tonnage')}

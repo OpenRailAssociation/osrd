@@ -79,8 +79,6 @@
   "launchPathFinding": "Lancer la recherche d'itinéraire",
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
-  "maximumRunTime": "Temps de parcours maximum",
-  "maximumRunTimeError": "Le temps de parcours ne doit pas excéder 12h",
   "noPlaceChosen": "Aucun point de passage/arrêt défini",
   "noOriginChosen": "Départ non défini",
   "noDestinationChosen": "Arrivée non définie",

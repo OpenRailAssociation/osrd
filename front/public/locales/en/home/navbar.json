@@ -22,7 +22,6 @@
   },
   "safeWord": "Safety keyword",
   "safeWordHelp": "The \"security keyword\" allows you to transparently filter the list of projects with the word you enter, used as a label. Choose a complicated word so that no-one uses it inadvertently. Add it as a label to a project; it will be automatically added when the project is created if the word is entered here.",
-  "stdcmToggle": "STDCM New interface",
   "userSettings": "User settings",
   "yourSafeWord": "Type in your word"
 }

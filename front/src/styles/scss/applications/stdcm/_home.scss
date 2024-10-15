@@ -1,4 +1,4 @@
-.stdcm-v2 {
+.stdcm {
   font-family: 'IBM Plex Sans';
   min-width: 85rem;
 
@@ -9,7 +9,7 @@
 */
   cursor: default !important;
 
-  .stdcm-v2__body {
+  .stdcm__body {
     padding: 2rem 2rem 3rem;
     background-color: rgb(239, 243, 245);
     display: flex;
@@ -44,14 +44,14 @@
       }
     }
 
-    .stdcm-v2-simulation-inputs {
+    .stdcm-simulation-inputs {
       display: flex;
       gap: 0.813rem;
 
-      .stdcm-v2-consist-container {
+      .stdcm-consist-container {
         width: 20.125rem;
 
-        .stdcm-v2-consist-img {
+        .stdcm-consist-img {
           overflow: hidden;
           img {
             transform: scaleX(-1);
@@ -61,14 +61,14 @@
         }
       }
 
-      .stdcm-v2__separator {
+      .stdcm__separator {
         border-radius: 0.25rem;
         background-color: rgba(0, 0, 0, 0.05);
         width: 0.375rem;
         height: 17.5rem;
         margin: 0.75rem 0;
       }
-      .stdcm-v2-simulation-itinerary {
+      .stdcm-simulation-itinerary {
         display: flex;
         flex-direction: column;
         min-width: 28.125rem;
@@ -80,14 +80,14 @@
           width: 100%;
         }
 
-        .stdcm-v2-vias-list,
-        * > .stdcm-v2-vias-bundle {
+        .stdcm-vias-list,
+        * > .stdcm-vias-bundle {
           display: flex;
           flex-direction: column;
           gap: 1rem;
         }
 
-        .stdcm-v2-vias-list {
+        .stdcm-vias-list {
           margin-block: 1rem;
         }
 
@@ -97,7 +97,7 @@
         }
 
         /*TODO Waiting to fix the button in ui-core...*/
-        .stdcm-v2-launch-request {
+        .stdcm-launch-request {
           button {
             justify-content: center;
             width: 100%;
@@ -186,7 +186,7 @@
       }
     }
 
-    .stdcm-v2-map {
+    .stdcm-map {
       border-radius: 0.5rem;
       border: 0.063rem solid rgba(255, 255, 255, 1);
       box-shadow:

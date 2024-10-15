@@ -134,7 +134,7 @@ const StdcmConfig = ({
   }, [infra]);
 
   return (
-    <div className="stdcm-v2__body">
+    <div className="stdcm__body">
       {isDebugMode && (
         <div className="stdcm-simulation-parameters">
           <StdcmSimulationParams {...{ disabled, projectID, studyID, scenarioID }} />
@@ -142,12 +142,12 @@ const StdcmConfig = ({
       )}
 
       <div className="d-flex">
-        <div className="stdcm-v2-simulation-inputs">
-          <div className="stdcm-v2-consist-container">
+        <div className="stdcm-simulation-inputs">
+          <div className="stdcm-consist-container">
             <StdcmConsist {...inputsProps} />
           </div>
-          <div className="stdcm-v2__separator" />
-          <div className="stdcm-v2-simulation-itinerary">
+          <div className="stdcm__separator" />
+          <div className="stdcm-simulation-itinerary">
             {/* //TODO: use them when we implement this feature #403 */}
             {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
             <StdcmOrigin {...inputsProps} origin={origin} />
@@ -155,7 +155,7 @@ const StdcmConfig = ({
             <StdcmDestination {...inputsProps} destination={destination} />
             {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
             <div
-              className={cx('stdcm-v2-launch-request', {
+              className={cx('stdcm-launch-request', {
                 'wizz-effect': pathfinding?.status !== 'success' || formErrors,
               })}
             >
@@ -173,7 +173,7 @@ const StdcmConfig = ({
           </div>
         </div>
 
-        <div className="osrd-config-item-container osrd-config-item-container-map stdcm-v2-map">
+        <div className="osrd-config-item-container osrd-config-item-container-map stdcm-map">
           <Map
             hideAttribution
             hideItinerary
