@@ -1,27 +1,30 @@
-import PropTypes from 'prop-types';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 
-interface HillshadeProps {
+type HillshadeProps = {
   mapStyle: string;
   layerOrder?: number;
   display?: boolean;
-}
+};
 
-function Hillshade({ mapStyle, layerOrder }: HillshadeProps) {
+const hillshadeParams: LayerProps = {
+  id: 'osm/hillshade',
+  source: 'hillshade',
+  type: 'hillshade',
+  paint: {},
+};
+
+const Hillshade = ({ mapStyle, layerOrder }: HillshadeProps) => {
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
 
-  const hillshadeParams: LayerProps = {
-    id: 'osm/hillshade',
-    source: 'hillshade',
-    type: 'hillshade',
-    paint: {},
-  };
+  if (mapStyle !== 'normal' || terrain3DExaggeration === 0) {
+    return null;
+  }
 
-  return mapStyle !== 'normal' || terrain3DExaggeration === 0 ? null : (
+  return (
     <Source
       id="hillshade"
       type="raster-dem"
@@ -33,10 +36,6 @@ function Hillshade({ mapStyle, layerOrder }: HillshadeProps) {
       <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />
     </Source>
   );
-}
-
-Hillshade.propTypes = {
-  mapStyle: PropTypes.string.isRequired,
 };
 
 export default Hillshade;
