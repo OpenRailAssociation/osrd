@@ -39,3 +39,9 @@ export const TAG_COLORS = {
   FALLBACK: '#216482',
   INCOMPATIBLE: '#EAA72B',
 };
+
+export const OCCUPANCY_BLOCKS_COLORS = {
+  FREE: '#CAEDDB',
+  SEMAPHORE: '#FFD4D8',
+  WARNING: '#FFEABF',
+};

@@ -3,7 +3,12 @@ import { useRef, useState } from 'react';
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
-import { ConflictLayer, PathLayer, SpaceTimeChart } from '@osrd-project/ui-spacetimechart';
+import {
+  ConflictLayer,
+  OccupancyBlockLayer,
+  PathLayer,
+  SpaceTimeChart,
+} from '@osrd-project/ui-spacetimechart';
 import type { Conflict } from '@osrd-project/ui-spacetimechart';
 
 import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
@@ -12,6 +17,7 @@ import type { WaypointsPanelData } from 'modules/simulationResult/types';
 import SettingsPanel from './SettingsPanel';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
+import { OCCUPANCY_BLOCKS_COLORS } from 'modules/simulationResult/consts';
 
 type ManchetteWithSpaceTimeChartProps = {
   operationalPoints: OperationalPoint[];
@@ -42,7 +48,33 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   );
 
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [settings, setSettings] = useState({ showConflicts: false });
+  const [settings, setSettings] = useState({
+    showConflicts: false,
+    showBAL: false,
+    showBAPR: false,
+    showTVM: false,
+    showSignalsStates: false,
+  });
+
+  const occupancyBlocks = projectPathTrainResult
+    .filter((train) => train.signal_updates)
+    .flatMap((train) =>
+      train.signal_updates.flatMap((block) => ({
+        timeStart: +new Date(train.departure_time) + block.time_start,
+        timeEnd: +new Date(train.departure_time) + block.time_end,
+        spaceStart: block.position_start,
+        spaceEnd: block.position_end,
+        aspect_label: block.aspect_label,
+        color: block.aspect_label.includes('VL')
+          ? OCCUPANCY_BLOCKS_COLORS.FREE
+          : block.aspect_label === 'S' || block.aspect_label === 'OCCUPIED'
+            ? OCCUPANCY_BLOCKS_COLORS.SEMAPHORE
+            : block.aspect_label.includes('A')
+              ? OCCUPANCY_BLOCKS_COLORS.WARNING
+              : '',
+        departure_time: train.departure_time,
+      }))
+    );
 
   return (
     <div className="manchette-space-time-chart-wrapper">
@@ -103,6 +135,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
                 <PathLayer key={path.id} path={path} color={path.color} />
               ))}
               {settings.showConflicts && <ConflictLayer conflicts={conflicts} />}
+              {settings.showSignalsStates && (
+                <OccupancyBlockLayer occupancyBlocks={occupancyBlocks} />
+              )}
             </SpaceTimeChart>
           )}
         </div>

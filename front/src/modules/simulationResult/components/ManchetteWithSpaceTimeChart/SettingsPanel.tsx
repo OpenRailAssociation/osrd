@@ -6,6 +6,10 @@ import { useTranslation } from 'react-i18next';
 
 type Settings = {
   showConflicts: boolean;
+  showBAL: boolean;
+  showBAPR: boolean;
+  showTVM: boolean;
+  showSignalsStates: boolean;
 };
 
 type SettingsPanelProps = {
@@ -17,8 +21,8 @@ type SettingsPanelProps = {
 const SettingsPanel = ({ settings, onChange, onClose }: SettingsPanelProps) => {
   const { t } = useTranslation('simulation');
 
-  const handleConflictsChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...settings, showConflicts: event.target.checked });
+  const handleChange = (key: keyof Settings) => (event: ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...settings, [key]: event.target.checked });
   };
 
   return (
@@ -28,11 +32,35 @@ const SettingsPanel = ({ settings, onChange, onClose }: SettingsPanelProps) => {
       </button>
 
       <section>
+        <header>{t('timeSpaceChartSettings.capacity')}</header>
+        <Checkbox
+          label={t('timeSpaceChartSettings.signals.BAL')}
+          checked={settings.showBAL}
+          onChange={handleChange('showBAL')}
+        />
+        <Checkbox
+          label={t('timeSpaceChartSettings.signals.BAPR')}
+          checked={settings.showBAPR}
+          onChange={handleChange('showBAPR')}
+        />
+        <Checkbox
+          label={t('timeSpaceChartSettings.signals.TVM')}
+          checked={settings.showTVM}
+          onChange={handleChange('showTVM')}
+        />
+        <Checkbox
+          label={t('timeSpaceChartSettings.signals.signalsStates')}
+          checked={settings.showSignalsStates}
+          onChange={handleChange('showSignalsStates')}
+        />
+      </section>
+
+      <section>
         <header>{t('timeSpaceChartSettings.paths')}</header>
         <Checkbox
           label={t('timeSpaceChartSettings.conflicts')}
           checked={settings.showConflicts}
-          onChange={handleConflictsChange}
+          onChange={handleChange('showConflicts')}
         />
       </section>
     </div>
