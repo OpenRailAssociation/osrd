@@ -43,10 +43,6 @@
   "rotate": "Pivoter le graphique",
   "simplify": "Simplification des données",
   "speedLimitComposition": "Composition",
-  "timeSpaceChartSettings": {
-    "paths": "Sillons",
-    "conflicts": "Conflits"
-  },
   "speedSpaceChart": "Graphique Espace Vitesse",
   "speedSpaceSettings": {
     "context": "Contexte",
@@ -66,6 +62,12 @@
   "stopPlace": "Lieu",
   "stopStopTime": "Arrêt",
   "stopTime": "Arrivée",
+  "timeSpaceChartSettings": {
+    "capacity": "Capacité",
+    "conflicts": "Conflits",
+    "paths": "Sillons",
+    "signalsStates": "États des signaux"
+  },
   "timetable": "Table horaire",
   "toggleElectricalProfileLegend": "Basculer l'affichage de la légende des tractions électriques",
   "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",
