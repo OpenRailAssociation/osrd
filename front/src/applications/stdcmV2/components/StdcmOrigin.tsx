@@ -13,6 +13,7 @@ import { extractDateAndTimefromISO, generateISODateFromDateTime } from 'utils/da
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmOpSchedule from './StdcmOpSchedule';
+import DEFAULT_TOLERANCE from '../consts';
 import { ArrivalTimeTypes, type ScheduleConstraint, type StdcmConfigCardProps } from '../types';
 
 const StdcmOrigin = ({
@@ -36,8 +37,8 @@ const StdcmOrigin = ({
     () => ({
       originArrival: origin?.arrival ? extractDateAndTimefromISO(origin.arrival) : undefined,
       originToleranceValues: {
-        arrivalToleranceBefore: origin?.arrivalToleranceBefore || 0,
-        arrivalToleranceAfter: origin?.arrivalToleranceAfter || 0,
+        arrivalToleranceBefore: origin?.arrivalToleranceBefore || DEFAULT_TOLERANCE,
+        arrivalToleranceAfter: origin?.arrivalToleranceAfter || DEFAULT_TOLERANCE,
       },
     }),
     [origin]

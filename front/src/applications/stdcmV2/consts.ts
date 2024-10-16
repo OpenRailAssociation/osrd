@@ -1,0 +1,2 @@
+const DEFAULT_TOLERANCE = 1800; // 30min
+export default DEFAULT_TOLERANCE;
