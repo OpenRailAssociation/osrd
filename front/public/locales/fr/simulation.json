@@ -62,6 +62,9 @@
   "stopPlace": "Lieu",
   "stopStopTime": "Arrêt",
   "stopTime": "Arrivée",
+  "timeSpaceChartSettings": {
+    "occupancyBlocks": "Blocs d'occupation"
+  },
   "timetable": "Table horaire",
   "toggleElectricalProfileLegend": "Basculer l'affichage de la légende des tractions électriques",
   "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",
