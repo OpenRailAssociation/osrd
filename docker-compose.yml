@@ -21,6 +21,7 @@ services:
       test: ["CMD", "pg_isready", "-d", "postgres://osrd:password@postgres/osrd"]
       start_period: 4s
       interval: 5s
+      retries: 20
 
   valkey:
     image: valkey/valkey:alpine
@@ -35,6 +36,7 @@ services:
       test: ["CMD", "valkey-cli", "ping"]
       start_period: 4s
       interval: 5s
+      retries: 20
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -49,9 +51,9 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   core:
     # This is a dummy container to build the core image
@@ -101,6 +103,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       start_period: 4s
       interval: 5s
+      retries: 6
 
   editoast:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-editoast:${TAG-dev}
@@ -135,6 +138,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       start_period: 4s
       interval: 5s
+      retries: 6
 
   gateway:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:${TAG-dev}-standalone
