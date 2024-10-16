@@ -510,11 +510,11 @@ async fn update_locked(
 
     let conn = &mut db_pool.get().await?;
 
-    // FIXME: check that the rolling stock exists (the Option<RollingStockModel> is ignored here)
-    // should return a 404 instead of a 204 in case the identifier doesn't exist.
     RollingStockModel::changeset()
         .locked(locked)
-        .update(conn, rolling_stock_id)
+        .update_or_fail(conn, rolling_stock_id, || RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        })
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
@@ -1221,6 +1221,18 @@ pub mod tests {
         // THEN
         let response: InternalError = raw_response.assert_status(StatusCode::CONFLICT).json_into();
         assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
+    }
+
+    #[rstest]
+    async fn patch_lock_rolling_stock_failed() {
+        let app = TestAppBuilder::default_app();
+
+        let id: i64 = rand::random();
+        let request = app
+            .patch(&format!("/rolling_stock/{id}/locked"))
+            .json(&json!({ "locked": true }));
+
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]

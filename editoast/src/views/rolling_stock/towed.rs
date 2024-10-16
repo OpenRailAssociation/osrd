@@ -334,11 +334,13 @@ async fn patch_by_id_locked(
 
     let conn = &mut db_pool.get().await?;
 
-    // FIXME: check that the towed rolling stock exists (the Option<RollingStockModel> is ignored here)
-    // should return a 404 instead of a 204 in case the identifier doesn't exist.
     TowedRollingStockModel::changeset()
         .locked(locked)
-        .update(conn, towed_rolling_stock_id)
+        .update_or_fail(conn, towed_rolling_stock_id, || {
+            TowedRollingStockError::IdNotFound {
+                towed_rolling_stock_id,
+            }
+        })
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
@@ -467,6 +469,18 @@ mod tests {
 
         assert_eq!(updated_towed_rolling_stock.name, name);
         assert_eq!(updated_towed_rolling_stock.mass, 13000.0);
+    }
+
+    #[rstest]
+    async fn modify_lock_on_unknown_towed_rolling_stock() {
+        let app = TestAppBuilder::default_app();
+
+        let id: i64 = rand::random(); // <-- doesn't exist
+        app.fetch(
+            app.patch(&format!("/towed_rolling_stock/{id}/locked"))
+                .json(&json!({ "locked": false })),
+        )
+        .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
