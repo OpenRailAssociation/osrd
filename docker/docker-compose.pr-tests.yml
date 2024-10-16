@@ -32,6 +32,7 @@ services:
       test: ["CMD", "pg_isready", "-d", "postgres://osrd:password@postgres:5433/osrd"]
       start_period: 4s
       interval: 5s
+      retries: 20
     networks:
       - pr-tests
 
@@ -48,6 +49,7 @@ services:
       test: ["CMD", "valkey-cli", "-p" , "6380", "ping"]
       start_period: 4s
       interval: 5s
+      retries: 20
     networks:
       - pr-tests
 
@@ -67,9 +69,9 @@ services:
       - ../docker/rabbitmq-pr-tests.conf:/etc/rabbitmq/rabbitmq.conf
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
-      interval: 15s
-      timeout: 30s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      retries: 20
     networks:
       - pr-tests
 
@@ -107,6 +109,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8091/health"]
       start_period: 4s
       interval: 5s
+      retries: 6
     networks:
       - pr-tests
 
