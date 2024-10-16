@@ -366,21 +366,22 @@ fun routingRequirements(
             ) ?: return null
         val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
         val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
-        val limitingSignalOffset =
+        val limitingSignalOffsetInBlock =
             blockInfra.getSignalsPositions(limitingBlock)[limitingSignalSpec.signalIndex].distance
 
-        val blockOffset = blockOffsets[limitingSignalSpec.blockIndex]
-        val sightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
+        val limitingBlockOffset = blockOffsets[limitingSignalSpec.blockIndex]
+        val signalSightDistance =
+            rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
 
         // find the location at which establishing the route becomes necessary
-        var criticalPos = blockOffset + limitingSignalOffset - sightDistance
+        val criticalPos = limitingBlockOffset + limitingSignalOffsetInBlock - signalSightDistance
         var criticalTime = envelope.interpolateArrivalAtClamp(criticalPos.distance.meters)
 
         // check if an arrival on stop signal is scheduled between the critical position and the
         // entry signal of the route (both position and time, as there is a time margin)
         // in this case, just move the critical position to just after the stop
         val entrySignalOffset =
-            blockOffset + blockInfra.getSignalsPositions(firstRouteBlock).first().distance
+            limitingBlockOffset + blockInfra.getSignalsPositions(firstRouteBlock).first().distance
         for (stop in stops.reversed()) {
             val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
             if (
