@@ -126,6 +126,18 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
+     * Creates a new OSRDError for any kind of unrecoverable infra error
+     *
+     * @param message a short description of what went wrong
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newInfraError(String message) {
+        var error = new OSRDError(ErrorType.InfraHardError);
+        error.context.put("error", message);
+        return error;
+    }
+
+    /**
      * Creates a new OSRDError for an infrastructure loading error.
      *
      * @param errorType the error type
@@ -149,6 +161,7 @@ public final class OSRDError extends RuntimeException {
     public static OSRDError newInfraLoadingError(ErrorType errorType, Object sourceOperation, Throwable e) {
         var error = new OSRDError(errorType, e);
         error.context.put("source_operation", sourceOperation);
+        error.context.put("original_error", e);
         return error;
     }
 
