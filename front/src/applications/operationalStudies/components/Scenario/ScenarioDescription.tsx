@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import InfraLoadingState from './InfraLoadingState';
 
@@ -27,6 +28,7 @@ const ScenarioDescription = ({
   const [isOpenedDescription, setIsOpenedDescription] = useState<boolean>(false);
   const [width, setWidth] = useState<number>(0);
   const ref = useRef<HTMLInputElement | null>(null);
+  const descriptionRef = useRef<HTMLDivElement | null>(null);
 
   const showDescription = () => {
     setIsOpenedDescription(!isOpenedDescription);
@@ -48,17 +50,20 @@ const ScenarioDescription = ({
     };
   }, []);
 
+  useOutsideClick(descriptionRef, () => setIsOpenedDescription(false));
+
   return (
-    <div>
+    <div ref={ref}>
       <div className="scenario-details-name">
         <span className="flex-grow-1 scenario-name text-truncate" title={scenario.name}>
           {scenario.name}
         </span>
       </div>
 
-      <div ref={ref} className="scenario-description">
+      <div className="scenario-description">
         {scenario.description && (
           <div
+            ref={descriptionRef}
             title={isOpenedDescription ? '' : scenario.description}
             className={`scenario-details-description ${isOpenedDescription ? 'opened' : 'not-opened'}`}
             style={{ width: isOpenedDescription ? width + 120 : width }}
