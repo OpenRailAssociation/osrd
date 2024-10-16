@@ -8,13 +8,15 @@ import {
   PathLayer,
   SpaceTimeChart,
   WorkScheduleLayer,
+  OccupancyBlockLayer,
 } from '@osrd-project/ui-spacetimechart';
 import type { Conflict } from '@osrd-project/ui-spacetimechart';
 
 import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
-import type { WaypointsPanelData } from 'modules/simulationResult/types';
+import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
+import type { AspectLabel, WaypointsPanelData } from 'modules/simulationResult/types';
 
 import SettingsPanel from './SettingsPanel';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
@@ -51,7 +53,22 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   );
 
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [settings, setSettings] = useState({ showConflicts: false });
+  const [settings, setSettings] = useState({
+    showConflicts: false,
+    showSignalsStates: false,
+  });
+
+  const occupancyBlocks = projectPathTrainResult.flatMap((train) => {
+    const departureTime = new Date(train.departure_time).getTime();
+
+    return train.signal_updates.map((block) => ({
+      timeStart: departureTime + block.time_start,
+      timeEnd: departureTime + block.time_end,
+      spaceStart: block.position_start,
+      spaceEnd: block.position_end,
+      color: ASPECT_LABELS_COLORS[block.aspect_label as AspectLabel],
+    }));
+  });
 
   return (
     <div className="manchette-space-time-chart-wrapper">
@@ -118,6 +135,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               />
             )}
             {settings.showConflicts && <ConflictLayer conflicts={conflicts} />}
+            {settings.showSignalsStates && (
+              <OccupancyBlockLayer occupancyBlocks={occupancyBlocks} />
+            )}
           </SpaceTimeChart>
         </div>
       </div>

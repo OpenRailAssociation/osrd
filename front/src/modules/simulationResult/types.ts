@@ -41,3 +41,19 @@ export type WaypointsPanelData = {
   setFilteredWaypoints: (waypoints: OperationalPoint[]) => void;
   projectionPath: TrainScheduleBase['path'];
 };
+
+export type AspectLabel =
+  | 'VL'
+  | '300VL'
+  | 'S'
+  | 'OCCUPIED'
+  | 'C'
+  | 'RRR'
+  | '(A)'
+  | 'A'
+  | '300(VL)'
+  | '270A'
+  | '220A'
+  | '160A'
+  | '080A'
+  | '000';

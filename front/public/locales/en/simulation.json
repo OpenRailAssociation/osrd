@@ -43,10 +43,6 @@
   "rotate": "Rotate the chart",
   "simplify": "Data simplification",
   "speedLimitComposition": "Composition",
-  "timeSpaceChartSettings": {
-    "paths": "Paths",
-    "conflicts": "Conflicts"
-  },
   "speedSpaceChart": "Speed Space Chart",
   "speedSpaceSettings": {
     "context": "Context",
@@ -66,6 +62,12 @@
   "stopPlace": "Place",
   "stopStopTime": "Stop",
   "stopTime": "Arrival",
+  "timeSpaceChartSettings": {
+    "capacity": "Capacity",
+    "conflicts": "Conflicts",
+    "paths": "Paths",
+    "signalsStates": "Signals states"
+  },
   "timetable": "Timetable",
   "toggleElectricalProfileLegend": "Toggle electrical profiles legend",
   "toggleManchetteMenu": "Toggle manchette menu",

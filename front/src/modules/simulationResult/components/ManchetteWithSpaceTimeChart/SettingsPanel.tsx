@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 type Settings = {
   showConflicts: boolean;
+  showSignalsStates: boolean;
 };
 
 type SettingsPanelProps = {
@@ -17,8 +18,8 @@ type SettingsPanelProps = {
 const SettingsPanel = ({ settings, onChange, onClose }: SettingsPanelProps) => {
   const { t } = useTranslation('simulation');
 
-  const handleConflictsChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...settings, showConflicts: event.target.checked });
+  const handleChange = (key: keyof Settings) => (event: ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...settings, [key]: event.target.checked });
   };
 
   return (
@@ -27,12 +28,21 @@ const SettingsPanel = ({ settings, onChange, onClose }: SettingsPanelProps) => {
         <X />
       </button>
 
+      <section className="pb-4">
+        <header>{t('timeSpaceChartSettings.capacity')}</header>
+        <Checkbox
+          label={t('timeSpaceChartSettings.signalsStates')}
+          checked={settings.showSignalsStates}
+          onChange={handleChange('showSignalsStates')}
+        />
+      </section>
+
       <section>
         <header>{t('timeSpaceChartSettings.paths')}</header>
         <Checkbox
           label={t('timeSpaceChartSettings.conflicts')}
           checked={settings.showConflicts}
-          onChange={handleConflictsChange}
+          onChange={handleChange('showConflicts')}
         />
       </section>
     </div>
