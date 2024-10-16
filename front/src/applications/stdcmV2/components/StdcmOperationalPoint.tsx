@@ -4,7 +4,7 @@ import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
-import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import { type SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { normalized } from 'utils/strings';

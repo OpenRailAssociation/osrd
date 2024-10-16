@@ -14,6 +14,7 @@ import { useAppDispatch } from 'store';
 
 import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
+import StdcmLinkedPathSearch from './StdcmLinkedPathSearch';
 import StdcmOrigin from './StdcmOrigin';
 import StdcmSimulationParams from './StdcmSimulationParams';
 import StdcmVias from './StdcmVias';
@@ -140,35 +141,34 @@ const StdcmConfig = ({
           <StdcmSimulationParams {...{ disabled, projectID, studyID, scenarioID }} />
         </div>
       )}
-
       <div className="d-flex">
-        <div className="stdcm-v2-simulation-inputs">
-          <div className="stdcm-v2-consist-container">
-            <StdcmConsist {...inputsProps} />
-          </div>
-          <div className="stdcm-v2__separator" />
-          <div className="stdcm-v2-simulation-itinerary">
-            {/* //TODO: use them when we implement this feature #403 */}
-            {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
-            <StdcmOrigin {...inputsProps} origin={origin} />
-            <StdcmVias {...inputsProps} />
-            <StdcmDestination {...inputsProps} destination={destination} />
-            {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
-            <div
-              className={cx('stdcm-v2-launch-request', {
-                'wizz-effect': pathfinding?.status !== 'success' || formErrors,
-              })}
-            >
-              {showBtnToLaunchSimulation && (
-                <Button label={t('simulation.getSimulation')} onClick={startSimulation} />
-              )}
-              {formErrors && (
-                <StdcmWarningBox
-                  errorInfos={formErrors}
-                  removeOriginArrivalTime={removeOriginArrivalTime}
-                  removeDestinationArrivalTime={removeDestinationArrivalTime}
-                />
-              )}
+        <div className="d-flex flex-column">
+          <StdcmLinkedPathSearch />
+          <div className="stdcm-v2-simulation-inputs">
+            <div className="stdcm-v2-consist-container">
+              <StdcmConsist {...inputsProps} />
+            </div>
+            <div className="stdcm-v2__separator" />
+            <div className="stdcm-v2-simulation-itinerary">
+              <StdcmOrigin {...inputsProps} origin={origin} />
+              <StdcmVias {...inputsProps} />
+              <StdcmDestination {...inputsProps} destination={destination} />
+              <div
+                className={cx('stdcm-v2-launch-request', {
+                  'wizz-effect': pathfinding?.status !== 'success' || formErrors,
+                })}
+              >
+                {showBtnToLaunchSimulation && (
+                  <Button label={t('simulation.getSimulation')} onClick={startSimulation} />
+                )}
+                {formErrors && (
+                  <StdcmWarningBox
+                    errorInfos={formErrors}
+                    removeOriginArrivalTime={removeOriginArrivalTime}
+                    removeDestinationArrivalTime={removeDestinationArrivalTime}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
