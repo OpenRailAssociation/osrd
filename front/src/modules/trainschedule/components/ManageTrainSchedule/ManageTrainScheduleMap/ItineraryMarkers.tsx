@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import type { Position } from '@turf/helpers';
 import cx from 'classnames';
@@ -15,6 +15,7 @@ import viaSVG from 'assets/pictures/via.svg';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getNearestTrack } from 'utils/mapHelper';
+import { usePathfinding } from 'modules/pathfinding/hooks/usePathfinding';
 
 enum MARKER_TYPE {
   ORIGIN = 'origin',
@@ -57,17 +58,33 @@ const formatPointWithNoName = (
   </>
 );
 
-const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAssets: boolean) =>
-  pathSteps.reduce((acc, cur, index) => {
+const extractMarkerInformation = (
+  pathSteps: (PathStep | null)[],
+  showStdcmAssets: boolean,
+  invalidItems: string[] = []
+) => {
+  console.log('Extracting marker information');
+  console.log('pathSteps:', pathSteps);
+  console.log('invalidItems:', invalidItems);
+
+  const filteredPathSteps = pathSteps.filter(
+    (step) =>
+      step && step.coordinates && (!('trigram' in step) || !invalidItems.includes(step.trigram))
+  );
+
+  return filteredPathSteps.reduce((acc, cur, index) => {
+    console.log(`Processing PathStep at index ${index}:`, cur);
     if (cur && cur.coordinates) {
       if (index === 0) {
+        console.log('Adding ORIGIN marker');
         acc.push({
           coordinates: cur.coordinates,
           type: MARKER_TYPE.ORIGIN,
           marker: cur,
           imageSource: showStdcmAssets ? stdcmOrigin : originSVG,
         });
-      } else if (index > 0 && index < pathSteps.length - 1) {
+      } else if (index > 0 && index < filteredPathSteps.length - 1) {
+        console.log('Adding VIA marker');
         acc.push({
           coordinates: cur.coordinates,
           type: MARKER_TYPE.VIA,
@@ -75,7 +92,8 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAsset
           imageSource: showStdcmAssets ? stdcmVia : viaSVG,
           index,
         });
-      } else if (index === pathSteps.length - 1) {
+      } else if (index === filteredPathSteps.length - 1) {
+        console.log('Adding DESTINATION marker');
         acc.push({
           coordinates: cur.coordinates,
           type: MARKER_TYPE.DESTINATION,
@@ -86,15 +104,33 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAsset
     }
     return acc;
   }, [] as MarkerInformation[]);
+};
 
 const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: ItineraryMarkersProps) => {
   const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
 
+  useEffect(() => {
+    console.log('Retrieved pathSteps:', pathSteps);
+    pathSteps.forEach((step, index) => {
+      if (step) {
+        console.log(`PathStep at index ${index} - ID: ${step.id}, Coordinates:`, step.coordinates);
+      }
+    });
+  }, [pathSteps]);
+
+  const { invalidItems } = usePathfinding();
+
   const markersInformation = useMemo(
-    () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets),
-    [simulationPathSteps, pathSteps]
+    () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets, invalidItems),
+    [simulationPathSteps, pathSteps, showStdcmAssets, invalidItems]
   );
+
+  useEffect(() => {
+    console.log('Invalid Items:', invalidItems);
+    console.log('pathSteps:', pathSteps);
+    console.log('markersInformation:', markersInformation);
+  }, [invalidItems, pathSteps]);
 
   const getMarkerDisplayInformation = useCallback(
     (markerInfo: MarkerInformation) => {
@@ -138,8 +174,13 @@ const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: Itinera
   const Markers = useMemo(
     () =>
       markersInformation.map((markerInfo) => {
+        console.log('SimulationPathSteps:', simulationPathSteps);
+        console.log('PathSteps passed to extractMarkerInformation:', pathSteps);
         const isDestination = markerInfo.type === MARKER_TYPE.DESTINATION;
         const isVia = markerInfo.type === MARKER_TYPE.VIA;
+        console.log('Markers to display:', markersInformation.length);
+        console.log('Markers Information2:', markersInformation);
+        console.log('Invalid Items2:', invalidItems);
 
         const markerName = (
           <div className={`map-pathfinding-marker ${markerInfo.type}-name`}>
@@ -173,9 +214,8 @@ const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: Itinera
           </Marker>
         );
       }),
-    [markersInformation]
+    [simulationPathSteps, pathSteps, showStdcmAssets, invalidItems]
   );
-
   return Markers;
 };
 

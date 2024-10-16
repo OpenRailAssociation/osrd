@@ -177,10 +177,33 @@ export const usePathfinding = (
 
   const { updatePathSteps } = useOsrdConfActions();
 
+  const [invalidItems, setInvalidItems] = useState<string[]>([]);
+
   const generatePathfindingParams = (): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
     setPathProperties?.(undefined);
-    return getPathfindingQuery({ infraId, rollingStock, origin, destination, pathSteps });
+    console.log('pathSteps:', pathSteps);
+    console.log('invalidItems:', invalidItems);
+
+    const filteredPathSteps = pathSteps.filter(
+      (step) =>
+        step !== null &&
+        step.coordinates !== null &&
+        !('trigram' in step && invalidItems.includes(step.trigram))
+    );
+    console.log('Après filtrage - filteredPathSteps:', filteredPathSteps);
+    return getPathfindingQuery({
+      infraId,
+      rollingStock,
+      origin,
+      destination,
+      pathSteps: filteredPathSteps,
+    });
   };
+
+  // const generatePathfindingParams = (): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
+  //   setPathProperties?.(undefined);
+  //   return getPathfindingQuery({ infraId, rollingStock, origin, destination, pathSteps });
+  // };
 
   useEffect(() => {
     if (isPathfindingInitialized) {
@@ -225,8 +248,23 @@ export const usePathfinding = (
 
         try {
           const pathfindingResult = await postPathfindingBlocks(pathfindingInput).unwrap();
+          if (pathfindingResult.status === 'invalid_path_items') {
+            console.log('pathfindingResult:', pathfindingResult.status);
+            const invalidPathItems = pathfindingResult.items
+              .map((item) => {
+                return 'trigram' in item.path_item ? item.path_item.trigram : null;
+              })
+              .filter((trigram): trigram is string => trigram !== null);
 
-          if (
+            pathfindingDispatch({
+              type: 'PATHFINDING_ERROR',
+              message: `Invalid path item: ${invalidPathItems.join(', ')}`,
+            });
+            if (invalidPathItems.length > 0) {
+              setInvalidItems([...invalidPathItems]);
+              startPathFinding();
+            }
+          } else if (
             pathfindingResult.status === 'success' ||
             pathfindingResult.status === 'incompatible_constraints'
           ) {
@@ -346,7 +384,7 @@ export const usePathfinding = (
     if (infra && infra.state === 'CACHED' && pathfindingState.mustBeLaunched) {
       startPathFinding();
     }
-  }, [pathfindingState.mustBeLaunched, infra]);
+  }, [pathfindingState.mustBeLaunched, infra, invalidItems]);
 
   useEffect(() => setIsPathfindingInitialized(true), []);
 
@@ -358,5 +396,6 @@ export const usePathfinding = (
       infra,
       reloadCount,
     },
+    invalidItems,
   };
 };
