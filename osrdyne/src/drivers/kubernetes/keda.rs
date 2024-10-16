@@ -19,7 +19,7 @@ pub struct ScaledObjectSpec {
     pub initial_cooldown_period: Option<i32>,
     pub idle_replica_count: Option<i32>,
     pub min_replica_count: Option<i32>,
-    pub max_replicas_count: Option<i32>,
+    pub max_replica_count: Option<i32>,
     pub triggers: Vec<Trigger>,
 }
 

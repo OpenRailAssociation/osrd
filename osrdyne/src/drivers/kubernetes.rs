@@ -232,7 +232,7 @@ impl KubernetesDriver {
                 initial_cooldown_period: None,
                 idle_replica_count: None,
                 min_replica_count: Some(keda.min_replicas),
-                max_replicas_count: Some(keda.max_replicas),
+                max_replica_count: Some(keda.max_replicas),
                 triggers: vec![keda::Trigger {
                     type_: "rabbitmq".to_string(),
                     use_cached_metrics: keda.use_cached_metrics,
