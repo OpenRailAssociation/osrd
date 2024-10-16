@@ -380,12 +380,13 @@ fun routingRequirements(
         // entry signal of the route (both position and time, as there is a time margin)
         // in this case, just move the critical position to just after the stop
         val entrySignalOffset =
-            blockOffset + blockInfra.getSignalsPositions(firstRouteBlock).first().distance
+            blockOffsets[routeStartBlockIndex] +
+                blockInfra.getSignalsPositions(firstRouteBlock).first().distance
         for (stop in stops.reversed()) {
             val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
             if (
                 stop.receptionSignal.isStopOnClosedSignal &&
-                    entrySignalOffset <= stopTravelledOffset
+                    stopTravelledOffset <= entrySignalOffset
             ) {
                 // stop duration is included in interpolateDepartureFromClamp()
                 val stopDepartureTime =
@@ -505,7 +506,10 @@ private fun findLimitingSignal(
     }
     // Limiting signal not found
     if (lastSignalBlockIndex == -1 || lastSignalIndex == -1) return null
-    return LimitingSignal(lastSignalBlockIndex, lastSignalIndex)
+    return LimitingSignal(
+        lastSignalBlockIndex,
+        lastSignalIndex
+    ) // TODO PEB: this is weird when route
 }
 
 data class ZoneOccupationChangeEvent(
