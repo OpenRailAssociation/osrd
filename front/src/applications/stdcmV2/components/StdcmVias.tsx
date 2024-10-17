@@ -22,7 +22,7 @@ import StdcmStopType from './StdcmStopType';
 import { StdcmStopTypes } from '../types';
 import type { StdcmConfigCardProps } from '../types';
 
-const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfigCardProps) => {
+const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
   const { getPathSteps } = useOsrdConfSelectors();
@@ -102,13 +102,6 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
       }
     });
   }, [stopTypes, pathSteps]);
-
-  useEffect(() => {
-    setCurrentSimulationInputs((prevState) => ({
-      ...prevState,
-      pathSteps,
-    }));
-  }, [pathSteps]);
 
   return (
     <div className="stdcm-v2-vias-list">

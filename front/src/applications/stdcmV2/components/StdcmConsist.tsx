@@ -31,7 +31,7 @@ const ConsistCardTitle = ({
   );
 };
 
-const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmConfigCardProps) => {
+const StdcmConsist = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
     useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
@@ -93,25 +93,7 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
     } else {
       searchRollingStock('');
     }
-    setCurrentSimulationInputs((prevState) => ({
-      ...prevState,
-      consist: {
-        tractionEngine: rollingStock,
-      },
-    }));
   }, [rollingStock]);
-
-  useEffect(() => {
-    if (speedLimitByTag) {
-      setCurrentSimulationInputs((prevState) => ({
-        ...prevState,
-        consist: {
-          ...prevState?.consist,
-          speedLimitByTag,
-        },
-      }));
-    }
-  }, [speedLimitByTag]);
 
   return (
     <StdcmCard
