@@ -250,3 +250,22 @@ export const sortTrainSchedulesByStartTime = (
   [...trainSchedulesWithDetails].sort((a, b) =>
     dayjs(a.startTime, 'D/MM/YYYY HH:mm:ss').diff(dayjs(b.startTime, 'D/MM/YYYY HH:mm:ss'))
   );
+
+const parseDate = (dateString: string): Date => {
+  const [datePart, timePart] = dateString.split(' ');
+  const [day, month, year] = datePart.split('/').map((part) => part.padStart(2, '0'));
+  const isoDateString = `${year}-${month}-${day}T${timePart || '00:00:00'}`;
+  return new Date(isoDateString);
+};
+
+export const formatDepartureDate = (date: string): string => {
+  const locale = i18n.language;
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+
+  return new Intl.DateTimeFormat(locale, options).format(parseDate(date));
+};
