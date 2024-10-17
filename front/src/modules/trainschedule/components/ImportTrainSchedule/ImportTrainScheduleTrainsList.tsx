@@ -36,6 +36,7 @@ type ImportTrainScheduleTrainsListProps = {
   isLoading: boolean;
   timetableId: number;
   trainsJsonData: TrainScheduleBase[];
+  trainsXmlData: ImportedTrainSchedule[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
 };
 
@@ -45,6 +46,7 @@ const ImportTrainScheduleTrainsList = ({
   isLoading,
   timetableId,
   trainsJsonData,
+  trainsXmlData,
   upsertTrainSchedules,
 }: ImportTrainScheduleTrainsListProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
@@ -77,10 +79,15 @@ const ImportTrainScheduleTrainsList = ({
 
   async function generateTrainSchedules() {
     try {
-      const payloads =
-        trainsJsonData.length > 0
-          ? trainsJsonData
-          : generateTrainSchedulesPayloads(formattedTrainsList);
+      let payloads;
+
+      if (trainsXmlData.length > 0) {
+        payloads = generateTrainSchedulesPayloads(trainsXmlData, true);
+      } else if (trainsJsonData.length > 0) {
+        payloads = trainsJsonData;
+      } else {
+        payloads = generateTrainSchedulesPayloads(formattedTrainsList, false);
+      }
 
       const trainSchedules = await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
       upsertTrainSchedules(trainSchedules);

@@ -7,12 +7,14 @@ import { formatToIsoDate } from 'utils/date';
 import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils/timeManipulation';
 
 export function generateTrainSchedulesPayloads(
-  trains: ImportedTrainSchedule[]
+  trains: ImportedTrainSchedule[],
+  checkChAndUIC: boolean = true
 ): TrainScheduleBase[] {
   return trains.reduce((payloads, train) => {
-    // Check if the first step has a valid UIC
     const firstStep = train.steps[0];
-    if (!firstStep || !firstStep.uic) {
+
+    // Conditionally check for valid UIC in the first step
+    if (checkChAndUIC && (!firstStep || !firstStep.uic)) {
       console.warn(`Skipping train ${train.trainNumber} due to invalid first step UIC`);
       return payloads; // Skip this train
     }
@@ -20,18 +22,20 @@ export function generateTrainSchedulesPayloads(
     const { path, schedule } = train.steps.reduce(
       (acc, step, index) => {
         const stepId = nextId();
-        if (!step.uic) {
+
+        // Conditionally skip invalid UIC or CH code steps
+        if (checkChAndUIC && !step.uic) {
           console.error(`Invalid UIC for step ${step.name}`);
           return acc; // Skip invalid step
         }
-        if (!step.chCode) {
+        if (checkChAndUIC && !step.chCode) {
           console.error(`Invalid CH code for step ${step.name}`);
           return acc; // Skip invalid step
         }
 
         acc.path.push({ id: stepId, uic: Number(step.uic), secondary_code: step.chCode });
 
-        // Skip the first step in the schedule
+        // Skip first step, handle time differences
         if (index !== 0) {
           const timeDifferenceInSeconds = calculateTimeDifferenceInSeconds(
             train.departureTime,

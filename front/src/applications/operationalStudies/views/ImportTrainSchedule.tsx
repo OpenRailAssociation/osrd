@@ -23,6 +23,7 @@ const ImportTrainSchedule = ({
   const [trainsList, setTrainsList] = useState<ImportedTrainSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [trainsJsonData, setTrainsJsonData] = useState<TrainScheduleBase[]>([]);
+  const [trainsXmlData, setTrainsXmlData] = useState<ImportedTrainSchedule[]>([]);
 
   const { data: { results: rollingStocks } = { results: [] }, isError } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
@@ -46,6 +47,7 @@ const ImportTrainSchedule = ({
         setIsLoading={setIsLoading}
         setTrainsList={setTrainsList}
         setTrainsJsonData={setTrainsJsonData}
+        setTrainsXmlData={setTrainsXmlData}
       />
       <ImportTrainScheduleTrainsList
         isLoading={isLoading}
@@ -53,6 +55,7 @@ const ImportTrainSchedule = ({
         timetableId={timetableId}
         trainsList={trainsList}
         trainsJsonData={trainsJsonData}
+        trainsXmlData={trainsXmlData}
         upsertTrainSchedules={upsertTrainSchedules}
       />
     </main>
