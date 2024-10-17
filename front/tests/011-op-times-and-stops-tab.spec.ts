@@ -113,6 +113,7 @@ test.describe('Times and Stops Tab Verification', () => {
       translations.departureTime,
       translations.stopTime,
       translations.receptionOnClosedSignal,
+      translations.shortSlipDistance,
       translations.theoreticalMargin,
     ]);
 
