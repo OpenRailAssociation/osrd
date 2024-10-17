@@ -24,8 +24,6 @@ class OperationalStudiesTimetablePage {
 
   readonly simulationMap: Locator;
 
-  readonly simulationDriverTrainSchedule: Locator;
-
   readonly timetableFilterButton: Locator;
 
   readonly timetableFilterButtonClose: Locator;
@@ -41,7 +39,6 @@ class OperationalStudiesTimetablePage {
     this.spaceTimeChart = page.locator('.space-time-chart-container');
     this.timeStopsDatasheet = page.locator('.time-stops-datasheet');
     this.simulationMap = page.locator('.osrd-simulation-map');
-    this.simulationDriverTrainSchedule = page.locator('.simulation-driver-train-schedule');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
     this.timetableFilterButtonClose = page.getByTestId('timetable-filter-button-close');
   }
@@ -84,9 +81,8 @@ class OperationalStudiesTimetablePage {
       this.manchetteSpaceTimeChart,
       this.speedSpaceChart,
       this.spaceTimeChart,
-      this.timeStopsDatasheet,
       this.simulationMap,
-      this.simulationDriverTrainSchedule,
+      this.timeStopsDatasheet,
     ];
     await Promise.all(
       simulationResultsLocators.map((simulationResultsLocator) =>

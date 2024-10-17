@@ -97,6 +97,7 @@ const styles = {
       borderRadius: '7',
       marginTop: '20',
       marginBottom: '20',
+      marginRight: '20',
       fontFamily: 'IBM Plex Mono',
     },
     number: {
@@ -594,6 +595,15 @@ const styles = {
     },
   }),
   footer: StyleSheet.create({
+    creationDate: {
+      height: '48',
+      paddingTop: '16',
+      paddingRight: '16',
+      display: 'flex',
+      alignItems: 'flex-end',
+      fontSize: '16',
+      fontWeight: 'bold',
+    },
     warrantyBox: {
       height: '64',
       marginTop: '16',

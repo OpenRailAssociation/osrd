@@ -16,6 +16,7 @@
   "errorHappened": "An error has occurred",
   "filesAndLinks": "Files & links",
   "filterPlaceholder": "Search...",
+  "infrastructureWithTwoPoints": "Infra: ",
   "updatedOn": "Edited on",
   "modifyStudy": "Edit the study",
   "nothingSelected": "— Empty —",
@@ -33,9 +34,10 @@
   "scenarioDeletedMulti_one": "{{count}} scenario have been deleted.",
   "scenarioDeletedMulti_other": "{{count}} scenarios have been deleted.",
   "scenariosList": "Scenarios",
+  "scenarioWithTwoPoints": "Scenario: ",
   "selectedScenarios_one": "{{count}} selected scenario",
   "selectedScenarios_other": "{{count}} selected scenarios",
-
+  "simulationSheet": "Simulation sheet",
   "sortOptions": {
     "byName": "Sort by name",
     "byRecentDate": "Latest"
