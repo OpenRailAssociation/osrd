@@ -1,0 +1,20 @@
+.manchette-space-time-chart-wrapper {
+  position: relative;
+  overflow: hidden;
+  // Create a new stacking context so that any z-index inside the space time
+  // chart doesn't affect the rest of the UI
+  transform: translate(0px);
+
+  #settings-panel {
+    right: 0;
+    margin-right: 0;
+    width: 16.4375rem;
+    height: 100%;
+    background: rgba(247, 246, 238, 0.4);
+  }
+
+  .settings-btn {
+    margin-left: 1rem;
+    vertical-align: middle;
+  }
+}
