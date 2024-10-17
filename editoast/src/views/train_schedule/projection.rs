@@ -20,7 +20,6 @@ use utoipa::ToSchema;
 
 use super::TrainScheduleError;
 use crate::client::get_app_version;
-use crate::core::pathfinding::PathfindingResult;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::pathfinding::TrackRange;
 use crate::core::signal_projection::SignalUpdate;
@@ -34,6 +33,7 @@ use crate::models::infra::Infra;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::Retrieve;
 use crate::models::RetrieveBatch;
+use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::train_schedule::train_simulation_batch;
