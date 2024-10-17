@@ -46,6 +46,8 @@ function computeMargins(
   pathStepId: string
 ) {
   const theoreticalMargin = getTheoreticalMargin(selectedTrainSchedule, pathStepId);
+  // We only compute margins if a margin was specified
+  if (theoreticalMargin === undefined) return undefined;
 
   // durations to go from current scheduled point to next scheduled point.
   // base = no margin
