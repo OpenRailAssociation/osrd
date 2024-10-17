@@ -1,51 +1,50 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 
 import { Input } from '@osrd-project/ui-core';
 import { debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { PathStep } from 'reducers/osrdconf/types';
-import { ISO8601Duration2sec } from 'utils/timeManipulation';
+import { ISO8601Duration2sec, secToMin } from 'utils/timeManipulation';
 
 import { StdcmStopTypes } from '../types';
 
-const StdcmInputVia = ({
-  stopType,
-  pathStep,
-  updatePathStepStopTime,
-}: {
-  stopType?: StdcmStopTypes;
-  pathStep: PathStep;
+type StdcmInputViaProps = {
+  stopType: StdcmStopTypes;
+  stopDuration: PathStep['stopFor'];
   updatePathStepStopTime: (stopTime: string) => void;
-}) => {
+};
+
+const StdcmInputVia = ({ stopType, stopDuration, updatePathStepStopTime }: StdcmInputViaProps) => {
   const { t } = useTranslation('stdcm');
 
-  const [pathStepStopTime, setPathStepStopTime] = useState(
-    pathStep.stopFor ? `${ISO8601Duration2sec(pathStep.stopFor) / 60}` : ''
-  );
+  const computedStopTime = useMemo(() => {
+    const duration = stopDuration ? `${secToMin(ISO8601Duration2sec(stopDuration))}` : '';
+    switch (stopType) {
+      case StdcmStopTypes.PASSAGE_TIME:
+        return '0';
+      case StdcmStopTypes.DRIVER_SWITCH:
+        return duration || '3';
+      default:
+        return duration || '0';
+    }
+  }, [stopDuration, stopType]);
 
-  const stopWarning = stopType === StdcmStopTypes.DRIVER_SWITCH && Number(pathStepStopTime) < 3;
+  const [pathStepStopTime, setPathStepStopTime] = useState(computedStopTime);
+
+  const stopWarning = stopType === StdcmStopTypes.DRIVER_SWITCH && Number(computedStopTime) < 3;
 
   const debounceUpdatePathStepStopTime = useMemo(
-    () => debounce((value) => updatePathStepStopTime(value), 500),
+    () => debounce((value) => updatePathStepStopTime(value), 300),
     []
   );
 
   useEffect(() => {
-    let newStopTime = pathStepStopTime;
-    const isPassageTime = stopType === StdcmStopTypes.PASSAGE_TIME || stopType === undefined;
-    if (isPassageTime && pathStepStopTime !== '0') {
-      newStopTime = '0';
-    }
-    if (newStopTime !== pathStepStopTime) {
-      setPathStepStopTime(newStopTime);
-      updatePathStepStopTime(newStopTime);
-    }
-  }, [pathStep.stopFor, stopType]);
+    setPathStepStopTime(computedStopTime);
+  }, [computedStopTime]);
 
   return (
-    stopType !== StdcmStopTypes.PASSAGE_TIME &&
-    stopType !== undefined && (
+    stopType !== StdcmStopTypes.PASSAGE_TIME && (
       <div className="stdcm-v2-via-stop-for stop-time">
         <Input
           id="stdcm-v2-via-stop-time"

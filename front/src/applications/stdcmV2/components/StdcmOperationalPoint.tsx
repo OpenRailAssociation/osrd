@@ -81,7 +81,7 @@ const StdcmOperationalPoint = ({
       ? {
           name: p.name,
           ch: p.ch,
-          id: nextId(),
+          id: point?.id || nextId(),
           uic: p.uic,
           coordinates: p.geographic.coordinates,
         }
