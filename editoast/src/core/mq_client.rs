@@ -1,25 +1,151 @@
-use deadpool_lapin::{Config, CreatePoolError, Pool, PoolError, Runtime};
+use deadpool::managed::{Manager, Metrics, Pool, RecycleError, RecycleResult};
 use editoast_derive::EditoastError;
 use futures_util::StreamExt;
 use itertools::Itertools;
 use lapin::{
+    message::Delivery,
     options::{BasicConsumeOptions, BasicPublishOptions},
     types::{ByteArray, FieldTable, ShortString},
-    BasicProperties,
+    BasicProperties, Channel, Connection, ConnectionProperties,
 };
 use serde::Serialize;
 use serde_json::to_vec;
-use std::fmt::Debug;
+use std::{collections::HashMap, fmt::Debug, sync::Arc};
 use thiserror::Error;
-use tokio::time::{timeout, Duration};
+use tokio::{
+    sync::{oneshot, RwLock},
+    task,
+    time::{timeout, Duration},
+};
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct RabbitMQClient {
-    pub pool: Pool,
+    pool: Pool<ChannelManager>,
     exchange: String,
     timeout: u64,
-    hostname: String,
     single_worker: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct ChannelManager {
+    connection: Arc<RwLock<Option<Connection>>>,
+    hostname: String,
+}
+
+impl ChannelManager {
+    pub fn new(connection: Arc<RwLock<Option<Connection>>>, hostname: String) -> Self {
+        ChannelManager {
+            connection,
+            hostname,
+        }
+    }
+}
+
+pub enum ChannelManagerError {
+    Lapin,
+    ConnectionNotFound,
+    BadChannelState,
+}
+
+impl Manager for ChannelManager {
+    type Type = ChannelWorker;
+    type Error = ChannelManagerError;
+
+    async fn create(&self) -> Result<ChannelWorker, ChannelManagerError> {
+        let connection = self.connection.read().await;
+        if let Some(connection) = connection.as_ref() {
+            let channel = connection
+                .create_channel()
+                .await
+                .map_err(|_| ChannelManagerError::Lapin)?;
+
+            Ok(ChannelWorker::new(Arc::new(channel), self.hostname.clone()).await)
+        } else {
+            Err(ChannelManagerError::ConnectionNotFound)
+        }
+    }
+
+    async fn recycle(
+        &self,
+        cw: &mut ChannelWorker,
+        _: &Metrics,
+    ) -> RecycleResult<ChannelManagerError> {
+        if cw.should_reuse() {
+            Ok(())
+        } else {
+            Err(RecycleError::Backend(ChannelManagerError::BadChannelState))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct ChannelWorker {
+    channel: Arc<Channel>,
+    response_tracker: Arc<RwLock<HashMap<String, oneshot::Sender<Delivery>>>>,
+    consumer_tag: String,
+}
+
+impl ChannelWorker {
+    pub async fn new(channel: Arc<Channel>, hostname: String) -> Self {
+        let worker = ChannelWorker {
+            channel,
+            response_tracker: Arc::new(RwLock::new(HashMap::new())),
+            consumer_tag: format!("{}-{}", hostname, Uuid::new_v4()),
+        };
+        worker.dispatching_loop().await;
+        worker
+    }
+
+    pub fn get_channel(&self) -> Arc<Channel> {
+        self.channel.clone()
+    }
+
+    pub async fn register_response_tracker(
+        &self,
+        correlation_id: String,
+        tx: oneshot::Sender<Delivery>,
+    ) {
+        let mut response_tracker = self.response_tracker.write().await;
+        response_tracker.insert(correlation_id, tx);
+    }
+
+    pub fn should_reuse(&self) -> bool {
+        self.channel.status().state() == lapin::ChannelState::Connected
+    }
+
+    async fn dispatching_loop(&self) {
+        let channel = self.channel.clone();
+        let response_tracker = self.response_tracker.clone();
+        let consumer_tag = self.consumer_tag.clone();
+
+        let mut consumer = channel
+            .basic_consume(
+                "amq.rabbitmq.reply-to",
+                consumer_tag.as_str(),
+                BasicConsumeOptions {
+                    no_ack: true,
+                    ..Default::default()
+                },
+                FieldTable::default(),
+            )
+            .await
+            .expect("Failed to consume from reply-to queue");
+
+        task::spawn(async move {
+            while let Some(delivery) = consumer.next().await {
+                let delivery = delivery.expect("Error in receiving message");
+                if let Some(correlation_id) = delivery.properties.correlation_id().as_ref() {
+                    let mut tracker = response_tracker.write().await;
+                    if let Some(sender) = tracker.remove(correlation_id.as_str()) {
+                        let _ = sender.send(delivery);
+                    }
+                } else {
+                    tracing::error!("Received message without correlation_id");
+                }
+            }
+        });
+    }
 }
 
 pub struct Options {
@@ -31,11 +157,12 @@ pub struct Options {
     /// Default timeout for the response
     pub timeout: u64,
     pub single_worker: bool,
+    pub num_channels: usize,
 }
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "coreclient")]
-pub enum Error {
+pub enum MqClientError {
     #[error("AMQP error: {0}")]
     #[editoast_error(status = "500")]
     Lapin(#[from] lapin::Error),
@@ -51,14 +178,12 @@ pub enum Error {
     #[error("Connection does not exist")]
     #[editoast_error(status = "500")]
     ConnectionDoesNotExist,
-    #[error("Cannot create the pool")]
+    #[error("Fail to pool a channel")]
     #[editoast_error(status = "500")]
-    CreatePoolLapin(CreatePoolError),
-    #[error("Cannot acquire connection from pool")]
-    #[editoast_error(status = "500")]
-    DeadpoolLapin(PoolError),
+    PoolChannelFail,
 }
 
+#[derive(Debug)]
 pub struct MQResponse {
     pub payload: Vec<u8>,
     pub status: Vec<u8>,
@@ -67,26 +192,100 @@ pub struct MQResponse {
 const SINGLE_WORKER_KEY: &str = "all";
 
 impl RabbitMQClient {
-    pub async fn new(options: Options) -> Result<Self, Error> {
+    pub async fn new(options: Options) -> Result<Self, MqClientError> {
         let hostname = hostname::get()
             .map(|name| name.to_string_lossy().into_owned())
             .unwrap_or_else(|_| "unknown".to_string());
 
-        let cfg = Config {
-            url: Some(options.uri),
-            ..Default::default()
-        };
-        let pool = cfg
-            .create_pool(Some(Runtime::Tokio1))
-            .map_err(Error::CreatePoolLapin)?;
+        let conn = Arc::new(RwLock::new(None));
+
+        tokio::spawn(Self::connection_loop(
+            options.uri,
+            hostname.clone(),
+            conn.clone(),
+        ));
+
+        // We should ensure that the connection is established at least once before creating the pool
+        // since deadpool will try to create resources upfront
+        const MAX_RETRIES: usize = 10;
+        const RETRY_DELAY: Duration = Duration::from_secs(1);
+
+        let mut retries = 0;
+        while retries < MAX_RETRIES {
+            if Self::connection_ok(&conn).await {
+                break;
+            }
+            tokio::time::sleep(RETRY_DELAY).await;
+            retries += 1;
+        }
+
+        if retries == MAX_RETRIES {
+            return Err(MqClientError::ConnectionDoesNotExist);
+        }
+
+        // Create the pool
+        let pool = Pool::builder(ChannelManager::new(conn, hostname))
+            .max_size(options.num_channels)
+            .build()
+            .map_err(|_| MqClientError::ConnectionDoesNotExist)?;
 
         Ok(RabbitMQClient {
             pool,
             exchange: format!("{}-req-xchg", options.worker_pool_identifier),
             timeout: options.timeout,
-            hostname,
             single_worker: options.single_worker,
         })
+    }
+
+    async fn connection_ok(connection: &Arc<RwLock<Option<Connection>>>) -> bool {
+        let guard = connection.as_ref().read().await;
+        let conn = guard.as_ref();
+        let status = match conn {
+            None => return false,
+            Some(conn) => conn.status().state(),
+        };
+        match status {
+            lapin::ConnectionState::Initial => true,
+            lapin::ConnectionState::Connecting => true,
+            lapin::ConnectionState::Connected => true,
+            lapin::ConnectionState::Closing => true,
+            lapin::ConnectionState::Closed => false,
+            lapin::ConnectionState::Error => false,
+        }
+    }
+
+    async fn connection_loop(
+        uri: String,
+        hostname: String,
+        connection: Arc<RwLock<Option<Connection>>>,
+    ) {
+        loop {
+            if Self::connection_ok(&connection).await {
+                tokio::time::sleep(Duration::from_secs(2)).await;
+                continue;
+            }
+
+            tracing::info!("Reconnecting to RabbitMQ");
+
+            // Connection should be re-established
+            let new_connection = Connection::connect(
+                &uri,
+                ConnectionProperties::default().with_connection_name(hostname.clone().into()),
+            )
+            .await;
+
+            match new_connection {
+                Ok(new_connection) => {
+                    *connection.write().await = Some(new_connection);
+                    tracing::info!("Reconnected to RabbitMQ");
+                }
+                Err(e) => {
+                    tracing::error!("Error while reconnecting to RabbitMQ: {:?}", e);
+                }
+            }
+
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        }
     }
 
     #[allow(dead_code)]
@@ -97,15 +296,20 @@ impl RabbitMQClient {
         published_payload: &T,
         mandatory: bool,
         correlation_id: Option<String>,
-    ) -> Result<(), Error>
+    ) -> Result<(), MqClientError>
     where
         T: Serialize,
     {
-        // Create a channel
-        let connection = self.pool.get().await.map_err(Error::DeadpoolLapin)?;
-        let channel = connection.create_channel().await.map_err(Error::Lapin)?;
+        // Get the next channel
+        let channel_worker = self
+            .pool
+            .get()
+            .await
+            .map_err(|_| MqClientError::PoolChannelFail)?;
+        let channel = channel_worker.get_channel();
 
-        let serialized_payload_vec = to_vec(published_payload).map_err(Error::Serialization)?;
+        let serialized_payload_vec =
+            to_vec(published_payload).map_err(MqClientError::Serialization)?;
         let serialized_payload = serialized_payload_vec.as_slice();
 
         let options = BasicPublishOptions {
@@ -138,13 +342,7 @@ impl RabbitMQClient {
                 properties,
             )
             .await
-            .map_err(Error::Lapin)?;
-
-        // Explicitly close the channel
-        channel
-            .close(200, "Normal shutdown")
-            .await
-            .map_err(Error::Lapin)?;
+            .map_err(MqClientError::Lapin)?;
 
         Ok(())
     }
@@ -156,15 +354,22 @@ impl RabbitMQClient {
         published_payload: &Option<T>,
         mandatory: bool,
         override_timeout: Option<u64>,
-    ) -> Result<MQResponse, Error>
+    ) -> Result<MQResponse, MqClientError>
     where
         T: Serialize,
     {
-        // Create a channel
-        let connection = self.pool.get().await.map_err(Error::DeadpoolLapin)?;
-        let channel = connection.create_channel().await.map_err(Error::Lapin)?;
+        let correlation_id = Uuid::new_v4().to_string();
 
-        let serialized_payload_vec = to_vec(published_payload).map_err(Error::Serialization)?;
+        // Get the next channel
+        let channel_worker = self
+            .pool
+            .get()
+            .await
+            .map_err(|_| MqClientError::PoolChannelFail)?;
+        let channel = channel_worker.get_channel();
+
+        let serialized_payload_vec =
+            to_vec(published_payload).map_err(MqClientError::Serialization)?;
         let serialized_payload = serialized_payload_vec.as_slice();
 
         let options = BasicPublishOptions {
@@ -179,21 +384,13 @@ impl RabbitMQClient {
 
         let properties = BasicProperties::default()
             .with_reply_to(ShortString::from("amq.rabbitmq.reply-to"))
+            .with_correlation_id(ShortString::from(correlation_id.clone()))
             .with_headers(headers);
 
-        // Set up a consumer on the reply-to queue
-        let mut consumer = channel
-            .basic_consume(
-                "amq.rabbitmq.reply-to",
-                self.hostname.as_str(),
-                BasicConsumeOptions {
-                    no_ack: true,
-                    ..Default::default()
-                },
-                FieldTable::default(),
-            )
-            .await
-            .map_err(Error::Lapin)?;
+        let (tx, rx) = oneshot::channel();
+        channel_worker
+            .register_response_tracker(correlation_id.clone(), tx)
+            .await;
 
         // Publish the message
         channel
@@ -209,28 +406,18 @@ impl RabbitMQClient {
                 properties,
             )
             .await
-            .map_err(Error::Lapin)?;
+            .map_err(MqClientError::Lapin)?;
 
-        // Await the response
-        let response_delivery = timeout(
+        // Release from the pool
+        drop(channel_worker);
+
+        match timeout(
             Duration::from_secs(override_timeout.unwrap_or(self.timeout)),
-            consumer.next(),
+            rx,
         )
-        .await;
-
-        if response_delivery.is_err() {
-            channel
-                .close(200, "Normal shutdown")
-                .await
-                .map_err(Error::Lapin)?;
-
-            return Err(Error::ResponseTimeout);
-        }
-
-        let response_delivery = response_delivery.unwrap();
-
-        let result = match response_delivery {
-            Some(Ok(delivery)) => {
+        .await
+        {
+            Ok(Ok(delivery)) => {
                 let status = delivery
                     .properties
                     .headers()
@@ -238,24 +425,15 @@ impl RabbitMQClient {
                     .and_then(|f| f.inner().get("x-status"))
                     .and_then(|s| s.as_byte_array())
                     .map(|s| Ok(s.as_slice().to_owned()))
-                    .unwrap_or(Err(Error::StatusParsing))?;
+                    .unwrap_or(Err(MqClientError::StatusParsing))?;
 
                 Ok(MQResponse {
                     payload: delivery.data,
                     status,
                 })
             }
-            Some(Err(e)) => Err(e.into()),
-            None => panic!("Rabbitmq consumer was cancelled unexpectedly"),
-        };
-
-        // Explicitly close the channel
-        channel
-            .close(200, "Normal shutdown")
-            .await
-            .map_err(Error::Lapin)?;
-
-        result
+            Ok(Err(_)) | Err(_) => Err(MqClientError::ResponseTimeout),
+        }
     }
 }
 
