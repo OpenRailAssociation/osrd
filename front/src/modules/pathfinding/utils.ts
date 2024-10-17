@@ -34,21 +34,20 @@ export const formatSuggestedOperationalPoints = (
     coordinates: getPointCoordinates(geometry, pathLength, op.position),
   }));
 
-export const matchPathStepAndOp = (step: PathStep, op: SuggestedOP) => {
+export const matchPathStepAndOp = (
+  step: PathStep,
+  op: Pick<SuggestedOP, 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack'>
+) => {
   if ('operational_point' in step) {
     return step.operational_point === op.opId;
   }
-  // We match the kp in case two OPs have the same uic+ch (can happen when the
-  // infra is imported)
   if ('uic' in step) {
-    return step.uic === op.uic && step.ch === op.ch && step.kp === op.kp;
+    return step.uic === op.uic && step.ch === op.ch;
   }
   if ('trigram' in step) {
-    return step.trigram === op.trigram && step.ch === op.ch && step.kp === op.kp;
+    return step.trigram === op.trigram && step.ch === op.ch;
   }
-  // TODO: we abuse the PathStep.id field here, the backend also sets it to an
-  // ID which has nothing to do with OPs
-  return step.id === op.opId;
+  return step.track === op.track && step.offset === op.offsetOnTrack;
 };
 
 export const getPathfindingQuery = ({
@@ -159,15 +158,22 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
 
 export const pathStepMatchesOp = (
   pathStep: PathStep,
-  op: Pick<SuggestedOP, 'uic' | 'ch' | 'kp' | 'name' | 'opId'>,
+  op: Pick<
+    SuggestedOP,
+    'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack' | 'name' | 'kp'
+  >,
   withKP = false
-) =>
-  ('uic' in pathStep &&
-    'ch' in pathStep &&
-    pathStep.uic === op.uic &&
-    pathStep.ch === op.ch &&
-    (withKP ? pathStep.kp === op.kp : pathStep.name === op.name)) ||
-  pathStep.id === op.opId;
+) => {
+  if (!matchPathStepAndOp(pathStep, op)) {
+    // TODO: we abuse the PathStep.id field here, the backend also sets it to an
+    // ID which has nothing to do with OPs
+    return pathStep.id === op.opId;
+  }
+  if ('uic' in pathStep) {
+    return withKP ? pathStep.kp === op.kp : pathStep.name === op.name;
+  }
+  return true;
+};
 
 /**
  * Check if a suggested operational point is a via.
@@ -179,6 +185,9 @@ export const pathStepMatchesOp = (
  */
 export const isVia = (
   vias: PathStep[],
-  op: Pick<SuggestedOP, 'uic' | 'ch' | 'kp' | 'name' | 'opId'>,
+  op: Pick<
+    SuggestedOP,
+    'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack' | 'name' | 'kp'
+  >,
   { withKP = false } = {}
 ) => vias.some((via) => pathStepMatchesOp(via, op, withKP));
