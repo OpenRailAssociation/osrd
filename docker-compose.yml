@@ -48,6 +48,7 @@ services:
       RABBITMQ_DEFAULT_USER: osrd
       RABBITMQ_DEFAULT_PASS: password
     volumes:
+      - "./docker/rabbitmq.conf:/etc/rabbitmq/conf.d/99-osrd.conf"
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
