@@ -9,39 +9,44 @@ import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
 import { StdcmStopTypes } from '../types';
 
+type StdcmInputViaProps = {
+  stopType?: StdcmStopTypes;
+  pathStepStopFor: PathStep['stopFor'];
+  updatePathStepStopTime: (stopTime: string) => void;
+};
+
 const StdcmInputVia = ({
   stopType,
-  pathStep,
+  pathStepStopFor,
   updatePathStepStopTime,
-}: {
-  stopType?: StdcmStopTypes;
-  pathStep: PathStep;
-  updatePathStepStopTime: (stopTime: string) => void;
-}) => {
+}: StdcmInputViaProps) => {
   const { t } = useTranslation('stdcm');
 
-  const [pathStepStopTime, setPathStepStopTime] = useState(
-    pathStep.stopFor ? `${ISO8601Duration2sec(pathStep.stopFor) / 60}` : ''
+  const computedStopTime = useMemo(
+    () => (pathStepStopFor ? `${ISO8601Duration2sec(pathStepStopFor) / 60}` : ''),
+    [pathStepStopFor]
   );
 
-  const stopWarning = stopType === StdcmStopTypes.DRIVER_SWITCH && Number(pathStepStopTime) < 3;
+  const [pathStepStopTime, setPathStepStopTime] = useState(computedStopTime);
+
+  const stopWarning = stopType === StdcmStopTypes.DRIVER_SWITCH && Number(computedStopTime) < 3;
 
   const debounceUpdatePathStepStopTime = useMemo(
-    () => debounce((value) => updatePathStepStopTime(value), 500),
+    () => debounce((value) => updatePathStepStopTime(value), 300),
     []
   );
 
   useEffect(() => {
-    let newStopTime = pathStepStopTime;
-    const isPassageTime = stopType === StdcmStopTypes.PASSAGE_TIME || stopType === undefined;
-    if (isPassageTime && pathStepStopTime !== '0') {
+    let newStopTime = computedStopTime;
+    const isPassageTime = stopType === StdcmStopTypes.PASSAGE_TIME || !stopType;
+    if (isPassageTime && newStopTime !== '0') {
       newStopTime = '0';
     }
     if (newStopTime !== pathStepStopTime) {
       setPathStepStopTime(newStopTime);
       updatePathStepStopTime(newStopTime);
     }
-  }, [pathStep.stopFor, stopType]);
+  }, [pathStepStopFor, stopType]);
 
   return (
     stopType !== StdcmStopTypes.PASSAGE_TIME &&
