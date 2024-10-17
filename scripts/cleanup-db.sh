@@ -18,12 +18,14 @@ fi
 OSRD_POSTGRES="osrd-postgres"
 OSRD_EDITOAST="osrd-editoast"
 OSRD_VALKEY="osrd-valkey"
+OSRD_VALKEY_VOLUME="osrd_valkey_data"
 OSRD_POSTGRES_PORT=5432
 OSRD_VALKEY_PORT=6379
 if [ "$PR_TEST" -eq 1 ]; then
   OSRD_POSTGRES="osrd-postgres-pr-tests"
   OSRD_EDITOAST="osrd-editoast-pr-tests"
   OSRD_VALKEY="osrd-valkey-pr-tests"
+  OSRD_VALKEY_VOLUME="osrd-pr-tests_valkey_data"
   OSRD_POSTGRES_PORT=5433
   OSRD_VALKEY_PORT=6380
 fi
@@ -71,7 +73,7 @@ docker exec "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -f //tmp/init.sql > /
 
 # Clear Valkey Cache
 echo "Deleting valkey cache..."
-docker exec "$OSRD_VALKEY" valkey-cli -p "$OSRD_VALKEY_PORT" FLUSHALL > /dev/null 2>&1 || docker volume rm -f osrd_valkey_data > /dev/null
+docker exec "$OSRD_VALKEY" valkey-cli -p "$OSRD_VALKEY_PORT" FLUSHALL > /dev/null 2>&1 || docker volume rm -f $OSRD_VALKEY_VOLUME > /dev/null
 
 echo "Cleanup done!\n"
 echo "You may want to apply migrations if you don't load a backup:"
