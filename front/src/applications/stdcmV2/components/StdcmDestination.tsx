@@ -42,8 +42,8 @@ const StdcmDestination = ({
         ? extractDateAndTimefromISO(destination.arrival)
         : undefined,
       destinationToleranceValues: {
-        arrivalToleranceBefore: destination?.arrivalToleranceBefore || 0,
-        arrivalToleranceAfter: destination?.arrivalToleranceAfter || 0,
+        arrivalToleranceBefore: destination?.arrivalToleranceBefore || 1800,
+        arrivalToleranceAfter: destination?.arrivalToleranceAfter || 1800,
       },
     }),
     [destination]

@@ -36,8 +36,8 @@ const StdcmOrigin = ({
     () => ({
       originArrival: origin?.arrival ? extractDateAndTimefromISO(origin.arrival) : undefined,
       originToleranceValues: {
-        arrivalToleranceBefore: origin?.arrivalToleranceBefore || 0,
-        arrivalToleranceAfter: origin?.arrivalToleranceAfter || 0,
+        arrivalToleranceBefore: origin?.arrivalToleranceBefore || 1800,
+        arrivalToleranceAfter: origin?.arrivalToleranceAfter || 1800,
       },
     }),
     [origin]
