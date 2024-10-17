@@ -62,17 +62,12 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
   };
 
   const updateStopType = (newStopType: StdcmStopTypes, index: number, pathStepId: string) => {
-    setStopTypes((prevStopTypes) => {
-      const updatedStopTypes = {
-        ...prevStopTypes,
-        [pathStepId]: newStopType,
-      };
-
-      const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
-      updatePathStepStopTime(defaultStopTime, index, pathStepId);
-
-      return updatedStopTypes;
-    });
+    setStopTypes((prevStopTypes) => ({
+      ...prevStopTypes,
+      [pathStepId]: newStopType,
+    }));
+    const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
+    updatePathStepStopTime(defaultStopTime, index, pathStepId);
   };
 
   const deleteViaOnClick = (index: number, pathStepId: string) => {
@@ -157,7 +152,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                     />
                     <StdcmInputVia
                       stopType={stopTypes[pathStep.id]}
-                      pathStep={pathStep}
+                      pathStepStopFor={pathStep.stopFor}
                       updatePathStepStopTime={(e) =>
                         updatePathStepStopTime(e, pathStepIndex, pathStep.id)
                       }
