@@ -82,18 +82,18 @@
   "stdcmSimulationReport": "Fiche simulation",
   "trainPath": {
     "addVia": "Ajouter un PR intermédiaire",
-    "asSoonAsPossible": "dès que possible",
+    "asSoonAsPossible": "Dès que possible",
     "ch": "CH",
     "ci": "CI",
     "date": "Date",
     "destination": "Destination",
     "origin": "Origine",
-    "preciseTime": "horaire précis",
+    "preciseTime": "Horaire précis",
     "stopFor": "Temps d'arrêt minimum",
     "stopType": {
-      "driverSwitch": "relève conducteur",
-      "passageTime": "passage",
-      "serviceStop": "arrêt de service"
+      "driverSwitch": "Relève conducteur",
+      "passageTime": "Passage",
+      "serviceStop": "Arrêt de service"
     },
     "time": "Heure",
     "tolerance": "Tolérance",

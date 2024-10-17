@@ -82,18 +82,18 @@
   "stdcmSimulationReport": "Path simulation report",
   "trainPath": {
     "addVia": "Add intermediate OP",
-    "asSoonAsPossible": "as soon as possible",
+    "asSoonAsPossible": "As soon as possible",
     "ch": "CH",
     "ci": "CI",
     "date": "Date",
     "destination": "Destination",
     "origin": "Origin",
-    "preciseTime": "precise time",
+    "preciseTime": "Precise time",
     "stopFor": "Minimum stop time",
     "stopType": {
-      "driverSwitch": "driver switch",
-      "passageTime": "passage time",
-      "serviceStop": "service stop"
+      "driverSwitch": "Driver switch",
+      "passageTime": "Passage time",
+      "serviceStop": "Service stop"
     },
     "time": "Time",
     "tolerance": "Tolerance",
