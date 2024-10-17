@@ -131,6 +131,8 @@ pub struct RunserverArgs {
     /// The timeout to use when performing the healthcheck, in milliseconds
     #[clap(long, env = "EDITOAST_HEALTH_CHECK_TIMEOUT_MS", default_value_t = 500)]
     pub health_check_timeout_ms: u64,
+    #[clap(long, env = "CORE_CLIENT_CHANNELS_SIZE", default_value_t = 8)]
+    pub core_client_channels_size: usize,
 }
 
 #[derive(Args, Debug)]
