@@ -2336,8 +2336,12 @@ paths:
               type: object
               required:
               - speed_limit_group_name
+              - infra_id
               - speed_limits
               properties:
+                infra_id:
+                  type: integer
+                  format: int64
                 speed_limit_group_name:
                   type: string
                 speed_limits:
@@ -2347,7 +2351,7 @@ paths:
                     required:
                     - start_date_time
                     - end_date_time
-                    - track_ranges
+                    - signals
                     - speed_limit
                     - obj_id
                     properties:
@@ -2356,16 +2360,16 @@ paths:
                         format: date-time
                       obj_id:
                         type: string
+                      signals:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Sign'
                       speed_limit:
                         type: number
                         format: double
                       start_date_time:
                         type: string
                         format: date-time
-                      track_ranges:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/DirectionalTrackRange'
         required: true
       responses:
         '201':

@@ -82,6 +82,17 @@ impl<'a> Graph<'a> {
             .map(|groups| groups.keys().cloned().collect())
             .unwrap_or_default()
     }
+
+    /// Given an endpoint return all its neighbours indiscriminately
+    /// of their group.
+    pub fn get_all_neighbours(&'a self, track_endpoint: &TrackEndpoint) -> Vec<&'a TrackEndpoint> {
+        let groups = self.links.get(track_endpoint);
+        if let Some(groups) = groups {
+            groups.values().copied().collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        }
+    }
 }
 
 #[cfg(test)]

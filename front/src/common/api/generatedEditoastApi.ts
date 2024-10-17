@@ -1476,13 +1476,14 @@ export type PostTemporarySpeedLimitGroupApiResponse =
   };
 export type PostTemporarySpeedLimitGroupApiArg = {
   body: {
+    infra_id: number;
     speed_limit_group_name: string;
     speed_limits: {
       end_date_time: string;
       obj_id: string;
+      signals: Sign[];
       speed_limit: number;
       start_date_time: string;
-      track_ranges: DirectionalTrackRange[];
     }[];
   };
 };
