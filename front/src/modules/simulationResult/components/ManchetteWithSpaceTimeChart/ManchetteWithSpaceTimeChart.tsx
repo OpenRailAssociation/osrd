@@ -5,7 +5,11 @@ import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with
 import { SpaceTimeChart, PathLayer } from '@osrd-project/ui-spacetimechart';
 
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import type { OperationalPointExtensions, OperationalPointPart } from 'common/api/osrdEditoastApi';
+import type {
+  OperationalPointExtensions,
+  OperationalPointPart,
+  ProjectPathTrainResult,
+} from 'common/api/osrdEditoastApi';
 
 type ManchetteWithSpaceTimeChartProps = {
   operationalPoints: {
@@ -16,6 +20,7 @@ type ManchetteWithSpaceTimeChartProps = {
   }[];
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainScheduleId?: number;
+  occupancyBlocks?: Pick<ProjectPathTrainResult, 'signal_updates'>[];
 };
 const DEFAULT_HEIGHT = 561;
 
@@ -23,6 +28,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   operationalPoints,
   projectPathTrainResult,
   selectedTrainScheduleId,
+  occupancyBlocks = [],
 }: ManchetteWithSpaceTimeChartProps) => {
   const [heightOfManchetteWithSpaceTimeChart] = useState(DEFAULT_HEIGHT);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);

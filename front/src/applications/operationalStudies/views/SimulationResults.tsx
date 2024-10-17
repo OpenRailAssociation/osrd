@@ -5,11 +5,13 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { SimulationResultsData } from 'applications/operationalStudies/types';
+import type { ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
 import ProjectionLoadingMessage from 'modules/simulationResult/components/SpaceTimeChart/ProjectionLoadingMessage';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
+import useProjectedOccupancyBlocks from 'modules/simulationResult/components/SpaceTimeChart/useProjectedOccupancyBlocks';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
@@ -30,6 +32,7 @@ type SimulationResultsProps = {
   simulationResults: SimulationResultsData;
   projectionData?: ProjectionData;
   timetableTrainNb: number;
+  occupancyBlocks?: Pick<ProjectPathTrainResult, 'signal_updates'>[];
 };
 
 const SimulationResults = ({
@@ -45,6 +48,7 @@ const SimulationResults = ({
   },
   projectionData,
   timetableTrainNb,
+  occupancyBlocks = [],
 }: SimulationResultsProps) => {
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
@@ -88,6 +92,27 @@ const SimulationResults = ({
       projectionData?.projectedTrains.filter((train) => train.space_time_curves.length > 0) || [],
     [projectionData]
   );
+
+  const occupancyBlocksZones = useProjectedOccupancyBlocks(
+    infraId,
+    occupancyBlocks,
+    projectionData?.path
+  );
+
+  const occupancyBlock = occupancyBlocksZones.map((zone) => ({
+    signal_updates: [
+      {
+        aspect_label: '',
+        blinking: false,
+        color: (zone.color[3] << 24) | (zone.color[0] << 16) | (zone.color[1] << 8) | zone.color[2],
+        position_end: zone.spaceEnd,
+        position_start: zone.spaceStart,
+        signal_id: '',
+        time_end: zone.timeEnd,
+        time_start: zone.timeStart,
+      },
+    ],
+  }));
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -153,6 +178,7 @@ const SimulationResults = ({
                   operationalPoints={projectedOperationalPoints}
                   projectPathTrainResult={projectPathTrainResult}
                   selectedTrainScheduleId={selectedTrainSchedule?.id}
+                  occupancyBlocks={occupancyBlock}
                 />
               </div>
             </div>

@@ -62,6 +62,9 @@
   "stopPlace": "Place",
   "stopStopTime": "Stop",
   "stopTime": "Arrival",
+  "timeSpaceChartSettings": {
+    "occupancyBlocks": "Occupancy blocks"
+  },
   "timetable": "Timetable",
   "toggleElectricalProfileLegend": "Toggle electrical profiles legend",
   "toggleManchetteMenu": "Toggle manchette menu",

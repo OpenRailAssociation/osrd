@@ -60,6 +60,7 @@ const ScenarioContent = ({
     projectionData: projection,
     simulationResults,
     conflicts,
+    occupancyBlocks,
     upsertTrainSchedules,
     removeTrains,
   } = useScenarioData(scenario, timetable, infra);
@@ -225,6 +226,7 @@ const ScenarioContent = ({
                     simulationResults={simulationResults}
                     infraId={infra.id}
                     timetableTrainNb={timetable.train_ids.length}
+                    occupancyBlocks={occupancyBlocks}
                   />
                 )
               )}
