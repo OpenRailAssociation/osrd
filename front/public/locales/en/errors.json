@@ -48,8 +48,7 @@
       "StatusParsing": "Core: cannot parse status",
       "UnparsableErrorOutput": "Core returned an error in an unknown format",
       "ConnectionDoesNotExist": "Core: message queue: connection not established",
-      "CreatePoolLapin": "Core: message queue: cannot create pool",
-      "DeadpoolLapin": "Core: message queue: pool error"
+      "PoolChannelFail": "Core: message queue: channel failure"
     },
     "DatabaseAccessError": "Database access fatal error",
     "document": {

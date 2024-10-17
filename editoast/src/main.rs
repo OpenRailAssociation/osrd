@@ -420,6 +420,7 @@ impl AppState {
             worker_pool_identifier: "core".into(),
             timeout: args.core_timeout,
             single_worker: args.core_single_worker,
+            num_channels: args.core_client_channels_size,
         })
         .await?
         .into();
