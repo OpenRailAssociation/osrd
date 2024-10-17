@@ -74,7 +74,7 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
       },
       {
         ...keyColumn('ch', createTextColumn()),
-        title: 'Ch',
+        title: t('ch'),
         disabled: true,
         maxWidth: 45,
       },
