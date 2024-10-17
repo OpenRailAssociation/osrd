@@ -88,3 +88,7 @@ export function secToHoursString(sec: number | null, { withSeconds = false } = {
   const format = withSeconds ? '%H:%M:%S' : '%H:%M';
   return d3.utcFormat(format)(new Date(sec * 1000));
 }
+
+export function secToMin(sec: number) {
+  return sec / 60;
+}

@@ -22,6 +22,14 @@ import StdcmStopType from './StdcmStopType';
 import { StdcmStopTypes } from '../types';
 import type { StdcmConfigCardProps } from '../types';
 
+const generateUniqueId = (idsList: string[]): string => {
+  let id;
+  do {
+    id = nextId();
+  } while (idsList.includes(id));
+  return id;
+};
+
 const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
@@ -33,7 +41,7 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
   const [stopTypes, setStopTypes] = useState<Record<string, StdcmStopTypes>>(
     compact(pathSteps).reduce(
       (acc, cur) => {
-        acc[cur.id] = StdcmStopTypes.PASSAGE_TIME;
+        acc[cur.id] = cur.stopType || StdcmStopTypes.PASSAGE_TIME;
         return acc;
       },
       {} as Record<string, StdcmStopTypes>
@@ -44,7 +52,6 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
 
   const updatePathStepsList = (pathStep: PathStep | null, index: number) => {
     if (!pathStep) return;
-
     const newPathSteps = replaceElementAtIndex(pathSteps, index, pathStep);
     dispatch(updatePathSteps({ pathSteps: newPathSteps }));
   };
@@ -56,23 +63,18 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
       updateViaStopTime({
         via: pathStepToUpdate,
         duration: formatDurationAsISO8601(Number(stopTime) * 60),
-        stopType: stopTypes[pathStepId] ?? StdcmStopTypes.PASSAGE_TIME,
+        stopType: stopTypes[pathStepId],
       })
     );
   };
 
   const updateStopType = (newStopType: StdcmStopTypes, index: number, pathStepId: string) => {
-    setStopTypes((prevStopTypes) => {
-      const updatedStopTypes = {
-        ...prevStopTypes,
-        [pathStepId]: newStopType,
-      };
-
-      const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
-      updatePathStepStopTime(defaultStopTime, index, pathStepId);
-
-      return updatedStopTypes;
-    });
+    setStopTypes((prevStopTypes) => ({
+      ...prevStopTypes,
+      [pathStepId]: newStopType,
+    }));
+    const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
+    updatePathStepStopTime(defaultStopTime, index, pathStepId);
   };
 
   const deleteViaOnClick = (index: number, pathStepId: string) => {
@@ -84,7 +86,15 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
   };
 
   const addViaOnClick = (pathStepIndex: number) => {
-    const newPathSteps = addElementAtIndex(pathSteps, pathStepIndex, { id: nextId(), uic: -1 });
+    const newPathStepId = generateUniqueId(pathSteps.map((pathStep) => pathStep?.id || ''));
+    const newPathSteps = addElementAtIndex(pathSteps, pathStepIndex, {
+      id: newPathStepId,
+      uic: -1,
+    });
+    setStopTypes((prevStopTypes) => ({
+      ...prevStopTypes,
+      [newPathStepId]: StdcmStopTypes.PASSAGE_TIME,
+    }));
     dispatch(updatePathSteps({ pathSteps: newPathSteps }));
   };
 
@@ -150,7 +160,7 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
                     />
                     <StdcmInputVia
                       stopType={stopTypes[pathStep.id]}
-                      pathStep={pathStep}
+                      stopDuration={pathStep.stopFor}
                       updatePathStepStopTime={(e) =>
                         updatePathStepStopTime(e, pathStepIndex, pathStep.id)
                       }
