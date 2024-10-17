@@ -49,9 +49,10 @@ const TimesStops = <T extends TimeStopsRow>({
       lockRows
       height={600}
       headerRowHeight={headerRowHeight}
-      rowClassName={({ rowData }) =>
+      rowClassName={({ rowData, rowIndex }) =>
         cx({
           activeRow: rowData.isWaypoint,
+          oddRow: (rowIndex + 1) % 2,
         })
       }
       cellClassName={cellClassName}
