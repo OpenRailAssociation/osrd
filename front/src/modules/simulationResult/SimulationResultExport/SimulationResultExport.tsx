@@ -10,7 +10,11 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { RollingStockWithLiveries, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type {
+  RollingStockWithLiveries,
+  ScenarioResponse,
+  TrainScheduleBase,
+} from 'common/api/osrdEditoastApi';
 import {
   BaseOrEco,
   type BaseOrEcoType,
@@ -24,6 +28,7 @@ import SimulationReportSheetScenario, {
 } from './SimulationReportSheetScenario';
 
 const Blob = ({
+  scenarioResponse,
   simulationType,
   scenarioData,
   simulationReportSheetNumber,
@@ -34,6 +39,7 @@ const Blob = ({
   <BlobProvider
     document={
       <SimulationReportSheetScenario
+        scenarioResponse={scenarioResponse}
         simulationType={simulationType}
         scenarioData={scenarioData}
         simulationReportSheetNumber={simulationReportSheetNumber}
@@ -54,6 +60,7 @@ const Blob = ({
 );
 
 type SimulationResultExportProps = {
+  scenario: ScenarioResponse;
   train: TrainScheduleBase;
   simulatedTrain: SimulationResponseSuccess;
   pathProperties: PathPropertiesFormatted;
@@ -67,6 +74,7 @@ type SimulationResultExportProps = {
 };
 
 const SimulationResultExport = ({
+  scenario,
   train,
   simulatedTrain,
   pathProperties,
@@ -79,6 +87,7 @@ const SimulationResultExport = ({
 
   const simulationSheetData: SimulationSheetData = useMemo(
     () => ({
+      trainName: train.train_name,
       departure_time: '',
       simulation: simulatedTrain,
       creationDate: new Date(),
@@ -96,9 +105,10 @@ const SimulationResultExport = ({
   return (
     <div className="simulation-sheet-container">
       <Blob
+        scenarioResponse={scenario}
         simulationType="scenario"
         scenarioData={simulationSheetData}
-        simulationReportSheetNumber="123"
+        simulationReportSheetNumber={undefined}
         operationalPointsList={operationalPointsToUse}
         t={t}
         mapCanvas={mapCanvas}
