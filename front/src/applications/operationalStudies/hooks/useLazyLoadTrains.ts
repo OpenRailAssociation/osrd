@@ -88,10 +88,10 @@ const useLazyLoadTrains = ({
         // do not happen during the same react cycle.
         // if we update a train, one is going to re-fetch first and the 2 are out of sync during a few cycles.
         // these cycles do not make sense to render.
-        const outOfSync = [...trainSchedulesById.values()].some((trainShedule) => {
-          const summary = rawSummaries[trainShedule.id];
+        const outOfSync = [...trainSchedulesById.values()].some((trainSchedule) => {
+          const summary = rawSummaries[trainSchedule.id];
           if (summary?.status === 'success') {
-            return trainShedule.path.length !== summary.path_item_times_final.length;
+            return trainSchedule.path.length !== summary.path_item_times_final.length;
           }
           return false;
         });

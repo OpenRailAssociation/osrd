@@ -51,6 +51,11 @@ const useUpdateTrainSchedule = (
           trainScheduleForm: trainSchedule,
         }).unwrap();
 
+        osrdEditoastApi.util.invalidateTags(['train_schedule']);
+        // We explicitely invalidate the cache to avoid a race condition between the automatic cache invalidation
+        // by putTrainScheduleById and the call to postTrainScheduleSimulationSummary in useLazyLoadTrain.ts
+        // Awaiting a set amount of time here would also work : await new Promise((resolve) => setTimeout(resolve, 1000));
+
         upsertTrainSchedules([trainScheduleResult]);
         dispatch(
           setSuccess({
