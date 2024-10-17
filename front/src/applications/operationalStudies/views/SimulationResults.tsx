@@ -83,11 +83,22 @@ const SimulationResults = ({
     [projectionData]
   );
 
-  const projectPathTrainResult = useMemo(
-    () =>
-      projectionData?.projectedTrains.filter((train) => train.space_time_curves.length > 0) || [],
-    [projectionData]
+  // const projectPathTrainResult = useMemo(
+  //   () =>
+  //     projectionData?.projectedTrains.filter((train) => train.space_time_curves.length > 0) || [],
+  //   [projectionData]
+  // );
+
+  // TODO:
+  // - Restore this as a useMemo (as up there)
+  const [projectPathTrainResult, setProjectPathTrainResult] = useState(
+    projectionData?.projectedTrains.filter((train) => train.space_time_curves.length > 0) || []
   );
+  useEffect(() => {
+    setProjectPathTrainResult(
+      projectionData?.projectedTrains.filter((train) => train.space_time_curves.length > 0) || []
+    );
+  }, [projectionData]);
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -153,6 +164,19 @@ const SimulationResults = ({
                   operationalPoints={projectedOperationalPoints}
                   projectPathTrainResult={projectPathTrainResult}
                   selectedTrainScheduleId={selectedTrainSchedule?.id}
+                  handleTrainDrag={(trainId, newDepartureTime, isPanning) => {
+                    // TODO:
+                    // - Replace this dirty "setProjectPathTrainResult" by a proper way to actually update the source of truth
+                    setProjectPathTrainResult(
+                      projectPathTrainResult.map((res) =>
+                        res.id === trainId ? { ...res, departure_time: newDepartureTime } : res
+                      )
+                    );
+
+                    if (!isPanning) {
+                      console.log('TODO: Update data server-side');
+                    }
+                  }}
                 />
               </div>
             </div>
