@@ -10,7 +10,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 const useProjectedOccupancyBlocks = (
   infraId: number | undefined,
-  occupancyblocks: ProjectPathTrainResult[],
+  occupancyBlocks: Pick<ProjectPathTrainResult, 'signal_updates'>[],
   path: PathfindingResultSuccess | undefined
 ) => {
   const [postPathProperties] =
@@ -36,17 +36,17 @@ const useProjectedOccupancyBlocks = (
   }, [path]);
 
   const occupancyblockReqsByZone = useMemo(() => {
-    const reqs = occupancyblocks.flatMap((occupancyblock) => occupancyblock.signal_updates);
+    const reqs = occupancyBlocks.flatMap((occupancyBlock) => occupancyBlock.signal_updates);
     return new Map(reqs.map((req) => [req.aspect_label, req]));
-  }, [occupancyblocks]);
+  }, [occupancyBlocks]);
 
   const occupancyblockZone = useMemo(() => {
     if (!projectedZones) {
       return [];
     }
 
-    const color = occupancyblocks.flatMap((occupancyblock) =>
-      occupancyblock.signal_updates.map((signal) => signal.color)
+    const color = occupancyBlocks.flatMap((occupancyBlock) =>
+      occupancyBlock.signal_updates.map((signal) => signal.color)
     );
 
     const boundaries = [0, ...projectedZones.boundaries, path!.length];

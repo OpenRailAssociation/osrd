@@ -32,7 +32,7 @@ type SimulationResultsProps = {
   simulationResults: SimulationResultsData;
   projectionData?: ProjectionData;
   timetableTrainNb: number;
-  occupancyBlocks?: ProjectPathTrainResult[];
+  occupancyBlocks?: Pick<ProjectPathTrainResult, 'signal_updates'>[];
 };
 
 const SimulationResults = ({
@@ -99,6 +99,21 @@ const SimulationResults = ({
     projectionData?.path
   );
 
+  const occupancyBlock = occupancyBlocksZones.map((zone) => ({
+    signal_updates: [
+      {
+        aspect_label: '',
+        blinking: false,
+        color: (zone.color[3] << 24) | (zone.color[0] << 16) | (zone.color[1] << 8) | zone.color[2],
+        position_end: zone.spaceEnd,
+        position_start: zone.spaceStart,
+        signal_id: '',
+        time_end: zone.timeEnd,
+        time_start: zone.timeStart,
+      },
+    ],
+  }));
+
   useEffect(() => {
     if (extViewport !== undefined) {
       dispatch(
@@ -163,7 +178,7 @@ const SimulationResults = ({
                   operationalPoints={projectedOperationalPoints}
                   projectPathTrainResult={projectPathTrainResult}
                   selectedTrainScheduleId={selectedTrainSchedule?.id}
-                  occupancyBlocks={occupancyBlocksZones}
+                  occupancyBlocks={occupancyBlock}
                 />
               </div>
             </div>

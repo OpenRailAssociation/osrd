@@ -20,7 +20,7 @@ type ManchetteWithSpaceTimeChartProps = {
   }[];
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainScheduleId?: number;
-  occupancyBlocks?: ProjectPathTrainResult[];
+  occupancyBlocks?: Pick<ProjectPathTrainResult, 'signal_updates'>[];
 };
 const DEFAULT_HEIGHT = 561;
 
