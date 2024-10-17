@@ -153,6 +153,18 @@ const SimulationResults = ({
                   operationalPoints={projectedOperationalPoints}
                   projectPathTrainResult={projectPathTrainResult}
                   selectedTrainScheduleId={selectedTrainSchedule?.id}
+                  workSchedules={[
+                    {
+                      type: 'TRACK',
+                      timeStart: '2024-09-10T12:20:00Z',
+                      timeEnd: '2024-09-10T12:40:00Z',
+                      intersections: [
+                        [0, 1000000],
+                        [2800000, 6300000],
+                      ],
+                      image: upward,
+                    },
+                  ]}
                 />
               </div>
             </div>
