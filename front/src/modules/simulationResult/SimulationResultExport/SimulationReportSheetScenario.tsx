@@ -6,26 +6,29 @@ import styles from 'applications/stdcm/components/SimulationReportStyleSheet';
 import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
-import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { RollingStockWithLiveries, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import { formatDateToString } from 'utils/date';
 import { secToHoursString } from 'utils/timeManipulation';
 
 export type SimulationSheetData = {
+  trainName: string | undefined;
   rollingStock: RollingStockWithLiveries;
   speedLimitByTag: string;
   departure_time: string;
   creationDate: Date;
 };
 export type SimulationReportSheetScenarioProps = {
+  scenarioResponse: ScenarioResponse | undefined;
   simulationType: 'stdcm' | 'scenario';
   scenarioData: SimulationSheetData;
-  simulationReportSheetNumber: string;
+  simulationReportSheetNumber: string | undefined;
   mapCanvas?: string;
   operationalPointsList: OperationalPointWithTimeAndSpeed[];
 };
 
 const SimulationReportSheetScenario = ({
+  scenarioResponse,
   simulationType,
   scenarioData,
   simulationReportSheetNumber,
@@ -53,19 +56,11 @@ const SimulationReportSheetScenario = ({
       path_number1: 'n°XXXXXX',
       path_number2: 'n°YYYYYY',
     },
-    scenario: {
-      rcName: '- - -',
-      rcPersonName: '- - -',
-      rcPhoneNumber: '- - -',
-      rcMail: '- - -',
-      path_number1: 'n°XXXXXX',
-      path_number2: 'n°YYYYYY',
-    },
   };
 
-  const fakeInformation = fakeInformations[simulationType];
+  const fakeInformation = fakeInformations.stdcm;
   const headerTitle =
-    simulationType === 'stdcm' ? t('stdcm') : t('operationalStudies/study:scenario');
+    simulationType === 'stdcm' ? t('stdcm') : t('operationalStudies/study:simulationSheet');
 
   return (
     <Document>
@@ -84,30 +79,56 @@ const SimulationReportSheetScenario = ({
               {isSTDMC && <Text style={styles.header.creation}>{t('stdcmCreation')}</Text>}
             </View>
           </View>
-          <View style={styles.header.numericInfo}>
-            <Text style={styles.header.number}>
-              n°
-              {simulationReportSheetNumber}
-            </Text>
-            <Text style={styles.header.creationDate}>
-              {t('formattedDate', formatDateToString(creationDate))}
-            </Text>
-          </View>
+          {/* train */}
+          {isSTDMC && (
+            <View style={styles.header.numericInfo}>
+              <>
+                <Text style={styles.header.number}>
+                  n°
+                  {simulationReportSheetNumber}
+                </Text>
+                <Text style={styles.header.creationDate}>{scenarioData.departure_time}</Text>
+              </>
+            </View>
+          )}
+          {!isSTDMC && (
+            <>
+              {/* scenario study project */}
+              <View style={styles.header.numericInfo}>
+                <Text style={styles.header.number}>{scenarioData.trainName}</Text>
+              </View>
+
+              <View style={styles.header.numericInfo}>
+                <Text style={styles.header.number}>
+                  {t('operationalStudies/study:scenarioWithTwoPoints')}
+                  {scenarioResponse?.name}
+                </Text>
+              </View>
+              {/* infra */}
+              <View style={styles.header.numericInfo}>
+                <Text style={styles.header.number}>
+                  {t('operationalStudies/study:infrastructureWithTwoPoints')}
+                  {scenarioResponse?.infra_name}
+                </Text>
+              </View>
+            </>
+          )}
           <Image src={logoSNCF} style={styles.header.sncfLogo} />
         </View>
 
-        <View style={styles.rcInfo.rcInfo}>
-          <View style={styles.rcInfo.rcBox}>
-            <Text style={styles.rcInfo.rcName}>{fakeInformation.rcName}</Text>
-            <Text style={styles.rcInfo.rcPersonName}>{fakeInformation.rcPersonName}</Text>
-          </View>
-          <View style={styles.rcInfo.rcBox}>
-            <Text style={styles.rcInfo.rcPhoneNumber}>{fakeInformation.rcPhoneNumber}</Text>
-            <Text style={styles.rcInfo.rcMail}>{fakeInformation.rcMail}</Text>
-          </View>
+        {isSTDMC && (
+          <View style={styles.rcInfo.rcInfo}>
+            <View style={styles.rcInfo.rcBox}>
+              <Text style={styles.rcInfo.rcName}>{fakeInformation.rcName}</Text>
+              <Text style={styles.rcInfo.rcPersonName}>{fakeInformation.rcPersonName}</Text>
+            </View>
+            <View style={styles.rcInfo.rcBox}>
+              <Text style={styles.rcInfo.rcPhoneNumber}>{fakeInformation.rcPhoneNumber}</Text>
+              <Text style={styles.rcInfo.rcMail}>{fakeInformation.rcMail}</Text>
+            </View>
 
-          {/* STDCM Sheet: Application date and reference path */}
-          {/*
+            {/* STDCM Sheet: Application date and reference path */}
+            {/*
            <View style={styles.rcInfo.rcBox}>
             <View style={styles.rcInfo.stdcmApplication}>
               <Text style={styles.rcInfo.applicationDate}>{t('applicationDate')}</Text>
@@ -117,7 +138,8 @@ const SimulationReportSheetScenario = ({
             </View> 
           </View>
           */}
-        </View>
+          </View>
+        )}
         <View style={styles.convoyAndRoute.convoyAndRoute}>
           <View style={styles.convoyAndRoute.convoy}>
             <Text style={styles.convoyAndRoute.convoyTitle}> {t('convoy')}</Text>
@@ -399,6 +421,11 @@ const SimulationReportSheetScenario = ({
         {mapCanvas && (
           <View style={styles.map.map} id="simulationMap">
             <Image src={mapCanvas} />
+          </View>
+        )}
+        {!isSTDMC && (
+          <View style={styles.footer.creationDate}>
+            <Text>{t('formattedDate', formatDateToString(creationDate))} </Text>
           </View>
         )}
         <View style={styles.footer.warrantyBox}>
