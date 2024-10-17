@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { SimulationResultsData } from 'applications/operationalStudies/types';
 import type { Conflict } from 'common/api/osrdEditoastApi';
+import type { ScenarioResponse } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
@@ -27,6 +28,7 @@ const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
 type SimulationResultsProps = {
+  scenario: ScenarioResponse;
   collapsedTimetable: boolean;
   infraId?: number;
   simulationResults: SimulationResultsData;
@@ -36,6 +38,7 @@ type SimulationResultsProps = {
 };
 
 const SimulationResults = ({
+  scenario,
   collapsedTimetable,
   infraId,
   simulationResults: {
@@ -245,8 +248,11 @@ const SimulationResults = ({
         pathProperties &&
         selectedTrainRollingStock &&
         operationalPoints &&
+        path &&
         infraId && (
           <SimulationResultExport
+            path={path}
+            scenario={scenario}
             train={selectedTrainSchedule}
             simulatedTrain={trainSimulation}
             pathProperties={pathProperties}

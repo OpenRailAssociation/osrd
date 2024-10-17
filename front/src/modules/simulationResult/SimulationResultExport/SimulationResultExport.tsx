@@ -10,7 +10,12 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import type { RollingStockWithLiveries, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type {
+  PathfindingResultSuccess,
+  RollingStockWithLiveries,
+  ScenarioResponse,
+  TrainScheduleBase,
+} from 'common/api/osrdEditoastApi';
 import {
   BaseOrEco,
   type BaseOrEcoType,
@@ -24,9 +29,9 @@ import SimulationReportSheetScenario, {
 } from './SimulationReportSheetScenario';
 
 const Blob = ({
-  simulationType,
+  path,
+  scenarioResponse,
   scenarioData,
-  simulationReportSheetNumber,
   mapCanvas,
   operationalPointsList,
   t,
@@ -34,9 +39,9 @@ const Blob = ({
   <BlobProvider
     document={
       <SimulationReportSheetScenario
-        simulationType={simulationType}
+        path={path}
+        scenarioResponse={scenarioResponse}
         scenarioData={scenarioData}
-        simulationReportSheetNumber={simulationReportSheetNumber}
         operationalPointsList={operationalPointsList}
         mapCanvas={mapCanvas}
       />
@@ -54,6 +59,8 @@ const Blob = ({
 );
 
 type SimulationResultExportProps = {
+  path: PathfindingResultSuccess;
+  scenario: ScenarioResponse;
   train: TrainScheduleBase;
   simulatedTrain: SimulationResponseSuccess;
   pathProperties: PathPropertiesFormatted;
@@ -67,6 +74,8 @@ type SimulationResultExportProps = {
 };
 
 const SimulationResultExport = ({
+  path,
+  scenario,
   train,
   simulatedTrain,
   pathProperties,
@@ -79,6 +88,7 @@ const SimulationResultExport = ({
 
   const simulationSheetData: SimulationSheetData = useMemo(
     () => ({
+      trainName: train.train_name,
       departure_time: '',
       simulation: simulatedTrain,
       creationDate: new Date(),
@@ -96,9 +106,9 @@ const SimulationResultExport = ({
   return (
     <div className="simulation-sheet-container">
       <Blob
-        simulationType="scenario"
+        path={path}
+        scenarioResponse={scenario}
         scenarioData={simulationSheetData}
-        simulationReportSheetNumber="123"
         operationalPointsList={operationalPointsToUse}
         t={t}
         mapCanvas={mapCanvas}

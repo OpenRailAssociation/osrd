@@ -4,31 +4,35 @@ import { useTranslation } from 'react-i18next';
 
 import styles from 'applications/stdcm/components/SimulationReportStyleSheet';
 import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationReportSheet';
-import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
-import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type {
+  PathfindingResultSuccess,
+  RollingStockWithLiveries,
+  ScenarioResponse,
+} from 'common/api/osrdEditoastApi';
 import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import { formatDateToString } from 'utils/date';
 import { secToHoursString } from 'utils/timeManipulation';
 
 export type SimulationSheetData = {
+  trainName: string | undefined;
   rollingStock: RollingStockWithLiveries;
   speedLimitByTag: string;
   departure_time: string;
   creationDate: Date;
 };
 export type SimulationReportSheetScenarioProps = {
-  simulationType: 'stdcm' | 'scenario';
+  path: PathfindingResultSuccess;
+  scenarioResponse: ScenarioResponse | undefined;
   scenarioData: SimulationSheetData;
-  simulationReportSheetNumber: string;
   mapCanvas?: string;
   operationalPointsList: OperationalPointWithTimeAndSpeed[];
 };
 
 const SimulationReportSheetScenario = ({
-  simulationType,
+  path,
+  scenarioResponse,
   scenarioData,
-  simulationReportSheetNumber,
   mapCanvas,
   operationalPointsList,
 }: SimulationReportSheetScenarioProps) => {
@@ -41,83 +45,35 @@ const SimulationReportSheetScenario = ({
 
   const { rollingStock, speedLimitByTag, creationDate } = scenarioData;
 
-  const isSTDMC = simulationType === 'stdcm';
-
-  // TODO: Add RC information when it becomes avalaible, until that, we use fake ones
-  const fakeInformations = {
-    stdcm: {
-      rcName: 'Super Fret',
-      rcPersonName: 'Jane Smith',
-      rcPhoneNumber: '01 23 45 67 89',
-      rcMail: 'john.doe@example.com',
-      path_number1: 'n°XXXXXX',
-      path_number2: 'n°YYYYYY',
-    },
-    scenario: {
-      rcName: '- - -',
-      rcPersonName: '- - -',
-      rcPhoneNumber: '- - -',
-      rcMail: '- - -',
-      path_number1: 'n°XXXXXX',
-      path_number2: 'n°YYYYYY',
-    },
-  };
-
-  const fakeInformation = fakeInformations[simulationType];
-  const headerTitle =
-    simulationType === 'stdcm' ? t('stdcm') : t('operationalStudies/study:scenario');
+  const headerTitle = t('operationalStudies/study:simulationSheet');
 
   return (
     <Document>
       <Page wrap={false} style={styles.main.page} size={[1344]}>
-        {isSTDMC && (
-          <View style={styles.header.alertBanner}>
-            <Image src={iconAlert} style={styles.header.alertIcon} />
-            <Text style={styles.header.simulationTitle}>{t('simulation')}</Text>
-            <Text style={styles.header.message}>{t('warningMessage')}</Text>
-          </View>
-        )}
         <View style={styles.header.numberDateBanner}>
           <View style={styles.header.stdcmTitleBox}>
             <View style={styles.header.stdcm}>
               <Text style={styles.header.title}>{headerTitle}</Text>
-              {isSTDMC && <Text style={styles.header.creation}>{t('stdcmCreation')}</Text>}
             </View>
           </View>
           <View style={styles.header.numericInfo}>
+            <Text style={styles.header.number}>{scenarioData.trainName}</Text>
+          </View>
+          <View style={styles.header.numericInfo}>
             <Text style={styles.header.number}>
-              n°
-              {simulationReportSheetNumber}
+              {t('operationalStudies/study:scenarioWithTwoPoints')}
+              {scenarioResponse?.name}
             </Text>
-            <Text style={styles.header.creationDate}>
-              {t('formattedDate', formatDateToString(creationDate))}
+          </View>
+          <View style={styles.header.numericInfo}>
+            <Text style={styles.header.number}>
+              {t('operationalStudies/study:infrastructureWithTwoPoints')}
+              {scenarioResponse?.infra_name}
             </Text>
           </View>
           <Image src={logoSNCF} style={styles.header.sncfLogo} />
         </View>
 
-        <View style={styles.rcInfo.rcInfo}>
-          <View style={styles.rcInfo.rcBox}>
-            <Text style={styles.rcInfo.rcName}>{fakeInformation.rcName}</Text>
-            <Text style={styles.rcInfo.rcPersonName}>{fakeInformation.rcPersonName}</Text>
-          </View>
-          <View style={styles.rcInfo.rcBox}>
-            <Text style={styles.rcInfo.rcPhoneNumber}>{fakeInformation.rcPhoneNumber}</Text>
-            <Text style={styles.rcInfo.rcMail}>{fakeInformation.rcMail}</Text>
-          </View>
-
-          {/* STDCM Sheet: Application date and reference path */}
-          {/*
-           <View style={styles.rcInfo.rcBox}>
-            <View style={styles.rcInfo.stdcmApplication}>
-              <Text style={styles.rcInfo.applicationDate}>{t('applicationDate')}</Text>
-              <Text style={styles.rcInfo.date}>{formatDay(departureTime)}</Text>
-              <Text style={styles.rcInfo.referencePath}>{t('referencePath')}</Text>
-              <Text style={styles.rcInfo.pathNumber}>{fakeInformation.path_number1}</Text>
-            </View> 
-          </View>
-          */}
-        </View>
         <View style={styles.convoyAndRoute.convoyAndRoute}>
           <View style={styles.convoyAndRoute.convoy}>
             <Text style={styles.convoyAndRoute.convoyTitle}> {t('convoy')}</Text>
@@ -150,15 +106,6 @@ const SimulationReportSheetScenario = ({
           </View>
           <View style={styles.convoyAndRoute.route}>
             <Text style={styles.convoyAndRoute.routeTitle}>{t('requestedRoute')}</Text>
-            {/* TODO: Add path number and date from reference path when it becomes avalaible */}
-            {/* STDCM Sheet: From Banner */}
-            {/* <View style={styles.convoyAndRoute.fromBanner}>
-              <View style={styles.convoyAndRoute.fromBox}>
-                <Text style={styles.convoyAndRoute.from}>{t('from')}</Text>
-              </View>
-              <Text style={styles.convoyAndRoute.fromNumber}>{fakeInformation.path_number1}</Text>
-              <Text style={styles.convoyAndRoute.fromScheduled} />
-            </View> */}
             <View style={styles.convoyAndRoute.stopTableContainer}>
               <Table style={styles.convoyAndRoute.stopTable}>
                 <TH style={styles.convoyAndRoute.stopTableTH}>
@@ -177,19 +124,11 @@ const SimulationReportSheetScenario = ({
                   <View style={styles.convoyAndRoute.stopTableStartWidth}>
                     <TD>{t('startStop')}</TD>
                   </View>
-                  {/* STDCM Sheet: Motif colunm */}
-                  {/* <View style={styles.convoyAndRoute.stopTableStopTypeWidth}>
-                    <TD>{t('stopType')}</TD>
-                  </View> */}
                 </TH>
                 {operationalPointsList.map((step, index) => {
                   const isFirstStep = index === 0;
                   const isLastStep = index === operationalPointsList.length - 1;
-                  const shouldRenderRow =
-                    isFirstStep ||
-                    step.duration > 0 ||
-                    // scenarioData.simulationPathSteps[renderedIndex].stopType === 'passageTime' ||
-                    isLastStep;
+                  const shouldRenderRow = isFirstStep || step.duration > 0 || isLastStep;
                   if (shouldRenderRow) {
                     renderedIndex += 1;
                     return (
@@ -217,20 +156,6 @@ const SimulationReportSheetScenario = ({
                             {isFirstStep ? secToHoursString(step.time, { withSeconds: true }) : ''}
                           </TD>
                         </View>
-                        {/* STDCM Sheet: Motif colunm */}
-                        {/* 
-                        <View style={styles.convoyAndRoute.stopTableStopTypeWidth}>
-                          <TD style={styles.convoyAndRoute.stopTableItalicColumn}>
-                            {isFirstStep || isLastStep
-                              ? t('serviceStop')
-                              : capitalizeFirstLetter(
-                                  t(
-                                    `stdcm:trainPath.stopType.${scenarioData.simulationPathSteps[renderedIndex - 1].stopType}`
-                                  )
-                                )}
-                          </TD>
-                        </View> 
-                        */}
                       </TR>
                     );
                   }
@@ -238,15 +163,6 @@ const SimulationReportSheetScenario = ({
                 })}
               </Table>
             </View>
-            {/* TODO: Add path number and date from reference path when it becomes avalaible */}
-            {/* STDCM Sheet: For Banner */}
-            {/* <View style={styles.convoyAndRoute.forBanner}>
-              <Text style={styles.convoyAndRoute.forScheduled} />
-              <Text style={styles.convoyAndRoute.forNumber}>{fakeInformation.path_number2}</Text>
-              <View style={styles.convoyAndRoute.forBox}>
-                <Text style={styles.convoyAndRoute.for}>{t('for')}</Text>
-              </View>
-            </View> */}
           </View>
         </View>
         <View style={styles.simulation.simulation}>
@@ -260,7 +176,7 @@ const SimulationReportSheetScenario = ({
               {t('viewSimulation')}
             </Link>
             <Text style={styles.simulation.simulationLength}>
-              {/* {`${Math.round(scenarioData.path.length / 1000000)} km`} */}
+              {`${Math.round(path.length / 1000000)} km`}
             </Text>
           </View>
           <View style={styles.simulation.tableContainer}>
@@ -401,8 +317,8 @@ const SimulationReportSheetScenario = ({
             <Image src={mapCanvas} />
           </View>
         )}
-        <View style={styles.footer.warrantyBox}>
-          <Text style={styles.footer.warrantyMessage}>{t('withoutWarranty')}</Text>
+        <View style={styles.footer.creationDate}>
+          <Text>{t('formattedDateScenario', formatDateToString(creationDate))} </Text>
         </View>
       </Page>
     </Document>
