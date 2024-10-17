@@ -369,7 +369,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
         <div className="d-flex justify-content-end w-100 mt-3">
           {editionMode && (
             <button
-              data-testid="deleteScenario"
+              data-testid="delete-scenario"
               className="btn btn-sm btn-outline-danger mr-auto"
               type="button"
               onClick={removeScenario}

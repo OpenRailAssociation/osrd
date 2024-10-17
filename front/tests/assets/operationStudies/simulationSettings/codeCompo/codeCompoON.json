@@ -1,0 +1,66 @@
+[
+  {
+    "stationName": "West_station",
+    "stationCh": "BV",
+    "requestedArrival": "11:22:40",
+    "requestedDeparture": "",
+    "stopTime": "",
+    "signalReceptionClosed": false,
+    "margin": {
+      "theoretical": "",
+      "theoreticalS": "0 s",
+      "actual": "0 s",
+      "difference": "0 s"
+    },
+    "calculatedArrival": "11:22:40",
+    "calculatedDeparture": ""
+  },
+  {
+    "stationName": "Mid_West_station",
+    "stationCh": "BV",
+    "requestedArrival": "",
+    "requestedDeparture": "",
+    "stopTime": "",
+    "signalReceptionClosed": false,
+    "margin": {
+      "theoretical": "",
+      "theoreticalS": "0 s",
+      "actual": "0 s",
+      "difference": "0 s"
+    },
+    "calculatedArrival": "11:42:12",
+    "calculatedDeparture": ""
+  },
+  {
+    "stationName": "Mid_East_station",
+    "stationCh": "BV",
+    "requestedArrival": "",
+    "requestedDeparture": "",
+    "stopTime": "124",
+    "signalReceptionClosed": false,
+    "margin": {
+      "theoretical": "",
+      "theoreticalS": "0 s",
+      "actual": "0 s",
+      "difference": "0 s"
+    },
+    "calculatedArrival": "11:50:12",
+    "calculatedDeparture": "11:52:16"
+  },
+  {
+    "stationName": "South_East_station",
+    "stationCh": "BV",
+    "requestedArrival": "",
+    "requestedDeparture": "",
+    "stopTime": "0",
+    "signalReceptionClosed": false,
+    "margin": {
+      "theoretical": "",
+      "theoreticalS": "",
+      "actual": "",
+      "difference": ""
+    },
+    "calculatedArrival": "12:02:28",
+    "calculatedDeparture": ""
+  }
+]

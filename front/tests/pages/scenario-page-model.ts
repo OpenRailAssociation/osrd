@@ -1,160 +1,142 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import BasePage from './base-page';
-import manageTrainScheduleTranslation from '../../public/locales/fr/operationalStudies/manageTrainSchedule.json';
+import CommonPage from './common-page-model';
 
-const trainAddedTranslation = manageTrainScheduleTranslation.trainAdded;
+class ScenarioPage extends CommonPage {
+  readonly scenarioUpdateButton: Locator;
 
-// TODO: extends simulation-conf-page
-class ScenarioPage extends BasePage {
-  readonly getScenarioUpdateBtn: Locator;
+  readonly scenarioConfirmDeleteButton: Locator;
 
-  readonly getScenarioDeleteConfirmBtn: Locator;
+  readonly trainLabels: Locator;
 
-  readonly getRollingStockSelector: Locator;
+  readonly scenarioConfirmUpdateButton: Locator;
 
-  readonly getItineraryModule: Locator;
+  readonly scenarioNameInput: Locator;
 
-  readonly getItineraryOrigin: Locator;
+  readonly scenarioDescriptionInput: Locator;
 
-  readonly getItinenaryDestination: Locator;
+  readonly scenarioInfraList: Locator;
 
-  readonly getItineraryVias: Locator;
+  readonly scenarioElectricProfileSelect: Locator;
 
-  readonly getTrainLabels: Locator;
+  readonly scenarioName: Locator;
 
-  readonly getMapModule: Locator;
+  readonly scenarioDescription: Locator;
 
-  readonly getSettingSimulationBtn: Locator;
+  readonly scenarioInfraName: Locator;
 
-  readonly getAddScenarioBtn: Locator;
+  readonly trainEditButton: Locator;
 
-  readonly getScenarioUpdateConfirmBtn: Locator;
+  readonly addScenarioButton: Locator;
 
-  readonly getScenarioNameInput: Locator;
+  readonly createScenarioButton: Locator;
 
-  readonly getScenarioDescriptionInput: Locator;
-
-  readonly getScenarioInfraList: Locator;
-
-  readonly getScenarioElectricProfileSelect: Locator;
-
-  readonly getScenarioName: Locator;
-
-  readonly getScenarioDescription: Locator;
-
-  readonly getScenarioInfraName: Locator;
-
-  readonly getResultPathfindingDistance: Locator;
-
-  readonly getInfraLoadState: Locator;
-
-  readonly getTrainCountInput: Locator;
-
-  readonly getDeltaInput: Locator;
-
-  readonly getAddTrainScheduleBtn: Locator;
-
-  readonly getTrainScheduleNameInput: Locator;
-
-  readonly getTrainTimetable: Locator;
-
-  readonly getReturnSimulationResultBtn: Locator;
-
-  readonly getPathfindingState: Locator;
-
-  readonly getSearchByTrigramButton: Locator;
-
-  readonly getSearchByTrigramContainer: Locator;
-
-  readonly getSearchByTrigramInput: Locator;
-
-  readonly getSearchByTrigramsubmit: Locator;
-
-  readonly getResultPathfindingDone: Locator;
-
-  readonly getTimetableList: Locator;
-
-  readonly getTrainEditBtn: Locator;
-
-  readonly getAllowancesSelector: Locator;
-
-  readonly getAllowancesModule: Locator;
-
-  readonly getAllowancesStandardSettings: Locator;
-
-  readonly getAllowancesEnergyConsumed: Locator;
-
-  readonly getAverageEnergyConsumed: Locator;
-
-  readonly getAllowancesEngineeringSettings: Locator;
-
-  readonly getSuccessBtn: Locator;
+  readonly scenarioTagsLabel: Locator;
 
   constructor(readonly page: Page) {
     super(page);
 
-    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
-    this.getScenarioUpdateBtn = page.getByTestId('editScenario');
-    this.getScenarioDeleteConfirmBtn = page
+    this.scenarioUpdateButton = page.getByTestId('editScenario');
+    this.scenarioConfirmDeleteButton = page
       .locator('#modal-content')
-      .getByText('Supprimer', { exact: true });
-    this.getItineraryModule = page.getByTestId('itinerary');
-    this.getItineraryOrigin = this.getItineraryModule
-      .getByTestId('display-itinerary')
-      .getByTestId('itinerary-origin');
-    this.getItinenaryDestination = this.getItineraryModule
-      .getByTestId('display-itinerary')
-      .getByTestId('itinerary-destination');
-    this.getItineraryVias = this.getItineraryModule
-      .getByTestId('display-itinerary')
-      .getByTestId('itinerary-vias');
-    this.getTrainLabels = page.getByTestId('add-train-labels');
-    this.getMapModule = page.getByTestId('map');
-    this.getSettingSimulationBtn = page.locator('span', { hasText: 'Paramètres de simulation' });
-    this.getAddScenarioBtn = page.getByTestId('addScenario');
-    this.getScenarioNameInput = page.locator('#scenarioInputName');
-    this.getScenarioDescriptionInput = page.locator('#scenarioDescription');
-    this.getScenarioInfraList = page.getByTestId('infraslist');
-    this.getScenarioElectricProfileSelect = page.locator('.input-group');
-    this.getScenarioName = page.locator('.scenario-details-name .scenario-name');
-    this.getScenarioDescription = page.locator('.scenario-details-description');
-    this.getScenarioInfraName = page.locator('.scenario-infra-name');
-    this.getSearchByTrigramButton = page.getByTestId('rocket-button');
-    this.getSearchByTrigramContainer = page.getByTestId('type-and-path-container');
-    this.getSearchByTrigramInput = page.getByTestId('type-and-path-input');
-    this.getSearchByTrigramsubmit = page.getByTestId('submit-search-by-trigram');
-    this.getResultPathfindingDone = page.getByTestId('result-pathfinding-done');
-    this.getResultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
-    this.getInfraLoadState = page.locator('.infra-loading-state');
-    this.getTrainCountInput = page.locator('#osrdconf-traincount');
-    this.getDeltaInput = page.locator('#osrdconf-delta');
-    this.getAddTrainScheduleBtn = page.getByTestId('add-train-schedules');
-    this.getTrainScheduleNameInput = page.locator('#trainSchedule-name');
-    this.getTrainTimetable = page
-      .locator('.scenario-timetable-trains')
-      .locator('.scenario-timetable-train');
-    this.getReturnSimulationResultBtn = page.getByTestId('return-simulation-result');
-    this.getPathfindingState = page.locator('.pathfinding-state-main-container');
-    this.getTimetableList = page.locator('.scenario-timetable-train-with-right-bar');
-    this.getTrainEditBtn = page.locator('.scenario-timetable-train-buttons-update');
-    this.getAllowancesSelector = page.getByTestId('allowances');
-    this.getAllowancesModule = page.locator('.operational-studies-allowances');
-    this.getAllowancesStandardSettings = page
-      .getByTestId('standard-allowance-group')
-      .getByTestId('allowances-standard-settings-value-input');
-    this.getAllowancesEnergyConsumed = page.getByTestId('allowance-energy-consumed');
-    this.getAverageEnergyConsumed = page.getByTestId('average-energy-consumed');
-    this.getAllowancesEngineeringSettings = page
-      .getByTestId('engineering-allowance-group')
-      .last()
-      .getByTestId('allowances-engineering-allowance-input');
-    this.getSuccessBtn = page.getByTestId('add-allowance-button');
-    this.getScenarioUpdateConfirmBtn = page.locator('#modal-content').getByTestId('updateScenario');
+      .getByTestId('delete-scenario');
+    this.trainLabels = page.getByTestId('add-train-labels');
+    this.addScenarioButton = page.getByTestId('add-scenario-button');
+    this.scenarioNameInput = page.locator('#scenarioInputName');
+    this.scenarioDescriptionInput = page.locator('#scenarioDescription');
+    this.scenarioInfraList = page.getByTestId('infra-list');
+    this.scenarioElectricProfileSelect = page.locator('.input-group');
+    this.scenarioName = page.locator('.scenario-details-name .scenario-name');
+    this.scenarioDescription = page.locator('.scenario-details-description');
+    this.scenarioInfraName = page.locator('.scenario-infra-name');
+    this.trainEditButton = page.locator('.scenario-timetable-train-buttons-update');
+    this.scenarioConfirmUpdateButton = page.locator('#modal-content').getByTestId('updateScenario');
+    this.createScenarioButton = page.getByTestId('createScenario');
+    this.scenarioTagsLabel = page.getByTestId('scenario-details-tag');
   }
 
-  async openTabByDataId(id: string) {
-    await this.page.getByTestId(id).click();
+  // Creates or updates a scenario based on the provided details.
+  async createOrUpdateScenario({
+    name,
+    description,
+    tags,
+    infraName,
+    electricProfileName,
+    isUpdate = false,
+  }: {
+    name: string;
+    description: string;
+    tags: string[];
+    infraName?: string;
+    electricProfileName?: string;
+    isUpdate?: boolean;
+  }) {
+    if (isUpdate) {
+      await this.clickOnUpdateScenario();
+    } else {
+      expect(this.addScenarioButton).toBeVisible();
+      await this.addScenarioButton.click();
+    }
+
+    await this.fillScenarioDetails({
+      name,
+      description,
+      tags,
+      infraName,
+      electricProfileName,
+    });
+    await (isUpdate ? this.scenarioConfirmUpdateButton.click() : this.createScenarioButton.click());
+    await this.page.waitForURL('**/scenarios/*');
+  }
+
+  // Fills the scenario details in the form inputs.
+  private async fillScenarioDetails({
+    name,
+    description,
+    infraName,
+    tags,
+    electricProfileName,
+  }: {
+    name: string;
+    description: string;
+    tags: string[];
+    infraName?: string;
+    electricProfileName?: string;
+  }) {
+    await this.scenarioNameInput.fill(name);
+    await this.scenarioDescriptionInput.fill(description);
+
+    // Check if electricProfileName is provided and not empty, then set the profile
+    if (electricProfileName && !process.env.CI) {
+      await this.setScenarioElectricProfileByName(electricProfileName);
+    }
+    if (infraName) {
+      await this.scenarioInfraList.getByText(infraName).first().click();
+    }
+
+    for (const tag of tags) {
+      await this.setTag(tag);
+    }
+  }
+
+  // Validates if all project details are displayed correctly.
+  async validateScenarioData({
+    name,
+    description,
+    infraName,
+    tags,
+  }: {
+    name: string;
+    description: string;
+    infraName: string;
+    tags?: string[];
+  }) {
+    expect(await this.scenarioName.textContent()).toContain(name);
+    expect(await this.scenarioDescription.textContent()).toContain(description);
+    expect(await this.scenarioInfraName.textContent()).toContain(infraName);
+    if (tags) {
+      expect(await this.scenarioTagsLabel.textContent()).toContain(tags.join(''));
+    }
   }
 
   getScenarioByName(name: string) {
@@ -169,153 +151,21 @@ class ScenarioPage extends BasePage {
     await this.page.getByTestId(scenarioTestId).getByTestId('openScenario').first().click();
   }
 
-  async openScenarioCreationModal() {
-    await this.getAddScenarioBtn.click();
-  }
-
-  async setScenarioName(name: string) {
-    await this.getScenarioNameInput.fill(name);
-  }
-
-  async openScenarioModalUpdate() {
-    // We need to hover the scenario description to make the update button visible
-    await this.getScenarioDescription.hover();
-    await this.getScenarioUpdateBtn.click();
-  }
-
-  async setScenarioDescription(description: string) {
-    await this.getScenarioDescriptionInput.fill(description);
-  }
-
-  async setScenarioInfraByName(infraName: string) {
-    await this.getScenarioInfraList.getByText(infraName).first().click();
-  }
-
   async setScenarioElectricProfileByName(electricProfileName: string) {
-    await this.getScenarioElectricProfileSelect.click();
-    await this.page.locator('[id="-selecttoggle"]').getByText(electricProfileName).click();
+    await this.scenarioElectricProfileSelect.click();
+    await this.page.locator('#-selecttoggle').getByText(electricProfileName).click();
   }
 
-  async checkPathfindingDistance(distance: string | RegExp) {
-    await this.page.waitForSelector('[data-testid="result-pathfinding-distance"]');
-    await expect(this.getResultPathfindingDistance).toHaveText(distance);
+  // Click on update scenario button
+  async clickOnUpdateScenario() {
+    await this.scenarioDescription.hover();
+    await this.scenarioUpdateButton.click();
   }
 
-  async checkInfraLoaded() {
-    await this.page.waitForSelector('.cached', { timeout: 60 * 1000 }); // Wait for the infrastructure to be fully loaded with a timeout of 60 seconds
-    await expect(this.getInfraLoadState).toHaveClass(/cached/);
-  }
-
-  async setNumberOfTrains(digits: string) {
-    const splitDigit = digits.split('');
-    await this.getTrainCountInput.focus();
-    await this.page.keyboard.press('Backspace');
-    splitDigit.forEach(async (digit) => {
-      await this.page.keyboard.press(digit);
-    });
-  }
-
-  async setDelta(digits: string) {
-    const splitDigit = digits.split('');
-    await this.getDeltaInput.focus();
-    await this.page.keyboard.press('Backspace');
-    await this.page.keyboard.press('Backspace');
-    splitDigit.forEach(async (digit) => {
-      await this.page.keyboard.press(digit);
-    });
-  }
-
-  async addTrainSchedule() {
-    await this.getAddTrainScheduleBtn.click();
-  }
-
-  async setTrainScheduleName(name: string) {
-    await this.getTrainScheduleNameInput.fill(name);
-    await expect(this.getTrainScheduleNameInput).toHaveValue(name);
-  }
-
-  async checkNumberOfTrains(number: number) {
-    await expect(this.getTrainTimetable).toHaveCount(number);
-  }
-
-  async returnSimulationResult() {
-    await this.getReturnSimulationResultBtn.click();
-  }
-
-  async checkTrainHasBeenAdded() {
-    this.checkLastToastTitle(trainAddedTranslation);
-  }
-
-  getBtnByName(name: string | RegExp) {
-    return this.page.getByRole('button', { name });
-  }
-
-  async checkPathfingingStateText(text: string | RegExp) {
-    await expect(this.getPathfindingState).toHaveText(text);
-  }
-
-  async getPathfindingByTriGramSearch(firstTrigram: string, secondTrigram: string) {
-    await this.getSearchByTrigramButton.click();
-    await expect(this.getSearchByTrigramContainer).toBeVisible();
-    await this.getSearchByTrigramInput.fill(`${firstTrigram} ${secondTrigram}`);
-    await expect(
-      this.page.getByTestId(`typeandpath-op-${firstTrigram}`) &&
-        this.page.getByTestId(`typeandpath-op-${secondTrigram}`)
-    ).toBeVisible();
-    await this.getSearchByTrigramsubmit.click();
-    await expect(this.getResultPathfindingDone).toBeVisible();
-  }
-
-  async clickBtnByName(name: string) {
-    await this.getBtnByName(name).click();
-  }
-
-  async openAllowancesModule() {
-    await this.getAllowancesSelector.click();
-  }
-
-  async setStandardAllowance() {
-    await this.getAllowancesStandardSettings.focus();
-    await this.page.keyboard.press('Digit5');
-  }
-
-  async checkAllowanceEnergyConsumed() {
-    const content = await this.getAllowancesEnergyConsumed.textContent();
-    const allowancesEnergyNumber = Number((content as string).slice(4, -3));
-    return allowancesEnergyNumber;
-  }
-
-  async checkAverageEnergyConsumed() {
-    const content = await this.getAverageEnergyConsumed.textContent();
-    const averageEnergyNumber = Number((content as string).slice(0, -3));
-    return averageEnergyNumber;
-  }
-
-  async isAllowanceWorking() {
-    const allowancesEnergyConsumed = await this.checkAllowanceEnergyConsumed();
-    const averageEnergyConsumed = await this.checkAverageEnergyConsumed();
-
-    const isCurrentAllowanceWorking = allowancesEnergyConsumed < averageEnergyConsumed;
-    return isCurrentAllowanceWorking;
-  }
-
-  async setEngineeringAllowance() {
-    await this.getAllowancesEngineeringSettings.focus();
-    await this.page.keyboard.press('Digit1');
-    await this.page.keyboard.press('Digit8');
-    await this.page.keyboard.press('Digit0');
-  }
-
-  async clickSuccessBtn() {
-    await this.getSuccessBtn.click();
-  }
-
-  async clickScenarioUpdateConfirmBtn() {
-    await this.getScenarioUpdateConfirmBtn.click();
-  }
-
-  async clickScenarioDeleteConfirmBtn() {
-    await this.getScenarioDeleteConfirmBtn.click();
+  // Delete scenario
+  async deleteScenario() {
+    await this.scenarioConfirmDeleteButton.click();
+    await this.page.waitForURL('**/studies/*');
   }
 }
 

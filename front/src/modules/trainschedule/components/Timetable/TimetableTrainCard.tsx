@@ -206,7 +206,11 @@ const TimetableTrainCard = ({
                   (train.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
               </div>
               {train.arrivalTime && (
-                <div className="scenario-timetable-train-arrival" title={train.arrivalTime}>
+                <div
+                  data-testid="train-arrival-time"
+                  className="scenario-timetable-train-arrival"
+                  title={train.arrivalTime}
+                >
                   {/* TODO: delete the format when the date management `PR` has been passed */}
                   {dayjs(train.arrivalTime, 'D/MM/YYYY HH:mm:ss').format('HH:mm')}
                 </div>

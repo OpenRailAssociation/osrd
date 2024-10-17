@@ -1,104 +1,16 @@
 import fs from 'fs';
 
-import { type APIResponse, type Locator, type Page, expect, request } from '@playwright/test';
+import { type Locator, type Page, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import type { Project, Scenario, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
-
-// API requests
-
-const getApiContext = async () =>
-  request.newContext({
-    baseURL: 'http://localhost:4000',
-  });
-
-export const getApiRequest = async (
-  url: string,
-  params?: { [key: string]: string | number | boolean }
-) => {
-  const apiContext = await getApiContext();
-  const response = await apiContext.get(url, { params });
-  return response.json();
-};
-
-export const postApiRequest = async <T>(
-  url: string,
-  data?: T,
-  params?: { [key: string]: string | number | boolean }
-) => {
-  const apiContext = await getApiContext();
-  const response = await apiContext.post(url, { data, params });
-  return response.json();
-};
-
-export const deleteApiRequest = async (url: string) => {
-  const apiContext = await getApiContext();
-  const response = await apiContext.delete(url);
-  return response;
-};
-
-// API calls for beforeAll setup in tests
-
-export const findOneInResults = <T extends { name: string }>(results: T[], name: string) =>
-  results.find((result) => result.name === name);
-
-export const getInfra = async () => {
-  const { results } = await getApiRequest(`/api/infra/`);
-  const infra = findOneInResults(results, 'small_infra_test_e2e') as Infra;
-  return infra;
-};
-
-export const getProject = async () => {
-  const { results } = await getApiRequest(`/api/projects/`);
-  const project = findOneInResults(results, 'project_test_e2e') as Project;
-  return project;
-};
-
-export const getStudy = async (projectId: number) => {
-  const { results } = await getApiRequest(`/api/projects/${projectId}/studies/`);
-  const study = findOneInResults(results, 'study_test_e2e') as Study;
-  return study;
-};
-
-export const getScenario = async (projectId: number, studyId: number) => {
-  const { results } = await getApiRequest(
-    `/api/projects/${projectId}/studies/${studyId}/scenarios/`
-  );
-  const scenario = findOneInResults(results, 'scenario_test_e2e') as Scenario;
-  return scenario;
-};
-
-export const getRollingStock = async () => {
-  const { results } = await getApiRequest(`/api/light_rolling_stock/`, { page_size: 500 });
-  const rollingStock = findOneInResults(
-    results,
-    'rollingstock_1500_25000_test_e2e'
-  ) as RollingStock;
-  return rollingStock;
-};
-// Add a rolling Stock
-export async function addRollingStock(rollingStockName: string, rollingStockJson: JSON) {
-  await postApiRequest('/api/rolling_stock/', {
-    ...rollingStockJson,
-    name: rollingStockName,
-  });
-}
-// Find and delete rolling stock with the given name
-export async function findAndDeleteRollingStocks(rollingStockNames: string[]) {
-  const rollingStocks = await getApiRequest(`/api/light_rolling_stock/`, { page_size: 500 });
-
-  const deleteRequests = rollingStockNames.map(async (name) => {
-    const rollingStockToDelete = rollingStocks.results.find((r: RollingStock) => r.name === name);
-    if (rollingStockToDelete) {
-      await deleteApiRequest(`/api/rolling_stock/${rollingStockToDelete.id}/`);
-    }
-  });
-
-  await Promise.all(deleteRequests);
-}
-
-// Fill and check input by ID
-// Note: This method check if the locator uses ID or TestID and fills it with the input value
+/**
+ * Fills the input field identified by ID or TestID with the specified value and verifies it.
+ *
+ * @param {Page} page - The Playwright page object.
+ * @param {string} inputId - The ID or TestID of the input field.
+ * @param {string | number} value - The value to fill into the input field.
+ * @param {boolean} [isTestId=false] - Optional. If true, uses TestID instead of ID for locating the input field.
+ */
 export async function fillAndCheckInputById(
   page: Page,
   inputId: string,
@@ -112,8 +24,14 @@ export async function fillAndCheckInputById(
   expect(await input.inputValue()).toBe(`${value}`);
 }
 
-// Verify input by ID
-// Note: This method check if the locator uses ID or TestID and verifies its content
+/**
+ * Verifies the content of the input field identified by ID or TestID.
+ *
+ * @param {Page} page - The Playwright page object.
+ * @param {string} inputId - The ID or TestID of the input field.
+ * @param {string | number} expectedValue - The expected value to verify in the input field.
+ * @param {boolean} [isTestId=false] - Optional. If true, uses TestID instead of ID for locating the input field.
+ */
 export async function verifyAndCheckInputById(
   page: Page,
   inputId: string,
@@ -125,28 +43,65 @@ export async function verifyAndCheckInputById(
   expect(await input.inputValue()).toContain(`${expectedValue}`);
 }
 
-// Generate unique name (used for creating rolling stock)
-export const generateUniqueName = async (baseName: string) => {
-  // Generate a UUID and truncate it to 6 characters
+/**
+ * Generates a unique name by appending a truncated UUID to the base name.
+ *
+ * @param {string} baseName - The base name to append the UUID segment to.
+ * @returns {string} - The generated unique name.
+ */
+export const generateUniqueName = (baseName: string): string => {
   const uuidSegment = uuidv4().slice(0, 6);
   return `${baseName}-${uuidSegment}`;
 };
 
-// Extracts the first sequence of digits found in the input string and returns it as a number or return 0 if no digits found
+/**
+ * Extracts the first sequence of digits found in a string and returns it as a number.
+ * Returns 0 if no digits are found.
+ *
+ * @param {string} input - The string to extract the number from.
+ * @returns {Promise<number>} - The extracted number or 0 if none found.
+ */
 export async function extractNumberFromString(input: string): Promise<number> {
   const match = input.match(/\d+/);
   return match ? parseInt(match[0], 10) : 0;
 }
-// Utility function to read JSON files
+
+/**
+ * Reads a JSON file from the specified path and returns its parsed content.
+ *
+ * @param {string} path - The file path of the JSON file.
+ * @returns {any} - The parsed JSON content.
+ */
 export const readJsonFile = (path: string) => JSON.parse(fs.readFileSync(path, 'utf8'));
 
-// Helper function to handle API error responses
-export function handleApiResponse(response: APIResponse, errorMessage: string) {
-  if (!response.ok()) {
-    throw new Error(`${errorMessage}: ${response.status()} ${response.statusText()}`);
-  }
-}
+/**
+ * Clicks on the specified element and waits for a specified delay after the click.
+ *
+ * @param {Locator} element - locator object representing the element to click.
+ * @param {number} [delay=500] - Optional. The delay in milliseconds to wait after clicking the element. Defaults to 500ms.
+ *
+ * @returns {Promise<void>} - A promise that resolves after the element is clicked and the delay has passed.
+ */
 export async function clickWithDelay(element: Locator, delay: number = 500): Promise<void> {
   await element.click();
   await element.page().waitForTimeout(delay);
+}
+
+/**
+ * Converts a date string from YYYY-MM-DD format to "DD mmm YYYY" format.
+ * @param dateString - The input date string in YYYY-MM-DD format.
+ * @returns The formatted date string in "DD mmm YYYY" format.
+ */
+export function formatDateToDayMonthYear(dateString: string): string {
+  const date = new Date(dateString);
+
+  // Format the date to "15 Oct 2024" using toLocaleDateString
+  const formattedDate = date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  // Convert the short month (first letter capitalized) to lowercase
+  return formattedDate.replace(/([A-Z])/g, (match) => match.toLowerCase());
 }
