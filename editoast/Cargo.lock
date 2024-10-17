@@ -1120,17 +1120,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "deadpool-lapin"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33c7b14064f854a3969735e7c948c677a57ef17ca7f0bc029da8fe2e5e0fc1eb"
-dependencies = [
- "deadpool",
- "lapin",
- "tokio-executor-trait",
-]
-
-[[package]]
 name = "deadpool-runtime"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1351,7 +1340,7 @@ dependencies = [
  "clap",
  "colored",
  "dashmap",
- "deadpool-lapin",
+ "deadpool",
  "derivative",
  "diesel",
  "diesel-async",
@@ -4524,17 +4513,6 @@ dependencies = [
  "socket2 0.5.7",
  "tokio-macros",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "tokio-executor-trait"
-version = "2.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "802ccf58e108fe16561f35348fabe15ff38218968f033d587e399a84937533cc"
-dependencies = [
- "async-trait",
- "executor-trait",
- "tokio",
 ]
 
 [[package]]

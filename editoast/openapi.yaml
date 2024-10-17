@@ -4158,13 +4158,6 @@ components:
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
       - $ref: '#/components/schemas/EditoastEditoastUrlErrorInvalidUrl'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
-      - $ref: '#/components/schemas/EditoastErrorConnectionDoesNotExist'
-      - $ref: '#/components/schemas/EditoastErrorCreatePoolLapin'
-      - $ref: '#/components/schemas/EditoastErrorDeadpoolLapin'
-      - $ref: '#/components/schemas/EditoastErrorLapin'
-      - $ref: '#/components/schemas/EditoastErrorResponseTimeout'
-      - $ref: '#/components/schemas/EditoastErrorSerialization'
-      - $ref: '#/components/schemas/EditoastErrorStatusParsing'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
@@ -4176,6 +4169,12 @@ components:
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastListErrorsRailjsonWrongRailjsonVersionProvided'
+      - $ref: '#/components/schemas/EditoastMqClientErrorConnectionDoesNotExist'
+      - $ref: '#/components/schemas/EditoastMqClientErrorLapin'
+      - $ref: '#/components/schemas/EditoastMqClientErrorPoolChannelFail'
+      - $ref: '#/components/schemas/EditoastMqClientErrorResponseTimeout'
+      - $ref: '#/components/schemas/EditoastMqClientErrorSerialization'
+      - $ref: '#/components/schemas/EditoastMqClientErrorStatusParsing'
       - $ref: '#/components/schemas/EditoastNoSuchUserErrorNoSuchUser'
       - $ref: '#/components/schemas/EditoastOperationErrorEmptyId'
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
@@ -4224,139 +4223,6 @@ components:
       description: Generated error type for Editoast
       discriminator:
         propertyName: type
-    EditoastErrorConnectionDoesNotExist:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:ConnectionDoesNotExist
-    EditoastErrorCreatePoolLapin:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:CreatePoolLapin
-    EditoastErrorDeadpoolLapin:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:DeadpoolLapin
-    EditoastErrorLapin:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:Lapin
-    EditoastErrorResponseTimeout:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:ResponseTimeout
-    EditoastErrorSerialization:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:Serialization
-    EditoastErrorStatusParsing:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:StatusParsing
     EditoastGeometryErrorUnexpectedGeometry:
       type: object
       required:
@@ -4613,6 +4479,120 @@ components:
           type: string
           enum:
           - editoast:infra:railjson:WrongRailjsonVersionProvided
+    EditoastMqClientErrorConnectionDoesNotExist:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:ConnectionDoesNotExist
+    EditoastMqClientErrorLapin:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:Lapin
+    EditoastMqClientErrorPoolChannelFail:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:PoolChannelFail
+    EditoastMqClientErrorResponseTimeout:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:ResponseTimeout
+    EditoastMqClientErrorSerialization:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:Serialization
+    EditoastMqClientErrorStatusParsing:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:StatusParsing
     EditoastNoSuchUserErrorNoSuchUser:
       type: object
       required:
