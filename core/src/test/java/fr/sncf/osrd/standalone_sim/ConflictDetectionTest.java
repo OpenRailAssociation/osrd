@@ -499,6 +499,10 @@ public class ConflictDetectionTest {
         var directStartTime = 300; // 5 min after stopping train
         var reqOvertaking = convertRequirements(1L, directStartTime, simResultNorthOvertaking.train);
 
+        // check that requirements are all ending after they begin
+        assertRequirementsPeriodsConsistency(reqOvertaking);
+        assertRequirementsPeriodsConsistency(reqWithStop);
+
         // check spacing and routing requirements for the zone of the switch after (East) Mid_West_station
         var switchZoneName = "zone.[DC4:INCREASING, DC5:INCREASING, DD0:DECREASING]";
 
@@ -540,6 +544,18 @@ public class ConflictDetectionTest {
                 .get();
         assertEquals(overtakingSwitchLimitingSignalSight, overtakingSwitchRouteReqWithStop.beginTime);
         assertEquals(overtakingSwitchZoneExitTime, overtakingSwitchRouteCrossingZoneReqWithStop.endTime);
+    }
+
+    private static void assertRequirementsPeriodsConsistency(TrainRequirements requirements) {
+        for (var spacingReq : requirements.getSpacingRequirements()) {
+            assert (spacingReq.beginTime <= spacingReq.endTime);
+        }
+        for (var routingReq : requirements.getRoutingRequirements()) {
+            var routingReqBegin = routingReq.beginTime;
+            for (var zoneReq : routingReq.zones) {
+                assert (routingReqBegin <= zoneReq.endTime);
+            }
+        }
     }
 
     @ParameterizedTest

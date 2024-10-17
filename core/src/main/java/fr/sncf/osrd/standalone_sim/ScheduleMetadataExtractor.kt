@@ -381,12 +381,13 @@ fun routingRequirements(
         // entry signal of the route (both position and time, as there is a time margin)
         // in this case, just move the critical position to just after the stop
         val entrySignalOffset =
-            limitingBlockOffset + blockInfra.getSignalsPositions(firstRouteBlock).first().distance
+            blockOffsets[routeStartBlockIndex] +
+                blockInfra.getSignalsPositions(firstRouteBlock).first().distance
         for (stop in stops.reversed()) {
             val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
             if (
                 stop.receptionSignal.isStopOnClosedSignal &&
-                    entrySignalOffset <= stopTravelledOffset
+                    stopTravelledOffset <= entrySignalOffset
             ) {
                 // stop duration is included in interpolateDepartureFromClamp()
                 val stopDepartureTime =
