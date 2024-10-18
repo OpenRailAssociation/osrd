@@ -85,7 +85,7 @@ pub enum Commands {
     #[command(subcommand, about, long_about = "Roles related commands")]
     Roles(RolesCommand),
     #[command(about, long_about = "Healthcheck")]
-    Healthcheck,
+    Healthcheck(CoreArgs),
 }
 
 #[derive(Args, Debug, Derivative, Clone)]
@@ -102,6 +102,19 @@ pub struct MapLayersConfig {
 
 #[derive(Args, Debug)]
 #[command(about, long_about = "Launch the server")]
+pub struct CoreArgs {
+    #[clap(long, env = "OSRD_MQ_URL", default_value_t = String::from("amqp://osrd:password@127.0.0.1:5672/%2f"))]
+    pub mq_url: String,
+    #[clap(long, env = "EDITOAST_CORE_TIMEOUT", default_value_t = 180)]
+    pub core_timeout: u64,
+    #[clap(long, env = "EDITOAST_CORE_SINGLE_WORKER", default_value_t = false)]
+    pub core_single_worker: bool,
+    #[clap(long, env = "CORE_CLIENT_CHANNELS_SIZE", default_value_t = 8)]
+    pub core_client_channels_size: usize,
+}
+
+#[derive(Args, Debug)]
+#[command(about, long_about = "Launch the server")]
 pub struct RunserverArgs {
     #[command(flatten)]
     pub map_layers_config: MapLayersConfig,
@@ -109,12 +122,8 @@ pub struct RunserverArgs {
     pub port: u16,
     #[arg(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
     pub address: String,
-    #[clap(long, env = "OSRD_MQ_URL", default_value_t = String::from("amqp://osrd:password@127.0.0.1:5672/%2f"))]
-    pub mq_url: String,
-    #[clap(long, env = "EDITOAST_CORE_TIMEOUT", default_value_t = 180)]
-    pub core_timeout: u64,
-    #[clap(long, env = "EDITOAST_CORE_SINGLE_WORKER", default_value_t = false)]
-    pub core_single_worker: bool,
+    #[command(flatten)]
+    pub core: CoreArgs,
     #[clap(long, env = "ROOT_PATH", default_value_t = String::new())]
     pub root_path: String,
     #[clap(long)]
@@ -131,8 +140,6 @@ pub struct RunserverArgs {
     /// The timeout to use when performing the healthcheck, in milliseconds
     #[clap(long, env = "EDITOAST_HEALTH_CHECK_TIMEOUT_MS", default_value_t = 500)]
     pub health_check_timeout_ms: u64,
-    #[clap(long, env = "CORE_CLIENT_CHANNELS_SIZE", default_value_t = 8)]
-    pub core_client_channels_size: usize,
 }
 
 #[derive(Args, Debug)]
