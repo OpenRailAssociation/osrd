@@ -72,7 +72,12 @@ const StcdmResults = ({
     useState(SPEED_SPACE_CHART_HEIGHT);
 
   const selectedSimulation = simulationsList[selectedSimulationIndex];
-  const spaceTimeData = useProjectedTrainsForStdcm(selectedSimulation.outputs?.results);
+  //
+  const spaceTimeData = useProjectedTrainsForStdcm(
+    selectedSimulation.outputs?.results,
+    isDebugMode
+  );
+  console.log('spaceTimeData', spaceTimeData);
   const speedSpaceChartData = selectedSimulation?.outputs?.speedSpaceChartData;
 
   const simulationReportSheetNumber = generateCodeNumber();

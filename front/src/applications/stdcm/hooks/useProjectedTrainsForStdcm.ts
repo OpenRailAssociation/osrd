@@ -7,10 +7,15 @@ import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
+import { usePrevious } from 'utils/hooks/state';
 
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
 
-const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmV2SuccessResponse) => {
+const useProjectedTrainsForStdcm = (
+  stdcmResponse: StdcmV2SuccessResponse | undefined,
+  isDebugMode: boolean
+) => {
+  const previousDebugMode = usePrevious(isDebugMode);
   const infraId = useInfraID();
   const { getTimetableID } = useOsrdConfSelectors();
   const timetableId = useSelector(getTimetableID);
@@ -33,9 +38,15 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmV2SuccessResponse) => {
       },
     },
     {
-      skip: !trainIds || !trainIds.length,
+      skip: !trainIds || !trainIds.length || !isDebugMode,
     }
   );
+
+  useEffect(() => {
+    if (trainSchedules && isDebugMode && !previousDebugMode) {
+      setTrainIdsToProject(new Set(trainSchedules.map((ts) => ts.id)));
+    }
+  }, [isDebugMode]);
 
   const stdcmProjectedTrain = useMemo(
     () => (stdcmResponse ? formatStdcmTrainIntoSpaceTimeData(stdcmResponse) : undefined),
@@ -50,6 +61,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmV2SuccessResponse) => {
     setTrainIdsToProject,
   });
 
+  console.log('projectedTimetableTrainsById', projectedTimetableTrainsById);
   useEffect(() => {
     const projectedTimetableTrains = Array.from(projectedTimetableTrainsById.values());
     const newSpaceTimeData = projectedTimetableTrains.filter(
