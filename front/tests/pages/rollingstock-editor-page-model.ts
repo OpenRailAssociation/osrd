@@ -4,68 +4,68 @@ import CommonPage from './common-page-model';
 import { fillAndCheckInputById } from '../utils/index';
 
 class RollingstockEditorPage extends CommonPage {
-  readonly getNewRollingstockButton: Locator;
+  readonly newRollingstockButton: Locator;
 
-  readonly getSubmitRollingstockButton: Locator;
+  readonly submitRollingstockButton: Locator;
 
-  readonly getRollingstockDetailsButton: Locator;
+  readonly rollingstockDetailsButton: Locator;
 
-  readonly getSpeedEffortCurvesButton: Locator;
+  readonly speedEffortCurvesButton: Locator;
 
-  readonly getRollingStockSpreadsheet: Locator;
+  readonly rollingStockSpreadsheet: Locator;
 
-  readonly getRollingStockSearchInput: Locator;
+  readonly rollingStockSearchInput: Locator;
 
-  readonly getRollingStockEditorList: Locator;
+  readonly rollingStockEditorList: Locator;
 
-  readonly getPowerRestrictionSelector: Locator;
+  readonly powerRestrictionSelector: Locator;
 
-  readonly getElectricalProfileSelector: Locator;
+  readonly electricalProfileSelector: Locator;
 
-  readonly getLoadingGauge: Locator;
+  readonly loadingGauge: Locator;
 
-  readonly getTractionModeSelector: Locator;
+  readonly tractionModeSelector: Locator;
 
-  readonly getConfirmModalButtonYes: Locator;
+  readonly confirmModalButtonYes: Locator;
 
   readonly addPowerRestrictionButton: Locator;
 
-  readonly getPowerRestrictionModalBody: Locator;
+  readonly powerRestrictionModalBody: Locator;
 
-  readonly getSelectedElectricalProfileButton: Locator;
+  readonly selectedElectricalProfileButton: Locator;
 
   readonly deleteSelectedElectricalProfileButton: Locator;
 
-  readonly getEditRollingStockButton: Locator;
+  readonly editRollingStockButton: Locator;
 
-  readonly getDuplicateRollingStockButton: Locator;
+  readonly duplicateRollingStockButton: Locator;
 
-  readonly getDeleteRollingStockButton: Locator;
+  readonly deleteRollingStockButton: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.getNewRollingstockButton = page.getByTestId('new-rollingstock-button');
-    this.getSubmitRollingstockButton = page.getByTestId('submit-rollingstock-button');
-    this.getRollingstockDetailsButton = page.getByTestId('tab-rollingstock-details');
-    this.getSpeedEffortCurvesButton = page.getByTestId('tab-rollingstock-curves');
-    this.getRollingStockSpreadsheet = page.locator('.dsg-container');
-    this.getRollingStockSearchInput = page.locator('#searchfilter');
-    this.getRollingStockEditorList = page.getByTestId('rollingstock-editor-list');
-    this.getPowerRestrictionSelector = page.getByTestId('power-restriction-selector');
-    this.getElectricalProfileSelector = page.getByTestId('electrical-profile-selector');
-    this.getLoadingGauge = page.locator('#loadingGauge');
-    this.getTractionModeSelector = page.getByTestId('traction-mode-selector');
-    this.getConfirmModalButtonYes = page.getByTestId('confirm-modal-button-yes');
-    this.addPowerRestrictionButton = this.getPowerRestrictionSelector.getByRole('button').nth(1);
-    this.getPowerRestrictionModalBody = page.locator('#modal-body');
-    this.getSelectedElectricalProfileButton = this.getElectricalProfileSelector.getByRole('button');
-    this.deleteSelectedElectricalProfileButton = this.getSelectedElectricalProfileButton.getByRole(
+    this.newRollingstockButton = page.getByTestId('new-rollingstock-button');
+    this.submitRollingstockButton = page.getByTestId('submit-rollingstock-button');
+    this.rollingstockDetailsButton = page.getByTestId('tab-rollingstock-details');
+    this.speedEffortCurvesButton = page.getByTestId('tab-rollingstock-curves');
+    this.rollingStockSpreadsheet = page.locator('.dsg-container');
+    this.rollingStockSearchInput = page.locator('#searchfilter');
+    this.rollingStockEditorList = page.getByTestId('rollingstock-editor-list');
+    this.powerRestrictionSelector = page.getByTestId('power-restriction-selector');
+    this.electricalProfileSelector = page.getByTestId('electrical-profile-selector');
+    this.loadingGauge = page.locator('#loadingGauge');
+    this.tractionModeSelector = page.getByTestId('traction-mode-selector');
+    this.confirmModalButtonYes = page.getByTestId('confirm-modal-button-yes');
+    this.addPowerRestrictionButton = this.powerRestrictionSelector.getByRole('button').nth(1);
+    this.powerRestrictionModalBody = page.locator('#modal-body');
+    this.selectedElectricalProfileButton = this.electricalProfileSelector.getByRole('button');
+    this.deleteSelectedElectricalProfileButton = this.selectedElectricalProfileButton.getByRole(
       'button',
       { name: 'Delete item', exact: true }
     );
-    this.getEditRollingStockButton = page.getByTestId('rollingstock-edit-button');
-    this.getDuplicateRollingStockButton = page.getByTestId('rollingstock-duplicate-button');
-    this.getDeleteRollingStockButton = page.getByTestId('rollingstock-delete-button');
+    this.editRollingStockButton = page.getByTestId('rollingstock-edit-button');
+    this.duplicateRollingStockButton = page.getByTestId('rollingstock-duplicate-button');
+    this.deleteRollingStockButton = page.getByTestId('rollingstock-delete-button');
   }
 
   // Navigate to the Rolling Stock Editor Page
@@ -78,17 +78,17 @@ class RollingstockEditorPage extends CommonPage {
 
   // Click the New Rolling Stock Button
   async clickOnNewRollingstockButton() {
-    await this.getNewRollingstockButton.click();
+    await this.newRollingstockButton.click();
   }
 
   // Search for a rolling stock
   async searchRollingStock(rollingStockName: string) {
-    await this.getRollingStockSearchInput.fill(rollingStockName);
+    await this.rollingStockSearchInput.fill(rollingStockName);
   }
 
   // Clear the search for a rolling stock
   async clearSearchRollingStock() {
-    await this.getRollingStockSearchInput.clear();
+    await this.rollingStockSearchInput.clear();
   }
 
   // Select a rolling stock from the list
@@ -100,32 +100,32 @@ class RollingstockEditorPage extends CommonPage {
   // Edit a rolling stock
   async editRollingStock(rollingStockName: string) {
     await this.selectRollingStock(rollingStockName);
-    await this.getEditRollingStockButton.click();
+    await this.editRollingStockButton.click();
   }
 
   // Click the Submit Rolling Stock Button
   async clickOnSubmitRollingstockButton() {
-    await this.getSubmitRollingstockButton.click();
+    await this.submitRollingstockButton.click();
   }
 
   // Click the Rolling Stock Details Button
   async clickOnRollingstockDetailsButton() {
-    await this.getRollingstockDetailsButton.click();
+    await this.rollingstockDetailsButton.click();
   }
 
   // Click the Speed Effort Curves Button
   async clickOnSpeedEffortCurvesButton() {
-    await this.getSpeedEffortCurvesButton.click();
+    await this.speedEffortCurvesButton.click();
   }
 
   // Get Velocity cell by row number
   getVelocityCellByRow(row: number) {
-    return this.getRollingStockSpreadsheet.locator('.dsg-row').nth(row).locator('.dsg-cell').nth(1);
+    return this.rollingStockSpreadsheet.locator('.dsg-row').nth(row).locator('.dsg-cell').nth(1);
   }
 
   // Get Velocity cell value by row number
   async getVelocityCellByRowValue(row: number) {
-    return this.getRollingStockSpreadsheet
+    return this.rollingStockSpreadsheet
       .locator('.dsg-row')
       .nth(row)
       .locator('.dsg-cell')
@@ -136,14 +136,14 @@ class RollingstockEditorPage extends CommonPage {
 
   // Get Effort cell by row number
   getEffortCellByRow(row: number) {
-    return this.getRollingStockSpreadsheet.locator('.dsg-row').nth(row).locator('.dsg-cell').last();
+    return this.rollingStockSpreadsheet.locator('.dsg-row').nth(row).locator('.dsg-cell').last();
   }
 
   // Get Effort cell value by row number
   // Note: This method assumes there are at least three cells per row.
   // If the structure changes, update the .nth() index accordingly.
   async getEffortCellByRowValue(row: number) {
-    return this.getRollingStockSpreadsheet
+    return this.rollingStockSpreadsheet
       .locator('.dsg-row')
       .nth(row)
       .locator('.dsg-cell')
@@ -175,8 +175,8 @@ class RollingstockEditorPage extends CommonPage {
 
   // Select gauge value
   async selectLoadingGauge(value: string) {
-    await this.getLoadingGauge.selectOption(value);
-    expect(await this.getLoadingGauge.inputValue()).toBe(value);
+    await this.loadingGauge.selectOption(value);
+    expect(await this.loadingGauge.inputValue()).toBe(value);
   }
 
   // Fill speed effort curves with or without power restriction
@@ -188,11 +188,11 @@ class RollingstockEditorPage extends CommonPage {
   ) {
     if (!isPowerRestrictionSpecified) {
       await this.clickOnSpeedEffortCurvesButton();
-      await this.getTractionModeSelector.getByRole('button').click();
-      await this.getTractionModeSelector
+      await this.tractionModeSelector.getByRole('button').click();
+      await this.tractionModeSelector
         .getByRole('button', { name: electricalProfilesValue, exact: true })
         .click();
-      await expect(this.getTractionModeSelector.getByTitle(electricalProfilesValue)).toBeVisible();
+      await expect(this.tractionModeSelector.getByTitle(electricalProfilesValue)).toBeVisible();
     }
 
     await this.fillSpeedEffortData(
@@ -212,15 +212,15 @@ class RollingstockEditorPage extends CommonPage {
   ) {
     if (isPowerRestrictionSpecified && !toBeUpdated) {
       await this.addPowerRestrictionButton.click();
-      await this.getPowerRestrictionModalBody
+      await this.powerRestrictionModalBody
         .getByTitle(powerRestrictionValue, { exact: true })
         .click();
       await expect(
-        this.getPowerRestrictionSelector.getByTitle(powerRestrictionValue.replace(/\s/g, ''))
+        this.powerRestrictionSelector.getByTitle(powerRestrictionValue.replace(/\s/g, ''))
       ).toBeVisible();
     }
     if (toBeUpdated) {
-      await this.getPowerRestrictionSelector
+      await this.powerRestrictionSelector
         .getByTitle(powerRestrictionValue, { exact: true })
         .click();
     }
@@ -241,7 +241,7 @@ class RollingstockEditorPage extends CommonPage {
     powerRestrictionValue: string
   ) {
     if (isPowerRestrictionSpecified) {
-      await this.getPowerRestrictionSelector
+      await this.powerRestrictionSelector
         .getByRole('button', { name: powerRestrictionValue })
         .click();
     }
@@ -257,11 +257,11 @@ class RollingstockEditorPage extends CommonPage {
 
   // Delete Electrical profile from the speed effort curves
   async deleteElectricalProfile(electricalProfileValue: string) {
-    await this.getSelectedElectricalProfileButton.getByTitle(electricalProfileValue).hover();
+    await this.selectedElectricalProfileButton.getByTitle(electricalProfileValue).hover();
     await this.deleteSelectedElectricalProfileButton.click();
-    await this.getConfirmModalButtonYes.click();
+    await this.confirmModalButtonYes.click();
     await expect(
-      this.getSelectedElectricalProfileButton.getByTitle(electricalProfileValue)
+      this.selectedElectricalProfileButton.getByTitle(electricalProfileValue)
     ).toBeHidden();
   }
 
@@ -282,19 +282,19 @@ class RollingstockEditorPage extends CommonPage {
   // Submit and confirm rolling stock creation
   async submitRollingStock() {
     await this.clickOnSubmitRollingstockButton();
-    await this.getConfirmModalButtonYes.click();
+    await this.confirmModalButtonYes.click();
   }
 
   // Duplicate rolling stock creation
   async duplicateRollingStock() {
-    await this.getDuplicateRollingStockButton.click();
+    await this.duplicateRollingStockButton.click();
   }
 
   // Delete a rolling stock
   async deleteRollingStock(rollingStockName: string) {
     await this.selectRollingStock(rollingStockName);
-    await this.getDeleteRollingStockButton.click();
-    await this.getConfirmModalButtonYes.click();
+    await this.deleteRollingStockButton.click();
+    await this.confirmModalButtonYes.click();
   }
 }
 export default RollingstockEditorPage;
