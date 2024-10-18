@@ -53,7 +53,7 @@
     "importTrainSchedule": "Importer",
     "invalid": {
       "pathfinding_not_found": "Chemin introuvable",
-      "pathfinding_failed": "Calcul non abouti",
+      "pathfinding_core_error": "Calcul non abouti",
       "simulation_failed": "Simulation impossible",
       "rolling_stock_not_found": "MR non trouvé"
     },
