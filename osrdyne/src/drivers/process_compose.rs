@@ -171,10 +171,17 @@ impl WorkerDriver for PCDriver {
                         external_id: pid.to_string(),
                         worker_id: **id,
                         worker_key: (*key).clone(),
+                        metadata: Default::default(),
                     })
                 })
                 .collect())
         })
+    }
+
+    fn cleanup_stalled(
+        &mut self,
+    ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
+        Box::pin(async move { Ok(()) })
     }
 }
 

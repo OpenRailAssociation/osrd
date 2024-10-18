@@ -1,4 +1,7 @@
-use crate::Key;
+use crate::{
+    drivers::{LABEL_QUEUE_NAME, LABEL_VERSION_IDENTIFIER},
+    Key,
+};
 
 use super::{
     worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
@@ -15,10 +18,11 @@ use k8s_openapi::{
     },
     apimachinery::pkg::apis::meta::v1::LabelSelector,
 };
-use keda::MetricType;
+use keda::{MetricType, ScaledObject};
 use kube::{api::ObjectMeta, Client};
-use log::debug;
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, HashMap},
     future::Future,
@@ -134,6 +138,7 @@ pub struct KubernetesDriver {
     pool_id: String,
     options: KubernetesDriverOptions,
     amqp_uri: String,
+    version_identifier: String,
 }
 
 impl KubernetesDriver {
@@ -142,6 +147,11 @@ impl KubernetesDriver {
         amqp_uri: String,
         pool_id: String,
     ) -> KubernetesDriver {
+        let version_identifier = std::env::var("OSRD_GIT_DESCRIBE")
+            .unwrap_or_else(|_| format!("run-{}", Uuid::new_v4()));
+
+        let hashed = format!("{:x}", Sha256::digest(version_identifier))[..16].to_string();
+
         KubernetesDriver {
             client: Client::try_default()
                 .await
@@ -149,25 +159,33 @@ impl KubernetesDriver {
             options,
             amqp_uri,
             pool_id,
+            version_identifier: hashed,
         }
     }
-}
 
-impl KubernetesDriver {
     async fn create_hpa_autoscaler(
         &self,
+        worker_id: String,
         worker_key: Key,
         hpa: HPAOptions,
+        queue_name: String,
         worker_deployment_name: String,
+        current_hpa_version: Option<String>,
     ) -> Result<(), super::worker_driver::DriverError> {
-        let hpa = HorizontalPodAutoscaler {
+        let mut hpa = HorizontalPodAutoscaler {
             metadata: ObjectMeta {
                 name: Some(worker_deployment_name.clone()),
                 namespace: Some(self.options.namespace.clone()),
                 labels: Some({
                     let mut labels = BTreeMap::new();
                     labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
-                    labels.insert(LABEL_WORKER_ID.to_owned(), worker_key.to_string());
+                    labels.insert(LABEL_WORKER_ID.to_owned(), worker_id);
+                    labels.insert(LABEL_WORKER_KEY.to_owned(), worker_key.to_string());
+                    labels.insert(LABEL_QUEUE_NAME.to_owned(), queue_name.clone());
+                    labels.insert(
+                        LABEL_VERSION_IDENTIFIER.to_owned(),
+                        self.version_identifier.clone(),
+                    );
                     labels
                 }),
                 ..Default::default()
@@ -188,34 +206,60 @@ impl KubernetesDriver {
             ..Default::default()
         };
 
-        debug!("Creating HPA: {:?}", hpa);
+        if let Some(version) = current_hpa_version {
+            info!("Updating HPA: {:?}", hpa);
 
-        kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
-            self.client.clone(),
-            &self.options.namespace,
-        )
-        .create(&kube::api::PostParams::default(), &hpa)
-        .await
-        .map_err(super::worker_driver::DriverError::KubernetesError)?;
+            hpa.metadata.resource_version = Some(version);
+
+            kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
+                self.client.clone(),
+                &self.options.namespace,
+            )
+            .replace(
+                &worker_deployment_name,
+                &kube::api::PostParams::default(),
+                &hpa,
+            )
+            .await
+            .map_err(super::worker_driver::DriverError::KubernetesError)?;
+        } else {
+            debug!("Creating HPA: {:?}", hpa);
+
+            kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
+                self.client.clone(),
+                &self.options.namespace,
+            )
+            .create(&kube::api::PostParams::default(), &hpa)
+            .await
+            .map_err(super::worker_driver::DriverError::KubernetesError)?;
+        }
 
         Ok(())
     }
 
     async fn create_keda_autoscaler(
         &self,
+        worker_id: String,
         worker_key: Key,
         keda: KedaOptions,
         queue_name: String,
         worker_deployment_name: String,
+        current_scaled_object_version: Option<String>,
     ) -> Result<(), super::worker_driver::DriverError> {
-        let scaled_object = keda::ScaledObject {
+        let mut scaled_object = keda::ScaledObject {
             metadata: ObjectMeta {
                 name: Some(worker_deployment_name.clone()),
                 namespace: Some(self.options.namespace.clone()),
                 labels: Some({
                     let mut labels = BTreeMap::new();
                     labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
-                    labels.insert(LABEL_WORKER_ID.to_owned(), worker_key.to_string());
+                    labels.insert(LABEL_WORKER_ID.to_owned(), worker_id);
+                    labels.insert(LABEL_WORKER_KEY.to_owned(), worker_key.to_string());
+                    labels.insert(LABEL_QUEUE_NAME.to_owned(), queue_name.clone());
+                    labels.insert(
+                        LABEL_VERSION_IDENTIFIER.to_owned(),
+                        self.version_identifier.clone(),
+                    );
                     labels
                 }),
                 ..Default::default()
@@ -235,7 +279,7 @@ impl KubernetesDriver {
                 max_replica_count: Some(keda.max_replicas),
                 triggers: vec![keda::Trigger {
                     type_: "rabbitmq".to_string(),
-                    use_cached_metrics: keda.use_cached_metrics,
+                    use_cached_metrics: Some(keda.use_cached_metrics),
                     metric_type: keda.metric_type.clone(),
                     metadata: {
                         let mut metadata = HashMap::new();
@@ -252,12 +296,33 @@ impl KubernetesDriver {
             },
         };
 
-        debug!("Creating Keda ScaledObject: {:?}", scaled_object);
+        if let Some(version) = current_scaled_object_version {
+            info!("Updating Keda ScaledObject: {:?}", scaled_object);
 
-        kube::api::Api::namespaced(self.client.clone(), &self.options.namespace)
+            scaled_object.metadata.resource_version = Some(version);
+
+            kube::api::Api::<ScaledObject>::namespaced(
+                self.client.clone(),
+                &self.options.namespace,
+            )
+            .replace(
+                &worker_deployment_name,
+                &kube::api::PostParams::default(),
+                &scaled_object,
+            )
+            .await
+            .map_err(super::worker_driver::DriverError::KubernetesError)?;
+        } else {
+            info!("Creating Keda ScaledObject: {:?}", scaled_object);
+
+            kube::api::Api::<ScaledObject>::namespaced(
+                self.client.clone(),
+                &self.options.namespace,
+            )
             .create(&kube::api::PostParams::default(), &scaled_object)
             .await
             .map_err(super::worker_driver::DriverError::KubernetesError)?;
+        }
 
         Ok(())
     }
@@ -270,18 +335,41 @@ impl WorkerDriver for KubernetesDriver {
         worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move {
+            let mut current_worker_id = None;
+            let mut last_known_version = None;
+
             let current_workers = self.list_worker_groups().await?;
+
             for worker in current_workers {
-                if worker.worker_key == worker_key {
+                let worker_version = worker
+                    .metadata
+                    .get(LABEL_VERSION_IDENTIFIER)
+                    .expect("version_identifier not found")
+                    .to_owned();
+
+                if worker.worker_key == worker_key && worker_version == self.version_identifier {
+                    // It's an update, and we found a worker with the same key and version
+                    // so we should not update it
                     return Ok(worker.worker_id);
+                } else if worker.worker_key == worker_key {
+                    // It's an update, and we found a worker with the same key but different version
+                    // so we should update it
+                    info!("Updating worker: {:?}", worker);
+                    current_worker_id = Some(worker.worker_id);
+                    last_known_version = worker
+                        .metadata
+                        .get("LAST_KNOWN_VERSION")
+                        .map(|v| v.to_owned());
                 }
             }
 
-            let new_id = Uuid::new_v4();
+            let is_update = current_worker_id.is_some();
+            let new_id = current_worker_id.unwrap_or_else(Uuid::new_v4);
             let worker_deployment_name = format!(
                 "{}-{}-{}",
                 self.options.deployment_prefix, self.pool_id, worker_key
             );
+
             let final_env = {
                 let mut env = self
                     .options
@@ -313,7 +401,7 @@ impl WorkerDriver for KubernetesDriver {
                 env
             };
 
-            let labels = {
+            let match_labels = {
                 let mut labels = BTreeMap::new();
                 labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
                 labels.insert(LABEL_WORKER_ID.to_owned(), new_id.to_string());
@@ -321,8 +409,18 @@ impl WorkerDriver for KubernetesDriver {
                 labels
             };
 
+            let labels = {
+                let mut labels = match_labels.clone();
+                labels.insert(
+                    LABEL_VERSION_IDENTIFIER.to_owned(),
+                    self.version_identifier.clone(),
+                );
+                labels.insert(LABEL_QUEUE_NAME.to_owned(), queue_name.clone());
+                labels
+            };
+
             // Create a new deployment
-            let deployment = Deployment {
+            let mut deployment = Deployment {
                 metadata: ObjectMeta {
                     name: Some(worker_deployment_name.clone()),
                     namespace: Some(self.options.namespace.clone()),
@@ -331,7 +429,7 @@ impl WorkerDriver for KubernetesDriver {
                 },
                 spec: Some(DeploymentSpec {
                     selector: LabelSelector {
-                        match_labels: Some(labels.clone()),
+                        match_labels: Some(match_labels.clone()),
                         ..Default::default()
                     },
                     replicas: Some(1),
@@ -378,26 +476,94 @@ impl WorkerDriver for KubernetesDriver {
             debug!("Creating deployment: {:?}", deployment);
 
             // Create the deployment
-            kube::api::Api::<Deployment>::namespaced(self.client.clone(), &self.options.namespace)
+            if is_update {
+                deployment.metadata.resource_version = last_known_version;
+
+                kube::api::Api::<Deployment>::namespaced(
+                    self.client.clone(),
+                    &self.options.namespace,
+                )
+                .replace(
+                    &worker_deployment_name,
+                    &kube::api::PostParams::default(),
+                    &deployment,
+                )
+                .await
+                .map_err(super::worker_driver::DriverError::KubernetesError)?;
+            } else {
+                kube::api::Api::<Deployment>::namespaced(
+                    self.client.clone(),
+                    &self.options.namespace,
+                )
                 .create(&kube::api::PostParams::default(), &deployment)
                 .await
                 .map_err(super::worker_driver::DriverError::KubernetesError)?;
+            }
 
             // Create the autoscaler if needed
             match &self.options.autoscaling {
                 // Using HorizontalPodAutoscaler
                 Some(AutoscalingOptions::Hpa(hpa)) => {
-                    self.create_hpa_autoscaler(worker_key, hpa.clone(), worker_deployment_name)
-                        .await?;
+                    let mut current_hpa_version = None;
+
+                    if is_update {
+                        let current_hpa = kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
+                            self.client.clone(),
+                            &self.options.namespace,
+                        )
+                        .get(&worker_deployment_name)
+                        .await
+                        .ok();
+
+                        if let Some(current_hpa) = current_hpa {
+                            current_hpa_version = current_hpa
+                                .metadata
+                                .resource_version
+                                .as_ref()
+                                .map(|v| v.to_owned());
+                        }
+                    }
+
+                    self.create_hpa_autoscaler(
+                        new_id.to_string(),
+                        worker_key,
+                        hpa.clone(),
+                        queue_name,
+                        worker_deployment_name,
+                        current_hpa_version,
+                    )
+                    .await?;
                 }
 
                 // Using Keda as the autoscaler
                 Some(AutoscalingOptions::Keda(keda)) => {
+                    let mut current_scaled_object_version = None;
+
+                    if is_update {
+                        let current_scaled_object = kube::api::Api::<ScaledObject>::namespaced(
+                            self.client.clone(),
+                            &self.options.namespace,
+                        )
+                        .get(&worker_deployment_name)
+                        .await
+                        .ok();
+
+                        if let Some(current_scaled_object) = current_scaled_object {
+                            current_scaled_object_version = current_scaled_object
+                                .metadata
+                                .resource_version
+                                .as_ref()
+                                .map(|v| v.to_owned());
+                        }
+                    }
+
                     self.create_keda_autoscaler(
+                        new_id.to_string(),
                         worker_key,
                         keda.clone(),
                         queue_name,
                         worker_deployment_name,
+                        current_scaled_object_version,
                     )
                     .await?;
                 }
@@ -474,11 +640,37 @@ impl WorkerDriver for KubernetesDriver {
                             let worker_key =
                                 labels.get(LABEL_WORKER_KEY).expect("worker_key not found");
 
+                            let mut metadata = HashMap::new();
+                            metadata.insert(
+                                LABEL_VERSION_IDENTIFIER.to_owned(),
+                                labels
+                                    .get(LABEL_VERSION_IDENTIFIER)
+                                    .expect("version_identifier not found")
+                                    .clone(),
+                            );
+                            metadata.insert(
+                                LABEL_QUEUE_NAME.to_owned(),
+                                labels
+                                    .get(LABEL_QUEUE_NAME)
+                                    .expect("queue_name not found")
+                                    .clone(),
+                            );
+                            metadata.insert(
+                                "LAST_KNOWN_VERSION".to_owned(),
+                                deployment
+                                    .metadata
+                                    .resource_version
+                                    .as_ref()
+                                    .expect("resource_version should be present on existing object")
+                                    .to_owned(),
+                            );
+
                             Some(super::worker_driver::WorkerMetadata {
                                 external_id: deployment.metadata.name.clone()?,
                                 worker_id: Uuid::parse_str(worker_id)
                                     .expect("worker_id not a valid UUID"),
                                 worker_key: Key::decode(worker_key),
+                                metadata,
                             })
                         } else {
                             None
@@ -488,6 +680,104 @@ impl WorkerDriver for KubernetesDriver {
                 .collect();
 
             Ok(workers)
+        })
+    }
+
+    fn cleanup_stalled(
+        &mut self,
+    ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
+        Box::pin(async move {
+            // List all worker groups
+            let current_workers = self.list_worker_groups().await?;
+
+            // If we have autoscaling enabled, we need to check if the autoscalers have deployments.
+            // If there is no deployment, we should clean up the autoscaler.
+            match self.options.autoscaling {
+                Some(AutoscalingOptions::Hpa(_)) => {
+                    // list hpas, check if the deployment is in current_workers and if not, delete the hpa
+                    let hpas = kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
+                        self.client.clone(),
+                        &self.options.namespace,
+                    )
+                    .list(&kube::api::ListParams::default())
+                    .await
+                    .map_err(DriverError::KubernetesError)?;
+
+                    for hpa in hpas.iter() {
+                        let worker_key = hpa
+                            .metadata
+                            .labels
+                            .as_ref()
+                            .and_then(|labels| labels.get(LABEL_WORKER_KEY))
+                            .expect("worker_key not found");
+
+                        let worker_deployment_name =
+                            hpa.metadata.name.clone().expect("name not found");
+
+                        if !current_workers
+                            .iter()
+                            .any(|worker| worker.worker_key == Key::decode(worker_key))
+                        {
+                            info!(
+                                "Deleting HPA {} as the worker is not found",
+                                worker_deployment_name
+                            );
+
+                            kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
+                                self.client.clone(),
+                                &self.options.namespace,
+                            )
+                            .delete(&worker_deployment_name, &kube::api::DeleteParams::default())
+                            .await
+                            .map_err(DriverError::KubernetesError)?;
+                        }
+                    }
+                }
+
+                Some(AutoscalingOptions::Keda(_)) => {
+                    // list scaled objects, check if the deployment is in current_workers and if not, delete the scaled object
+                    let scaled_objects = kube::api::Api::<keda::ScaledObject>::namespaced(
+                        self.client.clone(),
+                        &self.options.namespace,
+                    )
+                    .list(&kube::api::ListParams::default())
+                    .await
+                    .map_err(DriverError::KubernetesError)?;
+
+                    for scaled_object in scaled_objects.iter() {
+                        let worker_key = scaled_object
+                            .metadata
+                            .labels
+                            .as_ref()
+                            .and_then(|labels| labels.get(LABEL_WORKER_KEY))
+                            .expect("worker_key not found");
+
+                        let worker_deployment_name = scaled_object.metadata.name.clone().unwrap();
+
+                        if !current_workers
+                            .iter()
+                            .any(|worker| worker.worker_key == Key::decode(worker_key))
+                        {
+                            info!(
+                                "Deleting scaled object {} as the worker is not found",
+                                worker_deployment_name
+                            );
+
+                            kube::api::Api::<keda::ScaledObject>::namespaced(
+                                self.client.clone(),
+                                &self.options.namespace,
+                            )
+                            .delete(&worker_deployment_name, &kube::api::DeleteParams::default())
+                            .await
+                            .map_err(DriverError::KubernetesError)?;
+                        }
+                    }
+                }
+
+                _ => {}
+            }
+
+            Ok(())
         })
     }
 }

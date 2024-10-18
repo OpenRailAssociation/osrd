@@ -157,6 +157,7 @@ async fn list_workers(
                             external_id: "noop".to_string(),
                             worker_id: uuid::Uuid::nil(),
                             worker_key: key,
+                            metadata: Default::default(),
                         }),
                         // In noop mode, we can't track the worker states.
                         // We consider them always ready, as this mode is only used when debugging.

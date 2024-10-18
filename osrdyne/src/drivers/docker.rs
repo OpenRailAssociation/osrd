@@ -9,13 +9,15 @@ use bollard::{
     Docker,
 };
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
 use crate::Key;
 
 use super::{
     worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
-    LABEL_MANAGED_BY, LABEL_WORKER_ID, LABEL_WORKER_KEY, MANAGED_BY_VALUE,
+    LABEL_MANAGED_BY, LABEL_VERSION_IDENTIFIER, LABEL_WORKER_ID, LABEL_WORKER_KEY,
+    MANAGED_BY_VALUE,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -39,6 +41,7 @@ pub struct DockerDriver {
     options: DockerDriverOptions,
     amqp_uri: String,
     worker_pool: String,
+    version_identifier: String,
 }
 
 impl DockerDriver {
@@ -47,11 +50,17 @@ impl DockerDriver {
         amqp_uri: String,
         worker_pool: String,
     ) -> DockerDriver {
+        let version_identifier = std::env::var("OSRD_GIT_DESCRIBE")
+            .unwrap_or_else(|_| format!("run-{}", Uuid::new_v4()));
+
+        let hashed = format!("{:x}", Sha256::digest(version_identifier))[..16].to_string();
+
         DockerDriver {
             client: Docker::connect_with_socket_defaults().expect("Failed to connect to Docker"),
             options,
             amqp_uri,
             worker_pool,
+            version_identifier: hashed,
         }
     }
 }
@@ -63,14 +72,35 @@ impl WorkerDriver for DockerDriver {
         worker_key: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move {
+            let mut current_worker_id = None;
             let current_workers = self.list_worker_groups().await?;
+
             for worker in current_workers {
-                if worker.worker_key == worker_key {
+                let worker_version = worker
+                    .metadata
+                    .get(LABEL_VERSION_IDENTIFIER)
+                    .expect("version_identifier not found")
+                    .to_owned();
+
+                if worker.worker_key == worker_key && worker_version == self.version_identifier {
                     return Ok(worker.worker_id);
+                } else if worker.worker_key == worker_key {
+                    current_worker_id = Some(worker.worker_id);
+
+                    self.client
+                        .remove_container(
+                            &worker.external_id,
+                            Some(RemoveContainerOptions {
+                                force: true,
+                                ..Default::default()
+                            }),
+                        )
+                        .await
+                        .map_err(DriverError::DockerError)?;
                 }
             }
 
-            let new_id = Uuid::new_v4();
+            let new_id = current_worker_id.unwrap_or_else(Uuid::new_v4);
 
             let final_env = {
                 let mut env: Vec<String> = self.options.default_env.clone();
@@ -84,6 +114,10 @@ impl WorkerDriver for DockerDriver {
                 (LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned()),
                 (LABEL_WORKER_ID.to_owned(), new_id.to_string()),
                 (LABEL_WORKER_KEY.to_owned(), worker_key.to_string()),
+                (
+                    LABEL_VERSION_IDENTIFIER.to_owned(),
+                    self.version_identifier.clone(),
+                ),
             ]);
 
             let container_name = format!(
@@ -183,6 +217,15 @@ impl WorkerDriver for DockerDriver {
                 .filter_map(|container| {
                     container.labels.as_ref().and_then(|labels| {
                         if labels.get(LABEL_MANAGED_BY) == Some(&MANAGED_BY_VALUE.to_string()) {
+                            let mut metadata = HashMap::new();
+                            metadata.insert(
+                                LABEL_VERSION_IDENTIFIER.to_owned(),
+                                labels
+                                    .get(LABEL_VERSION_IDENTIFIER)
+                                    .expect("version_identifier label missing")
+                                    .clone(),
+                            );
+
                             Some(WorkerMetadata {
                                 external_id: container.id.clone().expect("container id missing"),
                                 worker_id: Uuid::parse_str(
@@ -196,6 +239,7 @@ impl WorkerDriver for DockerDriver {
                                         .get(LABEL_WORKER_KEY)
                                         .expect("worker_key label missing"),
                                 ),
+                                metadata,
                             })
                         } else {
                             None
@@ -206,5 +250,11 @@ impl WorkerDriver for DockerDriver {
 
             Ok(workers)
         })
+    }
+
+    fn cleanup_stalled(
+        &mut self,
+    ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
+        Box::pin(async move { Ok(()) })
     }
 }
