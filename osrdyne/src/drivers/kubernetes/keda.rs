@@ -44,6 +44,6 @@ pub enum MetricType {
 pub struct Trigger {
     pub type_: String,
     pub metadata: HashMap<String, String>,
-    pub use_cached_metrics: bool,
+    pub use_cached_metrics: Option<bool>,
     pub metric_type: MetricType,
 }

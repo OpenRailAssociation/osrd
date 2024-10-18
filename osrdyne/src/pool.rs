@@ -523,7 +523,7 @@ async fn worker_control_loop(
         for worker_key in wanted_worker_keys {
             let queue_name = pool.key_queue_name(&worker_key);
             if let Err(e) = driver
-                .get_or_create_worker_group(queue_name, worker_key)
+                .get_or_create_worker_group(queue_name, worker_key, None)
                 .await
             {
                 log::error!(
@@ -535,6 +535,17 @@ async fn worker_control_loop(
             }
         }
 
+        // Refresh workers if needed
+        if let Err(e) = driver.refresh_workers().await {
+            log::error!(
+                "Failed to refresh workers deployment: {:?}. Aborting current loop iteration.",
+                e
+            );
+            tokio::time::sleep(sleep_interval).await;
+            continue;
+        }
+
+        // Sleep for a while
         tokio::time::sleep(sleep_interval).await;
     }
 }
