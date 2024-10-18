@@ -1,0 +1,55 @@
+.space-time-chart-container {
+  position: relative;
+  overflow: hidden;
+
+  // Create a new stacking context so that any z-index inside the space time
+  // chart doesn't affect the rest of the UI
+  transform: translate(0);
+
+  .toolbar {
+    position: absolute;
+    right: 0.438rem;
+    top: 0.438rem;
+    z-index: 10;
+
+    button {
+      border: 0.063rem solid var(--black10);
+      border-radius: 0.313rem;
+      background: var(--white100);
+      color: var(--black100);
+      padding: 0 0.438rem;
+    }
+  }
+
+  .settings-panel {
+    position: absolute;
+    top: 0.125rem;
+    right: 0.125rem;
+    bottom: 2.25rem;
+    width: 16.4375rem;
+    color: rgb(49, 46, 43);
+    background: rgba(247, 246, 238, 0.4);
+    backdrop-filter: blur(0.3125rem);
+    border: solid 0.0625rem rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 0.0625rem rgb(250, 249, 245);
+    padding: 2rem 1.75rem;
+    z-index: 10;
+
+    .close-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 1rem;
+      height: 1rem;
+      margin-left: 30.625rem;
+      margin-top: 0.875rem;
+      margin-right: 0.875rem;
+      border: none;
+    }
+
+    section header {
+      font-weight: 600;
+      margin-bottom: 0.438rem;
+    }
+  }
+}

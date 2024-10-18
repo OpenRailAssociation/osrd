@@ -43,6 +43,10 @@
   "rotate": "Rotate the chart",
   "simplify": "Data simplification",
   "speedLimitComposition": "Composition",
+  "timeSpaceChartSettings": {
+    "paths": "Paths",
+    "conflicts": "Conflicts"
+  },
   "speedSpaceChart": "Speed Space Chart",
   "speedSpaceSettings": {
     "context": "Context",

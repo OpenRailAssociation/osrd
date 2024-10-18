@@ -5,11 +5,13 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { SimulationResultsData } from 'applications/operationalStudies/types';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
 import ProjectionLoadingMessage from 'modules/simulationResult/components/SpaceTimeChart/ProjectionLoadingMessage';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
+import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChart/useProjectedConflicts';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
@@ -30,6 +32,7 @@ type SimulationResultsProps = {
   simulationResults: SimulationResultsData;
   projectionData?: ProjectionData;
   timetableTrainNb: number;
+  conflicts?: Conflict[];
 };
 
 const SimulationResults = ({
@@ -45,6 +48,7 @@ const SimulationResults = ({
   },
   projectionData,
   timetableTrainNb,
+  conflicts = [],
 }: SimulationResultsProps) => {
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
@@ -93,6 +97,8 @@ const SimulationResults = ({
       projectionData?.projectedTrains.filter((train) => train.space_time_curves.length > 0) || [],
     [projectionData]
   );
+
+  const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -163,6 +169,7 @@ const SimulationResults = ({
                     setFilteredWaypoints: setFilteredOperationalPoints,
                     projectionPath: projectionData.trainSchedule.path,
                   }}
+                  conflicts={conflictZones}
                 />
               </div>
             </div>
