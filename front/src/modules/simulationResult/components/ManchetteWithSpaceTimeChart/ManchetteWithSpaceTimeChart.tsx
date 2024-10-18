@@ -2,10 +2,15 @@ import { useRef, useState } from 'react';
 
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
-import { SpaceTimeChart, PathLayer } from '@osrd-project/ui-spacetimechart';
+import { SpaceTimeChart, PathLayer, WorkScheduleLayer } from '@osrd-project/ui-spacetimechart';
 
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import type { OperationalPointExtensions, OperationalPointPart } from 'common/api/osrdEditoastApi';
+import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
+import type {
+  OperationalPointExtensions,
+  OperationalPointPart,
+  PostWorkSchedulesProjectPathApiResponse,
+} from 'common/api/osrdEditoastApi';
 
 type ManchetteWithSpaceTimeChartProps = {
   operationalPoints: {
@@ -16,6 +21,7 @@ type ManchetteWithSpaceTimeChartProps = {
   }[];
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainScheduleId?: number;
+  workSchedules?: PostWorkSchedulesProjectPathApiResponse;
 };
 const DEFAULT_HEIGHT = 561;
 
@@ -23,6 +29,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   operationalPoints,
   projectPathTrainResult,
   selectedTrainScheduleId,
+  workSchedules,
 }: ManchetteWithSpaceTimeChartProps) => {
   const [heightOfManchetteWithSpaceTimeChart] = useState(DEFAULT_HEIGHT);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -66,6 +73,17 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             {spaceTimeChartProps.paths.map((path) => (
               <PathLayer key={path.id} path={path} color={path.color} />
             ))}
+            {workSchedules && (
+              <WorkScheduleLayer
+                workSchedules={workSchedules.map((ws) => ({
+                  type: ws.type,
+                  timeStart: new Date(ws.start_date_time),
+                  timeEnd: new Date(ws.end_date_time),
+                  spaceRanges: ws.path_position_ranges.map(({ start, end }) => [start, end]),
+                }))}
+                imageUrl={upward}
+              />
+            )}
           </SpaceTimeChart>
         </div>
       </div>
