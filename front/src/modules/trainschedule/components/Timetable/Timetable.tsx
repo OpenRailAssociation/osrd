@@ -158,17 +158,15 @@ const Timetable = ({
           })}
         />
       </div>
-      <div className="mt-auto">
-        {conflicts && (
-          <ConflictsList
-            conflicts={conflicts}
-            expanded={conflictsListExpanded}
-            toggleConflictsList={toggleConflictsListExpanded}
-            trainSchedulesDetails={displayedTrainSchedules}
-            onConflictClick={handleConflictClick}
-          />
-        )}
-      </div>
+      {conflicts && (
+        <ConflictsList
+          conflicts={conflicts}
+          expanded={conflictsListExpanded}
+          toggleConflictsList={toggleConflictsListExpanded}
+          trainSchedulesDetails={displayedTrainSchedules}
+          onConflictClick={handleConflictClick}
+        />
+      )}
     </div>
   );
 };

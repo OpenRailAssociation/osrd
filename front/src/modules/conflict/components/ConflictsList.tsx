@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -34,7 +35,7 @@ const ConflictsList = ({
     return null;
   }
   return (
-    <div className="conflicts-list">
+    <div className={cx('conflicts-list', expanded && 'expanded')}>
       <div
         className="conflicts-list-header"
         role="button"
@@ -46,7 +47,7 @@ const ConflictsList = ({
             count: conflicts.length,
           })}
         </h2>
-        <i className={cx('icons-arrow-up', expanded && 'expanded')} />
+        {expanded ? <ChevronUp /> : <ChevronDown />}
       </div>
 
       <div className={cx('conflicts-container', expanded && 'expanded')}>
