@@ -71,6 +71,16 @@ impl CoreClient {
         error
     }
 
+    pub async fn ping(&self) -> Result<bool, CoreError> {
+        match self {
+            CoreClient::MessageQueue(mq_client) => {
+                mq_client.ping().await.map_err(|_| CoreError::BrokenPipe)
+            }
+            #[cfg(test)]
+            CoreClient::Mocked(_) => Ok(true),
+        }
+    }
+
     #[tracing::instrument(
         target = "editoast::coreclient",
         name = "core:fetch",
@@ -248,7 +258,7 @@ impl CoreResponse for () {
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "coreclient")]
-enum CoreError {
+pub enum CoreError {
     #[error("Cannot parse Core response: {msg}")]
     #[editoast_error(status = 500)]
     CoreResponseFormatError { msg: String },

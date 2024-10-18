@@ -26,6 +26,7 @@ use client::roles::RolesCommand;
 use client::search_commands::*;
 use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::timetables_commands::*;
+use client::CoreArgs;
 use client::{Client, Color, Commands, RunserverArgs, ValkeyConfig};
 use client::{MapLayersConfig, PostgresConfig};
 use dashmap::DashMap;
@@ -248,16 +249,27 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                     .map_err(Into::into)
             }
         },
-        Commands::Healthcheck => healthcheck_cmd(db_pool.into(), valkey_config).await,
+        Commands::Healthcheck(core_config) => {
+            healthcheck_cmd(db_pool.into(), valkey_config, core_config).await
+        }
     }
 }
 
 async fn healthcheck_cmd(
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_config: ValkeyConfig,
+    core_config: CoreArgs,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let valkey = ValkeyClient::new(valkey_config).unwrap();
-    check_health(db_pool, valkey.into())
+    let core_client = CoreClient::new_mq(mq_client::Options {
+        uri: core_config.mq_url,
+        worker_pool_identifier: String::from("core"),
+        timeout: core_config.core_timeout,
+        single_worker: core_config.core_single_worker,
+        num_channels: core_config.core_client_channels_size,
+    })
+    .await?;
+    check_health(db_pool, valkey.into(), core_client.into())
         .await
         .map_err(|e| CliError::new(1, format!("❌ healthcheck failed: {0}", e)))?;
     println!("✅ Healthcheck passed");
@@ -312,11 +324,11 @@ impl AppState {
 
         // Build Core client
         let core_client = CoreClient::new_mq(mq_client::Options {
-            uri: args.mq_url.clone(),
+            uri: args.core.mq_url.clone(),
             worker_pool_identifier: "core".into(),
-            timeout: args.core_timeout,
-            single_worker: args.core_single_worker,
-            num_channels: args.core_client_channels_size,
+            timeout: args.core.core_timeout,
+            single_worker: args.core.core_single_worker,
+            num_channels: args.core.core_client_channels_size,
         })
         .await?
         .into();

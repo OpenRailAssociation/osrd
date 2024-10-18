@@ -237,6 +237,16 @@ impl RabbitMQClient {
         })
     }
 
+    pub async fn ping(&self) -> Result<bool, MqClientError> {
+        let channel_worker = self
+            .pool
+            .get()
+            .await
+            .map_err(|_| MqClientError::PoolChannelFail)?;
+        let channel = channel_worker.get_channel();
+        Ok(channel.status().connected())
+    }
+
     async fn connection_ok(connection: &Arc<RwLock<Option<Connection>>>) -> bool {
         let guard = connection.as_ref().read().await;
         let conn = guard.as_ref();
@@ -245,10 +255,10 @@ impl RabbitMQClient {
             Some(conn) => conn.status().state(),
         };
         match status {
-            lapin::ConnectionState::Initial => true,
-            lapin::ConnectionState::Connecting => true,
+            lapin::ConnectionState::Initial => false,
+            lapin::ConnectionState::Connecting => false,
             lapin::ConnectionState::Connected => true,
-            lapin::ConnectionState::Closing => true,
+            lapin::ConnectionState::Closing => false,
             lapin::ConnectionState::Closed => false,
             lapin::ConnectionState::Error => false,
         }
