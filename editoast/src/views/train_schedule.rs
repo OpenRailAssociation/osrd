@@ -26,7 +26,6 @@ use crate::client::get_app_version;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingResultSuccess;
-use crate::core::pathfinding::UnknownError;
 use crate::core::simulation::CompleteReportTrain;
 use crate::core::simulation::PhysicsRollingStock;
 use crate::core::simulation::ReportTrain;
@@ -42,6 +41,7 @@ use crate::core::simulation::ZoneUpdate;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
+use crate::error::InternalError;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
@@ -643,7 +643,7 @@ enum SimulationSummaryResult {
     /// Pathfinding not found
     PathfindingNotFound(PathfindingNotFound),
     /// An error has occured during pathfinding
-    PathfindingFailure(UnknownError),
+    PathfindingFailure {core_error: InternalError},
     /// An error has occured during computing
     SimulationFailed { error_type: String },
     /// InputError
@@ -727,8 +727,8 @@ async fn simulation_summary(
             }
             SimulationResponse::PathfindingFailed { pathfinding_failed } => {
                 match pathfinding_failed {
-                    PathfindingFailure::InternalError(pathfinding_failed) => {
-                        SimulationSummaryResult::PathfindingFailure(pathfinding_failed)
+                    PathfindingFailure::InternalError{core_error} => {
+                        SimulationSummaryResult::PathfindingFailure{core_error}
                     }
 
                     PathfindingFailure::PathfindingInputError(input_error) => {

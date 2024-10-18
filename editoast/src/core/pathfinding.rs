@@ -20,7 +20,6 @@ editoast_common::schemas! {
     OffsetRange,
     TrackRange,
     PathfindingInputError,
-    UnknownError,
     PathfindingNotFound,
 }
 
@@ -102,7 +101,7 @@ pub enum PathfindingCoreResult {
         rolling_stock_name: String,
     },
     InternalError {
-        internal_error: UnknownError,
+        core_error: InternalError,
     },
 }
 
@@ -136,11 +135,6 @@ pub enum PathfindingInputError {
     RollingStockNotFound {
         rolling_stock_name: String,
     },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
-pub struct UnknownError {
-    pub core_error: InternalError,
 }
 
 // Enum for not-found results and incompatible constraints
@@ -211,8 +205,8 @@ impl From<PathfindingCoreResult> for PathfindingResult {
                     PathfindingInputError::RollingStockNotFound { rolling_stock_name },
                 ))
             }
-            PathfindingCoreResult::InternalError { internal_error } => {
-                PathfindingResult::Failed(PathfindingFailure::InternalError(internal_error))
+            PathfindingCoreResult::InternalError { core_error } => {
+                PathfindingResult::Failed(PathfindingFailure::InternalError{core_error})
             }
         }
     }

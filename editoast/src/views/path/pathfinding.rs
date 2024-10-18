@@ -22,10 +22,10 @@ use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingRequest;
 use crate::core::pathfinding::PathfindingResultSuccess;
-use crate::core::pathfinding::UnknownError;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
+use crate::error::InternalError;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::Infra;
 use crate::models::Retrieve;
@@ -84,7 +84,7 @@ pub enum PathfindingResult {
 pub enum PathfindingFailure {
     PathfindingInputError(PathfindingInputError),
     PathfindingNotFound(PathfindingNotFound),
-    InternalError(UnknownError),
+    InternalError{core_error:InternalError},
 }
 
 /// Compute a pathfinding
@@ -228,9 +228,9 @@ async fn pathfinding_blocks_batch(
             }
             // TODO: only make HTTP status code errors non-fatal
             Err(core_error) => {
-                PathfindingResult::Failed(PathfindingFailure::InternalError(UnknownError {
-                    core_error,
-                }))
+                PathfindingResult::Failed(PathfindingFailure::InternalError {
+                    core_error
+                })
             }
         };
         pathfinding_results[path_index] = Some(path);

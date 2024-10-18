@@ -7433,16 +7433,17 @@ components:
               type: string
               enum:
               - pathfinding_not_found
-      - allOf:
-        - $ref: '#/components/schemas/UnknownError'
-        - type: object
-          required:
-          - failed_status
-          properties:
-            failed_status:
-              type: string
-              enum:
-              - internal_error
+      - type: object
+        required:
+        - core_error
+        - failed_status
+        properties:
+          core_error:
+            $ref: '#/components/schemas/InternalError'
+          failed_status:
+            type: string
+            enum:
+            - internal_error
     PathfindingInput:
       type: object
       description: |-
@@ -9701,16 +9702,18 @@ components:
               type: string
               enum:
               - pathfinding_not_found
-      - allOf:
-        - $ref: '#/components/schemas/UnknownError'
-        - type: object
-          required:
-          - status
-          properties:
-            status:
-              type: string
-              enum:
-              - pathfinding_failure
+      - type: object
+        description: An error has occured during pathfinding
+        required:
+        - core_error
+        - status
+        properties:
+          core_error:
+            $ref: '#/components/schemas/InternalError'
+          status:
+            type: string
+            enum:
+            - pathfinding_failure
       - type: object
         description: An error has occured during computing
         required:
@@ -10636,13 +10639,6 @@ components:
           timetable_id:
             type: integer
             format: int64
-    UnknownError:
-      type: object
-      required:
-      - core_error
-      properties:
-        core_error:
-          $ref: '#/components/schemas/InternalError'
     Version:
       type: object
       required:

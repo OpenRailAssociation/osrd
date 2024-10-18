@@ -2483,9 +2483,6 @@ export type PathfindingNotFound =
       incompatible_constraints: IncompatibleConstraints;
       relaxed_constraints_path: PathfindingResultSuccess;
     };
-export type UnknownError = {
-  core_error: InternalError;
-};
 export type PathfindingFailure =
   | (PathfindingInputError & {
       failed_status: 'pathfinding_input_error';
@@ -2493,9 +2490,10 @@ export type PathfindingFailure =
   | (PathfindingNotFound & {
       failed_status: 'pathfinding_not_found';
     })
-  | (UnknownError & {
+  | {
+      core_error: InternalError;
       failed_status: 'internal_error';
-    });
+    };
 export type PathfindingResult =
   | (PathfindingResultSuccess & {
       status: 'success';
@@ -3329,9 +3327,10 @@ export type SimulationSummaryResult =
   | (PathfindingNotFound & {
       status: 'pathfinding_not_found';
     })
-  | (UnknownError & {
+  | {
+      core_error: InternalError;
       status: 'pathfinding_failure';
-    })
+    }
   | {
       error_type: string;
       status: 'simulation_failed';
