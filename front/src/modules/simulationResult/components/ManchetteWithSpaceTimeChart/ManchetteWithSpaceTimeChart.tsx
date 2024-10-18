@@ -3,10 +3,17 @@ import { useRef, useState } from 'react';
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
-import { ConflictLayer, PathLayer, SpaceTimeChart } from '@osrd-project/ui-spacetimechart';
+import {
+  ConflictLayer,
+  PathLayer,
+  SpaceTimeChart,
+  WorkScheduleLayer,
+} from '@osrd-project/ui-spacetimechart';
 import type { Conflict } from '@osrd-project/ui-spacetimechart';
 
 import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
+import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
 
 import SettingsPanel from './SettingsPanel';
@@ -19,6 +26,7 @@ type ManchetteWithSpaceTimeChartProps = {
   selectedTrainScheduleId?: number;
   waypointsPanelData?: WaypointsPanelData;
   conflicts?: Conflict[];
+  workSchedules?: PostWorkSchedulesProjectPathApiResponse;
 };
 const DEFAULT_HEIGHT = 561;
 
@@ -28,6 +36,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   selectedTrainScheduleId,
   waypointsPanelData,
   conflicts = [],
+  workSchedules,
 }: ManchetteWithSpaceTimeChartProps) => {
   const [heightOfManchetteWithSpaceTimeChart] = useState(DEFAULT_HEIGHT);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -97,6 +106,17 @@ const ManchetteWithSpaceTimeChartWrapper = ({
             {spaceTimeChartProps.paths.map((path) => (
               <PathLayer key={path.id} path={path} color={path.color} />
             ))}
+            {workSchedules && (
+              <WorkScheduleLayer
+                workSchedules={workSchedules.map((ws) => ({
+                  type: ws.type,
+                  timeStart: new Date(ws.start_date_time),
+                  timeEnd: new Date(ws.end_date_time),
+                  spaceRanges: ws.path_position_ranges.map(({ start, end }) => [start, end]),
+                }))}
+                imageUrl={upward}
+              />
+            )}
             {settings.showConflicts && <ConflictLayer conflicts={conflicts} />}
           </SpaceTimeChart>
         </div>

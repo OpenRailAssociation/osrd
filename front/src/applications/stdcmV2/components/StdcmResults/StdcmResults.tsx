@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import SimulationReportSheet from 'applications/stdcm/components/SimulationReportSheet';
 import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
@@ -12,10 +13,13 @@ import {
   getOperationalPointsWithTimes,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import type { StdcmSimulation } from 'applications/stdcmV2/types';
+import { osrdEditoastApi, type TrackRange } from 'common/api/osrdEditoastApi';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 import i18n from 'i18n';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
@@ -30,6 +34,7 @@ type StcdmResultsV2Props = {
   selectedSimulationIndex: number;
   showStatusBanner: boolean;
   simulationsList: StdcmSimulation[];
+  pathTrackRanges?: TrackRange[];
 };
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
@@ -45,7 +50,19 @@ const StcdmResults = ({
   selectedSimulationIndex,
   showStatusBanner,
   simulationsList,
+  pathTrackRanges,
 }: StcdmResultsV2Props) => {
+  const { getWorkScheduleGroupId } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const workScheduleGroupId = useSelector(getWorkScheduleGroupId);
+  const { data: workSchedules } = osrdEditoastApi.endpoints.postWorkSchedulesProjectPath.useQuery(
+    {
+      body: {
+        path_track_ranges: pathTrackRanges!,
+        work_schedule_group_id: workScheduleGroupId!,
+      },
+    },
+    { skip: !pathTrackRanges || !workScheduleGroupId }
+  );
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const tWithoutPrefix = i18n.getFixedT(null, 'stdcm');
 
@@ -154,6 +171,7 @@ const StcdmResults = ({
                     }
                     projectPathTrainResult={spaceTimeData}
                     selectedTrainScheduleId={STDCM_TRAIN_ID}
+                    workSchedules={workSchedules}
                   />
                 </div>
               </div>
