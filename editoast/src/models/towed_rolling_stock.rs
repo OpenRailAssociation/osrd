@@ -21,7 +21,9 @@ pub struct TowedRollingStockModel {
     pub railjson_version: String,
     pub locked: bool,
 
+    /// In kg
     pub mass: f64,
+    /// In m
     pub length: f64,
     pub comfort_acceleration: f64,
     pub startup_acceleration: f64,
