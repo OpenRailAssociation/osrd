@@ -2,7 +2,6 @@ package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.fast_collections.mutableIntArrayListOf
 import fr.sncf.osrd.geom.LineString
-import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.*
@@ -278,17 +277,13 @@ class RawInfraBuilder {
 
     private fun getTrackSectionIdx(name: String): TrackSectionId {
         return trackSectionNameToIdxMap[name]
-            ?: throw OSRDError.newInfraLoadingError(
-                ErrorType.InfraHardLoadingError,
-                "Accessing track-section from unregistered name $name"
-            )
+            ?: throw OSRDError.newInfraError("Accessing track-section from unregistered name $name")
     }
 
     private fun getTrackSectionDistanceSortedChunks(name: String): TreeMap<Distance, TrackChunkId> {
         val trackSectionIdx = getTrackSectionIdx(name)
         return trackSectionDistanceSortedChunkMap[trackSectionIdx]
-            ?: throw OSRDError.newInfraLoadingError(
-                ErrorType.InfraHardLoadingError,
+            ?: throw OSRDError.newInfraError(
                 "Accessing sorted chunks from unregistered track-section idx $trackSectionIdx (name: $name)"
             )
     }
