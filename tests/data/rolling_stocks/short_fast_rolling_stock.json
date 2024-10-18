@@ -1,5 +1,6 @@
 {
   "railjson_version": "3.2",
+  "locked": true,
   "length": 15,
   "max_speed": 20,
   "startup_time": 10,
