@@ -27,7 +27,6 @@ use utoipa::ToSchema;
 use super::SelectionSettings;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
-use crate::core::pathfinding::PathfindingResult;
 use crate::core::simulation::PhysicsRollingStock;
 use crate::core::simulation::SimulationParameters;
 use crate::core::pathfinding::PathfindingInputError;

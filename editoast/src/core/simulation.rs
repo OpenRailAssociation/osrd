@@ -18,7 +18,6 @@ use super::pathfinding::TrackRange;
 use crate::core::{AsCoreRequest, Json};
 use crate::error::InternalError;
 use crate::views::path::pathfinding::PathfindingFailure;
-use crate::RollingStockModel;
 use derivative::Derivative;
 use editoast_schemas::primitives::Identifier;
 use std::hash::Hash;
