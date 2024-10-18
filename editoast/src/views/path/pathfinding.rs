@@ -13,15 +13,19 @@ use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
 use ordered_float::OrderedFloat;
 use serde::Deserialize;
+use serde::Serialize;
 use tracing::debug;
 use tracing::info;
 use utoipa::ToSchema;
 
+use crate::core::pathfinding::PathfindingInputError;
+use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingRequest;
-use crate::core::pathfinding::PathfindingResult;
+use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
+use crate::error::InternalError;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::Infra;
 use crate::models::Retrieve;
@@ -41,6 +45,8 @@ crate::routes! {
 
 editoast_common::schemas! {
     PathfindingInput,
+    PathfindingFailure,
+    PathfindingResult,
 }
 
 /// Path input is described by some rolling stock information
@@ -64,6 +70,21 @@ struct PathfindingInput {
     /// Rolling stock length
     #[schema(value_type = f64)]
     rolling_stock_length: OrderedFloat<f64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[serde(tag = "status", rename_all = "snake_case")]
+pub enum PathfindingResult {
+    Success(PathfindingResultSuccess),
+    Failed(PathfindingFailure),
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[serde(tag = "failed_status", rename_all = "snake_case")]
+pub enum PathfindingFailure {
+    PathfindingInputError(PathfindingInputError),
+    PathfindingNotFound(PathfindingNotFound),
+    InternalError{core_error:InternalError},
 }
 
 /// Compute a pathfinding
@@ -202,11 +223,15 @@ async fn pathfinding_blocks_batch(
         let path_index = pathfinding_requests_index[index];
         let path = match path_result {
             Ok(path) => {
-                to_cache.push((&hashes[path_index], path.clone()));
-                path
+                to_cache.push((&hashes[path_index], path.clone().into()));
+                path.into()
             }
             // TODO: only make HTTP status code errors non-fatal
-            Err(core_error) => PathfindingResult::PathfindingFailed { core_error },
+            Err(core_error) => {
+                PathfindingResult::Failed(PathfindingFailure::InternalError {
+                    core_error
+                })
+            }
         };
         pathfinding_results[path_index] = Some(path);
     }
@@ -224,7 +249,9 @@ fn build_pathfinding_request(
 ) -> std::result::Result<PathfindingRequest, PathfindingResult> {
     let path_items: Vec<_> = pathfinding_input.path_items.iter().collect();
     if path_items.len() <= 1 {
-        return Err(PathfindingResult::NotEnoughPathItems);
+        return Err(PathfindingResult::Failed(
+            PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
+        ));
     }
     let track_offsets = path_item_cache.extract_location_from_path_items(&path_items)?;
 
@@ -283,7 +310,12 @@ pub async fn pathfinding_from_train_batch(
     train_schedules: &[TrainSchedule],
     rolling_stocks: &HashMap<String, RollingStockModel>,
 ) -> Result<Vec<PathfindingResult>> {
-    let mut results = vec![PathfindingResult::NotEnoughPathItems; train_schedules.len()];
+    let mut results = vec![
+        PathfindingResult::Failed(PathfindingFailure::PathfindingInputError(
+            PathfindingInputError::NotEnoughPathItems
+        ));
+        train_schedules.len()
+    ];
     let mut to_compute = vec![];
     let mut to_compute_index = vec![];
     for (index, train_schedule) in train_schedules.iter().enumerate() {
@@ -291,7 +323,9 @@ pub async fn pathfinding_from_train_batch(
         let rolling_stock_name = &train_schedule.rolling_stock_name;
         let Some(rolling_stock) = rolling_stocks.get(rolling_stock_name).cloned() else {
             let rolling_stock_name = rolling_stock_name.clone();
-            results[index] = PathfindingResult::RollingStockNotFound { rolling_stock_name };
+            results[index] = PathfindingResult::Failed(PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::RollingStockNotFound { rolling_stock_name },
+            ));
             continue;
         };
 
@@ -349,9 +383,11 @@ pub mod tests {
 
     use crate::core::mocking::MockingClient;
     use crate::core::pathfinding::InvalidPathItem;
-    use crate::core::pathfinding::PathfindingResult;
+    use crate::core::pathfinding::PathfindingInputError;
     use crate::core::pathfinding::PathfindingResultSuccess;
     use crate::models::fixtures::create_small_infra;
+    use crate::views::path::pathfinding::PathfindingFailure;
+    use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
@@ -380,15 +416,17 @@ pub mod tests {
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(
             pathfinding_result,
-            PathfindingResult::InvalidPathItems {
-                items: vec![InvalidPathItem {
-                    index: 1,
-                    path_item: PathItemLocation::OperationalPointDescription {
-                        trigram: "NO_TRIGRAM".into(),
-                        secondary_code: None
-                    }
-                }]
-            }
+            PathfindingResult::Failed(PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::InvalidPathItems {
+                    items: vec![InvalidPathItem {
+                        index: 1,
+                        path_item: PathItemLocation::OperationalPointDescription {
+                            trigram: "NO_TRIGRAM".into(),
+                            secondary_code: None
+                        }
+                    }]
+                }
+            ))
         );
     }
 
