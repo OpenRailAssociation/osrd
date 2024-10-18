@@ -1,9 +1,12 @@
-import { Blocked, ChevronLeft, Pencil } from '@osrd-project/ui-icons';
+import { useEffect, useRef, useState } from 'react';
+
+import { Blocked, ChevronLeft, Pencil, X } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import InfraLoadingState from './InfraLoadingState';
 
@@ -22,9 +25,35 @@ const ScenarioDescription = ({
 }: ScenarioDescriptionProps) => {
   const { t } = useTranslation('operationalStudies/scenario');
   const { openModal } = useModal();
+  const [isOpenedDescription, setIsOpenedDescription] = useState<boolean>(false);
+  const [width, setWidth] = useState<number>(0);
+  const ref = useRef<HTMLInputElement | null>(null);
+  const descriptionRef = useRef<HTMLDivElement | null>(null);
+
+  const showDescription = () => {
+    setIsOpenedDescription(!isOpenedDescription);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (ref.current) {
+        setWidth(ref.current.offsetWidth);
+      }
+    };
+
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  useOutsideClick(descriptionRef, () => setIsOpenedDescription(false));
 
   return (
-    <div>
+    <div ref={ref}>
       <div className="scenario-details-name">
         <span className="flex-grow-1 scenario-name text-truncate" title={scenario.name}>
           {scenario.name}
@@ -33,7 +62,22 @@ const ScenarioDescription = ({
 
       <div className="scenario-description">
         {scenario.description && (
-          <div className="scenario-details-description">{scenario.description}</div>
+          <div
+            ref={descriptionRef}
+            title={isOpenedDescription ? '' : scenario.description}
+            className={`scenario-details-description ${isOpenedDescription ? 'opened' : 'not-opened'}`}
+            style={{ width: isOpenedDescription ? width + 120 : width }}
+          >
+            {scenario.description}
+            <span
+              onClick={showDescription}
+              role="button"
+              tabIndex={0}
+              className={isOpenedDescription ? 'displayed-description' : 'display-description'}
+            >
+              {isOpenedDescription ? <X /> : '(plus)'}
+            </span>
+          </div>
         )}
         <div className="flex justify-end">
           <button
