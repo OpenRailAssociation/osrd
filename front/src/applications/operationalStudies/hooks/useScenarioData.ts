@@ -44,11 +44,6 @@ const useScenarioData = (
       },
     });
 
-  const { data: conflicts } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery({
-    id: scenario.timetable_id,
-    infraId: scenario.infra_id,
-  });
-
   const projectionPath = usePathProjection(infra);
 
   const simulationResults = useSimulationResults();
@@ -58,6 +53,7 @@ const useScenarioData = (
     projectedTrainsById,
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
+    allTrainsLoaded,
     allTrainsProjected,
   } = useLazyLoadTrains({
     infraId: scenario.infra_id,
@@ -66,6 +62,14 @@ const useScenarioData = (
     path: projectionPath?.path,
     trainSchedules,
   });
+
+  const { data: conflicts } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
+    {
+      id: scenario.timetable_id,
+      infraId: scenario.infra_id,
+    },
+    { skip: !allTrainsLoaded }
+  );
 
   const trainScheduleSummaries = useMemo(
     () => sortBy(Array.from(trainScheduleSummariesById.values()), 'startTime'),

@@ -127,6 +127,7 @@ const useLazyLoadTrains = ({
     projectedTrainsById,
     setTrainScheduleSummariesById,
     setProjectedTrainsById,
+    allTrainsLoaded,
     allTrainsProjected,
   };
 };
