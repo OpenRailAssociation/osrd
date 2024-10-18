@@ -24,13 +24,13 @@ const timeColumn = (isOutputTable: boolean) =>
     isCellEmpty: ({ rowData }) => !rowData,
   }) as Partial<Column<TimeExtraDays | undefined, string, string>>;
 
-const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
-
 export const useTimeStopsColumns = <T extends TimeStopsRow>(
   tableType: TableType,
   allWaypoints: T[] = []
 ) => {
   const { t } = useTranslation('timesStops');
+
+  const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
 
   const columns = useMemo<Column<T>[]>(() => {
     const isOutputTable = tableType === TableType.Output;
@@ -41,25 +41,36 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
               ...disabledTextColumn('theoreticalMarginSeconds', t('theoreticalMarginSeconds'), {
                 alignRight: true,
               }),
-              ...fixedWidth(110),
+              headerClassName: 'padded-header',
+              ...fixedWidth(130),
             },
             {
               ...disabledTextColumn('calculatedMargin', t('realMargin'), {
                 alignRight: true,
               }),
+              headerClassName: 'padded-header',
+              ...fixedWidth(100),
+            },
+            {
+              ...disabledTextColumn('diffMargins', t('diffMargins'), {
+                alignRight: true,
+              }),
+              headerClassName: 'padded-header',
+              ...fixedWidth(100),
+            },
+            {
+              ...disabledTextColumn('calculatedArrival', t('calculatedArrivalTime'), {
+                alignRight: true,
+              }),
+              headerClassName: 'padded-header',
               ...fixedWidth(120),
             },
             {
-              ...disabledTextColumn('diffMargins', t('diffMargins'), { alignRight: true }),
+              ...disabledTextColumn('calculatedDeparture', t('calculatedDepartureTime'), {
+                alignRight: true,
+              }),
+              headerClassName: 'padded-header',
               ...fixedWidth(120),
-            },
-            {
-              ...disabledTextColumn('calculatedArrival', t('calculatedArrivalTime')),
-              ...fixedWidth(95),
-            },
-            {
-              ...disabledTextColumn('calculatedDeparture', t('calculatedDepartureTime')),
-              ...fixedWidth(97),
             },
           ]
         : []
@@ -69,28 +80,39 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
       {
         ...keyColumn('name', createTextColumn()),
         title: t('name'),
+        component: isOutputTable
+          ? ({ rowData }) => (
+              <span
+                title={rowData.name}
+                className="ml-1 whitespace-nowrap overflow-hidden"
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                {rowData.name}
+              </span>
+            )
+          : undefined,
         disabled: true,
-        minWidth: isOutputTable ? 180 : 300,
+        minWidth: isOutputTable ? undefined : 300,
+        maxWidth: isOutputTable ? 560 : undefined,
       },
       {
-        ...keyColumn('ch', createTextColumn()),
+        ...keyColumn(
+          'ch',
+          createTextColumn({
+            alignRight: true,
+          })
+        ),
         title: t('ch'),
         disabled: true,
         maxWidth: 45,
       },
       {
         ...keyColumn('arrival', timeColumn(isOutputTable)),
-        alignRight: true,
         title: t('arrivalTime'),
+        headerClassName: 'padded-header',
+        ...fixedWidth(120),
 
         // We should not be able to edit the arrival time of the origin
-        disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
-      },
-      {
-        ...keyColumn('departure', timeColumn(isOutputTable)),
-        title: t('departureTime'),
-
-        // We should not be able to edit the departure time of the origin
         disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
       },
       {
@@ -102,23 +124,35 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
           })
         ),
         title: t('stopTime'),
+        headerClassName: 'padded-header',
         disabled: isOutputTable,
-        maxWidth: isOutputTable ? 90 : undefined,
+        maxWidth: isOutputTable ? 100 : undefined,
         grow: 0.6,
+      },
+      {
+        ...keyColumn('departure', timeColumn(isOutputTable)),
+        title: t('departureTime'),
+        headerClassName: 'padded-header',
+        ...fixedWidth(120),
+
+        // We should not be able to edit the departure time of the origin
+        disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
       },
       {
         ...keyColumn('onStopSignal', checkboxColumn as Partial<Column<boolean | undefined>>),
         title: t('receptionOnClosedSignal'),
+        headerClassName: 'padded-header',
+        ...fixedWidth(120),
 
         // We should not be able to edit the reception on close signal if stopFor is not filled
         // except for the destination
-        ...fixedWidth(94),
         disabled: ({ rowData, rowIndex }) =>
           isOutputTable || (rowIndex !== allWaypoints.length - 1 && !rowData.stopFor),
       },
       {
         ...keyColumn('shortSlipDistance', checkboxColumn as Partial<Column<boolean | undefined>>),
         title: t('shortSlipDistance'),
+        headerClassName: 'padded-header',
         ...fixedWidth(94),
         disabled: ({ rowData, rowIndex }) =>
           isOutputTable || (rowIndex !== allWaypoints.length - 1 && !rowData.onStopSignal),
@@ -142,8 +176,10 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
         cellClassName: ({ rowData }) =>
           cx({ invalidCell: !isOutputTable && !rowData.isMarginValid }),
         title: t('theoreticalMargin'),
+        headerClassName: 'padded-header',
+        minWidth: 100,
+        maxWidth: 145,
         disabled: ({ rowIndex }) => isOutputTable || rowIndex === allWaypoints.length - 1,
-        ...fixedWidth(110),
       },
       ...extraOutputColumns,
     ] as Column<T>[];

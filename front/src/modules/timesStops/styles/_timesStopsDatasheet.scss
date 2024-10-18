@@ -11,9 +11,19 @@
   .activeRow {
     font-weight: bold;
     color: var(--black100);
-    .dsg-cell-gutter {
+    .dsg-cell-gutter,
+    .cell-index {
       font-weight: normal;
     }
+  }
+
+  .padded-header > * {
+    padding-left: 8px;
+    padding-right: 16px;
+  }
+
+  .cell-index {
+    color: var(--grey50);
   }
 
   .invalidCell {
