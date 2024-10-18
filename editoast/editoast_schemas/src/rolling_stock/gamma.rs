@@ -16,3 +16,9 @@ pub struct Gamma {
     #[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))]
     value: f64,
 }
+
+impl Gamma {
+    pub fn new(gamma_type: String, value: f64) -> Self {
+        Self { gamma_type, value }
+    }
+}

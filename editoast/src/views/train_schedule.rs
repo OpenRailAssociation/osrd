@@ -593,6 +593,7 @@ fn build_simulation_request(
         options: train_schedule.options.clone(),
         rolling_stock: PhysicsRollingStock::new(
             rolling_stock.into(),
+            None,
             SimulationParameters::default(),
         ),
         electrical_profile_set_id,

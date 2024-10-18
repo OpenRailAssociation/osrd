@@ -27,6 +27,7 @@ type ValidStdcmConfig = {
   totalMass?: number;
   totalLength?: number;
   maxSpeed?: number;
+  towedRollingStockID?: number;
   margin?: StandardAllowance;
   gridMarginBefore?: number;
   gridMarginAfter?: number;
@@ -191,6 +192,7 @@ export const checkStdcmConf = (
     totalMass,
     totalLength,
     maxSpeed,
+    towedRollingStockID,
     margin: standardStdcmAllowance,
     gridMarginBefore,
     gridMarginAfter,

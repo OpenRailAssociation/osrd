@@ -1565,6 +1565,7 @@ export type PostTimetableByIdStdcmApiArg = {
     total_length?: number | null;
     /** Total mass of the consist in kg */
     total_mass?: number | null;
+    towed_rolling_stock_id?: number | null;
     work_schedule_group_id?: number | null;
   };
 };
@@ -2587,8 +2588,11 @@ export type RollingStockMetadata = {
   unit: string;
 };
 export type RollingResistance = {
+  /** kN */
   A: number;
+  /** kN/(km/h) */
   B: number;
+  /** kN/(km/h)² */
   C: number;
   type: string;
 };

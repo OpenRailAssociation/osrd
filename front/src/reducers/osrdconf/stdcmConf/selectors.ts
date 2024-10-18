@@ -11,6 +11,7 @@ const buildStdcmConfSelectors = () => {
     getStandardStdcmAllowance: makeOsrdConfSelector('standardStdcmAllowance'),
     getTotalMass: makeOsrdConfSelector('totalMass'),
     getTotalLength: makeOsrdConfSelector('totalLength'),
+    getTowedRollingStockID: makeOsrdConfSelector('towedRollingStockID'),
     getMaxSpeed: makeOsrdConfSelector('maxSpeed'),
   };
 };
