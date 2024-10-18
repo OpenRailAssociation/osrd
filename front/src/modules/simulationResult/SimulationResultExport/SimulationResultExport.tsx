@@ -29,9 +29,7 @@ import SimulationReportSheetScenario, {
 
 const Blob = ({
   scenarioResponse,
-  simulationType,
   scenarioData,
-  simulationReportSheetNumber,
   mapCanvas,
   operationalPointsList,
   t,
@@ -40,9 +38,7 @@ const Blob = ({
     document={
       <SimulationReportSheetScenario
         scenarioResponse={scenarioResponse}
-        simulationType={simulationType}
         scenarioData={scenarioData}
-        simulationReportSheetNumber={simulationReportSheetNumber}
         operationalPointsList={operationalPointsList}
         mapCanvas={mapCanvas}
       />
@@ -106,9 +102,7 @@ const SimulationResultExport = ({
     <div className="simulation-sheet-container">
       <Blob
         scenarioResponse={scenario}
-        simulationType="scenario"
         scenarioData={simulationSheetData}
-        simulationReportSheetNumber={undefined}
         operationalPointsList={operationalPointsToUse}
         t={t}
         mapCanvas={mapCanvas}
