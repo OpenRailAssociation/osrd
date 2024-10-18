@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { SimulationResultsData } from 'applications/operationalStudies/types';
+import type { ScenarioResponse } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
@@ -13,9 +14,9 @@ import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/comp
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
+import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
-import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { useAppDispatch } from 'store';
@@ -25,6 +26,7 @@ const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
 type SimulationResultsProps = {
+  scenario: ScenarioResponse;
   collapsedTimetable: boolean;
   infraId?: number;
   simulationResults: SimulationResultsData;
@@ -33,6 +35,7 @@ type SimulationResultsProps = {
 };
 
 const SimulationResults = ({
+  scenario,
   collapsedTimetable,
   infraId,
   simulationResults: {
@@ -56,12 +59,12 @@ const SimulationResults = ({
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
   const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
+  const [mapCanvas, setMapCanvas] = useState<string>();
 
   const {
     operationalPoints,
     loading: formattedOpPointsLoading,
     baseOrEco,
-    setBaseOrEco,
   } = useFormattedOperationalPoints(
     selectedTrainSchedule,
     trainSimulation,
@@ -191,6 +194,29 @@ const SimulationResults = ({
         </div>
       )}
 
+      {/* SIMULATION : MAP */}
+      <div ref={timeTableRef}>
+        <div className="osrd-simulation-container mb-2">
+          <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
+            <SimulationResultsMap
+              setExtViewport={setExtViewport}
+              geometry={pathProperties?.geometry}
+              trainSimulation={
+                selectedTrainSchedule && trainSimulation
+                  ? {
+                      ...trainSimulation,
+                      trainId: selectedTrainSchedule.id,
+                      startTime: selectedTrainSchedule.start_time,
+                    }
+                  : undefined
+              }
+              pathProperties={pathProperties}
+              setMapCanvas={setMapCanvas}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* TIME STOPS TABLE */}
       {selectedTrainSchedule &&
         trainSimulation.status === 'success' &&
@@ -209,27 +235,6 @@ const SimulationResults = ({
           </div>
         )}
 
-      {/* SIMULATION : MAP */}
-      <div ref={timeTableRef}>
-        <div className="osrd-simulation-container mb-2">
-          <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
-            <SimulationResultsMap
-              setExtViewport={setExtViewport}
-              geometry={pathProperties?.geometry}
-              trainSimulation={
-                selectedTrainSchedule && trainSimulation
-                  ? {
-                      ...trainSimulation,
-                      trainId: selectedTrainSchedule.id,
-                      startTime: selectedTrainSchedule.start_time,
-                    }
-                  : undefined
-              }
-            />
-          </div>
-        </div>
-      </div>
-
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
       {selectedTrainSchedule &&
         trainSimulation &&
@@ -237,18 +242,16 @@ const SimulationResults = ({
         selectedTrainRollingStock &&
         operationalPoints &&
         infraId && (
-          <div className="osrd-simulation-container mb-2">
-            <DriverTrainSchedule
-              train={selectedTrainSchedule}
-              simulatedTrain={trainSimulation}
-              pathProperties={pathProperties}
-              rollingStock={selectedTrainRollingStock}
-              operationalPoints={operationalPoints}
-              formattedOpPointsLoading={formattedOpPointsLoading}
-              baseOrEco={baseOrEco}
-              setBaseOrEco={setBaseOrEco}
-            />
-          </div>
+          <SimulationResultExport
+            scenario={scenario}
+            train={selectedTrainSchedule}
+            simulatedTrain={trainSimulation}
+            pathProperties={pathProperties}
+            operationalPoints={operationalPoints}
+            baseOrEco={baseOrEco}
+            rollingStock={selectedTrainRollingStock}
+            mapCanvas={mapCanvas}
+          />
         )}
     </div>
   );
