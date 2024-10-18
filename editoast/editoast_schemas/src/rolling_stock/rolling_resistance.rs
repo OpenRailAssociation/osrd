@@ -13,11 +13,22 @@ editoast_common::schemas! {
 #[allow(non_snake_case)]
 pub struct RollingResistance {
     #[serde(rename = "type")]
-    rolling_resistance_type: String,
+    pub rolling_resistance_type: String,
     #[derivative(Hash(hash_with = "editoast_common::hash_float::<5,_>"))]
-    A: f64,
+    pub A: f64,
     #[derivative(Hash(hash_with = "editoast_common::hash_float::<5,_>"))]
-    B: f64,
+    pub B: f64,
     #[derivative(Hash(hash_with = "editoast_common::hash_float::<5,_>"))]
-    C: f64,
+    pub C: f64,
+}
+
+impl RollingResistance {
+    pub fn new(rolling_resistance_type: String, a: f64, b: f64, c: f64) -> Self {
+        Self {
+            rolling_resistance_type,
+            A: a,
+            B: b,
+            C: c,
+        }
+    }
 }

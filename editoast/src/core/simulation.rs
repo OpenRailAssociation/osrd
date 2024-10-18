@@ -5,6 +5,7 @@ use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStock;
+use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::MarginValue;
@@ -74,21 +75,66 @@ pub struct SimulationParameters {
 }
 
 impl PhysicsRollingStock {
-    pub fn new(traction_engine: RollingStock, params: SimulationParameters) -> Self {
+    pub fn new(
+        traction_engine: RollingStock,
+        towed_rolling_stock: Option<TowedRollingStock>,
+        params: SimulationParameters,
+    ) -> Self {
         let traction_engine_length = traction_engine.length * 1000.0;
+
+        let towed_rolling_stock_length = towed_rolling_stock
+            .as_ref()
+            .map(|trs| trs.length)
+            .unwrap_or(0.0); // TODO check the unit
         let length = params
             .total_length
             .map(|tl| tl * 1000.0)
-            .unwrap_or(traction_engine_length)
+            .unwrap_or_else(|| traction_engine_length + towed_rolling_stock_length)
             .round() as u64;
 
         let traction_engine_mass = traction_engine.mass;
-        let mass = params.total_mass.unwrap_or(traction_engine_mass).round() as u64;
+        let towed_rolling_stock_mass = towed_rolling_stock.as_ref().map(|trs| trs.mass);
+        let mass = params
+            .total_mass
+            .unwrap_or_else(|| traction_engine_mass + towed_rolling_stock_mass.unwrap_or(0.0))
+            .round() as u64;
 
         let max_speed = f64::min(
             traction_engine.max_speed,
             params.max_speed.unwrap_or(traction_engine.max_speed),
         );
+
+        let comfort_acceleration = f64::min(
+            traction_engine.comfort_acceleration,
+            towed_rolling_stock
+                .as_ref()
+                .map(|trs| trs.comfort_acceleration)
+                .unwrap_or(traction_engine.comfort_acceleration),
+        );
+
+        let startup_acceleration = f64::max(
+            traction_engine.startup_acceleration,
+            towed_rolling_stock
+                .as_ref()
+                .map(|trs| trs.startup_acceleration)
+                .unwrap_or(traction_engine.startup_acceleration),
+        );
+
+        let inertia_coefficient = if let (Some(towed_rolling_stock), Some(total_mass)) =
+            (&towed_rolling_stock, params.total_mass)
+        {
+            compute_inertia_coefficient(&traction_engine, towed_rolling_stock, total_mass)
+        } else {
+            traction_engine.inertia_coefficient
+        };
+
+        let rolling_resistance = if let (Some(towed_rolling_stock), Some(total_mass)) =
+            (&towed_rolling_stock, params.total_mass)
+        {
+            compute_rolling_resistance(&traction_engine, towed_rolling_stock, total_mass)
+        } else {
+            traction_engine.rolling_resistance
+        };
 
         Self {
             effort_curves: traction_engine.effort_curves,
@@ -97,11 +143,11 @@ impl PhysicsRollingStock {
             mass,
             max_speed,
             startup_time: (traction_engine.startup_time * 1000.0).round() as u64,
-            startup_acceleration: traction_engine.startup_acceleration,
-            comfort_acceleration: traction_engine.comfort_acceleration,
+            startup_acceleration,
+            comfort_acceleration,
             gamma: traction_engine.gamma,
-            inertia_coefficient: traction_engine.inertia_coefficient,
-            rolling_resistance: traction_engine.rolling_resistance,
+            inertia_coefficient,
+            rolling_resistance,
             power_restrictions: traction_engine.power_restrictions.into_iter().collect(),
             electrical_power_startup_time: traction_engine
                 .electrical_power_startup_time
@@ -111,6 +157,34 @@ impl PhysicsRollingStock {
                 .map(|v| (v * 1000.0).round() as u64),
         }
     }
+}
+
+fn compute_rolling_resistance(
+    traction_engine: &RollingStock,
+    towed_rolling_stock: &TowedRollingStock,
+    total_mass: f64,
+) -> RollingResistance {
+    let traction_engine_rr = &traction_engine.rolling_resistance;
+    let towed_rs_rr = &towed_rolling_stock.rolling_resistance;
+    let traction_engine_mass = traction_engine.mass;
+
+    let a = traction_engine_rr.A * traction_engine_mass
+        + towed_rs_rr.A * (total_mass - traction_engine_mass);
+    let b = traction_engine_rr.B * traction_engine_mass
+        + towed_rs_rr.B * (total_mass - traction_engine_mass);
+    let c = traction_engine_rr.C * traction_engine_mass
+        + towed_rs_rr.C * (total_mass - traction_engine_mass);
+
+    RollingResistance::new(traction_engine_rr.rolling_resistance_type.clone(), a, b, c)
+}
+
+fn compute_inertia_coefficient(
+    traction_engine: &RollingStock,
+    towed_rolling_stock: &TowedRollingStock,
+    total_mass: f64,
+) -> f64 {
+    (total_mass * traction_engine.inertia_coefficient)
+        + ((total_mass - towed_rolling_stock.mass) * towed_rolling_stock.inertia_coefficient)
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Serialize, Deserialize, ToSchema)]

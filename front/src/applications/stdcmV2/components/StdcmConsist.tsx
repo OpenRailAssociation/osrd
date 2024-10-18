@@ -1,16 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { Input, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
-import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions } from 'common/osrdContext';
+import type { LightRollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
+import useFilterTowedRollingStock from 'modules/towedRollingStock/hooks/useFilterTowedRollingStock';
 import { type StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 
 import type { StdcmConfigCardProps } from '../types';
@@ -36,7 +39,8 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
   const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
     useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
 
-  const { updateRollingStockID } = useOsrdConfActions() as StdcmConfSliceActions;
+  const { updateRollingStockID, updateTowedRollingStockID } =
+    useOsrdConfActions() as StdcmConfSliceActions;
   const dispatch = useAppDispatch();
 
   const { rollingStock } = useStoreDataForRollingStockSelector();
@@ -52,6 +56,28 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
 
   const { filters, searchRollingStock, searchRollingStockById, filteredRollingStockList } =
     useFilterRollingStock({ isStdcm: true });
+
+  const { getTowedRollingStockID } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const towedRollingStockID = useSelector(getTowedRollingStockID);
+  const {
+    filteredTowedRollingStockList,
+    searchTowedRollingStock,
+    filters: towedRsFilters,
+    allTowedRollingStocks,
+  } = useFilterTowedRollingStock();
+
+  const selectedTowedRollingStock = useMemo(
+    () => allTowedRollingStocks.find((trs) => trs.id === towedRollingStockID),
+    [towedRollingStockID, allTowedRollingStocks]
+  );
+
+  useEffect(() => {
+    if (selectedTowedRollingStock) {
+      searchTowedRollingStock(selectedTowedRollingStock.name);
+    } else {
+      searchTowedRollingStock('');
+    }
+  }, [selectedTowedRollingStock]);
 
   const getLabel = (rs: LightRollingStockWithLiveries) => {
     let res = '';
@@ -134,6 +160,31 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
           onSelectSuggestion={onSelectSuggestion}
         />
       </div>
+      <div className="towed-rolling-stock">
+        <ComboBox
+          id="towedRollingStock"
+          label={t('consist.towedRollingStock')}
+          value={towedRsFilters.text.toUpperCase()}
+          onClick={() => {
+            if (selectedTowedRollingStock?.id !== undefined) {
+              searchRollingStockById(selectedTowedRollingStock.id);
+            }
+          }}
+          onChange={(e) => {
+            searchTowedRollingStock(e.target.value);
+            if (e.target.value.trim().length === 0) {
+              updateTowedRollingStockID(undefined);
+            }
+          }}
+          autoComplete="off"
+          disabled={disabled}
+          suggestions={filteredTowedRollingStockList}
+          getSuggestionLabel={(suggestion: TowedRollingStock) => suggestion.name}
+          onSelectSuggestion={(towed) => {
+            dispatch(updateTowedRollingStockID(towed?.id));
+          }}
+        />
+      </div>
       <div className="stdcm-v2-consist__properties">
         <Input
           id="tonnage"
@@ -142,6 +193,7 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
           type="number"
           min={0}
           value={totalMass ?? ''}
+          required={!!selectedTowedRollingStock}
           onChange={onTotalMassChange}
         />
         <Input
@@ -151,6 +203,7 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
           type="number"
           min={0}
           value={totalLength ?? ''}
+          required={!!selectedTowedRollingStock}
           onChange={onTotalLengthChange}
         />
       </div>

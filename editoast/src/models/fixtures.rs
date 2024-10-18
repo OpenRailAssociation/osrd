@@ -10,7 +10,10 @@ use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::rolling_stock::Gamma;
+use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStock;
+use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use postgis_diesel::types::LineString;
 use serde_json::Value;
@@ -30,6 +33,8 @@ use crate::models::RollingStockModel;
 use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::Tags;
+
+use super::towed_rolling_stock::TowedRollingStockModel;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()

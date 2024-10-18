@@ -1560,6 +1560,7 @@ export type PostTimetableByIdStdcmApiArg = {
     total_length?: number | null;
     /** Total mass of the consist in kg */
     total_mass?: number | null;
+    towed_rolling_stock_id?: number | null;
     work_schedule_group_id?: number | null;
   };
 };
