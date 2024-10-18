@@ -6,7 +6,9 @@ pub struct TowedRollingStock {
     pub name: String,
     pub railjson_version: String,
 
+    /// In kg
     pub mass: f64,
+    /// In m
     pub length: f64,
     pub comfort_acceleration: f64,
     pub startup_acceleration: f64,
