@@ -1,6 +1,6 @@
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
-import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { RollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
@@ -10,6 +10,7 @@ export type StdcmSimulationInputs = {
   pathSteps: (PathStep | null)[];
   consist?: {
     tractionEngine?: RollingStockWithLiveries;
+    towedRollingStock?: TowedRollingStock;
     speedLimitByTag?: string;
   };
 };

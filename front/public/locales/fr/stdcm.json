@@ -7,7 +7,8 @@
     "length": "Longueur",
     "tonnage": "Tonnage",
     "maxSpeed": "Vitesse max.",
-    "tractionEngine": "Engin de traction"
+    "tractionEngine": "Engin de traction",
+    "towedRollingStock": "Matériel remorqué"
   },
   "datetimeOutsideWindow": "La date et l'heure doivent être comprises entre le {{low}} et le {{high}}",
   "debug": {

@@ -29,6 +29,7 @@ type ValidStdcmConfig = {
   totalMass?: number;
   totalLength?: number;
   maxSpeed?: number;
+  towedRollingStockID?: number;
   maximumRunTime?: number;
   startTime?: string; // must be a datetime
   latestStartTime?: string;
@@ -54,6 +55,7 @@ export const checkStdcmConf = (
     rollingStockComfort,
     infraID,
     rollingStockID,
+    towedRollingStockID,
     maximumRunTime,
     standardStdcmAllowance,
     gridMarginBefore,
@@ -233,6 +235,7 @@ export const checkStdcmConf = (
     totalMass,
     totalLength,
     maxSpeed,
+    towedRollingStockID,
     margin: standardStdcmAllowance,
     gridMarginBefore,
     gridMarginAfter,
@@ -258,6 +261,7 @@ export const formatStdcmPayload = (
     total_mass: validConfig.totalMass ? tToKg(validConfig.totalMass) : undefined,
     max_speed: validConfig.maxSpeed ? kmhToMs(validConfig.maxSpeed) : undefined,
     total_length: validConfig.totalLength,
+    towed_rolling_stock_id: validConfig.towedRollingStockID,
     ...(!stdcmV2Activated && {
       maximum_run_time: toMsOrUndefined(validConfig.maximumRunTime),
       maximum_departure_delay: sec2ms(
