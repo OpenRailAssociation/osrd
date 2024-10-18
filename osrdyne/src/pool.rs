@@ -535,6 +535,17 @@ async fn worker_control_loop(
             }
         }
 
+        // Refresh workers if needed
+        if let Err(e) = driver.cleanup_stalled().await {
+            log::error!(
+                "Failed to cleanup stalled ressources : {:?}. Aborting current loop iteration.",
+                e
+            );
+            tokio::time::sleep(sleep_interval).await;
+            continue;
+        }
+
+        // Sleep for a while
         tokio::time::sleep(sleep_interval).await;
     }
 }

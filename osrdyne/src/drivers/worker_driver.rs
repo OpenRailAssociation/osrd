@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fmt::{self, Display, Formatter},
     future::Future,
     pin::Pin,
@@ -17,6 +18,8 @@ pub struct WorkerMetadata {
     pub worker_id: Uuid,
     /// Group ID for which this worker provides services.
     pub worker_key: Key,
+    /// Metadata attached to the worker.
+    pub metadata: HashMap<String, String>,
 }
 
 #[derive(Debug)]
@@ -54,6 +57,11 @@ pub trait WorkerDriver: Send {
     fn destroy_worker_group(
         &mut self,
         worker_key: Key,
+    ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>>;
+
+    /// This method should check if any ressources are dangling and clean them up.
+    fn cleanup_stalled(
+        &mut self,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>>;
 
     /// Returns the status of a worker.

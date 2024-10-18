@@ -40,7 +40,14 @@ impl WorkerDriver for NoopDriver {
                 external_id: self.fixed_pool_id.to_string(),
                 worker_id: self.fixed_pool_id,
                 worker_key: Key::decode("0"),
+                metadata: Default::default(),
             }])
         })
+    }
+
+    fn cleanup_stalled(
+        &mut self,
+    ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
+        Box::pin(async move { Ok(()) })
     }
 }
