@@ -33,7 +33,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
   const [stopTypes, setStopTypes] = useState<Record<string, StdcmStopTypes>>(
     compact(pathSteps).reduce(
       (acc, cur) => {
-        acc[cur.id] = StdcmStopTypes.PASSAGE_TIME;
+        acc[cur.id] = cur.stopType || StdcmStopTypes.PASSAGE_TIME;
         return acc;
       },
       {} as Record<string, StdcmStopTypes>
@@ -56,7 +56,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
       updateViaStopTime({
         via: pathStepToUpdate,
         duration: formatDurationAsISO8601(Number(stopTime) * 60),
-        stopType: stopTypes[pathStepId] ?? StdcmStopTypes.PASSAGE_TIME,
+        stopType: stopTypes[pathStepId],
       })
     );
   };
@@ -152,7 +152,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                     />
                     <StdcmInputVia
                       stopType={stopTypes[pathStep.id]}
-                      pathStepStopFor={pathStep.stopFor}
+                      stopDuration={pathStep.stopFor}
                       updatePathStepStopTime={(e) =>
                         updatePathStepStopTime(e, pathStepIndex, pathStep.id)
                       }
