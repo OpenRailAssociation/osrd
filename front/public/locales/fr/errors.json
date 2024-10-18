@@ -221,7 +221,8 @@
     "app_health": {
       "Timeout": "Le serveur n'a pas répondu à temps",
       "Database": "Erreur de base de données",
-      "Valkey": "Erreur de Valkey"
+      "Valkey": "Erreur de Valkey",
+      "Core": "Erreur de core"
     }
   }
 }

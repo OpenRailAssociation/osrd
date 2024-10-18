@@ -224,7 +224,8 @@
     "app_health": {
       "Timeout": "Service has not responded in time",
       "Database": "Database is in error",
-      "Valkey": "Valkey is in error"
+      "Valkey": "Valkey is in error",
+      "Core": "Core is in error"
     }
   }
 }
