@@ -15,16 +15,18 @@ import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint
 import fr.sncf.osrd.api.api_v2.stdcm.STDCMEndpointV2
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
-import java.io.InputStream
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.takes.Request
+import java.io.InputStream
+import java.util.concurrent.TimeUnit
 
 @Parameters(commandDescription = "RabbitMQ worker mode")
 class WorkerCommand : CliCommand {
@@ -130,7 +132,24 @@ class WorkerCommand : CliCommand {
         connection.createChannel().use { channel -> reportActivity(channel, "started") }
 
         if (!ALL_INFRA) {
-            infraManager.load(infraId, null, diagnosticRecorder)
+            try {
+                infraManager.load(infraId, null, diagnosticRecorder)
+            } catch (e: OSRDError) {
+                if (e.osrdErrorType == ErrorType.InfraHardLoadingError) {
+                    logger.warn("Failed to load infra $infraId with a perennial error: $e")
+                    // go on but requests will be rejected
+                } else if (e.osrdErrorType == ErrorType.InfraSoftLoadingError) {
+                    logger.warn("Failed to load infra $infraId with a temporary error: $e")
+                    // Stop and let another worker spawn eventually
+                    return 1
+                } else {
+                    logger.warn("Failed to load infra $infraId with an unexpected OSRD Error: $e")
+                    return 1
+                }
+            } catch (t: Throwable) {
+                logger.warn("Failed to load infra $infraId with an unexpected exception: $t")
+                return 1
+            }
         }
 
         connection.createChannel().use { channel -> reportActivity(channel, "ready") }
@@ -218,6 +237,9 @@ class WorkerCommand : CliCommand {
                         "ERROR, exception received"
                             .toByteArray() // TODO: have a valid payload for uncaught exceptions
                     status = "core_error".encodeToByteArray()
+                    if (t is OSRDError && t.osrdErrorType == ErrorType.InfraSoftLoadingError) {
+                        throw t // TODO ensure graceful exit
+                    }
                 } finally {
                     span.end()
                 }
@@ -235,8 +257,8 @@ class WorkerCommand : CliCommand {
                 channel.basicAck(message.envelope.deliveryTag, false)
                 logger.info("request for path {} processed", path)
             },
-            { _ -> logger.error("consumer cancelled") },
-            { consumerTag, e -> logger.info("consume shutdown: {}, {}", consumerTag, e.toString()) }
+            { _ -> logger.error("consumer cancelled") }, // TODO graceful exit ?
+            { consumerTag, e -> logger.info("consume shutdown: {}, {}", consumerTag, e.toString()) } // TODO graceful exit ?
         )
 
         logger.info("consume ended")
