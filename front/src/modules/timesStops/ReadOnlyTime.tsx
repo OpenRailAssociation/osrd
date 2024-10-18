@@ -17,7 +17,7 @@ const ReadOnlyTime = ({ rowData }: ReadOnlyTimeProps) => {
     daySinceDeparture !== undefined && dayDisplayed
       ? `${time}${NO_BREAK_SPACE}${t('dayCounter', { count: daySinceDeparture })}`
       : time;
-  return <div className="read-only-time">{fullString}</div>;
+  return <div className="read-only-time text-right w-full">{fullString}</div>;
 };
 
 export default ReadOnlyTime;
