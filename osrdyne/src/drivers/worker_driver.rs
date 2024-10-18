@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fmt::{self, Display, Formatter},
     future::Future,
     pin::Pin,
@@ -17,6 +18,8 @@ pub struct WorkerMetadata {
     pub worker_id: Uuid,
     /// Group ID for which this worker provides services.
     pub worker_key: Key,
+    /// Metadata attached to the worker.
+    pub metadata: HashMap<String, String>,
 }
 
 #[derive(Debug)]
@@ -48,12 +51,20 @@ pub trait WorkerDriver: Send {
         &mut self,
         queue_name: String,
         worker_key: Key,
+        forced_id: Option<Uuid>,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>>;
 
     /// Unschedules a worker from the given group.
     fn destroy_worker_group(
         &mut self,
         worker_key: Key,
+    ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>>;
+
+    /// This methoid should check if current deployments are up to date and refresh them if needed.
+    /// NOTE: This method should be called periodically to ensure that the worker deployments are up to date.
+    /// It should not modify the identifiers of the workers in anyway.
+    fn refresh_workers(
+        &mut self,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>>;
 
     /// Returns the status of a worker.

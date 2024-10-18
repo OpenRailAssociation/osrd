@@ -106,6 +106,7 @@ impl WorkerDriver for PCDriver {
         &mut self,
         _queue_name: String,
         worker_key: Key,
+        _forced_id: Option<Uuid>,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move {
             if let Some((_, id)) = self.workers.get(&worker_key) {
@@ -171,10 +172,17 @@ impl WorkerDriver for PCDriver {
                         external_id: pid.to_string(),
                         worker_id: **id,
                         worker_key: (*key).clone(),
+                        metadata: Default::default(),
                     })
                 })
                 .collect())
         })
+    }
+
+    fn refresh_workers(
+        &mut self,
+    ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
+        Box::pin(async move { Ok(()) })
     }
 }
 
