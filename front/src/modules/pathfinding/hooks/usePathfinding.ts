@@ -182,7 +182,6 @@ export const usePathfinding = (
     return getPathfindingQuery({ infraId, rollingStock, origin, destination, pathSteps });
   };
 
-
   useEffect(() => {
     if (isPathfindingInitialized) {
       pathfindingDispatch({
@@ -226,14 +225,12 @@ export const usePathfinding = (
 
         try {
           const pathfindingResult = await postPathfindingBlocks(pathfindingInput).unwrap();
-          const incompatibleConstraintsCheck = pathfindingResult.status === 'failed' &&
+          const incompatibleConstraintsCheck =
+            pathfindingResult.status === 'failed' &&
             pathfindingResult.failed_status === 'pathfinding_not_found' &&
-            pathfindingResult.error_type === 'incompatible_constraints'
+            pathfindingResult.error_type === 'incompatible_constraints';
 
-          if (
-            pathfindingResult.status === 'success' ||
-            (incompatibleConstraintsCheck)
-          ) {
+          if (pathfindingResult.status === 'success' || incompatibleConstraintsCheck) {
             const pathResult =
               pathfindingResult.status === 'success'
                 ? pathfindingResult
@@ -310,12 +307,9 @@ export const usePathfinding = (
                   allWaypoints,
                   length: pathResult.length,
                   trackSectionRanges: pathResult.track_section_ranges,
-                  incompatibleConstraints:
-                    pathfindingResult.status === 'failed' &&
-                      pathfindingResult.failed_status === 'pathfinding_not_found' &&
-                      pathfindingResult.error_type === 'incompatible_constraints'
-                      ? pathfindingResult.incompatible_constraints
-                      : undefined,
+                  incompatibleConstraints: incompatibleConstraintsCheck
+                    ? pathfindingResult.incompatible_constraints
+                    : undefined,
                 });
 
               if (pathfindingResult.status === 'success') {
