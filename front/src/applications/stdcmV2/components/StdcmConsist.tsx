@@ -79,12 +79,14 @@ const StdcmConsist = ({ disabled = false }: StdcmConfigCardProps) => {
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     searchRollingStock(e.target.value);
     if (e.target.value.trim().length === 0) {
-      updateRollingStockID(undefined);
+      dispatch(updateRollingStockID(undefined));
+      dispatchUpdateSpeedLimitByTag(null);
     }
   };
 
   const onSelectSuggestion = (option?: LightRollingStockWithLiveries) => {
     dispatch(updateRollingStockID(option?.id));
+    dispatchUpdateSpeedLimitByTag(null);
   };
 
   useEffect(() => {
