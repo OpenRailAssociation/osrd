@@ -4,6 +4,7 @@ import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Offset
@@ -416,8 +417,7 @@ class SpacingRequirementAutomaton(
 
         // TODO: use a lookup table
         fun findLastStopBeforeZone(): ProcessedStop? {
-            for (i in processedStops.size - 1 downTo 0) {
-                val stop = processedStops[i]
+            for (stop in processedStops.reversed()) {
                 if (stop.nextZoneIdx <= pendingRequirement.zoneIndex) {
                     return stop
                 }
@@ -432,7 +432,7 @@ class SpacingRequirementAutomaton(
             if (stopEndTime.isInfinite()) {
                 return null
             }
-            beginTime = maxOf(beginTime, stopEndTime)
+            beginTime = maxOf(beginTime, stopEndTime - CLOSED_SIGNAL_RESERVATION_MARGIN)
         }
 
         val departureTime = callbacks.departureTimeFromRange(zoneEntryOffset, zoneExitOffset)
