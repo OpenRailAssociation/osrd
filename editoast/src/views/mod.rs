@@ -50,6 +50,8 @@ use utoipa::ToSchema;
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::core::CoreError;
 use crate::core::{self};
 use crate::error::Result;
 use crate::error::{self};
@@ -235,6 +237,8 @@ pub enum AppHealthError {
     Database(#[from] editoast_models::db_connection_pool::PingError),
     #[error(transparent)]
     Valkey(#[from] redis::RedisError),
+    #[error(transparent)]
+    Core(#[from] CoreError),
 }
 
 #[utoipa::path(
@@ -248,23 +252,29 @@ async fn health(
         db_pool_v2: db_pool,
         valkey,
         health_check_timeout,
+        core_client,
         ..
     }): State<AppState>,
 ) -> Result<&'static str> {
-    timeout(health_check_timeout, check_health(db_pool, valkey))
-        .await
-        .map_err(|_| AppHealthError::Timeout)??;
+    timeout(
+        health_check_timeout,
+        check_health(db_pool, valkey, core_client),
+    )
+    .await
+    .map_err(|_| AppHealthError::Timeout)??;
     Ok("ok")
 }
 
 pub async fn check_health(
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_client: Arc<ValkeyClient>,
+    core_client: Arc<CoreClient>,
 ) -> Result<()> {
     let mut db_connection = db_pool.clone().get().await?;
     tokio::try_join!(
         ping_database(&mut db_connection).map_err(AppHealthError::Database),
-        valkey_client.ping_valkey().map_err(|e| e.into())
+        valkey_client.ping_valkey().map_err(AppHealthError::Valkey),
+        core_client.ping().map_err(AppHealthError::Core),
     )?;
     Ok(())
 }
