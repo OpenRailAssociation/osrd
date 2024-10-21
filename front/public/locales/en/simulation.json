@@ -80,6 +80,9 @@
   },
   "trainList": "Train list",
   "waiting": "Loading...",
+  "waypointMenu": {
+    "hide": "Hide this OP"
+  },
   "waypointsPanel": {
     "name": "name",
     "secondaryCode": "CH",
