@@ -17,8 +17,8 @@ use crate::error::Result;
 use crate::models::temporary_speed_limits::TemporarySpeedLimit;
 use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
 use crate::models::Changeset;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::Create;
 use crate::CreateBatch;
 use crate::Model;
@@ -135,13 +135,13 @@ fn map_diesel_error(e: InternalError, name: impl AsRef<str>) -> InternalError {
 )]
 async fn create_temporary_speed_limit_group(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(TemporarySpeedLimitCreateForm {
         speed_limit_group_name,
         speed_limits,
     }): Json<TemporarySpeedLimitCreateForm>,
 ) -> Result<Json<TemporarySpeedLimitCreateResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

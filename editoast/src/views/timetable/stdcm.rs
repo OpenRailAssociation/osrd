@@ -47,8 +47,8 @@ use crate::models::{Infra, List};
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::train_schedule::train_simulation;
 use crate::views::train_schedule::train_simulation_batch;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::Retrieve;
 use crate::RetrieveBatch;
@@ -171,12 +171,12 @@ struct InfraIdQueryParam {
 )]
 async fn stdcm(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(id): Path<i64>,
     Query(query): Query<InfraIdQueryParam>,
     Json(stdcm_request): Json<STDCMRequestPayload>,
 ) -> Result<Json<STDCMResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

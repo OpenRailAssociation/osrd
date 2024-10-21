@@ -37,8 +37,8 @@ use crate::SelectionSettings;
 #[cfg(test)]
 use serde::Deserialize;
 
+use super::AuthenticationExt;
 use super::AuthorizationError;
-use super::AuthorizerExt;
 
 crate::routes! {
     "/light_rolling_stock" => {
@@ -106,10 +106,10 @@ struct LightRollingStockWithLiveriesCountList {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParam>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -149,10 +149,10 @@ async fn list(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(light_rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -183,10 +183,10 @@ async fn get(
 )]
 async fn get_by_name(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(light_rolling_stock_name): Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

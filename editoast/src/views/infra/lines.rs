@@ -14,8 +14,8 @@ use crate::models::prelude::*;
 use crate::models::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 
 crate::routes! {
@@ -48,9 +48,9 @@ async fn get_line_bbox(
         db_pool_v2: db_pool,
         ..
     }): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<BoundingBox>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

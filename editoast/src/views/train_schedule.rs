@@ -47,8 +47,8 @@ use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::path::PathfindingError;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::RollingStockModel;
 use crate::ValkeyClient;
@@ -165,10 +165,10 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
 )]
 async fn get(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     train_schedule_id: Path<TrainScheduleIdParam>,
 ) -> Result<Json<TrainScheduleResult>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -203,10 +203,10 @@ struct BatchRequest {
 )]
 async fn get_batch(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(BatchRequest { ids: train_ids }): Json<BatchRequest>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -237,10 +237,10 @@ async fn get_batch(
 )]
 async fn delete(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(BatchRequest { ids: train_ids }): Json<BatchRequest>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -272,11 +272,11 @@ async fn delete(
 )]
 async fn put(
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     train_schedule_id: Path<TrainScheduleIdParam>,
     Json(train_schedule_form): Json<TrainScheduleForm>,
 ) -> Result<Json<TrainScheduleResult>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -321,12 +321,12 @@ pub struct ElectricalProfileSetIdQueryParam {
 )]
 async fn simulation(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(train_schedule_id): Path<TrainScheduleIdParam>,
     Query(infra_id_query): Query<InfraIdQueryParam>,
     Query(electrical_profile_set_id_query): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<SimulationResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -658,14 +658,14 @@ enum SimulationSummaryResult {
 )]
 async fn simulation_summary(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(SimulationBatchForm {
         infra_id,
         electrical_profile_set_id,
         ids: train_schedule_ids,
     }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -758,13 +758,13 @@ async fn simulation_summary(
 )]
 async fn get_path(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
     }): Path<TrainScheduleIdParam>,
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

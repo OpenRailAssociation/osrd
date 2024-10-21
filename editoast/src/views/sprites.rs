@@ -12,8 +12,8 @@ use tower_http::services::ServeFile;
 use crate::client::get_dynamic_assets_path;
 use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 
 crate::routes! {
     "/sprites" => {
@@ -41,8 +41,8 @@ enum SpriteErrors {
         (status = 200, description = "List of supported signaling systems", body = Vec<String>, example = json!(["BAL", "TVM300"])),
     ),
 )]
-async fn signaling_systems(Extension(authorizer): AuthorizerExt) -> Result<Json<Vec<String>>> {
-    let authorized = authorizer
+async fn signaling_systems(Extension(auth): AuthenticationExt) -> Result<Json<Vec<String>>> {
+    let authorized = auth
         .check_roles([BuiltinRole::MapRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -69,11 +69,11 @@ async fn signaling_systems(Extension(authorizer): AuthorizerExt) -> Result<Json<
     ),
 )]
 async fn sprites(
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((signaling_system, file_name)): Path<(String, String)>,
     request: Request,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::MapRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

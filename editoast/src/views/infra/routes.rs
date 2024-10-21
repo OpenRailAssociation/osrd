@@ -21,8 +21,8 @@ use crate::models::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 
 crate::routes! {
@@ -68,9 +68,9 @@ struct RoutesResponse {
 async fn get_routes_from_waypoint(
     Path(path): Path<RoutesFromWaypointParams>,
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<RoutesResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -146,11 +146,11 @@ struct RoutesFromNodesPositions {
 )]
 async fn get_routes_track_ranges(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<i64>,
     Query(params): Query<RouteTrackRangesParams>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -207,11 +207,11 @@ async fn get_routes_track_ranges(
 )]
 async fn get_routes_nodes(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(params): Path<InfraIdParam>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

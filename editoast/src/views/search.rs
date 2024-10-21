@@ -233,8 +233,8 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
@@ -346,7 +346,7 @@ struct SearchDBResult {
 )]
 async fn search(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Query(query_params): Query<PaginationQueryParam>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
@@ -362,7 +362,7 @@ async fn search(
         }
     };
 
-    let authorized = authorizer
+    let authorized = auth
         .check_roles(roles)
         .await
         .map_err(AuthorizationError::AuthError)?;

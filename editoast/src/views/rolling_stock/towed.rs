@@ -5,8 +5,8 @@ use crate::models::towed_rolling_stock::TowedRollingStockModel;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
@@ -132,10 +132,10 @@ impl From<TowedRollingStockForm> for Changeset<TowedRollingStockModel> {
 )]
 async fn post(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -170,10 +170,10 @@ struct TowedRollingStockCountList {
 )]
 async fn get_list(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParam>,
 ) -> Result<Json<TowedRollingStockCountList>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -211,12 +211,12 @@ pub struct TowedRollingStockIdParam {
 )]
 async fn get_by_id(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
 ) -> Result<Json<TowedRollingStock>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -246,13 +246,13 @@ async fn get_by_id(
 )]
 async fn patch_by_id(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
     }): Path<TowedRollingStockIdParam>,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -320,11 +320,11 @@ struct TowedRollingStockLockedForm {
 )]
 async fn patch_by_id_locked(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(towed_rolling_stock_id): Path<i64>,
     Json(TowedRollingStockLockedForm { locked }): Json<TowedRollingStockLockedForm>,
 ) -> Result<StatusCode> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

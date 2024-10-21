@@ -21,8 +21,8 @@ use crate::models::Infra;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use editoast_models::DbConnectionPoolV2;
 
 use super::InfraApiError;
@@ -72,7 +72,7 @@ pub(in crate::views) struct InfraErrorResponse {
  )]
 async fn list_errors(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(ErrorListQueryParams {
@@ -81,7 +81,7 @@ async fn list_errors(
         object_id,
     }): Query<ErrorListQueryParams>,
 ) -> Result<Json<ErrorListResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

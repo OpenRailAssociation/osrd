@@ -22,8 +22,8 @@ use crate::models::prelude::*;
 use crate::models::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
@@ -97,12 +97,12 @@ struct QueryParam {
 )]
 async fn pathfinding_view(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
     Query(params): Query<QueryParam>,
     Json(input): Json<InfraPathfindingInput>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
