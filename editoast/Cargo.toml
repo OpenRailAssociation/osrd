@@ -148,7 +148,7 @@ opentelemetry-otlp = { version = "0.16.0", default-features = false, features = 
 ] }
 opentelemetry-semantic-conventions.workspace = true
 opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio", "trace"] }
-ordered-float = { version = "4.3.0", features = ["serde"] }
+ordered-float = { version = "4.4.0", features = ["serde"] }
 osm_to_railjson = { path = "./osm_to_railjson" }
 paste.workspace = true
 pathfinding = "4.11.0"
