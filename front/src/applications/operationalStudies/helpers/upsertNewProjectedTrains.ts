@@ -1,10 +1,5 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import { type ProjectPathTrainResult, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
-import { convertIsoUtcToLocalTime } from 'utils/date';
-
-// TODO: feed the spaceTimeChart with date instead of formatted string
-export const formatDatetimeForSpaceTimeChart = (departureTime: string) =>
-  `${convertIsoUtcToLocalTime(departureTime).slice(0, -6)}Z`;
 
 const upsertNewProjectedTrains = (
   projectedTrains: Map<number, TrainSpaceTimeData>,
@@ -26,7 +21,7 @@ const upsertNewProjectedTrains = (
       ...trainData,
       id: +trainId,
       name: matchingTrain?.train_name || 'Train name not found',
-      departure_time: formatDatetimeForSpaceTimeChart(trainData.departure_time),
+      departure_time: trainData.departure_time,
     };
 
     newProjectedTrains.set(trainId, projectedTrain);

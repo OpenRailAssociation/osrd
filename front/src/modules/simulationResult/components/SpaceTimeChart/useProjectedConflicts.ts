@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 
-import { formatDatetimeForSpaceTimeChart } from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
 import type {
   Conflict,
   PathProperties,
@@ -54,8 +53,8 @@ const useProjectedConflicts = (
 
       return [
         {
-          timeStart: +new Date(formatDatetimeForSpaceTimeChart(req.start_time)),
-          timeEnd: +new Date(formatDatetimeForSpaceTimeChart(req.end_time)),
+          timeStart: +new Date(req.start_time),
+          timeEnd: +new Date(req.end_time),
           spaceStart: boundaries[index],
           spaceEnd: boundaries[index + 1],
         },
