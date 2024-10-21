@@ -39,13 +39,22 @@
 
   .osrd-simulation-container {
     position: relative;
-    background-color: white;
     padding: 1rem;
     border-radius: 4px;
 
     &.speedspacechart-container {
+      display: flex;
       background-color: rgb(247, 246, 238);
+      margin-bottom: 28px;
     }
+  }
+
+  .simulation-map {
+    position: relative;
+    height: 450px;
+    margin: 0 30px 56px 30px;
+    border-radius: 20px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
   }
 
   /* MAP */
