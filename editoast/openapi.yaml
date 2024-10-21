@@ -1867,7 +1867,6 @@ paths:
     get:
       tags:
       - scenarios
-      - nge
       summary: Get macro node list by scneario id
       parameters:
       - name: project_id
@@ -1922,7 +1921,6 @@ paths:
     post:
       tags:
       - scenarios
-      - nge
       parameters:
       - name: project_id
         in: path
@@ -1960,7 +1958,6 @@ paths:
     get:
       tags:
       - scenarios
-      - nge
       parameters:
       - name: project_id
         in: path
@@ -2003,7 +2000,6 @@ paths:
     put:
       tags:
       - scenarios
-      - nge
       parameters:
       - name: project_id
         in: path
@@ -2052,7 +2048,6 @@ paths:
     delete:
       tags:
       - scenarios
-      - ngraph
       parameters:
       - name: project_id
         in: path

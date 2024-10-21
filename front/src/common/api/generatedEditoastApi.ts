@@ -11,8 +11,6 @@ export const addTagTypes = [
   'projects',
   'studies',
   'scenarios',
-  'nge',
-  'ngraph',
   'rolling_stock_livery',
   'search',
   'speed_limit_tags',
@@ -556,7 +554,7 @@ const injectedRtkApi = api
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes`,
           params: { page: queryArg.page, page_size: queryArg.pageSize },
         }),
-        providesTags: ['scenarios', 'nge'],
+        providesTags: ['scenarios'],
       }),
       postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes: build.mutation<
         PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse,
@@ -567,7 +565,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.macroNodeForm,
         }),
-        invalidatesTags: ['scenarios', 'nge'],
+        invalidatesTags: ['scenarios'],
       }),
       getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.query<
         GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
@@ -576,7 +574,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes/${queryArg.nodeId}`,
         }),
-        providesTags: ['scenarios', 'nge'],
+        providesTags: ['scenarios'],
       }),
       putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.mutation<
         PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
@@ -587,7 +585,7 @@ const injectedRtkApi = api
           method: 'PUT',
           body: queryArg.macroNodeForm,
         }),
-        invalidatesTags: ['scenarios', 'nge'],
+        invalidatesTags: ['scenarios'],
       }),
       deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.mutation<
         DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
@@ -597,7 +595,7 @@ const injectedRtkApi = api
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes/${queryArg.nodeId}`,
           method: 'DELETE',
         }),
-        invalidatesTags: ['scenarios', 'ngraph'],
+        invalidatesTags: ['scenarios'],
       }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({

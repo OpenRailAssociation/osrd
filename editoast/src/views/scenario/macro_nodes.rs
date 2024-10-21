@@ -120,7 +120,7 @@ pub struct MacroNodeListResponse {
 /// Get macro node list by scneario id
 #[utoipa::path(
     get, path = "",
-    tag = "scenarios, nge",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, PaginationQueryParam),
     responses(
         (status = 200, body = MacroNodeListResponse, description = "List of macro nodes for the requested scenario"),
@@ -164,7 +164,7 @@ async fn list(
 
 #[utoipa::path(
     post, path = "",
-    tag = "scenarios, nge",
+    tag = "scenarios",
     request_body = MacroNodeForm,
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
@@ -222,7 +222,7 @@ async fn create(
 
 #[utoipa::path(
     get, path = "",
-    tag = "scenarios, nge",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
     responses(
         (status = 200, body = MacroNodeResponse, description = "The requested Macro node"),
@@ -259,7 +259,7 @@ async fn get(
 
 #[utoipa::path(
     put, path = "",
-    tag = "scenarios, nge",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
     request_body = MacroNodeForm,
     responses(
@@ -326,7 +326,7 @@ async fn update(
 
 #[utoipa::path(
     delete, path = "",
-    tag = "scenarios, ngraph",
+    tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
     responses(
         (status = 204, description = "The macro node was deleted successfully"),
