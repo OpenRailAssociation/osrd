@@ -4,6 +4,8 @@ import bbox from '@turf/bbox';
 import { lineString, point } from '@turf/helpers';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
+import html2canvas from 'html2canvas';
+import { isEqual } from 'lodash';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -63,9 +65,16 @@ type SimulationResultMapProps = {
   setExtViewport: (viewport: Viewport) => void;
   geometry?: PathPropertiesFormatted['geometry'];
   trainSimulation?: SimulationResponseSuccess & { trainId: number; startTime: string };
+  pathProperties?: PathPropertiesFormatted;
+  setMapCanvas?: (mapCanvas: string) => void;
 };
 
-const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapProps) => {
+const SimulationResultMap = ({
+  geometry,
+  trainSimulation,
+  pathProperties,
+  setMapCanvas,
+}: SimulationResultMapProps) => {
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
 
   const mapBlankStyle = useMapBlankStyle();
@@ -150,6 +159,25 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
     }
   };
 
+  // TODO: Also use in ManageTrainSchedule/Map.tsx
+  const captureMap = async () => {
+    if (!pathProperties) return;
+
+    const itineraryViewport = computeBBoxViewport(bbox(pathProperties.geometry), viewport);
+
+    if (setMapCanvas && isEqual(viewport, itineraryViewport)) {
+      try {
+        const mapElement = document.getElementById('simulation-result-map');
+        if (mapElement) {
+          const canvas = await html2canvas(mapElement);
+          setMapCanvas(canvas.toDataURL());
+        }
+      } catch (error) {
+        console.error('Error capturing map:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     const interactiveLayers: string[] =
       mapLoaded && geojsonPath ? ['geojsonPath', 'main-train-path'] : [];
@@ -220,6 +248,8 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
             : undefined
         }
         onLoad={handleLoadFinished}
+        onIdle={() => captureMap()}
+        id="simulation-result-map"
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />

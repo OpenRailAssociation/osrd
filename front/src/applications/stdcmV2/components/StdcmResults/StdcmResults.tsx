@@ -98,6 +98,7 @@ const StcdmResults = ({
                   <PDFDownloadLink
                     document={
                       <SimulationReportSheet
+                        simulationType="stdcm"
                         stdcmData={selectedSimulation.outputs.results}
                         simulationReportSheetNumber={simulationReportSheetNumber}
                         mapCanvas={mapCanvas}
