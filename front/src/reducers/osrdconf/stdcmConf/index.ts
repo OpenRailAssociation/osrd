@@ -13,6 +13,7 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
   totalMass: undefined,
   totalLength: undefined,
   maxSpeed: undefined,
+  towedRollingStockID: undefined,
   ...defaultCommonConf,
 };
 
@@ -45,6 +46,12 @@ export const stdcmConfSlice = createSlice({
       action: PayloadAction<OsrdStdcmConfState['maxSpeed']>
     ) {
       state.maxSpeed = action.payload;
+    },
+    updateTowedRollingStockID(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<OsrdStdcmConfState['towedRollingStockID']>
+    ) {
+      state.towedRollingStockID = action.payload;
     },
     updateStdcmConfigWithData(
       state: Draft<OsrdStdcmConfState>,
