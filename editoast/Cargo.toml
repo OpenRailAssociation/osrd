@@ -78,7 +78,7 @@ tracing = { version = "0.1.40", default-features = false, features = [
 url = { version = "2.5.2", features = ["serde"] }
 urlencoding = "2.1.3"
 utoipa = { version = "4.2.3", features = ["chrono", "uuid"] }
-uuid = { version = "1.10.0", features = ["serde", "v4"] }
+uuid = { version = "1.11.0", features = ["serde", "v4"] }
 
 [dependencies]
 anyhow = "1.0"
