@@ -152,7 +152,16 @@ fn impacted_tracks(entry: &Sign, exits: &Vec<Sign>, graph: &Graph, _max_distance
     let mut next_tracks: Vec<&TrackEndpoint> = vec![&first_track_endpoint];
 
     // Directional track ranges reached from `entry` during the graph exploration.
-    let first_track_range: DirectionalTrackRange = todo!();
+    let (begin_offset, end_offset) = match entry.direction {
+        Direction::StartToStop => (0, entry.position),
+        Direction::StopToStart => (entry.position, 0), // CHECK THE DIRECTION IS CORRECT
+    };
+    let first_track_range: DirectionalTrackRange = DirectionalTrackRange {
+        track: entry.track.clone(),
+        begin: begin_offset,
+        end: end_offset,
+        direction: entry.direction,
+    };
     let mut related_tracks_ranges: Vec<DirectionalTrackRange> = Vec::new();
     related_tracks_ranges.push(first_track_range);
 
