@@ -30,6 +30,8 @@ pub struct SignalUpdatesRequest<'a> {
 pub struct SignalUpdate {
     /// The id of the updated signal
     pub signal_id: String,
+    /// The name of the signaling system of the signal
+    signaling_system: String,
     /// The aspects start being displayed at this time (number of mseconds since `departure_time`)
     pub time_start: u64,
     /// The aspects stop being displayed at this time (number of seconds since `departure_time`)

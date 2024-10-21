@@ -7845,6 +7845,7 @@ components:
               type: object
               required:
               - signal_id
+              - signaling_system
               - time_start
               - time_end
               - position_start
@@ -7878,6 +7879,9 @@ components:
                 signal_id:
                   type: string
                   description: The id of the updated signal
+                signaling_system:
+                  type: string
+                  description: The name of the signaling system of the signal
                 time_end:
                   type: integer
                   format: int64

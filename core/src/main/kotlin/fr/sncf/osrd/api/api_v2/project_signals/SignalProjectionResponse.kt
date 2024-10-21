@@ -15,6 +15,7 @@ class SignalProjectionResponse(
 
 class SignalUpdate(
     @Json(name = "signal_id") val signalID: String,
+    @Json(name = "signaling_system") val signalingSystem: String,
     @Json(name = "time_start") val timeStart: TimeDelta,
     @Json(name = "time_end") val timeEnd: TimeDelta,
     @Json(name = "position_start") val positionStart: Offset<TravelledPath>,
