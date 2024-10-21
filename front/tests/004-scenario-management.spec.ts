@@ -1,11 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import type {
-  ElectricalProfileSet,
-  ProjectWithStudies,
-  Scenario,
-  StudyWithScenarios,
-} from 'common/api/osrdEditoastApi';
+import type { ElectricalProfileSet, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
 import ScenarioPage from './pages/scenario-page-model';
@@ -15,8 +10,9 @@ import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
 test.describe('Validate the Scenario creation workflow', () => {
-  let project: ProjectWithStudies;
-  let study: StudyWithScenarios;
+  console.info('Starting 004 test ...');
+  let project: Project;
+  let study: Study;
   let scenario: Scenario;
   let electricalProfileSet: ElectricalProfileSet;
 

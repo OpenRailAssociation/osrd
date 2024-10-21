@@ -1,21 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type {
-  InfraWithState,
-  ProjectWithStudies,
-  Scenario,
-  StudyWithScenarios,
-  TimetableResult,
-} from 'common/api/osrdEditoastApi';
+import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
 
 import { getInfra, getProject, getStudy, postApiRequest } from './api-setup';
 import scenarioData from '../assets/operationStudies/scenario.json';
 
 // Define the SetupResult interface to structure the returned setup data.
 interface SetupResult {
-  smallInfra: InfraWithState;
-  project: ProjectWithStudies;
-  study: StudyWithScenarios;
+  smallInfra: Infra;
+  project: Project;
+  study: Study;
   scenario: Scenario;
   timetableResult: TimetableResult;
 }
@@ -33,27 +27,27 @@ export default async function createScenario(
   electricalProfileId: number | null = null
 ): Promise<SetupResult> {
   // Fetch or create infrastructure
-  let smallInfra: InfraWithState;
+  let smallInfra: Infra;
   if (!infraId) {
     smallInfra = await getInfra();
   } else {
-    smallInfra = { id: infraId } as InfraWithState;
+    smallInfra = { id: infraId } as Infra;
   }
 
   // Fetch or create project
-  let project: ProjectWithStudies;
+  let project: Project;
   if (!projectId) {
     project = await getProject();
   } else {
-    project = { id: projectId } as ProjectWithStudies;
+    project = { id: projectId } as Project;
   }
 
   // Fetch or create study
-  let study: StudyWithScenarios;
+  let study: Study;
   if (!studyId) {
     study = await getStudy(project.id);
   } else {
-    study = { id: studyId } as StudyWithScenarios;
+    study = { id: studyId } as Study;
   }
 
   // Create a new timetable result

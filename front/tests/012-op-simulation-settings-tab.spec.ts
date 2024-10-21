@@ -1,11 +1,6 @@
 import { test } from '@playwright/test';
 
-import type {
-  ElectricalProfileSet,
-  ProjectWithStudies,
-  Scenario,
-  StudyWithScenarios,
-} from 'common/api/osrdEditoastApi';
+import type { ElectricalProfileSet, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import HomePage from './pages/home-page-model';
 import OperationalStudiesInputTablePage from './pages/op-input-table-page-model';
@@ -25,6 +20,7 @@ import enTranslations from '../public/locales/en/timesStops.json';
 import frTranslations from '../public/locales/fr/timesStops.json';
 
 test.describe('Simulation Settings Tab Verification', () => {
+  console.info('Starting 012 test ...');
   // Set viewport to avoid scrolling issues and ensure elements are attached to the DOM
   test.use({ viewport: { width: 1920, height: 1080 } });
 
@@ -58,8 +54,8 @@ test.describe('Simulation Settings Tab Verification', () => {
   );
 
   let electricalProfileSet: ElectricalProfileSet;
-  let project: ProjectWithStudies;
-  let study: StudyWithScenarios;
+  let project: Project;
+  let study: Study;
   let scenario: Scenario;
   let OSRDLanguage: string;
   type TranslationKeys = keyof typeof enTranslations;

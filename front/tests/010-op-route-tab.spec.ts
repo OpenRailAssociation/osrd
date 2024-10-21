@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 
-import type { ProjectWithStudies, Scenario, StudyWithScenarios } from 'common/api/osrdEditoastApi';
+import type { Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import HomePage from './pages/home-page-model';
 import RoutePage from './pages/op-route-page-model';
@@ -10,8 +10,9 @@ import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
 test.describe('Route Tab Verification', () => {
-  let project: ProjectWithStudies;
-  let study: StudyWithScenarios;
+  console.info('Starting 010 test ...');
+  let project: Project;
+  let study: Study;
   let scenario: Scenario;
   let OSRDLanguage: string;
   const electricRollingStockName = 'electric_rolling_stock_test_e2e';

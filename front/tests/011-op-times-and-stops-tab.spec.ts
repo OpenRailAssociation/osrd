@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import type { ProjectWithStudies, Scenario, StudyWithScenarios } from 'common/api/osrdEditoastApi';
+import type { Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import HomePage from './pages/home-page-model';
 import OperationalStudiesInputTablePage from './pages/op-input-table-page-model';
@@ -17,11 +17,12 @@ import enTranslations from '../public/locales/en/timesStops.json';
 import frTranslations from '../public/locales/fr/timesStops.json';
 
 test.describe('Times and Stops Tab Verification', () => {
+  console.info('Starting 011 test ...');
   // Set viewport to ensure correct element visibility and interaction
   test.use({ viewport: { width: 1920, height: 1080 } });
 
-  let project: ProjectWithStudies;
-  let study: StudyWithScenarios;
+  let project: Project;
+  let study: Study;
   let scenario: Scenario;
   let OSRDLanguage: string;
 

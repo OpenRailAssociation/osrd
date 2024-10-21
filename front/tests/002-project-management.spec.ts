@@ -10,6 +10,7 @@ import { createProject } from './utils/setup-utils';
 import { deleteProject } from './utils/teardown-utils';
 
 test.describe('Validate the Operational Study Project workflow', () => {
+  console.info('Starting 002 test ...');
   let project: Project;
 
   /** *************** Test 1 **************** */

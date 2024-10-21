@@ -14,6 +14,11 @@ import type {
   StudyWithScenarios,
   ScenarioWithDetails,
   LightRollingStockWithLiveries,
+  Project,
+  Infra,
+  Study,
+  Scenario,
+  LightRollingStock,
 } from 'common/api/osrdEditoastApi';
 
 import electricalProfileSet from '../assets/operationStudies/simulationSettings/electricalProfiles/electricalProfile.json';
@@ -103,12 +108,10 @@ export const deleteApiRequest = async (
  * @param {string} infraName - The name of the infrastructure to retrieve.
  * @returns {Promise<Infra>} - The matching infrastructure data.
  */
-export const getInfra = async (
-  infraName: string = 'small_infra_test_e2e'
-): Promise<InfraWithState> => {
+export const getInfra = async (infraName: string = 'small_infra_test_e2e'): Promise<Infra> => {
   const infras: GetInfraApiResponse = await getApiRequest('/api/infra/');
   const infra = infras.results.find((i: InfraWithState) => i.name === infraName);
-  return infra as InfraWithState;
+  return infra as Infra;
 };
 
 /**
@@ -117,12 +120,10 @@ export const getInfra = async (
  * @param {string} projectName - The name of the project to retrieve.
  * @returns {Promise<Project>} - The matching project data.
  */
-export const getProject = async (
-  projectName: string = 'project_test_e2e'
-): Promise<ProjectWithStudies> => {
+export const getProject = async (projectName: string = 'project_test_e2e'): Promise<Project> => {
   const projects: GetProjectsApiResponse = await getApiRequest('/api/projects/');
   const project = projects.results.find((p: ProjectWithStudies) => p.name === projectName);
-  return project as ProjectWithStudies;
+  return project as Project;
 };
 
 /**
@@ -135,12 +136,12 @@ export const getProject = async (
 export const getStudy = async (
   projectId: number,
   studyName: string = 'study_test_e2e'
-): Promise<StudyWithScenarios> => {
+): Promise<Study> => {
   const studies: GetProjectsByProjectIdStudiesApiResponse = await getApiRequest(
     `/api/projects/${projectId}/studies/`
   );
   const study = studies.results.find((s: StudyWithScenarios) => s.name === studyName);
-  return study as StudyWithScenarios;
+  return study as Study;
 };
 
 /**
@@ -155,11 +156,11 @@ export const getScenario = async (
   projectId: number,
   studyId: number,
   scenarioName: string
-): Promise<ScenarioWithDetails> => {
+): Promise<Scenario> => {
   const scenarios: GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
     await getApiRequest(`/api/projects/${projectId}/studies/${studyId}/scenarios`);
   const scenario = scenarios.results.find((s: ScenarioWithDetails) => s.name === scenarioName);
-  return scenario as ScenarioWithDetails;
+  return scenario as Scenario;
 };
 
 /**
@@ -168,9 +169,7 @@ export const getScenario = async (
  * @param {string} rollingStockName - The name of the rolling stock to retrieve.
  * @returns {Promise<RollingStock>} - The matching rolling stock data.
  */
-export const getRollingStock = async (
-  rollingStockName: string
-): Promise<LightRollingStockWithLiveries> => {
+export const getRollingStock = async (rollingStockName: string): Promise<LightRollingStock> => {
   const rollingStocks: GetLightRollingStockApiResponse = await getApiRequest(
     '/api/light_rolling_stock/',
     { page_size: 500 }
@@ -178,7 +177,7 @@ export const getRollingStock = async (
   const rollingStock = rollingStocks.results.find(
     (r: LightRollingStockWithLiveries) => r.name === rollingStockName
   );
-  return rollingStock as LightRollingStockWithLiveries;
+  return rollingStock as LightRollingStock;
 };
 
 /**

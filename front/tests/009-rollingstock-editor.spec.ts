@@ -11,6 +11,7 @@ import {
 import { deleteRollingStocks } from './utils/teardown-utils';
 
 test.describe('Rollingstock editor page tests', () => {
+  console.info('Starting 009 test ...');
   let uniqueRollingStockName: string;
   let uniqueUpdatedRollingStockName: string;
   let uniqueDeletedRollingStockName: string;

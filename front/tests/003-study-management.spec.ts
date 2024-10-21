@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import type { ProjectWithStudies, Study } from 'common/api/osrdEditoastApi';
+import type { Project, Study } from 'common/api/osrdEditoastApi';
 
 import studyData from './assets/operationStudies/study.json';
 import HomePage from './pages/home-page-model';
@@ -14,7 +14,8 @@ import enTranslations from '../public/locales/en/operationalStudies/study.json';
 import frTranslations from '../public/locales/fr/operationalStudies/study.json';
 
 test.describe('Validate the Study creation workflow', () => {
-  let project: ProjectWithStudies;
+  console.info('Starting 003 test ...');
+  let project: Project;
   let study: Study;
   let OSRDLanguage: string;
   test.beforeAll(' Retrieve a project', async () => {

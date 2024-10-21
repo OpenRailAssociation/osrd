@@ -1,11 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import type {
-  LightRollingStock,
-  ProjectWithStudies,
-  Scenario,
-  StudyWithScenarios,
-} from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import RoutePage from './pages/op-route-page-model';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
@@ -15,8 +10,9 @@ import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
 test.describe('Verify simulation configuration in operational studies', () => {
-  let project: ProjectWithStudies;
-  let study: StudyWithScenarios;
+  console.info('Starting 005 test ...');
+  let project: Project;
+  let study: Study;
   let scenario: Scenario;
   let rollingStock: LightRollingStock;
 

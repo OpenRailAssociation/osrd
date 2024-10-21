@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 
-import type { Scenario, ProjectWithStudies, StudyWithScenarios } from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study } from 'common/api/osrdEditoastApi';
 
 import HomePage from './pages/home-page-model';
 import OperationalStudiesTimetablePage from './pages/op-timetable-page-model';
@@ -11,8 +11,9 @@ import { deleteScenario } from './utils/teardown-utils';
 import { postSimulation, sendTrainSchedules } from './utils/trainSchedule';
 
 test.describe('Verify train schedule elements and filters', () => {
-  let project: ProjectWithStudies;
-  let study: StudyWithScenarios;
+  console.info('Starting 008 test ...');
+  let project: Project;
+  let study: Study;
   let scenario: Scenario;
   let OSRDLanguage: string;
   const trainSchedulesJson = readJsonFile('./tests/assets/trainSchedule/train_schedules.json');

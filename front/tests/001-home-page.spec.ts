@@ -5,6 +5,7 @@ import enTranslations from '../public/locales/en/home/home.json';
 import frTranslations from '../public/locales/fr/home/home.json';
 
 test.describe('Home page OSRD', () => {
+  console.info('Starting 001 test ...');
   let homePage: HomePage;
   let OSRDLanguage: string;
   test.beforeEach('Navigate to the home page', async ({ page }) => {

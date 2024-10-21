@@ -1,11 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import type {
-  LightRollingStock,
-  ProjectWithStudies,
-  Scenario,
-  StudyWithScenarios,
-} from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import OperationalStudiesPage from './pages/operational-studies-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
@@ -14,8 +9,9 @@ import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
 test.describe('Rolling stock Tab Verification', () => {
-  let project: ProjectWithStudies;
-  let study: StudyWithScenarios;
+  console.info('Starting 007 test ...');
+  let project: Project;
+  let study: Study;
   let scenario: Scenario;
   let rollingStock: LightRollingStock;
 
