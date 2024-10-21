@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -31,7 +31,7 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry up to 3 times on CI, and 1 time otherwise */
-  retries: process.env.CI ? 3 : 1,
+  retries: process.env.CI ? 2 : 1,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
@@ -57,14 +57,20 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
-        ...devices['Desktop Chrome'],
+        browserName: 'chromium',
+        launchOptions: {
+          slowMo: 50, // Slows down chromium interactions by 50 milliseconds
+        },
       },
       dependencies: ['setup'],
     },
     {
       name: 'firefox',
       use: {
-        ...devices['Desktop Firefox'],
+        browserName: 'firefox',
+        launchOptions: {
+          slowMo: 50, // Slows down firefox interactions by 50 milliseconds
+        },
       },
       dependencies: ['setup'],
     },

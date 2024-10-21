@@ -1,42 +1,22 @@
-import { test as setup } from '@playwright/test';
+import { test as teardown } from '@playwright/test';
 
-import type { Infra, Project, RollingStock } from 'common/api/osrdEditoastApi';
+import { deleteInfra, deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
-import { deleteApiRequest, getApiRequest } from './utils/api-setup';
-
-setup('teardown', async () => {
-  // Fetch infra and projects in parallel
-  const [infras, projects] = await Promise.all([
-    getApiRequest('/api/infra/'),
-    getApiRequest('/api/projects/'),
-  ]);
-
-  const infra = infras.results.find((i: Infra) => i.name === 'small_infra_test_e2e');
-  const project = projects.results.find((p: Project) => p.name === 'project_test_e2e');
-
-  // Fetch rolling stocks
-  const rollingStocks = await getApiRequest('/api/light_rolling_stock/', { page_size: 500 });
-
-  // Find specific rolling stocks
-  const rollingStockNames = [
-    'electric_rolling_stock_test_e2e',
-    'dual-mode_rolling_stock_test_e2e',
-    'slow_rolling_stock_test_e2e',
-    'fast_rolling_stock_test_e2e',
-    'improbable_rolling_stock_test_e2e',
-  ];
-
-  const rollingStockIds: number[] = rollingStocks.results
-    .filter((r: RollingStock) => rollingStockNames.includes(r.name))
-    .map((r: RollingStock) => r.id);
-
-  // Collect all delete requests
-  const deleteRequests = [
-    deleteApiRequest(`/api/infra/${infra.id}/`),
-    deleteApiRequest(`/api/projects/${project.id}/`),
-    ...rollingStockIds.map((id: number) => deleteApiRequest(`/api/rolling_stock/${id}/`)),
-  ];
-
-  // Execute all delete requests in parallel
-  await Promise.all(deleteRequests);
+teardown('teardown', async () => {
+  try {
+    await Promise.all([
+      deleteInfra('small_infra_test_e2e'),
+      deleteProject('project_test_e2e'),
+      deleteRollingStocks([
+        'electric_rolling_stock_test_e2e',
+        'dual-mode_rolling_stock_test_e2e',
+        'slow_rolling_stock_test_e2e',
+        'fast_rolling_stock_test_e2e',
+        'improbable_rolling_stock_test_e2e',
+      ]),
+    ]);
+    console.info('Test data teardown completed successfully.');
+  } catch (error) {
+    console.error('Error during test data teardown:', error);
+  }
 });

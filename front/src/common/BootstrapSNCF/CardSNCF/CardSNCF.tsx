@@ -20,7 +20,9 @@ const Card = ({ link, img, title, disabledLink = false, openInNewTab = false }: 
   >
     <img className="card-img-top" alt={title} src={img} />
     <div className="card-body text-center">
-      <h5 className="card-title mb-0 text-base font-weight-normal">{title}</h5>
+      <h5 data-testid="page-title" className="card-title mb-0 text-base font-weight-normal">
+        {title}
+      </h5>
     </div>
   </Link>
 );
