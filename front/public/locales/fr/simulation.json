@@ -84,6 +84,9 @@
   },
   "trainList": "Liste des trains",
   "waiting": "Chargement en cours…",
+  "waypointMenu": {
+    "hide": "Masquer ce PR"
+  },
   "waypointsPanel": {
     "name": "nom",
     "secondaryCode": "CH",

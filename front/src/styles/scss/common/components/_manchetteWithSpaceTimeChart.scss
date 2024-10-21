@@ -37,6 +37,17 @@
   .manchette {
     overflow-y: auto;
     overflow-x: hidden;
+
+    // TODO : remove this two styles when https://github.com/OpenRailAssociation/osrd-ui/issues/654 is fixed
+    .op {
+      height: 2rem;
+      line-height: 1.5rem;
+      padding-block: 0.1875rem 0.3125rem;
+
+      &::after {
+        bottom: 0.9844rem;
+      }
+    }
   }
 
   .space-time-chart-container {
