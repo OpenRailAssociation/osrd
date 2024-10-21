@@ -100,13 +100,15 @@ export const formatSuggestedViasToRowVias = (
       ? { time: departureTime }
       : undefined;
     const { receptionSignal: _opReceptionSignal, ...filteredOp } = op;
+    const { shortSlipDistance, onStopSignal } = receptionSignalToSignalBooleans(receptionSignal);
     return {
       ...filteredOp,
       isMarginValid,
       arrival: formattedArrival,
       departure: formattedDeparture,
-      onStopSignal: receptionSignalToOnStopSignal(receptionSignal),
+      onStopSignal,
       name: name || t('waypoint', { id: filteredOp.opId }),
+      shortSlipDistance,
       stopFor,
       theoreticalMargin,
       isWaypoint: op.isWaypoint || pathStep !== undefined,
@@ -317,26 +319,28 @@ export function calculateStepTimeAndDays(
 
 /** Convert onStopSignal boolean to receptionSignal enum */
 export function onStopSignalToReceptionSignal(
-  onStopSignal: boolean | undefined
+  onStopSignal?: boolean,
+  shortSlipDistance?: boolean
 ): ReceptionSignal | undefined {
   if (isNil(onStopSignal)) {
     return undefined;
   }
   if (onStopSignal === true) {
-    return 'STOP';
+    return shortSlipDistance ? 'SHORT_SLIP_STOP' : 'STOP';
   }
   return 'OPEN';
 }
 
 /** Convert receptionSignal enum to onStopSignal boolean */
-export function receptionSignalToOnStopSignal(
-  receptionSignal: ReceptionSignal | undefined
-): boolean | undefined {
+export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSignal) {
   if (isNil(receptionSignal)) {
-    return undefined;
+    return { shortSlipDistance: undefined, onStopSignal: undefined };
   }
-  if (receptionSignal === 'STOP' || receptionSignal === 'SHORT_SLIP_STOP') {
-    return true;
+  if (receptionSignal === 'STOP') {
+    return { shortSlipDistance: false, onStopSignal: true };
   }
-  return false;
+  if (receptionSignal === 'SHORT_SLIP_STOP') {
+    return { shortSlipDistance: true, onStopSignal: true };
+  }
+  return { shortSlipDistance: false, onStopSignal: false };
 }
