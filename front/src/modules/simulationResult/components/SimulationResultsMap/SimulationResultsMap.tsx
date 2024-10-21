@@ -197,7 +197,7 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
         {...viewport}
         cursor="pointer"
         ref={mapRef}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', borderRadius: '10px' }}
         mapStyle={mapBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
         attributionControl={false} // Defined below

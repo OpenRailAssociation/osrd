@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -22,7 +22,6 @@ import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormatte
 import { updateViewport, type Viewport } from 'reducers/map';
 import { useAppDispatch } from 'store';
 
-const MAP_MIN_HEIGHT = 450;
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
@@ -53,13 +52,11 @@ const SimulationResults = ({
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
 
-  const timeTableRef = useRef<HTMLDivElement | null>(null);
-  const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
+  const [extViewport, setExtViewport] = useState<Viewport>();
   const [showWarpedMap, setShowWarpedMap] = useState(false);
 
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
-  const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
 
   const {
     operationalPoints,
@@ -191,6 +188,23 @@ const SimulationResults = ({
         </div>
       )}
 
+      {/* SIMULATION : MAP */}
+      <div className="simulation-map">
+        <SimulationResultsMap
+          setExtViewport={setExtViewport}
+          geometry={pathProperties?.geometry}
+          trainSimulation={
+            selectedTrainSchedule && trainSimulation
+              ? {
+                  ...trainSimulation,
+                  trainId: selectedTrainSchedule.id,
+                  startTime: selectedTrainSchedule.start_time,
+                }
+              : undefined
+          }
+        />
+      </div>
+
       {/* TIME STOPS TABLE */}
       {selectedTrainSchedule &&
         trainSimulation.status === 'success' &&
@@ -208,27 +222,6 @@ const SimulationResults = ({
             />
           </div>
         )}
-
-      {/* SIMULATION : MAP */}
-      <div ref={timeTableRef}>
-        <div className="osrd-simulation-container mb-2">
-          <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
-            <SimulationResultsMap
-              setExtViewport={setExtViewport}
-              geometry={pathProperties?.geometry}
-              trainSimulation={
-                selectedTrainSchedule && trainSimulation
-                  ? {
-                      ...trainSimulation,
-                      trainId: selectedTrainSchedule.id,
-                      startTime: selectedTrainSchedule.start_time,
-                    }
-                  : undefined
-              }
-            />
-          </div>
-        </div>
-      </div>
 
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
       {selectedTrainSchedule &&

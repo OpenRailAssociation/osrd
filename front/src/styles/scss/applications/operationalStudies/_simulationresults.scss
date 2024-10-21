@@ -43,8 +43,19 @@
     border-radius: 4px;
 
     &.speedspacechart-container {
-      background-color: rgb(247, 246, 238);
+      margin-bottom: 41px;
     }
+  }
+
+  .simulation-map {
+    position: relative;
+    height: 720px;
+    margin: 0 30px 56px 38px;
+    border-radius: 10px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 1) inset,
+      0 4px 7px -3px rgba(255, 171, 88, 0.17),
+      0 2px 4px rgba(0, 0, 0, 0.22);
   }
 
   /* MAP */
