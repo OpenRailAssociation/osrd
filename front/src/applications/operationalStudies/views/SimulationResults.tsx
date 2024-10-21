@@ -128,7 +128,7 @@ const SimulationResults = ({
       )}
 
       {/* SIMULATION : SPACE TIME CHART */}
-      <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
+      <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2">
         {projectionData && projectionData.projectedTrains.length > 0 && pathProperties && (
           <>
             <button
@@ -237,7 +237,7 @@ const SimulationResults = ({
         selectedTrainRollingStock &&
         operationalPoints &&
         infraId && (
-          <div className="osrd-simulation-container mb-2">
+          <div className="osrd-simulation-container mb-2 bg-white">
             <DriverTrainSchedule
               train={selectedTrainSchedule}
               simulatedTrain={trainSimulation}
