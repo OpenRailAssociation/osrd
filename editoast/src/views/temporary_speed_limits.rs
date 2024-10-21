@@ -7,11 +7,14 @@ use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::infra::{DirectionalTrackRange, Sign};
+use editoast_schemas::primitives::Identifier;
 use serde::de::Error as SerdeError;
 use serde::{Deserialize, Serialize};
+use std::collections::{HashSet, HashMap};
 use std::result::Result as StdResult;
 use thiserror::Error;
 use utoipa::ToSchema;
+use std::iter::Extend;
 
 use crate::error::InternalError;
 use crate::error::Result;
@@ -96,11 +99,18 @@ impl TemporarySpeedLimitImport {
 /// signals. The input signals vector is expected to contain valid temporary speed limit signals,
 /// i.e. signals which sign type is either `EXECUTION` or `RESUME`.
 fn track_ranges_from_signals(signals: &Vec<Sign>, graph: &Graph) -> Vec<DirectionalTrackRange> {
+    // TODO
+    // - Merge adjacent directional track ranges together into a bigger one.
+    // - Use sets instead of maps for storing directional track ranges -> Implement Hash for
+    // DirectionalTrackRange ?
     let (execution_signals, resume_signals): (Vec<_>, Vec<_>) = signals
         .into_iter()
         .filter(|s| s.sign_type == "E".into() || s.sign_type == "R".into())
         .partition(|s| s.sign_type == "E".into());
-    return vec![]; // TODO
+    let mut speed_limit_track_ranges: Vec<DirectionalTrackRange> = Vec::new();
+    execution_signals.into_iter()
+        .for_each(|start_signal| speed_limit_track_ranges.extend(impacted_tracks(start_signal, &resume_signals, graph, f64::MAX)));
+    speed_limit_track_ranges.into_iter().collect::<Vec<_>>()
 }
 
 /// Do a graph traversal from `entry` up to any of the `exits` and return the visited track ranges
@@ -121,8 +131,38 @@ fn track_ranges_from_signals(signals: &Vec<Sign>, graph: &Graph) -> Vec<Directio
 /// current import request.)
 /// - `max_distance`: The maximum distance (in meters ?) after which we consider the exit signal is
 /// missing and we stop adding new track ranges from the current path.
-fn impacted_tracks(entry: &Sign, exits: &Vec<Sign>, graph: &Graph, max_distance: f64) -> Vec<DirectionalTrackRange> { // TODO add stop case if no exit is found for too long
-    todo!()
+fn impacted_tracks(entry: &Sign, exits: &Vec<&Sign>, graph: &Graph, _max_distance: f64) -> Vec<DirectionalTrackRange> {
+
+    // TrackEndpoint right after the entry sign (in the correct direction):
+    let first_track_endpoint: &TrackEndpoint = todo!();
+
+    // Identifiers of the track sections that have already been reached and should be ignored:
+    let mut visited_tracks: HashSet<Identifier> = HashSet::new();
+
+    // Neighbors of the explored tracks, i.e. the tracks that should be visited next:
+    let mut next_tracks: Vec<&TrackEndpoint> = vec![first_track_endpoint];
+
+    // Directional track ranges reached from `entry` during the graph exploration.
+    let first_track_range: DirectionalTrackRange = todo!();
+    let mut related_tracks_ranges: Vec<DirectionalTrackRange> = Vec::new();
+    related_tracks_ranges.push(first_track_range);
+
+    while !next_tracks.is_empty() {
+        let curr_track = next_tracks.pop().unwrap();
+        if !visited_tracks.insert(curr_track.track) {
+            // Track already visited; skipping it.
+            continue
+        }
+        // TODO check if there is a resume signal on that track range
+        // - If so, add the current track range with the resume sign offset to the returned tracks.
+        // - Otherwise, add the track neighbours to the next tracks to be visited and add the full
+        // track to the returned tracks.
+        let neighbours = graph.get_all_neighbours(curr_track);
+        next_tracks.extend(neighbours);
+        // TODO Add associated directional track range to the list of impacted track ranges
+
+    }
+    related_tracks_ranges
 }
 
 impl<'de> Deserialize<'de> for TemporarySpeedLimitItemForm {
