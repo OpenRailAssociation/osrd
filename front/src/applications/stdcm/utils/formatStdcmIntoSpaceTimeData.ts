@@ -1,4 +1,3 @@
-import { formatDatetimeForSpaceTimeChart } from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
 import type { ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 
 import { STDCM_TRAIN_ID } from '../consts';
@@ -19,7 +18,7 @@ const formatStdcmTrainIntoSpaceTimeData = (
     ],
     signal_updates: [],
     rolling_stock_length: rollingStock.length,
-    departure_time: formatDatetimeForSpaceTimeChart(departure_time),
+    departure_time,
   };
 };
 
