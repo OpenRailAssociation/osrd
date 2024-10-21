@@ -1,13 +1,15 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { Manchette } from '@osrd-project/ui-manchette';
 import { useManchettesWithSpaceTimeChart } from '@osrd-project/ui-manchette-with-spacetimechart';
 import { PathLayer, SpaceTimeChart } from '@osrd-project/ui-spacetimechart';
 
 import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import WaypointMenu from 'common/OSRDMenu';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
 
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
+import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
 import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 
 type ManchetteWithSpaceTimeChartProps = {
@@ -36,6 +38,25 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     selectedTrainScheduleId
   );
 
+  const waypointMenuData = useWaypointMenu(
+    waypointsPanelData?.filteredWaypoints,
+    waypointsPanelData?.setFilteredWaypoints
+  );
+
+  const manchettePropsWithWaypointMenu = useMemo(
+    () => ({
+      ...manchetteProps,
+      operationalPoints: manchetteProps.operationalPoints.map((op) => ({
+        ...op,
+        onClick: (id: string, ref: HTMLDivElement | null) => {
+          waypointMenuData.handleWaypointClick(id, ref);
+        },
+      })),
+      activeOperationalPointId: waypointMenuData.activeOperationalPointId,
+    }),
+    [manchetteProps, waypointMenuData]
+  );
+
   return (
     <div className="manchette-space-time-chart-wrapper">
       <div className="header">
@@ -56,7 +77,19 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         style={{ height: `${heightOfManchetteWithSpaceTimeChart}px` }}
         onScroll={handleScroll}
       >
-        <Manchette {...manchetteProps} />
+        <Manchette {...manchettePropsWithWaypointMenu}>
+          {waypointMenuData.menuPosition && (
+            <WaypointMenu
+              menuRef={waypointMenuData.menuRef}
+              items={waypointMenuData.menuItems}
+              style={{
+                width: '305px',
+                top: 0,
+                // left: waypointMenuData.menuPosition.left,
+              }}
+            />
+          )}
+        </Manchette>
         <div
           className="space-time-chart-container"
           style={{
