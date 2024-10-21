@@ -33,7 +33,7 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
   const [stopTypes, setStopTypes] = useState<Record<string, StdcmStopTypes>>(
     compact(pathSteps).reduce(
       (acc, cur) => {
-        acc[cur.id] = StdcmStopTypes.PASSAGE_TIME;
+        acc[cur.id] = cur.stopType || StdcmStopTypes.PASSAGE_TIME;
         return acc;
       },
       {} as Record<string, StdcmStopTypes>
@@ -56,23 +56,18 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
       updateViaStopTime({
         via: pathStepToUpdate,
         duration: formatDurationAsISO8601(Number(stopTime) * 60),
-        stopType: stopTypes[pathStepId] ?? StdcmStopTypes.PASSAGE_TIME,
+        stopType: stopTypes[pathStepId],
       })
     );
   };
 
   const updateStopType = (newStopType: StdcmStopTypes, index: number, pathStepId: string) => {
-    setStopTypes((prevStopTypes) => {
-      const updatedStopTypes = {
-        ...prevStopTypes,
-        [pathStepId]: newStopType,
-      };
-
-      const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
-      updatePathStepStopTime(defaultStopTime, index, pathStepId);
-
-      return updatedStopTypes;
-    });
+    setStopTypes((prevStopTypes) => ({
+      ...prevStopTypes,
+      [pathStepId]: newStopType,
+    }));
+    const defaultStopTime = newStopType === StdcmStopTypes.DRIVER_SWITCH ? '3' : '';
+    updatePathStepStopTime(defaultStopTime, index, pathStepId);
   };
 
   const deleteViaOnClick = (index: number, pathStepId: string) => {
@@ -150,7 +145,7 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
                     />
                     <StdcmInputVia
                       stopType={stopTypes[pathStep.id]}
-                      pathStep={pathStep}
+                      stopDuration={pathStep.stopFor}
                       updatePathStepStopTime={(e) =>
                         updatePathStepStopTime(e, pathStepIndex, pathStep.id)
                       }
