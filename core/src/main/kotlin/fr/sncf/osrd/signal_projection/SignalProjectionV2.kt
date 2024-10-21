@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.api_v2.ZoneUpdate
 import fr.sncf.osrd.api.api_v2.project_signals.SignalUpdate
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
@@ -95,6 +96,7 @@ fun projectSignals(
             pathSignals,
             signalAspectChangeEvents,
             loadedSignalInfra,
+            sigSystemManager,
             rawInfra,
             signalSightings,
             Length(chunkPath.endOffset - chunkPath.beginOffset),
@@ -182,6 +184,7 @@ private fun signalUpdates(
     signalsOnPath: List<PathSignal>,
     signalAspectChangeEvents: Map<PathSignal, MutableList<SignalAspectChangeEventV2>>,
     loadedSignalInfra: LoadedSignalInfra,
+    sigSystemManager: SigSystemManager,
     rawInfra: RawInfra,
     signalSightings: Collection<SignalSighting>,
     travelledPathLength: Length<TravelledPath>,
@@ -226,6 +229,8 @@ private fun signalUpdates(
 
     for ((pathSignal, events) in signalAspectChangeEvents) {
         val signal = pathSignal.signal
+        val signalingSystem = loadedSignalInfra.getSignalingSystem(signal)
+        val signalingSystemName = sigSystemManager.getName(signalingSystem)
         val physicalSignalId = loadedSignalInfra.getPhysicalSignal(signal)
         val physicalSignalName = rawInfra.getPhysicalSignalName(physicalSignalId)
         val positionStart = pathSignal.pathOffset
@@ -247,6 +252,7 @@ private fun signalUpdates(
                 signalUpdates.add(
                     SignalUpdate(
                         physicalSignalName!!,
+                        signalingSystemName,
                         timeStart,
                         timeEnd,
                         positionStart,
@@ -265,6 +271,7 @@ private fun signalUpdates(
             signalUpdates.add(
                 SignalUpdate(
                     physicalSignalName!!,
+                    signalingSystemName,
                     event.time,
                     nextEvent.time,
                     positionStart,
@@ -283,6 +290,7 @@ private fun signalUpdates(
             signalUpdates.add(
                 SignalUpdate(
                     physicalSignalName!!,
+                    signalingSystemName,
                     timeStart,
                     simulationEndTime,
                     positionStart,
