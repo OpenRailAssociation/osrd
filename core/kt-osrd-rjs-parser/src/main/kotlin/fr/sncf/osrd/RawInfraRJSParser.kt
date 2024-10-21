@@ -341,8 +341,7 @@ private fun parseRjsTrackSection(
         for (detector in trackSectionDetectors) {
             val detectorOffset = detector.key
             if (detectorOffset > trackSectionLength || detectorOffset < Offset.zero()) {
-                throw OSRDError.newInfraLoadingError(
-                    ErrorType.InfraHardLoadingError,
+                throw OSRDError.newInfraError(
                     "Detector out of range at offset $detectorOffset on trackSection ${rjsTrack.id}"
                 )
             }
@@ -562,8 +561,7 @@ fun parseTrackNode(
     }
     val switchType =
         switchTypeMap[rjsNode.switchType]
-            ?: throw OSRDError.newInfraLoadingError(
-                ErrorType.InfraHardLoadingError,
+            ?: throw OSRDError.newInfraError(
                 "Node ${rjsNode.id} references unknown switch-type ${rjsNode.switchType}"
             )
     if (rjsNode.ports.size != switchType.ports.size || portMap.keys != switchType.ports.toSet()) {
@@ -592,16 +590,14 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
     // parse the entry / exit detectors
     val routeEntryDetector =
         builder.getDetectorByName(rjsRoute.entryPoint.id.id)
-            ?: throw OSRDError.newInfraLoadingError(
-                ErrorType.InfraHardLoadingError,
+            ?: throw OSRDError.newInfraError(
                 "Route $routeName references unknown entry point ${rjsRoute.entryPoint.id.id}"
             )
     val routeEntryDirection = rjsRoute.entryPointDirection.toDirection()
     val routeEntry: DirDetectorId = DirStaticIdx(routeEntryDetector, routeEntryDirection)
     val routeExit: DetectorId =
         builder.getDetectorByName(rjsRoute.exitPoint.id.id)
-            ?: throw OSRDError.newInfraLoadingError(
-                ErrorType.InfraHardLoadingError,
+            ?: throw OSRDError.newInfraError(
                 "Route $routeName references unknown exit point ${rjsRoute.exitPoint.id.id}"
             )
 
@@ -610,8 +606,7 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
     for (rjsDetName in rjsRoute.releaseDetectors) {
         releaseDetectors.add(
             builder.getDetectorByName(rjsDetName)
-                ?: throw OSRDError.newInfraLoadingError(
-                    ErrorType.InfraHardLoadingError,
+                ?: throw OSRDError.newInfraError(
                     "Route $routeName references unknown release detector $rjsDetName"
                 )
         )
@@ -622,14 +617,12 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
     for (rjsRouteNode in rjsRoute.switchesDirections) {
         val node =
             builder.getTrackNodeByName(rjsRouteNode.key)
-                ?: throw OSRDError.newInfraLoadingError(
-                    ErrorType.InfraHardLoadingError,
+                ?: throw OSRDError.newInfraError(
                     "Route $routeName references unknown track node ${rjsRouteNode.key}"
                 )
         val config =
             builder.getTrackNodeConfigByName(node, rjsRouteNode.value)
-                ?: throw OSRDError.newInfraLoadingError(
-                    ErrorType.InfraHardLoadingError,
+                ?: throw OSRDError.newInfraError(
                     "Route $routeName references unknown config ${rjsRouteNode.value} for track node ${rjsRouteNode.key}"
                 )
         routeNodes[node] = config
@@ -640,18 +633,11 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
     } catch (error: BuildRouteError) {
         throw when (error) {
             is ReachedTrackDeadEnd ->
-                OSRDError.newInfraLoadingError(
-                    ErrorType.InfraHardLoadingError,
-                    "Impossible to build route: could not reach exit point"
-                )
+                OSRDError.newInfraError("Impossible to build route: could not reach exit point")
             is ReachedNodeDeadEnd ->
-                OSRDError.newInfraLoadingError(
-                    ErrorType.InfraHardLoadingError,
-                    "Impossible to build route: could not cross node"
-                )
+                OSRDError.newInfraError("Impossible to build route: could not cross node")
             is MissingNodeConfig ->
-                OSRDError.newInfraLoadingError(
-                    ErrorType.InfraHardLoadingError,
+                OSRDError.newInfraError(
                     "Impossible to build route: reached a node not listed on given route"
                 )
         }
@@ -661,8 +647,7 @@ fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
 fun parseSignal(builder: RawInfraBuilder, rjsSignal: RJSSignal) {
     val trackSectionId =
         builder.getTrackSectionByName(rjsSignal.track)
-            ?: throw OSRDError.newInfraLoadingError(
-                ErrorType.InfraHardLoadingError,
+            ?: throw OSRDError.newInfraError(
                 "Signal ${rjsSignal.id} references unknown track section ${rjsSignal.track}"
             )
     val direction = rjsSignal.direction!!.toDirection()
