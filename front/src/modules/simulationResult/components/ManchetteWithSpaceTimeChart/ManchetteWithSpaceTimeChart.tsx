@@ -65,13 +65,25 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         spaceStart: block.position_start,
         spaceEnd: block.position_end,
         aspect_label: block.aspect_label,
-        color: block.aspect_label.includes('VL')
-          ? OCCUPANCY_BLOCKS_COLORS.FREE
-          : block.aspect_label === 'S' || block.aspect_label === 'OCCUPIED'
-            ? OCCUPANCY_BLOCKS_COLORS.SEMAPHORE
-            : block.aspect_label.includes('A')
-              ? OCCUPANCY_BLOCKS_COLORS.WARNING
-              : '',
+        color:
+          block.aspect_label === 'VL' || block.aspect_label === '300VL'
+            ? OCCUPANCY_BLOCKS_COLORS.FREE
+            : block.aspect_label === 'S' ||
+                block.aspect_label === 'OCCUPIED' ||
+                block.aspect_label === 'C' ||
+                block.aspect_label === 'RRR'
+              ? OCCUPANCY_BLOCKS_COLORS.SEMAPHORE
+              : block.aspect_label === '(A)' || block.aspect_label === 'A'
+                ? OCCUPANCY_BLOCKS_COLORS.WARNING
+                : block.aspect_label === '300(VL)' ||
+                    block.aspect_label === '270A' ||
+                    block.aspect_label === '220A' ||
+                    block.aspect_label === '160A' ||
+                    block.aspect_label === '080A' ||
+                    block.aspect_label === '000'
+                  ? OCCUPANCY_BLOCKS_COLORS.GREY
+                  : '',
+
         departure_time: train.departure_time,
       }))
     );

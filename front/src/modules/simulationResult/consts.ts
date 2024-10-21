@@ -44,4 +44,5 @@ export const OCCUPANCY_BLOCKS_COLORS = {
   FREE: '#CAEDDB',
   SEMAPHORE: '#FFD4D8',
   WARNING: '#FFEABF',
+  GREY: '#D3D1CF',
 };
