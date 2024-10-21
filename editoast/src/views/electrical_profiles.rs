@@ -16,8 +16,8 @@ use serde::Deserialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 
+use super::AuthenticationExt;
 use super::AuthorizationError;
-use super::AuthorizerExt;
 use crate::error::Result;
 use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::electrical_profiles::LightElectricalProfileSet;
@@ -59,9 +59,9 @@ pub struct ElectricalProfileSetId {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<LightElectricalProfileSet>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -84,10 +84,10 @@ async fn list(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -123,10 +123,10 @@ async fn get(
 )]
 async fn get_level_order(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -155,10 +155,10 @@ async fn get_level_order(
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -192,11 +192,11 @@ struct ElectricalProfileQueryArgs {
 )]
 async fn post_electrical_profile(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Query(ep_set_name): Query<ElectricalProfileQueryArgs>,
     Json(ep_data): Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

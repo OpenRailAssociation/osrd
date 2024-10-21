@@ -25,8 +25,8 @@ use crate::models::prelude::*;
 use crate::models::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
@@ -56,9 +56,9 @@ enum ListErrorsRailjson {
 async fn get_railjson(
     Path(infra): Path<InfraIdParam>,
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -169,11 +169,11 @@ struct PostRailjsonResponse {
 )]
 async fn post_railjson(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Query(params): Query<PostRailjsonQueryParams>,
     Json(railjson): Json<RailJson>,
 ) -> Result<Json<PostRailjsonResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

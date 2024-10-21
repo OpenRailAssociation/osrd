@@ -20,8 +20,8 @@ use utoipa::ToSchema;
 
 use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginationStats;
+use super::AuthenticationExt;
 use super::AuthorizationError;
-use super::AuthorizerExt;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::prelude::*;
@@ -135,11 +135,11 @@ impl StudyCreateForm {
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
     Json(data): Json<StudyCreateForm>,
 ) -> Result<Json<StudyResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -201,10 +201,10 @@ pub struct StudyIdParam {
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -238,10 +238,10 @@ async fn delete(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<Json<StudyResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -321,11 +321,11 @@ impl StudyPatchForm {
 )]
 async fn patch(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
     Json(data): Json<StudyPatchForm>,
 ) -> Result<Json<StudyResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -403,12 +403,12 @@ struct StudyListResponse {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<StudyListResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

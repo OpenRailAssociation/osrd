@@ -20,7 +20,7 @@ use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationStats;
 use super::study;
-use super::AuthorizerExt;
+use super::AuthenticationExt;
 use crate::error::Result;
 use crate::models::projects::Tags;
 use crate::models::Changeset;
@@ -147,10 +147,10 @@ impl ProjectWithStudyCount {
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -188,11 +188,11 @@ struct ProjectWithStudyCountList {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -241,10 +241,10 @@ pub struct ProjectIdParam {
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -270,10 +270,10 @@ async fn get(
 )]
 async fn delete(
     Path(project_id): Path<i64>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -336,11 +336,11 @@ impl From<ProjectPatchForm> for Changeset<Project> {
 )]
 async fn patch(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
     Json(form): Json<ProjectPatchForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

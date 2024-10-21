@@ -38,8 +38,8 @@ use crate::models::prelude::*;
 use crate::models::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
@@ -77,10 +77,10 @@ async fn edit<'a>(
         map_layers,
         ..
     }): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(operations): Json<Vec<Operation>>,
 ) -> Result<Json<Vec<InfraObject>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -132,10 +132,10 @@ pub async fn split_track_section<'a>(
         map_layers,
         ..
     }): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(payload): Json<TrackOffset>,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

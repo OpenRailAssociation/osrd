@@ -5,8 +5,8 @@ use editoast_authz::BuiltinRole;
 
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 
 crate::routes! {
@@ -25,9 +25,9 @@ async fn speed_limit_tags(
         speed_limit_tag_ids,
         ..
     }): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<SpeedLimitTagIds>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

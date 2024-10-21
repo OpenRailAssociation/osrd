@@ -23,8 +23,8 @@ use crate::models::work_schedules::WorkScheduleGroup;
 use crate::models::work_schedules::WorkScheduleType;
 use crate::views::path::projection::Intersection;
 use crate::views::path::projection::PathProjection;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_schemas::infra::{Direction, TrackRange};
 
@@ -143,13 +143,13 @@ struct WorkScheduleCreateResponse {
 )]
 async fn create(
     State(app_state): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(WorkScheduleCreateForm {
         work_schedule_group_name,
         work_schedules,
     }): Json<WorkScheduleCreateForm>,
 ) -> Result<Json<WorkScheduleCreateResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::WorkScheduleWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -220,13 +220,13 @@ struct WorkScheduleProjection {
 )]
 async fn project_path(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(WorkScheduleProjectForm {
         work_schedule_group_id,
         path_track_ranges,
     }): Json<WorkScheduleProjectForm>,
 ) -> Result<Json<Vec<WorkScheduleProjection>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::WorkScheduleRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

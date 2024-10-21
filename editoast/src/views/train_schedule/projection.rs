@@ -41,8 +41,8 @@ use crate::views::train_schedule::CompleteReportTrain;
 use crate::views::train_schedule::ReportTrain;
 use crate::views::train_schedule::SignalSighting;
 use crate::views::train_schedule::ZoneUpdate;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::RollingStockModel;
 
@@ -127,7 +127,7 @@ struct CachedProjectPathTrainResult {
 )]
 async fn project_path(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(ProjectPathForm {
         infra_id,
         ids: train_ids,
@@ -135,7 +135,7 @@ async fn project_path(
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles(
             [
                 BuiltinRole::InfraRead,

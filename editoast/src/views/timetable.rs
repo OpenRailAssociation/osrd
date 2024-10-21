@@ -35,8 +35,8 @@ use crate::models::Infra;
 use crate::views::train_schedule::train_simulation_batch;
 use crate::views::train_schedule::TrainScheduleForm;
 use crate::views::train_schedule::TrainScheduleResult;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::RetrieveBatch;
 use editoast_models::DbConnectionPoolV2;
@@ -121,10 +121,10 @@ struct TimetableIdParam {
 )]
 async fn get(
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(timetable_id): Path<TimetableIdParam>,
 ) -> Result<Json<TimetableDetailedResult>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::TimetableRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -155,9 +155,9 @@ async fn get(
 )]
 async fn post(
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<TimetableResult>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::TimetableWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -184,10 +184,10 @@ async fn post(
 )]
 async fn delete(
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     timetable_id: Path<TimetableIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::TimetableWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -216,11 +216,11 @@ async fn delete(
 )]
 async fn train_schedule(
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(timetable_id): Path<TimetableIdParam>,
     Json(train_schedules): Json<Vec<TrainScheduleBase>>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::TimetableWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -273,12 +273,12 @@ pub struct ElectricalProfileSetIdQueryParam {
 )]
 async fn conflicts(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(timetable_id): Path<TimetableIdParam>,
     Query(infra_id_query): Query<InfraIdQueryParam>,
     Query(electrical_profile_set_id_query): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

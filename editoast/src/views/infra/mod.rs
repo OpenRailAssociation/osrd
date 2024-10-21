@@ -28,7 +28,7 @@ use utoipa::ToSchema;
 
 use super::pagination::PaginationStats;
 use super::params::List;
-use super::AuthorizerExt;
+use super::AuthenticationExt;
 use crate::core::infra_loading::InfraLoadRequest;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
@@ -121,10 +121,10 @@ struct RefreshResponse {
 )]
 async fn refresh(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Query(query_params): Query<RefreshQueryParams>,
 ) -> Result<Json<RefreshResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -199,10 +199,10 @@ struct InfraListResponse {
 )]
 async fn list(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<InfraListResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -293,10 +293,10 @@ struct InfraIdParam {
 )]
 async fn get(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<InfraWithState>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -342,10 +342,10 @@ impl From<InfraCreateForm> for Changeset<Infra> {
 )]
 async fn create(
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(infra_form): Json<InfraCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -376,12 +376,12 @@ struct CloneQuery {
     ),
 )]
 async fn clone(
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(params): Path<InfraIdParam>,
     db_pool: State<DbConnectionPoolV2>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -419,10 +419,10 @@ async fn clone(
 )]
 async fn delete(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     infra: Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -466,11 +466,11 @@ impl From<InfraPatchForm> for Changeset<Infra> {
 )]
 async fn put(
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -499,10 +499,10 @@ async fn put(
 )]
 async fn get_switch_types(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -541,11 +541,11 @@ async fn get_switch_types(
     )
 )]
 async fn get_speed_limit_tags(
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
     db_pool: State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -584,12 +584,12 @@ struct GetVoltagesQueryParams {
     )
 )]
 async fn get_voltages(
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
     Query(param): Query<GetVoltagesQueryParams>,
     db_pool: State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -621,9 +621,9 @@ async fn get_voltages(
 )]
 async fn get_all_voltages(
     db_pool: State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -655,11 +655,11 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) ->
     )
 )]
 async fn lock(
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -682,11 +682,11 @@ async fn lock(
     )
 )]
 async fn unlock(
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -710,10 +710,10 @@ async fn unlock(
 )]
 async fn load(
     app_state: State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(path): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

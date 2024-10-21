@@ -17,8 +17,8 @@ use serde::Serialize;
 use crate::error::Result;
 use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::models::Changeset;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use crate::Model;
 
@@ -103,10 +103,10 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
 )]
 async fn overwrite(
     State(app_state): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::StdcmAdmin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -132,9 +132,9 @@ async fn overwrite(
 )]
 async fn retrieve_latest(
     State(app_state): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Response> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

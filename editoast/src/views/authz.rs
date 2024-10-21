@@ -9,7 +9,7 @@ use editoast_authz::authorizer::Authorizer;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 
-use super::{AuthorizationError, AuthorizerExt};
+use super::{AuthenticationExt, AuthorizationError};
 
 crate::routes! {
     "/authz/roles" => {
@@ -62,8 +62,8 @@ struct Roles {
         (status = 200, description = "List the roles of the issuer of the request", body = inline(Roles)),
     ),
 )]
-async fn list_current_roles(Extension(authorizer): AuthorizerExt) -> Result<Json<Roles>> {
-    let authorizer = authorizer.authorizer()?;
+async fn list_current_roles(Extension(auth): AuthenticationExt) -> Result<Json<Roles>> {
+    let authorizer = auth.authorizer()?;
     Ok(Json(Roles {
         builtin: authorizer
             .user_builtin_roles(authorizer.user_id())
@@ -97,9 +97,9 @@ async fn check_user_exists(
 )]
 async fn list_user_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<Roles>> {
-    if !authorizer
+    if !auth
         .check_roles([BuiltinRole::SubjectRead, BuiltinRole::RoleRead].into())
         .await
         .map_err(AuthorizationError::from)?
@@ -107,7 +107,7 @@ async fn list_user_roles(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let authorizer = authorizer.authorizer()?;
+    let authorizer = auth.authorizer()?;
     check_user_exists(user_id, &authorizer).await?;
 
     Ok(Json(Roles {
@@ -134,10 +134,10 @@ struct RoleListBody {
 )]
 async fn grant_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
-    if !authorizer
+    if !auth
         .check_roles([BuiltinRole::SubjectRead, BuiltinRole::RoleWrite].into())
         .await
         .map_err(AuthorizationError::from)?
@@ -145,7 +145,7 @@ async fn grant_roles(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let mut authorizer = authorizer.authorizer()?;
+    let mut authorizer = auth.authorizer()?;
     check_user_exists(user_id, &authorizer).await?;
 
     authorizer
@@ -166,10 +166,10 @@ async fn grant_roles(
 )]
 async fn strip_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
-    if !authorizer
+    if !auth
         .check_roles([BuiltinRole::SubjectRead, BuiltinRole::RoleWrite].into())
         .await
         .map_err(AuthorizationError::from)?
@@ -177,7 +177,7 @@ async fn strip_roles(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    let mut authorizer = authorizer.authorizer()?;
+    let mut authorizer = auth.authorizer()?;
     check_user_exists(user_id, &authorizer).await?;
 
     authorizer

@@ -25,8 +25,8 @@ use crate::map::MapLayers;
 use crate::map::Tile;
 use crate::models::layers::geo_json_and_data::create_and_fill_mvt_tile;
 use crate::models::layers::geo_json_and_data::GeoJsonAndData;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 
 crate::routes! {
@@ -117,11 +117,11 @@ async fn layer_view(
         map_layers_config,
         ..
     }): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((layer_slug, view_slug)): Path<(String, String)>,
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<Json<ViewMetadata>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::MapRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -185,11 +185,11 @@ async fn cache_and_get_mvt_tile(
         valkey,
         ..
     }): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((layer_slug, view_slug, z, x, y)): Path<(String, String, u64, u64, u64)>,
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::MapRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

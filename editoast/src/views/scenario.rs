@@ -34,8 +34,8 @@ use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 
 crate::routes! {
     "/projects/{project_id}/studies/{study_id}/scenarios" => {
@@ -190,11 +190,11 @@ impl ScenarioResponse {
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
     Json(data): Json<ScenarioCreateForm>,
 ) -> Result<Json<ScenarioResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -268,14 +268,14 @@ async fn create(
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
     }): Path<ScenarioPathParam>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -354,7 +354,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::models::Model>::Changeset {
 )]
 async fn patch(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(ScenarioPathParam {
         project_id,
         study_id,
@@ -362,7 +362,7 @@ async fn patch(
     }): Path<ScenarioPathParam>,
     Json(form): Json<ScenarioPatchForm>,
 ) -> Result<Json<ScenarioResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -430,14 +430,14 @@ async fn patch(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
     }): Path<ScenarioPathParam>,
 ) -> Result<Json<ScenarioResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -484,12 +484,12 @@ struct ListScenariosResponse {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ListScenariosResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

@@ -16,8 +16,8 @@ use crate::error::Result;
 use crate::models::*;
 use editoast_models::DbConnectionPoolV2;
 
+use super::AuthenticationExt;
 use super::AuthorizationError;
-use super::AuthorizerExt;
 
 crate::routes! {
     "/documents" => {
@@ -55,10 +55,10 @@ pub enum DocumentErrors {
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::DocumentRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -99,11 +99,11 @@ struct NewDocumentResponse {
 )]
 async fn post(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
     bytes: Bytes,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::DocumentWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -143,10 +143,10 @@ async fn post(
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::DocumentWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

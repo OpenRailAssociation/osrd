@@ -158,7 +158,7 @@ impl Authentication {
     }
 }
 
-pub type AuthorizerExt = axum::extract::Extension<Authentication>;
+pub type AuthenticationExt = axum::extract::Extension<Authentication>;
 
 async fn authenticate(
     disable_authorization: bool,

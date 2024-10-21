@@ -30,8 +30,8 @@ use crate::valkey_utils::ValkeyConnection;
 use crate::views::get_app_version;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::PathfindingError;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_models::DbConnection;
 
@@ -85,11 +85,11 @@ async fn post(
         core_client,
         ..
     }): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(infra_id): Path<i64>,
     Json(path_input): Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
