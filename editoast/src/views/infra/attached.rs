@@ -14,8 +14,8 @@ use crate::infra_cache::InfraCache;
 use crate::models::prelude::*;
 use crate::models::Infra;
 use crate::views::infra::InfraApiError;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::AppState;
 use editoast_schemas::primitives::ObjectType;
 
@@ -70,9 +70,9 @@ async fn attached(
         db_pool_v2: db_pool,
         ..
     }): State<AppState>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

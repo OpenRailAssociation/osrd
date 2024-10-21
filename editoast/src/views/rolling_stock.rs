@@ -41,8 +41,8 @@ use crate::models::rolling_stock_model::ScenarioReference;
 use crate::models::Document;
 use crate::models::RollingStockModel;
 use crate::models::RollingStockSeparatedImageModel;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 
 crate::routes! {
     "/rolling_stock" => {
@@ -212,10 +212,10 @@ pub struct RollingStockNameParam {
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -243,10 +243,10 @@ async fn get(
 )]
 async fn get_by_name(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -274,9 +274,9 @@ async fn get_by_name(
 )]
 async fn get_power_restrictions(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -312,11 +312,11 @@ struct PostRollingStockQueryParams {
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Query(query_params): Query<PostRollingStockQueryParams>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockModel>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -350,11 +350,11 @@ async fn create(
 )]
 async fn update(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -429,11 +429,11 @@ struct DeleteRollingStockQueryParams {
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -496,11 +496,11 @@ struct RollingStockLockedUpdateForm {
 )]
 async fn update_locked(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Json(RollingStockLockedUpdateForm { locked }): Json<RollingStockLockedUpdateForm>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -578,11 +578,11 @@ async fn parse_multipart_content(
 )]
 async fn create_livery(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
 ) -> Result<Json<RollingStockLivery>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;

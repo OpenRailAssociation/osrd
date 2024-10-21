@@ -16,8 +16,8 @@ use super::InfraIdParam;
 use crate::error::Result;
 use crate::models::infra::ObjectQueryable;
 use crate::models::Infra;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 use crate::Retrieve;
 
 crate::routes! {
@@ -59,10 +59,10 @@ async fn get_objects(
     Path(infra_id_param): Path<InfraIdParam>,
     Path(object_type_param): Path<ObjectTypeParam>,
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Json(obj_ids): Json<Vec<String>>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::InfraRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
