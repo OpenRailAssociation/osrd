@@ -30,7 +30,7 @@ processes:
     command: cargo run runserver
     working_dir: "$OSRD_PATH/editoast"
   front:
-    command: yarn start
+    command: npm start
     working_dir: "$OSRD_PATH/front"
   osrdyne:
     command: cargo run
