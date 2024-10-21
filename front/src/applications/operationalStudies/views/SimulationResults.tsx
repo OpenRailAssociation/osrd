@@ -91,13 +91,6 @@ const SimulationResults = ({
     [projectionData]
   );
 
-  // TODO: remove this after closing https://github.com/OpenRailAssociation/osrd-ui/issues/648
-  const projectPathTrainResult = useMemo(
-    () =>
-      projectionData?.projectedTrains.filter((train) => train.space_time_curves.length > 0) || [],
-    [projectionData]
-  );
-
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
   useEffect(() => {
@@ -162,7 +155,7 @@ const SimulationResults = ({
                 )}
                 <ManchetteWithSpaceTimeChartWrapper
                   operationalPoints={projectedOperationalPoints}
-                  projectPathTrainResult={projectPathTrainResult}
+                  projectPathTrainResult={projectionData?.projectedTrains}
                   selectedTrainScheduleId={selectedTrainSchedule?.id}
                   waypointsPanelData={{
                     filteredWaypoints: filteredOperationalPoints,
