@@ -16,8 +16,9 @@ RUN cargo chef prepare --recipe-path recipe.json
 ######################
 FROM chef AS base_builder
 RUN apk add --no-cache build-base openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev 
-ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
+ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold --cfg tokio_unstable"
 RUN cargo install diesel_cli --no-default-features --features postgres
+RUN cargo install --locked tokio-console
 COPY --from=static_assets . /assets
 
 ######################
@@ -31,7 +32,7 @@ RUN rustup component add llvm-tools && \
 COPY --from=planner /editoast/recipe.json recipe.json
 COPY --from=planner /editoast/editoast_derive/ editoast_derive
 COPY --from=test_data . /tests/data
-ENV RUSTFLAGS="-Cinstrument-coverage -C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
+ENV RUSTFLAGS="-Cinstrument-coverage -C target-feature=-crt-static -C link-arg=-fuse-ld=mold --cfg tokio_unstable"
 ENV LLVM_PROFILE_FILE="editoast-%p-%m.profraw"
 RUN cargo chef cook --tests --recipe-path recipe.json
 COPY . .
@@ -60,6 +61,7 @@ RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl postgres
 
 COPY --from=run_builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
+COPY --from=run_builder /usr/local/cargo/bin/tokio-console /usr/local/bin/tokio-console
 COPY --from=run_builder /editoast/migrations /migrations
 COPY --from=run_builder /editoast/assets /assets
 

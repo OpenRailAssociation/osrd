@@ -77,6 +77,7 @@ enum EditoastMode {
 }
 
 fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) {
+    /*
     let env_filter_layer = tracing_subscriber::EnvFilter::builder()
         // Set the default log level to 'info'
         .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
@@ -141,7 +142,7 @@ fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) 
         .with(telemetry_layer)
         .with(env_filter_layer)
         .with(fmt_layer)
-        .init();
+        .init(); */
 }
 
 impl EditoastMode {
@@ -156,6 +157,8 @@ impl EditoastMode {
 
 #[tokio::main]
 async fn main() {
+    console_subscriber::init();
+
     match run().await {
         Ok(_) => (),
         Err(e) => {
