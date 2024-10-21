@@ -177,7 +177,7 @@ const SimulationResults = ({
 
       {/* TRAIN : SPACE SPEED CHART */}
       {selectedTrainRollingStock && trainSimulation && pathProperties && selectedTrainSchedule && (
-        <div className="osrd-simulation-container d-flex mb-2 speedspacechart-container">
+        <div className="osrd-simulation-container speedspacechart-container">
           <div
             className="chart-container"
             style={{
@@ -202,7 +202,7 @@ const SimulationResults = ({
         pathProperties &&
         operationalPoints &&
         infraId && (
-          <div className="osrd-simulation-container mb-2">
+          <div className="osrd-simulation-container mb-4">
             <TimesStopsOutput
               simulatedTrain={trainSimulation}
               pathProperties={pathProperties}

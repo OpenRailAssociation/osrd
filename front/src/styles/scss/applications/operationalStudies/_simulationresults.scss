@@ -43,7 +43,9 @@
     border-radius: 4px;
 
     &.speedspacechart-container {
+      display: flex;
       background-color: rgb(247, 246, 238);
+      margin-bottom: 28px;
     }
   }
 
