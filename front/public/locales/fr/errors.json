@@ -187,7 +187,6 @@
       "InvalidPathItems": "Point(s) de passage {{items}} invalide(s)",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TowedRollingStockNotFound": "Le matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
-      "ConsistEntryInvalid": "Entrée invalide : la masse totale et la longueur sont requises lorsque du matériel roulant remorqué est fourni.",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "study": {

@@ -177,7 +177,6 @@ const StdcmConsist = ({ disabled = false }: StdcmConfigCardProps) => {
           type="number"
           min={0}
           value={totalMass ?? ''}
-          required={!!selectedTowedRollingStock}
           onChange={onTotalMassChange}
         />
         <Input
@@ -187,7 +186,6 @@ const StdcmConsist = ({ disabled = false }: StdcmConfigCardProps) => {
           type="number"
           min={0}
           value={totalLength ?? ''}
-          required={!!selectedTowedRollingStock}
           onChange={onTotalLengthChange}
         />
       </div>

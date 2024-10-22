@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::io::Cursor;
 use std::ops::DerefMut;
 
@@ -10,7 +11,13 @@ use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::rolling_stock::EffortCurves;
+use editoast_schemas::rolling_stock::Gamma;
+use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStock;
+use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use postgis_diesel::types::LineString;
 use serde_json::Value;
@@ -212,6 +219,46 @@ pub async fn create_rolling_stock_livery(
         .create(conn)
         .await
         .expect("Failed to create rolling stock livery")
+}
+
+pub fn create_towed_rolling_stock() -> TowedRollingStock {
+    TowedRollingStock {
+        name: "TOWED ROLLING STOCK".to_string(),
+        mass: 50000_f64,
+        length: 30_f64, // m
+        comfort_acceleration: 0.2,
+        startup_acceleration: 0.06,
+        inertia_coefficient: 1.05,
+        rolling_resistance: RollingResistance::new("davis".to_string(), 1.0, 0.01, 0.0002),
+        gamma: Gamma::new("CONST".to_string(), 1.0),
+        railjson_version: "3.4".to_string(),
+    }
+}
+
+pub fn create_simple_rolling_stock() -> RollingStock {
+    RollingStock {
+        name: "ROLLING_STOCK_NAME".to_string(),
+        loading_gauge: LoadingGaugeType::G1,
+        supported_signaling_systems: RollingStockSupportedSignalingSystems(vec![]),
+        base_power_class: None,
+        comfort_acceleration: 0.1,
+        inertia_coefficient: 1.10,
+        startup_acceleration: 0.04,
+        startup_time: 1.0,
+        effort_curves: EffortCurves::default(),
+        electrical_power_startup_time: None,
+        raise_pantograph_time: None,
+        energy_sources: vec![],
+        gamma: Gamma::new("CONST".to_string(), 1.0),
+        locked: false,
+        metadata: None,
+        power_restrictions: HashMap::new(),
+        railjson_version: "12".to_string(),
+        rolling_resistance: RollingResistance::new("davis".to_string(), 1.0, 0.01, 0.0005),
+        length: 140.0,   // m
+        mass: 15000.0,   // kg
+        max_speed: 20.0, // m/s
+    }
 }
 
 pub async fn create_document_example(conn: &mut DbConnection) -> Document {

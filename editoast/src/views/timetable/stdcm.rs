@@ -10,6 +10,7 @@ use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::PositiveDuration;
+use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::train_schedule::PathItemLocation;
 use editoast_schemas::train_schedule::ReceptionSignal;
 use editoast_schemas::train_schedule::{Comfort, Margins, PathItem};
@@ -30,8 +31,8 @@ use crate::core::conflict_detection::TrainRequirements;
 use crate::core::conflict_detection::WorkSchedulesRequest;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingInputError;
+use crate::core::simulation::PhysicsConsist;
 use crate::core::simulation::PhysicsRollingStock;
-use crate::core::simulation::SimulationParameters;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::stdcm::STDCMPathItem;
 use crate::core::stdcm::STDCMRequest;
@@ -84,10 +85,6 @@ enum STDCMError {
     TowedRollingStockNotFound { towed_rolling_stock_id: i64 },
     #[error("Path items are invalid")]
     InvalidPathItems { items: Vec<InvalidPathItem> },
-    #[error(
-        "Invalid entry: total mass and length are required when towed rolling stock is provided."
-    )]
-    ConsistEntryInvalid,
 }
 
 /// An STDCM request
@@ -97,6 +94,7 @@ pub struct STDCMRequestPayload {
     start_time: Option<DateTime<Utc>>,
     steps: Vec<PathfindingItem>,
     rolling_stock_id: i64,
+    towed_rolling_stock_id: Option<i64>,
     electrical_profile_set_id: Option<i64>,
     work_schedule_group_id: Option<i64>,
     temporary_speed_limit_group_id: Option<i64>,
@@ -132,22 +130,19 @@ pub struct STDCMRequestPayload {
     total_length: Option<f64>,
     /// Maximum speed of the consist in km/h
     max_speed: Option<f64>,
-    towed_rolling_stock_id: Option<i64>,
 }
 
 impl STDCMRequestPayload {
-    pub fn simulation_parameters(&self) -> SimulationParameters {
-        SimulationParameters {
+    pub fn simulation_parameters(
+        &self,
+        towed_rolling_stock: Option<TowedRollingStock>,
+    ) -> PhysicsConsist {
+        PhysicsConsist {
             total_mass: self.total_mass,
             total_length: self.total_length,
             max_speed: self.max_speed,
+            towed_rolling_stock,
         }
-    }
-
-    pub fn is_consist_invalid(&self) -> bool {
-        self.towed_rolling_stock_id.is_some()
-            && self.total_mass.is_none()
-            && self.total_length.is_none()
     }
 }
 
@@ -211,10 +206,6 @@ async fn stdcm(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
-    if stdcm_request.is_consist_invalid() {
-        return Err(STDCMError::ConsistEntryInvalid.into());
-    }
-
     let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
 
@@ -222,7 +213,6 @@ async fn stdcm(
     let core_client = app_state.core_client.clone();
     let timetable_id = id;
     let infra_id = query.infra;
-    let simulation_parameters = stdcm_request.simulation_parameters();
 
     // 1. Retrieve Timetable / Infra / Trains / Simulation / Rolling Stock
     let timetable_trains = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
@@ -257,6 +247,9 @@ async fn stdcm(
         } else {
             None
         };
+
+    let physics_consist =
+        stdcm_request.simulation_parameters(towed_rolling_stock.map(|trs| trs.into()));
 
     let simulations = train_simulation_batch(
         conn,
@@ -369,11 +362,7 @@ async fn stdcm(
             maximum_run_time,
         ),
         temporary_speed_limits,
-        rolling_stock: PhysicsRollingStock::new(
-            rolling_stock.into(),
-            towed_rolling_stock.map(|trs| trs.into()),
-            simulation_parameters,
-        ),
+        rolling_stock: PhysicsRollingStock::new(rolling_stock.into(), physics_consist),
     };
 
     let stdcm_response = stdcm_request.fetch(core_client.as_ref()).await?;
@@ -879,50 +868,9 @@ mod tests {
 
     use super::*;
 
-    pub fn create_towed_rolling_stock() -> TowedRollingStock {
-        TowedRollingStock {
-            name: "FAKE VOITURE CORAIL".to_string(),
-            mass: 50000_f64,
-            length: 30_f64,
-            comfort_acceleration: 0.2,
-            startup_acceleration: 0.06,
-            inertia_coefficient: 1.05,
-            rolling_resistance: RollingResistance::new("davis".to_string(), 1.0, 0.01, 0.0002),
-            gamma: Gamma::new("CONST".to_string(), 1.0),
-            railjson_version: "3.4".to_string(),
-        }
-    }
-
-    fn create_test_rolling_stock() -> RollingStock {
-        let rs_form = fast_rolling_stock_form("test_rolling_stock");
-        RollingStock {
-            name: rs_form.name,
-            loading_gauge: rs_form.loading_gauge,
-            supported_signaling_systems: rs_form.supported_signaling_systems,
-            base_power_class: rs_form.base_power_class,
-            comfort_acceleration: rs_form.comfort_acceleration,
-            inertia_coefficient: rs_form.inertia_coefficient,
-            startup_acceleration: rs_form.startup_acceleration,
-            startup_time: rs_form.startup_time,
-            effort_curves: rs_form.effort_curves,
-            electrical_power_startup_time: rs_form.electrical_power_startup_time,
-            raise_pantograph_time: rs_form.raise_pantograph_time,
-            energy_sources: rs_form.energy_sources,
-            gamma: rs_form.gamma,
-            locked: false,
-            metadata: rs_form.metadata,
-            power_restrictions: rs_form.power_restrictions,
-            railjson_version: "12".to_string(),
-            rolling_resistance: rs_form.rolling_resistance,
-            length: 140.0,   // m
-            mass: 15000.0,   // kg
-            max_speed: 20.0, // m/s
-        }
-    }
-
     #[test]
     fn simulation_with_towed_rolling_stock_parameters() {
-        let mut rolling_stock = create_test_rolling_stock();
+        let mut rolling_stock = create_simple_rolling_stock();
         rolling_stock.mass = 100000.0;
         rolling_stock.length = 20.0;
         rolling_stock.inertia_coefficient = 1.10; // m/s²
@@ -935,17 +883,15 @@ mod tests {
 
         let total_mass = 200000.0;
 
-        let simulation_parameters = SimulationParameters {
+        let simulation_parameters = PhysicsConsist {
             total_length: None,
             max_speed: None,
             total_mass: Some(total_mass),
+            towed_rolling_stock: Some(towed_rolling_stock.clone()),
         };
 
-        let physics_rolling_stock: PhysicsRollingStock = PhysicsRollingStock::new(
-            rolling_stock.clone(),
-            Some(towed_rolling_stock.clone()),
-            simulation_parameters,
-        );
+        let physics_rolling_stock: PhysicsRollingStock =
+            PhysicsRollingStock::new(rolling_stock.clone(), simulation_parameters);
 
         assert_eq!(physics_rolling_stock.mass, total_mass as u64);
 
@@ -959,16 +905,17 @@ mod tests {
 
     #[test]
     fn simulation_with_parameters() {
-        let rolling_stock = create_test_rolling_stock();
+        let rolling_stock = create_simple_rolling_stock();
 
-        let simulation_parameters = SimulationParameters {
+        let simulation_parameters = PhysicsConsist {
             total_mass: Some(123.0),
             total_length: Some(455.0),
             max_speed: Some(10.0), // m/s
+            towed_rolling_stock: None,
         };
 
         let physics_rolling_stock: PhysicsRollingStock =
-            PhysicsRollingStock::new(rolling_stock, None, simulation_parameters);
+            PhysicsRollingStock::new(rolling_stock, simulation_parameters);
 
         assert_eq!(physics_rolling_stock.mass, 123_u64);
         assert_eq!(physics_rolling_stock.length, 455000_u64); // It should be converted in mm
@@ -977,11 +924,11 @@ mod tests {
 
     #[test]
     fn simulation_without_parameters() {
-        let rolling_stock = create_test_rolling_stock();
-        let simulation_parameters = SimulationParameters::default();
+        let rolling_stock = create_simple_rolling_stock();
+        let simulation_parameters = PhysicsConsist::default();
 
         let physics_rolling_stock: PhysicsRollingStock =
-            PhysicsRollingStock::new(rolling_stock, None, simulation_parameters);
+            PhysicsRollingStock::new(rolling_stock, simulation_parameters);
 
         assert_eq!(physics_rolling_stock.mass, 15000_u64);
         assert_eq!(physics_rolling_stock.length, 140000_u64); // It should be converted in mm
@@ -990,70 +937,74 @@ mod tests {
 
     #[test]
     fn new_physics_rolling_stock_keeps_the_smallest_available_comfort_acceleration() {
-        let mut rolling_stock = create_test_rolling_stock();
+        let mut rolling_stock = create_simple_rolling_stock();
         let mut towed_rolling_stock = create_towed_rolling_stock();
         rolling_stock.comfort_acceleration = 0.2;
         towed_rolling_stock.comfort_acceleration = 0.1;
 
-        let physics_rolling_stock: PhysicsRollingStock = PhysicsRollingStock::new(
-            rolling_stock.clone(),
-            Some(towed_rolling_stock.clone()),
-            SimulationParameters::default(),
-        );
+        let mut simulation_parameters = PhysicsConsist {
+            max_speed: None,
+            total_length: None,
+            total_mass: None,
+            towed_rolling_stock: Some(towed_rolling_stock.clone()),
+        };
+
+        let physics_rolling_stock: PhysicsRollingStock =
+            PhysicsRollingStock::new(rolling_stock.clone(), simulation_parameters.clone());
 
         assert_eq!(physics_rolling_stock.comfort_acceleration, 0.1);
 
         rolling_stock.comfort_acceleration = 0.2;
         towed_rolling_stock.comfort_acceleration = 0.67;
+        simulation_parameters.towed_rolling_stock = Some(towed_rolling_stock);
 
-        let physics_rolling_stock: PhysicsRollingStock = PhysicsRollingStock::new(
-            rolling_stock,
-            Some(towed_rolling_stock),
-            SimulationParameters::default(),
-        );
+        let physics_rolling_stock: PhysicsRollingStock =
+            PhysicsRollingStock::new(rolling_stock, simulation_parameters);
 
         assert_eq!(physics_rolling_stock.comfort_acceleration, 0.2);
     }
 
     #[test]
     fn new_physics_rolling_stock_keeps_the_bigest_available_startup_acceleration() {
-        let mut rolling_stock = create_test_rolling_stock();
+        let mut rolling_stock = create_simple_rolling_stock();
         let mut towed_rolling_stock = create_towed_rolling_stock();
         rolling_stock.startup_acceleration = 0.3;
         towed_rolling_stock.startup_acceleration = 0.45;
 
-        let physics_rolling_stock: PhysicsRollingStock = PhysicsRollingStock::new(
-            rolling_stock.clone(),
-            Some(towed_rolling_stock.clone()),
-            SimulationParameters::default(),
-        );
+        let simulation_parameters = PhysicsConsist {
+            max_speed: None,
+            total_length: None,
+            total_mass: None,
+            towed_rolling_stock: Some(towed_rolling_stock.clone()),
+        };
+
+        let physics_rolling_stock: PhysicsRollingStock =
+            PhysicsRollingStock::new(rolling_stock.clone(), simulation_parameters.clone());
 
         assert_eq!(physics_rolling_stock.startup_acceleration, 0.45);
 
         towed_rolling_stock.startup_acceleration = 0.4;
         rolling_stock.startup_acceleration = 0.88;
 
-        let physics_rolling_stock: PhysicsRollingStock = PhysicsRollingStock::new(
-            rolling_stock,
-            Some(towed_rolling_stock),
-            SimulationParameters::default(),
-        );
+        let physics_rolling_stock: PhysicsRollingStock =
+            PhysicsRollingStock::new(rolling_stock, simulation_parameters);
 
         assert_eq!(physics_rolling_stock.startup_acceleration, 0.88);
     }
 
     #[test]
     fn new_physics_rolling_stock_keeps_the_smallest_available_max_speed() {
-        let rolling_stock = create_test_rolling_stock();
+        let rolling_stock = create_simple_rolling_stock();
 
-        let simulation_parameters = SimulationParameters {
+        let simulation_parameters = PhysicsConsist {
             total_mass: None,
             total_length: None,
             max_speed: Some(30.0), // m/s
+            towed_rolling_stock: None,
         };
 
         let physics_rolling_stock: PhysicsRollingStock =
-            PhysicsRollingStock::new(rolling_stock, None, simulation_parameters);
+            PhysicsRollingStock::new(rolling_stock, simulation_parameters);
 
         assert_eq!(physics_rolling_stock.max_speed, 20_f64);
     }
