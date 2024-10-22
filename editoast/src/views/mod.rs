@@ -167,7 +167,7 @@ async fn authenticate(
 ) -> Result<Authentication, AuthorizationError> {
     if disable_authorization {
         return Ok(Authentication::Authenticated(Authorizer::new_superuser(
-            PgAuthDriver::<BuiltinRole>::new(db_pool.get().await?),
+            PgAuthDriver::<BuiltinRole>::new(db_pool),
         )));
     }
     let Some(header) = headers.get("x-remote-user") else {
@@ -186,7 +186,7 @@ async fn authenticate(
             identity: identity.to_owned(),
             name: name.to_owned(),
         },
-        PgAuthDriver::<BuiltinRole>::new(db_pool.get().await?),
+        PgAuthDriver::<BuiltinRole>::new(db_pool),
     )
     .await?;
     Ok(Authentication::Authenticated(authorizer))
