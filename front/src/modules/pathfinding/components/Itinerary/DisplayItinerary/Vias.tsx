@@ -12,14 +12,21 @@ import { useAppDispatch } from 'store';
 import { formatUicToCi } from 'utils/strings';
 
 import ViaStopDurationSelector from './ViaStopDurationSelector';
+import type { PathStep } from 'reducers/osrdconf/types';
 
 type ViasProps = {
   shouldManageStopDuration?: boolean;
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
-  invalidPathItems?: string[];
+  pathSteps: PathStep[];
+  isPathStepInvalid: (step: PathStep | null) => boolean;
 };
 
-const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration, invalidPathItems }: ViasProps) => {
+const Vias = ({
+  zoomToFeaturePoint,
+  shouldManageStopDuration,
+  pathSteps,
+  isPathStepInvalid,
+}: ViasProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { getVias } = useOsrdConfSelectors();
   const dispatch = useAppDispatch();
@@ -38,7 +45,7 @@ const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration, invalidPathItems }
       <Droppable droppableId="droppableVias">
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
-            {vias.map((via, index) => (
+            {pathSteps.map((via, index) => (
               <Draggable
                 key={`drag-key-${via.id}-${via.positionOnPath}`}
                 draggableId={`drag-vias-${via.id}`}
@@ -52,8 +59,7 @@ const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration, invalidPathItems }
                     {...providedDraggable.dragHandleProps}
                     className={cx('place via', {
                       'is-a-stop': via.arrival || via.stopFor,
-                      'invalid-path-item':
-                        'trigram' in via && invalidPathItems?.includes(via.trigram),
+                      'invalid-path-item': isPathStepInvalid(via),
                     })}
                   >
                     <div className="ring" />

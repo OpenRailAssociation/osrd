@@ -9,23 +9,16 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
 type DestinationProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
-  invalidPathItems?: string[];
+  isInvalid?: boolean;
 };
 
-const Destination = ({ zoomToFeaturePoint, invalidPathItems }: DestinationProps) => {
+const Destination = ({ zoomToFeaturePoint, isInvalid }: DestinationProps) => {
   const { getDestination } = useOsrdConfSelectors();
   const { updateDestination } = useOsrdConfActions();
   const destination = useSelector(getDestination);
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-
-  const isInvalid =
-    invalidPathItems &&
-    destination &&
-    'trigram' in destination &&
-    invalidPathItems.includes(destination.trigram);
-
   if (!destination)
     return (
       <>

@@ -15,7 +15,6 @@ import viaSVG from 'assets/pictures/via.svg';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getNearestTrack } from 'utils/mapHelper';
-import { usePathfinding } from 'modules/pathfinding/hooks/usePathfinding';
 
 enum MARKER_TYPE {
   ORIGIN = 'origin',
@@ -58,13 +57,9 @@ const formatPointWithNoName = (
   </>
 );
 
-const extractMarkerInformation = (
-  pathSteps: (PathStep | null)[],
-  showStdcmAssets: boolean,
-  invalidItems: string[] = []
-) => {
+const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAssets: boolean) => {
   return pathSteps.reduce((acc, cur, index) => {
-    if (cur && cur.coordinates && (!('trigram' in cur) || !invalidItems.includes(cur.trigram))) {
+    if (cur && cur.coordinates && !cur.isInvalid) {
       if (index === 0) {
         acc.push({
           coordinates: cur.coordinates,
@@ -78,7 +73,7 @@ const extractMarkerInformation = (
           type: MARKER_TYPE.VIA,
           marker: cur,
           imageSource: showStdcmAssets ? stdcmVia : viaSVG,
-          index: index,
+          index,
         });
       } else if (index === pathSteps.length - 1) {
         acc.push({
@@ -96,11 +91,10 @@ const extractMarkerInformation = (
 const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: ItineraryMarkersProps) => {
   const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
-  const { invalidItems } = usePathfinding();
 
   const markersInformation = useMemo(
-    () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets, invalidItems),
-    [simulationPathSteps, pathSteps, showStdcmAssets, invalidItems]
+    () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets),
+    [simulationPathSteps, pathSteps, showStdcmAssets]
   );
 
   const getMarkerDisplayInformation = useCallback(
@@ -180,7 +174,7 @@ const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: Itinera
           </Marker>
         );
       }),
-    [simulationPathSteps, pathSteps, showStdcmAssets, invalidItems]
+    [simulationPathSteps, pathSteps, showStdcmAssets]
   );
   return Markers;
 };

@@ -177,17 +177,13 @@ export const usePathfinding = (
 
   const { updatePathSteps } = useOsrdConfActions();
 
-  const [invalidItems, setInvalidItems] = useState<string[]>([]);
-
   const generatePathfindingParams = (): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
     setPathProperties?.(undefined);
 
     const filteredPathSteps = pathSteps.filter(
-      (step) =>
-        step !== null &&
-        step.coordinates !== null &&
-        !('trigram' in step && invalidItems.includes(step.trigram))
+      (step) => step !== null && step.coordinates !== null && !step.isInvalid
     );
+
     return getPathfindingQuery({
       infraId,
       rollingStock,
@@ -222,19 +218,6 @@ export const usePathfinding = (
       });
     }
   }, [origin?.id, destination?.id, rollingStock]);
-
-  useEffect(() => {
-    if (invalidItems.length > 0) {
-      pathfindingDispatch({
-        type: 'PATHFINDING_PARAM_CHANGED',
-        params: {
-          origin,
-          destination,
-          rollingStock,
-        },
-      });
-    }
-  }, [invalidItems]);
 
   useEffect(() => {
     const startPathFinding = async () => {
@@ -381,7 +364,7 @@ export const usePathfinding = (
     if (infra && infra.state === 'CACHED' && pathfindingState.mustBeLaunched) {
       startPathFinding();
     }
-  }, [pathfindingState.mustBeLaunched, infra, invalidItems]);
+  }, [pathfindingState.mustBeLaunched, infra]);
 
   useEffect(() => setIsPathfindingInitialized(true), []);
 
@@ -393,6 +376,5 @@ export const usePathfinding = (
       infra,
       reloadCount,
     },
-    invalidItems,
   };
 };
