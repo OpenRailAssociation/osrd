@@ -11,7 +11,6 @@ import {
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
@@ -162,15 +161,6 @@ const useScenarioData = (
       });
       return newProjectedTrainsById;
     });
-  }, []);
-
-  useEffect(() => {
-    dispatch(updateTrainIdUsedForProjection(undefined));
-    dispatch(updateSelectedTrainId(undefined));
-    return () => {
-      dispatch(updateTrainIdUsedForProjection(undefined));
-      dispatch(updateSelectedTrainId(undefined));
-    };
   }, []);
 
   return {
