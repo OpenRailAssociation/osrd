@@ -127,126 +127,136 @@ class WorkerCommand : CliCommand {
         factory.setUri(WORKER_AMQP_URI)
         factory.setMaxInboundMessageBodySize(1024 * 1024 * 128 * 5)
         val connection = factory.newConnection()
-        connection.createChannel().use { channel -> reportActivity(channel, "started") }
+        connection.use { connection ->
+            connection.createChannel().use { channel -> reportActivity(channel, "started") }
 
-        if (!ALL_INFRA) {
-            infraManager.load(infraId, null, diagnosticRecorder)
-        }
+            if (!ALL_INFRA) {
+                infraManager.load(infraId, null, diagnosticRecorder)
+            }
 
-        connection.createChannel().use { channel -> reportActivity(channel, "ready") }
+            connection.createChannel().use { channel -> reportActivity(channel, "ready") }
 
-        val activityChannel = connection.createChannel()
-        val channel = connection.createChannel()
-        channel.basicConsume(
-            WORKER_REQUESTS_QUEUE,
-            false,
-            mapOf(),
-            DeliverCallback { consumerTag, message ->
-                reportActivity(activityChannel, "request-received")
+            val activityChannel = connection.createChannel()
+            val channel = connection.createChannel()
+            channel.basicConsume(
+                WORKER_REQUESTS_QUEUE,
+                false,
+                mapOf(),
+                DeliverCallback { consumerTag, message ->
+                    reportActivity(activityChannel, "request-received")
 
-                val replyTo = message.properties.replyTo
-                val correlationId = message.properties.correlationId
-                val body = message.body
-                val path =
-                    (message.properties.headers["x-rpc-path"] as ByteArray?)?.decodeToString()
-                if (path == null) {
-                    logger.error("missing x-rpc-path header")
-                    channel.basicReject(message.envelope.deliveryTag, false)
-                    if (replyTo != null) {
-                        // TODO: response format to handle protocol error
-                        channel.basicPublish(
-                            "",
-                            replyTo,
-                            null,
-                            "missing x-rpc-path header".toByteArray()
-                        )
+                    val replyTo = message.properties.replyTo
+                    val correlationId = message.properties.correlationId
+                    val body = message.body
+                    val path =
+                        (message.properties.headers["x-rpc-path"] as ByteArray?)?.decodeToString()
+                    if (path == null) {
+                        logger.error("missing x-rpc-path header")
+                        channel.basicReject(message.envelope.deliveryTag, false)
+                        if (replyTo != null) {
+                            // TODO: response format to handle protocol error
+                            channel.basicPublish(
+                                "",
+                                replyTo,
+                                null,
+                                "missing x-rpc-path header".toByteArray()
+                            )
+                        }
+
+                        return@DeliverCallback
+                    }
+                    logger.info("received request for path {}", path)
+
+                    val endpoint = endpoints[path]
+                    if (endpoint == null) {
+                        logger.error("unknown path {}", path)
+                        channel.basicReject(message.envelope.deliveryTag, false)
+                        if (replyTo != null) {
+                            // TODO: response format to handle protocol error
+                            channel.basicPublish(
+                                "",
+                                replyTo,
+                                null,
+                                "unknown path $path".toByteArray()
+                            )
+                        }
+
+                        return@DeliverCallback
                     }
 
-                    return@DeliverCallback
-                }
-                logger.info("received request for path {}", path)
+                    class RabbitMQTextMapGetter : TextMapGetter<Map<String, Any>> {
+                        override fun keys(carrier: Map<String, Any>): Iterable<String> {
+                            return carrier.keys
+                        }
 
-                val endpoint = endpoints[path]
-                if (endpoint == null) {
-                    logger.error("unknown path {}", path)
-                    channel.basicReject(message.envelope.deliveryTag, false)
-                    if (replyTo != null) {
-                        // TODO: response format to handle protocol error
-                        channel.basicPublish("", replyTo, null, "unknown path $path".toByteArray())
+                        override fun get(carrier: Map<String, Any>?, key: String): String? {
+                            return (carrier?.get(key) as ByteArray?)?.decodeToString()
+                        }
                     }
 
-                    return@DeliverCallback
-                }
+                    val context =
+                        GlobalOpenTelemetry.getPropagators()
+                            .textMapPropagator
+                            .extract(
+                                Context.current(),
+                                message.properties.headers,
+                                RabbitMQTextMapGetter()
+                            )
+                    val span = tracer.spanBuilder(path).setParent(context).startSpan()
 
-                class RabbitMQTextMapGetter : TextMapGetter<Map<String, Any>> {
-                    override fun keys(carrier: Map<String, Any>): Iterable<String> {
-                        return carrier.keys
-                    }
-
-                    override fun get(carrier: Map<String, Any>?, key: String): String? {
-                        return (carrier?.get(key) as ByteArray?)?.decodeToString()
-                    }
-                }
-
-                val context =
-                    GlobalOpenTelemetry.getPropagators()
-                        .textMapPropagator
-                        .extract(
-                            Context.current(),
-                            message.properties.headers,
-                            RabbitMQTextMapGetter()
-                        )
-                val span = tracer.spanBuilder(path).setParent(context).startSpan()
-
-                var payload: ByteArray
-                var status: ByteArray
-                try {
-                    span.makeCurrent().use { scope ->
-                        val response = endpoint.act(MQRequest(path, body))
+                    var payload: ByteArray
+                    var status: ByteArray
+                    try {
+                        span.makeCurrent().use { scope ->
+                            val response = endpoint.act(MQRequest(path, body))
+                            payload =
+                                response
+                                    .body()
+                                    .readAllBytes() // TODO: check the response code too to catch
+                            val httpHeader = response.head().first()
+                            val statusCode = httpHeader.split(" ")[1]
+                            status =
+                                (if (statusCode[0] == '2') "ok" else "core_error")
+                                    .encodeToByteArray()
+                        }
+                    } catch (t: Throwable) {
+                        span.recordException(t)
                         payload =
-                            response
-                                .body()
-                                .readAllBytes() // TODO: check the response code too to catch
-                        val httpHeader = response.head().first()
-                        val statusCode = httpHeader.split(" ")[1]
-                        status =
-                            (if (statusCode[0] == '2') "ok" else "core_error").encodeToByteArray()
+                            "ERROR, exception received"
+                                .toByteArray() // TODO: have a valid payload for uncaught exceptions
+                        status = "core_error".encodeToByteArray()
+                    } finally {
+                        span.end()
                     }
-                } catch (t: Throwable) {
-                    span.recordException(t)
-                    payload =
-                        "ERROR, exception received"
-                            .toByteArray() // TODO: have a valid payload for uncaught exceptions
-                    status = "core_error".encodeToByteArray()
-                } finally {
-                    span.end()
+
+                    if (replyTo != null) {
+                        val properties =
+                            AMQP.BasicProperties()
+                                .builder()
+                                .correlationId(correlationId)
+                                .headers(mapOf("x-status" to status))
+                                .build()
+                        channel.basicPublish("", replyTo, properties, payload)
+                    }
+
+                    channel.basicAck(message.envelope.deliveryTag, false)
+                    logger.info("request for path {} processed", path)
+                },
+                { _ -> logger.error("consumer cancelled") },
+                { consumerTag, e ->
+                    logger.info("consume shutdown: {}, {}", consumerTag, e.toString())
                 }
+            )
 
-                if (replyTo != null) {
-                    val properties =
-                        AMQP.BasicProperties()
-                            .builder()
-                            .correlationId(correlationId)
-                            .headers(mapOf("x-status" to status))
-                            .build()
-                    channel.basicPublish("", replyTo, properties, payload)
-                }
+            logger.info("consume ended")
 
-                channel.basicAck(message.envelope.deliveryTag, false)
-                logger.info("request for path {} processed", path)
-            },
-            { _ -> logger.error("consumer cancelled") },
-            { consumerTag, e -> logger.info("consume shutdown: {}, {}", consumerTag, e.toString()) }
-        )
+            while (true) {
+                Thread.sleep(100)
+                if (!channel.isOpen()) break
+            }
 
-        logger.info("consume ended")
-
-        while (true) {
-            Thread.sleep(100)
-            if (!channel.isOpen()) break
+            return 0
         }
-
-        return 0
     }
 
     private fun reportActivity(activityChannel: Channel, event: String) {
