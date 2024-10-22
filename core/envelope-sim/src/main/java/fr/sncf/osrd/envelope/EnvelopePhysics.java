@@ -222,7 +222,7 @@ public class EnvelopePhysics {
         var kineticEnergyDelta =
                 0.5 * inertia * (part.getEndSpeed() * part.getEndSpeed() - part.getBeginSpeed() * part.getBeginSpeed());
 
-        var workDrag = 0;
+        double workDrag = 0.0;
         for (var i = 0; i < length - 1; i++) {
             var speed = part.getPointSpeed(i);
             var nextSpeed = part.getPointSpeed(i + 1);
