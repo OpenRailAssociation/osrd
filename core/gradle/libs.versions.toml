@@ -62,7 +62,7 @@ jcip-annotations = { module = 'net.jcip:jcip-annotations', version = '1.0' } # C
 spotbugs-annotations = { module = 'com.github.spotbugs:spotbugs-annotations', version = '4.8.+' } # LGPLv2.1
 
 opentelemetry-api = { module = 'io.opentelemetry:opentelemetry-api', version.ref = 'otel' }
-opentelemetry-instrumentation-annotations = { module = 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations', version = '2.8.0' }
+opentelemetry-instrumentation-annotations = { module = 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations', version = '2.9.0' }
 
 opentracing-util = { module = 'io.opentracing:opentracing-util', version = '0.33.0' }
 dd-trace-api = { module = 'com.datadoghq:dd-trace-api', version = '1.41.1' }
