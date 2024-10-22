@@ -5,11 +5,9 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
 
-import handleOperation from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
-import importTimetableToNGE from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
+import OsrdNgeSync from 'applications/operationalStudies/components/MacroEditor/OsrdNgeSync';
 import MicroMacroSwitch from 'applications/operationalStudies/components/MicroMacroSwitch';
 import NGE from 'applications/operationalStudies/components/NGE/NGE';
-import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTrainSchedule';
@@ -27,6 +25,7 @@ import TimetableManageTrainSchedule from 'modules/trainschedule/components/Manag
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
 import { useAppDispatch } from 'store';
 import { concatMap, mapBy } from 'utils/types';
+import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import ScenarioDescription from './ScenarioDescription';
 
@@ -72,52 +71,38 @@ const ScenarioContent = ({
     [setIsMacro, setCollapsedTimetable]
   );
 
-  const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
   const [ngeUpsertedTrainSchedules, setNgeUpsertedTrainSchedules] = useState<
     Map<number, TrainScheduleResult>
   >(new Map());
   const [ngeDeletedTrainIds, setNgeDeletedTrainIds] = useState<number[]>([]);
 
-  useEffect(() => {
-    if (!isMacro || (isMacro && ngeDto)) {
-      return;
-    }
+  const ngeProps = useAsyncMemo(async () => {
+    if (!isMacro) return null;
 
-    const doImport = async () => {
-      const dto = await importTimetableToNGE(scenario.infra_id, scenario.timetable_id, dispatch);
-      setNgeDto(dto);
+    const sync = new OsrdNgeSync(dispatch, scenario, trainSchedules || []);
+    await sync.importTimetable();
+    return {
+      dto: sync.getNgeDto(),
+      listener: sync.getNgeListener({
+        addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResult[]) => {
+          setNgeUpsertedTrainSchedules((prev) =>
+            concatMap(prev, mapBy(upsertedTrainSchedules, 'id'))
+          );
+        },
+        addDeletedTrainIds: (trainIds: number[]) => {
+          setNgeDeletedTrainIds((prev) => [...prev, ...trainIds]);
+        },
+      }),
     };
-    doImport();
-  }, [scenario, isMacro]);
+  }, [isMacro, scenario.id]);
 
   useEffect(() => {
     if (isMacro) {
       return;
     }
-
-    if (ngeDto) {
-      setNgeDto(undefined);
-    }
     upsertTrainSchedules(Array.from(ngeUpsertedTrainSchedules.values()));
     removeTrains(ngeDeletedTrainIds);
   }, [isMacro]);
-
-  const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) =>
-    handleOperation({
-      event,
-      dispatch,
-      infraId: infra.id,
-      timeTableId: scenario.timetable_id,
-      netzgrafikDto,
-      addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResult[]) => {
-        setNgeUpsertedTrainSchedules((prev) =>
-          concatMap(prev, mapBy(upsertedTrainSchedules, 'id'))
-        );
-      },
-      addDeletedTrainIds: (trainIds: number[]) => {
-        setNgeDeletedTrainIds((prev) => [...prev, ...trainIds]);
-      },
-    });
 
   return (
     <main className="mastcontainer mastcontainer-no-mastnav">
@@ -216,7 +201,14 @@ const ScenarioContent = ({
               )}
               {isMacro ? (
                 <div className={cx(collapsedTimetable ? 'macro-container' : 'h-100')}>
-                  <NGE dto={ngeDto} onOperation={handleNGEOperation} />
+                  <NGE
+                    dto={ngeProps.type === 'ready' && ngeProps.data ? ngeProps.data.dto : undefined}
+                    onOperation={
+                      ngeProps.type === 'ready' && ngeProps.data
+                        ? ngeProps.data.listener
+                        : undefined
+                    }
+                  />
                 </div>
               ) : (
                 isInfraLoaded &&

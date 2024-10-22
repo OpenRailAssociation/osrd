@@ -10,8 +10,6 @@ import type { AppDispatch } from 'store';
 import { formatToIsoDate } from 'utils/date';
 import { calculateTimeDifferenceInSeconds, formatDurationAsISO8601 } from 'utils/timeManipulation';
 
-import nodeStore from './nodeStore';
-import { DEFAULT_TRAINRUN_FREQUENCIES, DEFAULT_TRAINRUN_FREQUENCY } from './osrdToNge';
 import type {
   NetzgrafikDto,
   NGEEvent,
@@ -20,7 +18,41 @@ import type {
   TimeLockDto,
   TrainrunDto,
   LabelDto,
+  TrainrunFrequency,
 } from '../NGE/types';
+
+export const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
+  {
+    id: 2,
+    order: 0,
+    frequency: 30,
+    offset: 0,
+    name: 'Half-hourly',
+    shortName: '30',
+    linePatternRef: '30',
+  },
+  {
+    id: 3, // default NGE frequency takes id 3
+    order: 1,
+    frequency: 60,
+    offset: 0,
+    name: 'Hourly',
+    /** Short name, needs to be unique */
+    shortName: '60',
+    linePatternRef: '60',
+  },
+  {
+    id: 4,
+    order: 2,
+    frequency: 120,
+    offset: 0,
+    name: 'Two-hourly',
+    shortName: '120',
+    linePatternRef: '120',
+  },
+];
+
+export const DEFAULT_TRAINRUN_FREQUENCY: TrainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES[1];
 
 const createdTrainrun = new Map<number, number>();
 
@@ -372,35 +404,6 @@ const handleTrainrunOperation = async ({
   }
 };
 
-const handleUpdateNode = (timeTableId: number, node: NodeDto) => {
-  const { betriebspunktName: trigram, positionX, positionY } = node;
-  nodeStore.set(timeTableId, { trigram, positionX, positionY });
-};
-
-const handleNodeOperation = ({
-  type,
-  node,
-  timeTableId,
-}: {
-  type: NGEEvent['type'];
-  node: NodeDto;
-  timeTableId: number;
-}) => {
-  switch (type) {
-    case 'create':
-    case 'update': {
-      handleUpdateNode(timeTableId, node);
-      break;
-    }
-    case 'delete': {
-      nodeStore.delete(timeTableId, node.betriebspunktName);
-      break;
-    }
-    default:
-      break;
-  }
-};
-
 const handleLabelOperation = async ({
   type,
   label,
@@ -447,6 +450,7 @@ const handleOperation = async ({
   netzgrafikDto,
   addUpsertedTrainSchedules,
   addDeletedTrainIds,
+  handleNodeOperation,
 }: {
   event: NGEEvent;
   dispatch: AppDispatch;
@@ -455,6 +459,11 @@ const handleOperation = async ({
   netzgrafikDto: NetzgrafikDto;
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   addDeletedTrainIds: (trainIds: number[]) => void;
+  handleNodeOperation: (data: {
+    type: NGEEvent['type'];
+    node: NodeDto;
+    timeTableId: number;
+  }) => void;
 }) => {
   const { type } = event;
   switch (event.objectType) {
