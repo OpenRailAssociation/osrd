@@ -348,3 +348,14 @@ impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
         Some(self.infra)
     }
 }
+
+impl SimulationResponse {
+    pub fn simulation_run_time(self) -> Result<u64, Box<SimulationResponse>> {
+        match self {
+            SimulationResponse::Success { provisional, .. } => {
+                Ok(*provisional.times.last().expect("empty simulation result"))
+            }
+            err => Err(Box::from(err)),
+        }
+    }
+}

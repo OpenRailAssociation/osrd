@@ -236,24 +236,21 @@ async fn stdcm(
 
     // 2. Compute the earliest start time, maximum running time and maximum departure delay
     // Simulation time without stop duration
-    let (
-        simulation_run_time,
-        virtual_train_schedule,
-        virtual_train_sim_result,
-        virtual_train_pathfinding_result,
-    ) = simulate_train_run(
-        db_pool.clone(),
-        valkey_client.clone(),
-        core_client.clone(),
-        &stdcm_request,
-        &infra,
-        &rolling_stock,
-        timetable_id,
-    )
-    .await?;
-    let simulation_run_time = match simulation_run_time {
-        SimulationTimeResult::SimulationTime { value } => value,
-        SimulationTimeResult::Error { error } => {
+    let (virtual_train_schedule, virtual_train_sim_result, virtual_train_pathfinding_result) =
+        simulate_train_run(
+            db_pool.clone(),
+            valkey_client.clone(),
+            core_client.clone(),
+            &stdcm_request,
+            &infra,
+            &rolling_stock,
+            timetable_id,
+        )
+        .await?;
+
+    let simulation_run_time = match virtual_train_sim_result.clone().simulation_run_time() {
+        Ok(value) => value,
+        Err(error) => {
             return Ok(Json(STDCMResponse::PreprocessingSimulationError {
                 error: *error,
             }))
@@ -579,7 +576,6 @@ fn get_earliest_step_tolerance_window(data: &STDCMRequestPayload) -> u64 {
 }
 
 /// Returns a `Result` containing:
-/// * `SimulationTimeResult` - The result of the simulation time calculation.
 /// * `TrainSchedule` - The generated train schedule based on the provided data.
 /// * `SimulationResponse` - Simulation response.
 /// * `PathfindingResult` - Pathfinding result.
@@ -591,12 +587,7 @@ async fn simulate_train_run(
     infra: &Infra,
     rolling_stock: &RollingStockModel,
     timetable_id: i64,
-) -> Result<(
-    SimulationTimeResult,
-    TrainSchedule,
-    SimulationResponse,
-    PathfindingResult,
-)> {
+) -> Result<(TrainSchedule, SimulationResponse, PathfindingResult)> {
     // Doesn't matter for now, but eventually it will affect tmp speed limits
     let approx_start_time = get_earliest_step_time(data);
 
@@ -638,20 +629,7 @@ async fn simulate_train_run(
     )
     .await?;
 
-    let simulation_run_time = match sim_result.clone() {
-        SimulationResponse::Success { provisional, .. } => SimulationTimeResult::SimulationTime {
-            value: *provisional.times.last().expect("empty simulation result"),
-        },
-        err => SimulationTimeResult::Error {
-            error: Box::from(err),
-        },
-    };
-    Ok((
-        simulation_run_time,
-        train_schedule,
-        sim_result,
-        pathfinding_result,
-    ))
+    Ok((train_schedule, sim_result, pathfinding_result))
 }
 
 /// Returns the request's total stop time
@@ -801,12 +779,6 @@ async fn parse_stdcm_steps(
             }),
         })
         .collect())
-}
-
-#[derive(Debug)]
-enum SimulationTimeResult {
-    SimulationTime { value: u64 },
-    Error { error: Box<SimulationResponse> },
 }
 
 #[cfg(test)]
