@@ -177,17 +177,13 @@ export const usePathfinding = (
 
   const { updatePathSteps } = useOsrdConfActions();
 
-  const [invalidItems, setInvalidItems] = useState<string[]>([]);
-
   const generatePathfindingParams = (): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
     setPathProperties?.(undefined);
 
     const filteredPathSteps = pathSteps.filter(
-      (step) =>
-        step !== null &&
-        step.coordinates !== null &&
-        !('trigram' in step && invalidItems.includes(step.trigram))
+      (step) => step !== null && step.coordinates !== null && !step.isInvalid
     );
+
     return getPathfindingQuery({
       infraId,
       rollingStock,
@@ -224,19 +220,6 @@ export const usePathfinding = (
   }, [origin?.id, destination?.id, rollingStock]);
 
   useEffect(() => {
-    if (invalidItems.length > 0) {
-      pathfindingDispatch({
-        type: 'PATHFINDING_PARAM_CHANGED',
-        params: {
-          origin,
-          destination,
-          rollingStock,
-        },
-      });
-    }
-  }, [invalidItems]);
-
-  useEffect(() => {
     const startPathFinding = async () => {
       if (!pathfindingState.running) {
         pathfindingDispatch({ type: 'PATHFINDING_STARTED' });
@@ -260,12 +243,15 @@ export const usePathfinding = (
               })
               .filter((trigram): trigram is string => trigram !== null);
 
-            pathfindingDispatch({
-              type: 'PATHFINDING_ERROR',
-              message: `Invalid path item: ${invalidPathItems.join(', ')}`,
-            });
             if (invalidPathItems.length > 0) {
-              setInvalidItems([...invalidPathItems]);
+              const updatedPathSteps = pathSteps.map((step) => {
+                if (step && 'trigram' in step && invalidPathItems.includes(step.trigram)) {
+                  return { ...step, invalid: true };
+                }
+                return step;
+              });
+              dispatch(updatePathSteps({ pathSteps: updatedPathSteps }));
+              pathfindingDispatch({ type: 'PATHFINDING_PARAM_CHANGED' });
             }
           } else if (
             pathfindingResult.status === 'success' ||
@@ -389,7 +375,7 @@ export const usePathfinding = (
     if (infra && infra.state === 'CACHED' && pathfindingState.mustBeLaunched) {
       startPathFinding();
     }
-  }, [pathfindingState.mustBeLaunched, infra, invalidItems]);
+  }, [pathfindingState.mustBeLaunched, infra]);
 
   useEffect(() => setIsPathfindingInitialized(true), []);
 
@@ -401,6 +387,5 @@ export const usePathfinding = (
       infra,
       reloadCount,
     },
-    invalidItems,
   };
 };

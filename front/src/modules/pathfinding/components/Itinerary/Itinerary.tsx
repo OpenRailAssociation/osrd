@@ -24,7 +24,7 @@ import Destination from './DisplayItinerary/Destination';
 import Origin from './DisplayItinerary/Origin';
 import Vias from './DisplayItinerary/Vias';
 import ModalSuggestedVias from './ModalSuggestedVias';
-import { usePathfinding } from 'modules/pathfinding/hooks/usePathfinding';
+import type { PathStep } from 'reducers/osrdconf/types';
 
 type ItineraryProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
@@ -50,7 +50,10 @@ const Itinerary = ({
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { openModal } = useModal();
 
-  const { invalidItems: invalidPathItems } = usePathfinding(setPathProperties, pathProperties);
+  const isPathStepInvalid = (step: PathStep | null): boolean => {
+    return step?.isInvalid || false;
+  };
+  const viaSteps = pathSteps.slice(1, -1).filter((step) => step !== null) as PathStep[];
 
   const zoomToFeaturePoint = (lngLat?: Position) => {
     if (lngLat) {
@@ -168,13 +171,14 @@ const Itinerary = ({
       )}
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
         <div data-testid="display-itinerary">
-          <Origin zoomToFeaturePoint={zoomToFeaturePoint} invalidPathItems={invalidPathItems} />
+          <Origin zoomToFeaturePoint={zoomToFeaturePoint} isInvalid={isPathStepInvalid(origin)} />
           <div className="vias-list mb-2" data-testid="itinerary-vias">
             {pathSteps.length > 2 ? (
               <Vias
                 zoomToFeaturePoint={zoomToFeaturePoint}
                 shouldManageStopDuration={shouldManageStopDuration}
-                invalidPathItems={invalidPathItems}
+                pathSteps={viaSteps}
+                isPathStepInvalid={isPathStepInvalid}
               />
             ) : (
               <small data-testid="no-waypoint-chosen-text" className="ml-4">
@@ -184,7 +188,7 @@ const Itinerary = ({
           </div>
           <Destination
             zoomToFeaturePoint={zoomToFeaturePoint}
-            invalidPathItems={invalidPathItems}
+            isInvalid={isPathStepInvalid(destination)}
           />
         </div>
       </div>

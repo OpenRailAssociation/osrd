@@ -13,10 +13,10 @@ import { makeEnumBooleans } from 'utils/constants';
 
 type OriginProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
-  invalidPathItems?: string[];
+  isInvalid?: boolean;
 };
 
-const Origin = ({ zoomToFeaturePoint, invalidPathItems }: OriginProps) => {
+const Origin = ({ zoomToFeaturePoint, isInvalid }: OriginProps) => {
   const {
     getOrigin,
     getOriginDate,
@@ -46,9 +46,6 @@ const Origin = ({ zoomToFeaturePoint, invalidPathItems }: OriginProps) => {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { isStdcm } = makeEnumBooleans(MODES, mode);
-
-  const isInvalid =
-    invalidPathItems && origin && 'trigram' in origin && invalidPathItems.includes(origin.trigram);
 
   const originPointName = (
     <div
