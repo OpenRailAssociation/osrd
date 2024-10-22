@@ -235,15 +235,15 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                 Ok(())
             }
             RolesCommand::List(list_args) => {
-                roles::list_subject_roles(list_args, db_pool.get().await?)
+                roles::list_subject_roles(list_args, Arc::new(db_pool))
                     .await
                     .map_err(Into::into)
             }
-            RolesCommand::Add(add_args) => roles::add_roles(add_args, db_pool.get().await?)
+            RolesCommand::Add(add_args) => roles::add_roles(add_args, Arc::new(db_pool))
                 .await
                 .map_err(Into::into),
             RolesCommand::Remove(remove_args) => {
-                roles::remove_roles(remove_args, db_pool.get().await?)
+                roles::remove_roles(remove_args, Arc::new(db_pool))
                     .await
                     .map_err(Into::into)
             }

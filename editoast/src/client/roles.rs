@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fmt::Display};
+use std::{collections::HashSet, fmt::Display, sync::Arc};
 
 use anyhow::{anyhow, bail};
 use clap::{Args, Subcommand};
@@ -7,7 +7,7 @@ use editoast_authz::{
     roles::BuiltinRoleSet,
     BuiltinRole,
 };
-use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 use itertools::Itertools as _;
 use strum::IntoEnumIterator;
 use tracing::info;
@@ -89,9 +89,9 @@ async fn parse_and_fetch_subject(
 
 pub async fn list_subject_roles(
     ListArgs { subject }: ListArgs,
-    conn: DbConnection,
+    pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::<BuiltinRole>::new(conn);
+    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
     let subject = parse_and_fetch_subject(&subject, &driver).await?;
     let roles = driver.fetch_subject_roles(subject.id).await?;
     if roles.is_empty() {
@@ -116,9 +116,9 @@ fn parse_role_case_insensitive(tag: &str) -> anyhow::Result<BuiltinRole> {
 
 pub async fn add_roles(
     AddArgs { subject, roles }: AddArgs,
-    conn: DbConnection,
+    pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::<BuiltinRole>::new(conn);
+    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
     let subject = parse_and_fetch_subject(&subject, &driver).await?;
     let roles = roles
         .iter()
@@ -139,9 +139,9 @@ pub async fn add_roles(
 
 pub async fn remove_roles(
     RemoveArgs { subject, roles }: RemoveArgs,
-    conn: DbConnection,
+    pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::<BuiltinRole>::new(conn);
+    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
     let subject = parse_and_fetch_subject(&subject, &driver).await?;
     let roles = roles
         .iter()
