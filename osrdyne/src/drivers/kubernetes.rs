@@ -704,6 +704,17 @@ impl WorkerDriver for KubernetesDriver {
                     .map_err(DriverError::KubernetesError)?;
 
                     for hpa in hpas.iter() {
+                        // Check if managed by osrdyne otherwise ignore
+                        if hpa
+                            .metadata
+                            .labels
+                            .as_ref()
+                            .and_then(|labels| labels.get(LABEL_MANAGED_BY))
+                            != Some(&MANAGED_BY_VALUE.to_owned())
+                        {
+                            continue;
+                        }
+
                         let worker_key = hpa
                             .metadata
                             .labels
@@ -745,6 +756,14 @@ impl WorkerDriver for KubernetesDriver {
                     .map_err(DriverError::KubernetesError)?;
 
                     for scaled_object in scaled_objects.iter() {
+                        // Check if managed by osrdyne otherwise ignore
+                        if scaled_object.metadata.labels.as_ref().and_then(
+                            |labels: &BTreeMap<String, String>| labels.get(LABEL_MANAGED_BY),
+                        ) != Some(&MANAGED_BY_VALUE.to_owned())
+                        {
+                            continue;
+                        }
+
                         let worker_key = scaled_object
                             .metadata
                             .labels
