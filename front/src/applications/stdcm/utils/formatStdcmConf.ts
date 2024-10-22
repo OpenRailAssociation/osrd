@@ -1,22 +1,39 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { TFunction } from 'i18next';
 import { compact } from 'lodash';
 import type { Dispatch } from 'redux';
 
 import type {
+  PathItemLocation,
   PathfindingItem,
   PostTimetableByIdStdcmApiArg,
   TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
 import { setFailure } from 'reducers/main';
-import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
+import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { dateTimeFormatting } from 'utils/date';
 import { kmhToMs, mToMm, tToKg } from 'utils/physics';
 import { ISO8601Duration2sec, sec2ms } from 'utils/timeManipulation';
 
 import createMargin from './createMargin';
 
+const getStepLocation = (step: StdcmPathStep): PathItemLocation => {
+  if ('track' in step) {
+    return { track: step.track, offset: mToMm(step.offset) };
+  }
+  if ('operational_point' in step) {
+    return { operational_point: step.operational_point };
+  }
+  if ('trigram' in step) {
+    return { trigram: step.trigram, secondary_code: step.secondary_code };
+  }
+  if (step.uic === -1) {
+    throw new Error('Invalid UIC');
+  }
+  return { uic: step.uic, secondary_code: step.secondary_code };
+};
+
+// TODO: DROP STDCM V1: remove formattedStartTime, startTime and latestStartTime
 type ValidStdcmConfig = {
   rollingStockId: number;
   timetableId: number;
@@ -40,7 +57,7 @@ export const checkStdcmConf = (
   osrdconf: OsrdStdcmConfState & InfraState
 ): ValidStdcmConfig | null => {
   const {
-    pathSteps,
+    stdcmPathSteps: pathSteps,
     timetableID,
     speedLimitByTag,
     rollingStockComfort,
@@ -133,50 +150,22 @@ export const checkStdcmConf = (
 
   if (error) return null;
 
-  const path = compact(osrdconf.pathSteps).map((step) => {
-    const {
-      id,
-      arrival,
-      arrivalType,
-      arrivalToleranceBefore,
-      arrivalToleranceAfter,
-      deleted,
-      locked,
-      stopFor,
-      stopType,
-      positionOnPath,
-      coordinates,
-      name,
-      ch,
-      metadata,
-      theoreticalMargin,
-      kp,
-      receptionSignal,
-      ...stepLocation
-    } = step;
+  const path = compact(osrdconf.stdcmPathSteps).map((step) => {
+    const { arrival, tolerances, stopFor, arrivalType } = step;
+    const location = getStepLocation(step);
 
     const duration = stopFor ? sec2ms(ISO8601Duration2sec(stopFor) || Number(stopFor)) : 0;
     const timingData =
       arrivalType === 'preciseTime' && arrival
         ? {
             arrival_time: arrival,
-            arrival_time_tolerance_before: sec2ms(arrivalToleranceBefore ?? 0),
-            arrival_time_tolerance_after: sec2ms(arrivalToleranceAfter ?? 0),
+            arrival_time_tolerance_before: sec2ms(tolerances?.before ?? 0),
+            arrival_time_tolerance_after: sec2ms(tolerances?.after ?? 0),
           }
         : undefined;
-
-    if ('track' in stepLocation) {
-      return {
-        duration,
-        location: { track: stepLocation.track, offset: mToMm(stepLocation.offset) },
-        timing_data: timingData,
-      };
-    }
-
-    const secondary_code = 'trigram' in stepLocation || 'uic' in stepLocation ? ch : undefined;
     return {
       duration,
-      location: { ...stepLocation, secondary_code },
+      location,
       timing_data: timingData,
     };
   });

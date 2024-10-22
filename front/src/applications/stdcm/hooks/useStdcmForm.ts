@@ -10,8 +10,8 @@ import { extractDateAndTimefromISO } from 'utils/date';
 import type { StdcmSimulationInputs } from '../types';
 
 const useStdcmForm = (): StdcmSimulationInputs => {
-  const { getPathSteps, getSpeedLimitByTag } = useOsrdConfSelectors() as StdcmConfSelectors;
-  const pathSteps = useSelector(getPathSteps);
+  const { getStdcmPathSteps, getSpeedLimitByTag } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const pathSteps = useSelector(getStdcmPathSteps);
   const speedLimitByTag = useSelector(getSpeedLimitByTag);
   const { rollingStock } = useStoreDataForRollingStockSelector();
 

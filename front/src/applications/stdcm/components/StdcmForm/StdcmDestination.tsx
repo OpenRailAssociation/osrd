@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import DestinationIcon from 'assets/pictures/stdcm/destination.svg';
-import { useOsrdConfActions } from 'common/osrdContext';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import { extractDateAndTimefromISO, generateISODateFromDateTime } from 'utils/date';
 
@@ -13,71 +14,53 @@ import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmOpSchedule from './StdcmOpSchedule';
 import { DEFAULT_TOLERANCE } from '../../consts';
-import { ArrivalTimeTypes, type ScheduleConstraint, type StdcmConfigCardProps } from '../../types';
+import type { ArrivalTimeTypes, ScheduleConstraint, StdcmConfigCardProps } from '../../types';
 
-const StdcmDestination = ({
-  disabled = false,
-  destination,
-}: StdcmConfigCardProps & {
-  destination: PathStep | null;
-}) => {
+const StdcmDestination = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const [arrivalScheduleConstraint, setArrivalScheduleConstraint] = useState<ScheduleConstraint>();
+  const { getStdcmDestination } = useOsrdConfSelectors() as StdcmConfSelectors;
 
-  const {
-    updateDestination,
-    updateDestinationArrival,
-    updateDestinationArrivalType,
-    updateDestinationTolerances,
-  } = useOsrdConfActions() as StdcmConfSliceActions;
+  const destination = useSelector(getStdcmDestination);
+
+  const { updateStdcmPathStep } = useOsrdConfActions() as StdcmConfSliceActions;
 
   const { destinationArrival, destinationToleranceValues } = useMemo(
     () => ({
-      destinationArrival: destination?.arrival
+      destinationArrival: destination.arrival
         ? extractDateAndTimefromISO(destination.arrival)
         : undefined,
       destinationToleranceValues: {
-        arrivalToleranceBefore: destination?.arrivalToleranceBefore || DEFAULT_TOLERANCE,
-        arrivalToleranceAfter: destination?.arrivalToleranceAfter || DEFAULT_TOLERANCE,
+        arrivalToleranceBefore: destination.tolerances?.before || DEFAULT_TOLERANCE,
+        arrivalToleranceAfter: destination.tolerances?.after || DEFAULT_TOLERANCE,
       },
     }),
     [destination]
   );
 
-  const updateDestinationPoint = (pathStep: PathStep | null) => {
-    if (!pathStep || !arrivalScheduleConstraint) {
-      dispatch(updateDestination(pathStep));
-    } else {
-      dispatch(
-        updateDestination({
-          ...pathStep,
-          arrival: generateISODateFromDateTime(arrivalScheduleConstraint),
-        })
-      );
-    }
+  const onArrivalChange = (schedule: ScheduleConstraint) => {
+    const newPathStep = { ...destination, arrival: generateISODateFromDateTime(schedule) };
+    dispatch(updateStdcmPathStep(newPathStep));
   };
 
-  const onDestinationArrivalChange = (schedule: ScheduleConstraint) => {
-    setArrivalScheduleConstraint(schedule);
-
-    const newOpArrival = generateISODateFromDateTime(schedule);
-    dispatch(updateDestinationArrival(newOpArrival));
+  const onArrivalTypeChange = (arrivalType: ArrivalTimeTypes) => {
+    dispatch(updateStdcmPathStep({ ...destination, arrivalType }));
   };
 
-  const onDestinationArrivalTypeChange = (arrivalType: ArrivalTimeTypes) => {
-    dispatch(updateDestinationArrivalType(arrivalType));
-  };
-
-  const onDestinationToleranceChange = ({
+  const onToleranceChange = ({
     toleranceBefore,
     toleranceAfter,
   }: {
     toleranceBefore: number;
     toleranceAfter: number;
   }) => {
-    dispatch(updateDestinationTolerances({ toleranceBefore, toleranceAfter }));
+    dispatch(
+      updateStdcmPathStep({
+        ...destination,
+        tolerances: { before: toleranceBefore, after: toleranceAfter },
+      })
+    );
   };
 
   return (
@@ -87,26 +70,19 @@ const StdcmDestination = ({
       disabled={disabled}
       className="extremity"
     >
-      <div className="stdcm-destination">
-        <StdcmOperationalPoint
-          updatePoint={updateDestinationPoint}
-          point={destination}
-          opPointId={destination?.id || 'destination'}
-          disabled={disabled}
-        />
-        {destination && (
-          <StdcmOpSchedule
-            onArrivalChange={onDestinationArrivalChange}
-            onArrivalTypeChange={onDestinationArrivalTypeChange}
-            onArrivalToleranceChange={onDestinationToleranceChange}
-            opTimingData={destinationArrival}
-            opToleranceValues={destinationToleranceValues}
-            opScheduleTimeType={destination?.arrivalType || ArrivalTimeTypes.ASAP}
-            disabled={disabled}
-            opId="destination-arrival"
-          />
-        )}
-      </div>
+      {'uic' in destination && (
+        <StdcmOperationalPoint point={destination} opPointId={destination.id} disabled={disabled} />
+      )}
+      <StdcmOpSchedule
+        onArrivalChange={onArrivalChange}
+        onArrivalTypeChange={onArrivalTypeChange}
+        onArrivalToleranceChange={onToleranceChange}
+        opTimingData={destinationArrival}
+        opToleranceValues={destinationToleranceValues}
+        opScheduleTimeType={destination.arrivalType}
+        disabled={disabled}
+        opId="destination-arrival"
+      />
     </StdcmCard>
   );
 };
