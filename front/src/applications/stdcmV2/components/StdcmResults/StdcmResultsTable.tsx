@@ -28,6 +28,8 @@ const StcdmResultsTable = ({
   const [showAllOP, setShowAllOP] = useState(false);
   const toggleShowAllOP = () => setShowAllOP((prevState) => !prevState);
 
+  console.log('hello', operationalPointsList);
+
   return (
     <div className="table-container">
       <table className="table-results">
@@ -49,12 +51,17 @@ const StcdmResultsTable = ({
             const isLastStep = index === operationalPointsList.length - 1;
             const prevStep = operationalPointsList[index - 1];
             const isRequestedPathStep = stdcmData.simulationPathSteps.some(
-              (pathStep) => pathStep.name === step.name && pathStep.ch === step.ch
+              ({ location }) =>
+                location &&
+                location.name === step.name &&
+                'secondary_code' in location &&
+                location.secondary_code === step.ch
             );
             const shouldRenderRow = isFirstStep || isRequestedPathStep || isLastStep;
             const isPathStep =
               isFirstStep || isLastStep || (isRequestedPathStep && step.duration === 0);
             const isNotExtremity = !isFirstStep && !isLastStep;
+            console.log({ shouldRenderRow });
             if (showAllOP || shouldRenderRow) {
               return (
                 <tr key={index}>

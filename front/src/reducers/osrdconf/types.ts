@@ -51,6 +51,8 @@ export interface StandardAllowance {
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {
+  originDatetime?: Date;
+  stdcmPathSteps: StdcmPathStep[];
   maximumRunTime: number;
   standardStdcmAllowance?: StandardAllowance;
   totalMass?: number;
@@ -88,3 +90,16 @@ export type PathStep = PathItemLocation & {
     trackNumber: number;
   };
 };
+
+export type StdcmPathStep = {
+  id: string;
+  arrival?: Date;
+  stopFor?: string;
+  isVia: boolean;
+  location?: PathItemLocation & {
+    name: string;
+    coordinates: number[];
+  };
+  arrivalToleranceBefore?: number;
+  arrivalToleranceAfter?: number;
+} & ({ isVia: true; stopType?: StdcmStopTypes } | { isVia: false; arrivalType: ArrivalTimeTypes });

@@ -2,6 +2,7 @@ import { compact } from 'lodash';
 
 import type {
   GeoJsonLineString,
+  PathItemLocation,
   PathProperties,
   PathfindingInput,
   PostInfraByInfraIdPathfindingBlocksApiArg,
@@ -51,7 +52,7 @@ export const matchPathStepAndOp = (step: PathStep, op: SuggestedOP) => {
   return step.id === op.opId;
 };
 
-export const getPathfindingQuery = ({
+export const getPathfindingQuery = <T extends PathItemLocation>({
   infraId,
   rollingStock,
   origin,
@@ -60,15 +61,15 @@ export const getPathfindingQuery = ({
 }: {
   infraId?: number;
   rollingStock?: RollingStockWithLiveries;
-  origin: PathStep | null;
-  destination: PathStep | null;
-  pathSteps: (PathStep | null)[];
+  origin: T | null;
+  destination: T | null;
+  pathSteps: (T | null)[];
 }): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
   if (infraId && rollingStock && origin && destination) {
     // Only origin and destination can be null so we can compact and we want to remove any via that would be null
     const pathItems: PathfindingInput['path_items'] = compact(pathSteps).map((step) => {
       if ('uic' in step) {
-        return { uic: step.uic, secondary_code: step.ch };
+        return { uic: step.uic, secondary_code: step.secondary_code };
       }
       if ('track' in step) {
         return {
@@ -85,7 +86,7 @@ export const getPathfindingQuery = ({
       }
       return {
         trigram: step.trigram,
-        secondary_code: step.ch,
+        secondary_code: step.secondary_code,
       };
     });
 

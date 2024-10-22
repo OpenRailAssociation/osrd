@@ -6,7 +6,7 @@ import type {
   SimulationResponse,
 } from 'common/api/osrdEditoastApi';
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import type { ValueOf } from 'utils/types';
 
 export type StdcmRequestStatus = ValueOf<typeof STDCM_REQUEST_STATUS>;
@@ -19,7 +19,7 @@ export type StdcmV2SuccessResponse = Omit<
   rollingStock: LightRollingStock;
   creationDate: Date;
   speedLimitByTag?: string;
-  simulationPathSteps: PathStep[];
+  simulationPathSteps: StdcmPathStep[];
 };
 
 export type SimulationReportSheetProps = {

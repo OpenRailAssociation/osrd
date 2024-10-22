@@ -1,15 +1,15 @@
 import type { TFunction } from 'i18next';
 
-import type { PathStep } from 'reducers/osrdconf/types';
-import { extractHHMM } from 'utils/date';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import { extractDateAndTimeFromDate } from 'utils/date';
 
 import { StdcmConfigErrorTypes, ArrivalTimeTypes, type StdcmConfigErrors } from '../types';
 
 const checkStdcmConfigErrors = (
   pathfindingStateError: boolean,
-  origin: PathStep | null,
-  destination: PathStep | null,
-  pathSteps: (PathStep | null)[],
+  origin: Extract<StdcmPathStep, { isVia: false }>,
+  destination: Extract<StdcmPathStep, { isVia: false }>,
+  pathSteps: StdcmPathStep[],
   t: TFunction
 ): StdcmConfigErrors | undefined => {
   const isOneOpPointMissing = !origin || !destination;
@@ -42,10 +42,10 @@ const checkStdcmConfigErrors = (
       errorType: StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED,
       errorDetails: {
         originTime: origin?.arrival
-          ? t('leaveAt', { time: extractHHMM(origin.arrival) })
+          ? t('leaveAt', { time: extractDateAndTimeFromDate(origin.arrival).arrivalTime })
           : t('departureTime'),
         destinationTime: destination?.arrival
-          ? t('arriveAt', { time: extractHHMM(destination.arrival) })
+          ? t('arriveAt', { time: extractDateAndTimeFromDate(destination.arrival).arrivalTime })
           : t('destinationTime'),
       },
     };

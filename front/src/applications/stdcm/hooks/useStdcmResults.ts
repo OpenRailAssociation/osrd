@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react';
 
-import { compact } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
@@ -12,12 +11,14 @@ import {
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
-import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/pathfinding/utils';
+import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 
 import { STDCM_TRAIN_ID } from '../consts';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import { upsertStdcmPathStepsInOPs } from '../utils/upsertStdcmPathStepsInOPs';
 
 const useStdcmResults = (
   stdcmResponse: StdcmV2SuccessResponse | undefined,
@@ -25,8 +26,8 @@ const useStdcmResults = (
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void
 ) => {
   const infraId = useInfraID();
-  const { getPathSteps } = useOsrdConfSelectors();
-  const pathSteps = useSelector(getPathSteps);
+  const { getStdcmPathSteps } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const pathSteps = useSelector(getStdcmPathSteps);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const [postPathProperties] =
@@ -68,11 +69,6 @@ const useStdcmResults = (
         await postPathProperties(pathPropertiesParams).unwrap();
 
       if (geometry && operational_points && electrifications) {
-        const pathStepsWihPosition = compact(pathSteps).map((step, i) => ({
-          ...step,
-          positionOnPath: path.path_item_positions[i],
-        }));
-
         const operationalPointsWithUniqueIds = operational_points.map((op, index) => ({
           ...op,
           id: `${op.id}-${op.position}-${index}`,
@@ -84,9 +80,9 @@ const useStdcmResults = (
           path.length
         );
 
-        const updatedSuggestedOPs = upsertPathStepsInOPs(
+        const updatedSuggestedOPs = upsertStdcmPathStepsInOPs(
           suggestedOperationalPoints,
-          pathStepsWihPosition
+          pathSteps, path
         );
 
         setPathProperties({

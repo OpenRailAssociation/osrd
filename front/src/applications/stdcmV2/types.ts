@@ -2,12 +2,11 @@ import type { ManageTrainSchedulePathProperties } from 'applications/operational
 import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
 import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 export type StdcmSimulationInputs = {
-  departureDate?: string;
-  departureTime?: string;
-  pathSteps: (PathStep | null)[];
+  departureDatetime?: Date;
+  pathSteps: StdcmPathStep[];
   consist?: {
     tractionEngine?: RollingStockWithLiveries;
     speedLimitByTag?: string;

@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import type { StdcmStopTypes } from '../types';
 
 type StdcmStopTypeProps = {
-  stopTypes: StdcmStopTypes;
+  stopType: StdcmStopTypes;
   updatePathStepStopType: (stopType: StdcmStopTypes) => void;
 };
 
-const StdcmStopType = ({ stopTypes, updatePathStepStopType }: StdcmStopTypeProps) => {
+const StdcmStopType = ({ stopType, updatePathStepStopType }: StdcmStopTypeProps) => {
   const { t } = useTranslation('stdcm');
 
   return (
@@ -16,7 +16,7 @@ const StdcmStopType = ({ stopTypes, updatePathStepStopType }: StdcmStopTypeProps
       <Select
         label={t('trainPath.type')}
         id="type"
-        value={stopTypes}
+        value={stopType}
         onChange={(e) => {
           if (e) {
             updatePathStepStopType(e as StdcmStopTypes);

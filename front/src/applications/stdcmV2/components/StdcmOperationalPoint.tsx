@@ -2,18 +2,21 @@ import { useEffect, useMemo } from 'react';
 
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { normalized } from 'utils/strings';
 import { createFixedSelectOptions } from 'utils/uiCoreHelpers';
 
 type StdcmOperationalPointProps = {
-  updatePoint: (pathStep: PathStep | null) => void;
-  point: PathStep | null;
-  opPointId: string;
+  pathStepId: string;
+  updatePathStepLocation: (location: StdcmPathStep['location']) => void;
+  pathStepLocation?: {
+    secondaryCode?: string | null;
+    uic: number;
+    name: string;
+  };
   disabled?: boolean;
 };
 
@@ -24,15 +27,18 @@ function formatChCode(chCode: string) {
 }
 
 const StdcmOperationalPoint = ({
-  updatePoint,
-  point,
-  opPointId,
+  pathStepId,
+  updatePathStepLocation,
+  pathStepLocation: location,
   disabled,
 }: StdcmOperationalPointProps) => {
   const { t } = useTranslation('stdcm');
 
   const { searchTerm, chCodeFilter, sortedSearchResults, setSearchTerm, setChCodeFilter } =
-    useSearchOperationalPoint({ initialSearchTerm: point?.name, initialChCodeFilter: point?.ch });
+    useSearchOperationalPoint({
+      initialSearchTerm: location?.name,
+      initialChCodeFilter: location?.secondaryCode || undefined,
+    });
 
   const operationalPointsSuggestions = useMemo(
     () =>
@@ -72,21 +78,22 @@ const StdcmOperationalPoint = ({
           },
           [] as { label: string; id: string }[]
         ),
-    [point, sortedSearchResults]
+    [location, sortedSearchResults]
   );
 
   const dispatchNewPoint = (p?: SearchResultItemOperationalPoint) => {
-    if (p && p.ch === point?.ch && 'uic' in point && p.uic === point?.uic) return;
-    const newPoint = p
+    if (p && p.ch === location?.secondaryCode && 'uic' in location && p.uic === location?.uic)
+      return;
+
+    const newLocation = p
       ? {
           name: p.name,
-          ch: p.ch,
-          id: nextId(),
           uic: p.uic,
+          secondaryCode: p.ch,
           coordinates: p.geographic.coordinates,
         }
-      : null;
-    updatePoint(newPoint);
+      : undefined;
+    updatePathStepLocation(newLocation);
   };
 
   const updateSelectedPoint = (
@@ -112,8 +119,8 @@ const StdcmOperationalPoint = ({
 
   const onSelectChCodeFilter = (selectedChCode?: { id: string }) => {
     setChCodeFilter(selectedChCode?.id);
-    if (point && 'uic' in point)
-      updateSelectedPoint(sortedSearchResults, point.uic, selectedChCode?.id);
+    if (location && 'uic' in location)
+      updateSelectedPoint(sortedSearchResults, location.uic, selectedChCode?.id);
   };
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,20 +131,22 @@ const StdcmOperationalPoint = ({
   };
 
   useEffect(() => {
-    if (point) {
-      setSearchTerm(point.name || '');
-      setChCodeFilter(point.ch || '');
-    } else {
-      setSearchTerm('');
-      setChCodeFilter(undefined);
-    }
-  }, [point]);
+    if (location) {
+     setSearchTerm(location.name);
+     setChCodeFilter(location.secondaryCode || undefined);
+   } else {
+     if (searchTerm !== '') {
+       setSearchTerm('');
+     }
+     setChCodeFilter(undefined);
+   }
+  }, [location]);
 
   return (
     <div className="location-line">
       <div className="col-9 ci-input">
         <ComboBox
-          id={`${opPointId}-ci`}
+          id={`${pathStepId}-ci`}
           label={t('trainPath.ci')}
           value={searchTerm}
           onChange={onInputChange}
@@ -152,7 +161,7 @@ const StdcmOperationalPoint = ({
       <div className="col-3 p-0">
         <Select
           label={t('trainPath.ch')}
-          id={`${opPointId}-ch`}
+          id={`${pathStepId}-ch`}
           value={chCodeFilter ? { label: formatChCode(chCodeFilter), id: chCodeFilter } : undefined}
           onChange={(e) => onSelectChCodeFilter(e)}
           {...createFixedSelectOptions(sortedChOptions)}

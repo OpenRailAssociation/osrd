@@ -195,11 +195,11 @@ export function serializeDateTimeWithoutYear(date: Date): string {
 
 /**
  * Convert an ISO date into a string formatted as 'DD/MM/YYYY' and extract the numeric values for hours and minutes.
- * @param {string} arrivalTime - Arrival time at which the train should arrive at the location. (Format: 'YYYY-MM-DDTHH:mm:ss+HH:mm')
+ * @param {Date} date - Arrival time at which the train should arrive at the location. (Format: 'YYYY-MM-DDTHH:mm:ss+HH:mm')
  * @returns {object} An object containing the parsed date and time.
  */
-export function extractDateAndTimefromISO(arrivalTime: string) {
-  const dayjsDate = dayjs(arrivalTime);
+export function extractDateAndTimeFromDate(date: Date) {
+  const dayjsDate = dayjs(date);
   return {
     arrivalDate: dayjsDate.format('YYYY-MM-DD'), // ISO date part
     arrivalTime: dayjsDate.format('HH:mm'), // ISO time part
@@ -226,15 +226,11 @@ export function isArrivalDateInSearchTimeWindow(
   return arrivalDate >= searchDatetimeWindow.begin && arrivalDate <= searchDatetimeWindow.end;
 }
 
-/**
- * Generates an ISO date string from a given date and time.
- * @param {ScheduleConstraint} - An object containing the base date, the hours, and the minutes.
- * @returns {string} The ISO formatted date string.
- */
-export const generateISODateFromDateTime = ({ date, hours, minutes }: ScheduleConstraint) => {
+/** Generates a date from a given date and time. */
+export const generateDatetimeFromDateAndTime = ({ date, hours, minutes }: ScheduleConstraint) => {
   date.setHours(hours);
   date.setMinutes(minutes);
-  return formatLocaleDateToIsoDate(date);
+  return date;
 };
 
 /** Format a date to a string 'DD/MM/YY', for instance '01/01/24' */

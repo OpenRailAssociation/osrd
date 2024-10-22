@@ -1,21 +1,35 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { TFunction } from 'i18next';
-import { compact, last } from 'lodash';
 import type { Dispatch } from 'redux';
 
 import type {
+  PathItemLocation,
   PathfindingItem,
   PostTimetableByIdStdcmApiArg,
   TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
 import { setFailure } from 'reducers/main';
-import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
+import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { dateTimeFormatting, dateTimeToIso } from 'utils/date';
 import { kmhToMs, mToMm, tToKg } from 'utils/physics';
 import { ISO8601Duration2sec, sec2ms, time2sec } from 'utils/timeManipulation';
 
 import createMargin from './createMargin';
+
+const getStepLocation = (step: StdcmPathStep): PathItemLocation | undefined => {
+  if (!step.location) return undefined;
+  const { location } = step;
+  if ('track' in location) {
+    return { track: location.track, offset: mToMm(location.offset) };
+  }
+  if ('operational_point' in location) {
+    return { operational_point: location.operational_point };
+  }
+  if ('trigram' in location) {
+    return { trigram: location.trigram, secondary_code: location.secondary_code };
+  }
+  return { uic: location.uic, secondary_code: location.secondary_code };
+};
 
 // TODO: DROP STDCM V1: remove formattedStartTime, startTime and latestStartTime
 type ValidStdcmConfig = {
@@ -48,7 +62,7 @@ export const checkStdcmConf = (
   isDebugMode = false
 ): ValidStdcmConfig | null => {
   const {
-    pathSteps,
+    stdcmPathSteps: pathSteps,
     timetableID,
     speedLimitByTag,
     rollingStockComfort,
@@ -68,8 +82,12 @@ export const checkStdcmConf = (
     totalMass,
     maxSpeed,
   } = osrdconf;
+
+  const origin = pathSteps.at(0)!;
+  const destination = pathSteps.at(-1)!;
+
   let error = false;
-  if (pathSteps[0] === null) {
+  if (!origin) {
     error = true;
     dispatch(
       setFailure({
@@ -88,7 +106,7 @@ export const checkStdcmConf = (
       })
     );
   }
-  if (pathSteps[pathSteps.length - 1] === null) {
+  if (!destination.location) {
     error = true;
     dispatch(
       setFailure({
@@ -131,9 +149,13 @@ export const checkStdcmConf = (
 
   if (stdcmV2Activated) {
     // If stdcmV2Activated is true, we use the arrival date from either the origin or the destination
-    const firstArrival = pathSteps[0]?.arrival;
-    const lastArrival = last(pathSteps)?.arrival;
-    const isDepartureScheduled = pathSteps[0]?.arrivalType === 'preciseTime';
+    if (origin.isVia || destination.isVia) {
+      throw new Error('Origin and destination cannot be via points');
+    }
+
+    const firstArrival = origin.arrival;
+    const lastArrival = destination?.arrival;
+    const isDepartureScheduled = origin.arrivalType === 'preciseTime';
 
     startDateTime = isDepartureScheduled ? new Date(firstArrival!) : new Date(lastArrival!);
   } else if (!startTime) {
@@ -169,50 +191,43 @@ export const checkStdcmConf = (
 
   if (error) return null;
 
-  const path = compact(osrdconf.pathSteps).map((step) => {
-    const {
-      id,
-      arrival,
-      arrivalType,
-      arrivalToleranceBefore,
-      arrivalToleranceAfter,
-      deleted,
-      locked,
-      stopFor,
-      stopType,
-      positionOnPath,
-      coordinates,
-      name,
-      ch,
-      metadata,
-      theoreticalMargin,
-      kp,
-      receptionSignal,
-      ...stepLocation
-    } = step;
-
-    const duration = stopFor ? sec2ms(ISO8601Duration2sec(stopFor) || Number(stopFor)) : 0;
-    const timingData =
-      arrivalType === 'preciseTime' && arrival
-        ? {
-            arrival_time: arrival,
-            arrival_time_tolerance_before: sec2ms(arrivalToleranceBefore ?? 0),
-            arrival_time_tolerance_after: sec2ms(arrivalToleranceAfter ?? 0),
-          }
-        : undefined;
-
-    if ('track' in stepLocation) {
-      return {
-        duration,
-        location: { track: stepLocation.track, offset: mToMm(stepLocation.offset) },
-        timing_data: timingData,
-      };
+  const path = pathSteps.map((step) => {
+    const stepLocation = getStepLocation(step);
+    if (!stepLocation) {
+      throw new Error('Missing location');
     }
 
-    const secondary_code = 'trigram' in stepLocation || 'uic' in stepLocation ? ch : undefined;
+    let duration: number | undefined = undefined;
+    if (step.id === origin.id || step.id === destination.id) {
+      duration = 0;
+    } else if (step.stopFor) {
+      const { stopFor } = step;
+      duration = sec2ms(ISO8601Duration2sec(stopFor) || Number(stopFor));
+    }
+
+    let timingData;
+    if (step.arrival) {
+      const { arrival } = step;
+      if (step.isVia) {
+        timingData = {
+          arrival_time: arrival.toISOString(),
+          arrival_time_tolerance_before: sec2ms(step.arrivalToleranceBefore ?? 0),
+          arrival_time_tolerance_after: sec2ms(step.arrivalToleranceAfter ?? 0),
+        };
+      } else {
+        if (step.arrivalType === 'preciseTime') {
+          timingData = {
+            arrival_time: arrival.toISOString(),
+            arrival_time_tolerance_before: 0,
+            arrival_time_tolerance_after: 0,
+          };
+        }
+      }
+    }
+
     return {
       duration,
-      location: { ...stepLocation, secondary_code },
+      location: stepLocation,
       timing_data: timingData,
     };
   });

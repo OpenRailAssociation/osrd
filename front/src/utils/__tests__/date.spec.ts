@@ -6,10 +6,10 @@ import {
   formatToIsoDate,
   serializeDateTimeWithoutYear,
   parseDateTime,
-  extractDateAndTimefromISO,
+  extractDateAndTimeFromDate,
   isArrivalDateInSearchTimeWindow,
   formatLocaleDateToIsoDate,
-  generateISODateFromDateTime,
+  generateDatetimeFromDateAndTime,
 } from 'utils/date';
 
 describe('dateTimeToIso', () => {
@@ -88,10 +88,10 @@ describe('serializeDateTimeWithoutYear', () => {
   });
 });
 
-describe('extractDateAndTimefromISO', () => {
+describe('extractDateAndTimeFromDate', () => {
   it('should correctly parse the date and time from an ISO string', () => {
-    const arrivalTime = '2024-10-05T14:30:00+00:00';
-    const result = extractDateAndTimefromISO(arrivalTime);
+    const arrivalTime = new Date('2024-10-05T14:30:00+00:00');
+    const result = extractDateAndTimeFromDate(arrivalTime);
 
     expect(result).toEqual({
       arrivalDate: '2024-10-05',
@@ -102,8 +102,8 @@ describe('extractDateAndTimefromISO', () => {
   });
 
   it('should handle single digit hours and minutes correctly', () => {
-    const arrivalTime = '2024-10-05T09:05:00+00:00';
-    const result = extractDateAndTimefromISO(arrivalTime);
+    const arrivalTime = new Date('2024-10-05T09:05:00+00:00');
+    const result = extractDateAndTimeFromDate(arrivalTime);
 
     expect(result).toEqual({
       arrivalDate: '2024-10-05',
@@ -139,17 +139,17 @@ describe('isArrivalDateInSearchTimeWindow', () => {
   });
 });
 
-describe('generateISODateFromDateTime', () => {
+describe('generateDatetimeFromDateAndTime', () => {
   it('should correctly set hours and minutes and return ISO string', () => {
     const schedule = {
       date: new Date('2024-08-01T00:00:00Z'),
       hours: 10,
       minutes: 30,
     };
-    const expectedISODate = formatLocaleDateToIsoDate(new Date('2024-08-01T10:30:00Z'));
+    const expected = new Date('2024-08-01T10:30:00Z');
 
-    const result = generateISODateFromDateTime(schedule);
+    const result = generateDatetimeFromDateAndTime(schedule);
 
-    expect(result).toBe(expectedISODate);
+    expect(result).toBe(expected);
   });
 });

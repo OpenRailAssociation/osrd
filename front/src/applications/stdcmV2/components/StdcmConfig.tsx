@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -22,6 +22,7 @@ import useStaticPathfinding from '../hooks/useStaticPathfinding';
 import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../types';
 import type { StdcmConfigErrors } from '../types';
 import checkStdcmConfigErrors from '../utils/checkStdcmConfigErrors';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 
 /**
  * Inputs in different cards inside the StdcmConfig component come from the stdcm redux store.
@@ -50,20 +51,30 @@ const StdcmConfig = ({
     updateGridMarginAfter,
     updateGridMarginBefore,
     updateStdcmStandardAllowance,
-    updateOriginArrivalType,
-    updateDestinationArrivalType,
+    updateStdcmPathStep,
   } = useOsrdConfActions() as StdcmConfSliceActions;
 
-  const { getOrigin, getDestination, getPathSteps, getProjectID, getScenarioID, getStudyID } =
-    useOsrdConfSelectors();
-  const origin = useSelector(getOrigin);
-  const pathSteps = useSelector(getPathSteps);
-  const destination = useSelector(getDestination);
+  const {
+    getStdcmOrigin,
+    getStdcmDestination,
+    getStdcmPathSteps,
+    getProjectID,
+    getScenarioID,
+    getStudyID,
+  } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const origin = useSelector(getStdcmOrigin);
+  const pathSteps = useSelector(getStdcmPathSteps);
+  const destination = useSelector(getStdcmDestination);
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
 
-  const pathfinding = useStaticPathfinding(infra);
+  const pathStepsLocations = useMemo(
+    () => pathSteps.map((step) => step.location || null),
+    [pathSteps]
+  );
+
+  const pathfinding = useStaticPathfinding(pathStepsLocations, infra);
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
@@ -88,10 +99,10 @@ const StdcmConfig = ({
   };
 
   const removeOriginArrivalTime = () => {
-    dispatch(updateOriginArrivalType(ArrivalTimeTypes.ASAP));
+    dispatch(updateStdcmPathStep({ ...origin, arrivalType: ArrivalTimeTypes.ASAP }));
   };
   const removeDestinationArrivalTime = () => {
-    dispatch(updateDestinationArrivalType(ArrivalTimeTypes.ASAP));
+    dispatch(updateStdcmPathStep({ ...destination, arrivalType: ArrivalTimeTypes.ASAP }));
   };
 
   useEffect(() => {
@@ -123,6 +134,8 @@ const StdcmConfig = ({
     }
   }, [infra]);
 
+  useEffect(() => console.log(origin), [origin]);
+
   return (
     <div className="stdcm-v2__body">
       {isDebugMode && (
@@ -140,9 +153,9 @@ const StdcmConfig = ({
           <div className="stdcm-v2-simulation-itinerary">
             {/* //TODO: use them when we implement this feature #403 */}
             {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
-            <StdcmOrigin disabled={disabled} origin={origin} />
+            <StdcmOrigin disabled={disabled} />
             <StdcmVias disabled={disabled} />
-            <StdcmDestination disabled={disabled} destination={destination} />
+            <StdcmDestination disabled={disabled} />
             {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
             <div
               className={cx('stdcm-v2-launch-request', {

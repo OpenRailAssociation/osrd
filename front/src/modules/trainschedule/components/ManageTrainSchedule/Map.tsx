@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { PathProperties } from 'common/api/osrdEditoastApi';
+import type { PathItemLocation, PathProperties } from 'common/api/osrdEditoastApi';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
@@ -48,14 +48,14 @@ import RenderPopup from 'modules/trainschedule/components/ManageTrainSchedule/Ma
 import { updateViewport } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import ItineraryLayer from './ManageTrainScheduleMap/ItineraryLayer';
 import ItineraryMarkers from './ManageTrainScheduleMap/ItineraryMarkers';
 
-type MapProps = {
+type MapProps<T extends PathItemLocation> = {
   pathProperties?: ManageTrainSchedulePathProperties;
   pathGeometry?: NonNullable<PathProperties['geometry']>;
   setMapCanvas?: (mapCanvas: string) => void;
@@ -64,11 +64,11 @@ type MapProps = {
   hideItinerary?: boolean;
   preventPointSelection?: boolean;
   mapId?: string;
-  simulationPathSteps?: PathStep[];
+  simulationPathSteps?: T[];
   showStdcmAssets?: boolean;
 };
 
-const Map = ({
+const Map = <T extends PathItemLocation>({
   pathProperties,
   pathGeometry: geometry,
   setMapCanvas,
@@ -80,7 +80,7 @@ const Map = ({
   simulationPathSteps,
   showStdcmAssets = false,
   children,
-}: PropsWithChildren<MapProps>) => {
+}: PropsWithChildren<MapProps<T>>) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();
