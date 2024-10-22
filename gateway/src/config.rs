@@ -244,6 +244,6 @@ impl Default for ProxyConfig {
 pub fn load() -> Result<ProxyConfig, figment::Error> {
     Figment::from(Serialized::defaults(ProxyConfig::default()))
         .merge(Toml::file("gateway.toml"))
-        .merge(Env::prefixed("GATEWAY_"))
+        .merge(Env::prefixed("GATEWAY__").split("__"))
         .extract()
 }
