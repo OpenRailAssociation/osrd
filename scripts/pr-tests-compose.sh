@@ -17,25 +17,34 @@ esac
 
 if  {
         [ "$#" -eq 3 ] &&
-        [ "$2" != "up-and-load-backup" ]
+            [ "$2" != "up-and-load-backup" ]
     } ||
     {
         [ "$#" -eq 2 ] &&
-        {   [ "$2" != "up" ] &&
-            [ "$2" != "down" ] &&
-            [ "$2" != "down-and-clean" ]
-        }
+            [ "$2" != "up" ]
+    } || 
+    {
+        [ "$#" -eq 1 ] &&
+            [ "$1" != "down" ] &&
+            [ "$1" != "down-and-clean" ]
+    } || 
+    {
+        [ "$#" -ne 1 ] &&
+            [ "$#" -ne 2 ] &&
+            [ "$#" -ne 3 ]
     }; then
 
-    echo "Usage: $0 pr-number (up | up-and-load-backup [osrd.backup] | down | down-and-clean )" >&2
+    echo "Usage: $0 ( [pr-number] (up | up-and-load-backup [osrd.backup]) | down | down-and-clean )" >&2
     exit 1
 
 fi
 
 # Change ports in needed files
-export PR_NB="pr-$1"
+export PR_NB="" # We export a blank string for down and down-and-clean options not to produce a warning
 
 if [ "$2" = "up" ] || [ "$2" = "up-and-load-backup" ]; then
+
+    export PR_NB="pr-$1"
 
     if [ "$2" = "up-and-load-backup" ]; then
 
@@ -55,7 +64,7 @@ if [ "$2" = "up" ] || [ "$2" = "up-and-load-backup" ]; then
         -f "docker/docker-compose.pr-tests.yml" \
         up -d
 
-elif [ "$2" = "down" ]; then
+elif [ "$1" = "down" ]; then
 
     # Shutdown the docker instance
     docker compose \
