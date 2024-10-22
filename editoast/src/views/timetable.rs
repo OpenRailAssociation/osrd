@@ -1,4 +1,5 @@
 pub mod stdcm;
+pub mod stdcm_request_payload;
 
 use std::collections::HashMap;
 
@@ -57,7 +58,7 @@ crate::routes! {
 editoast_common::schemas! {
     TimetableResult,
     TimetableDetailedResult,
-    stdcm::schemas(),
+    stdcm_request_payload::schemas(),
 }
 
 #[derive(Debug, Error, EditoastError)]
