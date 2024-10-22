@@ -1963,6 +1963,226 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/macro_nodes:
+    get:
+      tags:
+      - scenarios
+      summary: Get macro node list by scneario id
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 25
+          nullable: true
+          minimum: 1
+      responses:
+        '200':
+          description: List of macro nodes for the requested scenario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroNodeListResponse'
+        '404':
+          description: The requested scenario was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+    post:
+      tags:
+      - scenarios
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MacroNodeForm'
+        required: true
+      responses:
+        '201':
+          description: Macro node created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroNodeResponse'
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/macro_nodes/{node_id}:
+    get:
+      tags:
+      - scenarios
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: node_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The requested Macro node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroNodeResponse'
+        '404':
+          description: The macro node was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+    put:
+      tags:
+      - scenarios
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: node_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MacroNodeForm'
+        required: true
+      responses:
+        '200':
+          description: The requested scenario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroNodeResponse'
+        '404':
+          description: The macro node was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+    delete:
+      tags:
+      - scenarios
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: node_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The macro node was deleted successfully
+        '404':
+          description: The macro node was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
   /rolling_stock:
     post:
       tags:
@@ -4184,6 +4404,7 @@ components:
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastListErrorsRailjsonWrongRailjsonVersionProvided'
+      - $ref: '#/components/schemas/EditoastMacroNodeErrorNotFound'
       - $ref: '#/components/schemas/EditoastMqClientErrorConnectionDoesNotExist'
       - $ref: '#/components/schemas/EditoastMqClientErrorLapin'
       - $ref: '#/components/schemas/EditoastMqClientErrorPoolChannelFail'
@@ -4195,6 +4416,7 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
       - $ref: '#/components/schemas/EditoastOperationErrorModifyId'
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
+      - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPage'
       - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPageSize'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
@@ -4494,6 +4716,30 @@ components:
           type: string
           enum:
           - editoast:infra:railjson:WrongRailjsonVersionProvided
+    EditoastMacroNodeErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - node_id
+          properties:
+            node_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:macro_node:NotFound
     EditoastMqClientErrorConnectionDoesNotExist:
       type: object
       required:
@@ -4721,6 +4967,30 @@ components:
           type: string
           enum:
           - editoast:operation:ObjectNotFound
+    EditoastPaginationErrorInvalidPage:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - page
+          properties:
+            page:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:pagination:InvalidPage
     EditoastPaginationErrorInvalidPageSize:
       type: object
       required:
@@ -6680,6 +6950,83 @@ components:
       - FR3.3
       - FR3.3/GB/G2
       - GLOTT
+    MacroNodeForm:
+      type: object
+      required:
+      - position_x
+      - position_y
+      - connection_time
+      - labels
+      - path_item_key
+      properties:
+        connection_time:
+          type: integer
+          format: int64
+        full_name:
+          type: string
+          nullable: true
+        labels:
+          type: array
+          items:
+            type: string
+            nullable: true
+        path_item_key:
+          type: string
+        position_x:
+          type: number
+          format: double
+        position_y:
+          type: number
+          format: double
+        trigram:
+          type: string
+          nullable: true
+    MacroNodeListResponse:
+      allOf:
+      - $ref: '#/components/schemas/PaginationStats'
+      - type: object
+        required:
+        - results
+        properties:
+          results:
+            type: array
+            items:
+              $ref: '#/components/schemas/MacroNodeResponse'
+    MacroNodeResponse:
+      type: object
+      required:
+      - id
+      - position_x
+      - position_y
+      - connection_time
+      - labels
+      - path_item_key
+      properties:
+        connection_time:
+          type: integer
+          format: int64
+        full_name:
+          type: string
+          nullable: true
+        id:
+          type: integer
+          format: int64
+        labels:
+          type: array
+          items:
+            type: string
+            nullable: true
+        path_item_key:
+          type: string
+        position_x:
+          type: number
+          format: double
+        position_y:
+          type: number
+          format: double
+        trigram:
+          type: string
+          nullable: true
     Margins:
       type: object
       required:

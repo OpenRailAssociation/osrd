@@ -1,6 +1,7 @@
 use std::ops::DerefMut;
 
 use chrono::NaiveDateTime;
+use chrono::Utc;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
@@ -9,6 +10,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::error::Result;
+use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::Tags;
 use editoast_derive::Model;
@@ -47,5 +49,11 @@ impl Scenario {
 
     pub async fn trains_count(&self, conn: &mut DbConnection) -> Result<i64> {
         Timetable::trains_count(self.timetable_id, conn).await
+    }
+
+    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
+        self.last_modification = Utc::now().naive_utc();
+        self.save(conn).await?;
+        Ok(())
     }
 }

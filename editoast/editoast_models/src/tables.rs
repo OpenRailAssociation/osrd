@@ -413,6 +413,26 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    macro_node (id) {
+        id -> Int8,
+        scenario_id -> Int8,
+        position_x -> Float8,
+        position_y -> Float8,
+        #[max_length = 255]
+        full_name -> Nullable<Varchar>,
+        connection_time -> Int8,
+        labels -> Array<Nullable<Text>>,
+        #[max_length = 25]
+        trigram -> Nullable<Varchar>,
+        #[max_length = 255]
+        path_item_key -> Varchar,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     project (id) {
         id -> Int8,
         #[max_length = 128]
@@ -835,6 +855,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_speed_section,
     infra_object_switch,
     infra_object_track_section,
+    macro_node,
     project,
     rolling_stock,
     rolling_stock_livery,

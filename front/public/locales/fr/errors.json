@@ -95,6 +95,9 @@
       "LayerNotFound": "Couche de données {{layer_name}} non trouvée.",
       "ViewNotFound": "View {{view_name}} non trouvé."
     },
+    "macro_node": {
+      "NotFound": "Noeud {{node_id}} non trouvé."
+    },
     "operation": {
       "EmptyId": "Une chaine de caractères vide est interdit comme identifiant",
       "InvalidPatch": "Une erreur de correctif JSON est survenue",
