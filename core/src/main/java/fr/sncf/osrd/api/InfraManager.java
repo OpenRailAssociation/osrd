@@ -111,13 +111,22 @@ public class InfraManager extends APIClient {
             RJSInfra rjsInfra;
             String version;
             try (var response = httpClient.newCall(request).execute()) {
-                if (!response.isSuccessful()) throw new UnexpectedHttpResponse(response);
+                if (!response.isSuccessful()) {
+                    if (response.code() != 404) {
+                        throw new UnexpectedHttpResponse(response);
+                    } else {
+                        logger.info("Infra not found (deleted) on supplier middleware");
+                        throw OSRDError.newInfraLoadingError(
+                                ErrorType.InfraHardLoadingError, "Infra not found (deleted) on supplier middleware");
+                    }
+                }
 
                 // Parse the response
                 logger.info("parsing the JSON of {}", request.url());
                 cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
                 version = response.header("x-infra-version");
                 assert version != null : "missing x-infra-version header in railjson response";
+                cacheEntry.version = version;
                 rjsInfra = RJSInfra.adapter.fromJson(response.body().source());
             }
 
@@ -137,11 +146,11 @@ public class InfraManager extends APIClient {
             // Cache the infra
             logger.info("successfully cached {}", request.url());
             cacheEntry.infra = new FullInfra(rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
-            cacheEntry.version = version;
             cacheEntry.transitionTo(InfraStatus.CACHED);
             return cacheEntry.infra;
         } catch (IOException | UnexpectedHttpResponse | VirtualMachineError e) {
             cacheEntry.transitionTo(InfraStatus.TRANSIENT_ERROR, e);
+            // TODO: retry with an exponential backoff and jitter (use a concurrent Thread.sleep)
             throw OSRDError.newInfraLoadingError(ErrorType.InfraSoftLoadingError, cacheEntry.lastStatus.name(), e);
         } catch (Throwable e) {
             cacheEntry.transitionTo(InfraStatus.ERROR, e);

@@ -15,6 +15,8 @@ import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint
 import fr.sncf.osrd.api.api_v2.stdcm.STDCMEndpointV2
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.Context
@@ -131,7 +133,26 @@ class WorkerCommand : CliCommand {
             connection.createChannel().use { channel -> reportActivity(channel, "started") }
 
             if (!ALL_INFRA) {
-                infraManager.load(infraId, null, diagnosticRecorder)
+                try {
+                    infraManager.load(infraId, null, diagnosticRecorder)
+                } catch (e: OSRDError) {
+                    if (e.osrdErrorType == ErrorType.InfraHardLoadingError) {
+                        logger.warn("Failed to load infra $infraId with a perennial error: $e")
+                        // go on and future requests will be consumed and rejected
+                    } else if (e.osrdErrorType == ErrorType.InfraSoftLoadingError) {
+                        logger.error("Failed to load infra $infraId with a temporary error: $e")
+                        // Stop worker and let another worker spawn eventually
+                        throw e
+                    } else {
+                        logger.error(
+                            "Failed to load infra $infraId with an unexpected OSRD Error: $e"
+                        )
+                        throw e
+                    }
+                } catch (t: Throwable) {
+                    logger.error("Failed to load infra $infraId with an unexpected exception: $t")
+                    throw t
+                }
             }
 
             connection.createChannel().use { channel -> reportActivity(channel, "ready") }
@@ -225,6 +246,10 @@ class WorkerCommand : CliCommand {
                             "ERROR, exception received"
                                 .toByteArray() // TODO: have a valid payload for uncaught exceptions
                         status = "core_error".encodeToByteArray()
+                        // Stop worker and let another worker spawn eventually
+                        if (t is OSRDError && t.osrdErrorType == ErrorType.InfraSoftLoadingError) {
+                            throw t
+                        }
                     } finally {
                         span.end()
                     }

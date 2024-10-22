@@ -26,11 +26,12 @@ public enum ErrorType {
     StrictWarningError("strict_warning", "Warning was reported with strict mode enabled", ErrorCause.USER),
     AssertionError("assert_error", "assert check failed", ErrorCause.INTERNAL),
     UnknownError("unknown_error", "An unknown exception was thrown", ErrorCause.INTERNAL),
-    InfraSoftLoadingError("infra_loading:soft_error", "soft error while loading new infra", ErrorCause.USER),
+    InfraSoftLoadingError("infra_loading:soft_error", "soft error while loading new infra", ErrorCause.USER, false),
     InfraHardLoadingError("infra_loading:hard_error", "hard error while loading new infra", ErrorCause.USER),
     InfraHardError("infra:hard_error", "hard error while parsing infra", ErrorCause.USER),
     InfraLoadingCacheException("infra_loading:cache_exception", "cached exception", ErrorCause.INTERNAL),
-    InfraLoadingInvalidStatusException("infra_loading:invalid_status", "Status doesn’t exist", ErrorCause.INTERNAL),
+    InfraLoadingInvalidStatusException(
+            "infra_loading:invalid_status", "infra not loaded correctly", ErrorCause.INTERNAL),
     InfraInvalidStatusWhileWaitingStable(
             "infra_loading:invalid_status_waiting_stable", "invalid status after waitUntilStable", ErrorCause.INTERNAL),
     InfraInvalidVersionException("infra:invalid_version", "Invalid infra version", ErrorCause.USER),
