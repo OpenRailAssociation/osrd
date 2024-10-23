@@ -108,7 +108,7 @@ class STDCMPathfinding(
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
     @Trace(operationName = "STDCM pathfinding")
     fun findPath(): STDCMResult? {
-        assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
+        runInputSanityChecks()
 
         val constraints =
             ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
@@ -143,6 +143,35 @@ class STDCMPathfinding(
                 "total stop time = ${res.stopResults.sumOf { it.duration }.toInt()}s"
         )
         return res
+    }
+
+    /**
+     * Run sanity checks on the inputs, to raise relevant errors if the inputs can't possibly lead
+     * to a valid solution.
+     */
+    private fun runInputSanityChecks() {
+        if (steps.size < 2)
+            throw OSRDError(ErrorType.InvalidSTDCMInputs)
+                .withContext("cause", "Not enough steps have been set to find a path")
+
+        // Check that the step timing makes sense: they can be reached in order and inside the
+        // search time window
+        val maxArrivalTime = startTime + maxDepartureDelay + maxRunTime
+        var minArrivalTime = startTime
+        for ((i, step) in steps.withIndex()) {
+            val stepTiming = step.plannedTimingData
+            if (stepTiming != null) {
+                val earliestAllowedArrival =
+                    stepTiming.arrivalTime.seconds - stepTiming.arrivalTimeToleranceBefore.seconds
+                val latestAllowedArrival =
+                    stepTiming.arrivalTime.seconds + stepTiming.arrivalTimeToleranceAfter.seconds
+                if (
+                    earliestAllowedArrival > maxArrivalTime || latestAllowedArrival < minArrivalTime
+                )
+                    throw OSRDError(ErrorType.InvalidSTDCMInputs)
+                        .withContext("cause", "Step $i timing is outside the search time window")
+            }
+        }
     }
 
     private fun findPathImpl(): Result? {

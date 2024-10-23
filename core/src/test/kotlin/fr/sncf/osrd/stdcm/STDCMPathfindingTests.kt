@@ -745,7 +745,7 @@ class STDCMPathfindingTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(
                     setOf(EdgeLocation(blocks[0], Offset(0.meters))),
-                    PlannedTimingData((-10).seconds, 20.seconds, 0.0.seconds)
+                    PlannedTimingData((-10).seconds, 20.seconds, 10.0.seconds)
                 )
                 .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
                 .run()!!
@@ -765,7 +765,7 @@ class STDCMPathfindingTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(
                     setOf(EdgeLocation(blocks[0], Offset(0.meters))),
-                    PlannedTimingData((-10).seconds, 20.seconds, 0.0.seconds)
+                    PlannedTimingData((-10).seconds, 20.seconds, 10.0.seconds)
                 )
                 .setEndLocations(
                     setOf(EdgeLocation(blocks[0], Offset(100.meters))),

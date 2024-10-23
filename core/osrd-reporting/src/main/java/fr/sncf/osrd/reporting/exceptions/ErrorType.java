@@ -121,6 +121,7 @@ public enum ErrorType {
     SigSchemaUnknownFieldError("sig_schema_field_error", "unknown sig schema field", ErrorCause.USER),
     InvalidSTDCMUnspecifiedStartTime(
             "invalid_stdcm", "STDCM requests with unspecified start time are not supported yet", ErrorCause.INTERNAL),
+    InvalidSTDCMInputs("invalid_stdcm_inputs", "Invalid inputs for stdcm request", ErrorCause.USER),
     DelimitingSignalEmptyBlock(
             "delimiting_signal_empty_block", "Delimiting signals must protect a non-empty block", ErrorCause.USER),
     BALUnprotectedZones("unprotected_zones", "BAL signals always protect zones", ErrorCause.USER),
