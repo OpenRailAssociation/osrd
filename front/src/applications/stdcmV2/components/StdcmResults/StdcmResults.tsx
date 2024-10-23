@@ -1,24 +1,31 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import SimulationReportSheet from 'applications/stdcm/components/SimulationReportSheet';
 import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import useProjectedTrainsForStdcm from 'applications/stdcm/hooks/useProjectedTrainsForStdcm';
+import { processConflicts } from 'applications/stdcm/utils/fomatConflicts';
 import {
   generateCodeNumber,
   getOperationalPointsWithTimes,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import type { StdcmSimulation } from 'applications/stdcmV2/types';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 
+import conflictData from './conflicts.json';
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
+
+const SPEED_SPACE_CHART_HEIGHT = 521.5;
+const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
 type StcdmResultsV2Props = {
   isCalculationFailed: boolean;
@@ -30,10 +37,8 @@ type StcdmResultsV2Props = {
   selectedSimulationIndex: number;
   showStatusBanner: boolean;
   simulationsList: StdcmSimulation[];
+  pathProperties?: ManageTrainSchedulePathProperties;
 };
-
-const SPEED_SPACE_CHART_HEIGHT = 521.5;
-const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
 const StcdmResults = ({
   isCalculationFailed,
@@ -45,6 +50,7 @@ const StcdmResults = ({
   selectedSimulationIndex,
   showStatusBanner,
   simulationsList,
+  pathProperties,
 }: StcdmResultsV2Props) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const tWithoutPrefix = i18n.getFixedT(null, 'stdcm');
@@ -52,6 +58,8 @@ const StcdmResults = ({
   const [mapCanvas, setMapCanvas] = useState<string>();
   const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
     useState(SPEED_SPACE_CHART_HEIGHT);
+  const [trackConflicts, setTrackConflicts] = useState<string[]>([]);
+  const [workConflicts, setWorkConflicts] = useState<string[]>([]);
 
   const selectedSimulation = simulationsList[selectedSimulationIndex];
   const spaceTimeData = useProjectedTrainsForStdcm(selectedSimulation.outputs?.results);
@@ -72,6 +80,97 @@ const StcdmResults = ({
       selectedSimulation.outputs.results.departure_time
     );
   }, [selectedSimulation]);
+
+  useEffect(() => {
+    if (!pathProperties) return;
+    const generateConflictMessages = () => {
+      const processedConflictsData = processConflicts(
+        conflictData?.conflicts as Conflict[],
+        pathProperties
+      );
+
+      // condition to be reconsider before merging
+      const trackConflictsData = processedConflictsData.filter(
+        (conflict) => conflict.conflictType === 'Spacing'
+      );
+      // condition to be reconsider before merging
+      const workConflictsData = processedConflictsData.filter(
+        (conflict) => conflict.conflictType !== 'Spacing'
+      );
+
+      const trackMessages = [];
+      trackConflictsData.slice(0, 2).forEach((conflict) => {
+        const { waypointBefore, waypointAfter, startDate, endDate, startTime, endTime } = conflict;
+
+        if (startDate === endDate) {
+          trackMessages.push(
+            t('trackConflictSameDay', {
+              waypointBefore,
+              waypointAfter,
+              startTime,
+              endTime,
+              startDate,
+            })
+          );
+        } else {
+          trackMessages.push(
+            t('trackConflict', {
+              waypointBefore,
+              waypointAfter,
+              startDate,
+              endDate,
+              startTime,
+              endTime,
+            })
+          );
+        }
+      });
+
+      const remainingTrackConflicts = trackConflictsData.length - 2;
+      if (remainingTrackConflicts > 0) {
+        trackMessages.push(t('remainingTrackConflicts', { remainingTrackConflicts }));
+      }
+
+      const workMessages = [];
+      workConflictsData.slice(0, 2).forEach((conflict) => {
+        const { waypointBefore, waypointAfter, startDate, endDate, startTime, endTime } = conflict;
+
+        if (startDate === endDate) {
+          workMessages.push(
+            t('workConflictSameDay', {
+              waypointBefore,
+              waypointAfter,
+              startDate,
+              startTime,
+              endTime,
+            })
+          );
+        } else {
+          workMessages.push(
+            t('workConflict', {
+              waypointBefore,
+              waypointAfter,
+              startDate,
+              startTime,
+              endDate,
+              endTime,
+            })
+          );
+        }
+      });
+
+      const remainingWorkConflicts = workConflictsData.length - 2;
+      if (remainingWorkConflicts > 0) {
+        workMessages.push(t('remainingWorkConflicts', { remainingWorkConflicts }));
+      }
+
+      // Update the state with generated messages
+      setTrackConflicts(trackMessages);
+      setWorkConflicts(workMessages);
+    };
+
+    generateConflictMessages();
+  }, [t, pathProperties]);
 
   return (
     <>
@@ -121,7 +220,34 @@ const StcdmResults = ({
         ) : (
           <div className="simulation-failure">
             <span className="title">{t('notFound')}</span>
-            <span className="change-criteria">{t('changeCriteria')}</span>
+            <span className="change-criteria">{t('conflictsTitle')}</span>
+
+            {trackConflicts.length > 0 && (
+              <ul>
+                {trackConflicts.map((message, index) => (
+                  <li key={index}>
+                    <span>
+                      <Trans>{message}</Trans>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {trackConflicts.length > 0 && workConflicts.length > 0 && <br />}
+
+            {workConflicts.length > 0 && (
+              <ul>
+                {workConflicts.map((message, index) => (
+                  <li key={index}>
+                    <span>
+                      <Trans>{message}</Trans>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <span>{t('changeSearchCriteria')}</span>
           </div>
         )}
         <div className="osrd-config-item-container osrd-config-item-container-map map-results no-pointer-events">
@@ -130,6 +256,7 @@ const StcdmResults = ({
             isReadOnly
             hideAttribution
             showStdcmAssets
+            isFeasible={conflictData.status !== 'conflicts'}
             setMapCanvas={setMapCanvas}
             pathGeometry={selectedSimulation.outputs?.pathProperties.geometry}
             simulationPathSteps={selectedSimulation.outputs?.results.simulationPathSteps}

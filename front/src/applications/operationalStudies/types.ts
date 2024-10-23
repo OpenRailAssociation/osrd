@@ -66,6 +66,8 @@ export type ManageTrainSchedulePathProperties = {
   length: number;
   trackSectionRanges: NonNullable<PathfindingResultSuccess['track_section_ranges']>;
   incompatibleConstraints?: IncompatibleConstraints;
+  zones: PathProperties['zones'];
+  operationalPoints: SuggestedOP[];
 };
 
 /**

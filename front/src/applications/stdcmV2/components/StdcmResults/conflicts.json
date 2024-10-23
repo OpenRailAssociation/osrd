@@ -1,0 +1,4668 @@
+{
+  "status": "conflicts",
+  "pathfinding_result": {
+    "status": "success",
+    "blocks": [
+      "block.2155562e56a00db19fd74ae0d24d0780",
+      "block.b59b5ed588b77d8ddef6cf4404c41ec6",
+      "block.3eb711e1d2e0e2700958c06d6eaec5ad",
+      "block.067017b9874d8ca863324d14e37e85e6",
+      "block.205b726b102b1973251619f439da02e8",
+      "block.c11b00592ebf7c3f6908093fce1d200e",
+      "block.d0eef29d4ed05e7a19cb3607a60a0867",
+      "block.7989924fc25fe7cdcbf03f995c41ecba",
+      "block.2ada52e6fa71408c5a10801617265af0",
+      "block.8aa0a6dfa3272b2d011706c4bc3ce18a",
+      "block.c79689d5cffd99493733ac114d1e2350",
+      "block.748ad5accfd2fc01183404f66b74652a",
+      "block.c39745cf9074b77277a7006761bfeb8f",
+      "block.44ff4d41ddbfb13350f4a9aa84edec8e",
+      "block.9642897ea702fd474eabffb990c814c3",
+      "block.a6435117d03d43e49f5bae0344ea5903",
+      "block.5c357675c9a439e1fe867b121ce5bd13",
+      "block.e568339249de0c852bb966b82ef13322",
+      "block.c6c000caa3d82b3026dfeb9120edc8af",
+      "block.92bcea9428a91ae5bc03de1f965933ff",
+      "block.a7ad7f4ed3ac989b753c96245fa35974",
+      "block.4c47216058e972919fe50b4537e0d4e7",
+      "block.f8b06dc513f71e5e37da71ab50bd0f54",
+      "block.2cfbf3433209d43530a9e5e5de2ddc64",
+      "block.6544cedf3076be6e0410d13f6d237df5",
+      "block.983a3652ef9f61ccf1446556df74defd",
+      "block.00516909c7533443a0029f9e2af379d7",
+      "block.f554f035c4ab897a54d1fb85b3df5e1a",
+      "block.3fab8674d8deb5d6a1fdee93f2ee1519",
+      "block.1c98f3af5c5ed6dbc5f9bda49d112c08",
+      "block.42da733895cb4ea389bc4a3fd80cc861",
+      "block.a8617c78f7f0457d9c1af39c66bba0e5",
+      "block.076cb53b630c5e4934830bbc75c4cf7f",
+      "block.1ae8230f12aedd0c42b414d3622b7c8a",
+      "block.66891431babf29ee21440247b65e7cc5",
+      "block.6bb680c7d8d85b7873b93d26c81c89f2",
+      "block.f4a6451aa2e7a8e0440a640eea3ef382",
+      "block.ce0c3e0596c9d497305970b1a7e94faa",
+      "block.fa87af83f3d59569cc23bad4b87e8d94",
+      "block.b6000916328d34ca38319f26ade9dc73",
+      "block.19b2645068d48a4d19b9810316a47c13",
+      "block.46845d8be228381a604fe195a71c56e1",
+      "block.b3704e5f00f60f0b849f42812d340f68",
+      "block.cd240a43ff29279f5a8b3a745a08a17f",
+      "block.121c608a48d727e916055bcd05204171",
+      "block.16602dd8e5e73cd1bdba2a9dec985ee5",
+      "block.d3dfbcd3c3bd9af2977677d325208723",
+      "block.7850dac5058af884bbfe0a82871ac89d",
+      "block.19b6ecf5698d3ec0396abdf5c59695a6",
+      "block.b9d3e940515b0e69b4b053d8ca82805a",
+      "block.fc11736983456b477d5978fb902883fc",
+      "block.2bec43a95888dbada724de55c9678adf",
+      "block.d9d9c8ed6af71bbe94a6c71a84dc503d",
+      "block.110294da6e5d59932ebec7851ec89e84",
+      "block.83239a1ae6042b46a01dc943f67fac51",
+      "block.16507d25a16182f2f2d385909725a00b",
+      "block.363c0f11d706b5642bcf018b2f482a04",
+      "block.5fe670dfc1eae56907cff40dce5c21b0",
+      "block.b49f479d51c382edb6d11070ba224f91",
+      "block.baa6972ac1a07ff0af66fcfb06ab4391",
+      "block.c837e65ca0a5e44d08655cab3785ebcd",
+      "block.88c2e9b50b52d4e61b70820b53dc8ab5",
+      "block.f33f9a078735cdd29b91681aaff288c1",
+      "block.028b3d0b6395d13ace436d867adea6cd",
+      "block.d8a7ea9a112d57930beae85d857cd0f7",
+      "block.1b071376b5af5f3451ae5203ca68dc94",
+      "block.ce99c2668f3e28fee33ebfb107a387c5",
+      "block.931754dc61f94e42bb9f5a6c6d0d90e6",
+      "block.e2106c718edd368bc58494327c04f7e6",
+      "block.22bb79c08148f6be4bae01e103c71e2e",
+      "block.fef890a358e0827b45db82a2ee279c67",
+      "block.55a3c69ab3c05c48473f868287bc0e2d",
+      "block.a5a6a7638559015e5891e03af6f6423b",
+      "block.ee9a7358bfa818754636a905487d80a5",
+      "block.bb518c3e058f40c9c7a70bb158b629eb",
+      "block.78f5b00ec8fb0a519c2f6da7405835c4",
+      "block.3817a20a8f7dc025b0d28a9cc450fdf1",
+      "block.c2d408dcf5726bf8b99fe0e9dc19a918",
+      "block.473657fca96aae46ceebfbf186878edc",
+      "block.048f6908603b7b2776eb03167a3d0699",
+      "block.5c9c0fd087e3db236851fc37ae036f83",
+      "block.c0cdc297c762213182f82619fcc248a1",
+      "block.360f84d7818e6197f7535d35b032341f",
+      "block.16a0ea420a5989b7cc8c17661e121489",
+      "block.8dfe3b0f169ab45611251d8bbdf6f53e",
+      "block.baf02216b7e1a84f99866b00767ee5a2",
+      "block.762bb2a612f43e8907eb05c4e3fd0a69",
+      "block.90831764f527b367a89882849c81769e",
+      "block.2301f0d03d0d2427ec474feca19f6434",
+      "block.5d3f2cc3638d3f6a6f3f49549dcb7143",
+      "block.a6fc3bc618ddfd709dc1304aebfc23d0",
+      "block.187a88d6e6d918099d757361c7cc7777",
+      "block.f3c4e83eeefeff4a7578ad432e9a6475",
+      "block.65fd3c622746557e0729c0da573555a9",
+      "block.b7e20274a4524e2bbdd9d7970ce40a12",
+      "block.0529117ecd7f2f7268d3fadc8e10ae69",
+      "block.c5bdd082915dc619285de67b1997ef68",
+      "block.b9db1c1f3412ac9bf0ce9a9010bf2d15",
+      "block.3a6930b215fb8dd8ee416ad7d347bf2f",
+      "block.8f015fc36061dafec74bc0b0a00a3431",
+      "block.00fb2fa569383dae265491eebac97d5e",
+      "block.25fbd6f3ac2831a35bde859a2a52c5f2",
+      "block.94372b7bf1df734b61e1174b2c228a65",
+      "block.1e4a998aa0727c50e00e6c4e70e17ac3",
+      "block.ebb265b0eb9899d58ce21749d70d61fe",
+      "block.9c92552e6e025ce28143d63e7213d805",
+      "block.cde819ef02667c66217de4070e681919",
+      "block.0ecb7462ce6ccbbbd348289ade1f72c6",
+      "block.5770162727b267d6c6504e91deb3ed35",
+      "block.75ed8dfb3aa67a3e988cb735ac9a4284",
+      "block.80609f5045d3deeb7e5b972986b6cead",
+      "block.693d947a97afde6c1ba06505002ea59b",
+      "block.4d9c079b96e680239b930c132c88403d",
+      "block.39cee0599242311c3d356f243a691f26",
+      "block.52421e19941b40571f98a84d00c9aa72",
+      "block.cd0691bf56de10efd813c02916b8ba1b",
+      "block.254a4c26ef5892830387a82c41d58d74",
+      "block.3abfc455253d97cf4ccd09ed19d6b892",
+      "block.2178a68562e1b40940618c4785067f47",
+      "block.bbe633c2f280b5b7b043452f23cd0379",
+      "block.dbc1667fe3e6922045e40f2e52df6777",
+      "block.90234fd3527e8955613aeb0e0f4f0237",
+      "block.c5ea18b0ca2229d0ea1030a01d752d78",
+      "block.295f411cc443d108346d542f3f854276",
+      "block.8f6fd6228d5cab0907de3265052bd63d",
+      "block.34abee187449db28189215c4b82b85b7",
+      "block.f48e73fbea0aaa1137f25aa51fe73fad",
+      "block.12301f2138bd9e6743456216d0e30a07",
+      "block.8a274c7296a1dcaceea6159dc19bbbcd",
+      "block.8e5d2589419be6554a856ffc495e9de0",
+      "block.985d790eef4e247973e696440564dda8",
+      "block.982a49c56782adba94a504a829c869f4",
+      "block.8775aecfa81105867e7405014360b1d4",
+      "block.770537fa44671ee00a27073e2d6e6906",
+      "block.0c74b04c2019cce634d46df178662917",
+      "block.1d6f5cc9ba574b11f5b628466ecc29fb",
+      "block.56e6297e57344e82a079b02d6ded502d",
+      "block.50b2544718a6eaf63852f57a003b452c",
+      "block.acbdb38c32a56f42f797964717f88027",
+      "block.213289ecc31322e46ad840308f035fe1",
+      "block.37af3152162b3bd77ab5c326a20209f1",
+      "block.fb60b7a3c5a305a91313dc390d8b40cf",
+      "block.a2cef49cf4bff0878802e78c62045499",
+      "block.21d14edd63d103456cff928502ccc782",
+      "block.bc97e29aa74a10cf2348e2b6a3a0caca",
+      "block.f58e79d649ec14962217c49d330609ca",
+      "block.be9b59d2395775bdbcae89faa38afdaa",
+      "block.5d827d2c416005435e1287f9c80e335b",
+      "block.0f9196b5c9e28dbbfbe6cb3350e12020",
+      "block.ac849bc66db2ccc92bc9fe13174303cb",
+      "block.b6eb7b59c67729306a5e152d42a00fc2",
+      "block.506be69aa2e54f8de2a908ec5b7f4749",
+      "block.58713d7283bbcf3e52c91d5e2fdd6d5b",
+      "block.6fccedc266b2f2d371a992b6a29ccc22",
+      "block.5f467e3225611238b8a9a7adb944f8da",
+      "block.2910a46f1b0802be062295304e2bb735",
+      "block.c892bd2cc9cfe37dad25bb024e2f885f",
+      "block.53d8f2fc736cfeab7c9c527028aabf1e",
+      "block.3491a3d46f1bedef4faaad45c012ea7f",
+      "block.0f2fe0e2e29ab42ff2cdd41612325120",
+      "block.0ec8b5f63d6a489cf2a80745a7fb439e",
+      "block.c19387986defe2821f8edc111d00960e",
+      "block.4b6532076d5ca81a96ad38a0166d1900",
+      "block.d608147a286726ea47638da8ee3697d9",
+      "block.7b3d8161205fb2278f2e950eb9098eb3",
+      "block.df86b4ff3a2d071813a3de2773960f33"
+    ],
+    "routes": [
+      "route.20140",
+      "route.20142",
+      "route.16648",
+      "route.5034",
+      "route.10685",
+      "route.9571",
+      "route.43876",
+      "route.35800",
+      "route.35676",
+      "route.18987",
+      "route.1746",
+      "route.2544",
+      "route.20199",
+      "route.31191",
+      "route.20541",
+      "route.20542",
+      "route.20545",
+      "route.22586",
+      "route.18074",
+      "route.1805",
+      "route.16925",
+      "route.36116",
+      "route.33303",
+      "route.33318",
+      "route.31372",
+      "route.50341",
+      "route.30709",
+      "route.47752",
+      "route.49598",
+      "route.15902",
+      "route.1528",
+      "route.1529",
+      "route.1530",
+      "route.1531",
+      "route.24714",
+      "route.49410",
+      "route.374",
+      "route.375",
+      "route.378",
+      "route.28518",
+      "route.28519",
+      "route.30131",
+      "route.28304",
+      "route.15299",
+      "route.15301",
+      "route.13315",
+      "route.33387",
+      "route.34937",
+      "route.31774",
+      "route.26198",
+      "route.26199",
+      "route.26205",
+      "route.32748",
+      "route.29015",
+      "route.11459",
+      "route.11467",
+      "route.1747",
+      "route.37535",
+      "route.23396",
+      "route.23397",
+      "route.23401",
+      "route.34988",
+      "route.13543",
+      "route.13792",
+      "route.11029",
+      "route.5503",
+      "route.20584",
+      "route.5049",
+      "route.20193",
+      "route.20195",
+      "route.38308",
+      "route.20169",
+      "route.37171",
+      "route.36817",
+      "route.4087",
+      "route.25479"
+    ],
+    "track_section_ranges": [
+      {
+        "track_section": "64d3cfe0-6667-11e3-81ff-01f464e0362d",
+        "begin": 47000,
+        "end": 416000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "64d3ab2c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 31000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "64d3a81e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 9000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "90051e9a-5c29-11ed-80ff-01a4b2273146",
+        "begin": 0,
+        "end": 36000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "90041720-5c29-11ed-80ff-01a4b2273146",
+        "begin": 0,
+        "end": 22000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "64d3b512-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 41000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66550c2a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 50000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "665c0cf2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 47000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61618c2e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 16000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6245e1f4-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 17000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6245e550-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 25000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62f9d51e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 80000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62f9d99c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 63000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "3034df4c-1032-11e7-8fff-010064e0362d",
+        "begin": 0,
+        "end": 38000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62f9e344-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 4000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62f9e7d6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 981000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6652d3c0-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 35000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6161bda8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 112000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "399eb6e6-19be-11e5-a6ff-01fc64e0362d",
+        "begin": 0,
+        "end": 52000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "bef4fcec-3403-11e9-a6ff-0110b2273146",
+        "begin": 0,
+        "end": 140000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6c4f390a-a38f-11ea-98ff-01e4b2273146",
+        "begin": 0,
+        "end": 869000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "e1bd691c-537e-11ec-80ff-01446fb51c27",
+        "begin": 0,
+        "end": 10000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "27658b78-7e95-11ea-80ff-0194b2273146",
+        "begin": 0,
+        "end": 285000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6161dccc-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 511000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6161e1f8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 4088000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6161e770-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 58000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6246b05a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 134000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6162a1da-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 78000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6162a6b8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 705000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6246c7d0-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 153000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6161fc14-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 139000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "64183d9c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 62000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6650250a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 363000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "616208b0-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 914000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "616217be-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 287000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61621c56-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 791000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "049db2fe-7a52-11ee-a2ff-01a0b2273146",
+        "begin": 0,
+        "end": 156000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "2a876404-0717-11eb-80ff-0144b2273146",
+        "begin": 0,
+        "end": 774000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "b6fcd02c-a543-11ec-80ff-01ec6fb51c27",
+        "begin": 0,
+        "end": 756000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61622bea-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 938000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "2d0f4bc8-a5b0-11ec-80ff-0144b2273146",
+        "begin": 0,
+        "end": 441000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "b187210e-a389-11ec-81ff-01ec6fb51c27",
+        "begin": 0,
+        "end": 54000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "dfc0c67a-a3ac-11ec-80ff-0144b2273146",
+        "begin": 0,
+        "end": 16000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62474d74-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 94000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "c505aa4c-a5e6-11ec-80ff-0144b2273146",
+        "begin": 0,
+        "end": 91000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "f5228716-a5d3-11ec-80ff-0144b2273146",
+        "begin": 0,
+        "end": 11148000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "664aa26c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 62000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60313f42-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 14000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60314ad8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 1877000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6649071c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 113000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60459956-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 1133000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6045a378-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 80000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6045ae18-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 619000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6045b5e8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 377000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6045bdba-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 3539000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6045c5d8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 9445000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6045d588-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 285000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6045e452-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 631000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66a1e424-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 433000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66a1e918-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 51000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "d4f10a82-392f-11e8-84ff-018464e0362d",
+        "begin": 0,
+        "end": 80000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "d4f1160a-392f-11e8-84ff-018464e0362d",
+        "begin": 0,
+        "end": 101000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "d4f11996-392f-11e8-84ff-018464e0362d",
+        "begin": 0,
+        "end": 751000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "d4f12974-392f-11e8-84ff-018464e0362d",
+        "begin": 0,
+        "end": 65000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60461892-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 76000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6046212e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 33000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62fdf45a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 85000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60324a3e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 10396000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "74fed396-91b4-11e6-afff-010c64e0362d",
+        "begin": 0,
+        "end": 25000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "870a69d8-91b4-11e6-afff-010c64e0362d",
+        "begin": 0,
+        "end": 135000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60463e00-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 3903000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6046487e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 5156000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "8db50f82-0d52-11e6-b4ff-016064e0362d",
+        "begin": 0,
+        "end": 78000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "8db512a8-0d52-11e6-b4ff-016064e0362d",
+        "begin": 0,
+        "end": 758000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "8db51602-0d52-11e6-b4ff-016064e0362d",
+        "begin": 0,
+        "end": 95000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "87acda96-0d52-11e6-b4ff-016064e0362d",
+        "begin": 0,
+        "end": 7000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "87f825c4-0d52-11e6-b4ff-016064e0362d",
+        "begin": 0,
+        "end": 107000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61db3058-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 856000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61db3770-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 69000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61db3ee2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 103000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61db453c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 72000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61db4c14-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 10465000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "048595fc-0e05-11ec-84ff-017c6fb51c27",
+        "begin": 0,
+        "end": 7554000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "5626b226-0edd-11ec-b1ff-01bcb2273146",
+        "begin": 0,
+        "end": 8000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "af5f3c28-43c3-11e8-84ff-014c64e0362d",
+        "begin": 0,
+        "end": 62000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "615818cc-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 10000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61581ed6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 232000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "67247e80-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 81000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "85c7836e-0eb2-11ec-84ff-017c6fb51c27",
+        "begin": 0,
+        "end": 30399000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61db95d6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 10000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61db9cc2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 768000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dba3aa-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 26000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dbab18-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 74000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dbb276-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 829000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dbb9c2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 70000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "ccff452c-3120-11e7-96ff-013864e0362d",
+        "begin": 0,
+        "end": 38000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dbc85a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 16271000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dbe0f6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 142000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dbee9a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 18961000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "fb4770dc-84a3-11ea-80ff-0194b2273146",
+        "begin": 0,
+        "end": 7000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "68bab2cc-84a5-11ea-80ff-0194b2273146",
+        "begin": 0,
+        "end": 819000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "2a1e92ba-1355-11eb-80ff-0144b2273146",
+        "begin": 0,
+        "end": 7000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "671f4932-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 62000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "30b93f9a-ae59-11eb-80ff-01a0b2273146",
+        "begin": 0,
+        "end": 14661000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "b298d3a4-0eb8-11ec-84ff-017c6fb51c27",
+        "begin": 0,
+        "end": 199000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "671e5a78-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 62000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc2f58-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 12912000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc3766-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 12164000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc501e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 72000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc5726-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 962000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc5e66-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 110000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc652e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 9578000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc6e38-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 8816000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc751e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 148000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc7b90-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 81000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc823e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 3265000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc8910-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 9042000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "671b8aa2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 82000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61590032-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 266000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "671adac4-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 82000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dc9fea-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 33000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dca6c6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 24434000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dccc94-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 1000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dcd39c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 320000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dcda78-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 59000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dce104-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 5000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dce76c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 372000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "671928bc-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 87000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6159434a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 25000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6159498c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 4000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6718ad66-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 73000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dcf4e2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 18000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dcfdba-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 15000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "672cb1c2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 719000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "672cb6c2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 66000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd0cf8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 33000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd13c6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 1000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd1aa2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 9548000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd2a86-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 144000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6716c91a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 80000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "615988e4-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 12000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61598f44-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 264000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6716502c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 60000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd3938-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 487000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd40dc-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 356000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd4880-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 78000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd4f76-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 1008000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd5750-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 30000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd5e9c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 88000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd6610-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 15575000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "5a07c708-c722-11e6-b8ff-01f064e0362d",
+        "begin": 0,
+        "end": 313000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "5a07da68-c722-11e6-b8ff-01f064e0362d",
+        "begin": 0,
+        "end": 16046000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6712bdb2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 132000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6159e21c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 12000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6712754c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 131000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dd9364-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 14754000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "28e00606-dfbc-11e3-8eff-01a464e0362d",
+        "begin": 0,
+        "end": 14000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dda2d8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 831000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61dda9fe-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 18000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61ddb11e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 15000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "671066de-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 63000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "613793e0-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 202000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "613797fa-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 80000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61379c02-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 7418000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "396436e0-19be-11e5-a6ff-01fc64e0362d",
+        "begin": 0,
+        "end": 19469000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66deddec-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 310000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66dee9d8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 354000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66deedf0-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 327000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6137ad9e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 1148000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6137b1ca-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 6917000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df75aa-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 131000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df7a16-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 702000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df7e86-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 17909000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df834c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 31000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df87dc-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 2000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df8c96-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 523000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df9138-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 36000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df95dc-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 10389000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60dfa81c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 221000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60dfbb2a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 32000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60df61b2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 39000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60e08028-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 396000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60dfe1d6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 432000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60dfe69a-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 13000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60dfd4ea-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 27635000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60dfebc6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 22529000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60e0028e-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 399000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60e00728-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 13673000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66de77b0-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 457000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66de7bee-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 426000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "66de8140-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 358000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "60e01bbe-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 27350000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6d0dcef4-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 1887000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62b89e3c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 51000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62b8a2b2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 244000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62b86528-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 529000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62b8a762-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 151000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62b8abf6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 8777000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "25395d42-cd53-11ec-80ff-012cb2273146",
+        "begin": 0,
+        "end": 712000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "ef2b8c60-03e1-11e4-a1ff-013c64e0362d",
+        "begin": 0,
+        "end": 1002000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "603c0bba-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 173000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "655051c4-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 87000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "604c72d8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 127000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "604c79fa-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 797000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "604c810c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 8122000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "604c88a0-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 197000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "654a1dea-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 163000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "61d16870-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 9000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6291afd6-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 38000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "64a121bc-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 125000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62925a80-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 252000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62d0cf0c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 131000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6291b8e2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 185000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6291bd5c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 3925000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "4ff19668-abfd-11eb-a8ff-01f8b2273146",
+        "begin": 0,
+        "end": 58000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6291a624-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 82000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62926f2c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 22000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "629273c8-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 510000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "f3b236ba-03e1-11e4-a1ff-013c64e0362d",
+        "begin": 0,
+        "end": 45000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "f3c0d37e-03e1-11e4-a1ff-013c64e0362d",
+        "begin": 0,
+        "end": 522000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "6299bfae-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 24000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "f3c0e222-03e1-11e4-a1ff-013c64e0362d",
+        "begin": 0,
+        "end": 1065000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "64a06af2-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 137000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62a1b65c-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 16000,
+        "direction": "START_TO_STOP"
+      },
+      {
+        "track_section": "62a1baca-6667-11e3-81ff-01f464e0362d",
+        "begin": 0,
+        "end": 636000,
+        "direction": "START_TO_STOP"
+      }
+    ],
+    "length": 504123000,
+    "path_item_positions": [0, 504123000]
+  },
+  "conflicts": [
+    {
+      "train_ids": [
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T17:17:58.070Z",
+      "end_time": "2024-06-26T20:17:36.359Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:INCREASING, detector.40185:DECREASING, detector.44472:DECREASING]",
+          "start_time": "2024-06-26T17:17:58.070Z",
+          "end_time": "2024-06-26T20:16:25.250Z"
+        },
+        {
+          "zone": "zone.[detector.1282:INCREASING, detector.29567:DECREASING, detector.39539:DECREASING, detector.40185:INCREASING]",
+          "start_time": "2024-06-26T17:17:58.070Z",
+          "end_time": "2024-06-26T20:17:09.081Z"
+        },
+        {
+          "zone": "zone.[detector.16481:INCREASING, detector.29567:INCREASING, detector.33059:DECREASING]",
+          "start_time": "2024-06-26T17:17:58.070Z",
+          "end_time": "2024-06-26T20:17:15.719Z"
+        },
+        {
+          "zone": "zone.[detector.14245:DECREASING, detector.33059:INCREASING, detector.48019:DECREASING]",
+          "start_time": "2024-06-26T17:17:58.070Z",
+          "end_time": "2024-06-26T20:17:36.359Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171, 172, 173, 174, 175, 176, 177],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:48:14.152Z",
+      "end_time": "2024-06-26T17:57:03.462Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.34282:DECREASING, detector.40382:INCREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T17:53:57.656Z"
+        },
+        {
+          "zone": "zone.[detector.33319:DECREASING, detector.34282:INCREASING, detector.40959:DECREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T17:57:03.462Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:19:53.119Z",
+      "end_time": "2024-06-26T18:54:55.930Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.33788:INCREASING, detector.35479:DECREASING, detector.48257:DECREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T18:54:55.930Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170, 171],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:55:02.731Z",
+      "end_time": "2024-06-26T15:05:34.045Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.18209:DECREASING, detector.19452:INCREASING]",
+          "start_time": "2024-06-26T13:55:02.731Z",
+          "end_time": "2024-06-26T14:21:18.732Z"
+        },
+        {
+          "zone": "zone.[detector.15042:INCREASING, detector.2711:DECREASING]",
+          "start_time": "2024-06-26T14:14:42.491Z",
+          "end_time": "2024-06-26T14:42:56.645Z"
+        },
+        {
+          "zone": "zone.[detector.2711:INCREASING, detector.36116:DECREASING, detector.37364:INCREASING]",
+          "start_time": "2024-06-26T14:14:42.491Z",
+          "end_time": "2024-06-26T14:43:52.112Z"
+        },
+        {
+          "zone": "zone.[detector.36116:INCREASING, detector.43496:DECREASING, detector.8560:DECREASING]",
+          "start_time": "2024-06-26T14:14:42.491Z",
+          "end_time": "2024-06-26T14:43:59.390Z"
+        },
+        {
+          "zone": "zone.[detector.1334:DECREASING, detector.29154:INCREASING, detector.43496:INCREASING]",
+          "start_time": "2024-06-26T14:14:42.491Z",
+          "end_time": "2024-06-26T14:44:06.550Z"
+        },
+        {
+          "zone": "zone.[detector.18007:INCREASING, detector.5084:DECREASING]",
+          "start_time": "2024-06-26T14:37:53.356Z",
+          "end_time": "2024-06-26T15:02:57.481Z"
+        },
+        {
+          "zone": "zone.[detector.5084:INCREASING, detector.8190:DECREASING]",
+          "start_time": "2024-06-26T14:37:53.356Z",
+          "end_time": "2024-06-26T15:05:34.045Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:38:14.152Z",
+      "end_time": "2024-06-26T18:24:00.939Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.40959:INCREASING, detector.43489:DECREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T18:23:34.263Z"
+        },
+        {
+          "zone": "zone.[detector.29234:DECREASING, detector.43489:INCREASING, detector.45521:INCREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T18:23:35.041Z"
+        },
+        {
+          "zone": "zone.[detector.29234:INCREASING, detector.48023:DECREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T18:24:00.939Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171, 172],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:01:00.837Z",
+      "end_time": "2024-06-26T15:10:34.045Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.18209:DECREASING, detector.19452:INCREASING]",
+          "start_time": "2024-06-26T14:01:00.837Z",
+          "end_time": "2024-06-26T14:26:18.732Z"
+        },
+        {
+          "zone": "zone.[detector.15042:INCREASING, detector.2711:DECREASING]",
+          "start_time": "2024-06-26T14:21:39.252Z",
+          "end_time": "2024-06-26T14:47:56.645Z"
+        },
+        {
+          "zone": "zone.[detector.2711:INCREASING, detector.36116:DECREASING, detector.37364:INCREASING]",
+          "start_time": "2024-06-26T14:21:39.252Z",
+          "end_time": "2024-06-26T14:48:52.112Z"
+        },
+        {
+          "zone": "zone.[detector.36116:INCREASING, detector.43496:DECREASING, detector.8560:DECREASING]",
+          "start_time": "2024-06-26T14:21:39.252Z",
+          "end_time": "2024-06-26T14:48:59.390Z"
+        },
+        {
+          "zone": "zone.[detector.1334:DECREASING, detector.29154:INCREASING, detector.43496:INCREASING]",
+          "start_time": "2024-06-26T14:21:39.252Z",
+          "end_time": "2024-06-26T14:49:06.550Z"
+        },
+        {
+          "zone": "zone.[detector.18007:INCREASING, detector.5084:DECREASING]",
+          "start_time": "2024-06-26T14:45:59.268Z",
+          "end_time": "2024-06-26T15:07:57.481Z"
+        },
+        {
+          "zone": "zone.[detector.5084:INCREASING, detector.8190:DECREASING]",
+          "start_time": "2024-06-26T14:45:59.268Z",
+          "end_time": "2024-06-26T15:10:34.045Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171, 172],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T15:30:40.627Z",
+      "end_time": "2024-06-26T15:49:59.618Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.15887:DECREASING, detector.16942:INCREASING]",
+          "start_time": "2024-06-26T15:30:40.627Z",
+          "end_time": "2024-06-26T15:49:59.618Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171, 172, 173, 174],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:48:14.152Z",
+      "end_time": "2024-06-26T17:26:06.782Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.37520:DECREASING, detector.7622:INCREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T17:26:06.782Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170, 171, 172, 173, 174, 175],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:38:14.152Z",
+      "end_time": "2024-06-26T17:47:03.462Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.34282:DECREASING, detector.40382:INCREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T17:43:57.656Z"
+        },
+        {
+          "zone": "zone.[detector.33319:DECREASING, detector.34282:INCREASING, detector.40959:DECREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T17:47:03.462Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179,
+        180, 181, 182, 183, 184, 185, 186, 187, 188
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:09:53.119Z",
+      "end_time": "2024-06-26T20:24:59.054Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:INCREASING, detector.43077:DECREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T20:24:59.054Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187,
+        188, 189, 190, 191, 192, 193, 194, 195, 196, 197
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:49:53.119Z",
+      "end_time": "2024-06-26T21:09:59.054Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:INCREASING, detector.43077:DECREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T21:09:59.054Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:29:53.119Z",
+      "end_time": "2024-06-26T19:04:55.930Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.33788:INCREASING, detector.35479:DECREASING, detector.48257:DECREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T19:04:55.930Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [166, 167, 168, 169, 170, 171, 172, 173],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:28:14.152Z",
+      "end_time": "2024-06-26T17:37:03.462Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.34282:DECREASING, detector.40382:INCREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T17:33:57.656Z"
+        },
+        {
+          "zone": "zone.[detector.33319:DECREASING, detector.34282:INCREASING, detector.40959:DECREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T17:37:03.462Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [164, 165, 166, 167, 168, 169, 170, 171],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:18:14.152Z",
+      "end_time": "2024-06-26T17:27:49.270Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.34282:DECREASING, detector.40382:INCREASING]",
+          "start_time": "2024-06-26T16:18:14.152Z",
+          "end_time": "2024-06-26T17:24:34.227Z"
+        },
+        {
+          "zone": "zone.[detector.33319:DECREASING, detector.34282:INCREASING, detector.40959:DECREASING]",
+          "start_time": "2024-06-26T16:18:14.152Z",
+          "end_time": "2024-06-26T17:27:49.270Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185,
+        186, 187, 188, 189, 190, 191, 192, 193
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:39:53.119Z",
+      "end_time": "2024-06-26T20:49:21.063Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:DECREASING, detector.43841:DECREASING, detector.44570:INCREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T20:49:21.063Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:18:14.152Z",
+      "end_time": "2024-06-26T18:04:00.939Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.40959:INCREASING, detector.43489:DECREASING]",
+          "start_time": "2024-06-26T16:18:14.152Z",
+          "end_time": "2024-06-26T18:03:34.263Z"
+        },
+        {
+          "zone": "zone.[detector.29234:DECREASING, detector.43489:INCREASING, detector.45521:INCREASING]",
+          "start_time": "2024-06-26T16:18:14.152Z",
+          "end_time": "2024-06-26T18:03:35.041Z"
+        },
+        {
+          "zone": "zone.[detector.29234:INCREASING, detector.48023:DECREASING]",
+          "start_time": "2024-06-26T16:18:14.152Z",
+          "end_time": "2024-06-26T18:04:00.939Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:39:53.119Z",
+      "end_time": "2024-06-26T19:14:55.930Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.33788:INCREASING, detector.35479:DECREASING, detector.48257:DECREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T19:14:55.930Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187,
+        188, 189, 190, 191, 192, 193, 194, 195, 196
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:49:53.119Z",
+      "end_time": "2024-06-26T21:04:21.063Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:DECREASING, detector.43841:DECREASING, detector.44570:INCREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T21:04:21.063Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T11:55:00Z",
+      "end_time": "2024-06-26T12:41:47.572Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[bufferstop.933:INCREASING, detector.24855:DECREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:55:46.680Z"
+        },
+        {
+          "zone": "zone.[detector.24855:INCREASING, detector.40693:DECREASING, detector.44195:DECREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:55:48.635Z"
+        },
+        {
+          "zone": "zone.[detector.34320:DECREASING, detector.38824:INCREASING, detector.40693:INCREASING, detector.41153:DECREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:55:50.275Z"
+        },
+        {
+          "zone": "zone.[detector.27826:DECREASING, detector.39744:INCREASING, detector.41153:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:55:52.099Z"
+        },
+        {
+          "zone": "zone.[detector.24654:INCREASING, detector.27826:INCREASING, detector.48251:DECREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:55:54.415Z"
+        },
+        {
+          "zone": "zone.[detector.27778:DECREASING, detector.48251:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:00.408Z"
+        },
+        {
+          "zone": "zone.[detector.27778:INCREASING, detector.28131:INCREASING, detector.45808:DECREASING, detector.48341:DECREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:04.081Z"
+        },
+        {
+          "zone": "zone.[detector.30198:DECREASING, detector.31180:INCREASING, detector.45808:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:06.430Z"
+        },
+        {
+          "zone": "zone.[detector.30198:INCREASING, detector.30794:DECREASING, detector.39749:DECREASING, detector.45171:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:07.650Z"
+        },
+        {
+          "zone": "zone.[detector.39749:INCREASING, detector.41329:DECREASING, detector.43770:INCREASING, detector.47847:DECREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:09.193Z"
+        },
+        {
+          "zone": "zone.[detector.41329:INCREASING, detector.48288:INCREASING, detector.8080:DECREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:13.794Z"
+        },
+        {
+          "zone": "zone.[detector.33760:DECREASING, detector.47969:DECREASING, detector.8080:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:18.098Z"
+        },
+        {
+          "zone": "zone.[detector.27375:INCREASING, detector.33760:INCREASING, detector.37246:DECREASING, detector.44996:DECREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:21.638Z"
+        },
+        {
+          "zone": "zone.[detector.37265:INCREASING, detector.39175:DECREASING, detector.44996:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:23.097Z"
+        },
+        {
+          "zone": "zone.[detector.20638:DECREASING, detector.39175:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:56:52.612Z"
+        },
+        {
+          "zone": "zone.[detector.20638:INCREASING, detector.42120:DECREASING, detector.45489:DECREASING, detector.48146:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:57:28.270Z"
+        },
+        {
+          "zone": "zone.[detector.12722:DECREASING, detector.45489:INCREASING, detector.46720:INCREASING]",
+          "start_time": "2024-06-26T11:55:00Z",
+          "end_time": "2024-06-26T11:57:31.475Z"
+        },
+        {
+          "zone": "zone.[detector.12722:INCREASING, detector.37854:DECREASING, detector.44620:INCREASING]",
+          "start_time": "2024-06-26T11:55:38.478Z",
+          "end_time": "2024-06-26T11:57:37.863Z"
+        },
+        {
+          "zone": "zone.[detector.37854:INCREASING, detector.45067:DECREASING, detector.46064:DECREASING]",
+          "start_time": "2024-06-26T11:55:38.478Z",
+          "end_time": "2024-06-26T11:57:43.667Z"
+        },
+        {
+          "zone": "zone.[detector.45067:INCREASING, detector.8146:DECREASING]",
+          "start_time": "2024-06-26T11:55:38.478Z",
+          "end_time": "2024-06-26T11:58:18.665Z"
+        },
+        {
+          "zone": "zone.[detector.35467:DECREASING, detector.8146:INCREASING]",
+          "start_time": "2024-06-26T11:56:58.645Z",
+          "end_time": "2024-06-26T11:58:38.705Z"
+        },
+        {
+          "zone": "zone.[detector.27960:DECREASING, detector.35467:INCREASING, detector.47518:DECREASING]",
+          "start_time": "2024-06-26T11:56:58.645Z",
+          "end_time": "2024-06-26T11:58:47.149Z"
+        },
+        {
+          "zone": "zone.[detector.26218:DECREASING, detector.36786:INCREASING, detector.47518:INCREASING]",
+          "start_time": "2024-06-26T11:56:58.645Z",
+          "end_time": "2024-06-26T11:59:05.752Z"
+        },
+        {
+          "zone": "zone.[detector.26218:INCREASING, detector.36343:DECREASING, detector.47788:INCREASING, detector.5063:DECREASING]",
+          "start_time": "2024-06-26T11:57:45.505Z",
+          "end_time": "2024-06-26T11:59:44.989Z"
+        },
+        {
+          "zone": "zone.[detector.22767:DECREASING, detector.5063:INCREASING]",
+          "start_time": "2024-06-26T11:58:30.742Z",
+          "end_time": "2024-06-26T12:00:30.106Z"
+        },
+        {
+          "zone": "zone.[detector.11428:DECREASING, detector.22767:INCREASING]",
+          "start_time": "2024-06-26T11:59:07.740Z",
+          "end_time": "2024-06-26T12:01:07.849Z"
+        },
+        {
+          "zone": "zone.[detector.11428:INCREASING, detector.22795:DECREASING]",
+          "start_time": "2024-06-26T11:59:51.233Z",
+          "end_time": "2024-06-26T12:01:45.490Z"
+        },
+        {
+          "zone": "zone.[detector.11449:DECREASING, detector.22795:INCREASING]",
+          "start_time": "2024-06-26T12:00:28.080Z",
+          "end_time": "2024-06-26T12:02:25.537Z"
+        },
+        {
+          "zone": "zone.[detector.11449:INCREASING, detector.13596:DECREASING]",
+          "start_time": "2024-06-26T12:01:04.168Z",
+          "end_time": "2024-06-26T12:03:00.815Z"
+        },
+        {
+          "zone": "zone.[detector.13596:INCREASING, detector.33320:INCREASING, detector.33568:DECREASING]",
+          "start_time": "2024-06-26T12:01:42.270Z",
+          "end_time": "2024-06-26T12:03:15.570Z"
+        },
+        {
+          "zone": "zone.[detector.30384:DECREASING, detector.33454:DECREASING, detector.33568:INCREASING]",
+          "start_time": "2024-06-26T12:01:42.270Z",
+          "end_time": "2024-06-26T12:03:20.998Z"
+        },
+        {
+          "zone": "zone.[detector.30384:INCREASING, detector.36690:INCREASING, detector.43346:DECREASING]",
+          "start_time": "2024-06-26T12:01:42.270Z",
+          "end_time": "2024-06-26T12:03:26.981Z"
+        },
+        {
+          "zone": "zone.[detector.17146:DECREASING, detector.35720:INCREASING, detector.43346:INCREASING]",
+          "start_time": "2024-06-26T12:01:42.270Z",
+          "end_time": "2024-06-26T12:03:32.608Z"
+        },
+        {
+          "zone": "zone.[detector.17146:INCREASING, detector.27532:DECREASING]",
+          "start_time": "2024-06-26T12:01:42.270Z",
+          "end_time": "2024-06-26T12:04:07.212Z"
+        },
+        {
+          "zone": "zone.[detector.27532:INCREASING, detector.36554:DECREASING, detector.47639:DECREASING]",
+          "start_time": "2024-06-26T12:01:42.270Z",
+          "end_time": "2024-06-26T12:04:11.611Z"
+        },
+        {
+          "zone": "zone.[detector.15812:DECREASING, detector.28846:INCREASING, detector.47639:INCREASING]",
+          "start_time": "2024-06-26T12:01:42.270Z",
+          "end_time": "2024-06-26T12:04:19.945Z"
+        },
+        {
+          "zone": "zone.[detector.15812:INCREASING, detector.42282:DECREASING, detector.47419:DECREASING]",
+          "start_time": "2024-06-26T12:02:15.154Z",
+          "end_time": "2024-06-26T12:04:24.888Z"
+        },
+        {
+          "zone": "zone.[detector.28958:INCREASING, detector.39698:DECREASING, detector.44703:DECREASING, detector.47419:INCREASING]",
+          "start_time": "2024-06-26T12:02:15.154Z",
+          "end_time": "2024-06-26T12:04:36.488Z"
+        },
+        {
+          "zone": "zone.[detector.19311:DECREASING, detector.42069:INCREASING, detector.44703:INCREASING]",
+          "start_time": "2024-06-26T12:02:15.154Z",
+          "end_time": "2024-06-26T12:04:50.745Z"
+        },
+        {
+          "zone": "zone.[detector.1510:DECREASING, detector.19311:INCREASING]",
+          "start_time": "2024-06-26T12:02:15.154Z",
+          "end_time": "2024-06-26T12:05:06.306Z"
+        },
+        {
+          "zone": "zone.[detector.1510:INCREASING, detector.27947:DECREASING, detector.38925:DECREASING]",
+          "start_time": "2024-06-26T12:03:31.780Z",
+          "end_time": "2024-06-26T12:05:44.914Z"
+        },
+        {
+          "zone": "zone.[detector.16663:DECREASING, detector.27947:INCREASING, detector.42451:INCREASING]",
+          "start_time": "2024-06-26T12:03:31.780Z",
+          "end_time": "2024-06-26T12:05:54.355Z"
+        },
+        {
+          "zone": "zone.[detector.11701:DECREASING, detector.16663:INCREASING]",
+          "start_time": "2024-06-26T12:04:15.215Z",
+          "end_time": "2024-06-26T12:06:25.827Z"
+        },
+        {
+          "zone": "zone.[detector.11701:INCREASING, detector.24505:DECREASING]",
+          "start_time": "2024-06-26T12:05:00.891Z",
+          "end_time": "2024-06-26T12:07:08.793Z"
+        },
+        {
+          "zone": "zone.[detector.24505:INCREASING, detector.6254:INCREASING, detector.6663:DECREASING]",
+          "start_time": "2024-06-26T12:05:30.806Z",
+          "end_time": "2024-06-26T12:07:55.378Z"
+        },
+        {
+          "zone": "zone.[detector.20838:DECREASING, detector.42522:INCREASING, detector.6663:INCREASING]",
+          "start_time": "2024-06-26T12:06:11.666Z",
+          "end_time": "2024-06-26T12:08:42.073Z"
+        },
+        {
+          "zone": "zone.[detector.20838:INCREASING, detector.32704:INCREASING, detector.8940:DECREASING]",
+          "start_time": "2024-06-26T12:06:55.990Z",
+          "end_time": "2024-06-26T12:09:23.914Z"
+        },
+        {
+          "zone": "zone.[detector.33741:DECREASING, detector.42771:DECREASING, detector.43094:INCREASING, detector.8940:INCREASING]",
+          "start_time": "2024-06-26T12:07:40.377Z",
+          "end_time": "2024-06-26T12:09:29.904Z"
+        },
+        {
+          "zone": "zone.[detector.21668:INCREASING, detector.33741:INCREASING, detector.41296:DECREASING]",
+          "start_time": "2024-06-26T12:07:40.377Z",
+          "end_time": "2024-06-26T12:09:31.883Z"
+        },
+        {
+          "zone": "zone.[detector.32609:DECREASING, detector.41296:INCREASING, detector.41460:DECREASING]",
+          "start_time": "2024-06-26T12:07:40.377Z",
+          "end_time": "2024-06-26T12:09:34.992Z"
+        },
+        {
+          "zone": "zone.[detector.41460:INCREASING, detector.47408:DECREASING, detector.6689:INCREASING]",
+          "start_time": "2024-06-26T12:07:40.377Z",
+          "end_time": "2024-06-26T12:09:40.216Z"
+        },
+        {
+          "zone": "zone.[detector.29295:DECREASING, detector.4366:DECREASING, detector.47408:INCREASING]",
+          "start_time": "2024-06-26T12:07:40.377Z",
+          "end_time": "2024-06-26T12:10:10.101Z"
+        },
+        {
+          "zone": "zone.[detector.11850:DECREASING, detector.4366:INCREASING]",
+          "start_time": "2024-06-26T12:08:20.136Z",
+          "end_time": "2024-06-26T12:10:57.259Z"
+        },
+        {
+          "zone": "zone.[detector.11850:INCREASING, detector.12843:DECREASING]",
+          "start_time": "2024-06-26T12:09:04.036Z",
+          "end_time": "2024-06-26T12:12:16.122Z"
+        },
+        {
+          "zone": "zone.[detector.12843:INCREASING, detector.19116:DECREASING]",
+          "start_time": "2024-06-26T12:09:48.920Z",
+          "end_time": "2024-06-26T12:13:17.707Z"
+        },
+        {
+          "zone": "zone.[detector.14665:DECREASING, detector.19116:INCREASING]",
+          "start_time": "2024-06-26T12:11:02.977Z",
+          "end_time": "2024-06-26T12:14:10.043Z"
+        },
+        {
+          "zone": "zone.[detector.14665:INCREASING, detector.20210:DECREASING]",
+          "start_time": "2024-06-26T12:12:00.948Z",
+          "end_time": "2024-06-26T12:14:52.979Z"
+        },
+        {
+          "zone": "zone.[detector.12702:DECREASING, detector.20210:INCREASING]",
+          "start_time": "2024-06-26T12:12:49.912Z",
+          "end_time": "2024-06-26T12:15:31.081Z"
+        },
+        {
+          "zone": "zone.[detector.12702:INCREASING, detector.25148:DECREASING]",
+          "start_time": "2024-06-26T12:13:30.401Z",
+          "end_time": "2024-06-26T12:16:15.856Z"
+        },
+        {
+          "zone": "zone.[detector.25148:INCREASING, detector.9235:DECREASING]",
+          "start_time": "2024-06-26T12:14:06.539Z",
+          "end_time": "2024-06-26T12:17:33.644Z"
+        },
+        {
+          "zone": "zone.[detector.13678:DECREASING, detector.9235:INCREASING]",
+          "start_time": "2024-06-26T12:14:49.026Z",
+          "end_time": "2024-06-26T12:18:53.521Z"
+        },
+        {
+          "zone": "zone.[detector.13678:INCREASING, detector.13702:DECREASING]",
+          "start_time": "2024-06-26T12:16:03.016Z",
+          "end_time": "2024-06-26T12:19:25.964Z"
+        },
+        {
+          "zone": "zone.[detector.13702:INCREASING, detector.15961:DECREASING]",
+          "start_time": "2024-06-26T12:17:20.455Z",
+          "end_time": "2024-06-26T12:20:14.483Z"
+        },
+        {
+          "zone": "zone.[detector.14246:DECREASING, detector.15961:INCREASING]",
+          "start_time": "2024-06-26T12:17:51.537Z",
+          "end_time": "2024-06-26T12:21:13.497Z"
+        },
+        {
+          "zone": "zone.[detector.14246:INCREASING, detector.43577:DECREASING, detector.8501:DECREASING]",
+          "start_time": "2024-06-26T12:18:37.030Z",
+          "end_time": "2024-06-26T12:21:17.895Z"
+        },
+        {
+          "zone": "zone.[detector.36098:DECREASING, detector.43577:INCREASING, detector.5717:INCREASING]",
+          "start_time": "2024-06-26T12:18:37.030Z",
+          "end_time": "2024-06-26T12:21:20.375Z"
+        },
+        {
+          "zone": "zone.[bufferstop.949:DECREASING, detector.36098:INCREASING, detector.6005:DECREASING]",
+          "start_time": "2024-06-26T12:18:37.030Z",
+          "end_time": "2024-06-26T12:21:32.905Z"
+        },
+        {
+          "zone": "zone.[detector.6005:INCREASING, detector.6469:DECREASING]",
+          "start_time": "2024-06-26T12:18:37.030Z",
+          "end_time": "2024-06-26T12:22:52.349Z"
+        },
+        {
+          "zone": "zone.[detector.11318:DECREASING, detector.32298:DECREASING, detector.6469:INCREASING]",
+          "start_time": "2024-06-26T12:18:37.030Z",
+          "end_time": "2024-06-26T12:23:23.741Z"
+        },
+        {
+          "zone": "zone.[bufferstop.54:DECREASING, detector.16424:INCREASING, detector.46990:DECREASING]",
+          "start_time": "2024-06-26T12:22:32.147Z",
+          "end_time": "2024-06-26T12:25:21.669Z"
+        },
+        {
+          "zone": "zone.[bufferstop.1024:INCREASING, detector.17408:DECREASING, detector.46990:INCREASING]",
+          "start_time": "2024-06-26T12:22:32.147Z",
+          "end_time": "2024-06-26T12:25:47.527Z"
+        },
+        {
+          "zone": "zone.[detector.17408:INCREASING, detector.6922:DECREASING]",
+          "start_time": "2024-06-26T12:23:18.730Z",
+          "end_time": "2024-06-26T12:27:07.272Z"
+        },
+        {
+          "zone": "zone.[detector.20240:DECREASING, detector.6922:INCREASING]",
+          "start_time": "2024-06-26T12:23:57.371Z",
+          "end_time": "2024-06-26T12:28:28.891Z"
+        },
+        {
+          "zone": "zone.[detector.20240:INCREASING, detector.9581:DECREASING]",
+          "start_time": "2024-06-26T12:25:12.227Z",
+          "end_time": "2024-06-26T12:29:46.899Z"
+        },
+        {
+          "zone": "zone.[detector.24451:DECREASING, detector.9581:INCREASING]",
+          "start_time": "2024-06-26T12:26:30.959Z",
+          "end_time": "2024-06-26T12:30:30.248Z"
+        },
+        {
+          "zone": "zone.[detector.14562:DECREASING, detector.24451:INCREASING]",
+          "start_time": "2024-06-26T12:27:46.839Z",
+          "end_time": "2024-06-26T12:31:10.935Z"
+        },
+        {
+          "zone": "zone.[detector.13809:DECREASING, detector.1842:INCREASING]",
+          "start_time": "2024-06-26T12:29:41.695Z",
+          "end_time": "2024-06-26T12:33:20.040Z"
+        },
+        {
+          "zone": "zone.[detector.13809:INCREASING, detector.19714:DECREASING]",
+          "start_time": "2024-06-26T12:30:14.840Z",
+          "end_time": "2024-06-26T12:33:56.426Z"
+        },
+        {
+          "zone": "zone.[detector.12653:DECREASING, detector.2525:INCREASING]",
+          "start_time": "2024-06-26T12:32:21.055Z",
+          "end_time": "2024-06-26T12:36:40.191Z"
+        },
+        {
+          "zone": "zone.[bufferstop.1102:INCREASING, detector.13936:DECREASING, detector.38274:INCREASING]",
+          "start_time": "2024-06-26T12:33:06.892Z",
+          "end_time": "2024-06-26T12:37:00.114Z"
+        },
+        {
+          "zone": "zone.[detector.13936:INCREASING, detector.24285:DECREASING]",
+          "start_time": "2024-06-26T12:33:06.892Z",
+          "end_time": "2024-06-26T12:37:28.434Z"
+        },
+        {
+          "zone": "zone.[detector.28266:INCREASING, detector.33121:INCREASING, detector.40129:DECREASING]",
+          "start_time": "2024-06-26T12:34:21.171Z",
+          "end_time": "2024-06-26T12:38:25.835Z"
+        },
+        {
+          "zone": "zone.[bufferstop.95:DECREASING, detector.40129:INCREASING, detector.40899:DECREASING]",
+          "start_time": "2024-06-26T12:34:21.171Z",
+          "end_time": "2024-06-26T12:38:47.654Z"
+        },
+        {
+          "zone": "zone.[detector.40899:INCREASING, detector.44029:DECREASING, detector.7368:INCREASING]",
+          "start_time": "2024-06-26T12:34:21.171Z",
+          "end_time": "2024-06-26T12:38:51.443Z"
+        },
+        {
+          "zone": "zone.[detector.44029:INCREASING, detector.45644:DECREASING, detector.45713:INCREASING]",
+          "start_time": "2024-06-26T12:34:21.171Z",
+          "end_time": "2024-06-26T12:38:54.388Z"
+        },
+        {
+          "zone": "zone.[detector.27527:DECREASING, detector.41697:DECREASING, detector.45644:INCREASING]",
+          "start_time": "2024-06-26T12:34:21.171Z",
+          "end_time": "2024-06-26T12:38:57.585Z"
+        },
+        {
+          "zone": "zone.[detector.15910:DECREASING, detector.35640:INCREASING, detector.41697:INCREASING]",
+          "start_time": "2024-06-26T12:34:21.171Z",
+          "end_time": "2024-06-26T12:39:15.011Z"
+        },
+        {
+          "zone": "zone.[detector.18348:INCREASING, detector.19065:DECREASING]",
+          "start_time": "2024-06-26T12:35:06.937Z",
+          "end_time": "2024-06-26T12:40:00.398Z"
+        },
+        {
+          "zone": "zone.[detector.8552:DECREASING, detector.9201:INCREASING]",
+          "start_time": "2024-06-26T12:37:26.829Z",
+          "end_time": "2024-06-26T12:41:47.572Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:49:53.119Z",
+      "end_time": "2024-06-26T19:24:55.930Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.33788:INCREASING, detector.35479:DECREASING, detector.48257:DECREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T19:24:55.930Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:28:14.152Z",
+      "end_time": "2024-06-26T18:33:22.583Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:DECREASING, detector.47159:DECREASING, detector.48023:INCREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T18:33:22.583Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189,
+        190
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T17:55:01.171Z",
+      "end_time": "2024-06-26T20:57:36.359Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.1282:INCREASING, detector.29567:DECREASING, detector.39539:DECREASING, detector.40185:INCREASING]",
+          "start_time": "2024-06-26T17:55:01.171Z",
+          "end_time": "2024-06-26T20:57:09.081Z"
+        },
+        {
+          "zone": "zone.[detector.16481:INCREASING, detector.29567:INCREASING, detector.33059:DECREASING]",
+          "start_time": "2024-06-26T17:55:01.171Z",
+          "end_time": "2024-06-26T20:57:15.719Z"
+        },
+        {
+          "zone": "zone.[detector.14245:DECREASING, detector.33059:INCREASING, detector.48019:DECREASING]",
+          "start_time": "2024-06-26T17:55:01.171Z",
+          "end_time": "2024-06-26T20:57:36.359Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179,
+        180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:09:53.119Z",
+      "end_time": "2024-06-26T21:05:32.740Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:DECREASING, detector.31647:INCREASING, detector.43077:INCREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T21:05:32.740Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T12:52:10.932Z",
+      "end_time": "2024-06-26T13:01:21.110Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.4520:INCREASING, detector.7751:DECREASING]",
+          "start_time": "2024-06-26T12:52:10.932Z",
+          "end_time": "2024-06-26T12:57:00.325Z"
+        },
+        {
+          "zone": "zone.[detector.12943:DECREASING, detector.7193:INCREASING]",
+          "start_time": "2024-06-26T12:54:25.431Z",
+          "end_time": "2024-06-26T12:58:45.881Z"
+        },
+        {
+          "zone": "zone.[detector.25055:DECREASING, detector.40614:INCREASING]",
+          "start_time": "2024-06-26T12:55:49.736Z",
+          "end_time": "2024-06-26T13:00:35.586Z"
+        },
+        {
+          "zone": "zone.[detector.1955:DECREASING, detector.20536:INCREASING]",
+          "start_time": "2024-06-26T12:57:07.690Z",
+          "end_time": "2024-06-26T13:01:21.110Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:12:22.577Z",
+      "end_time": "2024-06-26T13:17:22.432Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.23821:INCREASING, detector.30305:DECREASING]",
+          "start_time": "2024-06-26T13:12:22.577Z",
+          "end_time": "2024-06-26T13:17:18.910Z"
+        },
+        {
+          "zone": "zone.[detector.30305:INCREASING, detector.35708:DECREASING, detector.39819:DECREASING]",
+          "start_time": "2024-06-26T13:12:22.577Z",
+          "end_time": "2024-06-26T13:17:20.645Z"
+        },
+        {
+          "zone": "zone.[detector.35708:INCREASING, detector.38471:DECREASING, detector.46431:INCREASING]",
+          "start_time": "2024-06-26T13:12:22.577Z",
+          "end_time": "2024-06-26T13:17:22.432Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:25:12.363Z",
+      "end_time": "2024-06-26T13:30:10.600Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.15261:DECREASING, detector.4167:INCREASING]",
+          "start_time": "2024-06-26T13:25:12.363Z",
+          "end_time": "2024-06-26T13:30:10.600Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:39:24.205Z",
+      "end_time": "2024-06-26T13:49:32.373Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.15804:DECREASING, detector.8341:INCREASING]",
+          "start_time": "2024-06-26T13:39:24.205Z",
+          "end_time": "2024-06-26T13:43:57.475Z"
+        },
+        {
+          "zone": "zone.[detector.15804:INCREASING, detector.2179:DECREASING]",
+          "start_time": "2024-06-26T13:41:48.443Z",
+          "end_time": "2024-06-26T13:45:29.245Z"
+        },
+        {
+          "zone": "zone.[detector.2179:INCREASING, detector.37159:DECREASING, detector.41533:INCREASING]",
+          "start_time": "2024-06-26T13:43:21.753Z",
+          "end_time": "2024-06-26T13:45:39.893Z"
+        },
+        {
+          "zone": "zone.[detector.37159:INCREASING, detector.3715:DECREASING]",
+          "start_time": "2024-06-26T13:43:21.753Z",
+          "end_time": "2024-06-26T13:46:09.878Z"
+        },
+        {
+          "zone": "zone.[detector.30557:DECREASING, detector.3715:INCREASING, detector.41727:INCREASING]",
+          "start_time": "2024-06-26T13:44:52.026Z",
+          "end_time": "2024-06-26T13:46:23.173Z"
+        },
+        {
+          "zone": "zone.[detector.29860:DECREASING, detector.30302:DECREASING, detector.30557:INCREASING]",
+          "start_time": "2024-06-26T13:44:52.026Z",
+          "end_time": "2024-06-26T13:46:25.899Z"
+        },
+        {
+          "zone": "zone.[detector.30302:INCREASING, detector.34998:DECREASING, detector.7807:DECREASING]",
+          "start_time": "2024-06-26T13:44:52.026Z",
+          "end_time": "2024-06-26T13:46:35.772Z"
+        },
+        {
+          "zone": "zone.[detector.25665:DECREASING, detector.7807:INCREASING]",
+          "start_time": "2024-06-26T13:44:52.026Z",
+          "end_time": "2024-06-26T13:47:06.531Z"
+        },
+        {
+          "zone": "zone.[detector.25665:INCREASING, detector.45326:DECREASING]",
+          "start_time": "2024-06-26T13:45:31.598Z",
+          "end_time": "2024-06-26T13:47:15.226Z"
+        },
+        {
+          "zone": "zone.[detector.28454:INCREASING, detector.30819:DECREASING, detector.45326:INCREASING]",
+          "start_time": "2024-06-26T13:45:31.598Z",
+          "end_time": "2024-06-26T13:47:18.204Z"
+        },
+        {
+          "zone": "zone.[detector.2500:DECREASING, detector.30819:INCREASING, detector.37047:DECREASING]",
+          "start_time": "2024-06-26T13:45:31.598Z",
+          "end_time": "2024-06-26T13:47:35.859Z"
+        },
+        {
+          "zone": "zone.[detector.2500:INCREASING, detector.26571:DECREASING]",
+          "start_time": "2024-06-26T13:46:25.706Z",
+          "end_time": "2024-06-26T13:49:32.373Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:58:15.625Z",
+      "end_time": "2024-06-26T14:03:12.344Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25948:INCREASING, detector.31756:DECREASING, detector.45857:INCREASING]",
+          "start_time": "2024-06-26T13:58:15.625Z",
+          "end_time": "2024-06-26T14:03:12.344Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:18:04.580Z",
+      "end_time": "2024-06-26T14:22:53.263Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.29276:DECREASING, detector.4164:INCREASING, detector.46591:INCREASING]",
+          "start_time": "2024-06-26T14:18:04.580Z",
+          "end_time": "2024-06-26T14:22:13.323Z"
+        },
+        {
+          "zone": "zone.[detector.1430:DECREASING, detector.29276:INCREASING, detector.44940:DECREASING]",
+          "start_time": "2024-06-26T14:18:04.580Z",
+          "end_time": "2024-06-26T14:22:17.631Z"
+        },
+        {
+          "zone": "zone.[detector.1430:INCREASING, detector.25214:DECREASING]",
+          "start_time": "2024-06-26T14:18:04.580Z",
+          "end_time": "2024-06-26T14:22:53.263Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:09:53.119Z",
+      "end_time": "2024-06-26T18:09:34.865Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:INCREASING, detector.38049:DECREASING, detector.43203:DECREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T18:08:30.182Z"
+        },
+        {
+          "zone": "zone.[detector.31341:DECREASING, detector.38049:INCREASING, detector.40280:DECREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T18:08:37.484Z"
+        },
+        {
+          "zone": "zone.[detector.28390:INCREASING, detector.40280:INCREASING, detector.44358:DECREASING, detector.46498:DECREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T18:08:39.526Z"
+        },
+        {
+          "zone": "zone.[detector.31027:DECREASING, detector.46498:INCREASING, detector.8885:DECREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T18:08:47.794Z"
+        },
+        {
+          "zone": "zone.[detector.43878:DECREASING, detector.8885:INCREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T18:09:15.413Z"
+        },
+        {
+          "zone": "zone.[detector.33788:DECREASING, detector.38339:INCREASING, detector.43878:INCREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T18:09:34.865Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187,
+        188, 189, 190, 191, 192, 193, 194, 195
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:49:53.119Z",
+      "end_time": "2024-06-26T20:54:03.128Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.35479:INCREASING, detector.44570:DECREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T20:54:03.128Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:58:53.739Z",
+      "end_time": "2024-06-26T15:03:21.264Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.27269:INCREASING, detector.28684:INCREASING, detector.31475:DECREASING]",
+          "start_time": "2024-06-26T14:58:53.739Z",
+          "end_time": "2024-06-26T15:01:47.803Z"
+        },
+        {
+          "zone": "zone.[detector.13310:DECREASING, detector.31475:INCREASING, detector.46906:DECREASING]",
+          "start_time": "2024-06-26T14:58:53.739Z",
+          "end_time": "2024-06-26T15:03:21.264Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T15:14:22.976Z",
+      "end_time": "2024-06-26T15:19:11.888Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.27987:DECREASING, detector.41468:DECREASING, detector.7133:INCREASING]",
+          "start_time": "2024-06-26T15:14:22.976Z",
+          "end_time": "2024-06-26T15:19:05.273Z"
+        },
+        {
+          "zone": "zone.[detector.29613:INCREASING, detector.38505:DECREASING, detector.41468:INCREASING]",
+          "start_time": "2024-06-26T15:14:22.976Z",
+          "end_time": "2024-06-26T15:19:11.888Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T15:25:50.502Z",
+      "end_time": "2024-06-26T15:30:50.733Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.24410:INCREASING, detector.40423:DECREASING, detector.46397:DECREASING]",
+          "start_time": "2024-06-26T15:25:50.502Z",
+          "end_time": "2024-06-26T15:30:50.733Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T15:44:35.214Z",
+      "end_time": "2024-06-26T15:49:25.044Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.13095:INCREASING, detector.8850:DECREASING]",
+          "start_time": "2024-06-26T15:44:35.214Z",
+          "end_time": "2024-06-26T15:49:25.044Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T15:49:50.764Z",
+      "end_time": "2024-06-26T15:57:10.135Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.27666:INCREASING, detector.28451:DECREASING, detector.48124:INCREASING]",
+          "start_time": "2024-06-26T15:49:50.764Z",
+          "end_time": "2024-06-26T15:53:52.245Z"
+        },
+        {
+          "zone": "zone.[detector.28451:INCREASING, detector.46017:DECREASING]",
+          "start_time": "2024-06-26T15:49:50.764Z",
+          "end_time": "2024-06-26T15:54:02.338Z"
+        },
+        {
+          "zone": "zone.[detector.27884:INCREASING, detector.29020:DECREASING, detector.46017:INCREASING, detector.47515:DECREASING]",
+          "start_time": "2024-06-26T15:49:50.764Z",
+          "end_time": "2024-06-26T15:54:14.039Z"
+        },
+        {
+          "zone": "zone.[detector.29020:INCREASING, detector.31810:DECREASING, detector.40182:DECREASING]",
+          "start_time": "2024-06-26T15:49:50.764Z",
+          "end_time": "2024-06-26T15:54:15.946Z"
+        },
+        {
+          "zone": "zone.[detector.1748:DECREASING, detector.31810:INCREASING, detector.45436:DECREASING]",
+          "start_time": "2024-06-26T15:49:50.764Z",
+          "end_time": "2024-06-26T15:54:35.128Z"
+        },
+        {
+          "zone": "zone.[detector.1748:INCREASING, detector.44929:DECREASING, detector.46148:DECREASING]",
+          "start_time": "2024-06-26T15:51:40.644Z",
+          "end_time": "2024-06-26T15:54:39.726Z"
+        },
+        {
+          "zone": "zone.[detector.44929:INCREASING, detector.47105:DECREASING, detector.7215:INCREASING]",
+          "start_time": "2024-06-26T15:51:40.644Z",
+          "end_time": "2024-06-26T15:54:42.840Z"
+        },
+        {
+          "zone": "zone.[detector.45356:DECREASING, detector.47105:INCREASING]",
+          "start_time": "2024-06-26T15:51:40.644Z",
+          "end_time": "2024-06-26T15:54:43.645Z"
+        },
+        {
+          "zone": "zone.[detector.30050:DECREASING, detector.39915:DECREASING, detector.45356:INCREASING]",
+          "start_time": "2024-06-26T15:51:40.644Z",
+          "end_time": "2024-06-26T15:54:45.780Z"
+        },
+        {
+          "zone": "zone.[detector.30050:INCREASING, detector.31700:DECREASING, detector.46148:INCREASING]",
+          "start_time": "2024-06-26T15:51:40.644Z",
+          "end_time": "2024-06-26T15:54:48.301Z"
+        },
+        {
+          "zone": "zone.[detector.31395:DECREASING, detector.31700:INCREASING, detector.42046:DECREASING]",
+          "start_time": "2024-06-26T15:51:40.644Z",
+          "end_time": "2024-06-26T15:54:49.215Z"
+        },
+        {
+          "zone": "zone.[detector.16679:DECREASING, detector.19537:DECREASING, detector.31395:INCREASING]",
+          "start_time": "2024-06-26T15:51:40.644Z",
+          "end_time": "2024-06-26T15:54:55.998Z"
+        },
+        {
+          "zone": "zone.[detector.1483:DECREASING, detector.16679:INCREASING]",
+          "start_time": "2024-06-26T15:51:40.644Z",
+          "end_time": "2024-06-26T15:55:25.858Z"
+        },
+        {
+          "zone": "zone.[detector.35532:INCREASING, detector.39642:INCREASING, detector.40421:DECREASING]",
+          "start_time": "2024-06-26T15:52:50.801Z",
+          "end_time": "2024-06-26T15:55:34.966Z"
+        },
+        {
+          "zone": "zone.[detector.13176:DECREASING, detector.40421:INCREASING, detector.44568:DECREASING]",
+          "start_time": "2024-06-26T15:52:50.801Z",
+          "end_time": "2024-06-26T15:55:40.451Z"
+        },
+        {
+          "zone": "zone.[detector.13176:INCREASING, detector.19507:DECREASING]",
+          "start_time": "2024-06-26T15:52:50.801Z",
+          "end_time": "2024-06-26T15:57:10.135Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T15:59:48.666Z",
+      "end_time": "2024-06-26T16:06:33.249Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.20880:DECREASING, detector.27676:INCREASING]",
+          "start_time": "2024-06-26T15:59:48.666Z",
+          "end_time": "2024-06-26T16:04:24.493Z"
+        },
+        {
+          "zone": "zone.[detector.37615:DECREASING, detector.41750:DECREASING, detector.47293:INCREASING]",
+          "start_time": "2024-06-26T16:01:09.313Z",
+          "end_time": "2024-06-26T16:04:45.700Z"
+        },
+        {
+          "zone": "zone.[detector.36798:DECREASING, detector.39735:DECREASING, detector.41750:INCREASING]",
+          "start_time": "2024-06-26T16:01:09.313Z",
+          "end_time": "2024-06-26T16:04:54.460Z"
+        },
+        {
+          "zone": "zone.[detector.39735:INCREASING, detector.46405:INCREASING, detector.8828:DECREASING]",
+          "start_time": "2024-06-26T16:01:09.313Z",
+          "end_time": "2024-06-26T16:04:57.276Z"
+        },
+        {
+          "zone": "zone.[detector.13688:DECREASING, detector.8828:INCREASING]",
+          "start_time": "2024-06-26T16:01:09.313Z",
+          "end_time": "2024-06-26T16:05:32.500Z"
+        },
+        {
+          "zone": "zone.[detector.19630:DECREASING, detector.28720:INCREASING]",
+          "start_time": "2024-06-26T16:02:13.164Z",
+          "end_time": "2024-06-26T16:05:55.677Z"
+        },
+        {
+          "zone": "zone.[detector.19630:INCREASING, detector.3612:DECREASING]",
+          "start_time": "2024-06-26T16:02:13.164Z",
+          "end_time": "2024-06-26T16:06:33.249Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183,
+        184
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T17:27:58.070Z",
+      "end_time": "2024-06-26T20:27:36.359Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:INCREASING, detector.40185:DECREASING, detector.44472:DECREASING]",
+          "start_time": "2024-06-26T17:27:58.070Z",
+          "end_time": "2024-06-26T20:26:25.250Z"
+        },
+        {
+          "zone": "zone.[detector.1282:INCREASING, detector.29567:DECREASING, detector.39539:DECREASING, detector.40185:INCREASING]",
+          "start_time": "2024-06-26T17:27:58.070Z",
+          "end_time": "2024-06-26T20:27:09.081Z"
+        },
+        {
+          "zone": "zone.[detector.16481:INCREASING, detector.29567:INCREASING, detector.33059:DECREASING]",
+          "start_time": "2024-06-26T17:27:58.070Z",
+          "end_time": "2024-06-26T20:27:15.719Z"
+        },
+        {
+          "zone": "zone.[detector.14245:DECREASING, detector.33059:INCREASING, detector.48019:DECREASING]",
+          "start_time": "2024-06-26T17:27:58.070Z",
+          "end_time": "2024-06-26T20:27:36.359Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171, 172, 173, 174, 175, 176],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:48:14.152Z",
+      "end_time": "2024-06-26T17:45:33.789Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.33602:DECREASING, detector.35413:DECREASING, detector.37520:INCREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T17:44:27.779Z"
+        },
+        {
+          "zone": "zone.[detector.35413:INCREASING, detector.39594:DECREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T17:44:59.338Z"
+        },
+        {
+          "zone": "zone.[detector.33602:INCREASING, detector.39594:INCREASING, detector.40382:DECREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T17:45:33.789Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [171],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:34:57.956Z",
+      "end_time": "2024-06-26T16:39:38.168Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.34099:DECREASING, detector.44573:DECREASING, detector.7881:INCREASING]",
+          "start_time": "2024-06-26T16:34:57.956Z",
+          "end_time": "2024-06-26T16:39:05.668Z"
+        },
+        {
+          "zone": "zone.[detector.18666:INCREASING, detector.29491:DECREASING, detector.44573:INCREASING]",
+          "start_time": "2024-06-26T16:34:57.956Z",
+          "end_time": "2024-06-26T16:39:09.527Z"
+        },
+        {
+          "zone": "zone.[detector.29491:INCREASING, detector.38987:DECREASING, detector.6017:DECREASING]",
+          "start_time": "2024-06-26T16:34:57.956Z",
+          "end_time": "2024-06-26T16:39:13.355Z"
+        },
+        {
+          "zone": "zone.[detector.23743:DECREASING, detector.34099:INCREASING, detector.38987:INCREASING]",
+          "start_time": "2024-06-26T16:34:57.956Z",
+          "end_time": "2024-06-26T16:39:38.168Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [171],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:49:39.078Z",
+      "end_time": "2024-06-26T16:55:22.845Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.19874:INCREASING, detector.28951:DECREASING, detector.44567:INCREASING]",
+          "start_time": "2024-06-26T16:49:39.078Z",
+          "end_time": "2024-06-26T16:52:58.948Z"
+        },
+        {
+          "zone": "zone.[detector.14604:DECREASING, detector.28951:INCREASING, detector.40471:DECREASING]",
+          "start_time": "2024-06-26T16:49:39.078Z",
+          "end_time": "2024-06-26T16:53:09.174Z"
+        },
+        {
+          "zone": "zone.[detector.14604:INCREASING, detector.2452:DECREASING]",
+          "start_time": "2024-06-26T16:49:39.078Z",
+          "end_time": "2024-06-26T16:53:38.191Z"
+        },
+        {
+          "zone": "zone.[detector.2452:INCREASING, detector.38288:INCREASING, detector.45630:DECREASING]",
+          "start_time": "2024-06-26T16:51:25.985Z",
+          "end_time": "2024-06-26T16:53:51.169Z"
+        },
+        {
+          "zone": "zone.[detector.33286:DECREASING, detector.36601:DECREASING, detector.39743:INCREASING, detector.45630:INCREASING]",
+          "start_time": "2024-06-26T16:51:25.985Z",
+          "end_time": "2024-06-26T16:53:53.149Z"
+        },
+        {
+          "zone": "zone.[detector.16249:DECREASING, detector.36601:INCREASING, detector.42690:DECREASING]",
+          "start_time": "2024-06-26T16:51:25.985Z",
+          "end_time": "2024-06-26T16:53:57.829Z"
+        },
+        {
+          "zone": "zone.[detector.32200:INCREASING, detector.32689:DECREASING, detector.42690:INCREASING]",
+          "start_time": "2024-06-26T16:51:25.985Z",
+          "end_time": "2024-06-26T16:54:12.924Z"
+        },
+        {
+          "zone": "zone.[detector.32689:INCREASING, detector.9274:DECREASING]",
+          "start_time": "2024-06-26T16:51:25.985Z",
+          "end_time": "2024-06-26T16:54:41.737Z"
+        },
+        {
+          "zone": "zone.[detector.7622:DECREASING, detector.9274:INCREASING]",
+          "start_time": "2024-06-26T16:51:25.985Z",
+          "end_time": "2024-06-26T16:55:22.845Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182, 183, 184, 185, 186, 187, 188, 189, 190
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:19:53.119Z",
+      "end_time": "2024-06-26T20:34:59.053Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:INCREASING, detector.43077:DECREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T20:34:59.053Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179,
+        180, 181, 182, 183, 184, 185, 186
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:09:53.119Z",
+      "end_time": "2024-06-26T20:09:03.128Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.35479:INCREASING, detector.44570:DECREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T20:09:03.128Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:29:53.119Z",
+      "end_time": "2024-06-26T18:29:34.865Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:INCREASING, detector.38049:DECREASING, detector.43203:DECREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T18:28:30.182Z"
+        },
+        {
+          "zone": "zone.[detector.31341:DECREASING, detector.38049:INCREASING, detector.40280:DECREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T18:28:37.484Z"
+        },
+        {
+          "zone": "zone.[detector.28390:INCREASING, detector.40280:INCREASING, detector.44358:DECREASING, detector.46498:DECREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T18:28:39.526Z"
+        },
+        {
+          "zone": "zone.[detector.31027:DECREASING, detector.46498:INCREASING, detector.8885:DECREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T18:28:47.794Z"
+        },
+        {
+          "zone": "zone.[detector.43878:DECREASING, detector.8885:INCREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T18:29:15.413Z"
+        },
+        {
+          "zone": "zone.[detector.33788:DECREASING, detector.38339:INCREASING, detector.43878:INCREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T18:29:34.865Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T12:18:37.030Z",
+      "end_time": "2024-06-26T12:28:41.326Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.15509:INCREASING, detector.19510:DECREASING, detector.32298:INCREASING]",
+          "start_time": "2024-06-26T12:18:37.030Z",
+          "end_time": "2024-06-26T12:27:31.382Z"
+        },
+        {
+          "zone": "zone.[detector.19510:INCREASING, detector.4703:DECREASING]",
+          "start_time": "2024-06-26T12:18:37.030Z",
+          "end_time": "2024-06-26T12:27:55.233Z"
+        },
+        {
+          "zone": "zone.[bufferstop.265:INCREASING, detector.32388:DECREASING, detector.4703:INCREASING]",
+          "start_time": "2024-06-26T12:19:32.414Z",
+          "end_time": "2024-06-26T12:28:10.420Z"
+        },
+        {
+          "zone": "zone.[detector.11291:DECREASING, detector.16424:DECREASING, detector.32388:INCREASING]",
+          "start_time": "2024-06-26T12:19:32.414Z",
+          "end_time": "2024-06-26T12:28:41.326Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T12:34:21.171Z",
+      "end_time": "2024-06-26T13:34:49.281Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.15910:INCREASING, detector.18348:DECREASING]",
+          "start_time": "2024-06-26T12:34:21.171Z",
+          "end_time": "2024-06-26T12:42:50.364Z"
+        },
+        {
+          "zone": "zone.[detector.19065:INCREASING, detector.9201:DECREASING]",
+          "start_time": "2024-06-26T12:35:06.937Z",
+          "end_time": "2024-06-26T12:44:32.286Z"
+        },
+        {
+          "zone": "zone.[detector.19505:DECREASING, detector.8552:INCREASING]",
+          "start_time": "2024-06-26T12:37:26.829Z",
+          "end_time": "2024-06-26T12:45:59.586Z"
+        },
+        {
+          "zone": "zone.[detector.1473:DECREASING, detector.19505:INCREASING]",
+          "start_time": "2024-06-26T12:37:26.829Z",
+          "end_time": "2024-06-26T12:47:25.777Z"
+        },
+        {
+          "zone": "zone.[detector.1473:INCREASING, detector.7651:DECREASING]",
+          "start_time": "2024-06-26T12:39:07.275Z",
+          "end_time": "2024-06-26T12:47:28.094Z"
+        },
+        {
+          "zone": "zone.[detector.16890:DECREASING, detector.7651:INCREASING]",
+          "start_time": "2024-06-26T12:39:07.275Z",
+          "end_time": "2024-06-26T12:49:07.733Z"
+        },
+        {
+          "zone": "zone.[detector.16890:INCREASING, detector.22474:DECREASING]",
+          "start_time": "2024-06-26T12:39:07.275Z",
+          "end_time": "2024-06-26T12:50:06.010Z"
+        },
+        {
+          "zone": "zone.[detector.22474:INCREASING, detector.5526:DECREASING]",
+          "start_time": "2024-06-26T12:41:59.812Z",
+          "end_time": "2024-06-26T12:50:49.725Z"
+        },
+        {
+          "zone": "zone.[detector.24307:DECREASING, detector.5526:INCREASING]",
+          "start_time": "2024-06-26T12:41:59.812Z",
+          "end_time": "2024-06-26T12:51:46.695Z"
+        },
+        {
+          "zone": "zone.[detector.3514:DECREASING, detector.36617:INCREASING, detector.43914:INCREASING]",
+          "start_time": "2024-06-26T12:44:40.554Z",
+          "end_time": "2024-06-26T12:52:20.855Z"
+        },
+        {
+          "zone": "zone.[detector.10417:DECREASING, detector.3514:INCREASING]",
+          "start_time": "2024-06-26T12:44:40.554Z",
+          "end_time": "2024-06-26T12:53:12.109Z"
+        },
+        {
+          "zone": "zone.[detector.10417:INCREASING, detector.11315:DECREASING]",
+          "start_time": "2024-06-26T12:46:23.774Z",
+          "end_time": "2024-06-26T12:54:02.554Z"
+        },
+        {
+          "zone": "zone.[detector.7193:DECREASING, detector.7725:INCREASING]",
+          "start_time": "2024-06-26T12:50:18.790Z",
+          "end_time": "2024-06-26T12:58:20.992Z"
+        },
+        {
+          "zone": "zone.[detector.12943:INCREASING, detector.8717:DECREASING]",
+          "start_time": "2024-06-26T12:51:36.561Z",
+          "end_time": "2024-06-26T12:59:32.122Z"
+        },
+        {
+          "zone": "zone.[detector.35259:DECREASING, detector.36436:INCREASING, detector.8238:DECREASING]",
+          "start_time": "2024-06-26T12:55:14.833Z",
+          "end_time": "2024-06-26T13:03:47.153Z"
+        },
+        {
+          "zone": "zone.[detector.22541:DECREASING, detector.8238:INCREASING]",
+          "start_time": "2024-06-26T12:55:59.852Z",
+          "end_time": "2024-06-26T13:06:12.684Z"
+        },
+        {
+          "zone": "zone.[detector.22541:INCREASING, detector.5484:DECREASING]",
+          "start_time": "2024-06-26T12:58:25.352Z",
+          "end_time": "2024-06-26T13:08:41.042Z"
+        },
+        {
+          "zone": "zone.[detector.17310:DECREASING, detector.5484:INCREASING]",
+          "start_time": "2024-06-26T13:00:51.046Z",
+          "end_time": "2024-06-26T13:10:29.809Z"
+        },
+        {
+          "zone": "zone.[detector.17310:INCREASING, detector.44621:INCREASING, detector.7750:DECREASING]",
+          "start_time": "2024-06-26T13:03:15.246Z",
+          "end_time": "2024-06-26T13:11:49.752Z"
+        },
+        {
+          "zone": "zone.[detector.2705:DECREASING, detector.7750:INCREASING]",
+          "start_time": "2024-06-26T13:05:08.911Z",
+          "end_time": "2024-06-26T13:14:04.952Z"
+        },
+        {
+          "zone": "zone.[detector.23821:DECREASING, detector.2705:INCREASING]",
+          "start_time": "2024-06-26T13:06:29.487Z",
+          "end_time": "2024-06-26T13:16:16.539Z"
+        },
+        {
+          "zone": "zone.[detector.36512:DECREASING, detector.38471:INCREASING]",
+          "start_time": "2024-06-26T13:08:42.690Z",
+          "end_time": "2024-06-26T13:17:28.449Z"
+        },
+        {
+          "zone": "zone.[detector.19502:DECREASING, detector.36512:INCREASING, detector.46449:DECREASING]",
+          "start_time": "2024-06-26T13:08:42.690Z",
+          "end_time": "2024-06-26T13:17:36.258Z"
+        },
+        {
+          "zone": "zone.[detector.11035:DECREASING, detector.39819:INCREASING, detector.46449:INCREASING]",
+          "start_time": "2024-06-26T13:08:42.690Z",
+          "end_time": "2024-06-26T13:17:50.504Z"
+        },
+        {
+          "zone": "zone.[detector.11035:INCREASING, detector.2801:DECREASING]",
+          "start_time": "2024-06-26T13:10:56.446Z",
+          "end_time": "2024-06-26T13:19:49.383Z"
+        },
+        {
+          "zone": "zone.[detector.15282:DECREASING, detector.2801:INCREASING]",
+          "start_time": "2024-06-26T13:12:29.143Z",
+          "end_time": "2024-06-26T13:22:01.739Z"
+        },
+        {
+          "zone": "zone.[detector.15282:INCREASING, detector.15771:DECREASING]",
+          "start_time": "2024-06-26T13:14:26.843Z",
+          "end_time": "2024-06-26T13:23:55.693Z"
+        },
+        {
+          "zone": "zone.[detector.1330:DECREASING, detector.15771:INCREASING]",
+          "start_time": "2024-06-26T13:16:38.415Z",
+          "end_time": "2024-06-26T13:26:18.362Z"
+        },
+        {
+          "zone": "zone.[detector.1330:INCREASING, detector.4167:DECREASING]",
+          "start_time": "2024-06-26T13:18:29.873Z",
+          "end_time": "2024-06-26T13:27:57.183Z"
+        },
+        {
+          "zone": "zone.[detector.15261:INCREASING, detector.3759:DECREASING]",
+          "start_time": "2024-06-26T13:22:34.694Z",
+          "end_time": "2024-06-26T13:32:18.751Z"
+        },
+        {
+          "zone": "zone.[detector.3759:INCREASING, detector.7093:DECREASING]",
+          "start_time": "2024-06-26T13:24:47.452Z",
+          "end_time": "2024-06-26T13:34:49.281Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182, 183, 184, 185, 186, 187, 188
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:19:53.119Z",
+      "end_time": "2024-06-26T20:19:03.128Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.35479:INCREASING, detector.44570:DECREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T20:19:03.128Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187,
+        188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:49:53.119Z",
+      "end_time": "2024-06-26T21:50:32.740Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:DECREASING, detector.31647:INCREASING, detector.43077:INCREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T21:50:32.740Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [172],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T19:25:13.121Z",
+      "end_time": "2024-06-26T19:31:17.598Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.14245:INCREASING, detector.31090:DECREASING]",
+          "start_time": "2024-06-26T19:25:13.121Z",
+          "end_time": "2024-06-26T19:29:19.691Z"
+        },
+        {
+          "zone": "zone.[detector.10701:DECREASING, detector.28974:INCREASING, detector.31090:INCREASING]",
+          "start_time": "2024-06-26T19:25:13.121Z",
+          "end_time": "2024-06-26T19:30:04.638Z"
+        },
+        {
+          "zone": "zone.[detector.10701:INCREASING, detector.22528:DECREASING]",
+          "start_time": "2024-06-26T19:27:17.157Z",
+          "end_time": "2024-06-26T19:31:17.598Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [172],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T19:32:41.845Z",
+      "end_time": "2024-06-26T19:47:31.911Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.22593:INCREASING, detector.45060:INCREASING, detector.9008:DECREASING]",
+          "start_time": "2024-06-26T19:32:41.845Z",
+          "end_time": "2024-06-26T19:37:13.464Z"
+        },
+        {
+          "zone": "zone.[detector.17845:INCREASING, detector.6800:DECREASING]",
+          "start_time": "2024-06-26T19:36:58.048Z",
+          "end_time": "2024-06-26T19:41:44.188Z"
+        },
+        {
+          "zone": "zone.[detector.6800:INCREASING, detector.9459:DECREASING]",
+          "start_time": "2024-06-26T19:38:08.753Z",
+          "end_time": "2024-06-26T19:42:58.747Z"
+        },
+        {
+          "zone": "zone.[detector.3118:DECREASING, detector.9459:INCREASING]",
+          "start_time": "2024-06-26T19:39:16.621Z",
+          "end_time": "2024-06-26T19:44:13.382Z"
+        },
+        {
+          "zone": "zone.[detector.3118:INCREASING, detector.8957:DECREASING]",
+          "start_time": "2024-06-26T19:40:27.181Z",
+          "end_time": "2024-06-26T19:45:19.499Z"
+        },
+        {
+          "zone": "zone.[detector.30473:INCREASING, detector.36957:DECREASING, detector.45763:DECREASING]",
+          "start_time": "2024-06-26T19:42:39.537Z",
+          "end_time": "2024-06-26T19:47:23.388Z"
+        },
+        {
+          "zone": "zone.[detector.29733:INCREASING, detector.30331:DECREASING, detector.36957:INCREASING]",
+          "start_time": "2024-06-26T19:42:39.537Z",
+          "end_time": "2024-06-26T19:47:31.911Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183,
+        184, 185, 186, 187, 188, 189, 190
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:29:53.119Z",
+      "end_time": "2024-06-26T20:29:03.128Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.35479:INCREASING, detector.44570:DECREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T20:29:03.128Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170, 171, 172],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:15:29.504Z",
+      "end_time": "2024-06-26T14:51:13.504Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.1032:DECREASING, detector.1334:INCREASING]",
+          "start_time": "2024-06-26T14:15:29.504Z",
+          "end_time": "2024-06-26T14:51:13.504Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170, 171, 172],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:38:14.152Z",
+      "end_time": "2024-06-26T17:16:06.782Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.37520:DECREASING, detector.7622:INCREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T17:16:06.782Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185,
+        186, 187, 188, 189, 190, 191, 192
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:39:53.119Z",
+      "end_time": "2024-06-26T20:39:03.127Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.35479:INCREASING, detector.44570:DECREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T20:39:03.127Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170, 171, 172, 173, 174],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:38:14.152Z",
+      "end_time": "2024-06-26T17:35:33.789Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.33602:DECREASING, detector.35413:DECREASING, detector.37520:INCREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T17:34:27.779Z"
+        },
+        {
+          "zone": "zone.[detector.35413:INCREASING, detector.39594:DECREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T17:34:59.338Z"
+        },
+        {
+          "zone": "zone.[detector.33602:INCREASING, detector.39594:INCREASING, detector.40382:DECREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T17:35:33.789Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185,
+        186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:39:53.119Z",
+      "end_time": "2024-06-26T21:35:32.740Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:DECREASING, detector.31647:INCREASING, detector.43077:INCREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T21:35:32.740Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:48:14.152Z",
+      "end_time": "2024-06-26T18:34:00.939Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.40959:INCREASING, detector.43489:DECREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T18:33:34.263Z"
+        },
+        {
+          "zone": "zone.[detector.29234:DECREASING, detector.43489:INCREASING, detector.45521:INCREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T18:33:35.041Z"
+        },
+        {
+          "zone": "zone.[detector.29234:INCREASING, detector.48023:DECREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T18:34:00.939Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:18:14.152Z",
+      "end_time": "2024-06-26T18:23:22.583Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:DECREASING, detector.47159:DECREASING, detector.48023:INCREASING]",
+          "start_time": "2024-06-26T16:18:14.152Z",
+          "end_time": "2024-06-26T18:23:22.583Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169, 170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:46:53.439Z",
+      "end_time": "2024-06-26T14:08:05.320Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.17968:DECREASING, detector.26571:INCREASING]",
+          "start_time": "2024-06-26T13:46:53.439Z",
+          "end_time": "2024-06-26T13:56:38.151Z"
+        },
+        {
+          "zone": "zone.[detector.17968:INCREASING, detector.5147:DECREASING]",
+          "start_time": "2024-06-26T13:48:43.282Z",
+          "end_time": "2024-06-26T13:58:36.549Z"
+        },
+        {
+          "zone": "zone.[detector.19452:DECREASING, detector.31756:INCREASING, detector.43503:DECREASING]",
+          "start_time": "2024-06-26T13:58:15.625Z",
+          "end_time": "2024-06-26T14:08:05.320Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169, 170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:16:22.054Z",
+      "end_time": "2024-06-26T14:25:06.186Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.12546:INCREASING, detector.4164:DECREASING]",
+          "start_time": "2024-06-26T14:16:22.054Z",
+          "end_time": "2024-06-26T14:25:06.186Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169, 170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:41:20.373Z",
+      "end_time": "2024-06-26T14:50:34.101Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.15963:INCREASING, detector.18007:DECREASING, detector.45047:INCREASING]",
+          "start_time": "2024-06-26T14:41:20.373Z",
+          "end_time": "2024-06-26T14:50:34.101Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [169, 170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T15:09:56.371Z",
+      "end_time": "2024-06-26T15:19:45.052Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.16453:DECREASING, detector.38505:INCREASING]",
+          "start_time": "2024-06-26T15:09:56.371Z",
+          "end_time": "2024-06-26T15:19:45.052Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171, 172, 173],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:22:28.602Z",
+      "end_time": "2024-06-26T14:56:13.504Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.1032:DECREASING, detector.1334:INCREASING]",
+          "start_time": "2024-06-26T14:22:28.602Z",
+          "end_time": "2024-06-26T14:56:13.504Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [166, 167, 168, 169],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:45:02.731Z",
+      "end_time": "2024-06-26T14:36:46.270Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.18209:DECREASING, detector.19452:INCREASING]",
+          "start_time": "2024-06-26T13:45:02.731Z",
+          "end_time": "2024-06-26T14:12:50.447Z"
+        },
+        {
+          "zone": "zone.[detector.15042:INCREASING, detector.2711:DECREASING]",
+          "start_time": "2024-06-26T14:04:42.491Z",
+          "end_time": "2024-06-26T14:35:32.889Z"
+        },
+        {
+          "zone": "zone.[detector.2711:INCREASING, detector.36116:DECREASING, detector.37364:INCREASING]",
+          "start_time": "2024-06-26T14:04:42.491Z",
+          "end_time": "2024-06-26T14:36:31.114Z"
+        },
+        {
+          "zone": "zone.[detector.36116:INCREASING, detector.43496:DECREASING, detector.8560:DECREASING]",
+          "start_time": "2024-06-26T14:04:42.491Z",
+          "end_time": "2024-06-26T14:36:38.754Z"
+        },
+        {
+          "zone": "zone.[detector.1334:DECREASING, detector.29154:INCREASING, detector.43496:INCREASING]",
+          "start_time": "2024-06-26T14:04:42.491Z",
+          "end_time": "2024-06-26T14:36:46.270Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:28:14.152Z",
+      "end_time": "2024-06-26T18:14:00.939Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.40959:INCREASING, detector.43489:DECREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T18:13:34.263Z"
+        },
+        {
+          "zone": "zone.[detector.29234:DECREASING, detector.43489:INCREASING, detector.45521:INCREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T18:13:35.041Z"
+        },
+        {
+          "zone": "zone.[detector.29234:INCREASING, detector.48023:DECREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T18:14:00.939Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:48:14.152Z",
+      "end_time": "2024-06-26T18:54:34.865Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:DECREASING, detector.47159:DECREASING, detector.48023:INCREASING]",
+          "start_time": "2024-06-26T16:48:14.152Z",
+          "end_time": "2024-06-26T18:53:22.583Z"
+        },
+        {
+          "zone": "zone.[detector.3753:INCREASING, detector.38049:DECREASING, detector.43203:DECREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T18:53:30.182Z"
+        },
+        {
+          "zone": "zone.[detector.31341:DECREASING, detector.38049:INCREASING, detector.40280:DECREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T18:53:37.484Z"
+        },
+        {
+          "zone": "zone.[detector.28390:INCREASING, detector.40280:INCREASING, detector.44358:DECREASING, detector.46498:DECREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T18:53:39.526Z"
+        },
+        {
+          "zone": "zone.[detector.31027:DECREASING, detector.46498:INCREASING, detector.8885:DECREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T18:53:47.794Z"
+        },
+        {
+          "zone": "zone.[detector.43878:DECREASING, detector.8885:INCREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T18:54:15.413Z"
+        },
+        {
+          "zone": "zone.[detector.33788:DECREASING, detector.38339:INCREASING, detector.43878:INCREASING]",
+          "start_time": "2024-06-26T16:49:53.119Z",
+          "end_time": "2024-06-26T18:54:34.865Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185,
+        186
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T17:37:58.070Z",
+      "end_time": "2024-06-26T20:37:36.358Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:INCREASING, detector.40185:DECREASING, detector.44472:DECREASING]",
+          "start_time": "2024-06-26T17:37:58.070Z",
+          "end_time": "2024-06-26T20:36:25.250Z"
+        },
+        {
+          "zone": "zone.[detector.1282:INCREASING, detector.29567:DECREASING, detector.39539:DECREASING, detector.40185:INCREASING]",
+          "start_time": "2024-06-26T17:37:58.070Z",
+          "end_time": "2024-06-26T20:37:09.081Z"
+        },
+        {
+          "zone": "zone.[detector.16481:INCREASING, detector.29567:INCREASING, detector.33059:DECREASING]",
+          "start_time": "2024-06-26T17:37:58.070Z",
+          "end_time": "2024-06-26T20:37:15.718Z"
+        },
+        {
+          "zone": "zone.[detector.14245:DECREASING, detector.33059:INCREASING, detector.48019:DECREASING]",
+          "start_time": "2024-06-26T17:37:58.070Z",
+          "end_time": "2024-06-26T20:37:36.358Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183,
+        184, 185, 186, 187, 188, 189, 190, 191, 192
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:29:53.119Z",
+      "end_time": "2024-06-26T20:44:59.054Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:INCREASING, detector.43077:DECREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T20:44:59.054Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [166, 167, 168, 169, 170, 171, 172],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:28:14.152Z",
+      "end_time": "2024-06-26T17:25:33.789Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.33602:DECREASING, detector.35413:DECREASING, detector.37520:INCREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T17:24:27.779Z"
+        },
+        {
+          "zone": "zone.[detector.35413:INCREASING, detector.39594:DECREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T17:24:59.338Z"
+        },
+        {
+          "zone": "zone.[detector.33602:INCREASING, detector.39594:INCREASING, detector.40382:DECREASING]",
+          "start_time": "2024-06-26T16:28:14.152Z",
+          "end_time": "2024-06-26T17:25:33.789Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:51:43.075Z",
+      "end_time": "2024-06-26T14:10:28.058Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25948:DECREASING, detector.5147:INCREASING]",
+          "start_time": "2024-06-26T13:51:43.075Z",
+          "end_time": "2024-06-26T14:10:28.058Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:10:28.623Z",
+      "end_time": "2024-06-26T14:53:14.375Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.12546:DECREASING, detector.18209:INCREASING]",
+          "start_time": "2024-06-26T14:10:28.623Z",
+          "end_time": "2024-06-26T14:28:25.476Z"
+        },
+        {
+          "zone": "zone.[detector.15042:DECREASING, detector.956:INCREASING]",
+          "start_time": "2024-06-26T14:21:39.252Z",
+          "end_time": "2024-06-26T14:36:37.647Z"
+        },
+        {
+          "zone": "zone.[detector.1032:INCREASING, detector.15963:DECREASING]",
+          "start_time": "2024-06-26T14:36:21.302Z",
+          "end_time": "2024-06-26T14:53:14.375Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [170, 171],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:54:15.734Z",
+      "end_time": "2024-06-26T16:52:47.667Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.29558:DECREASING, detector.37947:INCREASING, detector.8190:INCREASING]",
+          "start_time": "2024-06-26T14:54:15.734Z",
+          "end_time": "2024-06-26T15:05:51.637Z"
+        },
+        {
+          "zone": "zone.[detector.1108:DECREASING, detector.29558:INCREASING, detector.45226:DECREASING]",
+          "start_time": "2024-06-26T14:54:15.734Z",
+          "end_time": "2024-06-26T15:05:59.521Z"
+        },
+        {
+          "zone": "zone.[detector.1108:INCREASING, detector.27269:DECREASING]",
+          "start_time": "2024-06-26T14:54:15.734Z",
+          "end_time": "2024-06-26T15:06:25.558Z"
+        },
+        {
+          "zone": "zone.[detector.13310:INCREASING, detector.19248:DECREASING]",
+          "start_time": "2024-06-26T14:59:48.068Z",
+          "end_time": "2024-06-26T15:15:59.409Z"
+        },
+        {
+          "zone": "zone.[detector.19248:INCREASING, detector.7133:DECREASING]",
+          "start_time": "2024-06-26T15:07:07.480Z",
+          "end_time": "2024-06-26T15:22:14.026Z"
+        },
+        {
+          "zone": "zone.[detector.16453:INCREASING, detector.6979:DECREASING]",
+          "start_time": "2024-06-26T15:16:18.589Z",
+          "end_time": "2024-06-26T15:27:08.960Z"
+        },
+        {
+          "zone": "zone.[detector.24410:DECREASING, detector.6979:INCREASING]",
+          "start_time": "2024-06-26T15:19:01.447Z",
+          "end_time": "2024-06-26T15:33:10.879Z"
+        },
+        {
+          "zone": "zone.[detector.35335:DECREASING, detector.46397:INCREASING, detector.9587:INCREASING]",
+          "start_time": "2024-06-26T15:25:50.502Z",
+          "end_time": "2024-06-26T15:35:48.461Z"
+        },
+        {
+          "zone": "zone.[detector.30700:DECREASING, detector.35335:INCREASING, detector.906:DECREASING]",
+          "start_time": "2024-06-26T15:25:50.502Z",
+          "end_time": "2024-06-26T15:35:59.344Z"
+        },
+        {
+          "zone": "zone.[detector.30700:INCREASING, detector.40423:INCREASING, detector.44486:DECREASING]",
+          "start_time": "2024-06-26T15:25:50.502Z",
+          "end_time": "2024-06-26T15:36:02.890Z"
+        },
+        {
+          "zone": "zone.[detector.16180:DECREASING, detector.44486:INCREASING]",
+          "start_time": "2024-06-26T15:25:50.502Z",
+          "end_time": "2024-06-26T15:36:07.276Z"
+        },
+        {
+          "zone": "zone.[detector.16180:INCREASING, detector.16942:DECREASING]",
+          "start_time": "2024-06-26T15:27:47.620Z",
+          "end_time": "2024-06-26T15:37:57.570Z"
+        },
+        {
+          "zone": "zone.[detector.13095:DECREASING, detector.15887:INCREASING]",
+          "start_time": "2024-06-26T15:37:38.123Z",
+          "end_time": "2024-06-26T15:51:29.940Z"
+        },
+        {
+          "zone": "zone.[detector.162:DECREASING, detector.8850:INCREASING]",
+          "start_time": "2024-06-26T15:46:10.668Z",
+          "end_time": "2024-06-26T15:55:14.665Z"
+        },
+        {
+          "zone": "zone.[detector.162:INCREASING, detector.27666:DECREASING]",
+          "start_time": "2024-06-26T15:47:58.746Z",
+          "end_time": "2024-06-26T15:57:08.302Z"
+        },
+        {
+          "zone": "zone.[detector.18889:DECREASING, detector.19507:INCREASING]",
+          "start_time": "2024-06-26T15:53:40.112Z",
+          "end_time": "2024-06-26T16:02:55.387Z"
+        },
+        {
+          "zone": "zone.[detector.11297:DECREASING, detector.18889:INCREASING]",
+          "start_time": "2024-06-26T15:55:21.049Z",
+          "end_time": "2024-06-26T16:05:11.735Z"
+        },
+        {
+          "zone": "zone.[detector.11297:INCREASING, detector.27676:DECREASING]",
+          "start_time": "2024-06-26T15:57:31.775Z",
+          "end_time": "2024-06-26T16:06:31.693Z"
+        },
+        {
+          "zone": "zone.[detector.19231:DECREASING, detector.9376:INCREASING]",
+          "start_time": "2024-06-26T16:03:18.419Z",
+          "end_time": "2024-06-26T16:12:22.208Z"
+        },
+        {
+          "zone": "zone.[detector.19231:INCREASING, detector.9337:DECREASING]",
+          "start_time": "2024-06-26T16:04:15.902Z",
+          "end_time": "2024-06-26T16:14:43.612Z"
+        },
+        {
+          "zone": "zone.[detector.21979:DECREASING, detector.9337:INCREASING]",
+          "start_time": "2024-06-26T16:06:58.104Z",
+          "end_time": "2024-06-26T16:17:21.140Z"
+        },
+        {
+          "zone": "zone.[detector.12595:DECREASING, detector.21979:INCREASING]",
+          "start_time": "2024-06-26T16:09:19.794Z",
+          "end_time": "2024-06-26T16:18:47.395Z"
+        },
+        {
+          "zone": "zone.[detector.12595:INCREASING, detector.2162:DECREASING]",
+          "start_time": "2024-06-26T16:09:19.794Z",
+          "end_time": "2024-06-26T16:19:53.820Z"
+        },
+        {
+          "zone": "zone.[detector.2162:INCREASING, detector.9122:DECREASING]",
+          "start_time": "2024-06-26T16:11:58.019Z",
+          "end_time": "2024-06-26T16:22:33.375Z"
+        },
+        {
+          "zone": "zone.[detector.21390:DECREASING, detector.9122:INCREASING]",
+          "start_time": "2024-06-26T16:14:29.162Z",
+          "end_time": "2024-06-26T16:24:40.952Z"
+        },
+        {
+          "zone": "zone.[detector.21390:INCREASING, detector.28043:DECREASING, detector.40597:DECREASING]",
+          "start_time": "2024-06-26T16:17:07.446Z",
+          "end_time": "2024-06-26T16:24:55.908Z"
+        },
+        {
+          "zone": "zone.[detector.10960:DECREASING, detector.28043:INCREASING, detector.43405:INCREASING]",
+          "start_time": "2024-06-26T16:17:07.446Z",
+          "end_time": "2024-06-26T16:25:16.220Z"
+        },
+        {
+          "zone": "zone.[detector.10960:INCREASING, detector.13982:DECREASING]",
+          "start_time": "2024-06-26T16:17:07.446Z",
+          "end_time": "2024-06-26T16:27:27.916Z"
+        },
+        {
+          "zone": "zone.[detector.11695:DECREASING, detector.13982:INCREASING]",
+          "start_time": "2024-06-26T16:19:15.859Z",
+          "end_time": "2024-06-26T16:28:57.550Z"
+        },
+        {
+          "zone": "zone.[detector.11695:INCREASING, detector.21380:DECREASING]",
+          "start_time": "2024-06-26T16:22:06.067Z",
+          "end_time": "2024-06-26T16:30:54.302Z"
+        },
+        {
+          "zone": "zone.[detector.21380:INCREASING, detector.25615:DECREASING]",
+          "start_time": "2024-06-26T16:23:37.086Z",
+          "end_time": "2024-06-26T16:32:41.383Z"
+        },
+        {
+          "zone": "zone.[detector.11411:DECREASING, detector.25615:INCREASING]",
+          "start_time": "2024-06-26T16:25:32.479Z",
+          "end_time": "2024-06-26T16:33:31.273Z"
+        },
+        {
+          "zone": "zone.[detector.11411:INCREASING, detector.7242:DECREASING]",
+          "start_time": "2024-06-26T16:25:32.479Z",
+          "end_time": "2024-06-26T16:34:37.004Z"
+        },
+        {
+          "zone": "zone.[detector.3195:DECREASING, detector.7242:INCREASING]",
+          "start_time": "2024-06-26T16:27:21.823Z",
+          "end_time": "2024-06-26T16:37:05.567Z"
+        },
+        {
+          "zone": "zone.[detector.3195:INCREASING, detector.7881:DECREASING]",
+          "start_time": "2024-06-26T16:29:15.201Z",
+          "end_time": "2024-06-26T16:38:56.814Z"
+        },
+        {
+          "zone": "zone.[detector.23163:DECREASING, detector.23743:INCREASING]",
+          "start_time": "2024-06-26T16:31:42.351Z",
+          "end_time": "2024-06-26T16:41:32.853Z"
+        },
+        {
+          "zone": "zone.[detector.15557:DECREASING, detector.23163:INCREASING]",
+          "start_time": "2024-06-26T16:33:33.875Z",
+          "end_time": "2024-06-26T16:43:48.166Z"
+        },
+        {
+          "zone": "zone.[detector.15557:INCREASING, detector.23141:DECREASING]",
+          "start_time": "2024-06-26T16:36:10.024Z",
+          "end_time": "2024-06-26T16:46:12.720Z"
+        },
+        {
+          "zone": "zone.[detector.18597:DECREASING, detector.23141:INCREASING]",
+          "start_time": "2024-06-26T16:38:24.176Z",
+          "end_time": "2024-06-26T16:48:39.592Z"
+        },
+        {
+          "zone": "zone.[detector.18597:INCREASING, detector.19273:DECREASING]",
+          "start_time": "2024-06-26T16:40:48.536Z",
+          "end_time": "2024-06-26T16:51:05.099Z"
+        },
+        {
+          "zone": "zone.[detector.19273:INCREASING, detector.19874:DECREASING]",
+          "start_time": "2024-06-26T16:43:13.968Z",
+          "end_time": "2024-06-26T16:52:47.667Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T13:26:55.858Z",
+      "end_time": "2024-06-26T15:47:30.689Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.14355:DECREASING, detector.7093:INCREASING]",
+          "start_time": "2024-06-26T13:26:55.858Z",
+          "end_time": "2024-06-26T13:42:18.504Z"
+        },
+        {
+          "zone": "zone.[detector.14355:INCREASING, detector.15656:DECREASING]",
+          "start_time": "2024-06-26T13:29:25.521Z",
+          "end_time": "2024-06-26T13:44:52.036Z"
+        },
+        {
+          "zone": "zone.[detector.15656:INCREASING, detector.8341:DECREASING]",
+          "start_time": "2024-06-26T13:31:55.903Z",
+          "end_time": "2024-06-26T13:47:11.649Z"
+        },
+        {
+          "zone": "zone.[detector.25948:DECREASING, detector.5147:INCREASING]",
+          "start_time": "2024-06-26T13:46:11.387Z",
+          "end_time": "2024-06-26T14:05:28.058Z"
+        },
+        {
+          "zone": "zone.[detector.12546:DECREASING, detector.18209:INCREASING]",
+          "start_time": "2024-06-26T14:04:03.625Z",
+          "end_time": "2024-06-26T14:23:25.476Z"
+        },
+        {
+          "zone": "zone.[detector.15042:DECREASING, detector.956:INCREASING]",
+          "start_time": "2024-06-26T14:14:42.491Z",
+          "end_time": "2024-06-26T14:31:37.647Z"
+        },
+        {
+          "zone": "zone.[detector.1032:INCREASING, detector.15963:DECREASING]",
+          "start_time": "2024-06-26T14:28:42.765Z",
+          "end_time": "2024-06-26T14:48:14.375Z"
+        },
+        {
+          "zone": "zone.[detector.29558:DECREASING, detector.37947:INCREASING, detector.8190:INCREASING]",
+          "start_time": "2024-06-26T14:45:46.308Z",
+          "end_time": "2024-06-26T15:00:51.637Z"
+        },
+        {
+          "zone": "zone.[detector.1108:DECREASING, detector.29558:INCREASING, detector.45226:DECREASING]",
+          "start_time": "2024-06-26T14:45:46.308Z",
+          "end_time": "2024-06-26T15:00:59.521Z"
+        },
+        {
+          "zone": "zone.[detector.1108:INCREASING, detector.27269:DECREASING]",
+          "start_time": "2024-06-26T14:45:46.308Z",
+          "end_time": "2024-06-26T15:01:25.558Z"
+        },
+        {
+          "zone": "zone.[detector.13310:INCREASING, detector.19248:DECREASING]",
+          "start_time": "2024-06-26T14:51:02.901Z",
+          "end_time": "2024-06-26T15:10:59.409Z"
+        },
+        {
+          "zone": "zone.[detector.19248:INCREASING, detector.7133:DECREASING]",
+          "start_time": "2024-06-26T14:58:01.501Z",
+          "end_time": "2024-06-26T15:17:14.026Z"
+        },
+        {
+          "zone": "zone.[detector.16453:INCREASING, detector.6979:DECREASING]",
+          "start_time": "2024-06-26T15:06:46.508Z",
+          "end_time": "2024-06-26T15:22:08.960Z"
+        },
+        {
+          "zone": "zone.[detector.24410:DECREASING, detector.6979:INCREASING]",
+          "start_time": "2024-06-26T15:09:21.653Z",
+          "end_time": "2024-06-26T15:28:16.985Z"
+        },
+        {
+          "zone": "zone.[detector.30700:DECREASING, detector.35335:INCREASING, detector.906:DECREASING]",
+          "start_time": "2024-06-26T15:15:51.334Z",
+          "end_time": "2024-06-26T15:31:13.826Z"
+        },
+        {
+          "zone": "zone.[detector.30700:INCREASING, detector.40423:INCREASING, detector.44486:DECREASING]",
+          "start_time": "2024-06-26T15:15:51.334Z",
+          "end_time": "2024-06-26T15:31:17.548Z"
+        },
+        {
+          "zone": "zone.[detector.16180:DECREASING, detector.44486:INCREASING]",
+          "start_time": "2024-06-26T15:15:51.334Z",
+          "end_time": "2024-06-26T15:31:22.153Z"
+        },
+        {
+          "zone": "zone.[detector.16180:INCREASING, detector.16942:DECREASING]",
+          "start_time": "2024-06-26T15:17:47.620Z",
+          "end_time": "2024-06-26T15:33:17.930Z"
+        },
+        {
+          "zone": "zone.[detector.15887:DECREASING, detector.16942:INCREASING]",
+          "start_time": "2024-06-26T15:20:40.627Z",
+          "end_time": "2024-06-26T15:40:40.961Z"
+        },
+        {
+          "zone": "zone.[detector.13095:DECREASING, detector.15887:INCREASING]",
+          "start_time": "2024-06-26T15:27:38.123Z",
+          "end_time": "2024-06-26T15:47:30.689Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179,
+        180, 181, 182, 183, 184, 185, 186, 187
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:09:53.119Z",
+      "end_time": "2024-06-26T20:19:21.063Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:DECREASING, detector.43841:DECREASING, detector.44570:INCREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T20:19:21.063Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:08:14.152Z",
+      "end_time": "2024-06-26T17:54:00.939Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.40959:INCREASING, detector.43489:DECREASING]",
+          "start_time": "2024-06-26T16:08:14.152Z",
+          "end_time": "2024-06-26T17:53:34.263Z"
+        },
+        {
+          "zone": "zone.[detector.29234:DECREASING, detector.43489:INCREASING, detector.45521:INCREASING]",
+          "start_time": "2024-06-26T16:08:14.152Z",
+          "end_time": "2024-06-26T17:53:35.041Z"
+        },
+        {
+          "zone": "zone.[detector.29234:INCREASING, detector.48023:DECREASING]",
+          "start_time": "2024-06-26T16:08:14.152Z",
+          "end_time": "2024-06-26T17:54:00.939Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179,
+        180
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T17:07:58.070Z",
+      "end_time": "2024-06-26T20:07:36.359Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:INCREASING, detector.40185:DECREASING, detector.44472:DECREASING]",
+          "start_time": "2024-06-26T17:07:58.070Z",
+          "end_time": "2024-06-26T20:06:25.250Z"
+        },
+        {
+          "zone": "zone.[detector.1282:INCREASING, detector.29567:DECREASING, detector.39539:DECREASING, detector.40185:INCREASING]",
+          "start_time": "2024-06-26T17:07:58.070Z",
+          "end_time": "2024-06-26T20:07:09.081Z"
+        },
+        {
+          "zone": "zone.[detector.16481:INCREASING, detector.29567:INCREASING, detector.33059:DECREASING]",
+          "start_time": "2024-06-26T17:07:58.070Z",
+          "end_time": "2024-06-26T20:07:15.719Z"
+        },
+        {
+          "zone": "zone.[detector.14245:DECREASING, detector.33059:INCREASING, detector.48019:DECREASING]",
+          "start_time": "2024-06-26T17:07:58.070Z",
+          "end_time": "2024-06-26T20:07:36.359Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T17:55:01.171Z",
+      "end_time": "2024-06-26T20:51:25.250Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:INCREASING, detector.40185:DECREASING, detector.44472:DECREASING]",
+          "start_time": "2024-06-26T17:55:01.171Z",
+          "end_time": "2024-06-26T20:51:25.250Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183,
+        184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:29:53.119Z",
+      "end_time": "2024-06-26T21:25:32.740Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:DECREASING, detector.31647:INCREASING, detector.43077:INCREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T21:25:32.740Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:19:53.119Z",
+      "end_time": "2024-06-26T18:19:34.865Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:INCREASING, detector.38049:DECREASING, detector.43203:DECREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T18:18:30.182Z"
+        },
+        {
+          "zone": "zone.[detector.31341:DECREASING, detector.38049:INCREASING, detector.40280:DECREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T18:18:37.484Z"
+        },
+        {
+          "zone": "zone.[detector.28390:INCREASING, detector.40280:INCREASING, detector.44358:DECREASING, detector.46498:DECREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T18:18:39.526Z"
+        },
+        {
+          "zone": "zone.[detector.31027:DECREASING, detector.46498:INCREASING, detector.8885:DECREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T18:18:47.794Z"
+        },
+        {
+          "zone": "zone.[detector.43878:DECREASING, detector.8885:INCREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T18:19:15.413Z"
+        },
+        {
+          "zone": "zone.[detector.33788:DECREASING, detector.38339:INCREASING, detector.43878:INCREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T18:19:34.865Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:08:14.152Z",
+      "end_time": "2024-06-26T18:13:22.583Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:DECREASING, detector.47159:DECREASING, detector.48023:INCREASING]",
+          "start_time": "2024-06-26T16:08:14.152Z",
+          "end_time": "2024-06-26T18:13:22.583Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182, 183, 184, 185, 186, 187, 188, 189
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:19:53.119Z",
+      "end_time": "2024-06-26T20:29:21.063Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:DECREASING, detector.43841:DECREASING, detector.44570:INCREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T20:29:21.063Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [166, 167, 168, 169, 170],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T14:05:29.504Z",
+      "end_time": "2024-06-26T14:41:13.504Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.1032:DECREASING, detector.1334:INCREASING]",
+          "start_time": "2024-06-26T14:05:29.504Z",
+          "end_time": "2024-06-26T14:41:13.504Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [172, 173],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T19:28:12.229Z",
+      "end_time": "2024-06-26T19:54:10.600Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.22528:INCREASING, detector.96:DECREASING]",
+          "start_time": "2024-06-26T19:28:12.229Z",
+          "end_time": "2024-06-26T19:36:40.195Z"
+        },
+        {
+          "zone": "zone.[detector.10339:DECREASING, detector.96:INCREASING]",
+          "start_time": "2024-06-26T19:29:21.685Z",
+          "end_time": "2024-06-26T19:38:06.502Z"
+        },
+        {
+          "zone": "zone.[detector.10339:INCREASING, detector.22593:DECREASING]",
+          "start_time": "2024-06-26T19:31:17.805Z",
+          "end_time": "2024-06-26T19:39:40.343Z"
+        },
+        {
+          "zone": "zone.[detector.1393:DECREASING, detector.29993:INCREASING, detector.31902:DECREASING, detector.9008:INCREASING]",
+          "start_time": "2024-06-26T19:32:41.845Z",
+          "end_time": "2024-06-26T19:41:14.009Z"
+        },
+        {
+          "zone": "zone.[detector.1393:INCREASING, detector.39281:DECREASING, detector.5917:INCREASING]",
+          "start_time": "2024-06-26T19:32:41.845Z",
+          "end_time": "2024-06-26T19:41:31.555Z"
+        },
+        {
+          "zone": "zone.[detector.36111:DECREASING, detector.39281:INCREASING, detector.39433:DECREASING]",
+          "start_time": "2024-06-26T19:32:41.845Z",
+          "end_time": "2024-06-26T19:41:38.024Z"
+        },
+        {
+          "zone": "zone.[detector.20362:INCREASING, detector.39433:INCREASING, detector.47183:DECREASING]",
+          "start_time": "2024-06-26T19:32:41.845Z",
+          "end_time": "2024-06-26T19:41:43.354Z"
+        },
+        {
+          "zone": "zone.[detector.19049:DECREASING, detector.27951:DECREASING, detector.47183:INCREASING]",
+          "start_time": "2024-06-26T19:32:41.845Z",
+          "end_time": "2024-06-26T19:42:19.146Z"
+        },
+        {
+          "zone": "zone.[detector.17845:DECREASING, detector.19049:INCREASING, detector.31799:DECREASING, detector.37542:INCREASING]",
+          "start_time": "2024-06-26T19:34:19.783Z",
+          "end_time": "2024-06-26T19:43:28.852Z"
+        },
+        {
+          "zone": "zone.[detector.38402:INCREASING, detector.8957:INCREASING, detector.9407:DECREASING]",
+          "start_time": "2024-06-26T19:41:37.960Z",
+          "end_time": "2024-06-26T19:49:26.291Z"
+        },
+        {
+          "zone": "zone.[detector.30331:INCREASING, detector.47451:DECREASING, detector.9398:DECREASING]",
+          "start_time": "2024-06-26T19:42:39.537Z",
+          "end_time": "2024-06-26T19:50:24.644Z"
+        },
+        {
+          "zone": "zone.[detector.24834:DECREASING, detector.9398:INCREASING]",
+          "start_time": "2024-06-26T19:42:39.537Z",
+          "end_time": "2024-06-26T19:50:59.179Z"
+        },
+        {
+          "zone": "zone.[detector.11982:DECREASING, detector.24834:INCREASING]",
+          "start_time": "2024-06-26T19:42:39.537Z",
+          "end_time": "2024-06-26T19:51:02.473Z"
+        },
+        {
+          "zone": "zone.[detector.11982:INCREASING, detector.19695:DECREASING]",
+          "start_time": "2024-06-26T19:44:04.516Z",
+          "end_time": "2024-06-26T19:52:08.740Z"
+        },
+        {
+          "zone": "zone.[detector.18154:DECREASING, detector.19695:INCREASING]",
+          "start_time": "2024-06-26T19:44:04.516Z",
+          "end_time": "2024-06-26T19:53:15.520Z"
+        },
+        {
+          "zone": "zone.[detector.18154:INCREASING, detector.19444:DECREASING]",
+          "start_time": "2024-06-26T19:44:04.516Z",
+          "end_time": "2024-06-26T19:53:21.598Z"
+        },
+        {
+          "zone": "zone.[detector.19444:INCREASING, detector.28960:INCREASING, detector.46171:DECREASING]",
+          "start_time": "2024-06-26T19:45:40.213Z",
+          "end_time": "2024-06-26T19:53:44.936Z"
+        },
+        {
+          "zone": "zone.[detector.45454:DECREASING, detector.46171:INCREASING, detector.47066:DECREASING]",
+          "start_time": "2024-06-26T19:45:40.213Z",
+          "end_time": "2024-06-26T19:53:48.631Z"
+        },
+        {
+          "zone": "zone.[detector.29757:INCREASING, detector.33171:DECREASING, detector.45454:INCREASING]",
+          "start_time": "2024-06-26T19:45:40.213Z",
+          "end_time": "2024-06-26T19:53:51.375Z"
+        },
+        {
+          "zone": "zone.[detector.25228:DECREASING, detector.33171:INCREASING, detector.43642:DECREASING]",
+          "start_time": "2024-06-26T19:45:40.213Z",
+          "end_time": "2024-06-26T19:54:10.600Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185,
+        186, 187, 188, 189, 190, 191, 192, 193, 194
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:39:53.119Z",
+      "end_time": "2024-06-26T20:54:59.054Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:INCREASING, detector.43077:DECREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T20:54:59.054Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:38:14.152Z",
+      "end_time": "2024-06-26T18:43:22.583Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:DECREASING, detector.47159:DECREASING, detector.48023:INCREASING]",
+          "start_time": "2024-06-26T16:38:14.152Z",
+          "end_time": "2024-06-26T18:43:22.583Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187,
+        188
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T17:47:58.070Z",
+      "end_time": "2024-06-26T20:47:36.359Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:INCREASING, detector.40185:DECREASING, detector.44472:DECREASING]",
+          "start_time": "2024-06-26T17:47:58.070Z",
+          "end_time": "2024-06-26T20:46:25.250Z"
+        },
+        {
+          "zone": "zone.[detector.1282:INCREASING, detector.29567:DECREASING, detector.39539:DECREASING, detector.40185:INCREASING]",
+          "start_time": "2024-06-26T17:47:58.070Z",
+          "end_time": "2024-06-26T20:47:09.081Z"
+        },
+        {
+          "zone": "zone.[detector.16481:INCREASING, detector.29567:INCREASING, detector.33059:DECREASING]",
+          "start_time": "2024-06-26T17:47:58.070Z",
+          "end_time": "2024-06-26T20:47:15.719Z"
+        },
+        {
+          "zone": "zone.[detector.14245:DECREASING, detector.33059:INCREASING, detector.48019:DECREASING]",
+          "start_time": "2024-06-26T17:47:58.070Z",
+          "end_time": "2024-06-26T20:47:36.359Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:39:53.119Z",
+      "end_time": "2024-06-26T18:39:34.865Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.3753:INCREASING, detector.38049:DECREASING, detector.43203:DECREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T18:38:30.182Z"
+        },
+        {
+          "zone": "zone.[detector.31341:DECREASING, detector.38049:INCREASING, detector.40280:DECREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T18:38:37.484Z"
+        },
+        {
+          "zone": "zone.[detector.28390:INCREASING, detector.40280:INCREASING, detector.44358:DECREASING, detector.46498:DECREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T18:38:39.526Z"
+        },
+        {
+          "zone": "zone.[detector.31027:DECREASING, detector.46498:INCREASING, detector.8885:DECREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T18:38:47.794Z"
+        },
+        {
+          "zone": "zone.[detector.43878:DECREASING, detector.8885:INCREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T18:39:15.413Z"
+        },
+        {
+          "zone": "zone.[detector.33788:DECREASING, detector.38339:INCREASING, detector.43878:INCREASING]",
+          "start_time": "2024-06-26T16:39:53.119Z",
+          "end_time": "2024-06-26T18:39:34.865Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:19:53.119Z",
+      "end_time": "2024-06-26T21:15:32.740Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.25253:DECREASING, detector.31647:INCREASING, detector.43077:INCREASING]",
+          "start_time": "2024-06-26T16:19:53.119Z",
+          "end_time": "2024-06-26T21:15:32.740Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:09:53.119Z",
+      "end_time": "2024-06-26T18:44:55.930Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.33788:INCREASING, detector.35479:DECREASING, detector.48257:DECREASING]",
+          "start_time": "2024-06-26T16:09:53.119Z",
+          "end_time": "2024-06-26T18:44:55.930Z"
+        }
+      ]
+    },
+    {
+      "train_ids": [
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183,
+        184, 185, 186, 187, 188, 189, 190, 191
+      ],
+      "work_schedule_ids": [],
+      "start_time": "2024-06-26T16:29:53.119Z",
+      "end_time": "2024-06-26T20:39:21.063Z",
+      "conflict_type": "Spacing",
+      "requirements": [
+        {
+          "zone": "zone.[detector.42735:DECREASING, detector.43841:DECREASING, detector.44570:INCREASING]",
+          "start_time": "2024-06-26T16:29:53.119Z",
+          "end_time": "2024-06-26T20:39:21.063Z"
+        }
+      ]
+    }
+  ]
+}
