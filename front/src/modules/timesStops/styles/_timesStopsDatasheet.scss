@@ -1,7 +1,10 @@
 .time-stops-datasheet {
   padding-bottom: 16px;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0px 1px 0px rgba(255, 255, 255, 1) inset,
+    0px 4px 7px -3px rgba(255, 171, 88, 0.17),
+    0px 2px 4px rgba(0, 0, 0, 0.22);
   background-color: var(--ambiantB15);
   --dsg-cell-background-color: var(--white100);
   --dsg-cell-disabled-background-color: var(--white100);
@@ -9,7 +12,7 @@
   --dsg-header-active-text-color: var(--black100);
 
   .activeRow {
-    font-weight: bold;
+    font-weight: semibold;
     color: var(--black100);
     .dsg-cell-gutter,
     .cell-index {
@@ -44,8 +47,13 @@
   }
 
   .dsg-cell {
+    font-size: 14px;
     border-top: none !important;
     border-bottom: none !important;
+  }
+
+  .dsg-cell.dsg-cell-header {
+    font-size: 12px;
   }
 
   .dsg-cell-gutter {

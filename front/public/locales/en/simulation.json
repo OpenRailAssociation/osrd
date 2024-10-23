@@ -67,6 +67,7 @@
   "stopStopTime": "Stop",
   "stopTime": "Arrival",
   "timetable": "Timetable",
+  "timetableOutput": "Timetable Output",
   "toggleElectricalProfileLegend": "Toggle electrical profiles legend",
   "toggleManchetteMenu": "Toggle manchette menu",
   "toggleRewind": "Toggle simulation rewind",

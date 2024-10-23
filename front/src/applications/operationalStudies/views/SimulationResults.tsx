@@ -198,6 +198,7 @@ const SimulationResults = ({
         operationalPoints &&
         infraId && (
           <div className="osrd-simulation-container mb-2">
+            <p className="mt-2 mb-3 ml-3 font-weight-bold">{t('timetableOutput')}</p>
             <TimesStopsOutput
               simulatedTrain={trainSimulation}
               pathProperties={pathProperties}
