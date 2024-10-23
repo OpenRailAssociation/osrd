@@ -11,14 +11,26 @@ interface RenderItineraryProps {
 export default function RenderItinerary(props: RenderItineraryProps) {
   const { geojsonPath, layerOrder } = props;
 
-  const paint = {
-    'line-width': 3,
-    'line-color': '#82be00',
+  const paintBackgroundLine = {
+    'line-width': 4,
+    'line-color': '#EDF9FF',
+  };
+
+  const paintLine = {
+    'line-width': 1,
+    'line-color': '#158DCF',
   };
 
   return (
     <Source type="geojson" data={geojsonPath}>
-      <OrderedLayer id="geojsonPath" type="line" paint={paint} layerOrder={layerOrder} />
+      <OrderedLayer
+        id="geojsonPathBackgroundLine"
+        type="line"
+        paint={paintBackgroundLine}
+        beforeId="geojsonPathLine"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer id="geojsonPathLine" type="line" paint={paintLine} layerOrder={layerOrder} />
     </Source>
   );
 }
