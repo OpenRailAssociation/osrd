@@ -236,17 +236,16 @@ export const usePathfinding = (
 
         try {
           const pathfindingResult = await postPathfindingBlocks(pathfindingInput).unwrap();
+          //TODO: we handle only invalid pathSteps with trigram. We will have to handle invalid pathSteps with trackOffset, opId and uic
           if (pathfindingResult.status === 'invalid_path_items') {
             const invalidPathItems = pathfindingResult.items
-              .map((item) => {
-                return 'trigram' in item.path_item ? item.path_item.trigram : null;
-              })
+              .map((item) => ('trigram' in item.path_item ? item.path_item.trigram : null))
               .filter((trigram): trigram is string => trigram !== null);
 
             if (invalidPathItems.length > 0) {
               const updatedPathSteps = pathSteps.map((step) => {
                 if (step && 'trigram' in step && invalidPathItems.includes(step.trigram)) {
-                  return { ...step, invalid: true };
+                  return { ...step, isInvalid: true };
                 }
                 return step;
               });

@@ -57,9 +57,9 @@ const formatPointWithNoName = (
   </>
 );
 
-const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAssets: boolean) => {
-  return pathSteps.reduce((acc, cur, index) => {
-    if (cur && cur.coordinates && !cur.isInvalid) {
+const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAssets: boolean) =>
+  pathSteps.reduce((acc, cur, index) => {
+    if (cur && cur.coordinates) {
       if (index === 0) {
         acc.push({
           coordinates: cur.coordinates,
@@ -86,7 +86,6 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[], showStdcmAsset
     }
     return acc;
   }, [] as MarkerInformation[]);
-};
 
 const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: ItineraryMarkersProps) => {
   const { getPathSteps } = useOsrdConfSelectors();

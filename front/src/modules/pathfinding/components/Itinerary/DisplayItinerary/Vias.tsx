@@ -8,25 +8,19 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatUicToCi } from 'utils/strings';
 
 import ViaStopDurationSelector from './ViaStopDurationSelector';
-import type { PathStep } from 'reducers/osrdconf/types';
 
 type ViasProps = {
   shouldManageStopDuration?: boolean;
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
-  pathSteps: PathStep[];
-  isPathStepInvalid: (step: PathStep | null) => boolean;
+  isInvalid: (step: PathStep | null) => boolean;
 };
 
-const Vias = ({
-  zoomToFeaturePoint,
-  shouldManageStopDuration,
-  pathSteps,
-  isPathStepInvalid,
-}: ViasProps) => {
+const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration, isInvalid }: ViasProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { getVias } = useOsrdConfSelectors();
   const dispatch = useAppDispatch();
@@ -45,7 +39,7 @@ const Vias = ({
       <Droppable droppableId="droppableVias">
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
-            {pathSteps.map((via, index) => (
+            {vias.map((via, index) => (
               <Draggable
                 key={`drag-key-${via.id}-${via.positionOnPath}`}
                 draggableId={`drag-vias-${via.id}`}
@@ -59,7 +53,7 @@ const Vias = ({
                     {...providedDraggable.dragHandleProps}
                     className={cx('place via', {
                       'is-a-stop': via.arrival || via.stopFor,
-                      'invalid-path-item': isPathStepInvalid(via),
+                      'invalid-path-item': isInvalid(via),
                     })}
                   >
                     <div className="ring" />

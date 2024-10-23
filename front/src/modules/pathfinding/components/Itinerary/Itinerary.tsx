@@ -17,6 +17,7 @@ import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath'
 import { setWarning } from 'reducers/main';
 import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { isEmptyArray } from 'utils/array';
 
@@ -24,7 +25,6 @@ import Destination from './DisplayItinerary/Destination';
 import Origin from './DisplayItinerary/Origin';
 import Vias from './DisplayItinerary/Vias';
 import ModalSuggestedVias from './ModalSuggestedVias';
-import type { PathStep } from 'reducers/osrdconf/types';
 
 type ItineraryProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
@@ -50,10 +50,7 @@ const Itinerary = ({
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { openModal } = useModal();
 
-  const isPathStepInvalid = (step: PathStep | null): boolean => {
-    return step?.isInvalid || false;
-  };
-  const viaSteps = pathSteps.slice(1, -1).filter((step) => step !== null) as PathStep[];
+  const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid || false;
 
   const zoomToFeaturePoint = (lngLat?: Position) => {
     if (lngLat) {
@@ -177,8 +174,7 @@ const Itinerary = ({
               <Vias
                 zoomToFeaturePoint={zoomToFeaturePoint}
                 shouldManageStopDuration={shouldManageStopDuration}
-                pathSteps={viaSteps}
-                isPathStepInvalid={isPathStepInvalid}
+                isInvalid={isPathStepInvalid}
               />
             ) : (
               <small data-testid="no-waypoint-chosen-text" className="ml-4">
