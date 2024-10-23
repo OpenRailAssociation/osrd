@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { EyeClosed } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
@@ -13,8 +13,7 @@ const WAYPOINT_MENU_OFFSET = 2;
 
 const useWaypointMenu = (
   manchetteWrapperRef: React.RefObject<HTMLDivElement>,
-  filteredWaypoints?: OperationalPoint[],
-  setFilteredWaypoints?: (waypoints: OperationalPoint[]) => void
+  setFilteredWaypoints?: Dispatch<SetStateAction<OperationalPoint[]>>
 ) => {
   const { t } = useTranslation('simulation');
 
@@ -36,10 +35,9 @@ const useWaypointMenu = (
       title: t('waypointMenu.hide'),
       icon: <EyeClosed />,
       onClick: () => {
-        setMenuPosition(undefined);
-        setActiveOperationalPointId(undefined);
-        if (filteredWaypoints && setFilteredWaypoints) {
-          setFilteredWaypoints(
+        closeMenu();
+        if (setFilteredWaypoints) {
+          setFilteredWaypoints((filteredWaypoints) =>
             filteredWaypoints.filter((waypoint) => waypoint.id !== activeOperationalPointId)
           );
         }

@@ -1,3 +1,5 @@
+import type { Dispatch, SetStateAction } from 'react';
+
 import type {
   LayerData,
   PowerRestrictionValues,
@@ -38,6 +40,6 @@ export type ProjectionData = {
 
 export type WaypointsPanelData = {
   filteredWaypoints: OperationalPoint[];
-  setFilteredWaypoints: (waypoints: OperationalPoint[]) => void;
+  setFilteredWaypoints: Dispatch<SetStateAction<OperationalPoint[]>>;
   projectionPath: TrainScheduleBase['path'];
 };

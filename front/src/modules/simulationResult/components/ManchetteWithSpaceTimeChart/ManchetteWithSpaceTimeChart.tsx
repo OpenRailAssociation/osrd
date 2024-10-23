@@ -14,7 +14,7 @@ import type { Conflict } from '@osrd-project/ui-spacetimechart';
 import type { OperationalPoint, TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import type { PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
-import WaypointMenu from 'common/OSRDMenu';
+import OSRDMenu from 'common/OSRDMenu';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
 
 import SettingsPanel from './SettingsPanel';
@@ -56,7 +56,6 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const waypointMenuData = useWaypointMenu(
     manchetteWithSpaceTimeChartRef,
-    waypointsPanelData?.filteredWaypoints,
     waypointsPanelData?.setFilteredWaypoints
   );
 
@@ -65,9 +64,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       ...manchetteProps,
       operationalPoints: manchetteProps.operationalPoints.map((op) => ({
         ...op,
-        onClick: (id: string, ref: HTMLDivElement | null) => {
-          waypointMenuData.handleWaypointClick(id, ref);
-        },
+        onClick: waypointMenuData.handleWaypointClick,
       })),
       activeOperationalPointId: waypointMenuData.activeOperationalPointId,
     }),
@@ -96,7 +93,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       >
         <Manchette {...manchettePropsWithWaypointMenu}>
           {waypointMenuData.menuPosition && (
-            <WaypointMenu
+            <OSRDMenu
               menuRef={waypointMenuData.menuRef}
               items={waypointMenuData.menuItems}
               style={{
