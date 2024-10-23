@@ -97,7 +97,6 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               menuRef={waypointMenuData.menuRef}
               items={waypointMenuData.menuItems}
               style={{
-                width: '305px',
                 top: waypointMenuData.menuPosition.top,
                 left: waypointMenuData.menuPosition.left,
               }}

@@ -9,7 +9,6 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 const SPACETIME_CHART_HEADER_HEIGHT = 40;
-const WAYPOINT_MENU_OFFSET = 2;
 
 const useWaypointMenu = (
   manchetteWrapperRef: React.RefObject<HTMLDivElement>,
@@ -53,11 +52,7 @@ const useWaypointMenu = (
     // The position of the clicked waypoint is relative to the viewport so we need to
     // substract the position of the manchetteWrapper to get the accurate position
     setMenuPosition({
-      top:
-        position.bottom -
-        manchetteWrapperPosition.top +
-        SPACETIME_CHART_HEADER_HEIGHT -
-        WAYPOINT_MENU_OFFSET,
+      top: position.bottom - manchetteWrapperPosition.top + SPACETIME_CHART_HEADER_HEIGHT,
       left: position.left - manchetteWrapperPosition.left,
     });
     setActiveOperationalPointId(id);
