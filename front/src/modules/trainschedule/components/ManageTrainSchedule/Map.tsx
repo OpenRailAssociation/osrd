@@ -66,7 +66,7 @@ type MapProps = {
   mapId?: string;
   simulationPathSteps?: PathStep[];
   showStdcmAssets?: boolean;
-  isNonFeasible?: boolean;
+  isFeasible?: boolean;
 };
 
 const Map = ({
@@ -80,7 +80,7 @@ const Map = ({
   mapId = 'map-container',
   simulationPathSteps,
   showStdcmAssets = false,
-  isNonFeasible = false,
+  isFeasible = true,
   children,
 }: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
@@ -413,7 +413,7 @@ const Map = ({
               geometry={pathGeometry}
               hideItineraryLine={hideItinerary}
               showStdcmAssets={showStdcmAssets}
-              isNonFeasible={isNonFeasible}
+              isFeasible={isFeasible}
             />
             {mapRef.current && (
               <ItineraryMarkers

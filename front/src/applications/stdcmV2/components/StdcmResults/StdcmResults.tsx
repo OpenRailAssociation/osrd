@@ -262,7 +262,7 @@ const StcdmResults = ({
             isReadOnly
             hideAttribution
             showStdcmAssets
-            isNonFeasible={conflictData.status === 'conflicts'}
+            isFeasible={conflictData.status !== 'conflicts'}
             setMapCanvas={setMapCanvas}
             pathGeometry={selectedSimulation.outputs?.pathProperties.geometry}
             simulationPathSteps={selectedSimulation.outputs?.results.simulationPathSteps}

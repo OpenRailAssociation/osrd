@@ -10,7 +10,7 @@ type ItineraryLayerProps = {
   geometry?: GeoJsonLineString;
   hideItineraryLine?: boolean;
   showStdcmAssets: boolean;
-  isNonFeasible?: boolean;
+  isFeasible?: boolean;
 };
 
 export default function ItineraryLayer({
@@ -18,7 +18,7 @@ export default function ItineraryLayer({
   geometry,
   hideItineraryLine = false,
   showStdcmAssets,
-  isNonFeasible,
+  isFeasible,
 }: ItineraryLayerProps) {
   const { getOrigin, getDestination } = useOsrdConfSelectors();
   const origin = useSelector(getOrigin);
@@ -26,7 +26,7 @@ export default function ItineraryLayer({
   if (geometry && origin && destination) {
     const lineWidth = showStdcmAssets ? 3 : 5;
     let lineColor = 'rgba(210, 225, 0, 0.75)';
-    if (isNonFeasible) {
+    if (!isFeasible) {
       lineColor = '#eaa72b';
     } else if (showStdcmAssets) {
       lineColor = 'rgba(21, 141, 207, 1)';
