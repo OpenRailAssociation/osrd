@@ -801,6 +801,7 @@ diesel::joinable!(infra_object_signal -> infra (infra_id));
 diesel::joinable!(infra_object_speed_section -> infra (infra_id));
 diesel::joinable!(infra_object_switch -> infra (infra_id));
 diesel::joinable!(infra_object_track_section -> infra (infra_id));
+diesel::joinable!(macro_node -> scenario (scenario_id));
 diesel::joinable!(project -> document (image_id));
 diesel::joinable!(rolling_stock_livery -> document (compound_image_id));
 diesel::joinable!(rolling_stock_livery -> rolling_stock (rolling_stock_id));

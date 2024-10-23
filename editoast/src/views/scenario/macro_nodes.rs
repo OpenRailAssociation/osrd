@@ -33,8 +33,8 @@ use crate::views::scenario::ScenarioError;
 use crate::views::scenario::ScenarioIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
+use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::AuthorizerExt;
 
 crate::routes! {
     "/macro_nodes" => {list, create,},
@@ -129,14 +129,14 @@ pub struct MacroNodeListResponse {
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
     Query(pagination_params): Query<PaginationQueryParam>,
 ) -> Result<Json<MacroNodeListResponse>> {
     let conn = &mut db_pool.get().await?;
 
     // Checking role
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -173,12 +173,12 @@ async fn list(
 )]
 async fn create(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
     Json(data): Json<MacroNodeForm>,
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -231,11 +231,11 @@ async fn create(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -269,11 +269,11 @@ async fn get(
 )]
 async fn update(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
     Json(data): Json<MacroNodeForm>,
 ) -> Result<Json<MacroNodeResponse>> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
@@ -335,10 +335,10 @@ async fn update(
 )]
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
-    Extension(authorizer): AuthorizerExt,
+    Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
 ) -> Result<impl IntoResponse> {
-    let authorized = authorizer
+    let authorized = auth
         .check_roles([BuiltinRole::OpsWrite].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
