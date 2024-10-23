@@ -4,6 +4,7 @@ import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation, Trans } from 'react-i18next';
 
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import SimulationReportSheet from 'applications/stdcm/components/SimulationReportSheet';
 import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import useProjectedTrainsForStdcm from 'applications/stdcm/hooks/useProjectedTrainsForStdcm';
@@ -13,10 +14,8 @@ import {
   getOperationalPointsWithTimes,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import type { StdcmSimulation } from 'applications/stdcmV2/types';
-import type { Conflict, PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
-import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import ManchetteWithSpaceTimeChartWrapper from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
@@ -38,6 +37,7 @@ type StcdmResultsV2Props = {
   selectedSimulationIndex: number;
   showStatusBanner: boolean;
   simulationsList: StdcmSimulation[];
+  pathProperties?: ManageTrainSchedulePathProperties;
 };
 
 const StcdmResults = ({
@@ -50,6 +50,7 @@ const StcdmResults = ({
   selectedSimulationIndex,
   showStatusBanner,
   simulationsList,
+  pathProperties,
 }: StcdmResultsV2Props) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const tWithoutPrefix = i18n.getFixedT(null, 'stdcm');
@@ -79,13 +80,6 @@ const StcdmResults = ({
       selectedSimulation.outputs.results.departure_time
     );
   }, [selectedSimulation]);
-
-  const infraId = useInfraID();
-  const pathProperties = usePathProperties(
-    infraId,
-    conflictData.pathfinding_result as PathfindingResultSuccess,
-    ['operational_points', 'zones', 'geometry']
-  );
 
   useEffect(() => {
     if (!pathProperties) return;

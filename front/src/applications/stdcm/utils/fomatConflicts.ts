@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
 
-import type { Conflict, PathProperties } from 'common/api/osrdEditoastApi';
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { Conflict } from 'common/api/osrdEditoastApi';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 
 interface ConflictWithInterval {
   trainIds?: number[];
@@ -15,19 +17,21 @@ interface ConflictWithInterval {
 
 // Helper function to find the closest operational point before or after a given position
 const findClosestOperationalPoint = (
-  operationalPoints: PathProperties['operational_points'],
+  operationalPoints: SuggestedOP[],
   position: number,
   direction: 'before' | 'after'
 ) => {
   if (direction === 'before') {
-    const pointsBefore = operationalPoints?.filter((point) => point?.position <= position);
+    const pointsBefore = operationalPoints?.filter((point) => point?.positionOnPath <= position);
     return pointsBefore
-      ? pointsBefore?.reduce((prev, curr) => (curr.position > prev.position ? curr : prev))
+      ? pointsBefore?.reduce((prev, curr) =>
+          curr.positionOnPath > prev.positionOnPath ? curr : prev
+        )
       : null;
   }
-  const pointsAfter = operationalPoints?.filter((point) => point.position >= position);
+  const pointsAfter = operationalPoints?.filter((point) => point.positionOnPath >= position);
   return pointsAfter
-    ? pointsAfter?.reduce((prev, curr) => (curr.position < prev.position ? curr : prev))
+    ? pointsAfter?.reduce((prev, curr) => (curr.positionOnPath < prev.positionOnPath ? curr : prev))
     : null;
 };
 
@@ -35,7 +39,7 @@ const findClosestOperationalPoint = (
 // eslint-disable-next-line import/prefer-default-export
 export const processConflicts = (
   conflicts: Conflict[],
-  pathProperties: PathProperties
+  pathProperties: ManageTrainSchedulePathProperties
 ): ConflictWithInterval[] =>
   conflicts.reduce<ConflictWithInterval[]>((acc, conflict) => {
     // Extract zones from conflict requirements
@@ -57,11 +61,11 @@ export const processConflicts = (
 
     // Find the closest operational point before and after the conflict
     const waypointBefore =
-      findClosestOperationalPoint(pathProperties.operational_points, start_position, 'before')
-        ?.extensions?.identifier?.name ?? null; // Extract only the ID of the operational point before
+      findClosestOperationalPoint(pathProperties.operationalPoints, start_position, 'before')
+        ?.name ?? null; // Extract only the ID of the operational point before
     const waypointAfter =
-      findClosestOperationalPoint(pathProperties.operational_points, end_position, 'after')
-        ?.extensions?.identifier?.name ?? null; // Extract only the ID of the operational point after
+      findClosestOperationalPoint(pathProperties.operationalPoints, end_position, 'after')?.name ??
+      null; // Extract only the ID of the operational point after
 
     acc.push({
       trainIds: conflict.train_ids,

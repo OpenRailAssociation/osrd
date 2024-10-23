@@ -59,12 +59,12 @@ const useStdcmResults = (
     const getPathProperties = async (_infraId: number, path: PathfindingResultSuccess) => {
       const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
         infraId: _infraId,
-        props: ['electrifications', 'geometry', 'operational_points'],
+        props: ['electrifications', 'geometry', 'operational_points', 'zones'],
         pathPropertiesInput: {
           track_section_ranges: path.track_section_ranges,
         },
       };
-      const { geometry, operational_points, electrifications } =
+      const { geometry, operational_points, electrifications, zones } =
         await postPathProperties(pathPropertiesParams).unwrap();
 
       if (geometry && operational_points && electrifications) {
@@ -97,6 +97,8 @@ const useStdcmResults = (
           allWaypoints: updatedSuggestedOPs,
           length: path.length,
           trackSectionRanges: path.track_section_ranges,
+          operationalPoints: suggestedOperationalPoints,
+          zones,
         });
       }
     };

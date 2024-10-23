@@ -203,6 +203,7 @@ const StdcmViewV2 = () => {
                   selectedSimulationIndex={selectedSimulationIndex}
                   showStatusBanner={showStatusBanner}
                   simulationsList={simulationsList}
+                  pathProperties={pathProperties}
                 />
               )}
             </div>
