@@ -36,7 +36,7 @@ editoast_common::schemas! {
 
 #[derive(Debug, Serialize, Derivative)]
 #[derivative(Hash)]
-pub struct PhysicsRollingStock {
+pub struct PhysicsConsist {
     pub effort_curves: EffortCurves,
     pub base_power_class: Option<String>,
     /// Length of the rolling stock in mm
@@ -70,7 +70,7 @@ pub struct PhysicsRollingStock {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct PhysicsConsist {
+pub struct PhysicsConsistParameters {
     /// In kg
     pub total_mass: Option<f64>,
     /// In m
@@ -80,7 +80,7 @@ pub struct PhysicsConsist {
     pub towed_rolling_stock: Option<TowedRollingStock>,
 }
 
-impl PhysicsConsist {
+impl PhysicsConsistParameters {
     pub fn compute_length(&self, traction_engine: &RollingStock) -> u64 {
         let towed_rolling_stock_length = self
             .towed_rolling_stock
@@ -99,33 +99,33 @@ impl PhysicsConsist {
     }
 
     pub fn compute_max_speed(&self, traction_engine: &RollingStock) -> f64 {
-        if let Some(max_speed_parameter) = self.max_speed {
-            f64::min(traction_engine.max_speed, max_speed_parameter)
-        } else {
-            traction_engine.max_speed
-        }
+        self.max_speed
+            .map(|max_speed_parameter| f64::min(traction_engine.max_speed, max_speed_parameter))
+            .unwrap_or(traction_engine.max_speed)
     }
 
     pub fn compute_startup_acceleration(&self, traction_engine: &RollingStock) -> f64 {
-        if let Some(towed_rolling_stock) = self.towed_rolling_stock.as_ref() {
-            f64::max(
-                traction_engine.startup_acceleration,
-                towed_rolling_stock.startup_acceleration,
-            )
-        } else {
-            traction_engine.startup_acceleration
-        }
+        self.towed_rolling_stock
+            .as_ref()
+            .map(|towed_rolling_stock| {
+                f64::max(
+                    traction_engine.startup_acceleration,
+                    towed_rolling_stock.startup_acceleration,
+                )
+            })
+            .unwrap_or(traction_engine.startup_acceleration)
     }
 
     pub fn compute_comfort_acceleration(&self, traction_engine: &RollingStock) -> f64 {
-        if let Some(towed_rolling_stock) = self.towed_rolling_stock.as_ref() {
-            f64::min(
-                traction_engine.comfort_acceleration,
-                towed_rolling_stock.comfort_acceleration,
-            )
-        } else {
-            traction_engine.comfort_acceleration
-        }
+        self.towed_rolling_stock
+            .as_ref()
+            .map(|towed_rolling_stock| {
+                f64::min(
+                    traction_engine.comfort_acceleration,
+                    towed_rolling_stock.comfort_acceleration,
+                )
+            })
+            .unwrap_or(traction_engine.comfort_acceleration)
     }
 
     pub fn compute_inertia_coefficient(&self, traction_engine: &RollingStock) -> f64 {
@@ -177,20 +177,20 @@ impl PhysicsConsist {
             let rav_b = rav_b_te + rav_b_towed;
             let rav_c = rav_c_te + rav_c_towed;
 
-            RollingResistance::new(
-                traction_engine_rr.rolling_resistance_type.clone(),
-                rav_a,
-                rav_b,
-                rav_c,
-            )
+            RollingResistance {
+                rolling_resistance_type: traction_engine_rr.rolling_resistance_type.clone(),
+                A: rav_a,
+                B: rav_b,
+                C: rav_c,
+            }
         } else {
             traction_engine.rolling_resistance.clone()
         }
     }
 }
 
-impl PhysicsRollingStock {
-    pub fn new(traction_engine: RollingStock, physics_consist: PhysicsConsist) -> Self {
+impl PhysicsConsist {
+    pub fn new(traction_engine: RollingStock, physics_consist: PhysicsConsistParameters) -> Self {
         let length = physics_consist.compute_length(&traction_engine);
         let max_speed = physics_consist.compute_max_speed(&traction_engine);
         let startup_acceleration = physics_consist.compute_startup_acceleration(&traction_engine);
@@ -406,7 +406,7 @@ pub struct SimulationRequest {
     pub speed_limit_tag: Option<String>,
     pub power_restrictions: Vec<SimulationPowerRestrictionItem>,
     pub options: TrainScheduleOptions,
-    pub rolling_stock: PhysicsRollingStock,
+    pub rolling_stock: PhysicsConsist,
     pub electrical_profile_set_id: Option<i64>,
 }
 
@@ -466,10 +466,10 @@ mod tests {
     use crate::models::fixtures::create_simple_rolling_stock;
     use crate::models::fixtures::create_towed_rolling_stock;
 
-    use super::PhysicsConsist;
+    use super::PhysicsConsistParameters;
 
-    fn create_physics_consist() -> PhysicsConsist {
-        PhysicsConsist {
+    fn create_physics_consist() -> PhysicsConsistParameters {
+        PhysicsConsistParameters {
             total_length: Some(100.0),
             total_mass: Some(50000.0),
             max_speed: Some(22.0),
@@ -596,7 +596,12 @@ mod tests {
 
         assert_eq!(
             physics_consist.compute_rolling_resistance(&traction_engine),
-            RollingResistance::new("davis".to_string(), 1350.0, 48.6, 7.387200000000001)
+            RollingResistance {
+                rolling_resistance_type: "davis".to_string(),
+                A: 1350.0,
+                B: 48.6,
+                C: 7.387200000000001
+            }
         );
 
         physics_consist.towed_rolling_stock = None;

@@ -223,21 +223,29 @@ pub async fn create_rolling_stock_livery(
 
 pub fn create_towed_rolling_stock() -> TowedRollingStock {
     TowedRollingStock {
-        name: "TOWED ROLLING STOCK".to_string(),
-        mass: 50000_f64,
-        length: 30_f64, // m
+        name: "TOWED_ROLLING_STOCK".to_string(),
+        mass: 50000.0,
+        length: 30.0, // m
         comfort_acceleration: 0.2,
         startup_acceleration: 0.06,
         inertia_coefficient: 1.05,
-        rolling_resistance: RollingResistance::new("davis".to_string(), 1.0, 0.01, 0.0002),
-        gamma: Gamma::new("CONST".to_string(), 1.0),
+        rolling_resistance: RollingResistance {
+            rolling_resistance_type: "davis".to_string(),
+            A: 1.0,
+            B: 0.01,
+            C: 0.0002,
+        },
+        gamma: Gamma {
+            gamma_type: "CONST".to_string(),
+            value: 1.0,
+        },
         railjson_version: "3.4".to_string(),
     }
 }
 
 pub fn create_simple_rolling_stock() -> RollingStock {
     RollingStock {
-        name: "ROLLING_STOCK_NAME".to_string(),
+        name: "SIMPLE_ROLLING_STOCK".to_string(),
         loading_gauge: LoadingGaugeType::G1,
         supported_signaling_systems: RollingStockSupportedSignalingSystems(vec![]),
         base_power_class: None,
@@ -249,12 +257,20 @@ pub fn create_simple_rolling_stock() -> RollingStock {
         electrical_power_startup_time: None,
         raise_pantograph_time: None,
         energy_sources: vec![],
-        gamma: Gamma::new("CONST".to_string(), 1.0),
+        gamma: Gamma {
+            gamma_type: "CONST".to_string(),
+            value: 1.0,
+        },
         locked: false,
         metadata: None,
         power_restrictions: HashMap::new(),
         railjson_version: "12".to_string(),
-        rolling_resistance: RollingResistance::new("davis".to_string(), 1.0, 0.01, 0.0005),
+        rolling_resistance: RollingResistance {
+            rolling_resistance_type: "davis".to_string(),
+            A: 1.0,
+            B: 0.01,
+            C: 0.0005,
+        },
         length: 140.0,   // m
         mass: 15000.0,   // kg
         max_speed: 20.0, // m/s

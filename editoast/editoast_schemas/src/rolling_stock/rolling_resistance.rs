@@ -24,14 +24,3 @@ pub struct RollingResistance {
     #[derivative(Hash(hash_with = "editoast_common::hash_float::<5,_>"))]
     pub C: f64,
 }
-
-impl RollingResistance {
-    pub fn new(rolling_resistance_type: String, a: f64, b: f64, c: f64) -> Self {
-        Self {
-            rolling_resistance_type,
-            A: a,
-            B: b,
-            C: c,
-        }
-    }
-}
