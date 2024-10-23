@@ -1,6 +1,8 @@
+pub mod path_not_found_handler;
 pub mod stdcm;
 pub mod stdcm_request_payload;
 
+use std::cmp::max;
 use std::collections::HashMap;
 
 use axum::extract::Json;
@@ -10,6 +12,10 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Extension;
+use chrono::DateTime;
+use chrono::NaiveDateTime;
+use chrono::TimeZone;
+use chrono::Utc;
 use derivative::Derivative;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
@@ -25,6 +31,7 @@ use crate::core::conflict_detection::Conflict;
 use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::simulation::SimulationResponse;
+use crate::core::stdcm::UndirectedTrackRange;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
 use crate::models::prelude::*;
@@ -32,6 +39,7 @@ use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleChangeset;
+use crate::models::work_schedules::WorkSchedule;
 use crate::models::Infra;
 use crate::views::train_schedule::train_simulation_batch;
 use crate::views::train_schedule::TrainScheduleForm;
@@ -349,6 +357,29 @@ async fn conflicts(
     let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
 
     Ok(Json(conflict_detection_response.conflicts))
+}
+
+pub fn filter_core_work_schedule(
+    ws: &WorkSchedule,
+    start_time: DateTime<Utc>,
+) -> crate::core::stdcm::WorkSchedule {
+    crate::core::stdcm::WorkSchedule {
+        start_time: elapsed_since_time_ms(&ws.start_date_time, &start_time),
+        end_time: elapsed_since_time_ms(&ws.end_date_time, &start_time),
+        track_ranges: ws
+            .track_ranges
+            .iter()
+            .map(|track| UndirectedTrackRange {
+                track_section: track.track.to_string(),
+                begin: (track.begin * 1000.0) as u64,
+                end: (track.end * 1000.0) as u64,
+            })
+            .collect(),
+    }
+}
+
+fn elapsed_since_time_ms(time: &NaiveDateTime, zero: &DateTime<Utc>) -> u64 {
+    max(0, (Utc.from_utc_datetime(time) - zero).num_milliseconds()) as u64
 }
 
 #[cfg(test)]

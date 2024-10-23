@@ -4,7 +4,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::Extension;
 use chrono::Utc;
-use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
+use chrono::{DateTime, Duration};
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
@@ -17,19 +17,18 @@ use editoast_schemas::train_schedule::ScheduleItem;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
-use std::cmp::max;
 use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::filter_core_work_schedule;
+use super::path_not_found_handler::PathNotFoundHandler;
 use super::stdcm_request_payload::convert_steps;
 use super::stdcm_request_payload::STDCMRequestPayload;
 use super::SelectionSettings;
-use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::TrainRequirements;
-use crate::core::conflict_detection::WorkSchedulesRequest;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResult;
 use crate::core::simulation::PhysicsRollingStock;
@@ -38,7 +37,6 @@ use crate::core::stdcm::STDCMPathItem;
 use crate::core::stdcm::STDCMRequest;
 use crate::core::stdcm::STDCMResponse;
 use crate::core::stdcm::STDCMStepTimingData;
-use crate::core::stdcm::UndirectedTrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -249,21 +247,21 @@ async fn stdcm(
 
     // 8. Handle PathNotFound response of STDCM
     if let STDCMResponse::PathNotFound = stdcm_response {
-        let stdcm_response = handle_path_not_found(
+        let path_not_found = PathNotFoundHandler {
             core_client,
+            infra_id,
+            infra_version: infra.version,
             train_schedules,
             simulations,
-            &work_schedules,
+            work_schedules,
             virtual_train_schedule,
             virtual_train_sim_result,
             virtual_train_pathfinding_result,
             earliest_departure_time,
             maximum_run_time,
             latest_simulation_end,
-            infra_id,
-            infra.version,
-        )
-        .await?;
+        };
+        let stdcm_response = path_not_found.handle().await?;
 
         return Ok(Json(stdcm_response));
     }
@@ -271,82 +269,9 @@ async fn stdcm(
     Ok(Json(stdcm_response))
 }
 
-#[allow(clippy::too_many_arguments)]
-async fn handle_path_not_found(
-    core_client: Arc<CoreClient>,
-    train_schedules: Vec<TrainSchedule>,
-    simulations: Vec<(SimulationResponse, PathfindingResult)>,
-    work_schedules: &[WorkSchedule],
-    virtual_train_schedule: TrainSchedule,
-    virtual_train_sim_result: SimulationResponse,
-    virtual_train_pathfinding_result: PathfindingResult,
-    earliest_departure_time: DateTime<Utc>,
-    maximum_run_time: u64,
-    latest_simulation_end: DateTime<Utc>,
-    infra_id: i64,
-    infra_version: String,
-) -> Result<STDCMResponse> {
-    let virtual_train_id = virtual_train_schedule.id;
-
-    // Combine the original train schedules with the virtual train schedule.
-    let train_schedules = [train_schedules, vec![virtual_train_schedule]].concat();
-
-    // Combine the original simulations with the virtual train's simulation results.
-    let simulations = [
-        simulations,
-        vec![(
-            virtual_train_sim_result,
-            virtual_train_pathfinding_result.clone(),
-        )],
-    ]
-    .concat();
-
-    // Build train requirements based on the combined train schedules and simulations
-    // This prepares the data structure required for conflict detection.
-    let trains_requirements = build_train_requirements(
-        train_schedules,
-        simulations,
-        earliest_departure_time,
-        latest_simulation_end,
-    );
-
-    // Filter the provided work schedules to find those that conflict with the given parameters
-    // This identifies any work schedules that may overlap with the earliest departure time and maximum run time.
-    let conflict_work_schedules =
-        filter_conflict_work_schedules(work_schedules, earliest_departure_time, maximum_run_time);
-
-    // Prepare the conflict detection request.
-    let conflict_detection_request = ConflictDetectionRequest {
-        infra: infra_id,
-        expected_version: infra_version,
-        trains_requirements,
-        work_schedules: conflict_work_schedules,
-    };
-
-    // Send the conflict detection request and await the response.
-    let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
-
-    // Filter the conflicts to find those specifically related to the virtual train.
-    let conflicts: Vec<_> = conflict_detection_response
-        .conflicts
-        .into_iter()
-        .filter(|conflict| conflict.train_ids.contains(&virtual_train_id))
-        .map(|mut conflict| {
-            conflict.train_ids.retain(|id| id != &virtual_train_id);
-            conflict
-        })
-        .collect();
-
-    // Return the conflicts found along with the pathfinding result for the virtual train.
-    Ok(STDCMResponse::Conflicts {
-        pathfinding_result: virtual_train_pathfinding_result,
-        conflicts,
-    })
-}
-
 /// Build the list of scheduled train requirements, only including requirements
 /// that overlap with the possible simulation times.
-fn build_train_requirements(
+pub fn build_train_requirements(
     train_schedules: Vec<TrainSchedule>,
     simulations: Vec<(SimulationResponse, PathfindingResult)>,
     departure_time: DateTime<Utc>,
@@ -499,25 +424,6 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
     }
 }
 
-fn filter_core_work_schedule(
-    ws: &WorkSchedule,
-    start_time: DateTime<Utc>,
-) -> crate::core::stdcm::WorkSchedule {
-    crate::core::stdcm::WorkSchedule {
-        start_time: elapsed_since_time_ms(&ws.start_date_time, &start_time),
-        end_time: elapsed_since_time_ms(&ws.end_date_time, &start_time),
-        track_ranges: ws
-            .track_ranges
-            .iter()
-            .map(|track| UndirectedTrackRange {
-                track_section: track.track.to_string(),
-                begin: (track.begin * 1000.0) as u64,
-                end: (track.end * 1000.0) as u64,
-            })
-            .collect(),
-    }
-}
-
 fn filter_stdcm_work_schedules(
     work_schedules: &[WorkSchedule],
     start_time: DateTime<Utc>,
@@ -528,27 +434,6 @@ fn filter_stdcm_work_schedules(
         .map(|ws| filter_core_work_schedule(ws, start_time))
         .filter(|ws| ws.end_time > 0 && ws.start_time < maximum_run_time)
         .collect()
-}
-
-fn filter_conflict_work_schedules(
-    work_schedules: &[WorkSchedule],
-    start_time: DateTime<Utc>,
-    maximum_run_time: u64,
-) -> Option<WorkSchedulesRequest> {
-    if work_schedules.is_empty() {
-        return None;
-    }
-
-    let work_schedule_requirements = work_schedules
-        .iter()
-        .map(|ws| (ws.id, filter_core_work_schedule(ws, start_time)))
-        .filter(|(_, ws)| ws.end_time > 0 && ws.start_time < maximum_run_time)
-        .collect();
-
-    Some(WorkSchedulesRequest {
-        start_time,
-        work_schedule_requirements,
-    })
 }
 
 /// Return the list of speed limits that are active at any point in a given time range
@@ -575,10 +460,6 @@ async fn build_temporary_speed_limits(
         .map_into()
         .collect();
     Ok(applicable_speed_limits)
-}
-
-fn elapsed_since_time_ms(time: &NaiveDateTime, zero: &DateTime<Utc>) -> u64 {
-    max(0, (Utc.from_utc_datetime(time) - zero).num_milliseconds()) as u64
 }
 
 /// Create steps from track_map and waypoints
