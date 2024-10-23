@@ -8,7 +8,7 @@
     "tonnage": "Tonnage",
     "maxSpeed": "Max speed",
     "tractionEngine": "Traction engine",
-    "towedRollingStock": "Matériel remorqué"
+    "towedRollingStock": "Towed rolling stock"
   },
   "datetimeOutsideWindow": "Date must be between {{low}} and {{high}}",
   "debug": {
