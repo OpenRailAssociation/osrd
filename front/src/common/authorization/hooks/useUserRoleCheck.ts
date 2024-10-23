@@ -10,8 +10,7 @@ const useUserRoleCheck = (allowedRoles: BuiltinRole[]) => {
   if (allowedRoles.length === 0 || isSuperUser) {
     return true;
   }
-
-  return allowedRoles.every((role) => userRoles.includes(role));
+  return allowedRoles.some((role) => userRoles.includes(role));
 };
 
 export default useUserRoleCheck;
