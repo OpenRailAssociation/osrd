@@ -60,7 +60,7 @@ const TimesStopsOutput = ({
           'cell-index': columnId === 'ch',
         });
       }}
-      headerRowHeight={65}
+      headerRowHeight={50}
     />
   );
 };
