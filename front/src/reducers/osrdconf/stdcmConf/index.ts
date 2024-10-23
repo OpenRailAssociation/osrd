@@ -89,8 +89,10 @@ export const stdcmConfSlice = createSlice({
       state.infraID = action.payload.infraID;
       state.timetableID = action.payload.timetableID;
       state.electricalProfileSetId = action.payload.electricalProfileSetId;
-      state.workScheduleGroupId = action.payload.workScheduleGroupId;
       state.searchDatetimeWindow = action.payload.searchDatetimeWindow;
+      if (action.payload.workScheduleGroupId) {
+        state.workScheduleGroupId = action.payload.workScheduleGroupId;
+      }
     },
     updateOriginArrival(
       state: Draft<OsrdStdcmConfState>,
