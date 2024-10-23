@@ -1,6 +1,9 @@
-import { omit } from 'lodash';
+import { isNil, sortBy, uniqBy } from 'lodash';
+import { Layout } from 'webcola';
+import type { Node as ColaNode } from 'webcola';
 
 import type {
+  MacroNodeResponse,
   ScenarioResponse,
   SearchPayload,
   SearchQuery,
@@ -93,33 +96,20 @@ const DEFAULT_TIME_LOCK: TimeLockDto = {
   timeFormatter: null,
 };
 
-const NODES_LOCAL_STORAGE_KEY = 'macro_nodes';
-
-type NodeIndex = {
-  node: {
-    id: number;
-    opId: string;
-    trigram: string;
-    fullName: string;
-    positionX: number;
-    positionY: number;
-    connectionTime: number;
-    labels: string[];
-  };
-  saved: boolean;
-};
+type NodeIndex = { node: MacroNodeResponse; saved: boolean };
 export default class OsrdNgeSync {
   /**
-   * Storing nodes by op ID
+   * Storing nodes by path item key
    * It's the main storage for node.
-   * The saved attribut is to know if the data comes from the local storage or from NGE
+   * The saved attribut is to know if the data comes from the API
+   * If the value is a string, it's a key redirection
    */
-  private nodesByOpId: Record<string, NodeIndex>;
+  private nodesByPathKey: Record<string, NodeIndex | string>;
 
   /**
-   * We keep a dictionnary of id/OpId to be able to find a node by its id
+   * We keep a dictionnary of id/key to be able to find a node by its id
    */
-  private nodesIdToOpId: Record<number, string>;
+  private nodesIdToKey: Record<number, string>;
 
   /**
    * Storing labels
@@ -141,31 +131,31 @@ export default class OsrdNgeSync {
   ) {
     // Empty
     this.labels = new Set<string>([]);
-    this.nodesIdToOpId = {};
-    this.nodesByOpId = {};
+    this.nodesIdToKey = {};
+    this.nodesByPathKey = {};
     this.ngeResource = { id: 1, capacity: trainSchedules.length };
   }
 
   /**
    * Load & index the data of the train schedule for the given scenario
    */
-  async importTimetable(): Promise<void> {
+  async loadAndIndex(): Promise<void> {
     // Load path items
     this.trainSchedules
       .map((schedule) => schedule.path)
       .flat()
       .forEach((pathItem, index) => {
-        const opId = OsrdNgeSync.findOpIdFromPathItem(pathItem);
-        if (!this.getNodeByOpId(opId)) {
+        const key = OsrdNgeSync.getPathKey(pathItem);
+        if (!this.getNodeByKey(key)) {
           const macroNode = {
-            id: index,
-            opId,
-            connectionTime: 0,
-            trigram: 'trigram' in pathItem ? pathItem.trigram : '',
-            fullName: '',
+            // negative is just to be sure that the id is not already taken
+            // by a node saved in the DB
+            id: index * -1,
+            path_item_key: key,
+            connection_time: 0,
             labels: [],
-            positionX: index * 200,
-            positionY: 0,
+            position_x: 0,
+            position_y: 0,
           };
           this.indexNode(macroNode);
         }
@@ -180,20 +170,19 @@ export default class OsrdNgeSync {
         positionX: searchResult.geographic.coordinates[0],
         positionY: searchResult.geographic.coordinates[1],
       };
-      OsrdNgeSync.getPossibleOpIdsForPathItem(searchResult).forEach((opId) => {
-        this.updateNodeDataByOpId(opId, macroNode);
+      OsrdNgeSync.getPathKeys(searchResult).forEach((opId) => {
+        this.updateNodeDataByKey(opId, macroNode);
       });
     });
 
     // Load saved node and update the indexed nodes
-    const savedNodes = OsrdNgeSync.getAllSavedNodes();
-    savedNodes
-      .filter((n) => n.timetableId === this.scenario.timetable_id)
-      .forEach((n) => {
-        this.updateNodeDataByOpId(n.opId, n, true);
-      });
+    const savedNodes = await this.apiGetSavedNodes();
+    savedNodes.forEach((n) => {
+      this.updateNodeDataByKey(n.path_item_key, n, true);
+    });
 
-    this.convertGeoCoords();
+    // Dedup nodes
+    this.dedupNodes();
 
     // Index trainschedule labels
     this.trainSchedules.forEach((ts) => {
@@ -201,6 +190,9 @@ export default class OsrdNgeSync {
         this.labels.add(l);
       });
     });
+
+    // Now that we have all node, we apply a layout
+    this.applyLayout();
   }
 
   /**
@@ -249,7 +241,7 @@ export default class OsrdNgeSync {
     };
   }
 
-  public handleNgeNodeOperation(
+  public async handleNgeNodeOperation(
     type: NGEEvent['type'],
     node: NodeDto,
     netzgrafikDto: NetzgrafikDto
@@ -259,25 +251,47 @@ export default class OsrdNgeSync {
       case 'create':
       case 'update': {
         if (indexNode) {
-          this.updateNodeDataByOpId(
-            indexNode.node.opId,
-            OsrdNgeSync.castNgeNode(indexNode.node.opId, node, netzgrafikDto.labels),
-            true
-          );
+          if (indexNode.saved) {
+            // Update the key if trigram has changed and key is based on it
+            let nodeKey = indexNode.node.path_item_key;
+            if (
+              nodeKey.startsWith('trigram:') &&
+              indexNode.node.trigram !== node.betriebspunktName
+            ) {
+              nodeKey = `trigram:${node.betriebspunktName}`;
+            }
+            await this.apiUpdateNode({
+              ...indexNode.node,
+              ...OsrdNgeSync.castNgeNode(node, netzgrafikDto.labels),
+              id: indexNode.node.id,
+              path_item_key: nodeKey,
+            });
+          } else {
+            const newNode = {
+              ...indexNode.node,
+              ...OsrdNgeSync.castNgeNode(node, netzgrafikDto.labels),
+            };
+            // Create the node
+            await this.apiCreateNode(newNode);
+            // keep track of the ID given by NGE
+            this.nodesIdToKey[node.id] = newNode.path_item_key;
+          }
         } else {
-          // It's an unknown node, we need to create it
-          // We assume that `betriebspunktName` is a trigram and so an opId
-          const opId = `trigram:${node.betriebspunktName}`;
-          this.indexNode(OsrdNgeSync.castNgeNode(opId, node, netzgrafikDto.labels), true);
+          // It's an unknown node, we need to create it in the db
+          // We assume that `betriebspunktName` is a trigram
+          const key = `trigram:${node.betriebspunktName}`;
+          // Create the node
+          await this.apiCreateNode({
+            ...OsrdNgeSync.castNgeNode(node, netzgrafikDto.labels),
+            path_item_key: key,
+          });
+          // keep track of the ID given by NGE
+          this.nodesIdToKey[node.id] = key;
         }
-        this.saveNodes();
         break;
       }
       case 'delete': {
-        if (indexNode) {
-          this.deleteNodeByOpId(indexNode.node.opId);
-          this.saveNodes();
-        }
+        if (indexNode) await this.apiDeleteNode(indexNode.node);
         break;
       }
       default:
@@ -286,19 +300,62 @@ export default class OsrdNgeSync {
   }
 
   /**
+   * Check if we have duplicates
+   * Ex: one key is trigram and an other is uic (with the same trigram), we should keep trigram
+   * What we do :
+   *  - Make a list of key,trigram
+   *  - aggregate on trigram to build a list of key
+   *  - filter if the array is of size 1 (ie, no dedup todo)
+   *  - sort the keys by priority
+   *  - add redirection in the nodesByPathKey
+   */
+  private dedupNodes(): void {
+    const trigramAggreg = Object.entries(this.nodesByPathKey)
+      .filter(([_, value]) => typeof value !== 'string' && value.node.trigram)
+      .map(([key, value]) => ({ key, trigram: (value as NodeIndex).node.trigram }))
+      .reduce(
+        (acc, curr) => {
+          acc[`${curr.trigram}`] = [...(acc[`${curr.trigram}`] || []), curr.key];
+          return acc;
+        },
+        {} as Record<string, string[]>
+      );
+
+    for (const trig of Object.keys(trigramAggreg)) {
+      if (trigramAggreg[trig].length < 2) {
+        delete trigramAggreg[trig];
+      }
+      trigramAggreg[trig] = sortBy(trigramAggreg[trig], (key) => {
+        if (key.startsWith('op_id:')) return 1;
+        if (key.startsWith('trigram:')) return 2;
+        if (key.startsWith('uic:')) return 3;
+        // default
+        return 4;
+      });
+    }
+
+    Object.values(trigramAggreg).forEach((mergeList) => {
+      const mainNodeKey = mergeList[0];
+      mergeList.slice(1).forEach((key) => {
+        this.nodesByPathKey[key] = mainNodeKey;
+      });
+    });
+  }
+
+  /**
    * Store and index the node.
    */
-  private indexNode(node: NodeIndex['node'], saved = false) {
+  private indexNode(node: MacroNodeResponse, saved = false) {
     // Remove in the id index, its previous value
-    const currentValue = this.getNodeByOpId(node.opId);
-    if (currentValue) {
+    const currentValue = this.getNodeByKey(node.path_item_key);
+    if (currentValue && typeof currentValue !== 'string') {
       const prevId = currentValue.node.id;
-      delete this.nodesIdToOpId[prevId];
+      delete this.nodesIdToKey[prevId];
     }
 
     // Index
-    this.nodesByOpId[node.opId] = { node, saved };
-    this.nodesIdToOpId[node.id] = node.opId;
+    this.nodesByPathKey[node.path_item_key] = { node, saved };
+    this.nodesIdToKey[node.id] = node.path_item_key;
     node.labels.forEach((l) => {
       if (l) this.labels.add(l);
     });
@@ -307,12 +364,12 @@ export default class OsrdNgeSync {
   /**
    * Update node's data by it's key
    */
-  private updateNodeDataByOpId(
-    opId: string,
+  private updateNodeDataByKey(
+    key: string,
     data: Partial<NodeIndex['node']>,
     saved: undefined | boolean = undefined
   ) {
-    const indexedNode = this.getNodeByOpId(opId);
+    const indexedNode = this.getNodeByKey(key);
     if (indexedNode) {
       this.indexNode(
         { ...indexedNode.node, ...data },
@@ -324,27 +381,38 @@ export default class OsrdNgeSync {
   /**
    * Delete a node by it's key
    */
-  private deleteNodeByOpId(opId: string) {
-    const indexedNode = this.getNodeByOpId(opId);
+  private deleteNodeByKey(key: string) {
+    const indexedNode = this.getNodeByKey(key);
     if (indexedNode) {
-      delete this.nodesByOpId[indexedNode.node.opId];
-      delete this.nodesIdToOpId[indexedNode.node.id];
+      delete this.nodesIdToKey[indexedNode.node.id];
+      delete this.nodesByPathKey[key];
     }
   }
 
   /**
-   * Get a node by its opId.
+   * Get a node by its key.
    */
-  private getNodeByOpId(opId: string): NodeIndex | null {
-    return this.nodesByOpId[opId] || null;
+  private getNodeByKey(key: string): NodeIndex | null {
+    let result: NodeIndex | null = null;
+    let currentKey: string | null = key;
+    while (currentKey !== null) {
+      const found: string | NodeIndex = this.nodesByPathKey[currentKey];
+      if (typeof found === 'string') {
+        currentKey = found;
+      } else {
+        currentKey = null;
+        result = found;
+      }
+    }
+    return result;
   }
 
   /**
    * Get a node by its id.
    */
   private getNodeById(id: number) {
-    const opId = this.nodesIdToOpId[id];
-    return this.getNodeByOpId(opId);
+    const key = this.nodesIdToKey[id];
+    return this.getNodeByKey(key);
   }
 
   /**
@@ -399,8 +467,8 @@ export default class OsrdNgeSync {
       .map((trainSchedule) => {
         // Figure out the primary node key for each path item
         const pathNodeKeys = trainSchedule.path.map((pathItem) => {
-          const node = this.getNodeByOpId(OsrdNgeSync.findOpIdFromPathItem(pathItem));
-          return node!.node.opId;
+          const node = this.getNodeByKey(OsrdNgeSync.getPathKey(pathItem));
+          return node!.node.path_item_key;
         });
 
         const startTime = new Date(trainSchedule.start_time);
@@ -421,7 +489,7 @@ export default class OsrdNgeSync {
           // Get the source node or created it
           if (!ngeNodesByPathKey[sourceNodeOpId]) {
             ngeNodesByPathKey[sourceNodeOpId] = this.castNodeToNge(
-              this.getNodeByOpId(sourceNodeOpId)!.node
+              this.getNodeByKey(sourceNodeOpId)!.node
             );
           }
           const sourceNode = ngeNodesByPathKey[sourceNodeOpId];
@@ -430,7 +498,7 @@ export default class OsrdNgeSync {
           const targetNodeKey = pathNodeKeys[i + 1];
           if (!ngeNodesByPathKey[targetNodeKey]) {
             ngeNodesByPathKey[targetNodeKey] = this.castNodeToNge(
-              this.getNodeByOpId(targetNodeKey)!.node
+              this.getNodeByKey(targetNodeKey)!.node
             );
           }
           const targetNode = ngeNodesByPathKey[targetNodeKey];
@@ -598,15 +666,15 @@ export default class OsrdNgeSync {
     return {
       id: node.id,
       betriebspunktName: node.trigram || '',
-      fullName: node.fullName || '',
-      positionX: node.positionX,
-      positionY: node.positionY,
+      fullName: node.full_name || '',
+      positionX: node.position_x,
+      positionY: node.position_y,
       ports: [],
       transitions: [],
       connections: [],
       resourceId: this.ngeResource.id,
       perronkanten: 10,
-      connectionTime: node.connectionTime,
+      connectionTime: node.connection_time,
       trainrunCategoryHaltezeiten: TRAINRUN_CATEGORY_HALTEZEITEN,
       symmetryAxis: 0,
       warnings: [],
@@ -615,38 +683,178 @@ export default class OsrdNgeSync {
   }
 
   /**
-   * Convert geographic coordinates (latitude/longitude) into screen coordinates
-   * (pixels).
+   * Create a graph structure from the time schedule.
+   * /!\ on edges, the source & target is the position in the node array, not the id of the node.
    */
-  private convertGeoCoords() {
-    // Don't change coordinates of saved nodes
-    const nodes = Object.values(this.nodesByOpId)
-      .filter((n) => !n.saved)
-      .map((n) => n.node);
+  private toGraph(): {
+    nodes: { fixed: number; x: number; y: number; key: string }[];
+    edges: { source: number; target: number; weight: number }[];
+  } {
+    const nodes = uniqBy(
+      this.trainSchedules.map((ts) => ts.path).flat(),
+      OsrdNgeSync.getPathKey
+    ).map((pathItem) => {
+      const key = OsrdNgeSync.getPathKey(pathItem);
+      const nodeIndexed = this.getNodeByKey(key);
+      const fixed = nodeIndexed!.saved ? 1 : 0;
+      return {
+        key,
+        x: nodeIndexed!.node.position_x,
+        y: nodeIndexed!.node.position_y,
+        height: 100,
+        width: 50,
+        fixed,
+      };
+    });
 
-    const xCoords = nodes.map((node) => node.positionX);
-    const yCoords = nodes.map((node) => node.positionY);
-    const minX = Math.min(...xCoords);
-    const minY = Math.min(...yCoords);
-    const maxX = Math.max(...xCoords);
-    const maxY = Math.max(...yCoords);
-    const width = maxX - minX;
-    const height = maxY - minY;
-    // TODO: grab NGE component size
-    const scaleX = 800;
-    const scaleY = 500;
-    const padding = 0.1;
+    const nodeIndexById = nodes.reduce(
+      (acc, curr, index) => {
+        acc[curr.key] = index;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-    for (const node of nodes) {
-      const normalizedX = (node.positionX - minX) / (width || 1);
-      const normalizedY = 1 - (node.positionY - minY) / (height || 1);
-      const paddedX = normalizedX * (1 - 2 * padding) + padding;
-      const paddedY = normalizedY * (1 - 2 * padding) + padding;
-
-      this.updateNodeDataByOpId(node.opId, {
-        positionX: scaleX * paddedX,
-        positionY: scaleY * paddedY,
+    const edges: { source: number; target: number; weight: number }[] = [];
+    const edgesIndex: Record<string, number> = {};
+    this.trainSchedules.forEach((ts) => {
+      let prevInNodeArrayIndex: number | null = null;
+      ts.path.forEach((item) => {
+        // create edges
+        const targetKey = OsrdNgeSync.getPathKey(item);
+        const targetNodeIndexInNodeArray = nodeIndexById[targetKey];
+        if (prevInNodeArrayIndex) {
+          const edgeIndexKey = `${prevInNodeArrayIndex}-${targetNodeIndexInNodeArray}`;
+          if (edgesIndex[edgeIndexKey]) {
+            edges[edgesIndex[edgeIndexKey]].weight += 1;
+          } else {
+            const newLength = edges.push({
+              source: prevInNodeArrayIndex,
+              target: targetNodeIndexInNodeArray,
+              weight: 1,
+            });
+            edgesIndex[edgeIndexKey] = newLength - 1;
+          }
+        }
+        prevInNodeArrayIndex = targetNodeIndexInNodeArray;
       });
+    });
+
+    return {
+      nodes,
+      edges,
+    };
+  }
+
+  /**
+   * Apply a layout on nodes and save the new position.
+   * Nodes that are saved are fixed.
+   */
+  private applyLayout() {
+    const graph = this.toGraph();
+    if (graph.nodes.some((n) => !n.fixed)) {
+      const layout = new Layout()
+        .defaultNodeSize(100)
+        .size([800, 600])
+        .linkDistance(200)
+        .avoidOverlaps(true)
+        .nodes(graph.nodes)
+        .links(graph.edges)
+        .start(5, 10, 15, 20, false, true);
+
+      layout.nodes().forEach((n) => {
+        const node = n as ColaNode & { key: string };
+        this.updateNodeDataByKey(node.key, {
+          position_x: node.x,
+          position_y: node.y,
+        });
+      });
+    }
+  }
+
+  /**
+   * Get nodes of the scenario that are saved in the DB.
+   */
+  private async apiGetSavedNodes(): Promise<MacroNodeResponse[]> {
+    const pageSize = 100;
+    let page = 1;
+    let reachEnd = false;
+    const result: MacroNodeResponse[] = [];
+    while (!reachEnd) {
+      const promise = this.dispatch(
+        osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
+          {
+            projectId: this.scenario.project.id,
+            studyId: this.scenario.study_id,
+            scenarioId: this.scenario.id,
+            pageSize,
+            page,
+          }
+        )
+      );
+      // need to unsubscribe on get call to avoid cache issue
+      promise.unsubscribe();
+      const { data } = await promise;
+      if (data) result.push(...data.results);
+      reachEnd = isNil(data?.next);
+      page += 1;
+    }
+    return result;
+  }
+
+  private async apiCreateNode(node: Omit<MacroNodeResponse, 'id'>) {
+    try {
+      const createPromise = this.dispatch(
+        osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
+          {
+            projectId: this.scenario.project.id,
+            studyId: this.scenario.study_id,
+            scenarioId: this.scenario.id,
+            macroNodeForm: node,
+          }
+        )
+      );
+      const newNode = await createPromise.unwrap();
+      this.indexNode(newNode, true);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  private async apiUpdateNode(node: MacroNodeResponse) {
+    try {
+      await this.dispatch(
+        osrdEditoastApi.endpoints.putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId.initiate(
+          {
+            projectId: this.scenario.project.id,
+            studyId: this.scenario.study_id,
+            scenarioId: this.scenario.id,
+            nodeId: node.id,
+            macroNodeForm: node,
+          }
+        )
+      );
+      this.indexNode(node, true);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  private async apiDeleteNode(node: MacroNodeResponse) {
+    try {
+      await this.dispatch(
+        osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId.initiate(
+          {
+            projectId: this.scenario.project.id,
+            studyId: this.scenario.study_id,
+            scenarioId: this.scenario.id,
+            nodeId: node.id,
+          }
+        )
+      );
+      this.deleteNodeByKey(node.path_item_key);
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -654,18 +862,16 @@ export default class OsrdNgeSync {
    * Cast a NGE node to a node.
    */
   static castNgeNode(
-    opId: string,
     node: NetzgrafikDto['nodes'][0],
     labels: NetzgrafikDto['labels']
-  ): NodeIndex['node'] {
+  ): Omit<MacroNodeResponse, 'path_item_key'> {
     return {
       id: node.id,
-      opId,
       trigram: node.betriebspunktName,
-      fullName: node.fullName,
-      connectionTime: node.connectionTime,
-      positionX: node.positionX,
-      positionY: node.positionY,
+      full_name: node.fullName,
+      connection_time: node.connectionTime,
+      position_x: node.positionX,
+      position_y: node.positionY,
       labels: node.labelIds
         .map((id) => {
           const ngeLabel = labels.find((e) => e.id === id);
@@ -677,50 +883,12 @@ export default class OsrdNgeSync {
   }
 
   /**
-   * Save the current nodes in the local storage.
-   */
-  private saveNodes() {
-    const currentTimetableEntriesToSave = Object.values(this.nodesByOpId)
-      .filter((n) => n.saved)
-      .map((n) => ({ ...omit(n.node, ['id']), timetableId: this.scenario.timetable_id }));
-
-    const otherEntries = OsrdNgeSync.getAllSavedNodes().filter(
-      (n) => n.timetableId !== this.scenario.timetable_id
-    );
-
-    localStorage.setItem(
-      NODES_LOCAL_STORAGE_KEY,
-      JSON.stringify([...currentTimetableEntriesToSave, ...otherEntries])
-    );
-  }
-
-  /**
-   * Get nodes that are saved in local storage (not filtered).
-   */
-  static getAllSavedNodes(): Array<Omit<NodeIndex['node'], 'id'> & { timetableId: number }> {
-    let nodes: Array<Omit<NodeIndex['node'], 'id'> & { timetableId: number }> = [];
-    const rawNodes = localStorage.getItem(NODES_LOCAL_STORAGE_KEY);
-    if (rawNodes) {
-      const parsedNodes = JSON.parse(rawNodes);
-      if (Array.isArray(parsedNodes)) {
-        nodes = parsedNodes;
-      } else {
-        console.error(
-          `Error loading nodes from localStorage: expected an array, but received: '${typeof parsedNodes}' type.`
-        );
-      }
-    }
-
-    return nodes;
-  }
-
-  /**
    * Given an path step, returns its opId
    */
-  static findOpIdFromPathItem(item: TrainScheduleResult['path'][0]): string {
+  static getPathKey(item: TrainScheduleResult['path'][0]): string {
     if ('trigram' in item)
       return `trigram:${item.trigram}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
-    if ('op_id' in item) return `op_id:${item.op_id}`;
+    if ('operational_point' in item) return `op_id:${item.operational_point}`;
     if ('uic' in item) return `uic:${item.uic}`;
     if ('track' in item && 'offset' in item) return `track_offset:${item.track}+${item.offset}`;
 
@@ -732,10 +900,11 @@ export default class OsrdNgeSync {
   /**
    * Given a search result item, returns all possible opIds, ordered by weight.
    */
-  static getPossibleOpIdsForPathItem(item: SearchResultItemOperationalPoint): string[] {
+  static getPathKeys(item: SearchResultItemOperationalPoint): string[] {
     const result = [];
-    result.push(`uic:${item.uic}`);
+    result.push(`op_id:${item.obj_id}`);
     result.push(`trigram:${item.trigram}${'ch' in item ? `/${item.ch}` : ''}`);
+    result.push(`uic:${item.uic}`);
     item.track_sections.forEach((ts) => {
       result.push(`track_offset:${ts.track}+${ts.position}`);
     });

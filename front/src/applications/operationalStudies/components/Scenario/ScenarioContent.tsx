@@ -20,6 +20,7 @@ import type {
   TimetableDetailedResult,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
+import { LoaderFill } from 'common/Loaders';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
@@ -78,9 +79,9 @@ const ScenarioContent = ({
 
   const ngeProps = useAsyncMemo(async () => {
     if (!isMacro) return null;
-
     const sync = new OsrdNgeSync(dispatch, scenario, trainSchedules || []);
-    await sync.importTimetable();
+    await sync.loadAndIndex();
+
     return {
       dto: sync.getNgeDto(),
       listener: sync.getNgeListener({
@@ -201,14 +202,10 @@ const ScenarioContent = ({
               )}
               {isMacro ? (
                 <div className={cx(collapsedTimetable ? 'macro-container' : 'h-100')}>
-                  <NGE
-                    dto={ngeProps.type === 'ready' && ngeProps.data ? ngeProps.data.dto : undefined}
-                    onOperation={
-                      ngeProps.type === 'ready' && ngeProps.data
-                        ? ngeProps.data.listener
-                        : undefined
-                    }
-                  />
+                  {ngeProps.type === 'loading' && <LoaderFill />}
+                  {ngeProps.type === 'ready' && ngeProps.data && (
+                    <NGE dto={ngeProps.data.dto} onOperation={ngeProps.data?.listener} />
+                  )}
                 </div>
               ) : (
                 isInfraLoaded &&
