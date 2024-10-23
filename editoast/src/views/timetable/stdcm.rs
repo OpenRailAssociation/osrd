@@ -4,40 +4,39 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::Extension;
 use chrono::Utc;
-use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
+use chrono::{DateTime, Duration};
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::PositiveDuration;
-use editoast_schemas::train_schedule::PathItemLocation;
+use editoast_schemas::train_schedule::MarginValue;
+use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::ReceptionSignal;
-use editoast_schemas::train_schedule::{Comfort, Margins, PathItem};
-use editoast_schemas::train_schedule::{MarginValue, ScheduleItem};
+use editoast_schemas::train_schedule::ScheduleItem;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
-use std::cmp::max;
 use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::filter_core_work_schedule;
+use super::path_not_found_handler::PathNotFoundHandler;
+use super::stdcm_request_payload::convert_steps;
+use super::stdcm_request_payload::STDCMRequestPayload;
 use super::SelectionSettings;
-use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::TrainRequirements;
-use crate::core::conflict_detection::WorkSchedulesRequest;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResult;
 use crate::core::simulation::PhysicsRollingStock;
-use crate::core::simulation::SimulationParameters;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::stdcm::STDCMPathItem;
 use crate::core::stdcm::STDCMRequest;
 use crate::core::stdcm::STDCMResponse;
 use crate::core::stdcm::STDCMStepTimingData;
-use crate::core::stdcm::UndirectedTrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -61,12 +60,6 @@ crate::routes! {
     "/stdcm" => stdcm,
 }
 
-editoast_common::schemas! {
-    STDCMRequestPayload,
-    PathfindingItem,
-    StepTimingData,
-}
-
 #[derive(Debug, Error, EditoastError, Serialize)]
 #[editoast_error(base_id = "stdcm_v2")]
 enum STDCMError {
@@ -79,80 +72,6 @@ enum STDCMError {
     RollingStockNotFound { rolling_stock_id: i64 },
     #[error("Path items are invalid")]
     InvalidPathItems { items: Vec<InvalidPathItem> },
-}
-
-/// An STDCM request
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-pub struct STDCMRequestPayload {
-    /// Deprecated, first step arrival time should be used instead
-    start_time: Option<DateTime<Utc>>,
-    steps: Vec<PathfindingItem>,
-    rolling_stock_id: i64,
-    electrical_profile_set_id: Option<i64>,
-    work_schedule_group_id: Option<i64>,
-    temporary_speed_limit_group_id: Option<i64>,
-    comfort: Comfort,
-    /// By how long we can shift the departure time in milliseconds
-    /// Deprecated, first step data should be used instead
-    maximum_departure_delay: Option<u64>,
-    /// Specifies how long the total run time can be in milliseconds
-    /// Deprecated, first step data should be used instead
-    maximum_run_time: Option<u64>,
-    /// Train categories for speed limits
-    // TODO: rename the field and its description
-    speed_limit_tags: Option<String>,
-    /// Margin before the train passage in seconds
-    ///
-    /// Enforces that the path used by the train should be free and
-    /// available at least that many milliseconds before its passage.
-    #[serde(default)]
-    time_gap_before: u64,
-    /// Margin after the train passage in milliseconds
-    ///
-    /// Enforces that the path used by the train should be free and
-    /// available at least that many milliseconds after its passage.
-    #[serde(default)]
-    time_gap_after: u64,
-    /// Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km`
-    #[serde(default)]
-    #[schema(value_type = Option<String>, example = json!(["5%", "2min/100km"]))]
-    margin: Option<MarginValue>,
-    /// Total mass of the consist in kg
-    total_mass: Option<f64>,
-    /// Total length of the consist in meters
-    total_length: Option<f64>,
-    /// Maximum speed of the consist in km/h
-    max_speed: Option<f64>,
-}
-
-impl STDCMRequestPayload {
-    pub fn simulation_parameters(&self) -> SimulationParameters {
-        SimulationParameters {
-            total_mass: self.total_mass,
-            total_length: self.total_length,
-            max_speed: self.max_speed,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
-struct PathfindingItem {
-    /// The stop duration in milliseconds, None if the train does not stop.
-    duration: Option<u64>,
-    /// The associated location
-    location: PathItemLocation,
-    /// Time at which the train should arrive at the location, if specified
-    timing_data: Option<StepTimingData>,
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
-struct StepTimingData {
-    /// Time at which the train should arrive at the location
-    arrival_time: DateTime<Utc>,
-    /// The train may arrive up to this duration before the expected arrival time
-    arrival_time_tolerance_before: u64,
-    /// The train may arrive up to this duration after the expected arrival time
-    arrival_time_tolerance_after: u64,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -236,44 +155,30 @@ async fn stdcm(
 
     // 2. Compute the earliest start time, maximum running time and maximum departure delay
     // Simulation time without stop duration
-    let (
-        simulation_run_time,
-        virtual_train_schedule,
-        virtual_train_sim_result,
-        virtual_train_pathfinding_result,
-    ) = simulate_train_run(
-        db_pool.clone(),
-        valkey_client.clone(),
-        core_client.clone(),
-        &stdcm_request,
-        &infra,
-        &rolling_stock,
-        timetable_id,
-    )
-    .await?;
-    let simulation_run_time = match simulation_run_time {
-        SimulationTimeResult::SimulationTime { value } => value,
-        SimulationTimeResult::Error { error } => {
+    let (virtual_train_schedule, virtual_train_sim_result, virtual_train_pathfinding_result) =
+        simulate_train_run(
+            db_pool.clone(),
+            valkey_client.clone(),
+            core_client.clone(),
+            &stdcm_request,
+            &infra,
+            &rolling_stock,
+            timetable_id,
+        )
+        .await?;
+
+    let simulation_run_time = match virtual_train_sim_result.clone().simulation_run_time() {
+        Ok(value) => value,
+        Err(error) => {
             return Ok(Json(STDCMResponse::PreprocessingSimulationError {
                 error: *error,
             }))
         }
     };
 
-    let earliest_step_tolerance_window = get_earliest_step_tolerance_window(&stdcm_request);
-    let maximum_departure_delay = get_maximum_departure_delay(
-        &stdcm_request,
-        simulation_run_time,
-        earliest_step_tolerance_window,
-    );
-    // Maximum duration between train departure and arrival, including all stops
-    let maximum_run_time = stdcm_request
-        .maximum_run_time
-        .unwrap_or(2 * simulation_run_time + get_total_stop_time(&stdcm_request));
-
-    let earliest_departure_time = get_earliest_departure_time(&stdcm_request, maximum_run_time);
-    let latest_simulation_end = earliest_departure_time
-        + Duration::milliseconds((maximum_run_time + earliest_step_tolerance_window) as i64);
+    let earliest_departure_time = stdcm_request.get_earliest_departure_time(simulation_run_time);
+    let maximum_run_time = stdcm_request.get_maximum_run_time(simulation_run_time);
+    let latest_simulation_end = stdcm_request.get_latest_simulation_end(simulation_run_time);
 
     // 3. Get scheduled train requirements
     let trains_requirements = build_train_requirements(
@@ -322,7 +227,7 @@ async fn stdcm(
         path_items,
         start_time: earliest_departure_time,
         trains_requirements: trains_requirements.clone(),
-        maximum_departure_delay,
+        maximum_departure_delay: stdcm_request.get_maximum_departure_delay(simulation_run_time),
         maximum_run_time,
         speed_limit_tag: stdcm_request.speed_limit_tags,
         time_gap_before: stdcm_request.time_gap_before,
@@ -342,21 +247,21 @@ async fn stdcm(
 
     // 8. Handle PathNotFound response of STDCM
     if let STDCMResponse::PathNotFound = stdcm_response {
-        let stdcm_response = handle_path_not_found(
-            virtual_train_schedule,
+        let path_not_found = PathNotFoundHandler {
+            core_client,
+            infra_id,
+            infra_version: infra.version,
             train_schedules,
             simulations,
+            work_schedules,
+            virtual_train_schedule,
             virtual_train_sim_result,
             virtual_train_pathfinding_result,
             earliest_departure_time,
             maximum_run_time,
             latest_simulation_end,
-            &work_schedules,
-            infra_id,
-            infra.version,
-            core_client,
-        )
-        .await?;
+        };
+        let stdcm_response = path_not_found.handle().await?;
 
         return Ok(Json(stdcm_response));
     }
@@ -364,82 +269,9 @@ async fn stdcm(
     Ok(Json(stdcm_response))
 }
 
-#[allow(clippy::too_many_arguments)]
-async fn handle_path_not_found(
-    virtual_train_schedule: TrainSchedule,
-    train_schedules: Vec<TrainSchedule>,
-    simulations: Vec<(SimulationResponse, PathfindingResult)>,
-    virtual_train_sim_result: SimulationResponse,
-    virtual_train_pathfinding_result: PathfindingResult,
-    earliest_departure_time: DateTime<Utc>,
-    maximum_run_time: u64,
-    latest_simulation_end: DateTime<Utc>,
-    work_schedules: &[WorkSchedule],
-    infra_id: i64,
-    infra_version: String,
-    core_client: Arc<CoreClient>,
-) -> Result<STDCMResponse> {
-    let virtual_train_id = virtual_train_schedule.id;
-
-    // Combine the original train schedules with the virtual train schedule.
-    let train_schedules = [train_schedules, vec![virtual_train_schedule]].concat();
-
-    // Combine the original simulations with the virtual train's simulation results.
-    let simulations = [
-        simulations,
-        vec![(
-            virtual_train_sim_result,
-            virtual_train_pathfinding_result.clone(),
-        )],
-    ]
-    .concat();
-
-    // Build train requirements based on the combined train schedules and simulations
-    // This prepares the data structure required for conflict detection.
-    let trains_requirements = build_train_requirements(
-        train_schedules,
-        simulations,
-        earliest_departure_time,
-        latest_simulation_end,
-    );
-
-    // Filter the provided work schedules to find those that conflict with the given parameters
-    // This identifies any work schedules that may overlap with the earliest departure time and maximum run time.
-    let conflict_work_schedules =
-        filter_conflict_work_schedules(work_schedules, earliest_departure_time, maximum_run_time);
-
-    // Prepare the conflict detection request.
-    let conflict_detection_request = ConflictDetectionRequest {
-        infra: infra_id,
-        expected_version: infra_version,
-        trains_requirements,
-        work_schedules: conflict_work_schedules,
-    };
-
-    // Send the conflict detection request and await the response.
-    let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
-
-    // Filter the conflicts to find those specifically related to the virtual train.
-    let conflicts: Vec<_> = conflict_detection_response
-        .conflicts
-        .into_iter()
-        .filter(|conflict| conflict.train_ids.contains(&virtual_train_id))
-        .map(|mut conflict| {
-            conflict.train_ids.retain(|id| id != &virtual_train_id);
-            conflict
-        })
-        .collect();
-
-    // Return the conflicts found along with the pathfinding result for the virtual train.
-    Ok(STDCMResponse::Conflicts {
-        pathfinding_result: virtual_train_pathfinding_result,
-        conflicts,
-    })
-}
-
 /// Build the list of scheduled train requirements, only including requirements
 /// that overlap with the possible simulation times.
-fn build_train_requirements(
+pub fn build_train_requirements(
     train_schedules: Vec<TrainSchedule>,
     simulations: Vec<(SimulationResponse, PathfindingResult)>,
     departure_time: DateTime<Utc>,
@@ -521,65 +353,7 @@ fn is_resource_in_range(
     abs_resource_start_time <= latest_sim_time && abs_resource_end_time >= earliest_sim_time
 }
 
-// Returns the maximum departure delay for the train.
-fn get_maximum_departure_delay(
-    data: &STDCMRequestPayload,
-    simulation_run_time: u64,
-    earliest_step_tolerance_window: u64,
-) -> u64 {
-    data.maximum_departure_delay
-        .unwrap_or(simulation_run_time + earliest_step_tolerance_window)
-}
-
-/// Returns the earliest time at which the train may start
-fn get_earliest_departure_time(data: &STDCMRequestPayload, maximum_run_time: u64) -> DateTime<Utc> {
-    // Prioritize: start time, or first step time, or (first specified time - max run time)
-    data.start_time.unwrap_or(
-        data.steps
-            .first()
-            .and_then(|step| step.timing_data.clone())
-            .and_then(|data| {
-                Option::from(
-                    data.arrival_time
-                        - Duration::milliseconds(data.arrival_time_tolerance_before as i64),
-                )
-            })
-            .unwrap_or(
-                get_earliest_step_time(data) - Duration::milliseconds(maximum_run_time as i64),
-            ),
-    )
-}
-
-/// Returns the earliest time that has been set on any step
-fn get_earliest_step_time(data: &STDCMRequestPayload) -> DateTime<Utc> {
-    // Get the earliest time that has been specified for any step
-    data.start_time
-        .or_else(|| {
-            data.steps
-                .iter()
-                .flat_map(|step| step.timing_data.iter())
-                .map(|data| {
-                    data.arrival_time
-                        - Duration::milliseconds(data.arrival_time_tolerance_before as i64)
-                })
-                .next()
-        })
-        .expect("No time specified for stdcm request")
-}
-
-/// Returns the earliest tolerance window that has been set on any step
-fn get_earliest_step_tolerance_window(data: &STDCMRequestPayload) -> u64 {
-    // Get the earliest time window that has been specified for any step, if maximum_run_time is not none
-    data.steps
-        .iter()
-        .flat_map(|step| step.timing_data.iter())
-        .map(|data| data.arrival_time_tolerance_before + data.arrival_time_tolerance_after)
-        .next()
-        .unwrap_or(0)
-}
-
 /// Returns a `Result` containing:
-/// * `SimulationTimeResult` - The result of the simulation time calculation.
 /// * `TrainSchedule` - The generated train schedule based on the provided data.
 /// * `SimulationResponse` - Simulation response.
 /// * `PathfindingResult` - Pathfinding result.
@@ -587,20 +361,15 @@ async fn simulate_train_run(
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_client: Arc<ValkeyClient>,
     core_client: Arc<CoreClient>,
-    data: &STDCMRequestPayload,
+    stdcm_request: &STDCMRequestPayload,
     infra: &Infra,
     rolling_stock: &RollingStockModel,
     timetable_id: i64,
-) -> Result<(
-    SimulationTimeResult,
-    TrainSchedule,
-    SimulationResponse,
-    PathfindingResult,
-)> {
+) -> Result<(TrainSchedule, SimulationResponse, PathfindingResult)> {
     // Doesn't matter for now, but eventually it will affect tmp speed limits
-    let approx_start_time = get_earliest_step_time(data);
+    let approx_start_time = stdcm_request.get_earliest_step_time();
 
-    let path = convert_steps(&data.steps);
+    let path = convert_steps(&stdcm_request.steps);
     let last_step = path.last().expect("empty step list");
 
     let train_schedule = TrainSchedule {
@@ -618,12 +387,12 @@ async fn simulate_train_run(
             reception_signal: ReceptionSignal::Open,
             locked: false,
         }],
-        margins: build_single_margin(data.margin),
+        margins: build_single_margin(stdcm_request.margin),
         initial_speed: 0.0,
-        comfort: data.comfort,
+        comfort: stdcm_request.comfort,
         path,
         constraint_distribution: Default::default(),
-        speed_limit_tag: data.speed_limit_tags.clone(),
+        speed_limit_tag: stdcm_request.speed_limit_tags.clone(),
         power_restrictions: vec![],
         options: Default::default(),
     };
@@ -638,40 +407,7 @@ async fn simulate_train_run(
     )
     .await?;
 
-    let simulation_run_time = match sim_result.clone() {
-        SimulationResponse::Success { provisional, .. } => SimulationTimeResult::SimulationTime {
-            value: *provisional.times.last().expect("empty simulation result"),
-        },
-        err => SimulationTimeResult::Error {
-            error: Box::from(err),
-        },
-    };
-    Ok((
-        simulation_run_time,
-        train_schedule,
-        sim_result,
-        pathfinding_result,
-    ))
-}
-
-/// Returns the request's total stop time
-fn get_total_stop_time(data: &STDCMRequestPayload) -> u64 {
-    data.steps
-        .iter()
-        .map(|step: &PathfindingItem| step.duration.unwrap_or_default())
-        .sum()
-}
-
-/// Convert the list of pathfinding items into a list of path item
-fn convert_steps(steps: &[PathfindingItem]) -> Vec<PathItem> {
-    steps
-        .iter()
-        .map(|step| PathItem {
-            id: Default::default(),
-            deleted: false,
-            location: step.location.clone(),
-        })
-        .collect()
+    Ok((train_schedule, sim_result, pathfinding_result))
 }
 
 /// Build a margins object with one margin value covering the entire range
@@ -688,25 +424,6 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
     }
 }
 
-fn filter_core_work_schedule(
-    ws: &WorkSchedule,
-    start_time: DateTime<Utc>,
-) -> crate::core::stdcm::WorkSchedule {
-    crate::core::stdcm::WorkSchedule {
-        start_time: elapsed_since_time_ms(&ws.start_date_time, &start_time),
-        end_time: elapsed_since_time_ms(&ws.end_date_time, &start_time),
-        track_ranges: ws
-            .track_ranges
-            .iter()
-            .map(|track| UndirectedTrackRange {
-                track_section: track.track.to_string(),
-                begin: (track.begin * 1000.0) as u64,
-                end: (track.end * 1000.0) as u64,
-            })
-            .collect(),
-    }
-}
-
 fn filter_stdcm_work_schedules(
     work_schedules: &[WorkSchedule],
     start_time: DateTime<Utc>,
@@ -717,27 +434,6 @@ fn filter_stdcm_work_schedules(
         .map(|ws| filter_core_work_schedule(ws, start_time))
         .filter(|ws| ws.end_time > 0 && ws.start_time < maximum_run_time)
         .collect()
-}
-
-fn filter_conflict_work_schedules(
-    work_schedules: &[WorkSchedule],
-    start_time: DateTime<Utc>,
-    maximum_run_time: u64,
-) -> Option<WorkSchedulesRequest> {
-    if work_schedules.is_empty() {
-        return None;
-    }
-
-    let work_schedule_requirements = work_schedules
-        .iter()
-        .map(|ws| (ws.id, filter_core_work_schedule(ws, start_time)))
-        .filter(|(_, ws)| ws.end_time > 0 && ws.start_time < maximum_run_time)
-        .collect();
-
-    Some(WorkSchedulesRequest {
-        start_time,
-        work_schedule_requirements,
-    })
 }
 
 /// Return the list of speed limits that are active at any point in a given time range
@@ -764,10 +460,6 @@ async fn build_temporary_speed_limits(
         .map_into()
         .collect();
     Ok(applicable_speed_limits)
-}
-
-fn elapsed_since_time_ms(time: &NaiveDateTime, zero: &DateTime<Utc>) -> u64 {
-    max(0, (Utc.from_utc_datetime(time) - zero).num_milliseconds()) as u64
 }
 
 /// Create steps from track_map and waypoints
@@ -803,12 +495,6 @@ async fn parse_stdcm_steps(
         .collect())
 }
 
-#[derive(Debug)]
-enum SimulationTimeResult {
-    SimulationTime { value: u64 },
-    Error { error: Box<SimulationResponse> },
-}
-
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
@@ -828,6 +514,7 @@ mod tests {
     use crate::core::simulation::CompleteReportTrain;
     use crate::core::simulation::ElectricalProfiles;
     use crate::core::simulation::ReportTrain;
+    use crate::core::simulation::SimulationParameters;
     use crate::core::simulation::SimulationResponse;
     use crate::core::simulation::SpeedLimitProperties;
     use crate::core::stdcm::STDCMResponse;
