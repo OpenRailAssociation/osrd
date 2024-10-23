@@ -94,7 +94,7 @@
 .via,
 .place {
   &.invalid-path-item {
-    color: #e05206;
+    color: var(--orange);
   }
 }
 
