@@ -93,7 +93,7 @@ const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: Itinera
 
   const markersInformation = useMemo(
     () => extractMarkerInformation(simulationPathSteps || pathSteps, showStdcmAssets),
-    [simulationPathSteps, pathSteps]
+    [simulationPathSteps, pathSteps, showStdcmAssets]
   );
 
   const getMarkerDisplayInformation = useCallback(
@@ -173,9 +173,8 @@ const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: Itinera
           </Marker>
         );
       }),
-    [markersInformation]
+    [simulationPathSteps, pathSteps, showStdcmAssets]
   );
-
   return Markers;
 };
 

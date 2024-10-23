@@ -91,6 +91,12 @@
     }
   }
 }
+.via,
+.place {
+  &.invalid-path-item {
+    color: var(--orange);
+  }
+}
 
 .pathfinding-state-main-container {
   .content {

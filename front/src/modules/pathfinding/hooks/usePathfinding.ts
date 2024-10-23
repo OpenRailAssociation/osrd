@@ -179,7 +179,18 @@ export const usePathfinding = (
 
   const generatePathfindingParams = (): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
     setPathProperties?.(undefined);
-    return getPathfindingQuery({ infraId, rollingStock, origin, destination, pathSteps });
+
+    const filteredPathSteps = pathSteps.filter(
+      (step) => step !== null && step.coordinates !== null && !step.isInvalid
+    );
+
+    return getPathfindingQuery({
+      infraId,
+      rollingStock,
+      origin,
+      destination,
+      pathSteps: filteredPathSteps,
+    });
   };
 
   useEffect(() => {
@@ -225,8 +236,23 @@ export const usePathfinding = (
 
         try {
           const pathfindingResult = await postPathfindingBlocks(pathfindingInput).unwrap();
+          //TODO: we handle only invalid pathSteps with trigram. We will have to handle invalid pathSteps with trackOffset, opId and uic
+          if (pathfindingResult.status === 'invalid_path_items') {
+            const invalidPathItems = pathfindingResult.items
+              .map((item) => ('trigram' in item.path_item ? item.path_item.trigram : null))
+              .filter((trigram): trigram is string => trigram !== null);
 
-          if (
+            if (invalidPathItems.length > 0) {
+              const updatedPathSteps = pathSteps.map((step) => {
+                if (step && 'trigram' in step && invalidPathItems.includes(step.trigram)) {
+                  return { ...step, isInvalid: true };
+                }
+                return step;
+              });
+              dispatch(updatePathSteps({ pathSteps: updatedPathSteps }));
+              pathfindingDispatch({ type: 'PATHFINDING_PARAM_CHANGED' });
+            }
+          } else if (
             pathfindingResult.status === 'success' ||
             pathfindingResult.status === 'incompatible_constraints'
           ) {
@@ -255,9 +281,11 @@ export const usePathfinding = (
               // We update existing pathsteps with coordinates, positionOnPath and kp corresponding to the new pathfinding result
               const updatedPathSteps: (PathStep | null)[] = pathSteps.map((step, i) => {
                 if (!step) return step;
+                const trigramValue = 'trigram' in step ? step.trigram : 'no trigram found';
                 const correspondingOp = suggestedOperationalPoints.find(
                   (suggestedOp) =>
-                    'uic' in step && suggestedOp.uic === step.uic && suggestedOp.ch === step.ch
+                    ('uic' in step && suggestedOp.uic === step.uic && suggestedOp.ch === step.ch) ||
+                    (suggestedOp.trigram === trigramValue && suggestedOp.ch === step.ch)
                 );
 
                 const theoreticalMargin = i === 0 ? '0%' : step.theoreticalMargin;

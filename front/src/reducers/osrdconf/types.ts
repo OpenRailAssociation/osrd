@@ -87,4 +87,5 @@ export type PathStep = PathItemLocation & {
     trackName: string;
     trackNumber: number;
   };
+  isInvalid?: boolean;
 };

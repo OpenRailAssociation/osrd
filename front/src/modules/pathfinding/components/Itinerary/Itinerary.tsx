@@ -17,6 +17,7 @@ import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath'
 import { setWarning } from 'reducers/main';
 import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { isEmptyArray } from 'utils/array';
 
@@ -48,6 +49,8 @@ const Itinerary = ({
   const map = useSelector(getMap);
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { openModal } = useModal();
+
+  const isPathStepInvalid = (step: PathStep | null): boolean => step?.isInvalid || false;
 
   const zoomToFeaturePoint = (lngLat?: Position) => {
     if (lngLat) {
@@ -165,12 +168,13 @@ const Itinerary = ({
       )}
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
         <div data-testid="display-itinerary">
-          <Origin zoomToFeaturePoint={zoomToFeaturePoint} />
+          <Origin zoomToFeaturePoint={zoomToFeaturePoint} isInvalid={isPathStepInvalid(origin)} />
           <div className="vias-list mb-2" data-testid="itinerary-vias">
             {pathSteps.length > 2 ? (
               <Vias
                 zoomToFeaturePoint={zoomToFeaturePoint}
                 shouldManageStopDuration={shouldManageStopDuration}
+                isInvalid={isPathStepInvalid}
               />
             ) : (
               <small data-testid="no-waypoint-chosen-text" className="ml-4">
@@ -178,7 +182,10 @@ const Itinerary = ({
               </small>
             )}
           </div>
-          <Destination zoomToFeaturePoint={zoomToFeaturePoint} />
+          <Destination
+            zoomToFeaturePoint={zoomToFeaturePoint}
+            isInvalid={isPathStepInvalid(destination)}
+          />
         </div>
       </div>
     </div>
