@@ -97,8 +97,7 @@ const ScenarioExplorer = ({
         updateStdcmEnvironment({
           infraID: scenario.infra_id,
           timetableID: scenario.timetable_id,
-          electricalProfileSetId: undefined,
-          workScheduleGroupId: undefined,
+          electricalProfileSetId: scenario.electrical_profile_set_id,
           searchDatetimeWindow: scenarioDateTimeWindow,
         })
       );
