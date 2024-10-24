@@ -7,6 +7,7 @@ import utc from 'dayjs/plugin/utc';
 import type { ScheduleConstraint } from 'applications/stdcm/types';
 import type { IsoDateTimeString, IsoDurationString } from 'common/types';
 import i18n from 'i18n';
+import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 
 import { ISO8601Duration2sec } from './timeManipulation';
 
@@ -241,4 +242,30 @@ export const generateISODateFromDateTime = ({ date, hours, minutes }: ScheduleCo
 export const formatDateString = (date?: Date | null) => {
   if (!date) return '';
   return dayjs(date).format('DD/MM/YY');
+};
+
+export const sortTrainSchedulesByStartTime = (
+  trainSchedulesWithDetails: TrainScheduleWithDetails[]
+) =>
+  [...trainSchedulesWithDetails].sort((a, b) =>
+    dayjs(a.startTime, 'D/MM/YYYY HH:mm:ss').diff(dayjs(b.startTime, 'D/MM/YYYY HH:mm:ss'))
+  );
+
+const parseDate = (dateString: string): Date => {
+  const [datePart, timePart] = dateString.split(' ');
+  const [day, month, year] = datePart.split('/').map((part) => part.padStart(2, '0'));
+  const isoDateString = `${year}-${month}-${day}T${timePart || '00:00:00'}`;
+  return new Date(isoDateString);
+};
+
+export const formatDepartureDate = (date: string): string => {
+  const locale = i18n.language;
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+
+  return new Intl.DateTimeFormat(locale, options).format(parseDate(date));
 };
