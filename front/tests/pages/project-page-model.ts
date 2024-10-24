@@ -1,164 +1,147 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import project from '../../public/locales/fr/operationalStudies/project.json';
+import CommonPage from './common-page-model';
+import { cleanText } from '../utils/dataNormalizer';
 
-class ProjectPage {
-  // The current page object
-  readonly page: Page;
+// Define the type for project details
+type ProjectDetails = {
+  name: string;
+  description: string;
+  objectives: string;
+  funders: string;
+  budget: string;
+  tags: string[];
+};
 
-  // Page information
-  readonly getProjectName: Locator;
+class ProjectPage extends CommonPage {
+  // Page Locators
+  readonly projectNameLabel: Locator;
 
-  readonly getProjectUpdateBtn: Locator;
+  readonly updateProjectButton: Locator;
 
-  readonly getProjectDescription: Locator;
+  readonly projectDescriptionLabel: Locator;
 
-  readonly getProjectObjectives: Locator;
+  readonly projectObjectivesLabel: Locator;
 
-  readonly getProjectFinancialsInfos: Locator;
+  readonly projectFinancialInfoLabel: Locator;
 
-  readonly getProjectFinancialsAmount: Locator;
+  readonly projectFinancialAmountLabel: Locator;
 
-  readonly getProjectTags: Locator;
+  readonly projectTagsLabel: Locator;
 
-  // Locator for all links
-  readonly getBackToProjects: Locator;
+  readonly addProjectButton: Locator;
 
-  // Locator for the "back to home" logo
-  readonly getBackHomeLogo: Locator;
+  readonly projectNameInput: Locator;
 
-  // Locator for the body
-  readonly getBody: Locator;
+  readonly projectDescriptionInput: Locator;
 
-  readonly translation: typeof project;
+  readonly projectObjectiveInput: Locator;
 
-  readonly getViteOverlay: Locator;
+  readonly projectFunderInput: Locator;
 
-  readonly getAddProjectBtn: Locator;
+  readonly projectBudgetInput: Locator;
 
-  readonly getProjectNameInput: Locator;
+  readonly updateConfirmButton: Locator;
 
-  readonly getProjectDescriptionInput: Locator;
+  readonly deleteConfirmButton: Locator;
 
-  readonly getProjectObjectiveInput: Locator;
-
-  readonly getProjectFunderInput: Locator;
-
-  readonly getProjectBudgetInput: Locator;
-
-  readonly getProjectDeleteBtn: Locator;
-
-  readonly getProjectUpdateConfirmBtn: Locator;
-
-  readonly getProjectDeleteConfirmBtn: Locator;
+  readonly createProjectButton: Locator;
 
   constructor(page: Page) {
-    this.page = page;
-    // Initialize locators using roles and text content
-    this.getProjectName = page.locator('.project-details-title-name');
-    this.getProjectUpdateBtn = page.locator('.project-details-title-modify-button');
-    this.getProjectDescription = page.locator('.project-details-title-description');
-    this.getProjectObjectives = page.locator('.project-details-title-objectives');
-    this.getProjectFinancialsAmount = page.locator('.project-details-financials-amount');
-    this.getProjectFinancialsInfos = page.locator('.project-details-financials-infos');
-    this.getProjectTags = page.locator('.project-details-tags');
-    this.getBackHomeLogo = page.locator('.mastheader-logo');
-    this.getBackToProjects = page.getByRole('heading', { name: 'Projets' });
-    this.getBody = page.locator('body');
-    this.translation = project;
-    this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
-    this.getAddProjectBtn = page.getByTestId('addProject');
-    this.getProjectNameInput = page.locator('#projectInputName');
-    this.getProjectDescriptionInput = page.locator('#projectDescription');
-    this.getProjectObjectiveInput = page.locator('#projectObjectives');
-    this.getProjectFunderInput = page.locator('#projectInputFunders');
-    this.getProjectBudgetInput = page.locator('#projectInputBudget');
-    this.getProjectDeleteBtn = page.getByTestId('deleteProjects');
-    this.getProjectUpdateConfirmBtn = page.locator('#modal-content').getByTestId('updateProject');
-    this.getProjectDeleteConfirmBtn = page.locator('#modal-content').getByTestId('deleteProject');
+    super(page);
+    this.projectNameLabel = page.locator('.project-details-title-name');
+    this.updateProjectButton = page.getByTestId('project-update-button');
+    this.projectDescriptionLabel = page.locator('.project-details-title-description');
+    this.projectObjectivesLabel = page.locator('.project-details-title-objectives');
+    this.projectFinancialAmountLabel = page.locator('.project-details-financials-amount');
+    this.projectFinancialInfoLabel = page.locator('.project-details-financials-infos');
+    this.projectTagsLabel = page.locator('.project-details-tags');
+    this.createProjectButton = page.getByTestId('create-project');
+    this.addProjectButton = page.getByTestId('add-project');
+    this.projectNameInput = page.locator('#projectInputName');
+    this.projectDescriptionInput = page.locator('#projectDescription');
+    this.projectObjectiveInput = page.locator('#projectObjectives');
+    this.projectFunderInput = page.locator('#projectInputFunders');
+    this.projectBudgetInput = page.locator('#projectInputBudget');
+    this.updateConfirmButton = page.locator('#modal-content').getByTestId('update-project');
+    this.deleteConfirmButton = page.locator('#modal-content').getByTestId('delete-project');
   }
 
-  // Completely remove VITE button & sign
-  async removeViteOverlay() {
-    if ((await this.getViteOverlay.count()) > 0) {
-      await this.getViteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
+  // Create a project based on the provided details.
+  async createProject(details: ProjectDetails) {
+    await expect(this.addProjectButton).toBeVisible();
+    await this.addProjectButton.click();
+    await this.fillProjectDetails(details);
+    await this.createProjectButton.click();
+    await this.page.waitForURL('**/projects/*');
+  }
+
+  // Update a project based on the provided details.
+  async updateProject(details: ProjectDetails) {
+    await this.updateProjectButton.click();
+    await this.fillProjectDetails(details);
+    await this.updateConfirmButton.click();
+    await this.page.waitForURL('**/projects/*');
+  }
+
+  // Fills the project details in the form inputs.
+  private async fillProjectDetails(details: ProjectDetails) {
+    const { name, description, objectives, funders, budget, tags } = details;
+
+    await this.projectNameInput.fill(name);
+    await this.projectDescriptionInput.fill(description);
+    await this.projectObjectiveInput.fill(objectives);
+    await this.projectFunderInput.fill(funders);
+    await this.projectBudgetInput.fill(budget);
+
+    for (const tag of tags) {
+      await this.setTag(tag);
     }
   }
 
-  // Navigate to the Home page
-  async goToHomePage() {
-    await this.page.goto('/');
-    await this.removeViteOverlay();
+  // Validates if the project's financial budget matches the expected value.
+  async validateNumericBudget(expectedBudget: string) {
+    const budgetText = await this.projectFinancialAmountLabel.textContent();
+    expect(budgetText?.replace(/[^0-9]/g, '')).toEqual(expectedBudget);
   }
 
-  // Click on the logo to navigate back to the home page
-  async backToHomePage() {
-    await this.getBackHomeLogo.click();
+  // Validates if the project objectives match the expected objectives.
+  async validateObjectives(expectedObjectives: string) {
+    const objectives = await this.projectObjectivesLabel.textContent();
+    expect(cleanText(objectives)).toContain(cleanText(expectedObjectives));
   }
 
-  // Assert that the breadcrumb project link is displayed on the page
-  async getDisplayLinks() {
-    expect(this.getBackToProjects).toBeVisible();
+  // Validates if all project details are displayed correctly.
+  async validateProjectData(details: ProjectDetails) {
+    const { name, description, objectives, funders, budget, tags } = details;
+
+    expect(await this.projectNameLabel.textContent()).toContain(name);
+    expect(await this.projectDescriptionLabel.textContent()).toContain(description);
+    await this.validateObjectives(objectives);
+    expect(await this.projectFinancialInfoLabel.textContent()).toContain(funders);
+    await this.validateNumericBudget(budget);
+    expect(await this.projectTagsLabel.textContent()).toContain(tags.join(''));
   }
 
-  getTranslations(key: keyof typeof project) {
-    return this.translation[key];
-  }
-
-  async openProjectModalCreation() {
-    await this.getAddProjectBtn.click();
-  }
-
-  async openProjectModalUpdate() {
-    await this.getProjectUpdateBtn.click();
-  }
-
+  // Opens a project by its test ID (The Test ID is the same as the Name)
   async openProjectByTestId(projectTestId: string | RegExp) {
-    await this.page.getByTestId(projectTestId).getByTestId('openProject').first().click();
+    await this.page.getByTestId(projectTestId).first().hover();
+    await this.page.getByTestId(projectTestId).getByTestId('openProject').click();
   }
 
-  async setProjectName(name: string) {
-    await this.getProjectNameInput.fill(name);
-  }
-
-  async setProjectDescription(description: string) {
-    await this.getProjectDescriptionInput.fill(description);
-  }
-
-  async setProjectObjectives(objectives: string) {
-    await this.getProjectObjectiveInput.fill(objectives);
-  }
-
-  async setProjectFunder(funder: string) {
-    await this.getProjectFunderInput.fill(funder);
-  }
-
-  async setProjectBudget(budget: string) {
-    await this.getProjectBudgetInput.fill(budget);
-  }
-
+  // Retrieves a project element by its name.
   getProjectByName(name: string) {
     return this.page.locator(`text=${name}`);
   }
 
-  async clickProjectByName(name: string) {
-    await this.getProjectByName(name).first().click();
-  }
-
-  async clickProjectDeleteBtn() {
-    await this.getProjectDeleteBtn.click();
-  }
-
-  async checkLabelProjectSelected() {
-    expect(this.page.locator('.projects-selection-toolbar').locator('span').first());
-  }
-
-  async clickProjectUpdateConfirmBtn() {
-    await this.getProjectUpdateConfirmBtn.click();
-  }
-
-  async clickProjectDeleteConfirmBtn() {
-    await this.getProjectDeleteConfirmBtn.click();
+  // Deletes a project by its name.
+  async deleteProject(name: string) {
+    await this.updateProjectButton.click();
+    await expect(this.deleteConfirmButton).toBeVisible();
+    await this.deleteConfirmButton.click();
+    await expect(this.deleteConfirmButton).not.toBeVisible();
+    await expect(this.getProjectByName(name)).not.toBeVisible();
   }
 }
+
 export default ProjectPage;

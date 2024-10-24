@@ -10,7 +10,7 @@ export default function ProjectCard() {
 
   return (
     <div
-      data-testid="addProject"
+      data-testid="add-project"
       className="project-card empty"
       role="button"
       tabIndex={0}

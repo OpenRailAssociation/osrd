@@ -97,7 +97,7 @@ const ScenarioDescription = ({
           </button>
         </div>
         <button
-          data-testid="editScenario"
+          data-testid="edit-scenario"
           className="update-scenario"
           type="button"
           aria-label={t('editScenario')}

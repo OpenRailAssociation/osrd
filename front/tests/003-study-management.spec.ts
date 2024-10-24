@@ -1,148 +1,132 @@
-import { test, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Project, Study } from 'common/api/osrdEditoastApi';
 
 import studyData from './assets/operationStudies/study.json';
-import CommonPage from './pages/common-page-model';
 import HomePage from './pages/home-page-model';
 import StudyPage from './pages/study-page-model';
-import { getProject, postApiRequest } from './utils/api-setup';
+import test from './test-logger';
+import { formatDateToDayMonthYear, generateUniqueName } from './utils';
+import { getProject } from './utils/api-setup';
+import { createStudy } from './utils/setup-utils';
+import { deleteStudy } from './utils/teardown-utils';
+import enTranslations from '../public/locales/en/operationalStudies/study.json';
+import frTranslations from '../public/locales/fr/operationalStudies/study.json';
 
-test.use({
-  launchOptions: {
-    slowMo: 10, // Introduces a slight delay to prevent UI elements (e.g., "Create Study" button and "Study edition" modal) from overlapping due to fast test execution.
-  },
-});
-
-let project: Project;
-let study: Study;
-
-test.beforeAll(async () => {
-  project = await getProject('project_test_e2e');
-});
-
-test.beforeEach(async () => {
-  study = await postApiRequest(`/api/projects/${project.id}/studies/`, {
-    ...studyData,
-    name: `${studyData.name} ${uuidv4()}`,
-    budget: 1234567890,
-    project: project.id,
+test.describe('Validate the Study creation workflow', () => {
+  let project: Project;
+  let study: Study;
+  let OSRDLanguage: string;
+  test.beforeAll(' Retrieve a project', async () => {
+    project = await getProject();
   });
-});
 
-test.describe('Test if study creation workflow is working properly', () => {
+  test.beforeEach('Create a new study linked to the project', async ({ page }) => {
+    const homePage = new HomePage(page);
+    await homePage.goToHomePage();
+    OSRDLanguage = await homePage.getOSRDLanguage();
+  });
+
+  /** *************** Test 1 **************** */
   test('Create a new study', async ({ page }) => {
     const studyPage = new StudyPage(page);
-    const commonPage = new CommonPage(page);
+    await page.goto(`/operational-studies/projects/${project.id}`); // Navigate to project page
 
-    await page.goto(`/operational-studies/projects/${project.id}`);
+    // Set translations based on the language
+    const translations = OSRDLanguage === 'English' ? enTranslations : frTranslations;
+    const studyName = `${studyData.name} ${uuidv4()}`; // Unique study name
+    const todayDateISO = new Date().toISOString().split('T')[0]; // Get today's date in ISO format
+    const expectedDate = formatDateToDayMonthYear(todayDateISO);
+    // Create a new study using the study page model
+    await studyPage.createStudy({
+      name: studyName,
+      description: studyData.description,
+      type: translations.studyCategories.flowRate, // Translated study type
+      status: translations.studyStates.started, // Translated study status
+      startDate: todayDateISO,
+      estimatedEndDate: todayDateISO,
+      endDate: todayDateISO,
+      serviceCode: studyData.service_code,
+      businessCode: studyData.business_code,
+      budget: studyData.budget,
+      tags: studyData.tags,
+    });
 
-    await studyPage.openStudyCreationModal();
-
-    const studyName = `${studyData.name} ${uuidv4()}`;
-    await studyPage.setStudyName(studyName);
-
-    await studyPage.setStudyTypeByText(studyData.type);
-
-    await studyPage.setStudyStatusByText(studyData.state);
-
-    await studyPage.setStudyDescription(studyData.description);
-
-    const todayDateISO = new Date().toISOString().split('T')[0];
-    await studyPage.setStudyStartDate(todayDateISO);
-
-    await studyPage.setStudyEstimatedEndDate(todayDateISO);
-
-    await studyPage.setStudyEndDate(todayDateISO);
-
-    await studyPage.setStudyServiceCode(studyData.service_code);
-
-    await studyPage.setStudyBusinessCode(studyData.business_code);
-
-    await studyPage.setStudyBudget(studyData.budget);
-
-    await commonPage.setTag(project.tags[0]);
-    await commonPage.setTag(project.tags[1]);
-    await commonPage.setTag(project.tags[2]);
-
-    await studyPage.createStudyButton.click();
-
-    await expect(studyPage.studyEditionModal).not.toBeVisible();
-
-    await expect(studyPage.getStudyName).toHaveText(studyName);
-    await expect(studyPage.getStudyDescription).toHaveText(studyData.description);
-    await expect(studyPage.getStudyType).toHaveText(studyData.type);
-    await expect(studyPage.getStudyState.first()).toHaveText(studyData.state);
-
-    await expect(studyPage.studyServiceCodeInfo).toHaveText(studyData.service_code);
-    await expect(studyPage.studyBusinessCodeInfo).toHaveText(studyData.business_code);
-    expect(await studyPage.getNumericFinancialsAmount()).toBe('1 234 567 890 €');
-    const tags = await studyPage.getStudyTags.textContent();
-    expect(tags).toContain(studyData.tags.join(''));
+    // Validate that the study was created with the correct data
+    await studyPage.validateStudyData({
+      name: studyName,
+      description: studyData.description,
+      type: translations.studyCategories.flowRate,
+      status: translations.studyStates.started,
+      startDate: expectedDate,
+      estimatedEndDate: expectedDate,
+      endDate: expectedDate,
+      serviceCode: studyData.service_code,
+      businessCode: studyData.business_code,
+      budget: studyData.budget,
+      tags: studyData.tags,
+    });
+    await deleteStudy(project.id, studyName);
   });
 
-  test('Update a study', async ({ page }) => {
+  /** *************** Test 2 **************** */
+  test('Update an existing study', async ({ page }) => {
+    // Create a study
+    study = await createStudy(project.id, generateUniqueName(studyData.name));
     const studyPage = new StudyPage(page);
-    const commonPage = new CommonPage(page);
+    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`); // Navigate to study page
 
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+    const translations = OSRDLanguage === 'English' ? enTranslations : frTranslations;
+    const tomorrowDateISO = new Date(Date.now() + 86400000).toISOString().split('T')[0]; // Get tomorrow's date in ISO format
+    const expectedDate = formatDateToDayMonthYear(tomorrowDateISO);
+    // Update the study with new values
+    await studyPage.updateStudy({
+      name: `${study.name} (updated)`,
+      description: `${study.description} (updated)`,
+      type: translations.studyCategories.operability,
+      status: translations.studyStates.inProgress,
+      startDate: tomorrowDateISO,
+      estimatedEndDate: tomorrowDateISO,
+      endDate: tomorrowDateISO,
+      serviceCode: 'A1230',
+      businessCode: 'B1230',
+      budget: '123456789',
+      tags: ['update-tag'],
+    });
 
-    await studyPage.openStudyModalUpdate();
-
-    await studyPage.setStudyName(`${study.name} (updated)`);
-
-    await studyPage.setStudyTypeByText('Exploitabilité');
-
-    await studyPage.setStudyStatusByText('En cours');
-
-    const tomorrowDateISO = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-    await studyPage.setStudyDescription(`${study.description} (updated)`);
-
-    await studyPage.setStudyStartDate(tomorrowDateISO);
-
-    await studyPage.setStudyEstimatedEndDate(tomorrowDateISO);
-
-    await studyPage.setStudyEndDate(tomorrowDateISO);
-
-    await studyPage.setStudyServiceCode(`${study.service_code} (updated)`);
-
-    await studyPage.setStudyBusinessCode(`${study.business_code} (updated)`);
-
-    await studyPage.setStudyBudget('123456789');
-
-    await commonPage.setTag('update-tag');
-
-    await studyPage.clickStudyUpdateConfirmBtn();
-
+    // Navigate back to the project page
     await page.goto(`/operational-studies/projects/${project.id}`);
 
+    // Reopen the updated study and validate the updated data
     await studyPage.openStudyByTestId(`${study.name} (updated)`);
-
-    await expect(studyPage.getStudyName).toHaveText(`${study.name} (updated)`);
-    await expect(studyPage.getStudyDescription).toHaveText(`${study.description} (updated)`);
-    await expect(studyPage.getStudyType).toHaveText('Exploitabilité');
-    await expect(studyPage.getStudyState.nth(1)).toHaveText('En cours');
-    await expect(studyPage.studyServiceCodeInfo).toHaveText(`${study.service_code} (updated)`);
-    await expect(studyPage.studyBusinessCodeInfo).toHaveText(`${study.business_code} (updated)`);
-    expect(await studyPage.getNumericFinancialsAmount()).toBe('123 456 789 €');
-    const tags = await studyPage.getStudyTags.textContent();
-    expect(tags).toContain('update-tag');
+    await studyPage.validateStudyData({
+      name: `${study.name} (updated)`,
+      description: `${study.description} (updated)`,
+      type: translations.studyCategories.operability,
+      status: translations.studyStates.inProgress,
+      startDate: expectedDate,
+      estimatedEndDate: expectedDate,
+      endDate: expectedDate,
+      serviceCode: 'A1230',
+      businessCode: 'B1230',
+      budget: '123456789',
+      tags: ['update-tag'],
+      isUpdate: true, // Indicate that this is an update
+    });
+    await deleteStudy(project.id, `${study.name} (updated)`);
   });
 
+  /** *************** Test 3 **************** */
   test('Delete a study', async ({ page }) => {
-    const homePage = new HomePage(page);
+    // Create a study
+    study = await createStudy(project.id, generateUniqueName(studyData.name));
+
     const studyPage = new StudyPage(page);
 
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+    // Navigate to the list of studies for the project
+    await page.goto(`/operational-studies/projects/${project.id}`);
 
-    await studyPage.openStudyModalUpdate();
-
-    await studyPage.clickStudyDeleteConfirmBtn();
-
-    await homePage.goToHomePage();
-    await homePage.goToOperationalStudiesPage();
-
-    await expect(studyPage.getStudyByName(studyData.name)).not.toBeVisible();
+    // Delete the study by name using the study page model
+    await studyPage.deleteStudy(study.name);
   });
 });

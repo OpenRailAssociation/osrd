@@ -1,104 +1,116 @@
-import { expect, test } from '@playwright/test';
-import { v4 as uuidv4 } from 'uuid';
+import { expect } from '@playwright/test';
 
-import type { Project, Scenario, Study } from 'common/api/osrdEditoastApi';
+import type { ElectricalProfileSet, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
-import CommonPage from './pages/common-page-model';
-import HomePage from './pages/home-page-model';
 import ScenarioPage from './pages/scenario-page-model';
-import setupScenario from './utils/scenario';
+import test from './test-logger';
+import { generateUniqueName } from './utils';
+import { deleteApiRequest, getProject, getStudy, setElectricalProfile } from './utils/api-setup';
+import createScenario from './utils/scenario';
+import { deleteScenario } from './utils/teardown-utils';
 
-let project: Project;
-let study: Study;
-let scenario: Scenario;
+test.describe('Validate the Scenario creation workflow', () => {
+  let project: Project;
+  let study: Study;
+  let scenario: Scenario;
+  let electricalProfileSet: ElectricalProfileSet;
 
-test.beforeEach(async () => {
-  ({ project, study, scenario } = await setupScenario());
-});
-
-test.describe('Test if scenario creation workflow is working properly', () => {
-  test('Create a new scenario', async ({ page }) => {
-    const homePage = new HomePage(page);
-    const scenarioPage = new ScenarioPage(page);
-    const commonPage = new CommonPage(page);
-
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-
-    expect(scenarioPage.getAddScenarioBtn).toBeVisible();
-    await scenarioPage.openScenarioCreationModal();
-
-    const scenarioName = `${scenarioData.name} ${uuidv4()}`;
-    await scenarioPage.setScenarioName(scenarioName);
-
-    await scenarioPage.setScenarioDescription(scenarioData.description);
-
-    // Infra created by CI has no electrical profile
-    if (!process.env.CI) {
-      await scenarioPage.setScenarioElectricProfileByName('small_infra');
-    }
-
-    await commonPage.setTag(scenarioData.tags[0]);
-    await commonPage.setTag(scenarioData.tags[1]);
-    await commonPage.setTag(scenarioData.tags[2]);
-
-    await scenarioPage.setScenarioInfraByName('small_infra_test_e2e');
-    const createButton = homePage.page.getByTestId('createScenario');
-    await createButton.click();
-    await homePage.page.waitForURL('**/scenarios/*');
-    expect(await scenarioPage.getScenarioName.textContent()).toContain(scenarioName);
-    expect(await scenarioPage.getScenarioDescription.textContent()).toContain(
-      scenarioData.description
-    );
-    expect(await scenarioPage.getScenarioInfraName.textContent()).toContain('small_infra_test_e2e');
+  test.beforeAll('Fetch a project, study and add electrical profile ', async () => {
+    project = await getProject();
+    study = await getStudy(project.id);
+    electricalProfileSet = await setElectricalProfile();
   });
 
-  test('Update a scenario', async ({ page }) => {
+  test.afterAll('Delete the electrical profile', async () => {
+    deleteApiRequest(`/api/electrical_profile_set/${electricalProfileSet.id}/`);
+  });
+
+  /** *************** Test 1 **************** */
+  test('Create a new scenario', async ({ page }) => {
     const scenarioPage = new ScenarioPage(page);
-    const commonPage = new CommonPage(page);
 
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-    );
-
-    await scenarioPage.openScenarioModalUpdate();
-
-    const scenarioName = `${scenarioData.name} ${uuidv4()}`;
-    await scenarioPage.setScenarioName(scenarioName);
-
-    await scenarioPage.setScenarioDescription(`${scenario.description} (updated)`);
-
-    await commonPage.setTag('update-tag');
-
-    await scenarioPage.clickScenarioUpdateConfirmBtn();
-
+    // Navigate to the study page for the selected project
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
 
-    expect(await scenarioPage.getScenarioTags(scenarioName).textContent()).toContain(
+    const scenarioName = generateUniqueName(scenarioData.name); // Generate a unique scenario name
+
+    // Create a new scenario using the scenario page model
+    await scenarioPage.createScenario({
+      name: scenarioName,
+      description: scenarioData.description,
+      infraName: 'small_infra_test_e2e',
+      tags: scenarioData.tags,
+      electricProfileName: electricalProfileSet.name,
+    });
+
+    // Validate that the scenario was created with the correct data
+    await scenarioPage.validateScenarioData({
+      name: scenarioName,
+      description: scenarioData.description,
+      infraName: 'small_infra_test_e2e',
+    });
+    await deleteScenario(project.id, study.id, scenarioName);
+  });
+
+  /** *************** Test 2 **************** */
+  test('Update an existing scenario', async ({ page }) => {
+    // Set up a scenario
+    ({ project, study, scenario } = await createScenario());
+
+    const scenarioPage = new ScenarioPage(page);
+
+    // Navigate to the specific scenario page
+    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+    await scenarioPage.openScenarioByTestId(scenario.name);
+
+    // Update the scenario with new details
+    const updatedScenarioName = generateUniqueName(`${scenarioData.name}(updated)`);
+    await scenarioPage.updateScenario({
+      name: updatedScenarioName,
+      description: `${scenario.description} (updated)`,
+      tags: ['update-tag'],
+    });
+
+    // Navigate back to the study page to verify the updated tags
+    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+
+    // Assert that the updated tags include the new 'update-tag'
+    expect(await scenarioPage.getScenarioTags(updatedScenarioName).textContent()).toContain(
       `${scenarioData.tags.join('')}update-tag`
     );
 
-    await scenarioPage.openScenarioByTestId(scenarioName);
+    // Reopen the updated scenario and validate the updated data
+    await scenarioPage.openScenarioByTestId(updatedScenarioName);
+    await scenarioPage.validateScenarioData({
+      name: updatedScenarioName,
+      description: `${scenario.description} (updated)`,
+      infraName: 'small_infra_test_e2e',
+    });
 
-    expect(await scenarioPage.getScenarioName.textContent()).toContain(scenarioName);
-    expect(await scenarioPage.getScenarioDescription.textContent()).toContain(
-      `${scenario.description} (updated)`
-    );
+    // Delete the scenario
+    await deleteScenario(project.id, study.id, updatedScenarioName);
   });
 
+  /** *************** Test 3 **************** */
   test('Delete a scenario', async ({ page }) => {
+    // Set up a scenario
+    ({ project, study, scenario } = await createScenario());
+
+    // Navigate to the specific scenario page
     const scenarioPage = new ScenarioPage(page);
+    // Navigate to the specific scenario page
+    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+    await scenarioPage.openScenarioByTestId(scenario.name);
 
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-    );
+    // Initiate the deletion of the scenario
+    await scenarioPage.clickOnUpdateScenario();
+    await scenarioPage.deleteScenario();
 
-    await scenarioPage.openScenarioModalUpdate();
-
-    await scenarioPage.clickScenarioDeleteConfirmBtn();
-
+    // Navigate back to the study page
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
 
+    // Ensure that the scenario is no longer visible
     await expect(scenarioPage.getScenarioByName(scenario.name)).not.toBeVisible();
   });
 });

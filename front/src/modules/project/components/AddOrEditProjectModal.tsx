@@ -435,6 +435,7 @@ export default function AddOrEditProjectModal({
         <div className="d-flex justify-content-end w-100">
           {editionMode && (
             <button
+              data-testid="delete-project"
               className="btn btn-outline-danger mr-auto"
               type="button"
               onClick={removeProject}
@@ -450,7 +451,7 @@ export default function AddOrEditProjectModal({
           </button>
           {editionMode ? (
             <button
-              data-testid="updateProject"
+              data-testid="update-project"
               className="btn btn-warning"
               type="button"
               onClick={updateProject}
@@ -462,7 +463,7 @@ export default function AddOrEditProjectModal({
             </button>
           ) : (
             <button
-              data-testid="createProject"
+              data-testid="create-project"
               className="btn btn-primary"
               type="button"
               onClick={createProject}

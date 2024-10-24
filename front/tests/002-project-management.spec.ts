@@ -1,145 +1,102 @@
-import { test, expect } from '@playwright/test';
-import { v4 as uuidv4 } from 'uuid';
-
 import type { Project } from 'common/api/osrdEditoastApi';
 
 import projectData from './assets/operationStudies/project.json';
-import CommonPage from './pages/common-page-model';
 import HomePage from './pages/home-page-model';
 import ProjectPage from './pages/project-page-model';
-import { deleteApiRequest, getApiRequest, postApiRequest } from './utils/api-setup';
+import test from './test-logger';
+import { generateUniqueName } from './utils';
+import { createProject } from './utils/setup-utils';
+import { deleteProject } from './utils/teardown-utils';
 
-let project: Project;
+test.describe('Validate the Operational Study Project workflow', () => {
+  let project: Project;
 
-test.beforeEach(async () => {
-  project = await postApiRequest('/api/projects/', {
-    ...projectData,
-    name: `${projectData.name} ${uuidv4()}`,
-    budget: 1234567890,
-  });
-});
-
-test.afterEach(async () => {
-  await deleteApiRequest(`/api/projects/${project.id}/`);
-});
-
-test.describe('Test if project workflow is working properly', () => {
+  /** *************** Test 1 **************** */
   test('Create a new project', async ({ page }) => {
-    const homePage = new HomePage(page);
     const projectPage = new ProjectPage(page);
-    const commonPage = new CommonPage(page);
 
-    await homePage.goToHomePage();
-    await homePage.goToOperationalStudiesPage();
-    await expect(projectPage.getAddProjectBtn).toBeVisible();
-    await projectPage.openProjectModalCreation();
-
-    const projectName = `${projectData.name} ${uuidv4()}`;
-    await projectPage.setProjectName(projectName);
-
-    await projectPage.setProjectDescription(projectData.description);
-
-    await projectPage.setProjectObjectives(projectData.objectives);
-
-    await projectPage.setProjectFunder(projectData.funders);
-
-    await projectPage.setProjectBudget(projectData.budget);
-
-    await commonPage.setTag(projectData.tags[0]);
-    await commonPage.setTag(projectData.tags[1]);
-    await commonPage.setTag(projectData.tags[2]);
-
-    const createButton = homePage.page.getByTestId('createProject');
-    await createButton.click();
-    await homePage.page.waitForURL('**/projects/*');
-    expect(await projectPage.getProjectName.textContent()).toContain(projectName);
-    expect(await projectPage.getProjectDescription.textContent()).toContain(
-      projectData.description
-    );
-    const objectives = await projectPage.getProjectObjectives.textContent();
-    expect(objectives).not.toEqual(null);
-    if (objectives !== null)
-      expect(objectives.replace(/[^A-Za-z0-9]/g, '')).toContain(
-        (project.objectives ?? '').replace(/[^A-Za-z0-9]/g, '')
-      );
-    expect(await projectPage.getProjectFinancialsInfos.textContent()).toContain(
-      projectData.funders
-    );
-    const budget = await projectPage.getProjectFinancialsAmount.textContent();
-    expect(budget).not.toEqual(null);
-    if (budget !== null) expect(budget.replace(/[^0-9]/g, '')).toContain(projectData.budget);
-    const tags = await projectPage.getProjectTags.textContent();
-    expect(tags).toContain(projectData.tags.join(''));
-
-    const projects = await getApiRequest('/api/projects/');
-    const actualTestProject = projects.results.find((p: Project) => p.name === projectName);
-
-    const deleteProject = await deleteApiRequest(`/api/projects/${actualTestProject.id}/`);
-    expect(deleteProject.status()).toEqual(204);
-  });
-
-  test(' update a project', async ({ page }) => {
-    const homePage = new HomePage(page);
-    const projectPage = new ProjectPage(page);
-    const commonPage = new CommonPage(page);
-
+    // Navigate to the Operational Studies projects page
     await page.goto('/operational-studies/projects');
 
+    // Define a unique project name for the test
+    const projectName = generateUniqueName(projectData.name);
+
+    // Create a new project using the project page model and json data
+    await projectPage.createProject({
+      name: projectName,
+      description: projectData.description,
+      objectives: projectData.objectives,
+      funders: projectData.funders,
+      budget: projectData.budget,
+      tags: projectData.tags,
+    });
+
+    // Validate that the project was created with the correct data
+    await projectPage.validateProjectData({
+      name: projectName,
+      description: projectData.description,
+      objectives: projectData.objectives,
+      funders: projectData.funders,
+      budget: projectData.budget,
+      tags: projectData.tags,
+    });
+
+    // Delete the created project
+    await deleteProject(projectName);
+  });
+
+  /** *************** Test 2 **************** */
+  test('Update an existing project', async ({ page }) => {
+    // Create a project
+    project = await createProject(generateUniqueName(projectData.name));
+
+    // Navigate to the Operational Studies projects page
+    await page.goto('/operational-studies/projects');
+
+    const homePage = new HomePage(page);
+    const projectPage = new ProjectPage(page);
+    // Open the created project by name using the project page model
     await projectPage.openProjectByTestId(project.name);
 
-    await projectPage.openProjectModalUpdate();
+    // Update the project data and save it
+    await projectPage.updateProject({
+      name: `${project.name} (updated)`,
+      description: `${project.description} (updated)`,
+      objectives: `${projectData.objectives} (updated)`,
+      funders: `${project.funders} (updated)`,
+      budget: '123456789',
+      tags: ['update-tag'],
+    });
 
-    await projectPage.setProjectName(`${project.name} (updated)`);
-
-    await projectPage.setProjectDescription(`${project.description} (updated)`);
-
-    await projectPage.setProjectObjectives(`updated`);
-
-    await projectPage.setProjectFunder(`${project.funders} (updated)`);
-
-    await projectPage.setProjectBudget('123456789');
-
-    await commonPage.setTag('update-tag');
-
-    await projectPage.clickProjectUpdateConfirmBtn();
-
+    // Navigate back to the Operational Studies page via the home page
     await homePage.goToHomePage();
     await homePage.goToOperationalStudiesPage();
 
+    // Reopen the updated project and validate the updated data
     await projectPage.openProjectByTestId(`${project.name} (updated)`);
-
-    expect(await projectPage.getProjectName.innerText()).toContain(`${project.name} (updated)`);
-    expect(await projectPage.getProjectDescription.textContent()).toContain(
-      `${project.description} (updated)`
-    );
-    expect(await projectPage.getProjectObjectives.textContent()).toContain('updated');
-    expect(await projectPage.getProjectFinancialsInfos.textContent()).toContain(
-      `${project.funders} (updated)`
-    );
-    const budget = await projectPage.getProjectFinancialsAmount.textContent();
-    expect(budget).not.toEqual(null);
-    if (budget !== null) expect(budget.replace(/[^0-9]/g, '')).toContain('123456789');
-    expect(await projectPage.getProjectTags.textContent()).toContain(
-      `${project.tags.join('')}update-tag`
-    );
-
-    const deleteProject = await deleteApiRequest(`/api/projects/${project.id}/`);
-    expect(deleteProject.status()).toEqual(204);
+    await projectPage.validateProjectData({
+      name: `${project.name} (updated)`,
+      description: `${project.description} (updated)`,
+      objectives: `${projectData.objectives} (updated)`,
+      funders: `${project.funders} (updated)`,
+      budget: '123456789',
+      tags: ['update-tag'],
+    });
+    // Delete the created project
+    await deleteProject(`${project.name} (updated)`);
   });
 
+  /** *************** Test 3 **************** */
   test('Delete a project', async ({ page }) => {
-    const projectPage = new ProjectPage(page);
+    // Create a project
+    project = await createProject(generateUniqueName(projectData.name));
 
+    // Navigate to the Operational Studies projects page
     await page.goto('/operational-studies/projects');
 
-    await projectPage.clickProjectByName(project.name);
-    await projectPage.checkLabelProjectSelected();
-    await expect(projectPage.getProjectDeleteBtn).not.toBeEmpty();
-    await projectPage.clickProjectDeleteBtn();
-    await expect(projectPage.getProjectDeleteConfirmBtn).toBeVisible();
-    await projectPage.clickProjectDeleteConfirmBtn();
-    await expect(projectPage.getProjectDeleteConfirmBtn).not.toBeVisible();
-    await expect(projectPage.getProjectDeleteBtn).not.toBeVisible();
-    await expect(projectPage.getProjectByName(project.name)).not.toBeVisible();
+    const projectPage = new ProjectPage(page);
+    // Find the project by name and delete it using the page model
+    await projectPage.openProjectByTestId(project.name);
+    await projectPage.deleteProject(project.name);
   });
 });

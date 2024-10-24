@@ -18,17 +18,42 @@ export interface StationData {
   calculatedDeparture: string;
 }
 
-// Trim and normalize whitespace in a string
+/**
+ * Trims leading/trailing whitespace and replaces multiple spaces with a single space.
+ *
+ * @param {string} [text=''] - The input string to clean.
+ * @returns {string} - The cleaned string with normalized whitespace.
+ */
 export function cleanWhitespace(text: string = ''): string {
-  return text.trim().replace(/\s+/g, ' ');
+  return text.trim().replace(/\s+/g, ' '); // Replace multiple spaces with a single space
 }
 
-// Clean whitespace for an array of strings
-export function cleanWhitespaceInArray(headers: string[]): string[] {
-  return headers.map(cleanWhitespace);
+/**
+ * Cleans whitespace for each string in an array of headers.
+ *
+ * @param {string[]} texts - The array of texts strings to clean.
+ * @returns {string[]} - The cleaned array of texts.
+ */
+export function cleanWhitespaceInArray(texts: string[]): string[] {
+  return texts.map(cleanWhitespace);
 }
 
-// Normalize StationData by cleaning whitespace in all string fields
+/**
+ * Removes non-alphanumeric characters from a string.
+ *
+ * @param {string | null} text - The input text to clean.
+ * @returns {string} - The cleaned text with non-alphanumeric characters removed.
+ */
+export function cleanText(text: string | null): string {
+  return text?.replace(/[^A-Za-z0-9]/g, '') ?? '';
+}
+
+/**
+ * Normalizes the StationData array by cleaning whitespace in all string fields.
+ *
+ * @param {StationData[]} data - The array of station data objects to normalize.
+ * @returns {StationData[]} - The normalized array of station data with cleaned fields.
+ */
 export function normalizeData(data: StationData[]): StationData[] {
   return data.map((item) => ({
     stationName: cleanWhitespace(item.stationName),

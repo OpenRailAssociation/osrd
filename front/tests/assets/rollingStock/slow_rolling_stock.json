@@ -1,0 +1,82 @@
+{
+  "id": 479,
+  "railjson_version": "3.2",
+  "name": "slow_rolling_stock",
+  "effort_curves": {
+    "modes": {
+      "thermal": {
+        "curves": [
+          {
+            "cond": {
+              "comfort": "STANDARD",
+              "electrical_profile_level": null,
+              "power_restriction_code": null
+            },
+            "curve": {
+              "speeds": [
+                0.0, 1.1111111111111112, 2.2222222222222223, 2.5, 2.7777777777777777,
+                4.166666666666667, 5.555555555555555, 6.944444444444445, 8.333333333333334,
+                11.11111111111111, 13.88888888888889, 16.666666666666668
+              ],
+              "max_efforts": [
+                132300.0, 116500.0, 99500.0, 95000.0, 91200.0, 70000.0, 55900.0, 44600.0, 36300.0,
+                27000.0, 21200.0, 16700.0
+              ]
+            }
+          }
+        ],
+        "default_curve": {
+          "speeds": [
+            0.0, 1.1111111111111112, 2.2222222222222223, 2.5, 2.7777777777777777, 4.166666666666667,
+            5.555555555555555, 6.944444444444445, 8.333333333333334, 11.11111111111111,
+            13.88888888888889, 16.666666666666668
+          ],
+          "max_efforts": [
+            132300.0, 116500.0, 99500.0, 95000.0, 91200.0, 70000.0, 55900.0, 44600.0, 36300.0,
+            27000.0, 21200.0, 16700.0
+          ]
+        },
+        "is_electric": false
+      }
+    },
+    "default_mode": "thermal"
+  },
+  "metadata": {
+    "detail": "slow_rolling_stock",
+    "family": "",
+    "type": "",
+    "grouping": "",
+    "series": "",
+    "subseries": "",
+    "unit": "",
+    "number": "",
+    "reference": "slow_rolling_stock"
+  },
+  "length": 11.0,
+  "max_speed": 18.055555555555557,
+  "startup_time": 22.0,
+  "startup_acceleration": 0.03,
+  "comfort_acceleration": 0.09,
+  "gamma": {
+    "type": "CONST",
+    "value": 0.6
+  },
+  "inertia_coefficient": 1.3,
+  "base_power_class": "8",
+  "mass": 75000.0,
+  "rolling_resistance": {
+    "type": "davis",
+    "A": 990.0,
+    "B": 27.0,
+    "C": 6.48
+  },
+  "loading_gauge": "G2",
+  "power_restrictions": {},
+  "energy_sources": [],
+  "locked": false,
+  "electrical_power_startup_time": null,
+  "raise_pantograph_time": null,
+  "version": 1,
+  "supported_signaling_systems": ["BAL", "BAPR"],
+  "liveries": []
+}

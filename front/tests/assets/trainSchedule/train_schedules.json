@@ -60,7 +60,7 @@
         "at": "id2881",
         "arrival": "PT123S",
         "stop_for": "PT120S",
-        "reception_signal": "STOP",
+        "reception_signal": "SHORT_SLIP_STOP",
         "locked": false
       }
     ],
@@ -186,7 +186,7 @@
     "train_name": "Train 8",
     "labels": ["Tag-8", "SS-MES"],
     "rolling_stock_name": "slow_rolling_stock_test_e2e",
-    "start_time": "2024-07-26T08:50:01Z",
+    "start_time": "2024-07-26T08:56:01Z",
     "path": [
       { "id": "id54647", "deleted": false, "uic": 6, "secondary_code": "BV" },
       { "id": "id54756", "deleted": false, "uic": 5, "secondary_code": "BV" },
@@ -377,21 +377,13 @@
   {
     "train_name": "Train 15",
     "labels": ["Tag-15"],
-    "rolling_stock_name": "fast_rolling_stock_high_gamma",
+    "rolling_stock_name": "improbable_rolling_stock_test_e2e",
     "start_time": "2024-07-26T12:30:00Z",
     "path": [
-      { "id": "id8640", "deleted": false, "uic": 8, "secondary_code": "BV" },
-      { "id": "id8641", "deleted": false, "uic": 2, "secondary_code": "BV" }
+      { "id": "id117", "deleted": false, "uic": 6, "secondary_code": "BV" },
+      { "id": "id118", "deleted": false, "uic": 8, "secondary_code": "BV" }
     ],
-    "schedule": [
-      {
-        "at": "id8641",
-        "arrival": null,
-        "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
-      }
-    ],
+    "schedule": [],
     "margins": { "boundaries": [], "values": ["0%"] },
     "initial_speed": 0,
     "comfort": "STANDARD",
@@ -557,6 +549,48 @@
     ],
     "margins": { "boundaries": ["id14748"], "values": ["4.5%", "0%"] },
     "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": null,
+    "power_restrictions": [],
+    "options": { "use_electrical_profiles": true }
+  },
+  {
+    "train_name": "Train 21",
+    "labels": ["Tag-21", "SS-WS"],
+    "rolling_stock_name": "electric_rolling_stock_test_e2e",
+    "start_time": "2024-07-26T19:05:00Z",
+    "path": [
+      { "id": "id14747", "deleted": false, "uic": 6, "secondary_code": "BV" },
+      { "id": "id16267", "deleted": false, "uic": 4, "secondary_code": "BV" },
+      { "id": "id14869", "deleted": false, "uic": 3, "secondary_code": "BV" },
+      { "id": "id14748", "deleted": false, "uic": 2, "secondary_code": "BV" }
+    ],
+    "schedule": [
+      {
+        "at": "id16267",
+        "arrival": "PT10554S",
+        "stop_for": "PT124S",
+        "reception_signal": "OPEN",
+        "locked": false
+      },
+      {
+        "at": "id14869",
+        "arrival": null,
+        "stop_for": "PT600S",
+        "reception_signal": "OPEN",
+        "locked": false
+      },
+      {
+        "at": "id14748",
+        "arrival": "PT13823S",
+        "stop_for": null,
+        "reception_signal": "OPEN",
+        "locked": false
+      }
+    ],
+    "margins": { "boundaries": ["id14748"], "values": ["4.5%", "0%"] },
+    "initial_speed": 27.77777777777778,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
     "speed_limit_tag": null,

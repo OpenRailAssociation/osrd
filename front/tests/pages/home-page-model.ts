@@ -1,34 +1,21 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { type BrowserContext, type Locator, type Page } from '@playwright/test';
 
-import home from '../../public/locales/fr/home/home.json';
+import CommonPage from './common-page-model';
 
-class HomePage {
-  // The current page object
-  readonly page: Page;
+class HomePage extends CommonPage {
+  readonly operationalStudiesLink: Locator;
 
-  // Locators for links
-  readonly getOperationalStudiesLink: Locator;
+  readonly cartoLink: Locator;
 
-  readonly getCartoLink: Locator;
+  readonly editorLink: Locator;
 
-  readonly getEditorLink: Locator;
+  readonly rollingStockEditorLink: Locator;
 
-  readonly getRollingStockEditorLink: Locator;
+  readonly STDCMLink: Locator;
 
-  readonly getSTDCMLink: Locator;
+  readonly linksTitle: Locator;
 
-  // Locator for all links
-  readonly getLinks: Locator;
-
-  // Locator for the "back to home" logo
-  readonly getBackHomeLogo: Locator;
-
-  // Locator for the body
-  readonly getBody: Locator;
-
-  readonly translation: typeof home;
-
-  readonly getViteOverlay: Locator;
+  readonly backHomeLogo: Locator;
 
   readonly dropDown: Locator;
 
@@ -37,30 +24,17 @@ class HomePage {
   readonly OSRDLanguage: Locator;
 
   constructor(page: Page) {
-    this.page = page;
-    // Initialize locators using roles and text content
-    this.getOperationalStudiesLink = page.getByRole('link', { name: /Études d'exploitation/ });
-    this.getSTDCMLink = page.getByRole('link', { name: /Sillons de dernière minute/ });
-    this.getEditorLink = page.getByRole('link', { name: /Éditeur d'infrastructure/ });
-    this.getRollingStockEditorLink = page.getByRole('link', {
-      name: /Éditeur de matériel roulant/,
-    });
-    this.getCartoLink = page.getByRole('link', { name: /Cartographie/ });
-    this.getLinks = page.locator('h5');
-    this.getBackHomeLogo = page.locator('.mastheader-logo');
-    this.getBody = page.locator('body');
-    this.translation = home;
-    this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
+    super(page);
+    this.operationalStudiesLink = page.locator('a[href="/operational-studies/projects"]');
+    this.STDCMLink = page.locator('a[href="/stdcm"]');
+    this.editorLink = page.locator('a[href="/editor"]');
+    this.rollingStockEditorLink = page.locator('a[href="/rolling-stock-editor"]');
+    this.cartoLink = page.locator('a[href="/map"]');
+    this.linksTitle = page.getByTestId('page-title');
+    this.backHomeLogo = page.getByTestId('osrd-logo');
     this.dropDown = page.getByTestId('dropdown-sncf');
     this.userSettings = page.getByTestId('user-settings-btn');
     this.OSRDLanguage = page.getByTestId('language-info');
-  }
-
-  // Completely remove VITE button & sign
-  async removeViteOverlay() {
-    if ((await this.getViteOverlay.count()) > 0) {
-      await this.getViteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
-    }
   }
 
   // Navigate to the Home page
@@ -71,43 +45,33 @@ class HomePage {
 
   // Click on the logo to navigate back to the home page
   async backToHomePage() {
-    await this.getBackHomeLogo.click();
+    await this.backHomeLogo.click();
   }
 
-  // Assert that the expected links are displayed on the page
-  async getDisplayLinks() {
-    expect(this.getLinks).toHaveText([
-      this.getTranslations('operationalStudies'),
-      this.getTranslations('stdcm'),
-      this.getTranslations('editor'),
-      this.getTranslations('rollingStockEditor'),
-      this.getTranslations('map'),
-    ]);
-  }
-
-  // Navigate to the different pages
   async goToOperationalStudiesPage() {
-    await this.getOperationalStudiesLink.click();
+    await this.operationalStudiesLink.click();
   }
 
   async goToCartoPage() {
-    await this.getCartoLink.click();
+    await this.cartoLink.click();
   }
 
   async goToEditorPage() {
-    await this.getEditorLink.click();
+    await this.editorLink.click();
   }
 
   async goToRollingStockEditorPage() {
-    await this.getRollingStockEditorLink.click();
+    await this.rollingStockEditorLink.click();
   }
 
-  async goToSTDCMPage() {
-    await this.getSTDCMLink.click();
-  }
+  async goToSTDCMPage(context: BrowserContext) {
+    // Start waiting for the new page to be created
+    const [stdcmPage] = await Promise.all([context.waitForEvent('page'), this.STDCMLink.click()]);
 
-  getTranslations(key: keyof typeof home) {
-    return this.translation[key];
+    // Ensure the new page is fully loaded before proceeding
+    await stdcmPage.waitForLoadState();
+
+    return stdcmPage;
   }
 
   // Get OSRD selected language

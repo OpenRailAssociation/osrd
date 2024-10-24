@@ -30,8 +30,8 @@ export default defineConfig({
   workers: process.env.CI ? '50%' : 1,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry up to 3 times on CI, and 1 time otherwise */
-  retries: process.env.CI ? 3 : 1,
+  /* Retry up to 2 times on CI, and 1 time otherwise */
+  retries: process.env.CI ? 2 : 1,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */

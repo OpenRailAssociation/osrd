@@ -1,63 +1,62 @@
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 import HomePage from './pages/home-page-model';
+import test from './test-logger';
+import enTranslations from '../public/locales/en/home/home.json';
+import frTranslations from '../public/locales/fr/home/home.json';
 
-// Describe the test suite for the home page of OSRD
 test.describe('Home page OSRD', () => {
   let homePage: HomePage;
-
-  test.beforeEach(async ({ page }) => {
-    // Create an instance of the HomePage class
+  let OSRDLanguage: string;
+  test.beforeEach('Navigate to the home page', async ({ page }) => {
     homePage = new HomePage(page);
-    // Go to the home page of OSRD
     await homePage.goToHomePage();
+    OSRDLanguage = await homePage.getOSRDLanguage();
   });
 
-  test.afterEach(async () => {
-    // Navigate back to the home page of OSRD
+  test.afterEach('Returns to the home page', async () => {
     await homePage.backToHomePage();
   });
 
-  // Test that the home page of OSRD displays links to other pages
-  test('should display links in the home page', async () => {
-    await homePage.getDisplayLinks();
+  /** *************** Test 1 **************** */
+  test('Verify the links for different pages in Home Page', async () => {
+    // Determine the correct translations based on the selected language
+    const translations = OSRDLanguage === 'English' ? enTranslations : frTranslations;
+
+    // List of expected links on the home page
+    const expectedLinks = [
+      translations.operationalStudies,
+      translations.stdcm,
+      translations.editor,
+      translations.rollingStockEditor,
+      translations.map,
+    ];
+
+    // Verify that the displayed links match the expected ones
+    await expect(homePage.linksTitle).toHaveText(expectedLinks);
   });
 
-  test('should be correctly redirected to the  "Operational Studies" page after clicking on the link', async () => {
-    // Navigate to the "Operational Studies" page
+  /** *************** Test 2 **************** */
+  test('Verify redirection to to the Operational Studies page', async () => {
     await homePage.goToOperationalStudiesPage();
-    // Check that the URL of the page matches the expected pattern
-    await expect(homePage.page).toHaveURL(/.*\/operational-studies/);
+    await expect(homePage.page).toHaveURL(/.*\/operational-studies/); // Check the URL
   });
 
-  test('should be correctly redirected to the  "Map" page after clicking on the link', async () => {
-    // Navigate to the "Map" page
+  /** *************** Test 3 **************** */
+  test('Verify redirection toto the Map page', async () => {
     await homePage.goToCartoPage();
-
-    // Check that the URL of the page matches the expected pattern
     await expect(homePage.page).toHaveURL(/.*\/map/);
   });
 
-  test('should be correctly redirected to the  "Editor" page after clicking on the link', async () => {
-    // Navigate to the "Editor" page
+  /** *************** Test 4 **************** */
+  test('Verify redirection to to the Infrastructure editor page', async () => {
     await homePage.goToEditorPage();
-
-    // Check that the URL of the page matches the expected pattern
     await expect(homePage.page).toHaveURL(/.*\/editor\/*/);
   });
 
-  test('should be correctly redirected to the  "STDCM" page after clicking on the link', async ({
-    context,
-  }) => {
-    // Start waiting for new page before clicking. Note no await.
-    const pagePromise = context.waitForEvent('page');
-
-    // Navigate to the "STDCM" page
-    await homePage.goToSTDCMPage();
-
-    const newPage = await pagePromise;
-
-    // Check that the URL of the page matches the expected pattern
-    await expect(newPage).toHaveURL(/.*\/stdcm/);
+  /** *************** Test 5 **************** */
+  test('Verify redirection to to the STDCM page', async ({ context }) => {
+    const stdcmPage = await homePage.goToSTDCMPage(context);
+    await expect(stdcmPage).toHaveURL(/.*\/stdcm/);
   });
 });
