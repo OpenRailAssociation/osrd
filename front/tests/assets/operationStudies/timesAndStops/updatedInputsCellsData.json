@@ -9,10 +9,10 @@
   },
   {
     "row": 3,
-    "values": ["Mid_East_station", "BV", "13:58:19", "13:58:40", "21", ""]
+    "values": ["Mid_East_station", "BV", "13:58:19", "21", "13:58:40", ""]
   },
   {
     "row": 4,
-    "values": ["North_East_station", "BV", "", "", "0", ""]
+    "values": ["North_East_station", "BV", "", "0", "", ""]
   }
 ]

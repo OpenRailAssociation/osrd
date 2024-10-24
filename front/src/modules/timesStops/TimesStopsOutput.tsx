@@ -57,7 +57,7 @@ const TimesStopsOutput = ({
         return cx({
           'warning-schedule': arrivalScheduleNotRespected,
           'warning-margin': negativeDiffMargins,
-          'cell-index': columnId === 'ch',
+          'secondary-code-column': columnId === 'ch',
         });
       }}
       headerRowHeight={50}
