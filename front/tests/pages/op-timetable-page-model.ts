@@ -67,7 +67,7 @@ class OperationalStudiesTimetablePage {
 
   // Function to wait for an element to be visible and then assert its visibility
   static async waitForElementVisibility(locator: Locator): Promise<void> {
-    await locator.waitFor({ state: 'visible' });
+    await locator.waitFor({ state: 'visible', timeout: 30 * 1000 });
     await expect(locator).toBeVisible();
   }
 
@@ -213,9 +213,9 @@ class OperationalStudiesTimetablePage {
   }
 
   async verifyTimeStopsDataSheetVisibility(timeout = 60 * 1000): Promise<void> {
-    await this.timeStopsDataSheet.scrollIntoViewIfNeeded();
     // Wait for the Times and Stops simulation dataSheet to be fully loaded with a specified timeout (default: 60 seconds)
     await expect(this.timeStopsDataSheet).toBeVisible({ timeout });
+    await this.timeStopsDataSheet.scrollIntoViewIfNeeded();
   }
 
   async clickOnEditTrain() {

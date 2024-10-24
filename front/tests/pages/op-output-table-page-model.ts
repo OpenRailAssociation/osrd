@@ -1,18 +1,17 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
+import OperationalStudiesTimetablePage from './op-timetable-page-model';
 import enTranslations from '../../public/locales/en/timesStops.json';
 import frTranslations from '../../public/locales/fr/timesStops.json';
 import { normalizeData, type StationData } from '../utils/dataNormalizer';
 
-class OperationalStudiesOutputTablePage {
-  readonly page: Page;
-
+class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage {
   readonly columnHeaders: Locator;
 
   readonly tableRows: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.columnHeaders = page.locator(
       '[class="dsg-cell dsg-cell-header"] .dsg-cell-header-container'
     );
@@ -21,7 +20,7 @@ class OperationalStudiesOutputTablePage {
 
   // Retrieve the cell value based on the locator type
   static async getCellValue(cell: Locator, isInput: boolean = true): Promise<string> {
-    await cell.waitFor({ state: 'visible' });
+    await cell.waitFor({ state: 'visible', timeout: 30 * 1000 });
     return isInput
       ? (await cell.locator('input').getAttribute('value'))?.trim() || ''
       : (await cell.textContent())?.trim() || '';
@@ -29,7 +28,7 @@ class OperationalStudiesOutputTablePage {
 
   // Extract the column index for each header name
   async getHeaderIndexMap(): Promise<Record<string, number>> {
-    await this.columnHeaders.first().waitFor({ state: 'visible' });
+    await this.columnHeaders.first().waitFor({ state: 'visible', timeout: 30 * 1000 });
     const headers = await this.columnHeaders.allTextContents();
     const headerMap: Record<string, number> = {};
     headers.forEach((header, index) => {
@@ -135,6 +134,13 @@ class OperationalStudiesOutputTablePage {
     const normalizedActualData = normalizeData(actualTableData);
     const normalizedExpectedData = normalizeData(expectedTableData);
     expect(normalizedActualData).toEqual(normalizedExpectedData);
+  }
+
+  // Wait for the Times and Stops simulation data sheet to be fully loaded with a specified timeout (default: 30 seconds)
+  async verifyTimeStopsDataSheetVisibility(timeout = 30 * 1000): Promise<void> {
+    await this.timeStopsDataSheet.waitFor({ state: 'attached', timeout });
+    await expect(this.timeStopsDataSheet).toBeVisible({ timeout });
+    await this.timeStopsDataSheet.scrollIntoViewIfNeeded();
   }
 }
 
