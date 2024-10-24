@@ -108,10 +108,10 @@ test.describe('Times and Stops Tab Verification', () => {
     const translations = selectedLanguage === 'English' ? enTranslations : frTranslations;
     const expectedColumnNames = cleanWhitespaceInArray([
       translations.name,
-      'Ch',
+      translations.ch,
       translations.arrivalTime,
-      translations.departureTime,
       translations.stopTime,
+      translations.departureTime,
       translations.receptionOnClosedSignal,
       translations.shortSlipDistance,
       translations.theoreticalMargin,

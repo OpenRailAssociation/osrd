@@ -48,7 +48,7 @@ const TimesStopsOutput = ({
     <TimesStops
       rows={enrichedOperationalPoints}
       tableType={TableType.Output}
-      cellClassName={({ rowData: rowData_ }) => {
+      cellClassName={({ rowData: rowData_, columnId }) => {
         const rowData = rowData_ as TimeStopsRow;
         const arrivalScheduleNotRespected = rowData.arrival?.time
           ? rowData.calculatedArrival !== rowData.arrival.time
@@ -57,9 +57,10 @@ const TimesStopsOutput = ({
         return cx({
           'warning-schedule': arrivalScheduleNotRespected,
           'warning-margin': negativeDiffMargins,
+          'secondary-code-column': columnId === 'ch',
         });
       }}
-      headerRowHeight={65}
+      headerRowHeight={50}
     />
   );
 };

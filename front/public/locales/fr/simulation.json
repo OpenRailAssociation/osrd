@@ -69,6 +69,7 @@
     "signalsStates": "États des signaux"
   },
   "timetable": "Table horaire",
+  "timetableOutput": "Table horaire de sortie",
   "toggleElectricalProfileLegend": "Basculer l'affichage de la légende des tractions électriques",
   "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",
   "toggleRewind": "Basculer le rembobinage de la simulation",

@@ -5,14 +5,14 @@
   },
   {
     "row": 2,
-    "values": ["Mid_West_station", "BV", "11:47:40", "11:52:40", "300", "1min/100km"]
+    "values": ["Mid_West_station", "BV", "11:47:40", "300", "11:52:40", "1min/100km"]
   },
   {
     "row": 3,
-    "values": ["Mid_East_station", "BV", "12:05:21", "12:07:25", "124", ""]
+    "values": ["Mid_East_station", "BV", "12:05:21", "124", "12:07:25", ""]
   },
   {
     "row": 4,
-    "values": ["North_East_station", "BV", "", "", "0", ""]
+    "values": ["North_East_station", "BV", "", "0", "", ""]
   }
 ]

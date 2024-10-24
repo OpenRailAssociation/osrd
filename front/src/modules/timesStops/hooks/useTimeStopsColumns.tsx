@@ -38,28 +38,29 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
       isOutputTable
         ? [
             {
-              ...disabledTextColumn('theoreticalMarginSeconds', t('theoreticalMarginSeconds'), {
-                alignRight: true,
-              }),
+              ...disabledTextColumn('theoreticalMarginSeconds', t('theoreticalMarginSeconds')),
+              headerClassName: 'padded-header',
               ...fixedWidth(110),
             },
             {
-              ...disabledTextColumn('calculatedMargin', t('realMargin'), {
-                alignRight: true,
-              }),
-              ...fixedWidth(120),
+              ...disabledTextColumn('calculatedMargin', t('realMargin')),
+              headerClassName: 'padded-header',
+              ...fixedWidth(90),
             },
             {
-              ...disabledTextColumn('diffMargins', t('diffMargins'), { alignRight: true }),
-              ...fixedWidth(120),
+              ...disabledTextColumn('diffMargins', t('diffMargins')),
+              headerClassName: 'padded-header',
+              ...fixedWidth(90),
             },
             {
               ...disabledTextColumn('calculatedArrival', t('calculatedArrivalTime')),
-              ...fixedWidth(95),
+              headerClassName: 'padded-header',
+              ...fixedWidth(105),
             },
             {
               ...disabledTextColumn('calculatedDeparture', t('calculatedDepartureTime')),
-              ...fixedWidth(97),
+              headerClassName: 'padded-header',
+              ...fixedWidth(105),
             },
           ]
         : []
@@ -69,28 +70,30 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
       {
         ...keyColumn('name', createTextColumn()),
         title: t('name'),
+        ...(isOutputTable && {
+          component: ({ rowData }) => (
+            <span title={rowData.name} className="ml-1 text-nowrap overflow-hidden">
+              {rowData.name}
+            </span>
+          ),
+        }),
         disabled: true,
-        minWidth: isOutputTable ? 180 : 300,
+        minWidth: isOutputTable ? undefined : 300,
+        maxWidth: isOutputTable ? 560 : undefined,
       },
       {
         ...keyColumn('ch', createTextColumn()),
-        title: 'Ch',
+        title: t('ch'),
         disabled: true,
-        maxWidth: 45,
+        ...fixedWidth(45),
       },
       {
         ...keyColumn('arrival', timeColumn(isOutputTable)),
-        alignRight: true,
         title: t('arrivalTime'),
+        headerClassName: 'padded-header',
+        ...fixedWidth(105),
 
         // We should not be able to edit the arrival time of the origin
-        disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
-      },
-      {
-        ...keyColumn('departure', timeColumn(isOutputTable)),
-        title: t('departureTime'),
-
-        // We should not be able to edit the departure time of the origin
         disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
       },
       {
@@ -98,27 +101,38 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
           'stopFor',
           createTextColumn({
             continuousUpdates: false,
-            alignRight: true,
           })
         ),
         title: t('stopTime'),
+        headerClassName: 'padded-header',
         disabled: isOutputTable,
-        maxWidth: isOutputTable ? 90 : undefined,
+        maxWidth: isOutputTable ? 100 : undefined,
         grow: 0.6,
+      },
+      {
+        ...keyColumn('departure', timeColumn(isOutputTable)),
+        title: t('departureTime'),
+        headerClassName: 'padded-header',
+        ...fixedWidth(105),
+
+        // We should not be able to edit the departure time of the origin
+        disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
       },
       {
         ...keyColumn('onStopSignal', checkboxColumn as Partial<Column<boolean | undefined>>),
         title: t('receptionOnClosedSignal'),
+        headerClassName: 'padded-header',
+        ...fixedWidth(97),
 
         // We should not be able to edit the reception on close signal if stopFor is not filled
         // except for the destination
-        ...fixedWidth(94),
         disabled: ({ rowData, rowIndex }) =>
           isOutputTable || (rowIndex !== allWaypoints.length - 1 && !rowData.stopFor),
       },
       {
         ...keyColumn('shortSlipDistance', checkboxColumn as Partial<Column<boolean | undefined>>),
         title: t('shortSlipDistance'),
+        headerClassName: 'padded-header',
         ...fixedWidth(94),
         disabled: ({ rowData, rowIndex }) =>
           isOutputTable || (rowIndex !== allWaypoints.length - 1 && !rowData.onStopSignal),
@@ -128,7 +142,6 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
           'theoreticalMargin',
           createTextColumn({
             continuousUpdates: false,
-            alignRight: true,
             placeholder: !isOutputTable ? t('theoreticalMarginPlaceholder') : '',
             formatBlurredInput: (value) => {
               if (!value || value === '0%') return '';
@@ -142,8 +155,10 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
         cellClassName: ({ rowData }) =>
           cx({ invalidCell: !isOutputTable && !rowData.isMarginValid }),
         title: t('theoreticalMargin'),
+        headerClassName: 'padded-header',
+        minWidth: 100,
+        maxWidth: 140,
         disabled: ({ rowIndex }) => isOutputTable || rowIndex === allWaypoints.length - 1,
-        ...fixedWidth(110),
       },
       ...extraOutputColumns,
     ] as Column<T>[];
