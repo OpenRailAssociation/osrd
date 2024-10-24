@@ -369,7 +369,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
         <div className="d-flex justify-content-end w-100 mt-3">
           {editionMode && (
             <button
-              data-testid="deleteScenario"
+              data-testid="delete-scenario"
               className="btn btn-sm btn-outline-danger mr-auto"
               type="button"
               onClick={removeScenario}
@@ -385,7 +385,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
           </button>
           {editionMode ? (
             <button
-              data-testid="updateScenario"
+              data-testid="update-scenario"
               className="btn btn-sm btn-warning"
               type="button"
               onClick={updateScenario}
@@ -397,7 +397,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
             </button>
           ) : (
             <button
-              data-testid="createScenario"
+              data-testid="create-scenario"
               className="btn btn-sm btn-primary"
               type="button"
               onClick={createScenario}
