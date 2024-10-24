@@ -56,6 +56,7 @@ pub struct RollingStock {
     pub locked: bool,
     pub effort_curves: EffortCurves,
     pub base_power_class: Option<String>,
+    /// In m
     pub length: f64,
     pub max_speed: f64,
     pub startup_time: f64,

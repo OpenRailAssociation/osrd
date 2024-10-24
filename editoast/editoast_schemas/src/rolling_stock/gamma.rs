@@ -12,7 +12,7 @@ editoast_common::schemas! {
 #[derivative(Hash)]
 pub struct Gamma {
     #[serde(rename = "type")]
-    gamma_type: String,
+    pub gamma_type: String,
     #[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))]
-    value: f64,
+    pub value: f64,
 }

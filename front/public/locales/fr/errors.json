@@ -186,6 +186,7 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "InvalidPathItems": "Point(s) de passage {{items}} invalide(s)",
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
+      "TowedRollingStockNotFound": "Le matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "study": {

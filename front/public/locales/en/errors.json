@@ -184,6 +184,7 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InvalidPathItems": "Invalid waypoint(s) {{items}}",
       "RollingStockNotFound": "Rolling stock '{{rolling_stock_id}}' does not exist",
+      "TowedRollingStockNotFound": "Towed rolling stock {towed_rolling_stock_id} does not exist",
       "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist"
     },
     "study": {

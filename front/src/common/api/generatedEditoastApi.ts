@@ -1545,6 +1545,7 @@ export type PostTimetableByIdStdcmApiArg = {
         Deprecated, first step data should be used instead */
     maximum_run_time?: number | null;
     rolling_stock_id: number;
+    towed_rolling_stock_id?: number | null;
     /** Train categories for speed limits */
     speed_limit_tags?: string | null;
     /** Deprecated, first step arrival time should be used instead */
@@ -2587,8 +2588,11 @@ export type RollingStockMetadata = {
   unit: string;
 };
 export type RollingResistance = {
+  /** kN */
   A: number;
+  /** kN/(km/h) */
   B: number;
+  /** kN/(km/h)² */
   C: number;
   type: string;
 };

@@ -2590,6 +2590,10 @@ paths:
                   format: double
                   description: Total mass of the consist in kg
                   nullable: true
+                towed_rolling_stock_id:
+                  type: integer
+                  format: int64
+                  nullable: true
                 work_schedule_group_id:
                   type: integer
                   format: int64
@@ -4261,6 +4265,7 @@ components:
       - $ref: '#/components/schemas/EditoastSTDCMErrorInvalidPathItems'
       - $ref: '#/components/schemas/EditoastSTDCMErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastSTDCMErrorTimetableNotFound'
+      - $ref: '#/components/schemas/EditoastSTDCMErrorTowedRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorTimetableNotFound'
@@ -5252,6 +5257,30 @@ components:
           type: string
           enum:
           - editoast:stdcm_v2:TimetableNotFound
+    EditoastSTDCMErrorTowedRollingStockNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - towed_rolling_stock_id
+          properties:
+            towed_rolling_stock_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_v2:TowedRollingStockNotFound
     EditoastScenarioErrorInfraNotFound:
       type: object
       required:
@@ -8252,12 +8281,15 @@ components:
         A:
           type: number
           format: double
+          description: kN
         B:
           type: number
           format: double
+          description: kN/(km/h)
         C:
           type: number
           format: double
+          description: kN/(km/h)²
         type:
           type: string
       additionalProperties: false
@@ -8812,6 +8844,10 @@ components:
           type: number
           format: double
           description: Total mass of the consist in kg
+          nullable: true
+        towed_rolling_stock_id:
+          type: integer
+          format: int64
           nullable: true
         work_schedule_group_id:
           type: integer

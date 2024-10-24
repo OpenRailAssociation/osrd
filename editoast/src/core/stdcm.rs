@@ -15,7 +15,7 @@ use super::conflict_detection::Conflict;
 use super::conflict_detection::TrainRequirements;
 use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
-use super::simulation::PhysicsRollingStock;
+use super::simulation::PhysicsConsist;
 use super::simulation::SimulationResponse;
 use crate::core::{AsCoreRequest, Json};
 use crate::views::path::pathfinding::PathfindingResult;
@@ -39,7 +39,7 @@ pub struct STDCMRequest {
     /// The comfort of the train
     pub comfort: Comfort,
     pub speed_limit_tag: Option<String>,
-    pub rolling_stock: PhysicsRollingStock,
+    pub rolling_stock: PhysicsConsist,
 
     // STDCM search parameters
     pub trains_requirements: HashMap<i64, TrainRequirements>,

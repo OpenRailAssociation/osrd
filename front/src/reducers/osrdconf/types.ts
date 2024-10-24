@@ -49,6 +49,7 @@ export interface OsrdStdcmConfState extends OsrdConfState {
   totalMass?: number;
   totalLength?: number;
   maxSpeed?: number;
+  towedRollingStockID?: number;
 }
 
 export type PathStep = PathItemLocation & {
