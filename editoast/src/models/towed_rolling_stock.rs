@@ -32,12 +32,14 @@ pub struct TowedRollingStockModel {
     pub gamma: Gamma,
 
     pub version: i64,
+    pub description: String,
 }
 
 impl From<TowedRollingStockModel> for TowedRollingStock {
     fn from(model: TowedRollingStockModel) -> Self {
         Self {
             name: model.name,
+            description: model.description,
             railjson_version: model.railjson_version,
             mass: model.mass,
             length: model.length,
@@ -54,6 +56,7 @@ impl From<TowedRollingStock> for Changeset<TowedRollingStockModel> {
     fn from(towed_rolling_stock: TowedRollingStock) -> Self {
         TowedRollingStockModel::changeset()
             .name(towed_rolling_stock.name)
+            .description(towed_rolling_stock.description)
             .railjson_version(towed_rolling_stock.railjson_version)
             .mass(towed_rolling_stock.mass)
             .length(towed_rolling_stock.length)

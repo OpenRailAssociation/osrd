@@ -233,6 +233,7 @@ class TowedRollingStock(BaseModel, extra="forbid"):
     """
 
     name: str = Field(max_length=255)
+    description: str = Field(max_length=255)
     railjson_version: RAILJSON_ROLLING_STOCK_VERSION_TYPE = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     locked: bool = Field(default=False, description="Whether the rolling stock can be edited/deleted or not")
     mass: NonNegativeFloat = Field(description="The mass of the train, in kg")

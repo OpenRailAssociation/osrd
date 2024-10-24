@@ -4,6 +4,7 @@ use super::RollingResistance;
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct TowedRollingStock {
     pub name: String,
+    pub description: String,
     pub railjson_version: String,
 
     pub mass: f64,
