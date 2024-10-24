@@ -72,14 +72,11 @@ class SimulationEndpoint(
                     request.path.pathItemPositions,
                 )
             return RsJson(RsWithBody(simulationResponseAdapter.toJson(res)))
-        } catch (error: OSRDError) {
-            if (!error.osrdErrorType.isCacheable) {
-                return ExceptionHandler.handle(error)
-            } else {
-                val response = SimulationFailed(error)
+        } catch (ex: Throwable) {
+            if (ex is OSRDError && ex.osrdErrorType.isCacheable) {
+                val response = SimulationFailed(ex)
                 return RsJson(RsWithBody(simulationResponseAdapter.toJson(response)))
             }
-        } catch (ex: Throwable) {
             return ExceptionHandler.handle(ex)
         }
     }
