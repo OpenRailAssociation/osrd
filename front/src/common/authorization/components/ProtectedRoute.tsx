@@ -1,9 +1,11 @@
 import { Navigate } from 'react-router-dom';
 
+import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+
 import useUserRoleCheck from '../hooks/useUserRoleCheck';
 
 type ProtectedRouteProps = {
-  allowedRoles: string[];
+  allowedRoles: BuiltinRole[];
   children: React.ReactNode;
 };
 
