@@ -79,11 +79,7 @@ target "editoast-test" {
   }
 }
 
-target "base-editoast" {
-  args = {
-    CARGO_FEATURES = "datadog"
-  }
-}
+target "base-editoast" {}
 target "editoast" {
   inherits = ["base", "base-editoast"]
   context = "editoast"
@@ -128,7 +124,7 @@ target "front-tests" {
   target = "tests"
   contexts = {
     test_data = "./tests/data"
-  } 
+  }
 }
 
 ###########
