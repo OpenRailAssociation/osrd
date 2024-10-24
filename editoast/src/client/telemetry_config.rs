@@ -22,7 +22,5 @@ pub struct TelemetryConfig {
 pub enum TelemetryKind {
     #[default]
     None,
-    #[cfg(feature = "datadog")]
-    Datadog,
     Opentelemetry,
 }

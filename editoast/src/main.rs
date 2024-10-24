@@ -99,21 +99,6 @@ fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) 
     // https://docs.rs/tracing-subscriber/latest/tracing_subscriber/layer/index.html#runtime-configuration-with-layers
     let telemetry_layer = match telemetry_config.telemetry_kind {
         client::TelemetryKind::None => None,
-        #[cfg(feature = "datadog")]
-        client::TelemetryKind::Datadog => {
-            let datadog_tracer = opentelemetry_datadog::new_pipeline()
-                .with_service_name(telemetry_config.service_name.as_str())
-                .with_agent_endpoint(telemetry_config.telemetry_endpoint.as_str())
-                .install_batch(opentelemetry_sdk::runtime::Tokio)
-                .expect("Failed to initialize datadog tracer");
-            let layer = tracing_opentelemetry::layer()
-                .with_tracer(datadog_tracer)
-                .boxed();
-            opentelemetry::global::set_text_map_propagator(
-                opentelemetry_datadog::DatadogPropagator::default(),
-            );
-            Some(layer)
-        }
         client::TelemetryKind::Opentelemetry => {
             let exporter = opentelemetry_otlp::new_exporter()
                 .tonic()
