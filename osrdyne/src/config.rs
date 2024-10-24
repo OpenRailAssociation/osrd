@@ -25,6 +25,7 @@ pub enum WorkerDriverConfig {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OsrdyneConfig {
     pub amqp_uri: String,
+    pub max_msg_size: i64,
     pub management_uri: String,
     pub pool_id: String,
     pub worker_driver: WorkerDriverConfig,
@@ -56,6 +57,7 @@ impl Default for OsrdyneConfig {
     fn default() -> Self {
         Self {
             amqp_uri: "amqp://osrd:password@osrd-rabbitmq:5672/%2f".into(),
+            max_msg_size: 1024 * 1024 * 128 * 5,
             management_uri: "http://osrd:password@osrd-rabbitmq:15672".into(),
             pool_id: "core".to_string(),
             worker_driver: WorkerDriverConfig::Noop,

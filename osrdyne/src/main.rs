@@ -131,6 +131,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 Box::new(DockerDriver::new(
                     opts,
                     config.amqp_uri.clone(),
+                    config.max_msg_size,
                     config.pool_id.clone(),
                 ))
             }
@@ -138,8 +139,13 @@ async fn main() -> Result<(), anyhow::Error> {
             WorkerDriverConfig::KubernetesDriver(opts) => {
                 info!("Using Kubernetes driver");
                 Box::new(
-                    KubernetesDriver::new(opts, config.amqp_uri.clone(), config.pool_id.clone())
-                        .await,
+                    KubernetesDriver::new(
+                        opts,
+                        config.amqp_uri.clone(),
+                        config.max_msg_size,
+                        config.pool_id.clone(),
+                    )
+                    .await,
                 )
             }
 

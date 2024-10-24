@@ -9,3 +9,4 @@ worker_driver:
     worker_id: /tmp/worker_id # WORKER_ID
     worker_key: /tmp/worker_key # WORKER_KEY
     amqp_uri: /tmp/worker_amqp_uri # WORKER_AMQP_URI
+    max_msg_size: /tmp/worker_max_msg_size # WORKER_MAX_MSG_SIZE

@@ -45,6 +45,7 @@ class WorkerCommand : CliCommand {
     val WORKER_ID_USE_HOSTNAME: Boolean
     val WORKER_KEY: String?
     val WORKER_AMQP_URI: String
+    val WORKER_MAX_MSG_SIZE: Int
     val WORKER_POOL: String
     val WORKER_REQUESTS_QUEUE: String
     val WORKER_ACTIVITY_EXCHANGE: String
@@ -56,6 +57,7 @@ class WorkerCommand : CliCommand {
         WORKER_KEY = if (ALL_INFRA) "all" else System.getenv("WORKER_KEY")
         WORKER_AMQP_URI =
             System.getenv("WORKER_AMQP_URI") ?: "amqp://osrd:password@127.0.0.1:5672/%2f"
+        WORKER_MAX_MSG_SIZE = getIntEnvvar("WORKER_MAX_MSG_SIZE") ?: 1024 * 1024 * 128 * 5
         WORKER_POOL = System.getenv("WORKER_POOL") ?: "core"
         WORKER_REQUESTS_QUEUE =
             System.getenv("WORKER_REQUESTS_QUEUE") ?: "$WORKER_POOL-req-$WORKER_KEY"
@@ -74,6 +76,10 @@ class WorkerCommand : CliCommand {
 
     private fun getBooleanEnvvar(name: String): Boolean {
         return System.getenv(name)?.lowercase() !in arrayOf(null, "", "0", "false")
+    }
+
+    private fun getIntEnvvar(name: String): Int? {
+        return System.getenv(name)?.toIntOrNull()
     }
 
     override fun run(): Int {
@@ -125,7 +131,7 @@ class WorkerCommand : CliCommand {
 
         val factory = ConnectionFactory()
         factory.setUri(WORKER_AMQP_URI)
-        factory.setMaxInboundMessageBodySize(1024 * 1024 * 128 * 5)
+        factory.setMaxInboundMessageBodySize(WORKER_MAX_MSG_SIZE)
         val connection = factory.newConnection()
         connection.createChannel().use { channel -> reportActivity(channel, "started") }
 

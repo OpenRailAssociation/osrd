@@ -41,6 +41,7 @@ pub struct DockerDriver {
     client: Docker,
     options: DockerDriverOptions,
     amqp_uri: String,
+    max_message_size: i64,
     worker_pool: String,
     version_identifier: String,
 }
@@ -60,6 +61,7 @@ impl DockerDriver {
     pub fn new(
         options: DockerDriverOptions,
         amqp_uri: String,
+        max_message_size: i64,
         worker_pool: String,
     ) -> DockerDriver {
         let version_identifier = std::env::var("OSRD_GIT_DESCRIBE")
@@ -71,6 +73,7 @@ impl DockerDriver {
             client: Docker::connect_with_socket_defaults().expect("Failed to connect to Docker"),
             options,
             amqp_uri,
+            max_message_size,
             worker_pool,
             version_identifier: hashed,
         }
@@ -120,6 +123,7 @@ impl WorkerDriver for DockerDriver {
                 env.push(format!("WORKER_ID={}", new_id));
                 env.push(format!("WORKER_KEY={}", worker_key));
                 env.push(format!("WORKER_AMQP_URI={}", self.amqp_uri));
+                env.push(format!("WORKER_MAX_MSG_SIZE={}", self.max_message_size));
                 env
             };
 

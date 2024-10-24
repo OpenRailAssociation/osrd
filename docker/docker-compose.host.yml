@@ -54,6 +54,7 @@ services:
       OSRDYNE__WORKER_DRIVER__DEFAULT_ENV: >
         [ "CORE_EDITOAST_URL=http://127.0.0.1:8090", "JAVA_TOOL_OPTIONS=-javaagent:/app/opentelemetry-javaagent.jar", "CORE_MONITOR_TYPE=opentelemetry", "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc", "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://127.0.0.1:4317", "OTEL_METRICS_EXPORTER=none", "OTEL_LOGS_EXPORTER=none" ]
       OSRDYNE__AMQP_URI: "amqp://osrd:password@127.0.0.1:5672/%2f"
+      OSRDYNE__MAX_MSG_SIZE: 671088640
       OSRDYNE__MANAGEMENT_URI: "http://osrd:password@127.0.0.1:15672/"
       OSRDYNE__OPENTELEMETRY__ENDPOINT: "http://localhost:4317"
 
