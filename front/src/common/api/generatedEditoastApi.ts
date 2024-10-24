@@ -2841,7 +2841,7 @@ export type MacroNodeResponse = {
   connection_time: number;
   full_name?: string | null;
   id: number;
-  labels: (string | null)[];
+  labels: Tags;
   path_item_key: string;
   position_x: number;
   position_y: number;
@@ -2853,7 +2853,7 @@ export type MacroNodeListResponse = PaginationStats & {
 export type MacroNodeForm = {
   connection_time: number;
   full_name?: string | null;
-  labels: (string | null)[];
+  labels: Tags;
   path_item_key: string;
   position_x: number;
   position_y: number;

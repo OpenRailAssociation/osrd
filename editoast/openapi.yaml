@@ -6966,10 +6966,7 @@ components:
           type: string
           nullable: true
         labels:
-          type: array
-          items:
-            type: string
-            nullable: true
+          $ref: '#/components/schemas/Tags'
         path_item_key:
           type: string
         position_x:
@@ -7012,10 +7009,7 @@ components:
           type: integer
           format: int64
         labels:
-          type: array
-          items:
-            type: string
-            nullable: true
+          $ref: '#/components/schemas/Tags'
         path_item_key:
           type: string
         position_x:

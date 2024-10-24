@@ -42,9 +42,15 @@ crate::routes! {
     "/macro_nodes/{node_id}" => {get, update, delete,},
 }
 
+editoast_common::schemas! {
+    MacroNodeForm,
+    MacroNodeResponse,
+    MacroNodeListResponse,
+}
+
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "macro_node")]
-pub enum MacroNodeError {
+enum MacroNodeError {
     #[error("Node '{node_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { node_id: i64 },
@@ -57,7 +63,7 @@ struct MacroNodeIdParam {
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
-pub struct MacroNodeForm {
+struct MacroNodeForm {
     position_x: f64,
     position_y: f64,
     full_name: Option<String>,
@@ -85,7 +91,7 @@ impl MacroNodeForm {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
-pub struct MacroNodeResponse {
+struct MacroNodeResponse {
     id: i64,
     position_x: f64,
     position_y: f64,
@@ -126,7 +132,7 @@ impl PartialEq<MacroNodeResponse> for MacroNode {
 
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-pub struct MacroNodeListResponse {
+struct MacroNodeListResponse {
     #[serde(flatten)]
     stats: PaginationStats,
     results: Vec<MacroNodeResponse>,

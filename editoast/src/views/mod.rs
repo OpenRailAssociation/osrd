@@ -104,15 +104,16 @@ editoast_common::schemas! {
     operation::schemas(),
     operational_studies::schemas(),
     pagination::schemas(),
+    path::schemas(),
     projects::schemas(),
     rolling_stock::schemas(),
+    scenario::schemas(),
+    scenario::macro_nodes::schemas(),
     search::schemas(),
     stdcm_search_environment::schemas(),
-    work_schedules::schemas(),
     train_schedule::schemas(),
     timetable::schemas(),
-    path::schemas(),
-    scenario::schemas(),
+    work_schedules::schemas(),
 }
 
 /// Represents the bundle of information about the issuer of a request

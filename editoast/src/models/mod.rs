@@ -43,6 +43,7 @@ editoast_common::schemas! {
     infra::schemas(),
     projects::schemas(),
     rolling_stock_model::schemas(),
+    tags::schemas(),
 }
 
 #[cfg(test)]
