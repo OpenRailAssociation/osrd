@@ -91,7 +91,7 @@ axum-extra = { version = "0.9.4", default-features = false, features = [
   "typed-header",
 ] }
 axum-test = { version = "15.3.1", default-features = false }
-axum-tracing-opentelemetry = { version = "0.19.0", default-features = false }
+axum-tracing-opentelemetry = { version = "0.21.1", default-features = false }
 chrono.workspace = true
 clap = { version = "4.5.20", features = ["derive", "env"] }
 colored = "2.1.0"
@@ -135,10 +135,10 @@ json-patch = { version = "3.0.1", default-features = false, features = [
 lapin = "2.5.0"
 mime = "0.3.17"
 mvt.workspace = true
-opentelemetry = { version = "0.23.0", default-features = false, features = [
+opentelemetry = { version = "0.25.0", default-features = false, features = [
   "trace",
 ] }
-opentelemetry-otlp = { version = "0.16.0", default-features = false, features = [
+opentelemetry-otlp = { version = "0.26.0", default-features = false, features = [
   "grpc-tonic",
   "trace",
 ] }
@@ -177,7 +177,7 @@ tower-http = { version = "0.6.1", features = [
   "trace",
 ] }
 tracing.workspace = true
-tracing-opentelemetry = { version = "0.24.0", default-features = false, features = [
+tracing-opentelemetry = { version = "0.26.0", default-features = false, features = [
   "tracing-log",
 ] }
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
