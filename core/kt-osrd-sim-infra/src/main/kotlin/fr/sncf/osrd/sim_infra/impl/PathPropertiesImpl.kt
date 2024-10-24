@@ -312,22 +312,22 @@ fun buildChunkPath(
     pathEndOffset: Offset<Path>
 ): ChunkPath {
     val filteredChunks = mutableDirStaticIdxArrayListOf<TrackChunk>()
-    var totalBlocksLength = Offset<Path>(0.meters)
+    var totalChunksLength = Offset<Path>(0.meters)
     var mutBeginOffset = pathBeginOffset
     var mutEndOffset = pathEndOffset
     for (dirChunkId in chunks) {
-        if (totalBlocksLength > pathEndOffset) break
+        if (totalChunksLength >= pathEndOffset) break
         val length = infra.getTrackChunkLength(dirChunkId.value)
-        val blockEndOffset = totalBlocksLength + length.distance
+        val chunkEndOffset = totalChunksLength + length.distance
 
-        // if the block ends before the path starts, it can be safely skipped
-        if (pathBeginOffset > blockEndOffset) {
+        // If the chunk ends before the path starts, it can be safely skipped
+        if (pathBeginOffset >= chunkEndOffset) {
             mutBeginOffset -= length.distance
             mutEndOffset -= length.distance
         } else {
             filteredChunks.add(dirChunkId)
         }
-        totalBlocksLength += length.distance
+        totalChunksLength += length.distance
     }
     return ChunkPath(filteredChunks, mutBeginOffset, mutEndOffset)
 }
