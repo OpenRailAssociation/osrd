@@ -284,7 +284,7 @@ impl KubernetesDriver {
                     metadata: {
                         let mut metadata = HashMap::new();
                         metadata.insert("host".to_string(), keda.amqp_host.clone());
-                        metadata.insert("protocol".to_string(), "amqp".to_string());
+                        metadata.insert("protocol".to_string(), "auto".to_string());
                         metadata.insert("mode".to_string(), keda.mode.clone());
                         metadata.insert("value".to_string(), keda.value.clone());
                         metadata
