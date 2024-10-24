@@ -696,6 +696,8 @@ diesel::table! {
         rolling_resistance -> Jsonb,
         gamma -> Jsonb,
         version -> Int8,
+        #[max_length = 255]
+        description -> Varchar,
     }
 }
 

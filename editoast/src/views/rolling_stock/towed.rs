@@ -50,6 +50,7 @@ editoast_common::schemas! {
 struct TowedRollingStock {
     id: i64,
     name: String,
+    description: String,
     railjson_version: String,
     locked: bool,
 
@@ -66,6 +67,7 @@ impl From<TowedRollingStockModel> for TowedRollingStock {
     fn from(towed_rolling_stock: TowedRollingStockModel) -> Self {
         Self {
             id: towed_rolling_stock.id,
+            description: towed_rolling_stock.description,
             name: towed_rolling_stock.name,
             railjson_version: towed_rolling_stock.railjson_version,
             locked: towed_rolling_stock.locked,
@@ -94,6 +96,7 @@ pub enum TowedRollingStockError {
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct TowedRollingStockForm {
     pub name: String,
+    pub description: String,
     pub locked: bool,
 
     pub mass: f64,
@@ -110,6 +113,7 @@ impl From<TowedRollingStockForm> for Changeset<TowedRollingStockModel> {
         TowedRollingStockModel::changeset()
             .railjson_version(ROLLING_STOCK_RAILJSON_VERSION.to_string())
             .name(towed_rolling_stock_form.name)
+            .description(towed_rolling_stock_form.description)
             .locked(towed_rolling_stock_form.locked)
             .mass(towed_rolling_stock_form.mass)
             .length(towed_rolling_stock_form.length)
@@ -363,6 +367,7 @@ mod tests {
     fn create_towed_rolling_stock(app: &TestApp, name: &str, locked: bool) -> TowedRollingStock {
         let towed_rolling_stock_json = json!({
             "name": name,
+            "description": name,
             "locked": locked,
             "mass": 42000,
             "length": 16500,
