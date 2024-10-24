@@ -9,7 +9,6 @@ use figment::{
 };
 use log::info;
 use opentelemetry::global;
-use opentelemetry_datadog::DatadogPropagator;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
     propagation::TraceContextPropagator, runtime::TokioCurrentThread, trace::TracerProvider,
@@ -33,11 +32,6 @@ pub enum TracingTelemetry {
     None,
     Otlp {
         endpoint: String,
-        service_name: Option<String>,
-    },
-    Datadog {
-        #[serde(flatten)]
-        endpoint: Endpoint,
         service_name: Option<String>,
     },
 }
@@ -73,51 +67,19 @@ impl TracingTelemetry {
         global::set_tracer_provider(provider);
     }
 
-    fn enable_datadog(&self, endpoint: &String, service_name: String) {
-        let exporter = opentelemetry_datadog::new_pipeline()
-            .with_service_name(service_name)
-            .with_agent_endpoint(endpoint)
-            .build_exporter()
-            .expect("Failed to initialize datadog exporter");
-
-        let provider = TracerProvider::builder()
-            .with_batch_exporter(exporter, TokioCurrentThread)
-            .build();
-
-        global::set_text_map_propagator(DatadogPropagator::default());
-        global::set_tracer_provider(provider);
-    }
-
     pub fn enable_providers(&self) {
         let service_name = match self {
             TracingTelemetry::None => {
                 info!("Tracing disabled");
                 return;
             }
-            TracingTelemetry::Otlp { service_name, .. }
-            | TracingTelemetry::Datadog { service_name, .. } => {
+            TracingTelemetry::Otlp { service_name, .. } => {
                 service_name.clone().unwrap_or("osrd-gateway".to_string())
             }
         };
 
-        match self {
-            TracingTelemetry::Otlp { endpoint, .. } => {
-                self.enable_otlp(endpoint, service_name);
-            }
-            TracingTelemetry::Datadog { endpoint, .. } => {
-                let used_endpoint = match endpoint {
-                    Endpoint::Kube { kube_node_ip_env } => format!(
-                        "http://{}:8126",
-                        std::env::var(kube_node_ip_env).unwrap_or_else(|_| panic!(
-                            "Missing environment variable {}",
-                            kube_node_ip_env
-                        ))
-                    ),
-                    Endpoint::Direct { endpoint } => endpoint.clone(),
-                };
-                self.enable_datadog(&used_endpoint, service_name);
-            }
-            _ => {}
+        if let TracingTelemetry::Otlp { endpoint, .. } = self {
+            self.enable_otlp(endpoint, service_name);
         }
     }
 }

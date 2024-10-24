@@ -31,7 +31,6 @@ figment = "0.10.19"
 humantime = "2"
 humantime-serde = "1"
 opentelemetry = "0.23.0"
-opentelemetry-datadog = { version = "0.11.0", features = ["reqwest-client"] }
 opentelemetry-otlp = "0.16.0"
 opentelemetry_sdk = { version = "0.23.0", features = [
   "metrics",
@@ -84,6 +83,5 @@ actix_proxy = { path = "./actix_proxy" }
 # tracing / metrics
 actix-web-opentelemetry.workspace = true
 opentelemetry.workspace = true
-opentelemetry-datadog.workspace = true
 opentelemetry-otlp.workspace = true
 opentelemetry_sdk.workspace = true
