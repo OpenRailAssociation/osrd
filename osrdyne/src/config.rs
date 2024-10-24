@@ -22,7 +22,7 @@ pub enum WorkerDriverConfig {
     ProcessComposeDriver(PCDriverOptions),
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct OsrdyneConfig {
     pub amqp_uri: String,
     pub management_uri: String,
@@ -49,6 +49,26 @@ impl Default for OpentelemetryConfig {
             service_name: None,
             endpoint: "http://jaeger:4317".parse().unwrap(),
         }
+    }
+}
+
+impl std::fmt::Debug for OsrdyneConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut url = url::Url::parse(&self.amqp_uri).map_err(|_| std::fmt::Error)?;
+        let _ = url.set_password(Some("*****"));
+        f.debug_struct("OsrdyneConfig")
+            .field("amqp_uri", &format!("{url}"))
+            .field("management_port", &self.management_port)
+            .field("management_host", &self.management_host)
+            .field("pool_id", &self.pool_id)
+            .field("worker_driver", &self.worker_driver)
+            .field("worker_loop_interval", &self.worker_loop_interval)
+            .field("default_message_ttl", &self.default_message_ttl)
+            .field("max_length", &self.max_length)
+            .field("max_length_bytes", &self.max_length_bytes)
+            .field("api_address", &self.api_address)
+            .field("extra_lifetime", &self.extra_lifetime)
+            .finish()
     }
 }
 
