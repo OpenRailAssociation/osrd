@@ -166,6 +166,7 @@ const ScenarioContent = ({
 
           <div className={collapsedTimetable ? 'col-12' : 'col-hdp-9 col-xl-8 col-lg-7 col-md-6'}>
             {!isInfraLoaded &&
+              !isMacro &&
               displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
               displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
                 <ScenarioLoaderMessage infraState={infra?.state} />
