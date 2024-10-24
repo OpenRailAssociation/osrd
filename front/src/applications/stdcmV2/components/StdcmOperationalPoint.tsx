@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -30,13 +30,13 @@ const StdcmOperationalPoint = ({
   disabled,
 }: StdcmOperationalPointProps) => {
   const { t } = useTranslation('stdcm');
+  const [suggestionsVisible, setSuggestionsVisible] = useState(false);
 
   const { searchTerm, chCodeFilter, sortedSearchResults, setSearchTerm, setChCodeFilter } =
     useSearchOperationalPoint({ initialSearchTerm: point?.name, initialChCodeFilter: point?.ch });
 
   const operationalPointsSuggestions = useMemo(
     () =>
-      // Temporary filter added to show a more restrictive list of suggestions inside the stdcm app.
       sortedSearchResults
         .filter(
           (op) =>
@@ -120,7 +120,13 @@ const StdcmOperationalPoint = ({
     setSearchTerm(e.target.value);
     if (e.target.value.trim().length === 0) {
       dispatchNewPoint(undefined);
+    } else {
+      setSuggestionsVisible(true);
     }
+  };
+
+  const handleBlur = () => {
+    setSuggestionsVisible(false);
   };
 
   useEffect(() => {
@@ -141,8 +147,9 @@ const StdcmOperationalPoint = ({
           label={t('trainPath.ci')}
           value={searchTerm}
           onChange={onInputChange}
+          onBlur={handleBlur}
           autoComplete="off"
-          suggestions={operationalPointsSuggestions}
+          suggestions={suggestionsVisible ? operationalPointsSuggestions : []}
           disabled={disabled}
           getSuggestionLabel={(option: Option) => option?.label}
           onSelectSuggestion={onSelectSuggestion}
