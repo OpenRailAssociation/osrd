@@ -17,8 +17,23 @@ import fr.sncf.osrd.utils.units.meters
  * offset on the first chunk, and endOffset on the last chunk. *
  */
 data class ChunkPath(
+    /**
+     * Ordered list of chunks on the path. Chunks that are fully outside the path are trimmed. Note:
+     * when the path starts or ends precisely at the border between two chunks, the extra bordering
+     * chunks are included. But code that uses this class should ideally work with either version.
+     */
     val chunks: DirStaticIdxList<TrackChunk>,
+
+    /**
+     * Offset of the head of the train when it starts its path, compared to the start of the first
+     * element in `chunks`.
+     */
     val beginOffset: Offset<Path>,
+
+    /**
+     * Offset of the head of the train when it ends its path, compared to the start of the first
+     * element in `chunks`.
+     */
     val endOffset: Offset<Path>
 ) {
     val length: Distance = endOffset.distance - beginOffset.distance
@@ -312,22 +327,22 @@ fun buildChunkPath(
     pathEndOffset: Offset<Path>
 ): ChunkPath {
     val filteredChunks = mutableDirStaticIdxArrayListOf<TrackChunk>()
-    var totalBlocksLength = Offset<Path>(0.meters)
+    var totalChunksLength = Offset<Path>(0.meters)
     var mutBeginOffset = pathBeginOffset
     var mutEndOffset = pathEndOffset
     for (dirChunkId in chunks) {
-        if (totalBlocksLength > pathEndOffset) break
+        if (totalChunksLength > pathEndOffset) break
         val length = infra.getTrackChunkLength(dirChunkId.value)
-        val blockEndOffset = totalBlocksLength + length.distance
+        val chunkEndOffset = totalChunksLength + length.distance
 
-        // if the block ends before the path starts, it can be safely skipped
-        if (pathBeginOffset > blockEndOffset) {
+        // if the chunk ends before the path starts, it can be safely skipped
+        if (pathBeginOffset > chunkEndOffset) {
             mutBeginOffset -= length.distance
             mutEndOffset -= length.distance
         } else {
             filteredChunks.add(dirChunkId)
         }
-        totalBlocksLength += length.distance
+        totalChunksLength += length.distance
     }
     return ChunkPath(filteredChunks, mutBeginOffset, mutEndOffset)
 }
