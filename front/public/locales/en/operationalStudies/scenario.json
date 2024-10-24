@@ -88,8 +88,11 @@
     "validityFilter": "Trains validity"
   },
   "toggleTimetable": "Toggle the timetable",
-  "trainCount_other": "{{ count }} out of {{ totalCount }} trains selected",
-  "trainCount_zero": "{{ totalCount }} trains",
+  "trainCount_one": "1 out of $t(train, { 'count': {{totalCount}} }) selected",
+  "trainCount_other": "{{count}} out of $t(train, { 'count': {{totalCount}} }) selected",
+  "trainCount_zero": "$t(train, { 'count': {{totalCount}} })",
+  "train_one": "{{count}} train",
+  "train_other": "{{count}} trains",
   "conflictsCount_one": "1 conflict",
   "conflictsCount_other": "{{count}} conflicts",
   "conflictsCount_zero": "No conflict",
