@@ -130,7 +130,7 @@ fun getRoutePathStartOffset(
     var firstChunk = chunkPath.chunks[0]
     var firstChunkLength = infra.getTrackChunkLength(firstChunk.value)
     if (firstChunkLength == chunkPath.beginOffset && chunkPath.chunks.size > 1) {
-        // If the path start precisely at the end of the first chunk, it may not be present in the
+        // If the path starts precisely at the end of the first chunk, it may not be present in the
         // route path. We can look for the next chunk instead.
         firstChunk = chunkPath.chunks[1]
         prevChunksLength += firstChunkLength.distance
