@@ -80,17 +80,17 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
       {
         ...keyColumn('name', createTextColumn()),
         title: t('name'),
-        component: isOutputTable
-          ? ({ rowData }) => (
-              <span
-                title={rowData.name}
-                className="ml-1 whitespace-nowrap overflow-hidden"
-                style={{ whiteSpace: 'nowrap' }}
-              >
-                {rowData.name}
-              </span>
-            )
-          : undefined,
+        ...(isOutputTable && {
+          component: ({ rowData }) => (
+            <span
+              title={rowData.name}
+              className="ml-1 whitespace-nowrap overflow-hidden"
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              {rowData.name}
+            </span>
+          ),
+        }),
         disabled: true,
         minWidth: isOutputTable ? undefined : 300,
         maxWidth: isOutputTable ? 560 : undefined,
