@@ -29,7 +29,7 @@ def test_conflicts(
     expected_conflict_types: set[str],
 ):
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
-    train_schedule_payload = [
+    stopping_train_schedule_payload = [
         {
             "comfort": "STANDARD",
             "constraint_distribution": "STANDARD",
@@ -57,7 +57,10 @@ def test_conflicts(
             "train_name": "with_stop",
         }
     ]
-    requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
+    stopping_train_schedule_response = requests.post(
+        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=stopping_train_schedule_payload
+    )
+
     train_schedule_payload = [
         {
             "comfort": "STANDARD",
@@ -85,10 +88,44 @@ def test_conflicts(
         }
     ]
     requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
-    response = requests.get(f"{EDITOAST_URL}/timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}")
-    assert response.status_code == 200
-    actual_conflicts = {conflict["conflict_type"] for conflict in response.json()}
+
+    conflicts_response = requests.get(f"{EDITOAST_URL}/timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}")
+    assert conflicts_response.status_code == 200
+    actual_conflicts = {conflict["conflict_type"] for conflict in conflicts_response.json()}
     assert actual_conflicts == expected_conflict_types
+
+    # Check GET reservation block starts at the right time for the signal protecting switch.
+    # Train is received on closed (STOP/SHORT_SLIP_STOP) or OPEN signal.
+    # The free-block requirement must start at the same time as the spacing requirement of the switch's zone
+    # (signal sight for OPEN reception, or 20s before restart for STOP/SHORT_SLIP_STOP reception).
+    train_id = stopping_train_schedule_response.json()[0]["id"]
+    simu_response = requests.get(
+        f"{EDITOAST_URL}/train_schedule/{train_id}/simulation/?infra_id={small_infra.id}"
+    ).json()
+    switch_zone_spacing_requirement = [
+        r
+        for r in simu_response["final_output"]["spacing_requirements"]
+        if r["zone"] == "zone.[DC4:INCREASING, DC5:INCREASING, DD0:DECREASING]"
+    ]
+    assert len(switch_zone_spacing_requirement) == 1
+    path_response = requests.get(f"{EDITOAST_URL}/train_schedule/{train_id}/path/?infra_id={small_infra.id}").json()
+    project_path_payload = {
+        "ids": [train_id],
+        "infra_id": small_infra.id,
+        "path": {
+            "blocks": path_response["blocks"],
+            "routes": path_response["routes"],
+            "track_section_ranges": path_response["track_section_ranges"],
+        },
+    }
+    response_project_path = requests.post(f"{EDITOAST_URL}/train_schedule/project_path", json=project_path_payload)
+    switch_signal_free_block_update = [
+        u
+        for u in response_project_path.json()[str(train_id)]["signal_updates"]
+        if (u["signal_id"] == "SC4" and u["aspect_label"] == "VL")
+    ]
+    assert len(switch_signal_free_block_update) == 1
+    assert switch_signal_free_block_update[0]["time_start"] == switch_zone_spacing_requirement[0]["begin_time"]
 
 
 def test_scheduled_points_with_incompatible_margins(
