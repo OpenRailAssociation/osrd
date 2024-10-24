@@ -19,6 +19,7 @@ processes:
         export WORKER_ID=$(cat /tmp/worker_id);
         export WORKER_KEY=$(cat /tmp/worker_key);
         export WORKER_AMQP_URI="$(cat /tmp/worker_amqp_uri);"
+        export WORKER_MAX_MSG_SIZE="$(cat /tmp/worker_max_msg_size);"
         java $$JAVA_OPTS -ea -jar build/libs/osrd-all.jar worker
       )
     working_dir: "$OSRD_PATH/core"

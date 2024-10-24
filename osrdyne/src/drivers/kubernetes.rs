@@ -138,6 +138,7 @@ pub struct KubernetesDriver {
     pool_id: String,
     options: KubernetesDriverOptions,
     amqp_uri: String,
+    max_message_size: i64,
     version_identifier: String,
 }
 
@@ -145,6 +146,7 @@ impl KubernetesDriver {
     pub async fn new(
         options: KubernetesDriverOptions,
         amqp_uri: String,
+        max_message_size: i64,
         pool_id: String,
     ) -> KubernetesDriver {
         let version_identifier = std::env::var("OSRD_GIT_DESCRIBE")
@@ -158,6 +160,7 @@ impl KubernetesDriver {
                 .expect("Failed to connect to Kubernetes"),
             options,
             amqp_uri,
+            max_message_size,
             pool_id,
             version_identifier: hashed,
         }
@@ -391,6 +394,11 @@ impl WorkerDriver for KubernetesDriver {
                 env.push(EnvVar {
                     name: "WORKER_AMQP_URI".to_string(),
                     value: Some(self.amqp_uri.clone()),
+                    ..Default::default()
+                });
+                env.push(EnvVar {
+                    name: "WORKER_MAX_MSG_SIZE".to_string(),
+                    value: Some(self.max_message_size.to_string()),
                     ..Default::default()
                 });
                 env.push(EnvVar {
