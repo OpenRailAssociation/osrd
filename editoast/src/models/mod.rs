@@ -20,6 +20,7 @@ pub mod rolling_stock_model;
 pub mod scenario;
 pub mod stdcm_search_environment;
 pub mod study;
+pub mod tags;
 pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod towed_rolling_stock;
@@ -32,11 +33,11 @@ pub use documents::Document;
 pub use infra::Infra;
 pub use infra_objects::*;
 pub use projects::Project;
-pub use projects::Tags;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use rolling_stock_model::RollingStockModel;
 pub use scenario::Scenario;
 pub use study::Study;
+pub use tags::Tags;
 
 editoast_common::schemas! {
     infra::schemas(),

@@ -22,13 +22,13 @@ use super::pagination::PaginationStats;
 use super::study;
 use super::AuthenticationExt;
 use crate::error::Result;
-use crate::models::projects::Tags;
 use crate::models::Changeset;
 use crate::models::Create;
 use crate::models::Document;
 use crate::models::Model;
 use crate::models::Project;
 use crate::models::Retrieve;
+use crate::models::Tags;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::AuthorizationError;
 

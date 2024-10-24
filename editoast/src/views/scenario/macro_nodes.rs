@@ -24,6 +24,7 @@ use crate::models::prelude::*;
 use crate::models::Project;
 use crate::models::Scenario;
 use crate::models::Study;
+use crate::models::Tags;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
@@ -61,7 +62,7 @@ pub struct MacroNodeForm {
     position_y: f64,
     full_name: Option<String>,
     connection_time: i64,
-    labels: Vec<Option<String>>,
+    labels: Tags,
     trigram: Option<String>,
     path_item_key: String,
 }
@@ -90,7 +91,7 @@ pub struct MacroNodeResponse {
     position_y: f64,
     full_name: Option<String>,
     connection_time: i64,
-    labels: Vec<Option<String>>,
+    labels: Tags,
     trigram: Option<String>,
     path_item_key: String,
 }
@@ -499,11 +500,12 @@ pub mod test {
         .await
         .expect("Failed to retrieve node");
 
+        let node_labels = node.labels.to_vec();
         assert_eq!(Some("My super node".to_string()), node.full_name);
         assert_eq!(4.0, node.position_x,);
         assert_eq!(1.0, node.position_y);
-        assert_eq!(Some("A".to_string()), node.labels[0]);
-        assert_eq!(Some("B".to_string()), node.labels[1]);
+        assert_eq!("A".to_string(), node_labels[0]);
+        assert_eq!("B".to_string(), node_labels[1]);
         assert_eq!(13, node.connection_time);
         assert_eq!("A->B".to_string(), node.path_item_key);
         assert_eq!(None, node.trigram);
@@ -522,7 +524,7 @@ pub mod test {
         let response: MacroNodeResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        assert_eq!(fixtures.nodes[0], response);
+        assert!(fixtures.nodes[0] == response);
     }
 
     #[rstest]
@@ -607,7 +609,7 @@ pub mod test {
                 .position_y(rng.gen_range(0.0..100.0))
                 .full_name(Some(random_string(10)))
                 .connection_time(rng.gen::<i64>())
-                .labels(vec![Some(random_string(5)), Some(random_string(5))])
+                .labels(Tags::new(vec![random_string(5), random_string(5)]))
                 .trigram(Some(random_string(3)))
                 .path_item_key(random_string(10))
                 .create(conn)

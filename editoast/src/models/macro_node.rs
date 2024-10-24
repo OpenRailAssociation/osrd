@@ -3,6 +3,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::models::Tags;
+
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = editoast_models::tables::macro_node)]
 #[model(gen(ops = crud, list))]
@@ -13,7 +15,8 @@ pub struct MacroNode {
     pub position_y: f64,
     pub full_name: Option<String>,
     pub connection_time: i64,
-    pub labels: Vec<Option<String>>,
+    #[model(remote = "Vec<Option<String>>")]
+    pub labels: Tags,
     pub trigram: Option<String>,
     pub path_item_key: String,
 }
@@ -41,7 +44,7 @@ pub mod test {
             .position_y(32.0)
             .full_name(Some("My Super Node".to_string()))
             .connection_time(51)
-            .labels(vec![Some("A".to_string()), Some("B".to_string())])
+            .labels(Tags::new(vec!["A".to_string(), "B".to_string()]))
             .trigram(Some("ABC".to_string()))
             .path_item_key("PATH".to_string())
             .create(&mut db_pool.get_ok())

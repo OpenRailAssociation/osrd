@@ -10,8 +10,8 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models::prelude::*;
-use crate::models::projects::Tags;
 use crate::models::Scenario;
+use crate::models::Tags;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = editoast_models::tables::study)]

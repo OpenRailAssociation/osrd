@@ -9,13 +9,13 @@ use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::Document;
 use crate::models::Study;
+use crate::models::Tags;
 use crate::views::projects::ProjectError;
 use crate::SelectionSettings;
 use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     Project,
-    Tags,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
@@ -34,27 +34,6 @@ pub struct Project {
     pub tags: Tags,
     #[model(column = editoast_models::tables::project::image_id)]
     pub image: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default, ToSchema, PartialEq)]
-pub struct Tags(Vec<String>);
-
-impl Tags {
-    pub fn new(value: Vec<String>) -> Self {
-        Self(value)
-    }
-}
-
-impl From<Vec<Option<String>>> for Tags {
-    fn from(value: Vec<Option<String>>) -> Self {
-        Self(value.into_iter().flatten().collect())
-    }
-}
-
-impl From<Tags> for Vec<Option<String>> {
-    fn from(value: Tags) -> Self {
-        value.0.into_iter().map(Some).collect()
-    }
 }
 
 impl Project {
