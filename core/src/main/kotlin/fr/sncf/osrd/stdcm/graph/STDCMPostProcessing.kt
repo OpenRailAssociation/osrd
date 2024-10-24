@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.graph
 
-import datadog.trace.api.Trace
 import fr.sncf.osrd.api.pathfinding.makeOperationalPoints
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
@@ -43,7 +42,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
      * method of this class, the rest is implementation detail.
      */
     @WithSpan(value = "STDCM post processing", kind = SpanKind.SERVER)
-    @Trace(operationName = "STDCM post processing")
     fun makeResult(
         infra: RawSignalingInfra,
         path: Result,

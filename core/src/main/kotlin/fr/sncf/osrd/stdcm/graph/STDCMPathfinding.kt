@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.graph
 
-import datadog.trace.api.Trace
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.api.pathfinding.constraints.initConstraints
@@ -106,7 +105,6 @@ class STDCMPathfinding(
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
-    @Trace(operationName = "STDCM pathfinding")
     fun findPath(): STDCMResult? {
         runInputSanityChecks()
 
