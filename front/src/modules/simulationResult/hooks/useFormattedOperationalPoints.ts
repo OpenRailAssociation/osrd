@@ -2,14 +2,13 @@
 import { useEffect, useState } from 'react';
 
 import type {
+  OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 
-import { BaseOrEco, type BaseOrEcoType } from './components/DriverTrainSchedule/consts';
-import type { OperationalPointWithTimeAndSpeed } from './components/DriverTrainSchedule/types';
-import { formatOperationalPoints, isEco } from './components/DriverTrainSchedule/utils';
+import { formatOperationalPoints } from '../SimulationResultExport/utils';
 
 /**
  * add time, speed, position, duration to operational points
@@ -20,14 +19,8 @@ export const useFormattedOperationalPoints = (
   pathProperties?: PathPropertiesFormatted,
   infraId?: number
 ) => {
-  const [operationalPoints, setOperationalPoints] = useState<{
-    base: OperationalPointWithTimeAndSpeed[];
-    finalOutput: OperationalPointWithTimeAndSpeed[];
-  }>();
+  const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>();
   const [loading, setLoading] = useState(false);
-  const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(
-    train && isEco(train) ? BaseOrEco.eco : BaseOrEco.base
-  );
 
   useEffect(() => {
     if (train && simulatedTrain && pathProperties && infraId) {
@@ -46,5 +39,5 @@ export const useFormattedOperationalPoints = (
     }
   }, [train, simulatedTrain, pathProperties, infraId]);
 
-  return { operationalPoints, loading, baseOrEco, setBaseOrEco };
+  return { operationalPoints, loading };
 };

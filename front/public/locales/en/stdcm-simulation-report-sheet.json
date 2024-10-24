@@ -8,6 +8,7 @@
   "endStop": "end",
   "for": "for",
   "formattedDate": "{{year}}/{{month}}/{{day}} at {{hours}}:{{minutes}}",
+  "formattedDateScenario": "Simulation sheet generated on {{day}}/{{month}}/{{year}} at {{hours}}:{{minutes}}",
   "from": "from",
   "maxLength": "max. length",
   "maxSpeed": "max. speed",

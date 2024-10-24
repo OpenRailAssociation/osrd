@@ -1,5 +1,6 @@
 import type {
   ElectrificationRange,
+  OperationalPointWithTimeAndSpeed,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
@@ -9,8 +10,6 @@ import { timestampToHHMMSS } from 'utils/date';
 import { mmToM, mToMm } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
 
-import { BaseOrEco, type BaseOrEcoType } from './consts';
-import type { OperationalPointWithTimeAndSpeed } from './types';
 import { getActualVmax, interpolateValue } from './utils';
 
 /**
@@ -176,32 +175,29 @@ function spreadDataBetweenSteps(steps: CSVData[]): CSVData[] {
   return newSteps;
 }
 
-function createFakeLinkWithData(trainName: string, baseOrEco: BaseOrEcoType, csvData: CSVData[]) {
+function createFakeLinkWithData(trainName: string, csvData: CSVData[]) {
   const currentDate = new Date();
-  const header = `Date: ${currentDate.toLocaleString()}\nName: ${trainName}\nType:${baseOrEco}\n`;
+  const header = `Date: ${currentDate.toLocaleString()}\nName: ${trainName}\nType: final_output\n`;
   const keyLine = `${Object.values(CSVKeys).join(';')}\n`;
   const csvContent = `data:text/csv;charset=utf-8,${header}\n${keyLine}${csvData.map((obj) => Object.values(obj).join(';')).join('\n')}`;
   const encodedUri = encodeURI(csvContent);
   const fakeLink = document.createElement('a');
   fakeLink.setAttribute('href', encodedUri);
-  fakeLink.setAttribute('download', `export-${trainName}-${baseOrEco}.csv`);
+  fakeLink.setAttribute('download', `export-${trainName}-final_output.csv`);
   document.body.appendChild(fakeLink);
   fakeLink.click();
   document.body.removeChild(fakeLink);
 }
 
-export default function driverTrainScheduleExportCSV(
+export default function exportTrainCSV(
   simulatedTrain: SimulationResponseSuccess,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
   electrificationRanges: ElectrificationRange[],
-  baseOrEco: BaseOrEcoType,
   train: TrainScheduleBase
 ) {
-  const trainRegime =
-    baseOrEco === BaseOrEco.base ? simulatedTrain.base : simulatedTrain.final_output;
   const trainRegimeWithAccurateTime: ReportTrain = {
-    ...trainRegime,
-    times: trainRegime.times.map(
+    ...simulatedTrain.final_output,
+    times: simulatedTrain.final_output.times.map(
       (time) => convertDepartureTimeIntoSec(train.start_time) + ms2sec(time)
     ),
   };
@@ -232,5 +228,5 @@ export default function driverTrainScheduleExportCSV(
     electrificationMode: speed.electrificationMode,
     electrificationProfile: speed.electrificationProfile,
   }));
-  if (steps) createFakeLinkWithData(train.train_name, baseOrEco, spreadDataBetweenSteps(steps));
+  if (steps) createFakeLinkWithData(train.train_name, spreadDataBetweenSteps(steps));
 }

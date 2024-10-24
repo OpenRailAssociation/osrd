@@ -222,6 +222,7 @@ const ScenarioContent = ({
                 isInfraLoaded &&
                 infra && (
                   <SimulationResults
+                    scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
                     collapsedTimetable={collapsedTimetable}
                     projectionData={projection}
                     simulationResults={simulationResults}

@@ -19,6 +19,7 @@
   "errorHappened": "Une erreur est survenue",
   "filesAndLinks": "Documents & liens",
   "filterPlaceholder": "Rechercher…",
+  "infrastructureWithTwoPoints": "Infra : ",
   "updatedOn": "Modifié le",
   "modifyStudy": "Modifier l'étude",
   "noDateFound": "Non renseigné",
@@ -35,8 +36,10 @@
   "scenarioDeletedMulti_one": "{{count}} scénario a été supprimé.",
   "scenarioDeletedMulti_other": "{{count}} scénarios ont été supprimés.",
   "scenariosList": "Scénarios",
+  "scenarioWithTwoPoints": "Scénario : ",
   "selectedScenarios_one": "{{count}} scénario sélectionné",
   "selectedScenarios_other": "{{count}} scénarios sélectionnés",
+  "simulationSheet": "Fiche de simulation",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"

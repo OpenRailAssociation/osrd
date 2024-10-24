@@ -10,6 +10,7 @@ import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
+import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
@@ -60,18 +61,26 @@ import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from '../ChartSynchronizer';
 
 type SimulationResultMapProps = {
-  setExtViewport: (viewport: Viewport) => void;
+  setExtViewport: (mapViewport: Viewport) => void;
   geometry?: PathPropertiesFormatted['geometry'];
   trainSimulation?: SimulationResponseSuccess & { trainId: number; startTime: string };
+  setMapCanvas?: (mapCanvas: string) => void;
 };
 
-const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapProps) => {
+const SimulationResultMap = ({
+  geometry,
+  trainSimulation,
+  setMapCanvas,
+}: SimulationResultMapProps) => {
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
 
   const mapBlankStyle = useMapBlankStyle();
-  const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(
-    (state: RootState) => state.map
-  );
+  const {
+    viewport: mapViewport,
+    mapSearchMarker,
+    mapStyle,
+    showOSM,
+  } = useSelector((state: RootState) => state.map);
   const isPlaying = useSelector(getIsPlaying);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const layersSettings = useSelector(getLayersSettings);
@@ -79,6 +88,7 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
   const [mapLoaded, setMapLoaded] = useState(false);
   const [interactiveLayerIds, setInteractiveLayerIds] = useState<string[]>([]);
   const [selectedTrainHoverPosition, setSelectedTrainHoverPosition] = useState<TrainCurrentInfo>();
+  const mapId = 'simulation-result-map';
 
   const geojsonPath = useMemo(() => geometry && lineString(geometry.coordinates), [geometry]);
 
@@ -114,7 +124,7 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
 
   const resetPitchBearing = () => {
     updateViewportChange({
-      ...viewport,
+      ...mapViewport,
       bearing: 0,
       pitch: 0,
     });
@@ -160,7 +170,7 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
     if (mapRef.current) {
       if (urlLat) {
         updateViewportChange({
-          ...viewport,
+          ...mapViewport,
           latitude: parseFloat(urlLat),
           longitude: parseFloat(urlLon),
           zoom: parseFloat(urlZoom),
@@ -175,7 +185,7 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
 
   useEffect(() => {
     if (geojsonPath) {
-      const newViewport = computeBBoxViewport(bbox(geojsonPath), viewport);
+      const newViewport = computeBBoxViewport(bbox(geojsonPath), mapViewport);
       updateViewportChange(newViewport);
     }
   }, [geojsonPath]);
@@ -189,12 +199,12 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
       <MapButtons
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
-        bearing={viewport.bearing}
+        bearing={mapViewport.bearing}
         withMapKeyButton
-        viewPort={viewport}
+        viewPort={mapViewport}
       />
       <ReactMapGL
-        {...viewport}
+        {...mapViewport}
         cursor="pointer"
         ref={mapRef}
         style={{ width: '100%', height: '100%' }}
@@ -220,6 +230,10 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
             : undefined
         }
         onLoad={handleLoadFinished}
+        onIdle={() => {
+          captureMap(mapViewport, mapId, setMapCanvas, geometry);
+        }}
+        id="simulation-result-map"
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
@@ -340,7 +354,7 @@ const SimulationResultMap = ({ geometry, trainSimulation }: SimulationResultMapP
           <TrainOnMap
             trainInfo={selectedTrainHoverPosition}
             geojsonPath={geojsonPath}
-            viewport={viewport}
+            viewport={mapViewport}
             trainSimulation={trainSimulation}
           />
         )}

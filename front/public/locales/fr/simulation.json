@@ -57,6 +57,7 @@
     "temporarySpeedLimits": "Limites temporaires de vit.",
     "tractionStatus": "Statut de la traction"
   },
+  "simulationSheet": "Fiche de simulation",
   "start": "Départ",
   "stop": "Arrivée",
   "stopPlace": "Lieu",

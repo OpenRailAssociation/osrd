@@ -48,6 +48,16 @@
     }
   }
 
+  .simulation-sheet-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 33.5px 0 42.5px;
+    button {
+      background-color: rgba(235, 235, 234, 0.4); // grey10 with 40% opacity
+      font-weight: 500; // doesn't work
+    }
+  }
+
   /* MAP */
   .train-speed-label {
     text-shadow: 0 0 3px #fff;

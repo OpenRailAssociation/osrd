@@ -4,12 +4,12 @@ import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type {
+  OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
-import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { convertIsoUtcToLocalTime } from 'utils/date';
 import { secToHoursString } from 'utils/timeManipulation';

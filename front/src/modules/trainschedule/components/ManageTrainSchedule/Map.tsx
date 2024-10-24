@@ -2,14 +2,13 @@ import { type PropsWithChildren, useCallback, useEffect, useMemo, useRef, useSta
 
 import bbox from '@turf/bbox';
 import type { Feature, Point } from 'geojson';
-import html2canvas from 'html2canvas';
-import { isEqual } from 'lodash';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
+import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -223,24 +222,6 @@ const Map = ({
     }
   }, [pathGeometry]);
 
-  const captureMap = async () => {
-    if (!pathGeometry) return;
-
-    const itineraryViewport = computeBBoxViewport(bbox(pathGeometry), mapViewport);
-
-    if (setMapCanvas && isEqual(mapViewport, itineraryViewport)) {
-      try {
-        const mapElement = document.getElementById(mapId);
-        if (mapElement) {
-          const canvas = await html2canvas(mapElement);
-          setMapCanvas(canvas.toDataURL());
-        }
-      } catch (error) {
-        console.error('Error capturing map:', error);
-      }
-    }
-  };
-
   return (
     <>
       {!isReadOnly && (
@@ -287,7 +268,7 @@ const Map = ({
           setMapIsLoaded(true);
         }}
         onIdle={() => {
-          captureMap();
+          captureMap(mapViewport, mapId, setMapCanvas, pathGeometry);
         }}
         preserveDrawingBuffer
         id={mapId}

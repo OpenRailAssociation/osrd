@@ -1,12 +1,12 @@
 import cx from 'classnames';
 
 import type {
+  OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders/Loader';
-import type { OperationalPointWithTimeAndSpeed } from 'modules/trainschedule/components/DriverTrainSchedule/types';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
 import useOutputTableData from './hooks/useOutputTableData';
