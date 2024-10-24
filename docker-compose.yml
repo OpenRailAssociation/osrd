@@ -5,20 +5,21 @@ volumes:
   valkey_data:
   rabbitmq_data:
 
+
 services:
   postgres:
     image: ${OSRD_POSTGIS_IMAGE:-postgis/postgis:16-3.4-alpine}
     container_name: osrd-postgres
     user: postgres
     restart: unless-stopped
-    ports: ["5432:5432"]
+    ports: [ "5432:5432" ]
     environment:
       POSTGRES_PASSWORD: "password"
     volumes:
       - "psql_data:/var/lib/postgresql/data"
       - "./docker/init_db.sql:/docker-entrypoint-initdb.d/init.sql"
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "postgres://osrd:password@postgres/osrd"]
+      test: [ "CMD", "pg_isready", "-d", "postgres://osrd:password@postgres/osrd" ]
       start_period: 4s
       interval: 5s
       retries: 20
@@ -27,13 +28,13 @@ services:
     image: valkey/valkey:alpine
     container_name: osrd-valkey
     restart: unless-stopped
-    ports: ["6379:6379"]
+    ports: [ "6379:6379" ]
     volumes:
       - "valkey_data:/data"
       - "./docker/valkey.conf:/etc/valkey.conf"
     command: "valkey-server /etc/valkey.conf --save 30 1 --loglevel warning"
     healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
+      test: [ "CMD", "valkey-cli", "ping" ]
       start_period: 4s
       interval: 5s
       retries: 20
@@ -51,7 +52,7 @@ services:
       - "./docker/rabbitmq.conf:/etc/rabbitmq/conf.d/99-osrd.conf"
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
+      test: [ "CMD", "rabbitmqctl", "status" ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -62,7 +63,7 @@ services:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-core:${TAG-dev}
     container_name: osrd-core-dummy
     depends_on:
-      rabbitmq: {condition: service_healthy}
+      rabbitmq: { condition: service_healthy }
     build:
       context: core
       dockerfile: Dockerfile
@@ -93,15 +94,15 @@ services:
       args:
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     environment:
-      FRONT_PORT: 3000  # only useful with the prod config
+      FRONT_PORT: 3000 # only useful with the prod config
       OSRD_EDITOAST_URL: /api
     volumes:
       - "./front:/app"
       - "./tests/data:/tests/data"
     restart: unless-stopped
-    ports: ["3000:3000"]
+    ports: [ "3000:3000" ]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
       start_period: 4s
       interval: 5s
       retries: 6
@@ -110,9 +111,9 @@ services:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-editoast:${TAG-dev}
     container_name: osrd-editoast
     depends_on:
-      postgres: {condition: service_healthy}
-      valkey: {condition: service_healthy}
-      rabbitmq: {condition: service_healthy}
+      postgres: { condition: service_healthy }
+      valkey: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
     build:
       context: editoast
       dockerfile: Dockerfile
@@ -122,7 +123,7 @@ services:
       args:
         CARGO_PROFILE: dev
     restart: unless-stopped
-    ports: ["8090:80"]
+    ports: [ "8090:80" ]
     environment:
       EDITOAST_PORT: 80
       VALKEY_URL: "redis://valkey"
@@ -136,7 +137,7 @@ services:
       - -c
       - "diesel migration run && exec editoast runserver"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost/health" ]
       start_period: 4s
       interval: 5s
       retries: 6
@@ -153,7 +154,7 @@ services:
     volumes:
       - "./docker/gateway.dev.simple.toml:/gateway.toml"
     restart: unless-stopped
-    ports: ["4000:4000"]
+    ports: [ "4000:4000" ]
 
   osrd-images:
     image: ghcr.io/openrailassociation/osrd-stable/osrd-images:${TAG_IMAGES-v1.0.0}
@@ -161,13 +162,13 @@ services:
     restart: unless-stopped
     environment:
       - NGINX_PORT=8080
-    ports: ["8080:8080"]
+    ports: [ "8080:8080" ]
 
   osrdyne:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:${TAG-dev}
     container_name: osrd-osrdyne
     depends_on:
-      rabbitmq: {condition: service_healthy}
+      rabbitmq: { condition: service_healthy }
     command: osrdyne
     volumes:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
@@ -178,9 +179,11 @@ services:
       args:
         CARGO_PROFILE: dev
     restart: unless-stopped
-    ports: ["4242:4242"]
+    ports: [ "4242:4242" ]
     environment:
       RUST_LOG: "info"
+      OSRDYNE__OPENTELEMETRY__ENDPOINT: "http://osrd-jaeger:4317"
+      OSRDYNE__OPENTELEMETRY__SERVICE_NAME: "osrdyne"
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -193,7 +196,7 @@ services:
 
   wait-healthy:
     depends_on:
-      editoast: {condition: service_healthy}
+      editoast: { condition: service_healthy }
     restart: "no"
     image: alpine:latest
     command: "true"

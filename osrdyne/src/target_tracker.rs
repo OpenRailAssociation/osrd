@@ -7,11 +7,11 @@ pub use actor::target_tracker_actor;
 
 pub use client::TargetTrackerClient;
 
-use log::{debug, error};
 use priority_queue::PriorityQueue;
 use std::{cmp::Reverse, collections::HashMap};
 use thunderdome::{Arena, Index};
 use tokio::time::{Duration, Instant};
+use tracing::{debug, error};
 
 use crate::Key;
 
@@ -151,19 +151,14 @@ impl TargetTracker {
         let expected = self.expected_status(queue.schedule_start, at);
 
         if Some(current) == expected {
-            error!(
-                "inconsistent state: no transition required for {:?} in state {:?}",
-                &queue.key, current
-            );
+            error!(?queue.key, ?current, "inconsistent state: no transition required");
             return;
         }
 
+        let age = at - queue.schedule_start;
         debug!(
-            "transition of {:?} from {:?} to {:?} at age {:?}",
-            &queue.key,
-            &current,
-            &expected,
-            at - queue.schedule_start
+            ?queue.key, ?current, ?expected, ?age,
+            "transition of queue"
         );
 
         // if the worker group still exists, update its status

@@ -1,5 +1,6 @@
 use serde::Serialize;
 use tokio::select;
+use tracing::warn;
 
 use crate::drivers::worker_driver::WorkerMetadata;
 use crate::pool::{ActivityMessage, ActivityMessageKind};
@@ -49,7 +50,7 @@ pub async fn status_tracker(
                     match activity.kind {
                         ActivityMessageKind::Ready => {
                             if !worker_states.contains_key(&activity.worker_id) {
-                                log::warn!("Received Ready message for unknown worker {}", activity.worker_id);
+                                warn!(%activity.worker_id, "Received Ready message for unknown worker");
                             }
                             worker_states.insert(activity.worker_id, WorkerStatus::Ready);
                         }

@@ -8,12 +8,12 @@ use lapin::options::QueueDeclareOptions;
 use lapin::options::QueueDeleteOptions;
 use lapin::types::FieldTable;
 use lapin::Channel;
-use log::debug;
 use tokio::select;
 use tokio::sync::oneshot;
 use tokio::sync::watch;
 use tokio::task::AbortHandle;
 use tokio::task::JoinSet;
+use tracing::debug;
 
 use crate::target_tracker::GenerationId;
 use crate::target_tracker::QueueStatus;
@@ -93,7 +93,9 @@ pub async fn queues_control_loop(
                 let job_completion = job_completion.unwrap();
                 // TODO: proper error handling on job failure (disconnect, non empty queue)
                 let (job_key, new_status) = job_completion.unwrap();
-                debug!("queue update job completed: {:?} to {:?}", &job_key, new_status);
+
+                debug!(?job_key, ?new_status, "queue update job completed");
+
                 jobs_by_key.remove(&job_key);
                 tx.send_modify(|state| {
                     if let Some(new_status) = new_status {
@@ -175,7 +177,8 @@ async fn update_queue(
     let queue_name = pool.key_queue_name(&key);
     match new_state {
         Some(QueueStatus::Active) => {
-            debug!("declaring and binding queue {:?}", &key);
+            debug!(?key, "declaring and binding queue");
+
             chan.queue_declare(
                 &queue_name,
                 QueueDeclareOptions::default(),
@@ -192,7 +195,8 @@ async fn update_queue(
             .await?;
         }
         Some(QueueStatus::Unbound) => {
-            debug!("declaring and unbinding queue {:?}", &key);
+            debug!(?key, "declaring and unbinding queue");
+
             chan.queue_declare(
                 &queue_name,
                 QueueDeclareOptions::default(),
@@ -208,7 +212,8 @@ async fn update_queue(
             .await?;
         }
         None => {
-            debug!("deleting queue {:?}", &key);
+            debug!(?key, "deleting queue");
+
             chan.queue_unbind(
                 &queue_name,
                 &pool.request_xchg,
@@ -227,7 +232,7 @@ async fn update_queue(
                 .await
             {
                 Err(lapin::Error::ProtocolError(err)) => {
-                    debug!("got protocol error (assuming non empty queue): {:?}", err);
+                    debug!(?err, "got protocol error (assuming non empty queue)");
                     return Err(QueueUpdateError::QueueNotEmpty(key));
                 }
                 res => res?,
