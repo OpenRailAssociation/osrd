@@ -444,7 +444,7 @@ jobs:
           -v $PWD/gateway:/gateway
           -v $PWD/front/src/common/api:/app/src/common/api
           ${{ fromJSON(needs.build.outputs.stable_tags).front-build }}
-          yarn generate-types
+          npm run generate-types
 
       - name: Check for unexpected changes
         run: |
@@ -663,7 +663,7 @@ jobs:
         run: |
           docker run --name=front-i18n-api-error --net=host -v $PWD/output/openapi.yaml:/editoast/openapi.yaml \
               ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
-              yarn i18n-api-errors
+              npm run i18n-api-errors
           exit $(docker wait front-i18n-api-error)
 
   check_gateway:
@@ -815,7 +815,7 @@ jobs:
         run: |
           docker run --name=front-format --net=host \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
-            yarn prettier . --check
+            npx prettier . --check
 
           exit $(docker wait front-format)
 
@@ -823,14 +823,14 @@ jobs:
         run: |
           docker run --name=front-i18n-checker --net=host \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
-            yarn i18n-checker
+            npm run i18n-checker
           exit $(docker wait front-i18n-checker)
 
       - name: Execute tests within container
         run: |
           docker run --name=front-test --net=host -v $PWD/output:/app/tests/unit \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
-            yarn test-coverage
+            npm run test-coverage
 
           exit $(docker wait front-test)
 
@@ -949,7 +949,7 @@ jobs:
             -e CI=true \
             -v $PWD/front/test-results:/app/test-results \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
-            /bin/sh -c "npx playwright install --with-deps && yarn e2e-tests"
+            /bin/sh -c "npx playwright install --with-deps && npm run e2e-tests"
 
           exit $(docker wait playwright-test)
 

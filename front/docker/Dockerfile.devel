@@ -19,4 +19,4 @@ WORKDIR /app
 # Start the app
 COPY docker/dev-entrypoint.sh /
 ENTRYPOINT ["/dev-entrypoint.sh"]
-CMD ["sh", "-c", "id && yarn install && exec yarn start-container"]
+CMD ["sh", "-c", "id && npm install && exec npm run start-container"]
