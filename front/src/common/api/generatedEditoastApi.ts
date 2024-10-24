@@ -1545,6 +1545,7 @@ export type PostTimetableByIdStdcmApiArg = {
         Deprecated, first step data should be used instead */
     maximum_run_time?: number | null;
     rolling_stock_id: number;
+    towed_rolling_stock_id?: number | null;
     /** Train categories for speed limits */
     speed_limit_tags?: string | null;
     /** Deprecated, first step arrival time should be used instead */
@@ -1565,7 +1566,6 @@ export type PostTimetableByIdStdcmApiArg = {
     total_length?: number | null;
     /** Total mass of the consist in kg */
     total_mass?: number | null;
-    towed_rolling_stock_id?: number | null;
     work_schedule_group_id?: number | null;
   };
 };

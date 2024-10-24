@@ -214,6 +214,7 @@ export const formatStdcmPayload = (
     comfort: validConfig.rollingStockComfort || 'STANDARD',
     margin: createMargin(validConfig.margin),
     rolling_stock_id: validConfig.rollingStockId,
+    towed_rolling_stock_id: validConfig.towedRollingStockID,
     speed_limit_tags: validConfig.speedLimitByTag,
     total_mass: validConfig.totalMass ? tToKg(validConfig.totalMass) : undefined,
     max_speed: validConfig.maxSpeed ? kmhToMs(validConfig.maxSpeed) : undefined,
