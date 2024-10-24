@@ -24,13 +24,13 @@ const timeColumn = (isOutputTable: boolean) =>
     isCellEmpty: ({ rowData }) => !rowData,
   }) as Partial<Column<TimeExtraDays | undefined, string, string>>;
 
+const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
+
 export const useTimeStopsColumns = <T extends TimeStopsRow>(
   tableType: TableType,
   allWaypoints: T[] = []
 ) => {
   const { t } = useTranslation('timesStops');
-
-  const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
 
   const columns = useMemo<Column<T>[]>(() => {
     const isOutputTable = tableType === TableType.Output;
@@ -38,37 +38,27 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
       isOutputTable
         ? [
             {
-              ...disabledTextColumn('theoreticalMarginSeconds', t('theoreticalMarginSeconds'), {
-                alignRight: true,
-              }),
+              ...disabledTextColumn('theoreticalMarginSeconds', t('theoreticalMarginSeconds')),
               headerClassName: 'padded-header',
               ...fixedWidth(110),
             },
             {
-              ...disabledTextColumn('calculatedMargin', t('realMargin'), {
-                alignRight: true,
-              }),
+              ...disabledTextColumn('calculatedMargin', t('realMargin')),
               headerClassName: 'padded-header',
               ...fixedWidth(90),
             },
             {
-              ...disabledTextColumn('diffMargins', t('diffMargins'), {
-                alignRight: true,
-              }),
+              ...disabledTextColumn('diffMargins', t('diffMargins')),
               headerClassName: 'padded-header',
               ...fixedWidth(90),
             },
             {
-              ...disabledTextColumn('calculatedArrival', t('calculatedArrivalTime'), {
-                alignRight: true,
-              }),
+              ...disabledTextColumn('calculatedArrival', t('calculatedArrivalTime')),
               headerClassName: 'padded-header',
               ...fixedWidth(105),
             },
             {
-              ...disabledTextColumn('calculatedDeparture', t('calculatedDepartureTime'), {
-                alignRight: true,
-              }),
+              ...disabledTextColumn('calculatedDeparture', t('calculatedDepartureTime')),
               headerClassName: 'padded-header',
               ...fixedWidth(105),
             },
@@ -82,11 +72,7 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
         title: t('name'),
         ...(isOutputTable && {
           component: ({ rowData }) => (
-            <span
-              title={rowData.name}
-              className="ml-1 whitespace-nowrap overflow-hidden"
-              style={{ whiteSpace: 'nowrap' }}
-            >
+            <span title={rowData.name} className="ml-1 text-nowrap overflow-hidden">
               {rowData.name}
             </span>
           ),
@@ -115,7 +101,6 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
           'stopFor',
           createTextColumn({
             continuousUpdates: false,
-            alignRight: true,
           })
         ),
         title: t('stopTime'),
@@ -157,7 +142,6 @@ export const useTimeStopsColumns = <T extends TimeStopsRow>(
           'theoreticalMargin',
           createTextColumn({
             continuousUpdates: false,
-            alignRight: true,
             placeholder: !isOutputTable ? t('theoreticalMarginPlaceholder') : '',
             formatBlurredInput: (value) => {
               if (!value || value === '0%') return '';
