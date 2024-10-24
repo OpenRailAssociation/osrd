@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm
 
-import datadog.trace.api.Trace
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -48,7 +47,6 @@ class STDCMHeuristicBuilder(
 
     /** Runs all the pre-processing and initialize the STDCM A* heuristic. */
     @WithSpan(value = "Initializing STDCM heuristic", kind = SpanKind.SERVER)
-    @Trace(operationName = "Initializing STDCM heuristic")
     fun build(): Pair<STDCMAStarHeuristic, Double> {
         logger.info("Start building STDCM heuristic...")
         // One map per number of reached pathfinding step

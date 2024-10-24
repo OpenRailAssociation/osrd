@@ -102,10 +102,6 @@ public final class ApiServerCommand implements CliCommand {
                 logger.info("wrapping endpoints in opentelemetry");
                 monitoredRoutes = new TkOpenTelemetry(routes);
             }
-            if ("datadog".equals(monitoringType)) {
-                logger.info("wrapping endpoints in datadog");
-                monitoredRoutes = new TkDataDog(routes);
-            }
 
             // the list of pages which should be displayed on error
             var fallbacks = new FbChain(
