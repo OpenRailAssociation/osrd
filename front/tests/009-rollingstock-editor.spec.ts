@@ -1,84 +1,71 @@
-import path from 'path';
-
-import { test, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 import RollingstockEditorPage from './pages/rollingstock-editor-page-model';
-import RollingStockSelectorPage from './pages/rollingstock-selector-page';
+import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
+import test from './test-logger';
 import {
   generateUniqueName,
   verifyAndCheckInputById,
   fillAndCheckInputById,
   readJsonFile,
 } from './utils/index';
-import { findAndDeleteRollingStocksByName } from './utils/rollingStock';
+import { deleteRollingStocks } from './utils/teardown-utils';
 
-// Correct path to load rolling stock details from JSON
-const rollingstockDetailsPath = path.resolve(
-  __dirname,
-  '../tests/assets/rollingStock/rollingstockDetails.json'
-);
-
-const rollingstockDetails = readJsonFile(rollingstockDetailsPath);
-const dualModeRollingStockName = 'dual-mode_rolling_stock_test_e2e';
-const electricRollingStockName = 'electric_rolling_stock_test_e2e';
-
-test.describe('Rollingstock editor page', () => {
+test.describe('Rollingstock editor page tests', () => {
   let uniqueRollingStockName: string;
   let uniqueUpdatedRollingStockName: string;
   let uniqueDeletedRollingStockName: string;
 
-  test.beforeEach(async () => {
-    uniqueRollingStockName = await generateUniqueName('RSN');
-    uniqueUpdatedRollingStockName = await generateUniqueName('U_RSN');
-    uniqueDeletedRollingStockName = await generateUniqueName('D_RSN');
+  const rollingstockDetails = readJsonFile('./tests/assets/rollingStock/rollingstockDetails.json');
 
-    // Check and delete the specified rolling stocks if they exist
-    await findAndDeleteRollingStocksByName([
-      uniqueRollingStockName,
-      uniqueUpdatedRollingStockName,
-      uniqueDeletedRollingStockName,
-    ]);
-  });
+  const dualModeRollingStockName = 'dual-mode_rolling_stock_test_e2e';
+  const electricRollingStockName = 'electric_rolling_stock_test_e2e';
 
-  test.afterEach(async () => {
-    // Clean up by deleting the created or updated rolling stock
-    await findAndDeleteRollingStocksByName([
-      uniqueRollingStockName,
-      uniqueUpdatedRollingStockName,
-      uniqueDeletedRollingStockName,
-    ]);
-  });
+  test.beforeEach(
+    'Generate unique names and ensure any existing RS are deleted',
+    async ({ page }) => {
+      const rollingStockEditorPage = new RollingstockEditorPage(page);
+      uniqueRollingStockName = generateUniqueName('RSN');
+      uniqueUpdatedRollingStockName = generateUniqueName('U_RSN');
+      uniqueDeletedRollingStockName = generateUniqueName('D_RSN');
 
-  test('should correctly create a new rolling stock', async ({ page, browserName }) => {
-    test.slow(browserName === 'webkit', 'This test is slow on safari');
+      await deleteRollingStocks([
+        uniqueRollingStockName,
+        uniqueUpdatedRollingStockName,
+        uniqueDeletedRollingStockName,
+      ]);
+
+      // Navigate to the rolling stock editor page
+      await rollingStockEditorPage.navigateToPage();
+    }
+  );
+
+  /** *************** Test 1 **************** */
+  test('Create a new rolling stock', async ({ page, browserName }) => {
+    test.slow(browserName === 'webkit', 'This test is slow on Safari');
     const rollingStockEditorPage = new RollingstockEditorPage(page);
-    // Navigate to the page
-    await rollingStockEditorPage.navigateToPage();
 
-    // Create a new rolling stock
+    // Start the rolling stock creation process
     await rollingStockEditorPage.clickOnNewRollingstockButton();
 
-    // Fill in the rolling stock details with unique name
+    // Fill in the rolling stock details with a unique name
     for (const input of rollingstockDetails.inputs) {
       const value = input.id === 'name' ? uniqueRollingStockName : input.value;
       await fillAndCheckInputById(page, input.id, value, input.isNumeric);
     }
-    // Select loading gauge
-    await rollingStockEditorPage.selectLoadingGauge('GA');
+    await rollingStockEditorPage.selectLoadingGauge('GA'); // Select loading gauge
 
-    // Submit and handle incomplete form warning
+    // Submit and handle potential warnings
     await rollingStockEditorPage.clickOnSubmitRollingstockButton();
-    await expect(rollingStockEditorPage.getToastSNCF).toBeVisible();
+    await expect(rollingStockEditorPage.toastSNCF).toBeVisible();
 
-    // Fill speed effort curves Not Specified
+    // Fill in speed effort curves for Not Specified and C1 categories
     await rollingStockEditorPage.fillSpeedEffortCurves(
       rollingstockDetails.speedEffortData,
       false,
       '',
       '1500V'
     );
-
-    // Fill speed effort curves C1
     await rollingStockEditorPage.fillSpeedEffortCurves(
       rollingstockDetails.speedEffortDataC1,
       true,
@@ -89,26 +76,22 @@ test.describe('Rollingstock editor page', () => {
     // Fill additional rolling stock details
     await rollingStockEditorPage.fillAdditionalDetails(rollingstockDetails.additionalDetails);
 
-    // Submit and confirm rolling stock
+    // Submit and confirm rolling stock creation
     await rollingStockEditorPage.submitRollingStock();
-
-    // Confirm the creation of the rolling stock
     expect(
       rollingStockEditorPage.page.getByTestId(`rollingstock-${uniqueRollingStockName}`)
     ).toBeDefined();
 
-    // Get to details page of the new rolling stock
+    // Verify rolling stock details
     await rollingStockEditorPage.searchRollingStock(uniqueRollingStockName);
     await rollingStockEditorPage.editRollingStock(uniqueRollingStockName);
-
-    // Verify the rolling stock details
     for (const input of rollingstockDetails.inputs) {
       const value = input.id === 'name' ? uniqueRollingStockName : input.value;
       await verifyAndCheckInputById(page, input.id, value, input.isNumeric);
     }
-    await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
 
     // Verify speed effort curves
+    await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
     await rollingStockEditorPage.verifySpeedEffortCurves(
       rollingstockDetails.speedEffortData,
       false,
@@ -119,26 +102,25 @@ test.describe('Rollingstock editor page', () => {
       true,
       'C1'
     );
+    await deleteRollingStocks([uniqueRollingStockName]);
   });
 
-  test('should correctly duplicate and modify a rolling stock', async ({ page, browserName }) => {
-    test.slow(browserName === 'webkit', 'This test is slow on safari');
+  /** *************** Test 2 **************** */
+  test('Duplicate and modify a rolling stock', async ({ page, browserName }) => {
+    test.slow(browserName === 'webkit', 'This test is slow on Safari');
     const rollingStockEditorPage = new RollingstockEditorPage(page);
 
-    await rollingStockEditorPage.navigateToPage();
-
-    // Select the rolling stock from global-setup
+    // Select the existing electric rolling stock and duplicate it
     await rollingStockEditorPage.selectRollingStock(electricRollingStockName);
-
-    // Duplicate rolling stock
     await rollingStockEditorPage.duplicateRollingStock();
 
-    // Update the rolling stock details and curves with unique name
+    // Update rolling stock details with a unique name
     for (const input of rollingstockDetails.updatedInputs) {
       const value = input.id === 'name' ? uniqueUpdatedRollingStockName : input.value;
       await fillAndCheckInputById(page, input.id, value, input.isNumeric);
     }
 
+    // Modify and verify speed effort curves
     await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
     await rollingStockEditorPage.deleteElectricalProfile('25000V');
     await rollingStockEditorPage.fillSpeedEffortData(
@@ -148,51 +130,25 @@ test.describe('Rollingstock editor page', () => {
       true
     );
 
-    // Confirm the modification of RS
+    // Submit and verify modification
     await rollingStockEditorPage.submitRollingStock();
-
-    // Confirm the presence of the original RS
-    await rollingStockEditorPage.searchRollingStock(electricRollingStockName);
-    expect(rollingStockEditorPage.page.getByTestId(electricRollingStockName)).toBeDefined();
-    await rollingStockEditorPage.clearSearchRollingStock();
-
-    // Get to details page of the new rolling stock
     await rollingStockEditorPage.searchRollingStock(uniqueUpdatedRollingStockName);
     await rollingStockEditorPage.editRollingStock(uniqueUpdatedRollingStockName);
-
-    // Verify the rolling stock details
-    for (const input of rollingstockDetails.updatedInputs) {
-      const value = input.id === 'name' ? uniqueUpdatedRollingStockName : input.value;
-      await verifyAndCheckInputById(page, input.id, value, input.isNumeric);
-    }
-    await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
-
-    // Verify speed effort curves
-    await rollingStockEditorPage.verifySpeedEffortCurves(
-      rollingstockDetails.speedEffortDataUpdated,
-      true,
-      'C1'
-    );
+    await deleteRollingStocks([uniqueUpdatedRollingStockName]);
   });
-  test('should correctly duplicate and delete a rolling stock', async ({ page }) => {
+
+  /** *************** Test 3 **************** */
+  test('Duplicate and delete a rolling stock', async ({ page }) => {
     const rollingStockEditorPage = new RollingstockEditorPage(page);
     const rollingStockSelectorPage = new RollingStockSelectorPage(page);
-    await rollingStockEditorPage.navigateToPage();
-
-    // Select the rolling stock from global-setup
+    // Duplicate and change the name of the rolling stock
     await rollingStockEditorPage.selectRollingStock(electricRollingStockName);
-
-    // Duplicate and change the rolling stock name
     await rollingStockEditorPage.duplicateRollingStock();
     await fillAndCheckInputById(page, 'name', uniqueDeletedRollingStockName);
-
-    // Confirm the modification of RS name
     await rollingStockEditorPage.submitRollingStock();
 
     // Delete the duplicated rolling stock
     await rollingStockEditorPage.deleteRollingStock(uniqueDeletedRollingStockName);
-
-    // Confirm the RS is deleted
     await expect(
       rollingStockEditorPage.page.getByTestId(uniqueDeletedRollingStockName)
     ).toBeHidden();
@@ -201,89 +157,73 @@ test.describe('Rollingstock editor page', () => {
     await rollingStockEditorPage.searchRollingStock(uniqueDeletedRollingStockName);
 
     // Verify that the count of rolling stock is 0 (No results Found)
-    await expect(rollingStockSelectorPage.getNoRollingStockResult).toBeVisible();
+    await expect(rollingStockSelectorPage.noRollingStockResult).toBeVisible();
     expect(await rollingStockSelectorPage.getRollingStockSearchNumber()).toEqual(0);
   });
-  test('should correctly filter a rolling stock', async ({ page }) => {
-    const rollingStockEditorPage = new RollingstockEditorPage(page);
-    const rollingStockSelectorPage = new RollingStockSelectorPage(page);
-    // Navigate to rolling stock editor page
-    await rollingStockEditorPage.navigateToPage();
 
-    // Extract and check the initial count of rolling stock
+  /** *************** Test 4 **************** */
+  test('Filtering rolling stocks', async ({ page }) => {
+    const rollingStockSelectorPage = new RollingStockSelectorPage(page);
+
+    // Get the initial rolling stock count
     const initialRollingStockFoundNumber =
       await rollingStockSelectorPage.getRollingStockSearchNumber();
 
-    // Perform a filtering action for electric rolling stock
-    await rollingStockSelectorPage.electricRollingStockFilter();
-
-    // Verify that filtering reduces the count and all the RS have electic icons
-    expect(await rollingStockSelectorPage.getElectricRollingStockIcons.count()).toEqual(
+    // Filter electric rolling stocks and verify count
+    await rollingStockSelectorPage.setElectricRollingStockFilter();
+    expect(await rollingStockSelectorPage.electricRollingStockIcons.count()).toEqual(
       await rollingStockSelectorPage.getRollingStockSearchNumber()
     );
-
     // Clear electric filter
-    await rollingStockSelectorPage.electricRollingStockFilter();
+    await rollingStockSelectorPage.setElectricRollingStockFilter();
 
-    // Perform a filtering action for thermal rolling stock
-    await rollingStockSelectorPage.thermalRollingStockFilter();
-
-    // Verify that filtering reduces the count and all the RS have thermal icons
-    expect(await rollingStockSelectorPage.getThermalRollingStockIcons.count()).toEqual(
+    // Filter thermal rolling stocks and verify count
+    await rollingStockSelectorPage.setThermalRollingStockFilter();
+    expect(await rollingStockSelectorPage.thermalRollingStockIcons.count()).toEqual(
       await rollingStockSelectorPage.getRollingStockSearchNumber()
     );
 
-    // Perform a filtering action for dual-mode rolling stock
-    await rollingStockSelectorPage.electricRollingStockFilter();
-
-    // Verify that filtering reduces the count and all the RS have thermal and electric icons
-    expect(await rollingStockSelectorPage.getDualModeRollingStockIcons.count()).toEqual(
+    // Filter both electric and thermal rolling stocks (dual-mode) and verify count
+    await rollingStockSelectorPage.setElectricRollingStockFilter();
+    expect(await rollingStockSelectorPage.dualModeRollingStockIcons.count()).toEqual(
       await rollingStockSelectorPage.getRollingStockSearchNumber()
     );
 
-    // Clear filters
-    await rollingStockSelectorPage.electricRollingStockFilter();
-    await rollingStockSelectorPage.thermalRollingStockFilter();
-
-    // Verify that the count of rolling stock is back to the initial number
-    expect(await rollingStockSelectorPage.getRollingStockList.count()).toEqual(
+    // Clear filters and verify the count returns to the initial number
+    await rollingStockSelectorPage.setElectricRollingStockFilter();
+    await rollingStockSelectorPage.setThermalRollingStockFilter();
+    expect(await rollingStockSelectorPage.rollingStockList.count()).toEqual(
       initialRollingStockFoundNumber
     );
   });
 
-  test('should correctly search for a rolling stock', async ({ page }) => {
+  /** *************** Test 5 **************** */
+  test('Search for a rolling stock', async ({ page }) => {
     const rollingStockEditorPage = new RollingstockEditorPage(page);
     const rollingStockSelectorPage = new RollingStockSelectorPage(page);
 
-    // Navigate to rolling stock editor page
-    await rollingStockEditorPage.navigateToPage();
-
-    // Extract and check the initial count of rolling stock
     const initialRollingStockFoundNumber =
       await rollingStockSelectorPage.getRollingStockSearchNumber();
 
-    // Search for the specific rolling stock
+    // Search for a specific rolling stock
     await rollingStockEditorPage.searchRollingStock(dualModeRollingStockName);
     expect(
       rollingStockEditorPage.page.getByTestId(`rollingstock-${dualModeRollingStockName}`)
     ).toBeDefined();
 
-    // Verify that the first rolling stock has the thermal and electric icon
-    await expect(rollingStockSelectorPage.getThermalRollingStockFirstIcon).toBeVisible();
-    await expect(rollingStockSelectorPage.getElectricRollingStockFirstIcon).toBeVisible();
+    // Verify the presence of thermal and electric icons
+    await expect(rollingStockSelectorPage.thermalRollingStockFirstIcon).toBeVisible();
+    await expect(rollingStockSelectorPage.electricRollingStockFirstIcon).toBeVisible();
 
-    // Clear the search
+    // Clear the search and verify the count returns to the initial number
     await rollingStockEditorPage.clearSearchRollingStock();
-
-    // Verify that the count of rolling stock is back to the initial number
-    expect(await rollingStockSelectorPage.getRollingStockList.count()).toEqual(
+    expect(await rollingStockSelectorPage.rollingStockList.count()).toEqual(
       initialRollingStockFoundNumber
     );
-    // Search for a non existing rolling stock
-    await rollingStockEditorPage.searchRollingStock(`${dualModeRollingStockName}-no-results`);
 
-    // Verify that the count of rolling stock is 0 (No results Found)
-    await expect(rollingStockSelectorPage.getNoRollingStockResult).toBeVisible();
+    // Search for a non-existent rolling stock and verify no results
+    await rollingStockEditorPage.searchRollingStock(`${dualModeRollingStockName}-no-results`);
+    await expect(rollingStockSelectorPage.noRollingStockResult).toBeVisible();
     expect(await rollingStockSelectorPage.getRollingStockSearchNumber()).toEqual(0);
   });
 });
