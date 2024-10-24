@@ -9,10 +9,11 @@ export type OSRDMenuItem = {
 type OSRDMenuProps = {
   menuRef: React.RefObject<HTMLDivElement>;
   items: OSRDMenuItem[];
+  style?: React.CSSProperties;
 };
 
-const OSRDMenu = ({ menuRef, items }: OSRDMenuProps) => (
-  <div ref={menuRef} className="osrd-menu">
+const OSRDMenu = ({ menuRef, items, style }: OSRDMenuProps) => (
+  <div ref={menuRef} className="osrd-menu" style={style}>
     {items.map(({ title, icon, onClick }) => (
       <button key={title} type="button" className="menu-item" onClick={onClick}>
         <span className="icon">{icon}</span>
