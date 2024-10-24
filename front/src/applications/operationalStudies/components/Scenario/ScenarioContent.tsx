@@ -203,9 +203,14 @@ const ScenarioContent = ({
               {isMacro ? (
                 <div className={cx(collapsedTimetable ? 'macro-container' : 'h-100')}>
                   {ngeProps.type === 'loading' && <LoaderFill />}
-                  {ngeProps.type === 'ready' && ngeProps.data && (
-                    <NGE dto={ngeProps.data.dto} onOperation={ngeProps.data?.listener} />
-                  )}
+                  <NGE
+                    dto={ngeProps.type === 'ready' && ngeProps.data ? ngeProps.data.dto : undefined}
+                    onOperation={
+                      ngeProps.type === 'ready' && ngeProps.data
+                        ? ngeProps.data?.listener
+                        : undefined
+                    }
+                  />
                 </div>
               ) : (
                 isInfraLoaded &&
