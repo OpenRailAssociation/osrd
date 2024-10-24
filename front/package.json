@@ -96,7 +96,8 @@
     "remark-gfm": "^4.0.0",
     "reselect": "^5.1.0",
     "uuid": "^10.0.0",
-    "viewport-mercator-project": "^7.0.4"
+    "viewport-mercator-project": "^7.0.4",
+    "webcola": "^3.4.0"
   },
   "devDependencies": {
     "@import-meta-env/prepare": "^0.1.13",

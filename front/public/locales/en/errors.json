@@ -95,6 +95,9 @@
       "LayerNotFound": "Layer {{layer_name}} not found.",
       "ViewNotFound": "View {{view_name}} not found."
     },
+    "macro_node": {
+      "NotFound": "Node {{node_id}} not found."
+    },
     "operation": {
       "EmptyId": "Empty string id is forbidden",
       "InvalidPatch": "A Json Patch error occurred",

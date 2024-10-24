@@ -581,6 +581,57 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes`,
+          params: { page: queryArg.page, page_size: queryArg.pageSize },
+        }),
+        providesTags: ['scenarios'],
+      }),
+      postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes: build.mutation<
+        PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse,
+        PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes`,
+          method: 'POST',
+          body: queryArg.macroNodeForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes/${queryArg.nodeId}`,
+        }),
+        providesTags: ['scenarios'],
+      }),
+      putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.mutation<
+        PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
+        PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes/${queryArg.nodeId}`,
+          method: 'PUT',
+          body: queryArg.macroNodeForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.mutation<
+        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
+        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes/${queryArg.nodeId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
           url: `/rolling_stock`,
@@ -1396,6 +1447,53 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg =
   studyId: number;
   scenarioId: number;
   scenarioPatchForm: ScenarioPatchForm;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse =
+  /** status 200 List of macro nodes for the requested scenario */ MacroNodeListResponse;
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  page?: number;
+  pageSize?: number | null;
+};
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse =
+  /** status 201 Macro node created */ MacroNodeResponse;
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  macroNodeForm: MacroNodeForm;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
+  /** status 200 The requested Macro node */ MacroNodeResponse;
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  nodeId: number;
+};
+export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
+  /** status 200 The requested scenario */ MacroNodeResponse;
+export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  nodeId: number;
+  macroNodeForm: MacroNodeForm;
+};
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
+  /** status 204 The macro node was deleted successfully */ void;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  nodeId: number;
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
@@ -2755,6 +2853,28 @@ export type ScenarioPatchForm = {
   infra_id?: number | null;
   name?: string | null;
   tags?: Tags | null;
+};
+export type MacroNodeResponse = {
+  connection_time: number;
+  full_name?: string | null;
+  id: number;
+  labels: (string | null)[];
+  path_item_key: string;
+  position_x: number;
+  position_y: number;
+  trigram?: string | null;
+};
+export type MacroNodeListResponse = PaginationStats & {
+  results: MacroNodeResponse[];
+};
+export type MacroNodeForm = {
+  connection_time: number;
+  full_name?: string | null;
+  labels: (string | null)[];
+  path_item_key: string;
+  position_x: number;
+  position_y: number;
+  trigram?: string | null;
 };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type EffortCurveConditions = {

@@ -6,6 +6,7 @@ pub mod fixtures;
 pub mod infra;
 pub mod infra_objects;
 pub mod layers;
+pub mod macro_node;
 // We allow unused until models is moved to a separate crate
 pub mod auth;
 pub mod pagination;
