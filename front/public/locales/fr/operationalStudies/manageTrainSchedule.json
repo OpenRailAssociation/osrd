@@ -81,6 +81,7 @@
   "manageVias": "Gestion des étapes",
   "maximumRunTime": "Temps de parcours maximum",
   "maximumRunTimeError": "Le temps de parcours ne doit pas excéder 12h",
+  "missing_pathSteps": "Au moins un point de passage n'a pas été trouvé dans l'infrastructure",
   "noPlaceChosen": "Aucun point de passage/arrêt défini",
   "noOriginChosen": "Départ non défini",
   "noDestinationChosen": "Arrivée non définie",

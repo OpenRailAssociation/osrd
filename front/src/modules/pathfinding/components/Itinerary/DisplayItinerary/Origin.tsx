@@ -10,13 +10,13 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdContext, useOsrdConfSelectors } from 'common/osrdContext';
 import { MODES } from 'main/consts';
 import { makeEnumBooleans } from 'utils/constants';
+import { isPathStepInvalid } from 'modules/pathfinding/utils';
 
 type OriginProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
-  isInvalid?: boolean;
 };
 
-const Origin = ({ zoomToFeaturePoint, isInvalid }: OriginProps) => {
+const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
   const {
     getOrigin,
     getOriginDate,
@@ -92,7 +92,7 @@ const Origin = ({ zoomToFeaturePoint, isInvalid }: OriginProps) => {
 
   return (
     <div
-      className={cx('mb-2 place', { 'invalid-path-item': isInvalid })}
+      className={cx('mb-2 place', { 'invalid-path-item': isPathStepInvalid(origin) })}
       data-testid="itinerary-origin"
     >
       <div className="pl-1 hover w-100 d-flex align-items-center">

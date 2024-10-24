@@ -241,7 +241,38 @@ export const usePathfinding = (
             pathfindingResult.failed_status === 'pathfinding_not_found' &&
             pathfindingResult.error_type === 'incompatible_constraints';
 
-          if (pathfindingResult.status === 'success' || incompatibleConstraintsCheck) {
+          const isInvalidPathItems =
+            pathfindingResult.status === 'failure' &&
+            pathfindingResult.failed_status === 'pathfinding_input_error' &&
+            pathfindingResult.error_type === 'invalid_path_items';
+
+          if (isInvalidPathItems) {
+            const invalidPathItems = pathfindingResult.items
+              .map((item) => ('trigram' in item.path_item ? item.path_item.trigram : null))
+              .filter((trigram): trigram is string => trigram !== null);
+
+            if (invalidPathItems.length > 0) {
+              const updatedPathSteps = pathSteps.map((step) => {
+                if (step && 'trigram' in step && invalidPathItems.includes(step.trigram)) {
+                  return { ...step, isInvalid: true };
+                }
+                return step;
+              });
+
+              dispatch(updatePathSteps({ pathSteps: updatedPathSteps }));
+              pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
+              pathfindingDispatch({ type: 'PATHFINDING_PARAM_CHANGED' });
+            } else {
+              dispatch(
+                setFailure(
+                  castErrorToFailure(pathfindingResult, {
+                    name: t('pathfinding_failed'),
+                    message: t('missing_pathSteps'),
+                  })
+                )
+              );
+            }
+          } else if (pathfindingResult.status === 'success' || incompatibleConstraintsCheck) {
             const pathResult =
               pathfindingResult.status === 'success'
                 ? pathfindingResult

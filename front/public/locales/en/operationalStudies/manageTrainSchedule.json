@@ -81,6 +81,7 @@
   "manageVias": "Steps management",
   "maximumRunTime": "Maximum running time",
   "maximumRunTimeError": "Travel time must not exceed 12h",
+  "missing_pathSteps": "At least one pathstep wasn't found in the infrastructure",
   "noPlaceChosen": "No stop/waypoint defined",
   "noOriginChosen": "Departure undefined",
   "noDestinationChosen": "Arrival undefined",

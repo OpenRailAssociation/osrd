@@ -151,6 +151,9 @@
     "vite-tsconfig-paths": "^5.0.1",
     "vitest": "^2.0.0"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-arm64-gnu": "^4.23.0"
+  },
   "resolutions": {
     "react-error-overlay": "6.0.9",
     "@nivo/line": "^0.80.0",

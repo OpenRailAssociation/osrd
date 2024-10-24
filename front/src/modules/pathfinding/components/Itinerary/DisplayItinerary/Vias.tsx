@@ -8,19 +8,18 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatUicToCi } from 'utils/strings';
 
 import ViaStopDurationSelector from './ViaStopDurationSelector';
+import { isPathStepInvalid } from 'modules/pathfinding/utils';
 
 type ViasProps = {
   shouldManageStopDuration?: boolean;
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
-  isInvalid: (step: PathStep | null) => boolean;
 };
 
-const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration, isInvalid }: ViasProps) => {
+const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration }: ViasProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { getVias } = useOsrdConfSelectors();
   const dispatch = useAppDispatch();
@@ -53,7 +52,7 @@ const Vias = ({ zoomToFeaturePoint, shouldManageStopDuration, isInvalid }: ViasP
                     {...providedDraggable.dragHandleProps}
                     className={cx('place via', {
                       'is-a-stop': via.arrival || via.stopFor,
-                      'invalid-path-item': isInvalid(via),
+                      'invalid-path-item': isPathStepInvalid(via),
                     })}
                   >
                     <div className="ring" />

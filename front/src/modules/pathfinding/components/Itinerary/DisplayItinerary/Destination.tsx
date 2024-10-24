@@ -6,13 +6,13 @@ import { IoFlag } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { isPathStepInvalid } from 'modules/pathfinding/utils';
 
 type DestinationProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
-  isInvalid?: boolean;
 };
 
-const Destination = ({ zoomToFeaturePoint, isInvalid }: DestinationProps) => {
+const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
   const { getDestination } = useOsrdConfSelectors();
   const { updateDestination } = useOsrdConfActions();
   const destination = useSelector(getDestination);
@@ -31,7 +31,7 @@ const Destination = ({ zoomToFeaturePoint, isInvalid }: DestinationProps) => {
 
   return (
     <div
-      className={cx('place', { 'invalid-path-item': isInvalid })}
+      className={cx('place', { 'invalid-path-item': isPathStepInvalid(destination) })}
       data-testid="itinerary-destination"
     >
       <div className="pl-1 hover w-100 d-flex align-items-center">
