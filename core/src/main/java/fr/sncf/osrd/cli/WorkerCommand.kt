@@ -6,7 +6,10 @@ import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.ConnectionFactory
 import com.rabbitmq.client.DeliverCallback
-import fr.sncf.osrd.api.*
+import fr.sncf.osrd.api.ElectricalProfileSetManager
+import fr.sncf.osrd.api.InfraLoadEndpoint
+import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.VersionEndpoint
 import fr.sncf.osrd.api.api_v2.conflicts.ConflictDetectionEndpointV2
 import fr.sncf.osrd.api.api_v2.path_properties.PathPropEndpoint
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2
@@ -17,12 +20,12 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
-import java.io.InputStream
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.takes.Request
+import java.io.InputStream
+import java.util.concurrent.TimeUnit
 
 @Parameters(commandDescription = "RabbitMQ worker mode")
 class WorkerCommand : CliCommand {
@@ -109,7 +112,6 @@ class WorkerCommand : CliCommand {
                     SimulationEndpoint(infraManager, electricalProfileSetManager),
                 "/v2/signal_projection" to SignalProjectionEndpointV2(infraManager),
                 "/v2/conflict_detection" to ConflictDetectionEndpointV2(infraManager),
-                "/cache_status" to InfraCacheStatusEndpoint(infraManager),
                 "/version" to VersionEndpoint(),
                 "/v2/stdcm" to STDCMEndpointV2(infraManager),
                 "/infra_load" to InfraLoadEndpoint(infraManager),

@@ -957,16 +957,9 @@ pub mod tests {
     #[rstest]
     async fn infra_get() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let mut core = MockingClient::new();
-        core.stub("/cache_status")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body("{}")
-            .finish();
 
         let app = TestAppBuilder::new()
             .db_pool(db_pool.clone())
-            .core_client(core.into())
             .build();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
@@ -1160,16 +1153,9 @@ pub mod tests {
     #[rstest]
     async fn infra_lock() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let mut core = MockingClient::new();
-        core.stub("/cache_status")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body("{}")
-            .finish();
 
         let app = TestAppBuilder::new()
             .db_pool(db_pool.clone())
-            .core_client(core.into())
             .build();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
