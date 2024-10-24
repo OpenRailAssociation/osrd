@@ -1,99 +1,92 @@
-import { test } from '@playwright/test';
-
 import type { Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import HomePage from './pages/home-page-model';
+import RoutePage from './pages/op-route-page-model';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
-import ScenarioPage from './pages/scenario-page-model';
-import setupScenario from './utils/scenario';
+import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
+import test from './test-logger';
+import createScenario from './utils/scenario';
+import { deleteScenario } from './utils/teardown-utils';
 
-let project: Project;
-let study: Study;
-let scenario: Scenario;
-let selectedLanguage: string;
+test.describe('Route Tab Verification', () => {
+  let project: Project;
+  let study: Study;
+  let scenario: Scenario;
+  let OSRDLanguage: string;
+  const electricRollingStockName = 'electric_rolling_stock_test_e2e';
 
-const electricRollingStockName = 'electric_rolling_stock_test_e2e';
+  test.beforeAll('Set up the scenario', async () => {
+    ({ project, study, scenario } = await createScenario());
+  });
 
-test.beforeAll(async () => {
-  // Create a new scenario
-  ({ project, study, scenario } = await setupScenario());
-});
+  test.afterAll('Delete the created scenario', async () => {
+    await deleteScenario(project.id, study.id, scenario.name);
+  });
 
-test.beforeEach(async ({ page }) => {
-  // Navigate to the home page and set up the required settings
-  const homePage = new HomePage(page);
-  await homePage.goToHomePage();
-  selectedLanguage = await homePage.getOSRDLanguage();
+  test.beforeEach(
+    'Navigate to the scenario page and select the rolling stock before each test',
+    async ({ page }) => {
+      const [operationalStudiesPage, rollingstockSelectorPage, homePage] = [
+        new OperationalStudiesPage(page),
+        new RollingStockSelectorPage(page),
+        new HomePage(page),
+      ];
 
-  // Navigate to the created scenario page
-  await page.goto(
-    `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+      await homePage.goToHomePage();
+      OSRDLanguage = await homePage.getOSRDLanguage();
+
+      await page.goto(
+        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+      );
+
+      // Verify that the infrastructure is correctly loaded
+      await operationalStudiesPage.checkInfraLoaded();
+
+      // Click on add train button and verify tab warnings
+      await operationalStudiesPage.clickOnAddTrainButton();
+      await operationalStudiesPage.verifyTabWarningPresence();
+
+      // Select electric rolling stock and navigate to the Route Tab
+      await rollingstockSelectorPage.selectRollingStock(electricRollingStockName);
+      await operationalStudiesPage.clickOnRouteTab();
+    }
   );
-});
 
-test.describe('Verifying that all elements in the route tab are loaded correctly', () => {
-  test('should correctly select a route for operational study', async ({ page, browserName }) => {
+  /** *************** Test 1 **************** */
+  test('Select a route for operational study', async ({ page, browserName }) => {
     const operationalStudiesPage = new OperationalStudiesPage(page);
-    const scenarioPage = new ScenarioPage(page);
+    const routePage = new RoutePage(page);
 
-    // Verify that the infrastructure is correctly loaded
-    await scenarioPage.checkInfraLoaded();
+    // Verify that no route is initially selected
+    await routePage.verifyNoSelectedRoute(OSRDLanguage);
 
-    // Click on add train button
-    await operationalStudiesPage.clickOnAddTrainBtn();
-
-    // Verify the presence of warnings in Rolling Stock and Route Tab
-    await operationalStudiesPage.verifyTabWarningPresence();
-
-    // Select electric rolling stock
-    await operationalStudiesPage.selectRollingStock(electricRollingStockName);
-
-    // Perform pathfinding and verify no selected route
-    await scenarioPage.openTabByDataId('tab-pathfinding');
-    await operationalStudiesPage.verifyNoSelectedRoute(selectedLanguage);
-    await operationalStudiesPage.performPathfindingByTrigram('WS', 'NES', 'MES');
-
-    /* Verify map markers in Chromium browser only:  
-    This check is not performed in Firefox because the map does not load correctly in Firefox. */
+    // Perform pathfinding by station trigrams and verify map markers in Chromium
+    await routePage.performPathfindingByTrigram('WS', 'NES', 'MES');
     if (browserName === 'chromium') {
       const expectedMapMarkersValues = ['West_station', 'North_East_station', 'Mid_East_station'];
-      await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
+      await routePage.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
-    // Verify absence of tab warning
+    // Verify that tab warnings are absent
     await operationalStudiesPage.verifyTabWarningAbsence();
   });
 
-  test('should correctly add waypoints in a route for operational study', async ({
-    page,
-    browserName,
-  }) => {
+  /** *************** Test 2 **************** */
+  test('Adding waypoints to a route for operational study', async ({ page, browserName }) => {
     const operationalStudiesPage = new OperationalStudiesPage(page);
-    const scenarioPage = new ScenarioPage(page);
+    const routePage = new RoutePage(page);
 
-    // Click on add train button
-    await operationalStudiesPage.clickOnAddTrainBtn();
+    // Perform pathfinding by station trigrams
+    await routePage.performPathfindingByTrigram('WS', 'NES');
 
-    // Select electric rolling stock
-    await operationalStudiesPage.selectRollingStock(electricRollingStockName);
-
-    // Perform pathfinding
-    await scenarioPage.openTabByDataId('tab-pathfinding');
-    await operationalStudiesPage.performPathfindingByTrigram('WS', 'NES');
-
-    // Add new waypoints
+    // Define waypoints and add them to the route
     const expectedViaValues = [
       { name: 'Mid_West_station', ch: 'BV', uic: '3', km: 'KM 11.850' },
       { name: 'Mid_East_station', ch: 'BV', uic: '4', km: 'KM 26.300' },
     ];
-    await operationalStudiesPage.addNewWaypoints(
-      2,
-      ['Mid_West_station', 'Mid_East_station'],
-      expectedViaValues
-    );
+    await routePage.addNewWaypoints(2, ['Mid_West_station', 'Mid_East_station'], expectedViaValues);
 
-    /* Verify map markers in Chromium browser:
-    This check is not performed in Firefox because the map does not load correctly in Firefox. */
+    // Verify map markers in Chromium
     if (browserName === 'chromium') {
       const expectedMapMarkersValues = [
         'West_station',
@@ -101,54 +94,48 @@ test.describe('Verifying that all elements in the route tab are loaded correctly
         'Mid_East_station',
         'North_East_station',
       ];
-      await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
+      await routePage.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
-    // Verify absence of tab warning
+    // Verify that tab warnings are absent
     await operationalStudiesPage.verifyTabWarningAbsence();
   });
 
-  test('should correctly reverse and delete waypoints in a route for operational study', async ({
-    browserName,
+  /** *************** Test 3 **************** */
+  test('Reversing and deleting waypoints in a route for operational study', async ({
     page,
+    browserName,
   }) => {
-    test.slow(browserName === 'webkit', 'This test is slow on safari');
-    const operationalStudiesPage = new OperationalStudiesPage(page);
-    const scenarioPage = new ScenarioPage(page);
+    test.slow(browserName === 'webkit', 'This test is slow on Safari');
 
-    // Click on add train button
-    await operationalStudiesPage.clickOnAddTrainBtn();
+    const routePage = new RoutePage(page);
 
-    // Select electric rolling stock
-    await operationalStudiesPage.selectRollingStock(electricRollingStockName);
-
-    // Perform pathfinding
-    await scenarioPage.openTabByDataId('tab-pathfinding');
-    await operationalStudiesPage.performPathfindingByTrigram('WS', 'SES', 'MWS');
+    // Perform pathfinding by station trigrams and verify map markers in Chromium
+    await routePage.performPathfindingByTrigram('WS', 'SES', 'MWS');
     const expectedMapMarkersValues = ['West_station', 'South_East_station', 'Mid_West_station'];
     if (browserName === 'chromium') {
-      await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
+      await routePage.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
     // Reverse the itinerary and verify the map markers
-    await operationalStudiesPage.clickOnReverseItinerary();
+    await routePage.clickOnReverseItinerary();
     if (browserName === 'chromium') {
       const reversedMapMarkersValues = [...expectedMapMarkersValues].reverse();
-      await operationalStudiesPage.verifyMapMarkers(...reversedMapMarkersValues);
+      await routePage.verifyMapMarkers(...reversedMapMarkersValues);
     }
 
     // Delete operational points and verify no selected route
-    await operationalStudiesPage.clickOnDeleteOPButtons(selectedLanguage);
-    await operationalStudiesPage.verifyNoSelectedRoute(selectedLanguage);
+    await routePage.clickOnDeleteOPButtons(OSRDLanguage);
+    await routePage.verifyNoSelectedRoute(OSRDLanguage);
 
-    // Search by trigram and verify map markers
-    await operationalStudiesPage.performPathfindingByTrigram('WS', 'SES', 'MWS');
+    // Perform pathfinding again and verify map markers in Chromium
+    await routePage.performPathfindingByTrigram('WS', 'SES', 'MWS');
     if (browserName === 'chromium') {
-      await operationalStudiesPage.verifyMapMarkers(...expectedMapMarkersValues);
+      await routePage.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
-    // Delete itinerary and verify no selected route
-    await operationalStudiesPage.clickDeleteItineraryButton();
-    await operationalStudiesPage.verifyNoSelectedRoute(selectedLanguage);
+    // Delete the itinerary and verify no selected route
+    await routePage.clickDeleteItineraryButton();
+    await routePage.verifyNoSelectedRoute(OSRDLanguage);
   });
 });
