@@ -8,6 +8,9 @@
 /docker                                                  @openrailassociation/OSRD-DevOps
 /docker-compose.yml                                      @openrailassociation/OSRD-DevOps
 
+# -- Scripts --
+/scripts                                                 @openrailassociation/OSRD-DevOps
+
 # --- NIX ---
 /nix                                                     @openrailassociation/OSRD-DevOps
 /flake.lock                                              @openrailassociation/OSRD-DevOps
