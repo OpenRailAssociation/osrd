@@ -126,8 +126,18 @@ fun getRoutePathStartOffset(
 ): Offset<Path> {
     var prevChunksLength = Offset<Path>(0.meters)
     val routeChunks = zonePaths.flatMap { infra.getZonePathChunks(it) }
+
+    var firstChunk = chunkPath.chunks[0]
+    var firstChunkLength = infra.getTrackChunkLength(firstChunk.value)
+    if (firstChunkLength == chunkPath.beginOffset && chunkPath.chunks.size > 1) {
+        // If the path start precisely at the end of the first chunk, it may not be present in the
+        // route path. We can look for the next chunk instead.
+        firstChunk = chunkPath.chunks[1]
+        prevChunksLength += firstChunkLength.distance
+    }
+
     for (chunk in routeChunks) {
-        if (chunk == chunkPath.chunks.first()) {
+        if (chunk == firstChunk) {
             return prevChunksLength + chunkPath.beginOffset.distance
         }
         prevChunksLength += infra.getTrackChunkLength(chunk.value).distance
