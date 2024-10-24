@@ -51,19 +51,19 @@ pub enum MacroNodeError {
 
 #[derive(IntoParams, Deserialize)]
 #[allow(unused)]
-pub struct MacroNodeIdParam {
+struct MacroNodeIdParam {
     node_id: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct MacroNodeForm {
-    pub position_x: f64,
-    pub position_y: f64,
-    pub full_name: Option<String>,
-    pub connection_time: i64,
-    pub labels: Vec<Option<String>>,
-    pub trigram: Option<String>,
-    pub path_item_key: String,
+    position_x: f64,
+    position_y: f64,
+    full_name: Option<String>,
+    connection_time: i64,
+    labels: Vec<Option<String>>,
+    trigram: Option<String>,
+    path_item_key: String,
 }
 
 impl MacroNodeForm {
@@ -82,20 +82,21 @@ impl MacroNodeForm {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
 pub struct MacroNodeResponse {
-    pub id: i64,
-    pub position_x: f64,
-    pub position_y: f64,
-    pub full_name: Option<String>,
-    pub connection_time: i64,
-    pub labels: Vec<Option<String>>,
-    pub trigram: Option<String>,
-    pub path_item_key: String,
+    id: i64,
+    position_x: f64,
+    position_y: f64,
+    full_name: Option<String>,
+    connection_time: i64,
+    labels: Vec<Option<String>>,
+    trigram: Option<String>,
+    path_item_key: String,
 }
 
-impl MacroNodeResponse {
-    pub fn new(node: MacroNode) -> Self {
+impl From<MacroNode> for MacroNodeResponse {
+    fn from(node: MacroNode) -> Self {
         Self {
             id: node.id,
             position_x: node.position_x,
@@ -109,7 +110,20 @@ impl MacroNodeResponse {
     }
 }
 
-#[derive(Debug, Serialize, PartialEq, Clone, ToSchema)]
+impl PartialEq<MacroNodeResponse> for MacroNode {
+    fn eq(&self, other: &MacroNodeResponse) -> bool {
+        self.id == other.id
+            && self.position_x == other.position_x
+            && self.position_y == other.position_y
+            && self.full_name == other.full_name
+            && self.connection_time == other.connection_time
+            && self.labels == other.labels
+            && self.trigram == other.trigram
+            && self.path_item_key == other.path_item_key
+    }
+}
+
+#[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub struct MacroNodeListResponse {
     #[serde(flatten)]
@@ -133,8 +147,6 @@ async fn list(
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
     Query(pagination_params): Query<PaginationQueryParam>,
 ) -> Result<Json<MacroNodeListResponse>> {
-    let conn = &mut db_pool.get().await?;
-
     // Checking role
     let authorized = auth
         .check_roles([BuiltinRole::OpsRead].into())
@@ -144,13 +156,14 @@ async fn list(
         return Err(AuthorizationError::Unauthorized.into());
     }
 
+    let conn = &mut db_pool.get().await?;
+
     // Check for project / study / scenario
     check_project_study_scenario(conn, project_id, study_id, scenario_id).await?;
 
     // Ask the db
     let settings = pagination_params
-        .validate(1000)?
-        .warn_page_size(100)
+        .validate(100)?
         .into_selection_settings()
         .filter(move || MacroNode::SCENARIO_ID.eq(scenario_id));
     let (result, stats) = MacroNode::list_paginated(conn, settings).await?;
@@ -158,7 +171,10 @@ async fn list(
     // Produce the response
     Ok(Json(MacroNodeListResponse {
         stats,
-        results: result.into_iter().map(MacroNodeResponse::new).collect_vec(),
+        results: result
+            .into_iter()
+            .map(MacroNodeResponse::from)
+            .collect_vec(),
     }))
 }
 
@@ -191,25 +207,22 @@ async fn create(
         .await?
         .transaction::<_, InternalError, _>(|conn| {
             async move {
+                let db_conn = &mut conn.clone();
                 // check if scneario exists
-                let (mut project, mut study, mut scenario) = check_project_study_scenario(
-                    &mut conn.clone(),
-                    project_id,
-                    study_id,
-                    scenario_id,
-                )
-                .await?;
+                let (mut project, mut study, mut scenario) =
+                    check_project_study_scenario(db_conn, project_id, study_id, scenario_id)
+                        .await?;
 
                 // save the node
                 let macro_node = data
                     .into_macro_node_changeset(scenario_id)?
-                    .create(&mut conn.clone())
+                    .create(db_conn)
                     .await?;
 
                 // Update last_modification fields
-                scenario.update_last_modified(&mut conn.clone()).await?;
-                study.update_last_modified(&mut conn.clone()).await?;
-                project.update_last_modified(&mut conn.clone()).await?;
+                scenario.update_last_modified(db_conn).await?;
+                study.update_last_modified(db_conn).await?;
+                project.update_last_modified(db_conn).await?;
 
                 Ok(macro_node)
             }
@@ -217,7 +230,7 @@ async fn create(
         })
         .await?;
 
-    Ok(Json(MacroNodeResponse::new(created)))
+    Ok(Json(MacroNodeResponse::from(created)))
 }
 
 #[utoipa::path(
@@ -248,13 +261,9 @@ async fn get(
     check_project_study_scenario(conn, project_id, study_id, scenario_id).await?;
 
     // Get / check the node
-    let macro_node =
-        MacroNode::retrieve_or_fail(conn, node_id, || MacroNodeError::NotFound { node_id }).await?;
-    if macro_node.scenario_id != scenario_id {
-        return Err(MacroNodeError::NotFound { node_id }.into());
-    }
+    let macro_node = retrieve_macro_node_and_check_scenario(conn, scenario_id, node_id).await?;
 
-    Ok(Json(MacroNodeResponse::new(macro_node)))
+    Ok(Json(MacroNodeResponse::from(macro_node)))
 }
 
 #[utoipa::path(
@@ -286,34 +295,23 @@ async fn update(
         .await?
         .transaction::<_, InternalError, _>(|conn| {
             async move {
-                // Get / check the node
-                let (mut project, mut study, mut scenario) = check_project_study_scenario(
-                    &mut conn.clone(),
-                    project_id,
-                    study_id,
-                    scenario_id,
-                )
-                .await?;
+                let db_conn = &mut conn.clone();
 
-                let node = MacroNode::retrieve_or_fail(&mut conn.clone(), node_id, || {
-                    MacroNodeError::NotFound { node_id }
-                })
-                .await?;
-                if node.scenario_id != scenario_id {
-                    return Err(MacroNodeError::NotFound { node_id }.into());
-                }
+                // Get / check the node
+                let (mut project, mut study, mut scenario) =
+                    check_project_study_scenario(db_conn, project_id, study_id, scenario_id)
+                        .await?;
+                retrieve_macro_node_and_check_scenario(db_conn, scenario_id, node_id).await?;
 
                 let macro_node = data
                     .into_macro_node_changeset(scenario_id)?
-                    .update_or_fail(&mut conn.clone(), node_id, || ScenarioError::NotFound {
-                        scenario_id,
-                    })
+                    .update_or_fail(db_conn, node_id, || ScenarioError::NotFound { scenario_id })
                     .await?;
 
                 // Update last_modification fields
-                scenario.update_last_modified(&mut conn.clone()).await?;
-                study.update_last_modified(&mut conn.clone()).await?;
-                project.update_last_modified(&mut conn.clone()).await?;
+                scenario.update_last_modified(db_conn).await?;
+                study.update_last_modified(db_conn).await?;
+                project.update_last_modified(db_conn).await?;
 
                 Ok(macro_node)
             }
@@ -321,7 +319,7 @@ async fn update(
         })
         .await?;
 
-    Ok(Json(MacroNodeResponse::new(updated)))
+    Ok(Json(MacroNodeResponse::from(updated)))
 }
 
 #[utoipa::path(
@@ -351,32 +349,23 @@ async fn delete(
         .await?
         .transaction::<_, InternalError, _>(|conn| {
             async move {
+                let db_conn = &mut conn.clone();
+
                 // Get / check the node
-                let (mut project, mut study, mut scenario) = check_project_study_scenario(
-                    &mut conn.clone(),
-                    project_id,
-                    study_id,
-                    scenario_id,
-                )
-                .await?;
-                let macro_node = MacroNode::retrieve_or_fail(&mut conn.clone(), node_id, || {
-                    MacroNodeError::NotFound { node_id }
-                })
-                .await?;
-                if macro_node.scenario_id != scenario_id {
-                    return Err(MacroNodeError::NotFound { node_id }.into());
-                }
+                let (mut project, mut study, mut scenario) =
+                    check_project_study_scenario(db_conn, project_id, study_id, scenario_id)
+                        .await?;
+
+                let macro_node =
+                    retrieve_macro_node_and_check_scenario(db_conn, scenario_id, node_id).await?;
 
                 // Delete
-                MacroNode::delete_static_or_fail(&mut conn.clone(), node_id, || {
-                    MacroNodeError::NotFound { node_id }
-                })
-                .await?;
+                macro_node.delete(db_conn).await?;
 
                 // Update last_modification fields
-                scenario.update_last_modified(&mut conn.clone()).await?;
-                study.update_last_modified(&mut conn.clone()).await?;
-                project.update_last_modified(&mut conn.clone()).await?;
+                scenario.update_last_modified(db_conn).await?;
+                study.update_last_modified(db_conn).await?;
+                project.update_last_modified(db_conn).await?;
 
                 Ok(())
             }
@@ -412,6 +401,21 @@ async fn check_project_study_scenario(
     }
 
     Ok((project, study, scenario))
+}
+
+async fn retrieve_macro_node_and_check_scenario(
+    conn: &mut DbConnection,
+    scenario_id: i64,
+    node_id: i64,
+) -> Result<MacroNode> {
+    let node = MacroNode::retrieve_or_fail(&mut conn.clone(), node_id, || {
+        MacroNodeError::NotFound { node_id }
+    })
+    .await?;
+    if node.scenario_id != scenario_id {
+        return Err(MacroNodeError::NotFound { node_id }.into());
+    }
+    Ok(node)
 }
 
 #[cfg(test)]
@@ -518,14 +522,7 @@ pub mod test {
         let response: MacroNodeResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        assert_eq!(fixtures.nodes[0].id, response.id);
-        assert_eq!(fixtures.nodes[0].full_name, response.full_name);
-        assert_eq!(fixtures.nodes[0].position_x, response.position_x,);
-        assert_eq!(fixtures.nodes[0].position_y, response.position_y);
-        assert_eq!(fixtures.nodes[0].labels, response.labels);
-        assert_eq!(fixtures.nodes[0].connection_time, response.connection_time);
-        assert_eq!(fixtures.nodes[0].path_item_key, response.path_item_key);
-        assert_eq!(fixtures.nodes[0].trigram, response.trigram);
+        assert_eq!(fixtures.nodes[0], response);
     }
 
     #[rstest]
@@ -557,25 +554,41 @@ pub mod test {
         ));
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let node = MacroNode::retrieve(&mut db_pool.get_ok(), fixtures.nodes[0].id)
+        let found = MacroNode::exists(&mut db_pool.get_ok(), fixtures.nodes[0].id)
             .await
             .unwrap();
-        assert_eq!(None, node)
+        assert_eq!(false, found)
+    }
+
+    #[rstest]
+    async fn retrieve_with_bad_scenario() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
+
+        let result = retrieve_macro_node_and_check_scenario(
+            &mut db_pool.get_ok(),
+            fixtures.scenario.id + 1,
+            fixtures.nodes[0].id,
+        )
+        .await;
+
+        assert!(result.is_err());
     }
 
     fn random_string(n: usize) -> String {
         thread_rng()
             .sample_iter(&Alphanumeric)
             .take(n)
-            .map(char::from) // From link above, this is needed in later versions
+            .map(char::from)
             .collect()
     }
 
-    pub struct MacroNodeFixtureSet {
-        pub project: Project,
-        pub study: Study,
-        pub scenario: Scenario,
-        pub nodes: Vec<MacroNode>,
+    struct MacroNodeFixtureSet {
+        project: Project,
+        study: Study,
+        scenario: Scenario,
+        nodes: Vec<MacroNode>,
     }
 
     async fn create_macro_node_fixtures_set(
@@ -586,7 +599,7 @@ pub mod test {
         let fixtures = create_scenario_fixtures_set(conn, "test_scenario_name").await;
 
         let mut nodes: Vec<MacroNode> = Vec::new();
-        for _x in 0..number {
+        for _ in 0..number {
             // Create node
             let node = MacroNode::changeset()
                 .scenario_id(fixtures.scenario.id)

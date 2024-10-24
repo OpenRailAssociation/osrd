@@ -3,9 +3,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-#[allow(unused_imports)]
-use crate::models::prelude::*;
-
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = editoast_models::tables::macro_node)]
 #[model(gen(ops = crud, list))]
@@ -21,15 +18,14 @@ pub struct MacroNode {
     pub path_item_key: String,
 }
 
-impl MacroNode {}
-
 #[cfg(test)]
 pub mod test {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
     use super::*;
-    use crate::{models::fixtures::create_scenario_fixtures_set, Model};
+    use crate::models::fixtures::create_scenario_fixtures_set;
+    use crate::models::prelude::*;
     use editoast_models::DbConnectionPoolV2;
 
     #[rstest]

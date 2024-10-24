@@ -311,28 +311,3 @@ pub async fn create_work_schedules_fixture_set(
 
     (work_schedule_group, work_schedules)
 }
-
-pub struct MacroNodeFixtureSet {
-    pub project: Project,
-    pub study: Study,
-    pub scenario: Scenario,
-    pub timetable: Timetable,
-    pub infra: Infra,
-}
-pub async fn create_macro_node_fixtures_set(
-    conn: &mut DbConnection,
-    name: &str,
-) -> ScenarioFixtureSet {
-    let project = create_project(conn, &format!("project_test_name_with_{name}")).await;
-    let study = create_study(conn, &format!("study_test_name_with_{name}"), project.id).await;
-    let infra = create_empty_infra(conn).await;
-    let timetable = create_timetable(conn).await;
-    let scenario = create_scenario(conn, name, study.id, timetable.id, infra.id).await;
-    ScenarioFixtureSet {
-        project,
-        study,
-        scenario,
-        timetable,
-        infra,
-    }
-}
