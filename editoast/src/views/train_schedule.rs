@@ -27,7 +27,6 @@ use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::CompleteReportTrain;
-use crate::core::simulation::PhysicsConsist;
 use crate::core::simulation::PhysicsConsistParameters;
 use crate::core::simulation::ReportTrain;
 use crate::core::simulation::SignalSighting;
@@ -591,10 +590,7 @@ fn build_simulation_request(
         speed_limit_tag: train_schedule.speed_limit_tag.clone(),
         power_restrictions,
         options: train_schedule.options.clone(),
-        rolling_stock: PhysicsConsist::new(
-            rolling_stock.into(),
-            PhysicsConsistParameters::default(),
-        ),
+        rolling_stock: PhysicsConsistParameters::with_traction_engine(rolling_stock.into()).into(),
         electrical_profile_set_id,
     }
 }

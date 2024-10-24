@@ -19,6 +19,7 @@ import createMargin from './createMargin';
 
 type ValidStdcmConfig = {
   rollingStockId: number;
+  towedRollingStockID?: number;
   timetableId: number;
   infraId: number;
   rollingStockComfort: TrainScheduleBase['comfort'];
@@ -27,7 +28,6 @@ type ValidStdcmConfig = {
   totalMass?: number;
   totalLength?: number;
   maxSpeed?: number;
-  towedRollingStockID?: number;
   margin?: StandardAllowance;
   gridMarginBefore?: number;
   gridMarginAfter?: number;
@@ -47,6 +47,7 @@ export const checkStdcmConf = (
     rollingStockComfort,
     infraID,
     rollingStockID,
+    towedRollingStockID,
     standardStdcmAllowance,
     gridMarginBefore,
     gridMarginAfter,
