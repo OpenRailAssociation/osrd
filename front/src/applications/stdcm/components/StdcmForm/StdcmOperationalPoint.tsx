@@ -2,17 +2,18 @@ import { useEffect, useMemo } from 'react';
 
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
-import type { PathStep } from 'reducers/osrdconf/types';
+import { useOsrdConfActions } from 'common/osrdContext';
+import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
 import { normalized } from 'utils/strings';
 import { createFixedSelectOptions } from 'utils/uiCoreHelpers';
 
 type StdcmOperationalPointProps = {
-  updatePoint: (pathStep: PathStep | null) => void;
-  point: PathStep | null;
+  point: StdcmPathStep;
   opPointId: string;
   disabled?: boolean;
 };
@@ -23,16 +24,14 @@ function formatChCode(chCode: string) {
   return chCode === '' ? 'BV' : chCode;
 }
 
-const StdcmOperationalPoint = ({
-  updatePoint,
-  point,
-  opPointId,
-  disabled,
-}: StdcmOperationalPointProps) => {
+const StdcmOperationalPoint = ({ point, opPointId, disabled }: StdcmOperationalPointProps) => {
   const { t } = useTranslation('stdcm');
+  const dispatch = useAppDispatch();
 
   const { searchTerm, chCodeFilter, sortedSearchResults, setSearchTerm, setChCodeFilter } =
-    useSearchOperationalPoint({ initialSearchTerm: point?.name, initialChCodeFilter: point?.ch });
+    useSearchOperationalPoint({ initialSearchTerm: point.name, initialChCodeFilter: point.ch });
+
+  const { updateStdcmPathStep } = useOsrdConfActions() as StdcmConfSliceActions;
 
   const operationalPointsSuggestions = useMemo(
     () =>
@@ -76,17 +75,16 @@ const StdcmOperationalPoint = ({
   );
 
   const dispatchNewPoint = (p?: SearchResultItemOperationalPoint) => {
-    if (p && p.ch === point?.ch && 'uic' in point && p.uic === point?.uic) return;
+    if (p && p.ch === point.ch && 'uic' in point && p.uic === point.uic) return;
     const newPoint = p
       ? {
           name: p.name,
           ch: p.ch,
-          id: point?.id || nextId(),
           uic: p.uic,
           coordinates: p.geographic.coordinates,
         }
-      : null;
-    updatePoint(newPoint);
+      : { name: undefined, ch: undefined, uic: -1, coordinates: undefined };
+    dispatch(updateStdcmPathStep({ ...point, ...newPoint }));
   };
 
   const updateSelectedPoint = (

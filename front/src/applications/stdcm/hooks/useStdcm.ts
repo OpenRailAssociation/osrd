@@ -42,7 +42,7 @@ const useStdcm = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['translation', 'stdcm']);
   const { getConf, getTimetableID } = useOsrdConfSelectors();
-  const osrdconf = useSelector(getConf);
+  const osrdconf = useSelector(getConf) as OsrdStdcmConfState;
   const timetableId = useSelector(getTimetableID);
 
   const stdcmResults = useStdcmResults(stdcmResponse, stdcmTrainResult, setPathProperties);
@@ -73,7 +73,7 @@ const useStdcm = ({
     setIsStdcmResultsEmpty(false);
     setStdcmResponse(undefined);
 
-    const validConfig = checkStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
+    const validConfig = checkStdcmConf(dispatch, t, osrdconf);
     if (validConfig) {
       const payload = formatStdcmPayload(validConfig);
       try {
@@ -89,7 +89,7 @@ const useStdcm = ({
             rollingStock: stdcmRollingStock,
             creationDate: new Date(),
             speedLimitByTag,
-            simulationPathSteps: osrdconf.pathSteps,
+            simulationPathSteps: osrdconf.stdcmPathSteps,
           } as StdcmSuccessResponse);
 
           const stdcmTrain: TrainScheduleResult = {

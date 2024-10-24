@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import OriginIcon from 'assets/pictures/stdcm/start.svg';
-import { useOsrdConfActions } from 'common/osrdContext';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import { extractDateAndTimefromISO, generateISODateFromDateTime } from 'utils/date';
 
@@ -13,55 +14,35 @@ import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmOpSchedule from './StdcmOpSchedule';
 import { DEFAULT_TOLERANCE } from '../../consts';
-import { ArrivalTimeTypes, type ScheduleConstraint, type StdcmConfigCardProps } from '../../types';
+import type { ArrivalTimeTypes, ScheduleConstraint, StdcmConfigCardProps } from '../../types';
 
-const StdcmOrigin = ({
-  disabled = false,
-  origin,
-}: StdcmConfigCardProps & {
-  origin: PathStep | null;
-}) => {
+const StdcmOrigin = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const [arrivalScheduleConstraint, setArrivalScheduleConstraint] = useState<ScheduleConstraint>();
+  const { getStdcmOrigin } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const origin = useSelector(getStdcmOrigin);
 
-  const { updateOrigin, updateOriginArrival, updateOriginArrivalType, updateOriginTolerances } =
-    useOsrdConfActions() as StdcmConfSliceActions;
+  const { updateStdcmPathStep } = useOsrdConfActions() as StdcmConfSliceActions;
 
   const { originArrival, originToleranceValues } = useMemo(
     () => ({
-      originArrival: origin?.arrival ? extractDateAndTimefromISO(origin.arrival) : undefined,
+      originArrival: origin.arrival ? extractDateAndTimefromISO(origin.arrival) : undefined,
       originToleranceValues: {
-        arrivalToleranceBefore: origin?.arrivalToleranceBefore || DEFAULT_TOLERANCE,
-        arrivalToleranceAfter: origin?.arrivalToleranceAfter || DEFAULT_TOLERANCE,
+        arrivalToleranceBefore: origin.tolerances?.before || DEFAULT_TOLERANCE,
+        arrivalToleranceAfter: origin.tolerances?.after || DEFAULT_TOLERANCE,
       },
     }),
     [origin]
   );
 
-  const updateOriginPoint = (pathStep: PathStep | null) => {
-    if (!pathStep || !arrivalScheduleConstraint) {
-      dispatch(updateOrigin(pathStep));
-    } else {
-      dispatch(
-        updateOrigin({
-          ...pathStep,
-          arrival: generateISODateFromDateTime(arrivalScheduleConstraint),
-        })
-      );
-    }
-  };
-
   const onOriginArrivalChange = (schedule: ScheduleConstraint) => {
-    setArrivalScheduleConstraint(schedule);
-
-    const newOpArrival = generateISODateFromDateTime(schedule);
-    dispatch(updateOriginArrival(newOpArrival));
+    const newPathStep = { ...origin, arrival: generateISODateFromDateTime(schedule) };
+    dispatch(updateStdcmPathStep(newPathStep));
   };
 
   const onOriginArrivalTypeChange = (arrivalType: ArrivalTimeTypes) => {
-    dispatch(updateOriginArrivalType(arrivalType));
+    dispatch(updateStdcmPathStep({ ...origin, arrivalType }));
   };
 
   const onOriginToleranceChange = ({
@@ -71,7 +52,12 @@ const StdcmOrigin = ({
     toleranceBefore: number;
     toleranceAfter: number;
   }) => {
-    dispatch(updateOriginTolerances({ toleranceBefore, toleranceAfter }));
+    dispatch(
+      updateStdcmPathStep({
+        ...origin,
+        tolerances: { before: toleranceBefore, after: toleranceAfter },
+      })
+    );
   };
 
   return (
@@ -82,24 +68,19 @@ const StdcmOrigin = ({
       disabled={disabled}
       hasTip
     >
-      <StdcmOperationalPoint
-        updatePoint={updateOriginPoint}
-        point={origin}
-        opPointId={origin?.id || 'origin'}
-        disabled={disabled}
-      />
-      {origin && (
-        <StdcmOpSchedule
-          onArrivalChange={onOriginArrivalChange}
-          onArrivalTypeChange={onOriginArrivalTypeChange}
-          onArrivalToleranceChange={onOriginToleranceChange}
-          opTimingData={originArrival}
-          opToleranceValues={originToleranceValues}
-          opScheduleTimeType={origin?.arrivalType || ArrivalTimeTypes.PRECISE_TIME}
-          disabled={disabled}
-          opId="origin-arrival"
-        />
+      {'uic' in origin && (
+        <StdcmOperationalPoint point={origin} opPointId={origin.id} disabled={disabled} />
       )}
+      <StdcmOpSchedule
+        onArrivalChange={onOriginArrivalChange}
+        onArrivalTypeChange={onOriginArrivalTypeChange}
+        onArrivalToleranceChange={onOriginToleranceChange}
+        opTimingData={originArrival}
+        opToleranceValues={originToleranceValues}
+        opScheduleTimeType={origin.arrivalType}
+        disabled={disabled}
+        opId="origin-arrival"
+      />
     </StdcmCard>
   );
 };

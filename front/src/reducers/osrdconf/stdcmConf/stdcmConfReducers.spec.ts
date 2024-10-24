@@ -1,13 +1,12 @@
-import { last } from 'lodash';
 import { describe, it, expect } from 'vitest';
 
-import { ArrivalTimeTypes } from 'applications/stdcm/types';
+import { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcm/types';
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
   stdcmConfSliceActions,
 } from 'reducers/osrdconf/stdcmConf';
-import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
+import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 
 import commonConfBuilder from '../osrdConfCommon/__tests__/commonConfBuilder';
@@ -39,12 +38,29 @@ const testDataBuilder = {
   ...commonConfBuilder(),
 };
 
-const [brest, rennes, lemans, paris] = testDataBuilder.buildPathSteps();
+const pathSteps = testDataBuilder.buildPathSteps();
+const [brest, rennes, lemans, paris] = pathSteps;
+const stdcmPathSteps = pathSteps.map(
+  (step, index) =>
+    ({
+      ...step,
+      ...(index === 0 || index === pathSteps.length - 1
+        ? {
+            isVia: false,
+            arrivalType: ArrivalTimeTypes.PRECISE_TIME,
+          }
+        : {
+            isVia: true,
+            stopType: StdcmStopTypes.PASSAGE_TIME,
+          }),
+    }) as StdcmPathStep
+);
 
 const initialStateSTDCMConfig = {
   rollingStockID: 10,
   pathSteps: [paris, lemans, rennes, brest],
   speedLimitByTag: 'init-tag',
+  stdcmPathSteps,
 };
 
 describe('stdcmConfReducers', () => {
@@ -76,7 +92,7 @@ describe('stdcmConfReducers', () => {
 
     const state = store.getState()[stdcmConfSlice.name];
     expect(state.rollingStockID).toBe(stdcmConfInitialState.rollingStockID);
-    expect(state.pathSteps).toBe(stdcmConfInitialState.pathSteps);
+    expect(state.stdcmPathSteps).toBe(stdcmConfInitialState.stdcmPathSteps);
     expect(state.speedLimitByTag).toBe(stdcmConfInitialState.speedLimitByTag);
   });
 
@@ -94,53 +110,6 @@ describe('stdcmConfReducers', () => {
     expect(state.rollingStockID).toBe(20);
     expect(state.pathSteps).toEqual([paris, rennes]);
     expect(state.speedLimitByTag).toBe('new-tag');
-  });
-
-  describe('Origin updates', () => {
-    const store = createStore(initialStateSTDCMConfig);
-    const newOrigin = {
-      ...paris,
-      arrivalType: ArrivalTimeTypes.PRECISE_TIME,
-    };
-
-    it('should handle updateOriginArrival', () => {
-      store.dispatch(stdcmConfSliceActions.updateOrigin(newOrigin));
-      store.dispatch(stdcmConfSliceActions.updateOriginArrival('2024-08-12T15:45:00.000+02:00'));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.pathSteps[0]).toEqual({
-        ...newOrigin,
-        arrival: '2024-08-12T15:45:00.000+02:00',
-      });
-    });
-
-    it('should handle updateOriginArrival with undefined', () => {
-      store.dispatch(stdcmConfSliceActions.updateOriginArrival(undefined));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.pathSteps[0]).toEqual({
-        ...newOrigin,
-        arrival: undefined,
-      });
-    });
-
-    it('should handle updateOriginArrivalType', () => {
-      store.dispatch(stdcmConfSliceActions.updateOriginArrivalType(ArrivalTimeTypes.PRECISE_TIME));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.pathSteps[0]).toEqual({
-        ...newOrigin,
-      });
-    });
-
-    it('should handle updateOriginTolerances', () => {
-      store.dispatch(
-        stdcmConfSliceActions.updateOriginTolerances({ toleranceBefore: 300, toleranceAfter: 300 })
-      );
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.pathSteps[0]).toEqual({
-        ...newOrigin,
-        arrivalToleranceBefore: 300,
-        arrivalToleranceAfter: 300,
-      });
-    });
   });
 
   describe('Consist updates', () => {
@@ -163,59 +132,57 @@ describe('stdcmConfReducers', () => {
     });
   });
 
-  describe('Destination updates', () => {
+  describe('StdcmPathStep updates', () => {
     const store = createStore(initialStateSTDCMConfig);
-    const newDestination = {
-      ...brest,
-      arrivalType: ArrivalTimeTypes.ASAP,
-    };
 
-    it('should handle updateDestinationArrival', () => {
-      store.dispatch(stdcmConfSliceActions.updateDestination(newDestination));
-      store.dispatch(
-        stdcmConfSliceActions.updateDestinationArrival('2024-08-12T15:45:00.000+02:00')
-      );
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(last(state.pathSteps)).toEqual({
-        ...newDestination,
+    it('should handle origin update', () => {
+      const origin = store.getState()[stdcmConfSlice.name].stdcmPathSteps.at(0)!;
+      expect(origin.isVia).toBe(false);
+      const newOrigin = {
+        ...origin,
+        arrivalType: ArrivalTimeTypes.ASAP,
         arrival: '2024-08-12T15:45:00.000+02:00',
-      });
+        tolerances: {
+          before: 60,
+          after: 60,
+        },
+      };
+
+      store.dispatch(stdcmConfSliceActions.updateStdcmPathStep(newOrigin));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.stdcmPathSteps.at(0)).toEqual(newOrigin);
     });
 
-    it('should handle updateDestinationArrival with undefined', () => {
-      store.dispatch(stdcmConfSliceActions.updateDestinationArrival(undefined));
+    it('should handle via update', () => {
+      const via = store.getState()[stdcmConfSlice.name].stdcmPathSteps.at(1)!;
+      expect(via.isVia).toBe(true);
+      const newVia = {
+        ...via,
+        stopType: StdcmStopTypes.DRIVER_SWITCH,
+        stopFor: 'PT60',
+      };
+
+      store.dispatch(stdcmConfSliceActions.updateStdcmPathStep(newVia));
       const state = store.getState()[stdcmConfSlice.name];
-      expect(last(state.pathSteps)).toEqual({
-        ...newDestination,
-        arrival: undefined,
-      });
+      expect(state.stdcmPathSteps.at(1)).toEqual(newVia);
     });
 
-    it('should handle updateDestinationArrivalType', () => {
-      store.dispatch(
-        stdcmConfSliceActions.updateDestinationArrivalType(ArrivalTimeTypes.PRECISE_TIME)
-      );
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(last(state.pathSteps)).toEqual({
-        ...newDestination,
-        arrivalType: ArrivalTimeTypes.PRECISE_TIME,
-      });
-    });
+    it('should handle destination update', () => {
+      const destination = store.getState()[stdcmConfSlice.name].stdcmPathSteps.at(-1)!;
+      expect(destination.isVia).toBe(false);
+      const newDestination = {
+        ...destination,
+        arrivalType: ArrivalTimeTypes.ASAP,
+        arrival: '2024-08-12T15:45:00.000+02:00',
+        tolerances: {
+          before: 60,
+          after: 60,
+        },
+      };
 
-    it('should handle updateDestinationTolerances', () => {
-      store.dispatch(
-        stdcmConfSliceActions.updateDestinationTolerances({
-          toleranceBefore: 300,
-          toleranceAfter: 300,
-        })
-      );
+      store.dispatch(stdcmConfSliceActions.updateStdcmPathStep(newDestination));
       const state = store.getState()[stdcmConfSlice.name];
-      expect(last(state.pathSteps)).toEqual({
-        ...newDestination,
-        arrivalType: ArrivalTimeTypes.PRECISE_TIME,
-        arrivalToleranceBefore: 300,
-        arrivalToleranceAfter: 300,
-      });
+      expect(state.stdcmPathSteps.at(-1)).toEqual(newDestination);
     });
   });
 

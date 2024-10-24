@@ -1,13 +1,19 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
+import nextId from 'react-id-generator';
 
-import type { ArrivalTimeTypes } from 'applications/stdcm/types';
+import { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcm/types';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
-
-import { updateOriginPathStep, updateDestinationPathStep } from '../helpers';
+import { addElementAtIndex } from 'utils/array';
+import type { ArrayElement } from 'utils/types';
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
+  // TODO: remove all the default uic values
+  stdcmPathSteps: [
+    { id: nextId(), uic: -1, isVia: false, arrivalType: ArrivalTimeTypes.PRECISE_TIME },
+    { id: nextId(), uic: -1, isVia: false, arrivalType: ArrivalTimeTypes.ASAP },
+  ],
   standardStdcmAllowance: undefined,
   totalMass: undefined,
   totalLength: undefined,
@@ -22,7 +28,7 @@ export const stdcmConfSlice = createSlice({
     ...buildCommonConfReducers<OsrdStdcmConfState>(),
     resetStdcmConfig(state: Draft<OsrdStdcmConfState>) {
       state.rollingStockID = stdcmConfInitialState.rollingStockID;
-      state.pathSteps = stdcmConfInitialState.pathSteps;
+      state.stdcmPathSteps = stdcmConfInitialState.stdcmPathSteps;
       state.speedLimitByTag = stdcmConfInitialState.speedLimitByTag;
     },
     updateTotalMass(
@@ -80,47 +86,34 @@ export const stdcmConfSlice = createSlice({
         state.workScheduleGroupId = action.payload.workScheduleGroupId;
       }
     },
-    updateOriginArrival(
+    updateStdcmPathSteps(
       state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<string | undefined>
+      action: PayloadAction<OsrdStdcmConfState['stdcmPathSteps']>
     ) {
-      state.pathSteps = updateOriginPathStep(state.pathSteps, { arrival: action.payload });
+      state.stdcmPathSteps = action.payload;
     },
-    updateDestinationArrival(
+    updateStdcmPathStep(
       state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<string | undefined>
+      action: PayloadAction<ArrayElement<OsrdStdcmConfState['stdcmPathSteps']>>
     ) {
-      state.pathSteps = updateDestinationPathStep(state.pathSteps, { arrival: action.payload });
+      const newPathSteps = state.stdcmPathSteps.map((pathStep) =>
+        pathStep.id === action.payload.id ? action.payload : pathStep
+      );
+      state.stdcmPathSteps = newPathSteps;
     },
-    updateOriginArrivalType(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<ArrivalTimeTypes>
-    ) {
-      state.pathSteps = updateOriginPathStep(state.pathSteps, { arrivalType: action.payload });
-    },
-    updateDestinationArrivalType(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<ArrivalTimeTypes>
-    ) {
-      state.pathSteps = updateDestinationPathStep(state.pathSteps, { arrivalType: action.payload });
-    },
-    updateOriginTolerances(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<{ toleranceBefore: number; toleranceAfter: number }>
-    ) {
-      state.pathSteps = updateOriginPathStep(state.pathSteps, {
-        arrivalToleranceBefore: action.payload.toleranceBefore,
-        arrivalToleranceAfter: action.payload.toleranceAfter,
+    addStdcmVia(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
+      // Index takes count of the origin in the array
+      state.stdcmPathSteps = addElementAtIndex(state.stdcmPathSteps, action.payload, {
+        id: nextId(),
+        uic: -1,
+        stopType: StdcmStopTypes.PASSAGE_TIME,
+        isVia: true,
       });
     },
-    updateDestinationTolerances(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<{ toleranceBefore: number; toleranceAfter: number }>
-    ) {
-      state.pathSteps = updateDestinationPathStep(state.pathSteps, {
-        arrivalToleranceBefore: action.payload.toleranceBefore,
-        arrivalToleranceAfter: action.payload.toleranceAfter,
-      });
+    deleteStdcmVia(state: Draft<OsrdStdcmConfState>, action: PayloadAction<string>) {
+      state.stdcmPathSteps = state.stdcmPathSteps.filter(
+        (pathStep) => pathStep.id !== action.payload
+      );
     },
   },
 });

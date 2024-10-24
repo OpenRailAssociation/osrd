@@ -12,11 +12,12 @@ import { useOsrdConfSelectors } from 'common/osrdContext';
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 
 const useStaticPathfinding = (infra?: InfraWithState) => {
-  const { getPathSteps } = useOsrdConfSelectors();
+  const { getStdcmPathSteps } = useOsrdConfSelectors() as StdcmConfSelectors;
 
-  const pathSteps = useSelector(getPathSteps);
+  const pathSteps = useSelector(getStdcmPathSteps);
   const { rollingStock } = useStoreDataForRollingStockSelector();
 
   const [pathfinding, setPathfinding] = useState<PathfindingResult>();
