@@ -96,7 +96,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
           style={{
             bottom: 0,
             left: 0,
-            top: 0,
+            top: 2,
             height: `${heightOfManchetteWithSpaceTimeChart - 6}px`,
           }}
         >
