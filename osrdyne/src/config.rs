@@ -10,6 +10,8 @@ use figment::{
     providers::{Env, Format, Serialized, Yaml},
     Figment,
 };
+use tracing::info;
+use url::Url;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "type")]
@@ -32,6 +34,22 @@ pub struct OsrdyneConfig {
     pub max_length_bytes: Option<usize>,
     pub api_address: String,
     pub extra_lifetime: Option<Duration>,
+    pub opentelemetry: Option<OpentelemetryConfig>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct OpentelemetryConfig {
+    pub service_name: Option<String>,
+    pub endpoint: Url,
+}
+
+impl Default for OpentelemetryConfig {
+    fn default() -> Self {
+        Self {
+            service_name: None,
+            endpoint: "http://jaeger:4317".parse().unwrap(),
+        }
+    }
 }
 
 impl Default for OsrdyneConfig {
@@ -47,13 +65,14 @@ impl Default for OsrdyneConfig {
             max_length_bytes: None,
             api_address: "0.0.0.0:4242".into(), // TODO: decide on the port
             extra_lifetime: None,
+            opentelemetry: None,
         }
     }
 }
 
 pub fn parse_config(file: Option<PathBuf>) -> Result<OsrdyneConfig, figment::Error> {
     let provider = if let Some(file) = file {
-        log::info!("Using configuration file: {}", file.display());
+        info!(file = %file.display(), "load configuration file");
         Yaml::file_exact(file)
     } else {
         Yaml::file("osrdyne.yml")

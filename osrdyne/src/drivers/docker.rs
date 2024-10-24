@@ -1,4 +1,4 @@
-use std::{collections::HashMap, future::Future, pin::Pin};
+use std::{collections::HashMap, fmt::Debug, future::Future, pin::Pin};
 
 use bollard::{
     container::{
@@ -10,6 +10,7 @@ use bollard::{
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::Key;
@@ -44,6 +45,17 @@ pub struct DockerDriver {
     version_identifier: String,
 }
 
+impl Debug for DockerDriver {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("DockerDriver")
+            .field("options", &self.options)
+            .field("amqp_uri", &self.amqp_uri)
+            .field("worker_pool", &self.worker_pool)
+            .field("version_identifier", &self.version_identifier)
+            .finish()
+    }
+}
+
 impl DockerDriver {
     pub fn new(
         options: DockerDriverOptions,
@@ -66,6 +78,7 @@ impl DockerDriver {
 }
 
 impl WorkerDriver for DockerDriver {
+    #[instrument]
     fn get_or_create_worker_group(
         &mut self,
         _queue_name: String,
@@ -124,7 +137,7 @@ impl WorkerDriver for DockerDriver {
                 "{}-{}-{}",
                 self.options.container_prefix, self.worker_pool, worker_key
             );
-            log::info!("Creating container {}", container_name);
+            info!(%container_name, "Creating container");
             let options = CreateContainerOptions {
                 name: container_name.clone(),
                 platform: None,
@@ -176,6 +189,7 @@ impl WorkerDriver for DockerDriver {
         })
     }
 
+    #[instrument]
     fn destroy_worker_group(
         &mut self,
         worker_key: Key,
@@ -184,7 +198,7 @@ impl WorkerDriver for DockerDriver {
             let current_workers = self.list_worker_groups().await?;
             for worker in current_workers {
                 if worker.worker_key == worker_key {
-                    log::info!("Removing container {}", worker.external_id);
+                    info!(%worker.external_id, "Removing container");
                     self.client
                         .remove_container(
                             &worker.external_id,
@@ -202,6 +216,7 @@ impl WorkerDriver for DockerDriver {
         })
     }
 
+    #[instrument]
     fn list_worker_groups(
         &self,
     ) -> Pin<Box<dyn Future<Output = Result<Vec<WorkerMetadata>, DriverError>> + Send + '_>> {
@@ -252,6 +267,7 @@ impl WorkerDriver for DockerDriver {
         })
     }
 
+    #[instrument]
     fn cleanup_stalled(
         &mut self,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {

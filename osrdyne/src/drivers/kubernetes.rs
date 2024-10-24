@@ -20,14 +20,15 @@ use k8s_openapi::{
 };
 use keda::{MetricType, ScaledObject};
 use kube::{api::ObjectMeta, Client};
-use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, HashMap},
+    fmt::Debug,
     future::Future,
     pin::Pin,
 };
+use tracing::{debug, info, instrument};
 use uuid::Uuid;
 
 mod keda;
@@ -141,6 +142,17 @@ pub struct KubernetesDriver {
     version_identifier: String,
 }
 
+impl Debug for KubernetesDriver {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("KubernetesDriver")
+            .field("pool_id", &self.pool_id)
+            .field("options", &self.options)
+            .field("amqp_uri", &self.amqp_uri)
+            .field("version_identifier", &self.version_identifier)
+            .finish()
+    }
+}
+
 impl KubernetesDriver {
     pub async fn new(
         options: KubernetesDriverOptions,
@@ -163,6 +175,7 @@ impl KubernetesDriver {
         }
     }
 
+    #[instrument]
     async fn create_hpa_autoscaler(
         &self,
         worker_id: String,
@@ -207,7 +220,7 @@ impl KubernetesDriver {
         };
 
         if let Some(version) = current_hpa_version {
-            info!("Updating HPA: {:?}", hpa);
+            debug!(?hpa, "Updating HPA");
 
             hpa.metadata.resource_version = Some(version);
 
@@ -223,7 +236,7 @@ impl KubernetesDriver {
             .await
             .map_err(super::worker_driver::DriverError::KubernetesError)?;
         } else {
-            debug!("Creating HPA: {:?}", hpa);
+            debug!(?hpa, "Creating HPA");
 
             kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
                 self.client.clone(),
@@ -237,6 +250,7 @@ impl KubernetesDriver {
         Ok(())
     }
 
+    #[instrument]
     async fn create_keda_autoscaler(
         &self,
         worker_id: String,
@@ -297,7 +311,7 @@ impl KubernetesDriver {
         };
 
         if let Some(version) = current_scaled_object_version {
-            info!("Updating Keda ScaledObject: {:?}", scaled_object);
+            debug!(?scaled_object.metadata.name, "Updating Keda ScaledObject");
 
             scaled_object.metadata.resource_version = Some(version);
 
@@ -313,7 +327,7 @@ impl KubernetesDriver {
             .await
             .map_err(super::worker_driver::DriverError::KubernetesError)?;
         } else {
-            info!("Creating Keda ScaledObject: {:?}", scaled_object);
+            debug!(?scaled_object.metadata.name, "Creating Keda ScaledObject");
 
             kube::api::Api::<ScaledObject>::namespaced(
                 self.client.clone(),
@@ -329,6 +343,7 @@ impl KubernetesDriver {
 }
 
 impl WorkerDriver for KubernetesDriver {
+    #[instrument]
     fn get_or_create_worker_group(
         &mut self,
         queue_name: String,
@@ -354,7 +369,7 @@ impl WorkerDriver for KubernetesDriver {
                 } else if worker.worker_key == worker_key {
                     // It's an update, and we found a worker with the same key but different version
                     // so we should update it
-                    info!("Updating worker: {:?}", worker);
+                    info!(?worker.worker_key, "Updating worker with key");
                     current_worker_id = Some(worker.worker_id);
                     last_known_version = worker
                         .metadata
@@ -473,7 +488,7 @@ impl WorkerDriver for KubernetesDriver {
                 ..Default::default()
             };
 
-            debug!("Creating deployment: {:?}", deployment);
+            debug!(?deployment, "Creating deployment");
 
             // Create the deployment
             if is_update {
@@ -576,6 +591,7 @@ impl WorkerDriver for KubernetesDriver {
         })
     }
 
+    #[instrument]
     fn destroy_worker_group(
         &mut self,
         worker_key: Key,
@@ -618,6 +634,7 @@ impl WorkerDriver for KubernetesDriver {
         })
     }
 
+    #[instrument]
     fn list_worker_groups(
         &self,
     ) -> Pin<Box<dyn Future<Output = Result<Vec<WorkerMetadata>, DriverError>> + Send + '_>> {
@@ -683,6 +700,7 @@ impl WorkerDriver for KubernetesDriver {
         })
     }
 
+    #[instrument]
     fn cleanup_stalled(
         &mut self,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
@@ -729,10 +747,7 @@ impl WorkerDriver for KubernetesDriver {
                             .iter()
                             .any(|worker| worker.worker_key == Key::decode(worker_key))
                         {
-                            info!(
-                                "Deleting HPA {} as the worker is not found",
-                                worker_deployment_name
-                            );
+                            info!(%worker_deployment_name, "Deleting HPA as the worker is not found");
 
                             kube::api::Api::<HorizontalPodAutoscaler>::namespaced(
                                 self.client.clone(),
@@ -777,10 +792,7 @@ impl WorkerDriver for KubernetesDriver {
                             .iter()
                             .any(|worker| worker.worker_key == Key::decode(worker_key))
                         {
-                            info!(
-                                "Deleting scaled object {} as the worker is not found",
-                                worker_deployment_name
-                            );
+                            info!(%worker_deployment_name, "Deleting Keda ScaledObject as the worker is not found");
 
                             kube::api::Api::<keda::ScaledObject>::namespaced(
                                 self.client.clone(),

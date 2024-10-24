@@ -1,6 +1,6 @@
-use log::trace;
 use tokio::sync::{mpsc, oneshot, watch};
 use tokio::time::{Duration, Instant};
+use tracing::trace;
 
 use crate::Key;
 

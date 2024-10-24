@@ -66,6 +66,7 @@ use std::{fmt::Debug, future::Future, pin::Pin};
 use anyhow::{bail, Context};
 use im::HashMap;
 use serde::{Deserialize, Serialize};
+use tracing::{debug, info, warn};
 use uuid::Uuid;
 
 use crate::Key;
@@ -164,7 +165,7 @@ impl WorkerDriver for PCDriver {
                 })
                 .filter_map(|ProcessInfo { name, pid, .. }| {
                     let Some((key, id)) = workers.get(&pid) else {
-                        log::warn!("unexpected unmanaged worker {name}:{pid}");
+                        warn!(%name, %pid, "unexpected unmanaged worker");
                         return None;
                     };
                     Some(WorkerMetadata {
@@ -271,17 +272,15 @@ impl PCDriver {
                         self.workers.insert(key, (p, id));
                     } else {
                         let Some((key, id)) = new_worker.take() else {
-                            log::warn!("process {pid} with status {status:?} cannot be given a worker key - was the process started manually?");
+                            warn!(%pid, ?status, "process cannot be given a worker key - was the process started manually?");
                             continue;
                         };
-                        log::info!("attached worker {key} to process {}:{pid}", p.name);
+                        info!(%key, %p.name, %pid, "attached worker to process");
                         self.workers.insert(key, (p, id));
                     }
                 }
                 status => {
-                    log::warn!(
-                        "unexpected non-running worker process {pid} with status: {status:?}"
-                    );
+                    warn!(%pid, ?status, "unexpected non-running worker process");
                     continue;
                 }
             }
@@ -373,7 +372,7 @@ impl PCClient {
     }
 
     async fn process_scale(&self, process: &str, count: usize) -> anyhow::Result<()> {
-        log::debug!("scaling process {process} to {count}");
+        debug!(?process, ?count, "scaling process");
         self.client
             .patch(self.url(&format!("process/scale/{process}/{count}")))
             .send()
@@ -387,7 +386,7 @@ impl PCClient {
     }
 
     async fn process_stop(&self, process: &str) -> anyhow::Result<()> {
-        log::info!("stopping process {process}");
+        info!(?process, "stopping process");
         self.client
             .post(self.url(&format!("process/stop/{process}")))
             .send()

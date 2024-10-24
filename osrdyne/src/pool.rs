@@ -16,6 +16,7 @@ use lapin::{
 };
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use tokio::{sync::oneshot, task::JoinSet};
+use tracing::{error, info, span, Level};
 
 use crate::{
     drivers::worker_driver::WorkerMetadata,
@@ -105,7 +106,7 @@ impl Pool {
         conn: &Connection,
         management_client: &ManagementClient,
     ) -> anyhow::Result<()> {
-        log::info!("Setting up pool: {}", self.pool_id);
+        info!(pool_id = %self.pool_id, "Setting up pool");
 
         // create exchanges
         let chan = conn.create_channel().await?;
@@ -477,14 +478,17 @@ async fn worker_control_loop(
     sleep_interval: Duration,
 ) {
     loop {
+        let span = span!(Level::INFO, "loop_iteration");
+        let _enter = span.enter();
+
         let target = expected_state.borrow().clone();
 
         let current_workers = match driver.list_worker_groups().await {
             Ok(workers) => workers,
             Err(e) => {
-                log::error!(
-                    "Failed to list worker groups: {:?}. Aborting current loop iteration.",
-                    e
+                error!(
+                    ?e,
+                    "Failed to list worker groups. Aborting current loop iteration."
                 );
                 tokio::time::sleep(sleep_interval).await;
                 continue;
@@ -509,9 +513,9 @@ async fn worker_control_loop(
         for worker_key in current_worker_keys {
             if !wanted_worker_keys.contains(worker_key) {
                 if let Err(e) = driver.destroy_worker_group(worker_key.clone()).await {
-                    log::error!(
-                        "Failed to destroy worker group: {:?}. Aborting current loop iteration.",
-                        e
+                    error!(
+                        ?e,
+                        "Failed to destroy worker group. Aborting current loop iteration."
                     );
                     tokio::time::sleep(sleep_interval).await;
                     continue;
@@ -526,9 +530,9 @@ async fn worker_control_loop(
                 .get_or_create_worker_group(queue_name, worker_key)
                 .await
             {
-                log::error!(
-                    "Failed to get or create worker group: {:?}. Aborting current loop iteration.",
-                    e
+                error!(
+                    ?e,
+                    "Failed to get or create worker group. Aborting current loop iteration."
                 );
                 tokio::time::sleep(sleep_interval).await;
                 continue;
@@ -537,9 +541,9 @@ async fn worker_control_loop(
 
         // Refresh workers if needed
         if let Err(e) = driver.cleanup_stalled().await {
-            log::error!(
-                "Failed to cleanup stalled ressources : {:?}. Aborting current loop iteration.",
-                e
+            error!(
+                ?e,
+                "Failed to cleanup stalled resources. Aborting current loop iteration."
             );
             tokio::time::sleep(sleep_interval).await;
             continue;
@@ -579,10 +583,7 @@ async fn deadletter_responder(pool: Arc<Pool>, chan: Channel) -> anyhow::Result<
             .as_ref()
             .and_then(|h| h.inner().get("x-first-death"))
         else {
-            log::error!(
-                "Deadletter message without x-first-death header: {:?}",
-                delivery
-            );
+            error!(?delivery, "Deadletter message without x-first-death header");
             continue;
         };
 

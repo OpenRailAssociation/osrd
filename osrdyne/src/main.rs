@@ -1,7 +1,7 @@
 use lapin::Connection;
 use lapin::ConnectionProperties;
-use log::error;
-use log::info;
+use opentelemetry::trace::TracerProvider;
+use opentelemetry_otlp::WithExportConfig;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -11,6 +11,10 @@ use tokio::select;
 use tokio::signal;
 use tokio::spawn;
 use tokio::sync::mpsc;
+use tracing::{debug, error, info};
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::Layer;
 
 use crate::management_client::ArgumentValue;
 use crate::management_client::ManagementClient;
@@ -63,15 +67,16 @@ fn request_queues_policy(config: &OsrdyneConfig) -> BTreeMap<String, ArgumentVal
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    env_logger::init();
-
     let file = {
         let mut args = std::env::args();
         args.nth(1).map(PathBuf::from)
     };
 
     let config = parse_config(file)?;
-    log::info!("config: {:?}", &config);
+    init_tracing(&config);
+
+    debug!(?config, "Configuration");
+
     let pool = Arc::new(Pool::new(
         config.pool_id.clone(),
         request_queues_policy(&config),
@@ -87,7 +92,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .filter_map(|q| pool.parse_key(&q.name))
         .collect();
 
-    info!("existing queues: {:?}", &init_keys);
+    debug!(?init_keys, "Existing queuest");
 
     // start the state tracker. The state tracker is not directly related to the message queue.
     // it is kept running accross rabbitmq reconnects.
@@ -170,7 +175,7 @@ async fn main() -> Result<(), anyhow::Error> {
             }
             res = &mut target_tracker => {
                 if let Err(err) = res {
-                    error!("target tracker stopped with an error, shutting down: {:?}", err);
+                    error!(?err, "target tracker stopped with an error, shutting down");
                 } else {
                     error!("target tracker unexpectedly stopped");
                 }
@@ -199,4 +204,56 @@ async fn main() -> Result<(), anyhow::Error> {
     target_tracker_client.stop().await?;
     target_tracker.await?;
     Ok::<(), anyhow::Error>(())
+}
+
+fn init_tracing(config: &OsrdyneConfig) {
+    let env_filter_layer = tracing_subscriber::EnvFilter::builder()
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
+        .from_env_lossy();
+
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .pretty()
+        .with_file(true)
+        .with_line_number(false)
+        .boxed();
+
+    let otlp_layer = config.opentelemetry.as_ref().map(|otel| {
+        let exporter = opentelemetry_otlp::new_exporter()
+            .tonic()
+            .with_endpoint(otel.endpoint.as_str());
+
+        let svc_name = otel.service_name.clone().unwrap_or("osrdyne".to_string());
+
+        let trace_config = opentelemetry_sdk::trace::Config::default().with_resource(
+            opentelemetry_sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+                opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                svc_name.clone(),
+            )]),
+        );
+
+        let otlp_tracer_provider = opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_exporter(exporter)
+            .with_trace_config(trace_config)
+            .install_batch(opentelemetry_sdk::runtime::Tokio)
+            .expect("Failed to initialize Opentelemetry tracer");
+
+        let otlp_tracer = otlp_tracer_provider.tracer(svc_name.clone());
+
+        let layer = tracing_opentelemetry::layer()
+            .with_tracer(otlp_tracer)
+            .boxed();
+
+        opentelemetry::global::set_text_map_propagator(
+            opentelemetry_sdk::propagation::TraceContextPropagator::new(),
+        );
+
+        layer
+    });
+
+    tracing_subscriber::registry()
+        .with(otlp_layer)
+        .with(env_filter_layer)
+        .with(fmt_layer)
+        .init();
 }

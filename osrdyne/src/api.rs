@@ -5,12 +5,13 @@ use std::{
 };
 
 use axum::{body::Body, extract::State, response::IntoResponse, routing::get, Json, Router};
-use log::info;
+use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use serde::Serialize;
 use tokio::{
     select,
     sync::{watch, Mutex},
 };
+use tracing::info;
 
 use crate::{drivers::worker_driver::WorkerMetadata, status_tracker::WorkerStatus, Key};
 use axum_extra::extract::Query;
@@ -49,19 +50,20 @@ pub async fn create_server(
         .route("/version", get(version))
         .route("/health", get(health_check))
         .route("/status", get(list_workers))
+        .layer(OtelAxumLayer::default())
         .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind(addr.clone())
         .await
         .expect("Failed to bind to address");
 
-    info!("Starting API server on {}", addr);
+    info!(%addr, "Starting API server");
 
     axum::serve(listener, app)
         .await
         .expect("Failed to start server");
 
-    info!("Shutting down API server on {}", addr);
+    info!(%addr, "Shutting down API server");
 }
 
 async fn app_state_updater(
