@@ -10,7 +10,7 @@ type Props = {
 export default function ScenarioLoaderMessage({ infraState }: Props) {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
 
-  if (infraState === 'ERROR' || infraState === 'TRANSIENT_ERROR') {
+  if (infraState === 'ERROR' || infraState === 'TRANSIENT_ERROR' || infraState === 'INITIALIZING') {
     return <h1 className="text-center">{t('simulation:errorMessages.errorLoadingInfra')}</h1>;
   }
 

@@ -142,7 +142,9 @@ const ScenarioDescription = ({
           t('noElectricalProfileSet')
         )}
       </div>
-
+      {infra && infra.state === 'INITIALIZING' && (
+        <div className="infra-banner">{t('infraBrokenBanner', "L'infrastructure est cassée")}</div>
+      )}
       <div className="scenario-details-infra-name">
         {t('infrastructure')} :&nbsp;
         {infra && <InfraLoadingState infra={infra} />}
