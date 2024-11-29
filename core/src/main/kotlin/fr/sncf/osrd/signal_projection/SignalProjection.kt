@@ -252,34 +252,20 @@ private fun signalUpdates(
             }
         }
 
-        for (i in 0 until events.size - 1) {
+        for (i in 0 until events.size) {
             val event = events[i]
-            val nextEvent = events[i + 1]
+            val timeEnd = if (i + 1 < events.size) events[i + 1].time else simulationEndTime
+
+            if (listOf("VL", "300VL").contains(event.newAspect)) {
+                continue
+            }
+
             signalUpdates.add(
                 SignalUpdate(
                     physicalSignalName!!,
                     signalingSystemName,
                     event.time,
-                    nextEvent.time,
-                    positionStart,
-                    positionEnd,
-                    color(event.newAspect),
-                    blinking(event.newAspect),
-                    event.newAspect,
-                )
-            )
-        }
-
-        // The last event only generates an update if the signal doesn't return to VL
-        if (events.last().newAspect != "VL" && events.last().newAspect != "300VL") {
-            val event = events.last()
-            val timeStart = event.time
-            signalUpdates.add(
-                SignalUpdate(
-                    physicalSignalName!!,
-                    signalingSystemName,
-                    timeStart,
-                    simulationEndTime,
+                    timeEnd,
                     positionStart,
                     positionEnd,
                     color(event.newAspect),
