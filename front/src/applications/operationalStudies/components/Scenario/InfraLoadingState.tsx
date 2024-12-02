@@ -24,13 +24,13 @@ export default function InfraLoadingState({ infra }: Props) {
     <div
       className={cx(
         'infra-loading-state',
-        infra.state === 'CACHED' ? 'cached' : infra.state === 'INITIALIZING' ? 'loading' : 'loading'
+        infra.state === 'CACHED' ? 'cached' : infra.state === 'ERROR' ? 'loading' : 'loading'
       )}
       title={infra.state}
     >
       {infra.state === 'CACHED' ? (
         <span className="infra-loaded" />
-      ) : infra.state === 'INITIALIZING' ? (
+      ) : infra.state === 'ERROR' ? (
         <span className="infra-broken" />
       ) : (
         <>

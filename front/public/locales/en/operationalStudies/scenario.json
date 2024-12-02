@@ -18,6 +18,7 @@
   },
   "filterPlaceholder": "Filter, tags",
   "advancedFiltersPlaceholder": "Filter by family, serie, detail",
+  "infraIsBroken": "The infrastructure contains issues and does not allow simulation", 
   "infraLoadingState": "{{step}}/3",
   "infrastructure": "Infrastructure",
   "lessDetails": "less details",
