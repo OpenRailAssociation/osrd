@@ -945,7 +945,7 @@ mod tests {
                 "routes": [],
                 "track_section_ranges": [],
                 "path_item_positions": [0,1,2,3],
-                "length": 0,
+                "length": 1,
                 "status": "success"
             }))
             .finish();

@@ -668,7 +668,7 @@ mod tests {
             blocks: vec![],
             routes: vec![],
             track_section_ranges: vec![],
-            length: 0,
+            length: 1,
             path_item_positions: vec![0, 10],
         }
     }

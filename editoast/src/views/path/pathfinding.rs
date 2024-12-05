@@ -86,7 +86,12 @@ pub enum PathfindingResult {
 impl From<PathfindingCoreResult> for PathfindingResult {
     fn from(core_result: PathfindingCoreResult) -> Self {
         match core_result {
-            PathfindingCoreResult::Success(success) => PathfindingResult::Success(success),
+            PathfindingCoreResult::Success(success) => match success.length {
+                0 => PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
+                    PathfindingInputError::ZeroLengthPath,
+                )),
+                _ => PathfindingResult::Success(success),
+            },
             PathfindingCoreResult::NotFoundInBlocks {
                 track_section_ranges,
                 length,
@@ -457,6 +462,53 @@ pub mod tests {
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
+    async fn pathfinding_fails_when_core_responds_with_zero_length_path() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "blocks":[],
+                "routes": [],
+                "track_section_ranges": [],
+                "path_item_positions": [],
+                "length": 0,
+                "status": "success"
+            }))
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let request = app
+            .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
+            .json(&json!({
+                "path_items":[
+                {"trigram":"WS","secondary_code":"BV"},
+                {"trigram":"WS","secondary_code":"BV"}
+            ],
+                "rolling_stock_is_thermal":true,
+                "rolling_stock_loading_gauge":"G1",
+                "rolling_stock_supported_electrifications":[],
+                "rolling_stock_supported_signaling_systems":["BAL","BAPR"],
+                "rolling_stock_maximum_speed":22.00,
+                "rolling_stock_length":26.00
+            }));
+
+        let pathfinding_result: PathfindingResult =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert_eq!(
+            pathfinding_result,
+            PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::ZeroLengthPath,
+            ))
+        );
+    }
+
+    #[rstest]
     async fn pathfinding_with_invalid_path_items_returns_invalid_path_items() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -560,7 +612,7 @@ pub mod tests {
                 "routes": [],
                 "track_section_ranges": [],
                 "path_item_positions": [],
-                "length": 0,
+                "length": 1,
                 "status": "success"
             }))
             .finish();
@@ -593,7 +645,7 @@ pub mod tests {
                 blocks: vec![],
                 routes: vec![],
                 track_section_ranges: vec![],
-                length: 0,
+                length: 1,
                 path_item_positions: vec![]
             })
         );

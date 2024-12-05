@@ -2700,6 +2700,9 @@ export type PathfindingInputError =
   | {
       error_type: 'rolling_stock_not_found';
       rolling_stock_name: string;
+    }
+  | {
+      error_type: 'zero_length_path';
     };
 export type OffsetRange = {
   end: number;

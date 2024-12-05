@@ -91,6 +91,11 @@
         "WrongRailjsonVersionProvided": "Wrong railjson version provided"
       }
     },
+    "core": {
+      "pathfinding": {
+        "ZeroLengthPath": "Path length cannot be null."
+      }
+    },
     "infra_state": {
       "FetchError": "Error while fetching the infrastructure loading status"
     },

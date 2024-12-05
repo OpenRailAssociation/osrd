@@ -133,6 +133,7 @@ pub enum PathfindingInputError {
     RollingStockNotFound {
         rolling_stock_name: String,
     },
+    ZeroLengthPath,
 }
 
 // Enum for not-found results and incompatible constraints

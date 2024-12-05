@@ -168,6 +168,7 @@ export enum StdcmConfigErrorTypes {
   PATHFINDING_FAILED = 'pathfindingFailed',
   BOTH_POINT_SCHEDULED = 'bothPointAreScheduled',
   NO_SCHEDULED_POINT = 'noScheduledPoint',
+  ZERO_LENGTH_PATH = 'zeroLengthPath',
 }
 
 export type StdcmConfigErrors = {

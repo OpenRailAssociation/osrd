@@ -58,6 +58,16 @@ const useStaticPathfinding = (infra?: InfraWithState) => {
         return;
       }
 
+      // Don't run the pathfinding if the origin and destination are the same:
+      const origin = pathSteps.at(0)!;
+      const destination = pathSteps.at(-1)!;
+      if (
+        origin.location!.uic === destination.location!.uic &&
+        origin.location!.secondary_code === destination.location!.secondary_code
+      ) {
+        return;
+      }
+
       const payload = getPathfindingQuery({
         infraId: infra.id,
         rollingStock,

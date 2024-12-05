@@ -91,6 +91,11 @@
         "WrongRailjsonVersionProvided": "Mauvaise version de railjson fournie"
       }
     },
+    "core": {
+      "pathfinding": {
+        "ZeroLengthPath": "La longueur d'un chemin ne peut pas être nulle."
+      }
+    },
     "infra_state": {
       "FetchError": "Erreur de récupération de l'état de chargement de l'infrastructure"
     },

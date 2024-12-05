@@ -23,6 +23,13 @@ const checkStdcmConfigErrors = (
     throw new Error('Last step can not be a via');
   }
 
+  if (
+    origin.location!.uic === destination.location!.uic &&
+    origin.location!.secondary_code === destination.location!.secondary_code
+  ) {
+    return { errorType: StdcmConfigErrorTypes.ZERO_LENGTH_PATH };
+  }
+
   if (pathfindingStateError) {
     return { errorType: StdcmConfigErrorTypes.PATHFINDING_FAILED };
   }

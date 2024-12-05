@@ -8435,6 +8435,14 @@ components:
             - rolling_stock_not_found
           rolling_stock_name:
             type: string
+      - type: object
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - zero_length_path
     PathfindingItem:
       type: object
       required:
