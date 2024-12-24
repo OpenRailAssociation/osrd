@@ -17,6 +17,7 @@ openssl.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 postgis_diesel.workspace = true
 postgres-openssl.workspace = true
+regex.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-postgres.workspace = true

@@ -137,6 +137,7 @@ impl ModelConfig {
             model: self.model.clone(),
             row: self.row.ident(),
             changeset: self.changeset.ident(),
+            error: self.error.clone(),
             table: self.table.clone(),
         }
     }

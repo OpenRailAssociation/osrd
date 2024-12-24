@@ -138,6 +138,9 @@ impl ModelConfig {
             fields,
             row,
             changeset,
+            error: options
+                .error
+                .unwrap_or(syn::parse_quote! { editoast_models::model::Error }),
             identifiers: typed_identifiers,
             preferred_identifier: preferred_typed_identifier,
             primary_identifier: primary_typed_identifier,

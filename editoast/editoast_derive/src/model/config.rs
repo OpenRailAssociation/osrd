@@ -19,6 +19,7 @@ pub(crate) struct ModelConfig {
     pub(crate) fields: Fields,
     pub(crate) row: GeneratedTypeArgs,
     pub(crate) changeset: GeneratedTypeArgs,
+    pub(crate) error: syn::Path,
     pub(crate) identifiers: BTreeSet<Identifier>, // identifiers ⊆ fields
     pub(crate) preferred_identifier: Identifier,  // preferred_identifier ∈ identifiers
     pub(crate) primary_identifier: Identifier,    // primary_identifier ∈ identifiers

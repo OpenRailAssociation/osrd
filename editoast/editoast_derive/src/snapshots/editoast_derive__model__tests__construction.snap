@@ -25,6 +25,7 @@ impl crate::models::Model for Document {
     type Row = DocumentRow;
     type Changeset = DocumentChangeset;
     type Table = editoast_models::tables::osrd_infra_document::table;
+    type Error = editoast_models::model::Error;
 }
 paste::paste! {
     impl Document { pub const [< id_ : snake : upper >] : crate ::models::ModelField <
@@ -486,7 +487,6 @@ impl crate::models::Create<Document> for DocumentChangeset {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::Delete for Document {
     #[tracing::instrument(
         name = "model:delete<Document>",
@@ -498,7 +498,7 @@ impl crate::models::Delete for Document {
     async fn delete(
         &self,
         conn: &mut editoast_models::DbConnection,
-    ) -> crate::error::Result<bool> {
+    ) -> std::result::Result<bool, <Document as crate::models::Model>::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::osrd_infra_document::dsl;
@@ -508,7 +508,9 @@ impl crate::models::Delete for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(Into::into)
+            .map_err(|e| <Document as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]

@@ -31,6 +31,7 @@ pub trait Model: std::fmt::Debug + Clone + Sized + Send {
     type Row: Into<Self> + Send;
     type Changeset: Default + From<Self> + Send;
     type Table: diesel::Table + Send;
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
 
     /// Returns an empty changeset for this model
     fn changeset() -> Self::Changeset {
@@ -56,15 +57,19 @@ pub trait Model: std::fmt::Debug + Clone + Sized + Send {
 
 /// A type alias for the [Model::Row] associated type
 ///
-/// Helps silent compiler errors about type amibiguity.
+/// Helps silent compiler errors about type ambiguity.
 #[allow(unused)]
 pub type Row<M> = <M as Model>::Row;
 
 /// A type alias for the [Model::Changeset] associated type
 ///
-/// Helps silent compiler errors about type amibiguity.
-#[allow(unused)]
+/// Helps silent compiler errors about type ambiguity.
 pub type Changeset<M> = <M as Model>::Changeset;
+
+/// A type alias for the [Model::Error] associated type
+///
+/// Helps silent compiler errors about type ambiguity.
+pub type ModelError<M> = <M as Model>::Error;
 
 /// A struct persisting the column and type information of each model field
 ///

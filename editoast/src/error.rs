@@ -265,6 +265,19 @@ impl EditoastError for editoast_schemas::errors::GeometryError {
     }
 }
 
+inventory::submit! {
+    ErrorDefinition::new("editoast:model:ModelError", "", "ModelError", 500u16, r#"{}"#)
+}
+impl EditoastError for editoast_models::model::Error {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:ModelError"
+    }
+}
+
 // error definition : uses by the macro EditoastError to generate
 // the list of error and share it with the openAPI generator
 #[derive(Debug)]

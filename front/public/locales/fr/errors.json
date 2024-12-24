@@ -106,6 +106,9 @@
     "macro_node": {
       "NotFound": "Noeud {{node_id}} non trouvé."
     },
+    "model": {
+      "ModelError": "Erreur interne (requêtage base de données)"
+    },
     "operation": {
       "EmptyId": "Une chaine de caractères vide est interdit comme identifiant",
       "InvalidPatch": "Une erreur de correctif JSON est survenue",

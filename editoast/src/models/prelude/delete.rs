@@ -3,27 +3,32 @@ use editoast_models::DbConnection;
 use crate::error::EditoastError;
 use crate::error::Result;
 
+use super::Model;
+
 /// Describes how a [Model](super::Model) can be deleted from the database
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
-pub trait Delete: Sized {
+pub trait Delete: Model {
     /// Deletes the row corresponding to this model instance
     ///
     /// Returns `true` if the row was deleted, `false` if it didn't exist
-    async fn delete(&self, conn: &mut DbConnection) -> Result<bool>;
+    async fn delete(&self, conn: &mut DbConnection) -> std::result::Result<bool, Self::Error>;
 
     /// Just like [Delete::delete] but returns `Err(fail())` if the row didn't exist
-    async fn delete_or_fail<E, F>(&self, conn: &mut DbConnection, fail: F) -> Result<()>
+    async fn delete_or_fail<E, F>(
+        &self,
+        conn: &mut DbConnection,
+        fail: F,
+    ) -> std::result::Result<(), E>
     where
-        E: EditoastError,
-        F: FnOnce() -> E + Send + 'async_trait,
+        E: From<Self::Error>,
+        F: FnOnce() -> E + Send,
     {
         match self.delete(conn).await {
             Ok(true) => Ok(()),
-            Ok(false) => Err(fail().into()),
-            Err(e) => Err(e),
+            Ok(false) => Err(fail()),
+            Err(e) => Err(E::from(e)),
         }
     }
 }

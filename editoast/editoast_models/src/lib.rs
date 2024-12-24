@@ -1,4 +1,5 @@
 pub mod db_connection_pool;
+pub mod model;
 pub mod tables;
 
 pub use db_connection_pool::DbConnection;

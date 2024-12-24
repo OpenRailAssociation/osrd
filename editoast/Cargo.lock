@@ -1421,6 +1421,7 @@ dependencies = [
  "opentelemetry-semantic-conventions",
  "postgis_diesel",
  "postgres-openssl",
+ "regex",
  "thiserror 2.0.11",
  "tokio",
  "tokio-postgres",

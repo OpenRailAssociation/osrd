@@ -106,6 +106,9 @@
     "macro_node": {
       "NotFound": "Node {{node_id}} not found."
     },
+    "model": {
+      "ModelError": "Internal error (database query)"
+    },
     "operation": {
       "EmptyId": "Empty string id is forbidden",
       "InvalidPatch": "A Json Patch error occurred",
@@ -166,7 +169,7 @@
       "EmptyArray": "Empty arrays are invalid syntax",
       "IntegerConversion": "Could not convert to i64",
       "InvalidColumnName": "Invalid column name",
-      "InvalidFunctionIdentifier": "Function identifer must be a string",
+      "InvalidFunctionIdentifier": "Function identifier must be a string",
       "InvalidSyntax": "Invalid syntax",
       "ObjectType": "Object type is invalid",
       "QueryAst": "Query Boolean type is expected",

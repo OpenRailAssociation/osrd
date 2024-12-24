@@ -20,6 +20,8 @@ pub(super) struct ModelArgs {
     pub(super) row: GeneratedTypeArgs,
     #[darling(default)]
     pub(super) changeset: GeneratedTypeArgs,
+    #[darling(default)]
+    pub(super) error: Option<syn::Path>,
     #[darling(multiple, rename = "identifier")]
     pub(super) identifiers: Vec<RawIdentifier>,
     #[darling(rename = "gen")]
