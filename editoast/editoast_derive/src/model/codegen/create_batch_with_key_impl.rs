@@ -47,29 +47,28 @@ impl ToTokens for CreateBatchWithKeyImpl {
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map(|s| {
-                        s.map_ok(|row| {
-                            let model = <#model as Model>::from_row(row);
-                            (model.get_id(), model)
-                        })
-                        .try_collect::<Vec<_>>()
-                    })?
-                    .await?
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_ok(|row| {
+                        let model = <#model as Model>::from_row(row);
+                        (model.get_id(), model)
+                    })
+                    .try_collect::<Vec<_>>()
+                    .await
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
-            impl crate::models::CreateBatchWithKey<#changeset, #ty> for #model {
+            impl crate::models::CreateBatchWithKey<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create_batch_with_key<
-                    I: std::iter::IntoIterator<Item = #changeset> + Send + 'async_trait,
+                    I: std::iter::IntoIterator<Item = #changeset> + Send,
                     C: Default + std::iter::Extend<(#ty, Self)> + Send + std::fmt::Debug,
                 >(
                     conn: &mut editoast_models::DbConnection,
                     values: I,
-                ) -> crate::error::Result<C> {
+                ) -> std::result::Result<C, <#model as crate::models::Model>::Error> {
                     use crate::models::Identifiable;
                     use crate::models::Model;
                     use std::ops::DerefMut;

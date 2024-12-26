@@ -1,14 +1,14 @@
 use std::fmt::Debug;
+use std::result::Result;
 
 use editoast_models::model;
 use editoast_models::DbConnection;
 
 use crate::error::EditoastError;
-use crate::error::Result;
 
 use super::Model;
 
-/// Describes how a [Model](super::Model) can be created in the database
+/// Describes how a [Model] can be created in the database
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
@@ -30,15 +30,11 @@ pub trait Create<M: Model>: Sized {
     }
 }
 
-/// Describes how a [Model](super::Model) can be created in the database given a batch of its changesets
+/// Describes how a [Model] can be created in the database given a batch of its changesets
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
-pub trait CreateBatch<Cs>: Sized
-where
-    Cs: Send,
-{
+pub trait CreateBatch: Model {
     /// Creates a batch of rows in the database given an iterator of changesets
     ///
     /// Returns a collection of the created rows.
@@ -52,15 +48,15 @@ where
     /// assert_eq!(docs.len(), 5);
     /// ```
     async fn create_batch<
-        I: IntoIterator<Item = Cs> + Send + 'async_trait,
+        I: IntoIterator<Item = Self::Changeset> + Send,
         C: Default + std::iter::Extend<Self> + Send + Debug,
     >(
         conn: &mut DbConnection,
         values: I,
-    ) -> Result<C>;
+    ) -> Result<C, Self::Error>;
 }
 
-/// Describes how a [Model](super::Model) can be created in the database given a batch of its changesets
+/// Describes how a [Model] can be created in the database given a batch of its changesets
 ///
 /// This trait is similar to [CreateBatch] but the returned models are paired with their key.
 /// There is two different traits because Rust cannot infer the type of the key when using
@@ -68,18 +64,16 @@ where
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
-pub trait CreateBatchWithKey<Cs, K>: Sized
+pub trait CreateBatchWithKey<K>: Model
 where
-    Cs: Send,
     K: Send + Clone,
 {
     /// Just like [CreateBatch::create_batch] but the returned models are paired with their key
     async fn create_batch_with_key<
-        I: IntoIterator<Item = Cs> + Send + 'async_trait,
+        I: IntoIterator<Item = Self::Changeset> + Send,
         C: Default + std::iter::Extend<(K, Self)> + Send + Debug,
     >(
         conn: &mut DbConnection,
         values: I,
-    ) -> Result<C>;
+    ) -> Result<C, Self::Error>;
 }

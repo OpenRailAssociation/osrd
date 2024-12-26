@@ -611,13 +611,15 @@ impl crate::models::prelude::Count for Document {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
-impl crate::models::CreateBatch<DocumentChangeset> for Document {
+impl crate::models::CreateBatch for Document {
     #[tracing::instrument(name = "model:create_batch<Document>", skip_all, err)]
     async fn create_batch<
-        I: std::iter::IntoIterator<Item = DocumentChangeset> + Send + 'async_trait,
+        I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
         C: Default + std::iter::Extend<Self> + Send + std::fmt::Debug,
-    >(conn: &mut editoast_models::DbConnection, values: I) -> crate::error::Result<C> {
+    >(
+        conn: &mut editoast_models::DbConnection,
+        values: I,
+    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
@@ -638,12 +640,15 @@ impl crate::models::CreateBatch<DocumentChangeset> for Document {
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s
-                                .map_ok(<Document as Model>::from_row)
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(<Document as Model>::from_row)
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }
@@ -652,13 +657,15 @@ impl crate::models::CreateBatch<DocumentChangeset> for Document {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
-impl crate::models::CreateBatchWithKey<DocumentChangeset, (String)> for Document {
+impl crate::models::CreateBatchWithKey<(String)> for Document {
     #[tracing::instrument(name = "model:create_batch_with_key<Document>", skip_all, err)]
     async fn create_batch_with_key<
-        I: std::iter::IntoIterator<Item = DocumentChangeset> + Send + 'async_trait,
+        I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
         C: Default + std::iter::Extend<((String), Self)> + Send + std::fmt::Debug,
-    >(conn: &mut editoast_models::DbConnection, values: I) -> crate::error::Result<C> {
+    >(
+        conn: &mut editoast_models::DbConnection,
+        values: I,
+    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use std::ops::DerefMut;
@@ -680,14 +687,18 @@ impl crate::models::CreateBatchWithKey<DocumentChangeset, (String)> for Document
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s.map_ok(|row| {
-                                    let model = <Document as Model>::from_row(row);
-                                    (model.get_id(), model)
-                                })
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(|row| {
+                            let model = <Document as Model>::from_row(row);
+                            (model.get_id(), model)
+                        })
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }
@@ -696,13 +707,15 @@ impl crate::models::CreateBatchWithKey<DocumentChangeset, (String)> for Document
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
-impl crate::models::CreateBatchWithKey<DocumentChangeset, (i64)> for Document {
+impl crate::models::CreateBatchWithKey<(i64)> for Document {
     #[tracing::instrument(name = "model:create_batch_with_key<Document>", skip_all, err)]
     async fn create_batch_with_key<
-        I: std::iter::IntoIterator<Item = DocumentChangeset> + Send + 'async_trait,
+        I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
         C: Default + std::iter::Extend<((i64), Self)> + Send + std::fmt::Debug,
-    >(conn: &mut editoast_models::DbConnection, values: I) -> crate::error::Result<C> {
+    >(
+        conn: &mut editoast_models::DbConnection,
+        values: I,
+    ) -> std::result::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use std::ops::DerefMut;
@@ -724,14 +737,18 @@ impl crate::models::CreateBatchWithKey<DocumentChangeset, (i64)> for Document {
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s.map_ok(|row| {
-                                    let model = <Document as Model>::from_row(row);
-                                    (model.get_id(), model)
-                                })
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(|row| {
+                            let model = <Document as Model>::from_row(row);
+                            (model.get_id(), model)
+                        })
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }

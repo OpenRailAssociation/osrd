@@ -202,8 +202,9 @@ async fn create(
             work_schedule.into_work_schedule_changeset(work_schedule_group.work_schedule_group_id)
         })
         .collect::<Vec<_>>();
-    let _work_schedules: Vec<_> =
-        WorkSchedule::create_batch(conn, work_schedules_changesets).await?;
+    let _work_schedules: Vec<_> = WorkSchedule::create_batch(conn, work_schedules_changesets)
+        .await
+        .map_err(WorkScheduleError::from)?;
 
     Ok(Json(WorkScheduleCreateResponse {
         work_schedule_group_id: work_schedule_group.work_schedule_group_id,
@@ -454,7 +455,9 @@ async fn put_in_group(
                 .map(|work_schedule| work_schedule.into_work_schedule_changeset(group_id))
                 .collect::<Vec<_>>();
             let work_schedules =
-                WorkSchedule::create_batch(&mut conn.clone(), work_schedules_changesets).await?;
+                WorkSchedule::create_batch(&mut conn.clone(), work_schedules_changesets)
+                    .await
+                    .map_err(WorkScheduleError::from)?;
 
             Ok(Json(work_schedules))
         })

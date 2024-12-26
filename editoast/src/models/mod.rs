@@ -61,13 +61,17 @@ mod tests {
     use super::prelude::*;
 
     #[derive(Debug, Default, Clone, Model, PartialEq, Eq)]
-    #[model(table = editoast_models::tables::document)]
+    #[model(table = editoast_models::tables::document, error = DocError)]
     #[model(gen(ops = crud, batch_ops = crud, list))]
     struct Document {
         id: i64,
         content_type: String,
         data: Vec<u8>,
     }
+
+    #[derive(Debug, thiserror::Error)]
+    #[error("oh no {0}")]
+    struct DocError(#[from] editoast_models::model::Error);
 
     #[rstest]
     async fn test_batch() {

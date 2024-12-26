@@ -42,23 +42,25 @@ impl ToTokens for CreateBatchImpl {
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
-                    .await?
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_ok(<#model as Model>::from_row)
+                    .try_collect::<Vec<_>>()
+                    .await
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
-            impl crate::models::CreateBatch<#changeset> for #model {
+            impl crate::models::CreateBatch for #model {
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create_batch<
-                    I: std::iter::IntoIterator<Item = #changeset> + Send + 'async_trait,
+                    I: std::iter::IntoIterator<Item = #changeset> + Send,
                     C: Default + std::iter::Extend<Self> + Send + std::fmt::Debug,
                 >(
                     conn: &mut editoast_models::DbConnection,
                     values: I,
-                ) -> crate::error::Result<C> {
+                ) -> std::result::Result<C, <#model as crate::models::Model>::Error> {
                     use crate::models::Model;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;

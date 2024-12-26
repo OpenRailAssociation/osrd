@@ -173,7 +173,9 @@ async fn create_temporary_speed_limit_group(
         .into_iter()
         .map(|speed_limit| speed_limit.into_temporary_speed_limit_changeset(group_id))
         .collect::<Vec<_>>();
-    let _: Vec<_> = TemporarySpeedLimit::create_batch(conn, speed_limits_changesets).await?;
+    let _: Vec<_> = TemporarySpeedLimit::create_batch(conn, speed_limits_changesets)
+        .await
+        .map_err(TemporarySpeedLimitError::from)?;
 
     Ok(Json(TemporarySpeedLimitCreateResponse { group_id }))
 }
