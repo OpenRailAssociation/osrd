@@ -469,13 +469,12 @@ impl crate::models::DeleteStatic<(i64)> for Document {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::Create<Document> for DocumentChangeset {
     #[tracing::instrument(name = "model:create<Document>", skip_all, err)]
     async fn create(
         self,
         conn: &mut editoast_models::DbConnection,
-    ) -> crate::error::Result<Document> {
+    ) -> std::result::Result<Document, <Document as crate::models::Model>::Error> {
         use diesel_async::RunQueryDsl;
         use editoast_models::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
@@ -485,7 +484,9 @@ impl crate::models::Create<Document> for DocumentChangeset {
             .get_result::<DocumentRow>(conn.write().await.deref_mut())
             .await
             .map(Into::into)
-            .map_err(Into::into)
+            .map_err(|e| <Document as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]

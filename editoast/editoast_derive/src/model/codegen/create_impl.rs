@@ -22,13 +22,12 @@ impl ToTokens for CreateImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::Create<#model> for #changeset {
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create(
                     self,
                     conn: &mut editoast_models::DbConnection,
-                ) -> crate::error::Result<#model> {
+                ) -> std::result::Result<#model, <#model as crate::models::Model>::Error> {
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
@@ -38,7 +37,7 @@ impl ToTokens for CreateImpl {
                         .get_result::<#row>(conn.write().await.deref_mut())
                         .await
                         .map(Into::into)
-                        .map_err(Into::into)
+                        .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
         });

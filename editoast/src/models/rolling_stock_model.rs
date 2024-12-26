@@ -7,6 +7,7 @@ use editoast_common::units::quantities::{
     Acceleration, Deceleration, Length, Mass, Ratio, Time, Velocity,
 };
 use editoast_derive::Model;
+use editoast_models::model;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
@@ -35,7 +36,7 @@ editoast_common::schemas! {
 
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, ToSchema)]
-#[model(table = editoast_models::tables::rolling_stock)]
+#[model(table = editoast_models::tables::rolling_stock, error = Error)]
 #[model(gen(ops = crud, batch_ops = r, list))]
 #[model(changeset(derive(Deserialize), public))]
 #[schema(as = RollingStock)]
@@ -99,6 +100,36 @@ pub struct RollingStockModel {
     #[schema(value_type = Vec<String>)]
     #[model(remote = "Vec<Option<String>>")]
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("Rolling stock name already used: {name}")]
+    NameAlreadyUsed { name: String },
+    #[error("Rolling stock base power class cannot be an empty string")]
+    BasePowerClassEmpty,
+    #[error(transparent)]
+    Database(editoast_models::model::Error),
+}
+
+impl From<model::Error> for Error {
+    fn from(e: model::Error) -> Self {
+        match e {
+            model::Error::UniqueViolation {
+                constraint,
+                column,
+                value,
+            } if constraint == "rolling_stock_name_key" && column == "name" => {
+                Self::NameAlreadyUsed { name: value }
+            }
+            model::Error::CheckViolation { constraint }
+                if constraint == "base_power_class_null_or_non_empty" =>
+            {
+                Self::BasePowerClassEmpty
+            }
+            e => Self::Database(e),
+        }
+    }
 }
 
 impl RollingStockModelChangeset {

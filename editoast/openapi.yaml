@@ -4836,6 +4836,7 @@ components:
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
+      - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorDatabase'
       - $ref: '#/components/schemas/EditoastTemporarySpeedLimitErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastTimetableErrorDatabase'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
@@ -6261,6 +6262,25 @@ components:
           type: string
           enum:
           - editoast:study:StartDateAfterEndDate
+    EditoastTemporarySpeedLimitErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:temporary_speed_limit:Database
     EditoastTemporarySpeedLimitErrorNameAlreadyUsed:
       type: object
       required:

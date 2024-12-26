@@ -1,29 +1,31 @@
 use std::fmt::Debug;
 
+use editoast_models::model;
 use editoast_models::DbConnection;
 
 use crate::error::EditoastError;
 use crate::error::Result;
 
+use super::Model;
+
 /// Describes how a [Model](super::Model) can be created in the database
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
-pub trait Create<Row: Send>: Sized {
+pub trait Create<M: Model>: Sized {
     /// Creates a new row in the database with the values of the changeset and
     /// returns the created model instance
-    async fn create(self, conn: &mut DbConnection) -> Result<Row>;
+    async fn create(self, conn: &mut DbConnection) -> std::result::Result<M, M::Error>;
 
     /// Just like [Create::create] but discards the error if any and returns `Err(fail())` instead
-    async fn create_or_fail<E: EditoastError, F: FnOnce() -> E + Send>(
+    async fn create_or_fail<E: From<M::Error>, F: FnOnce() -> E + Send>(
         self,
-        conn: &'async_trait mut DbConnection,
+        conn: &mut DbConnection,
         fail: F,
-    ) -> Result<Row> {
+    ) -> std::result::Result<M, E> {
         match self.create(conn).await {
             Ok(obj) => Ok(obj),
-            Err(_) => Err(fail().into()),
+            Err(_) => Err(fail()),
         }
     }
 }

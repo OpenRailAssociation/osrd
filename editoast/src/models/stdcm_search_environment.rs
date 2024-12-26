@@ -4,13 +4,14 @@ use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
+use editoast_models::model;
 use editoast_models::DbConnection;
 use serde::Serialize;
 use std::ops::DerefMut;
+use std::result::Result;
 use utoipa::ToSchema;
 
-use crate::error::Result;
-use crate::models::prelude::{Create, Row};
+use crate::models::prelude::*;
 
 #[cfg(test)]
 use serde::Deserialize;
@@ -48,7 +49,7 @@ impl StdcmSearchEnvironment {
             .ok()
     }
 
-    pub async fn delete_all(conn: &mut DbConnection) -> Result<()> {
+    pub async fn delete_all(conn: &mut DbConnection) -> Result<(), model::Error> {
         use editoast_models::tables::stdcm_search_environment::dsl::*;
         diesel::delete(stdcm_search_environment)
             .execute(conn.write().await.deref_mut())
@@ -58,7 +59,10 @@ impl StdcmSearchEnvironment {
 }
 
 impl StdcmSearchEnvironmentChangeset {
-    pub async fn overwrite(self, conn: &mut DbConnection) -> Result<StdcmSearchEnvironment> {
+    pub async fn overwrite(
+        self,
+        conn: &mut DbConnection,
+    ) -> Result<StdcmSearchEnvironment, model::Error> {
         StdcmSearchEnvironment::delete_all(conn).await?;
         self.create(conn).await
     }

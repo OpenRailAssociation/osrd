@@ -2,6 +2,7 @@ pub mod form;
 pub mod light;
 mod towed;
 
+use editoast_models::model;
 pub use form::RollingStockForm;
 
 use std::io::Cursor;
@@ -37,6 +38,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::rolling_stock_livery::RollingStockLiveryModel;
+use crate::models::rolling_stock_model;
 use crate::models::rolling_stock_model::ScenarioReference;
 use crate::models::Document;
 use crate::models::RollingStockModel;
@@ -147,7 +149,7 @@ pub enum RollingStockError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::model::Error),
+    Database(model::Error),
 }
 
 #[derive(Debug, Error)]
@@ -178,6 +180,7 @@ pub(crate) enum LiveryMultipartError {
     },
 }
 
+// Still used to parse the error of `Update` and `Save`. Will be removed soon.
 pub fn map_diesel_error(e: InternalError, name: impl AsRef<str>) -> InternalError {
     if e.message
         .contains(r#"duplicate key value violates unique constraint "rolling_stock_name_key""#)
@@ -187,6 +190,17 @@ pub fn map_diesel_error(e: InternalError, name: impl AsRef<str>) -> InternalErro
         RollingStockError::BasePowerClassEmpty.into()
     } else {
         e
+    }
+}
+
+// This implementation could be generated rather trivially...
+impl From<rolling_stock_model::Error> for RollingStockError {
+    fn from(e: rolling_stock_model::Error) -> Self {
+        match e {
+            rolling_stock_model::Error::NameAlreadyUsed { name } => Self::NameAlreadyUsed { name },
+            rolling_stock_model::Error::BasePowerClassEmpty => Self::BasePowerClassEmpty,
+            rolling_stock_model::Error::Database(error) => Self::Database(error),
+        }
     }
 }
 
@@ -326,7 +340,6 @@ async fn create(
     }
     rolling_stock_form.validate()?;
     let conn = &mut db_pool.get().await?;
-    let rolling_stock_name = rolling_stock_form.name.clone();
     let rolling_stock_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
 
     let rolling_stock = rolling_stock_changeset
@@ -334,7 +347,7 @@ async fn create(
         .version(0)
         .create(conn)
         .await
-        .map_err(|e| map_diesel_error(e, rolling_stock_name))?;
+        .map_err(RollingStockError::from)?;
 
     Ok(Json(rolling_stock))
 }

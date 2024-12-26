@@ -3,6 +3,7 @@ use std::cmp::max;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_derive::Model;
+use editoast_models::model;
 use editoast_schemas::infra::TrackRange;
 use strum::FromRepr;
 
@@ -13,12 +14,35 @@ use utoipa::ToSchema;
 use crate::core::stdcm::UndirectedTrackRange;
 
 #[derive(Debug, Clone, Model)]
-#[model(table = editoast_models::tables::work_schedule_group)]
+#[model(table = editoast_models::tables::work_schedule_group, error = WsGroupError)]
 #[model(gen(ops = crd, batch_ops = c, list))]
 pub struct WorkScheduleGroup {
     pub id: i64,
     pub creation_date: DateTime<Utc>,
     pub name: String,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum WsGroupError {
+    #[error("Work schedule group name already used: {name}")]
+    NameAlreadyUsed { name: String },
+    #[error(transparent)]
+    Database(model::Error),
+}
+
+impl From<model::Error> for WsGroupError {
+    fn from(e: model::Error) -> Self {
+        match e {
+            model::Error::UniqueViolation {
+                constraint,
+                column,
+                value,
+            } if constraint == "work_schedule_group_name_key" && column == "name" => {
+                Self::NameAlreadyUsed { name: value }
+            }
+            e => Self::Database(e),
+        }
+    }
 }
 
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, PartialEq)]
@@ -30,7 +54,7 @@ pub enum WorkScheduleType {
 }
 
 #[derive(Debug, Default, Clone, Model, Serialize, Deserialize, ToSchema)]
-#[model(table = editoast_models::tables::work_schedule)]
+#[model(table = editoast_models::tables::work_schedule, error = Error)]
 #[model(gen(batch_ops = c, list))]
 pub struct WorkSchedule {
     pub id: i64,
@@ -43,6 +67,10 @@ pub struct WorkSchedule {
     pub work_schedule_type: WorkScheduleType,
     pub work_schedule_group_id: i64,
 }
+
+#[derive(Debug, thiserror::Error)]
+#[error(transparent)]
+pub struct Error(#[from] model::Error);
 
 impl WorkSchedule {
     pub fn as_core_work_schedule(
