@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
+import { getPathSteps, getVias } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { moveElement, removeElementAtIndex } from 'utils/array';
 import { formatUicToCi } from 'utils/strings';
 
@@ -17,7 +17,6 @@ type ViasProps = {
 
 const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
-  const { getVias, getPathSteps } = useOsrdConfSelectors();
   const vias = useSelector(getVias());
   const pathSteps = useSelector(getPathSteps);
   const { launchPathfinding } = useManageTrainScheduleContext();

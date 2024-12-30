@@ -6,8 +6,11 @@ import { useSelector } from 'react-redux';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { RangedValue } from 'common/types';
+import {
+  getPowerRestrictions,
+  getPathSteps,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { mmToM } from 'utils/physics';
 
 import usePowerRestrictionSelectorBehaviours from './usePowerRestrictionSelectorBehaviours';
@@ -21,8 +24,7 @@ const usePowerRestrictionSelector = (
   rollingStockModes: RollingStock['effort_curves']['modes'],
   pathProperties: ManageTrainSchedulePathProperties
 ) => {
-  const { getPowerRestriction, getPathSteps } = useOsrdConfSelectors();
-  const powerRestrictionRanges = useSelector(getPowerRestriction);
+  const powerRestrictionRanges = useSelector(getPowerRestrictions);
   const pathSteps = compact(useSelector(getPathSteps));
 
   const [cutPositions, setCutPositions] = useState<number[]>([]); // in meters

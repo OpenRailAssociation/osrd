@@ -13,7 +13,6 @@ import type {
   PostInfraByInfraIdPathPropertiesApiArg,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import {
   formatSuggestedOperationalPoints,
   getPathfindingQuery,
@@ -22,6 +21,11 @@ import {
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure, setWarning } from 'reducers/main';
+import { replaceItinerary, updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
+import {
+  getPathSteps,
+  getPowerRestrictions,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { isEmptyArray } from 'utils/array';
@@ -41,9 +45,8 @@ const usePathfinding = (
 ) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
-  const { getPathSteps, getPowerRestriction } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
-  const powerRestrictions = useSelector(getPowerRestriction);
+  const powerRestrictions = useSelector(getPowerRestrictions);
   const { infra, reloadCount, setIsInfraError } = useInfraStatus();
   const { rollingStock } = useStoreDataForRollingStockSelector();
 
@@ -59,7 +62,6 @@ const usePathfinding = (
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
 
-  const { updatePathSteps, replaceItinerary } = useOsrdConfActions();
   const { infraId } = useScenarioContext();
 
   const setIsMissingParam = () =>

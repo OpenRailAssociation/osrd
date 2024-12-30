@@ -10,6 +10,11 @@ import infraLogo from 'assets/pictures/components/tracks.svg';
 import { Spinner } from 'common/Loaders';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
+import {
+  getPathSteps,
+  getOrigin,
+  getDestination,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 
 import { InfraHardError, InfraSoftError } from './InfraError';
@@ -17,7 +22,6 @@ import { InfraHardError, InfraSoftError } from './InfraError';
 const Pathfinding = () => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
-  const { getOrigin, getDestination, getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
   const hasInvalidPathStep = pathSteps.some((pathStep) => isPathStepInvalid(pathStep));
   const origin = useSelector(getOrigin, isEqual);

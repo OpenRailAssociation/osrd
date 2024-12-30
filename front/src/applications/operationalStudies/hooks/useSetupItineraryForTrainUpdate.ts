@@ -11,13 +11,13 @@ import {
   type PathfindingResult,
   type SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions } from 'common/osrdContext';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
 import { formatSuggestedOperationalPoints, matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
 import { setFailure } from 'reducers/main';
+import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -62,7 +62,6 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
   const { setPathProperties } = useManageTrainScheduleContext();
 
   const { infraId, getTrackSectionsByIds } = useScenarioContext();
-  const { updatePathSteps } = useOsrdConfActions();
 
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getRollingStockByName] =

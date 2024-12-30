@@ -10,13 +10,18 @@ import { useSelector } from 'react-redux';
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding/Pathfinding';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import { setWarning } from 'reducers/main';
 import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
+import {
+  getOrigin,
+  getDestination,
+  getPathSteps,
+  getPowerRestrictions,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';
 import { isEmptyArray } from 'utils/array';
 
@@ -26,11 +31,10 @@ import Vias from './DisplayItinerary/Vias';
 import ModalSuggestedVias from './ModalSuggestedVias';
 
 const Itinerary = () => {
-  const { getPathSteps, getOrigin, getDestination, getPowerRestriction } = useOsrdConfSelectors();
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
-  const powerRestrictions = useSelector(getPowerRestriction);
+  const powerRestrictions = useSelector(getPowerRestrictions);
 
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useAppDispatch();

@@ -3,7 +3,6 @@ import { describe, beforeEach, it, expect } from 'vitest';
 import type { Infra } from 'common/api/osrdEditoastApi';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';
-import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdConfState } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -27,7 +26,6 @@ const testSpeedLimitByTag = (
 };
 
 const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSlice) => {
-  const testDataBuilder = commonConfBuilder();
   let defaultStore: ReturnType<typeof createStore>;
 
   beforeEach(() => {
@@ -119,23 +117,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
       const state = testSpeedLimitByTag(slice, newSpeedLimitByTag);
       expect(state.speedLimitByTag).toBe(undefined);
     });
-  });
-
-  it('should handle updatePathSteps', () => {
-    const pathSteps = testDataBuilder.buildPathSteps();
-    defaultStore.dispatch(slice.actions.updatePathSteps(pathSteps));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.pathSteps).toEqual(pathSteps);
-  });
-
-  it('should handle deleteItinerary', () => {
-    const pathSteps = testDataBuilder.buildPathSteps();
-    const store = createStore(slice, {
-      pathSteps,
-    });
-    store.dispatch(slice.actions.deleteItinerary());
-    const state = store.getState()[slice.name];
-    expect(state.pathSteps).toEqual([null, null]);
   });
 };
 

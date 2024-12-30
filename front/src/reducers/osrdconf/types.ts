@@ -1,6 +1,5 @@
 import type { Position } from 'geojson';
 
-import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type {
   AllowanceValue,
   ArrivalTimeTypes,
@@ -27,8 +26,6 @@ export type OsrdConfState = InfraState & {
   searchDatetimeWindow?: StdcmSearchDatetimeWindow;
   rollingStockID?: number;
   speedLimitByTag?: string;
-  powerRestriction: PowerRestriction[];
-  pathSteps: (PathStep | null)[];
 };
 
 export interface StandardAllowance {

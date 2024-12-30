@@ -4,13 +4,13 @@ import { compact } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import type { InfraWithState } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { RangedValue } from 'common/types';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import usePathfinding from 'modules/pathfinding/hooks/usePathfinding';
 import type { PathfindingState } from 'modules/pathfinding/types';
 import { upsertPathStepsInOPs } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import { getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 
 import type { ManageTrainSchedulePathProperties } from '../types';
@@ -33,7 +33,6 @@ type ManageTrainScheduleContextProviderProps = { children: ReactNode };
 export const ManageTrainScheduleContextProvider = ({
   children,
 }: ManageTrainScheduleContextProviderProps) => {
-  const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
 
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();

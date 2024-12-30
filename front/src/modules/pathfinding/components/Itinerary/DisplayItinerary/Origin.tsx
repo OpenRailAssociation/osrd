@@ -6,8 +6,8 @@ import { RiMapPin2Fill } from 'react-icons/ri';
 import { useSelector } from 'react-redux';
 
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
+import { getOrigin, getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
 type OriginProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -17,7 +17,6 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { launchPathfinding } = useManageTrainScheduleContext();
 
-  const { getOrigin, getPathSteps } = useOsrdConfSelectors();
   const origin = useSelector(getOrigin);
   const pathSteps = useSelector(getPathSteps);
 

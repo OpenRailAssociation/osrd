@@ -1,16 +1,18 @@
 import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { Comfort, Distribution } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
-import type { OsrdConfState } from 'reducers/osrdconf/types';
+import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 import { msToKmh } from 'utils/physics';
 
 import { builPowerRestrictionReducer } from './powerRestrictionReducer';
 import buildTrainSettingsReducer from './trainSettingsReducer';
 import { upsertPathStep } from '../helpers';
+import itineraryReducer from './itineraryReducer';
 
 export type OperationalStudiesConfState = OsrdConfState & {
   name: string;
@@ -18,8 +20,10 @@ export type OperationalStudiesConfState = OsrdConfState & {
   initialSpeed?: number;
   labels: string[];
   rollingStockComfort: Comfort;
+  pathSteps: (PathStep | null)[];
   constraintDistribution: Distribution;
   usingElectricalProfiles: boolean;
+  powerRestriction: PowerRestriction[];
   trainCount: number;
   trainStep: number;
   trainDelta: number;
@@ -32,8 +36,11 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   initialSpeed: 0,
   labels: [],
   rollingStockComfort: 'STANDARD',
+  // Corresponds to origin and destination not defined
+  pathSteps: [null, null],
   constraintDistribution: 'MARECO',
   usingElectricalProfiles: true,
+  powerRestriction: [],
   trainCount: 1,
   trainDelta: 15,
   trainStep: 2,
@@ -46,6 +53,7 @@ export const operationalStudiesConfSlice = createSlice({
     ...buildCommonConfReducers<OperationalStudiesConfState>(),
     ...builPowerRestrictionReducer<OperationalStudiesConfState>(),
     ...buildTrainSettingsReducer(),
+    ...itineraryReducer,
     selectTrainToEdit(
       state: Draft<OperationalStudiesConfState>,
       action: PayloadAction<TrainScheduleWithDetails>
@@ -103,6 +111,9 @@ export const {
   updateInitialSpeed,
   updateLabels,
   updateRollingStockComfort,
+  updatePathSteps,
+  deleteItinerary,
+  replaceItinerary,
   updateConstraintDistribution,
   toggleUsingElectricalProfiles,
   updateTrainCount,

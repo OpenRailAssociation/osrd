@@ -7,7 +7,6 @@ import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import rollingStockPic from 'assets/pictures/components/train.svg';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
@@ -23,6 +22,9 @@ import SimulationSettings from 'modules/trainschedule/components/ManageTrainSche
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
 import {
   getConstraintDistribution,
+  getDestination,
+  getOrigin,
+  getPathSteps,
   getStartTime,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { formatKmValue } from 'utils/strings';
@@ -38,7 +40,6 @@ const ManageTrainSchedule = ({ trainIdToEdit }: ManageTrainScheduleProps) => {
   const { pathProperties, voltageRanges, pathStepsAndSuggestedOPs } =
     useManageTrainScheduleContext();
 
-  const { getOrigin, getDestination, getPathSteps } = useOsrdConfSelectors();
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);

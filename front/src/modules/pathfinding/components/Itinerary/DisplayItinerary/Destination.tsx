@@ -6,8 +6,8 @@ import { IoFlag } from 'react-icons/io5';
 import { useSelector } from 'react-redux';
 
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
+import { getDestination, getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
 type DestinationProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -16,7 +16,6 @@ type DestinationProps = {
 const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
   const { launchPathfinding } = useManageTrainScheduleContext();
 
-  const { getDestination, getPathSteps } = useOsrdConfSelectors();
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
 
