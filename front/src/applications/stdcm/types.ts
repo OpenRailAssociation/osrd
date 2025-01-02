@@ -109,19 +109,10 @@ export type LinkedTrains = {
   };
 };
 
-export type AllowanceValue =
-  | {
-      minutes: number;
-      value_type: 'time_per_distance';
-    }
-  | {
-      seconds: number;
-      value_type: 'time';
-    }
-  | {
-      percentage: number;
-      value_type: 'percentage';
-    };
+export enum MarginType {
+  PERCENTAGE = 'percentage',
+  TIME_PER_DISTANCE = 'time_per_distance',
+}
 
 export type StdcmSimulationInputs = {
   departureDate?: string;

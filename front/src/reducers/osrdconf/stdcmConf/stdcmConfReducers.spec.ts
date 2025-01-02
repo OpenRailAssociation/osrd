@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   ArrivalTimeTypes,
   StdcmStopTypes,
+  MarginType,
   type LinkedTrains,
   type StdcmSimulation,
 } from 'applications/stdcm/types';
@@ -41,11 +42,11 @@ function stdcmConfTestDataBuilder() {
   return {
     buildPercentageStandardAllowance: (value: number): StandardAllowance => ({
       value,
-      type: 'percentage',
+      type: MarginType.PERCENTAGE,
     }),
     buildTimeStandardAllowance: (value: number): StandardAllowance => ({
       value,
-      type: 'time',
+      type: MarginType.TIME_PER_DISTANCE,
     }),
     buildLinkedTrains(value?: Partial<LinkedTrains>): LinkedTrains {
       return {
