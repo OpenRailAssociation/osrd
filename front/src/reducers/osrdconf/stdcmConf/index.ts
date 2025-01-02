@@ -4,6 +4,7 @@ import { v4 as uuidV4 } from 'uuid';
 
 import {
   ArrivalTimeTypes,
+  MarginType,
   StdcmStopTypes,
   type ExtremityPathStepType,
   type StdcmLinkedTrainExtremity,
@@ -50,7 +51,7 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
     },
   ],
   margins: {
-    standardAllowance: { type: 'time_per_distance', value: 4.5 },
+    standardAllowance: { type: MarginType.TIME_PER_DISTANCE, value: 4.5 },
     gridMarginBefore: new Duration({ seconds: 0 }),
     gridMarginAfter: new Duration({ seconds: 0 }),
   },
@@ -132,7 +133,7 @@ export const stdcmConfSlice = createSlice({
     },
     resetMargins(state: Draft<OsrdStdcmConfState>) {
       state.margins = {
-        standardAllowance: { type: 'time_per_distance', value: 4.5 },
+        standardAllowance: { type: MarginType.TIME_PER_DISTANCE, value: 4.5 },
         gridMarginBefore: new Duration({ seconds: 0 }),
         gridMarginAfter: new Duration({ seconds: 0 }),
       };
