@@ -94,10 +94,11 @@ const Project = () => {
     toggleSelection: toggleStudySelection,
     deleteItems,
   } = useMultiSelection<StudyWithScenarios>(async (studyId) => {
+    const { data: scenarios } = await getScenarios({ projectId: projectId!, studyId });
+
     deleteStudy({ projectId: projectId!, studyId });
 
     // For each scenario in the selected studies, clean the local storage if a manchette is saved
-    const { data: scenarios } = await getScenarios({ projectId: projectId!, studyId });
     if (scenarios) {
       scenarios.results.forEach((scenario) => {
         cleanScenarioLocalStorage(scenario.timetable_id);
