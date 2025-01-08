@@ -574,7 +574,7 @@ if __name__ == "__main__":
         try:
             _get_rolling_stock(_EDITOAST_URL, _ROLLING_STOCK_NAME)
         except ValueError:
-            conftest.create_fast_rolling_stocks(test_rolling_stocks=None)
+            conftest.create_rolling_stock(conftest.FAST_ROLLING_STOCK_JSON_PATH, test_rolling_stocks=None)
     run(
         _EDITOAST_URL,
         new_scenario,

@@ -37,6 +37,13 @@ def small_infra() -> Iterator[Infra]:
     requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
+@pytest.fixture(scope="session")
+def etcs_infra() -> Iterator[Infra]:
+    infra_id = _load_generated_infra("etcs_infra")
+    yield Infra(infra_id, "etcs_infra")
+    requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
+
+
 @pytest.fixture
 def foo_project_id() -> Iterator[int]:
     response = requests.post(
@@ -80,6 +87,12 @@ def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
+@pytest.fixture
+def etcs_scenario(etcs_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
+    scenario_id, timetable_id = create_scenario(EDITOAST_URL, etcs_infra.id, foo_project_id, foo_study_id)
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, etcs_infra.id, timetable_id)
+
+
 def get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> int:
     """
     Returns the ID corresponding to the rolling stock name, if available.
@@ -103,6 +116,11 @@ def get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> int:
 
 FAST_ROLLING_STOCK_JSON_PATH = Path(__file__).parents[1] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json"
 
+# Rolling-stock derived from fast rolling stock, but able to travel under ETCS signaling
+ETCS_ROLLING_STOCK_JSON_PATH = (
+    Path(__file__).parents[1] / "tests" / "data" / "rolling_stocks" / "etcs_level2_rolling_stock.json"
+)
+
 
 @dataclass
 class TestRollingStock:
@@ -115,9 +133,11 @@ class TestRollingStock:
 TestRollingStock.__test__ = False
 
 
-def create_fast_rolling_stocks(test_rolling_stocks: Optional[List[TestRollingStock]] = None):
+def create_rolling_stock(
+    rolling_stock_json_path: Path, test_rolling_stocks: Optional[List[TestRollingStock]] = None
+) -> List[int]:
     if test_rolling_stocks is None:
-        payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
+        payload = json.loads(rolling_stock_json_path.read_text())
         response = requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload)
         rjson = response.json()
         if response.status_code // 100 == 4 and "NameAlreadyUsed" in rjson["type"]:
@@ -135,7 +155,9 @@ def create_fast_rolling_stocks(test_rolling_stocks: Optional[List[TestRollingSto
 
 @pytest.fixture
 def fast_rolling_stocks(request: pytest.FixtureRequest) -> Iterator[Iterable[int]]:
-    ids = create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
+    ids = create_rolling_stock(
+        FAST_ROLLING_STOCK_JSON_PATH, request.node.get_closest_marker("names_and_metadata").args[0]
+    )
     yield ids
     for id in ids:
         requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
@@ -143,7 +165,14 @@ def fast_rolling_stocks(request: pytest.FixtureRequest) -> Iterator[Iterable[int
 
 @pytest.fixture
 def fast_rolling_stock() -> Iterator[int]:
-    id = create_fast_rolling_stocks()[0]
+    id = create_rolling_stock(FAST_ROLLING_STOCK_JSON_PATH)[0]
+    yield id
+    requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
+
+
+@pytest.fixture
+def etcs_rolling_stock() -> Iterator[int]:
+    id = create_rolling_stock(ETCS_ROLLING_STOCK_JSON_PATH)[0]
     yield id
     requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
 
@@ -187,9 +216,37 @@ def west_to_south_east_simulation(
                     {"offset": 837034, "track": "TA2", "id": "a"},
                     {"offset": 4386000, "track": "TH1", "id": "b"},
                 ],
+                "schedule": [{"at": "b", "stop_for": "PT0S"}],
                 "rolling_stock_name": fast_rolling_stock_name,
                 "train_name": "foo",
                 "speed_limit_tag": "foo",
+                "start_time": "2024-01-01T07:19:54+00:00",
+            }
+        ],
+    )
+    yield response.json()
+
+
+@pytest.fixture
+def west_to_south_east_etcs_simulation(
+    etcs_scenario: Scenario,
+    etcs_rolling_stock: int,
+) -> Iterator[Dict]:
+
+    rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    response = requests.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedule/",
+        json=[
+            {
+                "constraint_distribution": "STANDARD",
+                "path": [
+                    {"offset": 837034, "track": "TA2", "id": "a"},
+                    {"offset": 4386000, "track": "TH1", "id": "b"},
+                ],
+                "schedule": [{"at": "b", "stop_for": "PT0S"}],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "train_name": "foo",
                 "start_time": "2024-01-01T07:19:54+00:00",
             }
         ],
