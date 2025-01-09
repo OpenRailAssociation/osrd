@@ -3,11 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { compact, isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import {
-  osrdEditoastApi,
-  type InfraWithState,
-  type PathfindingResult,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type InfraWithState } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
@@ -24,16 +20,11 @@ function pathStepsToLocations(
   return compact(pathSteps.map((s) => s.location));
 }
 
-const useStaticPathfinding = (infra?: InfraWithState) => {
+const useStdcmPathfinding = (infra?: InfraWithState) => {
   const { getStdcmPathSteps } = useOsrdConfSelectors() as StdcmConfSelectors;
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
   const { rollingStock } = useStoreDataForRollingStockSelector();
-
-  const [pathfinding, setPathfinding] = useState<PathfindingResult>();
-
-  const [postPathfindingBlocks, { isFetching }] =
-    osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
 
   // When pathSteps changed
   // => update the pathStepsLocations (if needed by doing a deep comparison).
@@ -45,56 +36,40 @@ const useStaticPathfinding = (infra?: InfraWithState) => {
     });
   }, [pathSteps]);
 
+  const pathfindingPayload = useMemo(() => {
+    if (infra?.state !== 'CACHED' || pathStepsLocations.length < 2) {
+      return null;
+    }
+    return getPathfindingQuery({
+      infraId: infra.id,
+      rollingStock,
+      pathSteps: pathStepsLocations,
+    });
+  }, [pathStepsLocations, rollingStock, infra]);
+
+  const { data: pathfinding, isFetching } =
+    osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useQuery(pathfindingPayload!, {
+      skip: !pathfindingPayload,
+    });
+
   const pathProperties = usePathProperties(
     infra?.id,
     pathfinding?.status === 'success' ? pathfinding : undefined,
     ['geometry']
   );
 
-  useEffect(() => {
-    const launchPathfinding = async () => {
-      setPathfinding(undefined);
-      if (infra?.state !== 'CACHED' || !rollingStock || pathStepsLocations.length < 2) {
-        return;
-      }
-
-      // Don't run the pathfinding if the origin and destination are the same:
-      const origin = pathSteps.at(0)!;
-      const destination = pathSteps.at(-1)!;
-      if (
-        origin.location!.uic === destination.location!.uic &&
-        origin.location!.secondary_code === destination.location!.secondary_code
-      ) {
-        return;
-      }
-
-      const payload = getPathfindingQuery({
-        infraId: infra.id,
-        rollingStock,
-        pathSteps: pathStepsLocations,
-      });
-
-      if (payload === null) {
-        return;
-      }
-
-      const pathfindingResult = await postPathfindingBlocks(payload).unwrap();
-
-      setPathfinding(pathfindingResult);
-    };
-
-    launchPathfinding();
-  }, [pathStepsLocations, rollingStock, infra]);
-
-  const result = useMemo(
+  const pathfindingResult = useMemo(
     () =>
       pathfinding
-        ? { status: pathfinding.status, geometry: pathProperties?.geometry ?? undefined }
+        ? {
+            status: pathfinding.status,
+            geometry: pathProperties?.geometry ?? undefined,
+          }
         : null,
     [pathfinding, pathProperties]
   );
 
-  return { pathfinding: result, isPathFindingLoading: isFetching };
+  return { isPathFindingLoading: isFetching, pathfinding: pathfindingResult };
 };
 
-export default useStaticPathfinding;
+export default useStdcmPathfinding;
