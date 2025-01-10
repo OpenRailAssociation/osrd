@@ -1,26 +1,44 @@
 import { isNil } from 'lodash';
-import { type LayerProps, Source, type SymbolLayer } from 'react-map-gl/maplibre';
+import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
+import { Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
-import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
+import getKPLabelLayerProps from 'common/Map/Layers/InfraObjectLayers/getKPLabelLayerProps';
 import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { LayerContext } from 'common/Map/Layers/types';
+import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 import type { Theme } from 'types';
 
-export function getNeutralSectionSignsLayerProps({
+type SNCF_PSL_SignsProps = {
+  colors: Theme;
+  layerOrder?: number;
+};
+
+export function getPSLSignsLayerProps({
   sourceTable,
   prefix,
 }: Pick<LayerContext, 'sourceTable' | 'prefix'>): Omit<SymbolLayer, 'source'> {
   const res: Omit<SymbolLayer, 'source'> = {
-    id: 'neutralSectionSignParams',
+    id: 'signParams',
     type: 'symbol',
     minzoom: 11,
     paint: {},
     layout: {
-      'icon-image': ['concat', prefix, ['get', 'type']],
+      'icon-image': [
+        'case',
+        ['==', ['get', 'type'], 'TIV_D'],
+        ['concat', prefix, 'TIV D FIXE ', ['get', 'value']],
+        ['==', ['get', 'type'], 'R'],
+        ['concat', prefix, 'R'],
+        ['==', ['get', 'type'], 'Z'],
+        ['concat', prefix, 'Z'],
+        ['==', ['get', 'type'], 'TIV_B'],
+        ['concat', prefix, 'TIVD B FIX ', ['get', 'value']],
+        'none',
+      ],
       'icon-size': ['step', ['zoom'], 0.3, 13, 0.4],
       'icon-offset': [
         'step',
@@ -48,48 +66,41 @@ export function getNeutralSectionSignsLayerProps({
   return res;
 }
 
-type NeutralSectionSignsProps = {
-  infraID: number | undefined;
-  colors: Theme;
-  layerOrder?: number;
-};
+export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
+  const infraID = useInfraID();
+  const { colors, layerOrder } = props;
 
-/**
- * Renders the layer for the neutral sections signs
- * https://osrd.fr/en/docs/explanation/models/neutral_sections
- */
-export default function NeutralSectionSigns(props: NeutralSectionSignsProps) {
-  const { colors, layerOrder, infraID } = props;
   const { mapStyle } = useSelector(getMap);
   const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
 
-  const signsParams: LayerProps = getNeutralSectionSignsLayerProps({
-    sourceTable: 'neutral_signs',
+  const signsParams: LayerProps = getPSLSignsLayerProps({
+    sourceTable: 'psl_signs',
     prefix,
   });
+
   const mastsParams: LayerProps = getMastLayerProps({
-    sourceTable: 'neutral_signs',
+    sourceTable: 'psl_signs',
   });
 
   const KPLabelsParams: LayerProps = getKPLabelLayerProps({
     colors,
     minzoom: 13,
     isSignalisation: true,
-    sourceTable: 'neutral_signs',
+    sourceTable: 'psl_signs',
   });
 
   if (isNil(infraID)) return null;
   return (
     <Source
-      id="osrd_sncf_neutral_signs_geo"
+      id="osrd_sncf_psl_signs_geo"
       type="vector"
-      url={`${MAP_URL}/layer/neutral_signs/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/psl_signs/mvt/geo/?infra=${infraID}`}
     >
       <OrderedLayer {...mastsParams} layerOrder={layerOrder} />
       <OrderedLayer {...signsParams} layerOrder={layerOrder} />
       <OrderedLayer
         {...KPLabelsParams}
-        id="chartis/osrd_neutral_signs_kp/geo"
+        id="chartis/osrd_psl_signs_kp/geo"
         layerOrder={layerOrder}
       />
     </Source>

@@ -10,7 +10,7 @@ import { getLayersSettings, getMapStyle } from 'reducers/map/selectors';
 import type { Theme } from 'types';
 
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
-import getKPLabelLayerProps from './KPLabel';
+import getKPLabelLayerProps from './getKPLabelLayerProps';
 
 interface PlatformProps {
   colors: Theme;

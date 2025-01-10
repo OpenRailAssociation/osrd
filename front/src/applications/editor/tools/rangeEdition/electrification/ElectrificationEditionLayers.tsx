@@ -20,7 +20,7 @@ import { getTrackRangeFeatures, isOnModeMove } from 'applications/editor/tools/r
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
-import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
+import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';

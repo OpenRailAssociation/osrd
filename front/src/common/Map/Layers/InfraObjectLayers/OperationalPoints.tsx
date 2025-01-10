@@ -3,10 +3,11 @@ import { Source, type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
-import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getLayersSettings } from 'reducers/map/selectors';
 import type { Theme } from 'types';
+
+import getKPLabelLayerProps from './getKPLabelLayerProps';
 
 type OperationalPointsProps = {
   colors: Theme;

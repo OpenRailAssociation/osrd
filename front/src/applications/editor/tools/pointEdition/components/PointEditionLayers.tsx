@@ -14,7 +14,10 @@ import type { PointEditionState } from 'applications/editor/tools/pointEdition/t
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import colors from 'common/Map/Consts/colors';
-import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
+import GeoJSONs, {
+  EditorSource,
+  SourcesDefinitionsIndex,
+} from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 import { NULL_GEOMETRY } from 'types';

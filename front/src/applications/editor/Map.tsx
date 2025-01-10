@@ -18,13 +18,12 @@ import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
 import Background from 'common/Map/Layers/Background';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import { NeutralSectionsLayer, OperationalPointsLayer } from 'common/Map/Layers/InfraObjectLayers';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
-import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import OSM from 'common/Map/Layers/OSM';
 import { Platforms as PlatformsLayer } from 'common/Map/Layers/Platforms';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
@@ -326,7 +325,7 @@ const MapUnplugged = ({
           )}
 
           {editorState.editorLayers.has('neutral_sections') && (
-            <NeutralSections
+            <NeutralSectionsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
               infraID={infraID}
@@ -335,7 +334,7 @@ const MapUnplugged = ({
           )}
 
           {editorState.editorLayers.has('operational_points') && (
-            <OperationalPoints
+            <OperationalPointsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
               infraID={infraID}

@@ -23,12 +23,12 @@ import {
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import colors from 'common/Map/Consts/colors';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import GeoJSONs from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
 import {
   getRoutesLineLayerProps,
   getRoutesPointLayerProps,
   getRoutesTextLayerProps,
-} from 'common/Map/Layers/Routes';
+} from 'common/Map/Layers/InfraObjectLayers/Routes';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';

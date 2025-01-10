@@ -14,7 +14,7 @@ import {
 import { TRACK_LAYER_ID, POINTS_LAYER_ID } from 'applications/editor/tools/trackEdition/consts';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import GeoJSONs from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 

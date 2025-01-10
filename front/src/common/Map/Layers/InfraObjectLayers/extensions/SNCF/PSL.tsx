@@ -1,5 +1,4 @@
 /* eslint-disable react/jsx-pascal-case */
-
 import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -8,12 +7,16 @@ import type { LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
-import SNCF_PSL_Signs from 'common/Map/Layers/extensions/SNCF/PSLSigns';
+import {
+  getSpeedSectionsName,
+  getFilterBySpeedSectionsTag,
+} from 'common/Map/Layers/InfraObjectLayers/SpeedLimits';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getSpeedSectionsName, getFilterBySpeedSectionsTag } from 'common/Map/Layers/SpeedLimits';
 import type { RootState } from 'reducers';
 import type { MapState } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
+
+import SNCF_PSL_Signs from './PSLSigns';
 
 interface SNCF_PSLProps {
   colors: Theme;

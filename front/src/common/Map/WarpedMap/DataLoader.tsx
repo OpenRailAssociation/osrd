@@ -14,7 +14,7 @@ import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import { OSM_URL } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import GeoJSONs from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { simplifyFeature, type BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';

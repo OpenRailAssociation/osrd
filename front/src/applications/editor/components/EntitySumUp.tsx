@@ -19,7 +19,7 @@ import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { InfraError } from 'common/api/osrdEditoastApi';
 import { LoaderFill } from 'common/Loaders';
-import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
+import { getSpeedSectionsNameString } from 'common/Map/Layers/InfraObjectLayers/SpeedLimits';
 import { useInfraID } from 'common/osrdContext';
 import { type AppDispatch, useAppDispatch } from 'store';
 

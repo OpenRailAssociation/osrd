@@ -3,10 +3,11 @@ import { type LayerProps, Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
-import NeutralSectionSigns from 'common/Map/Layers/extensions/SNCF/NeutralSectionSigns';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getLayersSettings } from 'reducers/map/selectors';
 import type { Theme } from 'types';
+
+import NeutralSectionSigns from './NeutralSectionSigns';
 
 type NeutralSectionsProps = {
   colors: Theme;

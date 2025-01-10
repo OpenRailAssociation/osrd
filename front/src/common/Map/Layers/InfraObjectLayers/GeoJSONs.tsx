@@ -10,44 +10,53 @@ import { useSelector } from 'react-redux';
 
 import type { Layer as LayerType } from 'applications/editor/consts';
 import { MAP_TRACK_SOURCE, MAP_URL } from 'common/Map/const';
-import { getBufferStopsLayerProps } from 'common/Map/Layers/BufferStops';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
-import { getDetectorsLayerProps, getDetectorsNameLayerProps } from 'common/Map/Layers/Detectors';
-import {
-  getElectrificationsProps,
-  getElectrificationsTextParams,
-} from 'common/Map/Layers/Electrifications';
 import {
   getLineErrorsLayerProps,
   getLineTextErrorsLayerProps,
   getPointErrorsLayerProps,
   getPointTextErrorsLayerProps,
 } from 'common/Map/Layers/Errors';
+import geoMainLayer from 'common/Map/Layers/geographiclayers';
+import { getBufferStopsLayerProps } from 'common/Map/Layers/InfraObjectLayers/BufferStops';
+import {
+  getDetectorsLayerProps,
+  getDetectorsNameLayerProps,
+} from 'common/Map/Layers/InfraObjectLayers/Detectors';
+import {
+  getElectrificationsProps,
+  getElectrificationsTextParams,
+} from 'common/Map/Layers/InfraObjectLayers/Electrifications';
 import {
   getPSLSpeedLineBGLayerProps,
   getPSLSpeedLineLayerProps,
   getPSLSpeedValueLayerProps,
-} from 'common/Map/Layers/extensions/SNCF/PSL';
-import { getPSLSignsLayerProps } from 'common/Map/Layers/extensions/SNCF/PSLSigns';
-import geoMainLayer from 'common/Map/Layers/geographiclayers';
-import { getPointLayerProps, getSignalLayerProps } from 'common/Map/Layers/geoSignalsLayers';
-import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { Platforms } from 'common/Map/Layers/Platforms';
+} from 'common/Map/Layers/InfraObjectLayers/extensions/SNCF/PSL';
+import { getPSLSignsLayerProps } from 'common/Map/Layers/InfraObjectLayers/extensions/SNCF/PSLSigns';
+import {
+  getPointLayerProps,
+  getSignalLayerProps,
+} from 'common/Map/Layers/InfraObjectLayers/geoSignalsLayers';
+import getKPLabelLayerProps from 'common/Map/Layers/InfraObjectLayers/getKPLabelLayerProps';
 import {
   getFilterBySpeedSectionsTag,
   getSpeedSectionsLineLayerProps,
   getSpeedSectionsPointLayerProps,
   getSpeedSectionsTextLayerProps,
-} from 'common/Map/Layers/SpeedLimits';
-import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+} from 'common/Map/Layers/InfraObjectLayers/SpeedLimits';
+import {
+  getSwitchesLayerProps,
+  getSwitchesNameLayerProps,
+} from 'common/Map/Layers/InfraObjectLayers/Switches';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { Platforms } from 'common/Map/Layers/Platforms';
 import type { LayerContext } from 'common/Map/Layers/types';
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { RootState } from 'reducers';
 import type { MapState } from 'reducers/map';
 import type { Theme } from 'types';
 
-import getMastLayerProps from './mastLayerProps';
+import getMastLayerProps from '../mastLayerProps';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 
