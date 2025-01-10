@@ -24,7 +24,7 @@ class Infra:
     electrifications: List[Electrification] = field(default_factory=list)
     neutral_sections: List[NeutralSection] = field(default_factory=list)
 
-    VERSION = "3.4.13"
+    VERSION = "3.4.14"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -98,6 +98,7 @@ class Infra:
                     ),
                 },
                 weight=None,
+                is_station=True,
             )
             ops.append(new_op)
         return ops

@@ -477,6 +477,7 @@ pub fn operational_points(
                         sncf: None,
                     },
                     weight: None,
+                    is_station: true,
                 })
             }
         })

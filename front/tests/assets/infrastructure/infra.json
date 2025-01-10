@@ -1,5 +1,5 @@
 {
-  "version": "3.4.13",
+  "version": "3.4.14",
   "track_sections": [
     {
       "id": "TA1",
@@ -6745,6 +6745,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",
@@ -6791,6 +6792,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",
@@ -6823,6 +6825,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",
@@ -6848,6 +6851,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",
@@ -6873,6 +6877,7 @@
           }
         }
       ],
+      "is_station": false,
       "extensions": {
         "sncf": {
           "ch": "BC",
@@ -6905,6 +6910,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",
@@ -6930,6 +6936,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",
@@ -6955,6 +6962,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",
@@ -6980,6 +6988,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",
@@ -7019,6 +7028,7 @@
           }
         }
       ],
+      "is_station": true,
       "extensions": {
         "sncf": {
           "ch": "BV",

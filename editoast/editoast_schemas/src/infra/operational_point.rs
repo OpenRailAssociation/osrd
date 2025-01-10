@@ -27,6 +27,8 @@ pub struct OperationalPoint {
     pub extensions: OperationalPointExtensions,
     #[serde(default)]
     pub weight: Option<u8>,
+    #[serde(default)]
+    pub is_station: bool,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, ToSchema)]

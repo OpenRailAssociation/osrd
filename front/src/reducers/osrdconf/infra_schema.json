@@ -885,6 +885,12 @@
                     "title": "Id",
                     "type": "string"
                 },
+                "is_station": {
+                    "default": false,
+                    "description": "Whether this operational point represents a station",
+                    "title": "Is Station",
+                    "type": "boolean"
+                },
                 "parts": {
                     "items": {
                         "$ref": "#/$defs/OperationalPointPart"
@@ -2245,8 +2251,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.13",
-            "default": "3.4.13",
+            "const": "3.4.14",
+            "default": "3.4.14",
             "description": "Version of the schema",
             "title": "Version"
         }

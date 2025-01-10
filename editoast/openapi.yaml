@@ -8409,6 +8409,8 @@ components:
           type: string
           maxLength: 255
           minLength: 1
+        is_station:
+          type: boolean
         parts:
           type: array
           items:
