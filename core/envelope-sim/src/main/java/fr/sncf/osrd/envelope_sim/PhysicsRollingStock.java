@@ -1,8 +1,8 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.GRAVITY_ACCELERATION;
-import static fr.sncf.osrd.envelope_sim.etcs.ConstantsKt.mRotatingMax;
-import static fr.sncf.osrd.envelope_sim.etcs.ConstantsKt.mRotatingMin;
+import static fr.sncf.osrd.envelope_sim.etcs.ConstantsKt.M_ROTATING_MAX;
+import static fr.sncf.osrd.envelope_sim.etcs.ConstantsKt.M_ROTATING_MIN;
 
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEtcsBrakeParams;
 
@@ -64,7 +64,7 @@ public interface PhysicsRollingStock {
      * mRotating (Max or Min) is in %, as seen in ERA braking curves simulation tool v5.1.
      */
     static double getGradientAcceleration(double grade) {
-        var mRotating = grade >= 0 ? mRotatingMax : mRotatingMin;
+        var mRotating = grade >= 0 ? M_ROTATING_MAX : M_ROTATING_MIN;
         return -GRAVITY_ACCELERATION * grade / (1000.0 + 10.0 * mRotating);
     }
 

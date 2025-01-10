@@ -47,56 +47,40 @@ fun addBrakingCurvesAtEOAs(
 ): Envelope {
     val sortedEndsOfAuthority = endsOfAuthority.sortedBy { it.offsetEOA }
     var beginPos = envelope.beginPos
+    val maxSpeedEnvelope = envelope.maxSpeed
     val builder = OverlayEnvelopeBuilder.forward(envelope)
     for (endOfAuthority in sortedEndsOfAuthority) {
         val targetPosition = endOfAuthority.offsetEOA.distance.meters
         assert(targetPosition > 0.0)
         val targetSpeed = 0.0
-        val maxSpeedEnvelope = envelope.maxSpeed
-        val overhead =
-            Envelope.make(
-                EnvelopePart.generateTimes(
-                    listOf(EnvelopeProfile.CONSTANT_SPEED),
-                    doubleArrayOf(0.0, targetPosition),
-                    doubleArrayOf(maxSpeedEnvelope, maxSpeedEnvelope)
-                )
-            )
-        val sbdCurve =
-            computeBrakingCurve(
-                context,
-                overhead,
-                targetPosition,
-                targetSpeed,
-                BrakingType.ETCS_SBD
-            )
-        assert(sbdCurve.beginPos >= 0 && sbdCurve.endPos == targetPosition)
-        assert(sbdCurve.endSpeed == targetSpeed)
-        val guiCurve =
-            computeBrakingCurve(
-                context,
-                overhead,
-                targetPosition,
-                targetSpeed,
-                BrakingType.ETCS_GUI
-            )
-        assert(guiCurve.beginPos >= 0.0 && guiCurve.endPos == targetPosition)
-        assert((guiCurve.beginSpeed == maxSpeedEnvelope || guiCurve.beginPos == 0.0))
-        assert(guiCurve.endSpeed == targetSpeed)
+        val fullIndicationCurveEoa =
+            computeSbdFullIndicationCurve(context, targetPosition, maxSpeedEnvelope)
+        var fullIndicationCurveStop = Envelope.make(fullIndicationCurveEoa)
 
-        val fullIndicationCurve =
-            computeIndicationBrakingCurveFromRef(context, sbdCurve, BrakingCurveType.SBD, guiCurve)
-        assert(fullIndicationCurve.endPos == targetPosition)
-        assert(fullIndicationCurve.endSpeed == targetSpeed)
+        if (endOfAuthority.offsetSVL != null) {
+            val targetPositionSvl = endOfAuthority.offsetSVL.distance.meters
+            val fullIndicationCurveSvl =
+                computeEbdFullIndicationCurve(
+                    context,
+                    targetPositionSvl,
+                    targetSpeed,
+                    maxSpeedEnvelope
+                )
+            fullIndicationCurveStop =
+                computeMinSvlEoaIndCurve(
+                    fullIndicationCurveEoa,
+                    fullIndicationCurveSvl,
+                    targetPosition
+                )
+        }
 
         val indicationCurve =
-            keepBrakingCurveUnderOverlay(Envelope.make(fullIndicationCurve), envelope, beginPos)
-                ?: continue
+            keepBrakingCurveUnderOverlay(fullIndicationCurveStop, envelope, beginPos) ?: continue
         assert(indicationCurve.beginPos >= beginPos && indicationCurve.endPos == targetPosition)
         assert(
             indicationCurve.beginSpeed <= maxSpeedEnvelope &&
                 indicationCurve.endSpeed == targetSpeed
         )
-
         builder.addPart(indicationCurve)
 
         // We build EOAs along the path. We need to handle overlaps with the next EOA. To do so, we
@@ -104,6 +88,95 @@ fun addBrakingCurvesAtEOAs(
         beginPos = targetPosition
     }
     return builder.build()
+}
+
+private fun computeMinSvlEoaIndCurve(
+    fullIndicationCurveEoa: EnvelopePart,
+    fullIndicationCurveSvl: EnvelopePart,
+    targetPosition: Double
+): Envelope {
+    // SvL indication curve should have positions before target position, and speeds above the
+    // release speed. Otherwise, follow EoA indication curve.
+    if (
+        fullIndicationCurveSvl.beginPos >= targetPosition ||
+            fullIndicationCurveSvl.maxSpeed <= NATIONAL_RELEASE_SPEED
+    ) {
+        return Envelope.make(fullIndicationCurveEoa)
+    }
+    val releaseSpeedPositionEoa = fullIndicationCurveEoa.interpolatePosition(NATIONAL_RELEASE_SPEED)
+    val releaseSpeedPositionSvl = fullIndicationCurveSvl.interpolatePosition(NATIONAL_RELEASE_SPEED)
+    val lastIndicationPart =
+        fullIndicationCurveEoa.sliceWithSpeeds(
+            releaseSpeedPositionEoa,
+            NATIONAL_RELEASE_SPEED,
+            fullIndicationCurveEoa.endPos,
+            fullIndicationCurveEoa.endSpeed
+        )
+    val slicedIndicationCurveEoa =
+        fullIndicationCurveEoa.sliceWithSpeeds(
+            fullIndicationCurveEoa.beginPos,
+            fullIndicationCurveEoa.beginSpeed,
+            releaseSpeedPositionEoa,
+            NATIONAL_RELEASE_SPEED
+        )
+    val slicedIndicationCurveSvl =
+        fullIndicationCurveSvl.sliceWithSpeeds(
+            fullIndicationCurveSvl.beginPos,
+            fullIndicationCurveSvl.beginSpeed,
+            releaseSpeedPositionSvl,
+            NATIONAL_RELEASE_SPEED
+        )
+    val startIntersectingRange =
+        max(slicedIndicationCurveEoa.beginPos, slicedIndicationCurveSvl.beginPos)
+    var refCurve = slicedIndicationCurveEoa
+    var otherCurve = slicedIndicationCurveSvl
+    if (
+        slicedIndicationCurveEoa.interpolateSpeed(startIntersectingRange) >
+            slicedIndicationCurveSvl.interpolateSpeed(startIntersectingRange)
+    ) {
+        refCurve = slicedIndicationCurveSvl
+        otherCurve = slicedIndicationCurveEoa
+    }
+    val pointCount = refCurve.pointCount()
+    var indicationPositions = DoubleArray(pointCount)
+    var indicationSpeeds = DoubleArray(pointCount)
+    for (i in 0 until pointCount) {
+        val newPos = refCurve.getPointPos(i)
+        val newSpeed = refCurve.getPointSpeed(i)
+        if (newPos < otherCurve.beginPos) {
+            indicationPositions[i] = newPos
+            indicationSpeeds[i] = newSpeed
+        } else if (newPos <= otherCurve.endPos) {
+            val otherSpeed = slicedIndicationCurveSvl.interpolateSpeed(newPos)
+            indicationPositions[i] = newPos
+            // TODO: unneeded for now: interpolate to not approximate position at intersection.
+            indicationSpeeds[i] = min(otherSpeed, newSpeed)
+        } else {
+            indicationPositions[i] = otherCurve.endPos
+            indicationSpeeds[i] = otherCurve.endSpeed
+            // Clean up the last unneeded points in the arrays before exiting the loop.
+            indicationPositions = indicationPositions.dropLast(pointCount - 1 - i).toDoubleArray()
+            indicationSpeeds = indicationSpeeds.dropLast(pointCount - 1 - i).toDoubleArray()
+            break
+        }
+    }
+    val firstIndicationPart =
+        EnvelopePart.generateTimes(
+            listOf(EnvelopeProfile.BRAKING),
+            indicationPositions,
+            indicationSpeeds
+        )
+    if (releaseSpeedPositionSvl < releaseSpeedPositionEoa) {
+        val maintainReleaseSpeedPart =
+            EnvelopePart.generateTimes(
+                listOf(EnvelopeProfile.CONSTANT_SPEED),
+                doubleArrayOf(releaseSpeedPositionSvl, releaseSpeedPositionEoa),
+                doubleArrayOf(NATIONAL_RELEASE_SPEED, NATIONAL_RELEASE_SPEED)
+            )
+        return Envelope.make(firstIndicationPart, maintainReleaseSpeedPart, lastIndicationPart)
+    } else {
+        return Envelope.make(firstIndicationPart, lastIndicationPart)
+    }
 }
 
 /** Compute braking curves at every limit of authority. */
@@ -114,58 +187,19 @@ fun addBrakingCurvesAtLOAs(
 ): Envelope {
     val sortedLimitsOfAuthority = limitsOfAuthority.sortedBy { it.offset }
     val beginPos = envelope.beginPos
+    val maxSpeedEnvelope = envelope.maxSpeed
     var envelopeWithLoaBrakingCurves = envelope
     var builder = OverlayEnvelopeBuilder.forward(envelopeWithLoaBrakingCurves)
-
-    val maxSpeedEnvelope = envelopeWithLoaBrakingCurves.maxSpeed
-    // Add maxBecDeltaSpeed to EBD curve overhead so it reaches a sufficiently high speed to
-    // guarantee that, after the speed translation, the corresponding EBI curve does intersect
-    // with envelope max speed.
-    val maxBecDeltaSpeed = maxBecDeltaSpeed()
-    val maxSpeedEbd = maxSpeedEnvelope + maxBecDeltaSpeed
-    val overhead =
-        Envelope.make(
-            EnvelopePart.generateTimes(
-                listOf(EnvelopeProfile.CONSTANT_SPEED),
-                doubleArrayOf(0.0, context.path.length),
-                doubleArrayOf(maxSpeedEbd, maxSpeedEbd)
-            )
-        )
 
     for (limitOfAuthority in sortedLimitsOfAuthority) {
         val targetPosition = limitOfAuthority.offset.distance.meters
         assert(targetPosition > 0.0)
         val targetSpeed = limitOfAuthority.speed
         assert(targetSpeed > 0.0)
-
-        val ebdCurve =
-            computeBrakingCurve(
-                context,
-                overhead,
-                targetPosition,
-                targetSpeed,
-                BrakingType.ETCS_EBD
-            )
-        assert(ebdCurve.beginPos >= 0.0 && ebdCurve.endPos >= targetPosition)
-        val guiCurve =
-            computeBrakingCurve(
-                context,
-                overhead,
-                targetPosition,
-                targetSpeed,
-                BrakingType.ETCS_GUI
-            )
-        assert(guiCurve.beginPos >= 0.0 && guiCurve.endPos == targetPosition)
-        assert((guiCurve.beginSpeed == maxSpeedEbd || guiCurve.beginPos == 0.0))
-
-        val ebiCurve = computeEbiBrakingCurveFromEbd(context, ebdCurve, targetSpeed)
-        assert(ebiCurve.endSpeed == targetSpeed)
-
         val fullIndicationCurve =
-            computeIndicationBrakingCurveFromRef(context, ebiCurve, BrakingCurveType.EBI, guiCurve)
+            computeEbdFullIndicationCurve(context, targetPosition, targetSpeed, maxSpeedEnvelope)
         val endOfIndicationCurve = fullIndicationCurve.endPos
         assert(endOfIndicationCurve <= targetPosition)
-        assert(fullIndicationCurve.endSpeed == targetSpeed)
 
         val fullIndCurveWithMaintain: Envelope
         if (endOfIndicationCurve < targetPosition) {
@@ -203,6 +237,80 @@ fun addBrakingCurvesAtLOAs(
     return envelopeWithLoaBrakingCurves
 }
 
+/** Compute SBD-based full indication curve. */
+private fun computeSbdFullIndicationCurve(
+    context: EnvelopeSimContext,
+    targetPosition: Double,
+    maxSpeedEnvelope: Double
+): EnvelopePart {
+    val targetSpeed = 0.0
+    val overhead =
+        Envelope.make(
+            EnvelopePart.generateTimes(
+                listOf(EnvelopeProfile.CONSTANT_SPEED),
+                doubleArrayOf(0.0, targetPosition),
+                doubleArrayOf(maxSpeedEnvelope, maxSpeedEnvelope)
+            )
+        )
+    val sbdCurve =
+        computeBrakingCurve(context, overhead, targetPosition, targetSpeed, BrakingType.ETCS_SBD)
+    assert(sbdCurve.beginPos >= 0 && sbdCurve.endPos == targetPosition)
+    assert(sbdCurve.endSpeed == targetSpeed)
+
+    val guiCurve =
+        computeBrakingCurve(context, overhead, targetPosition, targetSpeed, BrakingType.ETCS_GUI)
+    assert(guiCurve.beginPos >= 0.0 && guiCurve.endPos == targetPosition)
+    assert((guiCurve.beginSpeed == maxSpeedEnvelope || guiCurve.beginPos == 0.0))
+    assert(guiCurve.endSpeed == targetSpeed)
+
+    val fullIndicationCurve =
+        computeIndicationBrakingCurveFromRef(context, sbdCurve, BrakingCurveType.SBD, guiCurve)
+    assert(fullIndicationCurve.endPos == targetPosition)
+    assert(fullIndicationCurve.endSpeed == targetSpeed)
+    return fullIndicationCurve
+}
+
+/** Compute EBD-based full indication curve. */
+private fun computeEbdFullIndicationCurve(
+    context: EnvelopeSimContext,
+    targetPosition: Double,
+    targetSpeed: Double,
+    maxSpeedEnvelope: Double
+): EnvelopePart {
+    // Add maxBecDeltaSpeed to EBD curve overhead so it reaches a sufficiently high speed to
+    // guarantee that, after the speed translation, the corresponding EBI curve does intersect
+    // with envelope max speed.
+    val maxBecDeltaSpeed = maxBecDeltaSpeed()
+    val maxSpeedEbd = maxSpeedEnvelope + maxBecDeltaSpeed
+    val overhead =
+        Envelope.make(
+            EnvelopePart.generateTimes(
+                listOf(EnvelopeProfile.CONSTANT_SPEED),
+                doubleArrayOf(0.0, max(context.path.length, targetPosition)),
+                doubleArrayOf(maxSpeedEbd, maxSpeedEbd)
+            )
+        )
+
+    val ebdCurve =
+        computeBrakingCurve(context, overhead, targetPosition, targetSpeed, BrakingType.ETCS_EBD)
+    assert(ebdCurve.beginPos >= 0.0 && ebdCurve.endPos >= targetPosition)
+    // TODO: uncomment once ebd is not shifted anymore for an LoA
+    // assert((ebdCurve.beginSpeed == maxSpeedEbd || ebdCurve.beginPos == 0.0))
+
+    val guiCurve =
+        computeBrakingCurve(context, overhead, targetPosition, targetSpeed, BrakingType.ETCS_GUI)
+    assert(guiCurve.beginPos >= 0.0 && guiCurve.endPos == targetPosition)
+    assert((guiCurve.beginSpeed == maxSpeedEbd || guiCurve.beginPos == 0.0))
+
+    val ebiCurve = computeEbiBrakingCurveFromEbd(context, ebdCurve, targetSpeed)
+    assert(ebiCurve.endSpeed == targetSpeed)
+
+    val fullIndicationCurve =
+        computeIndicationBrakingCurveFromRef(context, ebiCurve, BrakingCurveType.EBI, guiCurve)
+    assert(fullIndicationCurve.endSpeed == targetSpeed)
+    return fullIndicationCurve
+}
+
 /** Compute braking curve: used to compute EBD, SBD or GUI. */
 private fun computeBrakingCurve(
     context: EnvelopeSimContext,
@@ -217,10 +325,10 @@ private fun computeBrakingCurve(
             brakingType == BrakingType.ETCS_GUI
     )
     // If the stopPosition is after the end of the path, the input is invalid except if it is an
-    // SVL, i.e. the target speed is 0 and the curve to compute is an EBD.
+    // SVL, i.e. the target speed is 0 and the curve to compute is not an SBD.
     if (
         (targetPosition > context.path.length &&
-            !(targetSpeed == 0.0 && brakingType == BrakingType.ETCS_EBD))
+            (targetSpeed != 0.0 || brakingType == BrakingType.ETCS_SBD))
     )
         throw RuntimeException(
             String.format(
@@ -282,15 +390,22 @@ private fun computeEbiBrakingCurveFromEbd(
     targetSpeed: Double
 ): EnvelopePart {
     val pointCount = ebdCurve.pointCount()
-    val newPositions = DoubleArray(pointCount)
-    val newSpeeds = DoubleArray(pointCount)
-    for (i in 0 until ebdCurve.pointCount()) {
+    var newPositions = DoubleArray(pointCount)
+    var newSpeeds = DoubleArray(pointCount)
+    for (i in 0 until pointCount) {
         val speed = ebdCurve.getPointSpeed(i)
         val becParams = computeBecParams(context, ebdCurve, speed, targetSpeed)
         val newPos = ebdCurve.getPointPos(i) - becParams.dBec
         val newSpeed = speed - becParams.deltaBecSpeed
         newPositions[i] = newPos
-        newSpeeds[i] = newSpeed
+        // TODO: unneeded for now: interpolate to not approximate position at 0 m/s.
+        newSpeeds[i] = max(newSpeed, 0.0)
+        if (newSpeed <= 0.0 && i < pointCount - 1) {
+            // Clean up the last unneeded points in the arrays before exiting the loop.
+            newPositions = newPositions.dropLast(pointCount - 1 - i).toDoubleArray()
+            newSpeeds = newSpeeds.dropLast(pointCount - 1 - i).toDoubleArray()
+            break
+        }
     }
 
     val fullBrakingCurve =
@@ -353,10 +468,23 @@ private fun keepBrakingCurveUnderOverlay(
     overlay: Envelope,
     beginPos: Double
 ): EnvelopePart? {
-    if (fullBrakingCurve.endPos <= beginPos) {
+    if (fullBrakingCurve.beginPos >= overlay.endPos || fullBrakingCurve.endPos <= beginPos) {
         etcsBrakingCurvesLogger.warn(
-            "The position-range of the ETCS braking curve ending at ($beginPos, ${fullBrakingCurve.endSpeed}) does not intersect with the overlay envelope's position-range."
+            "The position-range of the ETCS braking curve starting at (${fullBrakingCurve.beginPos}, ${fullBrakingCurve.beginSpeed}) and ending at (${fullBrakingCurve.endPos}, ${fullBrakingCurve.endSpeed}) does not intersect with the overlay envelope's position-range."
         )
+        return null
+    }
+    if (
+        fullBrakingCurve.minSpeed >
+            Envelope.make(
+                    *overlay.slice(
+                        max(fullBrakingCurve.beginPos, beginPos),
+                        min(fullBrakingCurve.endPos, overlay.endPos)
+                    )
+                )
+                .maxSpeed
+    ) {
+        // The full braking curve is above the overlay envelope: nothing to do here.
         return null
     }
 
@@ -376,21 +504,44 @@ private fun keepBrakingCurveUnderOverlay(
                 mergedArray + currentArray.drop(1).toDoubleArray()
             }
     val timeDeltas = fullBrakingCurve.flatMap { it.cloneTimes().asList() }
-    val nbPoints = positions.size
 
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)
     val overlayBuilder =
         ConstrainedEnvelopePartBuilder(
             partBuilder,
-            PositionConstraint(beginPos, overlay.endPos),
+            PositionConstraint(max(beginPos, fullBrakingCurve.beginPos), overlay.endPos),
             EnvelopeConstraint(overlay, EnvelopePartConstraintType.CEILING)
         )
-    overlayBuilder.initEnvelopePart(positions[nbPoints - 1], speeds[nbPoints - 1], -1.0)
-    for (i in nbPoints - 2 downTo 0) {
+    val lastIndex = getIndexOfLastPointBeneathOverlay(positions, speeds, overlay)
+    // To create a braking curve with overlay builder, we need at least 2 positions.
+    if (lastIndex <= 0) return null
+    overlayBuilder.initEnvelopePart(positions[lastIndex], speeds[lastIndex], -1.0)
+    for (i in lastIndex - 1 downTo 0) {
         if (!overlayBuilder.addStep(positions[i], speeds[i], timeDeltas[i])) break
     }
     return partBuilder.build()
+}
+
+/**
+ * Find the index of the last point which is located beneath the overlay envelope, -1 if none exist.
+ */
+private fun getIndexOfLastPointBeneathOverlay(
+    positions: DoubleArray,
+    speeds: DoubleArray,
+    overlay: Envelope
+): Int {
+    var lastIndex = positions.size - 1
+    while (
+        lastIndex >= 0 &&
+            speeds[lastIndex] >
+                overlay
+                    .get(overlay.findRightDir(positions[lastIndex], -1.0))
+                    .interpolateSpeed(positions[lastIndex])
+    ) {
+        lastIndex--
+    }
+    return lastIndex
 }
 
 private data class BecParams(val dBec: Double, val vBec: Double, val speed: Double) {
@@ -418,7 +569,7 @@ private fun computeBecParams(
     val tTraction =
         max(
             rollingStock.rjsEtcsBrakeParams.tTractionCutOff -
-                (tWarning + rollingStock.rjsEtcsBrakeParams.tBs2),
+                (T_WARNING + rollingStock.rjsEtcsBrakeParams.tBs2),
             0.0
         )
     // Estimated acceleration during tTraction, worst case scenario (the train accelerates as much
@@ -429,7 +580,12 @@ private fun computeBecParams(
             rollingStock.getRollingResistance(speed),
             weightForce,
             speed,
-            PhysicsRollingStock.getMaxEffort(speed, context.tractiveEffortCurveMap.get(position)),
+            PhysicsRollingStock.getMaxEffort(
+                speed,
+                // TODO: have a tractive effort curve map which extends until the last SvL instead
+                // of the end of the path.
+                context.tractiveEffortCurveMap.get(min(position, context.path.length))
+            ),
             1.0
         )
     // Speed correction due to the traction staying active during tTraction. See Subset:
@@ -440,7 +596,7 @@ private fun computeBecParams(
     // §3.13.9.3.2.6.
     val tBerem = max(rollingStock.rjsEtcsBrakeParams.tBe - tTraction, 0.0)
     // Speed correction due to the braking system not being active yet. See Subset: §3.13.9.3.2.10.
-    val vDelta2 = aEst2 * tBerem
+    val vDelta2 = A_EST_2 * tBerem
 
     // Compute dBec and vBec. See Subset: §3.13.9.3.2.10.
     val maxV = max(speed + vDelta0 + vDelta1, targetSpeed)
@@ -463,7 +619,7 @@ private fun getSbiPosition(ebiOrSbdPosition: Double, speed: Double, tbs: Double)
 
 /** See Subset 026: §3.13.9.3.5.1. */
 private fun getPermittedSpeedPosition(sbiPosition: Double, speed: Double): Double {
-    return getPreviousPosition(sbiPosition, speed, tDriver)
+    return getPreviousPosition(sbiPosition, speed, T_DRIVER)
 }
 
 /** See Subset 026: §3.13.9.3.5.4. */
@@ -488,7 +644,7 @@ private fun getIndicationPosition(
     speed: Double,
     tBs: Double
 ): Double {
-    val tIndication = max((0.8 * tBs), 5.0) + tDriver
+    val tIndication = max((0.8 * tBs), 5.0) + T_DRIVER
     return getPreviousPosition(permittedSpeedPosition, speed, tIndication)
 }
 

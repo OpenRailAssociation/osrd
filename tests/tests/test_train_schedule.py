@@ -20,6 +20,7 @@ SPEED_LIMIT_142 = kph2ms(141.9984)
 SPEED_LIMIT_112 = kph2ms(111.9996)
 SAFE_SPEED_30 = kph2ms(29.9988)
 SHORT_SLIP_SPEED_10 = kph2ms(10.0008)
+RELEASE_SPEED_40 = kph2ms(40)
 
 
 def _update_simulation_with_mareco_allowances(editoast_url, train_Schedule_id):
@@ -299,6 +300,213 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(etcs_scenario: Scenario, etcs
         _get_current_or_next_speed_at(simulation_final_output, offset_start_second_brake + 1)
         < speed_before_second_brake
     )
+
+
+def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(etcs_scenario: Scenario, etcs_rolling_stock: int):
+    rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = requests.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": "brake from MRSP: max_speed + EoA and SvL at same location",
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "first", "track": "TH0", "offset": 1_000_000},
+                    {"id": "last", "track": "TH1", "offset": 3_922_000},
+                ],
+                "schedule": [
+                    {"at": "zero", "stop_for": "P0D"},
+                    {"at": "first", "stop_for": "PT10S"},
+                    {"at": "last", "stop_for": "P0D"},
+                ],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "STANDARD",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    simu_response = requests.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+    )
+    simulation_final_output = simu_response.json()["final_output"]
+
+    assert len(simulation_final_output["positions"]) == len(simulation_final_output["speeds"])
+
+    # To debug this test: please add a breakpoint then use front to display speed-space chart
+    # (activate Context for Slopes and Speed limits).
+
+    # This case hits an LoA curve (slowdown of the MRSP), but it's not the point to test it here.
+
+    # Check that the curves respect the EoA + SvL (EoA = stops), and that there is an
+    # acceleration then deceleration in between (maintain speed when reach the MRSP).
+    first_stop_offset = 41_138_000
+    final_stop_offset = 45_060_000
+    stop_offsets = [
+        0,
+        first_stop_offset,
+        final_stop_offset,
+    ]
+
+    # Check null speed at stops
+    for stop_offset in stop_offsets:
+        assert _get_current_or_next_speed_at(simulation_final_output, stop_offset) == 0
+
+    # Check only one acceleration then only one deceleration between stops
+    for offset_index in range(1, len(stop_offsets) - 1):
+        accelerating = True
+        prev_speed = 0
+        start_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index - 1])
+        end_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index])
+        for pos_index in range(start_pos_index, end_pos_index):
+            current_speed = simulation_final_output["speeds"][pos_index]
+            if accelerating:
+                if prev_speed > current_speed:
+                    accelerating = False
+            else:
+                assert prev_speed >= current_speed
+            prev_speed = current_speed
+
+    # Check that the braking curve starts and ends at the expected offsets.
+    offset_start_first_brake = 33_461_530
+    speed_before_first_brake = _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake)
+    _assert_equal_speeds(speed_before_first_brake, MAX_SPEED_288)
+    assert (
+        _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake + 1) < speed_before_first_brake
+    )
+    # Check a bending point for the first stop's braking curve (where the Guidance curve's influence stops).
+    offset_bending_guidance_point = 37_210_507
+    speed_at_bending_guidance_point = _get_current_or_next_speed_at(
+        simulation_final_output, offset_bending_guidance_point
+    )
+    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(218.919_495_5))
+    # Check that the release part (where the speed stays at 40km/h) starts and ends at the expected offsets.
+    offset_start_release_speed = 40_827_882
+    speed_at_start_release_speed = _get_current_or_next_speed_at(simulation_final_output, offset_start_release_speed)
+    _assert_equal_speeds(speed_at_start_release_speed, RELEASE_SPEED_40)
+    offset_end_release_speed = 40_892_792
+    speed_at_end_release_speed = _get_current_or_next_speed_at(simulation_final_output, offset_end_release_speed)
+    _assert_equal_speeds(speed_at_end_release_speed, RELEASE_SPEED_40)
+
+
+def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
+    etcs_scenario: Scenario, etcs_rolling_stock: int
+):
+    rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = requests.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": "brake from MRSP: max_speed + EoA and SvL 100m after EoA",
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "first", "track": "TH0", "offset": 900_000},
+                    {"id": "last", "track": "TH1", "offset": 3_922_000},
+                ],
+                "schedule": [
+                    {"at": "zero", "stop_for": "P0D"},
+                    {"at": "first", "stop_for": "PT10S"},
+                    {"at": "last", "stop_for": "P0D"},
+                ],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "STANDARD",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    simu_response = requests.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+    )
+    simulation_final_output = simu_response.json()["final_output"]
+
+    assert len(simulation_final_output["positions"]) == len(simulation_final_output["speeds"])
+
+    # To debug this test: please add a breakpoint then use front to display speed-space chart
+    # (activate Context for Slopes and Speed limits).
+
+    # This case hits an LoA curve (slowdown of the MRSP), but it's not the point to test it here.
+
+    # Check that the curves respect the EoA + SvL (EoA = stops), and that there is an
+    # acceleration then deceleration in between (maintain speed when reach the MRSP).
+    # Here, the stop (EoA) is 100m before the PH1 switch (SvL).
+    svl_ph1_offset = 41_138_000
+    first_stop_offset = svl_ph1_offset - 100_000
+    final_stop_offset = 45_060_000
+    stop_offsets = [
+        0,
+        first_stop_offset,
+        final_stop_offset,
+    ]
+
+    # Check null speed at stops
+    for stop_offset in stop_offsets:
+        assert _get_current_or_next_speed_at(simulation_final_output, stop_offset) == 0
+
+    # Check only one acceleration then only one deceleration between stops
+    for offset_index in range(1, len(stop_offsets) - 1):
+        accelerating = True
+        prev_speed = 0
+        start_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index - 1])
+        end_pos_index = bisect.bisect_left(simulation_final_output["positions"], stop_offsets[offset_index])
+        for pos_index in range(start_pos_index, end_pos_index):
+            current_speed = simulation_final_output["speeds"][pos_index]
+            if accelerating:
+                if prev_speed > current_speed:
+                    accelerating = False
+            else:
+                assert prev_speed >= current_speed
+            prev_speed = current_speed
+
+    # Check that the braking curve starts and ends at the expected offsets.
+    offset_start_first_brake = 33_361_530
+    speed_before_first_brake = _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake)
+    _assert_equal_speeds(speed_before_first_brake, MAX_SPEED_288)
+    assert (
+        _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake + 1) < speed_before_first_brake
+    )
+    # Check the first bending point for the first stop's braking curve (where the Guidance curve's influence stops).
+    offset_bending_guidance_point = 37_240_601
+    speed_at_bending_guidance_point = _get_current_or_next_speed_at(
+        simulation_final_output, offset_bending_guidance_point
+    )
+    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(219.751_941_6))
+    # Check the second bending point for the first stop's braking curve, where the indication curve followed switches
+    # from the EoA indication curve to the SvL indication curve.
+    offset_bending_point_eoa_to_svl = 39_101_733
+    speed_at_start_release_speed = _get_current_or_next_speed_at(
+        simulation_final_output, offset_bending_point_eoa_to_svl
+    )
+    _assert_equal_speeds(speed_at_start_release_speed, kph2ms(155.175_955_2))
+    # Check the third bending point for the first stop's braking curve, where the indication curve followed switches
+    # back from the SvL indication curve to the EoA indication curve.
+    offset_bending_point_svl_to_eoa = 40_589_456
+    speed_at_start_release_speed = _get_current_or_next_speed_at(
+        simulation_final_output, offset_bending_point_svl_to_eoa
+    )
+    _assert_equal_speeds(speed_at_start_release_speed, kph2ms(62.492_266_11))
 
 
 def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_stock: int):

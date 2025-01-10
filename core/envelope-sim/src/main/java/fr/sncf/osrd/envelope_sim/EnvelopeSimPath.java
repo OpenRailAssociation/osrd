@@ -111,6 +111,10 @@ public final class EnvelopeSimPath implements PhysicsPath {
         // TODO: Optimise method by adding in a cache.
         int indexBegin = getIndexBeforePos(begin);
         int indexEnd = getIndexBeforePos(end);
+        // TODO: Remove if we extend path properties until last SvL > path.length.
+        if (indexBegin == indexEnd && indexBegin == gradePositions.length - 1)
+            // Take last grade value in this case
+            return gradeValues[gradeValues.length - 1];
         var lowestGradient = gradeValues[indexBegin];
         for (int i = indexBegin; i < indexEnd; i++) {
             var grad = gradeValues[i];
