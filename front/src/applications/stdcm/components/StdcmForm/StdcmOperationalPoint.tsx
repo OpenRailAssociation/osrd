@@ -145,6 +145,10 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
   useEffect(() => {
     if (location) {
       setSearchTerm(location.name);
+      // Clear the list of CH suggestions if the location has changed to avoid showing outated suggestions
+      if (!chSuggestions.some((suggestion) => suggestion.label === location.secondary_code)) {
+        setChSuggestions([]);
+      }
     } else {
       setSearchTerm('');
       setChSuggestions([]);
