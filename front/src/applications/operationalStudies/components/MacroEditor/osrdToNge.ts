@@ -4,6 +4,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
 import type { AppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 
 import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
 import { addDurationToDate, deleteMacroNodeByDbId, getSavedMacroNodes } from './utils';
@@ -414,17 +415,19 @@ const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelD
       if (i === 0) {
         sourceDeparture = createTimeLock(startTime);
       } else if (sourceScheduleEntry && sourceScheduleEntry.arrival) {
+        const arrival = Duration.parse(sourceScheduleEntry.arrival);
+        const stopFor = sourceScheduleEntry.stop_for
+          ? Duration.parse(sourceScheduleEntry.stop_for)
+          : Duration.zero;
         sourceDeparture = createTimeLock(
-          addDurationToDate(
-            addDurationToDate(startTime, sourceScheduleEntry.arrival),
-            sourceScheduleEntry.stop_for || 'P0D'
-          )
+          addDurationToDate(addDurationToDate(startTime, arrival), stopFor)
         );
       }
 
       let targetArrival = { ...DEFAULT_TIME_LOCK };
       if (targetScheduleEntry && targetScheduleEntry.arrival) {
-        targetArrival = createTimeLock(addDurationToDate(startTime, targetScheduleEntry.arrival));
+        const arrival = Duration.parse(targetScheduleEntry.arrival);
+        targetArrival = createTimeLock(addDurationToDate(startTime, arrival));
       }
 
       const travelTime = { ...DEFAULT_TIME_LOCK };

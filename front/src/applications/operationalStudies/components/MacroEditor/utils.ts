@@ -7,7 +7,7 @@ import {
   type SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
-import { ISO8601Duration2sec } from 'utils/timeManipulation';
+import type { Duration } from 'utils/duration';
 
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
@@ -41,8 +41,8 @@ export const findOpFromPathItem = (
   });
 };
 
-export const addDurationToDate = (date: Date, duration: string) =>
-  new Date(date.getTime() + ISO8601Duration2sec(duration) * 1000);
+export const addDurationToDate = (date: Date, duration: Duration) =>
+  new Date(date.getTime() + duration.ms);
 
 export const createMacroNode = async (
   state: MacroEditorState,
