@@ -10,9 +10,10 @@ import type {
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR_MS } from 'modules/timesStops/consts';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
-import { mmToM, sToMs } from 'utils/physics';
+import { Duration } from 'utils/duration';
+import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
-import { ISO8601Duration2sec, ms2sec } from 'utils/timeManipulation';
+import { ms2sec } from 'utils/timeManipulation';
 
 import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
@@ -240,9 +241,9 @@ export const isScheduledPointsNotHonored = (
         `No matching index found for schedule ${schedule} on trainSchedule ${trainSchedule}`
       );
     }
-    const arrivalTimeInMs = sToMs(ISO8601Duration2sec(schedule.arrival));
+    const arrival = Duration.parse(schedule.arrival);
     return (
-      Math.abs(arrivalTimeInMs - trainSummary.path_item_times_final[matchindIndex]) >=
+      Math.abs(arrival.ms - trainSummary.path_item_times_final[matchindIndex]) >=
       ARRIVAL_TIME_ACCEPTABLE_ERROR_MS
     );
   });

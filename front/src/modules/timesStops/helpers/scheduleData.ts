@@ -1,6 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import { dateToHHMMSS } from 'utils/date';
-import { ISO8601Duration2sec } from 'utils/timeManipulation';
+import { Duration, addDurationToDate } from 'utils/duration';
+import { ms2sec } from 'utils/timeManipulation';
 
 import type { ScheduleEntry } from '../types';
 import { receptionSignalToSignalBooleans } from './utils';
@@ -24,11 +25,11 @@ export const formatSchedule = (arrivalTime: Date, schedule?: ScheduleEntry) => {
     };
   }
 
-  const stopForSeconds = ISO8601Duration2sec(schedule.stop_for);
+  const stopFor = Duration.parse(schedule.stop_for);
 
   return {
-    stopFor: `${stopForSeconds}`,
-    calculatedDeparture: dateToHHMMSS(new Date(arrivalTime.getTime() + stopForSeconds * 1000)),
+    stopFor: `${ms2sec(stopFor.ms)}`,
+    calculatedDeparture: dateToHHMMSS(addDurationToDate(arrivalTime, stopFor)),
     ...receptionSignalToSignalBooleans(schedule.reception_signal),
   };
 };

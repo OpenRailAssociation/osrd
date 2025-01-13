@@ -78,14 +78,6 @@ export function calculateTimeDifferenceInDays(datetime1?: Date, datetime2?: Date
 }
 
 /**
- * Parse ISO8601 duration, for instance "PT11H9M8S" (11h, 9min and 8s) to seconds
- */
-export function ISO8601Duration2sec(isoDuration: string) {
-  const durationDictionnary = dayjs.duration(isoDuration);
-  return durationDictionnary.asSeconds();
-}
-
-/**
  * converts a value in seconds to a timeString "HH:MM"
  *
  * using the param withSeconds returns the longer format "HH:MM:SS"

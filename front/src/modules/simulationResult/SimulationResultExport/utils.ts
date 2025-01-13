@@ -12,8 +12,9 @@ import {
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { SpeedRanges } from 'reducers/simulationResults/types';
+import { Duration } from 'utils/duration';
 import { mmToM, msToKmhRounded } from 'utils/physics';
-import { ISO8601Duration2sec, ms2sec } from 'utils/timeManipulation';
+import { ms2sec } from 'utils/timeManipulation';
 
 export function massWithOneDecimal(number: number) {
   return Math.round(number / 100) / 10;
@@ -127,7 +128,7 @@ export const formatOperationalPoints = (
         (step) => step.at === correspondingStep.id
       );
       if (correspondingSchedule && correspondingSchedule.stop_for) {
-        stepDuration = ISO8601Duration2sec(correspondingSchedule.stop_for);
+        stepDuration = ms2sec(Duration.parse(correspondingSchedule.stop_for).ms);
       }
     }
 

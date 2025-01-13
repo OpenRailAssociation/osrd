@@ -6,9 +6,9 @@ import type {
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
-import { ISO8601Duration2sec } from 'utils/timeManipulation';
 import { mapBy } from 'utils/types';
 
 import { isScheduledPointsNotHonored, isTooFast } from '../utils';
@@ -70,7 +70,7 @@ const formatTrainScheduleSummaries = (
       startTime,
       stopsCount:
         (trainSchedule.schedule?.filter(
-          (step) => step.stop_for && ISO8601Duration2sec(step.stop_for) > 0
+          (step) => step.stop_for && Duration.parse(step.stop_for).ms > 0
         ).length ?? 0) + 1, // +1 to take the final stop (destination) into account
       speedLimitTag: trainSchedule.speed_limit_tag ?? null,
       labels: trainSchedule.labels ?? [],
