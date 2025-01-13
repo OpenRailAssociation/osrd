@@ -38,4 +38,8 @@ export class Duration {
   toJSON() {
     return this.toISOString();
   }
+
+  add(other: Duration) {
+    return new Duration(this.ms + other.ms);
+  }
 }
