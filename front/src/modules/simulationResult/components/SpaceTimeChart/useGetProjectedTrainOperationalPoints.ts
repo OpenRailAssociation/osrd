@@ -78,11 +78,12 @@ const useGetProjectedTrainOperationalPoints = (
           >;
         } else {
           // If the manchette hasn't been saved, we want to display by default only
-          // the waypoints with CH BV/00/'' and the ones added by map click
+          // the waypoints with CH BV/00/'' and the path steps (origin, destination, vias)
           operationalPointsWithUniqueIds = operationalPointsWithUniqueIds.filter((op) =>
-            op.extensions?.sncf ? isStation(op.extensions.sncf.ch) : true
+            op.extensions?.sncf ? isStation(op.extensions.sncf.ch) || op.weight === 100 : true
           );
         }
+
         setFilteredOperationalPoints(operationalPointsWithUniqueIds);
       }
     };

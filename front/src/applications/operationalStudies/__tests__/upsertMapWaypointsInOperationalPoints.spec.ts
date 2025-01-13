@@ -53,7 +53,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           position: 7746000,
         },
         position: 9246000,
-        weight: null,
+        weight: 100,
       },
       {
         id: 'Mid_West_station',
@@ -112,7 +112,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           position: 6481000,
         },
         position: 0,
-        weight: null,
+        weight: 100,
       },
       {
         id: 'Mid_West_station',
@@ -142,7 +142,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           position: 679000,
         },
         position: 4198000,
-        weight: null,
+        weight: 100,
       },
       {
         id: '3',
@@ -157,7 +157,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           position: 883000,
         },
         position: 4402000,
-        weight: null,
+        weight: 100,
       },
     ]);
   });
@@ -186,7 +186,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           position: 6481000,
         },
         position: 0,
-        weight: null,
+        weight: 100,
       },
       {
         id: '2',
@@ -201,7 +201,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           position: 4733000,
         },
         position: 1748000,
-        weight: null,
+        weight: 100,
       },
     ]);
   });

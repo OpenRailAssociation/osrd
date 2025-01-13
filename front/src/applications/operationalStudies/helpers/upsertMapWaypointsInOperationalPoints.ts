@@ -5,6 +5,8 @@ import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/o
 
 import type { OperationalPoint } from '../types';
 
+const HIGHEST_PRIORITY_WEIGHT = 100;
+
 /**
  * Check if the train path used waypoints added by map click and add them to the operational points
  */
@@ -18,35 +20,56 @@ export const upsertMapWaypointsInOperationalPoints = (
 
   return path.reduce(
     (operationalPointsWithAllWaypoints, step, i) => {
-      if (!('track' in step)) return operationalPointsWithAllWaypoints;
+      if ('uic' in step) {
+        const matchedIndex = operationalPointsWithAllWaypoints.findIndex(
+          (op) =>
+            'uic' in step &&
+            'secondary_code' in step &&
+            step.uic === op.extensions?.identifier?.uic &&
+            step.secondary_code === op.extensions?.sncf?.ch
+        );
 
-      const positionOnPath = pathItemsPositions[i];
-      const indexToInsert = operationalPointsWithAllWaypoints.findIndex(
-        (op) => op.position >= positionOnPath
-      );
+        if (matchedIndex !== -1) {
+          // Replace the operational point at its original index with updated weight
+          operationalPointsWithAllWaypoints[matchedIndex] = {
+            ...operationalPointsWithAllWaypoints[matchedIndex],
+            weight: HIGHEST_PRIORITY_WEIGHT,
+          };
+        }
 
-      const formattedStep: OperationalPoint = {
-        id: step.id,
-        extensions: {
-          identifier: {
-            name: t('requestedPoint', { count: waypointCounter }),
-            uic: 0,
-          },
-        },
-        part: { track: step.track, position: step.offset },
-        position: positionOnPath,
-        weight: null,
-      };
-
-      waypointCounter += 1;
-
-      // If we can't find any op position greater than the current step position, we add it at the end
-      if (indexToInsert === -1) {
-        operationalPointsWithAllWaypoints.push(formattedStep);
-      } else {
-        operationalPointsWithAllWaypoints.splice(indexToInsert, 0, formattedStep);
+        return operationalPointsWithAllWaypoints;
       }
 
+      if ('track' in step) {
+        const positionOnPath = pathItemsPositions[i];
+        const indexToInsert = operationalPointsWithAllWaypoints.findIndex(
+          (op) => op.position >= positionOnPath
+        );
+
+        const formattedStep: OperationalPoint = {
+          id: step.id,
+          extensions: {
+            identifier: {
+              name: t('requestedPoint', { count: waypointCounter }),
+              uic: 0,
+            },
+          },
+          part: { track: step.track, position: step.offset },
+          position: positionOnPath,
+          weight: HIGHEST_PRIORITY_WEIGHT,
+        };
+
+        waypointCounter += 1;
+
+        // If we can't find any op position greater than the current step position, we add it at the end
+        if (indexToInsert === -1) {
+          operationalPointsWithAllWaypoints.push(formattedStep);
+        } else {
+          operationalPointsWithAllWaypoints.splice(indexToInsert, 0, formattedStep);
+        }
+
+        return operationalPointsWithAllWaypoints;
+      }
       return operationalPointsWithAllWaypoints;
     },
     [...operationalPoints]

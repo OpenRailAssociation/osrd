@@ -190,6 +190,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       position: waypoint.position,
       name: waypoint.extensions?.identifier?.name,
       secondaryCode: waypoint.extensions?.sncf?.ch,
+      weight: waypoint.weight ?? 0,
     }));
   }, [waypointsPanelData, operationalPoints]);
 
