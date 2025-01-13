@@ -43,3 +43,5 @@ export class Duration {
     return new Duration(this.ms + other.ms);
   }
 }
+
+export const addDurationToDate = (date: Date, dur: Duration) => new Date(date.getTime() + dur.ms);

@@ -4,10 +4,10 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
 import type { AppDispatch } from 'store';
-import { Duration } from 'utils/duration';
+import { Duration, addDurationToDate } from 'utils/duration';
 
 import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
-import { addDurationToDate, deleteMacroNodeByDbId, getSavedMacroNodes } from './utils';
+import { deleteMacroNodeByDbId, getSavedMacroNodes } from './utils';
 import {
   type PortDto,
   type TimeLockDto,
