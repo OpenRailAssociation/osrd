@@ -1,15 +1,16 @@
 /* eslint-disable import/prefer-default-export */
 import { dateToHHMMSS } from 'utils/date';
-import { ISO8601Duration2sec, calculateTimeDifferenceInDays } from 'utils/timeManipulation';
+import { Duration, addDurationToDate } from 'utils/duration';
+import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 
 import type { ScheduleEntry, TimeExtraDays } from '../types';
 
 const computeDayTimeFromStartTime = (
   startDatetime: Date,
-  duration: number, // seconds
+  duration: Duration,
   previousDatetime: Date
 ): { timeExtraDay: TimeExtraDays; previousTime: Date } => {
-  const arrivalDatetime = new Date(startDatetime.getTime() + duration * 1000);
+  const arrivalDatetime = addDurationToDate(startDatetime, duration);
 
   const isAfterMidnight = arrivalDatetime.getDate() !== previousDatetime.getDate();
 
@@ -33,29 +34,29 @@ export const computeInputDatetimes = (
   let departure: TimeExtraDays | undefined;
   let refDate = lastReferenceDate;
 
-  let arrivalInSeconds;
+  let arrivalDuration;
   // if is departure, use the startDatetime
   if (isDeparture) {
-    arrivalInSeconds = 0;
+    arrivalDuration = Duration.zero;
   } else if (schedule?.arrival) {
-    arrivalInSeconds = ISO8601Duration2sec(schedule.arrival); // duration from startTime
+    arrivalDuration = Duration.parse(schedule.arrival); // duration from startTime
   }
 
-  if (arrivalInSeconds !== undefined) {
-    theoreticalArrival = new Date(startDatetime.getTime() + arrivalInSeconds * 1000);
+  if (arrivalDuration) {
+    theoreticalArrival = addDurationToDate(startDatetime, arrivalDuration);
     const { timeExtraDay, previousTime } = computeDayTimeFromStartTime(
       startDatetime,
-      arrivalInSeconds,
+      arrivalDuration,
       refDate
     );
     arrival = timeExtraDay;
     refDate = previousTime;
 
     if (schedule?.stop_for) {
-      const departureInSeconds = arrivalInSeconds + ISO8601Duration2sec(schedule.stop_for);
+      const stopFor = Duration.parse(schedule.stop_for);
       const resultDeparture = computeDayTimeFromStartTime(
         startDatetime,
-        departureInSeconds,
+        arrivalDuration.add(stopFor),
         refDate
       );
       departure = resultDeparture.timeExtraDay;
