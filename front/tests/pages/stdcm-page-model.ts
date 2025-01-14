@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import enTranslations from '../../public/locales/en/stdcm.json';
@@ -34,7 +37,7 @@ export interface ConsistFields {
   maxSpeed?: string;
   speedLimitTag?: string;
 }
-const EXPECT_TO_PASS_TIMEOUT = 90_000; // Since toPass ignores custom expect timeouts, this timeout is set to account for all actions within the function.
+
 const MINIMUM_SIMULATION_NUMBER = 1;
 
 class STDCMPage {
@@ -144,6 +147,8 @@ class STDCMPage {
 
   readonly downloadSimulationButton: Locator;
 
+  readonly downloadLink: Locator;
+
   readonly startNewQueryButton: Locator;
 
   readonly startNewQueryWithDataButton: Locator;
@@ -245,7 +250,8 @@ class STDCMPage {
     this.incrementButton = page.locator('.minute-button', { hasText: '+1mn' });
     this.allViasButton = page.getByTestId('all-vias-button');
     this.retainSimulationButton = page.getByTestId('retain-simulation-button');
-    this.downloadSimulationButton = page.getByTestId('download-simulation-button');
+    this.downloadSimulationButton = page.locator('.download-simulation a[download]');
+    this.downloadLink = page.locator('.download-simulation a');
     this.startNewQueryButton = page.getByTestId('start-new-query-button');
     this.startNewQueryWithDataButton = page.getByTestId('start-new-query-with-data-button');
     this.originMarker = this.mapContainer.locator('img[alt="origin"]');
@@ -553,16 +559,20 @@ class STDCMPage {
   }
 
   // Fill origin section
-  async fillOriginDetailsLight() {
+  async fillOriginDetailsLight(arrivalTypeOverride: string = '', isPrecise: boolean = false) {
     const { input, chValue, arrivalDate, arrivalTime, tolerance, arrivalType } =
       LIGHT_ORIGIN_DETAILS;
     await this.dynamicOriginCi.fill(input);
     await this.suggestionNWS.click();
-    await expect(this.dynamicOriginCh).toHaveValue(chValue);
-    await expect(this.originArrival).toHaveValue(arrivalType);
-    await this.dateOriginArrival.fill(arrivalDate);
-    await this.timeOriginArrival.fill(arrivalTime);
-    await this.fillToleranceField(tolerance.negative, tolerance.positive, true);
+    if (isPrecise && arrivalTypeOverride) {
+      await this.originArrival.selectOption(arrivalTypeOverride);
+    } else {
+      await expect(this.dynamicOriginCh).toHaveValue(chValue);
+      await expect(this.originArrival).toHaveValue(arrivalType);
+      await this.dateOriginArrival.fill(arrivalDate);
+      await this.timeOriginArrival.fill(arrivalTime);
+      await this.fillToleranceField(tolerance.negative, tolerance.positive, true);
+    }
   }
 
   // Fill destination section
@@ -712,23 +722,44 @@ class STDCMPage {
     await expect(this.startNewQueryWithDataButton).toBeVisible();
   }
 
-  async downloadSimulation(browserName: string) {
-    await expect(async () => {
-      const downloadPromise = this.page.waitForEvent('download');
-      await this.downloadSimulationButton.dispatchEvent('click');
-      const download = await downloadPromise.catch(() => {
-        throw new Error('Download event was not triggered.');
+  async downloadSimulation(browserName: string, isLinkedTrain: boolean = false): Promise<void> {
+    try {
+      // Wait until there are no network requests for stability
+      await this.page.waitForLoadState('networkidle');
+
+      // Get the download link element and suggested filename
+      const suggestedFilename = await this.downloadLink.getAttribute('download');
+      expect(suggestedFilename).toMatch(/^Stdcm.*\.pdf$/);
+
+      const downloadDir = isLinkedTrain
+        ? path.join('./tests/stdcm-results/linkedTrain', browserName)
+        : path.join('./tests/stdcm-results', browserName);
+      const downloadPath = path.join(downloadDir, suggestedFilename!);
+
+      await fs.promises.mkdir(downloadDir, { recursive: true });
+
+      // Get the file content from the `blob:` URL
+      const fileContent = await this.downloadSimulationButton.evaluate(async (el) => {
+        if (!(el instanceof HTMLAnchorElement)) {
+          throw new Error('Element is not an anchor tag');
+        }
+
+        const response = await fetch(el.href);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch the blob: ${response.status} ${response.statusText}`);
+        }
+
+        const buffer = await response.arrayBuffer();
+        return Array.from(new Uint8Array(buffer));
       });
 
-      // Verify filename and save the download
-      const suggestedFilename = download.suggestedFilename();
-      expect(suggestedFilename).toMatch(/^Stdcm.*\.pdf$/);
-      const downloadPath = `./tests/stdcm-results/${browserName}/${suggestedFilename}`;
-      await download.saveAs(downloadPath);
+      // Write the file to the local file system
+      await fs.promises.writeFile(downloadPath, Buffer.from(fileContent));
+
       logger.info(`The PDF was successfully downloaded to: ${downloadPath}`);
-    }).toPass({
-      timeout: EXPECT_TO_PASS_TIMEOUT,
-    });
+    } catch (error) {
+      logger.error('Failed to download simulation', error);
+    }
   }
 
   async startNewQuery() {

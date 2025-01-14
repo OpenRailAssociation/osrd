@@ -1,6 +1,6 @@
 [
   {
-    "train_name": "Train 1",
+    "train_name": "Train1",
     "labels": ["Tag-1", "SS-NS"],
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T03:00:00Z",
@@ -26,7 +26,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 2",
+    "train_name": "Train2",
     "labels": ["Tag-2", "WS-SES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T03:15:00Z",
@@ -61,7 +61,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 3",
+    "train_name": "Train3",
     "labels": ["Tag-3", "MWS-NES"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T05:00:00Z",
@@ -95,7 +95,7 @@
     "options": { "use_electrical_profiles": false }
   },
   {
-    "train_name": "Train 4",
+    "train_name": "Train4",
     "labels": ["Tag-4", "WS-SES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T05:15:00Z",
@@ -138,7 +138,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 5",
+    "train_name": "Train5",
     "labels": ["Tag-5", "SWE-MES"],
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T07:30:00Z",
@@ -172,7 +172,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 6",
+    "train_name": "Train6",
     "labels": ["Tag-6", "WS-NS"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T07:45:00Z",
@@ -206,7 +206,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 7",
+    "train_name": "Train7",
     "labels": ["Tag-7", "WS-NES"],
     "rolling_stock_name": "FAST_RS_E2E",
     "start_time": "2024-10-17T08:37:00Z",
@@ -233,7 +233,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 8",
+    "train_name": "Train8",
     "labels": ["Tag-8", "SS-MES"],
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T08:56:01Z",
@@ -267,7 +267,7 @@
     "options": { "use_electrical_profiles": false }
   },
   {
-    "train_name": "Train 9",
+    "train_name": "Train9",
     "labels": ["Tag-9", "MWS-NES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T09:35:59Z",
@@ -293,7 +293,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 10",
+    "train_name": "Train10",
     "labels": ["Tag-10", "SES-MES"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T09:45:31Z",
@@ -320,7 +320,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 11",
+    "train_name": "Train11",
     "labels": [],
     "rolling_stock_name": "",
     "start_time": "2024-10-17T09:45:43Z",
@@ -347,7 +347,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 12",
+    "train_name": "Train12",
     "labels": ["Tag-12"],
     "rolling_stock_name": "",
     "start_time": "2024-10-17T10:16:03Z",
@@ -375,7 +375,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 13",
+    "train_name": "Train13",
     "labels": ["Tag-13", "SES-SWS"],
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T10:48:00Z",
@@ -409,7 +409,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 14",
+    "train_name": "Train14",
     "labels": ["Tag-14", "NES-MES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T12:10:00Z",
@@ -435,7 +435,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 15",
+    "train_name": "Train15",
     "labels": ["Tag-15"],
     "rolling_stock_name": "IMPROBABLE_RS_E2E",
     "start_time": "2024-10-17T12:30:00Z",
@@ -462,7 +462,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 16",
+    "train_name": "Train16",
     "labels": ["Tag-16", "SES-WS"],
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T13:00:00Z",
@@ -496,7 +496,7 @@
     "options": { "use_electrical_profiles": false }
   },
   {
-    "train_name": "Train 17",
+    "train_name": "Train17",
     "labels": ["Tag-17", "WS-SES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T14:05:00Z",
@@ -538,7 +538,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 18",
+    "train_name": "Train18",
     "labels": ["Tag-18", "SWS-MWS"],
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T14:15:08Z",
@@ -564,7 +564,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 19",
+    "train_name": "Train19",
     "labels": ["Tag-19"],
     "rolling_stock_name": "",
     "start_time": "2024-10-17T15:55:00Z",
@@ -590,7 +590,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 20",
+    "train_name": "Train20",
     "labels": ["Tag-20", "SS-WS"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T16:00:00Z",
@@ -632,7 +632,7 @@
     "options": { "use_electrical_profiles": true }
   },
   {
-    "train_name": "Train 21",
+    "train_name": "Train21",
     "labels": ["Tag-21", "NWS-NES"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T19:05:00Z",

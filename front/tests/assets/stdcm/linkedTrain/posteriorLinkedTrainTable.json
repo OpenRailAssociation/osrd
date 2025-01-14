@@ -1,0 +1,32 @@
+[
+  {
+    "index": 1,
+    "operationalPoint": "North_West_station",
+    "code": "BV",
+    "endStop": "",
+    "passageStop": "",
+    "startStop": "11:11",
+    "weight": "236t",
+    "refEngine": ""
+  },
+  {
+    "index": 2,
+    "operationalPoint": "Mid_East_station",
+    "code": "BV",
+    "endStop": "12:38",
+    "passageStop": "3 min",
+    "startStop": "12:41",
+    "weight": "=",
+    "refEngine": "="
+  },
+  {
+    "index": 5,
+    "operationalPoint": "North_East_station",
+    "code": "BV",
+    "endStop": "13:40",
+    "passageStop": "",
+    "startStop": "",
+    "weight": "236t",
+    "refEngine": ""
+  }
+]
