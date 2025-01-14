@@ -2,6 +2,7 @@ import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
 import { electricRollingStockName, fastRollingStockName } from './assets/project-const';
 import HomePage from './pages/home-page-model';
+import STDCMLinkedTrainPage from './pages/stdcm-linked-train-page-model';
 import STDCMPage, { type ConsistFields } from './pages/stdcm-page-model';
 import test from './test-logger';
 import { handleAndVerifyInput, waitForInfraStateToBeCached } from './utils';
@@ -63,12 +64,13 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Verify empty STDCM page', async ({ page }) => {
-    // Verify visibility of STDCM elements and handle empty via fields
-    const stdcmPage = new STDCMPage(page);
+  test('Verify default STDCM page', async ({ page }) => {
+    // Verify visibility of STDCM elements and handle default fields
+    const [stdcmPage, stdcmLinkedTrainPage] = [new STDCMPage(page), new STDCMLinkedTrainPage(page)];
     await stdcmPage.verifyStdcmElementsVisibility();
-    await stdcmPage.verifyAllFieldsEmpty();
-    await stdcmPage.addAndDeleteEmptyVia();
+    await stdcmPage.verifyAllDefaultPageFields();
+    await stdcmPage.addAndDeletedDefaultVia();
+    await stdcmLinkedTrainPage.addAndDeleteDefaultLinkedPath();
   });
 
   /** *************** Test 2 **************** */

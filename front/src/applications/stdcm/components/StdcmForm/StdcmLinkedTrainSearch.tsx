@@ -58,7 +58,11 @@ const StdcmLinkedTrainSearch = ({
           disabled={disabled}
           name={t(`trainPath.linkedTrain.${linkedTrainType}`)}
           title={
-            <button type="button" onClick={removeLinkedTrainCard}>
+            <button
+              data-testid="linked-train-delete-button"
+              type="button"
+              onClick={removeLinkedTrainCard}
+            >
               {t('translation:common.delete').toLowerCase()}
             </button>
           }
@@ -91,6 +95,7 @@ const StdcmLinkedTrainSearch = ({
           </div>
           {displaySearchButton && (
             <button
+              data-testid="linked-train-search-button"
               className="stdcm-linked-train-button"
               type="button"
               onClick={launchTrainScheduleSearch}

@@ -36,6 +36,7 @@ export interface ConsistFields {
 }
 const EXPECT_TO_PASS_TIMEOUT = 90_000; // Since toPass ignores custom expect timeouts, this timeout is set to account for all actions within the function.
 const MINIMUM_SIMULATION_NUMBER = 1;
+
 class STDCMPage {
   readonly page: Page;
 
@@ -64,6 +65,14 @@ class STDCMPage {
   readonly maxSpeedField: Locator;
 
   readonly addViaButton: Locator;
+
+  readonly anteriorLinkedTrainContainer: Locator;
+
+  readonly anteriorAddLinkedPathButton: Locator;
+
+  readonly posteriorLinkedTrainContainer: Locator;
+
+  readonly posteriorAddLinkedPathButton: Locator;
 
   readonly launchSimulationButton: Locator;
 
@@ -175,6 +184,16 @@ class STDCMPage {
     this.speedLimitTagField = page.locator('#speed-limit-by-tag-selector');
     this.maxSpeedField = page.locator('#maxSpeed');
     this.addViaButton = page.locator('.stdcm-vias-list button .stdcm-card__body.add-via');
+    this.anteriorLinkedTrainContainer = page.locator(
+      '.stdcm-linked-train-search-container.anterior-linked-train'
+    );
+    this.anteriorAddLinkedPathButton =
+      this.anteriorLinkedTrainContainer.locator('.add-linked-train');
+    this.posteriorLinkedTrainContainer = page.locator(
+      '.stdcm-linked-train-search-container.posterior-linked-train'
+    );
+    this.posteriorAddLinkedPathButton =
+      this.posteriorLinkedTrainContainer.locator('.add-linked-train');
     this.launchSimulationButton = page.getByTestId('launch-simulation-button');
     this.originChField = this.originCard.locator('[data-testid="operational-point-ch"]');
     this.destinationChField = this.destinationCard.locator('[data-testid="operational-point-ch"]');
@@ -303,6 +322,8 @@ class STDCMPage {
       this.consistCard,
       this.originCard,
       this.addViaButton,
+      this.anteriorAddLinkedPathButton,
+      this.posteriorAddLinkedPathButton,
       this.destinationCard,
       this.mapContainer,
       this.launchSimulationButton,
@@ -313,7 +334,7 @@ class STDCMPage {
   }
 
   // Verify all input fields are empty
-  async verifyAllFieldsEmpty() {
+  async verifyAllDefaultPageFields() {
     const emptyFields = [
       this.tractionEngineField,
       this.towedRollingStockField,
@@ -325,20 +346,28 @@ class STDCMPage {
       this.originChField,
       this.destinationChField,
     ];
+    const { arrivalDate, arrivalTime, tolerance, speedLimitTag } = DEFAULT_DETAILS;
     for (const field of emptyFields) await expect(field).toHaveValue('');
-    await expect(this.speedLimitTagField).toHaveValue('__PLACEHOLDER__');
+    await expect(this.originArrival).toHaveValue(ORIGIN_DETAILS.arrivalType.default);
+    await expect(this.destinationArrival).toHaveValue(DESTINATION_DETAILS.arrivalType.default);
+    await expect(this.speedLimitTagField).toHaveValue(speedLimitTag);
+    await expect(this.dateOriginArrival).toHaveValue(arrivalDate);
+    await expect(this.timeOriginArrival).toHaveValue(arrivalTime);
+    await expect(this.toleranceOriginArrival).toHaveValue(tolerance);
   }
 
   // Add a via card, verify fields, and delete it
-  async addAndDeleteEmptyVia() {
+  async addAndDeletedDefaultVia() {
     await this.addViaButton.click();
     await expect(this.getViaCI(1)).toHaveValue('');
     await expect(this.getViaCH(1)).toHaveValue('');
+    await expect(this.getViaType(1)).toHaveValue(VIA_STOP_TYPES.PASSAGE_TIME);
     await this.viaIcon.hover();
     await expect(this.viaDeleteButton).toBeVisible();
     await this.viaDeleteButton.click();
     await expect(this.getViaCI(1)).not.toBeVisible();
     await expect(this.getViaCH(1)).not.toBeVisible();
+    await expect(this.getViaType(1)).not.toBeVisible();
   }
 
   // Verify the origin suggestions when searching for north
