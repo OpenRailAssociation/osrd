@@ -21,10 +21,12 @@ export default function StateStep({ study, number, state, done }: Props) {
 
   const changeStudyState = async () => {
     try {
+      const actual_end_date =
+        state === 'finish' ? new Date().toISOString().split('T')[0] : study.actual_end_date;
       await patchStudy({
         projectId: study.project.id,
         studyId: study.id,
-        studyPatchForm: { ...study, state },
+        studyPatchForm: { ...study, actual_end_date, state },
       });
       dispatch(
         setSuccess({
