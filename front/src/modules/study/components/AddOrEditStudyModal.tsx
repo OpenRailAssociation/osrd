@@ -336,15 +336,15 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               max={getEarliestDate(currentStudy?.expected_end_date, currentStudy?.actual_end_date)}
             />
             <InputSNCF
-              id="studyInputEstimatedEndDate"
+              id="studyInputExpectedEndDate"
               type="date"
-              name="studyInputEstimatedEndDate"
+              name="studyInputExpectedEndDate"
               label={
                 <div className="d-flex align-items-center">
                   <span className="mr-2 text-warning">
                     <RiCalendarLine />
                   </span>
-                  {t('studyEstimatedEndDate')}
+                  {t('studyExpectedEndDate')}
                 </div>
               }
               value={formatDateForInput(currentStudy?.expected_end_date)}

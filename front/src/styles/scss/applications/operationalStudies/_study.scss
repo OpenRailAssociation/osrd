@@ -36,10 +36,10 @@
         &.start {
           border-color: var(--green);
         }
-        &.estimatedend {
+        &.expected-end {
           border-color: var(--yellow);
         }
-        &.realend {
+        &.real-end {
           border-color: var(--orange);
         }
       }

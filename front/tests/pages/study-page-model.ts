@@ -9,7 +9,7 @@ type StudyDetails = {
   type: string;
   status: string;
   startDate: string;
-  estimatedEndDate: string;
+  expectedEndDate: string;
   endDate: string;
   serviceCode: string;
   businessCode: string;
@@ -50,7 +50,7 @@ class StudyPage extends CommonPage {
 
   readonly studyStartDateInput: Locator;
 
-  readonly studyEstimatedEndDateInput: Locator;
+  readonly studyExpectedEndDateInput: Locator;
 
   readonly studyEndDateInput: Locator;
 
@@ -68,7 +68,7 @@ class StudyPage extends CommonPage {
 
   readonly startDate: Locator;
 
-  readonly estimatedEndDate: Locator;
+  readonly expectedEndDate: Locator;
 
   readonly realEndDate: Locator;
 
@@ -91,7 +91,7 @@ class StudyPage extends CommonPage {
     );
     this.studyDescriptionInput = page.locator('#studyDescription');
     this.studyStartDateInput = page.locator('#studyInputStartDate');
-    this.studyEstimatedEndDateInput = page.locator('#studyInputEstimatedEndDate');
+    this.studyExpectedEndDateInput = page.locator('#studyInputExpectedEndDate');
     this.studyEndDateInput = page.locator('#studyInputRealEndDate');
     this.studyServiceCodeInput = page.locator('#studyInputServiceCode');
     this.studyBusinessCodeInput = page.locator('#studyInputBusinessCode');
@@ -103,11 +103,11 @@ class StudyPage extends CommonPage {
     this.startDate = page.locator(
       '.study-details-dates-date.start .study-details-dates-date-value'
     );
-    this.estimatedEndDate = page.locator(
-      '.study-details-dates-date.estimatedend .study-details-dates-date-value'
+    this.expectedEndDate = page.locator(
+      '.study-details-dates-date.expected-end .study-details-dates-date-value'
     );
     this.realEndDate = page.locator(
-      '.study-details-dates-date.realend .study-details-dates-date-value'
+      '.study-details-dates-date.real-end .study-details-dates-date-value'
     );
   }
 
@@ -119,7 +119,7 @@ class StudyPage extends CommonPage {
       type,
       status,
       startDate,
-      estimatedEndDate,
+      expectedEndDate,
       endDate,
       serviceCode,
       businessCode,
@@ -131,7 +131,7 @@ class StudyPage extends CommonPage {
     await this.setStudyTypeByText(type);
     await this.setStudyStatusByText(status);
     await this.studyStartDateInput.fill(startDate);
-    await this.studyEstimatedEndDateInput.fill(estimatedEndDate);
+    await this.studyExpectedEndDateInput.fill(expectedEndDate);
     await this.studyEndDateInput.fill(endDate);
     await this.studyServiceCodeInput.fill(serviceCode);
     await this.studyBusinessCodeInput.fill(businessCode);
@@ -164,7 +164,7 @@ class StudyPage extends CommonPage {
       type,
       status,
       startDate,
-      estimatedEndDate,
+      expectedEndDate,
       endDate,
       serviceCode,
       businessCode,
@@ -176,7 +176,7 @@ class StudyPage extends CommonPage {
     await expect(this.studyEditionModal).not.toBeVisible();
     await expect(this.studyName).toHaveText(name);
     await expect(this.startDate).toHaveText(startDate);
-    await expect(this.estimatedEndDate).toHaveText(estimatedEndDate);
+    await expect(this.expectedEndDate).toHaveText(expectedEndDate);
     await expect(this.realEndDate).toHaveText(endDate);
     await expect(this.studyDescription).toHaveText(description);
     await expect(this.studyType).toHaveText(type);

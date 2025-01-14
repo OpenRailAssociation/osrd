@@ -4,10 +4,10 @@
   "createScenario": "Create a scenario",
   "dates": {
     "creation": "Creation",
-    "estimatedend": "Expected ending",
+    "expectedEnd": "Expected end",
     "modified": "Updated",
-    "realend": "Real end",
-    "start": "Started"
+    "realEnd": "Real end",
+    "start": "Start"
   },
   "deleteScenarios": "Delete",
   "deleteItems": "Delete",
@@ -58,7 +58,7 @@
   "studyDescription": "Description",
   "studyDescriptionInvalid": "The description for the study must not exceed 1024 characters",
   "studyDescriptionPlaceholder": "Short description of the study",
-  "studyEstimatedEndDate": "Expected end date",
+  "studyExpectedEndDate": "Expected end date",
   "studyModificationTitle": "Edit a study",
   "studyModifyButton": "Save",
   "studyName": "Study name",

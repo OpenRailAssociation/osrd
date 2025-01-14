@@ -4,9 +4,9 @@
   "createScenario": "Créer un scénario",
   "dates": {
     "creation": "Création",
-    "estimatedend": "Fin estimée",
+    "expectedEnd": "Fin estimée",
     "modified": "Modification",
-    "realend": "Fin réelle",
+    "realEnd": "Fin réelle",
     "start": "Début"
   },
   "confirmDeleteMessage": "Voulez-vous supprimer le scénario ?",
@@ -57,7 +57,7 @@
   "studyDescription": "Description",
   "studyDescriptionInvalid": "La description de l'étude ne doit pas dépasser 1024 caractères",
   "studyDescriptionPlaceholder": "Courte description de l'étude",
-  "studyEstimatedEndDate": "Fin estimée",
+  "studyExpectedEndDate": "Fin estimée",
   "studyModificationTitle": "Modifier une étude",
   "studyModifyButton": "Enregistrer",
   "studyName": "Nom de l'étude",

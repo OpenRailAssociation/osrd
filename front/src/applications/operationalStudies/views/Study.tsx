@@ -232,14 +232,14 @@ const Study = () => {
                 />
                 <DateBox
                   date={study.expected_end_date ? new Date(study.expected_end_date) : null}
-                  className="estimatedend"
-                  translation="estimatedend"
+                  className="expected-end"
+                  translation="expectedEnd"
                   withoutTime
                 />
                 <DateBox
                   date={study.actual_end_date ? new Date(study.actual_end_date) : null}
-                  className="realend"
-                  translation="realend"
+                  className="real-end"
+                  translation="realEnd"
                   withoutTime
                 />
                 <DateBox
