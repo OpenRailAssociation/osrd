@@ -346,11 +346,11 @@ const NewMap = ({
           showStdcmAssets={showStdcmAssets}
           isFeasible={isFeasible}
         />
-        {mapRef.current && (
+        {infraID && (
           <ItineraryMarkers
             simulationPathSteps={simulationPathSteps}
-            map={mapRef.current.getMap()}
             showStdcmAssets={showStdcmAssets}
+            infraId={infraID}
           />
         )}
         {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}

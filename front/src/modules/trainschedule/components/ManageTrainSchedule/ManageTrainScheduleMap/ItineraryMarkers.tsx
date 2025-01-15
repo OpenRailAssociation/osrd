@@ -1,29 +1,26 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 import type { Position } from 'geojson';
-import type { Map } from 'maplibre-gl';
 import { Marker } from 'react-map-gl/maplibre';
 
+import useCachedTrackSections from 'applications/operationalStudies/hooks/useCachedTrackSections';
 import destinationSVG from 'assets/pictures/destination.svg';
 import stdcmDestination from 'assets/pictures/mapMarkers/destination.svg';
 import stdcmVia from 'assets/pictures/mapMarkers/intermediate-point.svg';
 import stdcmOrigin from 'assets/pictures/mapMarkers/start.svg';
 import originSVG from 'assets/pictures/origin.svg';
 import viaSVG from 'assets/pictures/via.svg';
-import { getNearestTrack } from 'utils/mapHelper';
+import type { PathItemLocation, TrackSection } from 'common/api/osrdEditoastApi';
+import { matchPathStepAndOp } from 'modules/pathfinding/utils';
+import type { PathStep } from 'reducers/osrdconf/types';
 
-export type MarkerInformation = {
-  pointType: MARKER_TYPE;
-  name?: string;
-  coordinates?: number[] | Position;
-  metadata?: {
-    lineCode: number;
-    lineName: string;
-    trackName: string;
-    trackNumber: number;
+import type { SuggestedOP } from '../types';
+
+export type MarkerInformation = Pick<PathStep, 'name' | 'coordinates' | 'metadata'> &
+  PathItemLocation & {
+    pointType: MARKER_TYPE;
   };
-};
 
 export enum MARKER_TYPE {
   ORIGIN = 'origin',
@@ -32,7 +29,8 @@ export enum MARKER_TYPE {
 }
 
 type MarkerProperties = {
-  marker: MarkerInformation;
+  op?: SuggestedOP;
+  pathStep: MarkerInformation;
   coordinates: number[] | Position;
   imageSource: string;
 } & (
@@ -46,9 +44,10 @@ type MarkerProperties = {
 );
 
 type ItineraryMarkersProps = {
-  map: Map;
   simulationPathSteps: MarkerInformation[];
+  pathStepsAndSuggestedOPs?: SuggestedOP[];
   showStdcmAssets: boolean;
+  infraId: number;
 };
 
 const formatPointWithNoName = (
@@ -66,123 +65,157 @@ const formatPointWithNoName = (
   </>
 );
 
-const extractMarkerInformation = (pathSteps: MarkerInformation[], showStdcmAssets: boolean) =>
-  pathSteps.reduce((acc, cur, index) => {
-    if (cur && cur.coordinates) {
-      if (cur.pointType === MARKER_TYPE.ORIGIN) {
-        acc.push({
-          coordinates: cur.coordinates,
-          type: MARKER_TYPE.ORIGIN,
-          marker: cur,
-          imageSource: showStdcmAssets ? stdcmOrigin : originSVG,
-        });
-      } else if (cur.pointType === MARKER_TYPE.DESTINATION) {
-        acc.push({
-          coordinates: cur.coordinates,
-          type: MARKER_TYPE.DESTINATION,
-          marker: cur,
-          imageSource: showStdcmAssets ? stdcmDestination : destinationSVG,
-        });
-      } else
-        acc.push({
-          coordinates: cur.coordinates,
+const extractMarkerInformation = (
+  pathSteps: MarkerInformation[],
+  showStdcmAssets: boolean,
+  suggestedOP?: SuggestedOP[]
+): MarkerProperties[] =>
+  pathSteps
+    .map((pathStep, index): MarkerProperties | null => {
+      const matchingOp = suggestedOP
+        ? suggestedOP.find((op) => matchPathStepAndOp(pathStep, op))
+        : undefined;
+
+      if (pathStep.coordinates) {
+        if (pathStep.pointType === MARKER_TYPE.ORIGIN) {
+          return {
+            coordinates: pathStep.coordinates,
+            type: MARKER_TYPE.ORIGIN,
+            imageSource: showStdcmAssets ? stdcmOrigin : originSVG,
+            op: matchingOp,
+            pathStep,
+          };
+        }
+
+        if (pathStep.pointType === MARKER_TYPE.DESTINATION) {
+          return {
+            coordinates: pathStep.coordinates,
+            type: MARKER_TYPE.DESTINATION,
+            imageSource: showStdcmAssets ? stdcmDestination : destinationSVG,
+            op: matchingOp,
+            pathStep,
+          };
+        }
+
+        return {
+          coordinates: pathStep.coordinates,
           type: MARKER_TYPE.VIA,
-          marker: cur,
           imageSource: showStdcmAssets ? stdcmVia : viaSVG,
           index,
-        });
-    }
-    return acc;
-  }, [] as MarkerProperties[]);
+          op: matchingOp,
+          pathStep,
+        };
+      }
+      return null;
+    })
+    .filter((marker): marker is MarkerProperties => marker !== null);
 
-const ItineraryMarkers = ({ map, simulationPathSteps, showStdcmAssets }: ItineraryMarkersProps) => {
+const ItineraryMarkers = ({
+  simulationPathSteps,
+  pathStepsAndSuggestedOPs,
+  showStdcmAssets,
+  infraId,
+}: ItineraryMarkersProps) => {
+  const { getTrackSectionsByIds } = useCachedTrackSections(infraId);
+
   const markersInformation = useMemo(
-    () => extractMarkerInformation(simulationPathSteps, showStdcmAssets),
+    () => extractMarkerInformation(simulationPathSteps, showStdcmAssets, pathStepsAndSuggestedOPs),
     [simulationPathSteps, showStdcmAssets]
   );
 
-  const getMarkerDisplayInformation = useCallback(
-    (markerInfo: MarkerProperties) => {
-      const {
-        marker: { coordinates: markerCoordinates, metadata: markerMetadata },
-        type: markerType,
-      } = markerInfo;
+  if (!markersInformation) return null;
 
-      if (markerMetadata) {
-        const {
+  const [trackSections, setTrackSections] = useState<Record<string, TrackSection>>({});
+
+  useEffect(() => {
+    const fetchTrackSections = async () => {
+      const trackId = markersInformation.map((markerInfo) => markerInfo.op!.track);
+      setTrackSections(await getTrackSectionsByIds(trackId));
+    };
+
+    if (pathStepsAndSuggestedOPs) fetchTrackSections();
+  }, [markersInformation, pathStepsAndSuggestedOPs]);
+
+  const getMarkerDisplayInformation = useCallback((markerInfo: MarkerProperties) => {
+    const {
+      pathStep: { metadata: markerMetadata, name: markerName },
+      type: markerType,
+    } = markerInfo;
+
+    if (markerName) return markerName;
+    if (!markerMetadata) return null;
+
+    const {
+      lineCode: markerLineCode,
+      lineName: markerLineName,
+      trackName: markerTrackName,
+    } = markerMetadata;
+
+    return formatPointWithNoName(markerLineCode, markerLineName, markerTrackName, markerType);
+  }, []);
+
+  return markersInformation.map((markerInfo) => {
+    const isDestination = markerInfo.type === MARKER_TYPE.DESTINATION;
+    const isVia = markerInfo.type === MARKER_TYPE.VIA;
+
+    if (!markerInfo.pathStep.metadata && markerInfo.op) {
+      const { op } = markerInfo;
+      const trackId = op.track;
+      const trackSection = trackSections[trackId];
+
+      const metadataFromSuggestedOp = trackSection?.extensions?.sncf;
+
+      if (!metadataFromSuggestedOp) return null;
+
+      const {
+        line_code: markerLineCode,
+        line_name: markerLineName,
+        track_name: markerTrackName,
+        track_number: markerTrackNumber,
+      } = metadataFromSuggestedOp;
+
+      markerInfo.pathStep = {
+        ...markerInfo.pathStep,
+        metadata: {
           lineCode: markerLineCode,
           lineName: markerLineName,
           trackName: markerTrackName,
-        } = markerMetadata;
-        return formatPointWithNoName(markerLineCode, markerLineName, markerTrackName, markerType);
-      }
+          trackNumber: markerTrackNumber,
+        },
+      };
+    }
 
-      if (!markerCoordinates) return null;
-
-      const trackResult = getNearestTrack(markerCoordinates, map);
-      if (trackResult) {
-        const {
-          track: { properties: trackProperties },
-        } = trackResult;
-        if (trackProperties) {
-          const {
-            extensions_sncf_line_code: lineCode,
-            extensions_sncf_line_name: lineName,
-            extensions_sncf_track_name: trackName,
-          } = trackProperties;
-          if (lineCode && lineName && trackName)
-            return formatPointWithNoName(lineCode, lineName, trackName, markerType);
-        }
-      }
-
-      return null;
-    },
-    [map]
-  );
-
-  const Markers = useMemo(
-    () =>
-      markersInformation.map((markerInfo) => {
-        const isDestination = markerInfo.type === MARKER_TYPE.DESTINATION;
-        const isVia = markerInfo.type === MARKER_TYPE.VIA;
-
-        const markerName = (
-          <div className={`map-pathfinding-marker ${markerInfo.type}-name`}>
-            {markerInfo.marker.name
-              ? markerInfo.marker.name
-              : getMarkerDisplayInformation(markerInfo)}
-          </div>
-        );
-        return (
-          <Marker
-            longitude={markerInfo.coordinates[0]}
-            latitude={markerInfo.coordinates[1]}
-            offset={isDestination && !showStdcmAssets ? [0, -24] : [0, -12]}
-            key={isVia ? `via-${markerInfo.index}` : markerInfo.type}
+    return (
+      <Marker
+        longitude={markerInfo.coordinates[0]}
+        latitude={markerInfo.coordinates[1]}
+        offset={isDestination && !showStdcmAssets ? [0, -24] : [0, -12]}
+        key={isVia ? `via-${markerInfo.index}` : markerInfo.type}
+      >
+        <img
+          src={markerInfo.imageSource}
+          alt={markerInfo.type}
+          style={showStdcmAssets ? {} : { height: isDestination ? '3rem' : '1.5rem' }}
+        />
+        {isVia && (
+          <span
+            className={cx('map-pathfinding-marker', 'via-number', {
+              'stdcm-via': isVia && showStdcmAssets,
+            })}
           >
-            <img
-              src={markerInfo.imageSource}
-              alt={markerInfo.type}
-              style={showStdcmAssets ? {} : { height: isDestination ? '3rem' : '1.5rem' }}
-            />
-            {isVia && (
-              <span
-                className={cx('map-pathfinding-marker', 'via-number', {
-                  'stdcm-via': isVia && showStdcmAssets,
-                })}
-              >
-                {markersInformation[0].type === MARKER_TYPE.ORIGIN
-                  ? markerInfo.index
-                  : markerInfo.index + 1}
-              </span>
-            )}
-            {!showStdcmAssets && markerName}
-          </Marker>
-        );
-      }),
-    [markersInformation, showStdcmAssets]
-  );
-  return Markers;
+            {markersInformation[0].type === MARKER_TYPE.ORIGIN
+              ? markerInfo.index
+              : markerInfo.index + 1}
+          </span>
+        )}
+        {!showStdcmAssets && (
+          <div className={`map-pathfinding-marker ${markerInfo.type}-name`}>
+            {getMarkerDisplayInformation(markerInfo)}
+          </div>
+        )}
+      </Marker>
+    );
+  });
 };
 
 export default ItineraryMarkers;
