@@ -178,12 +178,14 @@ const TimetableTrainCard = ({
                 />
               </div>
               <div title={train.trainName} className="checkbox-label">
-                {projectionPathIsUsed && (
-                  <div className="train-projected">
-                    <Manchette iconColor="var(--white100)" />
-                  </div>
-                )}
-                {train.trainName}
+                <div className="train-info">
+                  {projectionPathIsUsed && (
+                    <div className="train-projected">
+                      <Manchette iconColor="var(--white100)" />
+                    </div>
+                  )}
+                  <span className="train-name">{train.trainName}</span>
+                </div>
               </div>
             </div>
             <div className="rolling-stock">

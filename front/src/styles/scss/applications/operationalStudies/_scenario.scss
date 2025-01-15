@@ -356,23 +356,30 @@
           font-size: 1rem;
           font-weight: 600;
           max-width: 160px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          display: flex;
-          align-items: center;
-          .train-projected {
-            height: 20px;
-            width: 20px;
-            margin-right: 6px;
-            background-color: var(--info30);
-            border-radius: 4px;
-            position: relative;
-            svg {
-              position: absolute;
-              top: 0;
-              left: 0;
-              transform: translate(2px, 2px);
+
+          .train-info {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            .train-projected {
+              height: 20px;
+              width: 20px;
+              margin-right: 6px;
+              background-color: var(--info30);
+              border-radius: 4px;
+              position: relative;
+              flex-shrink: 0;
+              svg {
+                position: absolute;
+                top: 0;
+                left: 0;
+                transform: translate(2px, 2px);
+              }
+            }
+            .train-name {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
           }
         }
