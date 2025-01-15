@@ -14,6 +14,7 @@ use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_with::rust::double_option;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -274,32 +275,40 @@ async fn get(
 #[derivative(Default)]
 struct StudyPatchForm {
     pub name: Option<String>,
-    pub description: Option<String>,
-    pub start_date: Option<NaiveDate>,
-    pub expected_end_date: Option<NaiveDate>,
-    pub actual_end_date: Option<NaiveDate>,
-    pub business_code: Option<String>,
-    pub service_code: Option<String>,
-    pub budget: Option<i32>,
+    #[serde(default, with = "double_option")]
+    pub description: Option<Option<String>>,
+    #[serde(default, with = "double_option")]
+    pub start_date: Option<Option<NaiveDate>>,
+    #[serde(default, with = "double_option")]
+    pub expected_end_date: Option<Option<NaiveDate>>,
+    #[serde(default, with = "double_option")]
+    pub actual_end_date: Option<Option<NaiveDate>>,
+    #[serde(default, with = "double_option")]
+    pub business_code: Option<Option<String>>,
+    #[serde(default, with = "double_option")]
+    pub service_code: Option<Option<String>>,
+    #[serde(default, with = "double_option")]
+    pub budget: Option<Option<i32>>,
     pub tags: Option<Tags>,
     pub state: Option<String>,
-    pub study_type: Option<String>,
+    #[serde(default, with = "double_option")]
+    pub study_type: Option<Option<String>>,
 }
 
 impl StudyPatchForm {
     pub fn into_study_changeset(self) -> Result<Changeset<Study>> {
         let study_changeset = Study::changeset()
             .flat_name(self.name)
-            .description(self.description)
-            .business_code(self.business_code)
-            .service_code(self.service_code)
-            .flat_start_date(Some(self.start_date))
-            .flat_expected_end_date(Some(self.expected_end_date))
-            .flat_actual_end_date(Some(self.actual_end_date))
-            .flat_budget(Some(self.budget))
+            .flat_description(self.description)
+            .flat_business_code(self.business_code)
+            .flat_service_code(self.service_code)
+            .flat_start_date(self.start_date)
+            .flat_expected_end_date(self.expected_end_date)
+            .flat_actual_end_date(self.actual_end_date)
+            .flat_budget(self.budget)
             .flat_tags(self.tags)
             .flat_state(self.state)
-            .study_type(self.study_type);
+            .flat_study_type(self.study_type);
         Study::validate(&study_changeset)?;
         Ok(study_changeset)
     }

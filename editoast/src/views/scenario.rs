@@ -15,6 +15,7 @@ use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_with::rust::double_option;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -327,6 +328,7 @@ struct ScenarioPatchForm {
     pub description: Option<String>,
     pub tags: Option<Tags>,
     pub infra_id: Option<i64>,
+    #[serde(default, with = "double_option")]
     pub electrical_profile_set_id: Option<Option<i64>>,
 }
 

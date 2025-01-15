@@ -12,6 +12,7 @@ use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_with::rust::double_option;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -294,14 +295,19 @@ struct ProjectPatchForm {
     #[schema(max_length = 128)]
     pub name: Option<String>,
     #[schema(max_length = 1024)]
-    pub description: Option<String>,
+    #[serde(default, with = "double_option")]
+    pub description: Option<Option<String>>,
     #[schema(max_length = 4096)]
-    pub objectives: Option<String>,
+    #[serde(default, with = "double_option")]
+    pub objectives: Option<Option<String>>,
     #[schema(max_length = 1024)]
-    pub funders: Option<String>,
-    pub budget: Option<i32>,
+    #[serde(default, with = "double_option")]
+    pub funders: Option<Option<String>>,
+    #[serde(default, with = "double_option")]
+    pub budget: Option<Option<i32>>,
     /// The id of the image document
-    pub image: Option<i64>,
+    #[serde(default, with = "double_option")]
+    pub image: Option<Option<i64>>,
     #[schema(max_length = 255)]
     pub tags: Option<Tags>,
 }
@@ -310,11 +316,11 @@ impl From<ProjectPatchForm> for Changeset<Project> {
     fn from(project: ProjectPatchForm) -> Self {
         Project::changeset()
             .flat_name(project.name)
-            .description(project.description)
-            .objectives(project.objectives)
-            .funders(project.funders)
-            .flat_budget(Some(project.budget))
-            .flat_image(Some(project.image))
+            .flat_description(project.description)
+            .flat_objectives(project.objectives)
+            .flat_funders(project.funders)
+            .flat_budget(project.budget)
+            .flat_image(project.image)
             .flat_tags(project.tags)
             .last_modification(Utc::now().naive_utc())
     }
@@ -348,7 +354,7 @@ async fn patch(
         return Err(AuthorizationError::Forbidden.into());
     }
     let conn = &mut db_pool.get().await?;
-    if let Some(image) = form.image {
+    if let Some(Some(image)) = form.image {
         check_image_content(conn, image).await?;
     }
     let project_changeset: Changeset<Project> = form.into();

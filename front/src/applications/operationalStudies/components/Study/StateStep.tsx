@@ -26,7 +26,7 @@ export default function StateStep({ study, number, state, done }: Props) {
       await patchStudy({
         projectId: study.project.id,
         studyId: study.id,
-        studyPatchForm: { ...study, actual_end_date, state },
+        studyPatchForm: { actual_end_date, state },
       });
       dispatch(
         setSuccess({
