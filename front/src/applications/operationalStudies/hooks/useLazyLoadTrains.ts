@@ -17,8 +17,8 @@ type UseLazyLoadTrainsProps = {
   infraId?: number;
   trainIdsToFetch?: number[];
   trainSchedules?: TrainScheduleResult[];
-  setTrainIdsToFetch: Dispatch<SetStateAction<number[] | undefined>>;
-  setTrainIdsToProject: Dispatch<SetStateAction<Set<number>>>;
+  setTrainIdsToFetch?: Dispatch<SetStateAction<number[] | undefined>>;
+  setTrainIdsToProject?: Dispatch<SetStateAction<Set<number>>>;
 };
 
 /**
@@ -79,9 +79,6 @@ const useLazyLoadTrains = ({
         });
 
         if (!outOfSync) {
-          // launch the projection of the trains
-          setTrainIdsToProject((prev) => new Set([...prev, ...packageToFetch]));
-
           // format the summaries to display them in the timetable
           const newFormattedSummaries = formatTrainScheduleSummaries(
             packageToFetch,
@@ -89,6 +86,9 @@ const useLazyLoadTrains = ({
             trainSchedulesById,
             rollingStocks!
           );
+
+          // launch the projection of the trains if needed
+          setTrainIdsToProject?.((prev) => new Set([...prev, ...packageToFetch]));
 
           // as formattedSummaries is a dictionary, we replace the previous values with the new ones
           setTrainScheduleSummariesById((prev) => concatMap(prev, newFormattedSummaries));
