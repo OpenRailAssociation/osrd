@@ -26,7 +26,7 @@ services:
     ports: !reset []
     network_mode: host
     volumes:
-      - "./docker/gateway.dev.host.toml:/gateway.toml"
+      - "./docker/gateway.dev.host.toml:/srv/gateway.toml"
 
   osrd-images:
     ports: !reset []

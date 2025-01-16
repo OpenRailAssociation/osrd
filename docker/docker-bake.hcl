@@ -6,9 +6,6 @@ group "default" {
     "core-build",
     "editoast",
     "editoast-test",
-    "front-devel",
-    "front-nginx",
-    "front-build",
     "front-tests",
     "gateway-standalone",
     "gateway-test",
@@ -90,43 +87,6 @@ target "editoast" {
   }
 }
 
-#########
-# Front #
-#########
-
-target "base-front-devel" {}
-target "front-devel" {
-  inherits = ["base", "base-front-devel"]
-  context = "front"
-  dockerfile = "docker/Dockerfile.devel"
-}
-
-target "base-front-nginx" {}
-target "front-nginx" {
-  inherits = ["base", "base-front-nginx"]
-  context = "front"
-  dockerfile = "docker/Dockerfile.nginx"
-}
-
-target "base-front-build" {}
-target "front-build" {
-  inherits = ["base", "base-front-build"]
-  context = "front"
-  dockerfile = "docker/Dockerfile.nginx"
-  target = "build"
-}
-
-target "base-front-tests" {}
-target "front-tests" {
-  inherits = ["base", "base-front-tests"]
-  context = "front"
-  dockerfile = "docker/Dockerfile.nginx"
-  target = "tests"
-  contexts = {
-    test_data = "./tests/data"
-  }
-}
-
 ###########
 # Gateway #
 ###########
@@ -147,15 +107,41 @@ target "gateway-test" {
   target = "testing_env"
 }
 
+target "base-gateway-front-build" {}
+target "gateway-front-build" {
+  inherits = ["base", "base-gateway-front-build"]
+  context = "gateway"
+  dockerfile = "Dockerfile"
+  target = "front_build"
+  contexts = {
+    front_src = "./front"
+  }
+}
+
 target "base-gateway-front" {}
 target "gateway-front" {
   inherits = ["base", "base-gateway-front"]
-  dockerfile = "gateway-front.dockerfile"
-  context = "docker"
+  dockerfile = "Dockerfile"
+  target = "front_running_env"
+  context = "gateway"
   contexts = {
-    gateway_src = "./gateway"
-    gateway_build = "target:gateway-standalone"
-    front_build = "target:front-build"
+    front_src = "./front"
+  }
+}
+
+#########
+# Front #
+#########
+
+target "base-front-tests" {}
+target "front-tests" {
+  inherits = ["base", "base-front-tests"]
+  context = "front"
+  dockerfile = "docker/Dockerfile"
+  target = "tests"
+  contexts = {
+    front_build = "target:gateway-front-build"
+    test_data = "./tests/data"
   }
 }
 

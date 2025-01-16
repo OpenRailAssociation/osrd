@@ -8,3 +8,6 @@ __pycache__
 # Direnv
 .envrc
 .direnv
+
+# Helper script
+.osrd-compose-state

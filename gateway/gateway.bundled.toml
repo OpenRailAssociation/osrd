@@ -1,0 +1,44 @@
+# This is an example production file. It's meant to be mounted inside the container at /gateway.toml
+
+secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET"
+listen_addr = "0.0.0.0"
+port = 4000
+trusted_proxies = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+
+[static_files]
+root_folder = "/srv/front"
+redirect_404_to_index = true
+
+[[targets]]
+prefix = "/api"
+upstream = "http://osrd-editoast:80"
+require_auth = true
+
+[[targets]]
+prefix = "/images"
+upstream = "http://osrd-images:8080"
+require_auth = false
+
+[auth]
+default_provider = "mock"
+secure_cookies = false
+
+[[auth.providers]]
+type = "Mocked"
+provider_id = "mock"
+username = "Example User"
+require_login = false
+
+# Example of OIDC auth
+# [auth]
+# default_provider = "oidc_provider"
+# secure_cookies = true
+#
+# [[auth.providers]]
+# type = "Oidc"
+# provider_id = "oidc_provider"
+# issuer_url = "https://%PROVIDER_URL%"
+# post_login_url = "https://%POST_LOGIN_URL%"
+# callback_url = "https://%APP_ROOT_URL%/auth/provider/example_provider/callback"
+# client_id = "%CLIENT_ID%"
+# client_secret = "%CLIENT_SECRET%"

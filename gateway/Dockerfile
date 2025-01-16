@@ -48,11 +48,45 @@ COPY . .
 # Running env : build #
 #######################
 FROM alpine:3.20 AS running_env
-RUN apk add --no-cache curl ca-certificates bind-tools
+RUN apk add --no-cache curl ca-certificates bind-tools jq
 COPY --from=run_builder /usr/local/cargo/bin/osrd_gateway /usr/local/bin/osrd_gateway
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 ENV OTEL_SERVICE_NAME="osrd-gateway"
 
+CMD ["/usr/local/bin/osrd_gateway"]
+
+#####################
+# Build env : front #
+#####################
+FROM node:23-bookworm AS front_build
+WORKDIR /app
+
+# Build dependencies
+COPY --from=front_src package.json package-lock.json /app/
+RUN npm install --frozen-lockfile
+
+# Fill build time values
+ARG OSRD_GIT_DESCRIBE
+ENV VITE_OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
+
+# Generate the licenses file and build
+COPY --from=front_src . /app
+ENV NODE_OPTIONS="--max_old_space_size=4096"
+RUN npm run generate-licenses && npm run build
+
+#######################
+# Running env : front #
+#######################
+FROM running_env AS front_running_env
+
+# Copy the front
+WORKDIR /srv
+COPY --from=front_build /app/build /srv/front/
+
+# Copy an example config file
+COPY ./gateway.bundled.toml /srv/gateway.toml
+COPY --chmod=755 ./entrypoint.sh /srv/entrypoint.sh
+ENTRYPOINT ["/srv/entrypoint.sh"]
 CMD ["/usr/local/bin/osrd_gateway"]

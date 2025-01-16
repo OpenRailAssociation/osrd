@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+BASE_PATH="$(realpath "$(dirname "$0")")"
+STATE_FILE="${BASE_PATH}/.osrd-compose-state"
+BASE_COMPOSE="${BASE_PATH}/docker-compose.yml"
+OVERRIDE_DIR="${BASE_PATH}/docker"
+
+# Help
+show_help() {
+    cat << EOF
+
+Usage: $0 [FLAGS] [DOCKER_COMPOSE_COMMANDS]
+
+This script simplifies docker compose operations by managing override files.
+
+Flags (optional, can be combined):
+  front    Add front-end development container (docker/docker-compose.front.yml)
+  sw       Enable single worker mode (docker/docker-compose.single-worker.yml)
+  host     Use host networking mode (docker/docker-compose.host.yml)
+  default  Reset to base configuration only and clear saved state
+
+Examples:
+  $0 front sw up     # Start with front-end and single worker
+  $0 ps              # Use previous configuration
+  $0 default up      # Reset and start base configuration
+
+State System:
+The script maintains a state system to remember your last configuration.
+When you run the script with flags (front, sw, host), these choices are saved
+in a hidden file (.osrd-compose-state). Next time you run the script without
+flags, it will automatically use this saved configuration. This lets you run
+quick commands like 'ps' or 'logs' without re-specifying your setup each time.
+If you want to start fresh, use the 'default' flag to clear the saved state.
+
+State Management:
+- Previous flags are saved to .osrd-compose-state
+- Without flags, last known state is loaded
+- Without flags and no state file, only base compose is used
+- 'default' flag clears saved state
+EOF
+}
+
+# Display help if requested or no args given
+if [ "$1" = "--help" ] || [ "$1" = "help" ] || [ $# -eq 0 ]; then
+    show_help
+    exit 0
+fi
+
+# Initialize arrays for compose files and flags
+compose_files=("$BASE_COMPOSE")
+flags=()
+
+# Parse command line arguments for flags first
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        default)
+            DEFAULT_FLAG=true
+            shift
+            ;;
+        front|sw|host)
+            flags+=("$1")
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# If the default flag was provided while other flags are present, raise an error
+if [ -n "$DEFAULT_FLAG" ] && [ ${#flags[@]} -gt 0 ]; then
+    echo "Error: 'default' flag cannot be combined with other flags"
+    exit 1
+fi
+
+# If the default flag was provided, clear the state file
+if [ -n "$DEFAULT_FLAG" ]; then
+    rm -f "$STATE_FILE"
+fi
+
+# If flags were provided, save them
+if [ ${#flags[@]} -gt 0 ]; then
+    printf "%s\n" "${flags[@]}" > "$STATE_FILE"
+# If no flags but state exists, load it
+elif [ -f "$STATE_FILE" ]; then
+    mapfile -t flags < "$STATE_FILE"
+fi
+
+has_flag() {
+    local flag="$1"
+    local f
+    for f in "${flags[@]}"; do
+        if [ "$f" = "$flag" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+if has_flag "host"; then
+    compose_files+=("$OVERRIDE_DIR/docker-compose.host.yml")
+fi
+
+if has_flag "front"; then
+    if has_flag "host"; then
+        compose_files+=("$OVERRIDE_DIR/docker-compose.host-front.yml")
+    else
+        compose_files+=("$OVERRIDE_DIR/docker-compose.front.yml")
+    fi
+fi
+
+if has_flag "sw"; then
+    compose_files+=("$OVERRIDE_DIR/docker-compose.single-worker.yml")
+fi
+
+# Build docker-compose command
+cmd="docker compose"
+for file in "${compose_files[@]}"; do
+    cmd+=" -f $file"
+done
+
+# Add remaining arguments
+cmd+=" $*"
+
+# Execute the command
+echo "$cmd"
+exec $cmd

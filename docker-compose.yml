@@ -5,6 +5,7 @@ volumes:
   valkey_data:
   rabbitmq_data:
 
+
 services:
   postgres:
     image: ${OSRD_POSTGIS_IMAGE:-postgis/postgis:16-3.4-alpine}
@@ -84,30 +85,6 @@ services:
     restart: "no"
     command: "true"
 
-  front:
-    image: ghcr.io/openrailassociation/osrd-edge/osrd-front:${TAG-dev}-${OSRD_FRONT_MODE-devel}
-    container_name: osrd-front
-    build:
-      context: front
-      additional_contexts:
-        test_data: tests/data
-      dockerfile: docker/Dockerfile.${OSRD_FRONT_MODE-devel}
-      args:
-        OSRD_GIT_DESCRIBE: development
-    environment:
-      FRONT_PORT: 3000 # only useful with the prod config
-      OSRD_EDITOAST_URL: /api
-    volumes:
-      - "./front:/app"
-      - "./tests/data:/tests/data"
-    restart: unless-stopped
-    ports: [ "3000:3000" ]
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
-      start_period: 4s
-      interval: 5s
-      retries: 6
-
   editoast:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-editoast:${TAG-dev}
     container_name: osrd-editoast
@@ -145,16 +122,16 @@ services:
       retries: 6
 
   gateway:
-    image: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:${TAG-dev}-standalone
+    image: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:${TAG-dev}-${GATEWAY_FLAVOR-front}
     container_name: osrd-gateway
     build:
       context: gateway
       dockerfile: Dockerfile
       args:
-        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
+        OSRD_GIT_DESCRIBE: development
         CARGO_PROFILE: dev
-    volumes:
-      - "./docker/gateway.dev.simple.toml:/gateway.toml"
+      additional_contexts:
+        front_src: front
     restart: unless-stopped
     ports: [ "4000:4000" ]
 

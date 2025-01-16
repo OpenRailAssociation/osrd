@@ -1,4 +1,4 @@
-# This config file is copied into the host networking dev container
+# This config file is copied into the host networking dev container when in front mode
 
 # generate a production key with this command:
 # python3 -c "import secrets, base64; print(base64.standard_b64encode(secrets.token_bytes(64)).decode())"
@@ -6,12 +6,8 @@ secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECR
 
 listen_addr = "0.0.0.0"
 
-[static_files]
-root_folder = "/srv/front"
-redirect_404_to_index = true
-
 [telemetry.tracing]
-type = "Otlp"
+enable = true
 endpoint = "http://localhost:4317"
 
 [[targets]]
@@ -19,6 +15,11 @@ tracing_name = "editoast"
 prefix = "/api"
 upstream = "http://localhost:8090"
 require_auth = true
+
+[[targets]]
+tracing_name = "front"
+upstream = "http://localhost:3000"
+require_auth = false
 
 [[targets]]
 tracing_name = "images"
