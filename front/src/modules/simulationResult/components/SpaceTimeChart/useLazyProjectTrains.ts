@@ -51,6 +51,8 @@ const useLazyProjectTrains = ({
     new Map()
   );
 
+  const allTrainsProjected = useMemo(() => trainIdsToProject.size === 0, [trainIdsToProject]);
+
   const requestedProjectedTrainIds = useRef<Set<number>>(new Set());
   const projectionSeqNum = useRef(0);
 
@@ -134,13 +136,11 @@ const useLazyProjectTrains = ({
       projectionSeqNum.current += 1;
       requestedProjectedTrainIds.current = new Set();
       setProjectedTrainsById(new Map());
-
-      const trainIds = trainSchedules.map((trainSchedule) => trainSchedule.id);
-      setTrainIdsToProject(new Set(trainIds));
     }
   }, [path]);
 
   return {
+    allTrainsProjected,
     projectedTrainsById,
     setProjectedTrainsById,
   };

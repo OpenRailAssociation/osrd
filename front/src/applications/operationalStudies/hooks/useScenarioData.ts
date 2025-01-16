@@ -11,6 +11,7 @@ import {
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
+import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { mapBy } from 'utils/types';
 
@@ -30,6 +31,7 @@ const useScenarioData = (
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResult[]>();
   const [trainIdsToFetch, setTrainIdsToFetch] = useState<number[]>();
+  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<number>>(new Set());
 
   const [fetchTrainSchedules] = osrdEditoastApi.endpoints.postTrainSchedule.useLazyQuery();
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
@@ -40,20 +42,35 @@ const useScenarioData = (
 
   const projectionPath = usePathProjection(infra);
 
-  const {
-    trainScheduleSummariesById,
-    projectedTrainsById,
-    setTrainScheduleSummariesById,
-    setProjectedTrainsById,
-    allTrainsProjected,
-    allTrainsLoaded,
-  } = useLazyLoadTrains({
+  const { trainScheduleSummariesById, setTrainScheduleSummariesById, allTrainsLoaded } =
+    useLazyLoadTrains({
+      infraId: scenario.infra_id,
+      trainIdsToFetch,
+      trainSchedules,
+      setTrainIdsToProject,
+    });
+
+  useEffect(() => {
+    if (allTrainsLoaded) {
+      setTrainIdsToFetch([]);
+    }
+  }, [allTrainsLoaded]);
+
+  const { projectedTrainsById, allTrainsProjected, setProjectedTrainsById } = useLazyProjectTrains({
     infraId: scenario.infra_id,
-    trainIdsToFetch,
-    setTrainIdsToFetch,
+    trainIdsToProject,
     path: projectionPath?.path,
     trainSchedules,
+    moreTrainsToCome: !allTrainsLoaded,
+    setTrainIdsToProject,
   });
+
+  useEffect(() => {
+    if (trainSchedules && projectionPath?.path && allTrainsLoaded) {
+      const trainIds = trainSchedules.map((trainSchedule) => trainSchedule.id);
+      setTrainIdsToProject(new Set(trainIds));
+    }
+  }, [projectionPath?.path]);
 
   const { data: conflicts, refetch: refetchConflicts } =
     osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(

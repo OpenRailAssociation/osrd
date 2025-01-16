@@ -3,13 +3,8 @@ import { useEffect, useState, type Dispatch, type SetStateAction, useMemo } from
 
 import { useSelector } from 'react-redux';
 
-import {
-  osrdEditoastApi,
-  type PathfindingResultSuccess,
-  type TrainScheduleResult,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { getBatchPackage } from 'utils/batch';
 import { concatMap, mapBy } from 'utils/types';
@@ -21,9 +16,9 @@ const BATCH_SIZE = 10;
 type UseLazyLoadTrainsProps = {
   infraId?: number;
   trainIdsToFetch?: number[];
-  path?: PathfindingResultSuccess;
   trainSchedules?: TrainScheduleResult[];
   setTrainIdsToFetch: Dispatch<SetStateAction<number[] | undefined>>;
+  setTrainIdsToProject: Dispatch<SetStateAction<Set<number>>>;
 };
 
 /**
@@ -36,9 +31,8 @@ type UseLazyLoadTrainsProps = {
 const useLazyLoadTrains = ({
   infraId,
   trainIdsToFetch,
-  path,
   trainSchedules,
-  setTrainIdsToFetch,
+  setTrainIdsToProject,
 }: UseLazyLoadTrainsProps) => {
   const { getElectricalProfileSetId } = useOsrdConfSelectors();
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
@@ -46,7 +40,6 @@ const useLazyLoadTrains = ({
   const [trainScheduleSummariesById, setTrainScheduleSummariesById] = useState<
     Map<number, TrainScheduleWithDetails>
   >(new Map());
-  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<number>>(new Set());
   const [allTrainsLoaded, setAllTrainsLoaded] = useState(false);
 
   const [postTrainScheduleSimulationSummary] =
@@ -56,17 +49,6 @@ const useLazyLoadTrains = ({
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
   const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
-
-  const allTrainsProjected = useMemo(() => trainIdsToProject.size === 0, [trainIdsToProject]);
-
-  const { projectedTrainsById, setProjectedTrainsById } = useLazyProjectTrains({
-    infraId,
-    trainIdsToProject,
-    path,
-    trainSchedules,
-    moreTrainsToCome: !allTrainsLoaded,
-    setTrainIdsToProject,
-  });
 
   // gradually fetch the simulation of the trains
   useEffect(() => {
@@ -113,7 +95,6 @@ const useLazyLoadTrains = ({
         }
       }
 
-      setTrainIdsToFetch([]);
       setAllTrainsLoaded(true);
     };
 
@@ -124,10 +105,7 @@ const useLazyLoadTrains = ({
 
   return {
     trainScheduleSummariesById,
-    projectedTrainsById,
     setTrainScheduleSummariesById,
-    setProjectedTrainsById,
-    allTrainsProjected,
     allTrainsLoaded,
   };
 };
