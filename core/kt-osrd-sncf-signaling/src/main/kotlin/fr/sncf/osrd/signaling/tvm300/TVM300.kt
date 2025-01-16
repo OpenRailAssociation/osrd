@@ -22,6 +22,7 @@ object TVM300 : SignalingSystemDriver {
     override val settingsSchema = SigSettingsSchema { flag("Nf") }
     override val parametersSchema = SigParametersSchema {}
     override val isBlockDelimiterExpr = "true"
+    override val isRouteDelimiterExpr = "Nf"
 
     private fun maxSpeedForState(state: SigState): Speed {
         return when (val aspect = state.getEnum("aspect")) {

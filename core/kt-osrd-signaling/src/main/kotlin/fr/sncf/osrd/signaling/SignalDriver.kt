@@ -94,6 +94,7 @@ interface SignalingSystemDriver {
     val stateSchema: SigStateSchema
     val settingsSchema: SigSettingsSchema
     val isBlockDelimiterExpr: String
+    val isRouteDelimiterExpr: String
 
     fun checkBlock(reporter: BlockDiagReporter, block: SigBlock)
 

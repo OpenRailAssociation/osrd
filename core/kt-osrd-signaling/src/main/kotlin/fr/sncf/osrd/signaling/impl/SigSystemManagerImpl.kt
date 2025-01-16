@@ -95,6 +95,10 @@ class SigSystemManagerImpl : SigSystemManager {
         return evalSigSettings(sigSystemPool[sigSystem].isBlockDelimiterExpr, settings)
     }
 
+    override fun isRouteDelimiter(sigSystem: SignalingSystemId, settings: SigSettings): Boolean {
+        return evalSigSettings(sigSystemPool[sigSystem].isRouteDelimiterExpr, settings)
+    }
+
     override fun checkSignalingSystemBlock(
         reporter: BlockDiagReporter,
         sigSystem: SignalingSystemId,

@@ -20,6 +20,7 @@ object TVM430 : SignalingSystemDriver {
     override val parametersSchema = SigParametersSchema {}
 
     override val isBlockDelimiterExpr = "true"
+    override val isRouteDelimiterExpr = "Nf"
 
     override fun checkBlock(reporter: BlockDiagReporter, block: SigBlock) {
         // Check that we have the correct number of signals

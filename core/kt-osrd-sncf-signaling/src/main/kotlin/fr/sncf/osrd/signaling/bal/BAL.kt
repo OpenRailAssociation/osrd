@@ -12,6 +12,7 @@ object BAL : SignalingSystemDriver {
     override val settingsSchema = SigSettingsSchema { flag("Nf") }
     override val parametersSchema = SigParametersSchema { flag("jaune_cli") }
     override val isBlockDelimiterExpr = "true"
+    override val isRouteDelimiterExpr = "Nf"
 
     override fun checkBlock(reporter: BlockDiagReporter, block: SigBlock) {
         // Check that we have the correct number of signals

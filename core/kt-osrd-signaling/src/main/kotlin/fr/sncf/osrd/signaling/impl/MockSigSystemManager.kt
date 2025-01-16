@@ -90,4 +90,8 @@ class MockSigSystemManager(
     override fun isBlockDelimiter(sigSystem: SignalingSystemId, settings: SigSettings): Boolean {
         return true
     }
+
+    override fun isRouteDelimiter(sigSystem: SignalingSystemId, settings: SigSettings): Boolean {
+        return true
+    }
 }

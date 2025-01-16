@@ -20,6 +20,7 @@ internal fun internalBuildBlocks(
     val signalDelimiters = findSignalDelimiters(rawSignalingInfra, loadedSignalInfra)
     val detectorEntrySignals = makeDetectorEntrySignals(loadedSignalInfra, signalDelimiters)
     val missingSignalLogAggregator = LogAggregator({ logger.debug(it) })
+    val nonRouteDelimitingSignalLogAggregator = LogAggregator({ logger.debug(it) })
     val result =
         blockInfraBuilder(loadedSignalInfra, rawSignalingInfra) {
             // Step 2) iterate on zone paths along the route path.
@@ -96,9 +97,24 @@ internal fun internalBuildBlocks(
                         curBlock.signalPositions
                     )
                 }
+
+                // Finally we want to emit a warning if the route ends on a non route delimiting
+                // signal
+                if (!routeEndsAtBufferStop) {
+                    warnOnRouteEndingOnNonRouteDelimitingSignal(
+                        route,
+                        routeExitDet,
+                        detectorEntrySignals,
+                        sigModuleManager,
+                        rawSignalingInfra,
+                        loadedSignalInfra,
+                        nonRouteDelimitingSignalLogAggregator
+                    )
+                }
             }
         }
     missingSignalLogAggregator.logAggregatedSummary()
+    nonRouteDelimitingSignalLogAggregator.logAggregatedSummary()
     return result
 }
 
@@ -333,4 +349,28 @@ private fun BlockInfraBuilder.updatePartialBlocks(
         }
     }
     return nextBlocks
+}
+
+private fun warnOnRouteEndingOnNonRouteDelimitingSignal(
+    route: RouteId,
+    routeExitDet: DirDetectorId,
+    detectorSignals: IdxMap<DirDetectorId, IdxMap<SignalingSystemId, AssociatedSignal>>,
+    sigModuleManager: InfraSigSystemManager,
+    rawSignalingInfra: RawSignalingInfra,
+    loadedSignalInfra: LoadedSignalInfra,
+    logAggregator: LogAggregator
+) {
+    val endSignals = detectorSignals[routeExitDet] ?: return
+    for (associatedSignal in endSignals.values()) {
+        val logicalSignalId = associatedSignal.signal
+        val signalingSystem = loadedSignalInfra.getSignalingSystem(logicalSignalId)
+        val sigSettings = loadedSignalInfra.getSettings(logicalSignalId)
+        val routeEndsWithRouteEndingSignal =
+            sigModuleManager.isRouteDelimiter(signalingSystem, sigSettings)
+        if (!routeEndsWithRouteEndingSignal) {
+            logAggregator.registerError(
+                "Route ${rawSignalingInfra.getRouteName(route)} ends with non-route delimiting signal on signaling system ${signalingSystem}"
+            )
+        }
+    }
 }

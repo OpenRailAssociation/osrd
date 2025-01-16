@@ -15,6 +15,7 @@ object BAPR : SignalingSystemDriver {
     }
     override val parametersSchema = SigParametersSchema {}
     override val isBlockDelimiterExpr = "!distant"
+    override val isRouteDelimiterExpr = "Nf"
 
     override fun checkBlock(reporter: BlockDiagReporter, block: SigBlock) {
         // Check that we have the correct number of signals
