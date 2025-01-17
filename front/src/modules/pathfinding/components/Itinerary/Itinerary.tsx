@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ArrowSwitch, Route, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
-import { isNil } from 'lodash';
+import { compact, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -73,7 +73,29 @@ const Itinerary = () => {
 
   const inverseOD = () => {
     notifyRestrictionResetWarning();
-    const newPathSteps = [...pathSteps].reverse();
+
+    // Reverse start and end of margins, in prevision of reversing the list of path steps
+    const newMargins: (string | undefined)[] = [];
+    let prevMargin: string | undefined;
+    const cPathSteps = compact(pathSteps); // No step should be null when inverseOD is called (as start and arrival need to be defined), so compact should let the array unchanged
+    cPathSteps.forEach((pathStep, index) => {
+      // Each margin value is only defined at the start of its margin 'zone'
+      // Thus its needs to be pushed to the end of its 'zone', which corresponds to either the start of the next defined margin, or the last step for the last 'zone'
+      if (pathStep.theoreticalMargin || index === pathSteps.length - 1) {
+        newMargins.push(prevMargin);
+        prevMargin = pathStep.theoreticalMargin;
+      } else {
+        newMargins.push(undefined);
+      }
+    });
+
+    const newPathSteps = cPathSteps
+      .map((pathStep, index) => ({
+        ...pathStep,
+        arrival: null, // Remove arrival times set as they may become incoherent when reversing
+        theoreticalMargin: newMargins[index],
+      }))
+      .reverse();
     launchPathfinding(newPathSteps);
   };
 
