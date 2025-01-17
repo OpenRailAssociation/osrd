@@ -241,7 +241,6 @@ const StdcmView = () => {
                   selectedSimulationIndex={selectedSimulationIndex}
                   showStatusBanner={showStatusBanner}
                   simulationsList={simulationsList}
-                  pathTrackRanges={stdcmResults?.stdcmResponse.path.track_section_ranges}
                 />
               )}
             </div>

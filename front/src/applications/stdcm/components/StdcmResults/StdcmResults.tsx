@@ -12,7 +12,6 @@ import {
   getOperationalPointsWithTimes,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
-import { type TrackRange } from 'common/api/osrdEditoastApi';
 import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
@@ -33,7 +32,6 @@ type StcdmResultsProps = {
   selectedSimulationIndex: number;
   showStatusBanner: boolean;
   simulationsList: StdcmSimulation[];
-  pathTrackRanges?: TrackRange[];
 };
 
 const StcdmResults = ({
@@ -48,7 +46,6 @@ const StcdmResults = ({
   selectedSimulationIndex,
   showStatusBanner,
   simulationsList,
-  pathTrackRanges,
 }: StcdmResultsProps) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { stdcmName } = useDeploymentSettings();
@@ -188,9 +185,7 @@ const StcdmResults = ({
           />
         </div>
       </div>
-      {isDebugMode && pathTrackRanges && hasSimulationResults && (
-        <StdcmDebugResults pathTrackRanges={pathTrackRanges} simulationOutputs={outputs} />
-      )}
+      {isDebugMode && <StdcmDebugResults simulationOutputs={outputs} />}
     </>
   );
 };
