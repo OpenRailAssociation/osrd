@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Select, ComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
+import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
 import { useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
@@ -22,6 +23,20 @@ type CHOption = { label: string; id: string; coordinates: [number, number] };
 function formatChCode(chCode: string) {
   return chCode === '' ? 'BV' : chCode;
 }
+
+const extractChCodes = (searchResults: SearchResultItemOperationalPoint[], selectedCI: CIOption) =>
+  searchResults
+    .filter((op) => op.name === selectedCI.name)
+    .reduce((acc, op) => {
+      const newObject = {
+        label: formatChCode(op.ch),
+        id: op.ch,
+        coordinates: op.geographic.coordinates as [number, number],
+      };
+      const isDuplicate = acc.some((option) => option.label === newObject.label);
+      if (!isDuplicate) acc.push(newObject);
+      return acc;
+    }, [] as CHOption[]);
 
 const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperationalPointProps) => {
   const { t } = useTranslation('stdcm');
@@ -93,18 +108,7 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
 
   const handleCiSelect = (selectedSuggestion?: CIOption) => {
     if (selectedSuggestion) {
-      const newChSuggestions = searchResults
-        .filter((pr) => pr.name === selectedSuggestion.name)
-        .reduce((acc, pr) => {
-          const newObject = {
-            label: formatChCode(pr.ch),
-            id: pr.ch,
-            coordinates: pr.geographic.coordinates as [number, number],
-          };
-          const isDuplicate = acc.some((option) => option.label === newObject.label);
-          if (!isDuplicate) acc.push(newObject);
-          return acc;
-        }, [] as CHOption[]);
+      const newChSuggestions = extractChCodes(searchResults, selectedSuggestion);
       setChSuggestions(newChSuggestions);
     } else {
       setChSuggestions([]);
@@ -146,6 +150,15 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
       setChSuggestions([]);
     }
   }, [location]);
+
+  useEffect(() => {
+    // If we start a new query with inputs (ch suggestions will be empty at load),
+    // fetch the ch list again for the corresponding CI
+    if (chSuggestions.length === 0 && selectedCi && searchResults.length > 0) {
+      const updatedChSuggestions = extractChCodes(searchResults, selectedCi);
+      setChSuggestions(updatedChSuggestions);
+    }
+  }, [searchResults, selectedCi, chSuggestions]);
 
   return (
     <div className="location-line">
