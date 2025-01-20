@@ -350,7 +350,7 @@ async fn stdcm(
             },
         );
 
-        let _ = tokio::spawn(
+        tokio::spawn(
             // We just don't await the creation of the log entry since we want
             // the endpoint to return as soon as possible, and because failing
             // to persist a log entry is not a very important error here.
@@ -362,8 +362,7 @@ async fn stdcm(
                 user_id,
             )
             .in_current_span(),
-        )
-        .await;
+        );
     }
 
     // 7. Handle STDCM Core Response
