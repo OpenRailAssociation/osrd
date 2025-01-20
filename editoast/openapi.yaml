@@ -6413,6 +6413,7 @@ components:
           items:
             type: number
             format: double
+          description: Max efforts in N. Must contains the same number of elements as `speeds`.
           example:
           - 23500.0
           - 23200.0
@@ -6423,6 +6424,7 @@ components:
           items:
             type: number
             format: double
+          description: Speeds in m/s. Must contains the same number of elements as `max_efforts`
           example:
           - 0.0
           - 2.958

@@ -3072,7 +3072,9 @@ export type EffortCurveConditions = {
   power_restriction_code: string | null;
 };
 export type EffortCurve = {
+  /** Max efforts in N. Must contains the same number of elements as `speeds`. */
   max_efforts: number[];
+  /** Speeds in m/s. Must contains the same number of elements as `max_efforts` */
   speeds: number[];
 };
 export type ConditionalEffortCurve = {
