@@ -457,7 +457,11 @@ private fun getAdjustedPermittedSpeedPosition(
     val guiPosition =
         if (speed > guiCurve.maxSpeed || speed < guiCurve.minSpeed) Double.POSITIVE_INFINITY
         else guiCurve.interpolatePosition(speed)
-    return min(permittedSpeedPosition, guiPosition)
+    // Interpolating adds a position inaccuracy. If both positions are equal, keep more accurate
+    // permitted speed position.
+    return if (TrainPhysicsIntegrator.arePositionsEqual(permittedSpeedPosition, guiPosition))
+        permittedSpeedPosition
+    else min(permittedSpeedPosition, guiPosition)
 }
 
 /** See Subset 026: §3.13.9.3.6.1 and §3.13.9.3.6.2. */
