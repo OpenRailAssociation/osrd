@@ -157,7 +157,7 @@
   },
   "scripts": {
     "compile": "tsc -b",
-    "start": "exec scripts/start-dev.sh",
+    "start": "vite",
     "start-container": "vite --host",
     "build": "vite build",
     "test": "vitest",
