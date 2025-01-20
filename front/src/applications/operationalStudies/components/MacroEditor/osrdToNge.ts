@@ -226,6 +226,34 @@ const castNodeToNge = (
 });
 
 /**
+ * Match a frequency label to a NGE TrainrunFrequency, or `null` if not handled.
+ */
+const trainrunFrequencyFromLabel = (label: string) => {
+  if (!label.startsWith('frequency::')) return null;
+  const n = parseInt(label.split('::', 2)[1], 10);
+  const frequency = DEFAULT_TRAINRUN_FREQUENCIES.find((freq) => freq.frequency === n);
+  return frequency ?? null;
+};
+
+/**
+ * NGE trainrun frequency is stored as OSRD labels (`"frequency::30"` or `"frequency::120"`).
+ * Update the current frequency if the new frequency is smaller.
+ */
+const getFrequencyFromLabels = (labels: string[]): TrainrunFrequency | null => {
+  let currentFrequency: TrainrunFrequency | null = null;
+  labels.forEach((label) => {
+    const newFrequency = trainrunFrequencyFromLabel(label);
+    if (
+      newFrequency &&
+      (!currentFrequency || newFrequency.frequency < currentFrequency.frequency)
+    ) {
+      currentFrequency = newFrequency;
+    }
+  });
+  return currentFrequency;
+};
+
+/**
  * Load & index the data of the train schedule for the given scenario
  */
 export const loadAndIndexNge = async (
@@ -298,7 +326,7 @@ export const loadAndIndexNge = async (
 };
 
 /**
- * Translate the train schedule in NGE "trainruns".
+ * Translate the train schedule in NGE "trainrun".
  */
 const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
   state.trainSchedules
@@ -307,11 +335,15 @@ const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
       id: trainSchedule.id,
       name: trainSchedule.train_name,
       categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
-      frequencyId: DEFAULT_TRAINRUN_FREQUENCY.id,
+      frequencyId:
+        getFrequencyFromLabels(trainSchedule.labels || [])?.id ?? DEFAULT_TRAINRUN_FREQUENCY.id,
       trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
-      labelIds: (trainSchedule.labels || []).map((l) =>
-        labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
-      ),
+      labelIds: (trainSchedule.labels || [])
+        // we keep only not handled frequencies as labels to be not redundant
+        .filter((l) => trainrunFrequencyFromLabel(l) === null)
+        .map((l) =>
+          labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
+        ),
     }));
 
 /**
@@ -497,7 +529,7 @@ export const getNgeDto = (state: MacroEditorState): NetzgrafikDto => {
     metadata: {
       netzgrafikColors: [],
       trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
-      trainrunFrequencies: [DEFAULT_TRAINRUN_FREQUENCY],
+      trainrunFrequencies: DEFAULT_TRAINRUN_FREQUENCIES,
       trainrunTimeCategories: [DEFAULT_TRAINRUN_TIME_CATEGORY],
     },
     trainruns: getNgeTrainruns(state, labels),
