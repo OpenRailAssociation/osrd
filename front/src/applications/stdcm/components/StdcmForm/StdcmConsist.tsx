@@ -1,13 +1,12 @@
+import { useState } from 'react';
+
 import { Input, ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
+import useStatusWithMessage from 'applications/stdcm/hooks/useConsistFieldStatus';
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import type { ConsistErrors } from 'applications/stdcm/types';
-import {
-  CONSIST_MAX_SPEED_MIN,
-  CONSIST_TOTAL_LENGTH_MAX,
-  CONSIST_TOTAL_MASS_MAX,
-} from 'applications/stdcm/utils/consistValidation';
+import calculateConsistMaxSpeed from 'applications/stdcm/utils/calculateConsistMaxSpeed';
 import type { LightRollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
@@ -16,9 +15,8 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import useFilterTowedRollingStock from 'modules/towedRollingStock/hooks/useFilterTowedRollingStock';
-import { updateTowedRollingStockID } from 'reducers/osrdconf/stdcmConf';
+import { updateMaxSpeed, updateTowedRollingStockID } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
-import { kgToT, kmhToMs, msToKmh } from 'utils/physics';
 
 import StdcmCard from './StdcmCard';
 import useStdcmConsist from '../../hooks/useStdcmConsist';
@@ -54,6 +52,12 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
   const { rollingStock } = useStoreDataForRollingStockSelector();
   const towedRollingStock = useStdcmTowedRollingStock();
 
+  const [statusMessagesVisible, setStatusMessagesVisible] = useState({
+    mass: true,
+    length: true,
+    speed: true,
+  });
+
   const {
     totalMass,
     onTotalMassChange,
@@ -62,7 +66,23 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
     maxSpeed,
     onMaxSpeedChange,
     prefillConsist,
+    statusWithMessage,
+    setMaxSpeedChanged,
   } = useStdcmConsist();
+
+  const createFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
+    useStatusWithMessage(
+      field,
+      statusWithMessage,
+      consistErrors,
+      statusMessagesVisible,
+      rollingStock,
+      towedRollingStock
+    );
+
+  const massFieldStatus = createFieldStatus('totalMass');
+  const lengthFieldStatus = createFieldStatus('totalLength');
+  const speedFieldStatus = createFieldStatus('maxSpeed');
 
   const { filteredRollingStockList: rollingStocks } = useFilterRollingStock({ isStdcm: true });
 
@@ -86,11 +106,21 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
   const handleRollingStockSelect = (option?: LightRollingStockWithLiveries) => {
     prefillConsist(option, towedRollingStock, speedLimitByTag);
     dispatch(updateRollingStockID(option?.id));
+    setStatusMessagesVisible({
+      mass: true,
+      length: true,
+      speed: true,
+    });
   };
 
   const onSpeedLimitByTagChange = (newTag: string | null) => {
-    prefillConsist(rollingStock, towedRollingStock, newTag);
+    dispatch(updateMaxSpeed(calculateConsistMaxSpeed(rollingStock, towedRollingStock, newTag)));
     dispatchUpdateSpeedLimitByTag(newTag);
+    setMaxSpeedChanged(false);
+  };
+
+  const handleCloseStatusMessage = (key: 'mass' | 'length' | 'speed') => {
+    setStatusMessagesVisible((prevState) => ({ ...prevState, [key]: false }));
   };
 
   return (
@@ -137,20 +167,8 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
           value={totalMass ?? ''}
           onChange={onTotalMassChange}
           disabled={disabled}
-          statusWithMessage={
-            consistErrors?.totalMass
-              ? {
-                  status: 'error',
-                  tooltip: 'left',
-                  message: t(consistErrors.totalMass, {
-                    low: Math.ceil(
-                      kgToT((rollingStock?.mass ?? 0) + (towedRollingStock?.mass ?? 0))
-                    ),
-                    high: CONSIST_TOTAL_MASS_MAX,
-                  }),
-                }
-              : undefined
-          }
+          statusWithMessage={massFieldStatus}
+          onCloseStatusMessage={() => handleCloseStatusMessage('mass')}
         />
         <Input
           id="length"
@@ -161,18 +179,8 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
           value={totalLength ?? ''}
           onChange={onTotalLengthChange}
           disabled={disabled}
-          statusWithMessage={
-            consistErrors?.totalLength
-              ? {
-                  status: 'error',
-                  tooltip: 'left',
-                  message: t(consistErrors.totalLength, {
-                    low: Math.ceil((rollingStock?.length ?? 0) + (towedRollingStock?.length ?? 0)),
-                    high: CONSIST_TOTAL_LENGTH_MAX,
-                  }),
-                }
-              : undefined
-          }
+          statusWithMessage={lengthFieldStatus}
+          onCloseStatusMessage={() => handleCloseStatusMessage('length')}
         />
       </div>
       <div className="stdcm-consist__properties">
@@ -192,20 +200,8 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
           value={maxSpeed ?? ''}
           onChange={onMaxSpeedChange}
           disabled={disabled}
-          statusWithMessage={
-            consistErrors?.maxSpeed
-              ? {
-                  status: 'error',
-                  tooltip: 'left',
-                  message: t(consistErrors.maxSpeed, {
-                    low: CONSIST_MAX_SPEED_MIN,
-                    high: Math.floor(
-                      msToKmh(Math.min(rollingStock?.max_speed ?? kmhToMs(CONSIST_MAX_SPEED_MIN)))
-                    ),
-                  }),
-                }
-              : undefined
-          }
+          statusWithMessage={speedFieldStatus}
+          onCloseStatusMessage={() => handleCloseStatusMessage('speed')}
         />
       </div>
     </StdcmCard>

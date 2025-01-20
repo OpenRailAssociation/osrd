@@ -22,6 +22,11 @@
         "negative": "Must be positive.",
         "range": "The max speed must be between {{low}} and {{high}}km/h"
       }
+    },
+    "info": {
+      "totalMass": "The weight has been updated to reflect the new consist data.",
+      "totalLength": "The length has been updated to reflect the new consist data.",
+      "maxSpeed": "The max speed has been updated to reflect the new consist data."
     }
   },
   "datetimeOutsideWindow": "Date must be between {{low}} and {{high}}",

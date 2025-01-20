@@ -22,6 +22,11 @@
         "negative": "Doit être positif.",
         "range": "La vitesse max. doit être comprise entre {{low}} et {{high}}km/h"
       }
+    },
+    "info": {
+      "totalMass": "Le poids a été mis à jour en fonction des nouvelles données de convoi.",
+      "totalLength": "La longueur a été mise à jour en fonction des nouvelles données de convoi.",
+      "maxSpeed": "La vitesse maximale a été mise à jour en fonction des nouvelles données de convoi."
     }
   },
   "datetimeOutsideWindow": "La date et l'heure doivent être comprises entre le {{low}} et le {{high}}",

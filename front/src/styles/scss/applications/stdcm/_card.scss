@@ -90,7 +90,8 @@
 
     .feed-back {
       padding: 0;
-      &.error {
+      &.error,
+      &.info {
         --field-wrapper-padding-bottom: 5px;
         .status-message-wrapper-tooltip.tooltip-left {
           left: -4px;

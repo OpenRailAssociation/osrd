@@ -1,22 +1,30 @@
 import { useState } from 'react';
 
-import { min } from 'lodash';
+import type { InputProps } from '@osrd-project/ui-core';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type { LightRollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
 import { updateTotalMass, updateTotalLength, updateMaxSpeed } from 'reducers/osrdconf/stdcmConf';
 import { getTotalMass, getTotalLength, getMaxSpeed } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
-import { kgToT, kmhToMs, msToKmh } from 'utils/physics';
+import { kgToT } from 'utils/physics';
 
-import maxSpeedFromSpeedLimitByTag from '../utils/maxSpeedFromSpeedLimitByTag';
+import calculateConsistMaxSpeed from '../utils/calculateConsistMaxSpeed';
 
 const useStdcmConsist = () => {
+  const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
   const [totalMassChanged, setTotalMassChanged] = useState(false);
   const [totalLengthChanged, setTotalLengthChanged] = useState(false);
   const [maxSpeedChanged, setMaxSpeedChanged] = useState(false);
+
+  const [statusWithMessage, setStatusWithMessage] = useState<{
+    totalMass?: InputProps['statusWithMessage'];
+    totalLength?: InputProps['statusWithMessage'];
+    maxSpeed?: InputProps['statusWithMessage'];
+  }>({});
 
   const totalMass = useSelector(getTotalMass);
   const onTotalMassChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,25 +52,41 @@ const useStdcmConsist = () => {
     towed?: TowedRollingStock,
     maxSpeedTag?: string | null
   ) => {
-    if (!totalMassChanged) {
-      const consistMass = Math.ceil(kgToT((rollingStock?.mass ?? 0) + (towed?.mass ?? 0)));
-      dispatch(updateTotalMass(consistMass > 0 ? consistMass : undefined));
-    }
+    const newStatus: typeof statusWithMessage = {};
 
-    if (!totalLengthChanged) {
-      const consistLength = Math.ceil((rollingStock?.length ?? 0) + (towed?.length ?? 0));
-      dispatch(updateTotalLength(consistLength > 0 ? consistLength : undefined));
+    const consistMass = Math.ceil(kgToT((rollingStock?.mass ?? 0) + (towed?.mass ?? 0)));
+    dispatch(updateTotalMass(consistMass > 0 ? consistMass : undefined));
+    if (totalMassChanged && totalMass !== undefined) {
+      newStatus.totalMass = {
+        status: 'info',
+        message: t('consist.info.totalMass'),
+        tooltip: 'left',
+      };
     }
+    setTotalMassChanged(false);
 
-    if (!maxSpeedChanged) {
-      const maxSpeedFromTag = maxSpeedFromSpeedLimitByTag(maxSpeedTag);
-      const consistMaxSpeed = min([
-        rollingStock?.max_speed,
-        towed?.max_speed,
-        maxSpeedFromTag ? kmhToMs(maxSpeedFromTag) : undefined,
-      ]);
-      dispatch(updateMaxSpeed(consistMaxSpeed ? Math.floor(msToKmh(consistMaxSpeed)) : undefined));
+    const consistLength = Math.ceil((rollingStock?.length ?? 0) + (towed?.length ?? 0));
+    dispatch(updateTotalLength(consistLength > 0 ? consistLength : undefined));
+    if (totalLengthChanged && totalLength !== undefined) {
+      newStatus.totalLength = {
+        status: 'info',
+        message: t('consist.info.totalLength'),
+        tooltip: 'left',
+      };
     }
+    setTotalLengthChanged(false);
+
+    dispatch(updateMaxSpeed(calculateConsistMaxSpeed(rollingStock, towed, maxSpeedTag)));
+    if (maxSpeedChanged && maxSpeed !== undefined) {
+      newStatus.maxSpeed = {
+        status: 'info',
+        message: t('consist.info.maxSpeed'),
+        tooltip: 'left',
+      };
+    }
+    setMaxSpeedChanged(false);
+
+    setStatusWithMessage(newStatus);
   };
 
   return {
@@ -73,6 +97,8 @@ const useStdcmConsist = () => {
     maxSpeed,
     onMaxSpeedChange,
     prefillConsist,
+    statusWithMessage,
+    setMaxSpeedChanged,
   };
 };
 
