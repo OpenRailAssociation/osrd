@@ -151,7 +151,7 @@ const Timetable = ({
         />
         <Virtualizer overscan={15}>
           {displayedTrainSchedules.map((train: TrainScheduleWithDetails, index) => (
-            <div key={`timetable-train-card-${train.id}-${train.trainName}`}>
+            <div key={`timetable-train-card-${train.id}`}>
               {showDepartureDates[index] && (
                 <div className="scenario-timetable-departure-date">
                   {currentDepartureDates[index]}
