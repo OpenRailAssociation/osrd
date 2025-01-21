@@ -253,6 +253,12 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }
   }, [selectedProjectionId, projectPathTrainResult.length]);
 
+  // const deferredSpaceTimeChartProps = useConditionallyDeferredValue(
+  //   spaceTimeChartProps,
+  //   !allTrainsProjected
+  // );
+  // const deferredManchetteProps = useConditionallyDeferredValue(manchetteProps, !allTrainsProjected);
+
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [settings, setSettings] = useState({
     showConflicts: false,
@@ -272,58 +278,63 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   });
 
   // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10781
-  const onPanOverloaded: SpaceTimeChartProps['onPan'] = async (payload) => {
-    const { isPanning } = payload;
+  const onPanOverloaded = useCallback<
+    Extract<SpaceTimeChartProps['onPan'], (...args: never) => unknown>
+  >(
+    async (payload) => {
+      const { isPanning } = payload;
 
-    if (!handleTrainDrag) {
-      // if no handleTrainDrag, we pan normally
-      spaceTimeChartProps.onPan(payload);
-      return;
-    }
-
-    // if dragging
-    if (draggingState) {
-      const { draggedTrain, initialDepartureTime } = draggingState;
-      dispatch(updateSelectedTrainId(draggedTrain.id));
-
-      const timeDiff = payload.data.time - payload.initialData.time;
-      const newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
-
-      await handleTrainDrag(draggedTrain.id as TrainScheduleId, newDeparture, {
-        stopPanning: !isPanning,
-      });
-
-      // stop dragging if necessary
-      if (!isPanning) {
-        setDraggingState(undefined);
+      if (!handleTrainDrag) {
+        // if no handleTrainDrag, we pan normally
+        spaceTimeChartProps.onPan(payload);
+        return;
       }
-      return;
-    }
 
-    // if not dragging, we check if we should start dragging
-    if (
-      !zoomMode &&
-      hoveredItem &&
-      (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
-    ) {
-      const hoveredTrainId = getIdFromTrainPath(hoveredItem.element.pathId);
-      const train = projectPathTrainResult.find(
-        (projectedTrain) => projectedTrain.id === hoveredTrainId
-      );
-      if (train) {
-        setTmpSelectedTrain(train.id);
-        setDraggingState({
-          draggedTrain: train,
-          initialDepartureTime: train.departureTime,
+      // if dragging
+      if (draggingState) {
+        const { draggedTrain, initialDepartureTime } = draggingState;
+        dispatch(updateSelectedTrainId(draggedTrain.id));
+
+        const timeDiff = payload.data.time - payload.initialData.time;
+        const newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
+
+        await handleTrainDrag(draggedTrain.id as TrainScheduleId, newDeparture, {
+          stopPanning: !isPanning,
         });
-      } else {
-        console.error(`No train found with id ${hoveredTrainId}`);
-      }
-    }
 
-    // if no hovered train, we pan normally
-    spaceTimeChartProps.onPan(payload);
-  };
+        // stop dragging if necessary
+        if (!isPanning) {
+          setDraggingState(undefined);
+        }
+        return;
+      }
+
+      // if not dragging, we check if we should start dragging
+      if (
+        !zoomMode &&
+        hoveredItem &&
+        (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
+      ) {
+        const hoveredTrainId = getIdFromTrainPath(hoveredItem.element.pathId);
+        const train = projectPathTrainResult.find(
+          (projectedTrain) => projectedTrain.id === hoveredTrainId
+        );
+        if (train) {
+          setTmpSelectedTrain(train.id);
+          setDraggingState({
+            draggedTrain: train,
+            initialDepartureTime: train.departureTime,
+          });
+        } else {
+          console.error(`No train found with id ${hoveredTrainId}`);
+        }
+      }
+
+      // if no hovered train, we pan normally
+      spaceTimeChartProps.onPan(payload);
+    },
+    [handleTrainDrag, spaceTimeChartProps, draggingState, hoveredItem, projectPathTrainResult]
+  );
 
   const waypointMenuData = useWaypointMenu(waypointsPanelData);
 
@@ -350,7 +361,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     [setHoveredItem]
   );
 
-  const handleClick: SpaceTimeChartProps['onClick'] = () => {
+  const handleClick = useCallback<
+    Extract<SpaceTimeChartProps['onClick'], (...args: never) => unknown>
+  >(() => {
     if (
       !draggingState &&
       selectedTrainScheduleId &&
@@ -365,7 +378,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         onTrainClick?.(trainId);
       }
     }
-  };
+  }, []);
 
   return (
     <div

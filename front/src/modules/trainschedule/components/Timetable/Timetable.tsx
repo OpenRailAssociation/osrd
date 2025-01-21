@@ -66,9 +66,9 @@ const Timetable = ({
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const dispatch = useAppDispatch();
 
-  const toggleShowTrainDetails = () => {
+  const toggleShowTrainDetails = useCallback(() => {
     setShowTrainDetails(!showTrainDetails);
-  };
+  }, [setShowTrainDetails, showTrainDetails]);
 
   const removeAndUnselectTrains = useCallback((timetableItemIds: TimetableItemId[]) => {
     removeTimetableItems(timetableItemIds);

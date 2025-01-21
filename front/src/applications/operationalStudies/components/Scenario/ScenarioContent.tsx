@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useDeferredValue } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -59,6 +59,7 @@ const ScenarioContent = ({
     removeTimetableItems,
     updateTrainDepartureTime,
   } = useScenarioData(scenario, infra);
+  const deferredTimetableItemsWithDetails = useDeferredValue(timetableItemsWithDetails);
   const macroEditorState = useRef<MacroEditorState>();
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
@@ -113,6 +114,10 @@ const ScenarioContent = ({
 
   const handleNGELoad = () => setNGEIsLoading(false);
 
+  const handleCollapseTimetable = useCallback(() => {
+    setCollapsedTimetable(true);
+  }, []);
+
   return (
     <main className="mastcontainer mastcontainer-no-mastnav scenario">
       <div className="row no-gutters h-100">
@@ -128,7 +133,7 @@ const ScenarioContent = ({
               scenario={scenario}
               infra={infra}
               infraReloadCount={reloadCount}
-              collapseTimetable={() => setCollapsedTimetable(true)}
+              collapseTimetable={handleCollapseTimetable}
             />
 
             <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
@@ -156,7 +161,7 @@ const ScenarioContent = ({
                   setItemIdToEdit={setItemIdToEdit}
                   itemIdToEdit={itemIdToEdit}
                   timetableItems={timetableItems}
-                  timetableItemsWithDetails={timetableItemsWithDetails}
+                  timetableItemsWithDetails={deferredTimetableItemsWithDetails}
                   dtoImport={dtoImport}
                 />
               </>

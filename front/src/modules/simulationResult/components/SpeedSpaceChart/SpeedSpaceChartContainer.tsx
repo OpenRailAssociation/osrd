@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   SpeedSpaceChart,
@@ -48,33 +48,40 @@ const SpeedSpaceChartContainer = ({
   const root = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
 
-  const speedSpaceChartData = formatData(
-    timetableItemSimulation,
-    rollingStock.length,
-    selectedTimetableItemPowerRestrictions,
-    pathProperties
+  const speedSpaceChartData = useMemo(
+    () =>
+      formatData(
+        timetableItemSimulation,
+        rollingStock.length,
+        selectedTimetableItemPowerRestrictions,
+        pathProperties
+      ),
+    [timetableItemSimulation, rollingStock, selectedTimetableItemPowerRestrictions, pathProperties]
   );
 
-  const translations = {
-    detailsBoxDisplay: {
-      reticleInfos: t('speedSpaceSettings.reticleInfos'),
-      energySource: t('speedSpaceSettings.energySource'),
-      tractionStatus: t('speedSpaceSettings.tractionStatus'),
-      declivities: t('speedSpaceSettings.slopes'),
-      electricalProfiles: t('speedSpaceSettings.electricalProfiles'),
-      powerRestrictions: t('speedSpaceSettings.powerRestrictions'),
-    },
-    layersDisplay: {
-      context: t('speedSpaceSettings.context'),
-      steps: t('speedSpaceSettings.steps'),
-      declivities: t('speedSpaceSettings.slopes'),
-      speedLimits: t('speedSpaceSettings.speedLimits'),
-      temporarySpeedLimits: t('speedSpaceSettings.temporarySpeedLimits'),
-      electricalProfiles: t('speedSpaceSettings.electricalProfiles'),
-      powerRestrictions: t('speedSpaceSettings.powerRestrictions'),
-      speedLimitTags: t('speedSpaceSettings.speedLimitTags'),
-    },
-  };
+  const translations = useMemo(
+    () => ({
+      detailsBoxDisplay: {
+        reticleInfos: t('speedSpaceSettings.reticleInfos'),
+        energySource: t('speedSpaceSettings.energySource'),
+        tractionStatus: t('speedSpaceSettings.tractionStatus'),
+        declivities: t('speedSpaceSettings.slopes'),
+        electricalProfiles: t('speedSpaceSettings.electricalProfiles'),
+        powerRestrictions: t('speedSpaceSettings.powerRestrictions'),
+      },
+      layersDisplay: {
+        context: t('speedSpaceSettings.context'),
+        steps: t('speedSpaceSettings.steps'),
+        declivities: t('speedSpaceSettings.slopes'),
+        speedLimits: t('speedSpaceSettings.speedLimits'),
+        temporarySpeedLimits: t('speedSpaceSettings.temporarySpeedLimits'),
+        electricalProfiles: t('speedSpaceSettings.electricalProfiles'),
+        powerRestrictions: t('speedSpaceSettings.powerRestrictions'),
+        speedLimitTags: t('speedSpaceSettings.speedLimitTags'),
+      },
+    }),
+    [t]
+  );
 
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -95,6 +102,14 @@ const SpeedSpaceChartContainer = ({
     };
   }, []);
 
+  const size = useMemo(
+    () => ({
+      width: '100%',
+      height: `${heightOfSpeedSpaceChartContainer + SPEEDSPACECHART_PADDING_BOTTOM}px`,
+    }),
+    []
+  );
+
   return (
     <Rnd
       default={{
@@ -103,10 +118,7 @@ const SpeedSpaceChartContainer = ({
         width: '100%',
         height: `${heightOfSpeedSpaceChartContainer}px`,
       }}
-      size={{
-        width: '100%',
-        height: `${heightOfSpeedSpaceChartContainer + SPEEDSPACECHART_PADDING_BOTTOM}px`,
-      }}
+      size={size}
       minHeight={SPEEDSPACECHART_MIN_HEIGHT}
       disableDragging
       enableResizing={{
@@ -150,4 +162,4 @@ const SpeedSpaceChartContainer = ({
   );
 };
 
-export default SpeedSpaceChartContainer;
+export default memo(SpeedSpaceChartContainer);

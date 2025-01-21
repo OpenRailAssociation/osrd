@@ -12,6 +12,8 @@ import { NO_BREAK_SPACE } from 'utils/strings';
 import useOutputTableData from './hooks/useOutputTableData';
 import TimesStops from './TimesStops';
 import { TableType, type TimesStopsRow } from './types';
+import { memo, useCallback } from 'react';
+import type { DataSheetGridProps } from 'react-datasheet-grid';
 
 type TimesStopsOutputProps = {
   simulatedTimetableItem?: SimulationResponseSuccess;
@@ -37,22 +39,25 @@ const TimesStopsOutput = ({
     selectedTimetableItem,
     path
   );
+  const cellClassName = useCallback<
+      Extract<DataSheetGridProps['cellClassName'], Function>
+    >(({ rowData: rowData_, columnId }) => {
+    const rowData = rowData_ as TimesStopsRow;
+    const arrivalScheduleNotRespected = rowData.arrival?.time
+      ? rowData.calculatedArrival !== rowData.arrival.time
+      : false;
+    const negativeDiffMargins = Number(rowData.diffMargins?.split(NO_BREAK_SPACE)[0]) < 0;
+    return cx({
+      'warning-schedule': arrivalScheduleNotRespected,
+      'warning-margin': negativeDiffMargins,
+      'secondary-code-column': columnId === 'ch',
+    });
+  }, [])
   return (
     <TimesStops
       rows={enrichedOperationalPoints}
       tableType={TableType.Output}
-      cellClassName={({ rowData: rowData_, columnId }) => {
-        const rowData = rowData_ as TimesStopsRow;
-        const arrivalScheduleNotRespected = rowData.arrival?.time
-          ? rowData.calculatedArrival !== rowData.arrival.time
-          : false;
-        const negativeDiffMargins = Number(rowData.diffMargins?.split(NO_BREAK_SPACE)[0]) < 0;
-        return cx({
-          'warning-schedule': arrivalScheduleNotRespected,
-          'warning-margin': negativeDiffMargins,
-          'secondary-code-column': columnId === 'ch',
-        });
-      }}
+      cellClassName={cellClassName}
       headerRowHeight={40}
       dataIsLoading={
         dataIsLoading || !timetableItemWithDetails || !operationalPoints || !selectedTimetableItem
@@ -61,4 +66,4 @@ const TimesStopsOutput = ({
   );
 };
 
-export default TimesStopsOutput;
+export default memo(TimesStopsOutput);

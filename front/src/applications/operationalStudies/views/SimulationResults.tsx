@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useDeferredValue, useCallback, useTransition } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -23,7 +23,7 @@ import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -58,6 +58,7 @@ const SimulationResults = ({
 }: SimulationResultsProps) => {
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
+  const [_, startTransition] = useTransition();
 
   const timetableId = useSelector(getOperationalStudiesTimetableID);
 
@@ -96,6 +97,18 @@ const SimulationResults = ({
     }
   }, [projectionData]);
 
+  const mapTrainSimulation = useMemo(
+    () =>
+      timetableItemSimulation && selectedTimetableItem
+        ? {
+            ...timetableItemSimulation,
+            timetableItemId: selectedTimetableItem.id,
+            startTime: selectedTimetableItem.start_time,
+          }
+        : null,
+    [timetableItemSimulation, selectedTimetableItem]
+  );
+
   const {
     operationalPoints: projectedOperationalPoints,
     filteredOperationalPoints,
@@ -126,24 +139,40 @@ const SimulationResults = ({
   );
 
   // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10781
-  const handleTrainDrag = async (
-    draggedTrainId: TimetableItemId,
-    newDepartureTime: Date,
-    { stopPanning }: { stopPanning: boolean }
-  ) => {
-    if (stopPanning) {
-      // update in the database
-      dispatch(updateSelectedTrainId(draggedTrainId as TrainScheduleId));
-      updateTrainDepartureTime(draggedTrainId, newDepartureTime);
-    } else {
-      // update in the state
-      setProjectPathTrainResult(
-        projectPathTrainResult.map((train) =>
-          train.id === draggedTrainId ? { ...train, departureTime: newDepartureTime } : train
-        )
-      );
-    }
-  };
+
+  const handleTrainDrag = useCallback(
+    async (
+      draggedTrainId: TimetableItemId,
+      newDepartureTime: Date,
+      { stopPanning }: { stopPanning: boolean }
+    ) => {
+      if (stopPanning) {
+        // update in the database
+        dispatch(updateSelectedTrainId(draggedTrainId as TrainScheduleId));
+        updateTrainDepartureTime(draggedTrainId, newDepartureTime);
+      } else {
+        // update in the state
+        setProjectPathTrainResult(
+          projectPathTrainResult.map((train) =>
+            train.id === draggedTrainId ? { ...train, departureTime: newDepartureTime } : train
+          )
+        );
+      }
+    },
+    []
+  );
+
+  const onTrainClick = useCallback(
+    (trainId: TrainId | undefined) => dispatch(updateSelectedTrainId(trainId)),
+    []
+  );
+
+  const deferredWypointsPanelData = useDeferredValue({
+    filteredWaypoints: filteredOperationalPoints,
+    setFilteredWaypoints: setFilteredOperationalPoints,
+    projectionPath: projectionData.trainSchedule.path,
+    timetableId,
+  });
 
   if ((!selectedTimetableItem || !timetableItemSimulation) && !projectionData) {
     return null;
@@ -207,17 +236,12 @@ const SimulationResults = ({
                           ? selectedTimetableItem.id
                           : undefined
                       }
-                      waypointsPanelData={{
-                        filteredWaypoints: filteredOperationalPoints,
-                        setFilteredWaypoints: setFilteredOperationalPoints,
-                        projectionPath: projectionData.trainSchedule.path,
-                        timetableId,
-                      }}
+                      waypointsPanelData={deferredWypointsPanelData}
                       conflicts={conflictZones}
                       projectionLoaderData={projectionData.projectionLoaderData}
                       height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
                       handleTrainDrag={handleTrainDrag}
-                      onTrainClick={(trainId) => dispatch(updateSelectedTrainId(trainId))}
+                      onTrainClick={onTrainClick}
                       selectedProjectionId={trainIdUsedForProjection}
                     />
                   )}
@@ -228,7 +252,7 @@ const SimulationResults = ({
         </div>
       </ResizableSection>
 
-      {selectedTimetableItem && timetableItemSimulation && (
+      {selectedTimetableItem && timetableItemSimulation && mapTrainSimulation && (
         <>
           {/* SIMULATION : SPEED SPACE CHART */}
           {selectedTimetableItemRollingStock && pathProperties && (
@@ -255,13 +279,10 @@ const SimulationResults = ({
           <div data-testid="simulation-map" className="simulation-map">
             <SimulationResultsMap
               geometry={pathProperties?.geometry}
-              timetableItemSimulation={{
-                ...timetableItemSimulation,
-                timetableItemId: selectedTimetableItem.id,
-                startTime: selectedTimetableItem.start_time,
-              }}
+              timetableItemSimulation={mapTrainSimulation}
               setMapCanvas={setMapCanvas}
               pathfindingResult={path}
+              loading={!projectionData?.projectionLoaderData?.allTrainsProjected}
             />
           </div>
 
