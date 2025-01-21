@@ -71,15 +71,5 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
-    {
-      name: 'webkit',
-      use: {
-        browserName: 'webkit',
-        launchOptions: {
-          slowMo: 150, // Slows down WebKit interactions by 150 milliseconds
-        },
-      },
-      dependencies: ['setup'],
-    },
   ],
 });

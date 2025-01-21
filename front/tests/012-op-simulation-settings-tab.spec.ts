@@ -86,8 +86,8 @@ test.describe('Simulation Settings Tab Verification', () => {
 
   test.beforeEach(
     'Navigate to Times and Stops tab with rolling stock and route set',
-    async ({ page, browserName }) => {
-      stabilityTimeout = browserName === 'webkit' ? 2000 : 1000;
+    async ({ page }) => {
+      stabilityTimeout = 1000;
       const [operationalStudiesPage, routePage, rollingStockPage, homePage] = [
         new OperationalStudiesPage(page),
         new RoutePage(page),

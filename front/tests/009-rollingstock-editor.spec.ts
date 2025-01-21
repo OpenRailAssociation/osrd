@@ -39,8 +39,7 @@ test.describe('Rollingstock editor page tests', () => {
   );
 
   /** *************** Test 1 **************** */
-  test('Create a new rolling stock', async ({ page, browserName }) => {
-    test.slow(browserName === 'webkit', 'This test is slow on Safari');
+  test('Create a new rolling stock', async ({ page }) => {
     const rollingStockEditorPage = new RollingstockEditorPage(page);
 
     // Start the rolling stock creation process
@@ -104,8 +103,7 @@ test.describe('Rollingstock editor page tests', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Duplicate and modify a rolling stock', async ({ page, browserName }) => {
-    test.slow(browserName === 'webkit', 'This test is slow on Safari');
+  test('Duplicate and modify a rolling stock', async ({ page }) => {
     const rollingStockEditorPage = new RollingstockEditorPage(page);
 
     // Select the existing electric rolling stock and duplicate it
