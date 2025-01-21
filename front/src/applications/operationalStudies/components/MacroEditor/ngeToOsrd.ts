@@ -125,11 +125,29 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   return orderedSections;
 };
 
+const DEFAULT_PAYLOAD: Pick<TrainScheduleBase, 'constraint_distribution' | 'rolling_stock_name'> = {
+  constraint_distribution: 'STANDARD',
+  rolling_stock_name: '',
+};
+
+const mapSectionToPathItemId = (trainSchedule: TrainScheduleBase | undefined) => {
+  const sectionToPathItemId = new Map<number, string>();
+
+  if (trainSchedule?.path) {
+    trainSchedule.path.forEach((pathItem, index) => {
+      sectionToPathItemId.set(index, pathItem.id);
+    });
+  }
+
+  return sectionToPathItemId;
+};
+
 const createPathItemFromNode = async (
   node: NodeDto,
   index: number,
   infraId: number,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  sectionToPathItemId: Map<number, string>
 ) => {
   const [trigram, secondaryCode] = node.betriebspunktName.split('/');
   let finalSecondaryCode: string | undefined;
@@ -157,10 +175,11 @@ const createPathItemFromNode = async (
   if (!opFound) opFound = searchResults.find((op) => op.ch === '');
   finalSecondaryCode = opFound?.ch;
 
+  const existingId = sectionToPathItemId.get(index) || `${node.id}-${index}`;
   return {
     trigram,
     secondary_code: finalSecondaryCode,
-    id: `${node.id}-${index}`,
+    id: existingId,
   };
 };
 
@@ -177,26 +196,44 @@ const getTimeLockDate = (
 const formatDateDifferenceFrom = (start: Date, stop: Date) =>
   Duration.subtractDate(stop, start).toISOString();
 
-/**
- * Generate a path from a list of trainrun sections.
- */
-export const generatePath = async (
-  trainrunSections: TrainrunSectionDto[],
-  nodes: NodeDto[],
-  infraId: number,
-  dispatch: AppDispatch
-): Promise<TrainSchedule['path']> => {
-  const pathPromises = trainrunSections.map(async (section, index) => {
+const createTrainSchedulePayload = async ({
+  trainrunSections,
+  nodes,
+  trainrun,
+  infraId,
+  dispatch,
+  labels,
+  oldStartDate,
+  trainSchedule,
+}: {
+  trainrunSections: TrainrunSectionDto[];
+  nodes: NodeDto[];
+  trainrun: TrainrunDto;
+  infraId: number;
+  dispatch: AppDispatch;
+  labels: LabelDto[];
+  oldStartDate: Date;
+  trainSchedule?: TrainScheduleBase;
+}) => {
+  const sectionToPathItemId = mapSectionToPathItemId(trainSchedule);
+  const pathPromise = trainrunSections.map(async (section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
     const targetNode = getNodeById(nodes, section.targetNodeId);
     if (!sourceNode || !targetNode) return [];
-    const originPathItem = await createPathItemFromNode(sourceNode, index, infraId, dispatch);
+    const originPathItem = await createPathItemFromNode(
+      sourceNode,
+      index,
+      infraId,
+      dispatch,
+      sectionToPathItemId
+    );
     if (index === trainrunSections.length - 1) {
       const destinationPathItem = await createPathItemFromNode(
         targetNode,
         index + 1,
         infraId,
-        dispatch
+        dispatch,
+        sectionToPathItemId
       );
       return [originPathItem, destinationPathItem];
     }
@@ -317,6 +354,7 @@ const handleCreateTimetableItem = async (
     path,
     start_time: startDate.toISOString(),
     schedule,
+    margins: trainSchedule?.margins,
   };
   const newTimetableItems = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
@@ -376,59 +414,57 @@ const handleUpdateTimetableItem = async ({
     ...timetableItemBase,
     train_name: trainrun.name,
     labels,
-    path,
-    start_time: startDate.toISOString(),
-    schedule,
-    paced: undefined,
+    oldStartDate: startDate,
+    trainSchedule,
   };
 
-  let updatedTimetableItem: TimetableItemWithTimetableId;
-  if (trainrun.frequencyId === TRAIN_SCHEDULE_FREQUENCY_ID) {
-    updatedTimetableItem = await storeTrainSchedule(
-      timetableItemId,
-      timetableItemForUpdate,
-      timetableId,
-      dispatch,
-      addUpsertedTimetableItems,
-      addDeletedTimetableItemIds
-    );
-  } else {
-    const paced = {
-      interval: new Duration({
-        minutes: getFrequencyFromFrequencyId(state, trainrun.frequencyId).frequency,
-      }).toISOString(),
-      time_window: isPacedTrainResponseWithPacedTrainId(timetableItem)
-        ? timetableItem.paced.time_window
-        : DEFAULT_TIME_WINDOW.toISOString(),
-    };
-    updatedTimetableItem = await storePacedTrain(
-      timetableItemId,
-      { ...timetableItemForUpdate, paced },
-      timetableId,
-      dispatch,
-      addUpsertedTimetableItems,
-      addDeletedTimetableItemIds
-    );
-  }
-  state.timetableItemIdByNgeId.set(trainrun.id, updatedTimetableItem.id);
-};
+  const existingPathIds = new Set(trainSchedulePayload.path.map((p) => p.id));
+  const missingWaypoints = trainSchedule.path.filter((p) => !existingPathIds.has(p.id));
 
-const handleDeleteTimetableItem = async (
-  trainrunId: number,
-  state: MacroEditorState,
-  dispatch: AppDispatch,
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
-) => {
-  const timetableItemId = state.timetableItemIdByNgeId.get(trainrunId)!;
-  const editoastTrainId = isPacedTrain(timetableItemId)
-    ? formatPacedTrainIdToEditoastTrainId(timetableItemId)
-    : formatTrainScheduleIdToEditoastTrainId(timetableItemId);
-  const endpoint = isPacedTrain(timetableItemId)
-    ? osrdEditoastApi.endpoints.deletePacedTrain
-    : osrdEditoastApi.endpoints.deleteTrainSchedule;
-  await dispatch(
-    endpoint.initiate({
-      body: { ids: [editoastTrainId] },
+  if (missingWaypoints.length) {
+    console.warn('Adding missing waypoints to trainSchedulePayload:', missingWaypoints);
+
+    const trainSchedulePathOrder = trainSchedule.path.map((p) => p.id);
+
+    const orderedPath: any = [];
+
+    trainSchedulePathOrder.forEach((id) => {
+      const existingItem = trainSchedulePayload.path.find((p) => p.id === id);
+      const missingItem = missingWaypoints.find((p) => p.id === id);
+
+      if (existingItem) {
+        orderedPath.push(existingItem);
+      } else if (missingItem) {
+        orderedPath.push({
+          id: missingItem.id,
+          uic: 'uic' in missingItem && missingItem.uic,
+          secondary_code: 'secondary_code' in missingItem ? missingItem.secondary_code : undefined,
+        });
+      }
+    });
+
+    trainSchedulePayload.path = orderedPath;
+  }
+
+  if (trainSchedule.margins?.boundaries.length) {
+    const updatedMargins = { ...trainSchedule.margins };
+
+    updatedMargins.boundaries = updatedMargins.boundaries.map((boundary) =>
+      existingPathIds.has(boundary)
+        ? boundary
+        : missingWaypoints.find((wp) => wp.id === boundary)?.id || boundary
+    );
+
+    trainSchedulePayload.margins = updatedMargins;
+  }
+
+  const newTrainSchedule = await dispatch(
+    osrdEditoastApi.endpoints.putTrainScheduleById.initiate({
+      id: editoastTrainScheduleIdToUpdate,
+      trainScheduleForm: {
+        ...trainSchedule,
+        ...trainSchedulePayload,
+      },
     })
   ).unwrap();
   addDeletedTimetableItemIds([timetableItemId]);
