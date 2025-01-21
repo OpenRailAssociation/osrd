@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { EyeClosed } from '@osrd-project/ui-icons';
 import { omit } from 'lodash';
@@ -42,41 +42,49 @@ const useWaypointMenu = (waypointsPanelData?: WaypointsPanelData) => {
     };
   }, [activeWaypointId]);
 
-  const menuItems: OSRDMenuItem[] = [
-    {
-      title: t('waypointMenu.hide'),
-      icon: <EyeClosed />,
-      disabled: filteredWaypoints ? filteredWaypoints.length <= 2 : false,
-      disabledMessage: t('waypointsPanel.warning'),
-      onClick: () => {
-        closeMenu();
-        setFilteredWaypoints?.((prevFilteredWaypoints) => {
-          const newFilteredWaypoints = prevFilteredWaypoints.filter(
-            (waypoint) => waypoint.id !== activeWaypointId
-          );
+  const menuItems: OSRDMenuItem[] = useMemo(
+    () => [
+      {
+        title: t('waypointMenu.hide'),
+        icon: <EyeClosed />,
+        disabled: filteredWaypoints ? filteredWaypoints.length <= 2 : false,
+        disabledMessage: t('waypointsPanel.warning'),
+        onClick: () => {
+          closeMenu();
+          setFilteredWaypoints?.((prevFilteredWaypoints) => {
+            const newFilteredWaypoints = prevFilteredWaypoints.filter(
+              (waypoint) => waypoint.id !== activeWaypointId
+            );
 
-          // We need to remove the id because it can change for waypoints added by map click
-          const simplifiedPath = projectionPath?.map((waypoint) =>
-            omit(waypoint, ['id', 'deleted'])
-          );
+            // We need to remove the id because it can change for waypoints added by map click
+            const simplifiedPath = projectionPath?.map((waypoint) =>
+              omit(waypoint, ['id', 'deleted'])
+            );
 
-          // TODO : when switching to the manchette back-end manager, remove all logic using
-          // cleanScenarioLocalStorage from projet/study/scenario components (single/multi select)
-          localStorage.setItem(
-            `${timetableId}-${JSON.stringify(simplifiedPath)}`,
-            JSON.stringify(newFilteredWaypoints)
-          );
-          return newFilteredWaypoints;
-        });
+            // TODO : when switching to the manchette back-end manager, remove all logic using
+            // cleanScenarioLocalStorage from projet/study/scenario components (single/multi select)
+            localStorage.setItem(
+              `${timetableId}-${JSON.stringify(simplifiedPath)}`,
+              JSON.stringify(newFilteredWaypoints)
+            );
+            return newFilteredWaypoints;
+          });
+        },
       },
-    },
-  ];
+    ],
+    []
+  );
 
-  const handleWaypointClick = (id: string) => {
+  const handleWaypointClick = useCallback((id: string) => {
     setActiveWaypointId(id);
-  };
+  }, []);
 
-  return { menuRef, menuItems, activeWaypointId, handleWaypointClick };
+  const waypointMenu = useMemo(
+    () => ({ menuRef, menuItems, activeWaypointId, handleWaypointClick }),
+    [menuRef, menuItems, activeWaypointId, handleWaypointClick]
+  );
+
+  return waypointMenu;
 };
 
 export default useWaypointMenu;

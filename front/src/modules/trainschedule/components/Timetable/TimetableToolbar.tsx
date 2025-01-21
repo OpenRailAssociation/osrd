@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, memo, useState } from 'react';
 
 import { Button, Checkbox } from '@osrd-project/ui-core';
 import { Alert, Filter } from '@osrd-project/ui-icons';
@@ -388,4 +388,4 @@ const TimetableToolbar = ({
   );
 };
 
-export default TimetableToolbar;
+export default memo(TimetableToolbar);
