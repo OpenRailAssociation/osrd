@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::iter;
 use std::sync::Arc;
 
 use axum::extract::Json;
@@ -85,6 +86,8 @@ editoast_common::schemas! {
     ElectricalProfileSetIdQueryParam,
     projection::schemas(),
 }
+
+pub const TRAIN_SIZE_BATCH: usize = 500;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
@@ -383,28 +386,45 @@ pub async fn train_simulation_batch(
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
     // Compute path
+
+    let train_batches = train_schedules.chunks(TRAIN_SIZE_BATCH);
+
     let rolling_stocks_ids = train_schedules
         .iter()
         .map::<String, _>(|t| t.rolling_stock_name.clone());
 
-    let (rolling_stocks, _): (Vec<_>, HashSet<String>) =
-        RollingStockModel::retrieve_batch(conn, rolling_stocks_ids).await?;
+    let rolling_stocks: Vec<_> =
+        RollingStockModel::retrieve_batch_unchecked(&mut conn.clone(), rolling_stocks_ids).await?;
 
     let consists: Vec<PhysicsConsistParameters> = rolling_stocks
         .into_iter()
         .map(|rs| PhysicsConsistParameters::from_traction_engine(rs.into()))
         .collect();
 
-    consist_train_simulation_batch(
-        conn,
-        valkey_client,
-        core.clone(),
-        infra,
-        train_schedules,
-        &consists,
-        electrical_profile_set_id,
-    )
-    .await
+    let consists_ref = &consists;
+    let futures: Vec<_> = train_batches
+        .zip(iter::repeat(conn.clone()))
+        .map(|(chunk, conn)| {
+            let valkey_client = valkey_client.clone();
+            let core = core.clone();
+            async move {
+                consist_train_simulation_batch(
+                    &mut conn.clone(),
+                    valkey_client.clone(),
+                    core.clone(),
+                    infra,
+                    chunk,
+                    consists_ref,
+                    electrical_profile_set_id,
+                )
+                .await
+            }
+        })
+        .collect();
+
+    let results = futures::future::try_join_all(futures).await.unwrap();
+    let results = results.into_iter().flatten().collect();
+    Ok(results)
 }
 
 pub async fn consist_train_simulation_batch(
