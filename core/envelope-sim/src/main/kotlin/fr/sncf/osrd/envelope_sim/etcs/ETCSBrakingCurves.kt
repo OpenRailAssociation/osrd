@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim.etcs
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope.EnvelopeDebug.PlotBuilder
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePart
@@ -160,7 +161,7 @@ fun addBrakingCurvesAtLOAs(
         assert(ebiCurve.endSpeed == targetSpeed)
 
         val fullIndicationCurve =
-            computeIndicationBrakingCurveFromRef(context, ebiCurve, BrakingCurveType.EBI, guiCurve)
+            computeIndicationBrakingCurveFromRef(context, ebiCurve, BrakingCurveType.EBI, guiCurve, ebdCurve)
         assert(fullIndicationCurve.endPos <= targetPosition)
         assert(fullIndicationCurve.endSpeed == targetSpeed)
 
@@ -309,7 +310,8 @@ private fun computeIndicationBrakingCurveFromRef(
     context: EnvelopeSimContext,
     refBrakingCurve: EnvelopePart,
     refBrakingCurveType: BrakingCurveType,
-    guiCurve: EnvelopePart
+    guiCurve: EnvelopePart,
+    ebdCurve: EnvelopePart? = null,
 ): EnvelopePart {
     val rollingStock = context.rollingStock
     val tBs =
@@ -323,7 +325,11 @@ private fun computeIndicationBrakingCurveFromRef(
         }
 
     val pointCount = refBrakingCurve.pointCount()
-    val newPositions = DoubleArray(pointCount)
+    val sbiPositions = DoubleArray(pointCount)
+    val warningPositions = DoubleArray(pointCount)
+    val psPositions = DoubleArray(pointCount)
+    val adjustedPsPositions = DoubleArray(pointCount)
+    val indicationPositions = DoubleArray(pointCount)
     val newSpeeds = DoubleArray(pointCount)
     for (i in 0 until refBrakingCurve.pointCount()) {
         val speed = refBrakingCurve.getPointSpeed(i)
@@ -332,14 +338,26 @@ private fun computeIndicationBrakingCurveFromRef(
         val adjustedPermittedSpeedPosition =
             getAdjustedPermittedSpeedPosition(permittedSpeedPosition, speed, guiCurve)
         val indicationPosition = getIndicationPosition(adjustedPermittedSpeedPosition, speed, tBs)
-        newPositions[i] = indicationPosition
+        sbiPositions[i] = sbiPosition
+        warningPositions[i] = getWarningPosition(sbiPosition, speed)
+        psPositions[i] = permittedSpeedPosition
+        adjustedPsPositions[i] = adjustedPermittedSpeedPosition
+        indicationPositions[i] = indicationPosition
         newSpeeds[i] = speed
     }
 
-    val brakingCurve =
-        EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), newPositions, newSpeeds)
+    val sbiBrakingCurve =
+        EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), sbiPositions, newSpeeds)
+    val warningBrakingCurve =
+        EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), warningPositions, newSpeeds)
+    val psBrakingCurve =
+        EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), psPositions, newSpeeds)
+    val adjustedPsBrakingCurve =
+        EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), adjustedPsPositions, newSpeeds)
+    val indicationBrakingCurve =
+        EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), indicationPositions, newSpeeds)
 
-    return brakingCurve
+    return indicationBrakingCurve
 }
 
 /**
@@ -441,6 +459,11 @@ private fun maxBecDeltaSpeed(): Double {
 /** See Subset 026: §3.13.9.3.3.1 and §3.13.9.3.3.2. */
 private fun getSbiPosition(ebiOrSbdPosition: Double, speed: Double, tbs: Double): Double {
     return getPreviousPosition(ebiOrSbdPosition, speed, tbs)
+}
+
+/** See Subset 026: §3.13.9.3.4.1. */
+private fun getWarningPosition(sbiPosition: Double, speed: Double): Double {
+    return getPreviousPosition(sbiPosition, speed, tWarning)
 }
 
 /** See Subset 026: §3.13.9.3.5.1. */
