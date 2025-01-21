@@ -266,13 +266,13 @@ const usePathfinding = (
     if (isInitialized && infra?.state === 'CACHED') {
       launchPathfinding(pathSteps);
     }
-  }, [infra?.state]);
+  }, [infra?.state, isInitialized]);
 
   useEffect(() => {
     if (isInitialized) {
       launchPathfinding(pathSteps);
     }
-  }, [rollingStock]);
+  }, [rollingStock, isInitialized]);
 
   useEffect(() => {
     setIsInitialized(true);
