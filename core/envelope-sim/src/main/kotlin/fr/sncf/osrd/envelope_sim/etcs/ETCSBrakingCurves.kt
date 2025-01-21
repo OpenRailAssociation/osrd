@@ -357,6 +357,17 @@ private fun computeIndicationBrakingCurveFromRef(
     val indicationBrakingCurve =
         EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), indicationPositions, newSpeeds)
 
+    val plotBuilder = PlotBuilder()
+    val refBrakingCurveName = if (refBrakingCurveType == BrakingCurveType.EBI) "EBI" else "SBD"
+    if (ebdCurve != null) plotBuilder.add(Envelope.make(ebdCurve), "EBD")
+    plotBuilder.add(Envelope.make(refBrakingCurve), refBrakingCurveName)
+    plotBuilder.add(Envelope.make(sbiBrakingCurve), "SBI")
+    plotBuilder.add(Envelope.make(warningBrakingCurve), "Warning")
+    plotBuilder.add(Envelope.make(guiCurve), "GUI")
+    plotBuilder.add(Envelope.make(psBrakingCurve), "PS")
+    plotBuilder.add(Envelope.make(adjustedPsBrakingCurve), "AdjustedPS")
+    plotBuilder.add(Envelope.make(indicationBrakingCurve), "IND")
+
     return indicationBrakingCurve
 }
 
