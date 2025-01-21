@@ -208,6 +208,7 @@ class OperationalStudiesTimetablePage extends CommonPage {
         this.timetableTrains.nth(currentTrainIndex)
       );
       await trainButton.click({ position: { x: 5, y: 5 } });
+      await this.waitForSimulationResults();
       await this.verifySimulationResultsVisibility();
     }
   }
