@@ -72,23 +72,12 @@ const usePathfinding = (
     steps: PathStep[],
     invalidPathItems: Extract<PathfindingInputError, { error_type: 'invalid_path_items' }>['items']
   ) => {
-    // TODO: we currently only handle invalid pathSteps with trigram. We will have to do it for trackOffset, opId and uic too.
-    const invalidTrigrams = invalidPathItems
-      .map((item) => {
-        if ('trigram' in item.path_item) {
-          return item.path_item.trigram;
-        }
-        return null;
-      })
-      .filter((trigram): trigram is string => trigram !== null);
-    if (invalidTrigrams.length > 0) {
-      const updatedPathSteps = steps.map((step) => {
-        if (step && 'trigram' in step && invalidTrigrams.includes(step.trigram)) {
-          return { ...step, isInvalid: true };
-        }
-        return step;
-      });
+    const updatedPathSteps = steps.map((step, index) => ({
+      ...step,
+      isInvalid: invalidPathItems.some((item) => item.index === index),
+    }));
 
+    if (invalidPathItems.length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       launchPathfinding(updatedPathSteps);
     } else {

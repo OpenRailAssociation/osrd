@@ -10,6 +10,7 @@ import {
   type TrainScheduleResult,
   type PathfindingResult,
   type SearchResultItemOperationalPoint,
+  type PathfindingInputError,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
@@ -74,8 +75,13 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
   useEffect(() => {
-    const fetchPathStepsCoordinates = async (trainSchedule: TrainScheduleResult) => {
-      // get track sections
+    const fetchPathStepsCoordinates = async (
+      trainSchedule: TrainScheduleResult,
+      invalidPathItems: Extract<
+        PathfindingInputError,
+        { error_type: 'invalid_path_items' }
+      >['items'] = []
+    ) => {
       const trackSectionIds: string[] = [];
       trainSchedule.path.forEach((step) => {
         if ('track' in step) {
@@ -97,6 +103,8 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
       const pathStepsWithCoordinates = trainSchedule.path.map((step, index) => {
         let coordinates: Position | undefined;
         let name: string | undefined;
+        let uic: number | undefined;
+        let trigram: string | undefined;
 
         if ('track' in step) {
           const track = tracks[step.track];
@@ -107,19 +115,22 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
           let op: SearchResultItemOperationalPoint | undefined;
           if ('uic' in step) {
             op = ops.find((o) => o.uic === step.uic);
+            uic = step.uic;
           } else if ('trigram' in step) {
             op = ops.find((o) => o.trigram === step.trigram);
-          } else {
+            trigram = step.trigram;
+          } else if ('operational_point' in step) {
             op = ops.find((o) => o.obj_id === step.operational_point);
           }
           coordinates = op?.geographic.coordinates;
-          name = `${op?.name}`;
+          name = `${op?.name || uic?.toString() || trigram}`;
         }
 
         return {
           ...computeBasePathStep(trainSchedule, index),
           coordinates,
           name,
+          isInvalid: invalidPathItems.some((item) => item.index === index),
         };
       });
 
@@ -153,7 +164,13 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
       };
       const pathfindingResult = await postPathfindingBlocks(params).unwrap();
       if (pathfindingResult.status !== 'success') {
-        fetchPathStepsCoordinates(trainSchedule);
+        const invalidPathItems =
+          pathfindingResult.failed_status === 'pathfinding_input_error' &&
+          pathfindingResult.error_type === 'invalid_path_items'
+            ? pathfindingResult.items
+            : [];
+
+        fetchPathStepsCoordinates(trainSchedule, invalidPathItems);
         return null;
       }
       const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
