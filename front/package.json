@@ -96,8 +96,7 @@
     "remark-gfm": "^4.0.0",
     "reselect": "^5.1.0",
     "uuid": "^11.0.5",
-    "viewport-mercator-project": "^7.0.4",
-    "virtua": "^0.39.3"
+    "viewport-mercator-project": "^7.0.4"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",
