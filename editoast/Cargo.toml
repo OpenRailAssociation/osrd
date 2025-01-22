@@ -104,7 +104,7 @@ axum = { version = "0.8.1", default-features = false, features = [
 axum-extra = { version = "0.10.0", default-features = false, features = [
   "typed-header",
 ] }
-axum-test = { version = "17.0.2", default-features = false }
+axum-test = { version = "17.1.0", default-features = false }
 axum-tracing-opentelemetry = { version = "0.25.0", default-features = false, features = [
   "tracing_level_info",
 ] }
