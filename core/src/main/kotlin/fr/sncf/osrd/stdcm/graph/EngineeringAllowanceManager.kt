@@ -19,6 +19,7 @@ import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.SelfTypeHolder
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumDistances
 import java.util.*
@@ -31,26 +32,27 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
 
     /**
      * Check whether an engineering allowance can be used in this context to be at the expected
-     * start time at the node location.
+     * start time at the node location. Returns the allowance length if it's possible, or null if it
+     * isn't.
      */
-    fun checkEngineeringAllowance(prevNode: STDCMNode, expectedStartTime: Double): Boolean {
+    fun checkEngineeringAllowance(prevNode: STDCMNode, expectedStartTime: Double): Distance? {
         if (prevNode.previousEdge == null)
-            return false // The conflict happens on the first block, we can't add delay here
+            return null // The conflict happens on the first block, we can't add delay here
         val affectedEdges =
             findAffectedEdges(
                 prevNode.previousEdge,
                 expectedStartTime - prevNode.timeData.earliestReachableTime
             )
-        if (affectedEdges.isEmpty()) return false // No space to try the allowance
+        if (affectedEdges.isEmpty()) return null // No space to try the allowance
 
         val length = affectedEdges.map { it.length.distance }.sumDistances()
         if (length > 50_000.meters) {
             // If the allowance area is large enough to reasonably stop and accelerate again, we
             // just accept the solution. This avoids computation on very large paths
             // (which can be quite time expensive)
-            return true
+            return length
         }
-        if (length == 0.meters) return false
+        if (length == 0.meters) return null
 
         // We try to run a simulation with the slowest running time while keeping the end time
         // identical.
@@ -65,7 +67,7 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
             firstNode.timeData.earliestReachableTime +
                 firstNode.timeData.maxDepartureDelayingWithoutConflict +
                 slowestRunningTime
-        return latestArrivalTime >= expectedStartTime
+        return if (latestArrivalTime >= expectedStartTime) length else null
     }
 
     /**

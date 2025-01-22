@@ -196,20 +196,30 @@ private fun initFixedPoints(
         res.add(makeFixedPoint(res, edges, length, length, updatedTimeData, 0.0))
 
     // Add points at the end of each engineering allowance
+    fun addFixedPointAvoidingDuplicates(offset: Distance) {
+        if (res.none { it.offset.distance == offset }) {
+            res.add(
+                makeFixedPoint(
+                    res,
+                    edges,
+                    Offset(offset),
+                    length,
+                    updatedTimeData,
+                )
+            )
+        }
+    }
     var prevEdgeLength = 0.meters
     for (edge in edges) {
-        if (edge.afterEngineeringAllowance) {
-            if (res.none { it.offset.distance == prevEdgeLength }) {
-                res.add(
-                    makeFixedPoint(
-                        res,
-                        edges,
-                        Offset(prevEdgeLength),
-                        length,
-                        updatedTimeData,
-                    )
-                )
-            }
+        val engineeringAllowanceLength = edge.engineeringAllowanceLength
+        if (engineeringAllowanceLength != null) {
+            val engineeringAllowanceStart = prevEdgeLength - engineeringAllowanceLength
+            // Edges can have overlapping engineering allowance, only the last one is relevant.
+            // So we remove any point in the current allowance range.
+            res.removeIf { it.offset.distance > engineeringAllowanceStart && it.stopTime != null }
+
+            addFixedPointAvoidingDuplicates(prevEdgeLength)
+            addFixedPointAvoidingDuplicates(engineeringAllowanceStart)
         }
         prevEdgeLength += edge.length.distance
     }

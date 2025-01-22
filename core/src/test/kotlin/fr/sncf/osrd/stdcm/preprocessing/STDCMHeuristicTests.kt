@@ -253,7 +253,7 @@ class STDCMHeuristicTests {
                 0.0,
                 Length(0.meters),
                 0.0,
-                false,
+                null,
             )
         return heuristic.invoke(defaultEdge, nodeOffsetOnEdge?.let { Offset(it) }, nbPassedSteps)
     }

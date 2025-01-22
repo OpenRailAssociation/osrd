@@ -4,6 +4,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -34,9 +35,9 @@ data class STDCMEdge(
     // How long it takes to go from the beginning to the end of the block, taking the
     // standard allowance into account
     val totalTime: Double,
-    // Set to true if a conflict in the current edge required an engineering allowance.
-    // Used for initial placement of fixed time points in post-processing.
-    val afterEngineeringAllowance: Boolean,
+    // If this edges starts after the end of an engineering allowance, this contains its length, or
+    // null otherwise. Used for initial placement of fixed time points in postprocessing.
+    val engineeringAllowanceLength: Distance?,
 ) {
     val block = infraExplorer.getCurrentBlock()
 
