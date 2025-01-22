@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { min } from 'lodash';
 import { useSelector } from 'react-redux';
@@ -44,6 +44,18 @@ const useStdcmConsist = () => {
     setMaxSpeedChanged(true);
     dispatch(updateMaxSpeed(totalMaxSpeed === 0 ? undefined : totalMaxSpeed));
   };
+
+  useEffect(() => {
+    if (!totalMass) {
+      setTotalMassChanged(false);
+    }
+    if (!totalLength) {
+      setTotalLengthChanged(false);
+    }
+    if (!maxSpeed) {
+      setMaxSpeedChanged(false);
+    }
+  }, [maxSpeed, totalLength, totalMass]);
 
   const prefillConsist = (
     rollingStock?: LightRollingStockWithLiveries,
