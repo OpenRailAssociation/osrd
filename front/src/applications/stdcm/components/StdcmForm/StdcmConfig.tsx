@@ -127,8 +127,7 @@ const StdcmConfig = ({
   const markersInfo = useMemo(() => extractMarkersInfo(pathSteps), [pathSteps]);
 
   const startSimulation = () => {
-    const isPathfindingFailed = !!pathfinding && pathfinding.status !== 'success';
-    const formErrorsStatus = checkStdcmConfigErrors(isPathfindingFailed, pathSteps, t);
+    const formErrorsStatus = checkStdcmConfigErrors(pathSteps, t, pathfinding?.status);
     if (pathfinding?.status === 'success' && !formErrorsStatus) {
       launchStdcmRequest();
     } else {
@@ -157,14 +156,8 @@ const StdcmConfig = ({
   };
 
   useEffect(() => {
-    if (pathfinding) {
-      const formErrorsStatus = checkStdcmConfigErrors(
-        pathfinding.status !== 'success',
-        pathSteps,
-        t
-      );
-      setFormErrors(formErrorsStatus);
-    }
+    const formErrorsStatus = checkStdcmConfigErrors(pathSteps, t, pathfinding?.status);
+    setFormErrors(formErrorsStatus);
   }, [pathfinding, pathSteps, t]);
 
   useEffect(() => {

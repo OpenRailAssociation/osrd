@@ -6,9 +6,9 @@ import { dateToHHMMSS } from 'utils/date';
 import { StdcmConfigErrorTypes, ArrivalTimeTypes, type StdcmConfigErrors } from '../types';
 
 const checkStdcmConfigErrors = (
-  pathfindingStateError: boolean,
   pathSteps: StdcmPathStep[],
-  t: TFunction
+  t: TFunction,
+  pathfindingStatus?: 'success' | 'failure'
 ): StdcmConfigErrors | undefined => {
   if (pathSteps.some((step) => !step.location)) {
     return { errorType: StdcmConfigErrorTypes.MISSING_LOCATION };
@@ -30,7 +30,7 @@ const checkStdcmConfigErrors = (
     return { errorType: StdcmConfigErrorTypes.ZERO_LENGTH_PATH };
   }
 
-  if (pathfindingStateError) {
+  if (pathfindingStatus && pathfindingStatus === 'failure') {
     return { errorType: StdcmConfigErrorTypes.PATHFINDING_FAILED };
   }
 
