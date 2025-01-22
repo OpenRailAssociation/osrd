@@ -1,8 +1,9 @@
+name: osrd
+
 volumes:
   psql_data:
   valkey_data:
   rabbitmq_data:
-
 
 services:
   postgres:
