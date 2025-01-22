@@ -9,6 +9,8 @@ import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration.between
 import java.time.ZonedDateTime
 import org.slf4j.Logger
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory
 
 val requirementsParserLogger: Logger = LoggerFactory.getLogger("RequirementsParser")
 
+@WithSpan(value = "Parsing train requirements", kind = SpanKind.SERVER)
 fun parseTrainsRequirements(
     trainsRequirements: Map<Long, TrainRequirementsRequest>,
     startTime: ZonedDateTime
@@ -121,6 +124,7 @@ fun convertWorkScheduleMap(
  * Convert work schedules into timetable spacing requirements, without taking work schedule id into
  * account.
  */
+@WithSpan(value = "Parsing work schedules", kind = SpanKind.SERVER)
 fun convertWorkScheduleCollection(
     rawInfra: RawSignalingInfra,
     workSchedules: Collection<WorkSchedule>,

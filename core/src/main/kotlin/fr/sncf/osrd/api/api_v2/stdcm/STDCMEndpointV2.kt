@@ -43,6 +43,8 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.*
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.io.File
 import java.time.Duration.between
 import java.time.Duration.ofMillis
@@ -62,10 +64,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
     @Throws(OSRDError::class)
     override fun act(req: Request): Response {
         // Parse request input
-        val body = RqPrint(req).printBody()
-        val request =
-            stdcmRequestAdapter.fromJson(body)
-                ?: return RsWithStatus(RsText("missing request body"), 400)
+        val request = readRequest(req) ?: return RsWithStatus(RsText("missing request body"), 400)
 
         val logRequest = System.getenv("LOG_STDCM_REQUESTS")
         if (logRequest?.equals("true", ignoreCase = true) == true) {
@@ -79,7 +78,14 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
         return run(request)
     }
 
+    @WithSpan(value = "Reading request content", kind = SpanKind.SERVER)
+    private fun readRequest(req: Request): STDCMRequestV2? {
+        val body = RqPrint(req).printBody()
+        return stdcmRequestAdapter.fromJson(body)
+    }
+
     /** Process the given parsed request */
+    @WithSpan(value = "Processing STDCM request", kind = SpanKind.SERVER)
     fun run(request: STDCMRequestV2): Response {
         val recorder = DiagnosticRecorderImpl(false)
         logger.info(
@@ -227,6 +233,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
     }
 }
 
+@WithSpan(value = "Parsing speed limits", kind = SpanKind.SERVER)
 fun buildTemporarySpeedLimitManager(
     infra: FullInfra,
     speedLimits: Collection<STDCMTemporarySpeedLimit>
