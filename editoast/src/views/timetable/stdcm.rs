@@ -583,6 +583,7 @@ mod tests {
     use uuid::Uuid;
 
     use crate::core::conflict_detection::Conflict;
+    use crate::core::conflict_detection::ConflictDetectionResponse;
     use crate::core::conflict_detection::ConflictType;
     use crate::core::mocking::MockingClient;
     use crate::core::simulation::CompleteReportTrain;
@@ -595,6 +596,9 @@ mod tests {
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::create_towed_rolling_stock;
+    use crate::models::work_schedules::WorkSchedule;
+    use crate::models::work_schedules::WorkScheduleGroup;
+    use crate::models::work_schedules::WorkScheduleType;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::stdcm::request::PathfindingItem;
     use crate::views::timetable::stdcm::request::StepTimingData;
@@ -603,9 +607,11 @@ mod tests {
 
     use super::*;
 
-    fn stdcm_payload(rolling_stock_id: i64) -> Request {
+    fn get_stdcm_payload(rolling_stock_id: i64, work_schedule_group_id: Option<i64>) -> Request {
         Request {
-            start_time: None,
+            start_time: Some(
+                DateTime::from_str("2024-01-01T10:00:00Z").expect("Failed to parse datetime"),
+            ),
             steps: vec![
                 PathfindingItem {
                     duration: Some(0),
@@ -619,7 +625,7 @@ mod tests {
                         },
                     ),
                     timing_data: Some(StepTimingData {
-                        arrival_time: DateTime::from_str("2024-09-17T20:05:00+02:00")
+                        arrival_time: DateTime::from_str("2024-01-01T14:00:00Z")
                             .expect("Failed to parse datetime"),
                         arrival_time_tolerance_before: 0,
                         arrival_time_tolerance_after: 0,
@@ -642,7 +648,7 @@ mod tests {
             rolling_stock_id,
             towed_rolling_stock_id: None,
             electrical_profile_set_id: None,
-            work_schedule_group_id: None,
+            work_schedule_group_id,
             temporary_speed_limit_group_id: None,
             comfort: Comfort::Standard,
             maximum_departure_delay: None,
@@ -895,13 +901,13 @@ mod tests {
         );
     }
 
-    fn conflict_data() -> Conflict {
+    fn get_conflict_data(train_ids: Vec<i64>, work_schedule_ids: Vec<i64>) -> Conflict {
         Conflict {
-            train_ids: vec![0, 1],
-            work_schedule_ids: vec![],
-            start_time: DateTime::from_str("2024-01-01T00:00:00Z")
+            train_ids,
+            work_schedule_ids,
+            start_time: DateTime::from_str("2024-01-01T06:00:00Z")
                 .expect("Failed to parse datetime"),
-            end_time: DateTime::from_str("2024-01-02T00:00:00Z").expect("Failed to parse datetime"),
+            end_time: DateTime::from_str("2024-01-01T18:00:00Z").expect("Failed to parse datetime"),
             conflict_type: ConflictType::Spacing,
             requirements: vec![],
         }
@@ -933,7 +939,7 @@ mod tests {
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&stdcm_payload(rolling_stock.id));
+            .json(&get_stdcm_payload(rolling_stock.id, None));
 
         let stdcm_response: StdcmResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -965,9 +971,9 @@ mod tests {
         core.stub("/v2/conflict_detection")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
-            .json(json!({"conflicts": [
-                serde_json::to_value(conflict_data()).unwrap()
-            ]}))
+            .json(ConflictDetectionResponse {
+                conflicts: vec![get_conflict_data(vec![0, 1], vec![])],
+            })
             .finish();
 
         let app = TestAppBuilder::new()
@@ -981,19 +987,87 @@ mod tests {
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&stdcm_payload(rolling_stock.id));
+            .json(&get_stdcm_payload(rolling_stock.id, None));
 
         let stdcm_response: StdcmResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-
-        let mut conflict = conflict_data();
-        conflict.train_ids = vec![1];
 
         assert_eq!(
             stdcm_response,
             StdcmResponse::Conflicts {
                 pathfinding_result: PathfindingResult::Success(pathfinding_result_success()),
-                conflicts: vec![conflict],
+                conflicts: vec![get_conflict_data(vec![1], vec![])],
+            }
+        );
+    }
+
+    #[rstest]
+    async fn stdcm_return_work_schedule_conflicts() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let work_schedule_group = WorkScheduleGroup::changeset()
+            .name("work_schedule_group_name_test".to_string())
+            .creation_date(Utc::now())
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create a new work schedule group");
+
+        let work_schedule_changeset = WorkSchedule::changeset()
+            .start_date_time(
+                DateTime::from_str("2024-01-01T06:00:00Z").expect("Failed to parse datetime"),
+            )
+            .end_date_time(
+                DateTime::from_str("2024-01-01T18:00:00Z").expect("Failed to parse datetime"),
+            )
+            .track_ranges(vec![])
+            .obj_id("work_schedule_obj_id".to_string())
+            .work_schedule_type(WorkScheduleType::Catenary)
+            .work_schedule_group_id(work_schedule_group.id);
+
+        let work_schedules: Vec<_> =
+            WorkSchedule::create_batch(&mut db_pool.get_ok(), vec![work_schedule_changeset])
+                .await
+                .expect("Failed to create a new work schedule");
+        let work_schedule_ids: Vec<i64> = work_schedules.into_iter().map(|ws| ws.id).collect();
+
+        let mut core = core_mocking_client();
+        core.stub("/v2/stdcm")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(crate::core::stdcm::Response::PathNotFound)
+            .finish();
+        core.stub("/v2/conflict_detection")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(ConflictDetectionResponse {
+                conflicts: vec![get_conflict_data(vec![0], work_schedule_ids.clone())],
+            })
+            .finish();
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(
+                rolling_stock.id,
+                Some(work_schedule_group.id),
+            ));
+
+        let stdcm_response: StdcmResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(
+            stdcm_response,
+            StdcmResponse::Conflicts {
+                pathfinding_result: PathfindingResult::Success(pathfinding_result_success()),
+                conflicts: vec![get_conflict_data(vec![], work_schedule_ids)],
             }
         );
     }

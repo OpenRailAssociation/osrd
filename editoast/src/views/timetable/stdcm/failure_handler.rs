@@ -51,12 +51,13 @@ impl SimulationFailureHandler {
             latest_simulation_end,
             ..
         } = self;
+        let start_time = work_schedules
+            .first()
+            .map(|ws| ws.start_date_time)
+            .unwrap_or(earliest_departure_time);
         let virtual_train_id = train_schedule.id;
-        let work_schedules = WorkSchedulesRequest::new(
-            work_schedules,
-            earliest_departure_time,
-            latest_simulation_end,
-        );
+        let work_schedules =
+            WorkSchedulesRequest::new(work_schedules, start_time, latest_simulation_end);
 
         // Combine the original train schedules with the virtual train schedule.
         train_schedules.push(train_schedule);

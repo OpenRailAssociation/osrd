@@ -261,6 +261,9 @@ impl Request {
             .collect())
     }
 
+    /// Retrieves a list of work schedules, sorted by `start_date_time`.
+    ///  It is expected that the list returned by this function will always be ordered by the `start_date_time` field.
+    /// Any changes to the ordering behavior in the future should take this assumption into account.
     pub(super) async fn get_work_schedules(
         &self,
         conn: &mut DbConnection,
@@ -271,6 +274,7 @@ impl Request {
 
         let work_schedule_group_id = self.work_schedule_group_id.unwrap();
         let selection_setting = SelectionSettings::new()
+            .order_by(|| WorkSchedule::START_DATE_TIME.asc())
             .filter(move || WorkSchedule::WORK_SCHEDULE_GROUP_ID.eq(work_schedule_group_id));
         WorkSchedule::list(conn, selection_setting).await
     }

@@ -273,23 +273,23 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
         "conflicts": [
             {
                 "conflict_type": "Spacing",
-                "start_time": "2024-01-01T07:30:00Z",
+                "start_time": "2023-01-01T08:00:00Z",
                 "end_time": "2024-01-01T16:00:00Z",
                 "train_ids": [],
                 "work_schedule_ids": [0],
                 "requirements": [
                     {
-                        "start_time": "2024-01-01T07:30:00Z",
+                        "start_time": "2023-01-01T08:00:00Z",
                         "end_time": "2024-01-01T16:00:00Z",
                         "zone": "zone.[DG2:DECREASING, DH2:INCREASING, DH3:DECREASING]",
                     },
                     {
-                        "start_time": "2024-01-01T07:30:00Z",
+                        "start_time": "2023-01-01T08:00:00Z",
                         "end_time": "2024-01-01T16:00:00Z",
                         "zone": "zone.[DH1_1:DECREASING, DH3:INCREASING]",
                     },
                     {
-                        "start_time": "2024-01-01T07:30:00Z",
+                        "start_time": "2023-01-01T08:00:00Z",
                         "end_time": "2024-01-01T16:00:00Z",
                         "zone": "zone.[DH1_1:INCREASING, DH1_2:DECREASING]",
                     },

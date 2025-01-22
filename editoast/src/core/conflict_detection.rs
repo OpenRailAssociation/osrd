@@ -68,6 +68,7 @@ impl WorkSchedulesRequest {
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
+#[cfg_attr(test, derive(Serialize))]
 pub struct ConflictDetectionResponse {
     /// List of conflicts detected
     #[schema(inline)]
