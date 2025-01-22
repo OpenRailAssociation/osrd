@@ -2,6 +2,8 @@ import { useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
 import type { TFunction } from 'i18next';
 import { isEmpty, isEqual, isNil } from 'lodash';
+import maplibregl from 'maplibre-gl';
+import { Protocol } from 'pmtiles';
 import { withTranslation } from 'react-i18next';
 import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
@@ -49,6 +51,9 @@ interface MapState {
   isDragging: boolean;
   isHovering: boolean;
 }
+
+const protocol = new Protocol();
+maplibregl.addProtocol('pmtiles', protocol.tile);
 
 const MapUnplugged = ({
   mapRef,

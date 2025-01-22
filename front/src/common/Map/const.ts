@@ -4,7 +4,9 @@ import config from 'config/config';
 export const MAP_URL = `${config.proxy_editoast}/layers`;
 export const SPRITES_URL = `${config.proxy_editoast}/sprites`;
 export const FONTS_URL = `${config.proxy_editoast}/fonts`;
-export const OSM_URL = 'https://osm.osrd.fr/data/v3.json';
+export const OSM_URL = 'pmtiles://https://osm.nbg1.your-objectstorage.com/planet.pmtiles';
+export const TERRAIN_URL =
+  'pmtiles://https://osm.nbg1.your-objectstorage.com/terrain-europe.pmtiles';
 
 export const MAP_MODES = {
   display: 'display',

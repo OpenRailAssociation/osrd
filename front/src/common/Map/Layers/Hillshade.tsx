@@ -1,6 +1,7 @@
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
+import { TERRAIN_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 
@@ -29,7 +30,7 @@ const Hillshade = ({ mapStyle, layerOrder }: HillshadeProps) => {
       id="hillshade"
       type="raster-dem"
       encoding="terrarium"
-      url="https://osm.osrd.fr/data/terrain.json"
+      url={TERRAIN_URL}
       tileSize={256}
       maxzoom={12}
     >

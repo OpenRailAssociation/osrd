@@ -68,6 +68,7 @@
     "maplibre-gl": "^4.0.0",
     "openapi-typescript-codegen": "^0.29.0",
     "party-js": "^2.2.0",
+    "pmtiles": "^4.2.1",
     "prop-types": "^15.8.1",
     "rc-slider": "^11.1.8",
     "react": "^18.2.0",
