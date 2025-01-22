@@ -156,7 +156,7 @@ const getTimeLockDate = (
   return new Date(startDate.getTime() + offset * 60 * 1000);
 };
 
-const formatDateDifference = (start: Date, stop: Date) =>
+const formatDateDifferenceFrom = (start: Date, stop: Date) =>
   Duration.subtractDate(stop, start).toISOString();
 
 const createTrainSchedulePayload = async ({
@@ -240,8 +240,9 @@ const createTrainSchedulePayload = async ({
 
     return {
       at: `${section.targetNodeId}-${index + 1}`,
-      arrival: formatDateDifference(arrival, startDate),
-      stop_for: departure && !isNonStopTransit ? formatDateDifference(departure, arrival) : null,
+      arrival: formatDateDifferenceFrom(startDate, arrival),
+      stop_for:
+        departure && !isNonStopTransit ? formatDateDifferenceFrom(departure, arrival) : null,
     };
   });
 
