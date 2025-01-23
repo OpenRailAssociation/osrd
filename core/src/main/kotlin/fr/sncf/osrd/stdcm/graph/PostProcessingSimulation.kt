@@ -216,7 +216,7 @@ private fun initFixedPoints(
             val engineeringAllowanceStart = prevEdgeLength - engineeringAllowanceLength
             // Edges can have overlapping engineering allowance, only the last one is relevant.
             // So we remove any point in the current allowance range.
-            res.removeIf { it.offset.distance > engineeringAllowanceStart && it.stopTime != null }
+            res.removeIf { it.offset.distance > engineeringAllowanceStart && it.stopTime == null }
 
             addFixedPointAvoidingDuplicates(prevEdgeLength)
             addFixedPointAvoidingDuplicates(engineeringAllowanceStart)

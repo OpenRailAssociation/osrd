@@ -404,6 +404,58 @@ class EngineeringAllowanceTests {
         Assertions.assertNull(res)
     }
 
+    @Test
+    fun testOverwrittenEngineeringAllowance() {
+        /*
+        a --> b --> c --> d --> e --> f
+
+        space
+          ^                    end
+        f |###################### /
+          |#################x####/
+        e |#############  _/    /
+          |#############_/   __/
+        d |           _/  __/
+          |         _/ __/
+        c |       _/__/
+          |     _/_/
+        b |   _/
+          |  /#######################
+        a |_/_#######################> time
+
+        First engineering allowance to avoid the conflict at d->e,
+        which is then overwritten by the allowance to avoid the
+        conflict at e->f
+
+         */
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b", 1000.meters),
+                infra.addBlock("b", "c", 50_000.meters),
+                infra.addBlock("c", "d", 20_000.meters),
+                infra.addBlock("d", "e", 1000.meters),
+                infra.addBlock("e", "f", 1000.meters),
+            )
+        val occupancyGraph =
+            ImmutableMultimap.of(
+                blocks[0],
+                OccupancySegment(600.0, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+                blocks[3],
+                OccupancySegment(0.0, 2900.0, 0.meters, 1000.meters),
+                blocks[4],
+                OccupancySegment(0.0, 3000.0, 0.meters, 1000.meters),
+            )
+        STDCMPathfindingBuilder()
+            .setInfra(infra.fullInfra())
+            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+            .setEndLocations(setOf(EdgeLocation(blocks[4], Offset(1000.meters))))
+            .setUnavailableTimes(occupancyGraph)
+            .setMaxDepartureDelay(Double.POSITIVE_INFINITY)
+            .setMaxRunTime(Double.POSITIVE_INFINITY)
+            .run()!!
+    }
+
     /** Test that we return the fastest path even if there are some engineering allowances */
     @Test
     fun testReturnTheFastestPathWithAllowance() {
