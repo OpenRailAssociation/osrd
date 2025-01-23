@@ -138,14 +138,3 @@ impl<U: User> AsUser for Tbpa<U> {
         &"*"
     }
 }
-
-impl<R: Relation, U: AsUser<User = R::User>> serde::Serialize for Tuple<'_, R, U> {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        use serde::ser::SerializeMap as _;
-        let mut map = serializer.serialize_map(Some(3))?;
-        map.serialize_entry("user", &self.user.fga_ident())?;
-        map.serialize_entry("relation", R::NAME)?;
-        map.serialize_entry("object", &self.object.fga_ident())?;
-        map.end()
-    }
-}
