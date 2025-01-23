@@ -36,13 +36,13 @@ pub struct RunserverArgs {
     address: String,
     #[command(flatten)]
     core: CoreArgs,
-    /// If this option is set, any role and permission check will be bypassed. Even if no user is
+    /// If this option is set to false, any role and permission check will be bypassed. Even if no user is
     /// provided by the request headers of if the provided user doesn't have the required privileges.
     // TODO: once the whole role system will be deployed, the default value of this option should
     // be set to false. It's currently set to true in order to pass integration tests, which otherwise
-    // only recieve 401 responses.
-    #[clap(long, env = "EDITOAST_DISABLE_AUTHORIZATION", default_value_t = true)]
-    disable_authorization: bool,
+    // only receive 401 responses.
+    #[clap(long, env = "EDITOAST_ENABLE_AUTHORIZATION", default_value_t = false)]
+    enable_authorization: bool,
     /// If this option is set, logging for the STDCM will be enabled.
     /// When enabled, relevant logs will be captured to aid in debugging and monitoring.
     #[clap(long, env = "ENABLE_STDCM_LOGGING", default_value_t = true)]
@@ -67,7 +67,7 @@ pub async fn runserver(
                 core_single_worker,
                 core_client_channels_size,
             },
-        disable_authorization,
+        enable_authorization,
         enable_stdcm_logging,
         osrdyne_api_url,
         health_check_timeout_ms,
@@ -80,7 +80,7 @@ pub async fn runserver(
         address,
         health_check_timeout: Duration::milliseconds(health_check_timeout_ms as i64),
         map_layers_max_zoom: map_layers_config.max_zoom as u8,
-        disable_authorization,
+        enable_authorization,
         enable_stdcm_logging,
         postgres_config: postgres.into(),
         osrdyne_config: views::OsrdyneConfig {

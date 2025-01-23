@@ -143,7 +143,7 @@ impl TestAppBuilder {
             port: 0,
             address: String::default(),
             health_check_timeout: chrono::Duration::milliseconds(500),
-            disable_authorization: !self.enable_authorization,
+            enable_authorization: self.enable_authorization,
             enable_stdcm_logging: self.enable_stdcm_logging,
             map_layers_max_zoom: 18,
             postgres_config: PostgresConfig {

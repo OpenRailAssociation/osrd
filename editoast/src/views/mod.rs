@@ -191,11 +191,11 @@ impl Authentication {
 pub type AuthenticationExt = axum::extract::Extension<Authentication>;
 
 async fn authenticate(
-    disable_authorization: bool,
+    enable_authorization: bool,
     headers: &axum::http::HeaderMap,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<Authentication, AuthorizationError> {
-    if disable_authorization {
+    if !enable_authorization {
         return Ok(Authentication::Authenticated(Authorizer::new_superuser(
             PgAuthDriver::<BuiltinRole>::new(db_pool),
         )));
@@ -234,7 +234,7 @@ async fn authentication_middleware(
     next: Next,
 ) -> Result<Response> {
     let headers = req.headers();
-    let authorizer = authenticate(config.disable_authorization, headers, db_pool).await?;
+    let authorizer = authenticate(config.enable_authorization, headers, db_pool).await?;
     req.extensions_mut().insert(authorizer);
     Ok(next.run(req).await)
 }
@@ -365,7 +365,7 @@ pub struct ServerConfig {
     pub address: String,
     pub health_check_timeout: Duration,
     pub map_layers_max_zoom: u8,
-    pub disable_authorization: bool,
+    pub enable_authorization: bool,
     pub enable_stdcm_logging: bool,
     pub postgres_config: PostgresConfig,
     pub osrdyne_config: OsrdyneConfig,
@@ -516,11 +516,11 @@ impl Server {
         let ServerConfig {
             address,
             port,
-            disable_authorization,
+            enable_authorization,
             ..
         } = app_state.config.as_ref();
 
-        if *disable_authorization {
+        if !*enable_authorization {
             warn!("authorization disabled — all role and permission checks are bypassed");
         }
 

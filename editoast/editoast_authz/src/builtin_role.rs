@@ -26,7 +26,7 @@ use crate::roles::BuiltinRoleSet;
 pub enum BuiltinRole {
     /// A user with this role short-circuits all role and permission checks
     ///
-    /// Alternatively, especially for development, the `EDITOAST_DISABLE_AUTHORIZATION` environment variable can be set
+    /// Alternatively, especially for development, the `EDITOAST_ENABLE_AUTHORIZATION` environment variable can be set to `false`
     /// when no user identity header is present. (This is the case when editoast is queried directly and
     /// not through the gateway.)
     Superuser,
