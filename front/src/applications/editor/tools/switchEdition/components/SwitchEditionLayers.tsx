@@ -24,6 +24,7 @@ import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Lay
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
 const SwitchEditionLayers = () => {
   const dispatch = useAppDispatch();
@@ -79,7 +80,7 @@ const SwitchEditionLayers = () => {
           setTrackStatus({
             type: 'error',
             trackSectionID: hoveredTrackId,
-            message: e instanceof Error ? e.message : undefined,
+            message: castErrorToFailure(e).message,
           });
         });
     }

@@ -34,15 +34,13 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       setIsWaiting(true);
       try {
         if (action === InfraLockState.LOCK) {
-          await lockInfra({ infraId: infra.id });
+          await lockInfra({ infraId: infra.id }).unwrap();
         }
         if (action === InfraLockState.UNLOCK) {
-          await unlockInfra({ infraId: infra.id });
+          await unlockInfra({ infraId: infra.id }).unwrap();
         }
       } catch (e) {
-        if (e instanceof Error) {
-          dispatch(setFailure(castErrorToFailure(e)));
-        }
+        dispatch(setFailure(castErrorToFailure(e)));
       } finally {
         setIsWaiting(false);
       }
@@ -53,17 +51,10 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        const railjson = await getRailjson({ infraId: infra.id });
-        fileDownload(JSON.stringify(railjson.data), `${infra.name}.id${infra.id}.railjson.json`);
+        const railjson = await getRailjson({ infraId: infra.id }).unwrap();
+        fileDownload(JSON.stringify(railjson), `${infra.name}.id${infra.id}.railjson.json`);
       } catch (e) {
-        if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: e.message,
-            })
-          );
-        }
+        dispatch(setFailure(castErrorToFailure(e)));
       } finally {
         setIsWaiting(false);
       }
@@ -74,16 +65,9 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await cloneInfra({ infraId: infra.id, name: `${infra.name}_copy` });
+        await cloneInfra({ infraId: infra.id, name: `${infra.name}_copy` }).unwrap();
       } catch (e) {
-        if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: e.message,
-            })
-          );
-        }
+        dispatch(setFailure(castErrorToFailure(e)));
       } finally {
         setIsWaiting(false);
       }
@@ -94,17 +78,10 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await updateInfra({ infraId: infra.id, body: { name: inputValue } });
+        await updateInfra({ infraId: infra.id, body: { name: inputValue } }).unwrap();
         setIsFocused(undefined);
       } catch (e) {
-        if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: e.message,
-            })
-          );
-        }
+        dispatch(setFailure(castErrorToFailure(e)));
       } finally {
         setIsWaiting(false);
       }

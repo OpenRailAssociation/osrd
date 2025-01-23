@@ -27,7 +27,7 @@ export default function InfraSelectorEditionActionsBarDelete({
 
   async function handleDeleteInfra() {
     try {
-      await deleteInfra({ infraId: infra.id });
+      await deleteInfra({ infraId: infra.id }).unwrap();
       setRunningDelete(false);
       dispatch(
         setSuccess({
@@ -39,9 +39,7 @@ export default function InfraSelectorEditionActionsBarDelete({
         dispatch(updateInfraID(undefined));
       }
     } catch (e) {
-      if (e instanceof Error) {
-        dispatch(setFailure(castErrorToFailure(e)));
-      }
+      dispatch(setFailure(castErrorToFailure(e)));
     }
   }
 
