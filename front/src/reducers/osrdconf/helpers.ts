@@ -1,6 +1,6 @@
 import { feature, point } from '@turf/helpers';
 import { compact, last, pick } from 'lodash';
-import nextId from 'react-id-generator';
+import { v4 as uuidV4 } from 'uuid';
 
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
@@ -77,7 +77,7 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       'theoreticalMargin',
       'stopFor',
     ]),
-    id: nextId(),
+    id: uuidV4(),
     ...(op.uic
       ? { uic: op.uic, secondary_code: op.ch }
       : {

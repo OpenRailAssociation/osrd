@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
-import nextId from 'react-id-generator';
+import { v4 as uuidV4 } from 'uuid';
 
 import {
   ArrivalTimeTypes,
@@ -19,13 +19,13 @@ const DEFAULT_TOLERANCE = 1800; // 30min
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   stdcmPathSteps: [
     {
-      id: nextId(),
+      id: uuidV4(),
       isVia: false,
       arrivalType: ArrivalTimeTypes.PRECISE_TIME,
       tolerances: { before: DEFAULT_TOLERANCE, after: DEFAULT_TOLERANCE },
     },
     {
-      id: nextId(),
+      id: uuidV4(),
       isVia: false,
       arrivalType: ArrivalTimeTypes.ASAP,
       tolerances: { before: DEFAULT_TOLERANCE, after: DEFAULT_TOLERANCE },
@@ -209,7 +209,7 @@ export const stdcmConfSlice = createSlice({
     addStdcmVia(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       // Index takes count of the origin in the array
       state.stdcmPathSteps = addElementAtIndex(state.stdcmPathSteps, action.payload, {
-        id: nextId(),
+        id: uuidV4(),
         stopType: StdcmStopTypes.PASSAGE_TIME,
         isVia: true,
       });

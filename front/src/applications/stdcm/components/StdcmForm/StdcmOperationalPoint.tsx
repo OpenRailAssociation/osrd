@@ -169,6 +169,7 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
       <div className="col-9 ci-input">
         <ComboBox
           id={`${pathStepId}-ci`}
+          data-testid="operational-point-ci"
           label={t('trainPath.ci')}
           value={selectedCi}
           suggestions={ciSuggestions}
@@ -184,6 +185,7 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
         <Select
           label={t('trainPath.ch')}
           id={`${pathStepId}-ch`}
+          data-testid="operational-point-ch"
           value={selectedCh}
           onChange={handleChSelect}
           options={chSuggestions}

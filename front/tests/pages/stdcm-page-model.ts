@@ -176,10 +176,10 @@ class STDCMPage {
     this.maxSpeedField = page.locator('#maxSpeed');
     this.addViaButton = page.locator('.stdcm-vias-list button .stdcm-card__body.add-via');
     this.launchSimulationButton = page.getByTestId('launch-simulation-button');
-    this.originChField = this.originCard.locator('[id^="id"][id$="-ch"]');
-    this.destinationChField = this.destinationCard.locator('[id^="id"][id$="-ch"]');
-    this.originCiField = this.originCard.locator('[id^="id"][id$="-ci"]');
-    this.destinationCiField = this.destinationCard.locator('[id^="id"][id$="-ci"]');
+    this.originChField = this.originCard.locator('[data-testid="operational-point-ch"]');
+    this.destinationChField = this.destinationCard.locator('[data-testid="operational-point-ch"]');
+    this.originCiField = this.originCard.locator('[data-testid="operational-point-ci"]');
+    this.destinationCiField = this.destinationCard.locator('[data-testid="operational-point-ci"]');
     this.viaIcon = page.locator('.stdcm-via-icons');
     this.viaDeleteButton = page.getByTestId('delete-via-button');
     this.originArrival = page.locator('#select-origin-arrival');
@@ -213,10 +213,14 @@ class STDCMPage {
       hasText: 'MWS Mid_West_station',
     });
 
-    this.dynamicOriginCh = this.originCard.locator('[id^="id"][id$="-ch"]');
-    this.dynamicDestinationCh = this.destinationCard.locator('[id^="id"][id$="-ch"]');
-    this.dynamicOriginCi = this.originCard.locator('[id^="id"][id$="-ci"]');
-    this.dynamicDestinationCi = this.destinationCard.locator('[id^="id"][id$="-ci"]');
+    this.dynamicOriginCh = this.originCard.locator('[data-testid="operational-point-ch"]');
+    this.dynamicDestinationCh = this.destinationCard.locator(
+      '[data-testid="operational-point-ch"]'
+    );
+    this.dynamicOriginCi = this.originCard.locator('[data-testid="operational-point-ci"]');
+    this.dynamicDestinationCi = this.destinationCard.locator(
+      '[data-testid="operational-point-ci"]'
+    );
     this.simulationStatus = page.getByTestId('simulation-status');
     this.simulationList = page.locator('.stdcm-results .simulation-list');
     this.incrementButton = page.locator('.minute-button', { hasText: '+1mn' });
@@ -244,11 +248,11 @@ class STDCMPage {
   }
 
   private getViaCH(viaNumber: number): Locator {
-    return this.getViaCard(viaNumber).locator('[id^="id"][id$="-ch"]');
+    return this.getViaCard(viaNumber).locator('[data-testid="operational-point-ch"]');
   }
 
   private getViaCI(viaNumber: number): Locator {
-    return this.getViaCard(viaNumber).locator('[id^="id"][id$="-ci"]');
+    return this.getViaCard(viaNumber).locator('[data-testid="operational-point-ci"]');
   }
 
   private getViaType(viaNumber: number): Locator {
