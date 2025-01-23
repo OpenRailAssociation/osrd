@@ -2,11 +2,14 @@ import { useEffect, useState, useMemo } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
+import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 
-import { type Conflict } from 'common/api/osrdEditoastApi';
+import { type Conflict, type PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
+import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
+import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
@@ -24,8 +27,8 @@ import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/
 import { updateViewport, type Viewport } from 'reducers/map';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { getPointOnTrackCoordinates } from 'utils/geometry';
 
+import { useScenarioContext } from '../hooks/useScenarioContext';
 import useSimulationResults from '../hooks/useSimulationResults';
 import type { TrainSpaceTimeData } from '../types';
 
@@ -55,6 +58,8 @@ const SimulationResults = ({
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
 
+  const { getTrackSectionsByIds } = useScenarioContext();
+
   const {
     selectedTrainSchedule,
     selectedTrainRollingStock,
@@ -66,6 +71,7 @@ const SimulationResults = ({
 
   const [extViewport, setExtViewport] = useState<Viewport>();
   const [showWarpedMap, setShowWarpedMap] = useState(false);
+  const [pathItemsCoordinates, setPathItemsCoordinates] = useState<Position[]>();
 
   const [manchetteWithSpaceTimeChartHeight, setManchetteWithSpaceTimeChartHeight] = useState(
     MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT
@@ -90,12 +96,30 @@ const SimulationResults = ({
   }, [projectionData]);
 
   // Compute path items coordinates in order to place them on the map
-  const pathItemsCoordinates =
-    path &&
-    pathProperties &&
-    path.path_item_positions.map((positionOnPath) =>
-      getPointOnTrackCoordinates(pathProperties.geometry, path.length, positionOnPath)
-    );
+  useEffect(() => {
+    const getPathItemsCoordinates = async (pathfindingResult: PathfindingResultSuccess) => {
+      const trackIds = pathfindingResult.track_section_ranges.map((range) => range.track_section);
+      const tracks = await getTrackSectionsByIds(trackIds);
+      const tracksLengthCumulativeSums = getTrackLengthCumulativeSums(
+        pathfindingResult.track_section_ranges
+      );
+
+      const waypointsCoordinates = pathfindingResult.path_item_positions.map((position) =>
+        getPointOnPathCoordinates(
+          tracks,
+          pathfindingResult.track_section_ranges,
+          tracksLengthCumulativeSums,
+          position
+        )
+      );
+
+      setPathItemsCoordinates(waypointsCoordinates);
+    };
+
+    if (path) {
+      getPathItemsCoordinates(path);
+    }
+  }, [path]);
 
   const {
     operationalPoints: projectedOperationalPoints,
