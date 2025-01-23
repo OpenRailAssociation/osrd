@@ -6,6 +6,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import { useOsrdConfActions } from 'common/osrdContext';
+import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import { createCutAtPathStep } from 'modules/powerRestriction/helpers/createPathStep';
 import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
@@ -48,16 +49,7 @@ const usePowerRestrictionSelectorBehaviours = ({
 
   /** Cumulative sums of the trackSections' length on path (in mm) */
   const tracksLengthCumulativeSums = useMemo(
-    () =>
-      pathProperties.trackSectionRanges.reduce((acc, range, index) => {
-        const rangeLength = Math.abs(range.end - range.begin);
-        if (index === 0) {
-          acc.push(rangeLength);
-        } else {
-          acc.push(acc[acc.length - 1] + rangeLength);
-        }
-        return acc;
-      }, [] as number[]),
+    () => getTrackLengthCumulativeSums(pathProperties.trackSectionRanges),
     [pathProperties.trackSectionRanges]
   );
 
