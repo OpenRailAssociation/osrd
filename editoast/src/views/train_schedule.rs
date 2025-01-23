@@ -18,6 +18,7 @@ use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -385,9 +386,15 @@ pub async fn train_simulation_batch(
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
 ) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
-    // Compute path
-
-    let train_batches = train_schedules.chunks(TRAIN_SIZE_BATCH);
+    // Sort train_schedules by the hash of their path_item to group schedules with identical or similar paths together.
+    // This increases the likelihood of identical pathfinding and simulation results, optimizing cache usage and retrieval.
+    let mut sorted_train_schedules = train_schedules.to_vec();
+    sorted_train_schedules.sort_by(|a, b| {
+        let hash_a = path_input_hash(&a.path);
+        let hash_b = path_input_hash(&b.path);
+        hash_a.cmp(&hash_b)
+    });
+    let train_batches = sorted_train_schedules.chunks(TRAIN_SIZE_BATCH);
 
     let rolling_stocks_ids = train_schedules
         .iter()
@@ -402,6 +409,8 @@ pub async fn train_simulation_batch(
         .collect();
 
     let consists_ref = &consists;
+
+    // Compute path and simulation
     let futures: Vec<_> = train_batches
         .zip(iter::repeat(conn.clone()))
         .map(|(chunk, conn)| {
@@ -652,6 +661,13 @@ fn train_simulation_input_hash(
     simulation_input.hash(&mut hasher);
     let hash_simulation_input = hasher.finish();
     format!("simulation_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+}
+
+// Compute hash input of train schedule PathItem
+fn path_input_hash(path: &[PathItem]) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    path.hash(&mut hasher);
+    hasher.finish()
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
