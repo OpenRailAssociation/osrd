@@ -230,11 +230,21 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
                         }
                         val stepTargets = ArrayList(step.targets)
                         stepTargets.add(target)
+
+                        // Handle overlapping consecutive waypoints
+                        var newNReachedTargets = step.nReachedTargets + 1
+                        while (
+                            newNReachedTargets < targetsOnEdges.size &&
+                                targetsOnEdges[newNReachedTargets]
+                                    .apply(step.range.edge)
+                                    .contains(EdgeLocation(step.range.edge, step.range.end))
+                        ) newNReachedTargets++
+
                         registerStep(
                             newRange,
                             step.prev,
                             step.totalDistance,
-                            step.nReachedTargets + 1,
+                            newNReachedTargets,
                             stepTargets
                         )
                     }

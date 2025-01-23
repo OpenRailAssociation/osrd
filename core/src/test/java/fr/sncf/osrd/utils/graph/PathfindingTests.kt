@@ -134,6 +134,29 @@ class PathfindingTests {
     }
 
     @Test
+    fun overlappingWaypoints() {
+        val builder = SimpleGraphBuilder()
+        builder.makeNodes(7)
+        builder.makeEdge(0, 1, 10.meters)
+        builder.makeEdge(1, 2, 10.meters)
+        builder.makeEdge(2, 3, 10.meters)
+        val g = builder.build()
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1", 10.meters)),
+                        listOf(builder.getEdgeLocation("1-2", 10.meters)),
+                        listOf(builder.getEdgeLocation("1-2", 10.meters)),
+                        listOf(builder.getEdgeLocation("2-3", 1.meters)),
+                    )
+                )
+        val resIDs = res!!.map { x -> x.label }
+        Assertions.assertEquals(listOf("0-1", "1-2", "2-3"), resIDs)
+    }
+
+    @Test
     fun severalStartsTest() {
         /* Bottom path has more edges but is shorter
 
