@@ -1,10 +1,11 @@
 import nextId from 'react-id-generator';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import findTrackSectionOffset from 'modules/pathfinding/helpers/findTrackSectionOffset';
+import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
 import type { PathStep } from 'reducers/osrdconf/types';
-import { getPointOnTrackCoordinates } from 'utils/geometry';
 import { mmToM, mToMm } from 'utils/physics';
 
 import { NO_POWER_RESTRICTION } from '../consts';
@@ -13,7 +14,8 @@ const createPathStep = (
   positionOnPathInM: number, // in meters
   tracksLengthCumulativeSums: number[],
   pathProperties: ManageTrainSchedulePathProperties,
-  pathSteps: PathStep[]
+  pathSteps: PathStep[],
+  tracksById: Record<string, TrackSection>
 ): PathStep | undefined => {
   const positionOnPath = mToMm(positionOnPathInM);
   if (
@@ -29,10 +31,11 @@ const createPathStep = (
   );
   if (!trackOffset) return undefined;
 
-  const coordinates = getPointOnTrackCoordinates(
-    pathProperties.geometry,
-    pathProperties.length,
-    positionOnPath
+  const coordinates = getPointOnPathCoordinates(
+    tracksById,
+    pathProperties.trackSectionRanges,
+    tracksLengthCumulativeSums,
+    trackOffset.offset
   );
 
   return {
@@ -52,6 +55,7 @@ export const createCutAtPathStep = (
   rangesData: IntervalItem[],
   cutPositions: number[],
   tracksLengthCumulativeSums: number[],
+  tracksById: Record<string, TrackSection>,
   setCutPositions: (newCutPosition: number[]) => void
 ): PathStep | null => {
   const intervalCut = rangesData.find(
@@ -83,9 +87,10 @@ export const createCutAtPathStep = (
 
   if (!trackOffset) return null;
 
-  const coordinatesAtCut = getPointOnTrackCoordinates(
-    pathProperties.geometry,
-    pathProperties.length,
+  const coordinatesAtCut = getPointOnPathCoordinates(
+    tracksById,
+    pathProperties.trackSectionRanges,
+    tracksLengthCumulativeSums,
     cutAtPosition
   );
   return {

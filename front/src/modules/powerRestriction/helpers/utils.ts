@@ -1,4 +1,5 @@
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { mToMm } from 'utils/physics';
@@ -13,32 +14,42 @@ export const getOrCreatePathStepAtPosition = (
   positionOnPathInM: number,
   pathSteps: PathStep[],
   tracksLengthCumulativeSums: number[],
-  pathProperties: ManageTrainSchedulePathProperties
+  pathProperties: ManageTrainSchedulePathProperties,
+  tracksById: Record<string, TrackSection>
 ) => {
   const pathStep = getPathStep(pathSteps, positionOnPathInM);
   if (pathStep) {
     return pathStep;
   }
-  return createPathStep(positionOnPathInM, tracksLengthCumulativeSums, pathProperties, pathSteps);
+  return createPathStep(
+    positionOnPathInM,
+    tracksLengthCumulativeSums,
+    pathProperties,
+    pathSteps,
+    tracksById
+  );
 };
 
 export const extractPathStepsFromRange = (
   range: IntervalItem,
   pathSteps: PathStep[],
   tracksLengthCumulativeSums: number[],
-  pathProperties: ManageTrainSchedulePathProperties
+  pathProperties: ManageTrainSchedulePathProperties,
+  tracksById: Record<string, TrackSection>
 ) => {
   const from = getOrCreatePathStepAtPosition(
     range.begin,
     pathSteps,
     tracksLengthCumulativeSums,
-    pathProperties
+    pathProperties,
+    tracksById
   );
   const to = getOrCreatePathStepAtPosition(
     range.end,
     pathSteps,
     tracksLengthCumulativeSums,
-    pathProperties
+    pathProperties,
+    tracksById
   );
   return { from, to };
 };
