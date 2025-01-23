@@ -1,0 +1,537 @@
+use std::future;
+
+use futures::{stream, TryStreamExt};
+use itertools::Itertools as _;
+
+use crate::model::{AsUser, Check, Object, Relation, Tuple, User};
+
+#[derive(Debug, Clone)]
+pub struct Client {
+    store: Store,
+    settings: ConnectionSettings,
+    inner: reqwest::Client,
+}
+
+#[derive(Debug, Clone)]
+pub struct ConnectionSettings {
+    address: String,
+    port: u16,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum InitializationError {
+    #[error("Store not found: {0}")]
+    NotFound(String),
+    #[error(transparent)]
+    Request(#[from] RequestFailure),
+}
+
+// Public API of the client
+impl Client {
+    pub async fn try_init(
+        store_name: String,
+        settings: ConnectionSettings,
+    ) -> Result<Self, InitializationError> {
+        let mut client = Self {
+            store: Store::default(),
+            settings,
+            inner: reqwest::Client::new(),
+        };
+
+        client.store = client
+            .find_store(&store_name)
+            .await?
+            .ok_or_else(|| InitializationError::NotFound(store_name))?;
+
+        Ok(client)
+    }
+
+    pub async fn try_create_store(
+        store_name: String,
+        settings: ConnectionSettings,
+        #[cfg(test)] reset: bool,
+    ) -> Result<Client, InitializationError> {
+        let mut client = Self {
+            store: Store::default(),
+            settings,
+            inner: reqwest::Client::new(),
+        };
+        #[cfg(test)]
+        if reset {
+            if let Some(store) = client.find_store(&store_name).await? {
+                client.delete_stores(&store.id).await?;
+            }
+        }
+        client.store = client.post_stores(&store_name).await?;
+        Ok(client)
+    }
+
+    pub async fn find_store(&self, store_name: &str) -> Result<Option<Store>, RequestFailure> {
+        let stream = self
+            .get_stores()
+            .try_filter(|Store { name, .. }| future::ready(name == store_name));
+        futures::pin_mut!(stream);
+        let store = stream.try_next().await?.into_iter().last();
+        Ok(store)
+    }
+
+    pub async fn push_authorization_model(
+        &self,
+        authorization_model: &AuthorizationModel,
+    ) -> Result<String, RequestFailure> {
+        self.post_stores_authorization_models(&self.store.id, authorization_model)
+            .await
+    }
+
+    pub async fn write_tuples<'a, R: Relation, U: AsUser<User = R::User>>(
+        &self,
+        tuples: &[Tuple<'a, R, U>],
+    ) -> Result<(), RequestFailure> {
+        self.post_stores_write(
+            &self.store.id,
+            &tuples.into_iter().map_into().collect::<Vec<_>>(),
+            &[],
+        )
+        .await
+    }
+
+    pub async fn check<'a, R: Relation>(
+        &self,
+        Check { user, object }: Check<'a, R>,
+    ) -> Result<bool, RequestFailure> {
+        self.post_stores_check(
+            &self.store.id,
+            RawTuple {
+                user: User::fga_ident(user),
+                relation: R::NAME.to_string(),
+                object: object.fga_ident(),
+            },
+        )
+        .await
+    }
+}
+
+pub type AuthorizationModel = serde_json::Value;
+
+pub trait Request {
+    type Response;
+    type Error: std::error::Error;
+
+    fn fetch(
+        self,
+        client: &Client,
+    ) -> impl future::Future<Output = Result<Self::Response, Self::Error>>;
+}
+
+impl<R: Relation> Request for Check<'_, R> {
+    type Response = bool;
+
+    type Error = RequestFailure;
+
+    async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
+        client.check(self).await
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("HTTP request to OpenFGA failed: {0}")]
+pub struct RequestFailure(#[source] reqwest::Error);
+
+impl From<reqwest::Error> for RequestFailure {
+    fn from(error: reqwest::Error) -> Self {
+        #[cfg(any(debug_assertions, test))]
+        let err = RequestFailure(error);
+        #[cfg(all(not(debug_assertions), not(test)))]
+        let err = RequestFailure(error.without_url());
+        err
+    }
+}
+
+#[derive(Debug, Default, Clone, serde::Deserialize)]
+pub struct Store {
+    pub id: String,
+    pub name: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deleted_at: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct RawTuple {
+    user: String,
+    relation: String,
+    object: String,
+}
+
+impl<'a, R: Relation, U: AsUser<User = R::User>> From<&Tuple<'a, R, U>> for RawTuple {
+    fn from(tuple: &Tuple<'a, R, U>) -> Self {
+        RawTuple {
+            user: tuple.user.fga_ident(),
+            relation: R::NAME.to_string(),
+            object: tuple.object.fga_ident(),
+        }
+    }
+}
+
+// Almost 1-to-1 mapping of the HTTP API
+impl Client {
+    fn base_url(&self) -> url::Url {
+        url::Url::parse(
+            format!("http://{}:{}/", self.settings.address, self.settings.port).as_str(),
+        )
+        .unwrap()
+    }
+
+    fn get_stores(&self) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> {
+        #[derive(serde::Deserialize)]
+        struct Response {
+            stores: Vec<Store>,
+            continuation_token: Option<String>,
+        }
+
+        struct State {
+            client: Client,
+            continuation: Option<String>,
+        }
+
+        // will be factorized and commented
+        let stream = stream::try_unfold(
+            State {
+                client: self.clone(),
+                continuation: None,
+            },
+            |State {
+                 client,
+                 continuation,
+             }| {
+                async move {
+                    if continuation.as_ref().is_some_and(String::is_empty) {
+                        return Ok(None);
+                    }
+
+                    let mut url = client.base_url().join("stores").unwrap();
+                    if let Some(continuation) = continuation {
+                        url.query_pairs_mut()
+                            .append_pair("continuation_token", continuation.as_str());
+                    }
+                    let response = client.inner.get(url).send().await?;
+
+                    let Response {
+                        stores,
+                        continuation_token,
+                    } = response.error_for_status()?.json::<Response>().await?;
+                    let continuation = continuation_token.unwrap_or_default();
+
+                    let next_state = State {
+                        client,
+                        continuation: Some(continuation),
+                    };
+                    Ok::<_, RequestFailure>(Some((stores, next_state)))
+                }
+            },
+        );
+
+        stream
+            .map_ok(|stores| stream::iter(stores.into_iter().map(Ok)))
+            .try_flatten()
+    }
+
+    async fn post_stores(&self, name: &str) -> Result<Store, RequestFailure> {
+        #[derive(serde::Serialize)]
+        struct Request {
+            name: String,
+        }
+
+        let request = Request {
+            name: name.to_owned(),
+        };
+
+        let url = self.base_url().join("stores").unwrap();
+        let response = self.inner.post(url).json(&request).send().await?;
+
+        let store = response.error_for_status()?.json().await?;
+        Ok(store)
+    }
+
+    #[cfg_attr(not(test), expect(unused))]
+    async fn delete_stores(&self, store_id: &str) -> Result<(), RequestFailure> {
+        let url = self
+            .base_url()
+            .join(format!("stores/{store_id}").as_str())
+            .unwrap();
+        self.inner.delete(url).send().await?.error_for_status()?;
+        Ok(())
+    }
+
+    // It's fine to request tuples to be mapped into `RawTuple` as OpenFGA
+    // doesn't support more than 100 tuples in the request. So mapping 100 objects
+    // max is fine—we'll always be bounded by the network call.
+    async fn post_stores_write<'a>(
+        &self,
+        store_id: &str,
+        writes: &[RawTuple],
+        deletes: &[RawTuple],
+    ) -> Result<(), RequestFailure> {
+        #[derive(serde::Serialize)]
+        struct Request<'a> {
+            #[serde(skip_serializing_if = "Writes::is_empty")]
+            writes: Writes<'a>,
+            #[serde(skip_serializing_if = "Deletes::is_empty")]
+            deletes: Deletes<'a>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            authorization_model_id: Option<String>,
+        }
+
+        #[derive(serde::Serialize)]
+        struct Writes<'a> {
+            tuple_keys: &'a [RawTuple],
+        }
+
+        impl<'a> Writes<'a> {
+            fn is_empty(&self) -> bool {
+                self.tuple_keys.is_empty()
+            }
+        }
+
+        #[derive(serde::Serialize)]
+        struct Deletes<'a> {
+            tuple_keys: &'a [RawTuple],
+        }
+
+        impl<'a> Deletes<'a> {
+            fn is_empty(&self) -> bool {
+                self.tuple_keys.is_empty()
+            }
+        }
+
+        let url = self
+            .base_url()
+            .join(format!("stores/{store_id}/write").as_str())
+            .unwrap();
+        self.inner
+            .post(url)
+            .json(&Request {
+                writes: Writes { tuple_keys: writes },
+                deletes: Deletes {
+                    tuple_keys: deletes,
+                },
+                authorization_model_id: None,
+            })
+            .send()
+            .await?
+            .error_for_status()?;
+        Ok(())
+    }
+
+    async fn post_stores_authorization_models(
+        &self,
+        store_id: &str,
+        authorization_model: &AuthorizationModel,
+    ) -> Result<String, RequestFailure> {
+        let url = self
+            .base_url()
+            .join(format!("stores/{store_id}/authorization-models").as_str())
+            .unwrap();
+        let response = self
+            .inner
+            .post(url)
+            .json(authorization_model)
+            .send()
+            .await?
+            .error_for_status()?;
+
+        #[derive(serde::Deserialize)]
+        struct Response {
+            authorization_model_id: String,
+        }
+        let Response {
+            authorization_model_id,
+        } = response.json().await?;
+
+        Ok(authorization_model_id)
+    }
+
+    async fn post_stores_check(
+        &self,
+        store_id: &str,
+        tuple: RawTuple,
+    ) -> Result<bool, RequestFailure> {
+        #[derive(serde::Serialize)]
+        struct Request {
+            tuple_key: RawTuple,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            contextual_tuples: Option<ContextualTuples>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            authorization_model_id: Option<String>,
+        }
+
+        #[derive(serde::Serialize)]
+        struct ContextualTuples {
+            tuple_keys: Vec<Tuple>,
+        }
+
+        #[derive(serde::Serialize)]
+        struct Tuple {
+            user: String,
+            relation: String,
+            object: String,
+        }
+
+        let request = Request {
+            tuple_key: tuple,
+            contextual_tuples: None,
+            authorization_model_id: None,
+        };
+
+        let url = self
+            .base_url()
+            .join(format!("stores/{store_id}/check").as_str())
+            .unwrap();
+        let response = self.inner.post(url).json(&request).send().await?;
+
+        #[derive(serde::Deserialize)]
+        struct Response {
+            allowed: bool,
+            #[expect(dead_code)]
+            resolution: String,
+        }
+
+        let Response { allowed, .. } = response.error_for_status()?.json::<Response>().await?;
+
+        Ok(allowed)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::compile_model;
+    use crate::defs;
+    use crate::s;
+
+    use super::*;
+
+    macro_rules! test_client {
+        () => {
+            Client::try_create_store(
+                stdext::function_name!()
+                    .split("::")
+                    .filter(|x| *x != "{{closure}}")
+                    .collect::<Vec<_>>()
+                    .join("-"),
+                ConnectionSettings {
+                    address: "localhost".to_owned(),
+                    port: 8080,
+                },
+                true,
+            )
+            .await
+            .expect("Failed to initialize client")
+        };
+    }
+
+    #[tokio::test]
+    async fn test_try_init() {
+        let client = Client::try_init(
+            "lol".to_owned(),
+            ConnectionSettings {
+                address: "localhost".to_owned(),
+                port: 8080,
+            },
+        )
+        .await
+        .unwrap();
+        assert_eq!(client.store.name, "lol");
+    }
+
+    #[tokio::test]
+    async fn test_try_init_not_found() {
+        let result = Client::try_init(
+            "nonexistent_store".to_owned(),
+            ConnectionSettings {
+                address: "localhost".to_owned(),
+                port: 8080,
+            },
+        )
+        .await;
+
+        match result {
+            Err(InitializationError::NotFound(store_name)) => {
+                assert_eq!(store_name, "nonexistent_store");
+            }
+            _ => panic!("Expected InitializationError::NotFound"),
+        }
+    }
+
+    #[tokio::test]
+    async fn create_store_with_reset() {
+        let client = test_client!();
+        assert_eq!(
+            client.store.name,
+            "fga-client-tests-create_store_with_reset"
+        );
+    }
+
+    impl Client {
+        // TODO: comment about tokio::test
+        #[track_caller]
+        fn assert_check<'a, R: Relation>(&self, check: Check<'a, R>) -> &Self {
+            let error = format!("{check:?} doesn't hold, WWWHHHHYYYYY???");
+            let ok = futures::executor::block_on(check.fetch(self)).unwrap();
+            assert!(ok, "{error}");
+            self
+        }
+
+        #[track_caller]
+        fn assert_check_not<'a, R: Relation>(&self, check: Check<'a, R>) -> &Self {
+            let error = format!("{check:?} does hold, it shouldn't tho");
+            let ok = futures::executor::block_on(check.fetch(self)).unwrap();
+            assert!(!ok, "{error}");
+            self
+        }
+    }
+
+    const MODEL: &'static str = include_str!("../tests/model.fga");
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn check() {
+        let model = compile_model(MODEL);
+        let client = test_client!();
+        client.push_authorization_model(&model).await.unwrap();
+        let alice = defs::User(s!("alice"));
+        let bob = defs::User(s!("bob"));
+        let infra = defs::Infra(s!("france"));
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&bob, &infra)])
+            .await
+            .unwrap();
+
+        client
+            .assert_check(defs::Infra::can_read().check(&bob, &infra))
+            .assert_check_not(defs::Infra::can_read().check(&alice, &infra));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn higher_order_users() {
+        let model = compile_model(MODEL);
+        let client = test_client!();
+        client.push_authorization_model(&model).await.unwrap();
+        let alice = defs::User(s!("alice"));
+        let bob = defs::User(s!("bob"));
+        let france = defs::Infra(s!("france"));
+        let spain = defs::Infra(s!("espagne"));
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
+            .await
+            .unwrap();
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&defs::User::tbpa(), &spain)])
+            .await
+            .unwrap();
+
+        client
+            .assert_check(defs::Infra::can_read().check(&alice, &france))
+            .assert_check_not(defs::Infra::can_read().check(&bob, &france))
+            .assert_check(defs::Infra::can_read().check(&alice, &spain))
+            .assert_check(defs::Infra::can_read().check(&bob, &spain));
+    }
+}
