@@ -216,6 +216,7 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                 return ArrayList(res)
             }
             mutDelayNeeded += mutEdge.timeData.delayAddedToLastDeparture
+            mutDelayNeeded += mutEdge.engineeringAllowance?.extraDuration ?: 0.0
             mutEdge = mutEdge.previousNode.previousEdge!!
         }
     }

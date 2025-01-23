@@ -211,7 +211,7 @@ private fun initFixedPoints(
     }
     var prevEdgeLength = 0.meters
     for (edge in edges) {
-        val engineeringAllowanceLength = edge.engineeringAllowanceLength
+        val engineeringAllowanceLength = edge.engineeringAllowance?.length
         if (engineeringAllowanceLength != null) {
             val engineeringAllowanceStart = prevEdgeLength - engineeringAllowanceLength
             // Edges can have overlapping engineering allowance, only the last one is relevant.

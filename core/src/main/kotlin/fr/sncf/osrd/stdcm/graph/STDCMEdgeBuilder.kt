@@ -5,7 +5,6 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -161,13 +160,15 @@ internal constructor(
         var departureTimeShift = delayNeeded
         val needEngineeringAllowance =
             delayNeeded > prevNode.timeData.maxDepartureDelayingWithoutConflict
-        var allowanceLength: Distance? = null
+        var allowanceData: STDCMEdge.EngineeringAllowanceData? = null
         if (needEngineeringAllowance) {
             // We can't just shift the departure time, we need an engineering allowance
             // It's not computed yet, we just check that it's possible
-            allowanceLength =
+            val allowanceLength =
                 graph.allowanceManager.checkEngineeringAllowance(prevNode, actualStartTime)
                     ?: return null
+            val extraTime = delayNeeded - prevNode.timeData.maxDepartureDelayingWithoutConflict
+            allowanceData = STDCMEdge.EngineeringAllowanceData(allowanceLength, extraTime)
             // We still need to adapt the delay values
             departureTimeShift = prevNode.timeData.maxDepartureDelayingWithoutConflict
         } else {
@@ -217,7 +218,7 @@ internal constructor(
                 envelope!!.endSpeed,
                 Length(fromMeters(envelope!!.endPos)),
                 envelope!!.totalTime / standardAllowanceSpeedRatio,
-                allowanceLength,
+                allowanceData,
             )
         res = graph.backtrackingManager.backtrack(res!!, envelope!!)
         return if (res == null || graph.delayManager.isRunTimeTooLong(res)) null else res

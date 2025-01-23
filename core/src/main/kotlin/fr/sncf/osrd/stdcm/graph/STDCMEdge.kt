@@ -35,15 +35,23 @@ data class STDCMEdge(
     // How long it takes to go from the beginning to the end of the block, taking the
     // standard allowance into account
     val totalTime: Double,
-    // If this edges starts after the end of an engineering allowance, this contains its length, or
-    // null otherwise. Used for initial placement of fixed time points in postprocessing.
-    val engineeringAllowanceLength: Distance?,
+    // If this edges starts after the end of an engineering allowance, this contains
+    // some data like its length and extra time. Null if there's no engineering allowance
+    // ending here. Overrides any allowance spanning part of the range from previous edges.
+    val engineeringAllowance: EngineeringAllowanceData?,
 ) {
     val block = infraExplorer.getCurrentBlock()
 
     init {
         assert(!isNaN(timeData.earliestReachableTime)) { "STDCM edge starts at NaN time" }
     }
+
+    data class EngineeringAllowanceData(
+        /** How long is the allowance section. It always ends at the start of the current edge. */
+        val length: Distance,
+        /** How much extra time was added on this current allowance range. */
+        val extraDuration: Double,
+    )
 
     /** Returns the node at the end of this edge */
     fun getEdgeEnd(graph: STDCMGraph): STDCMNode {
