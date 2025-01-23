@@ -8,6 +8,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::Extension;
+use derivative::Derivative;
 use editoast_authz::BuiltinRole;
 use editoast_common::units;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
@@ -139,12 +140,16 @@ impl From<PathfindingCoreResult> for PathfindingResult {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Derivative)]
+#[derivative(Default)]
 #[serde(tag = "failed_status", rename_all = "snake_case")]
 pub enum PathfindingFailure {
     PathfindingInputError(PathfindingInputError),
+    #[derivative(Default)]
     PathfindingNotFound(PathfindingNotFound),
-    InternalError { core_error: InternalError },
+    InternalError {
+        core_error: InternalError,
+    },
 }
 
 /// Compute a pathfinding
@@ -210,18 +215,37 @@ async fn pathfinding_blocks_batch(
     infra: &Infra,
     pathfinding_inputs: &[PathfindingInput],
 ) -> Result<Vec<PathfindingResult>> {
+    let mut hash_to_path_indexes: HashMap<String, Vec<usize>> = HashMap::default();
+    let mut path_request_map: HashMap<String, PathfindingInput> = HashMap::default();
+    let mut pathfinding_results =
+        vec![PathfindingResult::Failure(PathfindingFailure::default()); pathfinding_inputs.len()];
+    for (index, path_input) in pathfinding_inputs.iter().enumerate() {
+        let pathfinding_hash = path_input_hash(infra.id, &infra.version, path_input);
+        hash_to_path_indexes
+            .entry(pathfinding_hash.clone())
+            .or_default()
+            .push(index);
+        path_request_map
+            .entry(pathfinding_hash.clone())
+            .or_insert(path_input.clone());
+    }
+
+    info!(
+        nb_pathfindings = pathfinding_inputs.len(),
+        nb_unique_pathfindings = hash_to_path_indexes.len()
+    );
+
     // Compute hashes of all path_inputs
-    let hashes: Vec<_> = pathfinding_inputs
-        .iter()
-        .map(|input| path_input_hash(infra.id, &infra.version, input))
-        .collect();
+    let hashes = hash_to_path_indexes.keys().collect::<Vec<_>>();
 
     // Try to retrieve the result from Valkey
-    let mut pathfinding_results: Vec<Option<PathfindingResult>> =
+    let pathfinding_cached_results: Vec<Option<PathfindingResult>> =
         valkey_conn.json_get_bulk(&hashes).await?;
+    let pathfinding_cached_results: HashMap<_, _> =
+        hashes.into_iter().zip(pathfinding_cached_results).collect();
 
     // Report number of hit cache
-    let nb_hit = pathfinding_results.iter().flatten().count();
+    let nb_hit = pathfinding_cached_results.values().flatten().count();
     info!(
         nb_hit,
         nb_miss = pathfinding_inputs.len() - nb_hit,
@@ -230,11 +254,10 @@ async fn pathfinding_blocks_batch(
 
     // Handle miss cache:
     debug!("Extracting locations from path items");
-    let path_items: Vec<_> = pathfinding_results
+    let path_items: Vec<_> = pathfinding_cached_results
         .iter()
-        .zip(pathfinding_inputs)
-        .filter(|(res, _)| res.is_none())
-        .flat_map(|(_, input)| &input.path_items)
+        .filter(|(_, res)| res.is_none())
+        .flat_map(|(hash, _)| &path_request_map[*hash].path_items)
         .collect();
     let path_item_cache = PathItemCache::load(conn, infra.id, &path_items).await?;
 
@@ -244,24 +267,25 @@ async fn pathfinding_blocks_batch(
     );
     let mut to_cache = vec![];
     let mut pathfinding_requests = vec![];
-    let mut pathfinding_requests_index = vec![];
-    for (index, (pathfinding_result, pathfinding_input)) in pathfinding_results
-        .iter_mut()
-        .zip(pathfinding_inputs)
-        .enumerate()
-    {
-        if pathfinding_result.is_some() {
+    let mut to_compute_hashes = vec![];
+    for (hash, pathfinding_result) in pathfinding_cached_results.into_iter() {
+        if let Some(result) = pathfinding_result {
+            hash_to_path_indexes[hash]
+                .iter()
+                .for_each(|index| pathfinding_results[*index] = result.clone());
             continue;
         }
-
+        let pathfinding_input = &path_request_map[hash];
         match build_pathfinding_request(pathfinding_input, infra, &path_item_cache) {
             Ok(pathfinding_request) => {
                 pathfinding_requests.push(pathfinding_request);
-                pathfinding_requests_index.push(index);
+                to_compute_hashes.push(hash);
             }
             Err(result) => {
-                *pathfinding_result = Some(result.clone());
-                to_cache.push((&hashes[index], result));
+                hash_to_path_indexes[hash]
+                    .iter()
+                    .for_each(|index| pathfinding_results[*index] = result.clone());
+                to_cache.push((hash, result));
             }
         }
     }
@@ -279,11 +303,10 @@ async fn pathfinding_blocks_batch(
         .into_iter()
         .collect();
 
-    for (index, path_result) in computed_paths.into_iter().enumerate() {
-        let path_index = pathfinding_requests_index[index];
-        let path = match path_result {
+    for (path_result, hash) in computed_paths.into_iter().zip(to_compute_hashes) {
+        let result = match path_result {
             Ok(path) => {
-                to_cache.push((&hashes[path_index], path.clone().into()));
+                to_cache.push((hash, path.clone().into()));
                 path.into()
             }
             // TODO: only make HTTP status code errors non-fatal
@@ -291,13 +314,15 @@ async fn pathfinding_blocks_batch(
                 PathfindingResult::Failure(PathfindingFailure::InternalError { core_error })
             }
         };
-        pathfinding_results[path_index] = Some(path);
+        hash_to_path_indexes[hash]
+            .iter()
+            .for_each(|index| pathfinding_results[*index] = result.clone());
     }
 
-    debug!(nb_results = to_cache.len(), "Caching pathfinding response");
+    debug!(nb_cached = to_cache.len(), "Caching pathfinding response");
     valkey_conn.json_set_bulk(&to_cache).await?;
 
-    Ok(pathfinding_results.into_iter().flatten().collect())
+    Ok(pathfinding_results)
 }
 
 fn build_pathfinding_request(

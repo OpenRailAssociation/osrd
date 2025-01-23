@@ -457,7 +457,8 @@ pub async fn consist_train_simulation_batch(
         .collect();
 
     let mut simulation_results = vec![SimulationResponse::default(); train_schedules.len()];
-    let mut to_sim = Vec::with_capacity(train_schedules.len());
+    let mut to_sim: HashMap<String, Vec<usize>> = HashMap::default();
+    let mut sim_request_map: HashMap<String, SimulationRequest> = HashMap::default();
     for (index, (pathfinding, train_schedule)) in
         pathfinding_results.iter().zip(train_schedules).enumerate()
     {
@@ -500,12 +501,21 @@ pub async fn consist_train_simulation_batch(
         // Compute unique hash of the simulation input
         let simulation_hash =
             train_simulation_input_hash(infra.id, &infra.version, &simulation_request);
-        to_sim.push((index, simulation_hash, simulation_request));
+        to_sim
+            .entry(simulation_hash.clone())
+            .or_default()
+            .push(index);
+        sim_request_map
+            .entry(simulation_hash)
+            .or_insert(simulation_request);
     }
-
-    let cached_results: Vec<Option<SimulationResponse>> = valkey_conn
-        .json_get_bulk(&to_sim.iter().map(|(_, hash, _)| hash).collect::<Vec<_>>())
-        .await?;
+    info!(
+        nb_train_schedules = train_schedules.len(),
+        nb_unique_sim = to_sim.len()
+    );
+    let cached_simulation_hash = to_sim.keys().collect::<Vec<_>>();
+    let cached_results: Vec<Option<SimulationResponse>> =
+        valkey_conn.json_get_bulk(&cached_simulation_hash).await?;
 
     let nb_hit = cached_results.iter().flatten().count();
     let nb_miss = to_sim.len() - nb_hit;
@@ -513,14 +523,18 @@ pub async fn consist_train_simulation_batch(
 
     // Compute simulation from core
     let mut futures = Vec::with_capacity(nb_miss);
-    let mut futures_index_hash = Vec::with_capacity(nb_miss);
-    for ((train_index, train_hash, sim_request), sim_cached) in to_sim.iter().zip(cached_results) {
+    let mut futures_hash = Vec::with_capacity(nb_miss);
+    for (train_hash, sim_cached) in cached_simulation_hash.iter().zip(cached_results) {
         if let Some(sim_cached) = sim_cached {
-            simulation_results[*train_index] = sim_cached;
+            let train_indexes = &to_sim[*train_hash];
+            for train_index in train_indexes {
+                simulation_results[*train_index] = sim_cached.clone();
+            }
             continue;
         }
+        let sim_request = &sim_request_map[*train_hash];
         futures.push(Box::pin(sim_request.fetch(core.as_ref())));
-        futures_index_hash.push((*train_index, train_hash));
+        futures_hash.push(train_hash);
     }
 
     let simulated: Vec<_> = futures::future::join_all(futures)
@@ -528,20 +542,23 @@ pub async fn consist_train_simulation_batch(
         .into_iter()
         .collect();
 
-    let mut is_cacheable = vec![false; train_schedules.len()];
-    for (&(train_index, _), sim_res) in futures_index_hash.iter().zip(simulated) {
-        (simulation_results[train_index], is_cacheable[train_index]) = match sim_res {
-            Ok(sim) => (sim, true),
-            // TODO: only make HTTP status code errors non-fatal
-            Err(core_error) => (SimulationResponse::SimulationFailed { core_error }, false),
+    let mut to_cache = vec![];
+    for (train_hash, sim_res) in futures_hash.iter().zip(simulated) {
+        let train_indexes = &to_sim[**train_hash];
+        match sim_res {
+            Ok(sim_res) => {
+                to_cache.push((train_hash, sim_res.clone()));
+                train_indexes
+                    .iter()
+                    .for_each(|index| simulation_results[*index] = sim_res.clone())
+            }
+            Err(core_error) => train_indexes.iter().for_each(|index| {
+                simulation_results[*index] = SimulationResponse::SimulationFailed {
+                    core_error: core_error.clone(),
+                }
+            }),
         }
     }
-
-    let to_cache: Vec<_> = futures_index_hash
-        .into_iter()
-        .filter(|&(train_index, _)| is_cacheable[train_index])
-        .map(|(train_index, train_hash)| (train_hash, &simulation_results[train_index]))
-        .collect();
 
     // Cache the simulation response
     valkey_conn.json_set_bulk(&to_cache).await?;

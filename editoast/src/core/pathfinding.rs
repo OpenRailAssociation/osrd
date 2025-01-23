@@ -136,7 +136,7 @@ pub enum PathfindingInputError {
 }
 
 // Enum for not-found results and incompatible constraints
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Default)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingNotFound {
     NotFoundInBlocks {
@@ -147,6 +147,7 @@ pub enum PathfindingNotFound {
         track_section_ranges: Vec<TrackRange>,
         length: u64,
     },
+    #[default]
     NotFoundInTracks,
     IncompatibleConstraints {
         relaxed_constraints_path: Box<PathfindingResultSuccess>,
