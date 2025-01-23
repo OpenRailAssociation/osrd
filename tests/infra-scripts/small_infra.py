@@ -100,7 +100,6 @@ def create_small_infra() -> ScenarioData:
     LAT_3 = 49.51
     # The lines of the north-east station
     LAT_4 = 49.513
-    LONG_SWITCH_LENGTH = 0.005
     # Track and line names
     V1 = {"track_name": "V1", "track_number": 1}
     V2 = {"track_name": "V2", "track_number": 2}
@@ -163,9 +162,9 @@ def create_small_infra() -> ScenarioData:
     ta1.set_remaining_coords([(-0.4, LAT_1)])
     ta2.set_remaining_coords([(-0.4, LAT_2)])
     # Extra detectors, which are not associated to signals
-    da7 = ta3.add_detector(label="DA7", position=ta3.length / 2)
-    da8 = ta4.add_detector(label="DA8", position=ta4.length / 2)
-    da9 = ta5.add_detector(label="DA9", position=ta5.length / 2)
+    ta3.add_detector(label="DA7", position=ta3.length / 2)
+    ta4.add_detector(label="DA8", position=ta4.length / 2)
+    ta5.add_detector(label="DA9", position=ta5.length / 2)
     # Extra signals
     place_regular_signals_detectors(ta6, "A6", Direction.START_TO_STOP, 200, -200)
     place_regular_signals_detectors(ta7, "A7", Direction.STOP_TO_START, 200, -200)
@@ -449,7 +448,7 @@ def create_small_infra() -> ScenarioData:
     pg1.set_coords(-0.108, LAT_4 - LAT_LINE_SPACE)
     tg4.set_remaining_coords([(-0.09, LAT_4)])
     tg5.set_remaining_coords([(-0.09, LAT_4 - LAT_LINE_SPACE)])
-    dg6 = tg3.add_detector(label="DG7", position=tg3.length / 2)
+    tg3.add_detector(label="DG7", position=tg3.length / 2)
     north_east = builder.add_operational_point(label="North_East_station", trigram="NES", uic=7)
     north_east.add_part(tg4, 1550)
     north_east.add_part(tg5, 1500)
