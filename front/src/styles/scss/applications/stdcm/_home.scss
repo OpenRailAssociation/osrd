@@ -107,7 +107,9 @@
         }
 
         .stdcm-vias-bundle {
-          animation: bouncin-in 0.75s cubic-bezier(0.567, -0.475, 0, 1);
+          &.animated {
+            animation: bouncin-in 0.75s cubic-bezier(0.567, -0.475, 0, 1);
+          }
 
           .stdcm-card {
             scroll-margin-bottom: 15px;
@@ -299,6 +301,7 @@
       }
 
       .pathfinding-status {
+        z-index: 1;
         left: -8px;
         position: absolute;
         bottom: -95px;

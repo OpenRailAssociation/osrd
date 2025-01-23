@@ -7,9 +7,9 @@ import { getStdcmDestination } from 'reducers/osrdconf/stdcmConf/selectors';
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmOpSchedule from './StdcmOpSchedule';
-import type { StdcmConfigCardProps } from '../../types';
+import type { StdcmItineraryProps } from '../../types';
 
-const StdcmDestination = ({ disabled = false }: StdcmConfigCardProps) => {
+const StdcmDestination = ({ disabled = false, onItineraryChange }: StdcmItineraryProps) => {
   const { t } = useTranslation('stdcm');
 
   const destination = useSelector(getStdcmDestination);
@@ -26,6 +26,7 @@ const StdcmDestination = ({ disabled = false }: StdcmConfigCardProps) => {
         location={destination.location}
         pathStepId={destination.id}
         disabled={disabled}
+        onItineraryChange={onItineraryChange}
       />
       <StdcmOpSchedule pathStep={destination} disabled={disabled} opId="destination-arrival" />
     </StdcmCard>

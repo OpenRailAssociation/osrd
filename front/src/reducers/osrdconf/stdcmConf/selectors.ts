@@ -32,6 +32,10 @@ const buildStdcmConfSelectors = () => {
     }
   );
 
+  const getStdcmCompletedSimulations = createSelector([getStdcmSimulations], (simulations) =>
+    simulations.filter((simulation) => simulation.outputs)
+  );
+
   return {
     ...commonConfSelectors,
     getStdcmConf,
@@ -62,6 +66,7 @@ const buildStdcmConfSelectors = () => {
     getLinkedTrains: makeOsrdConfSelector('linkedTrains'),
 
     getStdcmSimulations,
+    getStdcmCompletedSimulations,
     getSelectedSimulationIndex,
     getSelectedSimulation,
     getRetainedSimulationIndex: makeOsrdConfSelector('retainedSimulationIndex'),
@@ -83,6 +88,7 @@ export const {
   getStdcmDestination,
   getLinkedTrains,
   getStdcmSimulations,
+  getStdcmCompletedSimulations,
   getSelectedSimulationIndex,
   getSelectedSimulation,
   getRetainedSimulationIndex,

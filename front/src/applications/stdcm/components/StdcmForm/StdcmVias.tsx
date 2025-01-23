@@ -1,6 +1,7 @@
 import { useLayoutEffect, useMemo, useState } from 'react';
 
 import { Location } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -16,9 +17,13 @@ import StdcmOperationalPoint from './StdcmOperationalPoint';
 import StdcmStopType from './StdcmStopType';
 import StopDurationInput from './StopDurationInput';
 import { StdcmStopTypes } from '../../types';
-import type { StdcmConfigCardProps } from '../../types';
+import type { StdcmItineraryProps } from '../../types';
 
-const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
+type StdcmViasProps = StdcmItineraryProps & {
+  skipAnimation: boolean;
+};
+
+const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: StdcmViasProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getStdcmPathSteps);
@@ -89,11 +94,13 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
 
   const deleteViaOnClick = (pathStepId: string) => {
     dispatch(deleteStdcmVia(pathStepId));
+    onItineraryChange();
   };
 
   const addViaOnClick = (pathStepIndex: number) => {
     dispatch(addStdcmVia(pathStepIndex));
     setNewIntermediateOpIndex(pathStepIndex);
+    onItineraryChange();
   };
 
   return (
@@ -102,7 +109,12 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
         if (!pathStep.isVia) return null;
         const pathStepIndex = index + 1;
         return (
-          <div className="stdcm-vias-bundle" key={pathStep.id}>
+          <div
+            className={cx('stdcm-vias-bundle', {
+              animated: pathStepIndex === newIntermediateOpIndex && !skipAnimation,
+            })}
+            key={pathStep.id}
+          >
             <StdcmDefaultCard
               hasTip
               text={t('trainPath.addVia')}
@@ -135,6 +147,7 @@ const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
                 location={pathStep.location}
                 pathStepId={pathStep.id}
                 disabled={disabled}
+                onItineraryChange={onItineraryChange}
               />
               <StdcmStopType
                 stopTypes={pathStep.stopType}

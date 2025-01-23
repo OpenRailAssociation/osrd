@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 
 import useHorizontalScroll from 'applications/stdcm/hooks/useHorizontalScroll';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
-import { getStdcmSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
+import { getStdcmCompletedSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
 import { formatDateToString, formatTimeDifference } from 'utils/date';
 import { mmToKm } from 'utils/physics';
 
@@ -29,7 +29,7 @@ const StdcmSimulationNavigator = ({
 }: StdcmSimulationNavigatorProps) => {
   const { t } = useTranslation();
 
-  const simulationsList = useSelector(getStdcmSimulations);
+  const completedSimulations = useSelector(getStdcmCompletedSimulations);
 
   const { scrollableRef, showLeftBtn, showRightBtn, scrollLeft, scrollRight } = useHorizontalScroll(
     SIMULATION_ITEM_CLASSNAME,
@@ -42,91 +42,95 @@ const StdcmSimulationNavigator = ({
         'with-error-status': showStatusBanner && isCalculationFailed,
       })}
     >
-      <div className="simulation-list-wrapper">
-        {showLeftBtn && (
-          <div
-            className="scroll-btn left"
-            role="button"
-            tabIndex={0}
-            aria-label="Scroll left"
-            onClick={scrollLeft}
-          >
-            <ChevronLeft size="lg" />
-          </div>
-        )}
-        <div className="simulation-list" ref={scrollableRef}>
-          {simulationsList.map(({ index, creationDate, outputs }) => {
-            let formatedTotalLength = '';
-            let formatedTripDuration = '';
-
-            if (hasResults(outputs)) {
-              const { results } = outputs;
-              const lastPointTime = results.simulation.final_output.times.at(-1)!;
-              const departureTimeInMs = new Date(results.departure_time).getTime();
-
-              formatedTotalLength = `${Math.round(mmToKm(results.path.length))} ${t('common.units.km', { ns: 'translation' })} `;
-              formatedTripDuration = formatTimeDifference(
-                departureTimeInMs,
-                lastPointTime + departureTimeInMs
-              );
-            }
-
-            return (
+      {completedSimulations.length > 0 && (
+        <>
+          <div className="simulation-list-wrapper">
+            {showLeftBtn && (
               <div
+                className="scroll-btn left"
                 role="button"
                 tabIndex={0}
-                key={index}
-                className={cx(SIMULATION_ITEM_CLASSNAME, {
-                  retained: retainedSimulationIndex === index,
-                  selected: selectedSimulationIndex === index,
-                  anyRetained: retainedSimulationIndex !== undefined,
-                })}
-                onClick={() => onSelectSimulation(index)}
+                aria-label="Scroll left"
+                onClick={scrollLeft}
               >
-                <div className="simulation-name">
-                  <span>
-                    {outputs && !hasConflicts(outputs)
-                      ? t('simulation.results.simulationName.withOutputs', {
-                          id: index + 1,
-                          ns: 'stdcm',
-                        })
-                      : t('simulation.results.simulationName.withoutOutputs', {
+                <ChevronLeft size="lg" />
+              </div>
+            )}
+            <div className="simulation-list" ref={scrollableRef}>
+              {completedSimulations.map(({ index, creationDate, outputs }) => {
+                let formatedTotalLength = '';
+                let formatedTripDuration = '';
+
+                if (hasResults(outputs)) {
+                  const { results } = outputs;
+                  const lastPointTime = results.simulation.final_output.times.at(-1)!;
+                  const departureTimeInMs = new Date(results.departure_time).getTime();
+
+                  formatedTotalLength = `${Math.round(mmToKm(results.path.length))} ${t('common.units.km', { ns: 'translation' })} `;
+                  formatedTripDuration = formatTimeDifference(
+                    departureTimeInMs,
+                    lastPointTime + departureTimeInMs
+                  );
+                }
+
+                return (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    key={index}
+                    className={cx(SIMULATION_ITEM_CLASSNAME, {
+                      retained: retainedSimulationIndex === index,
+                      selected: selectedSimulationIndex === index,
+                      anyRetained: retainedSimulationIndex !== undefined,
+                    })}
+                    onClick={() => onSelectSimulation(index)}
+                  >
+                    <div className="simulation-name">
+                      <span>
+                        {outputs && !hasConflicts(outputs)
+                          ? t('simulation.results.simulationName.withOutputs', {
+                              id: index + 1,
+                              ns: 'stdcm',
+                            })
+                          : t('simulation.results.simulationName.withoutOutputs', {
+                              ns: 'stdcm',
+                            })}
+                      </span>
+                      {retainedSimulationIndex === index && (
+                        <CheckCircle className="check-circle" variant="fill" />
+                      )}
+                    </div>
+                    <div className="simulation-metadata" key={index}>
+                      <span className="creation-date">
+                        {t('simulation.results.formatCreationDate', {
+                          ...formatDateToString(creationDate, true),
                           ns: 'stdcm',
                         })}
-                  </span>
-                  {retainedSimulationIndex === index && (
-                    <CheckCircle className="check-circle" variant="fill" />
-                  )}
-                </div>
-                <div className="simulation-metadata" key={index}>
-                  <span className="creation-date">
-                    {t('simulation.results.formatCreationDate', {
-                      ...formatDateToString(creationDate, true),
-                      ns: 'stdcm',
-                    })}
-                  </span>
-                  <span className="total-length-trip-duration">{`${formatedTotalLength}— ${formatedTripDuration}`}</span>
-                </div>
-                {selectedSimulationIndex === index && (
-                  <div className="selected-simulation-indicator" />
-                )}
+                      </span>
+                      <span className="total-length-trip-duration">{`${formatedTotalLength}— ${formatedTripDuration}`}</span>
+                    </div>
+                    {selectedSimulationIndex === index && (
+                      <div className="selected-simulation-indicator" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {showRightBtn && (
+              <div
+                className="scroll-btn right"
+                role="button"
+                tabIndex={0}
+                aria-label="Scroll right"
+                onClick={scrollRight}
+              >
+                <ChevronRight size="lg" />
               </div>
-            );
-          })}
-        </div>
-        {showRightBtn && (
-          <div
-            className="scroll-btn right"
-            role="button"
-            tabIndex={0}
-            aria-label="Scroll right"
-            onClick={scrollRight}
-          >
-            <ChevronRight size="lg" />
+            )}
           </div>
-        )}
-      </div>
-      <div className="separator" />
+          <div className="separator" />
+        </>
+      )}
     </div>
   );
 };

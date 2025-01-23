@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcm/types';
+import {
+  ArrivalTimeTypes,
+  StdcmStopTypes,
+  type LinkedTrains,
+  type StdcmSimulation,
+} from 'applications/stdcm/types';
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
@@ -14,9 +19,9 @@ import {
   updateTotalLength,
   updateTotalMass,
   updateTowedRollingStockID,
-  addNewStdcmResult,
   retainSimulation,
   selectSimulation,
+  addStdcmSimulation,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -42,6 +47,22 @@ function stdcmConfTestDataBuilder() {
       value,
       type: 'time',
     }),
+    buildLinkedTrains(value?: Partial<LinkedTrains>): LinkedTrains {
+      return {
+        anteriorTrain: {
+          date: '2025-02-06',
+          time: '12:00',
+          trainName: 'anterior train',
+          ...value?.anteriorTrain,
+        },
+        posteriorTrain: {
+          date: '2025-02-08',
+          time: '12:00',
+          trainName: 'posterior train',
+          ...value?.posteriorTrain,
+        },
+      };
+    },
   };
 }
 
@@ -201,35 +222,32 @@ describe('stdcmConfReducers', () => {
   });
 
   describe('StdcmResults updates', () => {
-    const simulation = {
-      index: 0,
-      creationDate: new Date(),
-      inputs: {
-        pathSteps: stdcmPathSteps,
-        linkedTrains: { anteriorTrain: undefined, posteriorTrain: undefined },
+    const simulationInputs = {
+      pathSteps: stdcmPathSteps,
+      linkedTrains: { anteriorTrain: undefined, posteriorTrain: undefined },
+      consist: {
+        totalMass: 100,
+        totalLength: 50,
+        maxSpeed: 25,
+        speedLimitByTag: 'new-tag',
       },
     };
 
-    it('should handle adding new simulations', () => {
+    const simulation = {
+      index: 0,
+      creationDate: new Date(),
+      inputs: simulationInputs,
+    };
+
+    it('should add a new simulation', () => {
       const store = createStore();
       const { simulations } = store.getState()[stdcmConfSlice.name];
       expect(simulations.length).toBe(0);
 
-      store.dispatch(addNewStdcmResult(simulation));
-      let state = store.getState()[stdcmConfSlice.name];
+      store.dispatch(addStdcmSimulation(simulationInputs));
+      const state = store.getState()[stdcmConfSlice.name];
       expect(state.simulations.length).toEqual(1);
-      expect(state.simulations.at(0)).toEqual(simulation);
-
-      const newSimulation = {
-        ...simulation,
-        index: 1,
-      };
-
-      store.dispatch(addNewStdcmResult(newSimulation));
-      state = store.getState()[stdcmConfSlice.name];
-      expect(state.simulations.length).toEqual(2);
-      expect(state.simulations.at(0)).toEqual(simulation);
-      expect(state.simulations.at(1)).toEqual(newSimulation);
+      expect(state.simulations.at(0)!.inputs).toEqual(simulationInputs);
     });
 
     it('should handle updating last simulation', () => {
@@ -237,15 +255,29 @@ describe('stdcmConfReducers', () => {
       const { simulations } = store.getState()[stdcmConfSlice.name];
       expect(simulations.length).toBe(1);
 
-      const newSimulation = {
+      const newSimulation: StdcmSimulation = {
         ...simulation,
-        index: 1,
+        inputs: {
+          ...simulation.inputs,
+          consist: {
+            totalMass: 75,
+            totalLength: 20,
+            maxSpeed: 10,
+            speedLimitByTag: 'new-tag',
+          },
+        },
       };
 
       store.dispatch(updateLastStdcmResult(newSimulation));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.simulations.length).toEqual(1);
       expect(state.simulations.at(0)).toEqual(newSimulation);
+      expect(state.selectedSimulationIndex).toEqual(0);
+      expect(state.totalLength).toEqual(newSimulation.inputs.consist!.totalLength);
+      expect(state.totalMass).toEqual(newSimulation.inputs.consist!.totalMass);
+      expect(state.maxSpeed).toEqual(newSimulation.inputs.consist!.maxSpeed);
+      expect(state.speedLimitByTag).toEqual(newSimulation.inputs.consist!.speedLimitByTag);
+      expect(state.stdcmPathSteps).toEqual(newSimulation.inputs.pathSteps);
     });
 
     it('should handle selecting a simulation', () => {
@@ -253,6 +285,11 @@ describe('stdcmConfReducers', () => {
       store.dispatch(selectSimulation(0));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.selectedSimulationIndex).toEqual(0);
+      expect(state.totalLength).toEqual(simulation.inputs.consist.totalLength);
+      expect(state.totalMass).toEqual(simulation.inputs.consist.totalMass);
+      expect(state.maxSpeed).toEqual(simulation.inputs.consist.maxSpeed);
+      expect(state.speedLimitByTag).toEqual(simulation.inputs.consist.speedLimitByTag);
+      expect(state.stdcmPathSteps).toEqual(simulation.inputs.pathSteps);
     });
 
     it('should handle retaining a simulation', () => {

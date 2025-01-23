@@ -5,11 +5,17 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import useStdcmForm from 'applications/stdcm/hooks/useStdcmForm';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
-import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
+import {
+  resetMargins,
+  restoreStdcmConfig,
+  updateStdcmPathStep,
+  addStdcmSimulation,
+} from 'reducers/osrdconf/stdcmConf';
 import {
   getStdcmDestination,
   getStdcmOrigin,
@@ -44,19 +50,23 @@ declare global {
 type StdcmConfigProps = {
   isDebugMode: boolean;
   isPending: boolean;
-  launchStdcmRequest: () => Promise<void>;
   retainedSimulationIndex?: number;
   showBtnToLaunchSimulation: boolean;
+  skipPathfindingStatusMessage: boolean;
+  launchStdcmRequest: () => Promise<void>;
   cancelStdcmRequest: () => void;
+  setSkipPathfindingStatusMessage: (value: boolean) => void;
 };
 
 const StdcmConfig = ({
   isDebugMode,
   isPending,
-  launchStdcmRequest,
   retainedSimulationIndex,
   showBtnToLaunchSimulation,
+  skipPathfindingStatusMessage,
+  setSkipPathfindingStatusMessage,
   cancelStdcmRequest,
+  launchStdcmRequest,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
   const launchButtonRef = useRef<HTMLDivElement>(null);
@@ -81,13 +91,16 @@ const StdcmConfig = ({
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
+  const currentSimulationInputs = useStdcmForm();
+
   const disabled = isPending || retainedSimulationIndex !== undefined;
 
   const markersInfo = useMemo(() => extractMarkersInfo(pathSteps), [pathSteps]);
 
-  const startSimulation = () => {
+  const startSimulation = async () => {
     const formErrorsStatus = checkStdcmConfigErrors(pathSteps, t, pathfinding?.status);
     if (pathfinding?.status === 'success' && !formErrorsStatus) {
+      dispatch(addStdcmSimulation(currentSimulationInputs));
       launchStdcmRequest();
     } else {
       // The console error is only for debugging the user tests (temporary)
@@ -101,11 +114,14 @@ const StdcmConfig = ({
       updateStdcmPathStep({ id: origin.id, updates: { arrivalType: ArrivalTimeTypes.ASAP } })
     );
   };
+
   const removeDestinationArrivalTime = () => {
     dispatch(
       updateStdcmPathStep({ id: destination.id, updates: { arrivalType: ArrivalTimeTypes.ASAP } })
     );
   };
+
+  const onItineraryChange = () => setSkipPathfindingStatusMessage(false);
 
   const getStatusMessage = () => {
     if (isPathFindingLoading) {
@@ -141,14 +157,14 @@ const StdcmConfig = ({
   }, []);
 
   useEffect(() => {
-    if (isPathFindingLoading) {
+    if (!skipPathfindingStatusMessage && isPathFindingLoading) {
       setShowMessage(true);
     }
 
     if (pathfinding?.status === 'failure') {
       setShowMessage(false);
     }
-  }, [isPathFindingLoading, pathfinding?.status]);
+  }, [isPathFindingLoading, pathfinding?.status, skipPathfindingStatusMessage]);
 
   useLayoutEffect(() => {
     const handleAnimationEnd = () => {
@@ -185,9 +201,13 @@ const StdcmConfig = ({
             </div>
             <div className="stdcm__separator" />
             <div ref={formRef} className="stdcm-simulation-itinerary">
-              <StdcmOrigin disabled={disabled} />
-              <StdcmVias disabled={disabled} />
-              <StdcmDestination disabled={disabled} />
+              <StdcmOrigin disabled={disabled} onItineraryChange={onItineraryChange} />
+              <StdcmVias
+                disabled={disabled}
+                skipAnimation={skipPathfindingStatusMessage}
+                onItineraryChange={onItineraryChange}
+              />
+              <StdcmDestination disabled={disabled} onItineraryChange={onItineraryChange} />
               <StdcmLinkedTrainSearch
                 disabled={disabled}
                 linkedTrainType="posterior"

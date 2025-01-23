@@ -1,18 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 
 import { isEqual, isNil } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import { LoaderFill } from 'common/Loaders';
-import {
-  addNewStdcmResult,
-  selectSimulation,
-  updateLastStdcmResult,
-} from 'reducers/osrdconf/stdcmConf';
+import { selectSimulation, updateLastStdcmResult } from 'reducers/osrdconf/stdcmConf';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulationIndex,
+  getStdcmCompletedSimulations,
   getStdcmConf,
   getStdcmSimulations,
 } from 'reducers/osrdconf/stdcmConf/selectors';
@@ -33,6 +30,7 @@ const StdcmView = () => {
   const currentSimulationInputs = useStdcmForm();
   const stdcmConf = useSelector(getStdcmConf);
   const simulationsList = useSelector(getStdcmSimulations);
+  const completedSimulations = useSelector(getStdcmCompletedSimulations);
   const selectedSimulationIndex = useSelector(getSelectedSimulationIndex);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
@@ -41,6 +39,10 @@ const StdcmView = () => {
   const [isDebugMode, setIsDebugMode] = useState(false);
   const [showHelpModule, setShowHelpModule] = useState(false);
   const [buttonsVisible, setButtonsVisible] = useState(true);
+  const [skipPathfindingStatusMessage, setSkipPathfindingStatusMessage] = useState(false);
+
+  const resultSectionRef = useRef<HTMLDivElement | null>(null);
+  const previousResultSectionOffsetRef = useRef<number | null>(null);
 
   const {
     launchStdcmRequest,
@@ -62,7 +64,12 @@ const StdcmView = () => {
 
   const handleSelectSimulation = (index: number) => {
     if (retainedSimulationIndex === undefined) {
+      if (resultSectionRef.current) {
+        previousResultSectionOffsetRef.current =
+          resultSectionRef.current.getBoundingClientRect().top;
+      }
       dispatch(selectSimulation(index));
+      setSkipPathfindingStatusMessage(true);
       setShowBtnToLaunchSimulation(false);
     }
   };
@@ -102,7 +109,7 @@ const StdcmView = () => {
       selectedSimulationIndex === undefined ||
         !isEqual(currentSimulationInputs, simulationsList[selectedSimulationIndex].inputs)
     );
-  }, [currentSimulationInputs]);
+  }, [currentSimulationInputs, selectedSimulationIndex]);
 
   useEffect(() => {
     if (isPending) {
@@ -129,20 +136,13 @@ const StdcmView = () => {
      * listed in the simulations list. This helps us determine whether to add a new simulation or update
      * the existing one.
      */
-    const lastSimulation = simulationsList.at(simulationsList.length - 1);
-    const isSimulationAlreadyListed = isEqual(lastSimulation?.inputs, currentSimulationInputs);
-    const isSimulationOutputsComplete = stdcmResults?.stdcmResponse ?? hasConflicts;
+    const lastSimulation = simulationsList.at(-1);
+    const isSimulationOutputsComplete = stdcmResults?.stdcmResponse || hasConflicts;
 
-    if (isSimulationOutputsComplete) {
-      const newSimulation = {
-        ...(isSimulationAlreadyListed
-          ? { ...lastSimulation }
-          : {
-              index: simulationsList.length,
-              creationDate: new Date(),
-              inputs: currentSimulationInputs,
-            }),
-        ...(pathProperties && {
+    if (lastSimulation && isSimulationOutputsComplete && pathProperties) {
+      dispatch(
+        updateLastStdcmResult({
+          ...lastSimulation,
           outputs: {
             pathProperties,
             ...(stdcmResults?.stdcmResponse &&
@@ -154,14 +154,9 @@ const StdcmView = () => {
               conflicts: stdcmTrainConflicts,
             }),
           },
-        }),
-      };
+        } as StdcmSimulation)
+      );
 
-      if (isSimulationAlreadyListed) {
-        dispatch(updateLastStdcmResult(newSimulation as StdcmSimulation));
-      } else {
-        dispatch(addNewStdcmResult(newSimulation as StdcmSimulation));
-      }
       setShowStatusBanner(true);
     }
   }, [
@@ -176,6 +171,20 @@ const StdcmView = () => {
       setShowStatusBanner(true);
     }
   }, [isRejected]);
+
+  /*
+   * After the new content is rendered, this effect adjusts the scroll to compensate for any shift in the stdcmResult section.
+   * It compares the stdcmResult section position before the change (stored in previousResultSectionOffsetRef)
+   * with its current position after rendering. The calculated difference is used to perform a window.scrollBy,
+   *  ensuring that the section remains at the same relative position in the viewport, thus avoiding any visual jump.
+   */
+  useLayoutEffect(() => {
+    if (resultSectionRef.current && previousResultSectionOffsetRef.current) {
+      const newOffset = resultSectionRef.current.getBoundingClientRect().top;
+      const diff = newOffset - previousResultSectionOffsetRef.current;
+      window.scrollBy({ top: diff, behavior: 'auto' });
+    }
+  }, [selectedSimulationIndex]);
 
   // If we've got an error during the loading of the stdcm env which is not the "no config error" message,
   // we let the error boundary manage it
@@ -199,14 +208,16 @@ const StdcmView = () => {
             isDebugMode={isDebugMode}
             showBtnToLaunchSimulation={showBtnToLaunchSimulation}
             retainedSimulationIndex={retainedSimulationIndex}
+            skipPathfindingStatusMessage={skipPathfindingStatusMessage}
+            setSkipPathfindingStatusMessage={setSkipPathfindingStatusMessage}
             launchStdcmRequest={launchStdcmRequest}
             cancelStdcmRequest={cancelStdcmRequest}
           />
 
           {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
 
-          {simulationsList.length && (
-            <div className="stdcm-results">
+          {completedSimulations.length > 0 && (
+            <div ref={resultSectionRef} className="stdcm-results">
               <StdcmResults
                 isCalculationFailed={isCalculationFailed}
                 isDebugMode={isDebugMode}

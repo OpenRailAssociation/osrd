@@ -45,7 +45,6 @@ const StcdmResults = ({
   showStatusBanner,
 }: StcdmResultsProps) => {
   const infraId = useInfraID();
-
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { stdcmName } = useDeploymentSettings();
 
@@ -89,103 +88,107 @@ const StcdmResults = ({
         onSelectSimulation={onSelectSimulation}
         retainedSimulationIndex={retainedSimulationIndex}
       />
-      <div className="simulation-results">
-        {hasSimulationResults && !hasConflictResults ? (
-          <div className="results-and-sheet">
-            <StcdmResultsTable
-              stdcmData={outputs.results}
-              consist={selectedSimulation.inputs.consist}
-              isSimulationRetained={isSelectedSimulationRetained}
-              operationalPointsList={operationalPointsList}
-              simulationIndex={selectedSimulation.index}
-            />
-            {isSelectedSimulationRetained && (
-              <div className="get-simulation">
-                <div className="download-simulation">
-                  <PDFDownloadLink
-                    document={
-                      <SimulationReportSheet
-                        stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
-                        stdcmData={outputs.results}
-                        consist={selectedSimulation.inputs.consist}
-                        simulationReportSheetNumber={simulationReportSheetNumber}
-                        operationalPointsList={operationalPointsList}
-                      />
-                    }
-                    fileName={`${stdcmName}-${simulationReportSheetNumber}.pdf`}
-                  >
+      {outputs && (
+        <>
+          <div className="simulation-results">
+            {hasSimulationResults && !hasConflictResults ? (
+              <div className="results-and-sheet">
+                <StcdmResultsTable
+                  stdcmData={outputs.results}
+                  consist={selectedSimulation.inputs.consist}
+                  isSimulationRetained={isSelectedSimulationRetained}
+                  operationalPointsList={operationalPointsList}
+                  simulationIndex={selectedSimulation.index}
+                />
+                {isSelectedSimulationRetained && (
+                  <div className="get-simulation">
+                    <div className="download-simulation">
+                      <PDFDownloadLink
+                        document={
+                          <SimulationReportSheet
+                            stdcmLinkedTrains={selectedSimulation.inputs.linkedTrains}
+                            stdcmData={outputs.results}
+                            consist={selectedSimulation.inputs.consist}
+                            simulationReportSheetNumber={simulationReportSheetNumber}
+                            operationalPointsList={operationalPointsList}
+                          />
+                        }
+                        fileName={`${stdcmName}-${simulationReportSheetNumber}.pdf`}
+                      >
+                        <Button
+                          data-testid="download-simulation-button"
+                          label={t('downloadSimulationSheet')}
+                          onClick={() => {}}
+                        />
+                      </PDFDownloadLink>
+                    </div>
+                    <div className="gesico-text">{t('gesicoRequest')}</div>
+                  </div>
+                )}
+                {retainedSimulationIndex !== undefined && buttonsVisible && (
+                  <div className="start-new-query">
                     <Button
-                      data-testid="download-simulation-button"
-                      label={t('downloadSimulationSheet')}
-                      onClick={() => {}}
+                      data-testid="start-new-query-button"
+                      variant="Primary"
+                      label={t('startNewQuery')}
+                      onClick={onStartNewQuery}
                     />
-                  </PDFDownloadLink>
-                </div>
-                <div className="gesico-text">{t('gesicoRequest')}</div>
+                    <Button
+                      className="start-new-query-with-data"
+                      data-testid="start-new-query-with-data-button"
+                      variant="Normal"
+                      label={t('startNewQueryFromCurrent')}
+                      onClick={onStartNewQueryWithData}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="simulation-failure">
+                <span className="title">{t('notFound')}</span>
+                <span className="change-criteria">{t('conflictsTitle')}</span>
+
+                {trackConflicts.length > 0 && (
+                  <ul>
+                    {trackConflicts.map((message, index) => (
+                      <li key={index}>
+                        <span>
+                          <Trans>&bull; {message}</Trans>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {trackConflicts.length > 0 && workConflicts.length > 0 && <br />}
+
+                {workConflicts.length > 0 && (
+                  <ul>
+                    {workConflicts.map((message, index) => (
+                      <li key={index}>
+                        <span>
+                          <Trans>&bull; {message}</Trans>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <span>{t('changeSearchCriteria')}</span>
               </div>
             )}
-            {retainedSimulationIndex !== undefined && buttonsVisible && (
-              <div className="start-new-query">
-                <Button
-                  data-testid="start-new-query-button"
-                  variant="Primary"
-                  label={t('startNewQuery')}
-                  onClick={onStartNewQuery}
-                />
-                <Button
-                  className="start-new-query-with-data"
-                  data-testid="start-new-query-with-data-button"
-                  variant="Normal"
-                  label={t('startNewQueryFromCurrent')}
-                  onClick={onStartNewQueryWithData}
-                />
-              </div>
-            )}
+            <div className="osrd-config-item-container osrd-config-item-container-map map-results">
+              <DefaultBaseMap
+                mapId="stdcm-map-result"
+                infraId={infraId}
+                geometry={outputs?.pathProperties?.geometry}
+                pathStepMarkers={markersInfo}
+                isFeasible={!hasConflictResults}
+              />
+            </div>
           </div>
-        ) : (
-          <div className="simulation-failure">
-            <span className="title">{t('notFound')}</span>
-            <span className="change-criteria">{t('conflictsTitle')}</span>
-
-            {trackConflicts.length > 0 && (
-              <ul>
-                {trackConflicts.map((message, index) => (
-                  <li key={index}>
-                    <span>
-                      <Trans>&bull; {message}</Trans>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {trackConflicts.length > 0 && workConflicts.length > 0 && <br />}
-
-            {workConflicts.length > 0 && (
-              <ul>
-                {workConflicts.map((message, index) => (
-                  <li key={index}>
-                    <span>
-                      <Trans>&bull; {message}</Trans>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <span>{t('changeSearchCriteria')}</span>
-          </div>
-        )}
-        <div className="osrd-config-item-container osrd-config-item-container-map map-results">
-          <DefaultBaseMap
-            mapId="stdcm-map-result"
-            infraId={infraId}
-            geometry={outputs?.pathProperties?.geometry}
-            pathStepMarkers={markersInfo}
-            isFeasible={!hasConflictResults}
-          />
-        </div>
-      </div>
-      {isDebugMode && <StdcmDebugResults simulationOutputs={outputs} />}
+          {isDebugMode && <StdcmDebugResults simulationOutputs={outputs} />}
+        </>
+      )}
     </>
   );
 };

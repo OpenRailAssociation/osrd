@@ -8,6 +8,7 @@ import {
   type ExtremityPathStepType,
   type StdcmLinkedTrainExtremity,
   type StdcmSimulation,
+  type StdcmSimulationInputs,
 } from 'applications/stdcm/types';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types';
@@ -47,6 +48,19 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
     posteriorTrain: undefined,
   },
   simulations: [],
+};
+
+const updateSimulationState = (state: Draft<OsrdStdcmConfState>, simulation: StdcmSimulation) => {
+  const {
+    inputs: { consist, pathSteps },
+  } = simulation;
+  state.rollingStockID = consist?.tractionEngine?.id;
+  state.towedRollingStockID = consist?.towedRollingStock?.id;
+  state.totalLength = consist?.totalLength;
+  state.totalMass = consist?.totalMass;
+  state.maxSpeed = consist?.maxSpeed;
+  state.speedLimitByTag = consist?.speedLimitByTag;
+  state.stdcmPathSteps = pathSteps;
 };
 
 export const stdcmConfSlice = createSlice({
@@ -232,10 +246,15 @@ export const stdcmConfSlice = createSlice({
       );
       state.stdcmPathSteps = newPathSteps;
     },
-    // temporary solution to add a new simulation, only 1 action should remain after the refactoring
-    addNewStdcmResult(state: Draft<OsrdStdcmConfState>, action: PayloadAction<StdcmSimulation>) {
-      state.simulations.push(action.payload);
-      state.selectedSimulationIndex = state.simulations.length - 1;
+    addStdcmSimulation(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<StdcmSimulationInputs>
+    ) {
+      state.simulations.push({
+        index: state.simulations.length,
+        inputs: action.payload,
+        creationDate: new Date(),
+      });
     },
     updateLastStdcmResult(
       state: Draft<OsrdStdcmConfState>,
@@ -247,20 +266,11 @@ export const stdcmConfSlice = createSlice({
         action.payload
       );
       state.selectedSimulationIndex = state.simulations.length - 1;
+      updateSimulationState(state, action.payload);
     },
     selectSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       state.selectedSimulationIndex = action.payload;
-
-      const {
-        inputs: { consist, pathSteps },
-      } = state.simulations[action.payload];
-      state.rollingStockID = consist?.tractionEngine?.id;
-      state.towedRollingStockID = consist?.towedRollingStock?.id;
-      state.totalLength = consist?.totalLength;
-      state.totalMass = consist?.totalMass;
-      state.maxSpeed = consist?.maxSpeed;
-      state.speedLimitByTag = consist?.speedLimitByTag;
-      state.stdcmPathSteps = pathSteps;
+      updateSimulationState(state, state.simulations[action.payload]);
     },
     retainSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       state.retainedSimulationIndex = action.payload;
@@ -285,10 +295,10 @@ export const {
   addStdcmVia,
   deleteStdcmVia,
   updateLinkedTrainExtremity,
-  addNewStdcmResult,
   updateLastStdcmResult,
   selectSimulation,
   retainSimulation,
+  addStdcmSimulation,
 } = stdcmConfSlice.actions;
 
 export type StdcmConfSlice = typeof stdcmConfSlice;
