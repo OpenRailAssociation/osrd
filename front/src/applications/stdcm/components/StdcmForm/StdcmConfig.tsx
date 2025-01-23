@@ -248,13 +248,13 @@ const StdcmConfig = ({
                 <Button
                   data-testid="launch-simulation-button"
                   className={cx({
-                    'fade-out': !showBtnToLaunchSimulation,
+                    'fade-out': !isDebugMode && !showBtnToLaunchSimulation,
                   })}
                   label={t('simulation.getSimulation')}
                   onClick={startSimulation}
                   isDisabled={
                     disabled ||
-                    !showBtnToLaunchSimulation ||
+                    (!isDebugMode && !showBtnToLaunchSimulation) ||
                     formErrors?.errorType === StdcmConfigErrorTypes.INFRA_NOT_LOADED
                   }
                 />

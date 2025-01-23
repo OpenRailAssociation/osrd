@@ -80,13 +80,11 @@ const StdcmView = () => {
   const handleStartNewQuery = () => {
     setButtonsVisible(false);
     resetStdcmState();
-
     openNewWindow(false);
   };
 
   const handleStartNewQueryWithData = () => {
     setButtonsVisible(false);
-
     openNewWindow(true);
   };
 
@@ -111,30 +109,26 @@ const StdcmView = () => {
   }, [selectedSimulation]);
 
   useEffect(() => {
-    if (!isDebugMode) {
-      setShowBtnToLaunchSimulation(!isEqual(currentSimulationInputs, selectedSimulation?.inputs));
-    }
+    setShowBtnToLaunchSimulation(!isEqual(currentSimulationInputs, selectedSimulation?.inputs));
   }, [currentSimulationInputs]);
 
   useEffect(() => {
-    if (isPending && !isDebugMode) {
+    if (isPending) {
       setShowBtnToLaunchSimulation(false);
     }
   }, [isPending]);
-
-  useEffect(() => {
-    if (!isDebugMode) {
-      loadStdcmEnvironment();
-    } else {
-      setShowBtnToLaunchSimulation(true);
-    }
-  }, [isDebugMode]);
 
   useEffect(() => {
     if (isCanceled) {
       setShowBtnToLaunchSimulation(true);
     }
   }, [isCanceled]);
+
+  useEffect(() => {
+    if (!isDebugMode) {
+      loadStdcmEnvironment();
+    }
+  }, [isDebugMode]);
 
   useEffect(() => {
     /*
@@ -145,7 +139,7 @@ const StdcmView = () => {
      */
     const lastSimulation = simulationsList[simulationsList.length - 1];
     const isSimulationAlreadyListed = isEqual(lastSimulation?.inputs, currentSimulationInputs);
-    const isSimulationOutputsComplete = stdcmResults?.stdcmResponse || hasConflicts;
+    const isSimulationOutputsComplete = stdcmResults?.stdcmResponse ?? hasConflicts;
 
     if (isSimulationOutputsComplete) {
       const newSimulation = {
