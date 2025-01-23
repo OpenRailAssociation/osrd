@@ -33,6 +33,8 @@ import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 
 import useInfraStatus from './useInfraStatus';
+import getPointOnPathCoordinates from '../helpers/getPointOnPathCoordinates';
+import getTrackLengthCumulativeSums from '../helpers/getTrackLengthCumulativeSums';
 import type { PathfindingState } from '../types';
 
 const initialPathfindingState = {
@@ -63,7 +65,7 @@ const usePathfinding = (
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
 
-  const { infraId } = useScenarioContext();
+  const { infraId, getTrackSectionsByIds } = useScenarioContext();
 
   const setIsMissingParam = () =>
     setPathfindingState({ ...initialPathfindingState, isMissingParam: true });
@@ -119,6 +121,12 @@ const usePathfinding = (
       return;
     }
 
+    const trackIds = pathResult.track_section_ranges.map((range) => range.track_section);
+    const trackSectionsById = await getTrackSectionsByIds(trackIds);
+    const tracksLengthCumulativeSums = getTrackLengthCumulativeSums(
+      pathResult.track_section_ranges
+    );
+
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
       operational_points,
       geometry,
@@ -142,12 +150,17 @@ const usePathfinding = (
         positionOnPath: pathResult.path_item_positions[i],
         stopFor,
         theoreticalMargin,
+        coordinates: getPointOnPathCoordinates(
+          trackSectionsById,
+          pathResult.track_section_ranges,
+          tracksLengthCumulativeSums,
+          pathResult.path_item_positions[i]
+        ),
         ...(correspondingOp && {
           name: correspondingOp.name,
           uic: correspondingOp.uic,
           secondary_code: correspondingOp.ch,
           kp: correspondingOp.kp,
-          coordinates: correspondingOp.coordinates,
         }),
       };
     });
