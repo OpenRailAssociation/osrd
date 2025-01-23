@@ -12,6 +12,8 @@ import {
   type SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
+import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
+import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import { formatSuggestedOperationalPoints, matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -167,9 +169,22 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
       if (!electrifications || !geometry || !operational_points) {
         return null;
       }
-      const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
-        getPointOnTrackCoordinates(geometry, pathfindingResult.length, position)
+
+      const trackIds = pathfindingResult.track_section_ranges.map((range) => range.track_section);
+      const tracks = await getTrackSectionsByIds(trackIds);
+      const tracksLengthCumulativeSums = getTrackLengthCumulativeSums(
+        pathfindingResult.track_section_ranges
       );
+
+      const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
+        getPointOnPathCoordinates(
+          tracks,
+          pathfindingResult.track_section_ranges,
+          tracksLengthCumulativeSums,
+          position
+        )
+      );
+
       const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
         operational_points,
         geometry,
