@@ -1,46 +1,13 @@
 import nextId from 'react-id-generator';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { TrackRange } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
+import findTrackSectionOffset from 'modules/pathfinding/helpers/findTrackSectionOffset';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getPointCoordinates } from 'utils/geometry';
 import { mmToM, mToMm } from 'utils/physics';
 
 import { NO_POWER_RESTRICTION } from '../consts';
-
-const findTrackSectionIndex = (position: number, tracksLengthCumulativeSums: number[]) => {
-  for (let i = 0; i < tracksLengthCumulativeSums.length; i += 1) {
-    if (position <= tracksLengthCumulativeSums[i]) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-/**
- * Return the track offset corresponding to the given position on path, composed of the track section id
- * and the offet on this track section in mm
- */
-export const findTrackSectionOffset = (
-  positionOnPath: number, // in mm
-  tracksLengthCumulativeSums: number[], // in mm
-  trackRangesOnPath: TrackRange[]
-) => {
-  const index = findTrackSectionIndex(positionOnPath, tracksLengthCumulativeSums);
-  const trackRange = trackRangesOnPath[index];
-  if (!trackRange) return null;
-
-  // compute offset
-  const inferiorSum = index > 0 ? tracksLengthCumulativeSums[index - 1] : 0;
-  const offsetOnTrackRange = positionOnPath - inferiorSum;
-  const offsetOnTrackSection =
-    trackRange.direction === 'START_TO_STOP'
-      ? trackRange.begin + offsetOnTrackRange
-      : trackRange.end - offsetOnTrackRange;
-
-  return { track: trackRange.track_section, offset: offsetOnTrackSection };
-};
 
 const createPathStep = (
   positionOnPathInM: number, // in meters

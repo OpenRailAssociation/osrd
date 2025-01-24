@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 
 import type { TrackRange } from 'common/api/osrdEditoastApi';
 
-import { findTrackSectionOffset } from '../createPathStep';
+import findTrackSectionOffset from '../findTrackSectionOffset';
 
-describe('findTrackOffset', () => {
+describe('findTrackSectionOffset', () => {
   it('should correctly find the track offset', () => {
     const trackRangesLengthCumulativeSums = [1000, 2000, 3000, 4000, 5000];
     const trackRanges = [
@@ -81,5 +81,25 @@ describe('findTrackOffset', () => {
     );
 
     expect(result).toEqual(null);
+  });
+
+  it('should correctly find the track offset if it is located on the first track range', () => {
+    const trackRangesLengthCumulativeSums = [1000, 2000, 3000, 4000, 5000];
+    const trackRanges = [
+      { track_section: 'track_0', begin: 500, end: 1500, direction: 'START_TO_STOP' },
+      { track_section: 'track_1' },
+      { track_section: 'track_2', begin: 60, end: 1060, direction: 'STOP_TO_START' },
+      { track_section: 'track_3' },
+      { track_section: 'track_4' },
+    ] as TrackRange[];
+
+    const offsetOnPath = 900;
+    const result = findTrackSectionOffset(
+      offsetOnPath,
+      trackRangesLengthCumulativeSums,
+      trackRanges
+    );
+
+    expect(result).toEqual({ track: 'track_0', offset: 1400 });
   });
 });
