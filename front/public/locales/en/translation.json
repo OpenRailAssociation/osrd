@@ -318,11 +318,11 @@
           "delete-route": "Delete the route",
           "new-route": "Create a new route",
           "pick-entry_point": "Starting point selection tool",
-          "pick-entry_point-cancel-delete": "Cancel the selection of the starting point",
-          "pick-entry_point-delete": "Modify the selected starting point",
+          "pick-entry_point-cancel": "Cancel the selection of the starting point",
+          "pick-entry_point-update": "Modify the selected starting point",
           "pick-exit_point": "Ending point selection tool",
-          "pick-exit_point-cancel-delete": "Undo exit point selection.",
-          "pick-exit_point-delete": "Modify the selected exit point"
+          "pick-exit_point-cancel": "Undo exit point selection.",
+          "pick-exit_point-update": "Modify the selected exit point"
         },
         "alternative-routes": "Create a similar route",
         "confirm-delete-route": "Are you sure to delete this route?",

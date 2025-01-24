@@ -131,7 +131,7 @@ const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => 
           title={t(
             `Editor.tools.routes-edition.actions.pick-${EndPointKeys[endPoint].toLowerCase()}${
               isPicking ? '-cancel' : ''
-            }${isWayPointSelected ? '-delete' : ''}`
+            }${isWayPointSelected && !isPicking ? '-update' : ''}`
           )}
           className="btn btn-primary px-3"
           onClick={onBtnClick}
