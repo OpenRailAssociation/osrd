@@ -21,8 +21,11 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.io.File
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -45,14 +48,27 @@ class NoPathFoundException(val response: PathfindingBlockResponse) : Exception()
 val pathfindingLogger: Logger = LoggerFactory.getLogger("Pathfinding")
 
 class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take {
-
     override fun act(req: Request): Response {
+        val body = RqPrint(req).printBody()
+        val request =
+            pathfindingRequestAdapter.fromJson(body)
+                ?: return RsWithStatus(RsText("Missing request body"), 400)
+
+        val logRequest = System.getenv("LOG_PATHFINDING_REQUESTS")
+        if (logRequest?.equals("true", ignoreCase = true) == true) {
+            val time = LocalDateTime.now()
+            val formatted = time.format(DateTimeFormatter.ofPattern("MM-dd-HH:mm:ss:SSS"))
+            File("pathfinding-$formatted.json").printWriter().use {
+                it.println(pathfindingRequestAdapter.indent("    ").toJson(request))
+            }
+        }
+
+        return run(request)
+    }
+
+    fun run(request: PathfindingBlockRequest): Response {
         val recorder = DiagnosticRecorderImpl(false)
         try {
-            val body = RqPrint(req).printBody()
-            val request =
-                pathfindingRequestAdapter.fromJson(body)
-                    ?: return RsWithStatus(RsText("Missing request body"), 400)
             // Load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
             val res = runPathfinding(infra, request)

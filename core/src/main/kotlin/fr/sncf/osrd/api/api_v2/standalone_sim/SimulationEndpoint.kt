@@ -17,6 +17,9 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take
@@ -31,14 +34,26 @@ class SimulationEndpoint(
     private val electricalProfileSetManager: ElectricalProfileSetManager
 ) : Take {
     override fun act(req: Request): Response {
+        // Parse request input
+        val body = RqPrint(req).printBody()
+        val request =
+            SimulationRequest.adapter.fromJson(body)
+                ?: return RsWithStatus(RsText("missing request body"), 400)
+
+        val logRequest = System.getenv("LOG_SIMULATION_REQUESTS")
+        if (logRequest?.equals("true", ignoreCase = true) == true) {
+            val time = LocalDateTime.now()
+            val formatted = time.format(DateTimeFormatter.ofPattern("MM-dd-HH:mm:ss:SSS"))
+            File("simulation-$formatted.json").printWriter().use {
+                it.println(SimulationRequest.adapter.indent("    ").toJson(request))
+            }
+        }
+        return run(request)
+    }
+
+    fun run(request: SimulationRequest): Response {
         val recorder = DiagnosticRecorderImpl(false)
         try {
-            // Parse request input
-            val body = RqPrint(req).printBody()
-            val request =
-                SimulationRequest.adapter.fromJson(body)
-                    ?: return RsWithStatus(RsText("missing request body"), 400)
-
             // load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
 
