@@ -10,7 +10,6 @@ import { useSelector } from 'react-redux';
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
-import Tipped from 'common/Tipped';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding/Pathfinding';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import { setWarning } from 'reducers/main';
@@ -150,18 +149,16 @@ const Itinerary = () => {
             <span className="mr-1">{t('inverseOD')}</span>
             <ArrowSwitch />
           </button>
-          <Tipped mode="right">
-            <button
-              data-testid="delete-itinerary-button"
-              type="button"
-              className="ml-1 mt-1 btn-danger btn btn-sm"
-              aria-label={t('deleteRoute')}
-              onClick={resetPathfinding}
-            >
-              <Trash />
-            </button>
-            <span>{t('deleteRoute')}</span>
-          </Tipped>
+          <button
+            data-testid="delete-itinerary-button"
+            type="button"
+            title={t('deleteRoute')}
+            className="ml-1 my-1 btn-danger btn btn-sm"
+            aria-label={t('deleteRoute')}
+            onClick={resetPathfinding}
+          >
+            <Trash />
+          </button>
         </div>
       )}
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">

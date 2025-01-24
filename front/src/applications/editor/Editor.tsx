@@ -25,7 +25,6 @@ import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
-import Tipped from 'common/Tipped';
 import useInfra from 'modules/infra/useInfra';
 import type { EditorSliceActions } from 'reducers/editor';
 import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
@@ -339,27 +338,26 @@ const Editor = () => {
 
               if (tool.isHidden && tool.isHidden(extendedContext)) return null;
               return (
-                <Tipped key={id} mode="right">
-                  <button
-                    type="button"
-                    className={cx(
-                      'btn-rounded',
-                      id === toolAndState.tool.id && 'active',
-                      'editor-btn'
-                    )}
-                    onClick={() => {
-                      if (tool.onClick) {
-                        tool.onClick(extendedContext);
-                      } else {
-                        switchTool({ toolType, toolState: {} });
-                      }
-                    }}
-                  >
-                    <span className="sr-only">{label}</span>
-                    <IconComponent />
-                  </button>
-                  <span>{label}</span>
-                </Tipped>
+                <button
+                  key={id}
+                  type="button"
+                  title={label}
+                  className={cx(
+                    'btn-rounded',
+                    id === toolAndState.tool.id && 'active',
+                    'editor-btn'
+                  )}
+                  onClick={() => {
+                    if (tool.onClick) {
+                      tool.onClick(extendedContext);
+                    } else {
+                      switchTool({ toolType, toolState: {} });
+                    }
+                  }}
+                >
+                  <span className="sr-only">{label}</span>
+                  <IconComponent />
+                </button>
               );
             })}
           </div>
@@ -377,25 +375,23 @@ const Editor = () => {
                 const label = t(labelTranslationKey);
 
                 return (
-                  <Tipped key={id} mode="right">
-                    <button
-                      key={id}
-                      type="button"
-                      className={cx('editor-btn', 'btn-rounded', {
-                        active: isActive && isActive(extendedContext),
-                      })}
-                      onClick={() => {
-                        if (onClick) {
-                          onClick(extendedContext);
-                        }
-                      }}
-                      disabled={isDisabled && isDisabled(extendedContext)}
-                    >
-                      <span className="sr-only">{label}</span>
-                      <IconComponent />
-                    </button>
-                    <span>{label}</span>
-                  </Tipped>
+                  <button
+                    key={id}
+                    type="button"
+                    title={label}
+                    className={cx('editor-btn', 'btn-rounded', {
+                      active: isActive && isActive(extendedContext),
+                    })}
+                    onClick={() => {
+                      if (onClick) {
+                        onClick(extendedContext);
+                      }
+                    }}
+                    disabled={isDisabled && isDisabled(extendedContext)}
+                  >
+                    <span className="sr-only">{label}</span>
+                    <IconComponent />
+                  </button>
                 );
               });
               return i < a.length - 1

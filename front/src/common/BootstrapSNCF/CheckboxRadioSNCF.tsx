@@ -13,9 +13,9 @@ type CheckboxRadioProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 const CheckboxInput = (props: CheckboxRadioProps) => {
-  const { id, label, className, containerClassName, ...inputProps } = props;
+  const { id, label, className, containerClassName, title, ...inputProps } = props;
   return (
-    <div className={`custom-control custom-checkbox ${containerClassName}`}>
+    <div className={`custom-control custom-checkbox ${containerClassName}`} title={title}>
       <input
         {...inputProps}
         id={id}
@@ -30,9 +30,9 @@ const CheckboxInput = (props: CheckboxRadioProps) => {
 };
 
 const RadioInput = (props: CheckboxRadioProps) => {
-  const { id, label, className, containerClassName, ...inputProps } = props;
+  const { id, label, className, containerClassName, title, ...inputProps } = props;
   return (
-    <div className={`custom-control custom-radio ${containerClassName}`}>
+    <div className={`custom-control custom-radio ${containerClassName}`} title={title}>
       <input
         {...inputProps}
         id={id}

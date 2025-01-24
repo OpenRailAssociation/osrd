@@ -5,7 +5,6 @@ import { FaTimes } from 'react-icons/fa';
 import type { PartialOrReducer } from 'applications/editor/types';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { useInfraID } from 'common/osrdContext';
-import Tipped from 'common/Tipped';
 
 import useSwitchTypes from '../../switchEdition/useSwitchTypes';
 import type {
@@ -82,33 +81,33 @@ const SwitchList = ({
                     <label className="small" htmlFor={`${swId}-${optPosition}`}>
                       {optPosition}
                     </label>
-                    <Tipped disableTooltip={!isButtonIncompatible}>
-                      <CheckboxRadioSNCF
-                        containerClassName={cx({
-                          'incompatible-configuration-switch': isButtonIncompatible,
-                        })}
-                        type="radio"
-                        label=""
-                        id={`${swId}-${optPosition}`}
-                        name={swId}
-                        onChange={() => {
-                          setSwitchSelection((prev) => ({
-                            ...prev,
-                            selectedSwitches: {
-                              ...selectedSwitches,
-                              [swId]: {
-                                ...prev.selectedSwitches[swId],
-                                position: isPositionNull ? null : optPosition,
-                              },
+                    <CheckboxRadioSNCF
+                      containerClassName={cx({
+                        'incompatible-configuration-switch': isButtonIncompatible,
+                      })}
+                      type="radio"
+                      label=""
+                      id={`${swId}-${optPosition}`}
+                      name={swId}
+                      title={
+                        isButtonIncompatible
+                          ? t('Editor.tools.speed-edition.incompatible-switch')
+                          : undefined
+                      }
+                      onChange={() => {
+                        setSwitchSelection((prev) => ({
+                          ...prev,
+                          selectedSwitches: {
+                            ...selectedSwitches,
+                            [swId]: {
+                              ...prev.selectedSwitches[swId],
+                              position: isPositionNull ? null : optPosition,
                             },
-                          }));
-                        }}
-                        checked={isButtonChecked}
-                      />
-                      <div className="incompatible-tooltip">
-                        {t('Editor.tools.speed-edition.incompatible-switch')}
-                      </div>
-                    </Tipped>
+                          },
+                        }));
+                      }}
+                      checked={isButtonChecked}
+                    />
                   </div>
                 );
               })}

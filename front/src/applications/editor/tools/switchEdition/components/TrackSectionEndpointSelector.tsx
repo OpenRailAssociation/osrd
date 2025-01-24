@@ -16,7 +16,6 @@ import {
 import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
-import Tipped from 'common/Tipped';
 import { useAppDispatch } from 'store';
 
 import type { TrackSectionEntity } from '../../trackEdition/types';
@@ -141,23 +140,17 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
             </div>
           )}
         </div>
-        <Tipped mode="left">
-          <button
-            type="button"
-            className="btn btn-primary px-3"
-            onClick={startPickingPort}
-            disabled={isDisabled}
-          >
-            {isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />}
-          </button>
-          <span>
-            {t(
-              `Editor.tools.switch-edition.actions.${
-                isPicking ? 'pick-track-cancel' : 'pick-track'
-              }`
-            )}
-          </span>
-        </Tipped>
+        <button
+          type="button"
+          title={t(
+            `Editor.tools.switch-edition.actions.${isPicking ? 'pick-track-cancel' : 'pick-track'}`
+          )}
+          className="btn btn-primary px-3"
+          onClick={startPickingPort}
+          disabled={isDisabled}
+        >
+          {isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />}
+        </button>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 
+import { Info } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import { feature, featureCollection } from '@turf/helpers';
 import length from '@turf/length';
@@ -14,7 +15,6 @@ import Collapsable from 'common/Collapsable';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import IncompatibleConstraintsFilters from './IncompatibleConstrainstFilters';
-import IncompatibleConstraintsInfo from './IncompatibleConstrainstInfo';
 import IncompatibleConstraintsLayer from './IncompatibleConstraintsLayer';
 import IncompatibleConstraintsList from './IncompatibleConstraintsList';
 import IncompatibleConstraintsMapFocus from './IncompatibleConstraintsMapFocus';
@@ -215,7 +215,7 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
                   })
                 : t('incompatibleConstraints.title', { total })}
             </h5>
-            <IncompatibleConstraintsInfo className="flex-grow-0 mx-2" />
+            <Info className="flex-grow-0 mx-2" title={t('incompatibleConstraints.info')} />
             <IncompatibleConstraintsMapFocus geojson={filteredGeojson} />
           </div>
           <IncompatibleConstraintsFilters

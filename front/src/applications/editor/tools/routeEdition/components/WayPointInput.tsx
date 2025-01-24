@@ -17,7 +17,6 @@ import type {
 } from 'applications/editor/tools/routeEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
-import Tipped from 'common/Tipped';
 import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
@@ -127,23 +126,19 @@ const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => 
             </span>
           )}
         </div>
-        <Tipped mode="left">
-          <button
-            type="button"
-            className="btn btn-primary px-3"
-            onClick={onBtnClick}
-            disabled={isDisabled}
-          >
-            {getButtonIcon()}
-          </button>
-          <span>
-            {t(
-              `Editor.tools.routes-edition.actions.pick-${EndPointKeys[endPoint].toLowerCase()}${
-                isPicking ? '-cancel' : ''
-              }${isWayPointSelected ? '-delete' : ''}`
-            )}
-          </span>
-        </Tipped>
+        <button
+          type="button"
+          title={t(
+            `Editor.tools.routes-edition.actions.pick-${EndPointKeys[endPoint].toLowerCase()}${
+              isPicking ? '-cancel' : ''
+            }${isWayPointSelected ? '-delete' : ''}`
+          )}
+          className="btn btn-primary px-3"
+          onClick={onBtnClick}
+          disabled={isDisabled}
+        >
+          {getButtonIcon()}
+        </button>
       </div>
     </div>
   );
