@@ -350,6 +350,7 @@ mod tests {
             .enable_authorization(config.enable_authorization)
             .enable_stdcm_logging(config.enable_stdcm_logging)
             .enable_telemetry(config.enable_telemetry)
+            .ignore_rust_log()
             .user(user.clone())
             .roles(roles)
             .build();

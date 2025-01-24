@@ -115,9 +115,11 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         stream: EditoastMode::from_client(&client).into(),
         telemetry,
     };
+
     create_tracing_subscriber(
         tracing_config,
         tracing_subscriber::filter::LevelFilter::INFO,
+        false,
         exporter,
     )
     .init();

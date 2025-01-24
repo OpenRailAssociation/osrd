@@ -65,6 +65,7 @@ pub(crate) struct TestAppBuilder {
     enable_authorization: bool,
     enable_stdcm_logging: bool,
     enable_telemetry: bool,
+    ignore_rust_log: bool,
     user: Option<UserInfo>,
     roles: HashSet<BuiltinRole>,
 }
@@ -78,6 +79,7 @@ impl TestAppBuilder {
             enable_authorization: false,
             enable_stdcm_logging: false,
             enable_telemetry: true,
+            ignore_rust_log: false,
             user: None,
             roles: HashSet::new(),
         }
@@ -113,6 +115,11 @@ impl TestAppBuilder {
 
     pub fn enable_telemetry(mut self, enable_telemetry: bool) -> Self {
         self.enable_telemetry = enable_telemetry;
+        self
+    }
+
+    pub fn ignore_rust_log(mut self) -> Self {
+        self.ignore_rust_log = true;
         self
     }
 
@@ -179,9 +186,11 @@ impl TestAppBuilder {
             stream: Stream::Stdout,
             telemetry,
         };
+
         let sub = create_tracing_subscriber(
             tracing_config,
             tracing_subscriber::filter::LevelFilter::DEBUG,
+            self.ignore_rust_log,
             NoopSpanExporter,
         );
         let tracing_guard = tracing::subscriber::set_default(sub);

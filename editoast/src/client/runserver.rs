@@ -46,7 +46,7 @@ pub struct RunserverArgs {
     /// If this option is set, logging for the STDCM will be enabled.
     /// When enabled, relevant logs will be captured to aid in debugging and monitoring.
     #[clap(long, env = "ENABLE_STDCM_LOGGING", default_value_t = true)]
-    enable_stdcm_logging: bool,
+    pub(crate) enable_stdcm_logging: bool,
     #[clap(long, env = "OSRDYNE_API_URL", default_value_t = Url::parse("http://127.0.0.1:4242/").unwrap())]
     osrdyne_api_url: Url,
     /// The timeout to use when performing the healthcheck, in milliseconds

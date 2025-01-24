@@ -32,12 +32,19 @@ pub struct TracingConfig {
 pub fn create_tracing_subscriber<T: SpanExporter + 'static>(
     tracing_config: TracingConfig,
     log_level: tracing_subscriber::filter::LevelFilter,
+    ignore_rust_log: bool,
     exporter: T,
 ) -> impl tracing::Subscriber {
-    let env_filter_layer = tracing_subscriber::EnvFilter::builder()
+    let env_filter_builder = tracing_subscriber::EnvFilter::builder()
         // Set the default log level to 'info'
-        .with_default_directive(log_level.into())
-        .from_env_lossy();
+        .with_default_directive(log_level.into());
+
+    let env_filter_layer = if ignore_rust_log {
+        env_filter_builder.parse_lossy("")
+    } else {
+        env_filter_builder.from_env_lossy()
+    };
+
     let fmt_layer = tracing_subscriber::fmt::layer()
         .pretty()
         .with_file(true)
