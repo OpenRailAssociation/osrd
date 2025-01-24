@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope_sim.PhysicsPath
 import fr.sncf.osrd.graph.PathfindingResultId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.train.TrainStop
 
@@ -18,6 +19,7 @@ data class STDCMResult(
     val trainPath: PathProperties,
     val chunkPath: ChunkPath,
     val physicsPath: PhysicsPath,
+    val routePath: List<RouteId>,
     val departureTime: Double,
     val stopResults: List<TrainStop>
 )

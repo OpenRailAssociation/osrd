@@ -25,7 +25,6 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
-import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
@@ -42,6 +41,7 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.*
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -177,7 +177,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                 path.trainPath,
                 path.chunkPath,
                 infra,
-                infra.blockInfra.chunksToRoutes(infra.rawInfra, path.chunkPath.chunks),
+                path.routePath.toIdxList(),
                 rollingStock,
                 parseSimulationScheduleItems(path.stopResults),
                 listOf(),

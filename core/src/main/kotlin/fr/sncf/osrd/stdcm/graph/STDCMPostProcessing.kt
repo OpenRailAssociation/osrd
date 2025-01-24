@@ -98,6 +98,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 trainPath,
                 chunkPath,
                 physicsPath,
+                routes,
                 updatedTimeData.departureTime,
 
                 // Allow us to display OP, a hack that will be fixed
