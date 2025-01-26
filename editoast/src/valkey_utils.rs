@@ -16,7 +16,7 @@ use redis::RedisResult;
 use redis::ToRedisArgs;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use tracing::trace;
+use tracing::{debug, span, trace, Level};
 use url::Url;
 
 use crate::error::Result;
@@ -119,7 +119,7 @@ impl ValkeyConnection {
     }
 
     /// Get a list of deserializable value from valkey
-    #[tracing::instrument(name = "cache:get_bulk", skip(self), err)]
+    #[tracing::instrument(name = "cache:json_get_bulk", skip(self), err)]
     pub async fn json_get_bulk<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
         keys: &[K],
@@ -165,7 +165,7 @@ impl ValkeyConnection {
     }
 
     /// Set a list of serializable values to valkey
-    #[tracing::instrument(name = "cache:set_bulk", skip(self, items), err)]
+    #[tracing::instrument(name = "cache:json_set_bulk", skip(self, items), err)]
     pub async fn json_set_bulk<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
         &mut self,
         items: &[(K, T)],
@@ -191,6 +191,77 @@ impl ValkeyConnection {
 
         self.mset(&serialized_items).await?;
         Ok(())
+    }
+
+    /// Set a list of compressed serializable values to valkey
+    #[tracing::instrument(name = "cache:compressed_set_bulk", skip(self, items), err)]
+    pub async fn compressed_set_bulk<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
+        &mut self,
+        items: &[(K, T)],
+    ) -> Result<()> {
+        // Avoid mset to fail if keys is empty
+        if items.is_empty() {
+            return Ok(());
+        }
+
+        let compressed_items = span!(Level::INFO, "Compressing data").in_scope(|| {
+            items
+                .iter()
+                .map(|(key, value)| {
+                    // Create a LZ4 encoder.
+                    let mut encoder = lz4_flex::frame::FrameEncoder::new(Vec::new());
+                    // Serialize the `value` into JSON format and write it to the encoder (which compresses it).
+                    serde_json::to_writer(&mut encoder, value)?;
+                    // Finalize the compression process and retrieve the compressed data.
+                    let compressed_value = encoder.finish().map_err(|_| {
+                        RedisError::from((
+                            ErrorKind::IoError,
+                            "An error occured compressing the value",
+                        ))
+                    })?;
+                    Ok((key, compressed_value))
+                })
+                .collect::<Result<Vec<_>>>()
+        })?;
+
+        // Store the compressed values using mset
+        span!(Level::INFO, "Sending items to Redis")
+            .in_scope(|| async move { self.mset(&compressed_items).await })
+            .await?;
+        Ok(())
+    }
+
+    /// Retrieves a list of compressed serialized values from Valkey, decompresses them, and deserializes the result.
+    #[tracing::instrument(name = "cache:compressed_get_bulk", skip(self), err)]
+    pub async fn compressed_get_bulk<K: Debug + ToRedisArgs + Send + Sync, T: DeserializeOwned>(
+        &mut self,
+        keys: &[K],
+    ) -> Result<Vec<Option<T>>> {
+        // Avoid mget to fail if keys is empty
+        if keys.is_empty() {
+            return Ok(vec![]);
+        }
+        debug!(nb_keys = keys.len());
+
+        // Fetch the values from Redis
+        let values = span!(Level::INFO, "Fetching values from Redis")
+            .in_scope(|| async move { self.mget::<_, Vec<Option<Vec<u8>>>>(keys).await })
+            .await?;
+
+        // Decompress each value if it exists
+        span!(Level::INFO, "Decompressing data").in_scope(|| {
+            values
+                .into_iter()
+                .map(|value| match value {
+                    Some(compressed_data) => {
+                        let mut decoder = lz4_flex::frame::FrameDecoder::new(&compressed_data[..]);
+                        let deserialized: T = serde_json::from_reader(&mut decoder)?;
+                        Ok(Some(deserialized))
+                    }
+                    None => Ok(None),
+                })
+                .collect()
+        })
     }
 }
 

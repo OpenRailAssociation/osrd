@@ -245,7 +245,7 @@ async fn pathfinding_blocks_batch(
 
     // Try to retrieve the result from Valkey
     let pathfinding_cached_results: Vec<Option<PathfindingResult>> =
-        valkey_conn.json_get_bulk(&hashes).await?;
+        valkey_conn.compressed_get_bulk(&hashes).await?;
     let pathfinding_cached_results: HashMap<_, _> =
         hashes.into_iter().zip(pathfinding_cached_results).collect();
 
@@ -325,7 +325,7 @@ async fn pathfinding_blocks_batch(
     }
 
     debug!(nb_cached = to_cache.len(), "Caching pathfinding response");
-    valkey_conn.json_set_bulk(&to_cache).await?;
+    valkey_conn.compressed_set_bulk(&to_cache).await?;
 
     Ok(pathfinding_results)
 }

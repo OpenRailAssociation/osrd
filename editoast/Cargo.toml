@@ -149,6 +149,9 @@ json-patch = { version = "3.0.1", default-features = false, features = [
   "utoipa",
 ] }
 lapin = "2.5.0"
+lz4_flex = { version = "0.11.3", default-features = false, features = [
+  "frame",
+] }
 mime = "0.3.17"
 mvt.workspace = true
 opentelemetry.workspace = true

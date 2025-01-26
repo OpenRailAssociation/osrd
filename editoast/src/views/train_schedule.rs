@@ -87,7 +87,7 @@ editoast_common::schemas! {
     projection::schemas(),
 }
 
-pub const TRAIN_SIZE_BATCH: usize = 500;
+pub const TRAIN_SIZE_BATCH: usize = 250;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
@@ -427,6 +427,7 @@ pub async fn train_simulation_batch(
     Ok(results)
 }
 
+#[tracing::instrument(skip_all, fields(nb_trains = train_schedules.len()))]
 pub async fn consist_train_simulation_batch(
     conn: &mut DbConnection,
     valkey_client: Arc<ValkeyClient>,
@@ -514,8 +515,9 @@ pub async fn consist_train_simulation_batch(
         nb_unique_sim = to_sim.len()
     );
     let cached_simulation_hash = to_sim.keys().collect::<Vec<_>>();
-    let cached_results: Vec<Option<SimulationResponse>> =
-        valkey_conn.json_get_bulk(&cached_simulation_hash).await?;
+    let cached_results: Vec<Option<SimulationResponse>> = valkey_conn
+        .compressed_get_bulk(&cached_simulation_hash)
+        .await?;
 
     let nb_hit = cached_results.iter().flatten().count();
     let nb_miss = to_sim.len() - nb_hit;
@@ -561,7 +563,7 @@ pub async fn consist_train_simulation_batch(
     }
 
     // Cache the simulation response
-    valkey_conn.json_set_bulk(&to_cache).await?;
+    valkey_conn.compressed_set_bulk(&to_cache).await?;
 
     // Return the response
     Ok(simulation_results
