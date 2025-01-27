@@ -177,6 +177,7 @@ impl TestAppBuilder {
         let tracing_config = TracingConfig {
             stream: Stream::Stdout,
             telemetry,
+            directives: vec!["otel::tracing=info".parse().unwrap()],
         };
         let sub = create_tracing_subscriber(
             tracing_config,

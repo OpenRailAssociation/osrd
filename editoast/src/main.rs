@@ -114,6 +114,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let tracing_config = TracingConfig {
         stream: EditoastMode::from_client(&client).into(),
         telemetry,
+        directives: vec![],
     };
     create_tracing_subscriber(
         tracing_config,

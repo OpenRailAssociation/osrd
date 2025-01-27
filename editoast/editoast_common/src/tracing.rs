@@ -27,6 +27,7 @@ pub struct Telemetry {
 pub struct TracingConfig {
     pub stream: Stream,
     pub telemetry: Option<Telemetry>,
+    pub directives: Vec<tracing_subscriber::filter::Directive>,
 }
 
 pub fn create_tracing_subscriber<T: SpanExporter + 'static>(
@@ -38,6 +39,13 @@ pub fn create_tracing_subscriber<T: SpanExporter + 'static>(
         // Set the default log level to 'info'
         .with_default_directive(log_level.into())
         .from_env_lossy();
+    let env_filter_layer = tracing_config
+        .directives
+        .clone()
+        .into_iter()
+        .fold(env_filter_layer, |env_filter_layer, directive| {
+            env_filter_layer.add_directive(directive)
+        });
     let fmt_layer = tracing_subscriber::fmt::layer()
         .pretty()
         .with_file(true)
