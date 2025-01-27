@@ -46,7 +46,7 @@ const appendFinalNoPowerRestriction = (
 
 const reducePowerRestrictions =
   (pathStepById: Record<string, PathStep>, electrificationChangePoints: number[]) =>
-  (acc: IntervalItem[], restriction: PowerRestriction, index: number): IntervalItem[] => {
+  (acc: IntervalItem[], restriction: PowerRestriction): IntervalItem[] => {
     const fromPathStep = pathStepById[restriction.from];
     const toPathStep = pathStepById[restriction.to];
 
@@ -59,7 +59,7 @@ const reducePowerRestrictions =
 
     const prevEnd = isEmpty(acc) ? 0 : acc[acc.length - 1].end;
 
-    if (index === 0 || from > prevEnd) {
+    if (from > prevEnd) {
       const gapChangePoints = electrificationChangePoints.filter((cp) => cp > prevEnd && cp < from);
       if (gapChangePoints.length > 0) {
         addNoPowerRestrictions(acc, prevEnd, from, gapChangePoints);
