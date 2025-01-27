@@ -97,22 +97,22 @@ Using a specific script (just through `docker compose` CLI and a set of docker-c
 allows to run a single core worker for all infra on localhost network:
 
 ```sh
-./scripts/single-worker-compose.sh up -d
+./osrd-compose host sw up -d
 
 # or exclude 'core' service straight away:
-./scripts/single-worker-compose.sh up -d --scale core=0
+./osrd-compose host sw up -d --scale core=0
 ```
 
 Then, it is easy to replace the desired component for debug purpose. \
 For core:
 
 ```sh
-./scripts/single-worker-compose.sh down core # if 'core' is running
+./osrd-compose host sw down core # if 'core' is running
 ./gradlew shadowJar && ALL_INFRA=true java -jar -ea -Xmx12g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 ```
 
 Clean or restart the whole stack can be necessary sometimes and is also available
 through docker compose CLI (the following wipes the database too):
 ```sh
-./scripts/single-worker-compose.sh down -v
+./osrd-compose host sw down -v
 ```

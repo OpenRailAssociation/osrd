@@ -58,7 +58,7 @@ as `npm run e2e-tests` or `npx playwright test`.
 >
 > - Run all the components locally (you might keep Postgres and Valkey in containers)
 > - If on Linux, you can also launch all the containers on the host network: you can replace the
->   `docker compose <something>` above with `osrd/scripts/host-compose.sh <something>`
+>   `docker compose <something>` above with `osrd/osrd-compose host <something>`
 
 If the tests fail, a `front/test-results` folder will be created, containing videos and traces of
 the failed test executions. These files can help you understand what went wrong. Additionally, the

@@ -18,7 +18,7 @@ This component is built around 3 crates:
 ## Config
 
 The gateway reads `gateway.toml` in its current working directory.
-Please refer to `gateway.prod.sample.toml` for a relevant example.
+Please refer to `gateway.bundled.toml` for a relevant example.
 
 ```toml
 # Address on which the gateway will listen
