@@ -49,24 +49,26 @@ const reducePowerRestrictions =
   (acc: IntervalItem[], restriction: PowerRestriction, index: number): IntervalItem[] => {
     const fromPathStep = pathStepById[restriction.from];
     const toPathStep = pathStepById[restriction.to];
-    const from =
-      fromPathStep?.positionOnPath !== undefined ? mmToM(fromPathStep?.positionOnPath) : undefined;
-    const to = toPathStep?.positionOnPath ? mmToM(toPathStep?.positionOnPath) : undefined;
+
+    if (fromPathStep.positionOnPath === undefined || toPathStep.positionOnPath === undefined) {
+      throw new Error('Impossible to locate a path step');
+    }
+
+    const from = mmToM(fromPathStep.positionOnPath);
+    const to = mmToM(toPathStep.positionOnPath);
+
     const prevEnd = isEmpty(acc) ? 0 : acc[acc.length - 1].end;
 
-    if (from !== undefined && to !== undefined) {
-      if (index === 0 || from > prevEnd) {
-        const gapChangePoints = electrificationChangePoints.filter(
-          (cp) => cp > prevEnd && cp < from
-        );
-        if (gapChangePoints.length > 0) {
-          addNoPowerRestrictions(acc, prevEnd, from, gapChangePoints);
-        } else {
-          acc.push({ begin: prevEnd, end: from, value: 'NO_POWER_RESTRICTION' });
-        }
+    if (index === 0 || from > prevEnd) {
+      const gapChangePoints = electrificationChangePoints.filter((cp) => cp > prevEnd && cp < from);
+      if (gapChangePoints.length > 0) {
+        addNoPowerRestrictions(acc, prevEnd, from, gapChangePoints);
+      } else {
+        acc.push({ begin: prevEnd, end: from, value: 'NO_POWER_RESTRICTION' });
       }
-      acc.push({ begin: from, end: to, value: restriction.value });
     }
+
+    acc.push({ begin: from, end: to, value: restriction.value });
     return acc;
   };
 
