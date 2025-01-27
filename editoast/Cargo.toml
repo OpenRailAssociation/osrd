@@ -160,7 +160,7 @@ opentelemetry-semantic-conventions.workspace = true
 opentelemetry_sdk.workspace = true
 ordered-float = { version = "4.6.0", features = ["serde"] }
 paste.workspace = true
-pathfinding = "4.13.1"
+pathfinding = "4.14.0"
 postgis_diesel.workspace = true
 rand.workspace = true
 rangemap.workspace = true
