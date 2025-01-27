@@ -6,8 +6,6 @@ secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECR
 
 [telemetry.tracing]
 type = "Otlp"
-enable = true
-service_name = "gateway"
 endpoint = "http://localhost:4317"
 
 [[targets]]

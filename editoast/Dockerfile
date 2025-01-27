@@ -65,6 +65,7 @@ COPY --from=run_builder /editoast/assets /assets
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
+ENV OTEL_SERVICE_NAME="osrd-editoast"
 ENV DYNAMIC_ASSETS_PATH=/assets
 
 # We use jemalloc to reduce allocation fragmentation

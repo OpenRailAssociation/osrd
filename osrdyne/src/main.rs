@@ -231,20 +231,14 @@ fn init_tracing(config: &OsrdyneConfig) {
             .tonic()
             .with_endpoint(otel.endpoint.as_str());
 
-        let svc_name = otel.service_name.clone().unwrap_or("osrdyne".to_string());
-
-        let resource = opentelemetry_sdk::Resource::new(vec![opentelemetry::KeyValue::new(
-            opentelemetry_semantic_conventions::resource::SERVICE_NAME,
-            svc_name.clone(),
-        )])
-        .merge(&opentelemetry_sdk::Resource::from_detectors(
+        let resource = opentelemetry_sdk::Resource::from_detectors(
             Duration::from_secs(10),
             vec![
                 Box::new(SdkProvidedResourceDetector),
                 Box::new(TelemetryResourceDetector),
                 Box::new(EnvResourceDetector::new()),
             ],
-        ));
+        );
         let trace_config = opentelemetry_sdk::trace::Config::default().with_resource(resource);
 
         let otlp_tracer_provider = opentelemetry_otlp::new_pipeline()
@@ -254,7 +248,9 @@ fn init_tracing(config: &OsrdyneConfig) {
             .install_batch(opentelemetry_sdk::runtime::Tokio)
             .expect("Failed to initialize Opentelemetry tracer");
 
-        let otlp_tracer = otlp_tracer_provider.tracer(svc_name.clone());
+        let otlp_tracer = otlp_tracer_provider.tracer(
+            std::env::var("OTEL_SERVICE_NAME").unwrap_or_else(|_| String::from("osrd-osrdyne")),
+        );
 
         let layer = tracing_opentelemetry::layer()
             .with_tracer(otlp_tracer)

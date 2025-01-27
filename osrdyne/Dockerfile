@@ -53,5 +53,6 @@ COPY --from=run_builder /usr/local/cargo/bin/osrdyne /usr/local/bin/osrdyne
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
+ENV OTEL_SERVICE_NAME="osrd-osrdyne"
 
 CMD ["/usr/local/bin/osrdyne"]

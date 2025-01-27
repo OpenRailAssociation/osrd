@@ -8,9 +8,7 @@ listen_addr = "0.0.0.0"
 port = 4001
 
 [telemetry.tracing]
-enable = true
 type = "Otlp"
-service_name = "gateway"
 endpoint = "http://osrd-jaeger-pr-tests:4319"
 
 

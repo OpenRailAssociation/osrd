@@ -9,7 +9,6 @@ allowed_origins = ["http://127.0.0.1:3000", "http://localhost:3000"]
 
 [telemetry.tracing]
 type = "Otlp"
-service_name = "osrd-gateway"
 endpoint = "http://osrd-jaeger:4317"
 
 [[targets]]

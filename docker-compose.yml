@@ -133,7 +133,6 @@ services:
       OSRDYNE_API_URL: "http://osrd-osrdyne:4242/"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
-      OTEL_SERVICE_NAME: "osrd-editoast"
       OSRD_MQ_URL: "amqp://osrd:password@osrd-rabbitmq:5672/%2f"
     command:
       - /bin/sh
@@ -154,8 +153,6 @@ services:
       args:
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
         CARGO_PROFILE: dev
-    environment:
-      OTEL_SERVICE_NAME: "osrd-gateway"
     volumes:
       - "./docker/gateway.dev.simple.toml:/gateway.toml"
     restart: unless-stopped
@@ -188,7 +185,6 @@ services:
     environment:
       RUST_LOG: "info"
       OSRDYNE__OPENTELEMETRY__ENDPOINT: "http://osrd-jaeger:4317"
-      OSRDYNE__OPENTELEMETRY__SERVICE_NAME: "osrdyne"
 
   jaeger:
     image: jaegertracing/jaeger:latest

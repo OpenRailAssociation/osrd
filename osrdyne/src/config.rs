@@ -40,14 +40,12 @@ pub struct OsrdyneConfig {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OpentelemetryConfig {
-    pub service_name: Option<String>,
     pub endpoint: Url,
 }
 
 impl Default for OpentelemetryConfig {
     fn default() -> Self {
         Self {
-            service_name: None,
             endpoint: "http://jaeger:4317".parse().unwrap(),
         }
     }

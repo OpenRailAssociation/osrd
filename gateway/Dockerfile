@@ -53,5 +53,6 @@ COPY --from=run_builder /usr/local/cargo/bin/osrd_gateway /usr/local/bin/osrd_ga
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
+ENV OTEL_SERVICE_NAME="osrd-gateway"
 
 CMD ["/usr/local/bin/osrd_gateway"]

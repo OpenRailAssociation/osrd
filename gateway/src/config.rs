@@ -33,10 +33,7 @@ impl Telemetry {
 #[serde(tag = "type")]
 pub enum TracingTelemetry {
     None,
-    Otlp {
-        endpoint: String,
-        service_name: Option<String>,
-    },
+    Otlp { endpoint: String },
 }
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -47,7 +44,7 @@ pub enum Endpoint {
 }
 
 impl TracingTelemetry {
-    fn enable_otlp(&self, endpoint: &String, service_name: String) {
+    fn enable_otlp(&self, endpoint: &String) {
         let exporter = opentelemetry_otlp::new_exporter()
             .tonic()
             .with_endpoint(endpoint)
@@ -56,18 +53,14 @@ impl TracingTelemetry {
 
         info!("Tracing enabled with otlp");
 
-        let resource = opentelemetry_sdk::Resource::new(vec![opentelemetry::KeyValue::new(
-            "service.name",
-            service_name,
-        )])
-        .merge(&opentelemetry_sdk::Resource::from_detectors(
+        let resource = opentelemetry_sdk::Resource::from_detectors(
             Duration::from_secs(10),
             vec![
                 Box::new(SdkProvidedResourceDetector),
                 Box::new(TelemetryResourceDetector),
                 Box::new(EnvResourceDetector::new()),
             ],
-        ));
+        );
         let provider = TracerProvider::builder()
             .with_config(opentelemetry_sdk::trace::Config::default().with_resource(resource))
             .with_batch_exporter(exporter, TokioCurrentThread)
@@ -78,18 +71,8 @@ impl TracingTelemetry {
     }
 
     pub fn enable_providers(&self) {
-        let service_name = match self {
-            TracingTelemetry::None => {
-                info!("Tracing disabled");
-                return;
-            }
-            TracingTelemetry::Otlp { service_name, .. } => {
-                service_name.clone().unwrap_or("osrd-gateway".to_string())
-            }
-        };
-
         if let TracingTelemetry::Otlp { endpoint, .. } = self {
-            self.enable_otlp(endpoint, service_name);
+            self.enable_otlp(endpoint);
         }
     }
 }
