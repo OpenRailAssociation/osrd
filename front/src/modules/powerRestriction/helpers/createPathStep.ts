@@ -16,13 +16,14 @@ const createPathStep = (
   pathProperties: ManageTrainSchedulePathProperties,
   pathSteps: PathStep[],
   tracksById: Record<string, TrackSection>
-): PathStep | undefined => {
+): PathStep => {
   const positionOnPath = mToMm(positionOnPathInM);
   if (
     positionOnPath === 0 ||
     new Set(pathSteps.map((step) => step?.positionOnPath)).has(positionOnPath)
-  )
-    return undefined;
+  ) {
+    throw new Error('Invalid position on path: a path step already exists at this position');
+  }
 
   const trackOffset = findTrackSectionOffset(
     positionOnPath,

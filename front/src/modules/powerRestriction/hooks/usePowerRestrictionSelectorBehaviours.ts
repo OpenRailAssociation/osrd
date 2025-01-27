@@ -71,18 +71,16 @@ const usePowerRestrictionSelectorBehaviours = ({
       trackSectionsById
     );
 
-    if (from && to) {
-      if (newRange.value !== NO_POWER_RESTRICTION) {
-        dispatch(
-          upsertPowerRestrictionRanges({
-            from,
-            to,
-            code: newRange.value.toString(),
-          })
-        );
-      } else {
-        dispatch(deletePowerRestrictionRanges({ from, to }));
-      }
+    if (newRange.value !== NO_POWER_RESTRICTION) {
+      dispatch(
+        upsertPowerRestrictionRanges({
+          from,
+          to,
+          code: newRange.value.toString(),
+        })
+      );
+    } else {
+      dispatch(deletePowerRestrictionRanges({ from, to }));
     }
   };
 
