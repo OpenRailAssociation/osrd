@@ -7,7 +7,7 @@ secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECR
 listen_addr = "0.0.0.0"
 
 [telemetry.tracing]
-enable = true
+type = "Otlp"
 endpoint = "http://localhost:4317"
 
 [[targets]]

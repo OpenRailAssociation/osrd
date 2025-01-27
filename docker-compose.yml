@@ -154,6 +154,8 @@ services:
       args:
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
         CARGO_PROFILE: dev
+    environment:
+      OTEL_SERVICE_NAME: "osrd-gateway"
     volumes:
       - "./docker/gateway.dev.simple.toml:/gateway.toml"
     restart: unless-stopped

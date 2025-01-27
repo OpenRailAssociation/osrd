@@ -8,9 +8,8 @@ listen_addr = "0.0.0.0"
 allowed_origins = ["http://127.0.0.1:3000", "http://localhost:3000"]
 
 [telemetry.tracing]
-enable = true
 type = "Otlp"
-service_name = "gateway"
+service_name = "osrd-gateway"
 endpoint = "http://osrd-jaeger:4317"
 
 [[targets]]
