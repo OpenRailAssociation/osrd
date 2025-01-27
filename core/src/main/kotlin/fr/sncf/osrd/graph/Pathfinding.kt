@@ -14,6 +14,15 @@ import java.util.*
 import java.util.stream.Collectors
 import kotlin.math.max
 
+/**
+ * This class implements a pathfinding on an abstract graph, where the paths may end and start in
+ * the middle of edges.
+ *
+ * This should be considered as legacy, in the sense that we've had *a lot* of small increments and
+ * new features that weren't planned from the start. Although it works fine, it's very hard to
+ * navigate and modify. If we need to make any significant change in there, the best course of
+ * action would probably be to rewrite this whole class.
+ */
 @SuppressFBWarnings(
     value = ["FE_FLOATING_POINT_EQUALITY"],
     justification = "No arithmetic is done on values where we test for equality, only copies"
@@ -231,14 +240,19 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
                         val stepTargets = ArrayList(step.targets)
                         stepTargets.add(target)
 
-                        // Handle overlapping consecutive waypoints
+                        // Handle overlapping consecutive waypoints at the end of the edge (the only
+                        // case we need to explicitly handle)
                         var newNReachedTargets = step.nReachedTargets + 1
                         while (
-                            newNReachedTargets < targetsOnEdges.size &&
+                            step.range.start == edgeToLength!!.apply(step.range.edge) &&
+                                newNReachedTargets < targetsOnEdges.size &&
                                 targetsOnEdges[newNReachedTargets]
                                     .apply(step.range.edge)
                                     .contains(EdgeLocation(step.range.edge, step.range.end))
-                        ) newNReachedTargets++
+                        ) {
+                            newNReachedTargets++
+                            stepTargets.add(EdgeLocation(step.range.edge, step.range.end))
+                        }
 
                         registerStep(
                             newRange,
