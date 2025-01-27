@@ -24,6 +24,7 @@ use opentelemetry_sdk::export::trace::SpanData;
 use opentelemetry_sdk::export::trace::SpanExporter;
 use serde::de::DeserializeOwned;
 use tower_http::trace::TraceLayer;
+use tracing_subscriber::filter::Directive;
 use url::Url;
 
 use crate::{
@@ -65,6 +66,7 @@ pub(crate) struct TestAppBuilder {
     enable_authorization: bool,
     enable_stdcm_logging: bool,
     enable_telemetry: bool,
+    telemetry_directives: Vec<Directive>,
     user: Option<UserInfo>,
     roles: HashSet<BuiltinRole>,
 }
@@ -78,6 +80,7 @@ impl TestAppBuilder {
             enable_authorization: false,
             enable_stdcm_logging: false,
             enable_telemetry: true,
+            telemetry_directives: vec![],
             user: None,
             roles: HashSet::new(),
         }
@@ -113,6 +116,11 @@ impl TestAppBuilder {
 
     pub fn enable_telemetry(mut self, enable_telemetry: bool) -> Self {
         self.enable_telemetry = enable_telemetry;
+        self
+    }
+
+    pub fn with_rust_log_directive(mut self, directive: Directive) -> Self {
+        self.telemetry_directives.push(directive);
         self
     }
 
@@ -177,7 +185,7 @@ impl TestAppBuilder {
         let tracing_config = TracingConfig {
             stream: Stream::Stdout,
             telemetry,
-            directives: vec!["otel::tracing=info".parse().unwrap()],
+            directives: self.telemetry_directives,
         };
         let sub = create_tracing_subscriber(
             tracing_config,
