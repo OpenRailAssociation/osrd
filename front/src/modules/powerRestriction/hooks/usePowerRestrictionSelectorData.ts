@@ -54,6 +54,7 @@ const usePowerRestrictionSelector = (
 
   const {
     resizeSegments,
+    mergePowerRestrictionRange,
     deletePowerRestrictionRange,
     cutPowerRestrictionRange,
     editPowerRestrictionRanges,
@@ -103,6 +104,7 @@ const usePowerRestrictionSelector = (
     warnings,
     warningsNb,
     resizeSegments,
+    mergePowerRestrictionRange,
     deletePowerRestrictionRange,
     cutPowerRestrictionRange,
     editPowerRestrictionRanges,

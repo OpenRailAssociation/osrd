@@ -130,6 +130,7 @@ export const {
   // power restrictions reducer
   upsertPowerRestrictionRanges,
   cutPowerRestrictionRanges,
+  mergePowerRestrictionRanges,
   deletePowerRestrictionRanges,
   resizeSegmentEndInput,
   resizeSegmentBeginInput,

@@ -37,6 +37,7 @@ const PowerRestrictionsSelector = ({
     warnings,
     warningsNb,
     resizeSegments,
+    mergePowerRestrictionRange,
     deletePowerRestrictionRange,
     cutPowerRestrictionRange,
     editPowerRestrictionRanges,
@@ -113,10 +114,12 @@ const PowerRestrictionsSelector = ({
               setData={editPowerRestrictionRanges}
               onCut={cutPowerRestrictionRange}
               onDelete={deletePowerRestrictionRange}
+              onMerge={mergePowerRestrictionRange}
               totalLength={pathLength}
               toolsConfig={{
                 cutTool: true,
                 deleteTool: true,
+                mergeTool: true,
               }}
               disableDrag
               onResizeFromInput={resizeSegments}

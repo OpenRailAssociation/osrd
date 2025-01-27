@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
@@ -15,6 +15,7 @@ import {
   cutPowerRestrictionRanges,
   resizeSegmentBeginInput,
   resizeSegmentEndInput,
+  mergePowerRestrictionRanges,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -33,7 +34,7 @@ type UsePowerRestrictionSelectorBehavioursArgs = {
   pathProperties: ManageTrainSchedulePathProperties;
   pathSteps: PathStep[];
   powerRestrictionRanges: PowerRestriction[];
-  setCutPositions: (newCutPosition: number[]) => void;
+  setCutPositions: Dispatch<SetStateAction<number[]>>;
 };
 
 const usePowerRestrictionSelectorBehaviours = ({
@@ -97,6 +98,53 @@ const usePowerRestrictionSelectorBehaviours = ({
     if (cutAt) {
       dispatch(cutPowerRestrictionRanges({ cutAt }));
     }
+  };
+
+  const mergePowerRestrictionRange = (
+    fromPosition: number,
+    prevToPosition: number,
+    newToPosition: number
+  ) => {
+    const from = getPathStep(pathSteps, fromPosition);
+    const prevTo = getPathStep(pathSteps, prevToPosition);
+    let newTo = getPathStep(pathSteps, newToPosition);
+
+    // if the first range is empty but not the next one
+    // => delete the next range
+    if (!from && prevTo && newTo) {
+      dispatch(deletePowerRestrictionRanges({ from: prevTo, to: newTo }));
+    }
+
+    // the first range is not empty, then we need to extend it and to remove the next range
+    else if (from && prevTo) {
+      newTo = getOrCreatePathStepAtPosition(
+        newToPosition,
+        pathSteps,
+        tracksLengthCumulativeSums,
+        pathProperties,
+        trackSectionsById
+      );
+      dispatch(
+        mergePowerRestrictionRanges({
+          from,
+          prevTo,
+          newTo:
+            newTo ??
+            getOrCreatePathStepAtPosition(
+              newToPosition,
+              pathSteps,
+              tracksLengthCumulativeSums,
+              pathProperties,
+              trackSectionsById
+            ),
+        })
+      );
+    }
+
+    // clean cut positions
+    setCutPositions((prev) =>
+      prev.filter((position) => position <= fromPosition || newToPosition <= position)
+    );
   };
 
   const deletePowerRestrictionRange = (from: number, to: number) => {
@@ -164,6 +212,7 @@ const usePowerRestrictionSelectorBehaviours = ({
 
   return {
     resizeSegments,
+    mergePowerRestrictionRange,
     deletePowerRestrictionRange,
     cutPowerRestrictionRange,
     editPowerRestrictionRanges,

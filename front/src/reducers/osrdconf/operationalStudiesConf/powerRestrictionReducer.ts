@@ -96,6 +96,54 @@ const powerRestrictionReducer = {
     }
   },
 
+  mergePowerRestrictionRanges(
+    state: Draft<OperationalStudiesConfState>,
+    action: PayloadAction<{ from: PathStep; prevTo: PathStep; newTo: PathStep }>
+  ) {
+    const { from, prevTo, newTo } = action.payload;
+
+    if (!state.pathSteps.every((step) => step !== null)) {
+      throw new Error('PathSteps should not have null values at this point');
+    }
+    let newPathSteps: PathStep[] = [...state.pathSteps];
+
+    const powerRestrictionToModify = state.powerRestriction.find(
+      (restriction) => restriction.from === from.id
+    );
+
+    let newPowerRestrictionRanges: PowerRestriction[] = [];
+    if (!powerRestrictionToModify) {
+      // we need to remove the next range if it exists
+      newPowerRestrictionRanges = state.powerRestriction.filter(
+        (restriction) => restriction.from !== prevTo.id && restriction.to !== newTo.id
+      );
+    } else {
+      // replace the previous range by the new one and remove the previous one
+      for (const restriction of state.powerRestriction) {
+        if (restriction.from === from.id && restriction.to === prevTo.id) {
+          newPowerRestrictionRanges.push({ ...restriction, to: newTo.id });
+        } else if (restriction.from !== prevTo.id && restriction.to !== newTo.id) {
+          newPowerRestrictionRanges.push(restriction);
+        }
+      }
+
+      // add the new pathStep if needed
+      const pathIds = compact(state.pathSteps).map((step) => step.id);
+      if (!pathIds.includes(newTo.id)) {
+        const newToIndex = newPathSteps.findIndex(
+          (step) => step.positionOnPath && step.positionOnPath > newTo.positionOnPath!
+        );
+        if (newToIndex === -1) {
+          throw new Error('Can not insert the new pathStep in the pathSteps array');
+        }
+        newPathSteps = addElementAtIndex(newPathSteps, newToIndex, newTo);
+      }
+    }
+
+    state.pathSteps = cleanPathSteps(newPathSteps, newPowerRestrictionRanges);
+    state.powerRestriction = newPowerRestrictionRanges;
+  },
+
   deletePowerRestrictionRanges(
     state: Draft<OperationalStudiesConfState>,
     action: PayloadAction<{ from: PathStep; to: PathStep }>
