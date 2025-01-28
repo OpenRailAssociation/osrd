@@ -3,6 +3,7 @@
 __pycache__
 .vscode
 .idea
+.zed
 
 # Direnv
 .envrc
