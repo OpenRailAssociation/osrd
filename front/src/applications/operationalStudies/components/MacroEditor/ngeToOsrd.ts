@@ -227,6 +227,8 @@ const createTrainSchedulePayload = async ({
     );
     const isNonStopTransit = transition?.isNonStopTransit ?? false;
 
+    // Note that arrival is the time the train arrives at the node
+    // and departure is the time the train leaves the node
     let arrival = getTimeLockDate(section.targetArrival, startTimeLock, startDate);
     const departure = nextSection
       ? getTimeLockDate(nextSection.sourceDeparture, startTimeLock, startDate)
@@ -242,7 +244,7 @@ const createTrainSchedulePayload = async ({
       at: `${section.targetNodeId}-${index + 1}`,
       arrival: formatDateDifferenceFrom(startDate, arrival),
       stop_for:
-        departure && !isNonStopTransit ? formatDateDifferenceFrom(departure, arrival) : null,
+        departure && !isNonStopTransit ? formatDateDifferenceFrom(arrival, departure) : null,
     };
   });
 
