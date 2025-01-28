@@ -10,10 +10,15 @@ import type { AppDispatch } from 'store';
 import { formatToIsoDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 
+import { DEFAULT_TRAINRUN_FREQUENCIES, DEFAULT_TRAINRUN_FREQUENCY } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
-import { DEFAULT_TRAINRUN_FREQUENCIES, DEFAULT_TRAINRUN_FREQUENCY } from './osrdToNge';
-import { createMacroNode, deleteMacroNodeByNgeId, updateMacroNode } from './utils';
+import {
+  createMacroNode,
+  deleteMacroNodeByNgeId,
+  trainrunFrequencyFromLabel,
+  updateMacroNode,
+} from './utils';
 import type {
   NetzgrafikDto,
   NGEEvent,
@@ -209,7 +214,7 @@ const createTrainSchedulePayload = async ({
   }
 
   const trainScheduleLabels =
-    trainSchedule?.labels?.filter((label) => label.match(/^frequency::(?!30$|60$|120$)\d+$/)) || [];
+    trainSchedule?.labels?.filter((label) => trainrunFrequencyFromLabel(label) !== null) || [];
 
   trainrunLabels = uniq([...trainrunLabels, ...trainScheduleLabels]);
 

@@ -6,123 +6,28 @@ import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQu
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
 
+import {
+  TRAINRUN_CATEGORY_HALTEZEITEN,
+  NODE_LABEL_GROUP,
+  DEFAULT_TRAINRUN_FREQUENCIES,
+  DEFAULT_TRAINRUN_CATEGORY,
+  DEFAULT_TRAINRUN_FREQUENCY,
+  DEFAULT_TRAINRUN_TIME_CATEGORY,
+  TRAINRUN_LABEL_GROUP,
+  DEFAULT_TIME_LOCK,
+  DEFAULT_DTO,
+} from './consts';
 import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
-import { deleteMacroNodeByDbId, getSavedMacroNodes } from './utils';
+import { deleteMacroNodeByDbId, getSavedMacroNodes, trainrunFrequencyFromLabel } from './utils';
 import {
   type PortDto,
   type TimeLockDto,
   type TrainrunSectionDto,
-  type TrainrunCategory,
-  type TrainrunTimeCategory,
   type TrainrunFrequency,
   type NetzgrafikDto,
-  type LabelGroupDto,
   PortAlignment,
   type LabelDto,
 } from '../NGE/types';
-
-const TRAINRUN_CATEGORY_HALTEZEITEN = {
-  HaltezeitIPV: { haltezeit: 0, no_halt: false },
-  HaltezeitA: { haltezeit: 0, no_halt: false },
-  HaltezeitB: { haltezeit: 0, no_halt: false },
-  HaltezeitC: { haltezeit: 0, no_halt: false },
-  HaltezeitD: { haltezeit: 0, no_halt: false },
-  HaltezeitUncategorized: { haltezeit: 0, no_halt: false },
-};
-
-const TRAINRUN_LABEL_GROUP: LabelGroupDto = {
-  id: 1,
-  name: 'Default',
-  labelRef: 'Trainrun',
-};
-const NODE_LABEL_GROUP: LabelGroupDto = {
-  id: 2,
-  name: 'Node',
-  labelRef: 'Node',
-};
-
-const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
-  id: 1, // In NGE, Trainrun.DEFAULT_TRAINRUN_CATEGORY
-  order: 0,
-  name: 'Default',
-  shortName: '', // TODO: find a better way to hide this in the graph
-  fachCategory: 'HaltezeitUncategorized',
-  colorRef: 'EC',
-  minimalTurnaroundTime: 0,
-  nodeHeadwayStop: 0,
-  nodeHeadwayNonStop: 0,
-  sectionHeadway: 0,
-};
-
-export const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
-  {
-    id: 2,
-    order: 0,
-    frequency: 30,
-    offset: 0,
-    name: 'Half-hourly',
-    shortName: '30',
-    linePatternRef: '30',
-  },
-  {
-    id: 3, // default NGE frequency takes id 3
-    order: 1,
-    frequency: 60,
-    offset: 0,
-    name: 'Hourly',
-    /** Short name, needs to be unique */
-    shortName: '60',
-    linePatternRef: '60',
-  },
-  {
-    id: 4,
-    order: 2,
-    frequency: 120,
-    offset: 0,
-    name: 'Two-hourly',
-    shortName: '120',
-    linePatternRef: '120',
-  },
-];
-
-export const DEFAULT_TRAINRUN_FREQUENCY: TrainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES[1];
-
-const DEFAULT_TRAINRUN_TIME_CATEGORY: TrainrunTimeCategory = {
-  id: 0, // In NGE, Trainrun.DEFAULT_TRAINRUN_TIME_CATEGORY
-  order: 0,
-  name: 'Default',
-  shortName: '7/24',
-  dayTimeInterval: [],
-  weekday: [1, 2, 3, 4, 5, 6, 7],
-  linePatternRef: '7/24',
-};
-
-const DEFAULT_DTO: NetzgrafikDto = {
-  resources: [],
-  nodes: [],
-  trainruns: [],
-  trainrunSections: [],
-  metadata: {
-    netzgrafikColors: [],
-    trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
-    trainrunFrequencies: [...DEFAULT_TRAINRUN_FREQUENCIES],
-    trainrunTimeCategories: [DEFAULT_TRAINRUN_TIME_CATEGORY],
-  },
-  freeFloatingTexts: [],
-  labels: [],
-  labelGroups: [],
-  filterData: {
-    filterSettings: [],
-  },
-};
-
-const DEFAULT_TIME_LOCK: TimeLockDto = {
-  time: null,
-  consecutiveTime: null,
-  lock: false,
-  warning: null,
-  timeFormatter: null,
-};
 
 /**
  * Execute the search payload and collect all result pages.
@@ -224,16 +129,6 @@ const castNodeToNge = (
     labels.findIndex((e) => e.label === l && e.labelGroupId === NODE_LABEL_GROUP.id)
   ),
 });
-
-/**
- * Match a frequency label to a NGE TrainrunFrequency, or `null` if not handled.
- */
-const trainrunFrequencyFromLabel = (label: string) => {
-  if (!label.startsWith('frequency::')) return null;
-  const n = parseInt(label.split('::', 2)[1], 10);
-  const frequency = DEFAULT_TRAINRUN_FREQUENCIES.find((freq) => freq.frequency === n);
-  return frequency ?? null;
-};
 
 /**
  * NGE trainrun frequency is stored as OSRD labels (`"frequency::30"` or `"frequency::120"`).

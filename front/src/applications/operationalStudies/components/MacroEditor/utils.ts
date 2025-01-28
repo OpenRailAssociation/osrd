@@ -8,6 +8,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
+import { DEFAULT_TRAINRUN_FREQUENCIES } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
 
@@ -160,4 +161,14 @@ export const getSavedMacroNodes = async (
     page += 1;
   }
   return result;
+};
+
+/**
+ * Match a frequency label to a NGE TrainrunFrequency, or `null` if not handled.
+ */
+export const trainrunFrequencyFromLabel = (label: string) => {
+  if (!label.startsWith('frequency::')) return null;
+  const n = parseInt(label.split('::', 2)[1], 10);
+  const frequency = DEFAULT_TRAINRUN_FREQUENCIES.find((freq) => freq.frequency === n);
+  return frequency ?? null;
 };
