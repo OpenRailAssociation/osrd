@@ -11,7 +11,7 @@ authors = ["OSRD <contact@osrd.fr>"]
 [tool.poetry.dependencies]
 geojson-pydantic = "^1.0.0"
 pydantic = "^2.1.1"
-python = ">=3.9,<3.12"
+python = "^3.11,<3.13"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
