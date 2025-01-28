@@ -54,6 +54,7 @@
       "InvalidLocations": "Certaines localisations sont invalides"
     },
     "document": {
+      "Database": "Erreur interne (base de données)",
       "NotFound": "Document '{{document_key}}' non trouvé"
     },
     "DatabaseAccessError": "Erreur fatale d'accès à la base de données",
@@ -149,6 +150,7 @@
       "BasePowerClassEmpty": "La classe de puissance par défaut ne peut être vide",
       "CannotCreateCompoundImage": "Impossible de créer l'image composée",
       "CannotReadImage": "Impossible de lire l'image",
+      "Database": "Erreur interne (base de données)",
       "NameAlreadyUsed": "Un matériel roulant avec le nom '{{name}}' existe déjà",
       "KeyNotFound": "Matériel roulant '{{rolling_stock_key.key}}' non trouvé",
       "LiveryMultipartError": "Requête multipart invalide pour upload de livrée",
@@ -160,6 +162,7 @@
       "IsLocked": "Matériel remorqué '{{towed_rolling_stock_id}}' est verrouillé"
     },
     "scenario": {
+      "Database": "Erreur interne (base de données)",
       "NotFound": "Scénario non trouvé",
       "InfraNotFound": "Infrastructure {{infra_id}} non trouvée",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
@@ -210,10 +213,12 @@
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "study": {
+      "Database": "Erreur interne (base de données)",
       "NotFound": "Etude '{{study_id}}' non trouvée",
       "StartDateAfterEndDate": "La date de début de l'étude doit commencer avant sa date de fin"
     },
     "timetable": {
+      "Database": "Erreur interne (base de données)",
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée"
@@ -221,6 +226,7 @@
     "train_schedule": {
       "BatchShouldHaveSameTimetable": "Le lot doit avoir une grille horaire identique",
       "BatchTrainScheduleNotFound": "Certaines circulations sont introuvables",
+      "Database": "Erreur interne (base de données)",
       "NoSimulation": "Aucune simulation fournie",
       "NoTrainSchedules": "Aucune circulation de train fournie",
       "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
@@ -234,6 +240,7 @@
       "InvalidUrl": "Url invalide '{{url}}'"
     },
     "work_schedule": {
+      "Database": "Erreur interne (base de données)",
       "NameAlreadyUsed": "Un groupe de planches travaux avec le nom '{{name}}' existe déjà",
       "WorkScheduleGroupNotFound": "Le groupe de planche travaux avec l'id {{id}} n'existe pas"
     },

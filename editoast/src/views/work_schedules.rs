@@ -73,6 +73,9 @@ enum WorkScheduleError {
     #[error("Work schedule group '{id}' not found")]
     #[editoast_error(status = 404)]
     WorkScheduleGroupNotFound { id: i64 },
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 pub fn map_diesel_error(e: InternalError, name: impl AsRef<str>) -> InternalError {

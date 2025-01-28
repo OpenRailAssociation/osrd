@@ -24,6 +24,19 @@ pub struct Timetable {
     pub id: i64,
 }
 
+impl crate::models::Model for Timetable {
+    type Row = Self;
+    type Changeset = Option<i64>;
+    type Table = editoast_models::tables::timetable::table;
+    type Error = editoast_models::model::Error;
+}
+
+impl From<Timetable> for Option<i64> {
+    fn from(timetable: Timetable) -> Self {
+        Some(timetable.id)
+    }
+}
+
 impl Timetable {
     #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
     pub async fn create(conn: &mut DbConnection) -> Result<Self> {
@@ -84,22 +97,21 @@ impl Timetable {
     }
 }
 
-#[async_trait::async_trait]
 impl DeleteStatic<i64> for Timetable {
-    #[allow(clippy::blocks_in_conditions)] // TODO: Remove this once using clippy 0.1.80
     #[tracing::instrument(name = "model:delete_static<Timetable>", skip_all, ret, err)]
-    async fn delete_static(conn: &mut DbConnection, id: i64) -> Result<bool> {
-        diesel::delete(dsl::timetable.filter(dsl::id.eq(id)))
+    async fn delete_static(
+        conn: &mut DbConnection,
+        id: i64,
+    ) -> Result<bool, editoast_models::model::Error> {
+        let n = diesel::delete(dsl::timetable.filter(dsl::id.eq(id)))
             .execute(conn.write().await.deref_mut())
-            .await
-            .map(|n| n == 1)
-            .map_err(Into::into)
+            .await?;
+        Ok(n == 1)
     }
 }
 
 #[async_trait::async_trait]
 impl Retrieve<i64> for Timetable {
-    #[allow(clippy::blocks_in_conditions)] // TODO: Remove this once using clippy 0.1.80
     #[tracing::instrument(name = "model:retrieve<Timetable>", skip_all, err)]
     async fn retrieve(
         conn: &mut editoast_models::DbConnection,
@@ -116,7 +128,6 @@ impl Retrieve<i64> for Timetable {
 
 #[async_trait::async_trait]
 impl Exists<i64> for Timetable {
-    #[allow(clippy::blocks_in_conditions)] // TODO: Remove this once using clippy 0.1.80
     #[tracing::instrument(name = "model:exists<Timetable>", skip_all, ret, err)]
     async fn exists(conn: &mut DbConnection, id: i64) -> Result<bool> {
         Self::retrieve(conn, id)

@@ -65,6 +65,9 @@ pub enum StudyError {
     #[error("The study start date must be before the end date")]
     #[editoast_error(status = 400)]
     StartDateAfterEndDate,
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -505,13 +508,13 @@ pub mod tests {
         let response: StudyListResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let studies_retreived = response
+        let studies_retrieved = response
             .results
             .iter()
             .find(|r| r.study.id == created_study.id)
             .expect("Study not found");
 
-        assert_eq!(studies_retreived.study, created_study);
+        assert_eq!(studies_retrieved.study, created_study);
     }
 
     #[rstest]

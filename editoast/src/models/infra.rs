@@ -246,7 +246,7 @@ impl Infra {
     }
 
     /// Clear generated data of the infra
-    /// This function will update `generated_version` acordingly.
+    /// This function will update `generated_version` accordingly.
     pub async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool> {
         // TODO: lock self for update
         generated_data::clear_all(conn, self.id).await?;
@@ -301,6 +301,7 @@ impl Infra {
             })
         })
         .await
+        .map_err(Into::into)
     }
 }
 
@@ -386,7 +387,7 @@ pub mod tests {
     }
 
     #[rstest]
-    // The fixture leaks the persisted infra because we explicitely opened a
+    // The fixture leaks the persisted infra because we explicitly opened a
     // connection. This should be fixed by the testing utils rework. The ignore
     // should be removed after.
     #[ignore]

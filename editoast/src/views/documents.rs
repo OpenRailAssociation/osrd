@@ -39,6 +39,9 @@ pub enum DocumentErrors {
     #[error("Document '{document_key}' not found")]
     #[editoast_error(status = 404)]
     NotFound { document_key: i64 },
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 /// Returns a document of any type

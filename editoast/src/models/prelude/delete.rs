@@ -40,24 +40,26 @@ pub trait Delete: Model {
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
-pub trait DeleteStatic<K>: Sized
+pub trait DeleteStatic<K>: Model
 where
-    for<'async_trait> K: Send + 'async_trait,
+    K: Send,
 {
     /// Deletes the row #`id` from the database
-    async fn delete_static(conn: &mut DbConnection, id: K) -> Result<bool>;
+    async fn delete_static(
+        conn: &mut DbConnection,
+        id: K,
+    ) -> std::result::Result<bool, Self::Error>;
 
     /// Just like [DeleteStatic::delete_static] but returns `Err(fail())` if the row didn't exist
-    async fn delete_static_or_fail<E, F>(conn: &mut DbConnection, id: K, fail: F) -> Result<()>
+    async fn delete_static_or_fail<E, F>(conn: &mut DbConnection, id: K, fail: F) -> Result<(), E>
     where
-        E: EditoastError,
-        F: FnOnce() -> E + Send + 'async_trait,
+        E: From<Self::Error>,
+        F: FnOnce() -> E + Send,
     {
         match Self::delete_static(conn, id).await {
             Ok(true) => Ok(()),
-            Ok(false) => Err(fail().into()),
-            Err(e) => Err(e),
+            Ok(false) => Err(fail()),
+            Err(e) => Err(E::from(e)),
         }
     }
 }

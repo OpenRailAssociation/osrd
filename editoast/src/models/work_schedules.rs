@@ -31,7 +31,7 @@ pub enum WorkScheduleType {
 
 #[derive(Debug, Default, Clone, Model, Serialize, Deserialize, ToSchema)]
 #[model(table = editoast_models::tables::work_schedule)]
-#[model(gen(batch_ops = cd, list))]
+#[model(gen(batch_ops = c, list))]
 pub struct WorkSchedule {
     pub id: i64,
     pub start_date_time: DateTime<Utc>,

@@ -26,13 +26,12 @@ impl ToTokens for DeleteStaticImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::DeleteStatic<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn delete_static(
                     conn: &mut editoast_models::DbConnection,
                     #id_ident: #ty,
-                ) -> crate::error::Result<bool> {
+                ) -> std::result::Result<bool, <#model as crate::models::Model>::Error> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use std::ops::DerefMut;
@@ -42,7 +41,7 @@ impl ToTokens for DeleteStaticImpl {
                         .execute(conn.write().await.deref_mut())
                         .await
                         .map(|n| n == 1)
-                        .map_err(Into::into)
+                        .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
         });

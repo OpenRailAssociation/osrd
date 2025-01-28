@@ -412,7 +412,6 @@ impl crate::models::Update<(i64), Document> for DocumentChangeset {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::DeleteStatic<(String)> for Document {
     #[tracing::instrument(
         name = "model:delete_static<Document>",
@@ -424,7 +423,7 @@ impl crate::models::DeleteStatic<(String)> for Document {
     async fn delete_static(
         conn: &mut editoast_models::DbConnection,
         content_type: (String),
-    ) -> crate::error::Result<bool> {
+    ) -> std::result::Result<bool, <Document as crate::models::Model>::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -437,11 +436,12 @@ impl crate::models::DeleteStatic<(String)> for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(Into::into)
+            .map_err(|e| <Document as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::DeleteStatic<(i64)> for Document {
     #[tracing::instrument(
         name = "model:delete_static<Document>",
@@ -453,7 +453,7 @@ impl crate::models::DeleteStatic<(i64)> for Document {
     async fn delete_static(
         conn: &mut editoast_models::DbConnection,
         id_: (i64),
-    ) -> crate::error::Result<bool> {
+    ) -> std::result::Result<bool, <Document as crate::models::Model>::Error> {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -463,7 +463,9 @@ impl crate::models::DeleteStatic<(i64)> for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(Into::into)
+            .map_err(|e| <Document as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]

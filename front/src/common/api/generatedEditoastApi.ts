@@ -1596,8 +1596,7 @@ export type GetRollingStockByRollingStockIdApiResponse =
 export type GetRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
 };
-export type DeleteRollingStockByRollingStockIdApiResponse =
-  /** status 204 The rolling stock was deleted successfully */ void;
+export type DeleteRollingStockByRollingStockIdApiResponse = unknown;
 export type DeleteRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
   /** force the deletion even if it's used */
@@ -3169,48 +3168,6 @@ export type RollingStockForm = {
 export type RollingStockWithLiveries = RollingStock & {
   liveries: RollingStockLivery[];
 };
-export type RollingStockKey =
-  | {
-      key: number;
-      type: 'Id';
-    }
-  | {
-      key: string;
-      type: 'Name';
-    };
-export type ScenarioReference = {
-  project_id: number;
-  project_name: string;
-  scenario_id: number;
-  scenario_name: string;
-  study_id: number;
-  study_name: string;
-};
-export type RollingStockError =
-  | 'CannotReadImage'
-  | 'CannotCreateCompoundImage'
-  | {
-      KeyNotFound: {
-        rolling_stock_key: RollingStockKey;
-      };
-    }
-  | {
-      NameAlreadyUsed: {
-        name: string;
-      };
-    }
-  | {
-      IsLocked: {
-        rolling_stock_id: number;
-      };
-    }
-  | {
-      IsUsed: {
-        rolling_stock_id: number;
-        usage: ScenarioReference[];
-      };
-    }
-  | 'BasePowerClassEmpty';
 export type RollingStockLiveryCreateForm = {
   images: Blob[];
   name: string;
@@ -3218,6 +3175,14 @@ export type RollingStockLiveryCreateForm = {
 export type RollingStockLockedUpdateForm = {
   /** New locked value */
   locked: boolean;
+};
+export type ScenarioReference = {
+  project_id: number;
+  project_name: string;
+  scenario_id: number;
+  scenario_name: string;
+  study_id: number;
+  study_name: string;
 };
 export type SearchResultItemTrack = {
   infra_id: number;

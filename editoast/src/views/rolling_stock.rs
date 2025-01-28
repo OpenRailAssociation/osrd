@@ -67,8 +67,6 @@ editoast_common::schemas! {
     DeleteRollingStockQueryParams,
     RollingStockLockedUpdateForm,
     RollingStockLiveryCreateForm,
-    RollingStockError,
-    RollingStockKey,
     RollingStockWithLiveries,
     ScenarioReference,
     light::schemas(),
@@ -102,14 +100,14 @@ impl RollingStockWithLiveries {
     }
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Display, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Display, Serialize)]
 #[serde(tag = "type", content = "key")]
 pub enum RollingStockKey {
     Id(i64),
     Name(String),
 }
 
-#[derive(Debug, Error, EditoastError, ToSchema, Serialize)] // serde is required in order to skip variants
+#[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "rollingstocks")]
 pub enum RollingStockError {
     #[error("Impossible to read the separated image")]
@@ -121,8 +119,7 @@ pub enum RollingStockError {
     CannotCreateCompoundImage,
 
     #[error("Invalid livery import payload: {0}")]
-    #[editoast_error(status = 400, no_context)]
-    #[serde(skip)]
+    #[editoast_error(status = 400)]
     LiveryMultipartError(#[from] LiveryMultipartError),
 
     #[error("Rolling stock '{rolling_stock_key}' could not be found")]
@@ -147,6 +144,10 @@ pub enum RollingStockError {
     #[error("Base power class is an empty string")]
     #[editoast_error(status = 400)]
     BasePowerClassEmpty,
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 #[derive(Debug, Error)]
@@ -424,7 +425,7 @@ struct DeleteRollingStockQueryParams {
         (status = 204, description = "The rolling stock was deleted successfully"),
         (status = 404, description = "The requested rolling stock is locked"),
         (status = 404, description = "The requested rolling stock was not found"),
-        (status = 409, description = "The requested rolling stock is used", body = RollingStockError),
+        (status = 409, description = "The requested rolling stock is used"),
     )
 )]
 async fn delete(
@@ -811,7 +812,7 @@ pub mod tests {
         let mut form = serde_json::from_str::<RollingStockForm>(include_str!(
             "../tests/example_rolling_stock_1.json"
         ))
-        .expect("Unable to parse exemple rolling stock");
+        .expect("Unable to parse example rolling stock");
         form.name = name.to_owned();
         form
     }
