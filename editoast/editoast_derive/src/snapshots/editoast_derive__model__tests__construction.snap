@@ -1167,7 +1167,6 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::DeleteBatch<(String)> for Document {
     #[tracing::instrument(
         name = "model:delete_batch<Document>",
@@ -1176,9 +1175,10 @@ impl crate::models::DeleteBatch<(String)> for Document {
         err,
         fields(query_ids)
     )]
-    async fn delete_batch<
-        I: std::iter::IntoIterator<Item = (String)> + Send + 'async_trait,
-    >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<usize> {
+    async fn delete_batch<I: std::iter::IntoIterator<Item = (String)> + Send>(
+        conn: &mut editoast_models::DbConnection,
+        ids: I,
+    ) -> std::result::Result<usize, <Document as crate::models::Model>::Error> {
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -1198,7 +1198,12 @@ impl crate::models::DeleteBatch<(String)> for Document {
                     for content_type in chunk.into_iter() {
                         query = query.or_filter(dsl::content_type.eq(content_type));
                     }
-                    query.execute(conn.write().await.deref_mut()).await?
+                    query
+                        .execute(conn.write().await.deref_mut())
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.push(chunk_result);
             }
@@ -1208,7 +1213,6 @@ impl crate::models::DeleteBatch<(String)> for Document {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::DeleteBatch<(i64)> for Document {
     #[tracing::instrument(
         name = "model:delete_batch<Document>",
@@ -1217,9 +1221,10 @@ impl crate::models::DeleteBatch<(i64)> for Document {
         err,
         fields(query_ids)
     )]
-    async fn delete_batch<
-        I: std::iter::IntoIterator<Item = (i64)> + Send + 'async_trait,
-    >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<usize> {
+    async fn delete_batch<I: std::iter::IntoIterator<Item = (i64)> + Send>(
+        conn: &mut editoast_models::DbConnection,
+        ids: I,
+    ) -> std::result::Result<usize, <Document as crate::models::Model>::Error> {
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -1239,7 +1244,12 @@ impl crate::models::DeleteBatch<(i64)> for Document {
                     for id_ in chunk.into_iter() {
                         query = query.or_filter(dsl::id.eq(id_));
                     }
-                    query.execute(conn.write().await.deref_mut()).await?
+                    query
+                        .execute(conn.write().await.deref_mut())
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.push(chunk_result);
             }

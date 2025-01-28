@@ -40,19 +40,21 @@ impl ToTokens for DeleteBatchImpl {
                 for #id_ident in chunk.into_iter() {
                     query = query.or_filter(#filters);
                 }
-                query.execute(conn.write().await.deref_mut()).await?
+                query
+                    .execute(conn.write().await.deref_mut())
+                    .await
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::DeleteBatch<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_ids))]
-                async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait>(
+                async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send>(
                     conn: &mut editoast_models::DbConnection,
                     ids: I,
-                ) -> crate::error::Result<usize> {
+                ) -> std::result::Result<usize, <#model as crate::models::Model>::Error> {
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;

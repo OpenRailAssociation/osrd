@@ -1,11 +1,12 @@
-use editoast_models::DbConnection;
+use std::result::Result;
+
+use editoast_models::{model, DbConnection};
 
 use crate::error::EditoastError;
-use crate::error::Result;
 
 use super::Model;
 
-/// Describes how a [Model](super::Model) can be deleted from the database
+/// Describes how a [Model] can be deleted from the database
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
@@ -16,11 +17,7 @@ pub trait Delete: Model {
     async fn delete(&self, conn: &mut DbConnection) -> std::result::Result<bool, Self::Error>;
 
     /// Just like [Delete::delete] but returns `Err(fail())` if the row didn't exist
-    async fn delete_or_fail<E, F>(
-        &self,
-        conn: &mut DbConnection,
-        fail: F,
-    ) -> std::result::Result<(), E>
+    async fn delete_or_fail<E, F>(&self, conn: &mut DbConnection, fail: F) -> Result<(), E>
     where
         E: From<Self::Error>,
         F: FnOnce() -> E + Send,
@@ -33,7 +30,7 @@ pub trait Delete: Model {
     }
 }
 
-/// Describes how a [Model](super::Model) can be deleted from the database
+/// Describes how a [Model] can be deleted from the database
 ///
 /// This trait is similar to [Delete] but it doesn't take a reference to the model
 /// instance. This is useful for models that don't have to be retrieved before deletion.
@@ -64,36 +61,39 @@ where
     }
 }
 
-/// Describes how a [Model](super::Model) can be deleted from the database given a batch of keys
+/// Describes how a [Model] can be deleted from the database given a batch of keys
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
-pub trait DeleteBatch<K>: Sized
+pub trait DeleteBatch<K>: Model
 where
-    for<'async_trait> K: Send + 'async_trait,
+    K: Send,
 {
     /// Deletes a batch of rows from the database given an iterator of keys
     ///
     /// Returns the number of rows deleted.
-    async fn delete_batch<I: IntoIterator<Item = K> + Send + 'async_trait>(
+    async fn delete_batch<I: IntoIterator<Item = K> + Send>(
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<usize>;
+    ) -> Result<usize, Self::Error>;
 
     /// Just like [DeleteBatch::delete_batch] but returns `Err(fail(missing))` where `missing`
     /// is the number of rows that were not deleted
-    async fn delete_batch_or_fail<I, E, F>(conn: &mut DbConnection, ids: I, fail: F) -> Result<()>
+    async fn delete_batch_or_fail<I, E, F>(
+        conn: &mut DbConnection,
+        ids: I,
+        fail: F,
+    ) -> Result<(), E>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
-        E: EditoastError,
-        F: FnOnce(usize) -> E + Send + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
+        E: From<Self::Error>,
+        F: FnOnce(usize) -> E + Send,
     {
         let ids = ids.into_iter().collect::<Vec<_>>();
         let expected_count = ids.len();
         let count = Self::delete_batch(conn, ids).await?;
         if count != expected_count {
-            Err(fail(expected_count - count).into())
+            Err(fail(expected_count - count))
         } else {
             Ok(())
         }
