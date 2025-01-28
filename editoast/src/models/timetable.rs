@@ -31,7 +31,6 @@ impl Timetable {
             .default_values()
             .get_result::<Timetable>(conn.write().await.deref_mut())
             .await
-            .map(Into::into)
             .map_err(Into::into)
     }
 
@@ -119,10 +118,7 @@ impl Exists<i64> for Timetable {
     #[allow(clippy::blocks_in_conditions)] // TODO: Remove this once using clippy 0.1.80
     #[tracing::instrument(name = "model:exists<Timetable>", skip_all, ret, err)]
     async fn exists(conn: &mut DbConnection, id: i64) -> Result<bool> {
-        Self::retrieve(conn, id)
-            .await
-            .map(|r| r.is_some())
-            .map_err(Into::into)
+        Self::retrieve(conn, id).await.map(|r| r.is_some())
     }
 }
 

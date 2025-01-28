@@ -161,7 +161,6 @@ impl HTTPClient {
                 let status = statuses
                     .get(key.as_ref())
                     .copied()
-                    .map(WorkerStatus::from)
                     .unwrap_or(WorkerStatus::Unscheduled);
                 (key.as_ref().to_owned(), status)
             })
