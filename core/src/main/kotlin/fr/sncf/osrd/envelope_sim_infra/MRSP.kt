@@ -12,14 +12,11 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.rangeMapEntryToSpeedLimitProperty
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
 import fr.sncf.osrd.utils.units.Speed
-import fr.sncf.osrd.utils.units.Speed.Companion.toMetersPerSecond
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
-import kotlin.math.min
 
 /**
  * Computes the MSRP for a rolling stock on a given path. (MRSP = most restrictive speed profile:
@@ -77,33 +74,6 @@ fun computeMRSP(
     val pathLength = toMeters(path.getLength())
 
     val offset = if (addRollingStockLength) rsLength else 0.0
-    val speedLimitProperties = path.getSpeedLimitProperties(trainTag, temporarySpeedLimitManager)
-    for (speedLimitPropertyRange in speedLimitProperties) {
-        // Compute where this limit is active from and to
-        val start = toMeters(speedLimitPropertyRange.lower)
-        val end = min(pathLength, offset + toMeters(speedLimitPropertyRange.upper))
-        val speedLimitProp = rangeMapEntryToSpeedLimitProperty(speedLimitPropertyRange)
-        val speed = toMetersPerSecond(speedLimitProp.speed)
-        val attrs =
-            mutableListOf<SelfTypeHolder?>(
-                EnvelopeProfile.CONSTANT_SPEED,
-                MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT
-            )
-        if (speedLimitProp.source != null) {
-            attrs.add(speedLimitProp.source)
-        }
-        if (attrs.any { it is UnknownTag }) attrs.add(HasMissingSpeedTag)
-        if (speed != 0.0) {
-            // Add the envelope part corresponding to the restricted speed section
-            builder.addPart(
-                EnvelopePart.generateTimes(
-                    attrs,
-                    doubleArrayOf(start, end),
-                    doubleArrayOf(speed, speed)
-                )
-            )
-        }
-    }
 
     // Add a limit corresponding to the hardware's maximum operational speed
     val attrs = listOf(EnvelopeProfile.CONSTANT_SPEED, MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT)
@@ -113,28 +83,8 @@ fun computeMRSP(
         pathLength.meters,
         rsMaxSpeed.metersPerSecond,
         attrs,
-        speedLimitProperties
+        distanceRangeMapOf(),
     )
-
-    // Add safety speeds
-    if (safetySpeedRanges != null) {
-        for (range in safetySpeedRanges) {
-            val speed = range.value
-            val newAttrs =
-                listOf<SelfTypeHolder?>(
-                    EnvelopeProfile.CONSTANT_SPEED,
-                    MRSPEnvelopeBuilder.LimitKind.SAFETY_APPROACH_SPEED,
-                )
-            addSpeedSection(
-                builder,
-                range.lower,
-                Distance.min(range.upper, pathLength.meters),
-                speed,
-                newAttrs,
-                speedLimitProperties
-            )
-        }
-    }
     return builder.build()
 }
 
