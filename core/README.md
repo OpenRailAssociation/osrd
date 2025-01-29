@@ -1,30 +1,29 @@
 # OSRD's Simulation backend
 
-## Design Goals
+This is the service in charge of handling the core railway logic
+and physics simulations.
 
-- **Microscopic**: The movement of trains should be accurately simulated, as well as their interactions with interlocking / signaling
-- **Readable**: The code must be kept to very high quality standards, so everyone can contribute
-- **Modular**: Users should be able to easily integrate their own hardware and behaviors
-- **Observable**: What happens in the simulation must be easy to monitor
-- **Fast**: Simulating a full day of operation for 500+ trains shouldn't take hours
+It can currently handle:
 
-Many of these goals currently aren't _yet_ fulfilled: the simulation is pretty slow, and the feature set is very limited.
+* Pathfinding operations
+* Train simulations (including both speed / running times,
+and the simulation of nearby signaling)
+* Conflict detection
+* Last minute train requests
+* Path properties / projection operations
 
-## Simulation roadmap
 
-- [x] Reasonably accurate simulation of train movement
-- [x] Import of railML3 infrastructure
-- [x] Static speed restrictions
-- [x] Full history of internal simulation events
-- [x] Basic interlocking / signaling support
-- [x] Make the train react to signals
-- [x] pathfinding in the route graph
-- [x] API server mode
-- [ ] ERTMS support
-- [ ] Parallel integration of train movement
-- [x] Variable step integration
-- [ ] Driver behavior model
-- [ ] ~~Rewrite everything in Rust~~
+What **is not** supported yet:
+
+* Multi-train simulations, where each train react to their
+surroundings
+
+
+The API itself isn't extensively documented in an openapi file
+or similar (that's one big TODO). Existing endpoints are listed in
+the `WorkerCommand.kt` file, and the inputs/outputs are described
+in their respective classes.
+
 
 ## Getting Started
 
@@ -44,7 +43,7 @@ gradlew.bat shadowJar
 ALL_INFRA=true java -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 
 # Check that an infra can be loaded
-java -jar build/libs/osrd-all.jar load-infra --path RAILJSON_INFRA
+java -jar build/libs/osrd-all.jar load-infra --path infra.json
 
 # Run as web-service (deprecated inside OSRD's stack)
 java -jar build/libs/osrd-all.jar api --editoast-url http://localhost:8090/ --port 8080
@@ -79,11 +78,12 @@ To launch tests only, run:
 ./gradlew test
 ```
 
-To auto-format all source code, run:
+To auto-format all source code (required for the CI checks to pass), run:
 
 ```sh
 ./gradlew spotlessApply
 ```
+
 
 ### Local run and debug
 
@@ -92,6 +92,11 @@ It is recommended to pass additional Java options to enable the process of big i
 ```sh
 -ea -Xmx12g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof
 ```
+
+* `-ea` enables assertions (used extensively in the project).
+* `-Xmx12g` increases the allowed RAM usage to 12g (tweak this value for your use)
+* `-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof` is only relevant for memory use debugging
+(but never hurts). It dumps useful files when hitting the RAM limit.
 
 Using a specific script (just through `docker compose` CLI and a set of docker-compose files)
 allows to run a single core worker for all infra on localhost network:
@@ -126,3 +131,18 @@ through docker compose CLI (the following wipes the database too):
 ```sh
 ./osrd-compose host sw down -v
 ```
+
+
+### Development tips
+
+The most important interfaces/classes are the ones describing the infrastructure:
+`RawInfra` and `BlockInfra`. They work through abstract accessors and IDs
+instead of nested object (the plan being to enable possible future FFI there).
+The downside is that we can't just view object properties in the debugger, but the
+functions in `DebugViewers` can map IDs to nested objects for this purpose.
+
+Requests processed by the worker can be written to disk by setting these environments
+variables to true: `LOG_STDCM_REQUESTS`, `LOG_PATHFINDING_REQUESTS`,
+`LOG_SIMULATION_REQUESTS`. Though be careful, STDCM payload can be large
+(possibly in the 100s of MB). They can then be reproduced by the
+`reproduce-request` CLI command.
