@@ -40,7 +40,7 @@ logback-classic = { module = 'ch.qos.logback:logback-classic', version.ref = 'lo
 # java stuff
 guava = { module = 'com.google.guava:guava', version = '33.4.0-jre' } # Apache 2.0
 jcommander = { module = 'com.beust:jcommander', version = '1.82' } # Apache 2.0
-hppc = { module = 'com.carrotsearch:hppc', version = '0.9.1' } # Apache 2.0
+hppc = { module = 'com.carrotsearch:hppc', version = '0.10.0' } # Apache 2.0
 moshi = { module = 'com.squareup.moshi:moshi', version.ref = 'moshi' } # Apache 2.0
 moshi-adapters = { module = 'com.squareup.moshi:moshi-adapters', version.ref = 'moshi' } # Apache 2.0
 moshi-kotlin = { module = 'com.squareup.moshi:moshi-kotlin', version.ref = 'moshi' } # Apache 2.0

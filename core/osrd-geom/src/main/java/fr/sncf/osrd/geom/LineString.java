@@ -114,8 +114,8 @@ public final class LineString {
                         .distanceAsMeters(new Point(lineString.bufferLat[0], lineString.bufferLon[0]));
 
                 if (distance < 1e-5) {
-                    newBufferLon.remove(newBufferLon.size() - 1);
-                    newBufferLat.remove(newBufferLat.size() - 1);
+                    newBufferLon.removeAt(newBufferLon.size() - 1);
+                    newBufferLat.removeAt(newBufferLat.size() - 1);
                 } else {
                     newCumulativeLengths.add(distance + newCumulativeLengths.get(newCumulativeLengths.size() - 1));
                 }
