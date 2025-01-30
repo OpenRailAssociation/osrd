@@ -67,7 +67,7 @@ opentelemetry-instrumentation-annotations = { module = 'io.opentelemetry.instrum
 
 kaml = { module = 'com.charleskorn.kaml:kaml', version = '0.66.0' } # Apache 2.0
 
-amqp-client = { module = 'com.rabbitmq:amqp-client', version = '5.23.0' }
+amqp-client = { module = 'com.rabbitmq:amqp-client', version = '5.24.0' }
 
 [plugins]
 # kotlin

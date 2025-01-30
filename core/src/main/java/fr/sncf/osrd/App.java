@@ -41,7 +41,12 @@ public class App {
         }
 
         // run the user command
-        var statusCode = commands.get(commandName).run();
+        var statusCode = 1;
+        try {
+            statusCode = commands.get(commandName).run();
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
         System.exit(statusCode);
     }
 }
