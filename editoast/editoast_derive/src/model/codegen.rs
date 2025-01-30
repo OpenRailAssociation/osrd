@@ -54,6 +54,7 @@ use self::update_batch_impl::UpdateBatchImpl;
 use self::update_impl::UpdateImpl;
 
 use super::args::ImplPlan;
+use super::config::Changeset;
 use super::identifier::Identifier;
 use super::utils::np;
 use super::ModelConfig;
@@ -135,7 +136,7 @@ impl ModelConfig {
     pub(crate) fn model_impl(&self) -> ModelImpl {
         ModelImpl {
             model: self.model.clone(),
-            row: self.row.ident(),
+            row: self.row.name.clone(),
             changeset: self.changeset.ident(),
             error: self.error.clone(),
             table: self.table.clone(),
@@ -171,13 +172,13 @@ impl ModelConfig {
     pub(crate) fn row_decl(&self) -> RowDecl {
         RowDecl {
             vis: self.visibility.clone(),
-            ident: self.row.ident(),
+            ident: self.row.name.clone(),
             table: self.table.clone(),
             additional_derives: self.row.derive.clone(),
             fields: self
                 .iter_fields()
                 .map(|field| RowFieldDecl {
-                    vis: self.row.visibility(),
+                    vis: self.row.vis.clone(),
                     name: field.ident.clone(),
                     ty: field.transform_type(),
                     column_name: field.column_ident().to_string(),
@@ -187,15 +188,16 @@ impl ModelConfig {
     }
 
     pub(crate) fn changeset_decl(&self) -> ChangesetDecl {
+        let Changeset { name, derive, vis } = &self.changeset;
         ChangesetDecl {
             vis: self.visibility.clone(),
-            ident: self.changeset.ident(),
+            ident: name.clone(),
             table: self.table.clone(),
-            additional_derives: self.changeset.derive.clone(),
+            additional_derives: derive.clone(),
             fields: self
                 .changeset_fields()
                 .map(|field| ChangesetFieldDecl {
-                    vis: self.changeset.visibility(),
+                    vis: vis.clone(),
                     name: field.ident.clone(),
                     ty: field.transform_type(),
                     column_name: field.column_ident().to_string(),
@@ -242,7 +244,7 @@ impl ModelConfig {
     pub(crate) fn model_from_row_impl(&self) -> ModelFromRowImpl {
         ModelFromRowImpl {
             model: self.model.clone(),
-            row: self.row.ident(),
+            row: self.row.name.clone(),
             fields: self.fields.clone(),
         }
     }
@@ -263,7 +265,7 @@ impl ModelConfig {
                     model: self.model.clone(),
                     table_name: self.table_name(),
                     table_mod: self.table.clone(),
-                    row: self.row.ident(),
+                    row: self.row.name.clone(),
                     identifier: identifier.clone(),
                     columns: self.columns().cloned().collect(),
                 }
@@ -295,7 +297,7 @@ impl ModelConfig {
                     model: self.model.clone(),
                     table_name: self.table_name(),
                     table_mod: self.table.clone(),
-                    row: self.row.ident(),
+                    row: self.row.name.clone(),
                     changeset: self.changeset.ident(),
                     identifier: identifier.clone(),
                     columns: self.columns().cloned().collect(),
@@ -324,7 +326,7 @@ impl ModelConfig {
         CreateImpl {
             model: self.model.clone(),
             table_mod: self.table.clone(),
-            row: self.row.ident(),
+            row: self.row.name.clone(),
             changeset: self.changeset.ident(),
             columns: self.columns().cloned().collect(),
         }
@@ -344,7 +346,7 @@ impl ModelConfig {
         ListImpl {
             model: self.model.clone(),
             table_mod: self.table.clone(),
-            row: self.row.ident(),
+            row: self.row.name.clone(),
             columns: self.columns().cloned().collect(),
         }
         .tokens_if(self.impl_plan.list)
@@ -364,7 +366,7 @@ impl ModelConfig {
             table_name: self.table_name(),
             table_mod: self.table.clone(),
             chunk_size_limit: self.batch_chunk_size_limit,
-            row: self.row.ident(),
+            row: self.row.name.clone(),
             changeset: self.changeset.ident(),
             field_count: self.changeset_fields().count(),
             columns: self.columns().cloned().collect(),
@@ -381,7 +383,7 @@ impl ModelConfig {
                     table_name: self.table_name(),
                     table_mod: self.table.clone(),
                     chunk_size_limit: self.batch_chunk_size_limit,
-                    row: self.row.ident(),
+                    row: self.row.name.clone(),
                     changeset: self.changeset.ident(),
                     identifier: identifier.clone(),
                     field_count: self.changeset_fields().count(),
@@ -401,7 +403,7 @@ impl ModelConfig {
                     table_name: self.table_name(),
                     table_mod: self.table.clone(),
                     chunk_size_limit: self.batch_chunk_size_limit,
-                    row: self.row.ident(),
+                    row: self.row.name.clone(),
                     identifier: identifier.clone(),
                     columns: self.columns().cloned().collect(),
                 }
@@ -419,7 +421,7 @@ impl ModelConfig {
                     table_name: self.table_name(),
                     table_mod: self.table.clone(),
                     chunk_size_limit: self.batch_chunk_size_limit,
-                    row: self.row.ident(),
+                    row: self.row.name.clone(),
                     changeset: self.changeset.ident(),
                     identifier: identifier.clone(),
                     primary_key_column: self.get_primary_field_column(),

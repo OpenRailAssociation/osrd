@@ -6,7 +6,6 @@ use darling::{
     util::{self, PathList},
     FromDeriveInput, FromField, FromMeta,
 };
-use proc_macro2::Span;
 
 #[derive(FromDeriveInput, Debug)]
 #[darling(
@@ -47,7 +46,7 @@ pub(super) struct ImplPlan {
 #[derive(FromMeta, Default, Debug, PartialEq)]
 pub(super) struct GeneratedTypeArgs {
     #[darling(default)]
-    pub(super) type_name: Option<String>,
+    pub(super) type_name: Option<syn::Ident>,
     #[darling(default)]
     pub(super) derive: PathList,
     #[darling(default)]
@@ -83,18 +82,4 @@ pub(super) struct ModelFieldArgs {
     pub(super) remote: Option<syn::Type>,
     #[darling(default)]
     pub(super) uom_unit: Option<syn::Path>,
-}
-
-impl GeneratedTypeArgs {
-    pub(super) fn ident(&self) -> syn::Ident {
-        syn::Ident::new(self.type_name.as_ref().unwrap(), Span::call_site())
-    }
-
-    pub(super) fn visibility(&self) -> syn::Visibility {
-        if self.public {
-            syn::Visibility::Public(Default::default())
-        } else {
-            syn::Visibility::Inherited
-        }
-    }
 }

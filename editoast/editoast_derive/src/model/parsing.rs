@@ -5,6 +5,7 @@ use proc_macro2::Span;
 
 use super::{
     args::{GeneratedTypeArgs, ImplPlan, ModelArgs, ModelFieldArgs},
+    config::{Changeset, Row},
     crud::Crud,
     identifier::{Identifier, RawIdentifier},
     FieldTransformation, Fields, ModelConfig, ModelField, DEFAULT_BATCH_CHUNK_SIZE_LIMIT,
@@ -28,16 +29,24 @@ impl ModelConfig {
             ));
         }
 
-        let row = GeneratedTypeArgs {
-            type_name: options.row.type_name.or(Some(format!("{}Row", model_name))),
-            ..options.row
-        };
-        let changeset = GeneratedTypeArgs {
-            type_name: options
-                .changeset
-                .type_name
-                .or(Some(format!("{}Changeset", model_name))),
-            ..options.changeset
+        let row = {
+            let GeneratedTypeArgs {
+                type_name,
+                derive,
+                public,
+            } = options.row;
+            Row {
+                name: type_name.unwrap_or(syn::Ident::new(
+                    &format!("{}Row", model_name),
+                    Span::call_site(),
+                )),
+                derive,
+                vis: if public {
+                    syn::Visibility::Public(Default::default())
+                } else {
+                    syn::Visibility::Inherited
+                },
+            }
         };
 
         // transform fields
@@ -127,14 +136,37 @@ impl ModelConfig {
         let preferred_typed_identifier = Identifier::new(preferred_identifier.clone(), &fields);
         let primary_typed_identifier = Identifier::new(primary_field.clone(), &fields);
 
-        Ok(Self {
+        let impl_plan = options.impl_plan;
+
+        let changeset = {
+            let GeneratedTypeArgs {
+                type_name,
+                derive,
+                public,
+            } = options.changeset;
+            let vis = if public {
+                syn::Visibility::Public(Default::default())
+            } else {
+                syn::Visibility::Inherited
+            };
+            Changeset {
+                name: type_name.unwrap_or(syn::Ident::new(
+                    &format!("{}Changeset", model_name),
+                    Span::call_site(),
+                )),
+                derive,
+                vis,
+            }
+        };
+
+        let model_config = Self {
             model: model_name,
             visibility,
             table: options.table,
             batch_chunk_size_limit: options
                 .batch_chunk_size_limit
                 .unwrap_or(DEFAULT_BATCH_CHUNK_SIZE_LIMIT),
-            impl_plan: options.impl_plan,
+            impl_plan,
             fields,
             row,
             changeset,
@@ -144,7 +176,9 @@ impl ModelConfig {
             identifiers: typed_identifiers,
             preferred_identifier: preferred_typed_identifier,
             primary_identifier: primary_typed_identifier,
-        })
+        };
+
+        Ok(model_config)
     }
 }
 

@@ -3,10 +3,11 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
+use darling::util::PathList;
 use syn::parse_quote;
 
 use super::{
-    args::{GeneratedTypeArgs, ImplPlan},
+    args::ImplPlan,
     identifier::{Identifier, RawIdentifier},
 };
 
@@ -17,13 +18,27 @@ pub(crate) struct ModelConfig {
     pub(crate) table: syn::Path,
     pub(crate) batch_chunk_size_limit: usize,
     pub(crate) fields: Fields,
-    pub(crate) row: GeneratedTypeArgs,
-    pub(crate) changeset: GeneratedTypeArgs,
+    pub(crate) row: Row,
+    pub(crate) changeset: Changeset,
     pub(crate) error: syn::Path,
     pub(crate) identifiers: BTreeSet<Identifier>, // identifiers ⊆ fields
     pub(crate) preferred_identifier: Identifier,  // preferred_identifier ∈ identifiers
     pub(crate) primary_identifier: Identifier,    // primary_identifier ∈ identifiers
     pub(crate) impl_plan: ImplPlan,
+}
+
+#[derive(Debug, PartialEq)]
+pub(crate) struct Row {
+    pub(crate) name: syn::Ident,
+    pub(crate) derive: PathList,
+    pub(crate) vis: syn::Visibility,
+}
+
+#[derive(Debug, PartialEq)]
+pub(crate) struct Changeset {
+    pub(crate) name: syn::Ident,
+    pub(crate) derive: PathList,
+    pub(crate) vis: syn::Visibility,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -116,6 +131,12 @@ impl ModelConfig {
 
     pub(super) fn columns(&self) -> impl Iterator<Item = &syn::Ident> {
         self.fields.iter().map(ModelField::column_ident)
+    }
+}
+
+impl Changeset {
+    pub(crate) fn ident(&self) -> syn::Ident {
+        self.name.clone()
     }
 }
 
