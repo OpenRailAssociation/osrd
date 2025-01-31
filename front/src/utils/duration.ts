@@ -15,8 +15,9 @@ export class Duration {
 
   static zero = new Duration(0);
 
-  /** Parse an ISO 8601 duration string. */
+  /** Parse an ISO 8601 duration string, with added support for negative durations of the form "-P...". */
   static parse(str: string) {
+    if (str[0] === '-') return new Duration(-dayjs.duration(str.slice(1)).asMilliseconds());
     return new Duration(dayjs.duration(str).asMilliseconds());
   }
 
