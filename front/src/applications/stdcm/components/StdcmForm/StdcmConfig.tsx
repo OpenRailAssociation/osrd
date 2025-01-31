@@ -48,7 +48,7 @@ type StdcmConfigProps = {
   isDebugMode: boolean;
   isPending: boolean;
   launchStdcmRequest: () => Promise<void>;
-  retainedSimulationIndex: number;
+  retainedSimulationIndex?: number;
   showBtnToLaunchSimulation: boolean;
   cancelStdcmRequest: () => void;
 };
@@ -122,7 +122,7 @@ const StdcmConfig = ({
     };
   }, [rollingStock, towedRollingStock, totalMass, totalLength, maxSpeed]);
 
-  const disabled = isPending || retainedSimulationIndex > -1;
+  const disabled = isPending || retainedSimulationIndex !== undefined;
 
   const markersInfo = useMemo(() => extractMarkersInfo(pathSteps), [pathSteps]);
 

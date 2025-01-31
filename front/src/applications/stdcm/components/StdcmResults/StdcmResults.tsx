@@ -13,7 +13,10 @@ import {
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
-import { getStdcmSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
+import {
+  getRetainedSimulationIndex,
+  getStdcmSimulations,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import SimulationReportSheet from './SimulationReportSheet';
@@ -24,12 +27,10 @@ import StdcmSimulationNavigator from './StdcmSimulationNavigator';
 type StcdmResultsProps = {
   isCalculationFailed: boolean;
   isDebugMode: boolean;
-  onRetainSimulation: () => void;
   onSelectSimulation: (simulationIndex: number) => void;
   onStartNewQuery: () => void;
   onStartNewQueryWithData: () => void;
   buttonsVisible: boolean;
-  retainedSimulationIndex: number;
   selectedSimulationIndex: number;
   showStatusBanner: boolean;
 };
@@ -37,12 +38,10 @@ type StcdmResultsProps = {
 const StcdmResults = ({
   isCalculationFailed,
   isDebugMode,
-  onRetainSimulation,
   onSelectSimulation,
   onStartNewQuery,
   onStartNewQueryWithData,
   buttonsVisible,
-  retainedSimulationIndex,
   selectedSimulationIndex,
   showStatusBanner,
 }: StcdmResultsProps) => {
@@ -50,6 +49,7 @@ const StcdmResults = ({
   const { stdcmName } = useDeploymentSettings();
 
   const simulationsList = useSelector(getStdcmSimulations);
+  const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
   const selectedSimulation = simulationsList[selectedSimulationIndex];
   const { outputs } = selectedSimulation || {};
@@ -60,7 +60,8 @@ const StcdmResults = ({
   const { trackConflicts, workConflicts } = useConflictsMessages(t, outputs);
 
   const simulationReportSheetNumber = generateCodeNumber();
-  const isSelectedSimulationRetained = selectedSimulationIndex === retainedSimulationIndex;
+  const isSelectedSimulationRetained =
+    retainedSimulationIndex !== undefined && selectedSimulationIndex === retainedSimulationIndex;
 
   const operationalPointsList = useMemo(() => {
     if (!hasSimulationResults) return [];
@@ -96,7 +97,7 @@ const StcdmResults = ({
               consist={selectedSimulation.inputs.consist}
               isSimulationRetained={isSelectedSimulationRetained}
               operationalPointsList={operationalPointsList}
-              onRetainSimulation={onRetainSimulation}
+              simulationIndex={selectedSimulationIndex}
             />
             {isSelectedSimulationRetained && (
               <div className="get-simulation">
@@ -123,7 +124,7 @@ const StcdmResults = ({
                 <div className="gesico-text">{t('gesicoRequest')}</div>
               </div>
             )}
-            {retainedSimulationIndex > -1 && buttonsVisible && (
+            {retainedSimulationIndex !== undefined && buttonsVisible && (
               <div className="start-new-query">
                 <Button
                   data-testid="start-new-query-button"

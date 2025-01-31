@@ -13,7 +13,7 @@ export const SIMULATION_ITEM_CLASSNAME = 'simulation-item';
 const ITEM_TO_SHOW_COUNT_ON_SCROLL = 3;
 
 type StdcmSimulationNavigatorProps = {
-  retainedSimulationIndex: number;
+  retainedSimulationIndex?: number;
   selectedSimulationIndex: number;
   showStatusBanner: boolean;
   isCalculationFailed: boolean;
@@ -79,7 +79,7 @@ const StdcmSimulationNavigator = ({
                 className={cx(SIMULATION_ITEM_CLASSNAME, {
                   retained: retainedSimulationIndex === index,
                   selected: selectedSimulationIndex === index,
-                  anyRetained: retainedSimulationIndex !== -1,
+                  anyRetained: retainedSimulationIndex !== undefined,
                 })}
                 onClick={() => onSelectSimulation(index)}
               >

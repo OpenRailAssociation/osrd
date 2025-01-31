@@ -11,7 +11,11 @@ import {
   updateLastStdcmResult,
   type StdcmConfSliceActions,
 } from 'reducers/osrdconf/stdcmConf';
-import { getStdcmConf, getStdcmSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
+import {
+  getRetainedSimulationIndex,
+  getStdcmConf,
+  getStdcmSimulations,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 
 import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
@@ -29,10 +33,10 @@ const StdcmView = () => {
   const currentSimulationInputs = useStdcmForm();
   const stdcmConf = useSelector(getStdcmConf);
   const simulationsList = useSelector(getStdcmSimulations);
+  const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
   const [selectedSimulationIndex, setSelectedSimulationIndex] = useState(-1);
   const [showStatusBanner, setShowStatusBanner] = useState(false);
-  const [retainedSimulationIndex, setRetainedSimulationIndex] = useState(-1);
   const [showBtnToLaunchSimulation, setShowBtnToLaunchSimulation] = useState(false);
   const [isDebugMode, setIsDebugMode] = useState(false);
   const [showHelpModule, setShowHelpModule] = useState(false);
@@ -59,10 +63,8 @@ const StdcmView = () => {
 
   const selectedSimulation = simulationsList[selectedSimulationIndex];
 
-  const handleRetainSimulation = () => setRetainedSimulationIndex(selectedSimulationIndex);
-
   const handleSelectSimulation = (index: number) => {
-    if (retainedSimulationIndex === -1) {
+    if (retainedSimulationIndex === undefined) {
       setSelectedSimulationIndex(index);
       setShowBtnToLaunchSimulation(false);
     }
@@ -72,7 +74,11 @@ const StdcmView = () => {
     const newWindow = window.open(window.location.href, '_blank');
     if (newWindow) {
       if (keepForm) {
-        newWindow.osrdStdcmConfState = { ...stdcmConf, simulations: [] };
+        newWindow.osrdStdcmConfState = {
+          ...stdcmConf,
+          simulations: [],
+          retainedSimulationIndex: undefined,
+        };
       }
       newWindow.onload = () => {
         newWindow.focus();
@@ -228,12 +234,10 @@ const StdcmView = () => {
               <StdcmResults
                 isCalculationFailed={isCalculationFailed}
                 isDebugMode={isDebugMode}
-                onRetainSimulation={handleRetainSimulation}
                 onSelectSimulation={handleSelectSimulation}
                 onStartNewQuery={handleStartNewQuery}
                 onStartNewQueryWithData={handleStartNewQueryWithData}
                 buttonsVisible={buttonsVisible}
-                retainedSimulationIndex={retainedSimulationIndex}
                 selectedSimulationIndex={selectedSimulationIndex}
                 showStatusBanner={showStatusBanner}
               />

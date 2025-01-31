@@ -43,12 +43,14 @@ const buildStdcmConfSelectors = () => {
     getLinkedTrains: makeOsrdConfSelector('linkedTrains'),
 
     getStdcmSimulations,
+    getRetainedSimulationIndex: makeOsrdConfSelector('retainedSimulationIndex'),
   };
 };
 
 const selectors = buildStdcmConfSelectors();
 
-export const { getStdcmConf, getMargins, getStdcmSimulations } = selectors;
+export const { getStdcmConf, getMargins, getStdcmSimulations, getRetainedSimulationIndex } =
+  selectors;
 
 export type StdcmConfSelectors = typeof selectors;
 

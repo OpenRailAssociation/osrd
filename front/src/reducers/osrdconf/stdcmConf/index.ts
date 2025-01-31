@@ -269,6 +269,9 @@ export const stdcmConfSlice = createSlice({
         action.payload
       );
     },
+    retainSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
+      state.retainedSimulationIndex = action.payload;
+    },
   },
 });
 
@@ -281,6 +284,7 @@ export const {
   updateStandardAllowance,
   addNewStdcmResult,
   updateLastStdcmResult,
+  retainSimulation,
 } = stdcmConfSliceActions;
 
 export type StdcmConfSlice = typeof stdcmConfSlice;

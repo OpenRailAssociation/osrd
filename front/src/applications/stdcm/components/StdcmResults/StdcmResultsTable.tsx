@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
 import type {
   StdcmResultsOperationalPoint,
@@ -10,26 +11,32 @@ import type {
   StdcmSuccessResponse,
 } from 'applications/stdcm/types';
 import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationReportSheet';
+import { retainSimulation } from 'reducers/osrdconf/stdcmConf';
 
 type SimulationTableProps = {
   stdcmData: StdcmSuccessResponse;
   consist: StdcmSimulationInputs['consist'];
   isSimulationRetained: boolean;
   operationalPointsList: StdcmResultsOperationalPoint[];
-  onRetainSimulation: () => void;
+  simulationIndex: number;
 };
 
 const StcdmResultsTable = ({
   stdcmData,
   consist,
-  onRetainSimulation,
   isSimulationRetained,
   operationalPointsList,
+  simulationIndex,
 }: SimulationTableProps) => {
   const { t } = useTranslation(['stdcm-simulation-report-sheet', 'stdcm']);
+  const dispatch = useDispatch();
 
   const [showAllOP, setShowAllOP] = useState(false);
   const toggleShowAllOP = () => setShowAllOP((prevState) => !prevState);
+
+  const onRetainSimulation = () => {
+    dispatch(retainSimulation(simulationIndex));
+  };
 
   return (
     <div className="table-container">
