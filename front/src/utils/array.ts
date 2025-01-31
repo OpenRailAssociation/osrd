@@ -48,24 +48,6 @@ export const addElementAtIndex = <T>(array: T[], indexToAdd: number, newElement:
   return result;
 };
 
-export const moveElement = <T>(array: T[], from: number, to: number) => {
-  if (from >= array.length) {
-    throw new Error('Element to move out of bounds');
-  }
-  if (to >= array.length) {
-    throw new Error('Index to move the element out of bounds');
-  }
-  if (from < 0 || to < 0) {
-    throw new Error('Index must be positive');
-  }
-
-  const results = [...array];
-  const itemToPermute = results.slice(from, from + 1);
-  results.splice(from, 1); // Remove it from array
-  results.splice(to, 0, itemToPermute[0]); // Replace to right position
-  return results;
-};
-
 export function toggleElement<T>(array: T[], element: T) {
   if (array.includes(element)) {
     return removeElementAtIndex(array, array.indexOf(element));

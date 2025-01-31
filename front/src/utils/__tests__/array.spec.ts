@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { addElementAtIndex, isEmptyArray, moveElement, splitArrayByFirstLetter } from 'utils/array';
+import { addElementAtIndex, isEmptyArray, splitArrayByFirstLetter } from 'utils/array';
 
 describe('isEmptyArray', () => {
   it('should return true', () => {
@@ -55,31 +55,5 @@ describe('addElementAtIndex', () => {
     const array = [1, 2, 3];
     const updatedArray = addElementAtIndex(array, 5, 4);
     expect(updatedArray).toEqual([1, 2, 3, 4]);
-  });
-});
-
-describe('moveElement', () => {
-  it('should move the element at the specified index', () => {
-    const array = [1, 2, 3, 4];
-    const updatedArray = moveElement(array, 1, 2);
-    expect(updatedArray).toEqual([1, 3, 2, 4]);
-  });
-  it('should add the element at beginning of the array', () => {
-    const array = [1, 2, 3, 4];
-    const updatedArray = moveElement(array, 2, 0);
-    expect(updatedArray).toEqual([3, 1, 2, 4]);
-  });
-  it('should throw when specifying a negative index', () => {
-    const array = [1, 2, 3, 4];
-    expect(() => moveElement(array, 1, -1)).toThrow('Index must be positive');
-    expect(() => moveElement(array, -1, 1)).toThrow('Index must be positive');
-  });
-  it('should throw when trying to move an unexisting element', () => {
-    const array = [1, 2, 3];
-    expect(() => moveElement(array, 5, 4)).toThrow('Element to move out of bounds');
-  });
-  it('should throw when trying to move an element out of bounds', () => {
-    const array = [1, 2, 3];
-    expect(() => moveElement(array, 1, 4)).toThrow('Index to move the element out of bounds');
   });
 });
