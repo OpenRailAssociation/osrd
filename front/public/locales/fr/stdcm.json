@@ -127,6 +127,17 @@
   "stdcmErrors": {
     "bothPointAreScheduled": "Le calcul ne peut pas prendre en compte à la fois un horaire d'origine et un horaire de destination. Il faut choisir l'un ou l'autre :",
     "infraNotLoaded": "Infrastructure en cours de chargement",
+    "missingFields": {
+      "destination": "la destination",
+      "origin": "l'origine",
+      "timeDestination": "l'heure d'arrivée à la destination",
+      "timeOrigin": "l'heure de départ à l'origine",
+      "tractionEngine": "l'engin de traction",
+      "totalMass": "le poids total du convoi",
+      "totalLength": "la longueur totale du convoi",
+      "maxSpeed": "la vitesse maximale du convoi"
+    },
+    "missingInformations": "Informations manquantes pour le calcul :",
     "missingLocation": "Localisation manquante",
     "noPaths": "Incompatibilité avec d'autres sillons.",
     "noResults": "Aucun sillon trouvé",

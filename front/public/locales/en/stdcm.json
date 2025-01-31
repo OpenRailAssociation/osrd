@@ -127,6 +127,17 @@
   "stdcmErrors": {
     "bothPointAreScheduled": "The calculation cannot take into account both an origin and a destination schedule. You have to choose one or the other:",
     "infraNotLoaded": "Infrastructure is loading",
+    "missingFields": {
+      "destination": "the destination",
+      "origin": "the origin",
+      "timeDestination": "the arrival time at the destination",
+      "timeOrigin": "the departure time at the origin",
+      "tractionEngine": "the traction engine",
+      "totalMass": "the total mass of the consist",
+      "totalLength": "the total length of the consist",
+      "maxSpeed": "the maximum speed of the consist"
+    },
+    "missingInformations": "Missing informations for calculation:",
     "missingLocation": "Missing location",
     "noPaths": "Incompatibility with other train paths.",
     "noResults": "No path found",

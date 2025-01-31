@@ -48,17 +48,24 @@ const StdcmWarningBox = ({
       >
         {t(`stdcmErrors.${errorType}`)}
       </p>
-      {errorType === 'bothPointAreScheduled' && errorDetails && (
+      {errorType === StdcmConfigErrorTypes.MISSING_INFORMATIONS && errorDetails?.missingFields && (
+        <div>
+          {errorDetails.missingFields.map((field) => (
+            <div key={field}>&bull;&nbsp;{t(`stdcmErrors.missingFields.${field}`)}</div>
+          ))}
+        </div>
+      )}
+      {errorType === StdcmConfigErrorTypes.BOTH_POINT_SCHEDULED && errorDetails && (
         <div className="stdcm-warning-buttons">
           <Button
             type="button"
             onClick={removeDestinationArrivalTime}
-            label={errorDetails.originTime}
+            label={errorDetails.originTime!}
           />
           <Button
             type="button"
             onClick={removeOriginArrivalTime}
-            label={errorDetails.destinationTime}
+            label={errorDetails.destinationTime!}
           />
         </div>
       )}

@@ -1,21 +1,56 @@
 import type { TFunction } from 'i18next';
+import { isNil } from 'lodash';
 
-import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { dateToHHMMSS } from 'utils/date';
 
-import { StdcmConfigErrorTypes, ArrivalTimeTypes, type StdcmConfigErrors } from '../types';
+import {
+  StdcmConfigErrorTypes,
+  ArrivalTimeTypes,
+  type StdcmConfigErrors,
+  type ConsistErrors,
+  type MissingFields,
+} from '../types';
 
-const checkStdcmConfigErrors = (
-  pathSteps: StdcmPathStep[],
-  t: TFunction,
-  pathfindingStatus?: 'success' | 'failure'
-): StdcmConfigErrors | undefined => {
-  if (pathSteps.some((step) => !step.location)) {
-    return { errorType: StdcmConfigErrorTypes.MISSING_LOCATION };
+const checkStdcmConfigErrors = ({
+  t,
+  pathfindingStatus,
+  stdcmConf,
+  prevFormErros,
+  shouldCheckMandatoryFields,
+}: {
+  t: TFunction;
+  pathfindingStatus?: 'success' | 'failure';
+  stdcmConf?: OsrdStdcmConfState;
+  prevFormErros?: StdcmConfigErrors;
+  consistErrors?: ConsistErrors;
+  shouldCheckMandatoryFields?: boolean;
+}): StdcmConfigErrors | undefined => {
+  const { stdcmPathSteps, rollingStockID, totalMass, totalLength, maxSpeed } = stdcmConf!;
+  const origin = stdcmPathSteps.at(0)!;
+  const destination = stdcmPathSteps.at(-1)!;
+  const missingFields: MissingFields[] = [];
+
+  if (shouldCheckMandatoryFields) {
+    if (!rollingStockID) missingFields.push('tractionEngine');
+    if (isNil(totalMass)) missingFields.push('totalMass');
+    if (isNil(totalLength)) missingFields.push('totalLength');
+    if (isNil(maxSpeed)) missingFields.push('maxSpeed');
+    if (!origin.location) {
+      missingFields.push('origin');
+    }
+    if (!destination.location) {
+      missingFields.push('destination');
+    }
+
+    if (missingFields.length > 0) {
+      return {
+        errorType: StdcmConfigErrorTypes.MISSING_INFORMATIONS,
+        errorDetails: { missingFields },
+      };
+    }
   }
 
-  const origin = pathSteps.at(0)!;
-  const destination = pathSteps.at(-1)!;
   if (origin.isVia) {
     throw new Error('First step can not be a via');
   }
@@ -24,8 +59,8 @@ const checkStdcmConfigErrors = (
   }
 
   if (
-    origin.location!.uic === destination.location!.uic &&
-    origin.location!.secondary_code === destination.location!.secondary_code
+    origin.location?.uic === destination.location?.uic &&
+    origin.location?.secondary_code === destination.location?.secondary_code
   ) {
     return { errorType: StdcmConfigErrorTypes.ZERO_LENGTH_PATH };
   }
@@ -70,7 +105,9 @@ const checkStdcmConfigErrors = (
   if (isOnePointScheduledWithoutTime) {
     return { errorType: StdcmConfigErrorTypes.NO_SCHEDULED_POINT };
   }
-  return undefined;
+  return prevFormErros?.errorType === StdcmConfigErrorTypes.MISSING_INFORMATIONS
+    ? prevFormErros
+    : undefined;
 };
 
 export default checkStdcmConfigErrors;

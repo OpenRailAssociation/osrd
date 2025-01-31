@@ -5,16 +5,21 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import useStdcmConsist from 'applications/stdcm/hooks/useStdcmConsist';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
+import filterMissingFields from 'applications/stdcm/utils/filterMissingFields';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
+import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
+  getStdcmConf,
   getStdcmDestination,
   getStdcmInfraID,
   getStdcmOrigin,
   getStdcmPathSteps,
   getStdcmProjectID,
+  getStdcmRollingStockID,
   getStdcmScenarioID,
   getStdcmSelectedLayers,
   getStdcmStudyID,
@@ -76,9 +81,14 @@ const StdcmConfig = ({
 
   const dispatch = useAppDispatch();
 
+  const stdcmConf = useSelector(getStdcmConf);
+
   const origin = useSelector(getStdcmOrigin);
   const pathSteps = useSelector(getStdcmPathSteps);
   const destination = useSelector(getStdcmDestination);
+  const rollingStockId = useSelector(getStdcmRollingStockID);
+  const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
+  const { totalMass, totalLength, maxSpeed } = useStdcmConsist();
   const projectID = useSelector(getStdcmProjectID);
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
@@ -98,7 +108,16 @@ const StdcmConfig = ({
   const markersInfo = useMemo(() => extractMarkersInfo(pathSteps), [pathSteps]);
 
   const startSimulation = async () => {
-    const formErrorsStatus = checkStdcmConfigErrors(pathSteps, t, pathfinding?.status);
+    const formErrorsStatus = checkStdcmConfigErrors({
+      t,
+      pathfindingStatus: pathfinding?.status,
+      stdcmConf,
+      prevFormErros: formErrors,
+      shouldCheckMandatoryFields: true,
+    });
+
+    setFormErrors(formErrorsStatus);
+
     if (pathfinding?.status === 'success' && !formErrorsStatus) {
       launchStdcmRequest();
     } else {
@@ -129,16 +148,18 @@ const StdcmConfig = ({
     return t('pathfindingStatus.success');
   };
 
+  // Checks for live warnings regarding pathSteps
   useEffect(() => {
-    const formErrorsStatus = checkStdcmConfigErrors(pathSteps, t, pathfinding?.status);
+    if (!origin.location || !destination.location) return;
+
+    const formErrorsStatus = checkStdcmConfigErrors({
+      t,
+      pathfindingStatus: pathfinding?.status,
+      stdcmConf,
+      prevFormErros: formErrors,
+    });
     setFormErrors(formErrorsStatus);
   }, [pathfinding, pathSteps, t]);
-
-  useEffect(() => {
-    if (!isDebugMode) {
-      dispatch(resetMargins());
-    }
-  }, [isDebugMode]);
 
   useEffect(() => {
     if (!infra || infra.state === 'CACHED') {
@@ -147,6 +168,12 @@ const StdcmConfig = ({
       setFormErrors({ errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED });
     }
   }, [infra]);
+
+  useEffect(() => {
+    if (!isDebugMode) {
+      dispatch(resetMargins());
+    }
+  }, [isDebugMode]);
 
   useEffect(() => {
     const state = window.osrdStdcmConfState;
@@ -179,6 +206,50 @@ const StdcmConfig = ({
       pathfindingBannerRef.current?.removeEventListener('animationend', handleAnimationEnd);
     };
   }, [showMessage, formErrors]);
+
+  useEffect(() => {
+    if (
+      formErrors?.errorType !== StdcmConfigErrorTypes.MISSING_INFORMATIONS ||
+      !formErrors.errorDetails?.missingFields
+    ) {
+      return;
+    }
+
+    if (
+      rollingStockId &&
+      totalMass &&
+      totalLength &&
+      maxSpeed &&
+      origin.location &&
+      destination.location
+    ) {
+      return;
+    }
+
+    const updatedMissingFields = filterMissingFields({
+      missingFields: formErrors.errorDetails.missingFields,
+      rollingStock,
+      totalMass,
+      totalLength,
+      maxSpeed,
+      origin,
+      destination,
+    });
+
+    const previousFields = formErrors.errorDetails.missingFields;
+    const hasChanged =
+      previousFields.length !== updatedMissingFields.length ||
+      previousFields.some((field, i) => field !== updatedMissingFields[i]);
+
+    if (!hasChanged) return;
+
+    setFormErrors({
+      errorType: StdcmConfigErrorTypes.MISSING_INFORMATIONS,
+      errorDetails: {
+        missingFields: updatedMissingFields,
+      },
+    });
+  }, [rollingStockId, totalMass, totalLength, maxSpeed, origin, destination]);
 
   return (
     <div className="stdcm__body">
@@ -219,6 +290,13 @@ const StdcmConfig = ({
                 })}
                 ref={launchButtonRef}
               >
+                {formErrors && (
+                  <StdcmWarningBox
+                    errorInfos={formErrors}
+                    removeOriginArrivalTime={removeOriginArrivalTime}
+                    removeDestinationArrivalTime={removeDestinationArrivalTime}
+                  />
+                )}
                 <Button
                   data-testid="launch-simulation-button"
                   className={cx({
@@ -232,13 +310,6 @@ const StdcmConfig = ({
                     formErrors?.errorType === StdcmConfigErrorTypes.INFRA_NOT_LOADED
                   }
                 />
-                {formErrors && (
-                  <StdcmWarningBox
-                    errorInfos={formErrors}
-                    removeOriginArrivalTime={removeOriginArrivalTime}
-                    removeDestinationArrivalTime={removeDestinationArrivalTime}
-                  />
-                )}
               </div>
 
               {!formErrors && showMessage && (

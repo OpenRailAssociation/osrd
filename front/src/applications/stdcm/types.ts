@@ -188,11 +188,24 @@ export enum StdcmConfigErrorTypes {
   BOTH_POINT_SCHEDULED = 'bothPointAreScheduled',
   NO_SCHEDULED_POINT = 'noScheduledPoint',
   ZERO_LENGTH_PATH = 'zeroLengthPath',
+  MISSING_INFORMATIONS = 'missingInformations',
 }
+
+export type MissingFields =
+  | 'tractionEngine'
+  | 'totalMass'
+  | 'totalLength'
+  | 'maxSpeed'
+  | 'origin'
+  | 'destination';
 
 export type StdcmConfigErrors = {
   errorType: StdcmConfigErrorTypes;
-  errorDetails?: { originTime: string; destinationTime: string };
+  errorDetails?: {
+    originTime?: string;
+    destinationTime?: string;
+    missingFields?: MissingFields[];
+  };
 };
 
 export type ScheduleConstraint = {
