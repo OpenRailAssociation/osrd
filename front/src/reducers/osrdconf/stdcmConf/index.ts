@@ -95,29 +95,6 @@ export const stdcmConfSlice = createSlice({
     ) {
       state.towedRollingStockID = action.payload;
     },
-    updateStdcmConfigWithData(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<
-        Pick<
-          OsrdStdcmConfState,
-          | 'rollingStockID'
-          | 'towedRollingStockID'
-          | 'stdcmPathSteps'
-          | 'speedLimitByTag'
-          | 'totalLength'
-          | 'totalMass'
-          | 'maxSpeed'
-        >
-      >
-    ) {
-      state.rollingStockID = action.payload.rollingStockID;
-      state.towedRollingStockID = action.payload.towedRollingStockID;
-      state.totalLength = action.payload.totalLength;
-      state.totalMass = action.payload.totalMass;
-      state.maxSpeed = action.payload.maxSpeed;
-      state.stdcmPathSteps = action.payload.stdcmPathSteps;
-      state.speedLimitByTag = action.payload.speedLimitByTag;
-    },
     resetMargins(state: Draft<OsrdStdcmConfState>) {
       state.margins = {
         standardAllowance: { type: 'time_per_distance', value: 4.5 },
@@ -273,6 +250,17 @@ export const stdcmConfSlice = createSlice({
     },
     selectSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       state.selectedSimulationIndex = action.payload;
+
+      const {
+        inputs: { consist, pathSteps },
+      } = state.simulations[action.payload];
+      state.rollingStockID = consist?.tractionEngine?.id;
+      state.towedRollingStockID = consist?.towedRollingStock?.id;
+      state.totalLength = consist?.totalLength;
+      state.totalMass = consist?.totalMass;
+      state.maxSpeed = consist?.maxSpeed;
+      state.speedLimitByTag = consist?.speedLimitByTag;
+      state.stdcmPathSteps = pathSteps;
     },
     retainSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       state.retainedSimulationIndex = action.payload;
@@ -287,7 +275,6 @@ export const {
   updateGridMarginAfter,
   updateGridMarginBefore,
   updateStandardAllowance,
-  updateStdcmConfigWithData,
   addNewStdcmResult,
   updateLastStdcmResult,
   selectSimulation,

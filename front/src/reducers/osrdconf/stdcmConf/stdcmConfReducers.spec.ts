@@ -1,8 +1,6 @@
-import nextId from 'react-id-generator';
 import { describe, it, expect } from 'vitest';
 
 import { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcm/types';
-import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import {
   addNewStdcmResult,
   retainSimulation,
@@ -60,7 +58,6 @@ const stdcmPathSteps = pathSteps.map(
           }),
     }) as StdcmPathStep
 );
-const [_brest, rennes, _lemans, paris] = pathSteps;
 
 const initialStateSTDCMConfig = {
   rollingStockID: 10,
@@ -117,42 +114,6 @@ describe('stdcmConfReducers', () => {
     expect(state.rollingStockID).toBe(stdcmConfInitialState.rollingStockID);
     expect(state.stdcmPathSteps).toBe(stdcmConfInitialState.stdcmPathSteps);
     expect(state.speedLimitByTag).toBe(stdcmConfInitialState.speedLimitByTag);
-  });
-
-  it('should handle updateStdcmConfigWithData', () => {
-    const store = createStore(initialStateSTDCMConfig);
-    const parisStdcm = {
-      id: nextId(),
-      isVia: false,
-      arrivalType: ArrivalTimeTypes.PRECISE_TIME,
-      location: {
-        ...getStepLocation(paris),
-        coordinates: paris.coordinates as [number, number],
-        name: paris.id,
-      },
-    } as StdcmPathStep;
-    const rennesStdcm = {
-      id: nextId(),
-      isVia: false,
-      arrivalType: ArrivalTimeTypes.ASAP,
-      location: {
-        ...getStepLocation(rennes),
-        coordinates: rennes.coordinates as [number, number],
-        name: rennes.id,
-      },
-    } as StdcmPathStep;
-    store.dispatch(
-      stdcmConfSliceActions.updateStdcmConfigWithData({
-        rollingStockID: 20,
-        stdcmPathSteps: [parisStdcm, rennesStdcm],
-        speedLimitByTag: 'new-tag',
-      })
-    );
-
-    const state = store.getState()[stdcmConfSlice.name];
-    expect(state.rollingStockID).toBe(20);
-    expect(state.stdcmPathSteps).toEqual([parisStdcm, rennesStdcm]);
-    expect(state.speedLimitByTag).toBe('new-tag');
   });
 
   describe('Consist updates', () => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -13,12 +13,10 @@ import {
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
-import { updateStdcmConfigWithData } from 'reducers/osrdconf/stdcmConf';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import { useAppDispatch } from 'store';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import SimulationReportSheet from './SimulationReportSheet';
@@ -45,7 +43,6 @@ const StcdmResults = ({
   buttonsVisible,
   showStatusBanner,
 }: StcdmResultsProps) => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { stdcmName } = useDeploymentSettings();
 
@@ -62,24 +59,6 @@ const StcdmResults = ({
   const simulationReportSheetNumber = generateCodeNumber();
   const isSelectedSimulationRetained =
     retainedSimulationIndex !== undefined && selectedSimulation.index === retainedSimulationIndex;
-
-  // reset config data with the selected simulation data
-  useEffect(() => {
-    if (selectedSimulation) {
-      const { pathSteps, consist } = selectedSimulation.inputs;
-      dispatch(
-        updateStdcmConfigWithData({
-          rollingStockID: consist?.tractionEngine?.id,
-          towedRollingStockID: consist?.towedRollingStock?.id,
-          totalLength: consist?.totalLength,
-          totalMass: consist?.totalMass,
-          maxSpeed: consist?.maxSpeed,
-          speedLimitByTag: consist?.speedLimitByTag,
-          stdcmPathSteps: pathSteps,
-        })
-      );
-    }
-  }, [selectedSimulation]);
 
   const operationalPointsList = useMemo(() => {
     if (!hasSimulationResults) return [];
