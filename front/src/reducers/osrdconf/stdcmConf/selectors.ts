@@ -11,6 +11,7 @@ const buildStdcmConfSelectors = () => {
   const makeOsrdConfSelector = makeSubSelector<OsrdStdcmConfState>(getStdcmConf);
 
   const getStdcmPathSteps = makeOsrdConfSelector('stdcmPathSteps');
+  const getStdcmSimulations = makeOsrdConfSelector('simulations');
 
   return {
     ...commonConfSelectors,
@@ -40,12 +41,14 @@ const buildStdcmConfSelectors = () => {
       return destination!;
     },
     getLinkedTrains: makeOsrdConfSelector('linkedTrains'),
+
+    getStdcmSimulations,
   };
 };
 
 const selectors = buildStdcmConfSelectors();
 
-export const { getStdcmConf, getMargins } = selectors;
+export const { getStdcmConf, getMargins, getStdcmSimulations } = selectors;
 
 export type StdcmConfSelectors = typeof selectors;
 

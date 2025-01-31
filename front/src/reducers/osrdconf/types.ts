@@ -5,6 +5,7 @@ import type {
   ArrivalTimeTypes,
   LinkedTrains,
   StdcmSearchDatetimeWindow,
+  StdcmSimulation,
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type {
@@ -45,6 +46,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   maxSpeed?: number;
   towedRollingStockID?: number;
   linkedTrains: LinkedTrains;
+  simulations: StdcmSimulation[];
 };
 
 export type PathStep = PathItemLocation & {

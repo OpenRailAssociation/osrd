@@ -1,10 +1,11 @@
 import { CheckCircle, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import useHorizontalScroll from 'applications/stdcm/hooks/useHorizontalScroll';
-import type { StdcmSimulation } from 'applications/stdcm/types';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
+import { getStdcmSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
 import { formatDateToString, formatTimeDifference } from 'utils/date';
 import { mmToKm } from 'utils/physics';
 
@@ -12,7 +13,6 @@ export const SIMULATION_ITEM_CLASSNAME = 'simulation-item';
 const ITEM_TO_SHOW_COUNT_ON_SCROLL = 3;
 
 type StdcmSimulationNavigatorProps = {
-  simulationsList: StdcmSimulation[];
   retainedSimulationIndex: number;
   selectedSimulationIndex: number;
   showStatusBanner: boolean;
@@ -21,7 +21,6 @@ type StdcmSimulationNavigatorProps = {
 };
 
 const StdcmSimulationNavigator = ({
-  simulationsList,
   retainedSimulationIndex,
   selectedSimulationIndex,
   showStatusBanner,
@@ -29,6 +28,8 @@ const StdcmSimulationNavigator = ({
   onSelectSimulation,
 }: StdcmSimulationNavigatorProps) => {
   const { t } = useTranslation();
+
+  const simulationsList = useSelector(getStdcmSimulations);
 
   const { scrollableRef, showLeftBtn, showRightBtn, scrollLeft, scrollRight } = useHorizontalScroll(
     SIMULATION_ITEM_CLASSNAME,

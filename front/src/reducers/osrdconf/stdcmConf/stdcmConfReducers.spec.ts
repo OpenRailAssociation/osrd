@@ -4,9 +4,11 @@ import { describe, it, expect } from 'vitest';
 import { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcm/types';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import {
+  addNewStdcmResult,
   stdcmConfInitialState,
   stdcmConfSlice,
   stdcmConfSliceActions,
+  updateLastStdcmResult,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -224,6 +226,55 @@ describe('stdcmConfReducers', () => {
       store.dispatch(stdcmConfSliceActions.updateStdcmPathStep({ id: destination.id, updates }));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.stdcmPathSteps.at(-1)).toEqual({ ...destination, ...updates });
+    });
+  });
+
+  describe('StdcmResults updates', () => {
+    const simulation = {
+      index: 0,
+      creationDate: new Date(),
+      inputs: {
+        pathSteps: stdcmPathSteps,
+        linkedTrains: { anteriorTrain: undefined, posteriorTrain: undefined },
+      },
+    };
+
+    it('should handle adding new simulations', () => {
+      const store = createStore();
+      const { simulations } = store.getState()[stdcmConfSlice.name];
+      expect(simulations.length).toBe(0);
+
+      store.dispatch(addNewStdcmResult(simulation));
+      let state = store.getState()[stdcmConfSlice.name];
+      expect(state.simulations.length).toEqual(1);
+      expect(state.simulations.at(0)).toEqual(simulation);
+
+      const newSimulation = {
+        ...simulation,
+        index: 1,
+      };
+
+      store.dispatch(addNewStdcmResult(newSimulation));
+      state = store.getState()[stdcmConfSlice.name];
+      expect(state.simulations.length).toEqual(2);
+      expect(state.simulations.at(0)).toEqual(simulation);
+      expect(state.simulations.at(1)).toEqual(newSimulation);
+    });
+
+    it('should handle updating last simulation', () => {
+      const store = createStore({ simulations: [simulation] });
+      const { simulations } = store.getState()[stdcmConfSlice.name];
+      expect(simulations.length).toBe(1);
+
+      const newSimulation = {
+        ...simulation,
+        index: 1,
+      };
+
+      store.dispatch(updateLastStdcmResult(newSimulation));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.simulations.length).toEqual(1);
+      expect(state.simulations.at(0)).toEqual(newSimulation);
     });
   });
 

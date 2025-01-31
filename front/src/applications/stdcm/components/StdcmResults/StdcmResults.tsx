@@ -3,9 +3,9 @@ import { useMemo } from 'react';
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation, Trans } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import useConflictsMessages from 'applications/stdcm/hooks/useConflictsMessages';
-import type { StdcmSimulation } from 'applications/stdcm/types';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import {
   generateCodeNumber,
@@ -13,6 +13,7 @@ import {
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
+import { getStdcmSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import SimulationReportSheet from './SimulationReportSheet';
@@ -31,7 +32,6 @@ type StcdmResultsProps = {
   retainedSimulationIndex: number;
   selectedSimulationIndex: number;
   showStatusBanner: boolean;
-  simulationsList: StdcmSimulation[];
 };
 
 const StcdmResults = ({
@@ -45,10 +45,11 @@ const StcdmResults = ({
   retainedSimulationIndex,
   selectedSimulationIndex,
   showStatusBanner,
-  simulationsList,
 }: StcdmResultsProps) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { stdcmName } = useDeploymentSettings();
+
+  const simulationsList = useSelector(getStdcmSimulations);
 
   const selectedSimulation = simulationsList[selectedSimulationIndex];
   const { outputs } = selectedSimulation || {};
@@ -81,7 +82,6 @@ const StcdmResults = ({
   return (
     <>
       <StdcmSimulationNavigator
-        simulationsList={simulationsList}
         selectedSimulationIndex={selectedSimulationIndex}
         showStatusBanner={showStatusBanner}
         isCalculationFailed={isCalculationFailed}

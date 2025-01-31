@@ -7,16 +7,18 @@ import {
   StdcmStopTypes,
   type ExtremityPathStepType,
   type StdcmLinkedTrainExtremity,
+  type StdcmSimulation,
 } from 'applications/stdcm/types';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types';
-import { addElementAtIndex } from 'utils/array';
+import { addElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { isArrivalDateInSearchTimeWindow } from 'utils/date';
 import type { ArrayElement, PickAndNonNullableFields } from 'utils/types';
 
 const DEFAULT_TOLERANCE = 1800; // 30min
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
+  ...defaultCommonConf,
   stdcmPathSteps: [
     {
       id: uuidV4(),
@@ -44,7 +46,7 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
     anteriorTrain: undefined,
     posteriorTrain: undefined,
   },
-  ...defaultCommonConf,
+  simulations: [],
 };
 
 export const stdcmConfSlice = createSlice({
@@ -61,6 +63,7 @@ export const stdcmConfSlice = createSlice({
       state.maxSpeed = stdcmConfInitialState.maxSpeed;
       state.speedLimitByTag = stdcmConfInitialState.speedLimitByTag;
       state.linkedTrains = stdcmConfInitialState.linkedTrains;
+      state.simulations = stdcmConfInitialState.simulations;
     },
     restoreStdcmConfig(
       _state: Draft<OsrdStdcmConfState>,
@@ -252,6 +255,20 @@ export const stdcmConfSlice = createSlice({
       );
       state.stdcmPathSteps = newPathSteps;
     },
+    // temporary solution to add a new simulation, only 1 action should remain after the refactoring
+    addNewStdcmResult(state: Draft<OsrdStdcmConfState>, action: PayloadAction<StdcmSimulation>) {
+      state.simulations.push(action.payload);
+    },
+    updateLastStdcmResult(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<StdcmSimulation>
+    ) {
+      state.simulations = replaceElementAtIndex(
+        state.simulations,
+        state.simulations.length - 1,
+        action.payload
+      );
+    },
   },
 });
 
@@ -262,6 +279,8 @@ export const {
   updateGridMarginAfter,
   updateGridMarginBefore,
   updateStandardAllowance,
+  addNewStdcmResult,
+  updateLastStdcmResult,
 } = stdcmConfSliceActions;
 
 export type StdcmConfSlice = typeof stdcmConfSlice;

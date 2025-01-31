@@ -6,10 +6,13 @@ import { useSelector } from 'react-redux';
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import { LoaderFill } from 'common/Loaders';
 import { useOsrdConfActions } from 'common/osrdContext';
-import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
-import { getStdcmConf } from 'reducers/osrdconf/stdcmConf/selectors';
+import {
+  addNewStdcmResult,
+  updateLastStdcmResult,
+  type StdcmConfSliceActions,
+} from 'reducers/osrdconf/stdcmConf';
+import { getStdcmConf, getStdcmSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
-import { replaceElementAtIndex } from 'utils/array';
 
 import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
 import StdcmConfig from '../components/StdcmForm/StdcmConfig';
@@ -25,7 +28,8 @@ const StdcmView = () => {
   // TODO : refacto. state useStdcm. Maybe we can merge some state together in order to reduce the number of refresh
   const currentSimulationInputs = useStdcmForm();
   const stdcmConf = useSelector(getStdcmConf);
-  const [simulationsList, setSimulationsList] = useState<StdcmSimulation[]>([]);
+  const simulationsList = useSelector(getStdcmSimulations);
+
   const [selectedSimulationIndex, setSelectedSimulationIndex] = useState(-1);
   const [showStatusBanner, setShowStatusBanner] = useState(false);
   const [retainedSimulationIndex, setRetainedSimulationIndex] = useState(-1);
@@ -54,7 +58,6 @@ const StdcmView = () => {
   const { updateStdcmConfigWithData } = useOsrdConfActions() as StdcmConfSliceActions;
 
   const selectedSimulation = simulationsList[selectedSimulationIndex];
-  const showResults = showStatusBanner || simulationsList.length > 0 || hasConflicts;
 
   const handleRetainSimulation = () => setRetainedSimulationIndex(selectedSimulationIndex);
 
@@ -69,7 +72,7 @@ const StdcmView = () => {
     const newWindow = window.open(window.location.href, '_blank');
     if (newWindow) {
       if (keepForm) {
-        newWindow.osrdStdcmConfState = stdcmConf;
+        newWindow.osrdStdcmConfState = { ...stdcmConf, simulations: [] };
       }
       newWindow.onload = () => {
         newWindow.focus();
@@ -165,11 +168,11 @@ const StdcmView = () => {
         }),
       };
 
-      const updateSimulationsList = isSimulationAlreadyListed
-        ? replaceElementAtIndex(simulationsList, simulationsList.length - 1, newSimulation)
-        : [...simulationsList, newSimulation];
-
-      setSimulationsList(updateSimulationsList as StdcmSimulation[]);
+      if (isSimulationAlreadyListed) {
+        dispatch(updateLastStdcmResult(newSimulation as StdcmSimulation));
+      } else {
+        dispatch(addNewStdcmResult(newSimulation as StdcmSimulation));
+      }
       setShowStatusBanner(true);
     }
   }, [
@@ -220,23 +223,20 @@ const StdcmView = () => {
 
           {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
 
-          {showResults && (
+          {simulationsList.length && (
             <div className="stdcm-results">
-              {(selectedSimulationIndex > -1 || hasConflicts) && (
-                <StdcmResults
-                  isCalculationFailed={isCalculationFailed}
-                  isDebugMode={isDebugMode}
-                  onRetainSimulation={handleRetainSimulation}
-                  onSelectSimulation={handleSelectSimulation}
-                  onStartNewQuery={handleStartNewQuery}
-                  onStartNewQueryWithData={handleStartNewQueryWithData}
-                  buttonsVisible={buttonsVisible}
-                  retainedSimulationIndex={retainedSimulationIndex}
-                  selectedSimulationIndex={selectedSimulationIndex}
-                  showStatusBanner={showStatusBanner}
-                  simulationsList={simulationsList}
-                />
-              )}
+              <StdcmResults
+                isCalculationFailed={isCalculationFailed}
+                isDebugMode={isDebugMode}
+                onRetainSimulation={handleRetainSimulation}
+                onSelectSimulation={handleSelectSimulation}
+                onStartNewQuery={handleStartNewQuery}
+                onStartNewQueryWithData={handleStartNewQueryWithData}
+                buttonsVisible={buttonsVisible}
+                retainedSimulationIndex={retainedSimulationIndex}
+                selectedSimulationIndex={selectedSimulationIndex}
+                showStatusBanner={showStatusBanner}
+              />
             </div>
           )}
           <StdcmHelpModule showHelpModule={showHelpModule} toggleHelpModule={toggleHelpModule} />
