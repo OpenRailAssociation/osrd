@@ -29,7 +29,6 @@ const createPathStep = (
     tracksLengthCumulativeSums,
     pathProperties.trackSectionRanges
   );
-  if (!trackOffset) return undefined;
 
   const coordinates = getPointOnPathCoordinates(
     tracksById,
@@ -84,8 +83,6 @@ export const createCutAtPathStep = (
     tracksLengthCumulativeSums,
     pathProperties.trackSectionRanges
   );
-
-  if (!trackOffset) return null;
 
   const coordinatesAtCut = getPointOnPathCoordinates(
     tracksById,

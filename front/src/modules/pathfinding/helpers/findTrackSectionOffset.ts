@@ -13,7 +13,10 @@ const findTrackSectionOffset = (
     (cumulativeSum) => positionOnPath <= cumulativeSum
   );
   const trackRange = trackRangesOnPath[index];
-  if (!trackRange) return null;
+
+  if (!trackRange) {
+    throw new Error('No track range found for the given position on path');
+  }
 
   // compute offset
   const inferiorSum = index > 0 ? tracksLengthCumulativeSums[index - 1] : 0;

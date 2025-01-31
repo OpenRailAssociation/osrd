@@ -65,7 +65,7 @@ describe('findTrackSectionOffset', () => {
     expect(result).toEqual({ track: 'track_2', offset: 1050 });
   });
 
-  it('should not find the track offset if past cumulative sums', () => {
+  it('should throw an error if the given position on path is beyond the last position of the path', () => {
     const trackRangesLengthCumulativeSums = [1000, 2000, 3000];
     const trackRanges = [
       { track_section: 'track_0' },
@@ -74,13 +74,10 @@ describe('findTrackSectionOffset', () => {
     ] as TrackRange[];
 
     const offsetOnPath = 3001;
-    const result = findTrackSectionOffset(
-      offsetOnPath,
-      trackRangesLengthCumulativeSums,
-      trackRanges
-    );
 
-    expect(result).toEqual(null);
+    expect(() =>
+      findTrackSectionOffset(offsetOnPath, trackRangesLengthCumulativeSums, trackRanges)
+    ).toThrow('No track range found for the given position on path');
   });
 
   it('should correctly find the track offset if it is located on the first track range', () => {
