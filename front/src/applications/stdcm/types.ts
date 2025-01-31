@@ -144,7 +144,7 @@ export type StdcmConflictsOutput = {
 export type StdcmSimulationOutputs = StdcmResultsOutput | StdcmConflictsOutput;
 
 export type StdcmSimulation = {
-  id: number;
+  index: number;
   creationDate: Date;
   inputs: StdcmSimulationInputs;
   outputs?: StdcmSimulationOutputs;

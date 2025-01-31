@@ -6,6 +6,7 @@ import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import {
   addNewStdcmResult,
   retainSimulation,
+  selectSimulation,
   stdcmConfInitialState,
   stdcmConfSlice,
   stdcmConfSliceActions,
@@ -276,6 +277,13 @@ describe('stdcmConfReducers', () => {
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.simulations.length).toEqual(1);
       expect(state.simulations.at(0)).toEqual(newSimulation);
+    });
+
+    it('should handle selecting a simulation', () => {
+      const store = createStore({ simulations: [simulation] });
+      store.dispatch(selectSimulation(0));
+      const state = store.getState()[stdcmConfSlice.name];
+      expect(state.selectedSimulationIndex).toEqual(0);
     });
 
     it('should handle retaining a simulation', () => {

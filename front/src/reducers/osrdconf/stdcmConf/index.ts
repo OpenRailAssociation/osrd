@@ -258,6 +258,7 @@ export const stdcmConfSlice = createSlice({
     // temporary solution to add a new simulation, only 1 action should remain after the refactoring
     addNewStdcmResult(state: Draft<OsrdStdcmConfState>, action: PayloadAction<StdcmSimulation>) {
       state.simulations.push(action.payload);
+      state.selectedSimulationIndex = state.simulations.length - 1;
     },
     updateLastStdcmResult(
       state: Draft<OsrdStdcmConfState>,
@@ -268,6 +269,10 @@ export const stdcmConfSlice = createSlice({
         state.simulations.length - 1,
         action.payload
       );
+      state.selectedSimulationIndex = state.simulations.length - 1;
+    },
+    selectSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
+      state.selectedSimulationIndex = action.payload;
     },
     retainSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       state.retainedSimulationIndex = action.payload;
@@ -282,8 +287,10 @@ export const {
   updateGridMarginAfter,
   updateGridMarginBefore,
   updateStandardAllowance,
+  updateStdcmConfigWithData,
   addNewStdcmResult,
   updateLastStdcmResult,
+  selectSimulation,
   retainSimulation,
 } = stdcmConfSliceActions;
 

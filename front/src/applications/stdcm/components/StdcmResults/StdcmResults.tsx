@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -13,10 +13,12 @@ import {
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
+import { updateStdcmConfigWithData } from 'reducers/osrdconf/stdcmConf';
 import {
   getRetainedSimulationIndex,
-  getStdcmSimulations,
+  getSelectedSimulation,
 } from 'reducers/osrdconf/stdcmConf/selectors';
+import { useAppDispatch } from 'store';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import SimulationReportSheet from './SimulationReportSheet';
@@ -31,7 +33,6 @@ type StcdmResultsProps = {
   onStartNewQuery: () => void;
   onStartNewQueryWithData: () => void;
   buttonsVisible: boolean;
-  selectedSimulationIndex: number;
   showStatusBanner: boolean;
 };
 
@@ -42,17 +43,16 @@ const StcdmResults = ({
   onStartNewQuery,
   onStartNewQueryWithData,
   buttonsVisible,
-  selectedSimulationIndex,
   showStatusBanner,
 }: StcdmResultsProps) => {
+  const dispatch = useAppDispatch();
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { stdcmName } = useDeploymentSettings();
 
-  const simulationsList = useSelector(getStdcmSimulations);
+  const selectedSimulation = useSelector(getSelectedSimulation);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
-  const selectedSimulation = simulationsList[selectedSimulationIndex];
-  const { outputs } = selectedSimulation || {};
+  const { outputs } = selectedSimulation;
 
   const hasConflictResults = hasConflicts(outputs);
   const hasSimulationResults = hasResults(outputs);
@@ -61,7 +61,25 @@ const StcdmResults = ({
 
   const simulationReportSheetNumber = generateCodeNumber();
   const isSelectedSimulationRetained =
-    retainedSimulationIndex !== undefined && selectedSimulationIndex === retainedSimulationIndex;
+    retainedSimulationIndex !== undefined && selectedSimulation.index === retainedSimulationIndex;
+
+  // reset config data with the selected simulation data
+  useEffect(() => {
+    if (selectedSimulation) {
+      const { pathSteps, consist } = selectedSimulation.inputs;
+      dispatch(
+        updateStdcmConfigWithData({
+          rollingStockID: consist?.tractionEngine?.id,
+          towedRollingStockID: consist?.towedRollingStock?.id,
+          totalLength: consist?.totalLength,
+          totalMass: consist?.totalMass,
+          maxSpeed: consist?.maxSpeed,
+          speedLimitByTag: consist?.speedLimitByTag,
+          stdcmPathSteps: pathSteps,
+        })
+      );
+    }
+  }, [selectedSimulation]);
 
   const operationalPointsList = useMemo(() => {
     if (!hasSimulationResults) return [];
@@ -83,7 +101,7 @@ const StcdmResults = ({
   return (
     <>
       <StdcmSimulationNavigator
-        selectedSimulationIndex={selectedSimulationIndex}
+        selectedSimulationIndex={selectedSimulation.index}
         showStatusBanner={showStatusBanner}
         isCalculationFailed={isCalculationFailed}
         onSelectSimulation={onSelectSimulation}
@@ -97,7 +115,7 @@ const StcdmResults = ({
               consist={selectedSimulation.inputs.consist}
               isSimulationRetained={isSelectedSimulationRetained}
               operationalPointsList={operationalPointsList}
-              simulationIndex={selectedSimulationIndex}
+              simulationIndex={selectedSimulation.index}
             />
             {isSelectedSimulationRetained && (
               <div className="get-simulation">

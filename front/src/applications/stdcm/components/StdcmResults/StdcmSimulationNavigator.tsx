@@ -55,7 +55,7 @@ const StdcmSimulationNavigator = ({
           </div>
         )}
         <div className="simulation-list" ref={scrollableRef}>
-          {simulationsList?.map(({ id, creationDate, outputs }, index) => {
+          {simulationsList.map(({ index, creationDate, outputs }) => {
             let formatedTotalLength = '';
             let formatedTripDuration = '';
 
@@ -87,7 +87,7 @@ const StdcmSimulationNavigator = ({
                   <span>
                     {outputs && !hasConflicts(outputs)
                       ? t('simulation.results.simulationName.withOutputs', {
-                          id,
+                          id: index + 1,
                           ns: 'stdcm',
                         })
                       : t('simulation.results.simulationName.withoutOutputs', {
@@ -98,7 +98,7 @@ const StdcmSimulationNavigator = ({
                     <CheckCircle className="check-circle" variant="fill" />
                   )}
                 </div>
-                <div className="simulation-metadata" key={id}>
+                <div className="simulation-metadata" key={index}>
                   <span className="creation-date">
                     {t('simulation.results.formatCreationDate', {
                       ...formatDateToString(creationDate, true),

@@ -47,6 +47,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   towedRollingStockID?: number;
   linkedTrains: LinkedTrains;
   simulations: StdcmSimulation[];
+  selectedSimulationIndex?: number;
   retainedSimulationIndex?: number;
 };
 

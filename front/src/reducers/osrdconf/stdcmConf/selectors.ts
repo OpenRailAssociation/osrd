@@ -1,3 +1,6 @@
+import { createSelector } from '@reduxjs/toolkit';
+import { shallowEqual } from 'react-redux';
+
 import type { RootState } from 'reducers';
 import buildCommonConfSelectors from 'reducers/osrdconf/osrdConfCommon/selectors';
 import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
@@ -12,6 +15,22 @@ const buildStdcmConfSelectors = () => {
 
   const getStdcmPathSteps = makeOsrdConfSelector('stdcmPathSteps');
   const getStdcmSimulations = makeOsrdConfSelector('simulations');
+  const getSelectedSimulationIndex = makeOsrdConfSelector('selectedSimulationIndex');
+
+  const getSelectedSimulation = createSelector(
+    [getStdcmSimulations, getSelectedSimulationIndex],
+    (simulations, selectedIndex) => {
+      if (selectedIndex === undefined || !simulations.at(selectedIndex)) {
+        throw new Error('Can not retrieve the selected simulation');
+      }
+      return simulations[selectedIndex];
+    },
+    {
+      memoizeOptions: {
+        resultEqualityCheck: shallowEqual,
+      },
+    }
+  );
 
   return {
     ...commonConfSelectors,
@@ -43,14 +62,22 @@ const buildStdcmConfSelectors = () => {
     getLinkedTrains: makeOsrdConfSelector('linkedTrains'),
 
     getStdcmSimulations,
+    getSelectedSimulationIndex,
+    getSelectedSimulation,
     getRetainedSimulationIndex: makeOsrdConfSelector('retainedSimulationIndex'),
   };
 };
 
 const selectors = buildStdcmConfSelectors();
 
-export const { getStdcmConf, getMargins, getStdcmSimulations, getRetainedSimulationIndex } =
-  selectors;
+export const {
+  getStdcmConf,
+  getMargins,
+  getStdcmSimulations,
+  getSelectedSimulationIndex,
+  getSelectedSimulation,
+  getRetainedSimulationIndex,
+} = selectors;
 
 export type StdcmConfSelectors = typeof selectors;
 

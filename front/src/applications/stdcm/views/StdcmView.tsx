@@ -5,14 +5,14 @@ import { useSelector } from 'react-redux';
 
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import { LoaderFill } from 'common/Loaders';
-import { useOsrdConfActions } from 'common/osrdContext';
 import {
   addNewStdcmResult,
+  selectSimulation,
   updateLastStdcmResult,
-  type StdcmConfSliceActions,
 } from 'reducers/osrdconf/stdcmConf';
 import {
   getRetainedSimulationIndex,
+  getSelectedSimulationIndex,
   getStdcmConf,
   getStdcmSimulations,
 } from 'reducers/osrdconf/stdcmConf/selectors';
@@ -33,9 +33,9 @@ const StdcmView = () => {
   const currentSimulationInputs = useStdcmForm();
   const stdcmConf = useSelector(getStdcmConf);
   const simulationsList = useSelector(getStdcmSimulations);
+  const selectedSimulationIndex = useSelector(getSelectedSimulationIndex);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
-  const [selectedSimulationIndex, setSelectedSimulationIndex] = useState(-1);
   const [showStatusBanner, setShowStatusBanner] = useState(false);
   const [showBtnToLaunchSimulation, setShowBtnToLaunchSimulation] = useState(false);
   const [isDebugMode, setIsDebugMode] = useState(false);
@@ -59,13 +59,10 @@ const StdcmView = () => {
   const { loading, error, loadStdcmEnvironment } = useStdcmEnvironment();
 
   const dispatch = useAppDispatch();
-  const { updateStdcmConfigWithData } = useOsrdConfActions() as StdcmConfSliceActions;
-
-  const selectedSimulation = simulationsList[selectedSimulationIndex];
 
   const handleSelectSimulation = (index: number) => {
     if (retainedSimulationIndex === undefined) {
-      setSelectedSimulationIndex(index);
+      dispatch(selectSimulation(index));
       setShowBtnToLaunchSimulation(false);
     }
   };
@@ -77,6 +74,7 @@ const StdcmView = () => {
         newWindow.osrdStdcmConfState = {
           ...stdcmConf,
           simulations: [],
+          selectedSimulationIndex: undefined,
           retainedSimulationIndex: undefined,
         };
       }
@@ -99,26 +97,11 @@ const StdcmView = () => {
 
   const toggleHelpModule = () => setShowHelpModule((show) => !show);
 
-  // reset config data with the selected simulation data
   useEffect(() => {
-    if (selectedSimulation) {
-      const { pathSteps, consist } = selectedSimulation.inputs;
-      dispatch(
-        updateStdcmConfigWithData({
-          rollingStockID: consist?.tractionEngine?.id,
-          towedRollingStockID: consist?.towedRollingStock?.id,
-          totalLength: consist?.totalLength,
-          totalMass: consist?.totalMass,
-          maxSpeed: consist?.maxSpeed,
-          speedLimitByTag: consist?.speedLimitByTag,
-          stdcmPathSteps: pathSteps,
-        })
-      );
-    }
-  }, [selectedSimulation]);
-
-  useEffect(() => {
-    setShowBtnToLaunchSimulation(!isEqual(currentSimulationInputs, selectedSimulation?.inputs));
+    setShowBtnToLaunchSimulation(
+      selectedSimulationIndex === undefined ||
+        !isEqual(currentSimulationInputs, simulationsList[selectedSimulationIndex].inputs)
+    );
   }, [currentSimulationInputs]);
 
   useEffect(() => {
@@ -146,7 +129,7 @@ const StdcmView = () => {
      * listed in the simulations list. This helps us determine whether to add a new simulation or update
      * the existing one.
      */
-    const lastSimulation = simulationsList[simulationsList.length - 1];
+    const lastSimulation = simulationsList.at(simulationsList.length - 1);
     const isSimulationAlreadyListed = isEqual(lastSimulation?.inputs, currentSimulationInputs);
     const isSimulationOutputsComplete = stdcmResults?.stdcmResponse ?? hasConflicts;
 
@@ -155,7 +138,7 @@ const StdcmView = () => {
         ...(isSimulationAlreadyListed
           ? { ...lastSimulation }
           : {
-              id: simulationsList.length + 1,
+              index: simulationsList.length,
               creationDate: new Date(),
               inputs: currentSimulationInputs,
             }),
@@ -194,13 +177,6 @@ const StdcmView = () => {
     }
   }, [isRejected]);
 
-  // select the last simulation in the list
-  useEffect(() => {
-    if (simulationsList.length > 0) {
-      setSelectedSimulationIndex(simulationsList.length - 1);
-    }
-  }, [simulationsList]);
-
   // If we've got an error during the loading of the stdcm env which is not the "no config error" message,
   // we let the error boundary manage it
   if (error && error.message !== NO_CONFIG_FOUND_MSG) throw error;
@@ -238,7 +214,6 @@ const StdcmView = () => {
                 onStartNewQuery={handleStartNewQuery}
                 onStartNewQueryWithData={handleStartNewQueryWithData}
                 buttonsVisible={buttonsVisible}
-                selectedSimulationIndex={selectedSimulationIndex}
                 showStatusBanner={showStatusBanner}
               />
             </div>
