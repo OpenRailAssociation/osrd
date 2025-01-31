@@ -77,6 +77,13 @@ cargo install --locked taplo-cli
 
 To setup `grcov`, please see [its documentation](https://github.com/mozilla/grcov#how-to-get-grcov)
 
+## No-cache mode
+
+Running editoast with deactivated cache can help repeating calls when debugging.
+```sh
+NO_CACHE=true cargo run -- runserver
+```
+
 ## For M1 MacOS users
 
 Our `docker-compose.yml` at the root of the project uses the `postgis` image by default.
