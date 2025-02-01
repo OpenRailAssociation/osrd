@@ -10,7 +10,7 @@ pub(crate) struct MockClient {
 }
 
 impl MockClient {
-    pub async fn get_workers_statuses<'a, T>(
+    pub async fn get_workers_statuses<T>(
         &self,
         keys: &[T],
     ) -> Result<HashMap<String, WorkerStatus>, crate::Error>

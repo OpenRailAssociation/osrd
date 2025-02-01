@@ -121,10 +121,7 @@ impl TargetTracker {
             if now < transition_time {
                 return Some(status);
             }
-            status = match new_status {
-                Some(status) => status,
-                None => return None,
-            };
+            status = new_status?;
         }
     }
 

@@ -213,7 +213,7 @@ impl<'a> StubRequestBuilder<'a> {
     }
 }
 
-impl<'a> StubResponseBuilder<'a> {
+impl StubResponseBuilder<'_> {
     /// Sets the body of the mocked response
     ///
     /// If none is set, `AsCoreRequest::fetch` will return an `Err(CoreError::NoResponseContent)`

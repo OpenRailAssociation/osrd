@@ -70,7 +70,7 @@ impl RequestAuthExt for actix_web::dev::ServiceResponse {
     }
 }
 
-impl<'a> RequestAuthExt for actix_web::guard::GuardContext<'a> {
+impl RequestAuthExt for actix_web::guard::GuardContext<'_> {
     fn get_request_auth(&self) -> Option<RequestAuth> {
         RequestAuth::from_extensions(&self.req_data())
     }
