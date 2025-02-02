@@ -6,6 +6,7 @@ pub(crate) struct CreateImpl {
     pub(super) table_mod: syn::Path,
     pub(super) row: syn::Ident,
     pub(super) changeset: syn::Ident,
+    pub(super) empty_changeset: bool,
     pub(super) columns: Vec<syn::Ident>,
 }
 
@@ -16,9 +17,17 @@ impl ToTokens for CreateImpl {
             table_mod,
             row,
             changeset,
+            empty_changeset,
             columns,
         } = self;
         let span_name = format!("model:create<{}>", model);
+
+        // If the changeset has no fields, it cannot derive Insertable.
+        let values = if *empty_changeset {
+            quote! { default_values() }
+        } else {
+            quote! { values(&self) }
+        };
 
         tokens.extend(quote! {
             #[automatically_derived]
@@ -32,7 +41,7 @@ impl ToTokens for CreateImpl {
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
                     diesel::insert_into(#table_mod::table)
-                        .values(&self)
+                        .#values
                         .returning((#(dsl::#columns,)*))
                         .get_result::<#row>(conn.write().await.deref_mut())
                         .await

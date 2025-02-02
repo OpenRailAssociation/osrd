@@ -110,4 +110,67 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    #[should_panic]
+    fn single_pk_models_do_not_support_updates() {
+        crate::assert_macro_expansion!(
+            model,
+            syn::parse_quote! {
+                #[derive(Clone, Model)]
+                #[model(table = editoast_models::tables::timetable)]
+                #[model(gen(ops = u))]
+                struct Timetable {
+                    id: i64,
+                }
+            }
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_pk_models_do_not_support_batch_creates() {
+        crate::assert_macro_expansion!(
+            model,
+            syn::parse_quote! {
+                #[derive(Clone, Model)]
+                #[model(table = editoast_models::tables::timetable)]
+                #[model(gen(batch_ops = c))]
+                struct Timetable {
+                    id: i64,
+                }
+            }
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn single_pk_models_do_not_support_batch_updates() {
+        crate::assert_macro_expansion!(
+            model,
+            syn::parse_quote! {
+                #[derive(Clone, Model)]
+                #[model(table = editoast_models::tables::timetable)]
+                #[model(gen(batch_ops = u))]
+                struct Timetable {
+                    id: i64,
+                }
+            }
+        );
+    }
+
+    #[test]
+    fn single_pk_model() {
+        crate::assert_macro_expansion!(
+            model,
+            syn::parse_quote! {
+                #[derive(Clone, Model)]
+                #[model(table = editoast_models::tables::timetable)]
+                #[model(gen(ops = crd, batch_ops = rd, list))]
+                struct Timetable {
+                    id: i64,
+                }
+            }
+        );
+    }
 }

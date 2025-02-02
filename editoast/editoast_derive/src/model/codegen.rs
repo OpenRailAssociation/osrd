@@ -328,6 +328,7 @@ impl ModelConfig {
             table_mod: self.table.clone(),
             row: self.row.name.clone(),
             changeset: self.changeset.ident(),
+            empty_changeset: self.changeset_fields().next().is_none(),
             columns: self.columns().cloned().collect(),
         }
         .tokens_if(self.impl_plan.ops.create)

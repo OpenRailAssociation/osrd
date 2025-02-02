@@ -1,0 +1,457 @@
+---
+source: editoast_derive/src/model.rs
+---
+// Source
+// -----------------------------------------------------------------------------
+
+#[derive(Clone, Model)]
+#[model(table = editoast_models::tables::timetable)]
+#[model(gen(ops = crd, batch_ops = rd, list))]
+struct Timetable {
+    id: i64,
+}
+
+// Macro expansion
+// -----------------------------------------------------------------------------
+
+#[automatically_derived]
+impl crate::models::Model for Timetable {
+    type Row = TimetableRow;
+    type Changeset = TimetableChangeset;
+    type Table = editoast_models::tables::timetable::table;
+    type Error = editoast_models::model::Error;
+}
+paste::paste! {
+    impl Timetable { pub const [< id : snake : upper >] : crate ::models::ModelField <
+    Timetable, i64, editoast_models::tables::timetable::id > = crate
+    ::models::ModelField::new(); }
+}
+impl crate::models::prelude::ModelField<
+    Timetable,
+    i64,
+    editoast_models::tables::timetable::id,
+> {
+    pub fn eq(&self, value: i64) -> crate::models::prelude::FilterSetting<Timetable> {
+        use diesel::ExpressionMethods;
+        crate::models::prelude::FilterSetting::new(
+            editoast_models::tables::timetable::id.eq(value),
+        )
+    }
+    pub fn eq_any(
+        &self,
+        values: Vec<i64>,
+    ) -> crate::models::prelude::FilterSetting<Timetable> {
+        use diesel::ExpressionMethods;
+        crate::models::prelude::FilterSetting::new(
+            editoast_models::tables::timetable::id.eq_any(values),
+        )
+    }
+    pub fn asc(&self) -> crate::models::prelude::SortSetting<Timetable> {
+        use diesel::ExpressionMethods;
+        crate::models::prelude::SortSetting(
+            Box::new(editoast_models::tables::timetable::id.asc()),
+        )
+    }
+    pub fn desc(&self) -> crate::models::prelude::SortSetting<Timetable> {
+        use diesel::ExpressionMethods;
+        crate::models::prelude::SortSetting(
+            Box::new(editoast_models::tables::timetable::id.desc()),
+        )
+    }
+}
+#[derive(Queryable)]
+#[diesel(table_name = editoast_models::tables::timetable)]
+struct TimetableRow {
+    #[diesel(column_name = "id")]
+    id: i64,
+}
+#[derive(Debug, Default)]
+struct TimetableChangeset;
+#[automatically_derived]
+impl crate::models::Identifiable<(i64)> for Timetable {
+    fn get_id(&self) -> (i64) {
+        (self.id.clone())
+    }
+}
+#[automatically_derived]
+impl crate::models::PreferredId<(i64)> for Timetable {}
+#[automatically_derived]
+impl From<TimetableRow> for Timetable {
+    fn from(row: TimetableRow) -> Self {
+        Self { id: row.id }
+    }
+}
+#[automatically_derived]
+impl From<Timetable> for TimetableChangeset {
+    fn from(model: Timetable) -> Self {
+        Self {}
+    }
+}
+#[automatically_derived]
+impl TimetableChangeset {}
+#[automatically_derived]
+#[async_trait::async_trait]
+impl crate::models::Exists<(i64)> for Timetable {
+    #[tracing::instrument(
+        name = "model:exists<Timetable>",
+        skip_all,
+        ret,
+        err,
+        fields(query_id)
+    )]
+    async fn exists(
+        conn: &mut editoast_models::DbConnection,
+        id: (i64),
+    ) -> crate::error::Result<bool> {
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use std::ops::DerefMut;
+        use editoast_models::tables::timetable::dsl;
+        tracing::Span::current().record("query_id", tracing::field::debug(&id));
+        diesel::select(diesel::dsl::exists(dsl::timetable.filter(dsl::id.eq(id))))
+            .get_result(conn.write().await.deref_mut())
+            .await
+            .map_err(Into::into)
+    }
+}
+#[automatically_derived]
+#[async_trait::async_trait]
+impl crate::models::Retrieve<(i64)> for Timetable {
+    #[tracing::instrument(
+        name = "model:retrieve<Timetable>",
+        skip_all,
+        err,
+        fields(query_id)
+    )]
+    async fn retrieve(
+        conn: &mut editoast_models::DbConnection,
+        id: (i64),
+    ) -> crate::error::Result<Option<Timetable>> {
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use editoast_models::tables::timetable::dsl;
+        use std::ops::DerefMut;
+        tracing::Span::current().record("query_id", tracing::field::debug(&id));
+        dsl::timetable
+            .filter(dsl::id.eq(id))
+            .select((dsl::id,))
+            .first::<TimetableRow>(conn.write().await.deref_mut())
+            .await
+            .map(Into::into)
+            .optional()
+            .map_err(Into::into)
+    }
+}
+#[automatically_derived]
+impl crate::models::DeleteStatic<(i64)> for Timetable {
+    #[tracing::instrument(
+        name = "model:delete_static<Timetable>",
+        skip_all,
+        ret,
+        err,
+        fields(query_id)
+    )]
+    async fn delete_static(
+        conn: &mut editoast_models::DbConnection,
+        id: (i64),
+    ) -> std::result::Result<bool, <Timetable as crate::models::Model>::Error> {
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use std::ops::DerefMut;
+        use editoast_models::tables::timetable::dsl;
+        tracing::Span::current().record("query_id", tracing::field::debug(&id));
+        diesel::delete(dsl::timetable.filter(dsl::id.eq(id)))
+            .execute(conn.write().await.deref_mut())
+            .await
+            .map(|n| n == 1)
+            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
+    }
+}
+#[automatically_derived]
+impl crate::models::Create<Timetable> for TimetableChangeset {
+    #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
+    async fn create(
+        self,
+        conn: &mut editoast_models::DbConnection,
+    ) -> std::result::Result<Timetable, <Timetable as crate::models::Model>::Error> {
+        use diesel_async::RunQueryDsl;
+        use editoast_models::tables::timetable::dsl;
+        use std::ops::DerefMut;
+        diesel::insert_into(editoast_models::tables::timetable::table)
+            .default_values()
+            .returning((dsl::id,))
+            .get_result::<TimetableRow>(conn.write().await.deref_mut())
+            .await
+            .map(Into::into)
+            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
+    }
+}
+#[automatically_derived]
+impl crate::models::Delete for Timetable {
+    #[tracing::instrument(
+        name = "model:delete<Timetable>",
+        skip_all,
+        ret,
+        err,
+        fields(query_id = ?self.id)
+    )]
+    async fn delete(
+        &self,
+        conn: &mut editoast_models::DbConnection,
+    ) -> std::result::Result<bool, <Timetable as crate::models::Model>::Error> {
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use editoast_models::tables::timetable::dsl;
+        use std::ops::DerefMut;
+        let id = self.id;
+        diesel::delete(editoast_models::tables::timetable::table.find(id))
+            .execute(conn.write().await.deref_mut())
+            .await
+            .map(|n| n == 1)
+            .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
+    }
+}
+#[automatically_derived]
+#[async_trait::async_trait]
+impl crate::models::prelude::List for Timetable {
+    #[tracing::instrument(
+        name = "model:list<Timetable>",
+        skip_all,
+        err,
+        fields(
+            nb_filters = settings.filters.len(),
+            nb_sorts = settings.sorts.len(),
+            paginate_counting = settings.paginate_counting,
+            limit,
+            offset,
+        )
+    )]
+    async fn list(
+        conn: &'async_trait mut editoast_models::DbConnection,
+        settings: crate::models::prelude::SelectionSettings<Self>,
+    ) -> crate::error::Result<Vec<Self>> {
+        use diesel::QueryDsl;
+        use diesel_async::RunQueryDsl;
+        use futures_util::stream::TryStreamExt;
+        use editoast_models::tables::timetable::dsl;
+        use std::ops::DerefMut;
+        let mut query = editoast_models::tables::timetable::table.into_boxed();
+        for filter_fun in settings.filters {
+            let crate::models::prelude::FilterSetting(filter) = (*filter_fun)();
+            query = query.filter(filter);
+        }
+        for sort_fun in settings.sorts {
+            let crate::models::prelude::SortSetting(sort) = (*sort_fun)();
+            query = query.order_by(sort);
+        }
+        if let Some(limit) = settings.limit {
+            tracing::Span::current().record("limit", limit);
+            query = query.limit(limit);
+        }
+        if let Some(offset) = settings.offset {
+            tracing::Span::current().record("offset", offset);
+            query = query.offset(offset);
+        }
+        let results: Vec<Timetable> = query
+            .select((dsl::id,))
+            .load_stream::<TimetableRow>(conn.write().await.deref_mut())
+            .await?
+            .map_ok(<Timetable as crate::models::prelude::Model>::from_row)
+            .try_collect()
+            .await?;
+        Ok(results)
+    }
+}
+#[automatically_derived]
+#[async_trait::async_trait]
+impl crate::models::prelude::Count for Timetable {
+    #[tracing::instrument(
+        name = "model:count<Timetable>",
+        skip_all,
+        ret,
+        err,
+        fields(
+            nb_filters = settings.filters.len(),
+            paginate_counting = settings.paginate_counting,
+            limit,
+            offset,
+        )
+    )]
+    async fn count(
+        conn: &'async_trait mut editoast_models::DbConnection,
+        settings: crate::models::prelude::SelectionSettings<Self>,
+    ) -> crate::error::Result<u64> {
+        use diesel::QueryDsl;
+        use diesel_async::RunQueryDsl;
+        use futures_util::stream::TryStreamExt;
+        use std::ops::DerefMut;
+        let mut query = editoast_models::tables::timetable::table
+            .select(diesel::dsl::count_star())
+            .into_boxed();
+        for filter_fun in settings.filters {
+            let crate::models::prelude::FilterSetting(filter) = (*filter_fun)();
+            query = query.filter(filter);
+        }
+        if settings.paginate_counting {
+            if let Some(limit) = settings.limit {
+                tracing::Span::current().record("limit", limit);
+                query = query.limit(limit);
+            }
+            if let Some(offset) = settings.offset {
+                tracing::Span::current().record("offset", offset);
+                query = query.offset(offset);
+            }
+        }
+        Ok(query.get_result::<i64>(conn.write().await.deref_mut()).await? as u64)
+    }
+}
+#[automatically_derived]
+#[async_trait::async_trait]
+impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
+    #[tracing::instrument(
+        name = "model:retrieve_batch_unchecked<Timetable>",
+        skip_all,
+        err,
+        fields(query_id)
+    )]
+    async fn retrieve_batch_unchecked<
+        I: std::iter::IntoIterator<Item = (i64)> + Send + 'async_trait,
+        C: Default + std::iter::Extend<Timetable> + Send + std::fmt::Debug,
+    >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<C> {
+        use crate::models::Model;
+        use editoast_models::tables::timetable::dsl;
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use futures_util::stream::TryStreamExt;
+        use std::ops::DerefMut;
+        let ids = ids.into_iter().collect::<Vec<_>>();
+        tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
+        Ok({
+            const LIBPQ_MAX_PARAMETERS: usize = 2_usize.pow(16) - 1;
+            const ASYNC_SUBDIVISION: usize = 2_usize;
+            const CHUNK_SIZE: usize = LIBPQ_MAX_PARAMETERS / ASYNC_SUBDIVISION / 1usize;
+            let mut result = C::default();
+            let chunks = ids.chunks(CHUNK_SIZE.min(2048usize));
+            for chunk in chunks {
+                let chunk_result = {
+                    let mut query = dsl::timetable.into_boxed();
+                    for id in chunk.into_iter() {
+                        query = query.or_filter(dsl::id.eq(id));
+                    }
+                    query
+                        .select((dsl::id,))
+                        .load_stream::<TimetableRow>(conn.write().await.deref_mut())
+                        .await
+                        .map(|s| {
+                            s
+                                .map_ok(<Timetable as Model>::from_row)
+                                .try_collect::<Vec<_>>()
+                        })?
+                        .await?
+                };
+                result.extend(chunk_result);
+            }
+            result
+        })
+    }
+    #[tracing::instrument(
+        name = "model:retrieve_batch_with_key_unchecked<Timetable>",
+        skip_all,
+        err,
+        fields(query_id)
+    )]
+    async fn retrieve_batch_with_key_unchecked<
+        I: std::iter::IntoIterator<Item = (i64)> + Send + 'async_trait,
+        C: Default + std::iter::Extend<((i64), Timetable)> + Send + std::fmt::Debug,
+    >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<C> {
+        use crate::models::Identifiable;
+        use crate::models::Model;
+        use editoast_models::tables::timetable::dsl;
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use futures_util::stream::TryStreamExt;
+        use std::ops::DerefMut;
+        let ids = ids.into_iter().collect::<Vec<_>>();
+        tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
+        Ok({
+            const LIBPQ_MAX_PARAMETERS: usize = 2_usize.pow(16) - 1;
+            const ASYNC_SUBDIVISION: usize = 2_usize;
+            const CHUNK_SIZE: usize = LIBPQ_MAX_PARAMETERS / ASYNC_SUBDIVISION / 1usize;
+            let mut result = C::default();
+            let chunks = ids.chunks(CHUNK_SIZE.min(2048usize));
+            for chunk in chunks {
+                let chunk_result = {
+                    let mut query = dsl::timetable.into_boxed();
+                    for id in chunk.into_iter() {
+                        query = query.or_filter(dsl::id.eq(id));
+                    }
+                    query
+                        .select((dsl::id,))
+                        .load_stream::<TimetableRow>(conn.write().await.deref_mut())
+                        .await
+                        .map(|s| {
+                            s.map_ok(|row| {
+                                    let model = <Timetable as Model>::from_row(row);
+                                    (model.get_id(), model)
+                                })
+                                .try_collect::<Vec<_>>()
+                        })?
+                        .await?
+                };
+                result.extend(chunk_result);
+            }
+            result
+        })
+    }
+}
+#[automatically_derived]
+impl crate::models::DeleteBatch<(i64)> for Timetable {
+    #[tracing::instrument(
+        name = "model:delete_batch<Timetable>",
+        skip_all,
+        ret,
+        err,
+        fields(query_ids)
+    )]
+    async fn delete_batch<I: std::iter::IntoIterator<Item = (i64)> + Send>(
+        conn: &mut editoast_models::DbConnection,
+        ids: I,
+    ) -> std::result::Result<usize, <Timetable as crate::models::Model>::Error> {
+        use editoast_models::tables::timetable::dsl;
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use std::ops::DerefMut;
+        let ids = ids.into_iter().collect::<Vec<_>>();
+        tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
+        let counts = {
+            const LIBPQ_MAX_PARAMETERS: usize = 2_usize.pow(16) - 1;
+            const ASYNC_SUBDIVISION: usize = 2_usize;
+            const CHUNK_SIZE: usize = LIBPQ_MAX_PARAMETERS / ASYNC_SUBDIVISION / 1usize;
+            let mut result = Vec::new();
+            let chunks = ids.chunks(CHUNK_SIZE.min(2048usize));
+            for chunk in chunks {
+                let chunk_result = {
+                    let mut query = diesel::delete(dsl::timetable).into_boxed();
+                    for id in chunk.into_iter() {
+                        query = query.or_filter(dsl::id.eq(id));
+                    }
+                    query
+                        .execute(conn.write().await.deref_mut())
+                        .await
+                        .map_err(|e| <Timetable as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                };
+                result.push(chunk_result);
+            }
+            result
+        };
+        Ok(counts.into_iter().sum())
+    }
+}

@@ -38,15 +38,24 @@ impl ToTokens for ChangesetDecl {
                 np!(column_name, vis, name, ty)
             })
             .unzip();
-        tokens.extend(quote! {
-            #[derive(Debug, Default, Queryable, AsChangeset, Insertable, #(#additional_derives),*)]
-            #[diesel(table_name = #table)]
-            #vis struct #ident {
-                #(
-                    #[diesel(deserialize_as = #field_type, column_name = #field_column)]
-                    #field_vis #field_name: Option<#field_type>
-                ),*
-            }
-        });
+
+        // If the struct has no fields, Queryable, AsChangeset and Insertable cannot be derived.
+        if fields.is_empty() {
+            tokens.extend(quote! {
+                #[derive(Debug, Default, #(#additional_derives),*)]
+                #vis struct #ident;
+            });
+        } else {
+            tokens.extend(quote! {
+                #[derive(Debug, Default, Queryable, AsChangeset, Insertable, #(#additional_derives),*)]
+                #[diesel(table_name = #table)]
+                #vis struct #ident {
+                    #(
+                        #[diesel(deserialize_as = #field_type, column_name = #field_column)]
+                        #field_vis #field_name: Option<#field_type>
+                    ),*
+                }
+            });
+        }
     }
 }
