@@ -113,7 +113,7 @@ chrono.workspace = true
 clap.workspace = true
 colored = "3.0.0"
 dashmap = "6.1.0"
-deadpool = { version = "0.12.1", features = [
+deadpool = { version = "0.12.2", features = [
   "managed",
   "rt_tokio_1",
   "unmanaged",
