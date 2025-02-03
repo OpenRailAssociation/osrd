@@ -8,16 +8,10 @@ for signaling_system in *; do
   # Skip files (like this file)
   [ -d "${signaling_system}" ] || continue
 
-  # Prepare the tmp directory
-  tmp_dir="$(mktemp -d)"
-  echo "Generating '${signaling_system}' at '${tmp_dir}'..."
-  svg_dir="${tmp_dir}/sprites/svg/"
-  mkdir -p "${svg_dir}"
-  cp "${signaling_system}"/*.svg "${svg_dir}"
-
   # Generate atlas
-  docker run -it -e FOLDER=svg -e THEME=sprites -v "${tmp_dir}:/data" dolomate/spritezero
-  cp "${tmp_dir}"/sprites/sprites* "${signaling_system}"
+  spreet "${signaling_system}" "${signaling_system}"/sprites
+  spreet --ratio=2 "${signaling_system}" "${signaling_system}"/sprites@2x
+  spreet --ratio=3 "${signaling_system}" "${signaling_system}"/sprites@3x
 
   # Add a linefeed to the json files
   for json_file in "${signaling_system}"/*.json; do
