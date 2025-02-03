@@ -12,7 +12,6 @@ use axum::Extension;
 use derivative::Derivative;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
-use editoast_schemas::train_schedule::TrainScheduleBase;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -40,15 +39,20 @@ use crate::views::AuthorizationError;
 use crate::AppState;
 use crate::RetrieveBatch;
 use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::train_schedule::TrainScheduleBase;
+
+use super::pagination::PaginatedList as _;
+use super::pagination::PaginationQueryParams;
+use super::pagination::PaginationStats;
 
 crate::routes! {
     "/timetable" => {
         post,
         "/{id}" => {
             delete,
-            get,
+            "/train_schedules" => get,
+            "/train_schedules" => train_schedule,
             "/conflicts" => conflicts,
-            "/train_schedule" => train_schedule,
             &stdcm,
         },
     },
@@ -112,13 +116,22 @@ struct TimetableIdParam {
     id: i64,
 }
 
+#[derive(Serialize, ToSchema, Debug)]
+#[cfg_attr(test, derive(Deserialize))]
+struct ListTrainSchedulesResponse {
+    #[schema(value_type = Vec<TrainScheduleResult>)]
+    results: Vec<TrainScheduleResult>,
+    #[serde(flatten)]
+    stats: PaginationStats,
+}
+
 /// Return a specific timetable with its associated schedules
 #[utoipa::path(
     get, path = "",
     tag = "timetable",
-    params(TimetableIdParam),
+    params(TimetableIdParam, PaginationQueryParams),
     responses(
-        (status = 200, description = "Timetable with train schedules ids", body = TimetableDetailedResult),
+        (status = 200, description = "Timetable with train schedules ids", body = inline(ListTrainSchedulesResponse)),
         (status = 404, description = "Timetable not found"),
     ),
 )]
@@ -126,7 +139,8 @@ async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-) -> Result<Json<TimetableDetailedResult>> {
+    Query(pagination_params): Query<PaginationQueryParams>,
+) -> Result<Json<ListTrainSchedulesResponse>> {
     let authorized = auth
         .check_roles([BuiltinRole::TimetableRead].into())
         .await
@@ -136,11 +150,20 @@ async fn get(
     }
 
     let conn = &mut db_pool.get().await?;
-    let timetable = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
-        TimetableError::NotFound { timetable_id }
+    Timetable::retrieve_or_fail(conn, timetable_id, || TimetableError::NotFound {
+        timetable_id,
     })
     .await?;
-    Ok(Json(timetable.into()))
+
+    let settings = pagination_params
+        .validate(25)?
+        .into_selection_settings()
+        .filter(move || TrainSchedule::TIMETABLE_ID.eq(timetable_id));
+
+    let (train_schedules, stats) = TrainSchedule::list_paginated(conn, settings).await?;
+    let results = train_schedules.into_iter().map_into().collect();
+
+    Ok(Json(ListTrainSchedulesResponse { stats, results }))
 }
 
 /// Create a timetable
@@ -362,24 +385,17 @@ mod tests {
 
         let timetable = create_timetable(&mut pool.get_ok()).await;
 
-        let request = app.get(&format!("/timetable/{}", timetable.id));
+        let request = app.get(&format!("/timetable/{}/train_schedules", timetable.id));
 
-        let timetable_from_response: TimetableDetailedResult =
+        let timetable_from_response: ListTrainSchedulesResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-
-        assert_eq!(
-            timetable_from_response,
-            TimetableDetailedResult {
-                timetable_id: timetable.id,
-                train_ids: vec![],
-            }
-        );
+        assert_eq!(timetable_from_response.results.len(), 0);
     }
 
     #[rstest]
     async fn get_unexisting_timetable() {
         let app = TestAppBuilder::default_app();
-        let request = app.get(&format!("/timetable/{}", 0));
+        let request = app.get(&format!("/timetable/{}/train_schedules", 0));
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 

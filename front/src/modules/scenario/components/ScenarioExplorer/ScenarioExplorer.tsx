@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -59,20 +59,10 @@ const ScenarioExplorer = ({
       }
     );
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
-    { id: timetableID! },
-    { skip: !timetableID }
-  );
-
-  const timetableTrainIds = useMemo(() => timetable?.train_ids, [timetable]);
-  const { data: trainsDetails } = osrdEditoastApi.endpoints.postTrainSchedule.useQuery(
+  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery(
+    { timetableId: timetableID! },
     {
-      body: {
-        ids: timetableTrainIds!,
-      },
-    },
-    {
-      skip: !timetable || !timetableTrainIds,
+      skip: !timetableID,
     }
   );
 
@@ -85,11 +75,9 @@ const ScenarioExplorer = ({
     }
   };
 
-  const trainCount = (trainIds: number[]) => trainIds.length;
-
   useEffect(() => {
     if (scenario) {
-      const scenarioDateTimeWindow = getScenarioDatetimeWindow(trainsDetails);
+      const scenarioDateTimeWindow = getScenarioDatetimeWindow(timetable);
 
       // We also set the stdcm environment in case we select a scenario from the stdcm interface.
       dispatch(
@@ -101,7 +89,7 @@ const ScenarioExplorer = ({
         })
       );
     }
-  }, [scenario, trainsDetails]);
+  }, [scenario, timetable]);
 
   useEffect(() => {
     if (projectDetails?.image) {
@@ -175,7 +163,7 @@ const ScenarioExplorer = ({
                 </span>
 
                 <span className="scenario-explorator-card-head-scenario-traincount">
-                  {timetable && trainCount(timetable.train_ids)}
+                  {timetable && timetable.length}
                   <MdTrain />
                 </span>
               </div>

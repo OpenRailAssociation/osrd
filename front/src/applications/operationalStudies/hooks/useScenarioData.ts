@@ -8,7 +8,6 @@ import {
   type InfraWithState,
   type ScenarioResponse,
   type SimulationSummaryResult,
-  type TimetableDetailedResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
@@ -30,11 +29,7 @@ import useLazyLoadTrains from './useLazyLoadTrains';
 import usePathProjection from './usePathProjection';
 import formatTrainScheduleSummaries from '../helpers/formatTrainScheduleSummaries';
 
-const useScenarioData = (
-  scenario: ScenarioResponse,
-  timetable: TimetableDetailedResult,
-  infra: InfraWithState
-) => {
+const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const { getElectricalProfileSetId } = useOsrdConfSelectors();
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -43,7 +38,6 @@ const useScenarioData = (
   const [trainIdsToFetch, setTrainIdsToFetch] = useState<TrainId[]>();
   const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TrainId>>(new Set());
 
-  const [fetchTrainSchedules] = osrdEditoastApi.endpoints.postTrainSchedule.useLazyQuery();
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const [postTrainScheduleSimulationSummary] =
     osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.useLazyQuery();
@@ -51,6 +45,14 @@ const useScenarioData = (
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
   const projectionPath = usePathProjection(infra);
+
+  const { data: trainSchedulesResults = [] } =
+    osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery(
+      { timetableId: scenario?.timetable_id },
+      {
+        skip: !scenario,
+      }
+    );
 
   const { trainScheduleSummariesById, setTrainScheduleSummariesById, allTrainsLoaded } =
     useLazyLoadTrains({
@@ -109,28 +111,21 @@ const useScenarioData = (
     [trainIdUsedForProjection, trainSchedules]
   );
 
+  const trainsIds = useMemo(() => trainSchedulesResults.map((t) => t.id), [trainSchedulesResults]);
+
   // TODO Paced train : Adapt this to accept paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
-  useAutoUpdateProjection(infra, timetable.train_ids, trainScheduleSummaries);
+  useAutoUpdateProjection(infra, trainsIds, trainScheduleSummaries);
 
   useEffect(() => {
-    const fetchTrains = async () => {
-      const rawTrainSchedules = await fetchTrainSchedules({
-        body: {
-          ids: timetable.train_ids,
-        },
-      }).unwrap();
-      const formattedRawTrainSchedules: TrainScheduleResultWithTrainId[] = rawTrainSchedules.map(
-        (trainSchedule) => ({
-          ...trainSchedule,
-          id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
-        })
-      );
-      const sortedTrainSchedules = sortBy(formattedRawTrainSchedules, 'start_time');
-      setTrainSchedules(sortedTrainSchedules);
-    };
-
-    fetchTrains();
-  }, []);
+    const formattedRawTrainSchedules: TrainScheduleResultWithTrainId[] = trainSchedulesResults.map(
+      (trainSchedule) => ({
+        ...trainSchedule,
+        id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+      })
+    );
+    const sortedTrainSchedules = sortBy(formattedRawTrainSchedules, 'start_time');
+    setTrainSchedules(sortedTrainSchedules);
+  }, [trainSchedulesResults]);
 
   // first load of the trainScheduleSummaries
   useEffect(() => {
@@ -286,7 +281,7 @@ const useScenarioData = (
               projectedTrains,
               projectionLoaderData: {
                 allTrainsProjected,
-                totalTrains: timetable.train_ids.length,
+                totalTrains: trainSchedulesResults.length,
               },
             }
           : undefined,
@@ -302,7 +297,7 @@ const useScenarioData = (
       projectionPath,
       projectedTrains,
       allTrainsProjected,
-      timetable.train_ids.length,
+      trainSchedulesResults.length,
       conflicts,
       removeTrains,
       upsertTrainSchedules,

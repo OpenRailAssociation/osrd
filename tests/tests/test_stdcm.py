@@ -29,7 +29,7 @@ def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_name: str, s
             "start_time": start_time,
         }
     ]
-    r = requests.post(editoast_url + f"/timetable/{scenario.timetable}/train_schedule/", json=schedule_payload)
+    r = requests.post(editoast_url + f"/timetable/{scenario.timetable}/train_schedules/", json=schedule_payload)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
     schedule_id = r.json()[0]

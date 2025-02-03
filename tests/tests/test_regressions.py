@@ -38,7 +38,7 @@ def _schedule_with_payload(editoast_url: str, payload: Dict, accept_400: bool, s
     Send a schedule request with the given payload, raises an error if the request failed (unless we accept 400s).
     Returns the schedule id.
     """
-    r = requests.post(editoast_url + f"/timetable/{scenario.timetable}/train_schedule/", json=payload)
+    r = requests.post(editoast_url + f"/timetable/{scenario.timetable}/train_schedules/", json=payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4 and accept_400:
             return None

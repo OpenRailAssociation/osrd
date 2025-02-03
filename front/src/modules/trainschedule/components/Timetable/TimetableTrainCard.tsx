@@ -66,8 +66,8 @@ const TimetableTrainCard = ({
   const dispatch = useAppDispatch();
 
   const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedule.useMutation();
-  const [getTrainSchedule] = osrdEditoastApi.endpoints.postTrainSchedule.useLazyQuery();
+    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
+  const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
   const [deleteTrainSchedule] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
   const changeSelectedTrainId = (trainId: TrainId) => {
@@ -120,14 +120,15 @@ const TimetableTrainCard = ({
 
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
     const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId);
-    const trainsResults = await getTrainSchedule({ body: { ids: [editoastTrainId] } })
+    const trainDetail = await getTrainSchedule({
+      id: editoastTrainId,
+    })
       .unwrap()
       .catch((e) => {
         dispatch(setFailure(castErrorToFailure(e)));
       });
 
-    if (trainsResults) {
-      const trainDetail = trainsResults[0];
+    if (trainDetail) {
       const formattedStartTimeMs = isoDateToMs(trainDetail.start_time);
       const newStartTimeString = formatToIsoDate(formattedStartTimeMs + 1000 * 60 * trainDelta);
       const newTrain: TrainScheduleBase = {

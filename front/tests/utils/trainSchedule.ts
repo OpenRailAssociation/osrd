@@ -17,7 +17,7 @@ export async function sendTrainSchedules(
 ): Promise<TrainScheduleResult[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const trainSchedulesResponse: APIResponse = await apiContext.post(
-    `/api/timetable/${timetableId}/train_schedule/`,
+    `/api/timetable/${timetableId}/train_schedules/`,
     {
       data: JSON.stringify(body),
       headers: {

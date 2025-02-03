@@ -10,11 +10,10 @@ from .services import EDITOAST_URL
 def test_get_timetable(
     timetable_id: int,
 ):
-    response = requests.get(f"{EDITOAST_URL}/timetable/{timetable_id}/")
+    response = requests.get(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules")
     assert response.status_code == 200
     json = response.json()
-    assert "timetable_id" in json
-    assert "train_ids" in json
+    assert "results" in json
 
 
 @pytest.mark.parametrize(
@@ -58,7 +57,7 @@ def test_conflicts(
         }
     ]
     stopping_train_schedule_response = requests.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=stopping_train_schedule_payload
+        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules", json=stopping_train_schedule_payload
     )
     stopping_train_schedule_response.raise_for_status()
 
@@ -89,7 +88,7 @@ def test_conflicts(
         }
     ]
     requests.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload
+        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules", json=train_schedule_payload
     ).raise_for_status()
 
     conflicts_response = requests.get(f"{EDITOAST_URL}/timetable/{timetable_id}/conflicts/?infra_id={small_infra.id}")
@@ -168,7 +167,7 @@ def test_scheduled_points_with_incompatible_margins(
             "train_name": "name",
         }
     ]
-    response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedule_payload)
+    response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules", json=train_schedule_payload)
     response.raise_for_status()
     train_id = response.json()[0]["id"]
     response = requests.get(f"{EDITOAST_URL}/train_schedule/{train_id}/simulation/?infra_id={small_infra.id}")
@@ -239,7 +238,9 @@ def test_mrsp_sources(
 def _get_train_schedule_simulation_response(
     infra: Infra, timetable_id: int, train_schedules_payload: List[Dict[str, Any]]
 ):
-    ts_response = requests.post(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedule", json=train_schedules_payload)
+    ts_response = requests.post(
+        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules", json=train_schedules_payload
+    )
     ts_response.raise_for_status()
     train_id = ts_response.json()[0]["id"]
     sim_response = requests.get(f"{EDITOAST_URL}/train_schedule/{train_id}/simulation/?infra_id={infra.id}")

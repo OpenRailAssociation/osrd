@@ -2742,27 +2742,6 @@ paths:
         '404':
           description: Timetable not found
   /timetable/{id}:
-    get:
-      tags:
-      - timetable
-      summary: Return a specific timetable with its associated schedules
-      parameters:
-      - name: id
-        in: path
-        description: A timetable ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: Timetable with train schedules ids
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TimetableDetailedResult'
-        '404':
-          description: Timetable not found
     delete:
       tags:
       - timetable
@@ -3008,7 +2987,54 @@ paths:
                       type: string
                       enum:
                       - preprocessing_simulation_error
-  /timetable/{id}/train_schedule:
+  /timetable/{id}/train_schedules:
+    get:
+      tags:
+      - timetable
+      summary: Return a specific timetable with its associated schedules
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 25
+          nullable: true
+          minimum: 1
+      responses:
+        '200':
+          description: Timetable with train schedules ids
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TrainScheduleResult'
+        '404':
+          description: Timetable not found
     post:
       tags:
       - timetable
@@ -3156,34 +3182,6 @@ paths:
         '204':
           description: No content when successful
   /train_schedule:
-    post:
-      tags:
-      - train_schedule
-      summary: Return a specific train schedule
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - ids
-              properties:
-                ids:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
-                  uniqueItems: true
-        required: true
-      responses:
-        '200':
-          description: Retrieve a list of train schedule
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TrainScheduleResult'
     delete:
       tags:
       - timetable

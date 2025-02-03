@@ -354,7 +354,7 @@ const handleTrainrunOperation = async ({
       );
       const startDate = new Date();
       const newTrainSchedules = await dispatch(
-        osrdEditoastApi.endpoints.postTimetableByIdTrainSchedule.initiate({
+        osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.initiate({
           id: timeTableId,
           body: [
             {

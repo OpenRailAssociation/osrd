@@ -229,7 +229,7 @@ def _test_new_train(
     print("testing new train")
     schedule_payload = _make_payload_schedule(path, rolling_stock)
     r = _post_with_timeout(
-        editoast_url + f"/timetable/{scenario.timetable}/train_schedule/",
+        editoast_url + f"/timetable/{scenario.timetable}/train_schedules/",
         json=schedule_payload,
     )
     if r.status_code // 100 != 2:

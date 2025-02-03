@@ -49,13 +49,6 @@ const useScenario = () => {
     }
   );
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
-    { id: scenario?.timetable_id! },
-    {
-      skip: !scenario,
-    }
-  );
-
   useEffect(() => {
     if (scenario) {
       dispatch(updateTimetableID(scenario.timetable_id));
@@ -79,7 +72,7 @@ const useScenario = () => {
     }
   }, [projectId, studyId, scenarioId]);
 
-  return { scenario, timetable };
+  return { scenario };
 };
 
 export default useScenario;

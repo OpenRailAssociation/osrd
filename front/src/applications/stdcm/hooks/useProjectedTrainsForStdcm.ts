@@ -62,24 +62,14 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
   const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TrainId>>(new Set());
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
-    { id: timetableId! },
+  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery(
+    { timetableId: timetableId! },
     {
       skip: !timetableId,
     }
   );
-  const trainIds = useMemo(() => timetable?.train_ids || [], [timetable]);
 
-  const { currentData: trainSchedules } = osrdEditoastApi.endpoints.postTrainSchedule.useQuery(
-    {
-      body: {
-        ids: trainIds,
-      },
-    },
-    {
-      skip: !trainIds.length,
-    }
-  );
+  const trainIds = useMemo(() => timetable?.map((t) => t.id) || [], [timetable]);
 
   const formattedTrainIds = useMemo(
     () => trainIds.map((trainId) => formatEditoastTrainIdToTrainScheduleId(trainId)),
@@ -88,11 +78,11 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
 
   const formattedTrainSchedules: TrainScheduleResultWithTrainId[] | undefined = useMemo(
     () =>
-      trainSchedules?.map((trainSchedule) => ({
+      timetable?.map((trainSchedule) => ({
         ...trainSchedule,
         id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
       })),
-    [trainSchedules]
+    [timetable]
   );
 
   // Progressive loading of the trains

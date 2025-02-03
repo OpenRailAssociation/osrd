@@ -32,7 +32,7 @@ const AddTrainScheduleButton = ({
   dtoImport,
 }: AddTrainScheduleButtonProps) => {
   const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedule.useMutation();
+    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 

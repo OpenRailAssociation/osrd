@@ -7,7 +7,7 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 
 const Scenario = () => {
-  const { scenario, timetable } = useScenario();
+  const { scenario } = useScenario();
 
   // Initialize and sync the URL and local storage with Redux
   useScenarioQueryParams();
@@ -15,7 +15,7 @@ const Scenario = () => {
   const infraData = useInfraStatus();
   const { infra } = infraData;
 
-  if (!scenario || !timetable || !infra) return null;
+  if (!scenario || !infra) return null;
 
   return (
     <ScenarioContextProvider infraId={infra.id}>
@@ -24,12 +24,7 @@ const Scenario = () => {
           <BreadCrumbs project={scenario.project} study={scenario.study} scenario={scenario} />
         }
       />
-      <ScenarioContent
-        scenario={scenario}
-        timetable={timetable}
-        infra={infra}
-        infraMetadata={infraData}
-      />
+      <ScenarioContent scenario={scenario} infra={infra} infraMetadata={infraData} />
     </ScenarioContextProvider>
   );
 };

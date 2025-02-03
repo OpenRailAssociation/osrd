@@ -84,7 +84,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(etcs_scenario: Scenar
     rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = requests.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedule/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
         json=[
             {
                 "train_name": "nearby EoAs + brake uphill/downhill grade + no LoA",
@@ -209,7 +209,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(etcs_scenario: Scenario, etcs
     rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = requests.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedule/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
         json=[
             {
                 "train_name": "brake from MRSP: max_speed + after slowdown of the MRSP",
@@ -305,7 +305,7 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     rolling_stock_response = requests.get(EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}")
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = requests.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedule/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and safe approach speed",

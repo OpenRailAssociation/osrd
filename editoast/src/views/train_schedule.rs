@@ -67,7 +67,6 @@ crate::routes! {
     "/train_schedule" => {
         delete,
         "/simulation_summary" => simulation_summary,
-        get_batch,
         &projection,
         "/{id}" => {
             get,
@@ -200,39 +199,6 @@ async fn get(
 #[derive(Debug, Deserialize, ToSchema)]
 struct BatchRequest {
     ids: HashSet<i64>,
-}
-
-/// Return a specific train schedule
-#[utoipa::path(
-    post, path = "",
-    tag = "train_schedule",
-    request_body = inline(BatchRequest),
-    responses(
-        (status = 200, description = "Retrieve a list of train schedule", body = Vec<TrainScheduleResult>)
-    )
-)]
-async fn get_batch(
-    State(db_pool): State<DbConnectionPoolV2>,
-    Extension(auth): AuthenticationExt,
-    Json(BatchRequest { ids: train_ids }): Json<BatchRequest>,
-) -> Result<Json<Vec<TrainScheduleResult>>> {
-    let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
-    let conn = &mut db_pool.get().await?;
-    let train_schedules: Vec<TrainSchedule> =
-        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
-            TrainScheduleError::BatchTrainScheduleNotFound {
-                number: missing.len(),
-            }
-        })
-        .await?;
-    Ok(Json(train_schedules.into_iter().map_into().collect()))
 }
 
 /// Delete a train schedule and its result
@@ -900,25 +866,6 @@ mod tests {
     }
 
     #[rstest]
-    async fn train_schedule_get_batch() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let ts1 = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
-        let ts2 = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
-        let ts3 = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
-
-        // Should succeed
-        let request = app.post("/train_schedule").json(&json!({
-            "ids": vec![ts1.id, ts2.id, ts3.id]
-        }));
-        let response: Vec<TrainScheduleResult> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
-        assert_eq!(response.len(), 3);
-    }
-
-    #[rstest]
     async fn train_schedule_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -928,7 +875,7 @@ mod tests {
 
         // Insert train_schedule
         let request = app
-            .post(format!("/timetable/{}/train_schedule", timetable.id).as_str())
+            .post(format!("/timetable/{}/train_schedules", timetable.id).as_str())
             .json(&json!(vec![train_schedule_base]));
 
         let response: Vec<TrainScheduleResult> =

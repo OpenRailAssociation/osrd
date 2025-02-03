@@ -853,10 +853,6 @@ const injectedRtkApi = api
         query: () => ({ url: `/timetable`, method: 'POST' }),
         invalidatesTags: ['timetable'],
       }),
-      getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
-        query: (queryArg) => ({ url: `/timetable/${queryArg.id}` }),
-        providesTags: ['timetable'],
-      }),
       deleteTimetableById: build.mutation<
         DeleteTimetableByIdApiResponse,
         DeleteTimetableByIdApiArg
@@ -891,12 +887,25 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['stdcm'],
       }),
-      postTimetableByIdTrainSchedule: build.mutation<
-        PostTimetableByIdTrainScheduleApiResponse,
-        PostTimetableByIdTrainScheduleApiArg
+      getTimetableByIdTrainSchedules: build.query<
+        GetTimetableByIdTrainSchedulesApiResponse,
+        GetTimetableByIdTrainSchedulesApiArg
       >({
         query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}/train_schedule`,
+          url: `/timetable/${queryArg.id}/train_schedules`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['timetable'],
+      }),
+      postTimetableByIdTrainSchedules: build.mutation<
+        PostTimetableByIdTrainSchedulesApiResponse,
+        PostTimetableByIdTrainSchedulesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/train_schedules`,
           method: 'POST',
           body: queryArg.body,
         }),
@@ -954,10 +963,6 @@ const injectedRtkApi = api
           body: queryArg.towedRollingStockLockedForm,
         }),
         invalidatesTags: ['rolling_stock'],
-      }),
-      postTrainSchedule: build.query<PostTrainScheduleApiResponse, PostTrainScheduleApiArg>({
-        query: (queryArg) => ({ url: `/train_schedule`, method: 'POST', body: queryArg.body }),
-        providesTags: ['train_schedule'],
       }),
       deleteTrainSchedule: build.mutation<
         DeleteTrainScheduleApiResponse,
@@ -1743,12 +1748,6 @@ export type PostTemporarySpeedLimitGroupApiArg = {
 export type PostTimetableApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableResult;
 export type PostTimetableApiArg = void;
-export type GetTimetableByIdApiResponse =
-  /** status 200 Timetable with train schedules ids */ TimetableDetailedResult;
-export type GetTimetableByIdApiArg = {
-  /** A timetable ID */
-  id: number;
-};
 export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
@@ -1824,9 +1823,19 @@ export type PostTimetableByIdStdcmApiArg = {
     work_schedule_group_id?: number | null;
   };
 };
-export type PostTimetableByIdTrainScheduleApiResponse =
+export type GetTimetableByIdTrainSchedulesApiResponse =
+  /** status 200 Timetable with train schedules ids */ PaginationStats & {
+    results: TrainScheduleResult[];
+  };
+export type GetTimetableByIdTrainSchedulesApiArg = {
+  /** A timetable ID */
+  id: number;
+  page?: number;
+  pageSize?: number | null;
+};
+export type PostTimetableByIdTrainSchedulesApiResponse =
   /** status 200 The created train schedules */ TrainScheduleResult[];
-export type PostTimetableByIdTrainScheduleApiArg = {
+export type PostTimetableByIdTrainSchedulesApiArg = {
   /** A timetable ID */
   id: number;
   body: TrainScheduleBase[];
@@ -1858,13 +1867,6 @@ export type PatchTowedRollingStockByTowedRollingStockIdLockedApiResponse = unkno
 export type PatchTowedRollingStockByTowedRollingStockIdLockedApiArg = {
   towedRollingStockId: number;
   towedRollingStockLockedForm: TowedRollingStockLockedForm;
-};
-export type PostTrainScheduleApiResponse =
-  /** status 200 Retrieve a list of train schedule */ TrainScheduleResult[];
-export type PostTrainScheduleApiArg = {
-  body: {
-    ids: number[];
-  };
 };
 export type DeleteTrainScheduleApiResponse = unknown;
 export type DeleteTrainScheduleApiArg = {
@@ -3649,10 +3651,6 @@ export type StdcmLogListItem = {
 };
 export type TimetableResult = {
   timetable_id: number;
-};
-export type TimetableDetailedResult = {
-  timetable_id: number;
-  train_ids: number[];
 };
 export type ConflictRequirement = {
   end_time: string;

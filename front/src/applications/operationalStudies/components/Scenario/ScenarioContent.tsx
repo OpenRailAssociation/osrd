@@ -19,11 +19,7 @@ import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTra
 import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
 import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type {
-  InfraWithState,
-  ScenarioResponse,
-  TimetableDetailedResult,
-} from 'common/api/osrdEditoastApi';
+import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
@@ -35,14 +31,12 @@ import MacroEditorState from '../MacroEditor/MacroEditorState';
 
 type ScenarioDescriptionProps = {
   scenario: ScenarioResponse;
-  timetable: TimetableDetailedResult;
   infra: InfraWithState;
   infraMetadata: { isInfraLoaded: boolean; reloadCount: number };
 };
 
 const ScenarioContent = ({
   scenario,
-  timetable,
   infra,
   infraMetadata: { isInfraLoaded, reloadCount },
 }: ScenarioDescriptionProps) => {
@@ -63,25 +57,18 @@ const ScenarioContent = ({
     upsertTrainSchedules,
     removeTrains,
     updateTrainDepartureTime,
-  } = useScenarioData(scenario, timetable, infra);
+  } = useScenarioData(scenario, infra);
   const macroEditorState = useRef<MacroEditorState>();
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
 
   const dtoImport = useCallback(async () => {
     const timetablePromise = dispatch(
-      osrdEditoastApi.endpoints.getTimetableById.initiate(
-        { id: timetable.timetable_id },
+      osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
+        { timetableId: scenario?.timetable_id },
         { forceRefetch: true, subscribe: false }
       )
     );
-    const { train_ids } = await timetablePromise.unwrap();
-    const trainSchedulesPromise = dispatch(
-      osrdEditoastApi.endpoints.postTrainSchedule.initiate(
-        { body: { ids: train_ids } },
-        { forceRefetch: true, subscribe: false }
-      )
-    );
-    const schedules = (await trainSchedulesPromise.unwrap()).filter(
+    const schedules = (await timetablePromise.unwrap()).filter(
       (trainSchedule) => trainSchedule.path.length >= 2
     );
     const state = new MacroEditorState(scenario, schedules || []);
@@ -89,7 +76,7 @@ const ScenarioContent = ({
     const dto = getNgeDto(state);
     macroEditorState.current = state;
     setNgeDto(dto);
-  }, [dispatch, scenario, timetable.timetable_id]);
+  }, [dispatch, scenario, scenario.timetable_id]);
 
   const toggleMicroMacroButton = useCallback(
     (isMacroMode: boolean) => {
