@@ -63,6 +63,7 @@ type ManchetteWithSpaceTimeChartProps = {
   ) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: number) => void;
+  selectedProjection?: number;
 };
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
@@ -80,6 +81,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
   handleTrainDrag,
   onTrainClick,
+  selectedProjection,
 }: ManchetteWithSpaceTimeChartProps) => {
   const dispatch = useAppDispatch();
 
@@ -94,6 +96,15 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
+
+  const [minDepartureTime, setMinDepartureTime] = useState<number | null>(null);
+  useEffect(() => {
+    const projectedTrains = projectPathTrainResult.filter(
+      (train) => train.spaceTimeCurves.length > 0
+    );
+    const minTime = Math.min(...projectedTrains.map((p) => +p.departureTime));
+    setMinDepartureTime(minTime);
+  }, [selectedProjection, projectPathTrainResult.length]);
 
   const [tmpSelectedTrain, setTmpSelectedTrain] = useState(selectedTrainScheduleId);
   useEffect(() => {
@@ -381,41 +392,43 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               onClose={() => setShowSettingsPanel(false)}
             />
           )}
-          <SpaceTimeChart
-            className="inset-0 absolute h-full"
-            height={height}
-            spaceOrigin={
-              (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
-            }
-            timeOrigin={Math.min(...projectPathTrainResult.map((p) => +p.departureTime))}
-            {...spaceTimeChartProps}
-            onPan={onPanOverloaded}
-            onClick={handleClick}
-            onHoveredChildUpdate={handleHoveredChildUpdate}
-          >
-            {spaceTimeChartProps.paths.map((path) => (
-              <PathLayer
-                key={path.id}
-                path={path}
-                {...getPathStyle(hoveredItem, path, !!draggingState)}
-              />
-            ))}
-            {workSchedules && (
-              <WorkScheduleLayer
-                workSchedules={workSchedules.map((ws) => ({
-                  type: ws.type,
-                  timeStart: new Date(ws.start_date_time),
-                  timeEnd: new Date(ws.end_date_time),
-                  spaceRanges: ws.path_position_ranges.map(({ start, end }) => [start, end]),
-                }))}
-                imageUrl={upward}
-              />
-            )}
-            {settings.showConflicts && <ConflictLayer conflicts={cutConflicts} />}
-            {settings.showSignalsStates && (
-              <OccupancyBlockLayer occupancyBlocks={occupancyBlocks} />
-            )}
-          </SpaceTimeChart>
+          {minDepartureTime !== null && (
+            <SpaceTimeChart
+              className="inset-0 absolute h-full"
+              height={height}
+              spaceOrigin={
+                (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
+              }
+              timeOrigin={minDepartureTime}
+              {...spaceTimeChartProps}
+              onPan={onPanOverloaded}
+              onClick={handleClick}
+              onHoveredChildUpdate={handleHoveredChildUpdate}
+            >
+              {spaceTimeChartProps.paths.map((path) => (
+                <PathLayer
+                  key={path.id}
+                  path={path}
+                  {...getPathStyle(hoveredItem, path, !!draggingState)}
+                />
+              ))}
+              {workSchedules && (
+                <WorkScheduleLayer
+                  workSchedules={workSchedules.map((ws) => ({
+                    type: ws.type,
+                    timeStart: new Date(ws.start_date_time),
+                    timeEnd: new Date(ws.end_date_time),
+                    spaceRanges: ws.path_position_ranges.map(({ start, end }) => [start, end]),
+                  }))}
+                  imageUrl={upward}
+                />
+              )}
+              {settings.showConflicts && <ConflictLayer conflicts={cutConflicts} />}
+              {settings.showSignalsStates && (
+                <OccupancyBlockLayer occupancyBlocks={occupancyBlocks} />
+              )}
+            </SpaceTimeChart>
+          )}
         </div>
       </div>
       <Slider

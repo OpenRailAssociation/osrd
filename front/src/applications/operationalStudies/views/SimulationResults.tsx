@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
@@ -23,6 +24,7 @@ import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { getPointCoordinates } from 'utils/geometry';
 
@@ -63,6 +65,8 @@ const SimulationResults = ({
     pathProperties,
     path,
   } = useSimulationResults();
+
+  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const [extViewport, setExtViewport] = useState<Viewport>();
   const [showWarpedMap, setShowWarpedMap] = useState(false);
@@ -203,21 +207,24 @@ const SimulationResults = ({
 
               <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
                 <div className="chart-container">
-                  <ManchetteWithSpaceTimeChartWrapper
-                    operationalPoints={projectedOperationalPoints}
-                    projectPathTrainResult={projectPathTrainResult}
-                    selectedTrainScheduleId={selectedTrainSchedule?.id}
-                    waypointsPanelData={{
-                      filteredWaypoints: filteredOperationalPoints,
-                      setFilteredWaypoints: setFilteredOperationalPoints,
-                      projectionPath: projectionData.trainSchedule.path,
-                    }}
-                    conflicts={conflictZones}
-                    projectionLoaderData={projectionData.projectionLoaderData}
-                    height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
-                    handleTrainDrag={handleTrainDrag}
-                    onTrainClick={(trainId) => dispatch(updateSelectedTrainId(trainId))}
-                  />
+                  {trainIdUsedForProjection && (
+                    <ManchetteWithSpaceTimeChartWrapper
+                      operationalPoints={projectedOperationalPoints}
+                      projectPathTrainResult={projectPathTrainResult}
+                      selectedTrainScheduleId={selectedTrainSchedule?.id}
+                      waypointsPanelData={{
+                        filteredWaypoints: filteredOperationalPoints,
+                        setFilteredWaypoints: setFilteredOperationalPoints,
+                        projectionPath: projectionData.trainSchedule.path,
+                      }}
+                      conflicts={conflictZones}
+                      projectionLoaderData={projectionData.projectionLoaderData}
+                      height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
+                      handleTrainDrag={handleTrainDrag}
+                      onTrainClick={(trainId) => dispatch(updateSelectedTrainId(trainId))}
+                      selectedProjection={trainIdUsedForProjection}
+                    />
+                  )}
                 </div>
               </div>
             </>
