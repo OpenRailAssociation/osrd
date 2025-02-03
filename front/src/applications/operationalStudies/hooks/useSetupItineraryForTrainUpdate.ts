@@ -21,7 +21,7 @@ import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { getPointCoordinates } from 'utils/geometry';
+import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import type { ManageTrainSchedulePathProperties } from '../types';
 import { useManageTrainScheduleContext } from './useManageTrainScheduleContext';
@@ -100,7 +100,7 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
         if ('track' in step) {
           const track = tracks[step.track];
           if (track) {
-            coordinates = getPointCoordinates(track.geo, track.length, step.offset);
+            coordinates = getPointOnTrackCoordinates(track.geo, track.length, step.offset);
           }
         } else {
           let op: SearchResultItemOperationalPoint | undefined;
@@ -168,7 +168,7 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
         return null;
       }
       const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
-        getPointCoordinates(geometry, pathfindingResult.length, position)
+        getPointOnTrackCoordinates(geometry, pathfindingResult.length, position)
       );
       const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
         operational_points,

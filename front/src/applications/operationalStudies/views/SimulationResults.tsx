@@ -24,7 +24,7 @@ import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/
 import { updateViewport, type Viewport } from 'reducers/map';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { getPointCoordinates } from 'utils/geometry';
+import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import useSimulationResults from '../hooks/useSimulationResults';
 import type { TrainSpaceTimeData } from '../types';
@@ -94,7 +94,7 @@ const SimulationResults = ({
     path &&
     pathProperties &&
     path.path_item_positions.map((positionOnPath) =>
-      getPointCoordinates(pathProperties.geometry, path.length, positionOnPath)
+      getPointOnTrackCoordinates(pathProperties.geometry, path.length, positionOnPath)
     );
 
   const {

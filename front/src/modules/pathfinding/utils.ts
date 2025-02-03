@@ -12,7 +12,7 @@ import { getSupportedElectrification, isThermal } from 'modules/rollingStock/hel
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
-import { getPointCoordinates } from 'utils/geometry';
+import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import getStepLocation from './helpers/getStepLocation';
 
@@ -35,7 +35,7 @@ export const formatSuggestedOperationalPoints = (
     offsetOnTrack: op.part.position,
     track: op.part.track,
     positionOnPath: op.position,
-    coordinates: getPointCoordinates(geometry, pathLength, op.position),
+    coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position),
     metadata: op?.metadata,
   }));
 

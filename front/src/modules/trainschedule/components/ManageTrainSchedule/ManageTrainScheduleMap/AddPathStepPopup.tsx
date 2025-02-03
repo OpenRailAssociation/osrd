@@ -20,7 +20,7 @@ import { useOsrdConfSelectors } from 'common/osrdContext';
 import { setPointIti } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
 import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
-import { getPointCoordinates } from 'utils/geometry';
+import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import type { FeatureInfoClick } from '../types';
 import OperationalPointPopupDetails from './OperationalPointPopupDetails';
@@ -122,7 +122,7 @@ const AddPathStepPopup = ({
 
       const trackPartCoordinates = operationalPoint.parts.map((part) => ({
         trackName: tracks[part.track]?.extensions?.sncf?.track_name,
-        coordinates: getPointCoordinates(
+        coordinates: getPointOnTrackCoordinates(
           tracks[part.track]?.geo,
           tracks[part.track]?.length,
           part.position

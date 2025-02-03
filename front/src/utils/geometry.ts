@@ -151,16 +151,21 @@ export function nearestPointOnLine(
   });
 }
 
-export function getPointCoordinates(
+/**
+ * Given a track's geometry and length and an offset from the start of the track (in mm),
+ * returns the coordinates of the point for the given offset.
+ */
+export function getPointOnTrackCoordinates(
   geometry: GeoJsonLineString,
-  pathLength: number,
-  infraPositionOnPath: number
+  trackLength: number, // in mm
+  infraPositionOnTrack: number // in mm
 ): Position {
   const pathLineString = lineString(geometry.coordinates);
   const geometryTrackLength = length(pathLineString, { units: 'millimeters' });
-  const infraTrackLength = pathLength;
+  const infraTrackLength = trackLength;
   // TODO TS2 : when adapting train update check that this computation works properly
-  const geometryDistanceAlongTrack = infraPositionOnPath * (geometryTrackLength / infraTrackLength);
+  const geometryDistanceAlongTrack =
+    infraPositionOnTrack * (geometryTrackLength / infraTrackLength);
   return along(pathLineString, geometryDistanceAlongTrack, { units: 'millimeters' }).geometry
     .coordinates;
 }

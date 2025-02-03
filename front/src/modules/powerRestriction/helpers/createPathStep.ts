@@ -4,7 +4,7 @@ import type { ManageTrainSchedulePathProperties } from 'applications/operational
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import findTrackSectionOffset from 'modules/pathfinding/helpers/findTrackSectionOffset';
 import type { PathStep } from 'reducers/osrdconf/types';
-import { getPointCoordinates } from 'utils/geometry';
+import { getPointOnTrackCoordinates } from 'utils/geometry';
 import { mmToM, mToMm } from 'utils/physics';
 
 import { NO_POWER_RESTRICTION } from '../consts';
@@ -29,7 +29,7 @@ const createPathStep = (
   );
   if (!trackOffset) return undefined;
 
-  const coordinates = getPointCoordinates(
+  const coordinates = getPointOnTrackCoordinates(
     pathProperties.geometry,
     pathProperties.length,
     positionOnPath
@@ -83,7 +83,7 @@ export const createCutAtPathStep = (
 
   if (!trackOffset) return null;
 
-  const coordinatesAtCut = getPointCoordinates(
+  const coordinatesAtCut = getPointOnTrackCoordinates(
     pathProperties.geometry,
     pathProperties.length,
     cutAtPosition
