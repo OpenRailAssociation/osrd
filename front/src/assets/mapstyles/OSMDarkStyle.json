@@ -115,7 +115,7 @@
       "text-field": "{housenumber}",
       "text-size": 10,
       "text-font": [
-        "Open Sans Regular"
+        "Roboto Regular"
       ]
     },
     "paint": {
@@ -656,7 +656,7 @@
     "layout": {
       "text-size": 12,
       "text-font": [
-        "Open Sans Semibold"
+        "Roboto Semibold"
       ],
       "visibility": "visible",
       "text-offset": [
@@ -692,7 +692,7 @@
       "symbol-placement": "line",
       "text-field": "{name:latin} {name:nonlatin} {ref}",
       "text-font": [
-        "Open Sans Regular"
+        "Roboto Regular"
       ],
       "text-transform": "uppercase",
       "text-letter-spacing": 0,
@@ -792,7 +792,7 @@
     "layout": {
       "text-field": "{name:latin}\n{name:nonlatin}",
       "text-font": [
-        "Open Sans Regular"
+        "Roboto Regular"
       ],
       "text-max-width": 10,
       "text-size": {
