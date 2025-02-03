@@ -95,7 +95,11 @@ pub async fn trains_import(
                 return Err(Box::new(error));
             }
         },
-        None => Timetable::create(&mut db_pool.get().await?).await?,
+        None => {
+            Timetable::changeset()
+                .create(&mut db_pool.get().await?)
+                .await?
+        }
     };
 
     let train_schedules: Vec<TrainScheduleBase> =
@@ -138,7 +142,10 @@ mod tests {
     async fn import_export_timetable_schedule() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let timetable = Timetable::create(&mut db_pool.get_ok()).await.unwrap();
+        let timetable = Timetable::changeset()
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
 
         let mut file = NamedTempFile::new().unwrap();
         file.write_all(get_trainschedule_json_array().as_bytes())

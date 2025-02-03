@@ -5,30 +5,22 @@ use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
+use editoast_derive::Model;
 use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
-use crate::models::Identifiable;
-use crate::models::{DeleteStatic, Retrieve};
-use crate::Exists;
-use editoast_models::tables::timetable::dsl;
+use crate::models::Retrieve;
 use editoast_models::DbConnection;
 
-#[derive(Debug, Default, Clone, PartialEq, Queryable, Identifiable)]
-#[diesel(table_name = editoast_models::tables::timetable)]
+#[derive(Debug, Default, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
+#[model(table = editoast_models::tables::timetable)]
+#[model(gen(ops = crd, list))]
 pub struct Timetable {
     pub id: i64,
-}
-
-impl crate::models::Model for Timetable {
-    type Row = Self;
-    type Changeset = Option<i64>;
-    type Table = editoast_models::tables::timetable::table;
-    type Error = editoast_models::model::Error;
 }
 
 impl From<Timetable> for Option<i64> {
@@ -38,15 +30,6 @@ impl From<Timetable> for Option<i64> {
 }
 
 impl Timetable {
-    #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
-    pub async fn create(conn: &mut DbConnection) -> Result<Self> {
-        diesel::insert_into(editoast_models::tables::timetable::table)
-            .default_values()
-            .get_result::<Timetable>(conn.write().await.deref_mut())
-            .await
-            .map_err(Into::into)
-    }
-
     pub async fn trains_count(timetable_id: i64, conn: &mut DbConnection) -> Result<i64> {
         use editoast_models::tables::train_schedule::dsl;
 
@@ -93,49 +76,6 @@ impl Timetable {
             Ok(train_schedules) => Ok(train_schedules),
             Err(err) => Err(err.into()),
         }
-    }
-}
-
-impl DeleteStatic<i64> for Timetable {
-    #[tracing::instrument(name = "model:delete_static<Timetable>", skip_all, ret, err)]
-    async fn delete_static(
-        conn: &mut DbConnection,
-        id: i64,
-    ) -> Result<bool, editoast_models::model::Error> {
-        let n = diesel::delete(dsl::timetable.filter(dsl::id.eq(id)))
-            .execute(conn.write().await.deref_mut())
-            .await?;
-        Ok(n == 1)
-    }
-}
-
-#[async_trait::async_trait]
-impl Retrieve<i64> for Timetable {
-    #[tracing::instrument(name = "model:retrieve<Timetable>", skip_all, err)]
-    async fn retrieve(
-        conn: &mut editoast_models::DbConnection,
-        id: i64,
-    ) -> crate::error::Result<Option<Timetable>> {
-        dsl::timetable
-            .filter(dsl::id.eq(id))
-            .first::<Timetable>(conn.write().await.deref_mut())
-            .await
-            .optional()
-            .map_err(Into::into)
-    }
-}
-
-#[async_trait::async_trait]
-impl Exists<i64> for Timetable {
-    #[tracing::instrument(name = "model:exists<Timetable>", skip_all, ret, err)]
-    async fn exists(conn: &mut DbConnection, id: i64) -> Result<bool> {
-        Self::retrieve(conn, id).await.map(|r| r.is_some())
-    }
-}
-
-impl Identifiable<i64> for Timetable {
-    fn get_id(&self) -> i64 {
-        self.id
     }
 }
 

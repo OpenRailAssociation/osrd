@@ -166,7 +166,7 @@ async fn post(
 
     let conn = &mut db_pool.get().await?;
 
-    let timetable = Timetable::create(conn).await?;
+    let timetable = Timetable::changeset().create(conn).await?;
 
     Ok(Json(timetable.into()))
 }
