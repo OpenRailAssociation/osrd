@@ -97,7 +97,7 @@ uuid = { version = "1.11.1", features = ["serde", "v4"] }
 [dependencies]
 anyhow = "1.0"
 approx = "0.5.1"
-async-trait = "0.1.85"
+async-trait = "0.1.86"
 axum = { version = "0.8.1", default-features = false, features = [
   "multipart",
   "tracing",
