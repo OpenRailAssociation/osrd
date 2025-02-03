@@ -18,6 +18,7 @@ import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
@@ -171,6 +172,16 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
         temporarySpeedLimitManager: TemporarySpeedLimitManager?,
         comfort: Comfort,
     ): SimulationSuccess {
+        val scheduleItems = parseSimulationScheduleItems(path.stopResults).toMutableList()
+        // Add a short stop at the end to avoid signal propagation
+        scheduleItems.add(
+            SimulationScheduleItem(
+                Offset(path.trainPath.getLength()),
+                null,
+                0.1.seconds,
+                RJSTrainStop.RJSReceptionSignal.STOP
+            )
+        )
         val reportTrain =
             runScheduleMetadataExtractor(
                 path.envelope,
@@ -179,7 +190,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                 infra,
                 path.routePath.toIdxList(),
                 rollingStock,
-                parseSimulationScheduleItems(path.stopResults),
+                scheduleItems,
                 listOf(),
             )
 
