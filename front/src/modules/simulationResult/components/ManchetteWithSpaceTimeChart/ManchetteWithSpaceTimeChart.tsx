@@ -83,6 +83,12 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 }: ManchetteWithSpaceTimeChartProps) => {
   const dispatch = useAppDispatch();
 
+  const [chartKey, setChartKey] = useState(0);
+
+  useEffect(() => {
+    setChartKey((prev) => prev + 1);
+  }, [waypointsPanelData]);
+
   const manchetteWithSpaceTimeCharWrappertRef = useRef<HTMLDivElement>(null);
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
 
@@ -383,6 +389,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
           )}
           <SpaceTimeChart
             className="inset-0 absolute h-full"
+            key={chartKey}
             height={height}
             spaceOrigin={
               (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
