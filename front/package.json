@@ -2,6 +2,7 @@
   "name": "osrd",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@ag-media/react-pdf-table": "^2.0.1",
     "@nivo/core": "^0.88.0",
