@@ -25,4 +25,4 @@ const config: ConfigFile = {
   ],
 };
 
-export default config;
+exports.default = config;

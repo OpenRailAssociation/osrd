@@ -10,4 +10,4 @@ const config: ConfigFile = {
   tag: true,
 };
 
-export default config;
+exports.default = config;
