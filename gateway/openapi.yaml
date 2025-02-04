@@ -86,8 +86,6 @@ components:
       oneOf:
         - $ref: "#/components/schemas/LoginSuccess"
         - $ref: "#/components/schemas/LoginRedirect"
-      discriminator:
-        propertyName: type
 
     LoginSuccess:
       type: object

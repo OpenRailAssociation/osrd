@@ -46,13 +46,7 @@ export type LoginRedirect = {
   type: 'redirect';
   url: string;
 };
-export type LoginResponse =
-  | ({
-      type: 'success';
-    } & LoginSuccess)
-  | ({
-      type: 'redirect';
-    } & LoginRedirect);
+export type LoginResponse = LoginSuccess | LoginRedirect;
 export type LogoutResponse = {
   type: 'success';
 };
