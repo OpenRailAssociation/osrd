@@ -145,16 +145,10 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                     // We need to set the first constant speed part to 0
                     // so that we can use it as floor constraint
 
-                    // The min speed value isn't entirely trivial to determine:
-                    // We need it to be strictly positive to avoid NaN issues,
-                    // but we're also too optimistic with allowance possibility
-                    // when we let it get close to 0. But if it's too high, we miss
-                    // out on solutions.
-                    // So this is a magic value that could be tweaked if needed.
-                    //
+                    // We need a min speed that's strictly positive to avoid NaN issues.
                     // Eventually, when we'll have actual capacity stops, we should
-                    // use the actual minimum speed on the network.
-                    val minSpeed = 1.0
+                    // use the actual minimum speed on the network. (30km/h in France)
+                    val minSpeed = 1e-5
                     builder.addPart(
                         EnvelopePart.generateTimes(
                             mutableListOf<SelfTypeHolder?>(
