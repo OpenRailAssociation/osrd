@@ -161,7 +161,6 @@ impl TestAppBuilder {
             },
             valkey_config: ValkeyConfig {
                 no_cache: false,
-                is_cluster_client: false,
                 valkey_url: Url::parse("redis://localhost:6379").unwrap(),
             },
         };

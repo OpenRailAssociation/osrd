@@ -4,8 +4,6 @@ use futures::future;
 use futures::FutureExt;
 use redis::aio::ConnectionLike;
 use redis::aio::ConnectionManager;
-use redis::cluster::ClusterClient;
-use redis::cluster_async::ClusterConnection;
 use redis::cmd;
 use redis::AsyncCommands;
 use redis::Client;
@@ -22,7 +20,6 @@ use url::Url;
 use crate::error::Result;
 
 pub enum ValkeyConnection {
-    Cluster(ClusterConnection),
     Tokio(ConnectionManager),
     NoCache,
 }
@@ -59,7 +56,6 @@ fn no_cache_cmd_handler(cmd: &redis::Cmd) -> std::result::Result<redis::Value, R
 impl ConnectionLike for ValkeyConnection {
     fn req_packed_command<'a>(&'a mut self, cmd: &'a redis::Cmd) -> RedisFuture<'a, redis::Value> {
         match self {
-            ValkeyConnection::Cluster(connection) => connection.req_packed_command(cmd),
             ValkeyConnection::Tokio(connection) => connection.req_packed_command(cmd),
             ValkeyConnection::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
         }
@@ -72,9 +68,6 @@ impl ConnectionLike for ValkeyConnection {
         count: usize,
     ) -> RedisFuture<'a, Vec<redis::Value>> {
         match self {
-            ValkeyConnection::Cluster(connection) => {
-                connection.req_packed_commands(cmd, offset, count)
-            }
             ValkeyConnection::Tokio(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
             }
@@ -92,7 +85,6 @@ impl ConnectionLike for ValkeyConnection {
 
     fn get_db(&self) -> i64 {
         match self {
-            ValkeyConnection::Cluster(connection) => connection.get_db(),
             ValkeyConnection::Tokio(connection) => connection.get_db(),
             ValkeyConnection::NoCache => 0,
         }
@@ -267,7 +259,6 @@ impl ValkeyConnection {
 
 #[derive(Clone)]
 pub enum ValkeyClient {
-    Cluster(ClusterClient),
     Tokio(Client),
     /// This doesn't cache anything. It has no backend.
     NoCache,
@@ -277,7 +268,6 @@ pub enum ValkeyClient {
 pub struct ValkeyConfig {
     /// Disables caching. This should not be used in production.
     pub no_cache: bool,
-    pub is_cluster_client: bool,
     pub valkey_url: Url,
 }
 
@@ -286,11 +276,6 @@ impl ValkeyClient {
         if valkey_config.no_cache {
             return Ok(ValkeyClient::NoCache);
         }
-        if valkey_config.is_cluster_client {
-            return Ok(ValkeyClient::Cluster(
-                redis::cluster::ClusterClient::new(vec![valkey_config.valkey_url]).unwrap(),
-            ));
-        }
         Ok(ValkeyClient::Tokio(
             redis::Client::open(valkey_config.valkey_url).unwrap(),
         ))
@@ -298,9 +283,6 @@ impl ValkeyClient {
 
     pub async fn get_connection(&self) -> RedisResult<ValkeyConnection> {
         match self {
-            ValkeyClient::Cluster(client) => Ok(ValkeyConnection::Cluster(
-                client.get_async_connection().await?,
-            )),
             ValkeyClient::Tokio(client) => Ok(ValkeyConnection::Tokio(
                 client.get_connection_manager().await?,
             )),
