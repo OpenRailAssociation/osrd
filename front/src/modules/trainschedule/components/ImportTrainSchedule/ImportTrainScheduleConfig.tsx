@@ -53,6 +53,20 @@ const ImportTrainScheduleConfig = ({
   const dispatch = useAppDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
 
+  function filterInvalidSteps(
+    importedTrainSchedules: ImportedTrainSchedule[]
+  ): ImportedTrainSchedule[] {
+    return importedTrainSchedules.map((trainSchedule) => ({
+      ...trainSchedule,
+      steps: trainSchedule.steps.filter(
+        (step, i) =>
+          i === 0 ||
+          new Date(step.arrivalTime).getTime() >=
+            new Date(trainSchedule.steps[i - 1].departureTime).getTime()
+      ),
+    }));
+  }
+
   function validateImportedTrainSchedules(
     importedTrainSchedules: Record<string, unknown>[]
   ): ImportedTrainSchedule[] | null {
@@ -81,7 +95,7 @@ const ImportTrainScheduleConfig = ({
       );
       return null;
     }
-    return importedTrainSchedules as ImportedTrainSchedule[];
+    return filterInvalidSteps(importedTrainSchedules as ImportedTrainSchedule[]);
   }
 
   function updateTrainSchedules(importedTrainSchedules: ImportedTrainSchedule[]) {
