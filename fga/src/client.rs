@@ -84,7 +84,7 @@ impl Client {
 
     pub async fn find_store(&self, store_name: &str) -> Result<Option<Store>, RequestFailure> {
         let stream = self
-            .get_stores()
+            .get_stores(None)
             .try_filter(|Store { name, .. }| future::ready(name == store_name));
         futures::pin_mut!(stream);
         let store = stream.try_next().await?.into_iter().last();
@@ -216,7 +216,10 @@ impl Client {
         .unwrap()
     }
 
-    fn get_stores(&self) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> {
+    fn get_stores(
+        &self,
+        page_size: Option<usize>,
+    ) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> {
         #[derive(serde::Deserialize)]
         struct Response {
             stores: Vec<Store>,
@@ -234,10 +237,10 @@ impl Client {
                 client: self.clone(),
                 continuation: None,
             },
-            |State {
-                 client,
-                 continuation,
-             }| {
+            move |State {
+                      client,
+                      continuation,
+                  }| {
                 async move {
                     if continuation.as_ref().is_some_and(String::is_empty) {
                         return Ok(None);
@@ -247,6 +250,10 @@ impl Client {
                     if let Some(continuation) = continuation {
                         url.query_pairs_mut()
                             .append_pair("continuation_token", continuation.as_str());
+                    }
+                    if let Some(page_size) = page_size {
+                        url.query_pairs_mut()
+                            .append_pair("page_size", page_size.to_string().as_str());
                     }
                     let response = client.inner.get(url).send().await?;
 
