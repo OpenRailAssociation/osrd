@@ -91,6 +91,7 @@ impl Client {
             &self.store.id,
             &tuples.into_iter().map_into().collect::<Vec<_>>(),
             &[],
+            None,
         )
         .await
     }
@@ -106,6 +107,8 @@ impl Client {
                 relation: R::NAME.to_string(),
                 object: object.fga_ident(),
             },
+            None,
+            None,
         )
         .await
     }
@@ -169,6 +172,21 @@ impl<'a, R: Relation, U: AsUser<User = R::User>> From<&Tuple<'a, R, U>> for RawT
             user: tuple.user.fga_ident(),
             relation: R::NAME.to_string(),
             object: tuple.object.fga_ident(),
+        }
+    }
+}
+
+#[derive(Debug, serde::Serialize)]
+struct ContextualTuples {
+    tuple_keys: Vec<RawTuple>,
+}
+
+impl<'a, R: Relation, U: AsUser<User = R::User>> FromIterator<&'a Tuple<'a, R, U>>
+    for ContextualTuples
+{
+    fn from_iter<I: IntoIterator<Item = &'a Tuple<'a, R, U>>>(iter: I) -> Self {
+        Self {
+            tuple_keys: iter.into_iter().map(RawTuple::from).collect(),
         }
     }
 }
@@ -271,6 +289,7 @@ impl Client {
         store_id: &str,
         writes: &[RawTuple],
         deletes: &[RawTuple],
+        authorization_model_id: Option<String>,
     ) -> Result<(), RequestFailure> {
         #[derive(serde::Serialize)]
         struct Request<'a> {
@@ -315,7 +334,7 @@ impl Client {
                 deletes: Deletes {
                     tuple_keys: deletes,
                 },
-                authorization_model_id: None,
+                authorization_model_id,
             })
             .send()
             .await?
@@ -355,6 +374,8 @@ impl Client {
         &self,
         store_id: &str,
         tuple: RawTuple,
+        contextual_tuples: Option<ContextualTuples>,
+        authorization_model_id: Option<String>,
     ) -> Result<bool, RequestFailure> {
         #[derive(serde::Serialize)]
         struct Request {
@@ -365,22 +386,10 @@ impl Client {
             authorization_model_id: Option<String>,
         }
 
-        #[derive(serde::Serialize)]
-        struct ContextualTuples {
-            tuple_keys: Vec<Tuple>,
-        }
-
-        #[derive(serde::Serialize)]
-        struct Tuple {
-            user: String,
-            relation: String,
-            object: String,
-        }
-
         let request = Request {
             tuple_key: tuple,
-            contextual_tuples: None,
-            authorization_model_id: None,
+            contextual_tuples,
+            authorization_model_id,
         };
 
         let url = self
