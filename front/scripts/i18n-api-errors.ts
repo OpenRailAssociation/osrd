@@ -1,6 +1,6 @@
+import fs from 'node:fs';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import i18next from 'i18next';
-import { noop } from 'lodash';
 import type { OpenAPI } from 'openapi-types';
 
 // relative the project's root
@@ -30,7 +30,7 @@ async function checkI18N(error: any): Promise<string[]> {
   );
 
   // Init the i18n system
-  const i18nData = require(i18n_error_path);
+  const i18nData = JSON.parse(fs.readFileSync(new URL(i18n_error_path, import.meta.url), 'utf8'));
   const i18n = await i18next.createInstance(
     {
       lng: 'fr',
@@ -55,7 +55,7 @@ async function checkI18N(error: any): Promise<string[]> {
         }
       },
     },
-    noop
+    () => {}
   );
 
   // Generate the error message
