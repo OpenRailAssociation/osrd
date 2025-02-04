@@ -49,8 +49,8 @@ class STDCMGraph(
     val allowanceManager: EngineeringAllowanceManager = EngineeringAllowanceManager(this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
 
-    // min 4 minutes between two edges, determined empirically
-    private val visitedNodes = VisitedNodes(4 * 60.0)
+    // min 2 minutes between two edges, determined empirically
+    private val visitedNodes = VisitedNodes(2 * 60.0)
 
     // A* heuristic
     val remainingTimeEstimator: STDCMAStarHeuristic
