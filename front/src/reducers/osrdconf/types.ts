@@ -104,3 +104,21 @@ export type StdcmPathStep = {
       tolerances: { before: number; after: number };
     }
 );
+
+/**
+ * Each train schedule id should follow this syntax : train-{id}
+ */
+export type TrainScheduleId = string & { readonly __type: unique symbol };
+
+/**
+ * Each occurrence id should follow this syntax : paced-{id}-occurrence-{occurrenceIndex}
+ */
+export type OccurrenceId = string & { readonly __type: unique symbol };
+
+/**
+ * Each paced train id should follow this syntax : paced-{id}
+ */
+export type PacedTrainId = string & { readonly __type: unique symbol };
+
+export type TrainId = TrainScheduleId | OccurrenceId;
+export type TimetableItemId = TrainScheduleId | PacedTrainId;
