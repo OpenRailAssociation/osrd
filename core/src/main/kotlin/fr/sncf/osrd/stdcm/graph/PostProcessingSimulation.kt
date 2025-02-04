@@ -141,6 +141,12 @@ fun buildFinalEnvelope(
                 // still fallback on linear allowance to have a result
                 postProcessingLogger.warn("Discontinuity in mareco search space")
                 break
+            }
+            if (e.osrdErrorType == ErrorType.ImpossibleSimulationError) {
+                // Generic simulation errors, they can (very rarely) happen with mareco.
+                // For example when the train stops during/after a coasting.
+                postProcessingLogger.warn("Impossible simulation")
+                break
             } else throw e
         }
     }
