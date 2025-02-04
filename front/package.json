@@ -20,7 +20,6 @@
     "@rjsf/core": "^5.24.2",
     "@rjsf/utils": "^5.24.2",
     "@rjsf/validator-ajv8": "^5.24.2",
-    "@rtk-query/codegen-openapi": "^1.2.0",
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta4",
     "@turf/along": "^7.2.0",
     "@turf/bbox": "^7.2.0",
@@ -99,6 +98,7 @@
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",
     "@playwright/test": "^1.41.2",
+    "@rtk-query/codegen-openapi": "^1.2.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
