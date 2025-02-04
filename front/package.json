@@ -148,9 +148,6 @@
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.4"
   },
-  "overrides": {
-    "oazapfts": "osrd-project/oazapfts#master"
-  },
   "scripts": {
     "compile": "tsc -b",
     "start": "vite",
