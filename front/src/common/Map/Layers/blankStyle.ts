@@ -30,7 +30,7 @@ export const useMapBlankStyle = (): MapProps['mapStyle'] => {
     if (!signalingSystems) return [];
 
     const ponctualObjectsSprites: Sprite = {
-      url: 'https://static.osm.osrd.fr/sprites/sprites',
+      url: `${window.location.origin}${baseURL}/sprites/default/sprites`,
       id: 'default',
     };
     const isDefaultSpriteValid = await isValidUrl(ponctualObjectsSprites.url);

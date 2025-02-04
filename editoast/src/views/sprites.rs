@@ -82,7 +82,7 @@ async fn sprites(
     }
 
     let sprite_configs = SpriteConfig::load();
-    if !sprite_configs.contains_key(&signaling_system) {
+    if signaling_system != "default" && !sprite_configs.contains_key(&signaling_system) {
         return Err(SpriteErrors::UnknownSignalingSystem { signaling_system }.into());
     }
     let path = get_dynamic_assets_path().join(format!("sprites/{signaling_system}/{file_name}"));
