@@ -294,7 +294,6 @@ impl Client {
         Ok(store)
     }
 
-    #[cfg_attr(not(test), expect(unused))]
     async fn delete_stores(&self, store_id: &str) -> Result<(), RequestFailure> {
         let url = self
             .base_url()
