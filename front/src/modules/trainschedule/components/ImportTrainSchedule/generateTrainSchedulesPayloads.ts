@@ -34,8 +34,9 @@ export function generateTrainSchedulesPayloads(
           console.error(`Invalid CH code for step ${step.name}`);
           return acc; // Skip invalid step
         }
-
-        acc.path.push({ id: stepId, uic: Number(step.uic), secondary_code: step.chCode });
+        if (!step.uic && step.trigram)
+          acc.path.push({ id: stepId, trigram: step.trigram, secondary_code: step.chCode });
+        else acc.path.push({ id: stepId, uic: Number(step.uic), secondary_code: step.chCode });
 
         // Skip first step, handle time differences
         if (index !== 0) {
