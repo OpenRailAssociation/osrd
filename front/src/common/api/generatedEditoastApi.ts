@@ -69,7 +69,9 @@ const injectedRtkApi = api
           url: `/documents`,
           method: 'POST',
           body: queryArg.body,
-          headers: { content_type: queryArg.contentType },
+          headers: {
+            content_type: queryArg.contentType,
+          },
         }),
         invalidatesTags: ['documents'],
       }),
@@ -102,7 +104,9 @@ const injectedRtkApi = api
           url: `/electrical_profile_set`,
           method: 'POST',
           body: queryArg.electricalProfileSetData,
-          params: { name: queryArg.name },
+          params: {
+            name: queryArg.name,
+          },
         }),
         invalidatesTags: ['electrical_profiles'],
       }),
@@ -140,7 +144,10 @@ const injectedRtkApi = api
       getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
         query: (queryArg) => ({
           url: `/infra`,
-          params: { page: queryArg.page, page_size: queryArg.pageSize },
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
         }),
         providesTags: ['infra'],
       }),
@@ -153,7 +160,10 @@ const injectedRtkApi = api
           url: `/infra/railjson`,
           method: 'POST',
           body: queryArg.railJson,
-          params: { name: queryArg.name, generate_data: queryArg.generateData },
+          params: {
+            name: queryArg.name,
+            generate_data: queryArg.generateData,
+          },
         }),
         invalidatesTags: ['infra'],
       }),
@@ -161,7 +171,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/infra/refresh`,
           method: 'POST',
-          params: { force: queryArg.force, infras: queryArg.infras },
+          params: {
+            force: queryArg.force,
+            infras: queryArg.infras,
+          },
         }),
         invalidatesTags: ['infra'],
       }),
@@ -217,7 +230,9 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/infra/${queryArg.infraId}/clone`,
           method: 'POST',
-          params: { name: queryArg.name },
+          params: {
+            name: queryArg.name,
+          },
         }),
         invalidatesTags: ['infra'],
       }),
@@ -289,7 +304,9 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/path_properties`,
           method: 'POST',
           body: queryArg.pathPropertiesInput,
-          params: { props: queryArg.props },
+          params: {
+            props: queryArg.props,
+          },
         }),
         providesTags: ['pathfinding'],
       }),
@@ -301,7 +318,9 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/pathfinding`,
           method: 'POST',
           body: queryArg.infraPathfindingInput,
-          params: { number: queryArg.number },
+          params: {
+            number: queryArg.number,
+          },
         }),
         providesTags: ['infra', 'pathfinding'],
       }),
@@ -340,7 +359,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/infra/${queryArg.infraId}/routes/track_ranges`,
-          params: { routes: queryArg.routes },
+          params: {
+            routes: queryArg.routes,
+          },
         }),
         providesTags: ['infra', 'routes'],
       }),
@@ -391,7 +412,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/infra/${queryArg.infraId}/voltages`,
-          params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
+          params: {
+            include_rolling_stock_modes: queryArg.includeRollingStockModes,
+          },
         }),
         providesTags: ['infra'],
       }),
@@ -401,7 +424,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/layers/layer/${queryArg.layerSlug}/mvt/${queryArg.viewSlug}`,
-          params: { infra: queryArg.infra },
+          params: {
+            infra: queryArg.infra,
+          },
         }),
         providesTags: ['layers'],
       }),
@@ -411,7 +436,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/layers/tile/${queryArg.layerSlug}/${queryArg.viewSlug}/${queryArg.z}/${queryArg.x}/${queryArg.y}`,
-          params: { infra: queryArg.infra },
+          params: {
+            infra: queryArg.infra,
+          },
         }),
         providesTags: ['layers'],
       }),
@@ -421,7 +448,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/light_rolling_stock`,
-          params: { page: queryArg.page, page_size: queryArg.pageSize },
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
         }),
         providesTags: ['rolling_stock'],
       }),
@@ -599,7 +629,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes`,
-          params: { page: queryArg.page, page_size: queryArg.pageSize },
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
         }),
         providesTags: ['scenarios'],
       }),
@@ -649,7 +682,9 @@ const injectedRtkApi = api
           url: `/rolling_stock`,
           method: 'POST',
           body: queryArg.rollingStockForm,
-          params: { locked: queryArg.locked },
+          params: {
+            locked: queryArg.locked,
+          },
         }),
         invalidatesTags: ['rolling_stock'],
       }),
@@ -681,7 +716,9 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/rolling_stock/${queryArg.rollingStockId}`,
           method: 'DELETE',
-          params: { force: queryArg.force },
+          params: {
+            force: queryArg.force,
+          },
         }),
         invalidatesTags: ['rolling_stock'],
       }),
@@ -730,7 +767,10 @@ const injectedRtkApi = api
           url: `/search`,
           method: 'POST',
           body: queryArg.searchPayload,
-          params: { page: queryArg.page, page_size: queryArg.pageSize },
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
         }),
         invalidatesTags: ['search'],
       }),
@@ -773,14 +813,20 @@ const injectedRtkApi = api
       getStdcmLog: build.query<GetStdcmLogApiResponse, GetStdcmLogApiArg>({
         query: (queryArg) => ({
           url: `/stdcm_log`,
-          params: { trace_id: queryArg.traceId, id: queryArg.id },
+          params: {
+            trace_id: queryArg.traceId,
+            id: queryArg.id,
+          },
         }),
         providesTags: ['stdcm_log'],
       }),
       getStdcmLogs: build.query<GetStdcmLogsApiResponse, GetStdcmLogsApiArg>({
         query: (queryArg) => ({
           url: `/stdcm_logs`,
-          params: { page: queryArg.page, page_size: queryArg.pageSize },
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
         }),
         providesTags: ['stdcm_log'],
       }),
@@ -831,7 +877,9 @@ const injectedRtkApi = api
           url: `/timetable/${queryArg.id}/stdcm`,
           method: 'POST',
           body: queryArg.body,
-          params: { infra: queryArg.infra },
+          params: {
+            infra: queryArg.infra,
+          },
         }),
         invalidatesTags: ['stdcm'],
       }),
@@ -852,7 +900,10 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/towed_rolling_stock`,
-          params: { page: queryArg.page, page_size: queryArg.pageSize },
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
         }),
         providesTags: ['rolling_stock'],
       }),
@@ -953,7 +1004,9 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/train_schedule/${queryArg.id}/path`,
-          params: { infra_id: queryArg.infraId },
+          params: {
+            infra_id: queryArg.infraId,
+          },
         }),
         providesTags: ['train_schedule', 'pathfinding'],
       }),
@@ -1086,8 +1139,7 @@ export type GetDocumentsByDocumentKeyApiArg = {
   /** The document's key */
   documentKey: number;
 };
-export type DeleteDocumentsByDocumentKeyApiResponse =
-  /** status 204 The document was deleted */ void;
+export type DeleteDocumentsByDocumentKeyApiResponse = unknown;
 export type DeleteDocumentsByDocumentKeyApiArg = {
   /** The document's key */
   documentKey: number;
@@ -1106,8 +1158,7 @@ export type GetElectricalProfileSetByElectricalProfileSetIdApiResponse =
 export type GetElectricalProfileSetByElectricalProfileSetIdApiArg = {
   electricalProfileSetId: number;
 };
-export type DeleteElectricalProfileSetByElectricalProfileSetIdApiResponse =
-  /** status 204 The electrical profile was deleted successfully */ void;
+export type DeleteElectricalProfileSetByElectricalProfileSetIdApiResponse = unknown;
 export type DeleteElectricalProfileSetByElectricalProfileSetIdApiArg = {
   electricalProfileSetId: number;
 };
@@ -1431,8 +1482,7 @@ export type GetProjectsByProjectIdApiArg = {
   /** The id of a project */
   projectId: number;
 };
-export type DeleteProjectsByProjectIdApiResponse =
-  /** status 204 The project was deleted successfully */ void;
+export type DeleteProjectsByProjectIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1470,8 +1520,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
   projectId: number;
   studyId: number;
 };
-export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 204 The study was deleted successfully */ void;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1514,8 +1563,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   studyId: number;
   scenarioId: number;
 };
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was deleted successfully */ void;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1570,7 +1618,7 @@ export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes
   macroNodeForm: MacroNodeForm;
 };
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
-  /** status 204 The macro node was deleted successfully */ void;
+  unknown;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -1643,8 +1691,7 @@ export type GetSpritesBySignalingSystemAndFileNameApiArg = {
   /** File name (json, png or svg) */
   fileName: string;
 };
-export type GetStdcmSearchEnvironmentApiResponse =
-  /** status 200  */ StdcmSearchEnvironment | /** status 204 No search environment was created */ void;
+export type GetStdcmSearchEnvironmentApiResponse = /** status 200  */ StdcmSearchEnvironment;
 export type GetStdcmSearchEnvironmentApiArg = void;
 export type PostStdcmSearchEnvironmentApiResponse = /** status 201  */ StdcmSearchEnvironment;
 export type PostStdcmSearchEnvironmentApiArg = {

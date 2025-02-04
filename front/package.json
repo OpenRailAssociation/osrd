@@ -98,7 +98,7 @@
   "devDependencies": {
     "@apidevtools/swagger-parser": "^10.1.1",
     "@playwright/test": "^1.41.2",
-    "@rtk-query/codegen-openapi": "^1.2.0",
+    "@rtk-query/codegen-openapi": "^2.0.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
