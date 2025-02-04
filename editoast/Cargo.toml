@@ -79,7 +79,7 @@ strum = { version = "0.26.3", features = ["derive"] }
 tempfile = "3.16.0"
 thiserror = "2.0.11"
 tokio = { version = "1.43.0", features = ["fs", "macros", "rt-multi-thread"] }
-tokio-postgres = "0.7.12"
+tokio-postgres = "0.7.13"
 tracing = { version = "0.1.41", default-features = false, features = [
   "attributes",
   "log",
