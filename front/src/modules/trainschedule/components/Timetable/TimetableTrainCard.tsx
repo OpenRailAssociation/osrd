@@ -10,15 +10,25 @@ import { GiPathDistance } from 'react-icons/gi';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
+import type {
+  TimetableItemId,
+  TrainId,
+  TrainScheduleId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { formatToIsoDate, isoDateToMs } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
+import {
+  formatEditoastTrainIdToTrainScheduleId,
+  formatTrainScheduleIdToEditoastTrainId,
+} from 'utils/trainId';
 
 import type { TrainScheduleWithDetails } from './types';
 
@@ -27,11 +37,11 @@ type TimetableTrainCardProps = {
   train: TrainScheduleWithDetails;
   isSelected: boolean;
   isModified?: boolean;
-  handleSelectTrain: (trainId: number) => void;
+  handleSelectTrain: (trainId: TrainId) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
-  setTrainIdToEdit: (trainIdToEdit?: number) => void;
-  removeTrains: (trainIds: number[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  setTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void;
+  removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
   dtoImport: () => void;
 };
@@ -60,13 +70,14 @@ const TimetableTrainCard = ({
   const [getTrainSchedule] = osrdEditoastApi.endpoints.postTrainSchedule.useLazyQuery();
   const [deleteTrainSchedule] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
-  const changeSelectedTrainId = (trainId: number) => {
+  const changeSelectedTrainId = (trainId: TrainId) => {
     dispatch(updateSelectedTrainId(trainId));
   };
 
   const editTrainSchedule = () => {
     dispatch(selectTrainToEdit(train));
-    setTrainIdToEdit(train.id);
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    setTrainIdToEdit(train.id as TrainScheduleId);
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   };
 
@@ -77,10 +88,13 @@ const TimetableTrainCard = ({
       dispatch(updateSelectedTrainId(undefined));
     }
 
-    deleteTrainSchedule({ body: { ids: [train.id] } })
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    deleteTrainSchedule({
+      body: { ids: [formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId)] },
+    })
       .unwrap()
       .then(() => {
-        removeTrains([train.id]);
+        removeTrains([train.id as TrainScheduleId]);
         dtoImport();
         dispatch(
           setSuccess({
@@ -104,7 +118,9 @@ const TimetableTrainCard = ({
     const trainCount = 1;
     const actualTrainCount = 1;
 
-    const trainsResults = await getTrainSchedule({ body: { ids: [train.id] } })
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId);
+    const trainsResults = await getTrainSchedule({ body: { ids: [editoastTrainId] } })
       .unwrap()
       .catch((e) => {
         dispatch(setFailure(castErrorToFailure(e)));
@@ -125,7 +141,11 @@ const TimetableTrainCard = ({
           id: trainDetail.timetable_id,
           body: [newTrain],
         }).unwrap();
-        upsertTrainSchedules([trainScheduleResult]);
+        const formattedTrainScheduleResult: TrainScheduleResultWithTrainId = {
+          ...trainScheduleResult,
+          id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResult.id),
+        };
+        upsertTrainSchedules([formattedTrainScheduleResult]);
         dtoImport();
         dispatch(
           setSuccess({
@@ -140,7 +160,8 @@ const TimetableTrainCard = ({
   };
 
   const selectPathProjection = async () => {
-    dispatch(updateTrainIdUsedForProjection(train.id));
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    dispatch(updateTrainIdUsedForProjection(train.id as TrainScheduleId));
   };
 
   const isAfterMidnight = dayjs(train.arrivalTime).isAfter(train.startTime, 'day');

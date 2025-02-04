@@ -1,31 +1,36 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import { type ProjectPathTrainResult, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import { type ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
+import type {
+  TrainId,
+  TrainScheduleId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 
 const upsertNewProjectedTrains = (
-  projectedTrains: Map<number, TrainSpaceTimeData>,
-  projectedTrainsToUpsert: Record<string, ProjectPathTrainResult>,
-  trainSchedulesById: Map<number, TrainScheduleResult>
+  projectedTrains: Map<TrainId, TrainSpaceTimeData>,
+  projectedTrainsToUpsert: Record<TrainScheduleId, ProjectPathTrainResult>,
+  trainSchedulesById: Map<TrainScheduleId, TrainScheduleResultWithTrainId>
 ) => {
   const newProjectedTrains = new Map(projectedTrains);
 
   // For each key (train id) in projectPathTrainResult, we either add it or update it in the state
   Object.entries(projectedTrainsToUpsert).forEach(([trainIdKey, trainData]) => {
-    const trainId = Number(trainIdKey);
     if (!trainData) {
-      console.error(`Train ${trainId} not found in the projectedTrainsToUpsert`);
+      console.error(`Train ${trainIdKey} not found in the projectedTrainsToUpsert`);
       return;
     }
 
-    const matchingTrain = trainSchedulesById.get(trainId);
+    // trainIdKey is in format TrainScheduleId but Object.entries tells typescript it's a string
+    const matchingTrain = trainSchedulesById.get(trainIdKey as TrainScheduleId);
     const projectedTrain = {
-      id: +trainId,
+      id: trainIdKey as TrainScheduleId,
       name: matchingTrain?.train_name || 'Train name not found',
       departureTime: new Date(trainData.departure_time),
       spaceTimeCurves: trainData.space_time_curves,
       signalUpdates: trainData.signal_updates,
     };
 
-    newProjectedTrains.set(trainId, projectedTrain);
+    newProjectedTrains.set(trainIdKey as TrainScheduleId, projectedTrain);
   });
 
   return newProjectedTrains;

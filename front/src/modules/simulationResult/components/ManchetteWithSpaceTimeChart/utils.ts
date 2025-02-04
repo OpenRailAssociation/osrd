@@ -2,9 +2,13 @@ import type { PathLevel } from '@osrd-project/ui-spacetimechart';
 import type { HoveredItem } from '@osrd-project/ui-spacetimechart/dist/lib/types';
 
 import { PATH_COLORS } from 'modules/simulationResult/consts';
+import type { TrainId } from 'reducers/osrdconf/types';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 /* eslint-disable import/prefer-default-export */
-export const getIdFromTrainPath = (trainPath: string): number => +trainPath.split('-')[0];
+export const getIdFromTrainPath = (trainPath: string): TrainId =>
+  // TODO : Adapt this to handle paced train in space time chart in issue https://github.com/OpenRailAssociation/osrd/issues/10613
+  formatEditoastTrainIdToTrainScheduleId(+trainPath.split('-')[0]);
 
 export const getPathStyle = (
   hovered: HoveredItem | null,

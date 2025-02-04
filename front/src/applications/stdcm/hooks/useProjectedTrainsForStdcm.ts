@@ -9,7 +9,9 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TrainId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { addDurationToDate, subtractDurationFromDate } from 'utils/date';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
 
@@ -19,9 +21,9 @@ import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTime
  */
 const keepTrainsRunningDuringStdcm = (
   stdcmResult: StdcmSuccessResponse,
-  trainSchedules: Map<number, TrainScheduleWithDetails>
+  trainSchedules: Map<TrainId, TrainScheduleWithDetails>
 ) => {
-  const relevantTrainScheduleIds = new Set<number>();
+  const relevantTrainScheduleIds = new Set<TrainId>();
 
   const stdcmDepartureTime = new Date(stdcmResult.departure_time);
   const stdcmArrivalTime = addDurationToDate(
@@ -60,7 +62,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const timetableId = useSelector(getTimetableID);
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
-  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<number>>(new Set());
+  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TrainId>>(new Set());
 
   const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
     { id: timetableId! },
@@ -81,11 +83,25 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     }
   );
 
+  const formattedTrainIds = useMemo(
+    () => trainIds.map((trainId) => formatEditoastTrainIdToTrainScheduleId(trainId)),
+    [trainIds]
+  );
+
+  const formattedTrainSchedules: TrainScheduleResultWithTrainId[] | undefined = useMemo(
+    () =>
+      trainSchedules?.map((trainSchedule) => ({
+        ...trainSchedule,
+        id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+      })),
+    [trainSchedules]
+  );
+
   // Progressive loading of the trains
   const { trainScheduleSummariesById } = useLazyLoadTrains({
     infraId,
-    trainIdsToFetch: trainIds,
-    trainSchedules,
+    trainIdsToFetch: formattedTrainIds,
+    trainSchedules: formattedTrainSchedules,
   });
 
   // Progressive projection of the trains
@@ -93,7 +109,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     infraId,
     trainIdsToProject,
     path: stdcmResponse?.path,
-    trainSchedules,
+    trainSchedules: formattedTrainSchedules,
     setTrainIdsToProject,
   });
 

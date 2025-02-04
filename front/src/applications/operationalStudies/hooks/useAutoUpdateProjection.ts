@@ -10,6 +10,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { formatEditoastTrainIdToTrainScheduleId, isTrainSchedule } from 'utils/trainId';
 
 /**
  * Automatically select the train to be used for the simulation results display and for the projection.
@@ -22,39 +23,52 @@ import { useAppDispatch } from 'store';
  */
 const useAutoUpdateProjection = (
   infra: InfraWithState,
-  trainIds: number[],
+  editoastTrainIds: number[],
   trainScheduleSummaries: TrainScheduleWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
   const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
+  const formattedTrainIds = editoastTrainIds.map((editoastTrainId) =>
+    formatEditoastTrainIdToTrainScheduleId(editoastTrainId)
+  );
+
   useEffect(() => {
-    if (infra.state !== 'CACHED' || trainIds.length === 0) {
+    if (infra.state !== 'CACHED' || editoastTrainIds.length === 0) {
       if (selectedTrainId) dispatch(updateSelectedTrainId(undefined));
       if (currentTrainIdForProjection) dispatch(updateTrainIdUsedForProjection(undefined));
       return;
     }
 
     // if a selected train is given, we use it for the projection
-    if (selectedTrainId && !currentTrainIdForProjection && trainIds.includes(selectedTrainId)) {
+    if (
+      selectedTrainId &&
+      isTrainSchedule(selectedTrainId) &&
+      !currentTrainIdForProjection &&
+      formattedTrainIds.includes(selectedTrainId)
+    ) {
       dispatch(updateTrainIdUsedForProjection(selectedTrainId));
       return;
     }
 
     // if there is already a projection and the projected train still exists, keep it
-    if (currentTrainIdForProjection && trainIds.includes(currentTrainIdForProjection)) {
-      if (!selectedTrainId) dispatch(updateSelectedTrainId(trainIds[0]));
+    if (
+      currentTrainIdForProjection &&
+      isTrainSchedule(currentTrainIdForProjection) &&
+      formattedTrainIds.includes(currentTrainIdForProjection)
+    ) {
+      if (!selectedTrainId) dispatch(updateSelectedTrainId(formattedTrainIds[0]));
       return;
     }
 
     // by default, use the first valid train
     const firstValidTrain = trainScheduleSummaries.find((train) => train.isValid);
-    if (firstValidTrain) {
+    if (firstValidTrain && isTrainSchedule(firstValidTrain.id)) {
       dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
       dispatch(updateSelectedTrainId(firstValidTrain.id));
     }
-  }, [trainIds, infra, trainScheduleSummaries]);
+  }, [editoastTrainIds, infra, trainScheduleSummaries]);
 };
 
 export default useAutoUpdateProjection;

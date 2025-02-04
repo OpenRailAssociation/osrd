@@ -4,20 +4,21 @@ import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { InfraState, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { InfraState } from 'common/api/osrdEditoastApi';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
+import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 
 import AddTrainScheduleButton from './AddTrainScheduleButton';
 import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
 
 type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
-  trainIdToEdit?: number;
+  trainIdToEdit?: TimetableItemId;
   setDisplayTrainScheduleManagement: (type: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
   infraState?: InfraState;
-  setTrainIdToEdit: (trainIdToEdit?: number) => void;
+  setTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void;
   dtoImport: () => void;
 };
 

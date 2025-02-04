@@ -3,10 +3,19 @@ import { useEffect, useState, type Dispatch, type SetStateAction, useMemo } from
 
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type SimulationSummaryResult } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type {
+  TrainId,
+  TrainScheduleId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 import { getBatchPackage } from 'utils/batch';
+import {
+  formatEditoastTrainIdToTrainScheduleId,
+  formatTrainScheduleIdToEditoastTrainId,
+} from 'utils/trainId';
 import { concatMap, mapBy } from 'utils/types';
 
 import formatTrainScheduleSummaries from '../helpers/formatTrainScheduleSummaries';
@@ -15,10 +24,10 @@ const BATCH_SIZE = 10;
 
 type UseLazyLoadTrainsProps = {
   infraId?: number;
-  trainIdsToFetch?: number[];
-  trainSchedules?: TrainScheduleResult[];
-  setTrainIdsToFetch?: Dispatch<SetStateAction<number[] | undefined>>;
-  setTrainIdsToProject?: Dispatch<SetStateAction<Set<number>>>;
+  trainIdsToFetch?: TrainId[];
+  trainSchedules?: TrainScheduleResultWithTrainId[];
+  setTrainIdsToFetch?: Dispatch<SetStateAction<TrainId[] | undefined>>;
+  setTrainIdsToProject?: Dispatch<SetStateAction<Set<TrainId>>>;
 };
 
 /**
@@ -38,7 +47,7 @@ const useLazyLoadTrains = ({
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
 
   const [trainScheduleSummariesById, setTrainScheduleSummariesById] = useState<
-    Map<number, TrainScheduleWithDetails>
+    Map<TrainId, TrainScheduleWithDetails>
   >(new Map());
   const [allTrainsLoaded, setAllTrainsLoaded] = useState(false);
 
@@ -52,19 +61,31 @@ const useLazyLoadTrains = ({
 
   // gradually fetch the simulation of the trains
   useEffect(() => {
-    const getTrainScheduleSummaries = async (_infraId: number, _trainToFetchIds: number[]) => {
+    const getTrainScheduleSummaries = async (_infraId: number, _trainToFetchIds: TrainId[]) => {
       setAllTrainsLoaded(false);
 
       for (let i = 0; i < _trainToFetchIds.length; i += BATCH_SIZE) {
         const packageToFetch = getBatchPackage(i, _trainToFetchIds, BATCH_SIZE);
 
+        // Format train ids back to editoast format
+        const editoastTrainIds = packageToFetch.map((trainId) =>
+          formatTrainScheduleIdToEditoastTrainId(trainId as TrainScheduleId)
+        );
+
         const rawSummaries = await postTrainScheduleSimulationSummary({
           body: {
             infra_id: _infraId,
-            ids: packageToFetch,
+            ids: editoastTrainIds,
             electrical_profile_set_id: electricalProfileSetId,
           },
         }).unwrap();
+
+        // TODO Paced train : Adapt this for the add paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
+        const formattedRawSummaries: { [key: TrainScheduleId]: SimulationSummaryResult } = {};
+        for (const [editoastTrainId, trainSummary] of Object.entries(rawSummaries)) {
+          const trainId = formatEditoastTrainIdToTrainScheduleId(Number(editoastTrainId));
+          formattedRawSummaries[trainId] = trainSummary;
+        }
 
         // the two rtk-query calls postTrainSchedule & postTrainScheduleSimulationSummary
         // do not happen during the same react cycle.
@@ -82,7 +103,7 @@ const useLazyLoadTrains = ({
           // format the summaries to display them in the timetable
           const newFormattedSummaries = formatTrainScheduleSummaries(
             packageToFetch,
-            rawSummaries,
+            formattedRawSummaries,
             trainSchedulesById,
             rollingStocks!
           );

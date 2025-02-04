@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -7,17 +7,15 @@ import { useSelector } from 'react-redux';
 import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
 import type { OperationalPoint } from 'applications/operationalStudies/types';
 import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
-import {
-  osrdEditoastApi,
-  type PathProperties,
-  type TrainScheduleResult,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PathProperties } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { isStation } from 'modules/pathfinding/utils';
+import type { TrainScheduleId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
 
 const useGetProjectedTrainOperationalPoints = (
-  trainScheduleUsedForProjection?: TrainScheduleResult,
-  trainIdUsedForProjection?: number,
+  trainScheduleUsedForProjection?: TrainScheduleResultWithTrainId,
+  trainIdUsedForProjection?: TrainScheduleId,
   infraId?: number
 ) => {
   const { t } = useTranslation('simulation');
@@ -28,13 +26,24 @@ const useGetProjectedTrainOperationalPoints = (
   const [filteredOperationalPoints, setFilteredOperationalPoints] =
     useState<OperationalPoint[]>(operationalPoints);
 
+  const editoastTrainIdUsedForProjection = useMemo(
+    () =>
+      trainIdUsedForProjection
+        ? formatTrainScheduleIdToEditoastTrainId(trainIdUsedForProjection)
+        : undefined,
+    [trainIdUsedForProjection]
+  );
+
   const { data: pathfindingResult } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
     {
-      id: trainIdUsedForProjection!,
+      id: editoastTrainIdUsedForProjection!,
       infraId: infraId!,
     },
     {
-      skip: !trainIdUsedForProjection || !infraId || trainIdUsedForProjection === STDCM_TRAIN_ID,
+      skip:
+        !editoastTrainIdUsedForProjection ||
+        !infraId ||
+        editoastTrainIdUsedForProjection === STDCM_TRAIN_ID,
     }
   );
 

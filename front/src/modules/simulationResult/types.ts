@@ -16,8 +16,8 @@ import type {
   PathfindingResultSuccess,
   RollingStockWithLiveries,
   TrainScheduleBase,
-  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
@@ -31,7 +31,7 @@ export type SpeedSpaceChartData = {
 };
 
 export type ProjectionData = {
-  trainSchedule: TrainScheduleResult;
+  trainSchedule: TrainScheduleResultWithTrainId;
   projectedTrains: TrainSpaceTimeData[];
   path: PathfindingResultSuccess;
   geometry: PathProperties['geometry'];

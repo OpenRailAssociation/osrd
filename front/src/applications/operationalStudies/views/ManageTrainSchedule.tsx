@@ -33,12 +33,13 @@ import {
   getPathSteps,
   getStartTime,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { formatKmValue } from 'utils/strings';
 
 import { useManageTrainScheduleContext } from '../hooks/useManageTrainScheduleContext';
 
 type ManageTrainScheduleProps = {
-  trainIdToEdit?: number;
+  trainIdToEdit?: TimetableItemId;
 };
 
 const ManageTrainSchedule = ({ trainIdToEdit }: ManageTrainScheduleProps) => {

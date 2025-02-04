@@ -10,13 +10,14 @@ import {
   osrdEditoastApi,
   type LightRollingStockWithLiveries,
   type TrainScheduleBase,
-  type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { ImportTrainScheduleTrainDetail } from 'modules/trainschedule/components/ImportTrainSchedule';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import { setFailure, setSuccess } from 'reducers/main';
+import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import { generateTrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
 import type { RollingstockOpenData2OSRDKeys } from './types';
@@ -37,7 +38,7 @@ type ImportTrainScheduleTrainsListProps = {
   timetableId: number;
   trainsJsonData: TrainScheduleBase[];
   trainsXmlData: ImportedTrainSchedule[];
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
   dtoImport: () => void;
 };
 
@@ -92,7 +93,13 @@ const ImportTrainScheduleTrainsList = ({
       }
 
       const trainSchedules = await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
-      upsertTrainSchedules(trainSchedules);
+      const formattedTrainSchedules: TrainScheduleResultWithTrainId[] = trainSchedules.map(
+        (trainSchedule) => ({
+          ...trainSchedule,
+          id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+        })
+      );
+      upsertTrainSchedules(formattedTrainSchedules);
       dtoImport();
       dispatch(
         setSuccess({

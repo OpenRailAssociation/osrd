@@ -6,15 +6,21 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
+import type {
+  TimetableItemId,
+  TrainScheduleId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
+import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
 
 import FilterPanel from './FilterPanel';
 import type {
@@ -31,10 +37,10 @@ type TimetableToolbarProps = {
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   displayedTrainSchedules: TrainScheduleWithDetails[];
   setDisplayedTrainSchedules: (trainSchedulesDetails: TrainScheduleWithDetails[]) => void;
-  selectedTrainIds: number[];
-  setSelectedTrainIds: (selectedTrainIds: number[]) => void;
-  removeTrains: (trainIds: number[]) => void;
-  trainSchedules: TrainScheduleResult[];
+  selectedTrainIds: TimetableItemId[];
+  setSelectedTrainIds: (selectedTrainIds: TimetableItemId[]) => void;
+  removeTrains: (trainIds: TimetableItemId[]) => void;
+  trainSchedules: TrainScheduleResultWithTrainId[];
   isInSelection: boolean;
 };
 
@@ -90,23 +96,30 @@ const TimetableToolbar = ({
     if (displayedTrainSchedules.length === selectedTrainIds.length) {
       setSelectedTrainIds([]);
     } else {
-      setSelectedTrainIds(displayedTrainSchedules.map((train) => train.id));
+      // TODO Paced train : Adapt this to handle delete paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+      setSelectedTrainIds(displayedTrainSchedules.map((train) => train.id as TrainScheduleId));
     }
   };
 
   const handleTrainsDelete = async () => {
     const trainsCount = selectedTrainIds.length;
 
-    if (selectedTrainId && selectedTrainIds.includes(selectedTrainId)) {
+    // TODO Paced train : Adapt this to handle delete paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    if (selectedTrainId && selectedTrainIds.includes(selectedTrainId as TrainScheduleId)) {
       // we need to set selectedTrainId to undefined, otherwise just after the delete,
       // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
       dispatch(updateSelectedTrainId(undefined));
     }
 
-    await deleteTrainSchedules({ body: { ids: selectedTrainIds } })
+    // TODO Paced train : Adapt this to handle delete paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    const editoastSelectedTrainIds = selectedTrainIds.map((id) =>
+      formatTrainScheduleIdToEditoastTrainId(id as TrainScheduleId)
+    );
+
+    await deleteTrainSchedules({ body: { ids: editoastSelectedTrainIds } })
       .unwrap()
       .then(() => {
-        removeTrains(selectedTrainIds);
+        removeTrains(selectedTrainIds as TrainScheduleId[]);
         dispatch(
           setSuccess({
             title: t('timetable.trainsSelectionDeletedCount', { count: trainsCount }),
@@ -115,7 +128,8 @@ const TimetableToolbar = ({
         );
       })
       .catch((e) => {
-        if (selectedTrainId && selectedTrainIds.includes(selectedTrainId)) {
+        // TODO Paced train : Adapt this to handle delete paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+        if (selectedTrainId && selectedTrainIds.includes(selectedTrainId as TrainScheduleId)) {
           dispatch(updateSelectedTrainId(selectedTrainId));
         } else {
           dispatch(setFailure(castErrorToFailure(e)));
@@ -123,9 +137,10 @@ const TimetableToolbar = ({
       });
   };
 
-  const exportTrainSchedules = (selectedTrainIdsFromClick: number[]) => {
+  const exportTrainSchedules = (selectedTrainIdsFromClick: TimetableItemId[]) => {
     if (!trainSchedules) return;
 
+    // TODO Paced train : Adapt this to handle export paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10614
     const formattedTrainSchedules = trainSchedules
       .filter(({ id }) => selectedTrainIdsFromClick.includes(id))
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

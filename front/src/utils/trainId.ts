@@ -1,24 +1,22 @@
 import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 
-export const isPacedTrain = (id: TrainScheduleId | PacedTrainId): id is PacedTrainId =>
-  id.startsWith('paced-');
+export const isPacedTrain = (id: string): id is PacedTrainId => id.startsWith('paced-');
 
-export const isOccurrence = (id: TrainScheduleId | OccurrenceId): id is OccurrenceId => {
-  const pacedSyntax = id.split('-')[0];
-  const occurrenceSyntax = id.split('-')[2];
-  return pacedSyntax === 'paced' && occurrenceSyntax === 'occurrence';
+export const isOccurrence = (id: string): id is OccurrenceId => {
+  const occurrenceSyntax = id.split('-')[0];
+  const pacedSyntax = id.split('-')[2];
+  return occurrenceSyntax === 'occurrence' && pacedSyntax === 'paced';
 };
 
-export const isTrainSchedule = (
-  id: TrainScheduleId | OccurrenceId | PacedTrainId
-): id is TrainScheduleId => id.startsWith('train-');
+export const isTrainSchedule = (id: string): id is TrainScheduleId =>
+  id.startsWith('trainschedule-');
 
 /**
  * Given a train id in the Editoast format (used for api),
  * returns the train id with a TrainScheduleId format (used across the front).
  */
 export const formatEditoastTrainIdToTrainScheduleId = (trainId: number): TrainScheduleId =>
-  `train-${trainId}` as TrainScheduleId;
+  `trainschedule-${trainId}` as TrainScheduleId;
 
 /**
  * Given a train id in the Editoast format (used for api),
@@ -37,7 +35,7 @@ export const formatEditoastTrainIdToOccurrenceId = ({
 }: {
   pacedTrainId: number;
   occurrenceIndex: number;
-}): OccurrenceId => `paced-${pacedTrainId}-occurrence-${occurrenceIndex}` as OccurrenceId;
+}): OccurrenceId => `occurrence-${occurrenceIndex}-paced-${pacedTrainId}` as OccurrenceId;
 
 /**
  * Given a train id with a TrainScheduleId format (used across the front),
@@ -45,7 +43,7 @@ export const formatEditoastTrainIdToOccurrenceId = ({
  */
 export const formatTrainScheduleIdToEditoastTrainId = (trainId: TrainScheduleId): number => {
   if (!isTrainSchedule(trainId)) {
-    throw new Error('The train schedule id should start with "train-"');
+    throw new Error('The train schedule id should start with "trainschedule-"');
   }
   const formattedTrainId = Number(trainId.split('-')[1]);
 
@@ -80,15 +78,15 @@ export const formatPacedTrainIdToEditoastTrainId = (pacedTrainId: PacedTrainId):
 export const formatOccurrenceIdToEditoastTrainId = (occurrenceId: OccurrenceId): number => {
   if (!isOccurrence(occurrenceId)) {
     throw new Error(
-      'The occurrence id should match the format "paced-{trainId}-occurrence-{occurrenceIndex}"'
+      'The occurrence id should match the format "occurrence-{occurrenceIndex}-paced-{trainId}"'
     );
   }
 
-  const formattedTrainId = Number(occurrenceId.split('-')[1]);
-  const formattedOccurrenceIndex = Number(occurrenceId.split('-')[3]);
+  const formattedOccurrenceIndex = Number(occurrenceId.split('-')[1]);
+  const formattedTrainId = Number(occurrenceId.split('-')[3]);
 
-  if (Number.isNaN(formattedTrainId) || Number.isNaN(formattedOccurrenceIndex)) {
-    throw new Error(`Invalid paced train ID or occurrence ID: ${occurrenceId}`);
+  if (Number.isNaN(formattedOccurrenceIndex) || Number.isNaN(formattedTrainId)) {
+    throw new Error(`Invalid paced train ID or occurrence index: ${occurrenceId}`);
   }
 
   return formattedTrainId;

@@ -13,6 +13,7 @@ import type {
   SimulationSummaryResult,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 
 export const pathLength = 4000;
 
@@ -351,8 +352,8 @@ export const electrificationRangesLarge: ElectrificationRange[] = [
   },
 ];
 
-export const trainScheduleTooFast: TrainScheduleResult = {
-  id: 98,
+export const trainScheduleTooFast: TrainScheduleResultWithTrainId = {
+  id: 'trainschedule-98' as TrainScheduleId,
   timetable_id: 10,
   train_name: 'tooFast',
   labels: [],
@@ -418,8 +419,8 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
   path_item_times_base: [0, 1444453, 2491479],
 };
 
-export const trainScheduleNotHonored: TrainScheduleResult = {
-  id: 96,
+export const trainScheduleNotHonored: TrainScheduleResultWithTrainId = {
+  id: 'trainschedule-96' as TrainScheduleId,
   timetable_id: 10,
   train_name: 'notHonored',
   labels: [],
@@ -485,8 +486,8 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
   path_item_times_base: [0, 1425534, 2186885],
 };
 
-export const trainScheduleHonored: TrainScheduleResult = {
-  id: 95,
+export const trainScheduleHonored: TrainScheduleResultWithTrainId = {
+  id: 'trainschedule-95' as TrainScheduleId,
   timetable_id: 10,
   train_name: 'normal',
   labels: [],
@@ -529,12 +530,12 @@ export const trainScheduleHonored: TrainScheduleResult = {
   },
 };
 
-export const trainScheduleNoSchedule: TrainScheduleResult = {
+export const trainScheduleNoSchedule: TrainScheduleResultWithTrainId = {
   ...trainScheduleHonored,
   schedule: undefined,
 };
 
-export const trainScheduleNoMatch: TrainScheduleResult = {
+export const trainScheduleNoMatch: TrainScheduleResultWithTrainId = {
   ...trainScheduleHonored,
   schedule: [
     {

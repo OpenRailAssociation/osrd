@@ -9,6 +9,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { isTrainSchedule } from 'utils/trainId';
 
 type SimulationParams = {
   projectId: string;
@@ -59,12 +60,13 @@ const useScenarioQueryParams = () => {
   useEffect(() => {
     const selectedTrainFromUrl = getParamFromUrlOrStorage('selected_train');
     const projectionFromUrl = getParamFromUrlOrStorage('projection');
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
 
-    if (selectedTrainFromUrl) {
-      dispatch(updateSelectedTrainId(Number(selectedTrainFromUrl)));
+    if (selectedTrainFromUrl && isTrainSchedule(selectedTrainFromUrl)) {
+      dispatch(updateSelectedTrainId(selectedTrainFromUrl));
     }
-    if (projectionFromUrl) {
-      dispatch(updateTrainIdUsedForProjection(Number(projectionFromUrl)));
+    if (projectionFromUrl && isTrainSchedule(projectionFromUrl)) {
+      dispatch(updateTrainIdUsedForProjection(projectionFromUrl));
     }
   }, [dispatch, getParamFromUrlOrStorage]);
 

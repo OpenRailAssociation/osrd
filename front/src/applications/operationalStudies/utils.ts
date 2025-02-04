@@ -9,6 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR_MS } from 'modules/timesStops/consts';
+import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
@@ -217,7 +218,7 @@ export const isInvalidName = (name?: string | null) =>
  * @returns true if the scheduled points are not honored
  */
 export const isScheduledPointsNotHonored = (
-  trainSchedule: TrainScheduleResult,
+  trainSchedule: TrainScheduleResultWithTrainId,
   trainSummary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): boolean => {
   if (trainSummary.path_item_times_final.length !== trainSchedule.path.length) {
@@ -249,7 +250,7 @@ export const isScheduledPointsNotHonored = (
   });
 };
 
-export const getPathItemByIndexDict = (trainResult: TrainScheduleResult) =>
+export const getPathItemByIndexDict = (trainResult: TrainScheduleResultWithTrainId) =>
   trainResult.path.reduce((acc, pathItem, index) => {
     acc[pathItem.id] = index;
     return acc;
@@ -262,7 +263,7 @@ export const getPathItemByIndexDict = (trainResult: TrainScheduleResult) =>
  * @returns true if the train is too fast
  */
 export const isTooFast = (
-  trainSchedule: TrainScheduleResult,
+  trainSchedule: TrainScheduleResultWithTrainId,
   trainSummary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): boolean => {
   if (

@@ -3,19 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type {
-  InfraState,
-  TrainScheduleBase,
-  TrainScheduleResult,
-} from 'common/api/osrdEditoastApi';
+import type { InfraState, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { isoDateToMs, isoDateWithTimezoneToSec } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
 import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
@@ -23,7 +21,7 @@ import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
 type AddTrainScheduleButtonProps = {
   infraState?: InfraState;
   setIsWorking: (isWorking: boolean) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
   dtoImport: () => void;
 };
 
@@ -71,6 +69,13 @@ const AddTrainScheduleButton = ({
           body: trainScheduleParams,
         }).unwrap();
 
+        const formattedNewTrainSchedule: TrainScheduleResultWithTrainId[] = newTrainSchedules.map(
+          (trainSchedule) => ({
+            ...trainSchedule,
+            id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+          })
+        );
+
         dispatch(
           setSuccess({
             title: t('trainAdded'),
@@ -79,7 +84,7 @@ const AddTrainScheduleButton = ({
         );
         setIsWorking(false);
         dtoImport();
-        upsertTrainSchedules(newTrainSchedules);
+        upsertTrainSchedules(formattedNewTrainSchedule);
       } catch (e) {
         setIsWorking(false);
         dispatch(setFailure(castErrorToFailure(e)));

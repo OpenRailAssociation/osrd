@@ -7,15 +7,22 @@ import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { Conflict, InfraState, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
+import type {
+  TimetableItemId,
+  TrainId,
+  TrainScheduleId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import TimetableToolbar from './TimetableToolbar';
 import TimetableTrainCard from './TimetableTrainCard';
@@ -25,11 +32,11 @@ type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   infraState: InfraState;
   conflicts?: Conflict[];
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
-  setTrainIdToEdit: (trainId?: number) => void;
-  removeTrains: (trainIds: number[]) => void;
-  trainIdToEdit?: number;
-  trainSchedules?: TrainScheduleResult[];
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  setTrainIdToEdit: (trainId?: TimetableItemId) => void;
+  removeTrains: (trainIds: TimetableItemId[]) => void;
+  trainIdToEdit?: TimetableItemId;
+  trainSchedules?: TrainScheduleResultWithTrainId[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   dtoImport: () => void;
 };
@@ -54,7 +61,7 @@ const Timetable = ({
     TrainScheduleWithDetails[]
   >([]);
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
-  const [selectedTrainIds, setSelectedTrainIds] = useState<number[]>([]);
+  const [selectedTrainIds, setSelectedTrainIds] = useState<TimetableItemId[]>([]);
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -64,7 +71,7 @@ const Timetable = ({
     setShowTrainDetails(!showTrainDetails);
   };
 
-  const removeAndUnselectTrains = useCallback((trainIds: number[]) => {
+  const removeAndUnselectTrains = useCallback((trainIds: TimetableItemId[]) => {
     removeTrains(trainIds);
     setSelectedTrainIds([]);
     dtoImport();
@@ -75,12 +82,13 @@ const Timetable = ({
   };
 
   const handleSelectTrain = useCallback(
-    (id: number) => {
+    (id: TrainId) => {
+      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
       const currentSelectedTrainIds = [...selectedTrainIds];
-      const index = currentSelectedTrainIds.indexOf(id);
+      const index = currentSelectedTrainIds.indexOf(id as TrainScheduleId);
 
       if (index === -1) {
-        currentSelectedTrainIds.push(id);
+        currentSelectedTrainIds.push(id as TrainScheduleId);
       } else {
         currentSelectedTrainIds.splice(index, 1);
       }
@@ -92,8 +100,11 @@ const Timetable = ({
 
   const handleConflictClick = (conflict: Conflict) => {
     if (conflict.train_schedule_ids.length > 0) {
-      const firstTrainId = conflict.train_schedule_ids[0];
-      dispatch(updateSelectedTrainId(firstTrainId));
+      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+      const formattedFirstTrainId = formatEditoastTrainIdToTrainScheduleId(
+        conflict.train_schedule_ids[0]
+      );
+      dispatch(updateSelectedTrainId(formattedFirstTrainId));
     }
   };
 
@@ -157,8 +168,10 @@ const Timetable = ({
                   {currentDepartureDates[index]}
                 </div>
               )}
+              {/* TODO Paced train : Adapt this to handle paced trains in issue
+            https://github.com/OpenRailAssociation/osrd/issues/10615 */}
               <TimetableTrainCard
-                isInSelection={selectedTrainIds.includes(train.id)}
+                isInSelection={selectedTrainIds.includes(train.id as TrainScheduleId)}
                 handleSelectTrain={handleSelectTrain}
                 train={train}
                 isSelected={infraState === 'CACHED' && selectedTrainId === train.id}

@@ -1,4 +1,5 @@
 import type { AllListValues } from 'modules/simulationResult/consts';
+import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 
 type SimulationD3Scale = d3.ScaleTime<number, number> | d3.ScaleLinear<number, number>;
 
@@ -141,6 +142,6 @@ export type PositionsSpeedTimes<Time = number> = Record<AllListValues, PositionS
 export interface SimulationResultsState {
   chart?: Chart;
   isPlaying: boolean;
-  selectedTrainId?: number;
-  trainIdUsedForProjection?: number;
+  selectedTrainId?: TrainId;
+  trainIdUsedForProjection?: TimetableItemId;
 }

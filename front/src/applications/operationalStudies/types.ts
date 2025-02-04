@@ -15,6 +15,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 export interface Step {
@@ -84,7 +85,7 @@ export type ManageTrainSchedulePathProperties = {
  */
 // TODO: reuse the type from osrd-ui/ui-manchette
 export type TrainSpaceTimeData = {
-  id: number;
+  id: TrainId;
   name: string;
   spaceTimeCurves: {
     positions: number[];

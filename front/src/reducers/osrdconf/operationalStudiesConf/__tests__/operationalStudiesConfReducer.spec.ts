@@ -10,7 +10,7 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf';
 import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 import testCommonConfReducers from 'reducers/osrdconf/osrdConfCommon/__tests__/utils';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { PathStep, TrainScheduleId } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -32,8 +32,9 @@ describe('simulationConfReducer', () => {
   });
 
   it('selectTrainToEdit', () => {
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
     const trainSchedule: TrainScheduleWithDetails = {
-      id: 1,
+      id: 'trainschedule-1' as TrainScheduleId,
       trainName: 'train1',
       constraint_distribution: 'MARECO',
       rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,

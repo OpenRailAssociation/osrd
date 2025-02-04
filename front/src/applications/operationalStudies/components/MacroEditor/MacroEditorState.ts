@@ -6,6 +6,7 @@ import type {
   SearchResultItemOperationalPoint,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
+import type { TimetableItemId } from 'reducers/osrdconf/types';
 
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
   ngeId: number;
@@ -59,7 +60,7 @@ export default class MacroEditorState {
   /**
    * Given a nge train run ID, returns the osrd train schedule ID
    */
-  trainScheduleIdByNgeId: Map<number, number>;
+  trainScheduleIdByNgeId: Map<number, TimetableItemId>;
 
   /**
    * Default constructor
@@ -74,7 +75,7 @@ export default class MacroEditorState {
     this.scenario = scenario;
     this.trainSchedules = trainSchedules;
     this.ngeResource = { id: 1, capacity: this.trainSchedules.length };
-    this.trainScheduleIdByNgeId = new Map<number, number>();
+    this.trainScheduleIdByNgeId = new Map<number, TimetableItemId>();
   }
 
   /**

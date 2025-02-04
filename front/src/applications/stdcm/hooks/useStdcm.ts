@@ -24,6 +24,7 @@ import { getStdcmConf } from 'reducers/osrdconf/stdcmConf/selectors';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import useStdcmResults from './useStdcmResults';
 import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConf';
@@ -121,7 +122,7 @@ const useStdcm = ({
             train_name: 'stdcm',
           };
           setStdcmTrainResult(stdcmTrain);
-          dispatch(updateSelectedTrainId(STDCM_TRAIN_ID));
+          dispatch(updateSelectedTrainId(formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID)));
         } else if (response.status === 'conflicts') {
           setStdcmResponse({
             ...response,

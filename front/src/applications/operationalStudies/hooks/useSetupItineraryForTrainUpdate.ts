@@ -21,10 +21,11 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
 import { setFailure } from 'reducers/main';
 import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { PathStep, TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
+import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
 
 import type { ManageTrainSchedulePathProperties } from '../types';
 import { useManageTrainScheduleContext } from './useManageTrainScheduleContext';
@@ -60,7 +61,7 @@ export function updatePathStepsFromOperationalPoints(
   return updatedPathSteps;
 }
 
-const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
+const useSetupItineraryForTrainUpdate = (trainIdToEdit: TimetableItemId) => {
   const dispatch = useAppDispatch();
   const { setPathProperties } = useManageTrainScheduleContext();
 
@@ -254,7 +255,10 @@ const useSetupItineraryForTrainUpdate = (trainIdToEdit: number) => {
       if (!infraId) {
         return;
       }
-      const trainSchedule = await getTrainScheduleById({ id: trainIdToEdit }).unwrap();
+      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+      const trainSchedule = await getTrainScheduleById({
+        id: formatTrainScheduleIdToEditoastTrainId(trainIdToEdit as TrainScheduleId),
+      }).unwrap();
 
       let rollingStock: RollingStockWithLiveries | null = null;
 

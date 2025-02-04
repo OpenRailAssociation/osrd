@@ -7,12 +7,22 @@ import {
   osrdEditoastApi,
   type InfraWithState,
   type ScenarioResponse,
+  type SimulationSummaryResult,
   type TimetableDetailedResult,
-  type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
+import type {
+  TimetableItemId,
+  TrainId,
+  TrainScheduleId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import {
+  formatEditoastTrainIdToTrainScheduleId,
+  formatTrainScheduleIdToEditoastTrainId,
+} from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import useAutoUpdateProjection from './useAutoUpdateProjection';
@@ -29,9 +39,9 @@ const useScenarioData = (
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
-  const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResult[]>();
-  const [trainIdsToFetch, setTrainIdsToFetch] = useState<number[]>();
-  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<number>>(new Set());
+  const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResultWithTrainId[]>();
+  const [trainIdsToFetch, setTrainIdsToFetch] = useState<TrainId[]>();
+  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TrainId>>(new Set());
 
   const [fetchTrainSchedules] = osrdEditoastApi.endpoints.postTrainSchedule.useLazyQuery();
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
@@ -67,6 +77,7 @@ const useScenarioData = (
 
   useEffect(() => {
     if (trainSchedules && projectionPath?.path && allTrainsLoaded) {
+      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
       const trainIds = trainSchedules.map((trainSchedule) => trainSchedule.id);
       setTrainIdsToProject(new Set(trainIds));
     }
@@ -98,6 +109,7 @@ const useScenarioData = (
     [trainIdUsedForProjection, trainSchedules]
   );
 
+  // TODO Paced train : Adapt this to accept paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
   useAutoUpdateProjection(infra, timetable.train_ids, trainScheduleSummaries);
 
   useEffect(() => {
@@ -107,7 +119,13 @@ const useScenarioData = (
           ids: timetable.train_ids,
         },
       }).unwrap();
-      const sortedTrainSchedules = sortBy(rawTrainSchedules, 'start_time');
+      const formattedRawTrainSchedules: TrainScheduleResultWithTrainId[] = rawTrainSchedules.map(
+        (trainSchedule) => ({
+          ...trainSchedule,
+          id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+        })
+      );
+      const sortedTrainSchedules = sortBy(formattedRawTrainSchedules, 'start_time');
       setTrainSchedules(sortedTrainSchedules);
     };
 
@@ -117,13 +135,15 @@ const useScenarioData = (
   // first load of the trainScheduleSummaries
   useEffect(() => {
     if (trainSchedules && infra.state === 'CACHED' && trainScheduleSummaries.length === 0) {
+      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
       const trainIds = trainSchedules.map((trainSchedule) => trainSchedule.id);
       setTrainIdsToFetch(trainIds);
     }
   }, [trainSchedules, infra.state]);
 
   const upsertTrainSchedules = useCallback(
-    (trainSchedulesToUpsert: TrainScheduleResult[]) => {
+    (trainSchedulesToUpsert: TrainScheduleResultWithTrainId[]) => {
+      // TODO Paced train : Add another check if the train is a paced train for the add paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
       setProjectedTrainsById((prev) => {
         const newProjectedTrainsById = new Map(prev);
         trainSchedulesToUpsert.forEach((trainSchedule) => {
@@ -146,11 +166,13 @@ const useScenarioData = (
     [trainSchedules]
   );
 
-  const removeTrains = useCallback((_trainIdsToRemove: number[]) => {
+  const removeTrains = useCallback((_trainIdsToRemove: TimetableItemId[]) => {
+    // TODO Paced train : Add another check if the train is a paced train for the delete paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
+
     setTrainSchedules((prev) => {
       const trainSchedulesById = mapBy(prev, 'id');
       _trainIdsToRemove.forEach((trainId) => {
-        trainSchedulesById.delete(trainId);
+        trainSchedulesById.delete(trainId as TrainScheduleId);
       });
       return Array.from(trainSchedulesById.values());
     });
@@ -158,7 +180,8 @@ const useScenarioData = (
     setTrainScheduleSummariesById((prev) => {
       const newTrainScheduleSummariesById = new Map(prev);
       _trainIdsToRemove.forEach((trainId) => {
-        newTrainScheduleSummariesById.delete(trainId);
+        // TODO Paced train : Add another check if the train is a paced train for the delete paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
+        newTrainScheduleSummariesById.delete(trainId as TrainScheduleId);
       });
       return newTrainScheduleSummariesById;
     });
@@ -166,15 +189,20 @@ const useScenarioData = (
     setProjectedTrainsById((prev) => {
       const newProjectedTrainsById = new Map(prev);
       _trainIdsToRemove.forEach((trainId) => {
-        newProjectedTrainsById.delete(trainId);
+        // TODO Paced train : Add another check if the train is a paced train for the delete paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
+        newProjectedTrainsById.delete(trainId as TrainScheduleId);
       });
       return newProjectedTrainsById;
     });
   }, []);
 
+  // TODO Paced train : change this function to handle paced trains in the drag issue
   /** Update only depature time of a train */
   const updateTrainDepartureTime = useCallback(
-    async (trainId: number, newDeparture: Date) => {
+    async (trainId: TrainId, newDeparture: Date) => {
+      // TODO Paced train : Add another check if the train is a paced train for the paced train drag issue
+      const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(trainId as TrainScheduleId);
+
       const trainSchedule = trainSchedules?.find((train) => train.id === trainId);
 
       if (!trainSchedule) {
@@ -182,17 +210,23 @@ const useScenarioData = (
       }
 
       const trainScheduleResult = await putTrainScheduleById({
-        id: trainId,
+        id: editoastTrainId,
         trainScheduleForm: {
           ...trainSchedule,
           start_time: newDeparture.toISOString(),
         },
       }).unwrap();
 
+      // TODO Paced train : Add another check if the train is a paced train for the paced train drag issue
+      const updatedTrainScheduleResult: TrainScheduleResultWithTrainId = {
+        ...trainScheduleResult,
+        id: formatEditoastTrainIdToTrainScheduleId(trainScheduleResult.id),
+      };
+
       setProjectedTrainsById((prev) => {
         const newProjectedTrainsById = new Map(prev);
-        newProjectedTrainsById.set(trainScheduleResult.id, {
-          ...newProjectedTrainsById.get(trainScheduleResult.id)!,
+        newProjectedTrainsById.set(updatedTrainScheduleResult.id, {
+          ...newProjectedTrainsById.get(updatedTrainScheduleResult.id)!,
           departureTime: newDeparture,
         });
         return newProjectedTrainsById;
@@ -201,7 +235,7 @@ const useScenarioData = (
       setTrainSchedules((prev) => {
         const newTrainSchedulesById = {
           ...keyBy(prev, 'id'),
-          ...keyBy([trainScheduleResult], 'id'),
+          ...keyBy([updatedTrainScheduleResult], 'id'),
         };
         return sortBy(Object.values(newTrainSchedulesById), 'start_time');
       });
@@ -210,14 +244,22 @@ const useScenarioData = (
       const rawSummaries = await postTrainScheduleSimulationSummary({
         body: {
           infra_id: scenario.infra_id,
-          ids: [trainId],
+          ids: [editoastTrainId],
           electrical_profile_set_id: electricalProfileSetId,
         },
       }).unwrap();
+
+      // TODO Paced train : Adapt this for the add paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
+      const formattedRawSummaries: { [key: TrainScheduleId]: SimulationSummaryResult } = {};
+      for (const [_editoastTrainId, trainSummary] of Object.entries(rawSummaries)) {
+        const formattedTrainId = formatEditoastTrainIdToTrainScheduleId(Number(_editoastTrainId));
+        formattedRawSummaries[formattedTrainId] = trainSummary;
+      }
+
       const summaries = formatTrainScheduleSummaries(
         [trainId],
-        rawSummaries,
-        mapBy([trainScheduleResult], 'id'),
+        formattedRawSummaries,
+        mapBy([updatedTrainScheduleResult], 'id'),
         rollingStocks!
       );
       setTrainScheduleSummariesById((prev) => {

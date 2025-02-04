@@ -8,24 +8,33 @@ import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
-  type TrainScheduleResult,
+  type ProjectPathTrainResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
+import type {
+  TrainId,
+  TrainScheduleId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getBatchPackage } from 'utils/batch';
 import { castErrorToFailure } from 'utils/error';
+import {
+  formatEditoastTrainIdToTrainScheduleId,
+  formatTrainScheduleIdToEditoastTrainId,
+} from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 const BATCH_SIZE = 5;
 
 type useLazyLoadTrainsProp = {
   infraId?: number;
-  trainIdsToProject: Set<number>;
+  trainIdsToProject: Set<TrainId>;
   path?: PathfindingResultSuccess;
-  trainSchedules?: TrainScheduleResult[];
+  trainSchedules?: TrainScheduleResultWithTrainId[];
   moreTrainsToCome?: boolean;
-  setTrainIdsToProject: Dispatch<SetStateAction<Set<number>>>;
+  setTrainIdsToProject: Dispatch<SetStateAction<Set<TrainId>>>;
 };
 
 /**
@@ -47,13 +56,13 @@ const useLazyProjectTrains = ({
   const { getElectricalProfileSetId } = useOsrdConfSelectors();
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
 
-  const [projectedTrainsById, setProjectedTrainsById] = useState<Map<number, TrainSpaceTimeData>>(
+  const [projectedTrainsById, setProjectedTrainsById] = useState<Map<TrainId, TrainSpaceTimeData>>(
     new Map()
   );
 
   const allTrainsProjected = useMemo(() => trainIdsToProject.size === 0, [trainIdsToProject]);
 
-  const requestedProjectedTrainIds = useRef<Set<number>>(new Set());
+  const requestedProjectedTrainIds = useRef<Set<TrainId>>(new Set());
   const projectionSeqNum = useRef(0);
 
   const [postTrainScheduleProjectPath] =
@@ -65,24 +74,36 @@ const useLazyProjectTrains = ({
   useEffect(() => {
     const projectNextPackage = async (
       _path: PathfindingResultSuccess,
-      packageToProject: number[]
+      packageToProject: TrainId[]
     ) => {
       packageToProject.forEach((trainId) => requestedProjectedTrainIds.current.add(trainId));
 
+      // Format train ids back to editoast format
+      const editoastTrainIds = packageToProject.map((trainId) =>
+        formatTrainScheduleIdToEditoastTrainId(trainId as TrainScheduleId)
+      );
+
+      // TODO Paced train : adapt this to handle paced trains
       const { blocks, routes, track_section_ranges } = _path;
       const rawProjectedTrains = await postTrainScheduleProjectPath({
         projectPathForm: {
           infra_id: infraId!,
-          ids: packageToProject,
+          ids: editoastTrainIds,
           path: { blocks, routes, track_section_ranges },
           electrical_profile_set_id: electricalProfileSetId,
         },
       }).unwrap();
 
+      const formattedRawProjectedTrains: { [key: TrainScheduleId]: ProjectPathTrainResult } = {};
+      for (const [editoastTrainId, projectedTrain] of Object.entries(rawProjectedTrains)) {
+        const trainId = formatEditoastTrainIdToTrainScheduleId(Number(editoastTrainId));
+        formattedRawProjectedTrains[trainId] = projectedTrain;
+      }
+
       setProjectedTrainsById((prevTrains) => {
         const newProjectedTrains = upsertNewProjectedTrains(
           prevTrains,
-          rawProjectedTrains,
+          formattedRawProjectedTrains,
           trainSchedulesById
         );
         return newProjectedTrains;
@@ -92,7 +113,7 @@ const useLazyProjectTrains = ({
     const projectTrains = async (
       seqNum: number,
       _path: PathfindingResultSuccess,
-      _trainToProjectIds: Set<number>
+      _trainToProjectIds: Set<TrainId>
     ) => {
       const shouldProjectIds = Array.from(_trainToProjectIds).filter(
         (trainId) => !requestedProjectedTrainIds.current.has(trainId)

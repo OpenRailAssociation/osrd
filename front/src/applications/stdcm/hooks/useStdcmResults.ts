@@ -15,8 +15,10 @@ import { useInfraID } from 'common/osrdContext';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { TrainScheduleId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
 
 import { STDCM_TRAIN_ID } from '../consts';
 
@@ -27,6 +29,9 @@ const useStdcmResults = (
 ) => {
   const infraId = useInfraID();
   const selectedTrainId = useSelector(getSelectedTrainId);
+  const editoastSelectedTrainId = selectedTrainId
+    ? formatTrainScheduleIdToEditoastTrainId(selectedTrainId as TrainScheduleId)
+    : undefined;
   const dispatch = useAppDispatch();
 
   const [postPathProperties] =
@@ -34,16 +39,16 @@ const useStdcmResults = (
 
   const { data: otherSelectedTrainSchedule } =
     osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
-      { id: selectedTrainId! },
-      { skip: !selectedTrainId || selectedTrainId === STDCM_TRAIN_ID }
+      { id: editoastSelectedTrainId! },
+      { skip: !selectedTrainId || editoastSelectedTrainId === STDCM_TRAIN_ID }
     );
 
   const selectedTrainSchedule = useMemo(
     () =>
-      selectedTrainId !== STDCM_TRAIN_ID && otherSelectedTrainSchedule
+      editoastSelectedTrainId !== STDCM_TRAIN_ID && otherSelectedTrainSchedule
         ? otherSelectedTrainSchedule
         : stdcmTrainResult,
-    [selectedTrainId, stdcmTrainResult, otherSelectedTrainSchedule]
+    [editoastSelectedTrainId, stdcmTrainResult, otherSelectedTrainSchedule]
   );
 
   const { simulation, departure_time: departureTime } =

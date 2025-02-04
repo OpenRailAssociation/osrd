@@ -14,6 +14,7 @@ import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
@@ -74,7 +75,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
                 <ManchetteWithSpaceTimeChartWrapper
                   operationalPoints={pathProperties.manchetteOperationalPoints}
                   projectPathTrainResult={projectedData.spaceTimeData}
-                  selectedTrainScheduleId={STDCM_TRAIN_ID}
+                  selectedTrainScheduleId={formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID)}
                   workSchedules={workSchedules}
                   projectionLoaderData={projectedData.projectionLoaderData}
                   height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}

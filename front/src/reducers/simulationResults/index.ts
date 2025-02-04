@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
+import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { type SimulationResultsState } from 'reducers/simulationResults/types';
 
 export const simulationResultsInitialState: SimulationResultsState = {
@@ -19,13 +20,13 @@ export const simulationResultsSlice = createSlice({
     },
     updateSelectedTrainId(
       state: Draft<SimulationResultsState>,
-      action: PayloadAction<number | undefined>
+      action: PayloadAction<TrainId | undefined>
     ) {
       state.selectedTrainId = action.payload;
     },
     updateTrainIdUsedForProjection(
       state: Draft<SimulationResultsState>,
-      action: PayloadAction<number | undefined>
+      action: PayloadAction<TimetableItemId | undefined>
     ) {
       state.trainIdUsedForProjection = action.payload;
     },

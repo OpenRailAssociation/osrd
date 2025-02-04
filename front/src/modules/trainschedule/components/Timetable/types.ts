@@ -5,6 +5,7 @@ import type {
   SimulationSummaryResult,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
+import type { TrainId } from 'reducers/osrdconf/types';
 
 export type ValidityFilter = 'both' | 'valid' | 'invalid';
 
@@ -14,9 +15,9 @@ type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status:
 
 export type TrainScheduleWithDetails = Omit<
   TrainScheduleResult,
-  'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time'
+  'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time'
 > & {
-  id: number;
+  id: TrainId;
   trainName: string;
   startTime: Date;
   arrivalTime: Date | null;

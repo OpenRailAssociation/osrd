@@ -5,6 +5,7 @@ import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastAp
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
@@ -227,7 +228,9 @@ const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
   state.trainSchedules
     .filter((trainSchedule) => trainSchedule.path.length >= 2)
     .map((trainSchedule) => {
-      state.trainScheduleIdByNgeId.set(trainSchedule.id, trainSchedule.id);
+      // TODO Paced train : Adapt this for the add paced train issue https://github.com/OpenRailAssociation/osrd/issues/10615
+      const formattedTrainId = formatEditoastTrainIdToTrainScheduleId(trainSchedule.id);
+      state.trainScheduleIdByNgeId.set(trainSchedule.id, formattedTrainId);
       return {
         id: trainSchedule.id,
 

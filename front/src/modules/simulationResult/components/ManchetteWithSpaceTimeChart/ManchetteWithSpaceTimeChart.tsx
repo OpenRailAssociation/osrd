@@ -2,7 +2,10 @@ import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 
 import { Slider } from '@osrd-project/ui-core';
 import { KebabHorizontal, Iterations } from '@osrd-project/ui-icons';
-import Manchette, { type WaypointMenuData } from '@osrd-project/ui-manchette';
+import Manchette, {
+  type ProjectPathTrainResult,
+  type WaypointMenuData,
+} from '@osrd-project/ui-manchette';
 import {
   useManchettesWithSpaceTimeChart,
   timeScaleToZoomValue,
@@ -35,8 +38,10 @@ import type {
   LayerRangeData,
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
+import type { TimetableItemId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
+import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
 import { getIdFromTrainPath, getPathStyle } from './utils';
@@ -48,7 +53,7 @@ import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 type ManchetteWithSpaceTimeChartProps = {
   operationalPoints: OperationalPoint[];
   projectPathTrainResult: TrainSpaceTimeData[];
-  selectedTrainScheduleId?: number;
+  selectedTrainScheduleId?: TrainId;
   waypointsPanelData?: WaypointsPanelData;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
@@ -57,13 +62,13 @@ type ManchetteWithSpaceTimeChartProps = {
     allTrainsProjected: boolean;
   };
   handleTrainDrag?: (
-    draggedTrainId: number,
+    draggedTrainId: TrainId,
     newDepartureTime: Date,
     { stopPanning }: { stopPanning: boolean }
   ) => Promise<void>;
   height?: number;
-  onTrainClick?: (trainId: number) => void;
-  selectedProjection?: number;
+  onTrainClick?: (trainId: TrainId) => void;
+  selectedProjection?: TimetableItemId;
 };
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
@@ -107,6 +112,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   }, [selectedProjection, projectPathTrainResult.length]);
 
   const [tmpSelectedTrain, setTmpSelectedTrain] = useState(selectedTrainScheduleId);
+
   useEffect(() => {
     setTmpSelectedTrain(selectedTrainScheduleId);
   }, [selectedTrainScheduleId]);
@@ -205,12 +211,29 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }));
   }, [waypointsPanelData, operationalPoints]);
 
+  const formattedCutProjectedTrains: ProjectPathTrainResult[] = useMemo(
+    () =>
+      cutProjectedTrains.map((train) => ({
+        ...train,
+        id: formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId),
+      })),
+    [cutProjectedTrains]
+  );
+
+  const formattedTmpSelectedTrain = useMemo(
+    () =>
+      tmpSelectedTrain
+        ? formatTrainScheduleIdToEditoastTrainId(tmpSelectedTrain as TrainScheduleId)
+        : undefined,
+    [tmpSelectedTrain]
+  );
+
   const { manchetteProps, spaceTimeChartProps, handleScroll, handleXZoom, xZoom } =
     useManchettesWithSpaceTimeChart(
       manchetteWaypoints,
-      cutProjectedTrains,
+      formattedCutProjectedTrains,
       manchetteWithSpaceTimeChartRef,
-      tmpSelectedTrain,
+      formattedTmpSelectedTrain,
       height,
       spaceTimeChartRef
     );
@@ -262,7 +285,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     // if not dragging, we check if we should start dragging
     if (hoveredItem && 'pathId' in hoveredItem.element) {
       const hoveredTrainId = getIdFromTrainPath(hoveredItem.element.pathId);
-      const train = projectPathTrainResult.find((res) => res.id === hoveredTrainId);
+      const train = projectPathTrainResult.find(
+        (projectedTrain) => projectedTrain.id === hoveredTrainId
+      );
       if (train) {
         setTmpSelectedTrain(train.id);
         setDraggingState({
@@ -304,8 +329,16 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   );
 
   const handleClick: SpaceTimeChartProps['onClick'] = () => {
-    if (!draggingState && hoveredItem && 'pathId' in hoveredItem.element) {
-      if (selectedTrainScheduleId !== Number(hoveredItem.element.pathId)) {
+    if (
+      !draggingState &&
+      selectedTrainScheduleId &&
+      hoveredItem &&
+      'pathId' in hoveredItem.element
+    ) {
+      const editoastSelectedTrainId = formatTrainScheduleIdToEditoastTrainId(
+        selectedTrainScheduleId as TrainScheduleId
+      );
+      if (editoastSelectedTrainId !== Number(hoveredItem.element.pathId)) {
         const trainId = getIdFromTrainPath(hoveredItem.element.pathId);
         onTrainClick?.(trainId);
       }

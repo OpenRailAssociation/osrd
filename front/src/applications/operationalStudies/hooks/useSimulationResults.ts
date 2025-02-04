@@ -3,7 +3,9 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
+import type { TrainScheduleId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
 
 import type { SimulationResultsData } from '../types';
 
@@ -16,26 +18,31 @@ const useSimulationResults = (): SimulationResultsData => {
   const electricalProfileSetId = useSelector(getElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
+  // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+  const editoastSelectedTrainId = selectedTrainId
+    ? formatTrainScheduleIdToEditoastTrainId(selectedTrainId as TrainScheduleId)
+    : undefined;
+
   const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
     {
-      id: selectedTrainId!,
+      id: editoastSelectedTrainId!,
     },
-    { skip: !selectedTrainId }
+    { skip: !editoastSelectedTrainId }
   );
 
   const { data: rawPath } = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(
     {
-      id: selectedTrainId!,
+      id: editoastSelectedTrainId!,
       infraId: infraId!,
     },
-    { skip: !selectedTrainId || !infraId }
+    { skip: !editoastSelectedTrainId || !infraId }
   );
   const path = selectedTrainId && rawPath?.status === 'success' ? rawPath : undefined;
 
   const { data: trainSimulation } =
     osrdEditoastApi.endpoints.getTrainScheduleByIdSimulation.useQuery(
-      { id: selectedTrainId!, infraId: infraId!, electricalProfileSetId },
-      { skip: !selectedTrainId || !infraId }
+      { id: editoastSelectedTrainId!, infraId: infraId!, electricalProfileSetId },
+      { skip: !editoastSelectedTrainId || !infraId }
     );
 
   const speedSpaceChart = useSpeedSpaceChart(

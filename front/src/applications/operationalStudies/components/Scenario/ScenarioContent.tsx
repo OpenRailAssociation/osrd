@@ -23,11 +23,11 @@ import type {
   InfraWithState,
   ScenarioResponse,
   TimetableDetailedResult,
-  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
+import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import ScenarioDescription from './ScenarioDescription';
@@ -53,7 +53,7 @@ const ScenarioContent = ({
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
-  const [trainIdToEdit, setTrainIdToEdit] = useState<number>();
+  const [trainIdToEdit, setTrainIdToEdit] = useState<TimetableItemId>();
   const [isMacro, setIsMacro] = useState(false);
   const {
     trainScheduleSummaries,
@@ -115,10 +115,10 @@ const ScenarioContent = ({
       infraId: infra.id,
       timeTableId: scenario.timetable_id,
       netzgrafikDto,
-      addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResult[]) => {
+      addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResultWithTrainId[]) => {
         upsertTrainSchedules(upsertedTrainSchedules);
       },
-      addDeletedTrainIds: (trainIds: number[]) => {
+      addDeletedTrainIds: (trainIds: TimetableItemId[]) => {
         removeTrains(trainIds);
       },
     });

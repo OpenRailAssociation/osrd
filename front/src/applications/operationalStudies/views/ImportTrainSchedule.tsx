@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleBase, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { ImportTrainScheduleConfig } from 'modules/trainschedule/components/ImportTrainSchedule';
 import ImportTrainScheduleTrainsList from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleTrainsList';
 import { setFailure } from 'reducers/main';
+import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 const ImportTrainSchedule = ({
@@ -17,7 +18,7 @@ const ImportTrainSchedule = ({
   dtoImport,
 }: {
   timetableId: number;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
   dtoImport: () => void;
 }) => {
   const dispatch = useAppDispatch();

@@ -22,9 +22,14 @@ import SimulationResultExport from 'modules/simulationResult/SimulationResultExp
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
+import {
+  formatEditoastTrainIdToTrainScheduleId,
+  formatTrainScheduleIdToEditoastTrainId,
+} from 'utils/trainId';
 
 import useSimulationResults from '../hooks/useSimulationResults';
 import type { TrainSpaceTimeData } from '../types';
@@ -40,7 +45,7 @@ type SimulationResultsProps = {
   projectionData?: ProjectionData;
   trainScheduleSummaries?: TrainScheduleWithDetails[];
   conflicts?: Conflict[];
-  updateTrainDepartureTime: (trainId: number, newDepartureTime: Date) => void;
+  updateTrainDepartureTime: (trainId: TrainId, newDepartureTime: Date) => void;
 };
 
 const SimulationResults = ({
@@ -111,12 +116,17 @@ const SimulationResults = ({
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
   const selectedTrainSummary = useMemo(
-    () => trainScheduleSummaries?.find((train) => train.id === selectedTrainSchedule?.id),
+    () =>
+      trainScheduleSummaries?.find(
+        (train) =>
+          formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId) ===
+          selectedTrainSchedule?.id
+      ),
     [trainScheduleSummaries, selectedTrainSchedule]
   );
 
   const handleTrainDrag = async (
-    draggedTrainId: number,
+    draggedTrainId: TrainId,
     newDepartureTime: Date,
     { stopPanning }: { stopPanning: boolean }
   ) => {
@@ -190,7 +200,11 @@ const SimulationResults = ({
                     <ManchetteWithSpaceTimeChartWrapper
                       operationalPoints={projectedOperationalPoints}
                       projectPathTrainResult={projectPathTrainResult}
-                      selectedTrainScheduleId={selectedTrainSchedule?.id}
+                      selectedTrainScheduleId={
+                        selectedTrainSchedule?.id
+                          ? formatEditoastTrainIdToTrainScheduleId(selectedTrainSchedule.id)
+                          : undefined
+                      }
                       waypointsPanelData={{
                         filteredWaypoints: filteredOperationalPoints,
                         setFilteredWaypoints: setFilteredOperationalPoints,

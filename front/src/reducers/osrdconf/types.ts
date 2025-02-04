@@ -12,6 +12,7 @@ import type {
   OperationalPointReference,
   PathItemLocation,
   ReceptionSignal,
+  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
 import type { Duration } from 'utils/duration';
@@ -122,3 +123,7 @@ export type PacedTrainId = string & { readonly __type: unique symbol };
 
 export type TrainId = TrainScheduleId | OccurrenceId;
 export type TimetableItemId = TrainScheduleId | PacedTrainId;
+
+export type TrainScheduleResultWithTrainId = Omit<TrainScheduleResult, 'id'> & {
+  id: TrainScheduleId;
+};

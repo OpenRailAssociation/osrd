@@ -3,9 +3,13 @@ import { compact } from 'lodash';
 import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,
-  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type {
+  TrainId,
+  TrainScheduleId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
@@ -14,12 +18,15 @@ import { mapBy } from 'utils/types';
 import { isScheduledPointsNotHonored, isTooFast } from '../utils';
 
 const formatTrainScheduleSummaries = (
-  trainIds: number[],
-  rawSummaries: Record<string, SimulationSummaryResult>,
-  rawTrainSchedules: Map<number, TrainScheduleResult>,
+  trainIds: TrainId[],
+  rawSummaries: Record<TrainScheduleId, SimulationSummaryResult>,
+  rawTrainSchedules: Map<TrainScheduleId, TrainScheduleResultWithTrainId>,
   rollingStocks: LightRollingStockWithLiveries[]
-): Map<number, TrainScheduleWithDetails> => {
-  const relevantTrainSchedules = compact(trainIds.map((trainId) => rawTrainSchedules.get(trainId)));
+): Map<TrainId, TrainScheduleWithDetails> => {
+  const relevantTrainSchedules = compact(
+    // TODO Paced train : Adapt this for the add paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
+    trainIds.map((trainId) => rawTrainSchedules.get(trainId as TrainScheduleId))
+  );
 
   const trainScheduleWithDetails = relevantTrainSchedules.map((trainSchedule) => {
     const rollingStock = rollingStocks.find((rs) => rs.name === trainSchedule.rolling_stock_name);
