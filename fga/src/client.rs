@@ -46,17 +46,33 @@ impl Client {
         Ok(client)
     }
 
+    #[cfg(not(test))]
     pub async fn try_create_store(
         store_name: String,
         settings: ConnectionSettings,
-        #[cfg(test)] reset: bool,
+    ) -> Result<Client, InitializationError> {
+        Self::try_create_store_inner(store_name, settings, false).await
+    }
+
+    #[cfg(test)]
+    pub async fn try_create_store(
+        store_name: String,
+        settings: ConnectionSettings,
+        reset: bool,
+    ) -> Result<Client, InitializationError> {
+        Self::try_create_store_inner(store_name, settings, reset).await
+    }
+
+    async fn try_create_store_inner(
+        store_name: String,
+        settings: ConnectionSettings,
+        reset: bool,
     ) -> Result<Client, InitializationError> {
         let mut client = Self {
             store: Store::default(),
             settings,
             inner: reqwest::Client::new(),
         };
-        #[cfg(test)]
         if reset {
             if let Some(store) = client.find_store(&store_name).await? {
                 client.delete_stores(&store.id).await?;
