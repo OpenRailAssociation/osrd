@@ -1,10 +1,10 @@
 mod layer_cache;
 mod layers;
 
+use deadpool_redis::redis::AsyncCommands;
 pub use layers::Layer;
 pub use layers::MapLayers;
 pub use layers::View;
-use redis::AsyncCommands;
 
 pub use self::layer_cache::get_cache_tile_key;
 pub use self::layer_cache::get_layer_cache_prefix;

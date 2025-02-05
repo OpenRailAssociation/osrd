@@ -1,17 +1,23 @@
 use std::fmt::Debug;
 
+use deadpool_redis::redis::aio::ConnectionLike;
+use deadpool_redis::redis::cmd;
+use deadpool_redis::redis::Arg;
+use deadpool_redis::redis::AsyncCommands;
+use deadpool_redis::redis::Cmd;
+use deadpool_redis::redis::ErrorKind;
+use deadpool_redis::redis::Pipeline;
+use deadpool_redis::redis::RedisError;
+use deadpool_redis::redis::RedisFuture;
+use deadpool_redis::redis::ToRedisArgs;
+use deadpool_redis::redis::Value;
+use deadpool_redis::Config;
+use deadpool_redis::Connection;
+use deadpool_redis::Pool;
+use deadpool_redis::PoolError;
+use deadpool_redis::Runtime;
 use futures::future;
 use futures::FutureExt;
-use redis::aio::ConnectionLike;
-use redis::aio::ConnectionManager;
-use redis::cmd;
-use redis::AsyncCommands;
-use redis::Client;
-use redis::ErrorKind;
-use redis::RedisError;
-use redis::RedisFuture;
-use redis::RedisResult;
-use redis::ToRedisArgs;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use tracing::{debug, span, trace, Level};
@@ -20,41 +26,41 @@ use url::Url;
 use crate::error::Result;
 
 pub enum ValkeyConnection {
-    Tokio(ConnectionManager),
+    Tokio(Connection),
     NoCache,
 }
 
-fn no_cache_cmd_handler(cmd: &redis::Cmd) -> std::result::Result<redis::Value, RedisError> {
-    let cmd_name = cmd.args_iter().next().ok_or((
-        redis::ErrorKind::ClientError,
-        "missing a command instruction",
-    ))?;
+fn no_cache_cmd_handler(cmd: &Cmd) -> std::result::Result<Value, RedisError> {
+    let cmd_name = cmd
+        .args_iter()
+        .next()
+        .ok_or((ErrorKind::ClientError, "missing a command instruction"))?;
     let nb_keys = cmd.args_iter().skip(1).count();
     match cmd_name {
-        redis::Arg::Simple(cmd_name_bytes)
+        Arg::Simple(cmd_name_bytes)
             if cmd_name_bytes == "MGET".as_bytes()
                 || cmd_name_bytes == "MSET".as_bytes()
                 || nb_keys > 1 =>
         {
-            Ok(redis::Value::Array(vec![redis::Value::Nil; nb_keys]))
+            Ok(Value::Array(vec![Value::Nil; nb_keys]))
         },
-        redis::Arg::Simple(_)
+        Arg::Simple(_)
             if nb_keys == 1 =>
         {
-            Ok(redis::Value::Nil)
+            Ok(Value::Nil)
         },
-        redis::Arg::Simple(cmd_name_bytes) if cmd_name_bytes == "PING".as_bytes() => Ok(redis::Value::SimpleString("PONG".to_string())),
-        redis::Arg::Simple(cmd_name_bytes) => unimplemented!(
+        Arg::Simple(cmd_name_bytes) if cmd_name_bytes == "PING".as_bytes() => Ok(Value::SimpleString("PONG".to_string())),
+        Arg::Simple(cmd_name_bytes) => unimplemented!(
             "valkey command '{}' is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'", String::from_utf8(cmd_name_bytes.to_vec())?
         ),
-        redis::Arg::Cursor => unimplemented!(
+        Arg::Cursor => unimplemented!(
             "valkey cursor mode is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'"
         ),
     }
 }
 
 impl ConnectionLike for ValkeyConnection {
-    fn req_packed_command<'a>(&'a mut self, cmd: &'a redis::Cmd) -> RedisFuture<'a, redis::Value> {
+    fn req_packed_command<'a>(&'a mut self, cmd: &'a Cmd) -> RedisFuture<'a, Value> {
         match self {
             ValkeyConnection::Tokio(connection) => connection.req_packed_command(cmd),
             ValkeyConnection::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
@@ -63,10 +69,10 @@ impl ConnectionLike for ValkeyConnection {
 
     fn req_packed_commands<'a>(
         &'a mut self,
-        cmd: &'a redis::Pipeline,
+        cmd: &'a Pipeline,
         offset: usize,
         count: usize,
-    ) -> RedisFuture<'a, Vec<redis::Value>> {
+    ) -> RedisFuture<'a, Vec<Value>> {
         match self {
             ValkeyConnection::Tokio(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
@@ -77,7 +83,7 @@ impl ConnectionLike for ValkeyConnection {
                     .skip(offset)
                     .take(count)
                     .map(no_cache_cmd_handler)
-                    .collect::<std::result::Result<_, redis::RedisError>>();
+                    .collect::<std::result::Result<_, RedisError>>();
                 future::ready(responses).boxed()
             }
         }
@@ -259,7 +265,7 @@ impl ValkeyConnection {
 
 #[derive(Clone)]
 pub enum ValkeyClient {
-    Tokio(Client),
+    Tokio(Pool),
     /// This doesn't cache anything. It has no backend.
     NoCache,
 }
@@ -277,21 +283,21 @@ impl ValkeyClient {
             return Ok(ValkeyClient::NoCache);
         }
         Ok(ValkeyClient::Tokio(
-            redis::Client::open(valkey_config.valkey_url).unwrap(),
+            Config::from_url(valkey_config.valkey_url)
+                .create_pool(Some(Runtime::Tokio1))
+                .unwrap(),
         ))
     }
 
-    pub async fn get_connection(&self) -> RedisResult<ValkeyConnection> {
+    pub async fn get_connection(&self) -> std::result::Result<ValkeyConnection, PoolError> {
         match self {
-            ValkeyClient::Tokio(client) => Ok(ValkeyConnection::Tokio(
-                client.get_connection_manager().await?,
-            )),
+            ValkeyClient::Tokio(pool) => Ok(ValkeyConnection::Tokio(pool.get().await?)),
             ValkeyClient::NoCache => Ok(ValkeyConnection::NoCache),
         }
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn ping_valkey(&self) -> RedisResult<()> {
+    pub async fn ping_valkey(&self) -> anyhow::Result<()> {
         let mut conn = self.get_connection().await?;
         cmd("PING").query_async::<()>(&mut conn).await?;
         trace!("Valkey ping successful");

@@ -2,11 +2,12 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use colored::Colorize;
+use deadpool_redis::redis::RedisError;
+use deadpool_redis::PoolError;
 use diesel::result::Error as DieselError;
 use editoast_models::db_connection_pool::DatabasePoolBuildError;
 use editoast_models::db_connection_pool::DatabasePoolError;
 use editoast_models::DatabaseError;
-use redis::RedisError;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -171,7 +172,16 @@ impl EditoastError for RedisError {
     }
 }
 
-// Handle all json errors
+/// Handle all valkey pool errors
+impl EditoastError for PoolError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:ValkeyPoolError"
+    }
+}
 
 /// Handle all json errors
 impl EditoastError for ValidationErrors {

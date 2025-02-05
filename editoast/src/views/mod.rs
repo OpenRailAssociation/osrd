@@ -266,7 +266,7 @@ pub enum AppHealthError {
     #[error(transparent)]
     Database(#[from] editoast_models::db_connection_pool::PingError),
     #[error(transparent)]
-    Valkey(#[from] redis::RedisError),
+    Valkey(#[from] anyhow::Error),
     #[error(transparent)]
     Core(#[from] CoreError),
 }

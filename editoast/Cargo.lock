@@ -631,15 +631,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "backon"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba5289ec98f68f28dd809fd601059e6aa908bb8f6108620930828283d4ee23d7"
-dependencies = [
- "fastrand 2.3.0",
-]
-
-[[package]]
 name = "backtrace"
 version = "0.3.74"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -960,12 +951,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crc16"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "338089f42c427b86394a5ee60ff321da23a5c89c9d89514c829687b26359fcff"
-
-[[package]]
 name = "crc32fast"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1075,6 +1060,16 @@ dependencies = [
  "deadpool-runtime",
  "num_cpus",
  "tokio",
+]
+
+[[package]]
+name = "deadpool-redis"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfae6799b68a735270e4344ee3e834365f707c72da09c9a8bb89b45cc3351395"
+dependencies = [
+ "deadpool",
+ "redis",
 ]
 
 [[package]]
@@ -1295,6 +1290,7 @@ dependencies = [
  "colored",
  "dashmap",
  "deadpool",
+ "deadpool-redis",
  "derivative",
  "diesel",
  "diesel-async",
@@ -1332,7 +1328,6 @@ dependencies = [
  "pretty_assertions",
  "rand 0.8.5",
  "rangemap",
- "redis",
  "regex",
  "reqwest",
  "rstest",
@@ -3744,28 +3739,22 @@ dependencies = [
 
 [[package]]
 name = "redis"
-version = "0.28.2"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e37ec3fd44bea2ec947ba6cc7634d7999a6590aca7c35827c250bc0de502bda6"
+checksum = "09d8f99a4090c89cc489a94833c901ead69bfbf3877b4867d5482e321ee875bc"
 dependencies = [
  "arc-swap",
- "backon",
+ "async-trait",
  "bytes",
  "combine",
- "crc16",
- "futures-channel",
- "futures-sink",
  "futures-util",
+ "itertools",
  "itoa",
- "log",
- "native-tls",
  "num-bigint",
  "percent-encoding",
  "pin-project-lite",
- "rand 0.8.5",
  "ryu",
  "tokio",
- "tokio-native-tls",
  "tokio-util",
  "url",
 ]
