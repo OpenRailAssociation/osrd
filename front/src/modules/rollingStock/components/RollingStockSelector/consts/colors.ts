@@ -1,5 +1,5 @@
 // key = backgroundColor, value = text foreground color
-export const COLORS = {
+export default {
   '#009aa6': '#fff',
   '#d2e100': '#333',
   '#82be00': '#333',

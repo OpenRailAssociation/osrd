@@ -6,7 +6,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { RollingStock, Comfort } from 'common/api/osrdEditoastApi';
-import { COLORS } from 'modules/rollingStock/components/RollingStockSelector/consts/consts';
+import COLORS from 'modules/rollingStock/components/RollingStockSelector/consts/colors';
 import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
 import type { ParsedCurve, TransformedCurves } from 'modules/rollingStock/types';
