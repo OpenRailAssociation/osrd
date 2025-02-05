@@ -138,21 +138,21 @@ mod defs {
 
     pub type Id = String;
 
-    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord)]
+    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
     pub struct Role(#[from] pub Id);
     user!(Role, "role");
 
-    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord)]
+    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
     pub struct User(#[from] pub Id);
     user!(User, "user");
     object!(User, "user");
 
-    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord)]
+    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
     pub struct Group(#[from] pub Id);
     user!(Group, "group");
     object!(Group, "group");
 
-    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord)]
+    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
     pub struct Infra(#[from] pub Id);
     object!(Infra, "infra");
 

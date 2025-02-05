@@ -158,7 +158,7 @@ impl<'a, R: Relation> AsUser for UserSet<'a, R> {
     }
 
     fn fga_ident(&self) -> String {
-        format!("{}:{}#{}", Self::User::NAMESPACE, self.id(), R::NAME)
+        format!("{}:{}#{}", R::Object::NAMESPACE, self.id(), R::NAME)
     }
 }
 

@@ -660,11 +660,10 @@ mod tests {
         let france = defs::Infra(s!("france"));
         let spain = defs::Infra(s!("espagne"));
         client
-            .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
-            .await
-            .unwrap();
-        client
-            .write_tuples(&[defs::Infra::reader().tuple(&alice, &spain)])
+            .write_tuples(&[
+                defs::Infra::reader().tuple(&alice, &france),
+                defs::Infra::reader().tuple(&alice, &spain),
+            ])
             .await
             .unwrap();
 
@@ -686,11 +685,10 @@ mod tests {
         let france = defs::Infra(s!("france"));
         let spain = defs::Infra(s!("espagne"));
         client
-            .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
-            .await
-            .unwrap();
-        client
-            .write_tuples(&[defs::Infra::reader().tuple(&alice, &spain)])
+            .write_tuples(&[
+                defs::Infra::reader().tuple(&alice, &france),
+                defs::Infra::reader().tuple(&alice, &spain),
+            ])
             .await
             .unwrap();
 
@@ -700,5 +698,55 @@ mod tests {
             .await
             .unwrap();
         assert!(objects.is_empty());
+    }
+
+    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
+    async fn list_objects_higher_order_users() {
+        let model = compile_model(MODEL);
+        let client = test_client!();
+        client.push_authorization_model(&model).await.unwrap();
+        let alice = defs::User(s!("alice"));
+        let bob = defs::User(s!("bob"));
+        let france = defs::Infra(s!("france"));
+        let spain = defs::Infra(s!("espagne"));
+        let germany = defs::Infra(s!("allemagne"));
+        let group = defs::Group(s!("les_petits_pedestres"));
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
+            .await
+            .unwrap();
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&defs::User::tbpa(), &spain)])
+            .await
+            .unwrap();
+        client
+            .write_tuples(&[defs::Group::member().tuple(&alice, &group)])
+            .await
+            .unwrap();
+        client
+            .write_tuples(&[
+                defs::Infra::reader().tuple(&defs::Group::member().userset(&group), &germany)
+            ])
+            .await
+            .unwrap();
+
+        let objects = client
+            .list_objects(defs::Infra::can_read().query_objects(&defs::User::tbpa()))
+            .await
+            .unwrap();
+        assert_eq!(objects.as_slice(), &[spain.clone()]);
+
+        let objects = client
+            .list_objects(defs::Infra::can_read().query_objects(&bob))
+            .await
+            .unwrap();
+        assert_eq!(objects.as_slice(), &[spain.clone()]);
+
+        let mut objects = client
+            .list_objects(defs::Infra::can_read().query_objects(&alice))
+            .await
+            .unwrap();
+        objects.sort();
+        assert_eq!(objects.as_slice(), &[germany, spain, france]);
     }
 }
