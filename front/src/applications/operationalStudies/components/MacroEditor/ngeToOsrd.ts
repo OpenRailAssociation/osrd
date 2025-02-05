@@ -29,8 +29,6 @@ import type {
   LabelDto,
 } from '../NGE/types';
 
-const createdTrainrun = new Map<number, number>();
-
 const getNodeById = (nodes: NodeDto[], nodeId: number | string) =>
   nodes.find((node) => node.id === nodeId);
 
@@ -268,16 +266,18 @@ const handleUpdateTrainSchedule = async ({
   dispatch,
   infraId,
   addUpsertedTrainSchedules,
+  state,
 }: {
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
   dispatch: AppDispatch;
   infraId: number;
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+  state: MacroEditorState;
 }) => {
   const { nodes, labels } = netzgrafikDto;
   const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
-  const trainrunIdToUpdate = createdTrainrun.get(trainrun.id) || trainrun.id;
+  const trainrunIdToUpdate = state.trainScheduleIdByNgeId.get(trainrun.id);
   const trainSchedule = await dispatch(
     osrdEditoastApi.endpoints.getTrainScheduleById.initiate({
       id: trainrunIdToUpdate,
@@ -317,6 +317,7 @@ const handleTrainrunOperation = async ({
   netzgrafikDto,
   addUpsertedTrainSchedules,
   addDeletedTrainIds,
+  state,
 }: {
   type: NGEEvent['type'];
   trainrunId: number;
@@ -326,6 +327,7 @@ const handleTrainrunOperation = async ({
   netzgrafikDto: NetzgrafikDto;
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
   addDeletedTrainIds: (trainIds: number[]) => void;
+  state: MacroEditorState;
 }) => {
   const { nodes, labels, trainruns } = netzgrafikDto;
   const trainrun = trainruns.find((tr) => tr.id === trainrunId);
@@ -355,19 +357,19 @@ const handleTrainrunOperation = async ({
           ],
         })
       ).unwrap();
-      createdTrainrun.set(trainrunId, newTrainSchedules[0].id);
+      state.trainScheduleIdByNgeId.set(trainrunId, newTrainSchedules[0].id);
       addUpsertedTrainSchedules(newTrainSchedules);
       break;
     }
     case 'delete': {
-      const trainrunIdToDelete = createdTrainrun.get(trainrunId) || trainrunId;
+      const trainrunIdToDelete = state.trainScheduleIdByNgeId.get(trainrunId)!;
       await dispatch(
         osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
           body: { ids: [trainrunIdToDelete] },
         })
       ).unwrap();
-      createdTrainrun.delete(trainrunId);
       addDeletedTrainIds([trainrunIdToDelete]);
+      state.trainScheduleIdByNgeId.delete(trainrunId);
       break;
     }
     case 'update': {
@@ -377,6 +379,7 @@ const handleTrainrunOperation = async ({
         dispatch,
         infraId,
         addUpsertedTrainSchedules,
+        state,
       });
       break;
     }
@@ -478,6 +481,7 @@ const handleLabelOperation = async ({
   dispatch,
   infraId,
   addUpsertedTrainSchedules,
+  state,
 }: {
   type: NGEEvent['type'];
   label: LabelDto;
@@ -485,6 +489,7 @@ const handleLabelOperation = async ({
   dispatch: AppDispatch;
   infraId: number;
   addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResult[]) => void;
+  state: MacroEditorState;
 }) => {
   const { trainruns } = netzgrafikDto;
   switch (type) {
@@ -499,6 +504,7 @@ const handleLabelOperation = async ({
           dispatch,
           infraId,
           addUpsertedTrainSchedules,
+          state,
         });
       });
       break;
@@ -543,6 +549,7 @@ const handleOperation = async ({
         netzgrafikDto,
         addUpsertedTrainSchedules,
         addDeletedTrainIds,
+        state,
       });
       break;
     }
@@ -554,6 +561,7 @@ const handleOperation = async ({
         dispatch,
         infraId,
         addUpsertedTrainSchedules,
+        state,
       });
       break;
     default:

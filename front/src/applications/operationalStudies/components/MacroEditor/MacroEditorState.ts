@@ -57,6 +57,11 @@ export default class MacroEditorState {
   ngeResource: { id: number; capacity: number };
 
   /**
+   * Given a nge train run ID, returns the osrd train schedule ID
+   */
+  trainScheduleIdByNgeId: Map<number, number>;
+
+  /**
    * Default constructor
    */
   constructor(scenario: ScenarioResponse, trainSchedules: TrainScheduleResult[]) {
@@ -69,6 +74,7 @@ export default class MacroEditorState {
     this.scenario = scenario;
     this.trainSchedules = trainSchedules;
     this.ngeResource = { id: 1, capacity: this.trainSchedules.length };
+    this.trainScheduleIdByNgeId = new Map<number, number>();
   }
 
   /**

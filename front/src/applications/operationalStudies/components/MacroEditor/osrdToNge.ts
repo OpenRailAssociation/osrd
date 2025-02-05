@@ -226,20 +226,24 @@ export const loadAndIndexNge = async (
 const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
   state.trainSchedules
     .filter((trainSchedule) => trainSchedule.path.length >= 2)
-    .map((trainSchedule) => ({
-      id: trainSchedule.id,
-      name: trainSchedule.train_name,
-      categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
-      frequencyId:
-        getFrequencyFromLabels(trainSchedule.labels || [])?.id ?? DEFAULT_TRAINRUN_FREQUENCY.id,
-      trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
-      labelIds: (trainSchedule.labels || [])
-        // we keep only not handled frequencies as labels to be not redundant
-        .filter((l) => trainrunFrequencyFromLabel(l) === null)
-        .map((l) =>
-          labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
-        ),
-    }));
+    .map((trainSchedule) => {
+      state.trainScheduleIdByNgeId.set(trainSchedule.id, trainSchedule.id);
+      return {
+        id: trainSchedule.id,
+
+        name: trainSchedule.train_name,
+        categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
+        frequencyId:
+          getFrequencyFromLabels(trainSchedule.labels || [])?.id ?? DEFAULT_TRAINRUN_FREQUENCY.id,
+        trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
+        labelIds: (trainSchedule.labels || [])
+          // we keep only not handled frequencies as labels to be not redundant
+          .filter((l) => trainrunFrequencyFromLabel(l) === null)
+          .map((l) =>
+            labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
+          ),
+      };
+    });
 
 /**
  * Translate the train schedule in NGE "trainrunSection" & "nodes".
