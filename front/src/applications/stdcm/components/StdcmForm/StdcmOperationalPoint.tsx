@@ -5,8 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
-import { useOsrdConfActions } from 'common/osrdContext';
-import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { normalized } from 'utils/strings';
@@ -54,8 +53,6 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
   });
 
   const [chSuggestions, setChSuggestions] = useState<CHOption[]>([]);
-
-  const { updateStdcmPathStep } = useOsrdConfActions() as StdcmConfSliceActions;
 
   const selectedCi = useMemo(
     () =>

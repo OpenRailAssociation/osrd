@@ -2,13 +2,21 @@ import { describe, it, expect } from 'vitest';
 
 import { ArrivalTimeTypes, StdcmStopTypes } from 'applications/stdcm/types';
 import {
+  stdcmConfInitialState,
+  stdcmConfSlice,
+  updateLastStdcmResult,
+  resetStdcmConfig,
+  updateGridMarginAfter,
+  updateGridMarginBefore,
+  updateMaxSpeed,
+  updateStandardAllowance,
+  updateStdcmPathStep,
+  updateTotalLength,
+  updateTotalMass,
+  updateTowedRollingStockID,
   addNewStdcmResult,
   retainSimulation,
   selectSimulation,
-  stdcmConfInitialState,
-  stdcmConfSlice,
-  stdcmConfSliceActions,
-  updateLastStdcmResult,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -83,7 +91,7 @@ describe('stdcmConfReducers', () => {
       expect(stateBefore.margins.standardAllowance).toBe(initialTimeStandardAllowance);
 
       const newStandardAllowance = testDataBuilder.buildPercentageStandardAllowance(5);
-      store.dispatch(stdcmConfSliceActions.updateStandardAllowance(newStandardAllowance));
+      store.dispatch(updateStandardAllowance(newStandardAllowance));
 
       const stateAfter = store.getState()[stdcmConfSlice.name];
       expect(stateAfter.margins.standardAllowance).toBe(newStandardAllowance);
@@ -92,7 +100,7 @@ describe('stdcmConfReducers', () => {
     it('should handle updateGridMarginBefore', () => {
       const newGridMarginBefore = 5;
       const store = createStore(initialStateSTDCMConfig);
-      store.dispatch(stdcmConfSliceActions.updateGridMarginBefore(newGridMarginBefore));
+      store.dispatch(updateGridMarginBefore(newGridMarginBefore));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.margins.gridMarginBefore).toStrictEqual(newGridMarginBefore);
     });
@@ -100,7 +108,7 @@ describe('stdcmConfReducers', () => {
     it('should handle updateGridMarginAfter', () => {
       const newGridMarginAfter = 5;
       const store = createStore(initialStateSTDCMConfig);
-      store.dispatch(stdcmConfSliceActions.updateGridMarginAfter(newGridMarginAfter));
+      store.dispatch(updateGridMarginAfter(newGridMarginAfter));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.margins.gridMarginAfter).toStrictEqual(newGridMarginAfter);
     });
@@ -108,7 +116,7 @@ describe('stdcmConfReducers', () => {
 
   it('should handle resetStdcmConfig', () => {
     const store = createStore(initialStateSTDCMConfig);
-    store.dispatch(stdcmConfSliceActions.resetStdcmConfig());
+    store.dispatch(resetStdcmConfig());
 
     const state = store.getState()[stdcmConfSlice.name];
     expect(state.rollingStockID).toBe(stdcmConfInitialState.rollingStockID);
@@ -119,23 +127,23 @@ describe('stdcmConfReducers', () => {
   describe('Consist updates', () => {
     const store = createStore();
     it('should handle totalMass', () => {
-      store.dispatch(stdcmConfSliceActions.updateTotalMass(345));
+      store.dispatch(updateTotalMass(345));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.totalMass).toEqual(345);
     });
 
     it('should handle totalLength', () => {
-      store.dispatch(stdcmConfSliceActions.updateTotalLength(345));
+      store.dispatch(updateTotalLength(345));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.totalLength).toEqual(345);
     });
     it('should handle maxSpeed', () => {
-      store.dispatch(stdcmConfSliceActions.updateMaxSpeed(110));
+      store.dispatch(updateMaxSpeed(110));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.maxSpeed).toEqual(110);
     });
     it('should handle towedRollingStockID', () => {
-      store.dispatch(stdcmConfSliceActions.updateTowedRollingStockID(11));
+      store.dispatch(updateTowedRollingStockID(11));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.towedRollingStockID).toEqual(11);
     });
@@ -156,7 +164,7 @@ describe('stdcmConfReducers', () => {
         },
       };
 
-      store.dispatch(stdcmConfSliceActions.updateStdcmPathStep({ id: origin.id, updates }));
+      store.dispatch(updateStdcmPathStep({ id: origin.id, updates }));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.stdcmPathSteps.at(0)).toEqual({ ...origin, ...updates });
     });
@@ -169,7 +177,7 @@ describe('stdcmConfReducers', () => {
         stopFor: 1,
       };
 
-      store.dispatch(stdcmConfSliceActions.updateStdcmPathStep({ id: via.id, updates }));
+      store.dispatch(updateStdcmPathStep({ id: via.id, updates }));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.stdcmPathSteps.at(1)).toEqual({ ...via, ...updates });
     });
@@ -186,7 +194,7 @@ describe('stdcmConfReducers', () => {
         },
       };
 
-      store.dispatch(stdcmConfSliceActions.updateStdcmPathStep({ id: destination.id, updates }));
+      store.dispatch(updateStdcmPathStep({ id: destination.id, updates }));
       const state = store.getState()[stdcmConfSlice.name];
       expect(state.stdcmPathSteps.at(-1)).toEqual({ ...destination, ...updates });
     });

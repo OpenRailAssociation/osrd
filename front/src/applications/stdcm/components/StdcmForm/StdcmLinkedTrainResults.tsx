@@ -2,8 +2,7 @@ import { RadioButton } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { useDispatch } from 'react-redux';
 
-import { useOsrdConfActions } from 'common/osrdContext';
-import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import { updateLinkedTrainExtremity } from 'reducers/osrdconf/stdcmConf';
 
 import type { StdcmLinkedTrainResult, ExtremityPathStepType } from '../../types';
 
@@ -17,7 +16,6 @@ const StdcmLinkedTrainResults = ({
   linkedOp: { extremityType, id },
 }: StdcmLinkedTrainResultsProps) => {
   const dispatch = useDispatch();
-  const { updateLinkedTrainExtremity } = useOsrdConfActions() as StdcmConfSliceActions;
   return (
     <div className="stdcm-linked-train-results">
       {linkedTrainResults.map(({ trainName, origin, destination }, index) => (

@@ -3,14 +3,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions } from 'common/osrdContext';
-import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import { updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
 
 export const NO_CONFIG_FOUND_MSG = 'No configuration found';
 
 export default function useStdcmEnvironment() {
   const dispatch = useDispatch();
-  const { updateStdcmEnvironment } = useOsrdConfActions() as StdcmConfSliceActions;
   const [getStdcmSearchEnvironment] =
     osrdEditoastApi.endpoints.getStdcmSearchEnvironment.useLazyQuery();
 

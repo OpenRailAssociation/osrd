@@ -13,9 +13,9 @@ import { getDocument } from 'common/api/documentApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderFill } from 'common/Loaders';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 import { getScenarioDatetimeWindow } from 'modules/scenario/helpers/utils';
-import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import { updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
 
 import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
@@ -35,7 +35,6 @@ const ScenarioExplorer = ({
   const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
 
-  const { updateStdcmEnvironment } = useOsrdConfActions() as StdcmConfSliceActions;
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     { projectId: globalProjectId! },
     { skip: !globalProjectId }

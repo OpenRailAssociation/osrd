@@ -16,7 +16,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import useFilterTowedRollingStock from 'modules/towedRollingStock/hooks/useFilterTowedRollingStock';
-import { type StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import { updateTowedRollingStockID } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
 import { kgToT, kmhToMs, msToKmh } from 'utils/physics';
 
@@ -48,8 +48,7 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
   const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
     useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
 
-  const { updateRollingStockID, updateTowedRollingStockID } =
-    useOsrdConfActions() as StdcmConfSliceActions;
+  const { updateRollingStockID } = useOsrdConfActions();
   const dispatch = useAppDispatch();
 
   const { rollingStock } = useStoreDataForRollingStockSelector();

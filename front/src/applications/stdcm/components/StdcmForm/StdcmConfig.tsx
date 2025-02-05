@@ -12,11 +12,11 @@ import {
   validateTotalLength,
   validateTotalMass,
 } from 'applications/stdcm/utils/consistValidation';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
-import { type StdcmConfSliceActions, resetMargins } from 'reducers/osrdconf/stdcmConf';
+import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getMaxSpeed,
   getStdcmDestination,
@@ -73,7 +73,6 @@ const StdcmConfig = ({
 
   const { infra } = useInfraStatus();
   const dispatch = useAppDispatch();
-  const { updateStdcmPathStep, restoreStdcmConfig } = useOsrdConfActions() as StdcmConfSliceActions;
 
   const { getProjectID, getScenarioID, getStudyID } = useOsrdConfSelectors();
   const origin = useSelector(getStdcmOrigin);

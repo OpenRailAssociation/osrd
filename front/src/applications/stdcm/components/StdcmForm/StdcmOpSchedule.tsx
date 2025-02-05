@@ -4,8 +4,8 @@ import { DatePicker, Select, TimePicker, TolerancePicker } from '@osrd-project/u
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatDateString } from 'utils/date';
@@ -24,7 +24,6 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const { updateStdcmPathStep } = useOsrdConfActions() as StdcmConfSliceActions;
   const { getSearchDatetimeWindow } = useOsrdConfSelectors();
   const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 

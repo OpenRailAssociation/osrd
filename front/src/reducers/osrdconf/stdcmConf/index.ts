@@ -268,21 +268,31 @@ export const stdcmConfSlice = createSlice({
   },
 });
 
-export const stdcmConfSliceActions = stdcmConfSlice.actions;
-
 export const {
+  resetStdcmConfig,
+  restoreStdcmConfig,
+  updateTotalMass,
+  updateTotalLength,
+  updateMaxSpeed,
+  updateTowedRollingStockID,
   resetMargins,
   updateGridMarginAfter,
   updateGridMarginBefore,
   updateStandardAllowance,
+  updateStdcmEnvironment,
+  updateStdcmPathSteps,
+  updateStdcmPathStep,
+  addStdcmVia,
+  deleteStdcmVia,
+  updateLinkedTrainExtremity,
   addNewStdcmResult,
   updateLastStdcmResult,
   selectSimulation,
   retainSimulation,
-} = stdcmConfSliceActions;
+} = stdcmConfSlice.actions;
 
 export type StdcmConfSlice = typeof stdcmConfSlice;
 
-export type StdcmConfSliceActions = typeof stdcmConfSliceActions;
+export type StdcmConfSliceActions = typeof stdcmConfSlice.actions;
 
 export default stdcmConfSlice.reducer;

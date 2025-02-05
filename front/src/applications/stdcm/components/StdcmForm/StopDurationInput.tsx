@@ -4,8 +4,7 @@ import { Input } from '@osrd-project/ui-core';
 import type { Status } from '@osrd-project/ui-core/dist/components/inputs/StatusMessage';
 import { useTranslation } from 'react-i18next';
 
-import { useOsrdConfActions } from 'common/osrdContext';
-import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
+import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
@@ -20,8 +19,6 @@ type StopDurationInputProps = {
 const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('stdcm');
-
-  const { updateStdcmPathStep } = useOsrdConfActions() as StdcmConfSliceActions;
 
   const [stopDuration, setStopDuration] = useState(
     pathStep.stopFor !== undefined ? `${pathStep.stopFor}` : ''
