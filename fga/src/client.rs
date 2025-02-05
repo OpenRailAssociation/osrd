@@ -337,12 +337,12 @@ enum Continuation {
     Stop,
 }
 
-impl<S: AsRef<str>> From<S> for Continuation {
-    fn from(s: S) -> Self {
-        if s.as_ref().is_empty() {
+impl From<String> for Continuation {
+    fn from(s: String) -> Self {
+        if s.is_empty() {
             Continuation::Stop
         } else {
-            Continuation::Continue(s.as_ref().to_owned())
+            Continuation::Continue(s)
         }
     }
 }
