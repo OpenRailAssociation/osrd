@@ -70,6 +70,7 @@ mod defs {
 
     macro_rules! relation {
         ($name:ident : $user:ty => $object:ty) => {
+            #[allow(unused)]
             pub const fn $name() -> impl Relation<User = $user, Object = $object> {
                 #[derive(Debug)]
                 struct R;
@@ -100,7 +101,7 @@ mod defs {
             group: Group
         },
         Group {
-            // role: Role,
+            role: Role,
             member: User
         },
         Infra {
