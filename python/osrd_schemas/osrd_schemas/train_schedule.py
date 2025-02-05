@@ -170,11 +170,19 @@ class PowerRestrictionRanges(RootModel):
 
 
 class TrainScheduleOptions(BaseModel):
-    """Optional arguments for the standalone simulation."""
+    """Optional arguments :
+    - `use_electrical_profiles` : use the electrical profiles for the standalone simulation
+    - `use_infra_speed_limits_for_simulation` : use the speed limits coming from the infrastructure for
+       the standalone simulation
+    """
 
-    ignore_electrical_profiles: bool = Field(
+    use_electrical_profiles: bool = Field(
         default=False,
-        description="If true, the electrical profiles are ignored in the standalone simulation",
+        description="If true, the electrical profiles are used in the standalone simulation",
+    )
+    use_infra_speed_limits_for_simulation: bool = Field(
+        default=True,
+        description="If false, the speed limits of the infrastructure are ignored in the standalone simulation",
     )
 
 

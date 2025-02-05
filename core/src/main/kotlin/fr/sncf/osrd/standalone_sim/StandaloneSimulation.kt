@@ -59,6 +59,7 @@ fun runStandaloneSimulation(
     speedLimitTag: String?,
     powerRestrictions: DistanceRangeMap<String>,
     useElectricalProfiles: Boolean,
+    useInfraSpeedLimits: Boolean,
     timeStep: Double,
     schedule: List<SimulationScheduleItem>,
     initialSpeed: Double,
@@ -68,7 +69,16 @@ fun runStandaloneSimulation(
 ): SimulationSuccess {
     // MRSP & SpeedLimits
     val safetySpeedRanges = makeSafetySpeedRanges(infra, chunkPath, routes, schedule)
-    var mrsp = computeMRSP(pathProps, rollingStock, true, speedLimitTag, null, safetySpeedRanges)
+    var mrsp =
+        computeMRSP(
+            pathProps,
+            rollingStock,
+            true,
+            speedLimitTag,
+            null,
+            safetySpeedRanges,
+            useInfraSpeedLimits
+        )
     mrsp = driverBehaviour.applyToMRSP(mrsp)
     // We don't use speed safety ranges in the MRSP displayed in the front
     // (just like we don't add the train length)
@@ -79,6 +89,8 @@ fun runStandaloneSimulation(
             false,
             speedLimitTag,
             null,
+            null,
+            useInfraSpeedLimits,
         )
 
     // Build paths and contexts

@@ -11886,6 +11886,8 @@ components:
           properties:
             use_electrical_profiles:
               type: boolean
+            use_speed_limits_for_simulation:
+              type: boolean
           additionalProperties: false
         path:
           type: array
@@ -11980,6 +11982,8 @@ components:
       type: object
       properties:
         use_electrical_profiles:
+          type: boolean
+        use_speed_limits_for_simulation:
           type: boolean
       additionalProperties: false
     TrainScheduleResult:

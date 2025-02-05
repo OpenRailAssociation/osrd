@@ -3302,6 +3302,7 @@ export type Margins = {
 };
 export type TrainScheduleOptions = {
   use_electrical_profiles?: boolean;
+  use_speed_limits_for_simulation?: boolean;
 };
 export type PathItem = PathItemLocation & {
   /** Metadata given to mark a point as wishing to be deleted by the user.
@@ -3660,6 +3661,7 @@ export type TrainScheduleBase = {
   };
   options?: {
     use_electrical_profiles?: boolean;
+    use_speed_limits_for_simulation?: boolean;
   };
   path: (PathItemLocation & {
     /** Metadata given to mark a point as wishing to be deleted by the user.

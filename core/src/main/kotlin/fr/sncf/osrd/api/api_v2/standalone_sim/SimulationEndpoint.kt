@@ -90,6 +90,7 @@ class SimulationEndpoint(
                     request.speedLimitTag,
                     parsePowerRestrictions(request.powerRestrictions),
                     request.options.useElectricalProfiles,
+                    request.options.useInfraSpeedLimits ?: true,
                     2.0,
                     parseRawSimulationScheduleItems(request.schedule),
                     request.initialSpeed,

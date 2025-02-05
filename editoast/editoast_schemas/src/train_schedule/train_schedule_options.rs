@@ -14,8 +14,15 @@ pub struct TrainScheduleOptions {
     #[derivative(Default(value = "true"))]
     #[serde(default = "default_use_electrical_profiles")]
     use_electrical_profiles: bool,
+    #[derivative(Default(value = "true"))]
+    #[serde(default = "default_use_speed_limits_for_simulation")]
+    use_speed_limits_for_simulation: bool,
 }
 
 fn default_use_electrical_profiles() -> bool {
+    true
+}
+
+fn default_use_speed_limits_for_simulation() -> bool {
     true
 }
