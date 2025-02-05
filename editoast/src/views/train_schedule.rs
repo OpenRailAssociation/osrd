@@ -24,6 +24,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 use tracing::info;
+use tracing::Instrument;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -404,30 +405,37 @@ pub async fn train_simulation_batch(
         .map(|rs| PhysicsConsistParameters::from_traction_engine(rs.into()))
         .collect();
 
-    let consists_ref = &consists;
     let futures: Vec<_> = train_batches
         .zip(iter::repeat(conn.clone()))
         .map(|(chunk, conn)| {
             let valkey_client = valkey_client.clone();
             let core = core.clone();
-            async move {
-                consist_train_simulation_batch(
-                    &mut conn.clone(),
-                    valkey_client.clone(),
-                    core.clone(),
-                    infra,
-                    chunk,
-                    consists_ref,
-                    electrical_profile_set_id,
-                )
-                .await
-            }
+            let consists = consists.clone();
+            let infra = <Infra as Clone>::clone(infra);
+            let chunk = chunk.to_vec();
+            tokio::spawn(
+                async move {
+                    consist_train_simulation_batch(
+                        &mut conn.clone(),
+                        valkey_client.clone(),
+                        core.clone(),
+                        &infra,
+                        &chunk,
+                        &consists,
+                        electrical_profile_set_id,
+                    )
+                    .await
+                }
+                .in_current_span(),
+            )
         })
         .collect();
 
     let results = futures::future::try_join_all(futures).await.unwrap();
-    let results = results.into_iter().flatten().collect();
-    Ok(results)
+    results
+        .into_iter()
+        .flatten_ok()
+        .collect::<Result<Vec<_>, _>>()
 }
 
 #[tracing::instrument(skip_all, fields(nb_trains = train_schedules.len()))]
