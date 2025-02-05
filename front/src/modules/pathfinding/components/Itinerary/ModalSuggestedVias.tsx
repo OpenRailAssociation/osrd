@@ -8,10 +8,9 @@ import { useSelector } from 'react-redux';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import { useOsrdConfActions } from 'common/osrdContext';
 import { isVia, matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
+import { upsertViaFromSuggestedOP } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getVias,
   getDestination,
@@ -27,7 +26,6 @@ type ModalSuggestedViasProps = {
 };
 
 const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggestedViasProps) => {
-  const { upsertViaFromSuggestedOP } = useOsrdConfActions() as OperationalStudiesConfSliceActions;
   const dispatch = useAppDispatch();
   const vias = useSelector(getVias());
   const destination = useSelector(getDestination);

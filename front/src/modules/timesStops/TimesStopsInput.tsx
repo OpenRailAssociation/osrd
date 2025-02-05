@@ -7,12 +7,11 @@ import type { Operation } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { useOsrdConfActions } from 'common/osrdContext';
 import { isVia, matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import {
   updatePathSteps,
-  type OperationalStudiesConfSliceActions,
+  upsertSeveralViasFromSuggestedOP,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -77,8 +76,6 @@ const TimesStopsInput = ({
 }: TimesStopsInputProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('timesStops');
-  const { upsertSeveralViasFromSuggestedOP } =
-    useOsrdConfActions() as OperationalStudiesConfSliceActions;
 
   const [rows, setRows] = useState<TimesStopsInputRow[]>([]);
   const { getTrackSectionsByIds, trackSectionsLoading } = useScenarioContext();

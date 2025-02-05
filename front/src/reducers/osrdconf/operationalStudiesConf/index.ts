@@ -106,19 +106,33 @@ export const operationalStudiesConfSlice = createSlice({
 export const operationalStudiesConfSliceActions = operationalStudiesConfSlice.actions;
 
 export const {
+  selectTrainToEdit,
+
+  // train settings reducer
   updateName,
   updateStartTime,
   updateInitialSpeed,
   updateLabels,
   updateRollingStockComfort,
-  updatePathSteps,
-  deleteItinerary,
-  replaceItinerary,
   updateConstraintDistribution,
   toggleUsingElectricalProfiles,
   updateTrainCount,
   updateTrainDelta,
   updateTrainStep,
+  upsertViaFromSuggestedOP,
+  upsertSeveralViasFromSuggestedOP,
+
+  // itinerary reducer
+  updatePathSteps,
+  deleteItinerary,
+  replaceItinerary,
+
+  // power restrictions reducer
+  upsertPowerRestrictionRanges,
+  cutPowerRestrictionRanges,
+  deletePowerRestrictionRanges,
+  resizeSegmentEndInput,
+  resizeSegmentBeginInput,
 } = operationalStudiesConfSliceActions;
 
 export type OperationalStudiesConfSlice = typeof operationalStudiesConfSlice;

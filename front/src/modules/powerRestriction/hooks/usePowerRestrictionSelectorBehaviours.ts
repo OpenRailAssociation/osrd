@@ -7,10 +7,15 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
-import { useOsrdConfActions } from 'common/osrdContext';
 import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import { createCutAtPathStep } from 'modules/powerRestriction/helpers/createPathStep';
-import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
+import {
+  upsertPowerRestrictionRanges,
+  deletePowerRestrictionRanges,
+  cutPowerRestrictionRanges,
+  resizeSegmentBeginInput,
+  resizeSegmentEndInput,
+} from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
@@ -42,14 +47,6 @@ const usePowerRestrictionSelectorBehaviours = ({
   const dispatch = useAppDispatch();
 
   const { getTrackSectionsByIds } = useScenarioContext();
-
-  const {
-    upsertPowerRestrictionRanges,
-    cutPowerRestrictionRanges,
-    deletePowerRestrictionRanges,
-    resizeSegmentEndInput,
-    resizeSegmentBeginInput,
-  } = useOsrdConfActions() as OperationalStudiesConfSliceActions;
 
   const [trackSectionsById, setTrackSectionsById] = useState<Record<string, TrackSection>>({});
 
