@@ -3,8 +3,6 @@ import path from 'path';
 
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import enTranslations from '../../public/locales/en/stdcm.json';
-import frTranslations from '../../public/locales/fr/stdcm.json';
 import {
   CI_SUGGESTIONS,
   DEFAULT_DETAILS,
@@ -20,6 +18,9 @@ import { logger } from '../logging-fixture';
 import { getTranslations, handleAndVerifyInput, readJsonFile } from '../utils';
 import HomePage from './home-page-model';
 import type { ConsistFields } from '../utils/types';
+
+const enTranslations = readJsonFile('public/locales/en/stdcm.json');
+const frTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 interface TableRow {
   index: number;

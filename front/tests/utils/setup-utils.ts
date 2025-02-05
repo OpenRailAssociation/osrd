@@ -13,8 +13,6 @@ import { readJsonFile } from '.';
 import { getApiRequest, getInfra, postApiRequest, setStdcmEnvironment } from './api-setup';
 import createScenario from './scenario';
 import { sendTrainSchedules } from './trainSchedule';
-import projectData from '../assets/operationStudies/project.json';
-import studyData from '../assets/operationStudies/study.json';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
@@ -30,6 +28,9 @@ import {
 } from '../assets/project-const';
 import { logger } from '../logging-fixture';
 import { createDateInSpecialTimeZone } from './date';
+
+const projectData = readJsonFile('tests/assets/operationStudies/project.json');
+const studyData = readJsonFile('tests/assets/operationStudies/study.json');
 
 /**
  * Helper function to create infrastructure using RailJson.

@@ -2,9 +2,10 @@ import { expect } from '@playwright/test';
 
 import test from './logging-fixture';
 import HomePage from './pages/home-page-model';
-import { getTranslations } from './utils';
-import enTranslations from '../public/locales/en/home/home.json';
-import frTranslations from '../public/locales/fr/home/home.json';
+import { getTranslations, readJsonFile } from './utils';
+
+const enTranslations = readJsonFile('public/locales/en/home/home.json');
+const frTranslations = readJsonFile('public/locales/fr/home/home.json');
 
 test.describe('Home page OSRD', () => {
   let homePage: HomePage;

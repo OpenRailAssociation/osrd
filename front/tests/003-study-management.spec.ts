@@ -2,16 +2,17 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { Project, Study } from 'common/api/osrdEditoastApi';
 
-import studyData from './assets/operationStudies/study.json';
 import test from './logging-fixture';
 import StudyPage from './pages/study-page-model';
-import { generateUniqueName, getTranslations } from './utils';
+import { generateUniqueName, getTranslations, readJsonFile } from './utils';
 import { getProject } from './utils/api-setup';
 import { formatDateToDayMonthYear } from './utils/date';
 import { createStudy } from './utils/setup-utils';
 import { deleteStudy } from './utils/teardown-utils';
-import enTranslations from '../public/locales/en/operationalStudies/study.json';
-import frTranslations from '../public/locales/fr/operationalStudies/study.json';
+
+const studyData = readJsonFile('tests/assets/operationStudies/study.json');
+const enTranslations = readJsonFile('public/locales/en/operationalStudies/study.json');
+const frTranslations = readJsonFile('public/locales/fr/operationalStudies/study.json');
 
 test.describe('Validate the Study creation workflow', () => {
   let studyPage: StudyPage;

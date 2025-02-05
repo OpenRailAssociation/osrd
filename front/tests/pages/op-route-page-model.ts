@@ -1,8 +1,13 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import enTranslations from '../../public/locales/en/operationalStudies/manageTrainSchedule.json';
-import frTranslations from '../../public/locales/fr/operationalStudies/manageTrainSchedule.json';
-import { getTranslations } from '../utils';
+import { getTranslations, readJsonFile } from '../utils';
+
+const enTranslations = readJsonFile(
+  'public/locales/en/operationalStudies/manageTrainSchedule.json'
+);
+const frTranslations = readJsonFile(
+  'public/locales/fr/operationalStudies/manageTrainSchedule.json'
+);
 
 class RoutePage {
   readonly page: Page;

@@ -1,12 +1,13 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import OperationalStudiesTimetablePage from './op-timetable-page-model';
-import enTranslations from '../../public/locales/en/timesStops.json';
-import frTranslations from '../../public/locales/fr/timesStops.json';
 import { LOAD_PAGE_TIMEOUT } from '../assets/timeout-const';
-import { getTranslations } from '../utils';
+import { getTranslations, readJsonFile } from '../utils';
 import { normalizeData } from '../utils/dataNormalizer';
 import type { StationData } from '../utils/types';
+
+const enTranslations = readJsonFile('public/locales/en/timesStops.json');
+const frTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
 class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage {
   readonly columnHeaders: Locator;

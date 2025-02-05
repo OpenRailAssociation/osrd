@@ -16,8 +16,9 @@ import createScenario from './utils/scenario';
 import scrollContainer from './utils/scrollHelper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { StationData } from './utils/types';
-import enTranslations from '../public/locales/en/timesStops.json';
-import frTranslations from '../public/locales/fr/timesStops.json';
+
+const enTranslations = readJsonFile('public/locales/en/timesStops.json');
+const frTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
 test.describe('Times and Stops Tab Verification', () => {
   test.slow();

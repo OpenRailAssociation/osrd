@@ -24,10 +24,9 @@ import type {
   GetTowedRollingStockApiResponse,
 } from 'common/api/osrdEditoastApi';
 
-import electricalProfileSet from '../assets/operationStudies/simulationSettings/electricalProfiles/electricalProfile.json';
 import { globalProjectName, globalStudyName, infrastructureName } from '../assets/project-const';
-import towedRollingStockData from '../assets/stdcm/towedRollingStock/towedRollingStock.json';
 import { logger } from '../logging-fixture';
+import { readJsonFile } from '.';
 
 /**
  * Initialize a new API request context with the base URL.
@@ -217,6 +216,9 @@ export const getElectricalProfile = async (
  * Set a new electrical profile.
  */
 export const setElectricalProfile = async (): Promise<ElectricalProfileSet> => {
+  const electricalProfileSet = readJsonFile(
+    'tests/assets/operationStudies/simulationSettings/electricalProfiles/electricalProfile.json'
+  );
   const electricalProfile = await postApiRequest(
     `/api/electrical_profile_set`,
     {
@@ -290,6 +292,10 @@ export const getTowedRollingStockByName = async (
  * @returns {Promise<TowedRollingStock>} - The created towed rolling stock.
  */
 export async function setTowedRollingStock(): Promise<TowedRollingStock> {
+  const towedRollingStockData = readJsonFile(
+    'tests/assets/stdcm/towedRollingStock/towedRollingStock.json'
+  );
+
   // Check if the towed rolling stock already exists
   const existingTowedRollingStock = await getTowedRollingStockByName(towedRollingStockData.name);
   if (existingTowedRollingStock) {

@@ -1,8 +1,9 @@
-import enTranslations from '../../public/locales/en/stdcm-simulation-report-sheet.json';
-import frTranslations from '../../public/locales/fr/stdcm-simulation-report-sheet.json';
-import { getTranslations } from '../utils';
+import { getTranslations, readJsonFile } from '../utils';
 import { getLocalizedDateString } from '../utils/date';
 import type { Simulation } from '../utils/types';
+
+const enTranslations = readJsonFile('public/locales/en/stdcm-simulation-report-sheet.json');
+const frTranslations = readJsonFile('public/locales/fr/stdcm-simulation-report-sheet.json');
 
 const simulationSheetDetails = (): Simulation => {
   const translations = getTranslations({

@@ -1,7 +1,11 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import CommonPage from './common-page-model';
-import manageTrainScheduleTranslation from '../../public/locales/fr/operationalStudies/manageTrainSchedule.json';
+import { readJsonFile } from '../utils';
+
+const manageTrainScheduleTranslation = readJsonFile(
+  'public/locales/fr/operationalStudies/manageTrainSchedule.json'
+);
 
 const trainAddedTranslation = manageTrainScheduleTranslation.trainAdded;
 

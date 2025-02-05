@@ -2,8 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
 
+import { readJsonFile } from '.';
 import { getInfra, getProject, getStudy, postApiRequest } from './api-setup';
-import scenarioData from '../assets/operationStudies/scenario.json';
+
+const scenarioData = readJsonFile('tests/assets/operationStudies/scenario.json');
 
 // Define the SetupResult interface to structure the returned setup data.
 interface SetupResult {

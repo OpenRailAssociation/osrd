@@ -2,14 +2,15 @@ import { expect } from '@playwright/test';
 
 import type { ElectricalProfileSet, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
-import scenarioData from './assets/operationStudies/scenario.json';
 import { infrastructureName } from './assets/project-const';
 import test from './logging-fixture';
 import ScenarioPage from './pages/scenario-page-model';
-import { generateUniqueName } from './utils';
+import { generateUniqueName, readJsonFile } from './utils';
 import { deleteApiRequest, getProject, getStudy, setElectricalProfile } from './utils/api-setup';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
+
+const scenarioData = readJsonFile('tests/assets/operationStudies/scenario.json');
 
 test.describe('Validate the Scenario creation workflow', () => {
   let scenarioPage: ScenarioPage;

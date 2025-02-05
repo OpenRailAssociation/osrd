@@ -1,9 +1,10 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import enTranslations from '../../public/locales/en/timesStops.json';
-import frTranslations from '../../public/locales/fr/timesStops.json';
-import { getTranslations } from '../utils';
+import { getTranslations, readJsonFile } from '../utils';
 import { cleanWhitespace } from '../utils/dataNormalizer';
+
+const enTranslations = readJsonFile('public/locales/en/timesStops.json');
+const frTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
 class OperationalStudiesInputTablePage {
   readonly page: Page;
