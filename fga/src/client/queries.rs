@@ -1,6 +1,6 @@
 use crate::model::{AsUser, Relation, Tuple};
 
-use super::{Client, RawTuple, RequestFailure};
+use super::{Client, Consistency, RawTuple, RequestFailure};
 
 #[derive(Debug, serde::Serialize)]
 pub(super) struct ContextualTuples {
@@ -56,5 +56,50 @@ impl Client {
         let Response { allowed, .. } = response.error_for_status()?.json::<Response>().await?;
 
         Ok(allowed)
+    }
+
+    pub(super) async fn post_stores_list_objects(
+        &self,
+        store_id: &str,
+        type_: &str,
+        relation: &str,
+        user: &str,
+        contextual_tuples: Option<ContextualTuples>,
+        consistency: Option<Consistency>,
+    ) -> Result<Vec<String>, RequestFailure> {
+        #[derive(serde::Serialize)]
+        struct Request {
+            #[serde(rename = "type")]
+            type_: String,
+            relation: String,
+            user: String,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            contextual_tuples: Option<ContextualTuples>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            consistency: Option<Consistency>,
+        }
+
+        let request = Request {
+            type_: type_.to_string(),
+            relation: relation.to_string(),
+            user: user.to_string(),
+            contextual_tuples,
+            consistency,
+        };
+
+        let url = self
+            .base_url()
+            .join(format!("stores/{store_id}/list-objects").as_str())
+            .unwrap();
+        let response = self.inner.post(url).json(&request).send().await?;
+
+        #[derive(serde::Deserialize)]
+        struct Response {
+            objects: Vec<String>,
+        }
+
+        let Response { objects } = response.error_for_status()?.json::<Response>().await?;
+
+        Ok(objects)
     }
 }

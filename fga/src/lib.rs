@@ -108,6 +108,8 @@ fn compile_model(model: &str) -> serde_json::Value {
 
 #[cfg(test)]
 mod defs {
+    use derive_more::From;
+
     use super::model::Relation;
 
     macro_rules! user {
@@ -136,22 +138,22 @@ mod defs {
 
     pub type Id = String;
 
-    #[derive(Debug)]
-    pub struct Role(pub Id);
+    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord)]
+    pub struct Role(#[from] pub Id);
     user!(Role, "role");
 
-    #[derive(Debug)]
-    pub struct User(pub Id);
+    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord)]
+    pub struct User(#[from] pub Id);
     user!(User, "user");
     object!(User, "user");
 
-    #[derive(Debug)]
-    pub struct Group(pub Id);
+    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord)]
+    pub struct Group(#[from] pub Id);
     user!(Group, "group");
     object!(Group, "group");
 
-    #[derive(Debug)]
-    pub struct Infra(pub Id);
+    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord)]
+    pub struct Infra(#[from] pub Id);
     object!(Infra, "infra");
 
     relations! {

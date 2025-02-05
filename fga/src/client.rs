@@ -14,6 +14,8 @@ use std::future::{self, Future};
 use futures::{stream, TryStreamExt as _};
 use itertools::Itertools as _;
 
+use crate::model::ParsingError;
+use crate::model::QueryObjects;
 use crate::model::{AsUser, Check, Object, Relation, Tuple, User};
 
 #[derive(Debug, Clone)]
@@ -30,6 +32,17 @@ pub struct ConnectionSettings {
     port: u16,
 }
 
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Consistency {
+    MinimizeLatency,
+    HigherConsistency,
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("HTTP request to OpenFGA failed: {0}")]
+pub struct RequestFailure(#[source] reqwest::Error);
+
 #[derive(Debug, thiserror::Error)]
 pub enum InitializationError {
     #[error("Store not found: {0}")]
@@ -39,8 +52,12 @@ pub enum InitializationError {
 }
 
 #[derive(Debug, thiserror::Error)]
-#[error("HTTP request to OpenFGA failed: {0}")]
-pub struct RequestFailure(#[source] reqwest::Error);
+pub enum QueryError {
+    #[error(transparent)]
+    Parsing(#[from] ParsingError),
+    #[error(transparent)]
+    Request(#[from] RequestFailure),
+}
 
 impl From<reqwest::Error> for RequestFailure {
     fn from(error: reqwest::Error) -> Self {
@@ -252,6 +269,26 @@ impl Client {
         )
         .await
     }
+
+    pub async fn list_objects<'a, R: Relation, U: AsUser<User = R::User>>(
+        &self,
+        QueryObjects(user, _): QueryObjects<'a, R, U>,
+    ) -> Result<Vec<R::Object>, QueryError> {
+        let objects = self
+            .post_stores_list_objects(
+                &self.store.id,
+                R::Object::NAMESPACE,
+                R::NAME,
+                &user.fga_ident(),
+                None,
+                None,
+            )
+            .await?
+            .into_iter()
+            .map(|ident| R::Object::parse_fga_ident(&ident))
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(objects)
+    }
 }
 
 // Mapping of OpenFGA HTTP API
@@ -356,6 +393,45 @@ impl<C> ContinuationUnfolder<C> {
         }
     }
 
+    /// Unfolds a continuation-based paginated API call into a stream of items
+    ///
+    /// ```ignore
+    /// fn api_call(shift: u64, cont: Option<String>) -> (Vec<u64>, String) {
+    ///     let Some(page) = cont.and_then(|s| s.parse::<u64>().ok()) else {
+    ///         return (vec![shift], "1".to_string());
+    ///     };
+    ///     if page < 3 {
+    ///         (
+    ///             (1..(page + 1)).map(|x| x + shift).collect(),
+    ///             (page + 1).to_string(),
+    ///         )
+    ///     } else {
+    ///         (vec![], "".to_string())
+    ///     }
+    /// }
+    ///
+    /// let stream = ContinuationUnfolder::new(client, 0).stream(
+    ///     |UnfoldArgs {
+    ///          client: _client,
+    ///          ctx: shift,
+    ///          continuation,
+    ///      }| async move {
+    ///         let (items, continuation) = api_call(shift, continuation);
+    ///         Ok((
+    ///             items,
+    ///             UnfoldNextState {
+    ///                 ctx: shift + 10,
+    ///                 continuation,
+    ///             },
+    ///         ))
+    ///     },
+    /// );
+    /// assert_eq!(
+    ///     stream.try_collect::<Vec<_>>().await.unwrap(),
+    ///     vec![0, 11, 21, 22]
+    /// );
+    /// ```
+    ///
     // TODO: rewrite that using async closures once rust 1.85 lands :pepoparty:
     fn stream<F, Fut, T>(self, f: F) -> impl stream::TryStream<Ok = T, Error = RequestFailure>
     where
@@ -563,5 +639,56 @@ mod tests {
             .assert_check_not(defs::Infra::can_read().check(&bob, &france))
             .assert_check(defs::Infra::can_read().check(&alice, &spain))
             .assert_check(defs::Infra::can_read().check(&bob, &spain));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_objects() {
+        let model = compile_model(MODEL);
+        let client = test_client!();
+        client.push_authorization_model(&model).await.unwrap();
+        let alice = defs::User(s!("alice"));
+        let france = defs::Infra(s!("france"));
+        let spain = defs::Infra(s!("espagne"));
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
+            .await
+            .unwrap();
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&alice, &spain)])
+            .await
+            .unwrap();
+
+        let mut objects = client
+            .list_objects(defs::Infra::can_read().query_objects(&alice))
+            .await
+            .unwrap();
+        objects.sort();
+        assert_eq!(objects.as_slice(), &[spain, france]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn list_objects_unknown_user() {
+        let model = compile_model(MODEL);
+        let client = test_client!();
+        client.push_authorization_model(&model).await.unwrap();
+        let bob = defs::User(s!("bob"));
+        let alice = defs::User(s!("alice"));
+        let france = defs::Infra(s!("france"));
+        let spain = defs::Infra(s!("espagne"));
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
+            .await
+            .unwrap();
+        client
+            .write_tuples(&[defs::Infra::reader().tuple(&alice, &spain)])
+            .await
+            .unwrap();
+
+        // bob has no tuple, so OpenFGA doesn't know about him
+        let objects = client
+            .list_objects(defs::Infra::can_read().query_objects(&bob))
+            .await
+            .unwrap();
+        assert!(objects.is_empty());
     }
 }

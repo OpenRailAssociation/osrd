@@ -49,8 +49,11 @@ pub trait Relation: fmt::Debug + Sized {
     }
 
     // implicit
-    fn query_objects<'a>(&'a self, user: &'a Self::User) -> QueryObjects<'a, Self> {
-        QueryObjects(user)
+    fn query_objects<'a, U: AsUser<User = Self::User>>(
+        &'a self,
+        user: &'a U,
+    ) -> QueryObjects<'a, Self, U> {
+        QueryObjects::<Self, U>(user, std::marker::PhantomData)
     }
 
     // tuple_key = { user: user:bob, relation: reader, object: document: }
@@ -64,7 +67,7 @@ pub trait Relation: fmt::Debug + Sized {
     }
 }
 
-pub trait Object: fmt::Debug {
+pub trait Object: fmt::Debug + From<String> {
     const NAMESPACE: &'static str;
 
     fn id(&self) -> &str;
@@ -72,6 +75,27 @@ pub trait Object: fmt::Debug {
     fn fga_ident(&self) -> String {
         format!("{}:{}", Self::NAMESPACE, self.id())
     }
+
+    fn parse_fga_ident(ident: &str) -> Result<Self, ParsingError> {
+        let (ns, id) = ident.split_once(':').ok_or_else(|| ParsingError {
+            ident: ident.to_string(),
+            expected_type: Self::NAMESPACE,
+        })?;
+        if ns != Self::NAMESPACE {
+            return Err(ParsingError {
+                ident: ident.to_string(),
+                expected_type: Self::NAMESPACE,
+            });
+        }
+        Ok(Self::from(id.to_string()))
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("Cannot parse string as '{expected_type}': '{ident}'")]
+pub struct ParsingError {
+    ident: String,
+    expected_type: &'static str,
 }
 
 pub trait AsUser {
@@ -97,9 +121,13 @@ pub struct Check<'a, R: Relation> {
     pub(crate) user: &'a R::User,
     pub(crate) object: &'a R::Object,
 }
-#[expect(unused)]
+
 #[derive(Debug)]
-pub struct QueryObjects<'a, R: Relation>(&'a R::User);
+pub struct QueryObjects<'a, R: Relation, U: AsUser<User = R::User>>(
+    pub(crate) &'a U,
+    pub(crate) std::marker::PhantomData<R>,
+);
+
 #[expect(unused)]
 #[derive(Debug)]
 pub struct QueryUsers<'a, R: Relation>(&'a R::Object);
