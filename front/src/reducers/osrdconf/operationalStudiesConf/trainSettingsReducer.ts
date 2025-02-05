@@ -3,7 +3,7 @@ import type { Draft } from 'immer';
 
 import type { OperationalStudiesConfState } from '.';
 
-const buildTrainSettingsReducer = () => ({
+const trainSettingsReducer = {
   updateConstraintDistribution(
     state: Draft<OperationalStudiesConfState>,
     action: PayloadAction<OperationalStudiesConfState['constraintDistribution']>
@@ -61,6 +61,6 @@ const buildTrainSettingsReducer = () => ({
   ) {
     state.rollingStockComfort = action.payload;
   },
-});
+};
 
-export default buildTrainSettingsReducer;
+export default trainSettingsReducer;

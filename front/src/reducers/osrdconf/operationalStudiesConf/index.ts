@@ -10,7 +10,7 @@ import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 import { msToKmh } from 'utils/physics';
 
 import powerRestrictionReducer from './powerRestrictionReducer';
-import buildTrainSettingsReducer from './trainSettingsReducer';
+import trainSettingsReducer from './trainSettingsReducer';
 import { upsertPathStep } from '../helpers';
 import itineraryReducer from './itineraryReducer';
 
@@ -52,7 +52,7 @@ export const operationalStudiesConfSlice = createSlice({
   reducers: {
     ...buildCommonConfReducers<OperationalStudiesConfState>(),
     ...powerRestrictionReducer,
-    ...buildTrainSettingsReducer(),
+    ...trainSettingsReducer,
     ...itineraryReducer,
     selectTrainToEdit(
       state: Draft<OperationalStudiesConfState>,
