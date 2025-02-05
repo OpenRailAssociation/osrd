@@ -1,6 +1,6 @@
-use std::future;
+use std::future::{self, Future};
 
-use futures::{stream, TryStreamExt};
+use futures::{stream, TryStreamExt as _};
 use itertools::Itertools as _;
 
 use crate::model::{AsUser, Check, Object, Relation, Tuple, User};
@@ -8,6 +8,7 @@ use crate::model::{AsUser, Check, Object, Relation, Tuple, User};
 #[derive(Debug, Clone)]
 pub struct Client {
     store: Store,
+    authorization_model_id: Option<String>,
     settings: ConnectionSettings,
     inner: reqwest::Client,
 }
@@ -34,6 +35,7 @@ impl Client {
     ) -> Result<Self, InitializationError> {
         let mut client = Self {
             store: Store::default(),
+            authorization_model_id: None,
             settings,
             inner: reqwest::Client::new(),
         };
@@ -42,6 +44,7 @@ impl Client {
             .find_store(&store_name)
             .await?
             .ok_or_else(|| InitializationError::NotFound(store_name))?;
+        client.actualize_authorization_model().await?;
 
         Ok(client)
     }
@@ -70,6 +73,7 @@ impl Client {
     ) -> Result<Client, InitializationError> {
         let mut client = Self {
             store: Store::default(),
+            authorization_model_id: None,
             settings,
             inner: reqwest::Client::new(),
         };
@@ -91,6 +95,78 @@ impl Client {
         Ok(store)
     }
 
+    pub fn authorization_models(
+        &self,
+    ) -> impl stream::TryStream<Ok = StoreAuthorizationModel, Error = RequestFailure> {
+        ContinuationUnfolder::new(self.clone(), ()).stream(
+            |UnfoldArgs {
+                 client,
+                 continuation,
+                 ctx: _ctx,
+             }| async move {
+                let (models, continuation) = client
+                    .get_stores_authorization_models(
+                        &client.store.id,
+                        None,
+                        continuation.as_ref().map(String::as_str),
+                    )
+                    .await?;
+                Ok((
+                    models,
+                    UnfoldNextState {
+                        ctx: (),
+                        continuation,
+                    },
+                ))
+            },
+        )
+    }
+
+    pub async fn latest_authorization_model(
+        &self,
+    ) -> Result<Option<StoreAuthorizationModel>, RequestFailure> {
+        let models = &mut self
+            .get_stores_authorization_models(&self.store.id, Some(1), None)
+            .await?
+            .0;
+        debug_assert!(models.len() <= 1);
+        Ok(models.pop())
+    }
+
+    /// Fetches the latest authorization model ID and instructs the [Client] to use it for future API calls
+    ///
+    /// For API calls that use an authorization model, OpenFGA strongly recommends providing an authorization
+    /// model ID so that they don't have to infer it. This apparently helps performance. This function should
+    /// likely be called when a new authorization model is pushed ([Client::push_authorization_model]) to avoid
+    /// inconsistencies. Likewise for authorization model suppression.
+    ///
+    /// This function is called automatically when a new [Client] is created with [Client::try_init].
+    ///
+    /// Erases the [Client]'s authorization model ID if no authorization model is defined in the store.
+    pub async fn actualize_authorization_model(&mut self) -> Result<(), RequestFailure> {
+        self.authorization_model_id = self
+            .latest_authorization_model()
+            .await?
+            .map(|model| model.id);
+        Ok(())
+    }
+
+    /// Pushes a new authorization model into OpenFGA
+    ///
+    /// /!\ WARNING /!\ The `authorization_model_id` serialized in the [Client] won't change.
+    /// If you wan't this model to be used for following client usage, you need to call
+    /// [Client::actualize_authorization_model] afterwards.
+    ///
+    /// ```ignore
+    /// let settings = todo!();
+    /// let mut client = Client::try_create_store("store_name".to_owned(), settings).await.unwrap();
+    /// assert_eq!(client.authorization_model_id, None);
+    /// let model = todo!();
+    /// let id = client.push_authorization_model(&model).await.unwrap();
+    /// assert_eq!(client.authorization_model_id, None);
+    /// client.actualize_authorization_model().await.unwrap();
+    /// assert_eq!(client.authorization_model_id, Some(id));
+    /// ```
     pub async fn push_authorization_model(
         &self,
         authorization_model: &AuthorizationModel,
@@ -107,7 +183,7 @@ impl Client {
             &self.store.id,
             &tuples.into_iter().map_into().collect::<Vec<_>>(),
             &[],
-            None,
+            self.authorization_model_id.clone(),
         )
         .await
     }
@@ -124,7 +200,7 @@ impl Client {
                 object: object.fga_ident(),
             },
             None,
-            None,
+            self.authorization_model_id.clone(),
         )
         .await
     }
@@ -205,6 +281,12 @@ impl<'a, R: Relation, U: AsUser<User = R::User>> FromIterator<&'a Tuple<'a, R, U
             tuple_keys: iter.into_iter().map(RawTuple::from).collect(),
         }
     }
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct StoreAuthorizationModel {
+    pub id: String,
+    pub type_definitions: AuthorizationModel,
 }
 
 // Almost 1-to-1 mapping of the HTTP API
@@ -364,6 +446,41 @@ impl Client {
         Ok(())
     }
 
+    async fn get_stores_authorization_models(
+        &self,
+        store_id: &str,
+        page_size: Option<usize>,
+        continuation: Option<&str>,
+    ) -> Result<(Vec<StoreAuthorizationModel>, String), RequestFailure> {
+        #[derive(serde::Deserialize)]
+        struct Response {
+            authorization_models: Vec<StoreAuthorizationModel>,
+            #[serde(default)]
+            continuation_token: String,
+        }
+
+        let mut url = self
+            .base_url()
+            .join(format!("/stores/{store_id}/authorization-models").as_str())
+            .unwrap();
+        if let Some(continuation) = continuation {
+            url.query_pairs_mut()
+                .append_pair("continuation_token", continuation);
+        }
+        if let Some(page_size) = page_size {
+            url.query_pairs_mut()
+                .append_pair("page_size", page_size.to_string().as_str());
+        }
+
+        let response = self.inner.get(url).send().await?.error_for_status()?;
+        let Response {
+            authorization_models,
+            continuation_token,
+        } = response.json().await?;
+
+        Ok((authorization_models, continuation_token))
+    }
+
     async fn post_stores_authorization_models(
         &self,
         store_id: &str,
@@ -430,6 +547,128 @@ impl Client {
         let Response { allowed, .. } = response.error_for_status()?.json::<Response>().await?;
 
         Ok(allowed)
+    }
+}
+
+/// Models the three states of a continuation while unfolding paginated API calls
+enum Continuation {
+    /// Initial state, no calls have been made yet
+    None,
+    /// A call response has provided a continuation token
+    Continue(String),
+    /// A call response has provided no continuation token (an empty string) meaning that the pagination ends there
+    Stop,
+}
+
+impl<S: AsRef<str>> From<S> for Continuation {
+    fn from(s: S) -> Self {
+        if s.as_ref().is_empty() {
+            Continuation::Stop
+        } else {
+            Continuation::Continue(s.as_ref().to_owned())
+        }
+    }
+}
+
+/// Allows transforming continuation-based paginated endpoint calls into a [stream::TryStream]
+///
+/// The [ContinuationUnfolder::stream] function takes a closure that will be called repeatedly until
+/// the [UnfoldNextState::continuation] is empty. For lifetimes reasons, the closure is provided with
+/// the ownership of the [Client] (cloned internally, but that's a cheap operation).
+///
+/// The [ContinuationUnfolder::stream] closure is expected to return a `Vec<T>` of items at each call,
+/// but those will be flatten into a stream of `T` as expected, and not a stream of `Vec<T>`.
+///
+/// This unfolder can also be provided with a context that will be passed to the closure at each call.
+/// The closure is free to modify it but **must** provide it anew in its result using [UnfoldNextState].
+struct ContinuationUnfolder<C> {
+    client: Client,
+    ctx: C,
+    continuation: Continuation,
+}
+
+struct UnfoldArgs<C> {
+    client: Client,
+    ctx: C,
+    continuation: Option<String>,
+}
+
+struct UnfoldNextState<C> {
+    ctx: C,
+    continuation: String,
+}
+
+impl<C> ContinuationUnfolder<C> {
+    fn new(client: Client, ctx: C) -> Self {
+        Self {
+            client,
+            ctx,
+            continuation: Continuation::None,
+        }
+    }
+
+    // TODO: rewrite that using async closures once rust 1.85 lands :pepoparty:
+    fn stream<F, Fut, T>(self, f: F) -> impl stream::TryStream<Ok = T, Error = RequestFailure>
+    where
+        F: Fn(UnfoldArgs<C>) -> Fut,
+        Fut: Future<Output = Result<(Vec<T>, UnfoldNextState<C>), RequestFailure>>,
+    {
+        struct Iter<F, C> {
+            f: F,
+            client: Client,
+            ctx: C,
+            continuation: Continuation,
+        }
+        let init = {
+            let Self {
+                client,
+                ctx,
+                continuation,
+            } = self;
+            Iter {
+                f,
+                client,
+                ctx,
+                continuation,
+            }
+        };
+
+        let stream = stream::try_unfold(
+            init,
+            move |Iter {
+                      f,
+                      client,
+                      ctx,
+                      continuation,
+                  }| {
+                Box::pin(async move {
+                    let continuation = match continuation {
+                        Continuation::None => None,
+                        Continuation::Continue(continuation) => Some(continuation),
+                        Continuation::Stop => return Ok::<_, RequestFailure>(None),
+                    };
+                    let (items, UnfoldNextState { ctx, continuation }) = f(UnfoldArgs {
+                        client: client.clone(),
+                        ctx,
+                        continuation,
+                    })
+                    .await?;
+                    Ok(Some((
+                        items,
+                        Iter {
+                            f,
+                            client,
+                            ctx,
+                            continuation: Continuation::from(continuation),
+                        },
+                    )))
+                })
+            },
+        );
+
+        stream
+            .map_ok(|items| stream::iter(items.into_iter().map(Ok)))
+            .try_flatten()
     }
 }
 
@@ -522,6 +761,17 @@ mod tests {
     }
 
     const MODEL: &'static str = include_str!("../tests/model.fga");
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn persisted_auth_model_id_in_client() {
+        let model = compile_model(MODEL);
+        let mut client = test_client!();
+        assert_eq!(client.authorization_model_id, None);
+        let id = client.push_authorization_model(&model).await.unwrap();
+        assert_eq!(client.authorization_model_id, None);
+        client.actualize_authorization_model().await.unwrap();
+        assert_eq!(client.authorization_model_id, Some(id));
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn check() {
