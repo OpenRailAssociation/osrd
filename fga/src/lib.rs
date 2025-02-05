@@ -1,6 +1,90 @@
 pub mod client;
 pub mod model;
 
+/// A little DSL to define the OpenFGA relations of an object in a somewhat similar way to the OpenFGA model syntax
+///
+/// # Example
+///
+/// ```ignore
+/// relations! {
+///     User {
+///         group: Group
+///     },
+///     Group {
+///         member: User
+///     },
+///     Document {
+///         reader: User,
+///         can_read: User
+///     }
+/// ```
+///
+/// This will generate the following methods:
+///
+/// ```ignore
+/// impl User {
+///     pub const fn group() -> impl Relation<User = User, Object = Group>;
+/// }
+///
+/// impl Group {
+///     pub const fn member() -> impl Relation<User = User, Object = Group>;
+/// }
+///
+/// impl Document {
+///     pub const fn reader() -> impl Relation<User = User, Object = Document>;
+///     pub const fn can_read() -> impl Relation<User = User, Object = Document>;
+/// }
+/// ```
+///
+/// Consult macro expansion for more information.
+#[cfg(not(test))]
+#[macro_export]
+macro_rules! relations {
+    ($($object:ty { $($name:ident : $user:ty),* }),*) => {
+        $(
+            impl $object {
+                $(
+                    #[allow(unused)]
+                    pub const fn $name() -> impl fga::model::Relation<User = $user, Object = $object> {
+                        #[derive(Debug)]
+                        struct R;
+                        impl Relation for R {
+                            const NAME: &'static str = stringify!($name);
+                            type User = $user;
+                            type Object = $object;
+                        }
+                        R
+                    }
+                )*
+            }
+        )*
+    };
+}
+
+// Duplicated because we want to use it in the tests of this crate (cf. qualified Relation path)
+#[cfg(test)]
+macro_rules! relations {
+    ($($object:ty { $($name:ident : $user:ty),* }),*) => {
+        $(
+            impl $object {
+                $(
+                    #[allow(unused)]
+                    pub const fn $name() -> impl crate::model::Relation<User = $user, Object = $object> {
+                        #[derive(Debug)]
+                        struct R;
+                        impl Relation for R {
+                            const NAME: &'static str = stringify!($name);
+                            type User = $user;
+                            type Object = $object;
+                        }
+                        R
+                    }
+                )*
+            }
+        )*
+    };
+}
+
 #[cfg(test)]
 fn compile_model(model: &str) -> serde_json::Value {
     use std::process::Command;
@@ -69,28 +153,6 @@ mod defs {
     #[derive(Debug)]
     pub struct Infra(pub Id);
     object!(Infra, "infra");
-
-    macro_rules! relations {
-        ($($object:ty { $($name:ident : $user:ty),* }),*) => {
-            $(
-                impl $object {
-                    $(
-                        #[allow(unused)]
-                        pub const fn $name() -> impl Relation<User = $user, Object = $object> {
-                            #[derive(Debug)]
-                            struct R;
-                            impl Relation for R {
-                                const NAME: &'static str = stringify!($name);
-                                type User = $user;
-                                type Object = $object;
-                            }
-                            R
-                        }
-                    )*
-                }
-            )*
-        };
-    }
 
     relations! {
         User {
