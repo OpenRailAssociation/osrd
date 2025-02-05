@@ -28,6 +28,7 @@ mod defs {
 
     macro_rules! user {
         ($ty:ident, $namespace:literal) => {
+            #[automatically_derived]
             impl crate::model::User for $ty {
                 const NAMESPACE: &'static str = $namespace;
                 fn id(&self) -> &str {
@@ -39,6 +40,7 @@ mod defs {
 
     macro_rules! object {
         ($ty:ident, $namespace:literal) => {
+            #[automatically_derived]
             impl crate::model::Object for $ty {
                 const NAMESPACE: &'static str = $namespace;
                 fn id(&self) -> &str {
