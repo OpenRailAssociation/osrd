@@ -73,6 +73,15 @@ const selectors = buildStdcmConfSelectors();
 export const {
   getStdcmConf,
   getMargins,
+
+  getTotalMass,
+  getTotalLength,
+  getMaxSpeed,
+  getTowedRollingStockID,
+  getStdcmPathSteps,
+  getStdcmOrigin,
+  getStdcmDestination,
+  getLinkedTrains,
   getStdcmSimulations,
   getSelectedSimulationIndex,
   getSelectedSimulation,

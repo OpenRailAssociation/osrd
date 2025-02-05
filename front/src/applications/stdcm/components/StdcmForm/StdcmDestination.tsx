@@ -2,8 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import DestinationIcon from 'assets/pictures/mapMarkers/destination.svg';
-import { useOsrdConfSelectors } from 'common/osrdContext';
-import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import { getStdcmDestination } from 'reducers/osrdconf/stdcmConf/selectors';
 
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
@@ -12,8 +11,6 @@ import type { StdcmConfigCardProps } from '../../types';
 
 const StdcmDestination = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
-
-  const { getStdcmDestination } = useOsrdConfSelectors() as StdcmConfSelectors;
 
   const destination = useSelector(getStdcmDestination);
 

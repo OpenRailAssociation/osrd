@@ -17,7 +17,14 @@ import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
 import { type StdcmConfSliceActions, resetMargins } from 'reducers/osrdconf/stdcmConf';
-import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import {
+  getMaxSpeed,
+  getStdcmDestination,
+  getStdcmOrigin,
+  getStdcmPathSteps,
+  getTotalLength,
+  getTotalMass,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
@@ -68,17 +75,7 @@ const StdcmConfig = ({
   const dispatch = useAppDispatch();
   const { updateStdcmPathStep, restoreStdcmConfig } = useOsrdConfActions() as StdcmConfSliceActions;
 
-  const {
-    getStdcmOrigin,
-    getStdcmDestination,
-    getStdcmPathSteps,
-    getProjectID,
-    getScenarioID,
-    getStudyID,
-    getTotalMass,
-    getTotalLength,
-    getMaxSpeed,
-  } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const { getProjectID, getScenarioID, getStudyID } = useOsrdConfSelectors();
   const origin = useSelector(getStdcmOrigin);
   const pathSteps = useSelector(getStdcmPathSteps);
   const destination = useSelector(getStdcmDestination);

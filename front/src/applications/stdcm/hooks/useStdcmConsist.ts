@@ -4,9 +4,9 @@ import { min } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import type { LightRollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useOsrdConfActions } from 'common/osrdContext';
 import { type StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
-import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import { getTotalMass, getTotalLength, getMaxSpeed } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import { kgToT, kmhToMs, msToKmh } from 'utils/physics';
 
@@ -19,8 +19,6 @@ const useStdcmConsist = () => {
   const [totalLengthChanged, setTotalLengthChanged] = useState(false);
   const [maxSpeedChanged, setMaxSpeedChanged] = useState(false);
 
-  const { getTotalMass, getTotalLength, getMaxSpeed } =
-    useOsrdConfSelectors() as StdcmConfSelectors;
   const { updateTotalMass, updateTotalLength, updateMaxSpeed } =
     useOsrdConfActions() as StdcmConfSliceActions;
 

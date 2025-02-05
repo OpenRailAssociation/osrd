@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import IntermediatePointIcon from 'assets/pictures/mapMarkers/intermediate-point.svg';
-import { useOsrdConfSelectors, useOsrdConfActions } from 'common/osrdContext';
+import { useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
-import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
@@ -22,7 +22,6 @@ import type { StdcmConfigCardProps } from '../../types';
 const StdcmVias = ({ disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
-  const { getStdcmPathSteps } = useOsrdConfSelectors() as StdcmConfSelectors;
   const { updateStdcmPathStep, addStdcmVia, deleteStdcmVia } =
     useOsrdConfActions() as StdcmConfSliceActions;
   const pathSteps = useSelector(getStdcmPathSteps);

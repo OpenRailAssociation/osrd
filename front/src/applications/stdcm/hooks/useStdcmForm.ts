@@ -5,21 +5,20 @@ import { useSelector } from 'react-redux';
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import {
+  getLinkedTrains,
+  getMaxSpeed,
+  getStdcmOrigin,
+  getStdcmPathSteps,
+  getTotalLength,
+  getTotalMass,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 
 import type { StdcmSimulationInputs } from '../types';
 import { getTimesInfoFromDate } from '../utils';
 
 const useStdcmForm = (): StdcmSimulationInputs => {
-  const {
-    getStdcmPathSteps,
-    getSpeedLimitByTag,
-    getTotalMass,
-    getTotalLength,
-    getMaxSpeed,
-    getLinkedTrains,
-    getStdcmOrigin,
-  } = useOsrdConfSelectors() as StdcmConfSelectors;
+  const { getSpeedLimitByTag } = useOsrdConfSelectors();
 
   const pathSteps = useSelector(getStdcmPathSteps);
   const speedLimitByTag = useSelector(getSpeedLimitByTag);
