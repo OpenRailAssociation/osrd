@@ -74,7 +74,7 @@ export const formatConflicts = (
         )?.name ?? null; // Extract only the ID of the operational point after
 
       const formattedConflict = {
-        trainIds: conflict.train_ids,
+        trainIds: conflict.train_schedule_ids,
         startDate: dayjs(conflict.start_time).format('DD/MM/YYYY'),
         endDate: dayjs(conflict.end_time).format('DD/MM/YYYY'),
         startTime: dayjs(conflict.start_time).format('HH:mm'),

@@ -90,9 +90,11 @@ impl SimulationFailureHandler {
         let conflicts: Vec<_> = conflict_detection_response
             .conflicts
             .into_iter()
-            .filter(|conflict| conflict.train_ids.contains(&virtual_train_id))
+            .filter(|conflict| conflict.train_schedule_ids.contains(&virtual_train_id))
             .map(|mut conflict| {
-                conflict.train_ids.retain(|id| id != &virtual_train_id);
+                conflict
+                    .train_schedule_ids
+                    .retain(|id| id != &virtual_train_id);
                 conflict
             })
             .collect();

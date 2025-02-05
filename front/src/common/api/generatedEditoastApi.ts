@@ -3625,12 +3625,18 @@ export type Conflict = {
   conflict_type: 'Spacing' | 'Routing';
   /** Datetime of the end of the conflict */
   end_time: string;
+  /** List of paced train occurrences involved in the conflict.
+    Each occurrence is identified by a `paced_train_id` and its `index` */
+  paced_train_occurrence_ids?: {
+    index: number;
+    paced_train_id: number;
+  }[];
   /** List of requirements causing the conflict */
   requirements: ConflictRequirement[];
   /** Datetime of the start of the conflict */
   start_time: string;
-  /** List of train ids involved in the conflict */
-  train_ids: number[];
+  /** List of train schedule ids involved in the conflict */
+  train_schedule_ids: number[];
   /** List of work schedule ids involved in the conflict */
   work_schedule_ids: number[];
 };

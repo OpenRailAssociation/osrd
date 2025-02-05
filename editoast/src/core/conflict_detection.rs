@@ -76,9 +76,20 @@ pub struct ConflictDetectionResponse {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+pub struct PacedTrainOccurrenceId {
+    paced_train_id: i64,
+    index: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct Conflict {
-    /// List of train ids involved in the conflict
-    pub train_ids: Vec<i64>,
+    /// List of train schedule ids involved in the conflict
+    pub train_schedule_ids: Vec<i64>,
+    /// List of paced train occurrences involved in the conflict.
+    /// Each occurrence is identified by a `paced_train_id` and its `index`
+    #[serde(default)]
+    #[schema(inline)]
+    pub paced_train_occurrence_ids: Vec<PacedTrainOccurrenceId>,
     /// List of work schedule ids involved in the conflict
     pub work_schedule_ids: Vec<i64>,
     /// Datetime of the start of the conflict

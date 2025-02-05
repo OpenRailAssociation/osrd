@@ -296,7 +296,7 @@ fun mergeMap(
                     if (--eventCount > 0) continue
                     newConflicts.add(
                         Conflict(
-                            key.trainIds.toMutableList(),
+                            key.trainScheduleIds.toMutableList(),
                             key.workScheduleIds.toMutableList(),
                             eventBeginning,
                             event.time,
@@ -312,7 +312,7 @@ fun mergeMap(
     return newConflicts
 }
 
-data class ConflictingGroupKey(val trainIds: Set<Long>, val workScheduleIds: Set<Long>)
+data class ConflictingGroupKey(val trainScheduleIds: Set<Long>, val workScheduleIds: Set<Long>)
 
 fun mergeConflicts(conflicts: List<Conflict>): List<Conflict> {
     // group conflicts by sets of conflicting trains
@@ -321,7 +321,7 @@ fun mergeConflicts(conflicts: List<Conflict>): List<Conflict> {
 
     for (conflict in conflicts) {
         val conflictingGroupKey =
-            ConflictingGroupKey(conflict.trainIds.toSet(), conflict.workScheduleIds.toSet())
+            ConflictingGroupKey(conflict.trainScheduleIds.toSet(), conflict.workScheduleIds.toSet())
         val conflictingMap =
             when (conflict.conflictType) {
                 ConflictType.SPACING -> spacingResources

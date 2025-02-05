@@ -53,7 +53,7 @@ const ConflictsList = ({
       <div className={cx('conflicts-container', expanded && 'expanded')}>
         {enrichedConflicts.map((conflict, index) => (
           <ConflictCard
-            key={`${conflict.train_ids.join(', ')}-${conflict.conflict_type}-${index}`}
+            key={`${conflict.train_schedule_ids.join(', ')}-${conflict.conflict_type}-${index}`}
             conflict={conflict}
             onConflictClick={onConflictClick}
           />

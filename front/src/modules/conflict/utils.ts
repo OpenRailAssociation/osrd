@@ -15,6 +15,6 @@ export default function addTrainNamesToConflicts(
 
   return conflicts.map((conflict) => ({
     ...conflict,
-    trainNames: conflict.train_ids.map((id) => trainNameMap[id] || ''),
+    trainNames: conflict.train_schedule_ids.map((id) => trainNameMap[id] || ''),
   }));
 }

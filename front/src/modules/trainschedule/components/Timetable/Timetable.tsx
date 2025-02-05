@@ -91,8 +91,8 @@ const Timetable = ({
   );
 
   const handleConflictClick = (conflict: Conflict) => {
-    if (conflict.train_ids.length > 0) {
-      const firstTrainId = conflict.train_ids[0];
+    if (conflict.train_schedule_ids.length > 0) {
+      const firstTrainId = conflict.train_schedule_ids[0];
       dispatch(updateSelectedTrainId(firstTrainId));
     }
   };

@@ -275,7 +275,8 @@ def test_max_running_time(small_scenario: Scenario, fast_rolling_stock: int):
                 "conflict_type": "Spacing",
                 "start_time": "2023-01-01T08:00:00Z",
                 "end_time": "2024-01-01T16:00:00Z",
-                "train_ids": [],
+                "paced_train_occurrence_ids": [],
+                "train_schedule_ids": [],
                 "work_schedule_ids": [0],
                 "requirements": [
                     {

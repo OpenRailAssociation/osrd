@@ -72,8 +72,8 @@ public class ConflictDetectionEndpoint implements Take {
 
         @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
         public static class Conflict {
-            @Json(name = "train_ids")
-            public final Collection<Long> trainIds;
+            @Json(name = "train_schedule_ids")
+            public final Collection<Long> trainScheduleIds;
 
             public final transient Collection<Long> workScheduleIds;
 
@@ -97,12 +97,12 @@ public class ConflictDetectionEndpoint implements Take {
             public final transient Collection<ConflictRequirement> requirements;
 
             public Conflict(
-                    Collection<Long> trainIds,
+                    Collection<Long> trainScheduleIds,
                     double startTime,
                     double endTime,
                     @NotNull ConflictType conflictType,
                     Collection<ConflictRequirement> requirements) {
-                this.trainIds = trainIds;
+                this.trainScheduleIds = trainScheduleIds;
                 this.workScheduleIds = List.of();
                 this.startTime = startTime;
                 this.endTime = endTime;
@@ -111,13 +111,13 @@ public class ConflictDetectionEndpoint implements Take {
             }
 
             public Conflict(
-                    Collection<Long> trainIds,
+                    Collection<Long> trainScheduleIds,
                     Collection<Long> workScheduleIds,
                     double startTime,
                     double endTime,
                     @NotNull ConflictType conflictType,
                     Collection<ConflictRequirement> requirements) {
-                this.trainIds = trainIds;
+                this.trainScheduleIds = trainScheduleIds;
                 this.workScheduleIds = workScheduleIds;
                 this.startTime = startTime;
                 this.endTime = endTime;

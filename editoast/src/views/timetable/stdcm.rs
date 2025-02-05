@@ -845,9 +845,10 @@ mod tests {
         );
     }
 
-    fn get_conflict_data(train_ids: Vec<i64>, work_schedule_ids: Vec<i64>) -> Conflict {
+    fn get_conflict_data(train_schedule_ids: Vec<i64>, work_schedule_ids: Vec<i64>) -> Conflict {
         Conflict {
-            train_ids,
+            train_schedule_ids,
+            paced_train_occurrence_ids: vec![],
             work_schedule_ids,
             start_time: DateTime::from_str("2024-01-01T06:00:00Z")
                 .expect("Failed to parse datetime"),

@@ -64,7 +64,7 @@ private fun makeConflictDetectionResponse(
     return ConflictDetectionResponse(
         conflicts.map {
             Conflict(
-                it.trainIds,
+                it.trainScheduleIds,
                 it.workScheduleIds,
                 startTime.plus(Duration.ofMillis((it.startTime * 1000).toLong())),
                 startTime.plus(Duration.ofMillis((it.endTime * 1000).toLong())),
