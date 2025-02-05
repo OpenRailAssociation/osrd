@@ -3,7 +3,10 @@ package fr.sncf.osrd.cli
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.rabbitmq.client.*
-import fr.sncf.osrd.api.*
+import fr.sncf.osrd.api.ElectricalProfileSetManager
+import fr.sncf.osrd.api.InfraLoadEndpoint
+import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.VersionEndpoint
 import fr.sncf.osrd.api.api_v2.conflicts.ConflictDetectionEndpointV2
 import fr.sncf.osrd.api.api_v2.path_properties.PathPropEndpoint
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2
@@ -20,6 +23,7 @@ import java.io.InputStream
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import kotlin.system.exitProcess
 import okhttp3.OkHttpClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -303,7 +307,10 @@ class WorkerCommand : CliCommand {
                         executor.execute { callback(message) }
                     }
                 },
-                { _ -> logger.error("consumer cancelled") },
+                { _ ->
+                    logger.error("consumer cancelled")
+                    exitProcess(0)
+                },
                 { consumerTag, e ->
                     logger.info("consume shutdown: {}, {}", consumerTag, e.toString())
                 }
