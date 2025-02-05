@@ -23,6 +23,7 @@ impl Client {
     // It's fine to request tuples to be mapped into `RawTuple` as OpenFGA
     // doesn't support more than 100 tuples in the request. So mapping 100 objects
     // max is fine—we'll always be bounded by the network call.
+    #[tracing::instrument(skip(self, writes, deletes), err)]
     pub(super) async fn post_stores_write<'a>(
         &self,
         store_id: &str,
@@ -60,6 +61,13 @@ impl Client {
             fn is_empty(&self) -> bool {
                 self.tuple_keys.is_empty()
             }
+        }
+
+        if writes.len() > 0 {
+            tracing::debug!(writes = writes.len(), "writing tuples");
+        }
+        if deletes.len() > 0 {
+            tracing::debug!(deletes = deletes.len(), "deleting tuples");
         }
 
         let url = self

@@ -9,6 +9,7 @@ pub struct StoreAuthorizationModel {
 }
 
 impl Client {
+    #[tracing::instrument(skip(self), err)]
     pub(super) async fn get_stores_authorization_models(
         &self,
         store_id: &str,
@@ -44,6 +45,7 @@ impl Client {
         Ok((authorization_models, continuation_token))
     }
 
+    #[tracing::instrument(skip(self, authorization_model), ret(level = "debug"), err)]
     pub(super) async fn post_stores_authorization_models(
         &self,
         store_id: &str,

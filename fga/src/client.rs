@@ -73,6 +73,7 @@ impl From<reqwest::Error> for RequestFailure {
 // -------------------------
 
 impl Client {
+    #[tracing::instrument(err)]
     pub async fn try_init(
         store_name: String,
         settings: ConnectionSettings,
@@ -94,6 +95,7 @@ impl Client {
     }
 
     #[cfg(not(test))]
+    #[tracing::instrument(err)]
     pub async fn try_create_store(
         store_name: String,
         settings: ConnectionSettings,
@@ -102,6 +104,7 @@ impl Client {
     }
 
     #[cfg(test)]
+    #[tracing::instrument(err)]
     pub async fn try_create_store(
         store_name: String,
         settings: ConnectionSettings,
@@ -123,6 +126,7 @@ impl Client {
         };
         if reset {
             if let Some(store) = client.find_store(&store_name).await? {
+                tracing::debug!(old = ?store, "removing old store for reset");
                 client.delete_stores(&store.id).await?;
             }
         }
@@ -151,6 +155,7 @@ impl Client {
         )
     }
 
+    #[tracing::instrument(skip(self), err)]
     pub async fn find_store(&self, store_name: &str) -> Result<Option<Store>, RequestFailure> {
         let stream = self
             .stores()
@@ -208,11 +213,16 @@ impl Client {
     /// This function is called automatically when a new [Client] is created with [Client::try_init].
     ///
     /// Erases the [Client]'s authorization model ID if no authorization model is defined in the store.
+    #[tracing::instrument(skip(self), err)]
     pub async fn actualize_authorization_model(&mut self) -> Result<(), RequestFailure> {
         self.authorization_model_id = self
             .latest_authorization_model()
             .await?
             .map(|model| model.id);
+        tracing::debug!(
+            id = self.authorization_model_id,
+            "set client authorization model ID"
+        );
         Ok(())
     }
 
@@ -524,7 +534,7 @@ mod tests {
         };
     }
 
-    #[tokio::test]
+    #[test_log::test(tokio::test)]
     async fn test_try_init() {
         let client = Client::try_init(
             "lol".to_owned(),
@@ -538,7 +548,7 @@ mod tests {
         assert_eq!(client.store.name, "lol");
     }
 
-    #[tokio::test]
+    #[test_log::test(tokio::test)]
     async fn test_try_init_not_found() {
         let result = Client::try_init(
             "nonexistent_store".to_owned(),
@@ -557,7 +567,7 @@ mod tests {
         }
     }
 
-    #[tokio::test]
+    #[test_log::test(tokio::test)]
     async fn create_store_with_reset() {
         let client = test_client!();
         assert_eq!(
@@ -587,7 +597,7 @@ mod tests {
 
     const MODEL: &'static str = include_str!("../tests/model.fga");
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
     async fn persisted_auth_model_id_in_client() {
         let model = compile_model(MODEL);
         let mut client = test_client!();
@@ -598,7 +608,7 @@ mod tests {
         assert_eq!(client.authorization_model_id, Some(id));
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
     async fn check() {
         let model = compile_model(MODEL);
         let client = test_client!();
@@ -616,7 +626,7 @@ mod tests {
             .assert_check_not(defs::Infra::can_read().check(&alice, &infra));
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
     async fn higher_order_users() {
         let model = compile_model(MODEL);
         let client = test_client!();
@@ -641,7 +651,7 @@ mod tests {
             .assert_check(defs::Infra::can_read().check(&bob, &spain));
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
     async fn list_objects() {
         let model = compile_model(MODEL);
         let client = test_client!();
@@ -666,7 +676,7 @@ mod tests {
         assert_eq!(objects.as_slice(), &[spain, france]);
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
     async fn list_objects_unknown_user() {
         let model = compile_model(MODEL);
         let client = test_client!();

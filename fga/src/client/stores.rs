@@ -10,6 +10,7 @@ pub struct Store {
 }
 
 impl Client {
+    #[tracing::instrument(skip(self), err)]
     pub(super) async fn get_stores(
         &self,
         page_size: Option<usize>,
@@ -41,6 +42,7 @@ impl Client {
         Ok((stores, continuation_token))
     }
 
+    #[tracing::instrument(skip(self), err)]
     pub(super) async fn post_stores(&self, name: &str) -> Result<Store, RequestFailure> {
         #[derive(serde::Serialize)]
         struct Request {
@@ -58,6 +60,7 @@ impl Client {
         Ok(store)
     }
 
+    #[tracing::instrument(skip(self), err)]
     pub(super) async fn delete_stores(&self, store_id: &str) -> Result<(), RequestFailure> {
         let url = self
             .base_url()

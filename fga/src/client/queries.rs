@@ -18,6 +18,7 @@ impl<'a, R: Relation, U: AsUser<User = R::User>> FromIterator<&'a Tuple<'a, R, U
 }
 
 impl Client {
+    #[tracing::instrument(skip(self), ret(level = "debug") err)]
     pub(super) async fn post_stores_check(
         &self,
         store_id: &str,
@@ -58,6 +59,7 @@ impl Client {
         Ok(allowed)
     }
 
+    #[tracing::instrument(skip(self), err)]
     pub(super) async fn post_stores_list_objects(
         &self,
         store_id: &str,
@@ -100,6 +102,7 @@ impl Client {
 
         let Response { objects } = response.error_for_status()?.json::<Response>().await?;
 
+        tracing::debug!(count = objects.len(), "objects found");
         Ok(objects)
     }
 }

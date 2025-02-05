@@ -12,9 +12,11 @@ serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.135"
 thiserror = "2.0.11"
 tokio = { version = "1.43.0", features = ["full"] }
+tracing = { version = "0.1.41", features = ["log"] }
 url = "2.5.4"
 
 [dev-dependencies]
 derive_more = { version = "2.0.1", features = ["from"] }
 stdext = "0.3.3"
 tempfile = "3.15.0"
+test-log = { version = "0.2.17", default-features = false, features = ["trace", "color"] }
