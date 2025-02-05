@@ -4,7 +4,7 @@
   "rolling_stock": {
     "id": 899,
     "name": "TC64700",
-    "version": "3.2",
+    "version": "3.3",
     "locked": true,
     "effort_curves": {
       "modes": {
@@ -119,7 +119,9 @@
     "energy_sources": [],
     "electrical_power_startup_time": null,
     "raise_pantograph_time": null,
-    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"]
+    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
+    "primary_category": "COMMUTER_TRAIN",
+    "other_categories": []
   },
   "comfort": "STANDARD",
   "route_occupancies": [],

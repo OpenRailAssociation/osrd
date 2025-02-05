@@ -2,7 +2,7 @@
 {
     "name": "towed_rolling_stock",
     "label": "some towed rolling stock",
-    "railjson_version": "3.2",
+    "railjson_version": "3.3",
     "locked": false,
     "mass": 900000.0,
     "length": 400.0,
@@ -15,5 +15,7 @@
         "B": 200,
         "C": 12
     },
-    "const_gamma": 0.5
+    "const_gamma": 0.5,
+    "primary_category": "COMMUTER_TRAIN",
+    "other_categories": []
 }

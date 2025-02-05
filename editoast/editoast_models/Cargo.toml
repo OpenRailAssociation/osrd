@@ -10,7 +10,9 @@ testing = []
 [dependencies]
 diesel.workspace = true
 diesel-async.workspace = true
+editoast_common.workspace = true
 editoast_derive.workspace = true
+editoast_schemas.workspace = true
 futures.workspace = true
 futures-util.workspace = true
 openssl.workspace = true
@@ -18,11 +20,14 @@ opentelemetry-semantic-conventions.workspace = true
 postgis_diesel.workspace = true
 postgres-openssl.workspace = true
 regex.workspace = true
+serde.workspace = true
+strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-postgres.workspace = true
 tracing.workspace = true
 url.workspace = true
+utoipa.workspace = true
 
 [dev-dependencies]
 # The feature 'testing' is needed for all of the doc-tests

@@ -36,6 +36,10 @@ pub use rolling_stock_livery::RollingStockLiveryMetadata;
 mod towed_rolling_stock;
 pub use towed_rolling_stock::TowedRollingStock;
 
+mod rolling_stock_category;
+pub use rolling_stock_category::RollingStockCategories;
+pub use rolling_stock_category::RollingStockCategory;
+
 use editoast_common::units;
 use editoast_common::units::quantities::{
     Acceleration, Deceleration, Length, Mass, Ratio, Time, Velocity,
@@ -53,9 +57,10 @@ editoast_common::schemas! {
     rolling_resistance::schemas(),
     rolling_stock_livery::schemas(),
     supported_signaling_systems::schemas(),
+    rolling_stock_category::schemas(),
 }
 
-pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
+pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(remote = "Self")]

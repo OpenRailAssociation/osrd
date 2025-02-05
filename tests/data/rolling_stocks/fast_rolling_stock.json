@@ -1,5 +1,5 @@
 {
-  "railjson_version": "3.2",
+  "railjson_version": "3.3",
   "locked": true,
   "length": 400,
   "max_speed": 80,
@@ -74,5 +74,7 @@
     "BAPR",
     "TVM300",
     "TVM430"
-  ]
+  ],
+  "primary_category": "WORK_TRAIN",
+  "other_categories": []
 }

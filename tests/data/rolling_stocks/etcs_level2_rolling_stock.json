@@ -1,5 +1,5 @@
 {
-  "railjson_version": "3.2",
+  "railjson_version": "3.3",
   "locked": true,
   "length": 400,
   "max_speed": 80,
@@ -149,5 +149,7 @@
     "TVM300",
     "TVM430",
     "ETCS_LEVEL2"
-  ]
+  ],
+  "primary_category": "TOURISTIC_TRAIN",
+  "other_categories": []
 }

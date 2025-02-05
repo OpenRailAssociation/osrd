@@ -1,5 +1,5 @@
 {
-    "railjson_version": "3.2",
+    "railjson_version": "3.3",
     "version": 0,
     "locked": false,
     "length": 200.0,
@@ -66,5 +66,7 @@
     "power_restrictions": {},
     "electrical_power_startup_time": 4.0,
     "raise_pantograph_time": 14.0,
-    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"]
+    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
+    "primary_category": "COMMUTER_TRAIN",
+    "other_categories": []
 }

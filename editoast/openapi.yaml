@@ -9494,6 +9494,8 @@ components:
       - raise_pantograph_time
       - version
       - supported_signaling_systems
+      - primary_category
+      - other_categories
       properties:
         base_power_class:
           type: string
@@ -9550,10 +9552,14 @@ components:
           nullable: true
         name:
           type: string
+        other_categories:
+          $ref: '#/components/schemas/RollingStockCategories'
         power_restrictions:
           type: object
           additionalProperties:
             type: string
+        primary_category:
+          $ref: '#/components/schemas/RollingStockCategory'
         railjson_version:
           type: string
         raise_pantograph_time:
@@ -9578,6 +9584,23 @@ components:
         version:
           type: integer
           format: int64
+    RollingStockCategories:
+      type: array
+      items:
+        $ref: '#/components/schemas/RollingStockCategory'
+    RollingStockCategory:
+      type: string
+      enum:
+      - HIGH_SPEED_TRAIN
+      - INTERCITY_TRAIN
+      - REGIONAL_TRAIN
+      - NIGHT_TRAIN
+      - COMMUTER_TRAIN
+      - FREIGHT_TRAIN
+      - FAST_FREIGHT_TRAIN
+      - TRAM_TRAIN
+      - TOURISTIC_TRAIN
+      - WORK_TRAIN
     RollingStockForm:
       type: object
       required:

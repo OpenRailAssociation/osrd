@@ -10,7 +10,7 @@ public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter =
             new Moshi.Builder().add(RJSRollingResistance.adapter).build().adapter(RJSRollingStock.class);
 
-    public static final transient String CURRENT_VERSION = "3.2";
+    public static final transient String CURRENT_VERSION = "3.3";
 
     /** The version of the rolling stock format used */
     @Json(name = "railjson_version")

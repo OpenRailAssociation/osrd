@@ -1410,8 +1410,10 @@ version = "0.1.0"
 dependencies = [
  "diesel",
  "diesel-async",
+ "editoast_common",
  "editoast_derive",
  "editoast_models",
+ "editoast_schemas",
  "futures 0.3.31",
  "futures-util",
  "openssl",
@@ -1419,11 +1421,14 @@ dependencies = [
  "postgis_diesel",
  "postgres-openssl",
  "regex",
+ "serde",
+ "strum",
  "thiserror 2.0.11",
  "tokio",
  "tokio-postgres",
  "tracing",
  "url",
+ "utoipa",
 ]
 
 [[package]]

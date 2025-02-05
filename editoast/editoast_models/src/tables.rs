@@ -1,5 +1,15 @@
 // @generated automatically by Diesel CLI.
 
+pub mod sql_types {
+    #[derive(diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "geometry"))]
+    pub struct Geometry;
+
+    #[derive(diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "rolling_stock_category"))]
+    pub struct RollingStockCategory;
+}
+
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
@@ -102,6 +112,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_buffer_stop (id) {
         id -> Int8,
@@ -115,6 +126,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_detector (id) {
         id -> Int8,
@@ -128,6 +140,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_electrification (id) {
         id -> Int8,
@@ -141,6 +154,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_error (id) {
         id -> Int8,
@@ -155,6 +169,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_neutral_section (id) {
         id -> Int8,
@@ -168,6 +183,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_neutral_sign (id) {
         id -> Int8,
@@ -183,6 +199,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_operational_point (id) {
         id -> Int8,
@@ -198,6 +215,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_psl_sign (id) {
         id -> Int8,
@@ -213,6 +231,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_signal (id) {
         id -> Int8,
@@ -231,6 +250,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_speed_section (id) {
         id -> Int8,
@@ -244,6 +264,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_switch (id) {
         id -> Int8,
@@ -257,6 +278,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
 
     infra_layer_track_section (id) {
         id -> Int8,
@@ -455,6 +477,7 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+    use super::sql_types::RollingStockCategory;
 
     rolling_stock (id) {
         id -> Int8,
@@ -484,6 +507,8 @@ diesel::table! {
         version -> Int8,
         supported_signaling_systems -> Array<Nullable<Text>>,
         etcs_brake_params -> Jsonb,
+        primary_category -> RollingStockCategory,
+        other_categories -> Array<Nullable<RollingStockCategory>>,
     }
 }
 

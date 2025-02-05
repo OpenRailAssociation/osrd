@@ -8,6 +8,8 @@ use editoast_common::units::quantities::{
 };
 use editoast_derive::Model;
 use editoast_models::model;
+use editoast_models::rolling_stock::RollingStockCategories;
+use editoast_models::rolling_stock::RollingStockCategory;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
@@ -100,6 +102,9 @@ pub struct RollingStockModel {
     #[schema(value_type = Vec<String>)]
     #[model(remote = "Vec<Option<String>>")]
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    pub primary_category: RollingStockCategory,
+    #[model(remote = "Vec<Option<RollingStockCategory>>")]
+    pub other_categories: RollingStockCategories,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -241,13 +246,16 @@ impl From<RollingStock> for RollingStockModelChangeset {
 
 #[cfg(test)]
 pub mod tests {
-    use rstest::*;
+    use editoast_models::rolling_stock::RollingStockCategories;
+    use editoast_models::rolling_stock::RollingStockCategory;
+    use rstest::rstest;
     use serde_json::to_value;
 
     use super::RollingStockModel;
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::models::fixtures::fast_rolling_stock_changeset;
     use crate::models::fixtures::rolling_stock_with_energy_sources_changeset;
     use crate::models::prelude::*;
     use crate::views::rolling_stock::map_diesel_error;
@@ -315,6 +323,63 @@ pub mod tests {
         assert_eq!(
             to_value(result.unwrap_err()).unwrap(),
             to_value(error).unwrap()
+        );
+    }
+
+    #[rstest]
+    async fn test_primary_category_is_unknown_with_other_categories_are_empty() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let created_fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
+
+        assert_eq!(
+            created_fast_rolling_stock.primary_category,
+            RollingStockCategory(
+                editoast_schemas::rolling_stock::RollingStockCategory::FreightTrain
+            )
+        );
+        assert_eq!(
+            created_fast_rolling_stock.other_categories,
+            RollingStockCategories(vec![])
+        );
+    }
+
+    #[rstest]
+    async fn create_rolling_stock_with_categories() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let rolling_stock = fast_rolling_stock_changeset("fast_rolling_stock_with_categories")
+            .primary_category(RollingStockCategory(
+                editoast_schemas::rolling_stock::RollingStockCategory::HighSpeedTrain,
+            ))
+            .other_categories(RollingStockCategories(vec![
+                RollingStockCategory(
+                    editoast_schemas::rolling_stock::RollingStockCategory::TramTrain,
+                ),
+                RollingStockCategory(
+                    editoast_schemas::rolling_stock::RollingStockCategory::CommuterTrain,
+                ),
+            ]))
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create rolling stock");
+        assert_eq!(
+            rolling_stock.primary_category,
+            RollingStockCategory(
+                editoast_schemas::rolling_stock::RollingStockCategory::HighSpeedTrain,
+            ),
+        );
+        assert_eq!(
+            rolling_stock.other_categories,
+            RollingStockCategories(vec![
+                RollingStockCategory(
+                    editoast_schemas::rolling_stock::RollingStockCategory::TramTrain,
+                ),
+                RollingStockCategory(
+                    editoast_schemas::rolling_stock::RollingStockCategory::CommuterTrain,
+                ),
+            ])
         );
     }
 }

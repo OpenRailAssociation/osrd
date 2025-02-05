@@ -1,6 +1,6 @@
 [project]
 name = "osrd_schemas"
-version = "0.8.16"
+version = "0.8.17"
 description = ""
 authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
 requires-python = ">= 3.11"

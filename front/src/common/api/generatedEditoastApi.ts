@@ -3138,6 +3138,18 @@ export type EffortCurves = {
     [key: string]: ModeEffortCurves;
   };
 };
+export type RollingStockCategory =
+  | 'HIGH_SPEED_TRAIN'
+  | 'INTERCITY_TRAIN'
+  | 'REGIONAL_TRAIN'
+  | 'NIGHT_TRAIN'
+  | 'COMMUTER_TRAIN'
+  | 'FREIGHT_TRAIN'
+  | 'FAST_FREIGHT_TRAIN'
+  | 'TRAM_TRAIN'
+  | 'TOURISTIC_TRAIN'
+  | 'WORK_TRAIN';
+export type RollingStockCategories = RollingStockCategory[];
 export type RollingStock = {
   base_power_class: string | null;
   /** Acceleration in m·s⁻² */
@@ -3162,9 +3174,11 @@ export type RollingStock = {
   max_speed: number;
   metadata: RollingStockMetadata | null;
   name: string;
+  other_categories: RollingStockCategories;
   power_restrictions: {
     [key: string]: string;
   };
+  primary_category: RollingStockCategory;
   railjson_version: string;
   /** Duration in s */
   raise_pantograph_time: number | null;

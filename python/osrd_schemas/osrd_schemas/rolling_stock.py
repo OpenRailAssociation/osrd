@@ -12,8 +12,25 @@ from pydantic import (
 
 from .infra import LoadingGaugeType
 
-RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.2"]
+RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.3"]
 RAILJSON_ROLLING_STOCK_VERSION = get_args(RAILJSON_ROLLING_STOCK_VERSION_TYPE)[0]
+
+
+class RollingStockCategory(str, Enum):
+    """
+    The list of categories that can be assigned to a rolling stock.
+    """
+
+    HIGH_SPEED_TRAIN = "High Speed Train"
+    INTERCITY_TRAIN = "Intercity Train"
+    REGIONAL_TRAIN = "Regional Train"
+    NIGHT_TRAIN = "Night Train"
+    COMMUTER_TRAIN = "Commuter Train"
+    FREIGHT_TRAIN = "Freight Train"
+    FAST_FREIGHT_TRAIN = "Fast Freight Train"
+    TRAM_TRAIN = "Tram Train"
+    TOURISTIC_TRAIN = "Touristic Train"
+    WORK_TRAIN = "Work Train"
 
 
 class ComfortType(str, Enum):
@@ -332,6 +349,12 @@ class RollingStock(BaseModel, extra="forbid"):
         default=None,
     )
     supported_signaling_systems: List[str] = Field(default_factory=list)
+    primary_category: RollingStockCategory = Field(
+        description="The primary category of the rolling stock."
+    )
+    other_categories: List[RollingStockCategory] = Field(
+        description="Additional categories for the rolling stock."
+    )
 
 
 class TowedRollingStock(BaseModel, extra="forbid"):
