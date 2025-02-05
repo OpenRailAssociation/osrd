@@ -19,7 +19,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard from 'common/StationCard';
 import UploadFileModal from 'common/uploadFileModal';
 import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
-import { setFailure } from 'reducers/main';
+import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatIsoDate } from 'utils/date';
 
@@ -56,15 +56,32 @@ const ImportTrainScheduleConfig = ({
   function filterInvalidSteps(
     importedTrainSchedules: ImportedTrainSchedule[]
   ): ImportedTrainSchedule[] {
-    return importedTrainSchedules.map((trainSchedule) => ({
-      ...trainSchedule,
-      steps: trainSchedule.steps.filter(
+    const trainNumbersOfModifiedTrains: string[] = [];
+
+    const filteredSchedules = importedTrainSchedules.map((trainSchedule) => {
+      const filteredSteps = trainSchedule.steps.filter(
         (step, i) =>
           i === 0 ||
           new Date(step.arrivalTime).getTime() >=
             new Date(trainSchedule.steps[i - 1].departureTime).getTime()
-      ),
-    }));
+      );
+      if (filteredSteps.length < trainSchedule.steps.length) {
+        trainNumbersOfModifiedTrains.push(trainSchedule.trainNumber);
+      }
+      return { ...trainSchedule, steps: filteredSteps };
+    });
+
+    if (trainNumbersOfModifiedTrains.length)
+      dispatch(
+        setWarning({
+          title: t('warningMessages.warning'),
+          text: t('warningMessages.warningFilteredStepImport', {
+            trainNumbers: trainNumbersOfModifiedTrains,
+          }),
+        })
+      );
+
+    return filteredSchedules;
   }
 
   function validateImportedTrainSchedules(

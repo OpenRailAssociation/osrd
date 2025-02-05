@@ -15,6 +15,10 @@
     "errorSameFromTo": "Origin and destination must be different",
     "errorInvalidFile": "Invalid file"
   },
+  "warningMessages": {
+    "warning": "Warning",
+    "warningFilteredStepImport": "Some invalid steps had to be removed to allow import for trains: {{trainNumbers}}"
+  },
   "failure": "Operation failed",
   "from": "Origin",
   "import": "Import",
