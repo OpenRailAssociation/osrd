@@ -70,28 +70,22 @@ mod defs {
     pub struct Infra(pub Id);
     object!(Infra, "infra");
 
-    macro_rules! relation {
-        ($name:ident : $user:ty => $object:ty) => {
-            #[allow(unused)]
-            pub const fn $name() -> impl Relation<User = $user, Object = $object> {
-                #[derive(Debug)]
-                struct R;
-                impl Relation for R {
-                    const NAME: &'static str = stringify!($name);
-                    type User = $user;
-                    type Object = $object;
-                }
-                R
-            }
-        };
-    }
-
     macro_rules! relations {
         ($($object:ty { $($name:ident : $user:ty),* }),*) => {
             $(
                 impl $object {
                     $(
-                        relation!($name: $user => $object);
+                        #[allow(unused)]
+                        pub const fn $name() -> impl Relation<User = $user, Object = $object> {
+                            #[derive(Debug)]
+                            struct R;
+                            impl Relation for R {
+                                const NAME: &'static str = stringify!($name);
+                                type User = $user;
+                                type Object = $object;
+                            }
+                            R
+                        }
                     )*
                 }
             )*
