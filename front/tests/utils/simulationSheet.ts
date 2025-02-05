@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { expect } from '@playwright/test';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 import type { Simulation } from './types';
 
@@ -22,6 +23,30 @@ export function findFirstPdf(directory: string): string | null {
     console.error(`Error reading directory: ${directory}`, error);
     return null;
   }
+}
+
+export async function parsePdfText(buffer: Buffer) {
+  const doc = await getDocument(new Uint8Array(buffer.buffer)).promise;
+  let fullText = '';
+  for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
+    const page = await doc.getPage(pageNum);
+    const textContent = await page.getTextContent();
+    let prevY = 0;
+    for (const item of textContent.items) {
+      if (!('str' in item)) {
+        continue;
+      }
+      // transform contains a matrix
+      const y = item.transform[5];
+      if (prevY !== 0 && prevY !== y) {
+        fullText += '\n';
+      }
+      fullText += item.str;
+      prevY = y;
+    }
+    fullText += '\n\n';
+  }
+  return fullText;
 }
 
 /**

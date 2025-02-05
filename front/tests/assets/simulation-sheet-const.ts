@@ -35,7 +35,7 @@ const simulationSheetDetails = (): Simulation => {
     },
     requestedRoute: {
       station1: {
-        name: '1North_West_station',
+        name: '1 North_West_station',
         ch: 'BV',
         plusTolerance: '+60',
         minusTolerance: '-15',
@@ -43,12 +43,12 @@ const simulationSheetDetails = (): Simulation => {
         reason: translations.serviceStop,
       },
       station2: {
-        name: '2Mid_West_station',
+        name: '2 Mid_West_station',
         ch: 'BV',
         reason: translations.passageStop,
       },
       station3: {
-        name: '3South_station',
+        name: '3 South_station',
         ch: 'BV',
         arrivalTime: translations.asap,
         reason: translations.serviceStop,
@@ -58,7 +58,7 @@ const simulationSheetDetails = (): Simulation => {
       totalDistance: '51 km',
       simulationRoute: {
         station1: {
-          name: '1North_West_station',
+          name: '1 North_West_station',
           ch: 'BV',
           track: 'A',
           departureTime: '20:21',
@@ -67,7 +67,7 @@ const simulationSheetDetails = (): Simulation => {
           stopType: translations.serviceStop,
         },
         station2: {
-          name: '2Mid_West_station',
+          name: '2 Mid_West_station',
           ch: 'BV',
           track: 'V1',
           passageTime: '20:42',
@@ -76,7 +76,7 @@ const simulationSheetDetails = (): Simulation => {
           stopType: translations.passageStop,
         },
         station3: {
-          name: '3Mid_East_station',
+          name: '3 Mid_East_station',
           ch: 'BV',
           track: 'V1',
           passageTime: '20:50',
@@ -84,7 +84,7 @@ const simulationSheetDetails = (): Simulation => {
           length: '=',
         },
         station4: {
-          name: '4North_station',
+          name: '4 North_station',
           ch: 'BV',
           track: 'V1bis',
           passageTime: '21:01',
@@ -92,7 +92,7 @@ const simulationSheetDetails = (): Simulation => {
           length: '=',
         },
         station5: {
-          name: '5South_station',
+          name: '5 South_station',
           ch: 'BV',
           track: 'V1',
           arrivalTime: '21:06',

@@ -1,7 +1,5 @@
 import fs from 'fs';
 
-import pdfParse from 'pdf-parse';
-
 import type { Infra } from 'common/api/osrdEditoastApi';
 
 import { electricRollingStockName } from './assets/project-const';
@@ -10,7 +8,7 @@ import test from './logging-fixture';
 import STDCMPage from './pages/stdcm-page-model';
 import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-setup';
-import { findFirstPdf, verifySimulationContent } from './utils/simulationSheet';
+import { findFirstPdf, parsePdfText, verifySimulationContent } from './utils/simulationSheet';
 import type { ConsistFields, Simulation } from './utils/types';
 
 test.describe('Verify stdcm simulation page', () => {
@@ -97,8 +95,7 @@ test.describe('Verify stdcm simulation page', () => {
     }
     // Read and parse the PDF
     const pdfBuffer = fs.readFileSync(pdfFilePath);
-    const pdfData = await pdfParse(pdfBuffer);
-    const pdfText = pdfData.text;
+    const pdfText = await parsePdfText(pdfBuffer);
     const expectedSimulation: Simulation = simulationSheetDetails();
     verifySimulationContent(pdfText, expectedSimulation);
   });
