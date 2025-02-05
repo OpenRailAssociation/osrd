@@ -97,9 +97,17 @@ pub struct Check<'a, R: Relation> {
     pub(crate) user: &'a R::User,
     pub(crate) object: &'a R::Object,
 }
+#[expect(unused)]
+#[derive(Debug)]
 pub struct QueryObjects<'a, R: Relation>(&'a R::User);
+#[expect(unused)]
+#[derive(Debug)]
 pub struct QueryUsers<'a, R: Relation>(&'a R::Object);
+#[expect(unused)]
+#[derive(Debug)]
 pub struct QueryObjectsStored<'a, R: Relation>(&'a R::User);
+#[expect(unused)]
+#[derive(Debug)]
 pub struct QueryUsersStored<'a, R: Relation>(&'a R::Object);
 
 pub struct Tuple<'a, R, U>
