@@ -27,7 +27,7 @@ import {
 import { deleteApiRequest, getInfra, setElectricalProfile } from './utils/api-setup';
 import { cleanWhitespace } from './utils/dataNormalizer';
 import createScenario from './utils/scenario';
-import scrollContainer from './utils/scrollHelper';
+import { scrollHorizontally } from './utils/scrollHelper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { StationData } from './utils/types';
 import enTranslations from '../public/locales/en/timesStops.json';
@@ -149,7 +149,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await routePage.performPathfindingByTrigram('WS', 'SES', 'MWS');
       // Navigate to the Times and Stops tab and fill in required data
       await operationalStudiesPage.clickOnTimesAndStopsTab();
-      await scrollContainer(page, '.time-stops-datasheet .dsg-container');
+      await scrollHorizontally(page, '.time-stops-datasheet .dsg-container');
     }
   );
 
@@ -193,7 +193,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         actionName: 'visual assertion',
       }
     );
-    await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
+    await scrollHorizontally(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await opOutputTablePage.getOutputTableData(expectedCellDataElectricalProfileON);
     await opTimetablePage.clickOnTimetableCollapseButton();
     // Deactivate electrical profiles and verify output results
@@ -254,7 +254,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         actionName: 'visual assertion',
       }
     );
-    await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
+    await scrollHorizontally(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await opOutputTablePage.getOutputTableData(expectedCellDataCodeCompoON);
     await opTimetablePage.clickOnTimetableCollapseButton();
     // Remove the composition code option and verify the changes
@@ -325,7 +325,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         actionName: 'visual assertion',
       }
     );
-    await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
+    await scrollHorizontally(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await opOutputTablePage.getOutputTableData(expectedCellDataLinearMargin);
     await opTimetablePage.clickOnTimetableCollapseButton();
     // Modify the margin to 'Mareco' and verify the changes
@@ -398,7 +398,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         actionName: 'visual assertion',
       }
     );
-    await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
+    await scrollHorizontally(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await opOutputTablePage.getOutputTableData(expectedCellDataForAllSettings);
   });
 });

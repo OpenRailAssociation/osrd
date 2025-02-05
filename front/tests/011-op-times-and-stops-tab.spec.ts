@@ -13,7 +13,7 @@ import { getTranslations, readJsonFile, waitForInfraStateToBeCached } from './ut
 import { getInfra } from './utils/api-setup';
 import { cleanWhitespace, cleanWhitespaceInArray } from './utils/dataNormalizer';
 import createScenario from './utils/scenario';
-import scrollContainer from './utils/scrollHelper';
+import { scrollHorizontally } from './utils/scrollHelper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { StationData } from './utils/types';
 import enTranslations from '../public/locales/en/timesStops.json';
@@ -109,7 +109,7 @@ test.describe('Times and Stops Tab Verification', () => {
 
       // Navigate to the Times and Stops tab and scroll to the data sheet
       await operationalStudiesPage.clickOnTimesAndStopsTab();
-      await scrollContainer(page, '.time-stops-datasheet .dsg-container');
+      await scrollHorizontally(page, '.time-stops-datasheet .dsg-container');
     }
   );
 
@@ -171,7 +171,7 @@ test.describe('Times and Stops Tab Verification', () => {
     await opOutputTablePage.verifyTimesStopsDataSheetVisibility();
 
     // Scroll and extract output table data for verification
-    await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
+    await scrollHorizontally(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await opOutputTablePage.getOutputTableData(outputExpectedCellData);
   });
 

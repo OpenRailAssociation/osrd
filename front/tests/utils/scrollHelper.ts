@@ -14,7 +14,7 @@ interface ScrollOptions {
  * @param ScrollOptions - Optional scroll configuration including step size, timeout, and scroll offset threshold.
  * @returns {Promise<void>} - Resolves once the container has been fully scrolled.
  */
-const scrollContainer = async (
+export const scrollHorizontally = async (
   page: Page,
   containerSelector: string,
   { stepSize = 300, timeout = 20, scrollOffsetThreshold = 200 }: ScrollOptions = {}
@@ -38,7 +38,7 @@ const scrollContainer = async (
     container
   );
 
-  // Exit early if there's little or no scrollable content
+  // Exit early if there's a little or no scrollable content
   if (scrollWidth <= clientWidth + scrollOffsetThreshold) {
     await container.dispose();
     return;
@@ -64,4 +64,54 @@ const scrollContainer = async (
   await container.dispose();
 };
 
-export default scrollContainer;
+/**
+ * Scroll a specified container element vertically by a small step.
+ *
+ * @param page - The Playwright page object.
+ * @param containerSelector - The CSS selector for the scrollable container element.
+ * @param ScrollOptions - Optional scroll configuration including step size and scroll offset threshold.
+ * @returns {Promise<void>} - Resolves once a small scroll action is performed.
+ */
+export const scrollVertically = async (
+  page: Page,
+  containerSelector: string,
+  { stepSize = 30, scrollOffsetThreshold = 47 }: ScrollOptions = {}
+): Promise<void> => {
+  // Locate the scrollable container on the page
+  await page.waitForSelector(containerSelector);
+  const container = await page.evaluateHandle(
+    (selector: string) => document.querySelector(selector),
+    containerSelector
+  );
+
+  // Retrieve the scrollable height and visible height of the container
+  const { scrollHeight, clientHeight } = await page.evaluate(
+    (containerElement) =>
+      containerElement
+        ? {
+            scrollHeight: containerElement.scrollHeight,
+            clientHeight: containerElement.clientHeight,
+          }
+        : { scrollHeight: 0, clientHeight: 0 },
+    container
+  );
+
+  // Exit early if there's a little or no scrollable content
+  if (scrollHeight <= clientHeight + scrollOffsetThreshold) {
+    await container.dispose();
+    return;
+  }
+
+  // Perform a small vertical scroll
+  await page.evaluate(
+    ({ containerElement, step }) => {
+      if (containerElement) {
+        containerElement.scrollTop += step;
+      }
+    },
+    { containerElement: container, step: stepSize }
+  );
+
+  // Clean up the handle after scrolling is complete
+  await container.dispose();
+};

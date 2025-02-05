@@ -5,6 +5,7 @@ import enTranslations from '../../public/locales/en/operationalStudies/scenario.
 import frTranslations from '../../public/locales/fr/operationalStudies/scenario.json';
 import { EXPLICIT_UI_STABILITY_TIMEOUT, SIMULATION_RESULT_TIMEOUT } from '../assets/timeout-const';
 import { getTranslations } from '../utils';
+import { scrollVertically } from '../utils/scrollHelper';
 
 class OperationalStudiesTimetablePage extends CommonPage {
   readonly invalidTrainsMessage: Locator;
@@ -204,11 +205,12 @@ class OperationalStudiesTimetablePage extends CommonPage {
     for (let currentTrainIndex = 0; currentTrainIndex < trainCount; currentTrainIndex += 1) {
       await this.page.waitForLoadState();
       await this.simulationResult.waitFor();
+
       const trainButton = OperationalStudiesTimetablePage.getTrainButton(
         this.timetableTrains.nth(currentTrainIndex)
       );
       await trainButton.click({ position: { x: 5, y: 5 } });
-      await this.waitForSimulationResults();
+      await scrollVertically(this.page, '.scenario-timetable-trains');
       await this.verifySimulationResultsVisibility();
     }
   }
