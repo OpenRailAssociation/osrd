@@ -88,7 +88,7 @@ editoast_common::schemas! {
     projection::schemas(),
 }
 
-pub const TRAIN_SIZE_BATCH: usize = 250;
+pub const TRAIN_SIZE_BATCH: usize = 100;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
