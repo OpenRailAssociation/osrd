@@ -146,7 +146,7 @@
     "vite-plugin-checker": "^0.8.0",
     "vite-plugin-static-copy": "^2.2.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.4"
+    "vitest": "^3.0.5"
   },
   "overrides": {
     "oazapfts": "osrd-project/oazapfts#master"
