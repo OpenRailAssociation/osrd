@@ -201,7 +201,7 @@ const ScenarioContent = ({
             displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
             <div className="scenario-managetrainschedule">
               <ManageTrainScheduleContextProvider>
-                <ManageTrainSchedule trainIdToEdit={trainIdToEdit} />
+                <ManageTrainSchedule />
               </ManageTrainScheduleContextProvider>
             </div>
           )}

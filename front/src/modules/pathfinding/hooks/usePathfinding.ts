@@ -56,10 +56,6 @@ const usePathfinding = (
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
 
-  // isInitialized is used to prevent the pathfinding to be launched multiple times
-  // and especially to prevent the power restrictions to be reset
-  const [isInitialized, setIsInitialized] = useState(false);
-
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
   const [postPathProperties] =
@@ -153,14 +149,6 @@ const usePathfinding = (
       };
     });
 
-    if (!isEmptyArray(powerRestrictions)) {
-      dispatch(
-        setWarning({
-          title: t('warningMessages.pathfindingChange'),
-          text: t('warningMessages.powerRestrictionsReset'),
-        })
-      );
-    }
     dispatch(updatePathSteps(updatedPathSteps));
 
     setPathProperties({
@@ -174,8 +162,18 @@ const usePathfinding = (
   };
 
   const launchPathfinding = useCallback(
-    async (steps: (PathStep | null)[]) => {
-      dispatch(replaceItinerary(steps));
+    async (steps: (PathStep | null)[], options = { isInitialization: false }) => {
+      if (!options.isInitialization) {
+        dispatch(replaceItinerary(steps));
+        if (!isEmptyArray(powerRestrictions)) {
+          dispatch(
+            setWarning({
+              title: t('warningMessages.pathfindingChange'),
+              text: t('warningMessages.powerRestrictionsReset'),
+            })
+          );
+        }
+      }
       setPathProperties(undefined);
 
       if (!steps.every((step) => step !== null)) {
@@ -263,20 +261,10 @@ const usePathfinding = (
   );
 
   useEffect(() => {
-    if (isInitialized && infra?.state === 'CACHED') {
-      launchPathfinding(pathSteps);
+    if (infra?.state === 'CACHED') {
+      launchPathfinding(pathSteps, { isInitialization: true });
     }
   }, [infra?.state]);
-
-  useEffect(() => {
-    if (isInitialized) {
-      launchPathfinding(pathSteps);
-    }
-  }, [rollingStock]);
-
-  useEffect(() => {
-    setIsInitialized(true);
-  }, []);
 
   return {
     launchPathfinding,

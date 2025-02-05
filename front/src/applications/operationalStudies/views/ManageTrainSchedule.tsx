@@ -4,7 +4,6 @@ import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import useSetupItineraryForTrainUpdate from 'applications/operationalStudies/hooks/useSetupItineraryForTrainUpdate';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
@@ -36,20 +35,15 @@ import {
   getPathSteps,
   getStartTime,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatKmValue } from 'utils/strings';
 
 import { useManageTrainScheduleContext } from '../hooks/useManageTrainScheduleContext';
 
-type ManageTrainScheduleProps = {
-  trainIdToEdit?: TimetableItemId;
-};
-
-const ManageTrainSchedule = ({ trainIdToEdit }: ManageTrainScheduleProps) => {
+const ManageTrainSchedule = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const { pathProperties, voltageRanges, pathStepsAndSuggestedOPs } =
+  const { pathProperties, voltageRanges, pathStepsAndSuggestedOPs, launchPathfinding } =
     useManageTrainScheduleContext();
   const { updateRollingStockID } = useOsrdConfActions();
 
@@ -87,15 +81,14 @@ const ManageTrainSchedule = ({ trainIdToEdit }: ManageTrainScheduleProps) => {
   const { rollingStockId, rollingStockComfort, rollingStock } =
     useStoreDataForRollingStockSelector();
 
-  // TODO TS2 : test this hook in simulation results issue
-  if (trainIdToEdit) {
-    useSetupItineraryForTrainUpdate(trainIdToEdit);
-  }
-
-  const onSelectRollingStock = useCallback((_rollingStockId: number, comfort: Comfort) => {
-    dispatch(updateRollingStockID(_rollingStockId));
-    dispatch(updateRollingStockComfort(comfort));
-  }, []);
+  const onSelectRollingStock = useCallback(
+    (_rollingStockId: number, comfort: Comfort) => {
+      dispatch(updateRollingStockID(_rollingStockId));
+      dispatch(updateRollingStockComfort(comfort));
+      launchPathfinding(pathSteps);
+    },
+    [pathSteps]
+  );
 
   const tabRollingStock = {
     id: 'rollingstock',
