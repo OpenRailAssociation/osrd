@@ -5,8 +5,10 @@ mod tuples;
 
 pub use authorization_models::AuthorizationModel;
 pub use authorization_models::StoreAuthorizationModel;
+use itertools::Either;
 pub use stores::Store;
 
+use tracing::Instrument;
 use tuples::RawTuple;
 
 use std::future::{self, Future};
@@ -17,6 +19,8 @@ use itertools::Itertools as _;
 use crate::model::ParsingError;
 use crate::model::QueryObjects;
 use crate::model::{AsUser, Check, Object, Relation, Tuple, User};
+
+const OPENFGA_WRITES_MAX_TUPLES: usize = 100;
 
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -49,6 +53,13 @@ pub enum InitializationError {
     NotFound(String),
     #[error(transparent)]
     Request(#[from] RequestFailure),
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("Too many tuples provided ({provided_count}): hard limit set to {max}")]
+pub struct TooManyTuples {
+    max: usize,
+    provided_count: usize,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -250,10 +261,21 @@ impl Client {
             .await
     }
 
+    /// Writes up to 100 tuples in OpenFGA
+    ///
+    /// If the tuple slice is more than 100 elements, an error will be returned.
+    /// If you want them to be chunked into several requests, or if your tuples cannot
+    /// be monomorphized into a single type, use [Client::prepare_writes] instead.
     pub async fn write_tuples<'a, R: Relation, U: AsUser<User = R::User>>(
         &self,
         tuples: &[Tuple<'a, R, U>],
-    ) -> Result<(), RequestFailure> {
+    ) -> Result<(), Either<RequestFailure, TooManyTuples>> {
+        if tuples.len() > OPENFGA_WRITES_MAX_TUPLES {
+            return Err(Either::Right(TooManyTuples {
+                max: OPENFGA_WRITES_MAX_TUPLES,
+                provided_count: tuples.len(),
+            }));
+        }
         self.post_stores_write(
             &self.store.id,
             &tuples.into_iter().map_into().collect::<Vec<_>>(),
@@ -261,6 +283,26 @@ impl Client {
             self.authorization_model_id.clone(),
         )
         .await
+        .map_err(Either::Left)
+    }
+
+    /// Prepares multiple write requests to OpenFGA
+    ///
+    /// OpenFGA Writes API do not accept more than 100 tuples per request.
+    /// The [PreparedWrites] type returned by this function accepts any number
+    /// of tuples through [PreparedWrites::push] and will chunk them into
+    /// requests of 100 tuples each. The requests are sent concurrently when
+    /// [PreparedWrites::execute] is called.
+    ///
+    /// Beware that the tuples injected into [PreparedWrites] cannot be accessed
+    /// after a [PreparedWrites::push]. So any form of post-processing is impossible.
+    /// Likewise, once a [Tuple] is injected into [PreparedWrites], all its typing information
+    /// is lost.
+    pub fn prepare_writes(&self) -> PreparedWrites<'_> {
+        PreparedWrites {
+            writes: Vec::new(),
+            client: self,
+        }
     }
 
     pub async fn check<'a, R: Relation>(
@@ -298,6 +340,46 @@ impl Client {
             .map(|ident| R::Object::parse_fga_ident(&ident))
             .collect::<Result<Vec<_>, _>>()?;
         Ok(objects)
+    }
+}
+
+pub struct PreparedWrites<'a> {
+    writes: Vec<RawTuple>,
+    client: &'a Client,
+}
+
+impl PreparedWrites<'_> {
+    pub fn push<'a, R: Relation, U: AsUser<User = R::User>>(
+        mut self,
+        tuple: &Tuple<'_, R, U>,
+    ) -> Self {
+        self.writes.push(RawTuple::from(tuple));
+        self
+    }
+
+    /// Concurrently sends write requests to OpenFGA in 100-tuple chunks
+    ///
+    /// /!\ WARNING /!\ No transactional state is set up, so should any request fail,
+    /// the tuples written by other successful requests will remain in OpenFGA.
+    /// This function also returns at the first failing request, so OpenFGA may still
+    /// write some tuples **after** this function exits.
+    pub async fn execute(self) -> Result<(), RequestFailure> {
+        let futs = self
+            .writes
+            .chunks(100)
+            .map(|chunk| {
+                self.client
+                    .post_stores_write(
+                        &self.client.store.id,
+                        chunk,
+                        &[],
+                        self.client.authorization_model_id.clone(),
+                    )
+                    .in_current_span()
+            })
+            .collect_vec();
+        futures::future::try_join_all(futs).await?;
+        Ok(())
     }
 }
 
@@ -640,12 +722,12 @@ mod tests {
         let bob = fga!(User:"bob");
         let france = fga!(Infra:"france");
         let spain = fga!(Infra:"espagne");
+
         client
-            .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
-            .await
-            .unwrap();
-        client
-            .write_tuples(&[defs::Infra::reader().tuple(&fga!(User:*), &spain)])
+            .prepare_writes()
+            .push(&fga!(Infra:"france"#reader@User:"alice"))
+            .push(&fga!(Infra:"espagne"#reader@User:*))
+            .execute()
             .await
             .unwrap();
 
@@ -711,19 +793,12 @@ mod tests {
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
         client
-            .write_tuples(&[fga!(Infra:"france"#reader@User:"alice")])
-            .await
-            .unwrap();
-        client
-            .write_tuples(&[fga!(Infra:"espagne"#reader@User:*)])
-            .await
-            .unwrap();
-        client
-            .write_tuples(&[fga!(Group:"les_petits_pedestres"#member@User:"alice")])
-            .await
-            .unwrap();
-        client
-            .write_tuples(&[fga!(Infra:"allemagne"#reader@Group:"les_petits_pedestres"#member)])
+            .prepare_writes()
+            .push(&fga!(Infra:"france"#reader@User:"alice"))
+            .push(&fga!(Infra:"espagne"#reader@User:*))
+            .push(&fga!(Group:"les_petits_pedestres"#member@User:"alice"))
+            .push(&fga!(Infra:"allemagne"#reader@Group:"les_petits_pedestres"#member))
+            .execute()
             .await
             .unwrap();
 
