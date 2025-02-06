@@ -4,11 +4,12 @@ import { test as teardown } from '@playwright/test';
 
 import ROLLING_STOCK_NAMES, {
   globalProjectName,
+  infrastructureName,
   trainScheduleProjectName,
 } from './assets/project-const';
 import { logger } from './logging-fixture';
 import { setStdcmEnvironment } from './utils/api-setup';
-import { deleteProject, deleteRollingStocks } from './utils/teardown-utils';
+import { deleteInfra, deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
 teardown('teardown', async ({ browser }) => {
   try {
@@ -38,6 +39,11 @@ teardown('teardown', async ({ browser }) => {
     } else {
       logger.warn('No STDCM environment to restore.');
     }
+
+    fs.rmSync('./tests/test-saved-environment/savedStdcmEnvironment.json', {
+      recursive: true,
+      force: true,
+    });
 
     logger.info('Test data teardown completed successfully.');
   } catch (error) {

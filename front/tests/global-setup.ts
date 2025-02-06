@@ -6,16 +6,10 @@ import ROLLING_STOCK_NAMES, {
 } from './assets/project-const';
 import { logger } from './logging-fixture';
 import HomePage from './pages/home-page-model';
-import { getStdcmEnvironment } from './utils/api-setup';
 import { createDataForTests } from './utils/setup-utils';
 import { deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
 setup('setup', async ({ page }) => {
-  const stdcmEnvironment = await getStdcmEnvironment();
-  if (stdcmEnvironment) {
-    process.env.STDCM_ENVIRONMENT = JSON.stringify(stdcmEnvironment);
-  }
-
   logger.info('Starting test data setup ...');
 
   await Promise.all([deleteProject(trainScheduleProjectName), deleteProject(globalProjectName)]);

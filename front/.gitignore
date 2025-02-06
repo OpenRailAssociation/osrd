@@ -27,9 +27,6 @@ npm-debug.log*
 
 # sonarqube
 .scannerwork
-/test-results/
-/playwright-report/
-/playwright/.cache/
 
 # eslint cache
 .eslintcache
@@ -38,6 +35,12 @@ npm-debug.log*
 /.env
 # .env.local is up to the developer
 /.env.local
+
+# e2e-tests
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/tests/test-saved-environment
 
 # config overrides
 /overrides

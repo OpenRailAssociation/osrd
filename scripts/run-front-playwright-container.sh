@@ -6,7 +6,7 @@ set -e
 cd "$(realpath "$(dirname "$0")"/..)"
 
 # Detect the playwright version installed in the front
-if ! command -v jq &> /dev/null; then
+if ! command -v jq &>/dev/null; then
   echo "Error: jq is not installed. Please install jq using your package manager to continue." >&2
   exit 1
 fi
@@ -33,11 +33,13 @@ docker build --build-arg PLAYWRIGHT_VERSION=v"$VERSION" -t osrd-playwright:lates
 # Create the bind mounted folders if they don't exist, to avoid them being created as root
 mkdir -p "$PWD/front/playwright-report"
 mkdir -p "$PWD/front/test-results"
+mkdir -p "$PWD/front/tests/test-saved-environment"
 
 docker run -it --rm \
-    --ipc=host \
-    --network=host \
-    -v "$PWD/front/playwright-report:/app/front/playwright-report" \
-    -v "$PWD/front/test-results:/app/front/test-results" \
-    -u "$(stat -c %u:%g .)" \
-    osrd-playwright:latest npx playwright test "${args[@]}"
+  --ipc=host \
+  --network=host \
+  -v "$PWD/front/playwright-report:/app/front/playwright-report" \
+  -v "$PWD/front/test-results:/app/front/test-results" \
+  -v "$PWD/front/tests/test-saved-environment:/app/front/tests/test-saved-environment" \
+  -u "$(stat -c %u:%g .)" \
+  osrd-playwright:latest npx playwright test "${args[@]}"
