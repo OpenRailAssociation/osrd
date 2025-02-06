@@ -100,12 +100,10 @@
     "@apidevtools/swagger-parser": "^10.1.1",
     "@playwright/test": "^1.41.2",
     "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/chroma-js": "^3.1.1",
     "@types/d3": "^7.4.3",
-    "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.15",
     "@types/node": "^22",
     "@types/pdf-parse": "^1.1.4",
@@ -176,12 +174,6 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
-    ]
-  },
-  "jest": {
-    "coverageReporters": [
-      "text",
-      "cobertura"
     ]
   }
 }
