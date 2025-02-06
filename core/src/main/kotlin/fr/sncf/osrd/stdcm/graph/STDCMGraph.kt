@@ -49,8 +49,11 @@ class STDCMGraph(
     val allowanceManager: EngineeringAllowanceManager = EngineeringAllowanceManager(this)
     val backtrackingManager: BacktrackingManager = BacktrackingManager(this)
 
-    // min 2 minutes between two edges, determined empirically
-    private val visitedNodes = VisitedNodes(2 * 60.0)
+    // min 30s between two edges, determined empirically
+    // TODO: this value *should* reflect twice the min delay between two trains,
+    // but it seems we need it to be as small as the smallest amount of time
+    // a train can occupy a block. There's an issue somewhere.
+    private val visitedNodes = VisitedNodes(30.0)
 
     // A* heuristic
     val remainingTimeEstimator: STDCMAStarHeuristic
