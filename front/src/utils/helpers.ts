@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import 'moment/locale/fr';
 
 /**
  * Debounce input fields
