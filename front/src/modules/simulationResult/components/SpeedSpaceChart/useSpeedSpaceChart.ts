@@ -72,20 +72,23 @@ const useSpeedSpaceChart = (
         );
 
         setFormattedPathProperties(formattedPathProps);
-
-        // Format power restrictions
-        const powerRestrictions = formatPowerRestrictionRangesWithHandled({
-          selectedTrainSchedule: trainScheduleResult,
-          selectedTrainRollingStock: rollingStock,
-          pathfindingResult,
-          pathProperties: formattedPathProps,
-        });
-        setFormattedPowerRestrictions(powerRestrictions);
       }
     };
 
     getPathProperties();
   }, [pathProperties, infraId, rollingStock]);
+
+  useEffect(() => {
+    if (trainScheduleResult && rollingStock && pathfindingResult && formattedPathProperties) {
+      const powerRestrictions = formatPowerRestrictionRangesWithHandled({
+        selectedTrainSchedule: trainScheduleResult,
+        selectedTrainRollingStock: rollingStock,
+        pathfindingResult,
+        pathProperties: formattedPathProperties,
+      });
+      setFormattedPowerRestrictions(powerRestrictions);
+    }
+  }, [formattedPathProperties, trainScheduleResult]);
 
   // setup chart synchronizer
   useEffect(() => {
