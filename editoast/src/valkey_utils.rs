@@ -1,5 +1,8 @@
 use std::fmt::Debug;
 
+use deadpool_redis::cluster::Config as ClusterConfig;
+use deadpool_redis::cluster::Connection as ClusterConnection;
+use deadpool_redis::cluster::Pool as ClusterPool;
 use deadpool_redis::redis::aio::ConnectionLike;
 use deadpool_redis::redis::cmd;
 use deadpool_redis::redis::Arg;
@@ -26,6 +29,7 @@ use url::Url;
 use crate::error::Result;
 
 pub enum ValkeyConnection {
+    Cluster(ClusterConnection),
     Tokio(Connection),
     NoCache,
 }
@@ -62,6 +66,7 @@ fn no_cache_cmd_handler(cmd: &Cmd) -> std::result::Result<Value, RedisError> {
 impl ConnectionLike for ValkeyConnection {
     fn req_packed_command<'a>(&'a mut self, cmd: &'a Cmd) -> RedisFuture<'a, Value> {
         match self {
+            ValkeyConnection::Cluster(connection) => connection.req_packed_command(cmd),
             ValkeyConnection::Tokio(connection) => connection.req_packed_command(cmd),
             ValkeyConnection::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
         }
@@ -74,6 +79,9 @@ impl ConnectionLike for ValkeyConnection {
         count: usize,
     ) -> RedisFuture<'a, Vec<Value>> {
         match self {
+            ValkeyConnection::Cluster(connection) => {
+                connection.req_packed_commands(cmd, offset, count)
+            }
             ValkeyConnection::Tokio(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
             }
@@ -91,6 +99,7 @@ impl ConnectionLike for ValkeyConnection {
 
     fn get_db(&self) -> i64 {
         match self {
+            ValkeyConnection::Cluster(connection) => connection.get_db(),
             ValkeyConnection::Tokio(connection) => connection.get_db(),
             ValkeyConnection::NoCache => 0,
         }
@@ -265,6 +274,7 @@ impl ValkeyConnection {
 
 #[derive(Clone)]
 pub enum ValkeyClient {
+    Cluster(ClusterPool),
     Tokio(Pool),
     /// This doesn't cache anything. It has no backend.
     NoCache,
@@ -274,6 +284,7 @@ pub enum ValkeyClient {
 pub struct ValkeyConfig {
     /// Disables caching. This should not be used in production.
     pub no_cache: bool,
+    pub is_cluster_client: bool,
     pub valkey_url: Url,
 }
 
@@ -281,6 +292,13 @@ impl ValkeyClient {
     pub fn new(valkey_config: ValkeyConfig) -> Result<ValkeyClient> {
         if valkey_config.no_cache {
             return Ok(ValkeyClient::NoCache);
+        }
+        if valkey_config.is_cluster_client {
+            return Ok(ValkeyClient::Cluster(
+                ClusterConfig::from_urls(vec![valkey_config.valkey_url.to_string()])
+                    .create_pool(Some(Runtime::Tokio1))
+                    .unwrap(),
+            ));
         }
         Ok(ValkeyClient::Tokio(
             Config::from_url(valkey_config.valkey_url)
@@ -291,6 +309,7 @@ impl ValkeyClient {
 
     pub async fn get_connection(&self) -> std::result::Result<ValkeyConnection, PoolError> {
         match self {
+            ValkeyClient::Cluster(pool) => Ok(ValkeyConnection::Cluster(pool.get().await?)),
             ValkeyClient::Tokio(pool) => Ok(ValkeyConnection::Tokio(pool.get().await?)),
             ValkeyClient::NoCache => Ok(ValkeyConnection::NoCache),
         }

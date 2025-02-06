@@ -118,7 +118,7 @@ deadpool = { version = "0.12.2", features = [
   "rt_tokio_1",
   "unmanaged",
 ] }
-deadpool-redis = "0.18.0"
+deadpool-redis = { version = "0.18.0", features = ["cluster"] }
 derivative.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }
