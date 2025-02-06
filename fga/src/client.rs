@@ -602,6 +602,15 @@ mod tests {
     use crate::model::Check;
     use crate::model::Relation;
 
+    fn setup_tracing() {
+        tracing_subscriber::fmt()
+            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .without_time()
+            .pretty()
+            .try_init()
+            .expect("tracing should setup successfully");
+    }
+
     macro_rules! test_client {
         () => {
             Client::try_create_store(
@@ -621,8 +630,9 @@ mod tests {
         };
     }
 
-    #[test_log::test(tokio::test)]
+    #[tokio::test]
     async fn test_try_init() {
+        setup_tracing();
         let client = Client::try_init(
             "lol".to_owned(),
             ConnectionSettings {
@@ -635,8 +645,9 @@ mod tests {
         assert_eq!(client.store.name, "lol");
     }
 
-    #[test_log::test(tokio::test)]
+    #[tokio::test]
     async fn test_try_init_not_found() {
+        setup_tracing();
         let result = Client::try_init(
             "nonexistent_store".to_owned(),
             ConnectionSettings {
@@ -654,8 +665,9 @@ mod tests {
         }
     }
 
-    #[test_log::test(tokio::test)]
+    #[tokio::test]
     async fn create_store_with_reset() {
+        setup_tracing();
         let client = test_client!();
         assert_eq!(
             client.store.name,
@@ -684,8 +696,9 @@ mod tests {
 
     const MODEL: &'static str = include_str!("../tests/model.fga");
 
-    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn persisted_auth_model_id_in_client() {
+        setup_tracing();
         let model = compile_model(MODEL);
         let mut client = test_client!();
         assert_eq!(client.authorization_model_id, None);
@@ -695,8 +708,9 @@ mod tests {
         assert_eq!(client.authorization_model_id, Some(id));
     }
 
-    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn check() {
+        setup_tracing();
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
@@ -713,8 +727,9 @@ mod tests {
             .assert_check_not(defs::Infra::can_read().check(&alice, &infra));
     }
 
-    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn higher_order_users() {
+        setup_tracing();
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
@@ -738,8 +753,9 @@ mod tests {
             .assert_check(defs::Infra::can_read().check(&bob, &spain));
     }
 
-    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_objects() {
+        setup_tracing();
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
@@ -762,8 +778,9 @@ mod tests {
         assert_eq!(objects.as_slice(), &[spain, france]);
     }
 
-    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_objects_unknown_user() {
+        setup_tracing();
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
@@ -787,8 +804,9 @@ mod tests {
         assert!(objects.is_empty());
     }
 
-    #[test_log::test(tokio::test(flavor = "multi_thread", worker_threads = 1))]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_objects_higher_order_users() {
+        setup_tracing();
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
