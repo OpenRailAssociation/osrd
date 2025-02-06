@@ -509,11 +509,16 @@ impl<C> ContinuationUnfolder<C> {
 
 #[cfg(test)]
 mod tests {
+    use crate::client::Client;
+    use crate::client::ConnectionSettings;
+    use crate::client::InitializationError;
+    use crate::client::Request as _;
     use crate::compile_model;
     use crate::defs;
-    use crate::s;
-
-    use super::*;
+    use crate::defs::*;
+    use crate::fga;
+    use crate::model::Check;
+    use crate::model::Relation;
 
     macro_rules! test_client {
         () => {
@@ -613,9 +618,9 @@ mod tests {
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
-        let alice = defs::User(s!("alice"));
-        let bob = defs::User(s!("bob"));
-        let infra = defs::Infra(s!("france"));
+        let alice = fga!(User:"alice");
+        let bob = fga!(User:"bob");
+        let infra = fga!(Infra:"france");
         client
             .write_tuples(&[defs::Infra::reader().tuple(&bob, &infra)])
             .await
@@ -631,16 +636,16 @@ mod tests {
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
-        let alice = defs::User(s!("alice"));
-        let bob = defs::User(s!("bob"));
-        let france = defs::Infra(s!("france"));
-        let spain = defs::Infra(s!("espagne"));
+        let alice = fga!(User:"alice");
+        let bob = fga!(User:"bob");
+        let france = fga!(Infra:"france");
+        let spain = fga!(Infra:"espagne");
         client
             .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
             .await
             .unwrap();
         client
-            .write_tuples(&[defs::Infra::reader().tuple(&defs::User::tbpa(), &spain)])
+            .write_tuples(&[defs::Infra::reader().tuple(&fga!(User:*), &spain)])
             .await
             .unwrap();
 
@@ -656,9 +661,9 @@ mod tests {
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
-        let alice = defs::User(s!("alice"));
-        let france = defs::Infra(s!("france"));
-        let spain = defs::Infra(s!("espagne"));
+        let alice = fga!(User:"alice");
+        let france = fga!(Infra:"france");
+        let spain = fga!(Infra:"espagne");
         client
             .write_tuples(&[
                 defs::Infra::reader().tuple(&alice, &france),
@@ -680,10 +685,10 @@ mod tests {
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
-        let bob = defs::User(s!("bob"));
-        let alice = defs::User(s!("alice"));
-        let france = defs::Infra(s!("france"));
-        let spain = defs::Infra(s!("espagne"));
+        let bob = fga!(User:"bob");
+        let alice = fga!(User:"alice");
+        let france = fga!(Infra:"france");
+        let spain = fga!(Infra:"espagne");
         client
             .write_tuples(&[
                 defs::Infra::reader().tuple(&alice, &france),
@@ -705,48 +710,47 @@ mod tests {
         let model = compile_model(MODEL);
         let client = test_client!();
         client.push_authorization_model(&model).await.unwrap();
-        let alice = defs::User(s!("alice"));
-        let bob = defs::User(s!("bob"));
-        let france = defs::Infra(s!("france"));
-        let spain = defs::Infra(s!("espagne"));
-        let germany = defs::Infra(s!("allemagne"));
-        let group = defs::Group(s!("les_petits_pedestres"));
         client
-            .write_tuples(&[defs::Infra::reader().tuple(&alice, &france)])
+            .write_tuples(&[fga!(Infra:"france"#reader@User:"alice")])
             .await
             .unwrap();
         client
-            .write_tuples(&[defs::Infra::reader().tuple(&defs::User::tbpa(), &spain)])
+            .write_tuples(&[fga!(Infra:"espagne"#reader@User:*)])
             .await
             .unwrap();
         client
-            .write_tuples(&[defs::Group::member().tuple(&alice, &group)])
+            .write_tuples(&[fga!(Group:"les_petits_pedestres"#member@User:"alice")])
             .await
             .unwrap();
         client
-            .write_tuples(&[
-                defs::Infra::reader().tuple(&defs::Group::member().userset(&group), &germany)
-            ])
+            .write_tuples(&[fga!(Infra:"allemagne"#reader@Group:"les_petits_pedestres"#member)])
             .await
             .unwrap();
 
         let objects = client
-            .list_objects(defs::Infra::can_read().query_objects(&defs::User::tbpa()))
+            .list_objects(defs::Infra::can_read().query_objects(&fga!(User:*)))
             .await
             .unwrap();
-        assert_eq!(objects.as_slice(), &[spain.clone()]);
+        assert_eq!(objects.as_slice(), &[fga!(Infra:"espagne")]);
 
         let objects = client
-            .list_objects(defs::Infra::can_read().query_objects(&bob))
+            .list_objects(defs::Infra::can_read().query_objects(&fga!(User:"bob")))
             .await
             .unwrap();
-        assert_eq!(objects.as_slice(), &[spain.clone()]);
+        assert_eq!(objects.as_slice(), &[fga!(Infra:"espagne")]);
 
         let mut objects = client
-            .list_objects(defs::Infra::can_read().query_objects(&alice))
+            .list_objects(defs::Infra::can_read().query_objects(&fga!(User:"alice")))
             .await
             .unwrap();
         objects.sort();
-        assert_eq!(objects.as_slice(), &[germany, spain, france]);
+        assert_eq!(
+            objects.as_slice(),
+            &[
+                fga!(Infra:"allemagne"),
+                fga!(Infra:"espagne"),
+                fga!(Infra:"france")
+            ]
+        );
     }
 }

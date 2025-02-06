@@ -112,49 +112,46 @@ mod defs {
 
     use super::model::Relation;
 
-    macro_rules! user {
-        ($ty:ident, $namespace:literal) => {
+    macro_rules! fga_type {
+        (@ $vis:vis struct $name:ident) => {
+            #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
+            pub struct $name(#[from] pub String);
+        };
+        (@ $name:ident : User($ns:literal)) => {
             #[automatically_derived]
-            impl crate::model::User for $ty {
-                const NAMESPACE: &'static str = $namespace;
+            impl crate::model::User for $name {
+                const NAMESPACE: &'static str = $ns;
                 fn id(&self) -> &str {
                     self.0.as_str()
                 }
             }
         };
-    }
-
-    macro_rules! object {
-        ($ty:ident, $namespace:literal) => {
+        (@ $name:ident : Object($ns:literal)) => {
             #[automatically_derived]
-            impl crate::model::Object for $ty {
-                const NAMESPACE: &'static str = $namespace;
+            impl crate::model::Object for $name {
+                const NAMESPACE: &'static str = $ns;
                 fn id(&self) -> &str {
                     self.0.as_str()
                 }
             }
         };
+        ($vis:vis struct $name:ident($ns:literal) : $($derive:ident),+) => {
+            fga_type!(@ $vis struct $name);
+            $(fga_type!(@ $name : $derive($ns));)*
+
+            #[allow(unused)]
+            macro_rules! $name {
+                ($s:literal) => {
+                    $name($s.to_string())
+                };
+            }
+        };
     }
 
-    pub type Id = String;
-
-    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
-    pub struct Role(#[from] pub Id);
-    user!(Role, "role");
-
-    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
-    pub struct User(#[from] pub Id);
-    user!(User, "user");
-    object!(User, "user");
-
-    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
-    pub struct Group(#[from] pub Id);
-    user!(Group, "group");
-    object!(Group, "group");
-
-    #[derive(Debug, From, PartialEq, Eq, PartialOrd, Ord, Clone)]
-    pub struct Infra(#[from] pub Id);
-    object!(Infra, "infra");
+    fga_type!(pub struct Role("role"): User);
+    fga_type!(pub struct User("user"): User, Object);
+    fga_type!(pub struct Group("group"): User, Object);
+    fga_type!(pub struct Infra("infra"): Object);
 
     relations! {
         User {
@@ -172,14 +169,48 @@ mod defs {
 }
 
 #[cfg(test)]
-macro_rules! s {
-    () => {
-        "j'apprécie les fruits au sirop".to_string()
+macro_rules! fga {
+    // User notations
+    // --------------
+
+    // fga!(User:"bob") => "user:bob"
+    ($ty:ident : $id:literal) => {
+        $ty($id.to_string())
     };
-    ($s:literal) => {
-        $s.to_string()
+
+    // fga!(User:*) => "user:*"
+    ($ty:ident : *) => {
+        <$ty as crate::model::User>::tbpa()
+    };
+
+    // fga!(Group:"my_friends"#member) => userset syntax "group:my_friends#member"
+    ($ty:ident : $id:literal # $relation:ident) => {
+        {
+            use crate::model::Relation as _;
+            $ty::$relation().userset(&fga!($ty:$id))
+        }
+    };
+
+    // Tuple notations
+    // ---------------
+
+    // fga!(doc:id#reader@user:id) => tuple syntax
+    //
+    // Read it backwards: "the user of type 'user' with this id is a reader of this doc with that id"
+    ($object:ident : $object_id:literal # $relation:ident @ $user:ident : $user_id:literal) => {
+        $object::$relation().tuple(&fga!($user:$user_id), &fga!($object:$object_id))
+    };
+
+    // fga!(group:id#member@user:*) => tuple syntax for public type access bounds
+    ($object:ident : $object_id:literal # $relation:ident @ $user:ident : *) => {
+        $object::$relation().tuple(&fga!($user:*), &fga!($object:$object_id))
+    };
+
+    // fga!(doc:id#reader@group#member) => tuple syntax for user set
+    ($object:ident : $object_id:literal # $relation:ident @ $user:ident : $user_id:literal # $user_relation:ident) => {
+        $object::$relation().tuple(&fga!($user:$user_id # $user_relation), &fga!($object:$object_id))
     };
 }
 
 #[cfg(test)]
-pub(crate) use s;
+pub(crate) use fga;
