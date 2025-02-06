@@ -22,7 +22,7 @@ export const editorInitialState: EditorState = {
   // Definition of entities (json schema)
   editorSchema: [],
   // ID of selected layers on which we are working
-  editorLayers: new Set(['track_sections', 'errors']),
+  editorLayers: new Set(['track_sections']),
   // Editor issue management
   issues: {
     total: 0,
