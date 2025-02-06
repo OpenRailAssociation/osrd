@@ -60,7 +60,7 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       globalSetup: './vitest.global-setup.ts',
-      include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+      include: ['src/**/*.spec.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       environment: 'happy-dom',
       coverage: {
         all: true,
