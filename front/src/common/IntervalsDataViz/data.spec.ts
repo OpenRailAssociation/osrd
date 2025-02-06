@@ -2,7 +2,7 @@ import along from '@turf/along';
 import distance from '@turf/distance';
 import type { LineString, FeatureCollection } from 'geojson';
 import { tail, last } from 'lodash';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, assert } from 'vitest';
 
 import { getLineStringDistance, update, resizeSegment, splitAt, mergeIn } from './data';
 import type { LinearMetadataItem } from './types';
@@ -269,7 +269,7 @@ describe('Testing linear metadata functions', () => {
       ];
       try {
         resizeSegment(wrapper, 3, -10);
-        fail();
+        assert.fail();
       } catch (e) {
         expect(e).toBeTruthy();
       }
@@ -284,7 +284,7 @@ describe('Testing linear metadata functions', () => {
       ];
       try {
         resizeSegment(wrapper, 1, 10);
-        fail();
+        assert.fail();
       } catch (e) {
         expect(e).toBeTruthy();
       }
@@ -299,7 +299,7 @@ describe('Testing linear metadata functions', () => {
       ];
       try {
         resizeSegment(wrapper, 4, -5);
-        fail();
+        assert.fail();
       } catch (e) {
         expect(e).toBeTruthy();
       }
