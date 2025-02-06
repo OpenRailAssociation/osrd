@@ -8,7 +8,7 @@ mod voltage;
 
 use std::ops::DerefMut;
 
-use chrono::NaiveDateTime;
+use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel::delete;
@@ -69,9 +69,9 @@ pub struct Infra {
     #[schema(required)]
     pub generated_version: Option<String>,
     pub locked: bool,
-    pub created: NaiveDateTime,
-    #[derivative(Default(value = "Utc::now().naive_utc()"))]
-    pub modified: NaiveDateTime,
+    pub created: DateTime<Utc>,
+    #[derivative(Default(value = "Utc::now()"))]
+    pub modified: DateTime<Utc>,
 }
 
 impl InfraChangeset {
@@ -112,6 +112,7 @@ impl Infra {
             .expect("Cannot convert version into an Integer")
             + 1;
         self.version = new_version.to_string();
+        self.modified = Utc::now();
         self.save(conn).await
     }
 
@@ -123,11 +124,12 @@ impl Infra {
     pub async fn clone(&self, conn: &mut DbConnection, new_name: String) -> Result<Infra> {
         conn.clone().transaction(|conn| Box::pin(async move {
             // Duplicate infra shell
+            let now = Utc::now();
             let cloned_infra = <Self as Clone>::clone(self)
                 .into_changeset()
                 .name(new_name)
-                .created(Utc::now().naive_utc())
-                .modified(Utc::now().naive_utc())
+                .created(now)
+                .modified(now)
                 .create(&mut conn.clone())
                 .await?;
 
@@ -353,6 +355,7 @@ pub mod tests {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let old_modification_date = empty_infra.modified;
         let infra_new_name = "clone_infra_with_new_name_returns_new_cloned_infra".to_string();
 
         // WHEN
@@ -363,6 +366,7 @@ pub mod tests {
 
         // THEN
         assert_eq!(result.name, infra_new_name);
+        assert!(old_modification_date < result.modified);
     }
 
     #[rstest]
@@ -384,6 +388,20 @@ pub mod tests {
             expected: RAILJSON_VERSION.to_string(),
         };
         assert_eq!(res.unwrap_err().get_type(), expected_error.get_type());
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn infra_change_updates_modification_date() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let old = infra.modified;
+
+        infra
+            .bump_version(&mut db_pool.get_ok())
+            .await
+            .expect("could not bump version");
+
+        assert!(infra.modified > old);
     }
 
     #[rstest]

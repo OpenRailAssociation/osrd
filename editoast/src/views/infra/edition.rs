@@ -717,7 +717,7 @@ fn get_split_patch_operations_for_applicable_ranges(
                 }));
             } else {
                 // Case where the range is fully on right side
-                // so we need to change the track and to substract the distance on begin & end
+                // so we need to change the track and to subtract the distance on begin & end
                 if range.begin >= distance {
                     patch_operations.push(PatchOperation::Replace(ReplaceOperation {
                         path: format!("{}/{}/track", path, index).parse().unwrap(),
@@ -792,7 +792,7 @@ fn get_split_patch_operations_for_ranges(
                 }));
             } else {
                 // Case where the range is fully on right side
-                // so we need to change the track and to substract the distance on begin & end
+                // so we need to change the track and to subtract the distance on begin & end
                 if range.begin >= distance {
                     patch_operations.push(PatchOperation::Replace(ReplaceOperation {
                         path: format!("{}/{}/track", path, index).parse().unwrap(),
@@ -1025,6 +1025,45 @@ pub mod tests {
             })
             .collect();
         assert_eq!(errors_without_routes.len() - init_errors.len(), 0);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn infra_edition_updates_modification_date() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let mut small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let mut infra_cache = InfraCache::load(&mut db_pool.get_ok(), &small_infra)
+            .await
+            .unwrap();
+
+        let old_modified = small_infra.modified;
+
+        let operations: Vec<Operation> = [
+            // Success operation
+            Operation::Update(UpdateOperation {
+                obj_type: ObjectType::TrackSection,
+                obj_id: "TA0".to_string(),
+                railjson_patch: Patch(
+                    [PatchOperation::Replace(ReplaceOperation {
+                        path: "/length".to_string().parse().unwrap(),
+                        value: json!(1234),
+                    })]
+                    .to_vec(),
+                ),
+            }),
+        ]
+        .to_vec();
+        apply_edit(
+            &mut db_pool.get_ok(),
+            &mut small_infra,
+            &operations,
+            &mut infra_cache,
+        )
+        .await
+        .ok()
+        .unwrap();
+
+        assert!(small_infra.modified > old_modified);
     }
 
     #[rstest]

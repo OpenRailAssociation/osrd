@@ -4,6 +4,7 @@ mod update;
 
 use std::ops::Deref as _;
 
+use chrono::Utc;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::OSRDObject as _;
 use json_patch::Patch;
@@ -16,6 +17,8 @@ use utoipa::ToSchema;
 pub use self::delete::DeleteOperation;
 use crate::error::Result;
 use crate::infra_cache::ObjectCache;
+use crate::models::prelude::*;
+use crate::models::Infra;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::ObjectRef;
@@ -142,10 +145,10 @@ impl Operation {
         infra_id: i64,
         conn: &mut DbConnection,
     ) -> Result<Option<InfraObject>> {
-        match self {
+        let res = match self {
             Operation::Delete(deletion) => {
                 deletion.apply(infra_id, conn).await?;
-                Ok(None)
+                Ok::<_, crate::error::InternalError>(None)
             }
             Operation::Create(railjson_object) => {
                 create::apply_create_operation(railjson_object, infra_id, conn).await?;
@@ -155,7 +158,12 @@ impl Operation {
                 let railjson_object = update.apply(infra_id, conn).await?;
                 Ok(Some(railjson_object))
             }
-        }
+        }?;
+        Infra::changeset()
+            .modified(Utc::now())
+            .update(conn, infra_id)
+            .await?;
+        Ok(res)
     }
 }
 
@@ -165,7 +173,7 @@ pub fn patch_infra_object(infra_object: &InfraObject, json_patch: &Patch) -> Res
     // (1) transform `RailjsonObject` into `serde_json::Value`,
     // (2) patch the object,
     // (3) transform `serde_json::Value` back into a `RailjsonObject`.
-    // The code below is explicitely typed (even if not needed) to help understand this dance.
+    // The code below is explicitly typed (even if not needed) to help understand this dance.
     let object_type = infra_object.get_type();
     let mut value: serde_json::Value = match &infra_object {
         InfraObject::TrackSection { railjson } => serde_json::to_value(railjson)?,

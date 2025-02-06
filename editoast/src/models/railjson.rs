@@ -1,3 +1,4 @@
+use chrono::Utc;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
@@ -6,6 +7,8 @@ use crate::error::Result;
 use crate::models::infra_objects::*;
 use crate::models::prelude::*;
 use editoast_models::DbConnection;
+
+use super::Infra;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "railjson")]
@@ -116,6 +119,10 @@ pub async fn persist_railjson(
                 )
                 .await?;
 
+                Infra::changeset()
+                    .modified(Utc::now())
+                    .update(&mut conn.clone(), infra_id)
+                    .await?;
                 Ok(())
             })
         })
