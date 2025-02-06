@@ -4,6 +4,7 @@ use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
+use diesel::sql_types::Timestamptz;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use futures_util::stream::TryStreamExt;
@@ -55,27 +56,42 @@ impl Timetable {
             .map_err(Into::into)
     }
 
-    pub async fn schedules_before_date(
+    /// This function will return all train schedules in a timetable that runs within the time window.
+    ///
+    /// **IMPORTANT**: The filter is based on the scheduled arrival time and not the actual simulated arrival time.
+    ///
+    /// The diagram below shows a list of trains in a timetable:
+    /// `?`: unscheduled arrival times.
+    /// `|`: scheduled arrival times.
+    ///
+    /// ```
+    ///                       min_time               max_time
+    ///     Time Window           |----------------------|
+    /// Train 1 ✅         |-------------|
+    /// Train 2 ❌    |-------|
+    /// Train 3 ✅                              |----------|
+    /// Train 4 ✅   |-------?
+    /// Train 5 ✅                        |---------?
+    /// Train 6 ❌                                           |------?
+    /// ```
+    pub async fn schedules_in_time_window(
         self,
         conn: &mut DbConnection,
-        time: DateTime<Utc>,
+        min_time: DateTime<Utc>,
+        max_time: DateTime<Utc>,
     ) -> Result<Vec<TrainSchedule>> {
-        use diesel::prelude::*;
-        use diesel_async::RunQueryDsl;
-        use editoast_models::tables::train_schedule::dsl;
-
-        let train_schedules = dsl::train_schedule
-            .filter(dsl::start_time.le(time))
-            .filter(dsl::timetable_id.eq(self.id))
-            .load_stream::<Row<TrainSchedule>>(conn.write().await.deref_mut())
-            .await?
-            .map_ok(|ts| ts.into())
-            .try_collect::<Vec<TrainSchedule>>()
-            .await;
-        match train_schedules {
-            Ok(train_schedules) => Ok(train_schedules),
-            Err(err) => Err(err.into()),
-        }
+        let train_schedules = sql_query(include_str!(
+            "timetable/sql/get_train_schedules_in_time_window.sql"
+        ))
+        .bind::<BigInt, _>(self.id)
+        .bind::<Timestamptz, _>(max_time)
+        .bind::<Timestamptz, _>(min_time)
+        .load_stream::<Row<TrainSchedule>>(conn.write().await.deref_mut())
+        .await?
+        .map_ok(|ts| ts.into())
+        .try_collect::<Vec<TrainSchedule>>()
+        .await;
+        train_schedules.map_err(|e| e.into())
     }
 }
 
@@ -115,5 +131,92 @@ impl From<TimetableWithTrains> for Timetable {
         Self {
             id: timetable_with_trains.id,
         }
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use chrono::Duration;
+    use chrono::TimeZone;
+    use chrono::Utc;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+    use std::collections::HashSet;
+
+    use super::*;
+    use crate::models::fixtures::{create_timetable, simple_train_schedule_base};
+    use crate::models::train_schedule::TrainScheduleChangeset;
+    use editoast_models::DbConnectionPoolV2;
+
+    #[rstest]
+    async fn test_schedules_in_time_window() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        // Note that this train has a last arrival at PT50M
+        let min_time = Utc.with_ymd_and_hms(2025, 1, 1, 12, 0, 0).unwrap();
+        let max_time = Utc.with_ymd_and_hms(2025, 1, 1, 14, 0, 0).unwrap();
+        let base_ts = simple_train_schedule_base();
+        TrainScheduleChangeset::from(base_ts.clone())
+            .timetable_id(timetable.id)
+            .train_name("Train 1".into())
+            .start_time(min_time - Duration::minutes(20))
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        TrainScheduleChangeset::from(base_ts.clone())
+            .timetable_id(timetable.id)
+            .train_name("Train 2".into())
+            .start_time(min_time - Duration::hours(2))
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        TrainScheduleChangeset::from(base_ts.clone())
+            .timetable_id(timetable.id)
+            .train_name("Train 3".into())
+            .start_time(max_time - Duration::minutes(5))
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        TrainScheduleChangeset::from(base_ts.clone())
+            .timetable_id(timetable.id)
+            .train_name("Train 4".into())
+            .start_time(min_time - Duration::hours(2))
+            .schedule(vec![])
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        TrainScheduleChangeset::from(base_ts.clone())
+            .timetable_id(timetable.id)
+            .train_name("Train 5".into())
+            .start_time(max_time - Duration::minutes(10))
+            .schedule(vec![])
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        TrainScheduleChangeset::from(base_ts.clone())
+            .timetable_id(timetable.id)
+            .train_name("Train 6".into())
+            .start_time(max_time + Duration::minutes(10))
+            .schedule(vec![])
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+
+        // Test
+        let train_schedules = timetable
+            .schedules_in_time_window(&mut db_pool.get_ok(), min_time, max_time)
+            .await
+            .expect("Failed to get train schedules in time window");
+
+        // Expected: Train 1, Train 3, Train 4, Train 5
+        assert_eq!(train_schedules.len(), 4);
+        let train_names: HashSet<_> = train_schedules
+            .into_iter()
+            .map(|ts| ts.train_name)
+            .collect();
+        assert!(train_names.contains("Train 1"));
+        assert!(train_names.contains("Train 3"));
+        assert!(train_names.contains("Train 4"));
+        assert!(train_names.contains("Train 5"));
     }
 }
