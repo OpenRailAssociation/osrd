@@ -45,6 +45,10 @@ teardown('teardown', async ({ browser }) => {
       force: true,
     });
 
+    // Delete infra, unless it is currently used as a foreign key by the stdcm env in the database
+    if (savedEnvironment && savedEnvironment.infra_id !== Number(process.env.TEST_INFRA_ID))
+      await deleteInfra(infrastructureName);
+
     logger.info('Test data teardown completed successfully.');
   } catch (error) {
     logger.error('Error during test data teardown:', error);
