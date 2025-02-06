@@ -81,7 +81,6 @@
         "devDependencies": ["**/*.spec.ts", "**/__tests__/**"]
       }
     ],
-    "import/no-unresolved": [2, { "commonjs": true, "amd": true }],
     "jsx-a11y/click-events-have-key-events": "off",
     "linebreak-style": ["error", "unix"],
     "no-await-in-loop": "off",
