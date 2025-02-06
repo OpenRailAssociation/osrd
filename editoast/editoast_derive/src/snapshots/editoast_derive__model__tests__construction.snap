@@ -180,7 +180,6 @@ impl From<Document> for DocumentChangeset {
         }
     }
 }
-#[automatically_derived]
 impl DocumentChangeset {
     #[allow(unused)]
     #[must_use = "builder methods are intended to be chained"]
@@ -208,7 +207,6 @@ impl DocumentChangeset {
         self
     }
 }
-#[automatically_derived]
 impl<'a> crate::models::Patch<'a, Document> {
     #[allow(unused)]
     #[must_use = "builder methods are intended to be chained"]

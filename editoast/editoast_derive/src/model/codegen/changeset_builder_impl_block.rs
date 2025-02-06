@@ -75,7 +75,6 @@ impl ToTokens for ChangesetBuilderImplBlock {
             .iter()
             .map(|field| self.builder_flat_fn_decl(field));
         tokens.extend(quote! {
-            #[automatically_derived]
             #impl_decl {
                 #(
                     #[allow(unused)]
