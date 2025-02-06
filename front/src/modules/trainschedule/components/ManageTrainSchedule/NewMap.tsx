@@ -11,6 +11,7 @@ import { useParams } from 'react-router-dom';
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
+import { LoaderFill } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
@@ -53,6 +54,7 @@ type MapProps = {
   setMapCanvas?: (mapCanvas: string) => void;
   hideAttribution?: boolean;
   hideItinerary?: boolean;
+  isPathfindingLoading?: boolean;
   preventPointSelection?: boolean;
   id: string;
   simulationPathSteps: MarkerInformation[];
@@ -73,6 +75,7 @@ const NewMap = ({
   setMapCanvas,
   hideAttribution = false,
   hideItinerary = false,
+  isPathfindingLoading = false,
   preventPointSelection = false,
   id,
   simulationPathSteps,
@@ -99,6 +102,14 @@ const NewMap = ({
     [pathProperties, geometry]
   );
 
+  const mapRef = useRef<MapRef | null>(null);
+  const mapContainer = useMemo(() => mapRef.current?.getContainer(), [mapRef.current]);
+
+  const mapViewport = useMemo(
+    () => (pathGeometry ? computeBBoxViewport(bbox(pathGeometry), viewport) : viewport),
+    [pathGeometry, viewport]
+  );
+
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
 
   const [snappedPoint, setSnappedPoint] = useState<Feature<Point> | undefined>();
@@ -115,8 +126,6 @@ const NewMap = ({
       })),
     []
   );
-
-  const mapRef = useRef<MapRef | null>(null);
 
   const scaleControlStyle = {
     left: 20,
@@ -228,14 +237,19 @@ const NewMap = ({
       coordinates: compact(simulationPathSteps.map((step) => step.coordinates)),
       type: 'LineString',
     };
-    if (points.coordinates.length > 2) {
-      const newViewport = computeBBoxViewport(bbox(points), viewport);
+    if (points.coordinates.length > 2 && !isPathfindingLoading) {
+      const newViewport = computeBBoxViewport(bbox(points), mapViewport, {
+        width: mapContainer?.clientWidth,
+        height: mapContainer?.clientHeight,
+        padding: 60,
+      });
       updateViewportChange(newViewport);
     }
-  }, [pathGeometry, simulationPathSteps]);
+  }, [pathGeometry, simulationPathSteps, mapContainer, isPathfindingLoading]);
 
   return (
     <>
+      {isPathfindingLoading && <LoaderFill />}
       <MapButtons
         zoomIn={zoomIn}
         zoomOut={zoomOut}

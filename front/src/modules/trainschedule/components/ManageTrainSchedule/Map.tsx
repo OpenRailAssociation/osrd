@@ -82,7 +82,6 @@ const Map = ({
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
   const mapRef = useRef<MapRef | null>(null);
-  const mapContainer = useMemo(() => mapRef.current?.getContainer(), [mapRef.current]);
 
   const pathGeometry = useMemo(
     () => geometry || pathProperties?.geometry,
@@ -212,14 +211,10 @@ const Map = ({
       type: 'LineString',
     };
     if (points.coordinates.length > 2) {
-      const newViewport = computeBBoxViewport(bbox(points), viewport, {
-        width: mapContainer?.clientWidth,
-        height: mapContainer?.clientHeight,
-        padding: 60,
-      });
+      const newViewport = computeBBoxViewport(bbox(points), viewport);
       dispatch(updateViewport(newViewport));
     }
-  }, [pathGeometry, simulationPathSteps, mapContainer]);
+  }, [pathGeometry, simulationPathSteps]);
 
   return (
     <>
