@@ -293,6 +293,17 @@ class WorkerCommand : CliCommand {
                         executionTimeMS / 1_000.0
                     )
                 }
+
+            val terminatorCallback =
+                fun(message: Delivery) {
+                    try {
+                        callback(message)
+                    } catch (t: Throwable) {
+                        t.printStackTrace(System.err)
+                        exitProcess(1)
+                    }
+                }
+
             channel.basicConsume(
                 WORKER_REQUESTS_QUEUE,
                 false,
@@ -302,9 +313,9 @@ class WorkerCommand : CliCommand {
                         // We directly process the message with no dispatch if there's too many
                         // locally queued tasks. Prevents the worker from consuming all the rabbitmq
                         // at once, which would mess with the stats and automatic scaling.
-                        callback(message)
+                        terminatorCallback(message)
                     } else {
-                        executor.execute { callback(message) }
+                        executor.execute { terminatorCallback(message) }
                     }
                 },
                 { _ ->
