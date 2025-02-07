@@ -45,7 +45,6 @@ import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from '../ChartSynchronizer';
 
 type SimulationResultMapProps = {
-  setExtViewport: (mapViewport: Viewport) => void;
   geometry?: PathPropertiesFormatted['geometry'];
   trainSimulation?: SimulationResponseSuccess & { trainId: number; startTime: string };
   pathItemsCoordinates?: Position[];

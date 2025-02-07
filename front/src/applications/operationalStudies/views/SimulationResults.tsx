@@ -25,7 +25,6 @@ import SimulationResultExport from 'modules/simulationResult/SimulationResultExp
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import { updateViewport, type Viewport } from 'reducers/map';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -73,7 +72,6 @@ const SimulationResults = ({
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
-  const [extViewport, setExtViewport] = useState<Viewport>();
   const [showWarpedMap, setShowWarpedMap] = useState(false);
   const [pathItemsCoordinates, setPathItemsCoordinates] = useState<Position[]>();
 
@@ -168,16 +166,6 @@ const SimulationResults = ({
       );
     }
   };
-
-  useEffect(() => {
-    if (extViewport !== undefined) {
-      dispatch(
-        updateViewport({
-          ...extViewport,
-        })
-      );
-    }
-  }, [extViewport]);
 
   if ((!selectedTrainSchedule || !trainSimulation) && !projectionData) {
     return null;
@@ -282,7 +270,6 @@ const SimulationResults = ({
           {/* SIMULATION : MAP */}
           <div className="simulation-map">
             <SimulationResultsMap
-              setExtViewport={setExtViewport}
               geometry={pathProperties?.geometry}
               trainSimulation={{
                 ...trainSimulation,
