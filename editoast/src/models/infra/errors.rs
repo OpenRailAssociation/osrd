@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::ops::DerefMut;
+
 use diesel::pg::Pg;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
@@ -71,5 +74,40 @@ impl Infra {
             load_for_pagination(conn, query, page, page_size).await?;
         let results = results.into_iter().map(|r| r.information.0).collect();
         Ok((results, count))
+    }
+
+    /// Get the number of errors for each error type and object type.
+    pub async fn get_error_summary(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<HashMap<(String, String), u64>> {
+        use diesel::dsl::{count_star, sql};
+        use diesel::prelude::*;
+        use diesel::sql_types::Text;
+        use diesel_async::RunQueryDsl;
+        use editoast_models::tables::infra_layer_error::dsl;
+
+        let query = dsl::infra_layer_error
+            .select((
+                sql::<Text>("information->>'error_type'"),
+                sql::<Text>("information->>'obj_type'"),
+                count_star(),
+            ))
+            .filter(dsl::infra_id.eq(self.id))
+            .filter(sql::<Text>("information->>'is_warning'").eq("false"))
+            .group_by((
+                sql::<Text>("information->>'error_type'"),
+                sql::<Text>("information->>'obj_type'"),
+            ))
+            .order_by(count_star().desc());
+
+        let results = query
+            .load::<(String, String, i64)>(conn.write().await.deref_mut())
+            .await?;
+
+        Ok(results
+            .into_iter()
+            .map(|(err_ty, obj_ty, count)| ((err_ty, obj_ty), count as u64))
+            .collect())
     }
 }

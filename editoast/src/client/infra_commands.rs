@@ -118,14 +118,22 @@ pub async fn import_railjson(
         .map_err(|_| InfraApiError::NotFound { infra_id: infra.id })?;
 
     println!("✅ Infra {infra_name}[{}] saved!", infra.id);
-    // Generate only if the was set
+    // Generate only if the flag was set
     if args.generate {
         let infra_cache = InfraCache::load(&mut db_pool.get().await?, &infra).await?;
-        infra.refresh(db_pool, true, &infra_cache).await?;
+        infra.refresh(db_pool.clone(), true, &infra_cache).await?;
         println!(
             "✅ Infra {infra_name}[{}] generated data refreshed!",
             infra.id
         );
+
+        let error_counts = infra.get_error_summary(&mut db_pool.get().await?).await?;
+        if !error_counts.is_empty() {
+            println!("🚨 Infra {infra_name}[{}] has errors:", infra.id);
+            for ((error_type, object_type), count) in error_counts {
+                println!("  - {:<15} {} {}", object_type.bold(), count, error_type);
+            }
+        }
     };
     Ok(())
 }
