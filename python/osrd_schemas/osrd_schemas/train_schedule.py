@@ -21,15 +21,20 @@ class MRSPPoint(BaseModel):
     """This class defines each point used to compute the Most restricted speed profile (MRSP)."""
 
     position: float = Field(
-        description="Relative position of the point in meters with respect to the track section", ge=0
+        description="Relative position of the point in meters with respect to the track section",
+        ge=0,
     )
-    speed: float = Field(description="Speed at the point considered in meters per second", ge=0)
+    speed: float = Field(
+        description="Speed at the point considered in meters per second", ge=0
+    )
 
 
 class MRSP(RootModel):
     """This class is used to compute the MRSP."""
 
-    root: List[MRSPPoint] = Field(description="List of each point used to calculate the MRSP envelope")
+    root: List[MRSPPoint] = Field(
+        description="List of each point used to calculate the MRSP envelope"
+    )
 
 
 # Allowances
@@ -61,9 +66,9 @@ class AllowancePercentValue(BaseModel):
 class AllowanceValue(RootModel):
     """This class allows to choose the different present types of values used to apply an allowance."""
 
-    root: Union[AllowanceTimeValue, AllowancePercentValue, AllowanceTimePerDistanceValue] = Field(
-        discriminator="value_type"
-    )
+    root: Union[
+        AllowanceTimeValue, AllowancePercentValue, AllowanceTimePerDistanceValue
+    ] = Field(discriminator="value_type")
 
 
 class AllowanceDistribution(str, Enum):
@@ -81,9 +86,12 @@ class RangeAllowance(BaseModel):
     """This class defines the addition of an allowance between two specific points and not on the complete path."""
 
     begin_position: float = Field(
-        description="Offset in meters corresponding to the beginning of the addition of the allowance", ge=0
+        description="Offset in meters corresponding to the beginning of the addition of the allowance",
+        ge=0,
     )
-    end_position: float = Field(description="Offset in meters corresponding to the end of the allowance", ge=0)
+    end_position: float = Field(
+        description="Offset in meters corresponding to the end of the allowance", ge=0
+    )
     value: AllowanceValue = Field(description="The type of value of the allowance")
 
 
@@ -93,7 +101,9 @@ class EngineeringAllowance(RangeAllowance):
     but this time for operational reasons."""
 
     allowance_type: Literal["engineering"] = Field(default="engineering")
-    distribution: AllowanceDistribution = Field(description="The considered distribution of an allowance")
+    distribution: AllowanceDistribution = Field(
+        description="The considered distribution of an allowance"
+    )
     capacity_speed_limit: float = Field(
         description="Speed (m/s) that cannot be exceeded (defaults to -1 for no maximum)",
         default=-1,
@@ -109,8 +119,12 @@ class StandardAllowance(BaseModel):
 
     allowance_type: Literal["standard"] = Field(default="standard")
     default_value: AllowanceValue = Field(description="Type of value of the allowance")
-    ranges: List[RangeAllowance] = Field(description="List of the different application ranges of the allowances")
-    distribution: AllowanceDistribution = Field(description="The considered distribution of an allowance")
+    ranges: List[RangeAllowance] = Field(
+        description="List of the different application ranges of the allowances"
+    )
+    distribution: AllowanceDistribution = Field(
+        description="The considered distribution of an allowance"
+    )
     capacity_speed_limit: float = Field(
         description="Speed (m/s) that cannot be exceeded (defaults to -1 for no maximum)",
         default=-1,
@@ -120,13 +134,17 @@ class StandardAllowance(BaseModel):
 class Allowance(RootModel):
     """This class allows to choose the two different types of allowance."""
 
-    root: Union[EngineeringAllowance, StandardAllowance] = Field(discriminator="allowance_type")
+    root: Union[EngineeringAllowance, StandardAllowance] = Field(
+        discriminator="allowance_type"
+    )
 
 
 class Allowances(RootModel):
     """This class defines all the final allowances contained on the considered path."""
 
-    root: List[Allowance] = Field(description="List of all well-defined allowances of the path")
+    root: List[Allowance] = Field(
+        description="List of all well-defined allowances of the path"
+    )
 
 
 # Scheduled points
@@ -135,9 +153,12 @@ class Allowances(RootModel):
 class ScheduledPoint(BaseModel):
     """A schedule point is a point on the path where the train must be at a given time."""
 
-    path_offset: float = Field(description="Offset on a path. If negative then represents the end of the path.")
+    path_offset: float = Field(
+        description="Offset on a path. If negative then represents the end of the path."
+    )
     time: float = Field(
-        description="Time in seconds (elapsed since the train's departure) at which the train must be.", ge=0
+        description="Time in seconds (elapsed since the train's departure) at which the train must be.",
+        ge=0,
     )
 
 
@@ -158,9 +179,15 @@ class PowerRestrictionRange(BaseModel):
     """A user-specified range of the train path where a power restriction is applied.
     Ideally, this should come from infrastructure data."""
 
-    begin_position: float = Field(description="Offset in meters from the beginning of the path", ge=0)
-    end_position: float = Field(description="Offset in meters from the beginning of the path", ge=0)
-    power_restriction_code: str = Field(description="The code of the power restriction to apply")
+    begin_position: float = Field(
+        description="Offset in meters from the beginning of the path", ge=0
+    )
+    end_position: float = Field(
+        description="Offset in meters from the beginning of the path", ge=0
+    )
+    power_restriction_code: str = Field(
+        description="The code of the power restriction to apply"
+    )
 
 
 class PowerRestrictionRanges(RootModel):

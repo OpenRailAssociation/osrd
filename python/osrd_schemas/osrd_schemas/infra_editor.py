@@ -31,10 +31,14 @@ class BalSystem(BaseLogicalSignal):
         Nf: FlagSignalParameter = Field(description="Is the signal non-passable")
 
     class Parameters(BaseModel):
-        jaune_cli: FlagSignalParameter = Field(description="Is the signal yellow blinking")
+        jaune_cli: FlagSignalParameter = Field(
+            description="Is the signal yellow blinking"
+        )
 
     class ConditionalParameters(BaseModel):
-        on_route: Identifier = Field(description="Route for which those parameters are active")
+        on_route: Identifier = Field(
+            description="Route for which those parameters are active"
+        )
         parameters: "BalSystem.Parameters" = Field(description="BAL signal parameters")
 
     signaling_system: Literal["BAL"] = Field(default="BAL")
@@ -54,8 +58,12 @@ class BaprSystem(BaseLogicalSignal):
         pass
 
     class ConditionalParameters(BaseModel):
-        on_route: Identifier = Field(description="Route for which those parameters are active")
-        parameters: "BaprSystem.Parameters" = Field(description="BAPR signal parameters")
+        on_route: Identifier = Field(
+            description="Route for which those parameters are active"
+        )
+        parameters: "BaprSystem.Parameters" = Field(
+            description="BAPR signal parameters"
+        )
 
     signaling_system: Literal["BAPR"] = Field(default="BAPR")
     settings: Settings = Field(description="BAPR signal settings")
@@ -73,8 +81,12 @@ class Tvm300System(BaseLogicalSignal):
         pass
 
     class ConditionalParameters(BaseModel):
-        on_route: Identifier = Field(description="Route for which those parameters are active")
-        parameters: "Tvm300System.Parameters" = Field(description="TVM300 signal parameters")
+        on_route: Identifier = Field(
+            description="Route for which those parameters are active"
+        )
+        parameters: "Tvm300System.Parameters" = Field(
+            description="TVM300 signal parameters"
+        )
 
     signaling_system: Literal["TVM300"] = Field(default="TVM300")
     settings: Settings = Field(description="TVM signal settings")
@@ -92,8 +104,12 @@ class Tvm430System(BaseLogicalSignal):
         pass
 
     class ConditionalParameters(BaseModel):
-        on_route: Identifier = Field(description="Route for which those parameters are active")
-        parameters: "Tvm430System.Parameters" = Field(description="TVM430 signal parameters")
+        on_route: Identifier = Field(
+            description="Route for which those parameters are active"
+        )
+        parameters: "Tvm430System.Parameters" = Field(
+            description="TVM430 signal parameters"
+        )
 
     signaling_system: Literal["TVM430"] = Field(default="TVM430")
     settings: Settings = Field(description="TVM signal settings")
@@ -111,28 +127,34 @@ class EtcsLevel2System(BaseLogicalSignal):
         pass
 
     class ConditionalParameters(BaseModel):
-        on_route: Identifier = Field(description="Route for which those parameters are active")
-        parameters: "EtcsLevel2System.Parameters" = Field(description="ETCS_LEVEL2 signal parameters")
+        on_route: Identifier = Field(
+            description="Route for which those parameters are active"
+        )
+        parameters: "EtcsLevel2System.Parameters" = Field(
+            description="ETCS_LEVEL2 signal parameters"
+        )
 
     signaling_system: Literal["ETCS_LEVEL2"] = Field(default="ETCS_LEVEL2")
     settings: Settings = Field(description="ETCS_LEVEL2 signal settings")
     default_parameters: Parameters = Field(description="ETCS_LEVEL2 signal parameters")
     conditional_parameters: List[ConditionalParameters] = Field(
-        description="ETCS_LEVEL2 signal parameters for specific routes", default_factory=list
+        description="ETCS_LEVEL2 signal parameters for specific routes",
+        default_factory=list,
     )
 
 
 class LimitedLogicalSignal(RootModel):
     """Limited list of logical signals. Used to generate a usable schema for the front editor"""
 
-    root: Union[BalSystem, BaprSystem, Tvm300System, Tvm430System, EtcsLevel2System] = Field(
-        ..., discriminator="signaling_system"
+    root: Union[BalSystem, BaprSystem, Tvm300System, Tvm430System, EtcsLevel2System] = (
+        Field(..., discriminator="signaling_system")
     )
 
 
 class _TmpSignal(BaseModel):
     logical_signals: List[LimitedLogicalSignal] = Field(
-        description="Logical signals bundled into this physical signal", default_factory=list
+        description="Logical signals bundled into this physical signal",
+        default_factory=list,
     )
 
 
@@ -142,7 +164,9 @@ if __name__ == "__main__":
     railjson_schema = infra.RailJsonInfra.model_json_schema()
     tmp_signal_schema = _TmpSignal.model_json_schema()
     railjson_schema["$defs"].update(tmp_signal_schema["$defs"])
-    railjson_schema["$defs"]["Signal"]["properties"].update(tmp_signal_schema["properties"])
+    railjson_schema["$defs"]["Signal"]["properties"].update(
+        tmp_signal_schema["properties"]
+    )
 
     # sort keys in order to diff correctly in the CI
     print(dumps(railjson_schema, indent=4, sort_keys=True))

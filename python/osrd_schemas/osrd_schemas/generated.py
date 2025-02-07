@@ -13,16 +13,28 @@ class ObjectReference(BaseModel):
 # TRAITS
 class InfraErrorTrait(BaseModel):
     is_warning: Literal[False] = Field(default=False)
-    obj_id: str = Field(description="Identifier of the object that caused the error", max_length=255)
-    obj_type: str = Field(description="Type of the object that caused the error", max_length=32)
-    field: str = Field(description="Field of the object that caused the error", max_length=255)
+    obj_id: str = Field(
+        description="Identifier of the object that caused the error", max_length=255
+    )
+    obj_type: str = Field(
+        description="Type of the object that caused the error", max_length=32
+    )
+    field: str = Field(
+        description="Field of the object that caused the error", max_length=255
+    )
 
 
 class InfraWarningTrait(BaseModel):
     is_warning: Literal[True] = Field(default=True)
-    obj_id: str = Field(description="Identifier of the object that caused the warning", max_length=255)
-    obj_type: str = Field(description="Type of the object that caused the warning", max_length=32)
-    field: str = Field(description="Field of the object that caused the warning", max_length=255)
+    obj_id: str = Field(
+        description="Identifier of the object that caused the warning", max_length=255
+    )
+    obj_type: str = Field(
+        description="Type of the object that caused the warning", max_length=32
+    )
+    field: str = Field(
+        description="Field of the object that caused the warning", max_length=255
+    )
 
 
 # Errors
@@ -53,7 +65,9 @@ class InvalidRoute(InfraErrorTrait):
 
 
 class NodeEndpointsNotUnique(InfraErrorTrait):
-    error_type: Literal["node_endpoints_not_unique"] = Field(default="node_endpoints_not_unique")
+    error_type: Literal["node_endpoints_not_unique"] = Field(
+        default="node_endpoints_not_unique"
+    )
 
 
 class UnknownPortName(InfraErrorTrait):
@@ -94,16 +108,22 @@ class MissingBufferStop(InfraWarningTrait):
 
 
 class OddBufferStopLocation(InfraWarningTrait):
-    error_type: Literal["odd_buffer_stop_location"] = Field(default="odd_buffer_stop_location")
+    error_type: Literal["odd_buffer_stop_location"] = Field(
+        default="odd_buffer_stop_location"
+    )
 
 
 class OverlappingSpeedSections(InfraWarningTrait):
-    error_type: Literal["overlapping_speed_sections"] = Field(default="overlapping_speed_sections")
+    error_type: Literal["overlapping_speed_sections"] = Field(
+        default="overlapping_speed_sections"
+    )
     reference: ObjectReference
 
 
 class OverlappingElectrifications(InfraWarningTrait):
-    error_type: Literal["overlapping_electrifications"] = Field(default="overlapping_electrifications")
+    error_type: Literal["overlapping_electrifications"] = Field(
+        default="overlapping_electrifications"
+    )
     reference: ObjectReference
 
 
