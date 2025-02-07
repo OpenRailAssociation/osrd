@@ -6,6 +6,8 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use chrono::DateTime;
+use chrono::Utc;
 use dashmap::mapref::one::Ref;
 use dashmap::mapref::one::RefMut;
 use dashmap::DashMap;
@@ -69,6 +71,9 @@ pub struct InfraCache {
 
     /// Map reference to their cache object
     objects: EnumMap<ObjectType, HashMap<String, ObjectCache>>,
+
+    /// Last update of the cache
+    last_update: DateTime<Utc>,
 }
 
 pub trait Cache: OSRDObject {
@@ -421,6 +426,7 @@ impl InfraCache {
     }
 
     /// Given an infra id load infra cache from database
+    #[tracing::instrument(skip_all, err)]
     pub async fn load(conn: &mut DbConnection, infra: &Infra) -> Result<InfraCache> {
         let infra_id = infra.id;
         let mut infra_cache = Self::default();
@@ -519,7 +525,33 @@ impl InfraCache {
             .into_iter()
             .try_for_each(|electrification| infra_cache.add::<Electrification>(electrification))?;
 
+        infra_cache.last_update = Utc::now();
         Ok(infra_cache)
+    }
+
+    #[inline]
+    fn needs_reloading_since(&self, since: DateTime<Utc>) -> bool {
+        self.last_update < since
+    }
+
+    #[tracing::instrument(skip_all, err)]
+    async fn reload_maybe(&mut self, conn: &mut DbConnection, infra: &Infra) -> Result<()> {
+        let start_time = std::time::Instant::now();
+        if self.needs_reloading_since(infra.modified) {
+            tracing::warn!(
+                infra_id = infra.id,
+                last_update = %self.last_update,
+                "reloading out-of-sync infra cache"
+            );
+            *self = Self::load(conn, infra).await?;
+        }
+        let duration = start_time.elapsed();
+        tracing::warn!(
+            infra_id = infra.id,
+            duration = ?duration,
+            "reload_maybe completed"
+        );
+        Ok(())
     }
 
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
@@ -530,11 +562,21 @@ impl InfraCache {
         infra: &Infra,
     ) -> Result<Ref<'a, i64, InfraCache>> {
         // Cache hit
+        if infra_caches
+            .get(&infra.id)
+            .map(|infra_cache| infra_cache.needs_reloading_since(infra.modified))
+            .unwrap_or_default()
+        {
+            // If we need to update the cache, we need a mutable ref, to it
+            if let Some(mut infra_cache) = infra_caches.get_mut(&infra.id) {
+                infra_cache.reload_maybe(conn, infra).await?;
+            }
+        }
         if let Some(infra_cache) = infra_caches.get(&infra.id) {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
+        infra_caches.insert(infra.id, InfraCache::load(conn, infra).await?);
         Ok(infra_caches.get(&infra.id).unwrap())
     }
 
@@ -546,11 +588,12 @@ impl InfraCache {
         infra: &Infra,
     ) -> Result<RefMut<'a, i64, InfraCache>> {
         // Cache hit
-        if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
+        if let Some(mut infra_cache) = infra_caches.get_mut(&infra.id) {
+            infra_cache.reload_maybe(conn, infra).await?;
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert(infra.id, InfraCache::load(&mut conn.clone(), infra).await?);
+        infra_caches.insert(infra.id, InfraCache::load(conn, infra).await?);
         Ok(infra_caches.get_mut(&infra.id).unwrap())
     }
 
