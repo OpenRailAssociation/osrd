@@ -6,35 +6,23 @@ import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
 import type { Position } from 'geojson';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
 
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
+import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import TrainOnMap, { type TrainCurrentInfo } from 'common/Map/components/TrainOnMap/TrainOnMap';
-import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import colors from 'common/Map/Consts/colors';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import IGNLayers from 'common/Map/Layers/IGNLayers';
-import InfraObjectLayers from 'common/Map/Layers/InfraObjectLayers';
-import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
-import OSMLayers from 'common/Map/Layers/OSMLayers';
-import SearchMarker from 'common/Map/Layers/SearchMarker';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
-import type { RootState } from 'reducers';
 import { updateViewport, type Viewport } from 'reducers/map';
-import { getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { getIsPlaying } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isoDateWithTimezoneToSec } from 'utils/date';
@@ -43,6 +31,9 @@ import { kmToM, mmToM, msToKmh } from 'utils/physics';
 import getSelectedTrainHoverPositions from './getSelectedTrainHoverPositions';
 import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from '../ChartSynchronizer';
+import RenderItinerary from './RenderItinerary';
+
+const MAP_ID = 'simulation-result-map';
 
 type SimulationResultMapProps = {
   geometry?: PathPropertiesFormatted['geometry'];
@@ -57,26 +48,22 @@ const SimulationResultMap = ({
   pathItemsCoordinates,
   setMapCanvas,
 }: SimulationResultMapProps) => {
-  const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
+  const dispatch = useAppDispatch();
 
-  const mapBlankStyle = useMapBlankStyle();
-  const {
-    viewport: mapViewport,
-    mapSearchMarker,
-    mapStyle,
-    showOSM,
-  } = useSelector((state: RootState) => state.map);
+  const infraID = useInfraID();
+  const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(getMap);
   const isPlaying = useSelector(getIsPlaying);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
 
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [interactiveLayerIds, setInteractiveLayerIds] = useState<string[]>([]);
+  const mapRef = React.useRef<MapRef>(null);
   const [selectedTrainHoverPosition, setSelectedTrainHoverPosition] = useState<TrainCurrentInfo>();
-  const mapId = 'simulation-result-map';
 
   const geojsonPath = useMemo(() => geometry && lineString(geometry.coordinates), [geometry]);
 
-  const dispatch = useAppDispatch();
+  const interactiveLayerIds = useMemo(
+    () => (geojsonPath ? ['geojsonPath', 'main-train-path'] : []),
+    [geojsonPath]
+  );
 
   const { updateTimePosition } = useChartSynchronizer(
     (_, positionValues) => {
@@ -97,25 +84,16 @@ const SimulationResultMap = ({
     (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
-  const mapRef = React.useRef<MapRef>(null);
-
-  const infraID = useInfraID();
-
-  const scaleControlStyle = {
-    left: 20,
-    bottom: 20,
-  };
 
   const resetPitchBearing = () => {
     updateViewportChange({
-      ...mapViewport,
       bearing: 0,
       pitch: 0,
     });
   };
 
   const onPathHover = (e: MapLayerMouseEvent) => {
-    if (mapLoaded && !isPlaying && e && geojsonPath && trainSimulation) {
+    if (!isPlaying && e && geojsonPath && trainSimulation) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat.toArray());
 
@@ -145,97 +123,42 @@ const SimulationResultMap = ({
   };
 
   useEffect(() => {
-    const interactiveLayers: string[] =
-      mapLoaded && geojsonPath ? ['geojsonPath', 'main-train-path'] : [];
-    setInteractiveLayerIds(interactiveLayers);
-  }, [geojsonPath]);
-
-  useEffect(() => {
-    if (mapRef.current) {
-      if (urlLat) {
-        updateViewportChange({
-          ...mapViewport,
-          latitude: parseFloat(urlLat),
-          longitude: parseFloat(urlLon),
-          zoom: parseFloat(urlZoom),
-          bearing: parseFloat(urlBearing),
-          pitch: parseFloat(urlPitch),
-        });
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     if (geojsonPath) {
-      const newViewport = computeBBoxViewport(bbox(geojsonPath), mapViewport);
+      const newViewport = computeBBoxViewport(bbox(geojsonPath), viewport);
       updateViewportChange(newViewport);
     }
   }, [geojsonPath]);
-
-  const handleLoadFinished = () => {
-    setMapLoaded(true);
-  };
 
   return (
     <>
       <MapButtons
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
-        bearing={mapViewport.bearing}
+        bearing={viewport.bearing}
         withMapKeyButton
-        viewPort={mapViewport}
+        viewPort={viewport}
         isNewButtons
       />
-      <ReactMapGL
-        {...mapViewport}
+      <BaseMap
+        mapId={MAP_ID}
+        mapRef={mapRef}
         cursor="pointer"
-        ref={mapRef}
-        style={{ width: '100%', height: '100%', borderRadius: '10px' }}
-        mapStyle={mapBlankStyle}
-        onMove={(e) => updateViewportChange(e.viewState)}
-        attributionControl={false} // Defined below
-        onMouseEnter={onPathHover}
-        onResize={(e) => {
-          updateViewportChange({
-            width: e.target.getContainer().offsetWidth,
-            height: e.target.getContainer().offsetHeight,
-          });
-        }}
+        infraId={infraID}
+        interactiveLayerIds={interactiveLayerIds}
+        mapSearchMarker={mapSearchMarker}
+        mapStyle={mapStyle}
         onClick={() => {
           removeSearchItemMarkersOnMap(dispatch);
         }}
-        interactiveLayerIds={interactiveLayerIds}
-        touchZoomRotate
-        maxPitch={85}
-        terrain={
-          terrain3DExaggeration
-            ? { source: 'terrain', exaggeration: terrain3DExaggeration }
-            : undefined
-        }
-        onLoad={handleLoadFinished}
         onIdle={() => {
-          captureMap(mapViewport, mapId, setMapCanvas, geometry);
+          captureMap(viewport, MAP_ID, setMapCanvas, geometry);
         }}
-        id="simulation-result-map"
+        onMouseEnter={onPathHover}
+        showOSM={showOSM}
+        viewPort={viewport}
+        updatePartialViewPort={updateViewportChange}
+        terrain3DExaggeration={terrain3DExaggeration}
       >
-        <VirtualLayers />
-        <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
-        <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
-
-        {infraID && <InfraObjectLayers infraId={infraID} mapStyle={mapStyle} />}
-
-        <OSMLayers mapStyle={mapStyle} showOSM={showOSM && mapLoaded} />
-        <IGNLayers />
-
-        <LineSearchLayer
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
-          infraID={infraID}
-        />
-
-        {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
-
         {geojsonPath && (
           <RenderItinerary
             geojsonPath={geojsonPath}
@@ -248,11 +171,11 @@ const SimulationResultMap = ({
           <TrainOnMap
             trainInfo={selectedTrainHoverPosition}
             geojsonPath={geojsonPath}
-            viewport={mapViewport}
+            viewport={viewport}
             trainSimulation={trainSimulation}
           />
         )}
-      </ReactMapGL>
+      </BaseMap>
     </>
   );
 };

@@ -4,27 +4,19 @@ import bbox from '@turf/bbox';
 import type { Feature, Point } from 'geojson';
 import { compact } from 'lodash';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
-import { useParams } from 'react-router-dom';
 
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
+import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
-import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import IGNLayers from 'common/Map/Layers/IGNLayers';
-import InfraObjectLayers from 'common/Map/Layers/InfraObjectLayers';
-import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
-import OSMLayers from 'common/Map/Layers/OSMLayers';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import AddPathStepPopup from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/AddPathStepPopup';
 import { mapInitialState } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
@@ -73,8 +65,6 @@ const NewMap = ({
   isFeasible = true,
   children,
 }: PropsWithChildren<MapProps>) => {
-  const mapBlankStyle = useMapBlankStyle();
-
   const infraID = useInfraID();
   const [mapState, setMapState] = useState({
     ...mapInitialState,
@@ -92,10 +82,7 @@ const NewMap = ({
     [pathProperties, geometry]
   );
 
-  const [mapIsLoaded, setMapIsLoaded] = useState(false);
-
   const [snappedPoint, setSnappedPoint] = useState<Feature<Point> | undefined>();
-  const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) =>
@@ -110,11 +97,6 @@ const NewMap = ({
   );
 
   const mapRef = useRef<MapRef | null>(null);
-
-  const scaleControlStyle = {
-    left: 20,
-    bottom: 20,
-  };
 
   const [featureInfoClick, setFeatureInfoClick] = useState<FeatureInfoClick>();
 
@@ -203,20 +185,6 @@ const NewMap = ({
   }, [layersSettings]);
 
   useEffect(() => {
-    if (urlLat) {
-      updateViewportChange({
-        ...viewport,
-        latitude: parseFloat(urlLat),
-        longitude: parseFloat(urlLon),
-        zoom: parseFloat(urlZoom),
-        bearing: parseFloat(urlBearing),
-        pitch: parseFloat(urlPitch),
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     const points = pathGeometry ?? {
       coordinates: compact(simulationPathSteps.map((step) => step.coordinates)),
       type: 'LineString',
@@ -242,57 +210,25 @@ const NewMap = ({
         viewPort={viewport}
         isNewButtons
       />
-      <ReactMapGL
-        id={id}
-        ref={mapRef}
-        {...viewport}
-        style={{ width: '100%', height: '100%' }}
+      <BaseMap
+        mapId={id}
+        mapRef={mapRef}
         cursor={preventPointSelection ? 'default' : 'pointer'}
-        mapStyle={mapBlankStyle}
-        attributionControl={false} // Defined below
-        onMove={(e) => updateViewportChange(e.viewState)}
-        onMouseMove={onMoveGetFeature}
-        onClick={onFeatureClick}
-        onResize={(e) => {
-          updateViewportChange({
-            width: e.target.getContainer().offsetWidth,
-            height: e.target.getContainer().offsetHeight,
-          });
-        }}
+        hideAttribution={hideAttribution}
+        infraId={infraID}
         interactiveLayerIds={interactiveLayerIds}
-        maxPitch={85}
-        terrain={
-          terrain3DExaggeration
-            ? { source: 'terrain', exaggeration: terrain3DExaggeration }
-            : undefined
-        }
-        onLoad={() => {
-          setMapIsLoaded(true);
-        }}
+        mapSearchMarker={mapSearchMarker}
+        mapStyle={mapStyle}
+        onClick={onFeatureClick}
         onIdle={() => {
           captureMap(viewport, id, setMapCanvas, pathGeometry);
         }}
-        preserveDrawingBuffer
-        dragPan
-        scrollZoom
-        touchZoomRotate
+        onMouseMove={onMoveGetFeature}
+        showOSM={showOSM}
+        viewPort={viewport}
+        updatePartialViewPort={updateViewportChange}
+        terrain3DExaggeration={terrain3DExaggeration}
       >
-        <VirtualLayers />
-        {!hideAttribution && (
-          <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
-        )}
-        <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
-
-        {infraID && <InfraObjectLayers infraId={infraID} mapStyle={mapStyle} />}
-
-        <OSMLayers mapStyle={mapStyle} showOSM={showOSM && mapIsLoaded} />
-        <IGNLayers />
-
-        <LineSearchLayer
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
-          infraID={infraID}
-        />
-
         {!showStdcmAssets && featureInfoClick && (
           <AddPathStepPopup
             pathProperties={pathProperties}
@@ -319,7 +255,7 @@ const NewMap = ({
         {snappedPoint !== undefined && <SnappedMarker geojson={snappedPoint} />}
 
         {children}
-      </ReactMapGL>
+      </BaseMap>
     </>
   );
 };
