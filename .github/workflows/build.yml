@@ -211,7 +211,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
-        run: pipx install 'poetry<2.0'
+        run: pipx install poetry
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -226,7 +226,8 @@ jobs:
       - name: Generate railjson
         run: |
           mkdir /tmp/generated_infras
-          poetry -C python/railjson_generator run python -m railjson_generator /tmp/generated_infras tests/infra-scripts/*.py
+          cd python/railjson_generator
+          poetry run python -m railjson_generator /tmp/generated_infras ../../tests/infra-scripts/*.py
 
       - name: Ensure generated infrastructures are up to date
         run: diff -r -u tests/data/infras /tmp/generated_infras
@@ -237,7 +238,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
-        run: pipx install 'poetry<2.0'
+        run: pipx install poetry
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -248,7 +249,7 @@ jobs:
       - name: Install railjson_generator dependencies
         run: |
           cd python/railjson_generator
-          poetry install
+          poetry install --extras=check
 
       - name: Ruff
         run: |

@@ -1,23 +1,16 @@
 [project]
 name = "railjson_generator"
 version = "0.4.9"
-
-[tool.poetry]
-name = "railjson_generator"
-version = "0.4.9"
 description = ""
-authors = ["OSRD <contact@osrd.fr>"]
+authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
+requires-python = ">= 3.11"
 
-[tool.poetry.dependencies]
-osrd-schemas = { path = "../osrd_schemas/", develop = false }
-pytest = "^7.4.3"
-pytest-cov = "^4.1.0"
-python = ">=3.9,<3.12"
+dependencies = ["osrd-schemas @ ../osrd_schemas"]
 
-[tool.poetry.group.dev.dependencies]
-pyright = "1.1.393"
-ruff = "0.9.5"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[project.optional-dependencies]
+check = [
+  "pyright ~= 1.1.393",
+  "pytest ~= 7.4.3",
+  "pytest-cov ~= 4.1.0",
+  "ruff ~= 0.9.5",
+]
