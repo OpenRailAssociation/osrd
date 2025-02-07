@@ -26,12 +26,20 @@ class TestSimulationBuilder:
                 schedules=[train_schedule],
                 waypoints=[
                     [
-                        DirectedLocation.from_location(location1, Direction.START_TO_STOP),
-                        DirectedLocation.from_location(location1, Direction.STOP_TO_START),
+                        DirectedLocation.from_location(
+                            location1, Direction.START_TO_STOP
+                        ),
+                        DirectedLocation.from_location(
+                            location1, Direction.STOP_TO_START
+                        ),
                     ],
                     [
-                        DirectedLocation.from_location(location2, Direction.START_TO_STOP),
-                        DirectedLocation.from_location(location2, Direction.STOP_TO_START),
+                        DirectedLocation.from_location(
+                            location2, Direction.START_TO_STOP
+                        ),
+                        DirectedLocation.from_location(
+                            location2, Direction.STOP_TO_START
+                        ),
                     ],
                 ],
                 id=sb.simulation.train_schedule_groups[0].id,
@@ -78,12 +86,20 @@ class TestSimulationBuilder:
                 schedules=[train_schedule],
                 waypoints=[
                     [
-                        DirectedLocation.from_location(location1, Direction.START_TO_STOP),
-                        DirectedLocation.from_location(location1, Direction.STOP_TO_START),
+                        DirectedLocation.from_location(
+                            location1, Direction.START_TO_STOP
+                        ),
+                        DirectedLocation.from_location(
+                            location1, Direction.STOP_TO_START
+                        ),
                     ],
                     [
-                        DirectedLocation.from_location(location2, Direction.START_TO_STOP),
-                        DirectedLocation.from_location(location2, Direction.STOP_TO_START),
+                        DirectedLocation.from_location(
+                            location2, Direction.START_TO_STOP
+                        ),
+                        DirectedLocation.from_location(
+                            location2, Direction.STOP_TO_START
+                        ),
                     ],
                 ],
                 id=sb.simulation.train_schedule_groups[0].id,

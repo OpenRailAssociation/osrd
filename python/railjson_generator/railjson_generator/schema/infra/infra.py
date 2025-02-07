@@ -41,9 +41,15 @@ class Infra:
             detectors=self.make_rjs_detectors(),
             operational_points=self.make_rjs_operational_points(),
             extended_switch_types=[],
-            speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
-            electrifications=[electrification.to_rjs() for electrification in self.electrifications],
-            neutral_sections=[neutral_section.to_rjs() for neutral_section in self.neutral_sections],
+            speed_sections=[
+                speed_section.to_rjs() for speed_section in self.speed_sections
+            ],
+            electrifications=[
+                electrification.to_rjs() for electrification in self.electrifications
+            ],
+            neutral_sections=[
+                neutral_section.to_rjs() for neutral_section in self.neutral_sections
+            ],
         )
 
     def save(self, path):
@@ -71,7 +77,9 @@ class Infra:
         parts_per_op = defaultdict(list)
         for track in self.track_sections:
             for op_part in track.operational_points:
-                parts_per_op[op_part.operational_point.label].append(op_part.to_rjs(track))
+                parts_per_op[op_part.operational_point.label].append(
+                    op_part.to_rjs(track)
+                )
         ops = []
         for op in self.operational_points:
             new_op = infra.OperationalPoint(
@@ -86,7 +94,9 @@ class Infra:
                         ch_long_label="0",
                         trigram=op.trigram,
                     ),
-                    "identifier": infra.OperationalPointIdentifierExtension(uic=op.uic, name=op.label),
+                    "identifier": infra.OperationalPointIdentifierExtension(
+                        uic=op.uic, name=op.label
+                    ),
                 },
                 weight=None,
             )

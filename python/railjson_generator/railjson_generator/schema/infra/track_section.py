@@ -44,8 +44,12 @@ class TrackSection:
     coordinates: List[Tuple[Optional[float], Optional[float]]] = field(
         default_factory=lambda: [(None, None), (None, None)]
     )
-    begining_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(default_factory=list, repr=False)
-    end_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(default_factory=list, repr=False)
+    begining_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(
+        default_factory=list, repr=False
+    )
+    end_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(
+        default_factory=list, repr=False
+    )
     slopes: List[Slope] = field(default_factory=list)
     curves: List[Curve] = field(default_factory=list)
     loading_gauge_limits: List[LoadingGaugeLimit] = field(default_factory=list)
@@ -56,7 +60,9 @@ class TrackSection:
     def end(self):
         return TrackEndpoint(self, Endpoint.END)
 
-    def forwards(self, begin: Optional[float] = None, end: Optional[float] = None) -> ApplicableDirectionsTrackRange:
+    def forwards(
+        self, begin: Optional[float] = None, end: Optional[float] = None
+    ) -> ApplicableDirectionsTrackRange:
         return ApplicableDirectionsTrackRange(
             begin=begin or 0.0,
             end=end or self.length,
@@ -64,7 +70,9 @@ class TrackSection:
             applicable_directions=ApplicableDirection.START_TO_STOP,
         )
 
-    def backwards(self, begin: Optional[float] = None, end: Optional[float] = None) -> ApplicableDirectionsTrackRange:
+    def backwards(
+        self, begin: Optional[float] = None, end: Optional[float] = None
+    ) -> ApplicableDirectionsTrackRange:
         return ApplicableDirectionsTrackRange(
             begin=begin or 0.0,
             end=end or self.length,
@@ -136,7 +144,10 @@ class TrackSection:
             length=self.length,
             slopes=[slope.to_rjs() for slope in self.slopes],
             curves=[curve.to_rjs() for curve in self.curves],
-            loading_gauge_limits=[loading_gauge_limit.to_rjs() for loading_gauge_limit in self.loading_gauge_limits],
+            loading_gauge_limits=[
+                loading_gauge_limit.to_rjs()
+                for loading_gauge_limit in self.loading_gauge_limits
+            ],
             **geo_data,
             extensions={
                 "sncf": {

@@ -32,12 +32,16 @@ class LogicalSignal:
     next_signaling_systems: List[str] = field(default_factory=list)
     settings: Dict[str, str] = field(default_factory=dict)
     default_parameters: Dict[str, str] = field(default_factory=dict)
-    conditional_parameters: List[SignalConditionalParameters] = field(default_factory=list)
+    conditional_parameters: List[SignalConditionalParameters] = field(
+        default_factory=list
+    )
 
     def to_rjs(self):
         if self.signaling_system == "BAL":
             self.default_parameters = (
-                {"jaune_cli": "false"} if self.default_parameters == {} else self.default_parameters
+                {"jaune_cli": "false"}
+                if self.default_parameters == {}
+                else self.default_parameters
             )
 
         return infra.LogicalSignal(
@@ -45,7 +49,9 @@ class LogicalSignal:
             next_signaling_systems=self.next_signaling_systems,
             settings=self.settings,
             default_parameters=self.default_parameters,
-            conditional_parameters=[param.to_rjs() for param in self.conditional_parameters],
+            conditional_parameters=[
+                param.to_rjs() for param in self.conditional_parameters
+            ],
         )
 
 

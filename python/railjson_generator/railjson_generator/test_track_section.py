@@ -11,13 +11,22 @@ class TestTrackSection:
         track = TrackSection(length)
 
         assert track.forwards() == ApplicableDirectionsTrackRange(
-            begin=0.0, end=length, track=track, applicable_directions=ApplicableDirection.START_TO_STOP
+            begin=0.0,
+            end=length,
+            track=track,
+            applicable_directions=ApplicableDirection.START_TO_STOP,
         )
         assert track.forwards(begin=10) == ApplicableDirectionsTrackRange(
-            begin=10, end=length, track=track, applicable_directions=ApplicableDirection.START_TO_STOP
+            begin=10,
+            end=length,
+            track=track,
+            applicable_directions=ApplicableDirection.START_TO_STOP,
         )
         assert track.forwards(begin=5, end=90) == ApplicableDirectionsTrackRange(
-            begin=5, end=90, track=track, applicable_directions=ApplicableDirection.START_TO_STOP
+            begin=5,
+            end=90,
+            track=track,
+            applicable_directions=ApplicableDirection.START_TO_STOP,
         )
 
     def test_backwards(self):
@@ -25,11 +34,20 @@ class TestTrackSection:
         track = TrackSection(length)
 
         assert track.backwards() == ApplicableDirectionsTrackRange(
-            begin=0.0, end=length, track=track, applicable_directions=ApplicableDirection.STOP_TO_START
+            begin=0.0,
+            end=length,
+            track=track,
+            applicable_directions=ApplicableDirection.STOP_TO_START,
         )
         assert track.backwards(begin=10) == ApplicableDirectionsTrackRange(
-            begin=10, end=length, track=track, applicable_directions=ApplicableDirection.STOP_TO_START
+            begin=10,
+            end=length,
+            track=track,
+            applicable_directions=ApplicableDirection.STOP_TO_START,
         )
         assert track.backwards(begin=5, end=90) == ApplicableDirectionsTrackRange(
-            begin=5, end=90, track=track, applicable_directions=ApplicableDirection.STOP_TO_START
+            begin=5,
+            end=90,
+            track=track,
+            applicable_directions=ApplicableDirection.STOP_TO_START,
         )

@@ -44,7 +44,10 @@ class TestInfraBuilder:
 
         assert switch == PointSwitch(A=base, B1=left, B2=right, label=switch.label)
         assert ib.infra.switches == [switch]
-        assert base.get_neighbors() == [(left, switch.group("A_B1")), (right, switch.group("A_B2"))]
+        assert base.get_neighbors() == [
+            (left, switch.group("A_B1")),
+            (right, switch.group("A_B2")),
+        ]
         assert left.get_neighbors() == [(base, switch.group("A_B1"))]
         assert right.get_neighbors() == [(base, switch.group("A_B2"))]
 
@@ -67,7 +70,9 @@ class TestInfraBuilder:
 
         crossing = ib.add_crossing(north, south, east, west)
 
-        assert crossing == Crossing(A1=north, B1=south, B2=east, A2=west, label=crossing.label)
+        assert crossing == Crossing(
+            A1=north, B1=south, B2=east, A2=west, label=crossing.label
+        )
         assert ib.infra.switches == [crossing]
         assert north.get_neighbors() == [(south, crossing.group("STATIC"))]
         assert south.get_neighbors() == [(north, crossing.group("STATIC"))]
@@ -94,12 +99,26 @@ class TestInfraBuilder:
 
         switch = ib.add_double_slip_switch(north_1, north_2, south_1, south_2)
 
-        assert switch == DoubleSlipSwitch(A1=north_1, A2=north_2, B1=south_1, B2=south_2, label=switch.label)
+        assert switch == DoubleSlipSwitch(
+            A1=north_1, A2=north_2, B1=south_1, B2=south_2, label=switch.label
+        )
         assert ib.infra.switches == [switch]
-        assert north_1.get_neighbors() == [(south_1, switch.group("A1_B1")), (south_2, switch.group("A1_B2"))]
-        assert north_2.get_neighbors() == [(south_1, switch.group("A2_B1")), (south_2, switch.group("A2_B2"))]
-        assert south_1.get_neighbors() == [(north_1, switch.group("A1_B1")), (north_2, switch.group("A2_B1"))]
-        assert south_2.get_neighbors() == [(north_1, switch.group("A1_B2")), (north_2, switch.group("A2_B2"))]
+        assert north_1.get_neighbors() == [
+            (south_1, switch.group("A1_B1")),
+            (south_2, switch.group("A1_B2")),
+        ]
+        assert north_2.get_neighbors() == [
+            (south_1, switch.group("A2_B1")),
+            (south_2, switch.group("A2_B2")),
+        ]
+        assert south_1.get_neighbors() == [
+            (north_1, switch.group("A1_B1")),
+            (north_2, switch.group("A2_B1")),
+        ]
+        assert south_2.get_neighbors() == [
+            (north_1, switch.group("A1_B2")),
+            (north_2, switch.group("A2_B2")),
+        ]
 
     def test_add_link(self):
         ib = InfraBuilder()
@@ -150,7 +169,11 @@ class TestInfraBuilder:
         assert ib.infra.routes == []
         start = BufferStop(position=0)
         stop = BufferStop(position=1)
-        route = Route(entry_point_direction=Direction.START_TO_STOP, waypoints=[start, stop], release_waypoints=[])
+        route = Route(
+            entry_point_direction=Direction.START_TO_STOP,
+            waypoints=[start, stop],
+            release_waypoints=[],
+        )
 
         ib.register_route(route)
 

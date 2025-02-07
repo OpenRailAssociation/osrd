@@ -58,11 +58,20 @@ def test_find_detector_properties():
     bs0 = BufferStop(0)
     bs1 = BufferStop(1)
     det = Detector(0.5)
-    s025 = Signal(position=0.25, direction=Direction.START_TO_STOP, is_route_delimiter=False)
-    s075 = Signal(position=0.75, direction=Direction.STOP_TO_START, is_route_delimiter=False)
+    s025 = Signal(
+        position=0.25, direction=Direction.START_TO_STOP, is_route_delimiter=False
+    )
+    s075 = Signal(
+        position=0.75, direction=Direction.STOP_TO_START, is_route_delimiter=False
+    )
     ts = TrackSection(length=1, waypoints=[bs0, det, bs1], signals=[s025, s075])
     infra = Infra(track_sections=[ts])
-    default_dp = DetectorProps(incr_is_route_delim=False, incr_signals=[], decr_is_route_delim=False, decr_signals=[])
+    default_dp = DetectorProps(
+        incr_is_route_delim=False,
+        incr_signals=[],
+        decr_is_route_delim=False,
+        decr_signals=[],
+    )
 
     dps = find_detector_properties(infra)
 
@@ -70,7 +79,10 @@ def test_find_detector_properties():
         bs0.label: default_dp,
         bs1.label: default_dp,
         det.label: DetectorProps(
-            incr_is_route_delim=False, incr_signals=[s025], decr_is_route_delim=False, decr_signals=[s075]
+            incr_is_route_delim=False,
+            incr_signals=[s025],
+            decr_is_route_delim=False,
+            decr_signals=[s075],
         ),
     }
 
@@ -91,13 +103,25 @@ class TestZonePathStep:
         switch = ib.add_point_switch(base, left, right)
         ib.build()
         zps = ZonePathStep(
-            y, Direction.START_TO_STOP, SwitchGroup(switch, "group"), ZonePathStep(x, Direction.START_TO_STOP)
+            y,
+            Direction.START_TO_STOP,
+            SwitchGroup(switch, "group"),
+            ZonePathStep(x, Direction.START_TO_STOP),
         )
 
-        zp = zps.build(x.waypoints[0], Direction.START_TO_STOP, y.waypoints[-1], Direction.START_TO_STOP)
+        zp = zps.build(
+            x.waypoints[0],
+            Direction.START_TO_STOP,
+            y.waypoints[-1],
+            Direction.START_TO_STOP,
+        )
 
         assert zp == ZonePath(
-            x.waypoints[0], Direction.START_TO_STOP, y.waypoints[-1], Direction.START_TO_STOP, {switch.label: "group"}
+            x.waypoints[0],
+            Direction.START_TO_STOP,
+            y.waypoints[-1],
+            Direction.START_TO_STOP,
+            {switch.label: "group"},
         )
 
 
@@ -120,19 +144,35 @@ def test_search_zone_paths():
 
     assert len(zps) == 4
     xy = ZonePath(
-        x.waypoints[0], Direction.START_TO_STOP, y.waypoints[-1], Direction.START_TO_STOP, {switch.label: "A_B1"}
+        x.waypoints[0],
+        Direction.START_TO_STOP,
+        y.waypoints[-1],
+        Direction.START_TO_STOP,
+        {switch.label: "A_B1"},
     )
     assert xy in zps
     yx = ZonePath(
-        y.waypoints[-1], Direction.STOP_TO_START, x.waypoints[0], Direction.STOP_TO_START, {switch.label: "A_B1"}
+        y.waypoints[-1],
+        Direction.STOP_TO_START,
+        x.waypoints[0],
+        Direction.STOP_TO_START,
+        {switch.label: "A_B1"},
     )
     assert yx in zps
     xz = ZonePath(
-        x.waypoints[0], Direction.START_TO_STOP, z.waypoints[-1], Direction.START_TO_STOP, {switch.label: "A_B2"}
+        x.waypoints[0],
+        Direction.START_TO_STOP,
+        z.waypoints[-1],
+        Direction.START_TO_STOP,
+        {switch.label: "A_B2"},
     )
     assert xz in zps
     zx = ZonePath(
-        z.waypoints[-1], Direction.STOP_TO_START, x.waypoints[0], Direction.STOP_TO_START, {switch.label: "A_B2"}
+        z.waypoints[-1],
+        Direction.STOP_TO_START,
+        x.waypoints[0],
+        Direction.STOP_TO_START,
+        {switch.label: "A_B2"},
     )
     assert zx in zps
 
@@ -153,12 +193,18 @@ class TestIncompleteRoute:
         switch = ib.add_point_switch(base, left, right)
         ib.build()
         xy = ZonePath(
-            x.waypoints[0], Direction.START_TO_STOP, y.waypoints[-1], Direction.START_TO_STOP, {switch.label: "A_B1"}
+            x.waypoints[0],
+            Direction.START_TO_STOP,
+            y.waypoints[-1],
+            Direction.START_TO_STOP,
+            {switch.label: "A_B1"},
         )
 
         ir = IncompleteRoute.from_zonepath(xy)
 
-        assert ir == IncompleteRoute(path=[xy], switches_directions={switch.label: "A_B1"})
+        assert ir == IncompleteRoute(
+            path=[xy], switches_directions={switch.label: "A_B1"}
+        )
 
     def test_fork_overlap(self):
         ib = InfraBuilder()
@@ -175,10 +221,18 @@ class TestIncompleteRoute:
         switch = ib.add_point_switch(base, left, right)
         ib.build()
         xy = ZonePath(
-            x.waypoints[0], Direction.START_TO_STOP, y.waypoints[-1], Direction.START_TO_STOP, {switch.label: "A_B1"}
+            x.waypoints[0],
+            Direction.START_TO_STOP,
+            y.waypoints[-1],
+            Direction.START_TO_STOP,
+            {switch.label: "A_B1"},
         )
         xz = ZonePath(
-            x.waypoints[0], Direction.START_TO_STOP, z.waypoints[-1], Direction.START_TO_STOP, {switch.label: "A_B2"}
+            x.waypoints[0],
+            Direction.START_TO_STOP,
+            z.waypoints[-1],
+            Direction.START_TO_STOP,
+            {switch.label: "A_B2"},
         )
         ir = IncompleteRoute.from_zonepath(xy)
 
@@ -197,17 +251,26 @@ class TestIncompleteRoute:
         link_yz = ib.add_link(y.end(), z.begin())
         ib.build()
         xy = ZonePath(
-            x.waypoints[0], Direction.START_TO_STOP, y.waypoints[-1], Direction.START_TO_STOP, {link_xy.label: "STATIC"}
+            x.waypoints[0],
+            Direction.START_TO_STOP,
+            y.waypoints[-1],
+            Direction.START_TO_STOP,
+            {link_xy.label: "STATIC"},
         )
         yz = ZonePath(
-            y.waypoints[0], Direction.START_TO_STOP, z.waypoints[-1], Direction.START_TO_STOP, {link_yz.label: "STATIC"}
+            y.waypoints[0],
+            Direction.START_TO_STOP,
+            z.waypoints[-1],
+            Direction.START_TO_STOP,
+            {link_yz.label: "STATIC"},
         )
         ir = IncompleteRoute.from_zonepath(xy)
 
         ir = ir.fork(yz)
 
         assert ir == IncompleteRoute(
-            path=[xy, yz], switches_directions={link_xy.label: "STATIC", link_yz.label: "STATIC"}
+            path=[xy, yz],
+            switches_directions={link_xy.label: "STATIC", link_yz.label: "STATIC"},
         )
 
     def test_dir_waypoints(self):
@@ -223,10 +286,18 @@ class TestIncompleteRoute:
         link_yz = ib.add_link(y.end(), z.begin())
         ib.build()
         xy = ZonePath(
-            x.waypoints[0], Direction.START_TO_STOP, y.waypoints[-1], Direction.START_TO_STOP, {link_xy.label: "STATIC"}
+            x.waypoints[0],
+            Direction.START_TO_STOP,
+            y.waypoints[-1],
+            Direction.START_TO_STOP,
+            {link_xy.label: "STATIC"},
         )
         yz = ZonePath(
-            y.waypoints[0], Direction.START_TO_STOP, z.waypoints[-1], Direction.START_TO_STOP, {link_yz.label: "STATIC"}
+            y.waypoints[0],
+            Direction.START_TO_STOP,
+            z.waypoints[-1],
+            Direction.START_TO_STOP,
+            {link_yz.label: "STATIC"},
         )
         ir = IncompleteRoute.from_zonepath(xy)
         ir = ir.fork(yz)
@@ -253,10 +324,18 @@ class TestIncompleteRoute:
         link_yz = ib.add_link(y.end(), z.begin())
         ib.build()
         xy = ZonePath(
-            x.waypoints[0], Direction.START_TO_STOP, y.waypoints[-1], Direction.START_TO_STOP, {link_xy.label: "STATIC"}
+            x.waypoints[0],
+            Direction.START_TO_STOP,
+            y.waypoints[-1],
+            Direction.START_TO_STOP,
+            {link_xy.label: "STATIC"},
         )
         yz = ZonePath(
-            y.waypoints[0], Direction.START_TO_STOP, z.waypoints[-1], Direction.START_TO_STOP, {link_yz.label: "STATIC"}
+            y.waypoints[0],
+            Direction.START_TO_STOP,
+            z.waypoints[-1],
+            Direction.START_TO_STOP,
+            {link_yz.label: "STATIC"},
         )
         ir = IncompleteRoute.from_zonepath(xy)
         ir = ir.fork(yz)

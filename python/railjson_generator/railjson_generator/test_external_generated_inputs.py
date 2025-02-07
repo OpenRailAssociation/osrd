@@ -24,7 +24,9 @@ class TestElectricalProfile:
         ep.add_track_range(track=track, begin=0, end=1)
 
         assert ep.to_rjs() == external_generated_inputs.ElectricalProfile(
-            value="value", power_class="power_class", track_ranges=[infra.TrackRange(track=track.id, begin=0, end=1)]
+            value="value",
+            power_class="power_class",
+            track_ranges=[infra.TrackRange(track=track.id, begin=0, end=1)],
         )
 
 
@@ -35,7 +37,9 @@ class TestExternalGeneratedInputs:
 
         egi.add_electrical_profile(value="value", power_class="power_class")
 
-        assert egi.electrical_profiles == [ElectricalProfile(value="value", power_class="power_class")]
+        assert egi.electrical_profiles == [
+            ElectricalProfile(value="value", power_class="power_class")
+        ]
 
     def test_to_rjs(self):
         egi = ExternalGeneratedInputs()
@@ -66,4 +70,7 @@ class TestExternalGeneratedInputs:
         egi.save(path)
 
         with open(path) as f:
-            assert external_generated_inputs.ElectricalProfileSet(**json.load(f)) == egi.to_rjs()
+            assert (
+                external_generated_inputs.ElectricalProfileSet(**json.load(f))
+                == egi.to_rjs()
+            )

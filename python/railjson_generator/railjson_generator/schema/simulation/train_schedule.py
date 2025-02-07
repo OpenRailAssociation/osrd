@@ -48,7 +48,9 @@ class TrainSchedule:
             allowance = StandardAllowance(*args, **kwargs)
         self.allowances.append(allowance)
 
-    def add_standard_single_value_allowance(self, value_type: str, value: float, distribution: str = "LINEAR"):
+    def add_standard_single_value_allowance(
+        self, value_type: str, value: float, distribution: str = "LINEAR"
+    ):
         """Add a standard allowance with a single value. For more information on allowances, see
         the documentation of the Allowance class in osrd_schemas."""
         if value_type == "time":
@@ -62,7 +64,12 @@ class TrainSchedule:
 
         distribution = AllowanceDistribution(distribution)
 
-        self.add_allowance(default_value=value, distribution=distribution, ranges=[], capacity_speed_limit=-1)
+        self.add_allowance(
+            default_value=value,
+            distribution=distribution,
+            ranges=[],
+            capacity_speed_limit=-1,
+        )
 
     def format(self):
         stops = list(self.stops)

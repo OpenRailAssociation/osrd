@@ -12,7 +12,13 @@ class OperationalPoint:
     weight: Optional[int]
     uic: int
 
-    def __init__(self, label: str, trigram: Optional[str] = None, uic: int = 0, weight: Optional[int] = None):
+    def __init__(
+        self,
+        label: str,
+        trigram: Optional[str] = None,
+        uic: int = 0,
+        weight: Optional[int] = None,
+    ):
         self.label = label
         self.trigram = trigram or label[:3].upper()
         self.parts = list()

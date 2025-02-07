@@ -38,7 +38,9 @@ class TrackEndpoint:
         return self.track_section.end_links
 
     def opposite(self):
-        return TrackEndpoint(track_section=self.track_section, endpoint=self.endpoint.opposite())
+        return TrackEndpoint(
+            track_section=self.track_section, endpoint=self.endpoint.opposite()
+        )
 
     def get_coords(self):
         if self.endpoint == Endpoint.BEGIN:
@@ -53,4 +55,6 @@ class TrackEndpoint:
             self.track_section.coordinates[-1] = (x, y)
 
     def to_rjs(self):
-        return infra.TrackEndpoint(endpoint=infra.Endpoint[self.endpoint.name], track=self.track_section.id)
+        return infra.TrackEndpoint(
+            endpoint=infra.Endpoint[self.endpoint.name], track=self.track_section.id
+        )

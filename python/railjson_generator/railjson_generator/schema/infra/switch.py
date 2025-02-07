@@ -81,7 +81,10 @@ class Switch:
             id=self.label,
             switch_type=self.SWITCH_TYPE,
             group_change_delay=self.delay,
-            ports={port_name: getattr(self, port_name).to_rjs() for port_name in self.PORT_NAMES},
+            ports={
+                port_name: getattr(self, port_name).to_rjs()
+                for port_name in self.PORT_NAMES
+            },
             extensions={"sncf": {"label": self.label}},
         )
 

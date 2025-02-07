@@ -36,7 +36,9 @@ class SpeedSection:
             )
         )
 
-    def add_applicable_track_ranges(self, *track_ranges: ApplicableDirectionsTrackRange):
+    def add_applicable_track_ranges(
+        self, *track_ranges: ApplicableDirectionsTrackRange
+    ):
         self.track_ranges += track_ranges
 
     def to_rjs(self):

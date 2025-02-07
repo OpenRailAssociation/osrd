@@ -250,26 +250,11 @@ jobs:
           cd python/railjson_generator
           poetry install
 
-      - name: Flake8
+      - name: Ruff
         run: |
           cd python/railjson_generator
-          poetry run pflake8 --config ./pyproject.toml --output-file flake8.xml --format junit-xml
-
-      - name: Publish flake8 report
-        uses: mikepenz/action-junit-report@v5
-        if: failure()
-        with:
-          report_paths: flake8.xml
-
-      - name: Black
-        run: |
-          cd python/railjson_generator
-          poetry run black . --check
-
-      - name: Isort
-        run: |
-          cd python/railjson_generator
-          poetry run isort . --check
+          poetry run ruff check --output-format github
+          poetry run ruff format --check
 
       - name: Pytype
         run: |
@@ -398,7 +383,7 @@ jobs:
       - name: Ruff
         run: |
           cd python/osrd_schemas
-          poetry run ruff check
+          poetry run ruff check --output-format github
           poetry run ruff format --check
       - name: Pyright
         run: |

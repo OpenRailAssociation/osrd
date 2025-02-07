@@ -18,7 +18,10 @@ from .schema.infra.track_section import TrackSection
 from .utils import generate_routes
 
 
-def _check_connections(endpoint: TrackEndpoint, connections: Iterable[Tuple[TrackEndpoint, Optional[SwitchGroup]]]):
+def _check_connections(
+    endpoint: TrackEndpoint,
+    connections: Iterable[Tuple[TrackEndpoint, Optional[SwitchGroup]]],
+):
     switches = []
     for connected_endpoint, switch_group in connections:
         if connected_endpoint == endpoint:
@@ -38,7 +41,9 @@ def _check_connections(endpoint: TrackEndpoint, connections: Iterable[Tuple[Trac
         groups.add(switch_group.group)
 
 
-def _register_connection(endpoint_a: TrackEndpoint, endpoint_b: TrackEndpoint, switch_group: SwitchGroup):
+def _register_connection(
+    endpoint_a: TrackEndpoint, endpoint_b: TrackEndpoint, switch_group: SwitchGroup
+):
     """Connect two track endpoints together."""
     a_neighbors = endpoint_a.get_neighbors()
     b_neighbors = endpoint_b.get_neighbors()
@@ -62,7 +67,9 @@ class InfraBuilder:
         self.infra.track_sections.append(track)
         return track
 
-    def add_point_switch(self, base: TrackEndpoint, left: TrackEndpoint, right: TrackEndpoint, **kwargs) -> PointSwitch:
+    def add_point_switch(
+        self, base: TrackEndpoint, left: TrackEndpoint, right: TrackEndpoint, **kwargs
+    ) -> PointSwitch:
         """Build a point switch, add it to the infra, and return it."""
         switch = PointSwitch(A=base, B1=left, B2=right, **kwargs)
         _register_connection(base, left, switch.group("A_B1"))
@@ -71,7 +78,12 @@ class InfraBuilder:
         return switch
 
     def add_crossing(
-        self, north: TrackEndpoint, south: TrackEndpoint, east: TrackEndpoint, west: TrackEndpoint, **kwargs
+        self,
+        north: TrackEndpoint,
+        south: TrackEndpoint,
+        east: TrackEndpoint,
+        west: TrackEndpoint,
+        **kwargs,
     ) -> Crossing:
         """Build a crossing, add it to the infra, and return it."""
         switch = Crossing(A1=north, B1=south, B2=east, A2=west, **kwargs)
@@ -81,10 +93,17 @@ class InfraBuilder:
         return switch
 
     def add_double_slip_switch(
-        self, north_1: TrackEndpoint, north_2: TrackEndpoint, south_1: TrackEndpoint, south_2: TrackEndpoint, **kwargs
+        self,
+        north_1: TrackEndpoint,
+        north_2: TrackEndpoint,
+        south_1: TrackEndpoint,
+        south_2: TrackEndpoint,
+        **kwargs,
     ) -> DoubleSlipSwitch:
         """Build a double slip switch, add it to the infra, and return it."""
-        switch = DoubleSlipSwitch(A1=north_1, A2=north_2, B1=south_1, B2=south_2, **kwargs)
+        switch = DoubleSlipSwitch(
+            A1=north_1, A2=north_2, B1=south_1, B2=south_2, **kwargs
+        )
         for (src, dst), group_name in [
             ((north_1, south_1), "A1_B1"),
             ((north_1, south_2), "A1_B2"),
@@ -95,7 +114,9 @@ class InfraBuilder:
         self.infra.switches.append(switch)
         return switch
 
-    def add_link(self, source: TrackEndpoint, destination: TrackEndpoint, **kwargs) -> Link:
+    def add_link(
+        self, source: TrackEndpoint, destination: TrackEndpoint, **kwargs
+    ) -> Link:
         """Build a link, add it to the infra, and return it."""
         switch = Link(A=source, B=destination, **kwargs)
         self.infra.switches.append(switch)

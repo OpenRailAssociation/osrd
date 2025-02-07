@@ -55,7 +55,9 @@ class LoadingGaugeLimit(RangeElement):
         self.category = category
 
     def to_rjs(self):
-        return infra.LoadingGaugeLimit(category=self.category, begin=self.begin, end=self.end)
+        return infra.LoadingGaugeLimit(
+            category=self.category, begin=self.begin, end=self.end
+        )
 
 
 @dataclass
@@ -86,7 +88,9 @@ class ApplicableDirectionsTrackRange(TrackRange):
     def to_rjs(self):
         return infra.ApplicableDirectionsTrackRange(
             track=self.track.id,
-            applicable_directions=infra.ApplicableDirections[self.applicable_directions.name],
+            applicable_directions=infra.ApplicableDirections[
+                self.applicable_directions.name
+            ],
             begin=self.begin,
             end=self.end,
         )

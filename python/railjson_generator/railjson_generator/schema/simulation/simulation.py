@@ -21,9 +21,15 @@ class Simulation:
     time_step: float = field(default=2.0)
 
     def format(self):
-        rs_names = {sched.rolling_stock for group in self.train_schedule_groups for sched in group.schedules}
+        rs_names = {
+            sched.rolling_stock
+            for group in self.train_schedule_groups
+            for sched in group.schedules
+        }
         return {
-            "train_schedule_groups": [group.format() for group in self.train_schedule_groups],
+            "train_schedule_groups": [
+                group.format() for group in self.train_schedule_groups
+            ],
             "rolling_stocks": [ROLLING_STOCKS[name] for name in rs_names],
             "time_step": self.time_step,
         }

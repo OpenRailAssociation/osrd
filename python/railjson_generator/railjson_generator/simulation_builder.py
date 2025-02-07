@@ -21,7 +21,9 @@ class SimulationBuilder:
         return train_schedule
 
     def add_train_schedule_group(
-        self, locations: Sequence[Union[Location, DirectedLocation]], *train_schedules: TrainSchedule
+        self,
+        locations: Sequence[Union[Location, DirectedLocation]],
+        *train_schedules: TrainSchedule,
     ) -> TrainScheduleGroup:
         """Create a train schedule group containing the given train schedules.
 
@@ -32,11 +34,16 @@ class SimulationBuilder:
             (
                 [loc]
                 if isinstance(loc, DirectedLocation)
-                else [DirectedLocation.from_location(loc, direction) for direction in Direction]
+                else [
+                    DirectedLocation.from_location(loc, direction)
+                    for direction in Direction
+                ]
             )
             for loc in locations
         ]
-        train_schedule_group = TrainScheduleGroup(list(train_schedules), directed_locations)
+        train_schedule_group = TrainScheduleGroup(
+            list(train_schedules), directed_locations
+        )
         self.simulation.train_schedule_groups.append(train_schedule_group)
         return train_schedule_group
 

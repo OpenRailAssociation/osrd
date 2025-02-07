@@ -35,7 +35,9 @@ class NeutralSection:
 
     _INDEX = 0
 
-    def add_track_range(self, track: TrackSection, begin: float, end: float, direction: Direction):
+    def add_track_range(
+        self, track: TrackSection, begin: float, end: float, direction: Direction
+    ):
         self.track_ranges.append(
             DirectionalTrackRange(
                 begin=begin,
@@ -45,7 +47,9 @@ class NeutralSection:
             )
         )
 
-    def add_announcement_track_range(self, track: TrackSection, begin: float, end: float, direction: Direction):
+    def add_announcement_track_range(
+        self, track: TrackSection, begin: float, end: float, direction: Direction
+    ):
         self.announcement_track_ranges.append(
             DirectionalTrackRange(
                 begin=begin,
@@ -58,7 +62,9 @@ class NeutralSection:
     def to_rjs(self):
         return infra.NeutralSection(
             id=self.label,
-            announcement_track_ranges=[track.to_rjs() for track in self.announcement_track_ranges],
+            announcement_track_ranges=[
+                track.to_rjs() for track in self.announcement_track_ranges
+            ],
             track_ranges=[track.to_rjs() for track in self.track_ranges],
             lower_pantograph=self.lower_pantograph,
         )

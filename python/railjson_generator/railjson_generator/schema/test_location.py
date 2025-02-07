@@ -16,15 +16,19 @@ class TestDirectedLocation:
         ts = TrackSection(label="ts", length=1)
         location = Location(ts, offset=0)
 
-        assert DirectedLocation.from_location(location, Direction.START_TO_STOP) == DirectedLocation(
-            ts, offset=0, direction=Direction.START_TO_STOP
-        )
-        assert DirectedLocation.from_location(location, Direction.STOP_TO_START) == DirectedLocation(
-            ts, offset=0, direction=Direction.STOP_TO_START
-        )
+        assert DirectedLocation.from_location(
+            location, Direction.START_TO_STOP
+        ) == DirectedLocation(ts, offset=0, direction=Direction.START_TO_STOP)
+        assert DirectedLocation.from_location(
+            location, Direction.STOP_TO_START
+        ) == DirectedLocation(ts, offset=0, direction=Direction.STOP_TO_START)
 
     def test_format(self):
         ts = TrackSection(label="ts", length=1)
         location = DirectedLocation(ts, offset=0, direction=Direction.START_TO_STOP)
 
-        assert location.format() == {"track_section": "ts", "offset": 0, "direction": "START_TO_STOP"}
+        assert location.format() == {
+            "track_section": "ts",
+            "offset": 0,
+            "direction": "START_TO_STOP",
+        }
