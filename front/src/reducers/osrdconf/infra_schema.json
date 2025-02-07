@@ -187,12 +187,9 @@
         "BufferStopExtensions": {
             "properties": {
                 "sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/BufferStopSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
@@ -334,12 +331,9 @@
         "DetectorExtensions": {
             "properties": {
                 "sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/DetectorSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
@@ -818,12 +812,9 @@
         "NeutralSectionExtensions": {
             "properties": {
                 "neutral_sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/NeutralSectionNeutralSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
@@ -926,23 +917,17 @@
         "OperationalPointExtensions": {
             "properties": {
                 "identifier": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/OperationalPointIdentifierExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
                 },
                 "sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/OperationalPointSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
@@ -1007,12 +992,9 @@
         "OperationalPointPartExtensions": {
             "properties": {
                 "sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/OperationalPointPartSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
@@ -1303,12 +1285,9 @@
         "SignalExtensions": {
             "properties": {
                 "sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/SignalSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
@@ -1463,12 +1442,9 @@
         "SpeedSectionExtensions": {
             "properties": {
                 "psl_sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/SpeedSectionPslSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
@@ -1564,12 +1540,9 @@
         "SwitchExtensions": {
             "properties": {
                 "sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/SwitchSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
@@ -1755,23 +1728,17 @@
         "TrackSectionExtensions": {
             "properties": {
                 "sncf": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/TrackSectionSncfExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null
                 },
                 "source": {
-                    "anyOf": [
+                    "allOf": [
                         {
                             "$ref": "#/$defs/TrackSectionSourceExtension"
-                        },
-                        {
-                            "type": "null"
                         }
                     ],
                     "default": null

@@ -379,7 +379,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install poetry
-        run: pipx install 'poetry<2.0'
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -388,7 +388,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd python/osrd_schemas
-          poetry install
+          poetry install --extras=dev
       - name: Ruff
         run: |
           cd python/osrd_schemas
@@ -420,7 +420,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install poetry
-        run: pipx install 'poetry<2.0'
+        run: pipx install poetry
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"

@@ -638,7 +638,7 @@ def register_extension(object: Type[BaseModel], name):
             )
 
         extensions_field.annotation.model_fields[name] = FieldInfo(
-            annotation=Optional[extension],
+            annotation=extension,
             default=None,
         )
         return extension
