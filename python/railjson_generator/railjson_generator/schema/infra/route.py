@@ -35,7 +35,7 @@ class Route:
 
     def to_rjs(self):
         return infra.Route(
-            id=self.label,
+            id=self.label,  # pyright: ignore[reportArgumentType] - '__post_init__' ensures 'label' always has a value
             entry_point=self.entry_point.get_waypoint_ref(),
             entry_point_direction=infra.Direction[self.entry_point_direction.name],
             exit_point=self.exit_point.get_waypoint_ref(),

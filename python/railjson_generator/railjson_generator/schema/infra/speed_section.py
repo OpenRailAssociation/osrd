@@ -10,8 +10,8 @@ from railjson_generator.schema.infra.range_elements import (
 
 def _speed_section_id():
     # pytype: disable=name-error
-    res = f"speed_section.{SpeedSection._INDEX}"
-    SpeedSection._INDEX += 1
+    res = f"speed_section.{SpeedSection._index}"
+    SpeedSection._index += 1
     # pytype: enable=name-error
     return res
 
@@ -24,7 +24,7 @@ class SpeedSection:
     label: str = field(default_factory=_speed_section_id)
     on_routes: Optional[List[str]] = None
 
-    _INDEX = 0
+    _index = 0
 
     def add_track_range(self, track, begin, end, applicable_directions):
         self.track_ranges.append(

@@ -1,5 +1,4 @@
-from osrd_schemas.infra import ApplicableDirections
-
+from railjson_generator.schema.infra.direction import ApplicableDirection
 from railjson_generator.schema.infra.speed_section import (
     ApplicableDirectionsTrackRange,
     SpeedSection,
@@ -23,13 +22,13 @@ class TestSpeedSection:
                 begin=50.0,
                 end=100.0,
                 track=track1,
-                applicable_directions=ApplicableDirections.BOTH,
+                applicable_directions=ApplicableDirection.BOTH,
             ),
             ApplicableDirectionsTrackRange(
                 begin=0.0,
                 end=200.0,
                 track=track2,
-                applicable_directions=ApplicableDirections.START_TO_STOP,
+                applicable_directions=ApplicableDirection.START_TO_STOP,
             ),
         )
 
@@ -37,13 +36,13 @@ class TestSpeedSection:
             begin=50.0,
             end=100.0,
             track=track1,
-            applicable_directions=ApplicableDirections.BOTH,
+            applicable_directions=ApplicableDirection.BOTH,
         )
         ref.add_track_range(
             begin=0.0,
             end=200.0,
             track=track2,
-            applicable_directions=ApplicableDirections.START_TO_STOP,
+            applicable_directions=ApplicableDirection.START_TO_STOP,
         )
 
         assert speed == ref

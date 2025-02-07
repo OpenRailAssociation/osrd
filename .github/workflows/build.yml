@@ -256,10 +256,10 @@ jobs:
           poetry run ruff check --output-format github
           poetry run ruff format --check
 
-      - name: Pytype
+      - name: Pyright
         run: |
           cd python/railjson_generator
-          poetry run pytype -j auto
+          poetry run pyright
 
       - name: Pytest
         run: |

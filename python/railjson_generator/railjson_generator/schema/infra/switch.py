@@ -16,8 +16,8 @@ from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 
 def _switch_id():
     # pytype: disable=name-error
-    res = f"switch.{Switch._INDEX}"
-    Switch._INDEX += 1
+    res = f"switch.{Switch._index}"
+    Switch._index += 1
     # pytype: enable=name-error
     return res
 
@@ -30,7 +30,7 @@ class SwitchGroup:
 
 @dataclass
 class Switch:
-    _INDEX = 0
+    _index = 0
     # overridden by subclasses
     PORT_NAMES = []
     SWITCH_TYPE = ""
@@ -85,7 +85,7 @@ class Switch:
                 port_name: getattr(self, port_name).to_rjs()
                 for port_name in self.PORT_NAMES
             },
-            extensions={"sncf": {"label": self.label}},
+            extensions={"sncf": {"label": self.label}},  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
         )
 
 

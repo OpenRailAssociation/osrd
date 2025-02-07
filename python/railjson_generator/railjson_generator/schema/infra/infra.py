@@ -36,9 +36,9 @@ class Infra:
             track_sections=[track.to_rjs() for track in self.track_sections],
             switches=[switch.to_rjs() for switch in self.switches],
             routes=[route.to_rjs() for route in self.routes],
-            signals=self.make_rjs_signals(),
-            buffer_stops=self.make_rjs_buffer_stops(),
-            detectors=self.make_rjs_detectors(),
+            signals=list(self.make_rjs_signals()),
+            buffer_stops=list(self.make_rjs_buffer_stops()),
+            detectors=list(self.make_rjs_detectors()),
             operational_points=self.make_rjs_operational_points(),
             extended_switch_types=[],
             speed_sections=[
@@ -85,8 +85,7 @@ class Infra:
             new_op = infra.OperationalPoint(
                 id=op.label,
                 parts=parts_per_op[op.label],
-                name=op.label,
-                extensions={
+                extensions={  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
                     "sncf": infra.OperationalPointSncfExtension(
                         ci=0,
                         ch="BV",

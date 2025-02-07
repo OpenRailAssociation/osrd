@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import Union
 
 from osrd_schemas.train_schedule import (
-    Allowance,
     AllowanceDistribution,
     AllowancePercentValue,
     AllowanceTimePerDistanceValue,
@@ -17,8 +16,8 @@ from railjson_generator.schema.simulation.stop import Stop
 
 def _train_id():
     # pytype: disable=name-error
-    res = f"train.{TrainSchedule._INDEX}"
-    TrainSchedule._INDEX += 1
+    res = f"train.{TrainSchedule._index}"
+    TrainSchedule._index += 1
     # pytype: enable=name-error
     return res
 
@@ -29,10 +28,12 @@ class TrainSchedule:
     rolling_stock: str = field(default="fast_rolling_stock")
     departure_time: float = field(default=0.0)
     initial_speed: float = field(default=0.0)
-    stops: List[Stop] = field(default_factory=list)
-    allowances: List[Allowance] = field(default_factory=list)
+    stops: list[Stop] = field(default_factory=list)
+    allowances: list[Union[EngineeringAllowance, StandardAllowance]] = field(
+        default_factory=list
+    )
 
-    _INDEX = 0
+    _index = 0
 
     def add_stop(self, *args, **kwargs):
         stop = Stop(*args, **kwargs)
@@ -54,18 +55,18 @@ class TrainSchedule:
         """Add a standard allowance with a single value. For more information on allowances, see
         the documentation of the Allowance class in osrd_schemas."""
         if value_type == "time":
-            value = AllowanceTimeValue(seconds=value)
+            allowance = AllowanceTimeValue(seconds=value)
         elif value_type == "time_per_distance":
-            value = AllowanceTimePerDistanceValue(minutes=value)
+            allowance = AllowanceTimePerDistanceValue(minutes=value)
         elif value_type == "percentage":
-            value = AllowancePercentValue(percentage=value)
+            allowance = AllowancePercentValue(percentage=value)
         else:
             raise ValueError(f"Unknown value kind {value_type}")
 
         distribution = AllowanceDistribution(distribution)
 
         self.add_allowance(
-            default_value=value,
+            default_value=allowance,
             distribution=distribution,
             ranges=[],
             capacity_speed_limit=-1,
@@ -86,8 +87,8 @@ class TrainSchedule:
 
 def _group_id():
     # pytype: disable=name-error
-    res = f"group.{TrainScheduleGroup._INDEX}"
-    TrainScheduleGroup._INDEX += 1
+    res = f"group.{TrainScheduleGroup._index}"
+    TrainScheduleGroup._index += 1
     # pytype: enable=name-error
     return res
 
@@ -96,11 +97,11 @@ def _group_id():
 class TrainScheduleGroup:
     """A group of train schedules that share the same waypoints."""
 
-    schedules: List[TrainSchedule] = field(default_factory=list)
-    waypoints: List[List[DirectedLocation]] = field(default_factory=list)
+    schedules: list[TrainSchedule] = field(default_factory=list)
+    waypoints: list[list[DirectedLocation]] = field(default_factory=list)
     id: str = field(default_factory=_group_id)
 
-    _INDEX = 0
+    _index = 0
 
     def format(self):
         return {

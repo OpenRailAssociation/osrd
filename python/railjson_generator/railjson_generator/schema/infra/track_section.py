@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
+from geojson_pydantic.types import LineStringCoords
 from osrd_schemas import infra
 from pydantic import ValidationError
 
@@ -21,15 +22,15 @@ from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypo
 
 def _track_id():
     # pytype: disable=name-error
-    res = f"track.{TrackSection._INDEX}"
-    TrackSection._INDEX += 1
+    res = f"track.{TrackSection._index}"
+    TrackSection._index += 1
     # pytype: enable=name-error
     return res
 
 
 @dataclass
 class TrackSection:
-    _INDEX = 0
+    _index = 0
 
     length: float
     label: str = field(default_factory=_track_id)
@@ -131,10 +132,12 @@ class TrackSection:
         return self.begining_links
 
     def to_rjs(self):
-        if self.coordinates == [(None, None), (None, None)]:
-            self.coordinates = [(0, 0), (0, 0)]
+        # Replace 'None' by '0.0'
+        coordinates: LineStringCoords = list(
+            map(lambda pos: (pos[0] or 0.0, pos[1] or 0.0), self.coordinates)
+        )
         try:
-            geo_data = make_geo_lines(*self.coordinates)
+            geo_data = make_geo_lines(coordinates)
         except ValidationError:
             print(f"Track section {self.label} has invalid coordinates:")
             print(self.coordinates)
@@ -149,7 +152,7 @@ class TrackSection:
                 for loading_gauge_limit in self.loading_gauge_limits
             ],
             **geo_data,
-            extensions={
+            extensions={  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
                 "sncf": {
                     "line_code": self.line_code,
                     "line_name": self.line_name,

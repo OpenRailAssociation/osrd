@@ -10,8 +10,8 @@ from railjson_generator.schema.infra.track_section import TrackSection
 
 def _neutral_section_id():
     # pytype: disable=name-error
-    res = f"neutral_section.{NeutralSection._INDEX}"
-    NeutralSection._INDEX += 1
+    res = f"neutral_section.{NeutralSection._index}"
+    NeutralSection._index += 1
     # pytype: enable=name-error
     return res
 
@@ -33,7 +33,7 @@ class NeutralSection:
     lower_pantograph: bool = field(default=False)
     label: str = field(default_factory=_neutral_section_id)
 
-    _INDEX = 0
+    _index = 0
 
     def add_track_range(
         self, track: TrackSection, begin: float, end: float, direction: Direction

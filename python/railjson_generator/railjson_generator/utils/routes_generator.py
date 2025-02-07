@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
@@ -37,7 +37,6 @@ def _explore_signals(
         else iter(track.signals)
     )
 
-    pos_filter: Callable[[float], bool]
     continue_exploring: bool
 
     if det_i is None:

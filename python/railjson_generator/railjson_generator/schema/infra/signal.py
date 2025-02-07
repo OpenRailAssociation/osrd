@@ -8,8 +8,8 @@ from railjson_generator.schema.infra.direction import Direction
 
 def _signal_id():
     # pytype: disable=name-error
-    res = f"signal.{Signal._INDEX}"
-    Signal._INDEX += 1
+    res = f"signal.{Signal._index}"
+    Signal._index += 1
     # pytype: enable=name-error
     return res
 
@@ -20,7 +20,7 @@ class SignalConditionalParameters:
     parameters: Dict[str, str]
 
     def to_rjs(self):
-        return infra.SignalConditionalParameters(
+        return infra.ConditionalParameter(
             on_route=self.on_route,
             parameters=self.parameters,
         )
@@ -69,7 +69,7 @@ class Signal:
     installation_type: str = "CARRE"
     side: infra.Side = infra.Side.LEFT
 
-    _INDEX = 0
+    _index = 0
 
     def add_logical_signal(self, *args, **kwargs) -> LogicalSignal:
         signal = LogicalSignal(*args, **kwargs)
@@ -84,7 +84,7 @@ class Signal:
             direction=infra.Direction[self.direction.name],
             sight_distance=self.sight_distance,
             logical_signals=[sig.to_rjs() for sig in self.logical_signals],
-            extensions={
+            extensions={  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
                 "sncf": {
                     "label": self.label,
                     "side": self.side,
