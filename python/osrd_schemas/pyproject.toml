@@ -15,10 +15,7 @@ python = ">=3.9,<3.12"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "0.9.5"
-pytype = { platform = "linux", version = "^2023.10.17" }
-
-[tool.pytype]
-inputs = ["osrd_schemas"]
+pyright = "1.1.393"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
