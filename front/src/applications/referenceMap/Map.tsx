@@ -12,9 +12,7 @@ import colors from 'common/Map/Consts/colors';
 import Background from 'common/Map/Layers/Background';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
-import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
-import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import IGNLayers from 'common/Map/Layers/IGNLayers';
 import InfraObjectLayers from 'common/Map/Layers/InfraObjectLayers';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import OSM from 'common/Map/Layers/OSM';
@@ -136,9 +134,7 @@ function Map() {
         />
         <Terrain />
 
-        <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
-        <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
-        <IGN_CADASTRE layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+        <IGNLayers />
 
         {infraID && <InfraObjectLayers infraId={infraID} mapStyle={mapStyle} />}
 
