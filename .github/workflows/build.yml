@@ -380,7 +380,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd python/osrd_schemas
-          poetry install --extras=dev
+          poetry install --extras=check
       - name: Ruff
         run: |
           cd python/osrd_schemas

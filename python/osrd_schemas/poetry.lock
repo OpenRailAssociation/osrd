@@ -39,7 +39,7 @@ description = "Node.js virtual environment builder"
 optional = true
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 groups = ["main"]
-markers = "extra == \"dev\""
+markers = "extra == \"check\""
 files = [
     {file = "nodeenv-1.9.1-py2.py3-none-any.whl", hash = "sha256:ba11c9782d29c27c70ffbdda2d7415098754709be8a7056d79a737cd901155c9"},
     {file = "nodeenv-1.9.1.tar.gz", hash = "sha256:6ec12890a2dab7946721edbfbcd91f3319c6ccc9aec47be7c7e6b7011ee6645f"},
@@ -164,7 +164,7 @@ description = "Command line wrapper for pyright"
 optional = true
 python-versions = ">=3.7"
 groups = ["main"]
-markers = "extra == \"dev\""
+markers = "extra == \"check\""
 files = [
     {file = "pyright-1.1.393-py3-none-any.whl", hash = "sha256:8320629bb7a44ca90944ba599390162bf59307f3d9fb6e27da3b7011b8c17ae5"},
     {file = "pyright-1.1.393.tar.gz", hash = "sha256:aeeb7ff4e0364775ef416a80111613f91a05c8e01e58ecfefc370ca0db7aed9c"},
@@ -186,7 +186,7 @@ description = "An extremely fast Python linter and code formatter, written in Ru
 optional = true
 python-versions = ">=3.7"
 groups = ["main"]
-markers = "extra == \"dev\""
+markers = "extra == \"check\""
 files = [
     {file = "ruff-0.9.5-py3-none-linux_armv6l.whl", hash = "sha256:d466d2abc05f39018d53f681fa1c0ffe9570e6d73cde1b65d23bb557c846f442"},
     {file = "ruff-0.9.5-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:38840dbcef63948657fa7605ca363194d2fe8c26ce8f9ae12eee7f098c85ac8a"},
@@ -221,9 +221,9 @@ files = [
 ]
 
 [extras]
-dev = ["pyright", "ruff"]
+check = ["pyright", "ruff"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">= 3.11"
-content-hash = "dfc2e0df47630c6c72739910a1ead7cf9f4768091a2e5d800b3e7e7dd10949f2"
+content-hash = "d652b15ef227207e93b44ba06de0fbe300a71d2d4fdbc5a93676eb1f11350986"
