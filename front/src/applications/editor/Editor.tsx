@@ -32,6 +32,7 @@ import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
 import { setFailure } from 'reducers/main';
 import { getIsLoading } from 'reducers/main/mainSelector';
 import { updateViewport, type Viewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -101,9 +102,7 @@ const Editor = () => {
     forceRender();
   }, [switchTool, forceRender]);
 
-  const { mapStyle, viewport } = useSelector(
-    (state: { map: { mapStyle: string; viewport: Viewport } }) => state.map
-  );
+  const { mapStyle, viewport } = useSelector(getMap);
 
   const setViewport = useCallback(
     (value: Partial<Viewport>) => {

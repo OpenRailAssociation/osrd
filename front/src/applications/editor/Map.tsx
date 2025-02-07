@@ -16,17 +16,13 @@ import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applica
 import type { InfraError } from 'common/api/osrdEditoastApi';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
-import Background from 'common/Map/Layers/Background';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import Hillshade from 'common/Map/Layers/Hillshade';
 import IGNLayers from 'common/Map/Layers/IGNLayers';
 import { NeutralSectionsLayer, OperationalPointsLayer } from 'common/Map/Layers/InfraObjectLayers';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
-import OSM from 'common/Map/Layers/OSM';
+import OSMLayers from 'common/Map/Layers/OSMLayers';
 import { Platforms as PlatformsLayer } from 'common/Map/Layers/Platforms';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
-import Terrain from 'common/Map/Layers/Terrain';
-import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
@@ -41,7 +37,7 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
   toolState: S;
   setToolState: (state: Partial<S>) => void;
   activeTool: Tool<S>;
-  mapStyle: string;
+  mapStyle: 'normal' | 'dark' | 'blueprint' | 'minimal';
   viewport: Viewport;
   setViewport: (newViewport: Partial<Viewport>, updateRouter?: boolean) => void;
   mapRef: React.RefObject<MapRef>;
@@ -285,28 +281,8 @@ const MapUnplugged = ({
             }}
           />
 
-          {/* Common layers */}
-          <Background
-            colors={colors[mapStyle]}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-          />
-          <Terrain />
-          <TracksOSM
-            colors={colors[mapStyle]}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
-          />
-
+          <OSMLayers mapStyle={mapStyle} showOSM={showOSM} hidePlatforms />
           <IGNLayers />
-
-          {!showOSM ? null : (
-            <>
-              <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
-              <Hillshade
-                mapStyle={mapStyle}
-                layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-              />
-            </>
-          )}
 
           <LineSearchLayer
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}

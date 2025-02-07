@@ -20,7 +20,7 @@ export type Reducer<T> = (value: T) => T;
 export type PartialOrReducer<T> = Partial<T> | Reducer<T>;
 
 export type MapState = {
-  mapStyle: string;
+  mapStyle: 'normal' | 'dark' | 'blueprint' | 'minimal';
   viewport: ViewState;
 };
 

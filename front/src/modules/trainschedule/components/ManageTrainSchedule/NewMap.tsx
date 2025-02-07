@@ -14,18 +14,13 @@ import type { PathProperties } from 'common/api/osrdEditoastApi';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
-import Background from 'common/Map/Layers/Background';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import Hillshade from 'common/Map/Layers/Hillshade';
 import IGNLayers from 'common/Map/Layers/IGNLayers';
 import InfraObjectLayers from 'common/Map/Layers/InfraObjectLayers';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
-import OSM from 'common/Map/Layers/OSM';
-import PlatformsLayer from 'common/Map/Layers/Platforms';
+import OSMLayers from 'common/Map/Layers/OSMLayers';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
-import Terrain from 'common/Map/Layers/Terrain';
-import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -290,37 +285,8 @@ const NewMap = ({
 
         {infraID && <InfraObjectLayers infraId={infraID} mapStyle={mapStyle} />}
 
-        <Background
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-        />
-        <Terrain />
-
+        <OSMLayers mapStyle={mapStyle} showOSM={showOSM && mapIsLoaded} />
         <IGNLayers />
-
-        {mapIsLoaded && showOSM && (
-          <>
-            <OSM
-              mapStyle={mapStyle}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-              mapIsLoaded={mapIsLoaded}
-            />
-            <Hillshade
-              mapStyle={mapStyle}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
-            />
-          </>
-        )}
-
-        <PlatformsLayer
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
-        />
-
-        <TracksOSM
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
-        />
 
         <LineSearchLayer
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
