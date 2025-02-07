@@ -14,19 +14,19 @@ Usage: $0 [FLAGS] [DOCKER_COMPOSE_COMMANDS]
 This script simplifies docker compose operations by managing override files.
 
 Flags (optional, can be combined):
-  front    Add front-end development container (docker/docker-compose.front.yml)
-  sw       Enable single worker mode (docker/docker-compose.single-worker.yml)
-  host     Use host networking mode (docker/docker-compose.host.yml)
-  default  Reset to base configuration only and clear saved state
+  dev-front    Add front-end development container (docker/docker-compose.front.yml)
+  sw           Enable single worker mode (docker/docker-compose.single-worker.yml)
+  host         Use host networking mode (docker/docker-compose.host.yml)
+  default      Reset to base configuration only and clear saved state
 
 Examples:
-  $0 front sw up     # Start with front-end and single worker
-  $0 ps              # Use previous configuration
-  $0 default up      # Reset and start base configuration
+  $0 dev-front sw up   # Start with front-end and single worker
+  $0 ps                # Use previous configuration
+  $0 default up        # Reset and start base configuration
 
 State System:
 The script maintains a state system to remember your last configuration.
-When you run the script with flags (front, sw, host), these choices are saved
+When you run the script with flags (dev-front, sw, host), these choices are saved
 in a hidden file (.osrd-compose-state). Next time you run the script without
 flags, it will automatically use this saved configuration. This lets you run
 quick commands like 'ps' or 'logs' without re-specifying your setup each time.
@@ -57,7 +57,7 @@ while [[ $# -gt 0 ]]; do
             DEFAULT_FLAG=true
             shift
             ;;
-        front|sw|host)
+        dev-front|sw|host)
             flags+=("$1")
             shift
             ;;
@@ -101,7 +101,7 @@ if has_flag "host"; then
     compose_files+=("$OVERRIDE_DIR/docker-compose.host.yml")
 fi
 
-if has_flag "front"; then
+if has_flag "dev-front"; then
     if has_flag "host"; then
         compose_files+=("$OVERRIDE_DIR/docker-compose.host-front.yml")
     else
@@ -113,7 +113,7 @@ if has_flag "sw"; then
     compose_files+=("$OVERRIDE_DIR/docker-compose.single-worker.yml")
 fi
 
-# Build docker-compose command
+# Build compose command.
 cmd="docker compose"
 for file in "${compose_files[@]}"; do
     cmd+=" -f $file"
