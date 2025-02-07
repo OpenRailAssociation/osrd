@@ -12,10 +12,10 @@ import {
   validateTotalLength,
   validateTotalMass,
 } from 'applications/stdcm/utils/consistValidation';
+import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getMaxSpeed,
@@ -289,14 +289,10 @@ const StdcmConfig = ({
         </div>
 
         <div className="osrd-config-item-container osrd-config-item-container-map stdcm-map">
-          <NewMap
-            id="stdcm-map-config"
-            hideAttribution
-            hideItinerary
-            preventPointSelection
-            pathGeometry={pathfinding?.geometry}
-            showStdcmAssets
-            simulationPathSteps={markersInfo}
+          <DefaultBaseMap
+            mapId="stdcm-map-config"
+            infraId={infra?.id}
+            pathStepMarkers={markersInfo}
           />
         </div>
       </div>

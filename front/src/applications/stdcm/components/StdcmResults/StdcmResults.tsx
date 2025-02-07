@@ -12,7 +12,8 @@ import {
   getOperationalPointsWithTimes,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
-import NewMap from 'modules/trainschedule/components/ManageTrainSchedule/NewMap';
+import DefaultBaseMap from 'common/Map/DefaultBaseMap';
+import { useInfraID } from 'common/osrdContext';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
@@ -43,6 +44,8 @@ const StcdmResults = ({
   buttonsVisible,
   showStatusBanner,
 }: StcdmResultsProps) => {
+  const infraId = useInfraID();
+
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const { stdcmName } = useDeploymentSettings();
 
@@ -173,13 +176,12 @@ const StcdmResults = ({
           </div>
         )}
         <div className="osrd-config-item-container osrd-config-item-container-map map-results">
-          <NewMap
-            id="stdcm-map-result"
-            hideAttribution
-            showStdcmAssets
+          <DefaultBaseMap
+            mapId="stdcm-map-result"
+            infraId={infraId}
+            geometry={outputs?.pathProperties?.geometry}
+            pathStepMarkers={markersInfo}
             isFeasible={!hasConflictResults}
-            pathGeometry={outputs?.pathProperties?.geometry}
-            simulationPathSteps={markersInfo}
           />
         </div>
       </div>
