@@ -9,7 +9,7 @@ import type {
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
-import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
+import { interpolateValue } from 'modules/simulationResult/components/SimulationResultExport/utils';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';

@@ -11,6 +11,7 @@ import ResizableSection from 'common/ResizableSection';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
+import SimulationResultExport from 'modules/simulationResult/components/SimulationResultExport/SimulationResultsExport';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap/SimulationResultsMap';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChart/useProjectedConflicts';
@@ -18,7 +19,6 @@ import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedS
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetails from 'modules/simulationResult/components/TrainDetails';
 import { useFormattedOperationalPoints } from 'modules/simulationResult/hooks/useFormattedOperationalPoints';
-import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';

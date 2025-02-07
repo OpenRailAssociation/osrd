@@ -17,8 +17,8 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import exportTrainCSV from './exportTrainCSV';
-import SimulationReportSheetScenario from './SimulationReportSheetScenario';
 import type { SimulationSheetData } from './types';
+import SimulationReportSheetScenario from '../SimulationReportSheetScenario/SimulationReportSheetScenario';
 
 type SimulationResultExportProps = {
   path: PathfindingResultSuccess;

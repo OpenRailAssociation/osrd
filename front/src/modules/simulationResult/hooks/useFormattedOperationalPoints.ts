@@ -9,7 +9,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 
-import { formatOperationalPoints } from '../SimulationResultExport/utils';
+import { formatOperationalPoints } from '../components/SimulationResultExport/utils';
 
 /**
  * add time, speed, position, duration to operational points
