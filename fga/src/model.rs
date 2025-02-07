@@ -164,7 +164,7 @@ impl<'a, R: Relation> AsUser for UserSet<'a, R> {
 
 /// Type-bound public access: `user:*`, `document:*`, etc.
 ///
-/// Note: doesn't derive [Object] as prohibited by OpenFGA: https://openfga.dev/docs/concepts#what-is-type-bound-public-access
+/// Note: doesn't derive [Object] as prohibited by OpenFGA: <https://openfga.dev/docs/concepts#what-is-type-bound-public-access>
 pub struct Tbpa<U: User>(std::marker::PhantomData<U>);
 
 impl<U: User> AsUser for Tbpa<U> {
