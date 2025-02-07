@@ -1,6 +1,6 @@
 import type { SimulationResponse } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
+import { interpolateValue } from 'modules/simulationResult/components/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';

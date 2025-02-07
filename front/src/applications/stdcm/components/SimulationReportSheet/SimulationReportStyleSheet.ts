@@ -162,18 +162,18 @@ const styles = {
       fontWeight: 'semibold',
     },
   }),
-  convoyAndRoute: StyleSheet.create({
-    convoyAndRoute: {
+  consistAndRoute: StyleSheet.create({
+    consistAndRoute: {
       height: 'auto',
       display: 'flex',
       flexDirection: 'row',
     },
-    convoy: {
+    consist: {
       marginLeft: '16',
       paddingRight: '32',
       borderRight: '1 solid #D3D1CF',
     },
-    convoyTitle: {
+    consistTitle: {
       marginTop: '13',
       marginBottom: '13',
       marginLeft: '4',
@@ -183,7 +183,7 @@ const styles = {
       color: '#000000',
       letterSpacing: '0.4',
     },
-    convoyInfo: {
+    consistInfo: {
       width: '368',
       height: '100%',
       marginBottom: '16',
@@ -191,20 +191,20 @@ const styles = {
       display: 'flex',
       flexDirection: 'row',
     },
-    convoyInfoBox1: {
+    consistInfoBox1: {
       width: '197',
       marginLeft: '24',
       marginTop: '17',
     },
-    convoyInfoBox2: {
+    consistInfoBox2: {
       width: '147',
       marginTop: '17',
     },
-    convoyInfoTitles: {
+    consistInfoTitles: {
       color: '#797671',
       fontSize: '14',
     },
-    convoyInfoData: {
+    consistInfoData: {
       color: '#000000',
       fontFamily: 'IBM Plex Mono',
       fontSize: '16',

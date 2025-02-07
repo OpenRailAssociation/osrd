@@ -20,10 +20,10 @@ import {
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
-import SimulationReportSheet from './SimulationReportSheet';
 import StdcmDebugResults from './StdcmDebugResults';
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
+import SimulationReportSheet from '../SimulationReportSheet';
 
 type StcdmResultsProps = {
   isCalculationFailed: boolean;
