@@ -3,6 +3,9 @@ services:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:${TAG-dev}-${GATEWAY_FLAVOR-standalone}
     volumes:
       - "./docker/gateway.dev.front.toml:/srv/gateway.toml"
+    build:
+      args:
+        SKIP_FRONT: "1"
 
   front:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-front:${TAG-dev}-dev
