@@ -1,7 +1,8 @@
 import fs from 'node:fs';
+
 import SwaggerParser from '@apidevtools/swagger-parser';
 import i18next from 'i18next';
-import type { OpenAPI } from 'openapi-types';
+import type { OpenAPI, OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 
 // relative the project's root
 const openapi_path = '../editoast/openapi.yaml';
@@ -11,9 +12,41 @@ const i18n_error_path = '../public/locales/fr/errors.json';
 /**
  * Check if the given error is well filled in the i18n.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function checkI18N(error: any): Promise<string[]> {
+async function checkI18N(
+  error:
+    | OpenAPIV3_1.SchemaObject
+    | OpenAPIV3.ReferenceObject
+    | OpenAPIV3.SchemaObject
+    | OpenAPIV3_1.ReferenceObject
+): Promise<string[]> {
   const i18nErrors: string[] = [];
+
+  // If needed, we could resolve the refs instead of throwing (and the same is true for context)
+  if ('$ref' in error) {
+    throw new Error(
+      `Invalid error schema: reference found instead of schema for "${JSON.stringify(error)}".`
+    );
+  }
+
+  if (
+    !(
+      error.properties &&
+      'enum' in error.properties?.type &&
+      Array.isArray(error.properties.type.enum) &&
+      error.properties.type.enum.length !== 0 &&
+      typeof error.properties.type.enum[0] === 'string'
+    )
+  ) {
+    throw new Error(
+      `Invalid error schema: properties.type.enum missing or invalid in "${JSON.stringify(error)}".`
+    );
+  }
+
+  if ('$ref' in error.properties.context) {
+    throw new Error(
+      `Invalid error schema: reference found instead of schema in properties.context for "${JSON.stringify(error)}".`
+    );
+  }
 
   // Error data for i18n
   const errorName = error.properties.type.enum[0];
@@ -77,12 +110,7 @@ async function run() {
       throw new Error(`Expected "EditoastError" to be a "oneOf" object`);
 
     // Check i18n for all errors
-    const errors = (
-      await Promise.all(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        editoastError.oneOf.map((error: any) => checkI18N(error))
-      )
-    ).flat();
+    const errors = (await Promise.all(editoastError.oneOf.map((error) => checkI18N(error)))).flat();
 
     if (errors.length > 0) {
       console.error(errors);

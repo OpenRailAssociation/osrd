@@ -1,7 +1,10 @@
 import { mkdtemp, readFile } from 'node:fs/promises';
 import os from 'node:os';
+import type { Transform } from 'node:stream';
 
 import { glob } from 'glob';
+// TODO : remove eslint-disable once https://github.com/i18next/i18next-parser/issues/1000 gets fixed
+// eslint-disable-next-line import/no-unresolved
 import * as I18nextParser from 'i18next-parser';
 import { jsonKeyPathList } from 'json-key-path-list';
 import vfs from 'vinyl-fs';
@@ -52,7 +55,7 @@ const IGNORE_UNUSED: RegExp[] = [
  */
 async function readJsonFile<T extends { [key: string]: unknown }>(filePath: string): Promise<T> {
   const data = await readFile(filePath, 'utf-8');
-  return JSON.parse(data);
+  return JSON.parse(data) as T;
 }
 
 /**
@@ -67,7 +70,7 @@ async function getLocalesKeys(localePath: string, locale: string): Promise<Set<s
         const data = await readJsonFile(file);
         const namespace = file.replace(pathForLocale, '').replace(/\.json$/, '');
         return jsonKeyPathList(data).map(
-          (key) => `${namespace}:${key.replace(/_(zero|one|other|many)$/, '')}`
+          (key: string) => `${namespace}:${key.replace(/_(zero|one|other|many)$/, '')}`
         );
       })
     )
@@ -75,6 +78,11 @@ async function getLocalesKeys(localePath: string, locale: string): Promise<Set<s
     .flat()
     .sort();
   return new Set(allKeys);
+}
+
+// TODO : remove I18nextParser type redefinition once https://github.com/i18next/i18next-parser/issues/1000 gets fixed
+interface I18nextParser {
+  gulp: { new (options: { locales: string[]; output: string }): Transform };
 }
 
 /**
@@ -89,8 +97,8 @@ async function scanCode(): Promise<string> {
     const stream = vfs
       .src(`${process.cwd()}/src/**/*.{ts,tsx}`)
       .pipe(
-        // eslint-disable-next-line
-        new (I18nextParser as any).gulp({
+        // eslint-disable-next-line new-cap
+        new (I18nextParser as unknown as I18nextParser).gulp({
           locales: ['dev'],
           output: '$LOCALE/$NAMESPACE.json',
         })

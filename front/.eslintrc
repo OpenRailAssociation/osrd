@@ -75,7 +75,7 @@
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "devDependencies": ["**/*.spec.ts", "**/__tests__/**", "**/tests/**"]
+        "devDependencies": ["**/*.spec.ts", "**/__tests__/**", "**/tests/**", "**/scripts/**"]
       }
     ],
     "jsx-a11y/click-events-have-key-events": "off",
