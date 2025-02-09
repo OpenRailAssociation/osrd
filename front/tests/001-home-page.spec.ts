@@ -2,10 +2,19 @@ import { expect } from '@playwright/test';
 
 import test from './logging-fixture';
 import HomePage from './pages/home-page-model';
-import { getTranslations, readJsonFile } from './utils';
+import { getTranslations } from './utils';
+import readJsonFile from './utils/file-utils';
 
-const enTranslations = readJsonFile('public/locales/en/home/home.json');
-const frTranslations = readJsonFile('public/locales/fr/home/home.json');
+type HomeTranslations = {
+  operationalStudies: string;
+  stdcm: string;
+  editor: string;
+  rollingStockEditor: string;
+  map: string;
+};
+
+const enTranslations: HomeTranslations = readJsonFile('public/locales/en/home/home.json');
+const frTranslations: HomeTranslations = readJsonFile('public/locales/fr/home/home.json');
 
 test.describe('Home page OSRD', () => {
   let homePage: HomePage;

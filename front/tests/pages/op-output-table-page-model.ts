@@ -2,12 +2,30 @@ import { type Locator, type Page, expect } from '@playwright/test';
 
 import OperationalStudiesTimetablePage from './op-timetable-page-model';
 import { LOAD_PAGE_TIMEOUT } from '../assets/timeout-const';
-import { getTranslations, readJsonFile } from '../utils';
-import { normalizeData } from '../utils/dataNormalizer';
+import { getTranslations } from '../utils';
+import { normalizeStationData } from '../utils/dataNormalizer';
+import readJsonFile from '../utils/file-utils';
 import type { StationData } from '../utils/types';
 
-const enTranslations = readJsonFile('public/locales/en/timesStops.json');
-const frTranslations = readJsonFile('public/locales/fr/timesStops.json');
+type TimeStopsTranslations = {
+  name: string;
+  ch: string;
+  trackName: string;
+  arrivalTime: string;
+  stopTime: string;
+  departureTime: string;
+  receptionOnClosedSignal: string;
+  shortSlipDistance: string;
+  theoreticalMargin: string;
+  theoreticalMarginSeconds: string;
+  realMargin: string;
+  diffMargins: string;
+  calculatedArrivalTime: string;
+  calculatedDepartureTime: string;
+};
+
+const enTranslations: TimeStopsTranslations = readJsonFile('public/locales/en/timesStops.json');
+const frTranslations: TimeStopsTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
 class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage {
   readonly columnHeaders: Locator;
@@ -144,8 +162,8 @@ class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage 
     }
 
     // // Normalize and compare data
-    const normalizedActualData = normalizeData(actualTableData);
-    const normalizedExpectedData = normalizeData(expectedTableData);
+    const normalizedActualData = normalizeStationData(actualTableData);
+    const normalizedExpectedData = normalizeStationData(expectedTableData);
     expect(normalizedActualData).toEqual(normalizedExpectedData);
   }
 

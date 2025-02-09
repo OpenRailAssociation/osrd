@@ -26,7 +26,7 @@ import type {
 
 import { globalProjectName, globalStudyName, infrastructureName } from '../assets/project-const';
 import { logger } from '../logging-fixture';
-import { readJsonFile } from '.';
+import readJsonFile from './file-utils';
 
 /**
  * Initialize a new API request context with the base URL.
@@ -41,16 +41,17 @@ export const getApiContext = async (): Promise<APIRequestContext> =>
 /**
  * Send a GET request to the specified API endpoint with optional query parameters.
  *
+ * @template T - Type of the response object.
  * @param url - The API endpoint URL.
  * @param params - Optional query parameters to include in the request.
  */
-export const getApiRequest = async (
+export const getApiRequest = async <T>(
   url: string,
   params?: { [key: string]: string | number | boolean }
-) => {
+): Promise<T> => {
   const apiContext = await getApiContext();
   const response = await apiContext.get(url, { params });
-  return response.json();
+  return response.json() as T;
 };
 
 /**
@@ -69,23 +70,24 @@ export function handleErrorResponse(response: APIResponse, errorMessage = 'API R
 /**
  * Send a POST request to the specified API endpoint with optional data and query parameters.
  *
- * @template T
+ * @template T - Type of the data payload.
+ * @template U - Type of the response object.
  * @param url - The API endpoint URL.
  * @param data - Optional. The payload to send in the request body.
  * @param params - Optional query parameters to include in the request.
  * @param errorMessage - Optional. Custom error message for failed requests.
  */
-export const postApiRequest = async <T>(
+export const postApiRequest = async <T, U>(
   url: string,
   data?: T,
   params?: { [key: string]: string | number | boolean },
   errorMessage?: string
-) => {
+): Promise<U> => {
   const apiContext = await getApiContext();
   const response = await apiContext.post(url, { data, params });
   handleErrorResponse(response, errorMessage);
 
-  return response.json();
+  return response.json() as U;
 };
 
 /**
@@ -209,7 +211,7 @@ export const getElectricalProfile = async (
   const electricalProfile = electricalProfiles.find(
     (e: LightElectricalProfileSet) => e.name === electricalProfileName
   );
-  return electricalProfile as LightElectricalProfileSet;
+  return electricalProfile!;
 };
 
 /**
@@ -292,7 +294,7 @@ export const getTowedRollingStockByName = async (
  * @returns {Promise<TowedRollingStock>} - The created towed rolling stock.
  */
 export async function setTowedRollingStock(): Promise<TowedRollingStock> {
-  const towedRollingStockData = readJsonFile(
+  const towedRollingStockData: { name: string } = readJsonFile(
     'tests/assets/stdcm/towedRollingStock/towedRollingStock.json'
   );
 

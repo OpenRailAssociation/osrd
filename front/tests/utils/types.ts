@@ -1,3 +1,5 @@
+import type { Tags } from 'common/api/osrdEditoastApi';
+
 // STDCM simulation pdf content type
 export type Simulation = {
   header: {
@@ -150,4 +152,42 @@ export type StationData = {
   margin: Margin;
   calculatedArrival: string;
   calculatedDeparture: string;
+};
+
+export type RollingStockDetails = {
+  inputs: { id: string; value: string | number; isNumeric?: boolean }[];
+  updatedInputs: { id: string; value: string | number; isNumeric?: boolean }[];
+  speedEffortData: { velocity: string; effort: string }[];
+  speedEffortDataC1: { velocity: string; effort: string }[];
+  speedEffortDataUpdated: { velocity: string; effort: string }[];
+  additionalDetails: { electricalPowerStartupTime: number; raisePantographTime: number };
+};
+
+export type ProjectData = {
+  name: string;
+  description: string;
+  objectives: string;
+  funders: string;
+  budget: string;
+  tags: Tags;
+};
+
+export type StudyData = {
+  actual_end_date: string;
+  budget: string;
+  business_code: string;
+  description: string;
+  name: string;
+  expected_end_date: string;
+  service_code: string;
+  start_date: string;
+  state: string;
+  study_type: string;
+  tags: Tags;
+};
+
+export type ScenarioData = {
+  name: string;
+  description: string;
+  tags: Tags;
 };

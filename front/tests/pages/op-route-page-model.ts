@@ -1,11 +1,18 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { getTranslations, readJsonFile } from '../utils';
+import { getTranslations } from '../utils';
+import readJsonFile from '../utils/file-utils';
 
-const enTranslations = readJsonFile(
+type ManageTrainScheduleTranslations = {
+  noOriginChosen: string;
+  noDestinationChosen: string;
+  pathfindingMissingParams: string;
+};
+
+const enTranslations: ManageTrainScheduleTranslations = readJsonFile(
   'public/locales/en/operationalStudies/manageTrainSchedule.json'
 );
-const frTranslations = readJsonFile(
+const frTranslations: ManageTrainScheduleTranslations = readJsonFile(
   'public/locales/fr/operationalStudies/manageTrainSchedule.json'
 );
 
@@ -232,6 +239,7 @@ class RoutePage {
       en: enTranslations,
       fr: frTranslations,
     });
+
     const expectedMessage = translations.pathfindingMissingParams.replace(
       ': {{missingElements}}.',
       ''

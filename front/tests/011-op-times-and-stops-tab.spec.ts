@@ -9,16 +9,29 @@ import OperationalStudiesOutputTablePage from './pages/op-output-table-page-mode
 import RoutePage from './pages/op-route-page-model';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
-import { getTranslations, readJsonFile, waitForInfraStateToBeCached } from './utils';
+import { getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-setup';
 import { cleanWhitespace, cleanWhitespaceInArray } from './utils/dataNormalizer';
+import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import scrollContainer from './utils/scrollHelper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { StationData } from './utils/types';
 
-const enTranslations = readJsonFile('public/locales/en/timesStops.json');
-const frTranslations = readJsonFile('public/locales/fr/timesStops.json');
+type TimeStopsTranslation = {
+  name: string;
+  ch: string;
+  trackName: string;
+  arrivalTime: string;
+  stopTime: string;
+  departureTime: string;
+  receptionOnClosedSignal: string;
+  shortSlipDistance: string;
+  theoreticalMargin: string;
+};
+
+const enTranslations: TimeStopsTranslation = readJsonFile('public/locales/en/timesStops.json');
+const frTranslations: TimeStopsTranslation = readJsonFile('public/locales/fr/timesStops.json');
 
 test.describe('Times and Stops Tab Verification', () => {
   test.slow();
@@ -33,7 +46,7 @@ test.describe('Times and Stops Tab Verification', () => {
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
-  let translations: typeof enTranslations | typeof frTranslations;
+  let translations: TimeStopsTranslation;
 
   // Load test data for table inputs and expected results
   const initialInputsData: CellData[] = readJsonFile(
@@ -45,10 +58,10 @@ test.describe('Times and Stops Tab Verification', () => {
   const outputExpectedCellData: StationData[] = readJsonFile(
     './tests/assets/operationStudies/timesAndStops/expectedOutputsCellsData.json'
   );
-  const inputExpectedData = readJsonFile(
+  const inputExpectedData: JSON = readJsonFile(
     './tests/assets/operationStudies/timesAndStops/expectedInputsCellsData.json'
   );
-  const updatedCellData = readJsonFile(
+  const updatedCellData: JSON = readJsonFile(
     './tests/assets/operationStudies/timesAndStops/updatedInputsCellsData.json'
   );
 
@@ -66,7 +79,7 @@ test.describe('Times and Stops Tab Verification', () => {
     marginForm?: string;
   }
 
-  type TranslationKeys = keyof typeof enTranslations;
+  type TranslationKeys = keyof TimeStopsTranslation;
 
   test.beforeAll('Fetch infrastructure and get translation', async () => {
     infra = await getInfra();

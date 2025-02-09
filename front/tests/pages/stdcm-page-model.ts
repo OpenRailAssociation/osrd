@@ -15,12 +15,29 @@ import {
 } from '../assets/stdcm-const';
 import { EXPLICIT_UI_STABILITY_TIMEOUT, STDCM_SIMULATION_TIMEOUT } from '../assets/timeout-const';
 import { logger } from '../logging-fixture';
-import { getTranslations, handleAndVerifyInput, readJsonFile } from '../utils';
+import { getTranslations, handleAndVerifyInput } from '../utils';
 import HomePage from './home-page-model';
+import readJsonFile from '../utils/file-utils';
 import type { ConsistFields } from '../utils/types';
 
-const enTranslations = readJsonFile('public/locales/en/stdcm.json');
-const frTranslations = readJsonFile('public/locales/fr/stdcm.json');
+type StdcmTranslations = {
+  stdcmErrors: {
+    noScheduledPoint: string;
+  };
+  trainPath: {
+    warningMinStopTime: string;
+  };
+  simulation: {
+    results: {
+      simulationName: {
+        withoutOutputs: string;
+      };
+    };
+  };
+};
+
+const enTranslations: StdcmTranslations = readJsonFile('public/locales/en/stdcm.json');
+const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
 interface TableRow {
   index: number;

@@ -1,5 +1,3 @@
-import fs from 'fs';
-
 import { type Locator, type Page, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -68,14 +66,6 @@ export async function extractNumberFromString(input: string): Promise<number> {
   const match = input.match(/\d+/);
   return match ? parseInt(match[0], 10) : 0;
 }
-
-/**
- * Read a JSON file from the specified path and returns its parsed content.
- *
- * @param path - The file path of the JSON file.
- * @returns {any} - The parsed JSON content.
- */
-export const readJsonFile = (path: string) => JSON.parse(fs.readFileSync(path, 'utf8'));
 
 /**
  * Generic function to handle input fields.

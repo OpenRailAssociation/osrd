@@ -51,7 +51,7 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Verify STDCM anterior linked train', async ({}, testInfo) => {
+  test('Verify STDCM anterior linked train', async ({ page: _ }, testInfo) => {
     await stdcmPage.fillAndVerifyConsistDetails(
       towedConsistDetails,
       fastRollingStockPrefilledValues.tonnage,
@@ -74,7 +74,7 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Verify STDCM posterior linked train', async ({}, testInfo) => {
+  test('Verify STDCM posterior linked train', async ({ page: _ }, testInfo) => {
     await stdcmPage.fillAndVerifyConsistDetails(
       towedConsistDetails,
       fastRollingStockPrefilledValues.tonnage,

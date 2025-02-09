@@ -2,10 +2,27 @@ import { type Locator, type Page, expect } from '@playwright/test';
 
 import CommonPage from './common-page-model';
 import { EXPLICIT_UI_STABILITY_TIMEOUT, SIMULATION_RESULT_TIMEOUT } from '../assets/timeout-const';
-import { getTranslations, readJsonFile } from '../utils';
+import { getTranslations } from '../utils';
+import readJsonFile from '../utils/file-utils';
 
-const enTranslations = readJsonFile('public/locales/en/operationalStudies/scenario.json');
-const frTranslations = readJsonFile('public/locales/fr/operationalStudies/scenario.json');
+type ScenarioTranslations = {
+  timetable: {
+    invalidTrains: string;
+    noSpeedLimitTagsShort: string;
+    showValidTrains: string;
+    showInvalidTrains: string;
+    showAllTrains: string;
+    showHonoredTrains: string;
+    showNotHonoredTrains: string;
+  };
+};
+
+const enTranslations: ScenarioTranslations = readJsonFile(
+  'public/locales/en/operationalStudies/scenario.json'
+);
+const frTranslations: ScenarioTranslations = readJsonFile(
+  'public/locales/fr/operationalStudies/scenario.json'
+);
 
 class OperationalStudiesTimetablePage extends CommonPage {
   readonly invalidTrainsMessage: Locator;

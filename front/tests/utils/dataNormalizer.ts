@@ -36,7 +36,7 @@ export function cleanText(text: string | null): string {
  * @param data - The array of station data objects to normalize.
  * @returns {StationData[]} - The normalized array of station data with cleaned fields.
  */
-export function normalizeData(data: StationData[]): StationData[] {
+export function normalizeStationData(data: StationData[]): StationData[] {
   return data.map((item) => ({
     stationName: cleanWhitespace(item.stationName),
     stationCh: cleanWhitespace(item.stationCh),

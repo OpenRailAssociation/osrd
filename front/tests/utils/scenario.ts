@@ -2,10 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
 
-import { readJsonFile } from '.';
 import { getInfra, getProject, getStudy, postApiRequest } from './api-setup';
+import readJsonFile from './file-utils';
+import type { ScenarioData } from './types';
 
-const scenarioData = readJsonFile('tests/assets/operationStudies/scenario.json');
+const scenarioData: ScenarioData = readJsonFile('tests/assets/operationStudies/scenario.json');
 
 // Define the SetupResult interface to structure the returned setup data.
 interface SetupResult {
@@ -39,7 +40,7 @@ export default async function createScenario(
   const study: Study = studyId ? ({ id: studyId } as Study) : await getStudy(project.id);
 
   // Create a new timetable result
-  const timetableResult = await postApiRequest(`/api/timetable`);
+  const timetableResult: TimetableResult = await postApiRequest(`/api/timetable`);
 
   // Create a new scenario with a unique name if not provided
   const scenarioNameFinal = scenarioName || `${scenarioData.name} ${uuidv4()}`;
@@ -50,7 +51,6 @@ export default async function createScenario(
     {
       ...scenarioData,
       name: scenarioNameFinal,
-      study_id: study.id,
       infra_id: smallInfra.id,
       timetable_id: timetableResult.timetable_id,
       electrical_profile_set_id: electricalProfileId,

@@ -4,13 +4,10 @@ import { dualModeRollingStockName, electricRollingStockName } from './assets/pro
 import test from './logging-fixture';
 import RollingstockEditorPage from './pages/rollingstock-editor-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
-import {
-  generateUniqueName,
-  verifyAndCheckInputById,
-  fillAndCheckInputById,
-  readJsonFile,
-} from './utils/index';
+import readJsonFile from './utils/file-utils';
+import { generateUniqueName, verifyAndCheckInputById, fillAndCheckInputById } from './utils/index';
 import { deleteRollingStocks } from './utils/teardown-utils';
+import type { RollingStockDetails } from './utils/types';
 
 test.describe('Rollingstock editor page tests', () => {
   let rollingStockEditorPage: RollingstockEditorPage;
@@ -19,7 +16,9 @@ test.describe('Rollingstock editor page tests', () => {
   let uniqueUpdatedRollingStockName: string;
   let uniqueDeletedRollingStockName: string;
 
-  const rollingstockDetails = readJsonFile('./tests/assets/rollingStock/rollingstockDetails.json');
+  const rollingstockDetails: RollingStockDetails = readJsonFile(
+    './tests/assets/rollingStock/rollingstockDetails.json'
+  );
 
   test.beforeEach(
     'Generate unique names and ensure all existing RS are deleted',

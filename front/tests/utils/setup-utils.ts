@@ -9,8 +9,8 @@ import type {
   StudyCreateForm,
 } from 'common/api/osrdEditoastApi';
 
-import { readJsonFile } from '.';
 import { getApiRequest, getInfra, postApiRequest, setStdcmEnvironment } from './api-setup';
+import readJsonFile from './file-utils';
 import createScenario from './scenario';
 import { sendTrainSchedules } from './trainSchedule';
 import {
@@ -28,9 +28,10 @@ import {
 } from '../assets/project-const';
 import { logger } from '../logging-fixture';
 import { createDateInSpecialTimeZone } from './date';
+import type { ProjectData, StudyData } from './types';
 
-const projectData = readJsonFile('tests/assets/operationStudies/project.json');
-const studyData = readJsonFile('tests/assets/operationStudies/study.json');
+const projectData: ProjectData = readJsonFile('tests/assets/operationStudies/project.json');
+const studyData: StudyData = readJsonFile('tests/assets/operationStudies/study.json');
 
 /**
  * Helper function to create infrastructure using RailJson.
@@ -145,7 +146,9 @@ export async function createStudy(projectId: number, studyName = globalStudyName
  * project, study, and scenario.
  */
 export async function createDataForTests(): Promise<void> {
-  const trainSchedulesJson = readJsonFile('./tests/assets/trainSchedule/train_schedules.json');
+  const trainSchedulesJson: JSON = readJsonFile(
+    './tests/assets/trainSchedule/train_schedules.json'
+  );
   try {
     // Step 1: Create infrastructure
     let smallInfra = await getInfra();

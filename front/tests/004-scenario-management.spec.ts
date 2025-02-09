@@ -5,12 +5,14 @@ import type { ElectricalProfileSet, Project, Scenario, Study } from 'common/api/
 import { infrastructureName } from './assets/project-const';
 import test from './logging-fixture';
 import ScenarioPage from './pages/scenario-page-model';
-import { generateUniqueName, readJsonFile } from './utils';
+import { generateUniqueName } from './utils';
 import { deleteApiRequest, getProject, getStudy, setElectricalProfile } from './utils/api-setup';
+import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
+import type { ScenarioData } from './utils/types';
 
-const scenarioData = readJsonFile('tests/assets/operationStudies/scenario.json');
+const scenarioData: ScenarioData = readJsonFile('tests/assets/operationStudies/scenario.json');
 
 test.describe('Validate the Scenario creation workflow', () => {
   let scenarioPage: ScenarioPage;
