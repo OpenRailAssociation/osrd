@@ -2,10 +2,7 @@
   "env": {
     "browser": true
   },
-  "ignorePatterns": [
-    "src/common/api/generatedEditoastApi.ts",
-    "src/common/api/osrdGatewayApi.ts"
-  ],
+  "ignorePatterns": ["src/common/api/generatedEditoastApi.ts", "src/common/api/osrdGatewayApi.ts"],
   "extends": [
     "plugin:vitest/recommended",
     "airbnb",
@@ -145,7 +142,10 @@
     {
       "files": ["**/*.ts", "**/*.tsx"],
       "rules": {
-        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
+        "@typescript-eslint/no-unused-vars": [
+          "warn",
+          { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+        ]
       }
     },
     {
