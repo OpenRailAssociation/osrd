@@ -225,7 +225,6 @@ All common code (and shared components) supposed to be in `common/`.
   - 'no-named-as-default': 'off',
   - 'react/jsx-props-no-spreading': 0,
   - 'react/static-property-placement': 0,
-  - 'import/no-extraneous-dependencies': 0,
 - eslint rules incompatible with prettier usage are disabled, yet these styling errors will be
   displayed as prettier issues.
 - Do not set your IDE to auto format with current prettier rules for now, as some old files will be
