@@ -28,6 +28,8 @@ import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
+import fr.sncf.osrd.reporting.exceptions.ErrorType.ZeroLengthPath
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
@@ -67,6 +69,7 @@ fun runStandaloneSimulation(
     pathItemPositions: List<Offset<Path>>,
     driverBehaviour: DriverBehaviour = DriverBehaviour()
 ): SimulationSuccess {
+    if (chunkPath.length == 0.meters) throw OSRDError(ZeroLengthPath)
     // MRSP & SpeedLimits
     val safetySpeedRanges = makeSafetySpeedRanges(infra, chunkPath, routes, schedule)
     var mrsp =

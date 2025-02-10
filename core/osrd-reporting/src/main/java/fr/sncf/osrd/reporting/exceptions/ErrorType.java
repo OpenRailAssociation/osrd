@@ -171,6 +171,7 @@ public enum ErrorType {
             "missing_route_from_chunk_path",
             "couldn't find a route matching the given chunk list",
             ErrorCause.INTERNAL),
+    ZeroLengthPath("zero_length_path", "can't simulate a zero length path", ErrorCause.USER),
     ;
 
     public final String type;
