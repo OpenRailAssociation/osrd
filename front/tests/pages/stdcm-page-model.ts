@@ -179,6 +179,8 @@ class STDCMPage extends HomePage {
 
   private readonly helpButton: Locator;
 
+  private readonly simulationTableRows: Locator;
+
   constructor(page: Page) {
     super(page);
     this.notificationHeader = page.locator('#notification');
@@ -269,6 +271,8 @@ class STDCMPage extends HomePage {
     this.destinationResultMarker = this.mapResultContainer.locator('img[alt="destination"]');
     this.viaResultMarker = this.mapResultContainer.locator('img[alt="via"]');
     this.simulationResultTable = page.locator('.simulation-results table.table-results');
+
+    this.simulationTableRows = page.locator('.table-results tbody tr');
   }
 
   // Dynamic selectors for via cards
@@ -670,7 +674,8 @@ class STDCMPage extends HomePage {
     // Load expected data from JSON file
     const jsonData: TableRow[] = readJsonFile(tableDataPath);
     // Extract rows from the HTML table and map each row's data to match JSON structure
-    const tableRows = await this.page.$$eval('.table-results tbody tr', (rows) =>
+    await this.simulationTableRows.first().waitFor();
+    const tableRows = await this.simulationTableRows.evaluateAll((rows) =>
       rows.map((row) => {
         const cells = row.querySelectorAll('td');
         return {
