@@ -170,7 +170,7 @@ postgis_diesel.workspace = true
 rand.workspace = true
 rangemap.workspace = true
 # Make sure to use the same version as deadpool-redis
-redis = { version = "0.27", default-features = false, features = [
+redis = { version = "0.28", default-features = false, features = [
   "tokio-comp",
   "tokio-native-tls-comp",
 ] }
