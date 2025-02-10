@@ -2,7 +2,13 @@
   "env": {
     "browser": true
   },
-  "ignorePatterns": ["src/common/api/generatedEditoastApi.ts", "src/common/api/osrdGatewayApi.ts"],
+  "ignorePatterns": [
+    "src/common/api/generatedEditoastApi.ts",
+    "src/common/api/osrdGatewayApi.ts",
+    "public",
+    "build",
+    "playwright-report"
+  ],
   "extends": [
     "plugin:vitest/recommended",
     "airbnb",
@@ -75,7 +81,14 @@
     "import/no-extraneous-dependencies": [
       "error",
       {
-        "devDependencies": ["**/*.spec.ts", "**/__tests__/**", "**/tests/**", "**/scripts/**"]
+        "devDependencies": [
+          "**/*.spec.ts",
+          "**/__tests__/**",
+          "tests/**",
+          "scripts/**",
+          "playwright.config.ts",
+          "vite.config.ts"
+        ]
       }
     ],
     "jsx-a11y/click-events-have-key-events": "off",
