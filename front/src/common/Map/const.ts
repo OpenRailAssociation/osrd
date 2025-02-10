@@ -1,7 +1,5 @@
 import config from 'config/config';
 
-export * from 'common/Map/Consts/SignalsNames';
-
 // Map constants
 export const MAP_URL = `${config.proxy_editoast}/layers`;
 export const SPRITES_URL = `${config.proxy_editoast}/sprites`;

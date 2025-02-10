@@ -2,18 +2,13 @@ import bearing from '@turf/bearing';
 import { compare } from 'fast-json-patch';
 import type { Position } from 'geojson';
 import type { JSONSchema7 } from 'json-schema';
-import { isArray, isNil, isObject, uniq } from 'lodash';
+import { isArray, isNil, isObject } from 'lodash';
 import { v4 as uuid } from 'uuid';
 
 import type { EditoastType } from 'applications/editor/consts';
 import type { CreateOperation, DeleteOperation, UpdateOperation } from 'applications/editor/types';
 import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { PostInfraByInfraIdObjectsAndObjectTypeApiResponse } from 'common/api/osrdEditoastApi';
-import {
-  ALL_SIGNAL_LAYERS_SET,
-  SIGNALS_TO_SYMBOLS,
-  type SignalType,
-} from 'common/Map/Consts/SignalsNames';
 
 // Quick helper to get a "promised" setTimeout:
 export function setTimeoutPromise(ms: number) {
@@ -56,29 +51,6 @@ export function getLayerForObjectType(schema: EditorSchema, objType: string): st
  */
 export function cleanSymbolType(type: string): string {
   return (type || '').replace(/(^[" ]|[" ]$)/g, '');
-}
-
-export function getSignalsList(editorData: EditorEntity[]): SignalType[] {
-  const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
-  const signalTypes = Object.keys(
-    editorData.reduce(
-      (iter, feature) =>
-        feature.objType === 'Signal' && (feature.properties || {})[SIGNAL_TYPE_KEY]
-          ? { ...iter, [(feature.properties || {})[SIGNAL_TYPE_KEY]]: true }
-          : iter,
-      {}
-    )
-  ).map(cleanSymbolType);
-
-  return signalTypes.filter((signal: string): signal is SignalType => {
-    if (ALL_SIGNAL_LAYERS_SET.has(signal)) return true;
-    console.warn(`The signal type "${signal}" is not handled yet.`);
-    return false;
-  });
-}
-export function getSymbolsList(editorData: EditorEntity[]): SignalType[] {
-  const signalTypes = getSignalsList(editorData);
-  return uniq(signalTypes.flatMap((s) => SIGNALS_TO_SYMBOLS[s]));
 }
 
 export function getAngle(p1: Position | undefined, p2: Position | undefined): number {

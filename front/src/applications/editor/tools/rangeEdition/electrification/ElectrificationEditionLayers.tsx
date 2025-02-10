@@ -69,8 +69,6 @@ export const ElectrificationEditionLayers = () => {
     const context = {
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       colors: colors[mapStyle],
-      signalsList: [],
-      symbolsList: [],
       isEmphasized: true,
       showIGNBDORTHO,
       layersSettings,

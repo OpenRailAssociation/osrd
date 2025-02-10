@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 
 import type { Layer as LayerType } from 'applications/editor/consts';
 import colors from 'common/Map/Consts/colors';
-import { ALL_SIGNAL_LAYERS } from 'common/Map/Consts/SignalsNames';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import {
   EditorSource,
@@ -66,8 +65,6 @@ const WarpedMap = ({
   const layerContext: LayerContext = useMemo(
     () => ({
       colors: colors[mapStyle],
-      signalsList: ALL_SIGNAL_LAYERS,
-      symbolsList: ALL_SIGNAL_LAYERS,
       sourceLayer: 'geo',
       prefix: '',
       isEmphasized: false,
