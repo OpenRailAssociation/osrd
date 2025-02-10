@@ -85,8 +85,7 @@ async fn sprites(
     if !sprite_configs.contains_key(&signaling_system) {
         return Err(SpriteErrors::UnknownSignalingSystem { signaling_system }.into());
     }
-    let path =
-        get_dynamic_assets_path().join(format!("signal_sprites/{signaling_system}/{file_name}"));
+    let path = get_dynamic_assets_path().join(format!("sprites/{signaling_system}/{file_name}"));
 
     if !path.is_file() {
         return Err(SpriteErrors::FileNotFound { file: file_name }.into());
@@ -124,8 +123,7 @@ mod tests {
         assert_eq!("image/svg+xml", response.content_type());
         let response = response.bytes();
         let expected =
-            std::fs::read(get_dynamic_assets_path().join("signal_sprites/TVM300/REP TGV.svg"))
-                .unwrap();
+            std::fs::read(get_dynamic_assets_path().join("sprites/TVM300/REP TGV.svg")).unwrap();
         assert_eq!(response, expected);
     }
 

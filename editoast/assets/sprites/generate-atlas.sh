@@ -20,8 +20,4 @@ for signaling_system in *; do
   done
 
   echo "${signaling_system} atlas generated"
-
-  # Cleaning up
-  echo "Cleaning ${tmp_dir}..."
-  rm -rf "${tmp_dir}"
 done
