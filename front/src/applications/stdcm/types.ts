@@ -74,9 +74,18 @@ export type StdcmResultsOperationalPoint = {
 };
 
 export type ConsistErrors = {
-  totalMass?: string;
-  totalLength?: string;
-  maxSpeed?: string;
+  totalMass: {
+    message?: string;
+    display: boolean;
+  };
+  totalLength: {
+    message?: string;
+    display: boolean;
+  };
+  maxSpeed: {
+    message?: string;
+    display: boolean;
+  };
 };
 
 export type StdcmResults = {

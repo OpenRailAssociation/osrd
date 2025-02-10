@@ -5,25 +5,15 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
-import {
-  validateMaxSpeed,
-  validateTotalLength,
-  validateTotalMass,
-} from 'applications/stdcm/utils/consistValidation';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
-  getMaxSpeed,
   getStdcmDestination,
   getStdcmOrigin,
   getStdcmPathSteps,
-  getTotalLength,
-  getTotalMass,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -82,10 +72,6 @@ const StdcmConfig = ({
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
 
-  const totalMass = useSelector(getTotalMass);
-  const totalLength = useSelector(getTotalLength);
-  const maxSpeed = useSelector(getMaxSpeed);
-
   const [showMessage, setShowMessage] = useState(false);
 
   const { pathfinding, isPathFindingLoading } = useStaticPathfinding(infra);
@@ -94,29 +80,6 @@ const StdcmConfig = ({
   const pathfindingBannerRef = useRef<HTMLDivElement>(null);
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
-
-  const { rollingStock } = useStoreDataForRollingStockSelector();
-  const towedRollingStock = useStdcmTowedRollingStock();
-
-  const consistErrors = useMemo(() => {
-    const totalMassError = validateTotalMass({
-      tractionEngineMass: rollingStock?.mass,
-      towedMass: towedRollingStock?.mass,
-      totalMass,
-    });
-
-    const totalLengthError = validateTotalLength({
-      tractionEngineLength: rollingStock?.length,
-      towedLength: towedRollingStock?.length,
-      totalLength,
-    });
-
-    return {
-      totalMass: totalMassError,
-      totalLength: totalLengthError,
-      maxSpeed: validateMaxSpeed(maxSpeed, rollingStock?.max_speed),
-    };
-  }, [rollingStock, towedRollingStock, totalMass, totalLength, maxSpeed]);
 
   const disabled = isPending || retainedSimulationIndex !== undefined;
 
@@ -218,11 +181,7 @@ const StdcmConfig = ({
           />
           <div className="stdcm-simulation-inputs">
             <div className="stdcm-consist-container">
-              <StdcmConsist
-                consistErrors={consistErrors}
-                disabled={disabled}
-                isDebugMode={isDebugMode}
-              />
+              <StdcmConsist disabled={disabled} isDebugMode={isDebugMode} />
             </div>
             <div className="stdcm__separator" />
             <div ref={formRef} className="stdcm-simulation-itinerary">

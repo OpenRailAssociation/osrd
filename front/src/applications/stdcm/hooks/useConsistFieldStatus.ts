@@ -28,11 +28,11 @@ const useConsistFieldStatus = (
 
   switch (type) {
     case 'totalMass': {
-      if (consistErrors?.totalMass) {
+      if (consistErrors.totalMass.message && consistErrors.totalMass.display) {
         return {
           status: 'error',
           tooltip: 'left',
-          message: t(consistErrors.totalMass, {
+          message: t(consistErrors.totalMass.message, {
             low: Math.ceil(kgToT((rollingStock?.mass ?? 0) + (towedRollingStock?.mass ?? 0))),
             high: CONSIST_TOTAL_MASS_MAX,
           }),
@@ -45,11 +45,11 @@ const useConsistFieldStatus = (
     }
 
     case 'totalLength': {
-      if (consistErrors?.totalLength) {
+      if (consistErrors.totalLength.message && consistErrors.totalLength.display) {
         return {
           status: 'error',
           tooltip: 'left',
-          message: t(consistErrors.totalLength, {
+          message: t(consistErrors.totalLength.message, {
             low: Math.ceil((rollingStock?.length ?? 0) + (towedRollingStock?.length ?? 0)),
             high: CONSIST_TOTAL_LENGTH_MAX,
           }),
@@ -62,11 +62,11 @@ const useConsistFieldStatus = (
     }
 
     case 'maxSpeed': {
-      if (consistErrors?.maxSpeed) {
+      if (consistErrors.maxSpeed.message && consistErrors.maxSpeed.display) {
         return {
           status: 'error',
           tooltip: 'left',
-          message: t(consistErrors.maxSpeed, {
+          message: t(consistErrors.maxSpeed.message, {
             low: CONSIST_MAX_SPEED_MIN,
             high: Math.floor(
               msToKmh(Math.min(rollingStock?.max_speed ?? kmhToMs(CONSIST_MAX_SPEED_MIN)))
