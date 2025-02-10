@@ -250,7 +250,7 @@ async fn batch_retrieve_infras(
 
 #[cfg(test)]
 mod tests {
-    use rand::{distributions::Alphanumeric, thread_rng, Rng as _};
+    use rand::{distr::Alphanumeric, rng, Rng as _};
 
     use crate::client::generate_temp_file;
 
@@ -290,7 +290,7 @@ mod tests {
             "{}_{}",
             "infra",
             (0..10)
-                .map(|_| thread_rng().sample(Alphanumeric) as char)
+                .map(|_| rng().sample(Alphanumeric) as char)
                 .collect::<String>(),
         );
         let args: ImportRailjsonArgs = ImportRailjsonArgs {

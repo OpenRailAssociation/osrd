@@ -417,8 +417,8 @@ async fn retrieve_macro_node_and_check_scenario(
 pub mod test {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rand::distributions::Alphanumeric;
-    use rand::{thread_rng, Rng};
+    use rand::distr::Alphanumeric;
+    use rand::{rng, Rng};
     use rstest::rstest;
 
     use super::*;
@@ -593,7 +593,7 @@ pub mod test {
     }
 
     fn random_string(n: usize) -> String {
-        thread_rng()
+        rng()
             .sample_iter(&Alphanumeric)
             .take(n)
             .map(char::from)
@@ -611,7 +611,7 @@ pub mod test {
         conn: &mut DbConnection,
         number: usize,
     ) -> MacroNodeFixtureSet {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let fixtures = create_scenario_fixtures_set(conn, "test_scenario_name").await;
 
         let mut nodes: Vec<MacroNode> = Vec::new();
@@ -619,10 +619,10 @@ pub mod test {
             // Create node
             let node = MacroNode::changeset()
                 .scenario_id(fixtures.scenario.id)
-                .position_x(rng.gen_range(0..100))
-                .position_y(rng.gen_range(0..100))
+                .position_x(rng.random_range(0..100))
+                .position_y(rng.random_range(0..100))
                 .full_name(Some(random_string(10)))
-                .connection_time(rng.gen::<i64>())
+                .connection_time(rng.random::<i64>())
                 .labels(Tags::new(vec![random_string(5), random_string(5)]))
                 .trigram(Some(random_string(3)))
                 .path_item_key(random_string(10))

@@ -2,8 +2,8 @@ use std::fmt::Display;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
-use rand::distributions::Alphanumeric;
-use rand::thread_rng;
+use rand::distr::Alphanumeric;
+use rand::rng;
 use rand::Rng;
 use serde::Deserialize;
 use serde::Deserializer;
@@ -83,7 +83,7 @@ impl Default for Identifier {
     fn default() -> Self {
         Identifier(
             (0..10)
-                .map(|_| thread_rng().sample(Alphanumeric) as char)
+                .map(|_| rng().sample(Alphanumeric) as char)
                 .collect::<String>(),
         )
     }
