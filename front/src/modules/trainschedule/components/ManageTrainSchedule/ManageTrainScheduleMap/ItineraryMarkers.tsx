@@ -116,7 +116,7 @@ const ItineraryMarkers = ({
 
   const markersInformation = useMemo(
     () => extractMarkerInformation(simulationPathSteps, showStdcmAssets, pathStepsAndSuggestedOPs),
-    [simulationPathSteps, showStdcmAssets]
+    [simulationPathSteps, showStdcmAssets, pathStepsAndSuggestedOPs]
   );
 
   if (!markersInformation) return null;
@@ -206,7 +206,7 @@ const ItineraryMarkers = ({
               : markerInfo.index + 1}
           </span>
         )}
-        {!showStdcmAssets && (
+        {!showStdcmAssets && markerInfo.pathStep.metadata && (
           <div className={`map-pathfinding-marker ${markerInfo.type}-name`}>
             {getMarkerDisplayInformation(markerInfo)}
           </div>
