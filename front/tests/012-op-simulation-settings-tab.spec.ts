@@ -311,7 +311,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     // Add the train schedule and verify output results
     await operationalStudiesPage.addTrainSchedule();
     await operationalStudiesPage.returnSimulationResult();
-    await opTimetablePage.getTrainArrivalTime('11:54');
+    await opTimetablePage.getTrainArrivalTime('11:55');
     await opTimetablePage.clickOnScenarioCollapseButton();
     await opOutputTablePage.verifyTimesStopsDataSheetVisibility();
     await performOnSpecificOSAndBrowser(
@@ -334,7 +334,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await operationalStudiesPage.clickOnSimulationSettingsTab();
     await opSimulationSettingsPage.activateMarecoMargin();
     await opTimetablePage.clickOnEditTrainSchedule();
-    await opTimetablePage.getTrainArrivalTime('11:54');
+    await opTimetablePage.getTrainArrivalTime('11:55');
     await opTimetablePage.clickOnScenarioCollapseButton();
     await opOutputTablePage.verifyTimesStopsDataSheetVisibility();
     await performOnSpecificOSAndBrowser(

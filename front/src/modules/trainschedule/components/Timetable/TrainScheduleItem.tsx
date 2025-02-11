@@ -44,7 +44,10 @@ type TrainScheduleItemProps = {
 };
 
 const formatFullDate = (d: Date) => dayjs(d).format('D/MM/YYYY HH:mm:ss');
-const formatDateHours = (d: Date) => dayjs(d).format('HH:mm');
+const formatDateHours = (d: Date) =>
+  dayjs(d)
+    .add(d.getSeconds() >= 30 ? 1 : 0, 'minute')
+    .format('HH:mm');
 
 const TrainScheduleItem = ({
   isInSelection,
