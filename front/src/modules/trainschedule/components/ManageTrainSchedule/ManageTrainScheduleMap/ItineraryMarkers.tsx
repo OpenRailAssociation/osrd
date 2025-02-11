@@ -65,6 +65,18 @@ const formatPointWithNoName = (
   </>
 );
 
+const MARKER_IMAGES = {
+  [MARKER_TYPE.ORIGIN]: originSVG,
+  [MARKER_TYPE.DESTINATION]: destinationSVG,
+  [MARKER_TYPE.VIA]: viaSVG,
+};
+
+const STDCM_MARKER_IMAGES = {
+  [MARKER_TYPE.ORIGIN]: stdcmOrigin,
+  [MARKER_TYPE.DESTINATION]: stdcmDestination,
+  [MARKER_TYPE.VIA]: stdcmVia,
+};
+
 const extractMarkerInformation = (
   pathSteps: MarkerInformation[],
   showStdcmAssets: boolean,
@@ -78,33 +90,18 @@ const extractMarkerInformation = (
         ? suggestedOP.find((op) => matchPathStepAndOp(pathStep, op))
         : undefined;
 
-      if (pathStep.pointType === MARKER_TYPE.ORIGIN) {
-        return {
-          coordinates: pathStep.coordinates,
-          type: MARKER_TYPE.ORIGIN,
-          imageSource: showStdcmAssets ? stdcmOrigin : originSVG,
-          op: matchingOp,
-          pathStep,
-        };
-      }
-
-      if (pathStep.pointType === MARKER_TYPE.DESTINATION) {
-        return {
-          coordinates: pathStep.coordinates,
-          type: MARKER_TYPE.DESTINATION,
-          imageSource: showStdcmAssets ? stdcmDestination : destinationSVG,
-          op: matchingOp,
-          pathStep,
-        };
-      }
-
+      const images = showStdcmAssets ? STDCM_MARKER_IMAGES : MARKER_IMAGES;
       return {
         coordinates: pathStep.coordinates,
-        type: MARKER_TYPE.VIA,
-        imageSource: showStdcmAssets ? stdcmVia : viaSVG,
-        index,
+        imageSource: images[pathStep.pointType],
         op: matchingOp,
         pathStep,
+        ...(pathStep.pointType === MARKER_TYPE.VIA
+          ? {
+              type: MARKER_TYPE.VIA,
+              index,
+            }
+          : { type: pathStep.pointType }),
       };
     })
     .filter((marker): marker is MarkerProperties => marker !== null);
