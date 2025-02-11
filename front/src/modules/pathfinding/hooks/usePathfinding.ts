@@ -15,11 +15,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
-import {
-  formatSuggestedOperationalPoints,
-  getPathfindingQuery,
-  matchPathStepAndOp,
-} from 'modules/pathfinding/utils';
+import { formatSuggestedOperationalPoints, getPathfindingQuery } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure, setWarning } from 'reducers/main';
 import { replaceItinerary, updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
@@ -171,8 +167,8 @@ const usePathfinding = ({
     // We update existing pathsteps with coordinates, positionOnPath and kp corresponding to the new pathfinding result
     const updatedPathSteps: (PathStep | null)[] = pathStepsInput.map((step, i) => {
       if (!step) return step;
-      const correspondingOp = suggestedOperationalPoints.find((suggestedOp) =>
-        matchPathStepAndOp(step, suggestedOp)
+      const correspondingOp = suggestedOperationalPoints.find(
+        (suggestedOp) => step.id === suggestedOp.pathStepId
       );
 
       const theoreticalMargin = i === 0 ? step.theoreticalMargin || '0%' : step.theoreticalMargin;
