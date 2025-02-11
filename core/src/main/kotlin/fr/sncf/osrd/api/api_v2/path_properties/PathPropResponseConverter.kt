@@ -136,11 +136,13 @@ private fun makeElectrificationMap(
     for (entry in distanceRangeMap) {
         when (entry.value) {
             // Is electrified
-            is String -> {
+            is Set<*> -> {
+                val values = (entry.value as Set<*>)
                 res.put(
                     entry.lower,
                     entry.upper,
-                    if (entry.value == "") NonElectrified() else Electrified(entry.value as String)
+                    if (values.isEmpty()) NonElectrified()
+                    else Electrified(values.first() as String)
                 )
             }
             // Is neutral

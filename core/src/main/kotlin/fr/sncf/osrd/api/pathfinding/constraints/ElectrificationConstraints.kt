@@ -37,7 +37,7 @@ data class ElectrificationConstraints(
             val neutralSections = rangeSetFromMap(path.getNeutralSections())
             for ((lower, upper, value) in voltages) {
                 if (lower == upper) continue
-                if (!compatibleElectrification.contains(value)) {
+                if (compatibleElectrification.intersect(value).isEmpty()) {
                     val voltageInterval = Range.open(lower, upper)
                     val blockingRanges =
                         neutralSections.complement().subRangeSet(voltageInterval).asRanges()

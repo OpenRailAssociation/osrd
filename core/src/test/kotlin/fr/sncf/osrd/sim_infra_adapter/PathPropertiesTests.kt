@@ -383,8 +383,8 @@ class PathPropertiesTests {
         val electrificationForward = path.getElectrification()
         assertEquals(
             listOf(
-                RangeMapEntry(0.meters, 2_500.meters, "1500V"),
-                RangeMapEntry(2_500.meters, 3_000.meters, "25000V"),
+                RangeMapEntry(0.meters, 2_500.meters, setOf("1500V")),
+                RangeMapEntry(2_500.meters, 3_000.meters, setOf("25000V")),
             ),
             electrificationForward.asList(),
         )
@@ -400,8 +400,8 @@ class PathPropertiesTests {
         val electrificationBackward = pathBackward.getElectrification()
         assertEquals(
             listOf(
-                RangeMapEntry(0.meters, 500.meters, "25000V"),
-                RangeMapEntry(500.meters, 2_500.meters, "1500V"),
+                RangeMapEntry(0.meters, 500.meters, setOf("25000V")),
+                RangeMapEntry(500.meters, 2_500.meters, setOf("1500V")),
             ),
             electrificationBackward.asList(),
         )

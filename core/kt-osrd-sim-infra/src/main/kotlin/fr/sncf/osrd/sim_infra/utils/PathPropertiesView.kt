@@ -49,7 +49,7 @@ data class PathPropertiesView(
         return sliceRangeMap(base.getLoadingGauge())
     }
 
-    override fun getElectrification(): DistanceRangeMap<String> {
+    override fun getElectrification(): DistanceRangeMap<Set<String>> {
         return sliceRangeMap(base.getElectrification())
     }
 

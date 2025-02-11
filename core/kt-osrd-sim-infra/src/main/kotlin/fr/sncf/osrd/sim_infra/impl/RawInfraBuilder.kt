@@ -495,10 +495,9 @@ class RawInfraBuilder {
                 // are not initialized yet
                 MutableStaticIdxArrayList(),
                 loadingGaugeConstraints,
-                // Electrifications will be filled later on
+                // Electrification will be filled later on
                 distanceRangeMapOf(
-                    *listOf(DistanceRangeMap.RangeMapEntry(0.meters, length.distance, ""))
-                        .toTypedArray()
+                    DistanceRangeMap.RangeMapEntry(0.meters, length.distance, setOf())
                 ),
                 // NeutralSections will be filled later on
                 DirectionalMap(distanceRangeMapOf(), distanceRangeMapOf()),

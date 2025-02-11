@@ -406,28 +406,20 @@ private fun parseRjsTrackSection(
 fun parseRjsElectrification(
     builder: RawInfraBuilder,
     electrification: RJSElectrification,
-    electrificationConflictAggregator: LogAggregator
 ) {
+    if (electrification.voltage == "") return
     for (electrificationRange in electrification.trackRanges) {
         val applyElectrificationForChunkBetween =
             { chunk: TrackChunkDescriptor, chunkLower: Distance, chunkUpper: Distance ->
-                val previousElectrifications =
-                    chunk.electrificationVoltage.subMap(chunkLower, chunkUpper)
-                for (previousElectrification in previousElectrifications) {
-                    if (
-                        previousElectrification.value != electrification.voltage &&
-                            previousElectrification.value != ""
-                    ) {
-                        electrificationConflictAggregator.registerError(
-                            "Electrification conflict on track-range ${electrificationRange.trackSectionID}" +
-                                "[${previousElectrification.lower + chunk.offset.distance}, " +
-                                "${previousElectrification.upper + chunk.offset.distance}]: " +
-                                "${previousElectrification.value} != ${electrification.voltage}"
-                        )
-                    }
-                }
-
-                chunk.electrificationVoltage.put(chunkLower, chunkUpper, electrification.voltage)
+                val newMap =
+                    distanceRangeMapOf(
+                        DistanceRangeMap.RangeMapEntry(
+                            chunkLower,
+                            chunkUpper,
+                            electrification.voltage
+                        ),
+                    )
+                chunk.electrificationVoltage.updateMapIntersection(newMap) { a, b -> a + b }
             }
         builder.applyFunctionToTrackSectionChunksBetween(
             electrificationRange.trackSectionID,
@@ -760,11 +752,9 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
     }
 
     // Parse electrifications
-    val electrificationConflictAggregator = LogAggregator({ logger.warn(it) })
     for (electrification in rjsInfra.electrifications) {
-        parseRjsElectrification(builder, electrification, electrificationConflictAggregator)
+        parseRjsElectrification(builder, electrification)
     }
-    electrificationConflictAggregator.logAggregatedSummary()
 
     for (neutralSection in rjsInfra.neutralSections) {
         parseNeutralRanges(builder, false, neutralSection)

@@ -415,8 +415,11 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getTrackChunkElectrificationVoltage(
         trackChunk: TrackChunkId
-    ): DistanceRangeMap<String> {
-        return makeRangeMap(blockPool[trackChunk.index].length, blockPool[trackChunk.index].voltage)
+    ): DistanceRangeMap<Set<String>> {
+        return makeRangeMap(
+            blockPool[trackChunk.index].length,
+            setOf(blockPool[trackChunk.index].voltage)
+        )
     }
 
     override fun getTrackChunkNeutralSections(

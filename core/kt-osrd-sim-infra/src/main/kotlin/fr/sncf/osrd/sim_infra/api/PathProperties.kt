@@ -50,7 +50,7 @@ interface PathProperties {
 
     fun getLoadingGauge(): DistanceRangeMap<LoadingGaugeConstraint>
 
-    fun getElectrification(): DistanceRangeMap<String>
+    fun getElectrification(): DistanceRangeMap<Set<String>>
 
     fun getNeutralSections(): DistanceRangeMap<NeutralSection>
 

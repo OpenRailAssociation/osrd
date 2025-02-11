@@ -101,7 +101,7 @@ class TrackChunkDescriptor(
     val routes: DirectionalMap<StaticIdxList<Route>>,
     var operationalPointParts: StaticIdxList<OperationalPointPart>,
     val loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
-    val electrificationVoltage: DistanceRangeMap<String>,
+    val electrificationVoltage: DistanceRangeMap<Set<String>>,
     val neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
     val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
 )
@@ -516,7 +516,7 @@ class RawInfraImpl(
 
     override fun getTrackChunkElectrificationVoltage(
         trackChunk: TrackChunkId
-    ): DistanceRangeMap<String> {
+    ): DistanceRangeMap<Set<String>> {
         return trackChunkPool[trackChunk].electrificationVoltage
     }
 

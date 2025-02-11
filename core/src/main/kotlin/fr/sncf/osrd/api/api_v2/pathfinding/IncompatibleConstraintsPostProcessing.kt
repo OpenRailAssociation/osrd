@@ -39,7 +39,12 @@ fun buildIncompatibleConstraintsResponse(
                 pathProps.getElectrification(),
                 elecConstraints.firstOrNull()
             )
-            .map { RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value) }
+            .map {
+                RangeValue(
+                    Pathfinding.Range(Offset(it.lower), Offset(it.upper)),
+                    it.value.joinToString(",")
+                )
+            }
 
     val gaugeConstraints = constraints.filterIsInstance<LoadingGaugeConstraints>()
     assert(gaugeConstraints.size < 2)

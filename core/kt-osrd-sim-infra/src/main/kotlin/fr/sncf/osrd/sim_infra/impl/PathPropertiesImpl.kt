@@ -74,7 +74,7 @@ data class PathPropertiesImpl(
         }
     }
 
-    override fun getElectrification(): DistanceRangeMap<String> {
+    override fun getElectrification(): DistanceRangeMap<Set<String>> {
         return getRangeMapFromUndirected { chunkId ->
             infra.getTrackChunkElectrificationVoltage(chunkId)
         }

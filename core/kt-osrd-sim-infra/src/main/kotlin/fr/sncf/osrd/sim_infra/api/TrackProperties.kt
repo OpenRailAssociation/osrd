@@ -79,7 +79,7 @@ interface TrackProperties {
         trackChunk: TrackChunkId
     ): DistanceRangeMap<LoadingGaugeConstraint>
 
-    fun getTrackChunkElectrificationVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
+    fun getTrackChunkElectrificationVoltage(trackChunk: TrackChunkId): DistanceRangeMap<Set<String>>
 
     fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection>
 

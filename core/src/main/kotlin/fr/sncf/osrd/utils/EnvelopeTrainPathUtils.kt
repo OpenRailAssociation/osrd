@@ -14,8 +14,10 @@ fun buildElectrificationMap(path: PathProperties): DistanceRangeMap<Electrificat
     res.put(Distance.ZERO, path.getLength(), NonElectrified())
     res.updateMapIntersection(path.getElectrification()) {
         _: Electrification?,
-        electrificationMode: String ->
-        if (electrificationMode == "") NonElectrified() else Electrified(electrificationMode)
+        electrificationMode: Set<String> ->
+        // TODO: identify which mode to use
+        if (electrificationMode.isEmpty()) NonElectrified()
+        else Electrified(electrificationMode.first())
     }
     res.updateMapIntersection(path.getNeutralSections()) {
         electrification: Electrification?,
