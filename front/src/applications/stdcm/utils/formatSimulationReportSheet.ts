@@ -1,5 +1,4 @@
 import type { SimulationResponse } from 'common/api/osrdEditoastApi';
-import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
@@ -139,9 +138,7 @@ function formatOperationalPointWithTimes(
 ): StdcmResultsOperationalPoint {
   const partiallyFormattedOp = formatMinimalOperationalPointWithTimes(op, train);
   // Find the corresponding stopType from pathSteps
-  const correspondingStep = simulationPathSteps.find(
-    (step) => step.location && matchPathStepAndOp(step.location, op)
-  );
+  const correspondingStep = simulationPathSteps.find((step) => step.id === op.pathStepId);
   let stopType;
   if (correspondingStep) {
     stopType = correspondingStep.isVia ? correspondingStep.stopType : StdcmStopTypes.SERVICE_STOP;
