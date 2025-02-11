@@ -1,44 +1,29 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type { Comfort } from 'common/api/osrdEditoastApi';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
-import { useOsrdConfActions } from 'common/osrdContext';
 import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
-import { updateRollingStockComfort } from 'reducers/osrdconf/operationalStudiesConf';
 import { getRollingStockComfort } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import { useAppDispatch } from 'store';
 
-interface RollingStockCardButtonsProps {
+type RollingStockCardButtonsProps = {
   id: number;
   curvesComfortList: Comfort[];
-  setOpenedRollingStockCardId: (openCardId: number | undefined) => void;
-}
+  onSelectRollingStock: (rollingStockId: number, comfort: Comfort) => void;
+};
 
 const RollingStockCardButtons = ({
   id,
   curvesComfortList,
-  setOpenedRollingStockCardId,
+  onSelectRollingStock,
 }: RollingStockCardButtonsProps) => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock']);
-  const { closeModal } = useContext(ModalContext);
 
   const currentComfortInStore = useSelector(getRollingStockComfort);
   const [comfort, setComfort] = useState<string>(currentComfortInStore);
-
-  const { updateRollingStockID } = useOsrdConfActions();
-
-  const selectRollingStock = () => {
-    setOpenedRollingStockCardId(undefined);
-    dispatch(updateRollingStockID(id));
-    dispatch(updateRollingStockComfort(comfort as Comfort));
-    closeModal();
-  };
 
   const comfortOptions = useMemo(() => {
     const options: Option[] = [{ value: 'STANDARD', label: t('comfortTypes.STANDARD') }];
@@ -91,7 +76,11 @@ const RollingStockCardButtons = ({
           sm
         />
       )}
-      <button type="button" className="ml-2 btn btn-primary btn-sm" onClick={selectRollingStock}>
+      <button
+        type="button"
+        className="ml-2 btn btn-primary btn-sm"
+        onClick={() => onSelectRollingStock(id, comfort as Comfort)}
+      >
         {t('selectRollingStock')}
       </button>
     </div>

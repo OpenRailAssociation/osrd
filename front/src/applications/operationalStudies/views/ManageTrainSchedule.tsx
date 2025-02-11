@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,8 @@ import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import rollingStockPic from 'assets/pictures/components/train.svg';
+import type { Comfort } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
@@ -26,6 +28,7 @@ import {
 } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 import SimulationSettings from 'modules/trainschedule/components/ManageTrainSchedule/SimulationSettings';
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
+import { updateRollingStockComfort } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getConstraintDistribution,
   getDestination,
@@ -34,6 +37,7 @@ import {
   getStartTime,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
 import { formatKmValue } from 'utils/strings';
 
 import { useManageTrainScheduleContext } from '../hooks/useManageTrainScheduleContext';
@@ -43,9 +47,11 @@ type ManageTrainScheduleProps = {
 };
 
 const ManageTrainSchedule = ({ trainIdToEdit }: ManageTrainScheduleProps) => {
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { pathProperties, voltageRanges, pathStepsAndSuggestedOPs } =
     useManageTrainScheduleContext();
+  const { updateRollingStockID } = useOsrdConfActions();
 
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
@@ -86,6 +92,11 @@ const ManageTrainSchedule = ({ trainIdToEdit }: ManageTrainScheduleProps) => {
     useSetupItineraryForTrainUpdate(trainIdToEdit);
   }
 
+  const onSelectRollingStock = useCallback((_rollingStockId: number, comfort: Comfort) => {
+    dispatch(updateRollingStockID(_rollingStockId));
+    dispatch(updateRollingStockComfort(comfort));
+  }, []);
+
   const tabRollingStock = {
     id: 'rollingstock',
     title: rollingStock ? (
@@ -107,6 +118,7 @@ const ManageTrainSchedule = ({ trainIdToEdit }: ManageTrainScheduleProps) => {
       <RollingStockSelector
         rollingStockSelected={rollingStock}
         rollingStockComfort={rollingStockComfort}
+        onSelectRollingStock={onSelectRollingStock}
       />
     ),
   };

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -17,6 +17,7 @@ type RollingStockProps = {
   rollingStockSelected?: RollingStockWithLiveries;
   rollingStockComfort: Comfort;
   image?: JSX.Element;
+  onSelectRollingStock: (rollingStockId: number, comfort: Comfort) => void;
 };
 
 const RollingStockSelector = ({
@@ -24,10 +25,19 @@ const RollingStockSelector = ({
   rollingStockSelected,
   rollingStockComfort,
   image,
+  onSelectRollingStock,
 }: RollingStockProps) => {
-  const { openModal } = useModal();
+  const { openModal, closeModal } = useModal();
 
   const ref2scroll = useRef<HTMLDivElement>(null);
+
+  const selectRollingStock = useCallback(
+    (rollingStockId: number, comfort: Comfort) => {
+      onSelectRollingStock(rollingStockId, comfort);
+      closeModal();
+    },
+    [onSelectRollingStock]
+  );
 
   const { t } = useTranslation('rollingstock');
 
@@ -37,7 +47,10 @@ const RollingStockSelector = ({
         className="osrd-config-item-container osrd-config-item-clickable"
         data-testid="rollingstock-selector"
         onClick={() => {
-          openModal(<RollingStockModal ref2scroll={ref2scroll} />, 'lg');
+          openModal(
+            <RollingStockModal ref2scroll={ref2scroll} onSelectRollingStock={selectRollingStock} />,
+            'lg'
+          );
         }}
         role="button"
         tabIndex={0}

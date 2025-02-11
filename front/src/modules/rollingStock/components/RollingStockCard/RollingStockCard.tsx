@@ -21,6 +21,7 @@ interface RollingStockCardProps {
   ref2scroll?: React.MutableRefObject<HTMLDivElement | null>;
   rollingStock: LightRollingStockWithLiveries;
   setOpenedRollingStockCardId: (openCardId: number | undefined) => void;
+  onSelectRollingStock?: (rollingStockId: number, comfort: Comfort) => void;
 }
 
 const RollingStockCard = ({
@@ -30,6 +31,7 @@ const RollingStockCard = ({
   rollingStock,
   ref2scroll = undefined,
   setOpenedRollingStockCardId,
+  onSelectRollingStock,
 }: RollingStockCardProps) => {
   const [curvesComfortList, setCurvesComfortList] = useState<Comfort[]>([]);
 
@@ -153,11 +155,11 @@ const RollingStockCard = ({
             </div>
           </div>
         </div>
-        {isOpen && curvesComfortList && !isOnEditMode && (
+        {isOpen && curvesComfortList && !isOnEditMode && onSelectRollingStock && (
           <RollingStockCardButtons
             id={rollingStock.id}
             curvesComfortList={curvesComfortList}
-            setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+            onSelectRollingStock={onSelectRollingStock}
           />
         )}
       </div>
