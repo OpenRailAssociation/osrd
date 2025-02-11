@@ -13,12 +13,12 @@ import type {
   PostInfraByInfraIdPathPropertiesApiArg,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 import {
   formatSuggestedOperationalPoints,
   getPathfindingQuery,
   matchPathStepAndOp,
 } from 'modules/pathfinding/utils';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure, setWarning } from 'reducers/main';
 import { replaceItinerary, updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
@@ -51,11 +51,14 @@ const usePathfinding = (
   const pathSteps = useSelector(getPathSteps);
   const powerRestrictions = useSelector(getPowerRestrictions);
   const { infra, reloadCount, setIsInfraError } = useInfraStatus();
-  const { rollingStock } = useStoreDataForRollingStockSelector();
+  const { getRollingStockID } = useOsrdConfSelectors();
+  const rollingStockId = useSelector(getRollingStockID);
 
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
 
+  const [getRollingStockById] =
+    osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useLazyQuery();
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
   const [postPathProperties] =
@@ -186,6 +189,10 @@ const usePathfinding = (
       }
 
       setIsRunning();
+
+      const rollingStock = rollingStockId
+        ? await getRollingStockById({ rollingStockId }).unwrap()
+        : undefined;
       const pathfindingInput = getPathfindingQuery({
         infraId,
         rollingStock,
@@ -257,7 +264,7 @@ const usePathfinding = (
         }
       }
     },
-    [rollingStock, infra]
+    [rollingStockId, infra]
   );
 
   useEffect(() => {
