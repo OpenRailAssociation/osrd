@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import { isVia, matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { upsertViaFromSuggestedOP } from 'reducers/osrdconf/operationalStudiesConf';
 import {
@@ -39,12 +38,12 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
   );
 
   const removeViaFromPath = (op: SuggestedOP) => {
-    const newPathSteps = pathSteps.filter((step) => !matchPathStepAndOp(step!, op));
+    const newPathSteps = pathSteps.filter((step) => step!.id !== op.pathStepId);
     launchPathfinding(newPathSteps);
   };
 
   const formatOP = (op: SuggestedOP, idx: number, idxTrueVia: number) => {
-    const isInVias = isVia(vias, op);
+    const isInVias = vias.find((step) => step.id === op.pathStepId);
     return (
       <div
         key={`suggested-via-modal-${op.opId}-${idx}`}
@@ -107,7 +106,7 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
           {suggestedVias.map((via, idx) => {
             if (!isOriginOrDestination(via)) {
               // If name is undefined, we know the op/via has been added by clicking on map
-              if (isVia(vias, via)) idxTrueVia += 1;
+              if (vias.find((step) => step.id === via.pathStepId)) idxTrueVia += 1;
               return formatOP(via, idx, idxTrueVia);
             }
             return null;
