@@ -37,6 +37,7 @@ import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUs
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.ElectrifiedUsage
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -70,6 +71,7 @@ fun runStandaloneSimulation(
     driverBehaviour: DriverBehaviour = DriverBehaviour()
 ): SimulationSuccess {
     if (chunkPath.length == 0.meters) throw OSRDError(ZeroLengthPath)
+    val signalingRanges = buildSignalingRanges(infra, blockPath, chunkPath)
     // MRSP & SpeedLimits
     val safetySpeedRanges = makeSafetySpeedRanges(infra, chunkPath, routes, schedule)
     var mrsp =
@@ -82,7 +84,7 @@ fun runStandaloneSimulation(
             safetySpeedRanges,
             useInfraSpeedLimits
         )
-    mrsp = driverBehaviour.applyToMRSP(mrsp)
+    mrsp = driverBehaviour.applyToMRSP(mrsp, signalingRanges)
     // We don't use speed safety ranges in the MRSP displayed in the front
     // (just like we don't add the train length)
     val speedLimits =
@@ -115,7 +117,7 @@ fun runStandaloneSimulation(
             envelopeSimPath,
             timeStep,
             curvesAndConditions.curves,
-            makeETCSContext(rollingStock, infra, chunkPath, routes, blockPath)
+            makeETCSContext(rollingStock, infra, chunkPath, routes, signalingRanges)
         )
 
     // Max speed envelope
@@ -188,6 +190,33 @@ fun runStandaloneSimulation(
         mrsp = makeMRSPResponse(speedLimits),
         electricalProfiles = makeElectricalProfiles(electrificationRanges),
     )
+}
+
+/** Returns the ranges where each signaling system is encountered, as travelled path offsets. */
+fun buildSignalingRanges(
+    infra: FullInfra,
+    blockPath: StaticIdxList<Block>,
+    chunkPath: ChunkPath
+): DistanceRangeMap<String> {
+    val blockInfra = infra.blockInfra
+    var blockStartOffset =
+        Offset<TravelledPath>(
+            trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath) * -1.0
+        )
+    val res = distanceRangeMapOf<String>()
+    for (blockId in blockPath) {
+        val blockLength = blockInfra.getBlockLength(blockId)
+        val blockEndOffset = blockStartOffset + blockLength.distance
+        val sigSystem = blockInfra.getBlockSignalingSystem(blockId)
+        val name = infra.signalingSimulator.sigModuleManager.getName(sigSystem)
+        res.put(
+            Distance.max(blockStartOffset.distance, Distance.ZERO),
+            Distance.min(blockEndOffset.distance, chunkPath.length),
+            name,
+        )
+        blockStartOffset += blockLength.distance
+    }
+    return res
 }
 
 fun makeElectricalProfiles(

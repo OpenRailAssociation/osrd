@@ -4,7 +4,9 @@ import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.train.TestTrains
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
@@ -24,7 +26,13 @@ class DriverBehaviourTest {
         val testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN
         val driverBehaviour = DriverBehaviour(2.0, 3.0)
         var mrsp = computeMRSP(path, testRollingStock, true, null, null)
-        mrsp = driverBehaviour.applyToMRSP(mrsp)
+        mrsp =
+            driverBehaviour.applyToMRSP(
+                mrsp,
+                distanceRangeMapOf(
+                    DistanceRangeMap.RangeMapEntry(0.meters, path.getLength(), "BAL")
+                )
+            )
         Assertions.assertEquals(20.0, mrsp.interpolateSpeedRightDir(0.0, 1.0))
         Assertions.assertEquals(10.0, mrsp.interpolateSpeedRightDir((100 - 3).toDouble(), 1.0))
         Assertions.assertEquals(

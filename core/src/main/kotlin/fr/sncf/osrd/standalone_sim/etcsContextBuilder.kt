@@ -8,10 +8,10 @@ import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.distanceRangeSetOf
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.mapToRangeSet
 import fr.sncf.osrd.utils.units.Offset
 
 /** Build the ETCS context, if relevant. */
@@ -20,31 +20,9 @@ fun makeETCSContext(
     infra: FullInfra,
     chunkPath: ChunkPath,
     routePath: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>
+    signalingRanges: DistanceRangeMap<String>,
 ): EnvelopeSimContext.ETCSContext? {
-    val blockInfra = infra.blockInfra
-    val etcsRanges = distanceRangeSetOf()
-    val etcsLevel2 =
-        infra.signalingSimulator.sigModuleManager.findSignalingSystemOrThrow(ETCS_LEVEL2.id)
-    var blockStartOffset =
-        Offset<TravelledPath>(
-            trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath) * -1.0
-        )
-    for (blockId in blockPath) {
-        val blockLength = blockInfra.getBlockLength(blockId)
-        val blockEndOffset = blockStartOffset + blockLength.distance
-        if (
-            blockInfra.getBlockSignalingSystem(blockId) == etcsLevel2 &&
-                chunkPath.length >= blockStartOffset.distance &&
-                blockEndOffset.distance >= Distance.ZERO
-        ) {
-            etcsRanges.put(
-                Distance.max(blockStartOffset.distance, Distance.ZERO),
-                Distance.min(blockEndOffset.distance, chunkPath.length)
-            )
-        }
-        blockStartOffset += blockLength.distance
-    }
+    val etcsRanges = signalingRanges.mapToRangeSet { it == ETCS_LEVEL2.id }
 
     if (etcsRanges.asList().isEmpty()) {
         return null

@@ -41,3 +41,16 @@ interface DistanceRangeSet : Iterable<DistanceRangeSet.RangeSetEntry> {
 fun distanceRangeSetOf(): DistanceRangeSet {
     return DistanceRangeSetImpl()
 }
+
+/**
+ * Create a range set from a range map, with values set where the predicate matches the map value.
+ */
+fun <T> DistanceRangeMap<T>.mapToRangeSet(f: (T) -> Boolean): DistanceRangeSet {
+    val res = distanceRangeSetOf()
+    for (entry in this) {
+        if (f(entry.value)) {
+            res.put(entry.lower, entry.upper)
+        }
+    }
+    return res
+}
