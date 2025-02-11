@@ -497,7 +497,6 @@ const GeoJSONs = ({
   const layerContext: LayerContext = useMemo(
     () => ({
       colors,
-      prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       isEmphasized,
       showIGNBDORTHO,
       layersSettings,

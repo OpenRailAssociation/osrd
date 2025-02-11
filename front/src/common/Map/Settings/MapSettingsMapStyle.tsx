@@ -2,7 +2,6 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import picBlueprint from 'assets/pictures/mapbuttons/mapstyle-blueprint.jpg';
 import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
 import picMinimalMode from 'assets/pictures/mapbuttons/mapstyle-minimal.jpg';
 import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
@@ -40,14 +39,6 @@ const MapSettingsMapStyle = () => {
       >
         <img src={picDarkMode} alt="dark mode" />
         <span>{t('mapstyles.darkmode')}</span>
-      </button>
-      <button
-        className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === 'blueprint' && 'active')}
-        type="button"
-        onClick={() => dispatch(updateMapStyle('blueprint'))}
-      >
-        <img src={picBlueprint} alt="blueprint mode" />
-        <span>{t('mapstyles.blueprint')}</span>
       </button>
     </div>
   );

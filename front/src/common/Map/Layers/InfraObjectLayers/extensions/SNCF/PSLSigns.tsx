@@ -1,7 +1,6 @@
 import { isNil } from 'lodash';
 import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
 import { Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import getKPLabelLayerProps from 'common/Map/Layers/InfraObjectLayers/getKPLabelLayerProps';
@@ -9,7 +8,6 @@ import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { LayerContext } from 'common/Map/Layers/types';
 import { useInfraID } from 'common/osrdContext';
-import { getMap } from 'reducers/map/selectors';
 import type { Theme } from 'types';
 
 type SNCF_PSL_SignsProps = {
@@ -19,8 +17,7 @@ type SNCF_PSL_SignsProps = {
 
 export function getPSLSignsLayerProps({
   sourceTable,
-  prefix,
-}: Pick<LayerContext, 'sourceTable' | 'prefix'>): Omit<SymbolLayer, 'source'> {
+}: Pick<LayerContext, 'sourceTable'>): Omit<SymbolLayer, 'source'> {
   const res: Omit<SymbolLayer, 'source'> = {
     id: 'signParams',
     type: 'symbol',
@@ -30,14 +27,10 @@ export function getPSLSignsLayerProps({
       'icon-image': [
         'case',
         ['==', ['get', 'type'], 'TIV_D'],
-        ['concat', prefix, 'TIV D FIXE ', ['get', 'value']],
-        ['==', ['get', 'type'], 'R'],
-        ['concat', prefix, 'R'],
-        ['==', ['get', 'type'], 'Z'],
-        ['concat', prefix, 'Z'],
+        ['concat', 'TIV D FIXE ', ['get', 'value']],
         ['==', ['get', 'type'], 'TIV_B'],
-        ['concat', prefix, 'TIVD B FIX ', ['get', 'value']],
-        'none',
+        ['concat', 'TIVD B FIX ', ['get', 'value']],
+        ['get', 'type'],
       ],
       'icon-size': ['step', ['zoom'], 0.3, 13, 0.4],
       'icon-offset': [
@@ -70,12 +63,8 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
   const infraID = useInfraID();
   const { colors, layerOrder } = props;
 
-  const { mapStyle } = useSelector(getMap);
-  const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
-
   const signsParams: LayerProps = getPSLSignsLayerProps({
     sourceTable: 'psl_signs',
-    prefix,
   });
 
   const mastsParams: LayerProps = getMastLayerProps({

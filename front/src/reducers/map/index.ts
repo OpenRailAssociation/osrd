@@ -19,7 +19,7 @@ export interface MapSearchMarker {
   lonlat: Position;
 }
 
-export type MapStyle = 'normal' | 'dark' | 'blueprint' | 'minimal';
+export type MapStyle = 'normal' | 'dark' | 'minimal';
 
 export interface MapState {
   url: typeof MAP_URL;

@@ -31,10 +31,9 @@ type FormatSwitchProps = {
   state: boolean;
   icon: string;
   label: string;
-  disabled?: boolean;
 };
 
-const FormatSwitch = ({ name, onChange, state, icon, label, disabled }: FormatSwitchProps) => {
+const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps) => {
   const { t } = useTranslation(['map-settings']);
   return (
     <div className="d-flex align-items-center">
@@ -44,7 +43,6 @@ const FormatSwitch = ({ name, onChange, state, icon, label, disabled }: FormatSw
         name={name}
         onChange={onChange}
         checked={state}
-        disabled={disabled}
       />
       <img className="map-format-switch-img ml-2 rounded" src={icon} alt="" />
       <span className="ml-2">{t(label)}</span>
@@ -55,7 +53,6 @@ const FormatSwitch = ({ name, onChange, state, icon, label, disabled }: FormatSw
 const MapSettingsBackgroundSwitches = () => {
   const { t } = useTranslation(['map-settings']);
   const {
-    mapStyle,
     showIGNBDORTHO,
     showIGNSCAN25,
     showIGNCadastre,
@@ -67,7 +64,6 @@ const MapSettingsBackgroundSwitches = () => {
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const dispatch = useAppDispatch();
 
-  const isBlueprint = mapStyle === 'blueprint';
   return (
     <>
       <FormatSwitch
@@ -81,9 +77,8 @@ const MapSettingsBackgroundSwitches = () => {
       <FormatSwitch
         name="show3dBuildings"
         onChange={() => dispatch(updateShowOSM3dBuildings(!showOSM3dBuildings))}
-        state={!isBlueprint ? showOSM3dBuildings : false}
+        state={showOSM3dBuildings}
         icon={icon3dBuildings}
-        disabled={isBlueprint}
         label="showOSM3dBuildings"
       />
       <div className="my-2" />

@@ -77,7 +77,6 @@ export const BasePointEditionLayers = ({
     () =>
       SourcesDefinitionsIndex[objType](
         {
-          prefix: '',
           colors: colors[mapStyle],
           isEmphasized: true,
           showIGNBDORTHO: false,

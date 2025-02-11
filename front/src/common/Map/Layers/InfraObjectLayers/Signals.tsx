@@ -6,7 +6,7 @@ import { MAP_URL } from 'common/Map/const';
 import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { SignalContext } from 'common/Map/Layers/types';
-import { getLayersSettings, getMapStyle } from 'reducers/map/selectors';
+import { getLayersSettings } from 'reducers/map/selectors';
 import type { Theme } from 'types';
 
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
@@ -22,13 +22,9 @@ interface PlatformProps {
 }
 
 const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) => {
-  const mapStyle = useSelector(getMapStyle);
   const layersSettings = useSelector(getLayersSettings);
 
-  const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
-
   const context: SignalContext = {
-    prefix,
     colors,
     sourceTable,
     sidePropertyName: 'extensions_sncf_side',

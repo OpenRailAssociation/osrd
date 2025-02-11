@@ -125,7 +125,6 @@ export const SpeedSectionEditionLayers = () => {
 
   const { speedSectionLayerProps, pslLayerProps } = useMemo(() => {
     const context = {
-      prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       colors: colors[mapStyle],
       isEmphasized: true,
       showIGNBDORTHO,

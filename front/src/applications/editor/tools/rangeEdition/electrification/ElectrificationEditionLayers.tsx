@@ -67,7 +67,6 @@ export const ElectrificationEditionLayers = () => {
 
   const layersProps = useMemo(() => {
     const context = {
-      prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       colors: colors[mapStyle],
       isEmphasized: true,
       showIGNBDORTHO,

@@ -1,26 +1,23 @@
 import { isNil } from 'lodash';
 import { type LayerProps, Source, type SymbolLayer } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import getKPLabelLayerProps from 'common/Map/Layers/InfraObjectLayers/getKPLabelLayerProps';
 import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { LayerContext } from 'common/Map/Layers/types';
-import { getMap } from 'reducers/map/selectors';
 import type { Theme } from 'types';
 
 export function getNeutralSectionSignsLayerProps({
   sourceTable,
-  prefix,
-}: Pick<LayerContext, 'sourceTable' | 'prefix'>): Omit<SymbolLayer, 'source'> {
+}: Pick<LayerContext, 'sourceTable'>): Omit<SymbolLayer, 'source'> {
   const res: Omit<SymbolLayer, 'source'> = {
     id: 'neutralSectionSignParams',
     type: 'symbol',
     minzoom: 11,
     paint: {},
     layout: {
-      'icon-image': ['concat', prefix, ['get', 'type']],
+      'icon-image': ['get', 'type'],
       'icon-size': ['step', ['zoom'], 0.3, 13, 0.4],
       'icon-offset': [
         'step',
@@ -60,12 +57,9 @@ type NeutralSectionSignsProps = {
  */
 export default function NeutralSectionSigns(props: NeutralSectionSignsProps) {
   const { colors, layerOrder, infraID } = props;
-  const { mapStyle } = useSelector(getMap);
-  const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
 
   const signsParams: LayerProps = getNeutralSectionSignsLayerProps({
     sourceTable: 'neutral_signs',
-    prefix,
   });
   const mastsParams: LayerProps = getMastLayerProps({
     sourceTable: 'neutral_signs',
