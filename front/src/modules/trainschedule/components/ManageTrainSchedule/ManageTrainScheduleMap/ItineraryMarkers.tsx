@@ -12,12 +12,11 @@ import stdcmOrigin from 'assets/pictures/mapMarkers/start.svg';
 import originSVG from 'assets/pictures/origin.svg';
 import viaSVG from 'assets/pictures/via.svg';
 import type { PathItemLocation, TrackSection } from 'common/api/osrdEditoastApi';
-import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { PathStep } from 'reducers/osrdconf/types';
 
 import type { SuggestedOP } from '../types';
 
-export type MarkerInformation = Pick<PathStep, 'name' | 'coordinates' | 'metadata'> &
+export type MarkerInformation = Pick<PathStep, 'id' | 'name' | 'coordinates' | 'metadata'> &
   PathItemLocation & {
     pointType: MARKER_TYPE;
   };
@@ -87,7 +86,7 @@ const extractMarkerInformation = (
       if (!pathStep.coordinates) return null;
 
       const matchingOp = suggestedOP
-        ? suggestedOP.find((op) => matchPathStepAndOp(pathStep, op))
+        ? suggestedOP.find((op) => pathStep.id === op.pathStepId)
         : undefined;
 
       const images = showStdcmAssets ? STDCM_MARKER_IMAGES : MARKER_IMAGES;
