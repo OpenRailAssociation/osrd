@@ -72,41 +72,40 @@ const extractMarkerInformation = (
 ): MarkerProperties[] =>
   pathSteps
     .map((pathStep, index): MarkerProperties | null => {
+      if (!pathStep.coordinates) return null;
+
       const matchingOp = suggestedOP
         ? suggestedOP.find((op) => matchPathStepAndOp(pathStep, op))
         : undefined;
 
-      if (pathStep.coordinates) {
-        if (pathStep.pointType === MARKER_TYPE.ORIGIN) {
-          return {
-            coordinates: pathStep.coordinates,
-            type: MARKER_TYPE.ORIGIN,
-            imageSource: showStdcmAssets ? stdcmOrigin : originSVG,
-            op: matchingOp,
-            pathStep,
-          };
-        }
-
-        if (pathStep.pointType === MARKER_TYPE.DESTINATION) {
-          return {
-            coordinates: pathStep.coordinates,
-            type: MARKER_TYPE.DESTINATION,
-            imageSource: showStdcmAssets ? stdcmDestination : destinationSVG,
-            op: matchingOp,
-            pathStep,
-          };
-        }
-
+      if (pathStep.pointType === MARKER_TYPE.ORIGIN) {
         return {
           coordinates: pathStep.coordinates,
-          type: MARKER_TYPE.VIA,
-          imageSource: showStdcmAssets ? stdcmVia : viaSVG,
-          index,
+          type: MARKER_TYPE.ORIGIN,
+          imageSource: showStdcmAssets ? stdcmOrigin : originSVG,
           op: matchingOp,
           pathStep,
         };
       }
-      return null;
+
+      if (pathStep.pointType === MARKER_TYPE.DESTINATION) {
+        return {
+          coordinates: pathStep.coordinates,
+          type: MARKER_TYPE.DESTINATION,
+          imageSource: showStdcmAssets ? stdcmDestination : destinationSVG,
+          op: matchingOp,
+          pathStep,
+        };
+      }
+
+      return {
+        coordinates: pathStep.coordinates,
+        type: MARKER_TYPE.VIA,
+        imageSource: showStdcmAssets ? stdcmVia : viaSVG,
+        index,
+        op: matchingOp,
+        pathStep,
+      };
     })
     .filter((marker): marker is MarkerProperties => marker !== null);
 
