@@ -18,9 +18,12 @@ export interface MapSearchMarker {
   subtitle?: string;
   lonlat: Position;
 }
+
+export type MapStyle = 'normal' | 'dark' | 'blueprint' | 'minimal';
+
 export interface MapState {
   url: typeof MAP_URL;
-  mapStyle: 'normal' | 'dark' | 'blueprint' | 'minimal';
+  mapStyle: MapStyle;
   showIGNBDORTHO: boolean;
   showIGNSCAN25: boolean;
   showIGNCadastre: boolean;

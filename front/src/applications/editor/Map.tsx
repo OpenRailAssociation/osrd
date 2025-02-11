@@ -27,7 +27,7 @@ import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import { getEditorState } from 'reducers/editor/selectors';
-import type { Viewport } from 'reducers/map';
+import type { MapStyle, Viewport } from 'reducers/map';
 import { getMap, getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
@@ -37,7 +37,7 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
   toolState: S;
   setToolState: (state: Partial<S>) => void;
   activeTool: Tool<S>;
-  mapStyle: 'normal' | 'dark' | 'blueprint' | 'minimal';
+  mapStyle: MapStyle;
   viewport: Viewport;
   setViewport: (newViewport: Partial<Viewport>, updateRouter?: boolean) => void;
   mapRef: React.RefObject<MapRef>;

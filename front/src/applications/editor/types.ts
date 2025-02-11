@@ -9,6 +9,7 @@ import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import type { Operation } from 'common/api/osrdEditoastApi';
 import type { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import type { EditorState } from 'reducers/editor';
+import type { MapStyle } from 'reducers/map';
 import type { AppDispatch } from 'store';
 
 import type { Layer } from './consts';
@@ -20,7 +21,7 @@ export type Reducer<T> = (value: T) => T;
 export type PartialOrReducer<T> = Partial<T> | Reducer<T>;
 
 export type MapState = {
-  mapStyle: 'normal' | 'dark' | 'blueprint' | 'minimal';
+  mapStyle: MapStyle;
   viewport: ViewState;
 };
 

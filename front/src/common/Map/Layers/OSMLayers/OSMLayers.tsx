@@ -1,5 +1,6 @@
 import colors from 'common/Map/Consts/colors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import type { MapStyle } from 'reducers/map';
 
 import Background from '../Background';
 import Hillshade from '../Hillshade';
@@ -9,7 +10,7 @@ import Terrain from '../Terrain';
 import TracksOSM from '../TracksOSM';
 
 type OSMLayersProps = {
-  mapStyle: 'normal' | 'dark' | 'blueprint' | 'minimal';
+  mapStyle: MapStyle;
   showOSM: boolean;
   hidePlatforms?: boolean;
 };

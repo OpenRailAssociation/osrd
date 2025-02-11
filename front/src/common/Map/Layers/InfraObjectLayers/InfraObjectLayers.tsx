@@ -1,5 +1,6 @@
 import colors from 'common/Map/Consts/colors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import type { MapStyle } from 'reducers/map';
 
 import BufferStops from './BufferStops';
 import Detectors from './Detectors';
@@ -15,7 +16,7 @@ import TracksGeographic from './TracksGeographic';
 
 type InfraObjectLayersProps = {
   infraId: number;
-  mapStyle: 'normal' | 'dark' | 'blueprint' | 'minimal';
+  mapStyle: MapStyle;
   hoveredOperationalPointId?: string;
 };
 
