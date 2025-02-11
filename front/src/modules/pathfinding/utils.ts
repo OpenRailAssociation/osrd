@@ -154,40 +154,6 @@ export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]):
   return updatedOPs;
 };
 
-export const pathStepMatchesOp = (
-  pathStep: PathStep,
-  op: Pick<
-    SuggestedOP,
-    'pathStepId' | 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack' | 'name' | 'kp'
-  >,
-  withKP = false
-) => {
-  if (!matchPathStepAndOp(pathStep, op)) {
-    return pathStep.id === op.pathStepId;
-  }
-  if ('uic' in pathStep) {
-    return withKP ? pathStep.kp === op.kp : pathStep.name === op.name;
-  }
-  return true;
-};
-
-/**
- * Check if a suggested operational point is a via.
- * Some OPs have same uic so we need to check also the ch (can be still not enough
- * probably because of imports problem).
- * If the vias has no uic, it has been added via map click and we know it has an id.
- * @param withKP - If true, we check the kp compatibility instead of the name.
- * It is used in the times and stops table to check if an operational point is a via.
- */
-export const isVia = (
-  vias: PathStep[],
-  op: Pick<
-    SuggestedOP,
-    'pathStepId' | 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack' | 'name' | 'kp'
-  >,
-  { withKP = false } = {}
-) => vias.some((via) => pathStepMatchesOp(via, op, withKP));
-
 export const isStation = (chCode: string): boolean =>
   chCode === 'BV' || chCode === '00' || chCode === '';
 
