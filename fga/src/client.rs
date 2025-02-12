@@ -11,14 +11,21 @@ pub use stores::Store;
 use tracing::Instrument;
 use tuples::RawTuple;
 
-use std::future::{self, Future};
+use std::future::Future;
+use std::future::{self};
 
-use futures::{stream, TryStreamExt as _};
+use futures::stream;
+use futures::TryStreamExt as _;
 use itertools::Itertools as _;
 
+use crate::model::AsUser;
+use crate::model::Check;
+use crate::model::Object;
 use crate::model::ParsingError;
 use crate::model::QueryObjects;
-use crate::model::{AsUser, Check, Object, Relation, Tuple, User};
+use crate::model::Relation;
+use crate::model::Tuple;
+use crate::model::User;
 
 const OPENFGA_WRITES_MAX_TUPLES: usize = 100;
 

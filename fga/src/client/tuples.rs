@@ -1,6 +1,10 @@
-use crate::model::{AsUser, Object as _, Relation, Tuple};
+use crate::model::AsUser;
+use crate::model::Object as _;
+use crate::model::Relation;
+use crate::model::Tuple;
 
-use super::{Client, RequestFailure};
+use super::Client;
+use super::RequestFailure;
 
 #[derive(Debug, serde::Serialize)]
 pub(super) struct RawTuple {

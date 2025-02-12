@@ -1,6 +1,11 @@
-use crate::model::{AsUser, Relation, Tuple};
+use crate::model::AsUser;
+use crate::model::Relation;
+use crate::model::Tuple;
 
-use super::{Client, Consistency, RawTuple, RequestFailure};
+use super::Client;
+use super::Consistency;
+use super::RawTuple;
+use super::RequestFailure;
 
 #[derive(Debug, serde::Serialize)]
 pub(super) struct ContextualTuples {

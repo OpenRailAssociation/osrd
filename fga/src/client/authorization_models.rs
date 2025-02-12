@@ -1,4 +1,5 @@
-use super::{Client, RequestFailure};
+use super::Client;
+use super::RequestFailure;
 
 pub type AuthorizationModel = serde_json::Value;
 

@@ -1,4 +1,5 @@
-use super::{Client, RequestFailure};
+use super::Client;
+use super::RequestFailure;
 
 #[derive(Debug, Default, Clone, serde::Deserialize)]
 pub struct Store {
