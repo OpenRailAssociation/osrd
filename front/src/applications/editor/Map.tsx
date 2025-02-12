@@ -18,13 +18,13 @@ import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applica
 import type { InfraError } from 'common/api/osrdEditoastApi';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import IGNLayers from 'common/Map/Layers/IGNLayers';
 import { NeutralSectionsLayer, OperationalPointsLayer } from 'common/Map/Layers/InfraObjectLayers';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import OSMLayers from 'common/Map/Layers/OSMLayers';
 import { Platforms as PlatformsLayer } from 'common/Map/Layers/OSMLayers/Platforms';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
+import useMapBlankStyle from 'common/Map/Layers/useMapBlankStyle';
 import VirtualLayers from 'common/Map/Layers/VirtualLayers';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
