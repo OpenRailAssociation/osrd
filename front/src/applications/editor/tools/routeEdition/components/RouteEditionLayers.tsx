@@ -23,7 +23,7 @@ import {
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import colors from 'common/Map/Consts/colors';
-import GeoJSONs from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
+import { GeoJSONs } from 'common/Map/Layers';
 import {
   getRoutesLineLayerProps,
   getRoutesPointLayerProps,

@@ -4,6 +4,9 @@ export { default as OSMLayers, Platforms, genOSMLayerProps } from './OSMLayers';
 // Infra object layers
 export {
   default as InfraObjectLayers,
+  GeoJSONs,
+  EditorSource,
+  SourcesDefinitionsIndex,
   NeutralSectionsLayer,
   OperationalPointsLayer,
 } from './InfraObjectLayers';
