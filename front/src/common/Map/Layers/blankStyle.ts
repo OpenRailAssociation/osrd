@@ -66,7 +66,7 @@ export const useMapBlankStyle = (): MapProps['mapStyle'] => {
       name: 'Blank',
       sources: {},
       sprite,
-      glyphs: 'https://static.osm.osrd.fr/fonts/{fontstack}/{range}.pbf',
+      glyphs: `${window.location.origin}${baseURL}/fonts/{fontstack}/{range}.pbf`,
       layers: [
         {
           id: 'emptyBackground',
