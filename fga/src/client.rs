@@ -41,6 +41,14 @@ pub struct Client {
 pub struct ConnectionSettings {
     address: String,
     port: u16,
+
+    /// Whether to reset the store on initialization
+    ///
+    /// This parameter is only relevant when using [Client::try_new_store].
+    ///
+    /// It's useful if a store is created for each unit tests and the store name is the same
+    /// for each run. (This typically occurs if the stores are named according to the test name.)
+    reset: bool,
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -112,29 +120,10 @@ impl Client {
         Ok(client)
     }
 
-    #[cfg(not(test))]
     #[tracing::instrument(err)]
     pub async fn try_new_store(
         store_name: String,
         settings: ConnectionSettings,
-    ) -> Result<Client, InitializationError> {
-        Self::try_new_store_inner(store_name, settings, false).await
-    }
-
-    #[cfg(test)]
-    #[tracing::instrument(err)]
-    pub async fn try_new_store(
-        store_name: String,
-        settings: ConnectionSettings,
-        reset: bool,
-    ) -> Result<Client, InitializationError> {
-        Self::try_new_store_inner(store_name, settings, reset).await
-    }
-
-    async fn try_new_store_inner(
-        store_name: String,
-        settings: ConnectionSettings,
-        reset: bool,
     ) -> Result<Client, InitializationError> {
         let mut client = Self {
             store: Store::default(),
@@ -142,7 +131,7 @@ impl Client {
             settings,
             inner: reqwest::Client::new(),
         };
-        if reset {
+        if client.settings.reset {
             if let Some(store) = client.find_store(&store_name).await? {
                 tracing::debug!(old = ?store, "removing old store for reset");
                 client.delete_stores(&store.id).await?;
@@ -625,8 +614,8 @@ mod tests {
                 ConnectionSettings {
                     address: "localhost".to_owned(),
                     port: 8080,
+                    reset: true,
                 },
-                true,
             )
             .await
             .expect("Failed to initialize client")
@@ -641,6 +630,7 @@ mod tests {
             ConnectionSettings {
                 address: "localhost".to_owned(),
                 port: 8080,
+                reset: false,
             },
         )
         .await
@@ -656,6 +646,7 @@ mod tests {
             ConnectionSettings {
                 address: "localhost".to_owned(),
                 port: 8080,
+                reset: false,
             },
         )
         .await;
