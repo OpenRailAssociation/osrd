@@ -189,6 +189,7 @@ export default function useSearchOperationalPoint({
     mainOperationalPointsOnly,
     searchResults,
     searchOperationalPoints,
+    searchOperationalPointsByTrigram,
     setSearchTerm,
     setChCodeFilter,
     setSearchResults,

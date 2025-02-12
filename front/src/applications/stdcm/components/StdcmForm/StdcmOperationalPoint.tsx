@@ -41,7 +41,13 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const { searchTerm, setSearchTerm, searchResults, setSearchResults } = useSearchOperationalPoint({
+  const {
+    searchTerm,
+    setSearchTerm,
+    searchResults,
+    setSearchResults,
+    searchOperationalPointsByTrigram,
+  } = useSearchOperationalPoint({
     initialSearchTerm: location?.name,
     initialChCodeFilter: location?.secondary_code,
     isStdcm: true,
@@ -98,14 +104,17 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
     [searchResults]
   );
 
-  const handleCiSelect = (selectedSuggestion?: CIOption) => {
+  const handleCiSelect = async (selectedSuggestion?: CIOption) => {
+    dispatch(updateStdcmPathStep({ id: pathStepId, updates: { location: selectedSuggestion } }));
     if (selectedSuggestion) {
-      const newChSuggestions = extractChCodes(searchResults, selectedSuggestion);
+      const operationalPointParts = await searchOperationalPointsByTrigram(
+        selectedSuggestion.trigram
+      );
+      const newChSuggestions = extractChCodes(operationalPointParts, selectedSuggestion);
       setChSuggestions(newChSuggestions);
     } else {
       setChSuggestions([]);
     }
-    dispatch(updateStdcmPathStep({ id: pathStepId, updates: { location: selectedSuggestion } }));
   };
 
   const handleChSelect = (selectedChCode?: CHOption) => {
