@@ -17,7 +17,6 @@ import {
   getPointErrorsLayerProps,
   getPointTextErrorsLayerProps,
 } from 'common/Map/Layers/Errors';
-import geoMainLayer from 'common/Map/Layers/geographiclayers';
 import { getBufferStopsLayerProps } from 'common/Map/Layers/InfraObjectLayers/BufferStops';
 import {
   getDetectorsLayerProps,
@@ -56,7 +55,8 @@ import type { RootState } from 'reducers';
 import type { MapState } from 'reducers/map';
 import type { Theme } from 'types';
 
-import getMastLayerProps from '../mastLayerProps';
+import geoMainLayer from './getGeographicLayerProps';
+import getMastLayerProps from './getMastLayerProps';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 
