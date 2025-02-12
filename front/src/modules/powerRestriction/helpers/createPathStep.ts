@@ -10,6 +10,35 @@ import { mmToM, mToMm } from 'utils/physics';
 
 import { NO_POWER_RESTRICTION } from '../consts';
 
+export const insertCutPosition = (cutPositions: number[], newCutPosition: number) => {
+  if (!cutPositions.length) {
+    return [newCutPosition];
+  }
+
+  const newCutPositions: number[] = [];
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < cutPositions.length; i++) {
+    // if the position is already in the array, we return the original array
+    if (newCutPosition === cutPositions[i]) {
+      return cutPositions;
+    }
+
+    // if the position is smaller than the current one, we insert it before the current one
+    // and return
+    if (newCutPosition < cutPositions[i]) {
+      return [...cutPositions.slice(0, i), newCutPosition, ...cutPositions.slice(i)];
+    }
+
+    // if the position is greater than the last position in the array,
+    // we add it at the end
+    if (i === cutPositions.length - 1) {
+      return [...cutPositions, newCutPosition];
+    }
+  }
+
+  return newCutPositions;
+};
+
 const createPathStep = (
   positionOnPathInM: number, // in meters
   tracksLengthCumulativeSums: number[],
@@ -63,17 +92,7 @@ export const createCutAtPathStep = (
   );
 
   if (!intervalCut || intervalCut.value === NO_POWER_RESTRICTION) {
-    const newCutPositions = !cutPositions.length
-      ? [cutAtPositionInM]
-      : cutPositions.flatMap((position, index) => {
-          if (position > cutAtPositionInM) {
-            return [cutAtPositionInM, position];
-          }
-          if (index === cutPositions.length - 1) {
-            return [position, cutAtPositionInM];
-          }
-          return [position];
-        });
+    const newCutPositions = insertCutPosition(cutPositions, cutAtPositionInM);
     setCutPositions(newCutPositions);
     return null;
   }
