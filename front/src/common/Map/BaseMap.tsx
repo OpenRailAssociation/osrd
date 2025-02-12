@@ -12,8 +12,8 @@ import InfraObjectLayers from 'common/Map/Layers/InfraObjectLayers';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import OSMLayers from 'common/Map/Layers/OSMLayers';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
+import VirtualLayers from 'common/Map/Layers/VirtualLayers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import type { MapState, Viewport } from 'reducers/map';
 
 import { CUSTOM_ATTRIBUTION } from './const';
