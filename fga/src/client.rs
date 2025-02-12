@@ -396,10 +396,20 @@ impl Client {
 ///
 /// For example:
 ///
-/// ```ignore
+/// ```no_run
+/// # include!("doctest_setup.rs");
+/// # fga::relations! { Document { relation: Person }}
+/// # type Object = Document;
+/// # #[tokio::main]
+/// # async fn main() {
+/// # let user = Person("bob".to_owned());
+/// # let object = Document("topsecret".to_owned());
+/// # let client = todo!();
+/// # use fga::client::Request as _;
 /// Object::relation().check(&user, &object).fetch(&client).await.unwrap();
 /// // instead of
 /// client.check(Object::relation().check(&user, &object)).await.unwrap();
+/// # }
 /// ```
 pub trait Request {
     type Response;
