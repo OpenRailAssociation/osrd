@@ -141,14 +141,13 @@ impl Client {
         Ok(client)
     }
 
-    pub fn stores(&self) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> {
-        ContinuationUnfolder::new(self.clone(), ()).stream(
-            |UnfoldArgs {
-                 client,
-                 continuation,
-                 ctx: _ctx,
-             }| async move {
-                let (stores, continuation) = client
+    pub fn stores(&self) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> + '_ {
+        ContinuationUnfolder::new(()).stream(
+            move |UnfoldArgs {
+                      continuation,
+                      ctx: _ctx,
+                  }| async move {
+                let (stores, continuation) = self
                     .get_stores(None, continuation.as_ref().map(String::as_str))
                     .await?;
                 Ok((
@@ -174,16 +173,15 @@ impl Client {
 
     pub fn authorization_models(
         &self,
-    ) -> impl stream::TryStream<Ok = StoreAuthorizationModel, Error = RequestFailure> {
-        ContinuationUnfolder::new(self.clone(), ()).stream(
-            |UnfoldArgs {
-                 client,
-                 continuation,
-                 ctx: _ctx,
-             }| async move {
-                let (models, continuation) = client
+    ) -> impl stream::TryStream<Ok = StoreAuthorizationModel, Error = RequestFailure> + '_ {
+        ContinuationUnfolder::new(()).stream(
+            move |UnfoldArgs {
+                      continuation,
+                      ctx: _ctx,
+                  }| async move {
+                let (models, continuation) = self
                     .get_stores_authorization_models(
-                        &client.store.id,
+                        &self.store.id,
                         None,
                         continuation.as_ref().map(String::as_str),
                     )
@@ -432,13 +430,11 @@ impl<R: Relation> Request for Check<'_, R> {
 /// This unfolder can also be provided with a context that will be passed to the closure at each call.
 /// The closure is free to modify it but **must** provide it anew in its result using [UnfoldNextState].
 struct ContinuationUnfolder<C> {
-    client: Client,
     ctx: C,
     continuation: Continuation,
 }
 
 struct UnfoldArgs<C> {
-    client: Client,
     ctx: C,
     continuation: Option<String>,
 }
@@ -469,9 +465,8 @@ impl From<String> for Continuation {
 }
 
 impl<C> ContinuationUnfolder<C> {
-    fn new(client: Client, ctx: C) -> Self {
+    fn new(ctx: C) -> Self {
         Self {
-            client,
             ctx,
             continuation: Continuation::None,
         }
@@ -480,6 +475,8 @@ impl<C> ContinuationUnfolder<C> {
     /// Unfolds a continuation-based paginated API call into a stream of items
     ///
     /// ```ignore
+    /// # internal API, cannot be doc tested
+    /// #
     /// fn api_call(shift: u64, cont: Option<String>) -> (Vec<u64>, String) {
     ///     let Some(page) = cont.and_then(|s| s.parse::<u64>().ok()) else {
     ///         return (vec![shift], "1".to_string());
@@ -494,9 +491,8 @@ impl<C> ContinuationUnfolder<C> {
     ///     }
     /// }
     ///
-    /// let stream = ContinuationUnfolder::new(client, 0).stream(
-    ///     |UnfoldArgs {
-    ///          client: _client,
+    /// let stream = ContinuationUnfolder::new(0).stream(
+    ///     move |UnfoldArgs {
     ///          ctx: shift,
     ///          continuation,
     ///      }| async move {
@@ -524,19 +520,13 @@ impl<C> ContinuationUnfolder<C> {
     {
         struct Iter<F, C> {
             f: F,
-            client: Client,
             ctx: C,
             continuation: Continuation,
         }
         let init = {
-            let Self {
-                client,
-                ctx,
-                continuation,
-            } = self;
+            let Self { ctx, continuation } = self;
             Iter {
                 f,
-                client,
                 ctx,
                 continuation,
             }
@@ -546,7 +536,6 @@ impl<C> ContinuationUnfolder<C> {
             init,
             move |Iter {
                       f,
-                      client,
                       ctx,
                       continuation,
                   }| {
@@ -556,17 +545,12 @@ impl<C> ContinuationUnfolder<C> {
                         Continuation::Continue(continuation) => Some(continuation),
                         Continuation::Stop => return Ok::<_, RequestFailure>(None),
                     };
-                    let (items, UnfoldNextState { ctx, continuation }) = f(UnfoldArgs {
-                        client: client.clone(),
-                        ctx,
-                        continuation,
-                    })
-                    .await?;
+                    let (items, UnfoldNextState { ctx, continuation }) =
+                        f(UnfoldArgs { ctx, continuation }).await?;
                     Ok(Some((
                         items,
                         Iter {
                             f,
-                            client,
                             ctx,
                             continuation: Continuation::from(continuation),
                         },
