@@ -10,11 +10,11 @@ import {
   getSpeedSectionsName,
   getFilterBySpeedSectionsTag,
 } from 'common/Map/Layers/InfraObjectLayers/SpeedLimits';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { LayersSettings } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
 
 import SNCF_PSL_Signs from './PSLSigns';
+import OrderedLayer from '../../../OrderedLayer';
 
 interface SNCF_PSLProps {
   colors: Theme;

@@ -1,8 +1,9 @@
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { RootState } from 'reducers';
+
+import OrderedLayer from '../OrderedLayer';
 
 interface IGN_SCAN25_Props {
   layerOrder?: number;

@@ -12,7 +12,7 @@ import type { ManageTrainSchedulePathProperties } from 'applications/operational
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
-import SnappedMarker from 'common/Map/Layers/SnappedMarker';
+import { SnappedMarker } from 'common/Map/Layers';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';

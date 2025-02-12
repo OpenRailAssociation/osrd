@@ -3,8 +3,9 @@ import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { Theme, OmitLayer } from 'types';
+
+import OrderedLayer from '../OrderedLayer';
 
 export function getDetectorsLayerProps(params: {
   colors: Theme;

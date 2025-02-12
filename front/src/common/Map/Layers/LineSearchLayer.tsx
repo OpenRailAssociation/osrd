@@ -3,8 +3,9 @@ import { Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getMap } from 'reducers/map/selectors';
+
+import OrderedLayer from './OrderedLayer';
 
 interface TracksGeographicProps {
   layerOrder?: number;

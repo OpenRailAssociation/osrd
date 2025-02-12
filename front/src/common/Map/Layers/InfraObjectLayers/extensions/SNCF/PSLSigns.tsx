@@ -6,10 +6,11 @@ import { Source } from 'react-map-gl/maplibre';
 import { MAP_URL } from 'common/Map/const';
 import getKPLabelLayerProps from 'common/Map/Layers/InfraObjectLayers/getKPLabelLayerProps';
 import getMastLayerProps from 'common/Map/Layers/InfraObjectLayers/getMastLayerProps';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import type { LayerContext } from 'common/Map/Layers/types';
 import { useInfraID } from 'common/osrdContext';
 import type { Theme } from 'types';
+
+import OrderedLayer from '../../../OrderedLayer';
+import type { LayerContext } from '../../../types';
 
 type SNCF_PSL_SignsProps = {
   colors: Theme;

@@ -2,10 +2,10 @@ import { isNil } from 'lodash';
 import { type LayerProps, Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { Theme } from 'types';
 
 import NeutralSectionSigns from './NeutralSectionSigns';
+import OrderedLayer from '../../../OrderedLayer';
 
 type NeutralSectionsProps = {
   colors: Theme;

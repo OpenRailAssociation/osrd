@@ -3,8 +3,9 @@ import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { Theme, OmitLayer } from 'types';
+
+import OrderedLayer from '../OrderedLayer';
 
 interface RoutesProps {
   colors: Theme;

@@ -4,9 +4,10 @@ import { type LayerProps, Source, type SymbolLayer } from 'react-map-gl/maplibre
 import { MAP_URL } from 'common/Map/const';
 import getKPLabelLayerProps from 'common/Map/Layers/InfraObjectLayers/getKPLabelLayerProps';
 import getMastLayerProps from 'common/Map/Layers/InfraObjectLayers/getMastLayerProps';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { LayerContext } from 'common/Map/Layers/types';
 import type { Theme } from 'types';
+
+import OrderedLayer from '../../../OrderedLayer';
 
 export function getNeutralSectionSignsLayerProps({
   sourceTable,

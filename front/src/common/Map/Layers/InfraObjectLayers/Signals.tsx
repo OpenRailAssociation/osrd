@@ -2,13 +2,13 @@ import { isNil } from 'lodash';
 import { Source, type MapRef } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import type { SignalContext } from 'common/Map/Layers/types';
 import type { Theme } from 'types';
 
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
 import getKPLabelLayerProps from './getKPLabelLayerProps';
 import getMastLayerProps from './getMastLayerProps';
+import OrderedLayer from '../OrderedLayer';
+import { type SignalContext } from '../types';
 
 interface PlatformProps {
   colors: Theme;
