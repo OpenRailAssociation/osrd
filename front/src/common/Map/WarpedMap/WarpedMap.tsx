@@ -17,10 +17,10 @@ import {
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genOSMLayerProps } from 'common/Map/Layers/OSM';
 import type { LayerContext } from 'common/Map/Layers/types';
+import VirtualLayers from 'common/Map/Layers/VirtualLayers';
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import { getMap } from 'reducers/map/selectors';
 
 type WarpedMapProps = {
