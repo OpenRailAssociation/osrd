@@ -29,7 +29,7 @@ const MapSearchOperationalPoint = ({
     searchTerm,
     chCodeFilter,
     searchResults,
-    filteredAndSortedSearchResults,
+    searchResultsFilteredByCh,
     mainOperationalPointsOnly,
     setSearchTerm,
     setChCodeFilter,
@@ -136,13 +136,13 @@ const MapSearchOperationalPoint = ({
         {searchResults.length > 100
           ? t('resultsCountTooMuch')
           : t('resultsCount', {
-              count: filteredAndSortedSearchResults.length,
+              count: searchResultsFilteredByCh.length,
             })}
       </h2>
       <div className="search-results">
         {searchResults.length > 0 &&
           searchResults.length <= 100 &&
-          filteredAndSortedSearchResults.map((searchResult, index) => (
+          searchResultsFilteredByCh.map((searchResult, index) => (
             <button
               id={`result-${index}`}
               type="button"

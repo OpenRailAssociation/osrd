@@ -154,18 +154,19 @@ export default function useSearchOperationalPoint({
     [infraID, isStdcm, isSuperUser]
   );
 
-  const filteredAndSortedSearchResults = useMemo(
-    () =>
-      searchResults.filter((result) => {
-        if (mainOperationalPointsOnly || (chCodeFilter && MAIN_OP_CH_CODES.includes(chCodeFilter)))
-          return MAIN_OP_CH_CODES.includes(result.ch);
+  /** Filter operational points on secondary code (ch), if provided */
+  const searchResultsFilteredByCh = useMemo(() => {
+    if (
+      mainOperationalPointsOnly ||
+      (chCodeFilter !== undefined && MAIN_OP_CH_CODES.includes(chCodeFilter))
+    )
+      return searchResults.filter((result) => MAIN_OP_CH_CODES.includes(result.ch));
 
-        if (chCodeFilter === undefined) return true;
+    if (!chCodeFilter) return searchResults;
 
-        return result.ch.toLocaleLowerCase().includes(chCodeFilter.trim().toLowerCase());
-      }),
-    [searchResults, chCodeFilter, mainOperationalPointsOnly]
-  );
+    const chFilter = chCodeFilter.trim().toLowerCase();
+    return searchResults.filter((result) => result.ch.toLocaleLowerCase().includes(chFilter));
+  }, [searchResults, chCodeFilter, mainOperationalPointsOnly]);
 
   useEffect(() => {
     if (debouncedSearchTerm) {
@@ -184,7 +185,7 @@ export default function useSearchOperationalPoint({
   return {
     searchTerm,
     chCodeFilter,
-    filteredAndSortedSearchResults,
+    searchResultsFilteredByCh,
     mainOperationalPointsOnly,
     searchResults,
     searchOperationalPoints,
