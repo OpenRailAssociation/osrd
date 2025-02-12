@@ -3,8 +3,11 @@
 # This script should be used to generate signaling systems atlas given svg.
 # First add all your svg in a subfolder named to the signaling system (eg: `BAL`)
 # Then run this script. You will need docker.
+set -e
 
-for signaling_system in *; do
+sprites_directory=$(dirname "$(realpath "$0")")
+echo "Processing sprites in ${sprites_directory}"
+for signaling_system in "${sprites_directory}"/*; do
   # Skip files (like this file)
   [ -d "${signaling_system}" ] || continue
 
