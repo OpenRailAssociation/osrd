@@ -1,14 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { isEmpty } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import DPY_TO_MAS_OPERATIONAL_POINTS from 'assets/operationStudies/DPYToMASOperationalPoints';
-import {
-  type SearchQuery,
-  type SearchResultItemOperationalPoint,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
+import { type SearchResultItemOperationalPoint, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
 import { getIsSuperUser } from 'reducers/user/userSelectors';
@@ -44,69 +40,70 @@ export default function useSearchOperationalPoint({
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
-  const searchOperationalPointsByTrigram = async (
-    infraId: number,
-    dpyToMasOperationalpointsFilter: SearchQuery
-  ) => {
-    const shouldSearchByTrigram =
-      !Number.isInteger(+debouncedSearchTerm) && debouncedSearchTerm.length < 4;
+  const searchOperationalPointsByTrigram = useCallback(
+    async (searchQuery: string) => {
+      const shouldSearchByTrigram = !Number.isInteger(+searchQuery) && searchQuery.length < 4;
 
-    if (!shouldSearchByTrigram) return [];
+      if (!shouldSearchByTrigram || !infraID) return [];
 
-    const payload = {
-      object: 'operationalpoint',
-      query: [
-        'and',
-        ['=i', ['trigram'], debouncedSearchTerm],
-        ['=', ['infra_id'], infraId],
-        dpyToMasOperationalpointsFilter,
-      ],
-    };
-    try {
-      const results = (await postSearch({
-        searchPayload: payload,
-        pageSize: 101,
-      }).unwrap()) as SearchResultItemOperationalPoint[];
-      return results;
-    } catch (error) {
-      setFailure(castErrorToFailure(error));
-      return [];
-    }
-  };
+      const dpyToMasOperationalpointsFilter = isStdcm && !isSuperUser ? DPY_TO_MAS_FILTER : true;
 
-  const searchOperationalPoints = async () => {
-    if (infraID === undefined) return;
+      const payload = {
+        object: 'operationalpoint',
+        query: [
+          'and',
+          ['=i', ['trigram'], searchQuery],
+          ['=', ['infra_id'], infraID],
+          dpyToMasOperationalpointsFilter,
+        ],
+      };
+      try {
+        const results = (await postSearch({
+          searchPayload: payload,
+          pageSize: 101,
+        }).unwrap()) as SearchResultItemOperationalPoint[];
+        return results;
+      } catch (error) {
+        setFailure(castErrorToFailure(error));
+        return [];
+      }
+    },
+    [infraID, isStdcm, isSuperUser]
+  );
 
-    const dpyToMasOperationalpointsFilter = isStdcm && !isSuperUser ? DPY_TO_MAS_FILTER : true;
+  const searchOperationalPoints = useCallback(
+    async (searchQuery: string) => {
+      if (infraID === undefined) return [];
 
-    const trigramResults = await searchOperationalPointsByTrigram(
-      infraID,
-      dpyToMasOperationalpointsFilter
-    );
+      const trigramResults = await searchOperationalPointsByTrigram(searchQuery);
 
-    try {
-      const results = (await postSearch({
-        searchPayload: {
-          object: 'operationalpoint',
-          query: [
-            'and',
-            [
-              'or',
-              ['search', ['name'], debouncedSearchTerm],
-              ['like', ['to_string', ['uic']], `%${debouncedSearchTerm}%`],
+      const dpyToMasOperationalpointsFilter = isStdcm && !isSuperUser ? DPY_TO_MAS_FILTER : true;
+
+      try {
+        const results = (await postSearch({
+          searchPayload: {
+            object: 'operationalpoint',
+            query: [
+              'and',
+              [
+                'or',
+                ['search', ['name'], searchQuery],
+                ['like', ['to_string', ['uic']], `%${searchQuery}%`],
+              ],
+              ['=', ['infra_id'], infraID],
+              dpyToMasOperationalpointsFilter,
             ],
-            ['=', ['infra_id'], infraID],
-            dpyToMasOperationalpointsFilter,
-          ],
-        },
-        pageSize: 101,
-      }).unwrap()) as SearchResultItemOperationalPoint[];
-      setSearchResults([...trigramResults, ...results]);
-    } catch (error) {
-      setFailure(castErrorToFailure(error));
-      setSearchResults([]);
-    }
-  };
+          },
+          pageSize: 101,
+        }).unwrap()) as SearchResultItemOperationalPoint[];
+        return [...trigramResults, ...results];
+      } catch (error) {
+        setFailure(castErrorToFailure(error));
+        return [];
+      }
+    },
+    [infraID, isStdcm, isSuperUser]
+  );
 
   const sortOperationalPoints = (
     a: SearchResultItemOperationalPoint,
@@ -172,7 +169,9 @@ export default function useSearchOperationalPoint({
 
   useEffect(() => {
     if (debouncedSearchTerm) {
-      searchOperationalPoints();
+      searchOperationalPoints(debouncedSearchTerm).then((results) => {
+        setSearchResults(results);
+      });
     } else if (searchResults.length !== 0) {
       setSearchResults([]);
     }
