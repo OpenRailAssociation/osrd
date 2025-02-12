@@ -6,15 +6,12 @@ import { Source } from 'react-map-gl/maplibre';
 import type { LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import {
-  getSpeedSectionsName,
-  getFilterBySpeedSectionsTag,
-} from 'common/Map/Layers/InfraObjectLayers/SpeedLimits';
 import type { LayersSettings } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
 
 import SNCF_PSL_Signs from './PSLSigns';
 import OrderedLayer from '../../../OrderedLayer';
+import { getSpeedSectionsName, getFilterBySpeedSectionsTag } from '../../SpeedLimits';
 
 interface SNCF_PSLProps {
   colors: Theme;
