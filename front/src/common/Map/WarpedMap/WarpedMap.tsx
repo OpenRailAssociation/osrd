@@ -10,17 +10,15 @@ import { useSelector } from 'react-redux';
 import type { Layer as LayerType } from 'applications/editor/consts';
 import colors from 'common/Map/Consts/colors';
 import {
+  EditorSource,
   OrderedLayer,
+  SourcesDefinitionsIndex,
   VirtualLayers,
   genOSMLayerProps,
   useMapBlankStyle,
   type LayerContext,
   type OrderedLayerProps,
 } from 'common/Map/Layers';
-import {
-  EditorSource,
-  SourcesDefinitionsIndex,
-} from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';

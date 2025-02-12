@@ -19,7 +19,7 @@ import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
-import GeoJSONs from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
+import { GeoJSONs } from 'common/Map/Layers';
 import {
   getSwitchesLayerProps,
   getSwitchesNameLayerProps,
