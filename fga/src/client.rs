@@ -92,7 +92,7 @@ impl From<reqwest::Error> for RequestFailure {
 
 impl Client {
     #[tracing::instrument(err)]
-    pub async fn try_init(
+    pub async fn try_with_store(
         store_name: String,
         settings: ConnectionSettings,
     ) -> Result<Self, InitializationError> {
@@ -114,24 +114,24 @@ impl Client {
 
     #[cfg(not(test))]
     #[tracing::instrument(err)]
-    pub async fn try_create_store(
+    pub async fn try_new_store(
         store_name: String,
         settings: ConnectionSettings,
     ) -> Result<Client, InitializationError> {
-        Self::try_create_store_inner(store_name, settings, false).await
+        Self::try_new_store_inner(store_name, settings, false).await
     }
 
     #[cfg(test)]
     #[tracing::instrument(err)]
-    pub async fn try_create_store(
+    pub async fn try_new_store(
         store_name: String,
         settings: ConnectionSettings,
         reset: bool,
     ) -> Result<Client, InitializationError> {
-        Self::try_create_store_inner(store_name, settings, reset).await
+        Self::try_new_store_inner(store_name, settings, reset).await
     }
 
-    async fn try_create_store_inner(
+    async fn try_new_store_inner(
         store_name: String,
         settings: ConnectionSettings,
         reset: bool,
@@ -225,7 +225,7 @@ impl Client {
     ///
     /// For API calls that use an authorization model, OpenFGA strongly recommends providing an authorization
     /// model ID so that they don't have to infer it. It helps to improve performance.
-    /// This function is called automatically when a new [Client] is created with [Client::try_init].
+    /// This function is called automatically when a new [Client] is created with [Client::try_with_store].
     ///
     /// Note that the [Client] may still not have an authorization model ID configured after calling this function
     /// if the [Client]'s store doesn't have any authorization model yet.
@@ -616,7 +616,7 @@ mod tests {
 
     macro_rules! test_client {
         () => {
-            Client::try_create_store(
+            Client::try_new_store(
                 stdext::function_name!()
                     .split("::")
                     .filter(|x| *x != "{{closure}}")
@@ -636,7 +636,7 @@ mod tests {
     #[tokio::test]
     async fn test_try_init() {
         setup_tracing();
-        let client = Client::try_init(
+        let client = Client::try_with_store(
             "lol".to_owned(),
             ConnectionSettings {
                 address: "localhost".to_owned(),
@@ -651,7 +651,7 @@ mod tests {
     #[tokio::test]
     async fn test_try_init_not_found() {
         setup_tracing();
-        let result = Client::try_init(
+        let result = Client::try_with_store(
             "nonexistent_store".to_owned(),
             ConnectionSettings {
                 address: "localhost".to_owned(),
