@@ -224,13 +224,11 @@ impl Client {
     /// Fetches the latest authorization model ID and instructs the [Client] to use it for future API calls
     ///
     /// For API calls that use an authorization model, OpenFGA strongly recommends providing an authorization
-    /// model ID so that they don't have to infer it. This apparently helps performance. This function should
-    /// likely be called when a new authorization model is pushed ([Client::push_authorization_model]) to avoid
-    /// inconsistencies. Likewise for authorization model suppression.
-    ///
+    /// model ID so that they don't have to infer it. It helps to improve performance.
     /// This function is called automatically when a new [Client] is created with [Client::try_init].
     ///
-    /// Erases the [Client]'s authorization model ID if no authorization model is defined in the store.
+    /// Note that the [Client] may still not have an authorization model ID configured after calling this function
+    /// if the [Client]'s store doesn't have any authorization model yet.
     #[tracing::instrument(skip(self), err)]
     pub async fn actualize_authorization_model(&mut self) -> Result<(), RequestFailure> {
         self.authorization_model_id = self
@@ -244,28 +242,16 @@ impl Client {
         Ok(())
     }
 
-    /// Pushes a new authorization model into OpenFGA
-    ///
-    /// /!\ WARNING /!\ The `authorization_model_id` serialized in the [Client] won't change.
-    /// If you wan't this model to be used for following client usage, you need to call
-    /// [Client::actualize_authorization_model] afterwards.
-    ///
-    /// ```ignore
-    /// let settings = todo!();
-    /// let mut client = Client::try_create_store("store_name".to_owned(), settings).await.unwrap();
-    /// assert_eq!(client.authorization_model_id, None);
-    /// let model = todo!();
-    /// let id = client.push_authorization_model(&model).await.unwrap();
-    /// assert_eq!(client.authorization_model_id, None);
-    /// client.actualize_authorization_model().await.unwrap();
-    /// assert_eq!(client.authorization_model_id, Some(id));
-    /// ```
-    pub async fn push_authorization_model(
-        &self,
+    /// Pushes a new authorization model into OpenFGA and configures the client to use it from now on
+    pub async fn update_authorization_model(
+        &mut self,
         authorization_model: &AuthorizationModel,
     ) -> Result<String, RequestFailure> {
-        self.post_stores_authorization_models(&self.store.id, authorization_model)
-            .await
+        let model_id = self
+            .post_stores_authorization_models(&self.store.id, authorization_model)
+            .await?;
+        self.actualize_authorization_model().await?;
+        Ok(model_id)
     }
 
     /// Writes up to 100 tuples in OpenFGA
@@ -709,9 +695,7 @@ mod tests {
         let model = compile_model(MODEL);
         let mut client = test_client!();
         assert_eq!(client.authorization_model_id, None);
-        let id = client.push_authorization_model(&model).await.unwrap();
-        assert_eq!(client.authorization_model_id, None);
-        client.actualize_authorization_model().await.unwrap();
+        let id = client.update_authorization_model(&model).await.unwrap();
         assert_eq!(client.authorization_model_id, Some(id));
     }
 
@@ -719,8 +703,8 @@ mod tests {
     async fn check() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let client = test_client!();
-        client.push_authorization_model(&model).await.unwrap();
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
         let alice = fga!(User:"alice");
         let bob = fga!(User:"bob");
         let infra = fga!(Infra:"france");
@@ -738,8 +722,8 @@ mod tests {
     async fn higher_order_users() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let client = test_client!();
-        client.push_authorization_model(&model).await.unwrap();
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
         let alice = fga!(User:"alice");
         let bob = fga!(User:"bob");
         let france = fga!(Infra:"france");
@@ -764,8 +748,8 @@ mod tests {
     async fn list_objects() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let client = test_client!();
-        client.push_authorization_model(&model).await.unwrap();
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
         let alice = fga!(User:"alice");
         let france = fga!(Infra:"france");
         let spain = fga!(Infra:"espagne");
@@ -789,8 +773,8 @@ mod tests {
     async fn list_objects_unknown_user() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let client = test_client!();
-        client.push_authorization_model(&model).await.unwrap();
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
         let bob = fga!(User:"bob");
         let alice = fga!(User:"alice");
         let france = fga!(Infra:"france");
@@ -815,8 +799,8 @@ mod tests {
     async fn list_objects_higher_order_users() {
         setup_tracing();
         let model = compile_model(MODEL);
-        let client = test_client!();
-        client.push_authorization_model(&model).await.unwrap();
+        let mut client = test_client!();
+        client.update_authorization_model(&model).await.unwrap();
         client
             .prepare_writes()
             .push(&fga!(Infra:"france"#reader@User:"alice"))
