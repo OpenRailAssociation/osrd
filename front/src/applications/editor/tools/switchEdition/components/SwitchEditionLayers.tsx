@@ -19,11 +19,11 @@ import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
-import { GeoJSONs } from 'common/Map/Layers';
 import {
+  GeoJSONs,
   getSwitchesLayerProps,
   getSwitchesNameLayerProps,
-} from 'common/Map/Layers/InfraObjectLayers/Switches';
+} from 'common/Map/Layers/InfraObjectLayers';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
