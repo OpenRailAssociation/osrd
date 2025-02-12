@@ -1,6 +1,7 @@
 mod authz;
 mod documents;
 pub mod electrical_profiles;
+pub mod fonts;
 pub mod infra;
 mod layers;
 mod openapi;
@@ -99,6 +100,7 @@ crate::routes! {
     &authz,
     &documents,
     &electrical_profiles,
+    &fonts,
     &infra,
     &layers,
     &projects,

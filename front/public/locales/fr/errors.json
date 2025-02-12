@@ -61,6 +61,9 @@
     "electrical_profiles": {
       "NotFound": "Profil électrique '{{electrical_profile_set_id}}' non trouvé"
     },
+    "fonts": {
+      "FileNotFound": "Fichier pour la police de charactère demandée non trouvé"
+    },
     "geometry": {
       "UnexpectedGeometry": "Géometrie {{expected}} attendue mais {{actual}} reçue"
     },

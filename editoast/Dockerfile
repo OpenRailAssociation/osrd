@@ -23,11 +23,15 @@ COPY --from=static_assets . /assets
 #######################
 # Build assets        #
 #######################
-FROM alpine:latest AS editoast_assets
+FROM ubuntu:latest AS editoast_assets
+RUN apt update && apt install --yes wget
 RUN wget https://github.com/flother/spreet/releases/download/v0.11.0/spreet-x86_64-unknown-linux-musl.tar.gz
 RUN tar xvf spreet-x86_64-unknown-linux-musl.tar.gz --directory /usr/bin
+RUN wget http://github.com/stadiamaps/sdf_font_tools/releases/download/cli-v1.4.2/build_pbf_glyphs.x86_64-unknown-linux-gnu -O /usr/bin/build_pbf_glyphs
+RUN chmod +x /usr/bin/build_pbf_glyphs
 COPY ./assets /assets
 RUN /assets/sprites/generate-atlas.sh
+RUN /assets/fonts/generate-glyphs.sh
 
 ######################
 # Testing env: build #
@@ -44,6 +48,7 @@ ENV RUSTFLAGS="-Cinstrument-coverage -C target-feature=-crt-static -C link-arg=-
 ENV LLVM_PROFILE_FILE="editoast-%p-%m.profraw"
 RUN cargo chef cook --tests --recipe-path recipe.json
 COPY . .
+COPY --from=editoast_assets /assets /editoast/assets
 
 #######################
 # Running env : build #

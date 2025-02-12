@@ -24,6 +24,8 @@ $ diesel migration run
 # build the assets
 $ cargo install spreet
 $ ./assets/sprites/generate-atlas.sh
+$ cargo install build_pbf_glyphs
+$ ./assets/fonts/generate-glyphs.sh
 # Build and run
 $ cargo build
 $ cargo run -- runserver
