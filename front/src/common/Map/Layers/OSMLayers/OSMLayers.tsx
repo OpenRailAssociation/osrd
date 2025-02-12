@@ -4,11 +4,11 @@ import TerrainSource from 'common/Map/Sources/Terrain';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapStyle } from 'reducers/map';
 
-import Background from '../Background';
+import Background from './Background';
 import Hillshade from '../Hillshade';
-import OSM from '../OSM';
-import PlatformsLayer from '../Platforms';
-import TracksOSM from '../TracksOSM';
+import OSM from './OSM';
+import PlatformsLayer from './Platforms';
+import TracksOSM from './TracksOSM';
 
 type OSMLayersProps = {
   mapStyle: MapStyle;

@@ -23,7 +23,7 @@ import IGNLayers from 'common/Map/Layers/IGNLayers';
 import { NeutralSectionsLayer, OperationalPointsLayer } from 'common/Map/Layers/InfraObjectLayers';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import OSMLayers from 'common/Map/Layers/OSMLayers';
-import { Platforms as PlatformsLayer } from 'common/Map/Layers/Platforms';
+import { Platforms as PlatformsLayer } from 'common/Map/Layers/OSMLayers/Platforms';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import VirtualLayers from 'common/Map/Layers/VirtualLayers';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';

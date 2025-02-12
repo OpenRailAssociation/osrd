@@ -15,7 +15,7 @@ import {
   SourcesDefinitionsIndex,
 } from 'common/Map/Layers/InfraObjectLayers/GeoJSONs';
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
-import { genOSMLayerProps } from 'common/Map/Layers/OSM';
+import { genOSMLayerProps } from 'common/Map/Layers/OSMLayers/OSM';
 import type { LayerContext } from 'common/Map/Layers/types';
 import VirtualLayers from 'common/Map/Layers/VirtualLayers';
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';
