@@ -21,6 +21,9 @@ For both tests or run:
 # apply database migration
 $ cargo install diesel_cli --no-default-features --features postgres
 $ diesel migration run
+# build the assets
+$ cargo install spreet
+$ ./assets/sprites/generate-atlas.sh
 # Build and run
 $ cargo build
 $ cargo run -- runserver

@@ -18,7 +18,16 @@ FROM chef AS base_builder
 RUN apk add --no-cache build-base openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 RUN cargo install diesel_cli --no-default-features --features postgres
-COPY --from=static_assets . /assets
+COPY --from=static_assets . /assets 
+
+#######################
+# Build assets        #
+#######################
+FROM alpine:latest AS editoast_assets
+RUN wget https://github.com/flother/spreet/releases/download/v0.11.0/spreet-x86_64-unknown-linux-musl.tar.gz
+RUN tar xvf spreet-x86_64-unknown-linux-musl.tar.gz --directory /usr/bin
+COPY ./assets /assets
+RUN /assets/sprites/generate-atlas.sh
 
 ######################
 # Testing env: build #
@@ -61,7 +70,7 @@ RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl postgres
 COPY --from=run_builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
 COPY --from=run_builder /editoast/migrations /migrations
-COPY --from=run_builder /editoast/assets /assets
+COPY --from=editoast_assets /assets /assets
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
