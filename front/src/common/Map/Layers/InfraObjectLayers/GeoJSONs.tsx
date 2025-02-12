@@ -49,7 +49,7 @@ import {
   getSwitchesNameLayerProps,
 } from 'common/Map/Layers/InfraObjectLayers/Switches';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { Platforms } from 'common/Map/Layers/Platforms';
+import { Platforms } from 'common/Map/Layers/OSMLayers/Platforms';
 import type { LayerContext } from 'common/Map/Layers/types';
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { RootState } from 'reducers';
