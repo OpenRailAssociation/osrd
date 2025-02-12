@@ -40,6 +40,49 @@ export default function useSearchOperationalPoint({
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
+  const sortOperationalPoints =
+    (searchQuery: string) =>
+    (a: SearchResultItemOperationalPoint, b: SearchResultItemOperationalPoint) => {
+      const upperCaseSearchTerm = searchQuery.toUpperCase();
+      const lowerCaseSearchTerm = searchQuery.toLowerCase();
+
+      // ops with trigram match first
+      if (a.trigram === upperCaseSearchTerm && b.trigram !== upperCaseSearchTerm) {
+        return -1;
+      }
+      if (b.trigram === upperCaseSearchTerm && a.trigram !== upperCaseSearchTerm) {
+        return 1;
+      }
+
+      // ops whose name starts by the searchTerm
+      const aStartsWithSearchTerm = a.name.toLowerCase().startsWith(lowerCaseSearchTerm);
+      const bStartsWithSearchTerm = b.name.toLowerCase().startsWith(lowerCaseSearchTerm);
+
+      if (aStartsWithSearchTerm && !bStartsWithSearchTerm) {
+        return -1;
+      }
+      if (!aStartsWithSearchTerm && bStartsWithSearchTerm) {
+        return 1;
+      }
+
+      // other matching ops alphabetically ordered
+      const nameComparison = a.name.localeCompare(b.name);
+      if (nameComparison !== 0) {
+        return nameComparison;
+      }
+
+      const chA = a.ch ?? '';
+      const chB = b.ch ?? '';
+
+      if (MAIN_OP_CH_CODES.includes(chA)) {
+        return -1;
+      }
+      if (MAIN_OP_CH_CODES.includes(chB)) {
+        return 1;
+      }
+      return chA.localeCompare(chB);
+    };
+
   const searchOperationalPointsByTrigram = useCallback(
     async (searchQuery: string) => {
       const shouldSearchByTrigram = !Number.isInteger(+searchQuery) && searchQuery.length < 4;
@@ -62,7 +105,9 @@ export default function useSearchOperationalPoint({
           searchPayload: payload,
           pageSize: 101,
         }).unwrap()) as SearchResultItemOperationalPoint[];
-        return results;
+        const sortedResults = [...results];
+        sortedResults.sort(sortOperationalPoints(searchQuery));
+        return sortedResults;
       } catch (error) {
         setFailure(castErrorToFailure(error));
         return [];
@@ -71,6 +116,7 @@ export default function useSearchOperationalPoint({
     [infraID, isStdcm, isSuperUser]
   );
 
+  /** Search for operational points by name or UIC code (primary code) */
   const searchOperationalPoints = useCallback(
     async (searchQuery: string) => {
       if (infraID === undefined) return [];
@@ -96,7 +142,10 @@ export default function useSearchOperationalPoint({
           },
           pageSize: 101,
         }).unwrap()) as SearchResultItemOperationalPoint[];
-        return [...trigramResults, ...results];
+
+        const allResults = [...trigramResults, ...results];
+        allResults.sort(sortOperationalPoints(searchQuery));
+        return allResults;
       } catch (error) {
         setFailure(castErrorToFailure(error));
         return [];
@@ -105,58 +154,9 @@ export default function useSearchOperationalPoint({
     [infraID, isStdcm, isSuperUser]
   );
 
-  const sortOperationalPoints = (
-    a: SearchResultItemOperationalPoint,
-    b: SearchResultItemOperationalPoint
-  ) => {
-    const upperCaseSearchTerm = debouncedSearchTerm.toUpperCase();
-    const lowerCaseSearchTerm = debouncedSearchTerm.toLowerCase();
-
-    // ops with trigram match first
-    if (a.trigram === upperCaseSearchTerm && b.trigram !== upperCaseSearchTerm) {
-      return -1;
-    }
-    if (b.trigram === upperCaseSearchTerm && a.trigram !== upperCaseSearchTerm) {
-      return 1;
-    }
-
-    // ops whose name starts by the searchTerm
-    const aStartsWithSearchTerm = a.name.toLowerCase().startsWith(lowerCaseSearchTerm);
-    const bStartsWithSearchTerm = b.name.toLowerCase().startsWith(lowerCaseSearchTerm);
-
-    if (aStartsWithSearchTerm && !bStartsWithSearchTerm) {
-      return -1;
-    }
-    if (!aStartsWithSearchTerm && bStartsWithSearchTerm) {
-      return 1;
-    }
-
-    // other matching ops alphabetically ordered
-    const nameComparison = a.name.localeCompare(b.name);
-    if (nameComparison !== 0) {
-      return nameComparison;
-    }
-
-    const chA = a.ch ?? '';
-    const chB = b.ch ?? '';
-
-    if (MAIN_OP_CH_CODES.includes(chA)) {
-      return -1;
-    }
-    if (MAIN_OP_CH_CODES.includes(chB)) {
-      return 1;
-    }
-    return chA.localeCompare(chB);
-  };
-
-  const sortedSearchResults = useMemo(
-    () => [...searchResults].sort(sortOperationalPoints),
-    [searchResults]
-  );
-
   const filteredAndSortedSearchResults = useMemo(
     () =>
-      sortedSearchResults.filter((result) => {
+      searchResults.filter((result) => {
         if (mainOperationalPointsOnly || (chCodeFilter && MAIN_OP_CH_CODES.includes(chCodeFilter)))
           return MAIN_OP_CH_CODES.includes(result.ch);
 
@@ -164,7 +164,7 @@ export default function useSearchOperationalPoint({
 
         return result.ch.toLocaleLowerCase().includes(chCodeFilter.trim().toLowerCase());
       }),
-    [sortedSearchResults, chCodeFilter, mainOperationalPointsOnly]
+    [searchResults, chCodeFilter, mainOperationalPointsOnly]
   );
 
   useEffect(() => {
@@ -184,7 +184,6 @@ export default function useSearchOperationalPoint({
   return {
     searchTerm,
     chCodeFilter,
-    sortedSearchResults,
     filteredAndSortedSearchResults,
     mainOperationalPointsOnly,
     searchResults,

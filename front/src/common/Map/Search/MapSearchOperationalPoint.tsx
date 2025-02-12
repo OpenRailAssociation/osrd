@@ -28,7 +28,7 @@ const MapSearchOperationalPoint = ({
   const {
     searchTerm,
     chCodeFilter,
-    sortedSearchResults,
+    searchResults,
     filteredAndSortedSearchResults,
     mainOperationalPointsOnly,
     setSearchTerm,
@@ -57,7 +57,7 @@ const MapSearchOperationalPoint = ({
     switch (event.key) {
       case 'ArrowUp':
         setSelectedResultIndex((prevIndex) => {
-          const newIndex = prevIndex > 0 ? prevIndex - 1 : sortedSearchResults.length - 1;
+          const newIndex = prevIndex > 0 ? prevIndex - 1 : searchResults.length - 1;
           const element = document.getElementById(`result-${newIndex}`);
           if (element) {
             element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -67,7 +67,7 @@ const MapSearchOperationalPoint = ({
         break;
       case 'ArrowDown':
         setSelectedResultIndex((prevIndex) => {
-          const newIndex = prevIndex < sortedSearchResults.length - 1 ? prevIndex + 1 : 0;
+          const newIndex = prevIndex < searchResults.length - 1 ? prevIndex + 1 : 0;
           const element = document.getElementById(`result-${newIndex}`);
           if (element) {
             element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -133,15 +133,15 @@ const MapSearchOperationalPoint = ({
         </span>
       </div>
       <h2 className="text-center mt-3">
-        {sortedSearchResults.length > 100
+        {searchResults.length > 100
           ? t('resultsCountTooMuch')
           : t('resultsCount', {
               count: filteredAndSortedSearchResults.length,
             })}
       </h2>
       <div className="search-results">
-        {sortedSearchResults.length > 0 &&
-          sortedSearchResults.length <= 100 &&
+        {searchResults.length > 0 &&
+          searchResults.length <= 100 &&
           filteredAndSortedSearchResults.map((searchResult, index) => (
             <button
               id={`result-${index}`}

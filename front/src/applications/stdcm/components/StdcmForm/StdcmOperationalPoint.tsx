@@ -41,12 +41,7 @@ const StdcmOperationalPoint = ({ location, pathStepId, disabled }: StdcmOperatio
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const {
-    searchTerm,
-    setSearchTerm,
-    sortedSearchResults: searchResults,
-    setSearchResults,
-  } = useSearchOperationalPoint({
+  const { searchTerm, setSearchTerm, searchResults, setSearchResults } = useSearchOperationalPoint({
     initialSearchTerm: location?.name,
     initialChCodeFilter: location?.secondary_code,
     isStdcm: true,
