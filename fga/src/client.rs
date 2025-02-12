@@ -418,6 +418,20 @@ impl<R: Relation> Request for Check<'_, R> {
     }
 }
 
+impl<R, U> Request for QueryObjects<'_, R, U>
+where
+    R: Relation,
+    U: AsUser<User = R::User>,
+{
+    type Response = Vec<R::Object>;
+
+    type Error = QueryError;
+
+    async fn fetch(self, client: &Client) -> Result<Self::Response, Self::Error> {
+        client.list_objects(self).await
+    }
+}
+
 /// Allows transforming continuation-based paginated endpoint calls into a [stream::TryStream]
 ///
 /// The [ContinuationUnfolder::stream] function takes a closure that will be called repeatedly until
@@ -736,6 +750,14 @@ mod tests {
             .unwrap();
         objects.sort();
         assert_eq!(objects.as_slice(), &[spain, france]);
+
+        let mut same_objects = defs::Infra::can_read()
+            .query_objects(&alice)
+            .fetch(&client)
+            .await
+            .unwrap();
+        same_objects.sort();
+        assert_eq!(same_objects, objects);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
