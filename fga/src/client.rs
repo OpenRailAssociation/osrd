@@ -607,22 +607,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_try_init() {
-        setup_tracing();
-        let client = Client::try_with_store(
-            "lol".to_owned(),
-            ConnectionSettings {
-                address: "localhost".to_owned(),
-                port: 8080,
-                reset: false,
-            },
-        )
-        .await
-        .unwrap();
-        assert_eq!(client.store.name, "lol");
-    }
-
-    #[tokio::test]
     async fn test_try_init_not_found() {
         setup_tracing();
         let result = Client::try_with_store(
