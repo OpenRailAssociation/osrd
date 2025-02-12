@@ -1,4 +1,4 @@
-const DotLoader = () => (
+const DotsLoader = () => (
   <div className="dots-loader">
     <div className="dots-loader--dot" />
     <div className="dots-loader--dot" />
@@ -6,4 +6,4 @@ const DotLoader = () => (
   </div>
 );
 
-export default DotLoader;
+export default DotsLoader;

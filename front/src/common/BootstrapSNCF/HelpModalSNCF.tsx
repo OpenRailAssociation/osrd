@@ -9,7 +9,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 
 const DEFAULT_TEXT = '# contact@osrd.fr';
 
-const HelpModal = () => {
+const HelpModalSNCF = () => {
   const { t } = useTranslation('home/navbar');
   const [helpModalText, setHelpModalText] = useState<string>('');
 
@@ -41,4 +41,4 @@ const HelpModal = () => {
   );
 };
 
-export default HelpModal;
+export default HelpModalSNCF;

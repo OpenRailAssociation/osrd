@@ -15,7 +15,7 @@ import {
 } from 'applications/stdcm/utils/consistValidation';
 import type { LightRollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
+import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';

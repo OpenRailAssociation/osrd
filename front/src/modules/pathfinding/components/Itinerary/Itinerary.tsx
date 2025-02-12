@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
-import Pathfinding from 'modules/pathfinding/components/Pathfinding/Pathfinding';
+import Pathfinding from 'modules/pathfinding/components/Pathfinding';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
 import { setWarning } from 'reducers/main';

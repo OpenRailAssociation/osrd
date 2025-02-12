@@ -27,7 +27,7 @@ import { useAppDispatch } from 'store';
 import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
 import StdcmConfig from '../components/StdcmForm/StdcmConfig';
 import StdcmHeader from '../components/StdcmHeader';
-import StdcmHelpModule from '../components/StdcmHelpModule/StdcmHelpModule';
+import StdcmHelpModule from '../components/StdcmHelpModule';
 import StdcmResults from '../components/StdcmResults';
 import StdcmStatusBanner from '../components/StdcmStatusBanner';
 import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';

@@ -8,10 +8,7 @@ import iconOSM from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
 import iconIGNBDORTHO from 'assets/pictures/mapbuttons/mapstyle-ortho.jpg';
 import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
 import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
-import SwitchSNCF, {
-  SWITCH_TYPES,
-  type SwitchSNCFProps,
-} from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import SwitchSNCF, { SWITCH_TYPES, type SwitchSNCFProps } from 'common/BootstrapSNCF/SwitchSNCF';
 import {
   updateShowIGNBDORTHO,
   updateShowIGNCadastre,

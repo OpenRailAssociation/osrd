@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import electricalProfilesIcon from 'assets/pictures/components/electricalProfiles.svg';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF';
 import { toggleUsingElectricalProfiles } from 'reducers/osrdconf/operationalStudiesConf';
 import { getUsingElectricalProfiles } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';

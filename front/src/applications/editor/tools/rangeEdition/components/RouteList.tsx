@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import EyeToggle from 'common/EyeToggle/EyeToggle';
+
+import EyeToggle from './EyeToggle';
 
 type RouteListProps = {
   switchesRouteCandidates: string[];

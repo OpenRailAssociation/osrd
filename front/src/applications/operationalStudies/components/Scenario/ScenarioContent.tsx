@@ -9,8 +9,6 @@ import {
   loadAndIndexNge,
   getNgeDto,
 } from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
-import MicroMacroSwitch from 'applications/operationalStudies/components/MicroMacroSwitch';
-import NGE from 'applications/operationalStudies/components/NGE/NGE';
 import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
@@ -22,12 +20,14 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
-import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
+import Timetable from 'modules/trainschedule/components/Timetable';
 import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import ScenarioDescription from './ScenarioDescription';
 import MacroEditorState from '../MacroEditor/MacroEditorState';
+import MicroMacroSwitch from '../MicroMacroSwitch';
+import NGE from '../NGE';
 
 type ScenarioDescriptionProps = {
   scenario: ScenarioResponse;

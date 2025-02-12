@@ -9,8 +9,8 @@ import { useSelector } from 'react-redux';
 import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import DotsLoader from 'common/DotsLoader/DotsLoader';
+import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF';
+import DotsLoader from 'common/DotsLoader';
 import {
   FormatSwitch as SimpleFormatSwitch,
   Icon2SVG,

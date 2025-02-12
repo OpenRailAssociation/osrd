@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { ConditionalEffortCurve, RollingStock, Comfort } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import Selector from 'common/Selector/Selector';
+import Selector from 'common/Selector';
 import PowerRestrictionGridModal from 'modules/rollingStock/components/RollingStockEditor/PowerRestrictionGridModal';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import {

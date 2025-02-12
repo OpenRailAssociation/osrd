@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import DotsLoader from 'common/DotsLoader/DotsLoader';
+import DotsLoader from 'common/DotsLoader';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
 import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { getUserPreferences } from 'reducers/user/userSelectors';

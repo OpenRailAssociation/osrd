@@ -1,5 +1,5 @@
 import type { Distribution } from 'common/api/osrdEditoastApi';
-import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
+import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector';
 
 import ConstraintDistributionSwitch from './ConstraintDistributionSwitch';
 import ElectricalProfiles from './ElectricalProfiles';

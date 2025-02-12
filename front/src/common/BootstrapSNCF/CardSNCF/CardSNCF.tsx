@@ -8,7 +8,7 @@ interface CardProps {
   disabledLink?: boolean;
   openInNewTab?: boolean;
 }
-const Card = ({ link, img, title, disabledLink = false, openInNewTab = false }: CardProps) => (
+const CardSNCF = ({ link, img, title, disabledLink = false, openInNewTab = false }: CardProps) => (
   <Link
     to={link}
     {...(openInNewTab
@@ -27,4 +27,4 @@ const Card = ({ link, img, title, disabledLink = false, openInNewTab = false }: 
   </Link>
 );
 
-export default Card;
+export default CardSNCF;

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF, useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import Grid from 'common/Grid/Grid';
+import Grid from 'common/Grid';
 import { splitArrayByFirstLetter } from 'utils/array';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 

@@ -19,7 +19,7 @@ import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
-import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';

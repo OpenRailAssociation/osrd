@@ -13,7 +13,7 @@ import { useOsrdConfActions } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
-import Itinerary from 'modules/pathfinding/components/Itinerary/Itinerary';
+import Itinerary from 'modules/pathfinding/components/Itinerary';
 import PowerRestrictionsSelector from 'modules/powerRestriction/components/PowerRestrictionsSelector';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';

@@ -9,8 +9,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
-import HelpModal from 'common/HelpModal/HelpModal';
-import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
+import ReleaseInformations from 'common/ReleaseInformations';
 import UserSettings from 'common/UserSettings';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import useAuth from 'utils/hooks/OsrdAuth';
@@ -18,6 +17,7 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 import { language2flag } from 'utils/strings';
 
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
+import HelpModalSNCF from './HelpModalSNCF';
 import { useModal } from './ModalSNCF';
 
 type Props = {
@@ -114,7 +114,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
               <button
                 type="button"
                 className="btn-link text-reset"
-                onClick={() => openModal(<HelpModal />, 'lg')}
+                onClick={() => openModal(<HelpModalSNCF />, 'lg')}
                 key="help"
               >
                 <span className="mr-2">

@@ -10,7 +10,7 @@ import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
 import SignalsSVGFile from 'assets/pictures/layersicons/layer_signal.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
-import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF';
 import type { RootState } from 'reducers';
 import { updateLayersSettings } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';

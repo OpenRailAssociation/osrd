@@ -12,7 +12,7 @@ import { getIsSuperUser, getUserPreferences } from 'reducers/user/userSelectors'
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 
-import SwitchSNCF from './BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import SwitchSNCF from './BootstrapSNCF/SwitchSNCF';
 
 const UserSettings = () => {
   const userPreferences = useSelector(getUserPreferences);

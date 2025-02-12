@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import icon from 'assets/pictures/components/power_restrictions.svg';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
-import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
+import IntervalsEditor from 'common/IntervalsEditor';
 import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
 import type { RangedValue } from 'common/types';
 import { mmToM } from 'utils/physics';

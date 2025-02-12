@@ -34,9 +34,9 @@ import { isoDateWithTimezoneToSec } from 'utils/date';
 import { kmToM, mmToM, msToKmh } from 'utils/physics';
 
 import getSelectedTrainHoverPositions from './getSelectedTrainHoverPositions';
-import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from '../ChartSynchronizer';
 import Itinerary from './RenderItinerary';
+import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 
 const MAP_ID = 'simulation-result-map';
 

@@ -6,9 +6,10 @@ import type { Comfort } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Loader } from 'common/Loaders';
-import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
 import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
+
+import { RollingStockCard } from '../RollingStockCard';
 
 type RollingStockModal = {
   rollingStockId: number | undefined;
