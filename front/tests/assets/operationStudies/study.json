@@ -1,17 +1,13 @@
 {
-  "id": 0,
   "name": "study_test_e2e",
   "description": "This is an e2e test for the study description",
   "budget": "1234567890",
   "service_code": "A1234",
   "business_code": "B1234",
-  "creation_date": "2023-02-02T23:37:21.271Z",
-  "last_modification": "2023-02-02T23:37:21.271Z",
-  "scenarios": [0],
-  "start_date_study": "2023-02-02T23:37:21.271Z",
-  "expected_end_date_study": "2023-02-02T23:37:21.271Z",
-  "actual_end_date_study": "2023-02-02T23:37:21.271Z",
+  "start_date": "2023-02-02",
+  "expected_end_date": "2023-02-02",
+  "actual_end_date": "2023-02-02",
   "state": "Démarrage",
-  "type": "Débit",
+  "study_type": "Débit",
   "tags": ["tag1", "tag2", "tag3"]
 }
