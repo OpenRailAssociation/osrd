@@ -269,4 +269,39 @@ public class EnvelopeOverlayTest {
         assertEquals(2, envelope.size());
         assertTrue(envelope.continuous);
     }
+
+    /** Testing around edge cases with overlays that stop within the first step*/
+    @Test
+    void interruptedAtStart() {
+        //  +==============+
+        //  0              8
+        var baseEnvelope = Envelope.make(EnvelopeTestUtils.generateTimes(new double[] {0, 8}, new double[] {1, 1}));
+
+        // Constraint has been broken immediately after start, part with no step
+        {
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
+            var overlayBuilder =
+                    new ConstrainedEnvelopePartBuilder(partBuilder, new EnvelopeConstraint(baseEnvelope, CEILING));
+            assertTrue(overlayBuilder.initEnvelopePart(0, 1, 1));
+            assertTrue(overlayBuilder.addStep(0, 1));
+            assertFalse(overlayBuilder.addStep(1, 2));
+            var res = partBuilder.build();
+            assertEquals(0, res.stepCount());
+        }
+
+        // Constraint has been broken within the first step, part with one (partial) step
+        {
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
+            var overlayBuilder =
+                    new ConstrainedEnvelopePartBuilder(partBuilder, new EnvelopeConstraint(baseEnvelope, CEILING));
+            assertTrue(overlayBuilder.initEnvelopePart(0, 0.5, 1));
+            assertTrue(overlayBuilder.addStep(0, 0.5));
+            assertFalse(overlayBuilder.addStep(1, 5));
+            var res = partBuilder.build();
+            assertEquals(1, res.stepCount());
+            assertTrue(res.getPointPos(1) < 1);
+        }
+    }
 }

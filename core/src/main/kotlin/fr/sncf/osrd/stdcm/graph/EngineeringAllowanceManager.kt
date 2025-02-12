@@ -130,8 +130,8 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                 -1.0
             )
             val builder = OverlayEnvelopeBuilder.backward(maxEffort)
-            if (speedupPartBuilder.stepCount() > 1) {
-                val speedupPart = speedupPartBuilder.build()
+            val speedupPart = speedupPartBuilder.build()
+            if (speedupPart.stepCount() > 0) {
                 builder.addPart(speedupPart)
                 val lastAccelerationPosition = speedupPart.beginPos
                 if (lastAccelerationPosition > 0.0) {

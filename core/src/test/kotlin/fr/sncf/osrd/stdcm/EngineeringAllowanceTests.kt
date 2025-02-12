@@ -494,4 +494,79 @@ class EngineeringAllowanceTests {
         occupancyTest(res, occupancyGraph)
         Assertions.assertEquals(3600.0, res.departureTime, 2 * timeStep)
     }
+
+    /**
+     * Reproduces a bug: the engineering allowance area has a very low speed limit, to the point
+     * where we reach speed=0 within one step.
+     */
+    @Test
+    fun testSlowdownWithLowLimitSpeed() {
+        /*
+        a --> b --> c --> d
+
+        space
+          ^
+        d |######### end
+          |######### /
+        c |#########/
+          |     __/
+        b |  __/
+          | /##################
+        a |/_##################_> time
+
+         */
+        val infra = DummyInfra()
+        val firstBlock = infra.addBlock("a", "b", 1000.meters, 0.5)
+        val secondBlock = infra.addBlock("b", "c", 10000.meters, 0.5)
+        val thirdBlock = infra.addBlock("c", "d", 100.meters, 0.5)
+        val firstBlockEnvelope =
+            simulateBlock(
+                infra,
+                infraExplorerFromBlock(infra, infra, firstBlock),
+                0.0,
+                Offset(0.meters),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                Comfort.STANDARD,
+                2.0,
+                null,
+                null,
+                null
+            )!!
+        val secondBlockEnvelope =
+            simulateBlock(
+                infra,
+                infraExplorerFromBlock(infra, infra, secondBlock),
+                firstBlockEnvelope.endSpeed,
+                Offset(0.meters),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                Comfort.STANDARD,
+                2.0,
+                null,
+                null,
+                null
+            )!!
+        val timeThirdBlockFree = firstBlockEnvelope.totalTime + secondBlockEnvelope.totalTime
+        val occupancyGraph =
+            ImmutableMultimap.of(
+                firstBlock,
+                OccupancySegment(
+                    firstBlockEnvelope.totalTime + 10,
+                    Double.POSITIVE_INFINITY,
+                    0.meters,
+                    1000.meters
+                ),
+                thirdBlock,
+                OccupancySegment(0.0, timeThirdBlockFree + 30, 0.meters, 100.meters)
+            )
+        val timeStep = 2.0
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset(1.meters))))
+                .setUnavailableTimes(occupancyGraph)
+                .setTimeStep(timeStep)
+                .run()!!
+        occupancyTest(res, occupancyGraph, 2 * timeStep)
+    }
 }
