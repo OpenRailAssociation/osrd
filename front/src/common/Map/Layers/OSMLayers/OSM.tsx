@@ -7,8 +7,9 @@ import { useSelector } from 'react-redux';
 import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
 import mapStyleMinimalJson from 'assets/mapstyles/OSMMinimalStyle.json';
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
-import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { getShowOSM3dBuildings } from 'reducers/map/selectors';
+
+import OrderedLayer, { type OrderedLayerProps } from '../OrderedLayer';
 
 interface OSMProps {
   mapStyle: string;

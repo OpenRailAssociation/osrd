@@ -4,9 +4,10 @@ import { Source } from 'react-map-gl/maplibre';
 import type { SymbolLayer, LineLayer } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { LayersSettings } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
+
+import OrderedLayer from '../OrderedLayer';
 
 interface SpeedLimitsProps {
   colors: Theme;

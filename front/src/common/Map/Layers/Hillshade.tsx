@@ -1,8 +1,9 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
+
+import OrderedLayer from './OrderedLayer';
 
 type HillshadeProps = {
   mapStyle: string;

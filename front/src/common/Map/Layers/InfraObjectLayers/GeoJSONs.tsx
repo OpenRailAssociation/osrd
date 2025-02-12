@@ -47,7 +47,6 @@ import {
   getSwitchesLayerProps,
   getSwitchesNameLayerProps,
 } from 'common/Map/Layers/InfraObjectLayers/Switches';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { Platforms } from 'common/Map/Layers/OSMLayers/Platforms';
 import type { LayerContext } from 'common/Map/Layers/types';
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -57,6 +56,7 @@ import type { Theme } from 'types';
 
 import geoMainLayer from './getGeographicLayerProps';
 import getMastLayerProps from './getMastLayerProps';
+import OrderedLayer from '../OrderedLayer';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 

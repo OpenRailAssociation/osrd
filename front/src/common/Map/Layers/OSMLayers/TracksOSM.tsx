@@ -1,9 +1,10 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { RootState } from 'reducers';
 import type { Theme } from 'types';
+
+import OrderedLayer from '../OrderedLayer';
 
 interface TracksOSMProps {
   colors: Theme;

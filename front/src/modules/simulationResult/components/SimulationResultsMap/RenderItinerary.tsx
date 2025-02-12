@@ -1,7 +1,7 @@
 import type { Feature, LineString } from 'geojson';
 import { Source } from 'react-map-gl/maplibre';
 
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { OrderedLayer } from 'common/Map/Layers';
 
 type ItineraryProps = {
   geojsonPath: Feature<LineString>;

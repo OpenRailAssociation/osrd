@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getMap } from 'reducers/map/selectors';
 import type { Theme } from 'types';
 
 import geoMainLayer from './getGeographicLayerProps';
+import OrderedLayer from '../OrderedLayer';
 
 interface TracksGeographicProps {
   colors: Theme;

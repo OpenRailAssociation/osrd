@@ -2,10 +2,10 @@ import { isNil } from 'lodash';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { Theme } from 'types';
 
 import getKPLabelLayerProps from './getKPLabelLayerProps';
+import OrderedLayer from '../OrderedLayer';
 
 type OperationalPointsProps = {
   colors: Theme;

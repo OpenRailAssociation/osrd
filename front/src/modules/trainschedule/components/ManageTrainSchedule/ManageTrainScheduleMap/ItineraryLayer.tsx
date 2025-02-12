@@ -1,7 +1,7 @@
 import { Source } from 'react-map-gl/maplibre';
 
 import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { OrderedLayer } from 'common/Map/Layers';
 
 type ItineraryLayerProps = {
   layerOrder: number;

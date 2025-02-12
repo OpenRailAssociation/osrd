@@ -3,8 +3,9 @@ import { Source } from 'react-map-gl/maplibre';
 import type { LayerProps } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { Theme } from 'types';
+
+import OrderedLayer from '../OrderedLayer';
 
 interface ElectrificationsProps {
   colors: Theme;
