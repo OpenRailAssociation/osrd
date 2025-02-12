@@ -142,19 +142,15 @@ impl Client {
     }
 
     pub fn stores(&self) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> + '_ {
-        ContinuationUnfolder::new(()).stream(
-            move |UnfoldArgs {
-                      continuation,
-                      ctx: _ctx,
-                  }| async move {
-                let (stores, continuation) = self
-                    .get_stores(None, continuation.as_ref().map(String::as_str))
-                    .await?;
+        ContinuationState::new(()).stream(
+            move |ContinuationState { continuation, .. }| async move {
+                let (stores, continuation) =
+                    self.get_stores(None, continuation.as_option()).await?;
                 Ok((
                     stores,
-                    UnfoldNextState {
+                    ContinuationState {
                         ctx: (),
-                        continuation,
+                        continuation: Continuation::from(continuation),
                     },
                 ))
             },
@@ -174,23 +170,16 @@ impl Client {
     pub fn authorization_models(
         &self,
     ) -> impl stream::TryStream<Ok = StoreAuthorizationModel, Error = RequestFailure> + '_ {
-        ContinuationUnfolder::new(()).stream(
-            move |UnfoldArgs {
-                      continuation,
-                      ctx: _ctx,
-                  }| async move {
+        ContinuationState::new(()).stream(
+            move |ContinuationState { continuation, .. }| async move {
                 let (models, continuation) = self
-                    .get_stores_authorization_models(
-                        &self.store.id,
-                        None,
-                        continuation.as_ref().map(String::as_str),
-                    )
+                    .get_stores_authorization_models(&self.store.id, None, continuation.as_option())
                     .await?;
                 Ok((
                     models,
-                    UnfoldNextState {
+                    ContinuationState {
                         ctx: (),
-                        continuation,
+                        continuation: Continuation::from(continuation),
                     },
                 ))
             },
@@ -443,19 +432,9 @@ where
 ///
 /// This unfolder can also be provided with a context that will be passed to the closure at each call.
 /// The closure is free to modify it but **must** provide it anew in its result using [UnfoldNextState].
-struct ContinuationUnfolder<C> {
+struct ContinuationState<C> {
     ctx: C,
     continuation: Continuation,
-}
-
-struct UnfoldArgs<C> {
-    ctx: C,
-    continuation: Option<String>,
-}
-
-struct UnfoldNextState<C> {
-    ctx: C,
-    continuation: String,
 }
 
 /// Models the three states of a continuation while unfolding paginated API calls
@@ -468,6 +447,15 @@ enum Continuation {
     Stop,
 }
 
+impl Continuation {
+    fn as_option(&self) -> Option<&str> {
+        match self {
+            Continuation::None | Continuation::Stop => None,
+            Continuation::Continue(continuation) => Some(continuation.as_str()),
+        }
+    }
+}
+
 impl From<String> for Continuation {
     fn from(s: String) -> Self {
         if s.is_empty() {
@@ -478,7 +466,7 @@ impl From<String> for Continuation {
     }
 }
 
-impl<C> ContinuationUnfolder<C> {
+impl<C> ContinuationState<C> {
     fn new(ctx: C) -> Self {
         Self {
             ctx,
@@ -529,49 +517,25 @@ impl<C> ContinuationUnfolder<C> {
     // TODO: rewrite that using async closures once rust 1.85 lands :pepoparty:
     fn stream<F, Fut, T>(self, f: F) -> impl stream::TryStream<Ok = T, Error = RequestFailure>
     where
-        F: Fn(UnfoldArgs<C>) -> Fut,
-        Fut: Future<Output = Result<(Vec<T>, UnfoldNextState<C>), RequestFailure>>,
+        F: Fn(ContinuationState<C>) -> Fut + Copy,
+        Fut: Future<Output = Result<(Vec<T>, ContinuationState<C>), RequestFailure>>,
     {
-        struct Iter<F, C> {
-            f: F,
-            ctx: C,
-            continuation: Continuation,
-        }
-        let init = {
-            let Self { ctx, continuation } = self;
-            Iter {
-                f,
-                ctx,
-                continuation,
-            }
-        };
-
-        let stream = stream::try_unfold(
-            init,
-            move |Iter {
-                      f,
-                      ctx,
-                      continuation,
-                  }| {
-                Box::pin(async move {
-                    let continuation = match continuation {
-                        Continuation::None => None,
-                        Continuation::Continue(continuation) => Some(continuation),
-                        Continuation::Stop => return Ok::<_, RequestFailure>(None),
-                    };
-                    let (items, UnfoldNextState { ctx, continuation }) =
-                        f(UnfoldArgs { ctx, continuation }).await?;
-                    Ok(Some((
-                        items,
-                        Iter {
-                            f,
-                            ctx,
-                            continuation: Continuation::from(continuation),
-                        },
-                    )))
-                })
-            },
-        );
+        let stream = stream::try_unfold(self, move |ContinuationState { ctx, continuation }| {
+            Box::pin(async move {
+                if let Continuation::Stop = continuation {
+                    return Ok::<_, RequestFailure>(None);
+                }
+                let (items, ContinuationState { ctx, continuation }) =
+                    f(ContinuationState { ctx, continuation }).await?;
+                Ok(Some((
+                    items,
+                    ContinuationState {
+                        ctx,
+                        continuation: Continuation::from(continuation),
+                    },
+                )))
+            })
+        });
 
         stream
             .map_ok(|items| stream::iter(items.into_iter().map(Ok)))
