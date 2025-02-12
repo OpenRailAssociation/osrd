@@ -42,8 +42,8 @@
 //!
 //! type document
 //!     relations
-//!         reader: [person, person:*] # a document can be publicly available for consultation
-//!         can_read: reader
+//!         define reader: [person, person:*] # a document can be publicly available for consultation
+//!         define can_read: reader
 //! ```
 //!
 //! A definition of this model in Rust looks like this:
