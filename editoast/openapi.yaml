@@ -299,6 +299,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
+  /fonts/{font}/{glyph}:
+    get:
+      tags:
+      - fonts
+      summary: This endpoint is used by map libre to retrieve the fonts. They are separated by font and unicode block
+      parameters:
+      - name: font
+        in: path
+        description: Requested font
+        required: true
+        schema:
+          type: string
+      - name: glyph
+        in: path
+        description: Requested unicode block
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Glyphs in PBF format of the font at the requested unicode block
+        '404':
+          description: Font not found
   /health:
     get:
       responses:
@@ -4807,6 +4830,7 @@ components:
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
       - $ref: '#/components/schemas/EditoastEditoastUrlErrorInvalidUrl'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
+      - $ref: '#/components/schemas/EditoastFontErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
@@ -4889,6 +4913,30 @@ components:
       description: Generated error type for Editoast
       discriminator:
         propertyName: type
+    EditoastFontErrorsFileNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - file
+          properties:
+            file:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:fonts:FileNotFound
     EditoastGeometryErrorUnexpectedGeometry:
       type: object
       required:

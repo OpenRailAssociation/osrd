@@ -4,6 +4,7 @@ export const addTagTypes = [
   'authz',
   'documents',
   'electrical_profiles',
+  'fonts',
   'infra',
   'rolling_stock',
   'delimited_area',
@@ -137,6 +138,13 @@ const injectedRtkApi = api
           url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/level_order`,
         }),
         providesTags: ['electrical_profiles'],
+      }),
+      getFontsByFontAndGlyph: build.query<
+        GetFontsByFontAndGlyphApiResponse,
+        GetFontsByFontAndGlyphApiArg
+      >({
+        query: (queryArg) => ({ url: `/fonts/${queryArg.font}/${queryArg.glyph}` }),
+        providesTags: ['fonts'],
       }),
       getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
         query: () => ({ url: `/health` }),
@@ -1168,6 +1176,13 @@ export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiResponse
   };
 export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiArg = {
   electricalProfileSetId: number;
+};
+export type GetFontsByFontAndGlyphApiResponse = unknown;
+export type GetFontsByFontAndGlyphApiArg = {
+  /** Requested font */
+  font: string;
+  /** Requested unicode block */
+  glyph: string;
 };
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
