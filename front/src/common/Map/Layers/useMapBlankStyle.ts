@@ -20,7 +20,7 @@ const isValidUrl = async (url: string) => {
   return (await checkValidity('json')) && checkValidity('png');
 };
 
-export const useMapBlankStyle = (): MapProps['mapStyle'] => {
+const useMapBlankStyle = (): MapProps['mapStyle'] => {
   const { data: signalingSystems } =
     osrdEditoastApi.endpoints.getSpritesSignalingSystems.useQuery();
 

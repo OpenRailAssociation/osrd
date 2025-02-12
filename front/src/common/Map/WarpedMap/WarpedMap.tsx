@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 
 import type { Layer as LayerType } from 'applications/editor/consts';
 import colors from 'common/Map/Consts/colors';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import {
   EditorSource,
   SourcesDefinitionsIndex,
@@ -17,6 +16,7 @@ import {
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genOSMLayerProps } from 'common/Map/Layers/OSMLayers/OSM';
 import type { LayerContext } from 'common/Map/Layers/types';
+import useMapBlankStyle from 'common/Map/Layers/useMapBlankStyle';
 import VirtualLayers from 'common/Map/Layers/VirtualLayers';
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';

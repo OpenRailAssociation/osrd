@@ -6,12 +6,12 @@ import type { MapRef } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
 
 import colors from 'common/Map/Consts/colors';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import IGNLayers from 'common/Map/Layers/IGNLayers';
 import InfraObjectLayers from 'common/Map/Layers/InfraObjectLayers';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import OSMLayers from 'common/Map/Layers/OSMLayers';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
+import useMapBlankStyle from 'common/Map/Layers/useMapBlankStyle';
 import VirtualLayers from 'common/Map/Layers/VirtualLayers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapState, Viewport } from 'reducers/map';
