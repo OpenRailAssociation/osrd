@@ -7,6 +7,7 @@ import fr.sncf.osrd.api.api_v2.pathfinding.NoPathFoundException
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockRequest
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
+import fr.sncf.osrd.signaling.bapr.BAPR
 import fr.sncf.osrd.signaling.tvm300.TVM300
 import fr.sncf.osrd.signaling.tvm430.TVM430
 import fr.sncf.osrd.train.RollingStock
@@ -143,6 +144,35 @@ class PathfindingSignalingTest {
                     DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("b->S", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("S->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
+                )
+            )
+    }
+
+    @Test
+    fun shouldPriorUseBalPathForBaprBalTrain() {
+        setSigSystemIds(listOf("b->N", "N->d"), BAPR.id) // Other blocks are BAL
+        val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
+        val waypointsInter =
+            listOf(TrackLocation("S->d", Offset.zero()), TrackLocation("N->d", Offset.zero()))
+        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
+
+        val pathfindingResp =
+            fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
+                infra.fullInfra(),
+                getPathfindingBlockRequest(
+                    TestTrains.REALISTIC_FAST_TRAIN,
+                    listOf(waypointsStart, waypointsInter, waypointsEnd)
+                )
+            )
+        assertThat(pathfindingResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        assertThat((pathfindingResp as PathfindingBlockSuccess).trackSectionRanges)
+            .isEqualTo(
+                arrayListOf(
+                    DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    // xfail: Should go South here to prioritize BAL over BAPR
+                    DirectionalTrackRange("b->N", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange("N->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
                 )
             )
