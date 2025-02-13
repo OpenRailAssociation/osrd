@@ -5,6 +5,7 @@ import { expect } from '@playwright/test';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 import type { Simulation } from './types';
+import { logger } from '../logging-fixture';
 
 /**
  * Find the first PDF file in a directory.
@@ -15,12 +16,12 @@ export function findFirstPdf(directory: string): string | null {
   try {
     const pdfFile = fs.readdirSync(directory).find((file) => file.endsWith('.pdf'));
     if (!pdfFile) {
-      console.error(`No PDF files found in directory: ${directory}`);
+      logger.error(`No PDF files found in directory: ${directory}`);
       return null;
     }
     return path.resolve(directory, pdfFile);
   } catch (error) {
-    console.error(`Error reading directory: ${directory}`, error);
+    logger.error(`Error reading directory: ${directory}`, error);
     return null;
   }
 }
