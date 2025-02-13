@@ -20,7 +20,7 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
   const pathSteps = useSelector(getPathSteps);
 
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  if (!destination)
+  if (!destination || pathSteps.length === 1)
     return (
       <>
         <span className="text-warning mr-2">
