@@ -39,9 +39,15 @@ export type StdcmConsistProps = {
   isDebugMode: boolean;
   disabled?: boolean;
   consistErrors?: ConsistErrors;
+  onValidateConsist?: () => void;
 };
 
-const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: StdcmConsistProps) => {
+const StdcmConsist = ({
+  isDebugMode,
+  consistErrors = {},
+  disabled = false,
+  onValidateConsist,
+}: StdcmConsistProps) => {
   const { t } = useTranslation('stdcm');
   const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
     useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
@@ -169,6 +175,7 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
           disabled={disabled}
           statusWithMessage={massFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('mass')}
+          onBlur={onValidateConsist}
         />
         <Input
           id="length"
@@ -181,6 +188,7 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
           disabled={disabled}
           statusWithMessage={lengthFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('length')}
+          onBlur={onValidateConsist}
         />
       </div>
       <div className="stdcm-consist__properties">
@@ -202,6 +210,7 @@ const StdcmConsist = ({ isDebugMode, consistErrors = {}, disabled = false }: Std
           disabled={disabled}
           statusWithMessage={speedFieldStatus}
           onCloseStatusMessage={() => handleCloseStatusMessage('speed')}
+          onBlur={onValidateConsist}
         />
       </div>
     </StdcmCard>

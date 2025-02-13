@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -98,7 +98,13 @@ const StdcmConfig = ({
   const { rollingStock } = useStoreDataForRollingStockSelector();
   const towedRollingStock = useStdcmTowedRollingStock();
 
-  const consistErrors = useMemo(() => {
+  const [consistErrors, setConsistErrors] = useState<{
+    totalMass?: string;
+    totalLength?: string;
+    maxSpeed?: string;
+  }>();
+
+  const onValidateConsist = useCallback(() => {
     const totalMassError = validateTotalMass({
       tractionEngineMass: rollingStock?.mass,
       towedMass: towedRollingStock?.mass,
@@ -111,11 +117,11 @@ const StdcmConfig = ({
       totalLength,
     });
 
-    return {
+    setConsistErrors({
       totalMass: totalMassError,
       totalLength: totalLengthError,
       maxSpeed: validateMaxSpeed(maxSpeed, rollingStock?.max_speed),
-    };
+    });
   }, [rollingStock, towedRollingStock, totalMass, totalLength, maxSpeed]);
 
   const disabled = isPending || retainedSimulationIndex !== undefined;
@@ -220,6 +226,7 @@ const StdcmConfig = ({
             <div className="stdcm-consist-container">
               <StdcmConsist
                 consistErrors={consistErrors}
+                onValidateConsist={onValidateConsist}
                 disabled={disabled}
                 isDebugMode={isDebugMode}
               />
