@@ -31,7 +31,6 @@ use tracing::Instrument;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
-use validator::Validate;
 
 use crate::core::conflict_detection::Conflict;
 use crate::core::conflict_detection::TrainRequirements;
@@ -100,6 +99,10 @@ enum StdcmError {
     TrainSimulationFail,
     #[error("Path items are invalid")]
     InvalidPathItems { items: Vec<InvalidPathItem> },
+    #[error("Invalid consist mass: {message}")]
+    InvalidConsistMass { message: String },
+    #[error("Invalid consist length: {message}")]
+    InvalidConsistLength { message: String },
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -156,7 +159,6 @@ async fn stdcm(
 
     let trace_id = Some(trace_id).filter(|trace_id| *trace_id != TraceId::INVALID);
 
-    stdcm_request.validate()?;
     let mut conn = db_pool.get().await?;
 
     let timetable_id = id;
@@ -178,14 +180,18 @@ async fn stdcm(
         .await?
         .into();
 
+    let towed_rolling_stock = stdcm_request
+        .get_towed_rolling_stock(&mut conn)
+        .await?
+        .map(From::from);
+
+    stdcm_request.validate_consist(&rolling_stock, &towed_rolling_stock)?;
+
     let physics_consist_parameters = PhysicsConsistParameters {
         max_speed: stdcm_request.max_speed,
         total_length: stdcm_request.total_length,
         total_mass: stdcm_request.total_mass,
-        towed_rolling_stock: stdcm_request
-            .get_towed_rolling_stock(&mut conn)
-            .await?
-            .map(From::from),
+        towed_rolling_stock,
         traction_engine: rolling_stock,
     };
 
@@ -524,6 +530,10 @@ mod tests {
     use rstest::rstest;
     use serde_json::json;
     use std::str::FromStr;
+    use uom::si::length::meter;
+    use uom::si::length::Length;
+    use uom::si::mass::kilogram;
+    use uom::si::quantities::Mass;
     use uuid::Uuid;
 
     use crate::core::conflict_detection::Conflict;
@@ -535,6 +545,7 @@ mod tests {
     use crate::core::simulation::PhysicsConsist;
     use crate::core::simulation::ReportTrain;
     use crate::core::simulation::SpeedLimitProperties;
+    use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_simple_rolling_stock;
     use crate::models::fixtures::create_small_infra;
@@ -551,7 +562,12 @@ mod tests {
 
     use super::*;
 
-    fn get_stdcm_payload(rolling_stock_id: i64, work_schedule_group_id: Option<i64>) -> Request {
+    fn get_stdcm_payload(
+        rolling_stock_id: i64,
+        work_schedule_group_id: Option<i64>,
+        total_mass: Option<f64>,
+        total_length: Option<f64>,
+    ) -> Request {
         Request {
             start_time: Some(
                 DateTime::from_str("2024-01-01T10:00:00Z").expect("Failed to parse datetime"),
@@ -601,8 +617,8 @@ mod tests {
             time_gap_before: 35000,
             time_gap_after: 35000,
             margin: Some(MarginValue::MinPer100Km(4.5)),
-            total_mass: None,
-            total_length: None,
+            total_mass: total_mass.map(Mass::new::<kilogram>),
+            total_length: total_length.map(Length::new::<meter>),
             max_speed: None,
             loading_gauge_type: None,
         }
@@ -883,7 +899,147 @@ mod tests {
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(rolling_stock.id, None));
+            .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
+
+        let stdcm_response: StdcmResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        if let PathfindingResult::Success(path) =
+            PathfindingResult::Success(pathfinding_result_success())
+        {
+            assert_eq!(
+                stdcm_response,
+                StdcmResponse::Success {
+                    simulation: simulation_response(),
+                    path,
+                    departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                        .expect("Failed to parse datetime")
+                }
+            );
+        }
+    }
+
+    #[rstest]
+    async fn stdcm_request_mass_validation() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = core_mocking_client();
+        core.stub("/v2/stdcm")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(crate::core::stdcm::Response::Success {
+                simulation: simulation_response(),
+                path: pathfinding_result_success(),
+                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    .expect("Failed to parse datetime"),
+            })
+            .finish();
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let total_mass = Some(80_000.0);
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(rolling_stock.id, None, total_mass, None));
+
+        let stdcm_response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
+
+        assert_eq!(
+            stdcm_response.message,
+            "Invalid consist mass: The total mass must be greater than the sum of the rolling stock masses (900000 kilograms)"
+                .to_owned()
+        );
+    }
+
+    #[rstest]
+    async fn stdcm_request_length_validation() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = core_mocking_client();
+        core.stub("/v2/stdcm")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(crate::core::stdcm::Response::Success {
+                simulation: simulation_response(),
+                path: pathfinding_result_success(),
+                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    .expect("Failed to parse datetime"),
+            })
+            .finish();
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let total_length = Some(300.0);
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(
+                rolling_stock.id,
+                None,
+                None,
+                total_length,
+            ));
+
+        let stdcm_response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
+
+        assert_eq!(
+            stdcm_response.message,
+            "Invalid consist length: The total length must be greater than the sum of the rolling stock lengths (400 meters)"
+                .to_owned()
+        );
+    }
+
+    #[rstest]
+    async fn stdcm_request_validation_success() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = core_mocking_client();
+        core.stub("/v2/stdcm")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(crate::core::stdcm::Response::Success {
+                simulation: simulation_response(),
+                path: pathfinding_result_success(),
+                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    .expect("Failed to parse datetime"),
+            })
+            .finish();
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let total_length = Some(410.0);
+        let total_mass = Some(910_000.0);
+        let request = app
+            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
+            .json(&get_stdcm_payload(
+                rolling_stock.id,
+                None,
+                total_mass,
+                total_length,
+            ));
 
         let stdcm_response: StdcmResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -931,7 +1087,7 @@ mod tests {
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(rolling_stock.id, None));
+            .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
 
         let stdcm_response: StdcmResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -1002,6 +1158,8 @@ mod tests {
             .json(&get_stdcm_payload(
                 rolling_stock.id,
                 Some(work_schedule_group.id),
+                None,
+                None,
             ));
 
         let stdcm_response: StdcmResponse =

@@ -4,6 +4,8 @@ use chrono::Utc;
 use editoast_common::units;
 use editoast_models::DbConnection;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::rolling_stock::RollingStock;
+use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::PathItem;
@@ -14,8 +16,10 @@ use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
 use units::quantities;
+use uom::fmt::DisplayStyle;
+use uom::si::length::meter;
+use uom::si::mass::kilogram;
 use utoipa::ToSchema;
-use validator::Validate;
 
 use crate::core::pathfinding::PathfindingInputError;
 use crate::error::Result;
@@ -70,7 +74,7 @@ pub(crate) struct StepTimingData {
 
 /// An STDCM request
 #[editoast_derive::annotate_units]
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Validate, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(remote = "Self")]
 pub(crate) struct Request {
     /// Deprecated, first step arrival time should be used instead
@@ -296,6 +300,70 @@ impl Request {
             })
             .await?;
         Ok(Some(towed_rolling_stock))
+    }
+
+    pub(super) fn validate_consist(
+        &self,
+        traction_engine: &RollingStock,
+        towed_rolling_stock: &Option<TowedRollingStock>,
+    ) -> Result<()> {
+        self.validate_consist_mass(traction_engine, towed_rolling_stock)?;
+        self.validate_consist_length(traction_engine, towed_rolling_stock)?;
+        Ok(())
+    }
+
+    fn validate_consist_mass(
+        &self,
+        traction_engine: &RollingStock,
+        towed_rolling_stock: &Option<TowedRollingStock>,
+    ) -> Result<()> {
+        let consist_mass = traction_engine.mass
+            + towed_rolling_stock
+                .as_ref()
+                .map(|t| t.mass)
+                .unwrap_or_default();
+        let consist_mass = consist_mass.floor::<kilogram>();
+
+        if let Some(request_total_mass) = self.total_mass {
+            if request_total_mass < consist_mass {
+                return Err(StdcmError::InvalidConsistMass {
+                    message: format!(
+                        "The total mass must be greater than the sum of the rolling stock masses ({})",
+                        &consist_mass.into_format_args(kilogram, DisplayStyle::Description),
+                    ),
+                }
+                .into());
+            }
+        }
+
+        Ok(())
+    }
+
+    fn validate_consist_length(
+        &self,
+        traction_engine: &RollingStock,
+        towed_rolling_stock: &Option<TowedRollingStock>,
+    ) -> Result<()> {
+        let consist_length = traction_engine.length
+            + towed_rolling_stock
+                .as_ref()
+                .map(|t| t.length)
+                .unwrap_or_default();
+        let consist_length = consist_length.floor::<meter>();
+
+        if let Some(request_total_length) = self.total_length {
+            if request_total_length < consist_length {
+                return Err(StdcmError::InvalidConsistLength {
+                    message: format!(
+                        "The total length must be greater than the sum of the rolling stock lengths ({})",
+                        &consist_length.into_format_args(meter, DisplayStyle::Description),
+                    ),
+                }
+                .into());
+            }
+        }
+
+        Ok(())
     }
 }
 

@@ -210,7 +210,9 @@
       "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TowedRollingStockNotFound": "Matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
       "TrainSimulationFail": "Échec de la simulation du train",
-      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
+      "InvalidConsistMass": "La masse du convoi est invalide : '{{message}}'",
+      "InvalidConsistLength": "La longueur du convoi est invalide : '{{message}}'"
     },
     "study": {
       "Database": "Erreur interne (base de données)",

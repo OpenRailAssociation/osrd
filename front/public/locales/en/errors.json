@@ -208,7 +208,9 @@
       "RollingStockNotFound": "Rolling stock '{{rolling_stock_id}}' does not exist",
       "TowedRollingStockNotFound": "Towed rolling stock {towed_rolling_stock_id} does not exist",
       "TrainSimulationFail": "Train simulation failed",
-      "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist"
+      "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist",
+      "InvalidConsistMass": "Invalid consist mass: '{{message}}'",
+      "InvalidConsistLength": "Invalid consist length: '{{message}}'"
     },
     "study": {
       "Database": "Internal error (database)",
