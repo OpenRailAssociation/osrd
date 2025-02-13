@@ -1,0 +1,15 @@
+DROP INDEX IF EXISTS public.pga_idx_fk_infra_layer_psl_sign_infra_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_study_project_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_infra_layer_neutral_sign_infra_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_train_schedule_timetable_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_scenario_electrical_profile_set_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_scenario_infra_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_scenario_study_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_work_schedule_work_schedule_group_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_stdcm_search_environment_electrical_profile_set_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_stdcm_search_environment_infra_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_stdcm_search_environment_temporary_speed_limit_group_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_stdcm_search_environment_timetable_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_stdcm_search_environment_work_schedule_group_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_temporary_speed_limit_temporary_speed_limit_group_id;
+DROP INDEX IF EXISTS public.pga_idx_fk_stdcm_logs_user_id;
