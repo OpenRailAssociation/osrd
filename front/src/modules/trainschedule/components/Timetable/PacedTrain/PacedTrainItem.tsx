@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -11,6 +11,15 @@ import { ms2min } from 'utils/timeManipulation';
 
 import TimetableItemActions from '../TimetableItemActions';
 import type { PacedTrainWithResult } from '../types';
+import OccurenceItem, { type Occurence } from './OccurenceItem';
+import useOccurences from './hooks/useOccurences';
+
+export type PacedTrain = TrainScheduleWithDetails & {
+  paced: {
+    duration: string;
+    step: string;
+  };
+};
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
@@ -31,16 +40,15 @@ const PacedTrainItem = ({
 }: PacedTrainItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
 
-  const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
+const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
+const pacedTrainCadence = pacedTrain.paced.step;
+  const { occurences, occurencesCount } = useOccurences(pacedTrain, pacedTrainCadence);
 
   const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
   const selectPathProjection = async () => {};
   const duplicatePacedTrain = async () => {};
   const deletePacedTrain = async () => {};
 
-  const pacedTrainCadence = pacedTrain.paced.step;
-
-  const occurrencesCount = Math.floor(pacedTrain.paced.duration.ms / pacedTrain.paced.step.ms);
   return (
     <div
       data-testid="scenario-timetable-train"
@@ -120,7 +128,10 @@ const PacedTrainItem = ({
         editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
         deleteTimetableItem={deletePacedTrain}
       />
-      <div className="occurrences" />
+      <div className="occurences">
+        {isOccurrencesListOpen &&
+          occurences.map((occurence, index) => <OccurenceItem occurence={occurence} key={index} />)}
+      </div>
       {pacedTrain.isValid && (
         <div className="more-info">
           <div className="more-info-left">
