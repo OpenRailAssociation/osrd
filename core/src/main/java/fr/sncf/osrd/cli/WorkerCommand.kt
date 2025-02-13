@@ -154,13 +154,18 @@ class WorkerCommand : CliCommand {
                 try {
                     infraManager.load(infraId, null, diagnosticRecorder)
                 } catch (e: OSRDError) {
-                    if (e.osrdErrorType == ErrorType.InfraHardLoadingError) {
-                        logger.warn("Failed to load infra $infraId with a perennial error: $e")
-                        // go on and future requests will be consumed and rejected
-                    } else if (e.osrdErrorType == ErrorType.InfraSoftLoadingError) {
-                        logger.error("Failed to load infra $infraId with a temporary error: $e")
-                        // Stop worker and let another worker spawn eventually
-                        throw e
+                    val isInfraLoadError =
+                        setOf(ErrorType.InfraHardLoadingError, ErrorType.InfraSoftLoadingError)
+                            .contains(e.osrdErrorType)
+                    if (isInfraLoadError) {
+                        if (e.osrdErrorType.isRecoverable) {
+                            logger.warn("Failed to load infra $infraId with a perennial error: $e")
+                            // go on and future requests will be consumed and rejected
+                        } else {
+                            logger.error("Failed to load infra $infraId with a temporary error: $e")
+                            // Stop worker and let another worker spawn eventually
+                            throw e
+                        }
                     } else {
                         logger.error(
                             "Failed to load infra $infraId with an unexpected OSRD Error: $e"
@@ -268,7 +273,7 @@ class WorkerCommand : CliCommand {
                                 .toByteArray() // TODO: have a valid payload for uncaught exceptions
                         status = "core_error".encodeToByteArray()
                         // Stop worker and let another worker spawn eventually
-                        if (t is OSRDError && t.osrdErrorType == ErrorType.InfraSoftLoadingError) {
+                        if (t is OSRDError && !t.osrdErrorType.isRecoverable) {
                             throw t
                         }
                     } finally {
@@ -308,7 +313,7 @@ class WorkerCommand : CliCommand {
                 WORKER_REQUESTS_QUEUE,
                 false,
                 mapOf(),
-                DeliverCallback { _, message ->
+                { _, message ->
                     if (executor.queue.count() >= WORKER_THREADS * 4) {
                         // We directly process the message with no dispatch if there's too many
                         // locally queued tasks. Prevents the worker from consuming all the rabbitmq
@@ -327,12 +332,12 @@ class WorkerCommand : CliCommand {
                 }
             )
 
-            logger.info("consume ended")
-
             while (true) {
                 Thread.sleep(100)
                 if (!channel.isOpen()) break
             }
+
+            logger.info("consume ended")
 
             return 0
         }
