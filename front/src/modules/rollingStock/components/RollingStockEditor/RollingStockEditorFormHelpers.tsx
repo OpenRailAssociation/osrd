@@ -2,12 +2,14 @@ import cx from 'classnames';
 import { floor, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import type { RollingStockCategory } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import {
   DEFAULT_SIGNALING_SYSTEMS,
+  RollingStockCategoryDict,
   RollingStockEditorMetadata,
   RollingStockEditorParameter,
   RS_REQUIRED_FIELDS,
@@ -368,6 +370,93 @@ export const RollingStockEditorOnboardSystemEquipmentForm = ({
           {t('supportedSignalingSystems')}
         </label>
         <div className="d-flex flex-wrap col-xl-9 ">{signalingSystemCheckboxes}</div>
+      </div>
+    </div>
+  );
+};
+
+type CategoryOption = { id?: RollingStockCategory; label: string };
+
+export const RollingStockEditorCategoryForm = ({
+  rollingStockValues,
+  setRollingStockValues,
+}: RollingStockEditorParameterFormProps) => {
+  const { t } = useTranslation(['rollingstock']);
+
+  const categoryOptions: CategoryOption[] = [
+    { label: t('categoriesOptions.choose') },
+    ...Object.values(RollingStockCategoryDict).map((category) => ({
+      id: category,
+      label: t(`categoriesOptions.${category}`),
+    })),
+  ];
+
+  const handlePrimaryCategoryChange = (selectedCategory?: CategoryOption) => {
+    setRollingStockValues((prevValues) => {
+      if (selectedCategory?.id) {
+        prevValues.categories.add(selectedCategory.id);
+      }
+      return {
+        ...prevValues,
+        primaryCategory: selectedCategory?.id,
+      };
+    });
+  };
+
+  const handleOtherCategoryChange =
+    (category: RollingStockCategory) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setRollingStockValues((prevValues) => {
+        if (e.target.checked) {
+          prevValues.categories.add(category);
+        } else {
+          prevValues.categories.delete(category);
+        }
+        return { ...prevValues };
+      });
+    };
+
+  return (
+    <div className="rollingstock-editor-input-container px-1 pb-3">
+      {/* Primary Category Selection */}
+      <div className="d-flex align-items-center justify-content-between col rollingstock-editor-select mb-4">
+        <SelectSNCF
+          sm
+          id="primary_category"
+          name="primary_category"
+          label={t('primaryCategory')}
+          value={
+            rollingStockValues.primaryCategory
+              ? {
+                  id: rollingStockValues.primaryCategory,
+                  label: t(rollingStockValues.primaryCategory),
+                }
+              : { label: t('categoriesOptions.choose') }
+          }
+          options={categoryOptions}
+          onChange={handlePrimaryCategoryChange}
+        />
+      </div>
+
+      {/* Other Categories Selection */}
+      <div className="col">
+        <label className="form-label" htmlFor="rs_category_checkboxes">
+          {t('otherCategories')}
+        </label>
+        <div className="d-flex flex-wrap" id="rs_category_checkboxes">
+          {Object.values(RollingStockCategoryDict).map((category) => (
+            <div key={category} className={cx('col-12', 'col-sm-6', 'col-lg-4', 'mb-2')}>
+              <CheckboxRadioSNCF
+                type="checkbox"
+                id={`other_category_${category}`}
+                name="other_categories"
+                label={t(`categoriesOptions.${category}`)}
+                checked={rollingStockValues.categories.has(category)}
+                onChange={handleOtherCategoryChange(category)}
+                disabled={rollingStockValues.primaryCategory === category}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

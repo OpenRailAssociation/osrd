@@ -1,7 +1,14 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import type { RollingStockCategory } from 'common/api/osrdEditoastApi';
+
 import CommonPage from './common-page-model';
-import { fillAndCheckInputById } from '../utils/index';
+import readJsonFile from '../utils/file-utils';
+import { fillAndCheckInputById, getTranslations } from '../utils/index';
+import type { FlatTranslations } from '../utils/types';
+
+const enTranslations: FlatTranslations = readJsonFile('public/locales/en/rollingstock.json');
+const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/rollingstock.json');
 
 class RollingstockEditorPage extends CommonPage {
   private readonly newRollingstockButton: Locator;
@@ -21,6 +28,8 @@ class RollingstockEditorPage extends CommonPage {
   private readonly electricalProfileSelector: Locator;
 
   private readonly loadingGauge: Locator;
+
+  private readonly primaryCategorySelector: Locator;
 
   private readonly tractionModeSelector: Locator;
 
@@ -42,6 +51,10 @@ class RollingstockEditorPage extends CommonPage {
 
   constructor(page: Page) {
     super(page);
+    const translations = getTranslations({
+      en: enTranslations,
+      fr: frTranslations,
+    });
     this.newRollingstockButton = page.getByTestId('new-rollingstock-button');
     this.submitRollingstockButton = page.getByTestId('submit-rollingstock-button');
     this.rollingstockDetailsButton = page.getByTestId('tab-rollingstock-details');
@@ -51,6 +64,9 @@ class RollingstockEditorPage extends CommonPage {
     this.powerRestrictionSelector = page.getByTestId('power-restriction-selector');
     this.electricalProfileSelector = page.getByTestId('electrical-profile-selector');
     this.loadingGauge = page.locator('#loadingGauge');
+    this.primaryCategorySelector = page.getByRole('combobox', {
+      name: translations.primaryCategory,
+    });
     this.tractionModeSelector = page.getByTestId('traction-mode-selector');
     this.confirmModalButtonYes = page.getByTestId('confirm-modal-button-yes');
     this.addPowerRestrictionButton = this.powerRestrictionSelector.getByRole('button').nth(1);
@@ -174,6 +190,12 @@ class RollingstockEditorPage extends CommonPage {
   async selectLoadingGauge(value: string) {
     await this.loadingGauge.selectOption(value);
     expect(await this.loadingGauge.inputValue()).toBe(value);
+  }
+
+  // Select primary category
+  async selectPrimaryCategory(value: RollingStockCategory) {
+    await this.primaryCategorySelector.selectOption(value);
+    await expect(this.primaryCategorySelector).toHaveValue(value);
   }
 
   // Fill speed effort curves with or without power restriction

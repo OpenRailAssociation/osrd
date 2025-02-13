@@ -110,8 +110,11 @@ export const getRollingStockEditorDefaultValues = (
         basePowerClass: rollingStockData.base_power_class || null,
         powerRestrictions: rollingStockData.power_restrictions,
         supportedSignalingSystems: rollingStockData.supported_signaling_systems,
-        primary_category: rollingStockData.primary_category,
-        other_categories: rollingStockData.other_categories,
+        primaryCategory: rollingStockData.primary_category,
+        categories: new Set([
+          ...rollingStockData.other_categories,
+          rollingStockData.primary_category,
+        ]),
       }
     : {
         ...newRollingStockValues,
@@ -198,22 +201,15 @@ export const rollingStockEditorQueryArg = (
     },
     base_power_class: data.basePowerClass,
     supported_signaling_systems: data.supportedSignalingSystems,
-    primary_category: data.primary_category,
-    other_categories: data.other_categories,
+    primary_category: data.primaryCategory,
+    other_categories: [...data.categories].filter((category) => category !== data.primaryCategory),
   };
 };
 
 type Conditions = Record<string, (effortCurves: EffortCurveForms | null) => boolean>;
 
 const isMultiUnitsParam = (
-  param:
-    | string
-    | number
-    | string[]
-    | { [key: string]: string }
-    | MultiUnitsParameter
-    | null
-    | undefined
+  param: RollingStockParametersValues[keyof RollingStockParametersValues]
 ): param is MultiUnitsParameter =>
   param ? Object.keys(param as MultiUnitsParameter).includes('value') : false;
 

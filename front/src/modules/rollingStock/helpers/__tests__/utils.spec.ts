@@ -47,6 +47,7 @@ describe('checkRollingStockFormValidity', () => {
           'rollingResistanceA',
           'rollingResistanceB',
           'rollingResistanceC',
+          'primaryCategory',
         ],
         validRollingStockForm: {
           name: 'auietsrn',
@@ -61,6 +62,7 @@ describe('checkRollingStockFormValidity', () => {
           rollingResistanceA: { max: 20, min: 0, unit: 'kN', value: 0 },
           rollingResistanceB: { max: 0.5, min: 0, unit: 'kN/(km/h)', value: 0 },
           rollingResistanceC: { max: 0.01, min: 0, unit: 'kN/(km/h)²', value: 0 },
+          primaryCategory: 'FREIGHT_TRAIN',
         },
         invalidEffortCurves: [],
       };
@@ -79,6 +81,7 @@ describe('checkRollingStockFormValidity', () => {
         maxSpeed: { unit: 'km/h', value: 100 },
         loadingGauge: 'G1',
         basePowerClass: null,
+        primaryCategory: 'FAST_FREIGHT_TRAIN',
       } as RollingStockParametersValues;
 
       const expected = {
@@ -112,6 +115,7 @@ describe('checkRollingStockFormValidity', () => {
           electricalPowerStartupTime: 0,
           raisePantographTime: 15,
           basePowerClass: null,
+          primaryCategory: 'FAST_FREIGHT_TRAIN',
         },
         invalidEffortCurves: ['comfortTypes.STANDARD > 15000 > unspecified > unspecified'],
       };
@@ -140,6 +144,7 @@ describe('checkRollingStockFormValidity', () => {
         'rollingResistanceC',
         'electricalPowerStartupTime',
         'raisePantographTime',
+        'primaryCategory',
       ],
       validRollingStockForm: {
         name: 'auietsrn',
@@ -158,6 +163,7 @@ describe('checkRollingStockFormValidity', () => {
         electricalPowerStartupTime: 0,
         raisePantographTime: 15,
         basePowerClass: null,
+        primaryCategory: 'FREIGHT_TRAIN',
       },
       invalidEffortCurves: [],
     };

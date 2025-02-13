@@ -173,6 +173,21 @@ export default function RollingStockCardDetail({
             </td>
           </tr>
         )}
+        <tr>
+          <td className="text-primary text-nowrap pr-1">{t('primaryCategory')}</td>
+          <td> {t(`categoriesOptions.${rs.primary_category}`)} </td>
+        </tr>
+        {!isEmpty(rs.other_categories) && (
+          <tr>
+            <td className="text-primary text-nowrap pr-1">{t('otherCategories')}</td>
+            <td>
+              {rs.other_categories
+                .map((category) => t(`categoriesOptions.${category}`))
+                .toSorted()
+                .join(', ')}
+            </td>
+          </tr>
+        )}
       </tbody>
     </table>
   );

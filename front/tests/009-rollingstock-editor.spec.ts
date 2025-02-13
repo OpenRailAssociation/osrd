@@ -54,6 +54,7 @@ test.describe('Rollingstock editor page tests', () => {
       await fillAndCheckInputById(page, input.id, value, input.isNumeric);
     }
     await rollingStockEditorPage.selectLoadingGauge('GA'); // Select loading gauge
+    await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN'); // Select primary category
 
     // Submit and handle potential warnings
     await rollingStockEditorPage.clickOnSubmitRollingstockButton();

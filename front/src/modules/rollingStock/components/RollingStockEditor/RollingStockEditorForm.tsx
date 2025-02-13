@@ -14,6 +14,7 @@ import type { TabProps } from 'common/Tabs';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockEditorCurves from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCurves';
 import {
+  RollingStockEditorCategoryForm,
   RollingStockEditorMetadataForm,
   RollingStockEditorOnboardSystemEquipmentForm,
   RollingStockEditorParameterForm,
@@ -157,6 +158,11 @@ const RollingStockEditorForm = ({
         name: t('messages.invalidForm'),
         message: t('messages.missingName'),
       };
+    } else if (!data.primaryCategory) {
+      error = {
+        name: t('messages.invalidForm'),
+        message: t('messages.missingPrimaryCategory'),
+      };
     } else if (!selectedTractionMode || !effortCurves) {
       error = {
         name: t('messages.invalidForm'),
@@ -245,6 +251,11 @@ const RollingStockEditorForm = ({
 
         <RollingStockEditorOnboardSystemEquipmentForm
           rsSignalingSystemsList={rollingStockValues.supportedSignalingSystems}
+          setRollingStockValues={setRollingStockValues}
+        />
+
+        <RollingStockEditorCategoryForm
+          rollingStockValues={rollingStockValues}
           setRollingStockValues={setRollingStockValues}
         />
       </>

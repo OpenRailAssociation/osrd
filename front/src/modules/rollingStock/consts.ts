@@ -1,8 +1,9 @@
-import type { Comfort } from 'common/api/osrdEditoastApi';
+import type { Comfort, RollingStockCategory } from 'common/api/osrdEditoastApi';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import type {
   ElectricalProfileByMode,
   MultiUnit,
+  RollingStockParametersValidValues,
   RollingStockParametersValues,
   SchemaProperty,
 } from 'modules/rollingStock/types';
@@ -60,12 +61,14 @@ export const newRollingStockValues: RollingStockParametersValues = {
   basePowerClass: null,
   powerRestrictions: {},
   supportedSignalingSystems: DEFAULT_SIGNALING_SYSTEMS,
-  primary_category: 'FREIGHT_TRAIN',
-  other_categories: [],
+  primaryCategory: undefined,
+  categories: new Set(),
 };
 
-export const RS_REQUIRED_FIELDS = Object.freeze({
-  name: '',
+// This contains a list of required fields, as well as defaults values that are auto-filled in case they are missing
+// However the form can not be user submitted at all if name or primaryCategory (or effort curve params) are missing
+export const RS_REQUIRED_FIELDS: Partial<RollingStockParametersValidValues> = Object.freeze({
+  name: '', // Default value that should not end up being used
   length: 1,
   mass: newRollingStockValues.mass,
   maxSpeed: newRollingStockValues.maxSpeed,
@@ -79,6 +82,7 @@ export const RS_REQUIRED_FIELDS = Object.freeze({
   rollingResistanceC: newRollingStockValues.rollingResistanceC,
   electricalPowerStartupTime: 0,
   raisePantographTime: 15,
+  primaryCategory: 'FREIGHT_TRAIN', // Default value that should not end up being used
 });
 
 export enum RollingStockEditorMetadata {
@@ -338,4 +342,19 @@ export const EP_BY_MODE: ElectricalProfileByMode = {
   '25000V': [null, '25000V', '22500V', '20000V'],
   other: [null],
   thermal: [null],
+};
+
+// This dict is passthrough as we actually only need a list of categories, but using a dict lets typescript check
+// that the keys perfectly corresponds to the API-provided keys or raise a type error, thus enforcing consistency
+export const RollingStockCategoryDict: Record<RollingStockCategory, RollingStockCategory> = {
+  HIGH_SPEED_TRAIN: 'HIGH_SPEED_TRAIN',
+  INTERCITY_TRAIN: 'INTERCITY_TRAIN',
+  REGIONAL_TRAIN: 'REGIONAL_TRAIN',
+  COMMUTER_TRAIN: 'COMMUTER_TRAIN',
+  FREIGHT_TRAIN: 'FREIGHT_TRAIN',
+  FAST_FREIGHT_TRAIN: 'FAST_FREIGHT_TRAIN',
+  NIGHT_TRAIN: 'NIGHT_TRAIN',
+  TRAM_TRAIN: 'TRAM_TRAIN',
+  TOURISTIC_TRAIN: 'TOURISTIC_TRAIN',
+  WORK_TRAIN: 'WORK_TRAIN',
 };
