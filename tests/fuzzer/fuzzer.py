@@ -59,7 +59,7 @@ def run(
     """
     print("loading infra")
     infra_graph = _make_graph(editoast_url, scenario.infra)
-    requests.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
+    _raise_if_error(requests.post(editoast_url + f"infra/{scenario.infra}/load"))
     # The prelude allows us to keep track of path/schedule requests sent so far,
     # so we can easily reproduce the current state.
     prelude = []
@@ -464,8 +464,7 @@ def _convert_stop(stop: Tuple[str, float], i: int) -> Dict:
 def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:
     """Deletes the current timetable and creates a new one."""
     # Delete the current timetable
-    r = _delete_with_timeout(editoast_url + f"/timetable/{scenario.timetable}/")
-    r.raise_for_status()
+    _raise_if_error(_delete_with_timeout(editoast_url + f"/timetable/{scenario.timetable}/"))
 
     # Create a timetable
     r = _post_with_timeout(editoast_url + "/timetable/", json={})
@@ -558,6 +557,15 @@ def _request_with_timeout(request_type: str, *args, **kwargs) -> Response:
         res = Response()
         res.status_code = 500
         return res
+
+
+def _raise_if_error(response: Response) -> Response:
+    """
+    Similar to response.raise_for_status(), but includes the response content in the message
+    """
+    if response.status_code // 100 != 2:
+        raise RuntimeError(f"status code: {response.status_code}, content: {response.content.decode('UTF-8')}")
+    return response
 
 
 def _to_mm(distance: float) -> int:
