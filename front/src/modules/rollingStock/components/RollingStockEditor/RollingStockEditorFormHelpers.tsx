@@ -304,8 +304,8 @@ export const RollingStockEditorParameterForm = ({
       </div>
       <div className="d-flex flex-column justify-content-between col-xl-4 pb-3">
         <div className="d-flex flex-xl-column mb-2 mt-3 mt-xl-0">
-          <span className=" ml-xl-2 text-gray-dark">{t('rollingResistance')}</span>
-          <span className=" ml-4 text-muted">{t('rollingResistanceFormula')}</span>
+          <span className="ml-xl-2 text-gray-dark">{t('rollingResistance')}</span>
+          <span className="ml-4 text-muted">{t('rollingResistanceFormula')}</span>
         </div>
         <RollingStockEditorParameterFormColumn
           rollingStockValues={rollingStockValues}
@@ -365,7 +365,7 @@ export const RollingStockEditorOnboardSystemEquipmentForm = ({
 
   return (
     <div className="d-lg-flex rollingstock-editor-input-container px-1 pb-3">
-      <div className={cx('d-flex', 'justify-content-space-around', 'mr-2')}>
+      <div className="d-flex justify-content-space-around mr-2">
         <label className="signaling-systems-label col-xl-3" htmlFor="supportedSignalingSystems">
           {t('supportedSignalingSystems')}
         </label>

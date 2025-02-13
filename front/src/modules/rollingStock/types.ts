@@ -7,14 +7,6 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 export type RollingStockParametersValidValues = {
-  // TODO: remove this line in the type
-  [key: string]:
-    | string
-    | number
-    | null
-    | RollingStock['power_restrictions']
-    | string[]
-    | MultiUnitsParameter;
   railjsonVersion: string;
   name: string;
   detail: string;
