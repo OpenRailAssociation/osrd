@@ -12,10 +12,7 @@ import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
 
 export const MAIN_OP_CH_CODES = ['', '00', 'BV'];
-const DPY_TO_MAS_FILTER = [
-  'or',
-  ...DPY_TO_MAS_OPERATIONAL_POINTS.map(([ci, ch]) => ['and', ['=', ['ci'], ci], ['=', ['ch'], ch]]),
-];
+const DPY_TO_MAS_FILTER = ['or', ...DPY_TO_MAS_OPERATIONAL_POINTS.map((ci) => ['=', ['ci'], ci])];
 
 type SearchOperationalPoint = {
   debounceDelay?: number;
