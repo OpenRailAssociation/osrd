@@ -82,7 +82,8 @@ $colors: (
   --breakpoint-lg: 1024px;
   @each $color, $value in $colors {
     --#{$color}: #{$value};
-    --#{$color}-rgb: #{color.channel($value, 'red')}, #{color.channel($value, 'green')},
+    --#{$color}-rgb:
+      #{color.channel($value, 'red')}, #{color.channel($value, 'green')},
       #{color.channel($value, 'blue')};
   }
 
