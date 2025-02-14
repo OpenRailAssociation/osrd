@@ -287,16 +287,19 @@ function getDetectorsLayers(context: LayerContext, prefix: string): LayerProps[]
 }
 
 function getPSLSignsLayers(context: LayerContext, prefix: string): LayerProps[] {
+  const filter = getFilterBySpeedSectionsTag(context.layersSettings);
   return [
     {
       ...getPSLSignsLayerProps(context),
       id: `${prefix}geo/psl-signs`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
+      filter,
     },
     {
       ...getMastLayerProps(context),
       id: `${prefix}geo/psl-signs-mast`,
       minzoom: 13,
+      filter,
     },
     {
       ...getKPLabelLayerProps({
@@ -305,6 +308,7 @@ function getPSLSignsLayers(context: LayerContext, prefix: string): LayerProps[] 
         isSignalisation: true,
       }),
       id: `${prefix}geo/psl-signs-kp`,
+      filter,
     },
   ];
 }
