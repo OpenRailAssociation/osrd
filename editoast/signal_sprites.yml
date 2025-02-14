@@ -19,4 +19,4 @@ TVM300:
 TVM430:
   default: "REP TGV"
 ETCS_LEVEL2:
-  default: "REP TGV"
+  default: "STOP MARKER"
