@@ -10,7 +10,7 @@ import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { TrainId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
-import { addDurationToDate, subtractDurationFromDate } from 'utils/date';
+import { Duration, addDurationToDate } from 'utils/duration';
 import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
@@ -28,8 +28,7 @@ const keepTrainsRunningDuringStdcm = (
   const stdcmDepartureTime = new Date(stdcmResult.departure_time);
   const stdcmArrivalTime = addDurationToDate(
     new Date(stdcmResult.departure_time),
-    stdcmResult.simulation.final_output.times.at(-1)!,
-    'millisecond'
+    new Duration({ milliseconds: stdcmResult.simulation.final_output.times.at(-1)! })
   );
 
   for (const trainSchedule of trainSchedules.values()) {
@@ -39,13 +38,12 @@ const keepTrainsRunningDuringStdcm = (
     const departureTime = trainSchedule.startTime;
     const arrivalTime = addDurationToDate(
       trainSchedule.startTime,
-      trainSchedule.pathItemTimes.final.at(-1)!,
-      'millisecond'
+      new Duration({ milliseconds: trainSchedule.pathItemTimes.final.at(-1)! })
     );
 
     if (
-      arrivalTime < subtractDurationFromDate(stdcmDepartureTime, 1, 'hour') ||
-      departureTime > addDurationToDate(stdcmArrivalTime, 1, 'hour')
+      arrivalTime < addDurationToDate(stdcmDepartureTime, new Duration({ hours: -1 })) ||
+      departureTime > addDurationToDate(stdcmArrivalTime, new Duration({ hours: 1 }))
     ) {
       continue;
     }
