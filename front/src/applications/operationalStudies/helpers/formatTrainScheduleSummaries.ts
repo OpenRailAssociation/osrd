@@ -19,7 +19,7 @@ import { isScheduledPointsNotHonored, isTooFast } from '../utils';
 
 const formatTrainScheduleSummaries = (
   trainIds: TrainId[],
-  rawSummaries: Record<TrainScheduleId, SimulationSummaryResult>,
+  rawSummaries: Map<TrainScheduleId, SimulationSummaryResult>,
   rawTrainSchedules: Map<TrainScheduleId, TrainScheduleResultWithTrainId>,
   rollingStocks: LightRollingStockWithLiveries[]
 ): Map<TrainId, TrainScheduleWithDetails> => {
@@ -31,7 +31,7 @@ const formatTrainScheduleSummaries = (
   const trainScheduleWithDetails = relevantTrainSchedules.map((trainSchedule) => {
     const rollingStock = rollingStocks.find((rs) => rs.name === trainSchedule.rolling_stock_name);
 
-    const trainSummary = rawSummaries[trainSchedule.id];
+    const trainSummary = rawSummaries.get(trainSchedule.id);
 
     if (!trainSummary) return null;
 

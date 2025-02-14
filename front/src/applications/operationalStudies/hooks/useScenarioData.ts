@@ -250,10 +250,10 @@ const useScenarioData = (
       }).unwrap();
 
       // TODO Paced train : Adapt this for the add paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
-      const formattedRawSummaries: { [key: TrainScheduleId]: SimulationSummaryResult } = {};
+      const formattedRawSummaries: Map<TrainScheduleId, SimulationSummaryResult> = new Map();
       for (const [_editoastTrainId, trainSummary] of Object.entries(rawSummaries)) {
         const formattedTrainId = formatEditoastTrainIdToTrainScheduleId(Number(_editoastTrainId));
-        formattedRawSummaries[formattedTrainId] = trainSummary;
+        formattedRawSummaries.set(formattedTrainId, trainSummary);
       }
 
       const summaries = formatTrainScheduleSummaries(

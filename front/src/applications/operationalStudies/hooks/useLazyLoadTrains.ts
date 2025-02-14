@@ -81,10 +81,10 @@ const useLazyLoadTrains = ({
         }).unwrap();
 
         // TODO Paced train : Adapt this for the add paced train issue : https://github.com/OpenRailAssociation/osrd/issues/10615
-        const formattedRawSummaries: { [key: TrainScheduleId]: SimulationSummaryResult } = {};
+        const formattedRawSummaries: Map<TrainScheduleId, SimulationSummaryResult> = new Map();
         for (const [editoastTrainId, trainSummary] of Object.entries(rawSummaries)) {
           const trainId = formatEditoastTrainIdToTrainScheduleId(Number(editoastTrainId));
-          formattedRawSummaries[trainId] = trainSummary;
+          formattedRawSummaries.set(trainId, trainSummary);
         }
 
         // the two rtk-query calls postTrainSchedule & postTrainScheduleSimulationSummary

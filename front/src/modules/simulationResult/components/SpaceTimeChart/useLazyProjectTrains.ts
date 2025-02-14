@@ -94,10 +94,10 @@ const useLazyProjectTrains = ({
         },
       }).unwrap();
 
-      const formattedRawProjectedTrains: { [key: TrainScheduleId]: ProjectPathTrainResult } = {};
+      const formattedRawProjectedTrains: Map<TrainScheduleId, ProjectPathTrainResult> = new Map();
       for (const [editoastTrainId, projectedTrain] of Object.entries(rawProjectedTrains)) {
         const trainId = formatEditoastTrainIdToTrainScheduleId(Number(editoastTrainId));
-        formattedRawProjectedTrains[trainId] = projectedTrain;
+        formattedRawProjectedTrains.set(trainId, projectedTrain);
       }
 
       setProjectedTrainsById((prevTrains) => {
