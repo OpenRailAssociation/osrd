@@ -331,7 +331,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   {t('studyStartDate')}
                 </div>
               }
-              value={formatDateForInput(currentStudy?.start_date)}
+              value={formatLocalDate(currentStudy?.start_date)}
               onChange={(e) => handleStudyInputChange('start_date', e.target.value || null)}
               max={getEarliestDate(currentStudy?.expected_end_date, currentStudy?.actual_end_date)}
             />
@@ -347,9 +347,9 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   {t('studyExpectedEndDate')}
                 </div>
               }
-              value={formatDateForInput(currentStudy?.expected_end_date)}
+              value={formatLocalDate(currentStudy?.expected_end_date)}
               onChange={(e) => handleStudyInputChange('expected_end_date', e.target.value || null)}
-              min={formatDateForInput(currentStudy.start_date)}
+              min={formatLocalDate(currentStudy.start_date)}
               isInvalid={!isExpectedEndDateValid}
             />
             <InputSNCF
@@ -364,9 +364,9 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
                   {t('studyRealEndDate')}
                 </div>
               }
-              value={formatDateForInput(currentStudy?.actual_end_date)}
+              value={formatLocalDate(currentStudy?.actual_end_date)}
               onChange={(e) => handleStudyInputChange('actual_end_date', e.target.value || null)}
-              min={formatDateForInput(currentStudy.start_date)}
+              min={formatLocalDate(currentStudy.start_date)}
               isInvalid={!isActualEndDateValid}
             />
           </div>

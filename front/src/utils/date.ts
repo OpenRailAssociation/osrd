@@ -19,10 +19,6 @@ export function timestampToHHMMSS(timestamp: number) {
   return dayjs(date).format('HH:mm:ss');
 }
 
-export function formatIsoDate(date: Date) {
-  return date.toISOString().substring(0, 10);
-}
-
 export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
   let locale;
   switch (i18n.language) {
@@ -53,6 +49,9 @@ export const parseLocalDateTime = (inputDateTime: string) => {
 
 export const formatLocalDateTime = (date: Date) =>
   dayjs(date).local().format('YYYY-MM-DDTHH:mm:ss');
+
+export const formatLocalDate = (date: Date) =>
+  dayjs(date).local().format('YYYY-MM-DD');
 
 /**
  * Transform a milliseconds date to an ISO 8601 date with the user timezone
@@ -114,8 +113,6 @@ export const formatDateToString = (date: Date, shortYear: boolean = false) => {
     minutes,
   };
 };
-
-export const formatDateForInput = (date?: string | null) => (date ? date.substring(0, 10) : '');
 
 export function getEarliestDate(date1: string | null | undefined, dat2: string | null | undefined) {
   const formatedDate1 = formatDateForInput(date1);
