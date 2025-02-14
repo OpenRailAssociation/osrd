@@ -33,7 +33,6 @@ import type { SimulationResultsState } from 'reducers/simulationResults/types';
 import userReducer, { userInitialState, userSlice } from 'reducers/user';
 import type { UserState } from 'reducers/user';
 import { Duration } from 'utils/duration';
-import { sec2ms } from 'utils/timeManipulation';
 
 import type { ConfSlice } from './osrdconf/osrdConfCommon';
 
@@ -76,20 +75,10 @@ const pathStepsTransform = createTransform(
     pathSteps.map((pathStep) => {
       if (!pathStep) return null;
 
-      let stopFor: Duration | null = null;
-      if (pathStep.stopFor) {
-        if (pathStep.stopFor.startsWith('P')) {
-          stopFor = Duration.parse(pathStep.stopFor);
-        } else {
-          // Compatibility with older store format
-          stopFor = new Duration(sec2ms(Number(stopFor)));
-        }
-      }
-
       return {
         ...pathStep,
         arrival: pathStep.arrival ? Duration.parse(pathStep.arrival) : null,
-        stopFor,
+        stopFor: pathStep.stopFor ? Duration.parse(pathStep.stopFor) : null,
       };
     }),
   { whitelist: ['pathSteps'] }
