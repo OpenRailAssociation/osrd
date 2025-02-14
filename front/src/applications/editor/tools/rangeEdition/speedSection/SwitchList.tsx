@@ -74,40 +74,44 @@ const SwitchList = ({
                 return (
                   <div
                     key={`${swId}-${optPosition}`}
-                    className={cx('d-flex', 'flex-column', {
+                    className={cx('d-flex', 'flex-column', 'align-items-center', {
                       'pl-2 ml-2 border-left': posIndex !== 0,
                     })}
                   >
                     <label className="small" htmlFor={`${swId}-${optPosition}`}>
-                      {optPosition}
+                      {optPosition === 'Any'
+                        ? t('Editor.tools.speed-edition.any-position')
+                        : optPosition}
                     </label>
-                    <CheckboxRadioSNCF
-                      containerClassName={cx({
-                        'incompatible-configuration-switch': isButtonIncompatible,
-                      })}
-                      type="radio"
-                      label=""
-                      id={`${swId}-${optPosition}`}
-                      name={swId}
-                      title={
-                        isButtonIncompatible
-                          ? t('Editor.tools.speed-edition.incompatible-switch')
-                          : undefined
-                      }
-                      onChange={() => {
-                        setSwitchSelection((prev) => ({
-                          ...prev,
-                          selectedSwitches: {
-                            ...selectedSwitches,
-                            [swId]: {
-                              ...prev.selectedSwitches[swId],
-                              position: isPositionNull ? null : optPosition,
+                    <div className="pl-1">
+                      <CheckboxRadioSNCF
+                        containerClassName={cx({
+                          'incompatible-configuration-switch': isButtonIncompatible,
+                        })}
+                        type="radio"
+                        label=""
+                        id={`${swId}-${optPosition}`}
+                        name={swId}
+                        title={
+                          isButtonIncompatible
+                            ? t('Editor.tools.speed-edition.incompatible-switch')
+                            : undefined
+                        }
+                        onChange={() => {
+                          setSwitchSelection((prev) => ({
+                            ...prev,
+                            selectedSwitches: {
+                              ...selectedSwitches,
+                              [swId]: {
+                                ...prev.selectedSwitches[swId],
+                                position: isPositionNull ? null : optPosition,
+                              },
                             },
-                          },
-                        }));
-                      }}
-                      checked={isButtonChecked}
-                    />
+                          }));
+                        }}
+                        checked={isButtonChecked}
+                      />
+                    </div>
                   </div>
                 );
               })}

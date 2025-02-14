@@ -431,6 +431,7 @@
         "add-sign": "Add a sign from {{signType}} type",
         "add-track-range": "Click to link to:",
         "additional-speed-limit": "Additional speed limits",
+        "any-position": "Any",
         "hovered-sign": "Sign {{signType}}",
         "incompatible-switch": "This switch position is not compatible with the other switches positions",
         "label": "Speed section tool",

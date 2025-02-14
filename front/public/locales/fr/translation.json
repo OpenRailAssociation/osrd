@@ -414,6 +414,7 @@
         "add-sign": "Ajouter un panneau de type {{signType}}",
         "add-track-range": "Cliquer pour lier à :",
         "additional-speed-limit": "Limitations de vitesse par code de composition",
+        "any-position": "Toutes",
         "hovered-sign": "Panneau {{signType}}",
         "incompatible-switch": "Cette position d’aiguille n’est pas compatible avec la position des autres aiguilles",
         "label": "Outil \"Vitesse limite\"",
