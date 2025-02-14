@@ -65,7 +65,7 @@ const UserSettings = () => {
               <SwitchSNCF
                 id="paced-train-switch"
                 type="switch"
-                name={t('operationalStudies/scenario:pacedTrain.pacedTrain')}
+                name="paced-train-switch"
                 checked={userPreferences.showPacedTrains}
                 onChange={() =>
                   dispatch(

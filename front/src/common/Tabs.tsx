@@ -41,11 +41,10 @@ const Tabs = ({ tabs, pills = false, fullWidth = false, fullHeight = false }: Ta
         {tabs.map((tab, index) => (
           <div
             data-testid={`tab-${tab.id}`}
-            className={cx(
-              'tab',
-              index === activeTabIndex && 'active',
-              tab.withWarning && 'warning'
-            )}
+            className={cx('tab', {
+              active: index === activeTabIndex,
+              warning: tab.withWarning,
+            })}
             key={`tab-${tab.label}-${index}}`}
             role="button"
             tabIndex={0}

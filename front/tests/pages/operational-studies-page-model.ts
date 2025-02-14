@@ -1,7 +1,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import CommonPage from './common-page-model';
+import {
+  DEFAULT_PACED_TRAIN_SETTINGS,
+  PACED_TRAIN_SETTINGS_TEST,
+} from '../assets/operational-studies-const';
 import readJsonFile from '../utils/file-utils';
+import type { ManageTrainScheduleTranslations, PacedTrainSettings } from '../utils/types';
 
 const manageTrainScheduleTranslation: { trainAdded: string } = readJsonFile(
   'public/locales/fr/operationalStudies/manageTrainSchedule.json'
@@ -24,9 +29,29 @@ class OperationalStudiesPage extends CommonPage {
 
   private readonly trainCountInput: Locator;
 
-  private readonly trainScheduleNameInput: Locator;
+  private readonly operationStudiesSettings: Locator;
 
-  private readonly addTrainScheduleButton: Locator;
+  private readonly userSettings: Locator;
+
+  private readonly modalCloseButton: Locator;
+
+  private readonly pacedTrainSwitch: Locator;
+
+  private readonly definePacedTrainCheckbox: Locator;
+
+  private readonly definePacedTrainCheckboxLabel: Locator;
+
+  private readonly pacedTrainTimeRangeDurationInput: Locator;
+
+  private readonly pacedTrainCadenceInput: Locator;
+
+  private readonly trainNameInput: Locator;
+
+  private readonly trainInitialSpeedInput: Locator;
+
+  private readonly trainTagsInput: Locator;
+
+  private readonly addTrainButton: Locator;
 
   private readonly trainTimetable: Locator;
 
@@ -42,11 +67,21 @@ class OperationalStudiesPage extends CommonPage {
     this.routeTab = page.getByTestId('tab-pathfinding');
     this.simulationSettingsTab = page.getByTestId('tab-simulation-settings');
     this.timesAndStopsTab = page.getByTestId('tab-timesStops');
-    this.startTimeField = page.locator('#trainSchedule-startTime');
+    this.startTimeField = page.locator('#train-start-time');
     this.returnSimulationResultButton = page.getByTestId('return-simulation-result');
     this.trainCountInput = page.locator('#osrdconf-traincount');
-    this.addTrainScheduleButton = page.getByTestId('add-train-schedules');
-    this.trainScheduleNameInput = page.locator('#trainSchedule-name');
+    this.operationStudiesSettings = page.getByTestId('dropdown-sncf');
+    this.userSettings = page.getByTestId('user-settings-btn');
+    this.modalCloseButton = page.getByTestId('modal-close-button');
+    this.pacedTrainSwitch = page.getByTestId('paced-train-switch');
+    this.definePacedTrainCheckbox = page.locator('#define-paced-train');
+    this.definePacedTrainCheckboxLabel = page.locator('label[for="define-paced-train"]');
+    this.pacedTrainTimeRangeDurationInput = page.locator('#paced-train-time-range-duration');
+    this.pacedTrainCadenceInput = page.locator('#paced-train-cadence');
+    this.addTrainButton = page.getByTestId('add-train');
+    this.trainNameInput = page.locator('#train-name');
+    this.trainInitialSpeedInput = page.locator('#train-initial-speed');
+    this.trainTagsInput = page.getByTestId('chips-input');
 
     this.trainTimetable = page
       .locator('.scenario-timetable-trains')
@@ -118,14 +153,117 @@ class OperationalStudiesPage extends CommonPage {
     await this.trainCountInput.fill(trainCount);
   }
 
+  // TODO Paced train : remove this (and all related locator and data-testid) in https://github.com/OpenRailAssociation/osrd/issues/10791
+  async checkPacedTrainSwitch() {
+    await expect(this.operationStudiesSettings).toBeVisible();
+    await this.operationStudiesSettings.click();
+
+    await expect(this.userSettings).toBeVisible();
+    await this.userSettings.click();
+
+    await expect(this.pacedTrainSwitch).toBeVisible();
+    await expect(this.pacedTrainSwitch).not.toBeChecked();
+    await this.pacedTrainSwitch.click();
+    await expect(this.pacedTrainSwitch).toBeChecked();
+
+    await this.modalCloseButton.click();
+  }
+
+  async checkInputsAndButtons(translations: ManageTrainScheduleTranslations, date: string) {
+    await expect(this.addTrainButton).toBeVisible();
+    await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
+    await expect(this.definePacedTrainCheckboxLabel).toBeVisible();
+    await expect(this.definePacedTrainCheckboxLabel).toHaveText(
+      translations.pacedTrains.defineService
+    );
+    await expect(this.definePacedTrainCheckbox).not.toBeChecked();
+    await expect(this.returnSimulationResultButton).toBeVisible();
+    await expect(this.trainNameInput).toBeVisible();
+
+    await expect(this.startTimeField).toBeVisible();
+    const startTimeDate = new Date(await this.startTimeField.inputValue());
+    const scenarioCreationDate = new Date(date);
+    const isSameDate =
+      startTimeDate.getFullYear() === scenarioCreationDate.getFullYear() &&
+      startTimeDate.getMonth() === scenarioCreationDate.getMonth() &&
+      startTimeDate.getDate() === scenarioCreationDate.getDate();
+    expect(isSameDate).toBe(true);
+
+    await expect(this.trainInitialSpeedInput).toBeVisible();
+    await expect(this.trainInitialSpeedInput).toHaveValue('0');
+
+    await expect(this.trainTagsInput).toBeVisible();
+  }
+
+  async checkTabs() {
+    await expect(this.rollingStockTab).toBeVisible();
+    await expect(this.routeTab).toBeVisible();
+    await expect(this.timesAndStopsTab).toBeVisible();
+    await expect(this.simulationSettingsTab).toBeVisible();
+
+    await expect(this.rollingStockTab).toHaveClass(/active/);
+    await this.verifyTabWarningPresence();
+  }
+
+  async checkPacedTrainModeAndVerifyInputs(translations: ManageTrainScheduleTranslations) {
+    await this.definePacedTrainCheckboxLabel.click();
+    await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
+    await expect(this.pacedTrainTimeRangeDurationInput).toBeVisible();
+    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(
+      DEFAULT_PACED_TRAIN_SETTINGS.timeRangeDuration
+    );
+    await expect(this.pacedTrainCadenceInput).toBeVisible();
+    await expect(this.pacedTrainCadenceInput).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.cadence);
+  }
+
+  async testPacedTrainMode(translations: ManageTrainScheduleTranslations) {
+    await this.setTimeRangeDuration(PACED_TRAIN_SETTINGS_TEST.timeRangeDuration);
+    await this.setCadence(PACED_TRAIN_SETTINGS_TEST.cadence);
+    await this.definePacedTrainCheckboxLabel.click();
+    await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
+    await expect(this.pacedTrainTimeRangeDurationInput).not.toBeVisible();
+    await expect(this.pacedTrainCadenceInput).not.toBeVisible();
+
+    await this.definePacedTrainCheckboxLabel.click();
+    await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
+    await expect(this.pacedTrainTimeRangeDurationInput).toBeVisible();
+    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(
+      PACED_TRAIN_SETTINGS_TEST.timeRangeDuration
+    );
+    await expect(this.pacedTrainCadenceInput).toBeVisible();
+    await expect(this.pacedTrainCadenceInput).toHaveValue(PACED_TRAIN_SETTINGS_TEST.cadence);
+  }
+
+  async fillPacedTrainSettings({
+    name,
+    startTime,
+    timeRangeDuration,
+    cadence,
+  }: PacedTrainSettings) {
+    await this.setTrainScheduleName(name);
+    await this.setTrainStartTime(startTime);
+    await this.setTimeRangeDuration(timeRangeDuration);
+    await this.setCadence(cadence);
+  }
+
+  async setTimeRangeDuration(timeRangeDuration: string) {
+    await this.pacedTrainTimeRangeDurationInput.fill(timeRangeDuration);
+    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(timeRangeDuration);
+  }
+
+  async setCadence(cadence: string) {
+    await this.pacedTrainCadenceInput.fill(cadence);
+    await expect(this.pacedTrainCadenceInput).toHaveValue(cadence);
+  }
+
   async addTrainSchedule() {
-    await this.addTrainScheduleButton.click();
+    await this.addTrainButton.click();
     await this.closeToastNotification();
   }
 
   async setTrainScheduleName(name: string) {
-    await this.trainScheduleNameInput.fill(name);
-    await expect(this.trainScheduleNameInput).toHaveValue(name);
+    await this.trainNameInput.fill(name);
+    await expect(this.trainNameInput).toHaveValue(name);
   }
 
   async checkNumberOfTrains(number: number) {

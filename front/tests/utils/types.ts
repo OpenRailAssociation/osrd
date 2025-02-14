@@ -193,3 +193,14 @@ export type ScenarioData = {
 };
 
 export type FlatTranslations = Record<string, string>;
+
+export type ManageTrainScheduleTranslations = FlatTranslations & {
+  pacedTrains: FlatTranslations;
+};
+
+export type PacedTrainSettings = {
+  name: string;
+  startTime: string;
+  timeRangeDuration: string;
+  cadence: string;
+};

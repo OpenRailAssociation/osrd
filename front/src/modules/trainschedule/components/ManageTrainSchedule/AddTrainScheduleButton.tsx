@@ -114,7 +114,7 @@ const AddTrainScheduleButton = ({
       type="button"
       disabled={infraState !== 'CACHED'}
       onClick={createTrainSchedules}
-      data-testid="add-train-schedules"
+      data-testid="add-train"
     >
       <span className="mr-2">
         <Plus size="lg" />

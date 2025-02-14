@@ -8,17 +8,27 @@ import type {
   Study,
 } from 'common/api/osrdEditoastApi';
 
-import { electricRollingStockName } from './assets/project-const';
+import { NEW_PACED_TRAIN_SETTINGS } from './assets/operational-studies-const';
+import { dualModeRollingStockName, electricRollingStockName } from './assets/project-const';
 import test from './logging-fixture';
 import RoutePage from './pages/op-route-page-model';
 import OperationalStudiesPage from './pages/operational-studies-page-model';
 import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
-import { waitForInfraStateToBeCached } from './utils';
+import { getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getRollingStock } from './utils/api-setup';
+import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
+import type { ManageTrainScheduleTranslations } from './utils/types';
 
-test.describe('Verify simulation configuration in operational studies', () => {
+const enTranslations: ManageTrainScheduleTranslations = readJsonFile(
+  'public/locales/en/operationalStudies/manageTrainSchedule.json'
+);
+const frTranslations: ManageTrainScheduleTranslations = readJsonFile(
+  'public/locales/fr/operationalStudies/manageTrainSchedule.json'
+);
+
+test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
   test.slow();
 
   let rollingstockPage: RollingStockSelectorPage;
@@ -29,10 +39,15 @@ test.describe('Verify simulation configuration in operational studies', () => {
   let scenario: Scenario;
   let infra: Infra;
   let rollingStock: LightRollingStock;
+  let translations: ManageTrainScheduleTranslations;
 
-  test.beforeAll('Fetch rolling stock and infrastructure ', async () => {
+  test.beforeAll('Fetch infrastructure and get translations', async () => {
     rollingStock = await getRollingStock(electricRollingStockName);
     infra = await getInfra();
+    translations = getTranslations({
+      en: enTranslations,
+      fr: frTranslations,
+    });
   });
 
   test.beforeEach('Set up the project, study, and scenario', async ({ page }) => {
@@ -50,6 +65,53 @@ test.describe('Verify simulation configuration in operational studies', () => {
   });
 
   /** *************** Test **************** */
+  test('Add a paced train', async ({ page }) => {
+    // Navigate to the scenario page for the given project and study
+    await page.goto(
+      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+    );
+
+    await operationalStudiesPage.checkPacedTrainSwitch();
+
+    // Wait for infra to be in 'CACHED' state before proceeding
+    await waitForInfraStateToBeCached(infra.id);
+
+    // Click the button to add a train schedule or paced train
+    await operationalStudiesPage.clickOnAddTrainButton();
+
+    // Verify that all configuration buttons and inputs are visible and have their proper default values
+    await operationalStudiesPage.checkInputsAndButtons(translations, scenario.creation_date);
+
+    // Verify that all tabs are visible and their default behavior is correct
+    await operationalStudiesPage.checkTabs();
+
+    // Check the define paced train checkbox
+    await operationalStudiesPage.checkPacedTrainModeAndVerifyInputs(translations);
+
+    // Test the paced train mode behavior
+    await operationalStudiesPage.testPacedTrainMode(translations);
+
+    // Set the paced train inputs
+    await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
+
+    // Select a rolling stock
+    await rollingstockPage.selectRollingStock(dualModeRollingStockName);
+
+    // Select an itinerary
+    await operationalStudiesPage.clickOnRouteTab();
+    await routePage.performPathfindingByTrigram('MWS', 'NES');
+    await operationalStudiesPage.checkPathfindingDistance('33.950 km');
+
+    // TODO : update this part when paced train endpoints are delivered to find a fine configuration for it
+    // Change some time and stops
+
+    // Adding Train Schedule
+    await operationalStudiesPage.addTrainSchedule();
+
+    // TODO : update the test to verify the newly added paced train (for now nothing happens when clicking on the button)
+  });
+
+  // TODO Paced train : Remove this test in https://github.com/OpenRailAssociation/osrd/issues/10791
   test('Pathfinding with rolling stock and composition code', async ({ page }) => {
     // Page models
 
