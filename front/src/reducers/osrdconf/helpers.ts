@@ -4,7 +4,6 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { OperationalPointReference } from 'common/api/osrdEditoastApi';
 import { pathStepMatchesOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { addElementAtIndex } from 'utils/array';
@@ -95,7 +94,9 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       ...newVia,
       id: cleanPathSteps[stepIndex].id,
       track_reference:
-        (cleanPathSteps[stepIndex] as OperationalPointReference).track_reference || undefined,
+        'track_reference' in cleanPathSteps[stepIndex]
+          ? cleanPathSteps[stepIndex].track_reference
+          : undefined,
     }; // We don't need to change the id of the updated via
     statePathSteps[stepIndex] = newVia;
   } else {
