@@ -38,6 +38,7 @@ const MapMarkers = ({ markers }: MapMarkersProps) =>
         latitude={coordinates[1]}
         anchor="bottom"
         offset={MARKER_OFFSET}
+        key={index}
       >
         <img src={imgSrc} alt={imgAlt} />
         {pointType === MARKER_TYPE.VIA && (
