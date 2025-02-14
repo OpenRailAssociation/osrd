@@ -8,4 +8,4 @@ export const MarginUnit = {
   second: 's',
 } as const;
 
-export const ARRIVAL_TIME_ACCEPTABLE_ERROR = new Duration(2000);
+export const ARRIVAL_TIME_ACCEPTABLE_ERROR = new Duration({ seconds: 2 });

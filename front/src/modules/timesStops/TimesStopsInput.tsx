@@ -16,7 +16,6 @@ import {
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { sec2ms } from 'utils/timeManipulation';
 
 import {
   durationSinceStartTime,
@@ -127,7 +126,7 @@ const TimesStopsInput = ({
           arrival: durationSinceStartTime(startTime, arrival),
           departure: durationSinceStartTime(startTime, departure),
           receptionSignal: onStopSignalToReceptionSignal(onStopSignal, shortSlipDistance),
-          stopFor: stopFor ? new Duration(sec2ms(Number(stopFor))) : null,
+          stopFor: stopFor ? new Duration({ seconds: Number(stopFor) }) : null,
         }));
       dispatch(upsertSeveralViasFromSuggestedOP(newVias));
     },

@@ -49,7 +49,7 @@ const formatTrainScheduleSummaries = (
         ? {
             isValid: true,
             arrivalTime: new Date(startTime.getTime() + trainSummary.time),
-            duration: new Duration(trainSummary.time),
+            duration: new Duration({ milliseconds: trainSummary.time }),
             pathLength: formatKmValue(trainSummary.length, 'millimeters', 1),
             mechanicalEnergyConsumed: jouleToKwh(trainSummary.energy_consumption, true),
             pathItemTimes: {

@@ -45,7 +45,7 @@ describe('simulationConfReducer', () => {
       margins: { boundaries: ['id2'], values: ['10%', '0%'] },
       startTime: new Date('2021-01-01T00:00:00Z'),
       arrivalTime: null,
-      duration: new Duration(1000),
+      duration: new Duration({ milliseconds: 1000 }),
       stopsCount: 2,
       pathLength: '100',
       mechanicalEnergyConsumed: 100,
