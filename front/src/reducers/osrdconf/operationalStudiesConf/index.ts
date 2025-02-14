@@ -3,7 +3,10 @@ import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { Comfort, Distribution } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type {
+  PacedTrainWithResult,
+  TrainScheduleWithDetails,
+} from 'modules/trainschedule/components/Timetable/types';
 import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
@@ -56,7 +59,7 @@ export const operationalStudiesConfSlice = createSlice({
     ...itineraryReducer,
     selectTrainToEdit(
       state: Draft<OperationalStudiesConfState>,
-      action: PayloadAction<TrainScheduleWithDetails>
+      action: PayloadAction<TrainScheduleWithDetails | PacedTrainWithResult>
     ) {
       const {
         rollingStock,

@@ -12,7 +12,6 @@ import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import type {
   TimetableItemId,
-  TrainId,
   TrainScheduleId,
   TrainScheduleResultWithTrainId,
 } from 'reducers/osrdconf/types';
@@ -23,9 +22,13 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
+import { Duration } from 'utils/duration';
+import {
+  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastTrainIdToPacedTrainId,
+} from 'utils/trainId';
 
-import PacedTrainItem, { type PacedTrain } from './PacedTrain/PacedTrainItem';
+import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
 import TimetableTrainCard from './TimetableTrainCard';
 import type { TrainScheduleWithDetails } from './types';
@@ -85,7 +88,7 @@ const Timetable = ({
   };
 
   const handleSelectTrain = useCallback(
-    (id: TrainId) => {
+    (id: TimetableItemId) => {
       // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
       const currentSelectedTrainIds = [...selectedTrainIds];
       const index = currentSelectedTrainIds.indexOf(id as TrainScheduleId);
@@ -174,7 +177,7 @@ const Timetable = ({
               {/* TODO Paced train : Adapt this to handle paced trains in issue
             https://github.com/OpenRailAssociation/osrd/issues/10615 */}
               <TimetableTrainCard
-                isInSelection={selectedTrainIds.includes(train.id as TrainScheduleId)}
+                isInSelection={selectedTrainIds.includes(train.id)}
                 handleSelectTrain={handleSelectTrain}
                 train={train}
                 isSelected={infraState === 'CACHED' && selectedTrainId === train.id}
@@ -192,19 +195,19 @@ const Timetable = ({
           ))}
           {showPacedTrains && displayedTrainSchedules.length > 0 && (
             <PacedTrainItem
-              pacedTrain={
-                {
-                  ...displayedTrainSchedules[0],
-                  id: 12345,
-                  paced: {
-                    duration: 'PT2H',
-                    step: 'PT20M',
-                  },
-                } as PacedTrain
-              }
-              isInSelection={selectedTrainIds.includes(12345)}
+              pacedTrain={{
+                ...displayedTrainSchedules[0],
+                id: formatEditoastTrainIdToPacedTrainId(12345),
+                paced: {
+                  duration: Duration.parse('PT2H'),
+                  step: Duration.parse('PT30M'),
+                },
+              }}
+              isInSelection={selectedTrainIds.includes(formatEditoastTrainIdToPacedTrainId(12345))}
+              setPacedTrainIdToEdit={setTrainIdToEdit}
+              setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               handleSelectPacedTrain={handleSelectTrain}
-              isOnEdit={false}
+              isOnEdit={formatEditoastTrainIdToPacedTrainId(12345) === trainIdToEdit}
               isProjectionPathUsed={false}
             />
           )}

@@ -37,7 +37,7 @@ type TimetableTrainCardProps = {
   train: TrainScheduleWithDetails;
   isSelected: boolean;
   isModified?: boolean;
-  handleSelectTrain: (trainId: TrainId) => void;
+  handleSelectTrain: (trainId: TrainScheduleId) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
   setTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void;
@@ -77,7 +77,7 @@ const TimetableTrainCard = ({
   const editTrainSchedule = () => {
     dispatch(selectTrainToEdit(train));
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-    setTrainIdToEdit(train.id as TrainScheduleId);
+    setTrainIdToEdit(train.id);
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   };
 
@@ -90,11 +90,11 @@ const TimetableTrainCard = ({
 
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
     deleteTrainSchedule({
-      body: { ids: [formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId)] },
+      body: { ids: [formatTrainScheduleIdToEditoastTrainId(train.id)] },
     })
       .unwrap()
       .then(() => {
-        removeTrains([train.id as TrainScheduleId]);
+        removeTrains([train.id]);
         dtoImport();
         dispatch(
           setSuccess({
@@ -119,7 +119,7 @@ const TimetableTrainCard = ({
     const actualTrainCount = 1;
 
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-    const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId);
+    const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(train.id);
     const trainsResults = await getTrainSchedule({ body: { ids: [editoastTrainId] } })
       .unwrap()
       .catch((e) => {
@@ -161,7 +161,7 @@ const TimetableTrainCard = ({
 
   const selectPathProjection = async () => {
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-    dispatch(updateTrainIdUsedForProjection(train.id as TrainScheduleId));
+    dispatch(updateTrainIdUsedForProjection(train.id));
   };
 
   const isAfterMidnight = dayjs(train.arrivalTime).isAfter(train.startTime, 'day');
@@ -232,7 +232,11 @@ const TimetableTrainCard = ({
                   {formatDateHours(train.startTime)}
                 </div>
               )}
-              <div className="status-icon not-honored-or-too-fast">
+              <div
+                className={cx('status-icon', {
+                  'not-honored-or-too-fast': train.notHonoredReason,
+                })}
+              >
                 {train.notHonoredReason &&
                   (train.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
               </div>

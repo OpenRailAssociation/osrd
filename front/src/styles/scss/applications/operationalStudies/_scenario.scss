@@ -335,10 +335,6 @@
           margin-left: 8px;
           position: relative;
           line-height: 24px;
-
-          .custom-checkbox.small {
-            margin-right: 9px;
-          }
         }
 
         .no-train {
@@ -346,7 +342,7 @@
         }
 
         .checkbox-label {
-          margin-right: 8px;
+          margin-inline: 9px 8px;
           font-size: 1rem;
           font-weight: 600;
           max-width: 160px;
@@ -358,7 +354,7 @@
             .train-projected {
               height: 20px;
               width: 20px;
-              margin-right: 6px;
+              margin-right: 7.5px;
               background-color: var(--info30);
               border-radius: 4px;
               position: relative;
@@ -477,110 +473,6 @@
           background-color: var(--ambiantB10);
           box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
 
-          &.paced-train {
-            align-items: center;
-            padding: 12px 0px;
-
-            &:has(.mission-time:hover, .action-buttons:hover) {
-              .action-buttons {
-                display: flex;
-                z-index: 1;
-              }
-              .mission-time {
-                color: var(--grey20);
-              }
-            }
-
-            .mission-time {
-              display: flex;
-              flex-grow: 0;
-              flex-shrink: 0;
-              align-items: center;
-              margin-left: auto;
-              padding-right: 64px;
-              justify-content: right;
-
-              .frequency {
-                text-align: right;
-              }
-
-              .status-icon {
-                width: 24px;
-                margin-left: 3px;
-              }
-            }
-
-            .checkbox-label {
-              display: flex;
-            }
-
-            .custom-checkbox.small {
-              margin-bottom: 0;
-            }
-
-            .toggle-icon {
-              transition: all 0.3s;
-              margin-right: 7.5px;
-            }
-
-            .base-info {
-              align-items: center;
-              position: relative;
-              &.warning {
-                &:before {
-                  content: '';
-                  position: absolute;
-                  top: 50%;
-                  right: 7px;
-                  width: 4px;
-                  height: 16px;
-                  transform: translate(0, -50%);
-                  border-radius: 5px;
-                }
-                &.not-honored {
-                  &:before {
-                    background-color: var(--warning30);
-                  }
-                }
-                &.invalid {
-                  &:before {
-                    background-color: var(--error60);
-                  }
-                }
-              }
-            }
-
-            .occurences-count {
-              height: 20px;
-              border: 0.5px solid var(--grey90);
-              font-size: 14px;
-              padding: 3px 4px;
-              background-color: var(--grey70);
-              color: var(--white100);
-              font-weight: 600;
-              border-radius: 3px;
-              display: flex;
-              align-items: center;
-              align-self: center;
-              margin-right: 8px;
-            }
-            .occurences {
-              width: 100%;
-              //TODO PACED TRAIN: set the height to auto when integrating the OccurenceItem component
-              height: 20px;
-            }
-
-            &.closed {
-              .toggle-icon {
-                transform: rotate(-90deg);
-                transition: all 0.3s;
-              }
-              .occurences {
-                height: 0;
-              }
-            }
-          }
-
           .clickable-button {
             width: 100%;
             padding: 12px 0;
@@ -653,13 +545,8 @@
             }
             .train-time {
               display: flex;
-              flex-basis: 160px;
-              flex-grow: 0;
-              flex-shrink: 0;
               align-items: center;
               justify-content: right;
-              margin-left: auto;
-
               .status-icon {
                 width: 24px;
                 height: 24px;
@@ -677,8 +564,6 @@
               }
 
               .scenario-timetable-train-times {
-                font-weight: 400;
-                font-size: 1rem;
                 width: 44px;
                 text-align: right;
               }
