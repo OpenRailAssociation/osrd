@@ -12,6 +12,7 @@ import type {
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import { isArrivalDateInSearchTimeWindow, isEqualDate } from 'utils/date';
+import { Duration } from 'utils/duration';
 
 import type { StdcmLinkedTrainResult } from '../types';
 import computeOpSchedules from '../utils/computeOpSchedules';
@@ -118,13 +119,15 @@ const useLinkedTrainSearch = () => {
         filteredResults.map(async (result) => {
           const resultSummary = filteredResultsSummaries && filteredResultsSummaries[result.id];
           if (!resultSummary || resultSummary.status !== 'success') return undefined;
-          const msFromStartTime = resultSummary.path_item_times_final.at(-1)!;
+          const durationFromStartTime = new Duration({
+            milliseconds: resultSummary.path_item_times_final.at(-1)!,
+          });
 
           const originDetails = await getExtremityDetails(result.path.at(0)!);
           const destinationDetails = await getExtremityDetails(result.path.at(-1)!);
           const computedOpSchedules = computeOpSchedules(
             new Date(result.start_time),
-            msFromStartTime
+            durationFromStartTime
           );
 
           if (!originDetails || !destinationDetails) return undefined;
