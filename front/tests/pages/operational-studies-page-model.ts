@@ -22,8 +22,6 @@ class OperationalStudiesPage extends CommonPage {
 
   private readonly returnSimulationResultButton: Locator;
 
-  private readonly deltaInput: Locator;
-
   private readonly trainCountInput: Locator;
 
   private readonly trainScheduleNameInput: Locator;
@@ -47,7 +45,6 @@ class OperationalStudiesPage extends CommonPage {
     this.startTimeField = page.locator('#trainSchedule-startTime');
     this.returnSimulationResultButton = page.getByTestId('return-simulation-result');
     this.trainCountInput = page.locator('#osrdconf-traincount');
-    this.deltaInput = page.locator('#osrdconf-delta');
     this.addTrainScheduleButton = page.getByTestId('add-train-schedules');
     this.trainScheduleNameInput = page.locator('#trainSchedule-name');
 
@@ -119,11 +116,6 @@ class OperationalStudiesPage extends CommonPage {
   async setNumberOfTrains(trainCount: string) {
     await expect(this.trainCountInput).toBeVisible();
     await this.trainCountInput.fill(trainCount);
-  }
-
-  async setDelta(gapValue: string) {
-    await expect(this.deltaInput).toBeVisible();
-    await this.deltaInput.fill(gapValue);
   }
 
   async addTrainSchedule() {
