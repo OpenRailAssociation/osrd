@@ -18,11 +18,7 @@ import {
   WorkScheduleLayer,
   OccupancyBlockLayer,
 } from '@osrd-project/ui-spacetimechart';
-import type { Conflict } from '@osrd-project/ui-spacetimechart';
-import type {
-  SpaceTimeChartProps,
-  HoveredItem,
-} from '@osrd-project/ui-spacetimechart/dist/lib/types';
+import type { Conflict, HoveredItem, SpaceTimeChartProps } from '@osrd-project/ui-spacetimechart';
 import cx from 'classnames';
 import { compact } from 'lodash';
 import { createPortal } from 'react-dom';
