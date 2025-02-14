@@ -269,7 +269,7 @@ const TimetableTrainCard = ({
             </div>
             <div className="duration-time">
               <span data-testid="train-duration">
-                {dayjs.duration(train.duration).format('HH[h]mm')}
+                {dayjs.duration(train.duration!.ms).format('HH[h]mm')}
               </span>
             </div>
           </div>

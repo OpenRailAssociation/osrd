@@ -6,6 +6,7 @@ import type {
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { TrainId } from 'reducers/osrdconf/types';
+import type { Duration } from 'utils/duration';
 
 export type ValidityFilter = 'both' | 'valid' | 'invalid';
 
@@ -21,8 +22,7 @@ export type TrainScheduleWithDetails = Omit<
   trainName: string;
   startTime: Date;
   arrivalTime: Date | null;
-  /** in ms */
-  duration: number;
+  duration: Duration | null;
   stopsCount: number;
   pathLength: string;
   rollingStock?: LightRollingStockWithLiveries;
