@@ -3,6 +3,7 @@ import config from 'config/config';
 // Map constants
 export const MAP_URL = `${config.proxy_editoast}/layers`;
 export const SPRITES_URL = `${config.proxy_editoast}/sprites`;
+export const FONTS_URL = `${config.proxy_editoast}/fonts`;
 export const OSM_URL = 'https://osm.osrd.fr/data/v3.json';
 
 export const MAP_MODES = {

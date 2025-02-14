@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { MapProps } from 'react-map-gl/maplibre';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { MAIN_API } from 'config/config';
+import { SPRITES_URL, FONTS_URL } from 'common/Map/const';
 
 type Sprite = { url: string; id: string };
 
@@ -21,8 +21,6 @@ const isValidUrl = async (url: string) => {
 };
 
 export const useMapBlankStyle = (): MapProps['mapStyle'] => {
-  const baseURL = MAIN_API.proxy_editoast;
-
   const { data: signalingSystems } =
     osrdEditoastApi.endpoints.getSpritesSignalingSystems.useQuery();
 
@@ -30,7 +28,7 @@ export const useMapBlankStyle = (): MapProps['mapStyle'] => {
     if (!signalingSystems) return [];
 
     const ponctualObjectsSprites: Sprite = {
-      url: `${window.location.origin}${baseURL}/sprites/default/sprites`,
+      url: `${SPRITES_URL}/default/sprites`,
       id: 'default',
     };
     const isDefaultSpriteValid = await isValidUrl(ponctualObjectsSprites.url);
@@ -38,7 +36,7 @@ export const useMapBlankStyle = (): MapProps['mapStyle'] => {
     const sprites: (Sprite | null)[] = await Promise.all([
       isDefaultSpriteValid ? ponctualObjectsSprites : null,
       ...signalingSystems.map(async (id) => {
-        const signalingSystemsURL = `${window.location.origin}${baseURL}/sprites/${id}/sprites`;
+        const signalingSystemsURL = `${SPRITES_URL}/${id}/sprites`;
         const isValid = await isValidUrl(signalingSystemsURL);
         return isValid ? { url: signalingSystemsURL, id } : null;
       }),
@@ -66,7 +64,7 @@ export const useMapBlankStyle = (): MapProps['mapStyle'] => {
       name: 'Blank',
       sources: {},
       sprite,
-      glyphs: `${window.location.origin}${baseURL}/fonts/{fontstack}/{range}.pbf`,
+      glyphs: `${FONTS_URL}/{fontstack}/{range}.pbf`,
       layers: [
         {
           id: 'emptyBackground',
