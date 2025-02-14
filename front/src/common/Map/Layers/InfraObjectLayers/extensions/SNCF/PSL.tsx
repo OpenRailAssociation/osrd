@@ -211,7 +211,7 @@ const SNCF_PSL = ({ colors, layerOrder, infraID }: SNCF_PSLProps) => {
           layerOrder={layerOrder}
         />
       </Source>
-      <SNCF_PSL_Signs colors={colors} layerOrder={layerOrder} />
+      <SNCF_PSL_Signs colors={colors} layerOrder={layerOrder} filter={speedSectionFilter} />
     </>
   );
 };

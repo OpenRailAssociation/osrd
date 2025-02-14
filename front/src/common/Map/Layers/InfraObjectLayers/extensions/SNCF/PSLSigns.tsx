@@ -1,4 +1,5 @@
 import { isNil } from 'lodash';
+import type { FilterSpecification } from 'maplibre-gl';
 import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
 import { Source } from 'react-map-gl/maplibre';
 
@@ -13,6 +14,7 @@ import type { Theme } from 'types';
 type SNCF_PSL_SignsProps = {
   colors: Theme;
   layerOrder?: number;
+  filter: FilterSpecification;
 };
 
 export function getPSLSignsLayerProps({
@@ -61,7 +63,7 @@ export function getPSLSignsLayerProps({
 
 export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
   const infraID = useInfraID();
-  const { colors, layerOrder } = props;
+  const { colors, layerOrder, filter } = props;
 
   const signsParams: LayerProps = getPSLSignsLayerProps({
     sourceTable: 'psl_signs',
@@ -85,12 +87,13 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
       type="vector"
       url={`${MAP_URL}/layer/psl_signs/mvt/geo/?infra=${infraID}`}
     >
-      <OrderedLayer {...mastsParams} layerOrder={layerOrder} />
-      <OrderedLayer {...signsParams} layerOrder={layerOrder} />
+      <OrderedLayer {...mastsParams} layerOrder={layerOrder} filter={filter} />
+      <OrderedLayer {...signsParams} layerOrder={layerOrder} filter={filter} />
       <OrderedLayer
         {...KPLabelsParams}
         id="chartis/osrd_psl_signs_kp/geo"
         layerOrder={layerOrder}
+        filter={filter}
       />
     </Source>
   );
