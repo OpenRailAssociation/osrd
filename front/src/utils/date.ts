@@ -1,4 +1,4 @@
-import dayjs, { type ManipulateType } from 'dayjs';
+import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
@@ -132,22 +132,6 @@ export function getEarliestDate(date1: string | null | undefined, dat2: string |
 export function convertUTCDateToLocalDate(date: number) {
   const timeDifferenceMinutes = new Date().getTimezoneOffset();
   return Math.abs(timeDifferenceMinutes) * 60 + date;
-}
-
-export function addDurationToDate(
-  startTime: Date,
-  duration: number,
-  durationUnit: ManipulateType = 'second'
-): Date {
-  return dayjs(startTime).add(duration, durationUnit).toDate();
-}
-
-export function subtractDurationFromDate(
-  startTime: Date,
-  duration: number,
-  durationUnit: ManipulateType = 'second'
-): Date {
-  return dayjs(startTime).subtract(duration, durationUnit).toDate();
 }
 
 /**
