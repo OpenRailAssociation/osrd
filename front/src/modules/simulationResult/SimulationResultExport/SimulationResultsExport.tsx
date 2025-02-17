@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { Download, File } from '@osrd-project/ui-icons';
-import { BlobProvider } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import type {
@@ -55,30 +55,32 @@ const SimulationResultExport = ({
     [simulatedTrain]
   );
 
+  const exportTrainPDF = useCallback(async () => {
+    const doc = (
+      <SimulationReportSheetScenario
+        path={path}
+        scenarioData={scenarioData}
+        trainData={simulationSheetData}
+        operationalPointsList={operationalPoints}
+        mapCanvas={mapCanvas}
+      />
+    );
+    const blob = await pdf(doc).toBlob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    URL.revokeObjectURL(url);
+  }, [path, scenarioData, simulationSheetData, operationalPoints, mapCanvas]);
+
   return (
     <div className="simulation-sheet-container">
       {/* Export simulation PDF */}
-      <BlobProvider
-        document={
-          <SimulationReportSheetScenario
-            path={path}
-            scenarioData={scenarioData}
-            trainData={simulationSheetData}
-            operationalPointsList={operationalPoints}
-            mapCanvas={mapCanvas}
-          />
-        }
-      >
-        {({ url }) => (
-          <Button
-            onClick={() => window.open(url!, '_blank')}
-            variant="Quiet"
-            label={t('simulationSheet')}
-            size="medium"
-            leadingIcon={<File />}
-          />
-        )}
-      </BlobProvider>
+      <Button
+        onClick={exportTrainPDF}
+        variant="Quiet"
+        label={t('simulationSheet')}
+        size="medium"
+        leadingIcon={<File />}
+      />
 
       {/* Export simulation CSV */}
       <Button
