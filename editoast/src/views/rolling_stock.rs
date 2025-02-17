@@ -32,7 +32,6 @@ use strum::Display;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
-use validator::Validate;
 
 use crate::error::InternalError;
 use crate::error::Result;
@@ -338,9 +337,10 @@ async fn create(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    rolling_stock_form.validate()?;
+
     let conn = &mut db_pool.get().await?;
     let rolling_stock_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
+    rolling_stock_changeset.validate()?;
 
     let rolling_stock = rolling_stock_changeset
         .locked(query_params.locked)
@@ -375,8 +375,10 @@ async fn update(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    rolling_stock_form.validate()?;
+
     let name = rolling_stock_form.name.clone();
+    let rolling_stock_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
+    rolling_stock_changeset.validate()?;
 
     let new_rolling_stock = db_pool
         .get()
@@ -393,14 +395,13 @@ async fn update(
                 .await?;
                 assert_rolling_stock_unlocked(&previous_rolling_stock)?;
 
-                let mut new_rolling_stock =
-                    Into::<Changeset<RollingStockModel>>::into(rolling_stock_form)
-                        .update(&mut conn.clone(), rolling_stock_id)
-                        .await
-                        .map_err(|e| map_diesel_error(e, name.clone()))?
-                        .ok_or(RollingStockError::KeyNotFound {
-                            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-                        })?;
+                let mut new_rolling_stock = rolling_stock_changeset
+                    .update(&mut conn.clone(), rolling_stock_id)
+                    .await
+                    .map_err(|e| map_diesel_error(e, name.clone()))?
+                    .ok_or(RollingStockError::KeyNotFound {
+                        rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+                    })?;
 
                 if new_rolling_stock != previous_rolling_stock {
                     new_rolling_stock.version += 1;
@@ -786,6 +787,8 @@ async fn create_compound_image(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
+    use editoast_models::rolling_stock::RollingStockCategories;
+    use editoast_models::rolling_stock::RollingStockCategory;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -1168,6 +1171,105 @@ pub mod tests {
             updated_rolling_stock.version,
             fast_rolling_stock.version + 1
         );
+    }
+
+    #[rstest]
+    async fn update_rolling_stock_with_new_categories() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_with_categories")
+                .await;
+
+        assert_eq!(
+            fast_rolling_stock.primary_category,
+            RollingStockCategory(
+                editoast_schemas::rolling_stock::RollingStockCategory::CommuterTrain,
+            )
+        );
+        assert_eq!(
+            fast_rolling_stock.other_categories,
+            RollingStockCategories(vec![])
+        );
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        let primary_category = RollingStockCategory(
+            editoast_schemas::rolling_stock::RollingStockCategory::HighSpeedTrain,
+        );
+        rolling_stock_form.primary_category = primary_category.clone();
+        let other_categories = RollingStockCategories(vec![RollingStockCategory(
+            editoast_schemas::rolling_stock::RollingStockCategory::RegionalTrain,
+        )]);
+        rolling_stock_form.other_categories = other_categories.clone();
+
+        let request = app
+            .patch(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .json(&&rolling_stock_form);
+
+        // WHEN
+        let raw_response = app.fetch(request);
+
+        // THEN
+        raw_response.assert_status(StatusCode::OK);
+
+        let updated_rolling_stock: RollingStockModel =
+            RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+
+        assert_eq!(
+            updated_rolling_stock.version,
+            fast_rolling_stock.version + 1
+        );
+        assert_eq!(updated_rolling_stock.primary_category, primary_category);
+        assert_eq!(updated_rolling_stock.other_categories, other_categories);
+    }
+
+    #[rstest]
+    async fn update_rolling_stock_categories_should_fail_when_invalid() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let fast_rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_with_categories")
+                .await;
+
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
+        let primary_category = RollingStockCategory(
+            editoast_schemas::rolling_stock::RollingStockCategory::HighSpeedTrain,
+        );
+        rolling_stock_form.primary_category = primary_category.clone();
+        let other_categories = RollingStockCategories(vec![primary_category.clone()]);
+        rolling_stock_form.other_categories = other_categories.clone();
+
+        let request = app
+            .patch(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .json(&&rolling_stock_form);
+
+        // WHEN
+        let raw_response = app.fetch(request);
+
+        // THEN
+        let response: InternalError = raw_response
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
+        assert_eq!(response.error_type, "editoast:ValidationError");
+        assert_eq!(
+            &response.context.get("primary_category").unwrap()[0],
+            "The primary_category cannot be listed in other_categories for rolling stocks."
+        );
+
+        let updated_rolling_stock: RollingStockModel =
+            RollingStockModel::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+                .await
+                .expect("Failed to retrieve rolling stock")
+                .expect("Rolling stock not found");
+
+        assert_eq!(updated_rolling_stock.version, fast_rolling_stock.version);
     }
 
     #[rstest]

@@ -138,53 +138,78 @@ impl From<model::Error> for Error {
 }
 
 impl RollingStockModelChangeset {
-    pub fn validate_imported_rolling_stock(&self) -> std::result::Result<(), ValidationErrors> {
-        match &self.effort_curves {
-            Some(effort_curves) => validate_rolling_stock(
-                effort_curves,
-                self.electrical_power_startup_time
+    pub fn validate(&self) -> std::result::Result<(), ValidationErrors> {
+        let mut validation_errors = ValidationErrors::new();
+
+        self.validate_primary_category(&mut validation_errors);
+
+        self.validate_effort_curves(&mut validation_errors);
+
+        if !validation_errors.is_empty() {
+            return Err(validation_errors);
+        }
+
+        Ok(())
+    }
+
+    fn validate_effort_curves(&self, validation_errors: &mut ValidationErrors) {
+        if let Some(effort_curves) = &self.effort_curves {
+            if effort_curves.is_electric() {
+                if self
+                    .electrical_power_startup_time
                     .flatten()
-                    .map(units::second::new),
-                self.raise_pantograph_time.flatten().map(units::second::new),
-            )
-            .map_err(|e| {
-                let mut err = ValidationErrors::new();
-                err.add("effort_curves", e);
-                err
-            }),
-            None => {
-                let mut err = ValidationErrors::new();
-                err.add(
-                    "effort_curves",
-                    ValidationError::new("effort_curves is required"),
-                );
-                Err(err)
+                    .map(units::second::new)
+                    .is_none()
+                {
+                    let mut error = ValidationError::new("electrical_power_startup_time");
+                    error.message = Some(
+                        "electrical_power_startup_time is required for electric rolling stocks"
+                            .into(),
+                    );
+                    validation_errors.add("effort_curves", error);
+                }
+                if self
+                    .raise_pantograph_time
+                    .flatten()
+                    .map(units::second::new)
+                    .is_none()
+                {
+                    let mut error = ValidationError::new("raise_pantograph_time");
+                    error.message = Some(
+                        "raise_pantograph_time is required for electric rolling stocks".into(),
+                    );
+                    validation_errors.add("effort_curves", error);
+                }
             }
+        } else {
+            validation_errors.add(
+                "effort_curves",
+                ValidationError::new("effort_curves is required"),
+            );
         }
     }
-}
 
-pub fn validate_rolling_stock(
-    effort_curves: &EffortCurves,
-    electrical_power_startup_time: Option<Time>,
-    raise_pantograph_time: Option<Time>,
-) -> std::result::Result<(), ValidationError> {
-    if !effort_curves.is_electric() {
-        return Ok(());
+    fn validate_primary_category(&self, validation_errors: &mut ValidationErrors) {
+        if let Some(primary_category) = &self.primary_category {
+            if let Some(other_categories) = &self.other_categories {
+                if other_categories
+                    .iter()
+                    .flatten()
+                    .collect::<Vec<_>>()
+                    .contains(&primary_category)
+                {
+                    let mut error = ValidationError::new("primary_category");
+                    error.message = Some("The primary_category cannot be listed in other_categories for rolling stocks.".into(),);
+                    validation_errors.add("primary_category", error);
+                }
+            }
+        } else {
+            validation_errors.add(
+                "primary_category",
+                ValidationError::new("primary_category is required"),
+            );
+        }
     }
-    if electrical_power_startup_time.is_none() {
-        let mut error = ValidationError::new("electrical_power_startup_time");
-        error.message =
-            Some("electrical_power_startup_time is required for electric rolling stocks".into());
-        return Err(error);
-    }
-    if raise_pantograph_time.is_none() {
-        let mut error = ValidationError::new("raise_pantograph_time");
-        error.message =
-            Some("raise_pantograph_time is required for electric rolling stocks".into());
-        return Err(error);
-    }
-    Ok(())
 }
 
 impl From<RollingStockModel> for RollingStock {

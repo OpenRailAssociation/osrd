@@ -110,6 +110,8 @@ export const getRollingStockEditorDefaultValues = (
         basePowerClass: rollingStockData.base_power_class || null,
         powerRestrictions: rollingStockData.power_restrictions,
         supportedSignalingSystems: rollingStockData.supported_signaling_systems,
+        primary_category: rollingStockData.primary_category,
+        other_categories: rollingStockData.other_categories,
       }
     : {
         ...newRollingStockValues,
@@ -196,6 +198,8 @@ export const rollingStockEditorQueryArg = (
     },
     base_power_class: data.basePowerClass,
     supported_signaling_systems: data.supportedSignalingSystems,
+    primary_category: data.primary_category,
+    other_categories: data.other_categories,
   };
 };
 

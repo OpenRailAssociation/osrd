@@ -60,6 +60,8 @@ export const newRollingStockValues: RollingStockParametersValues = {
   basePowerClass: null,
   powerRestrictions: {},
   supportedSignalingSystems: DEFAULT_SIGNALING_SYSTEMS,
+  primary_category: 'FREIGHT_TRAIN',
+  other_categories: [],
 };
 
 export const RS_REQUIRED_FIELDS = Object.freeze({

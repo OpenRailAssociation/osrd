@@ -3214,10 +3214,12 @@ export type RollingStockForm = {
   max_speed: number;
   metadata?: RollingStockMetadata | null;
   name: string;
+  other_categories: RollingStockCategories;
   /** Mapping of power restriction code to power class */
   power_restrictions: {
     [key: string]: string;
   };
+  primary_category: RollingStockCategory;
   /** The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
     Duration in s */
   raise_pantograph_time?: number | null;

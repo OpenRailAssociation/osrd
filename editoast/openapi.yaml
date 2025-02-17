@@ -9619,6 +9619,8 @@ components:
       - loading_gauge
       - power_restrictions
       - supported_signaling_systems
+      - primary_category
+      - other_categories
       properties:
         base_power_class:
           type: string
@@ -9677,11 +9679,15 @@ components:
           nullable: true
         name:
           type: string
+        other_categories:
+          $ref: '#/components/schemas/RollingStockCategories'
         power_restrictions:
           type: object
           description: Mapping of power restriction code to power class
           additionalProperties:
             type: string
+        primary_category:
+          $ref: '#/components/schemas/RollingStockCategory'
         raise_pantograph_time:
           type: number
           format: double

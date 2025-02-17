@@ -32,7 +32,7 @@ pub async fn import_rolling_stock(
         let rolling_stock: RollingStock =
             serde_json::from_reader(BufReader::new(rolling_stock_file))?;
         let rolling_stock: Changeset<RollingStockModel> = rolling_stock.into();
-        match rolling_stock.validate_imported_rolling_stock() {
+        match rolling_stock.validate() {
             Ok(()) => {
                 println!(
                     "🍞 Importing rolling stock {}",

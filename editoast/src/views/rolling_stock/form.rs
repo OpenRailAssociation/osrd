@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
 use editoast_common::units::{quantities::*, *};
+use editoast_models::rolling_stock::RollingStockCategories;
+use editoast_models::rolling_stock::RollingStockCategory;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
@@ -12,17 +14,13 @@ use editoast_schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
-use validator::Validate;
-use validator::ValidationError;
 
-use crate::models::rolling_stock_model::validate_rolling_stock;
 use crate::models::Changeset;
 use crate::models::Model;
 use crate::models::RollingStockModel;
 
 #[editoast_derive::annotate_units]
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema, Validate)]
-#[validate(schema(function = "validate_rolling_stock_form"))]
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct RollingStockForm {
     pub name: String,
     pub effort_curves: EffortCurves,
@@ -64,6 +62,8 @@ pub struct RollingStockForm {
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     pub locked: Option<bool>,
     pub metadata: Option<RollingStockMetadata>,
+    pub primary_category: RollingStockCategory,
+    pub other_categories: RollingStockCategories,
 }
 
 impl From<RollingStockForm> for Changeset<RollingStockModel> {
@@ -91,17 +91,9 @@ impl From<RollingStockForm> for Changeset<RollingStockModel> {
             .electrical_power_startup_time(rolling_stock.electrical_power_startup_time)
             .raise_pantograph_time(rolling_stock.raise_pantograph_time)
             .supported_signaling_systems(rolling_stock.supported_signaling_systems)
+            .primary_category(rolling_stock.primary_category)
+            .other_categories(rolling_stock.other_categories)
     }
-}
-
-fn validate_rolling_stock_form(
-    rolling_stock_form: &RollingStockForm,
-) -> std::result::Result<(), ValidationError> {
-    validate_rolling_stock(
-        &rolling_stock_form.effort_curves,
-        rolling_stock_form.electrical_power_startup_time,
-        rolling_stock_form.raise_pantograph_time,
-    )
 }
 
 // Used in some tests where we import a rolling stock as a fixture
@@ -130,6 +122,8 @@ impl From<RollingStockModel> for RollingStockForm {
             supported_signaling_systems: value.supported_signaling_systems,
             locked: Some(value.locked),
             metadata: value.metadata,
+            primary_category: value.primary_category,
+            other_categories: value.other_categories,
         }
     }
 }
