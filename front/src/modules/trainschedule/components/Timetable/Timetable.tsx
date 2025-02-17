@@ -21,9 +21,11 @@ import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
+import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
+import PacedTrainItem, { type PacedTrain } from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
 import TimetableTrainCard from './TimetableTrainCard';
 import type { TrainScheduleWithDetails } from './types';
@@ -56,6 +58,7 @@ const Timetable = ({
   dtoImport,
 }: TimetableProps) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
+  const showPacedTrains = useSelector(getShowPacedTrains);
 
   const [displayedTrainSchedules, setDisplayedTrainSchedules] = useState<
     TrainScheduleWithDetails[]
@@ -187,6 +190,24 @@ const Timetable = ({
               />
             </div>
           ))}
+          {showPacedTrains && displayedTrainSchedules.length > 0 && (
+            <PacedTrainItem
+              pacedTrain={
+                {
+                  ...displayedTrainSchedules[0],
+                  id: 12345,
+                  paced: {
+                    duration: 'PT2H',
+                    step: 'PT20M',
+                  },
+                } as PacedTrain
+              }
+              isInSelection={selectedTrainIds.includes(12345)}
+              handleSelectPacedTrain={handleSelectTrain}
+              isOnEdit={false}
+              isProjectionPathUsed={false}
+            />
+          )}
         </Virtualizer>
         <div
           className={cx('bottom-timetables-trains', {

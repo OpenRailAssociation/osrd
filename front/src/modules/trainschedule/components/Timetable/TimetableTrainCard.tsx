@@ -1,12 +1,11 @@
 import React from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
-import { Duplicate, Pencil, Trash, Clock, Flame, Moon, Manchette } from '@osrd-project/ui-icons';
+import { Clock, Flame, Moon, Manchette } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { GiPathDistance } from 'react-icons/gi';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -30,6 +29,7 @@ import {
   formatTrainScheduleIdToEditoastTrainId,
 } from 'utils/trainId';
 
+import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
 
 type TimetableTrainCardProps = {
@@ -226,7 +226,7 @@ const TimetableTrainCard = ({
               <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
               {train.isValid && (
                 <div
-                  className="scenario-timetable-train-departure"
+                  className="scenario-timetable-train-times"
                   title={formatFullDate(train.startTime)}
                 >
                   {formatDateHours(train.startTime)}
@@ -239,7 +239,7 @@ const TimetableTrainCard = ({
               {train.arrivalTime && (
                 <div
                   data-testid="train-arrival-time"
-                  className="scenario-timetable-train-arrival"
+                  className="scenario-timetable-train-times"
                   title={formatFullDate(train.arrivalTime)}
                 >
                   {formatDateHours(train.arrivalTime)}
@@ -275,41 +275,12 @@ const TimetableTrainCard = ({
           </div>
         )}
       </div>
-      <div className="action-buttons">
-        <button
-          type="button"
-          aria-label={t('timetable.choosePath')}
-          title={t('timetable.choosePath')}
-          onClick={selectPathProjection}
-        >
-          <GiPathDistance />
-        </button>
-        <button
-          type="button"
-          aria-label={t('timetable.duplicate')}
-          title={t('timetable.duplicate')}
-          onClick={duplicateTrain}
-        >
-          <Duplicate />
-        </button>
-        <button
-          type="button"
-          aria-label={t('timetable.update')}
-          title={t('timetable.update')}
-          onClick={editTrainSchedule}
-          data-testid="edit-train"
-        >
-          <Pencil />
-        </button>
-        <button
-          type="button"
-          aria-label={t('timetable.delete')}
-          title={t('timetable.delete')}
-          onClick={deleteTrain}
-        >
-          <Trash />
-        </button>
-      </div>
+      <TimetableItemActions
+        selectPathProjection={selectPathProjection}
+        duplicateTimetableItem={duplicateTrain}
+        editTimetableItem={editTrainSchedule}
+        deleteTimetableItem={deleteTrain}
+      />
     </div>
   );
 };
