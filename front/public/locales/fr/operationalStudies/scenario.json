@@ -28,6 +28,13 @@
   "pacedTrain": {
     "pacedTrain": "Mission"
   },
+  "pacedTrain_one": "1 mission",
+  "pacedTrain_other": "{{count}} missions",
+  "pacedTrain_zero": "0 mission",
+  "pacedTrainCount_one": "1/$t(pacedTrain, { 'count': {{totalCount}} }) sélectionnée",
+  "pacedTrainCount_other": "{{count}}/$t(pacedTrain, { 'count': {{totalCount}} }) sélectionnées",
+  "pacedTrainCount_zero": "$t(pacedTrain, { 'count': {{totalCount}} })",
+  "pacedTrainAndTrainCount": "{{pacedTrainCount}}/$t(pacedTrain, { 'count': {{totalPacedTrainCount}} }) et {{trainCount}}/$t(train, { 'count': {{totalTrainScheduleCount}} }) sélectionnés",
   "scenarioCancel": "Annuler",
   "scenarioCreateButton": "Créer le scénario",
   "scenarioCreationTitle": "Créer un scénario",
@@ -71,6 +78,7 @@
       "simulation_failed": "Simulation impossible"
     },
     "invalidTrains": "Certains trains sont invalides",
+    "noItem": "Aucun item",
     "noSpeedLimitTags": "Sans code",
     "noSpeedLimitTagsShort": "Aucun",
     "noTrain": "Aucun train",
@@ -94,8 +102,8 @@
     "validityFilter": "Validité des trains"
   },
   "toggleTimetable": "Basculer l'affichage de la grille horaire",
-  "trainCount_one": "1 sélectionné sur $t(train, { 'count': {{totalCount}} })",
-  "trainCount_other": "{{count}} sélectionnés sur $t(train, { 'count': {{totalCount}} })",
+  "trainCount_one": "1/$t(train, { 'count': {{totalCount}} }) sélectionné",
+  "trainCount_other": "{{count}}/$t(train, { 'count': {{totalCount}} }) sélectionnés",
   "trainCount_zero": "$t(train, { 'count': {{totalCount}} })",
   "train_one": "1 train",
   "train_other": "{{count}} trains",

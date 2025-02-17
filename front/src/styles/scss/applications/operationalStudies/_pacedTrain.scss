@@ -1,0 +1,154 @@
+.paced-train {
+  padding: 12px 0px;
+
+  .paced-train-right-zone {
+    display: flex;
+    align-items: center;
+    padding-right: 64px;
+    justify-content: right;
+    min-width: 172px;
+
+    .status-icon {
+      width: 24px;
+      margin-left: 4px;
+      display: flex;
+      justify-content: center;
+
+      &.not-honored-or-too-fast {
+        color: var(--warning60);
+      }
+    }
+  }
+
+  &:hover:not(.modified) {
+    .action-buttons {
+      display: flex !important;
+      z-index: 1;
+    }
+
+    .paced-train-right-zone {
+      color: var(--grey20);
+    }
+  }
+
+  &.modified {
+    z-index: 3;
+  }
+
+  .paced-train-main-info {
+    display: flex;
+    margin-inline: 9px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    width: calc(100% - 196px);
+    height: 24px;
+    width: 100%;
+    align-items: center;
+    overflow: hidden;
+
+    .train-projected {
+      height: 20px;
+      width: 20px;
+      margin-right: 7.5px;
+      background-color: var(--info30);
+      border-radius: 4px;
+      position: relative;
+      flex-shrink: 0;
+      svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: translate(2px, 2px);
+      }
+    }
+
+    .train-info {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      .train-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .custom-checkbox.small {
+    margin-bottom: 0;
+  }
+
+  .base-info {
+    position: relative;
+
+    &.warning {
+      &:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 7px;
+        width: 4px;
+        height: 16px;
+        transform: translate(0, -50%);
+        border-radius: 5px;
+      }
+      &.not-honored {
+        &:before {
+          background-color: var(--warning30);
+        }
+      }
+      &.invalid {
+        &:before {
+          background-color: var(--error60);
+        }
+      }
+    }
+  }
+
+  .occurrences-count {
+    height: 20px;
+    border: 0.5px solid var(--grey90);
+    font-size: 14px;
+    padding: 3px 4px;
+    background-color: var(--grey70);
+    color: var(--white100);
+    font-weight: 600;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    align-self: center;
+    margin-right: 8px;
+  }
+  .occurrences {
+    width: 100%;
+    //TODO PACED TRAIN: set the height to auto when integrating the OccurenceItem component
+    height: 20px;
+  }
+
+  .center-icon {
+    display: flex;
+    align-items: center;
+  }
+
+  .toggle-icon {
+    margin-right: 6px;
+  }
+
+  &.closed {
+    .occurrences {
+      height: 0;
+    }
+  }
+
+  .invalid-reason {
+    margin-right: 18px;
+    font-size: 16px;
+    color: var(--error80);
+    font-weight: 600;
+    min-width: 155px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 24px;
+  }
+}

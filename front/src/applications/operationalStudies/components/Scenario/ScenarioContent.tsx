@@ -47,7 +47,7 @@ const ScenarioContent = ({
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
-  const [trainIdToEdit, setTrainIdToEdit] = useState<TimetableItemId>();
+  const [itemIdToEdit, setItemIdToEdit] = useState<TimetableItemId>();
   const [isMacro, setIsMacro] = useState(false);
   const {
     trainScheduleSummaries,
@@ -138,8 +138,8 @@ const ScenarioContent = ({
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     upsertTrainSchedules={upsertTrainSchedules}
-                    trainIdToEdit={trainIdToEdit}
-                    setTrainIdToEdit={setTrainIdToEdit}
+                    itemIdToEdit={itemIdToEdit}
+                    setItemIdToEdit={setItemIdToEdit}
                     infraState={infra.state}
                     dtoImport={dtoImport}
                   />
@@ -150,8 +150,8 @@ const ScenarioContent = ({
                   conflicts={conflicts}
                   upsertTrainSchedules={upsertTrainSchedules}
                   removeTrains={removeTrains}
-                  setTrainIdToEdit={setTrainIdToEdit}
-                  trainIdToEdit={trainIdToEdit}
+                  setItemIdToEdit={setItemIdToEdit}
+                  itemIdToEdit={itemIdToEdit}
                   trainSchedules={trainSchedules}
                   trainSchedulesWithDetails={trainScheduleSummaries}
                   dtoImport={dtoImport}

@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 
 import cx from 'classnames';
 import dayjs from 'dayjs';
@@ -10,32 +10,35 @@ import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/con
 import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
-import type {
-  TimetableItemId,
-  TrainId,
-  TrainScheduleId,
-  TrainScheduleResultWithTrainId,
-} from 'reducers/osrdconf/types';
+import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
+import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
+import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
+import { Duration } from 'utils/duration';
+import {
+  formatEditoastTrainIdToTrainScheduleId,
+  formatEditoastTrainIdToPacedTrainId,
+  isTrainSchedule,
+} from 'utils/trainId';
 
+import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
 import TimetableTrainCard from './TimetableTrainCard';
-import type { TrainScheduleWithDetails } from './types';
+import type { PacedTrainWithResult, TimetableItemResult, TrainScheduleWithDetails } from './types';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   infraState: InfraState;
   conflicts?: Conflict[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
-  setTrainIdToEdit: (trainId?: TimetableItemId) => void;
+  setItemIdToEdit: (trainId?: TimetableItemId) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
-  trainIdToEdit?: TimetableItemId;
+  itemIdToEdit?: TimetableItemId;
   trainSchedules?: TrainScheduleResultWithTrainId[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   dtoImport: () => void;
@@ -49,20 +52,20 @@ const Timetable = ({
   conflicts,
   upsertTrainSchedules,
   removeTrains,
-  setTrainIdToEdit,
-  trainIdToEdit,
+  setItemIdToEdit,
+  itemIdToEdit,
   trainSchedules = [],
   trainSchedulesWithDetails,
   dtoImport,
 }: TimetableProps) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
+  const showPacedTrains = useSelector(getShowPacedTrains);
 
-  const [displayedTrainSchedules, setDisplayedTrainSchedules] = useState<
-    TrainScheduleWithDetails[]
-  >([]);
+  const [displayedTimetableItems, setDisplayedTimetableItems] = useState<TimetableItemResult[]>([]);
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
-  const [selectedTrainIds, setSelectedTrainIds] = useState<TimetableItemId[]>([]);
+  const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const [showTrainDetails, setShowTrainDetails] = useState(false);
+  const [timetableItems, setTimetableItems] = useState<TimetableItemResult[]>([]);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const dispatch = useAppDispatch();
@@ -73,7 +76,7 @@ const Timetable = ({
 
   const removeAndUnselectTrains = useCallback((trainIds: TimetableItemId[]) => {
     removeTrains(trainIds);
-    setSelectedTrainIds([]);
+    setSelectedTimetableItemIds([]);
     dtoImport();
   }, []);
 
@@ -81,21 +84,20 @@ const Timetable = ({
     setConflictsListExpanded(!conflictsListExpanded);
   };
 
-  const handleSelectTrain = useCallback(
-    (id: TrainId) => {
-      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-      const currentSelectedTrainIds = [...selectedTrainIds];
-      const index = currentSelectedTrainIds.indexOf(id as TrainScheduleId);
+  const handleSelectTimetableItem = useCallback(
+    (id: TimetableItemId) => {
+      const currentSelectedTrainIds: TimetableItemId[] = selectedTimetableItemIds;
+      const index = currentSelectedTrainIds.indexOf(id);
 
       if (index === -1) {
-        currentSelectedTrainIds.push(id as TrainScheduleId);
+        currentSelectedTrainIds.push(id);
       } else {
         currentSelectedTrainIds.splice(index, 1);
       }
 
-      setSelectedTrainIds(currentSelectedTrainIds);
+      setSelectedTimetableItemIds([...currentSelectedTrainIds]);
     },
-    [selectedTrainIds]
+    [selectedTimetableItemIds]
   );
 
   const handleConflictClick = (conflict: Conflict) => {
@@ -109,8 +111,8 @@ const Timetable = ({
   };
 
   const currentDepartureDates = useMemo(
-    () => displayedTrainSchedules.map((train) => formatDepartureDate(train.startTime)),
-    [displayedTrainSchedules]
+    () => displayedTimetableItems.map((train) => formatDepartureDate(train.startTime)),
+    [displayedTimetableItems]
   );
 
   const showDepartureDates = useMemo(() => {
@@ -121,6 +123,32 @@ const Timetable = ({
       return show;
     });
   }, [currentDepartureDates]);
+
+  const selectTimetableItemToEdit = useCallback((itemToEdit: TimetableItemResult) => {
+    dispatch(selectTrainToEdit(itemToEdit));
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    setItemIdToEdit(itemToEdit.id);
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+  }, []);
+
+  // TODO PACED TRAIN : Remove this after adapting the code to handle paced trains in issue
+  useEffect(() => {
+    setTimetableItems(
+      showPacedTrains && trainSchedulesWithDetails.length > 0
+        ? [
+            ...trainSchedulesWithDetails,
+            {
+              ...trainSchedulesWithDetails[0],
+              id: formatEditoastTrainIdToPacedTrainId(12345),
+              paced: {
+                duration: Duration.parse('PT2H'),
+                step: Duration.parse('PT30M'),
+              },
+            },
+          ]
+        : trainSchedulesWithDetails
+    );
+  }, [showPacedTrains, trainSchedulesWithDetails]);
 
   return (
     <div className="scenario-timetable">
@@ -151,18 +179,18 @@ const Timetable = ({
         <TimetableToolbar
           showTrainDetails={showTrainDetails}
           toggleShowTrainDetails={toggleShowTrainDetails}
-          trainSchedulesWithDetails={trainSchedulesWithDetails}
-          displayedTrainSchedules={displayedTrainSchedules}
-          setDisplayedTrainSchedules={setDisplayedTrainSchedules}
-          selectedTrainIds={selectedTrainIds}
-          setSelectedTrainIds={setSelectedTrainIds}
+          timetableItems={timetableItems}
+          displayedTimetableItems={displayedTimetableItems}
+          setDisplayedTimetableItems={setDisplayedTimetableItems}
+          selectedTimetableItemIds={selectedTimetableItemIds}
+          setSelectedTimetableItemIds={setSelectedTimetableItemIds}
           removeTrains={removeAndUnselectTrains}
           trainSchedules={trainSchedules}
-          isInSelection={selectedTrainIds.length > 0}
+          isInSelection={selectedTimetableItemIds.length > 0}
         />
         <Virtualizer overscan={15}>
-          {displayedTrainSchedules.map((train: TrainScheduleWithDetails, index) => (
-            <div key={`timetable-train-card-${train.id}`}>
+          {displayedTimetableItems.map((timetableItem, index) => (
+            <div key={`timetable-train-card-${timetableItem.id}`}>
               {showDepartureDates[index] && (
                 <div className="scenario-timetable-departure-date">
                   {currentDepartureDates[index]}
@@ -170,21 +198,31 @@ const Timetable = ({
               )}
               {/* TODO Paced train : Adapt this to handle paced trains in issue
             https://github.com/OpenRailAssociation/osrd/issues/10615 */}
-              <TimetableTrainCard
-                isInSelection={selectedTrainIds.includes(train.id as TrainScheduleId)}
-                handleSelectTrain={handleSelectTrain}
-                train={train}
-                isSelected={infraState === 'CACHED' && selectedTrainId === train.id}
-                isModified={train.id === trainIdToEdit}
-                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                upsertTrainSchedules={upsertTrainSchedules}
-                setTrainIdToEdit={setTrainIdToEdit}
-                removeTrains={removeAndUnselectTrains}
-                projectionPathIsUsed={
-                  infraState === 'CACHED' && trainIdUsedForProjection === train.id
-                }
-                dtoImport={dtoImport}
-              />
+              {isTrainSchedule(timetableItem.id) ? (
+                <TimetableTrainCard
+                  isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
+                  handleSelectTrain={handleSelectTimetableItem}
+                  train={timetableItem as TrainScheduleWithDetails}
+                  isSelected={infraState === 'CACHED' && selectedTrainId === timetableItem.id}
+                  isModified={timetableItem.id === itemIdToEdit}
+                  upsertTrainSchedules={upsertTrainSchedules}
+                  removeTrains={removeAndUnselectTrains}
+                  selectTrainToEdit={selectTimetableItemToEdit}
+                  projectionPathIsUsed={
+                    infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
+                  }
+                  dtoImport={dtoImport}
+                />
+              ) : (
+                <PacedTrainItem
+                  pacedTrain={timetableItem as PacedTrainWithResult}
+                  isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
+                  selectPacedTrainToEdit={selectTimetableItemToEdit}
+                  handleSelectPacedTrain={handleSelectTimetableItem}
+                  isOnEdit={timetableItem.id === itemIdToEdit}
+                  isProjectionPathUsed={false}
+                />
+              )}
             </div>
           ))}
         </Virtualizer>
@@ -199,7 +237,12 @@ const Timetable = ({
           conflicts={conflicts}
           expanded={conflictsListExpanded}
           toggleConflictsList={toggleConflictsListExpanded}
-          trainSchedulesDetails={displayedTrainSchedules}
+          // TODO PACED TRAIN : Adapt this props to handle paced trains in issue
+          trainSchedulesDetails={
+            displayedTimetableItems.filter((train) =>
+              isTrainSchedule(train.id)
+            ) as TrainScheduleWithDetails[]
+          }
           onConflictClick={handleConflictClick}
         />
       )}

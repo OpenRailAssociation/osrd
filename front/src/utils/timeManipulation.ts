@@ -16,6 +16,10 @@ export function ms2sec(ms: number) {
   return ms / 1000;
 }
 
+export function ms2min(ms: number) {
+  return ms / 1000 / 60;
+}
+
 export function minToMs(min: number) {
   return min * 60 * 1000;
 }

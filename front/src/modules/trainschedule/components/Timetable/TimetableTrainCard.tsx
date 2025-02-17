@@ -1,20 +1,17 @@
 import React from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
-import { Duplicate, Pencil, Trash, Clock, Flame, Moon, Manchette } from '@osrd-project/ui-icons';
+import { Clock, Flame, Moon, Manchette } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { GiPathDistance } from 'react-icons/gi';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
-import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   TimetableItemId,
   TrainId,
@@ -30,6 +27,7 @@ import {
   formatTrainScheduleIdToEditoastTrainId,
 } from 'utils/trainId';
 
+import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
 
 type TimetableTrainCardProps = {
@@ -37,13 +35,12 @@ type TimetableTrainCardProps = {
   train: TrainScheduleWithDetails;
   isSelected: boolean;
   isModified?: boolean;
-  handleSelectTrain: (trainId: TrainId) => void;
-  setDisplayTrainScheduleManagement: (arg0: string) => void;
+  handleSelectTrain: (trainId: TrainScheduleId) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
-  setTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
   dtoImport: () => void;
+  selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
 };
 
 const formatFullDate = (d: Date) => dayjs(d).format('D/MM/YYYY HH:mm:ss');
@@ -54,13 +51,12 @@ const TimetableTrainCard = ({
   train,
   isSelected,
   isModified,
-  setDisplayTrainScheduleManagement,
   handleSelectTrain,
   upsertTrainSchedules,
-  setTrainIdToEdit,
   removeTrains,
   projectionPathIsUsed,
   dtoImport,
+  selectTrainToEdit,
 }: TimetableTrainCardProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
@@ -74,13 +70,6 @@ const TimetableTrainCard = ({
     dispatch(updateSelectedTrainId(trainId));
   };
 
-  const editTrainSchedule = () => {
-    dispatch(selectTrainToEdit(train));
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-    setTrainIdToEdit(train.id as TrainScheduleId);
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
-  };
-
   const deleteTrain = async () => {
     if (isSelected) {
       // we need to set selectedTrainId to undefined, otherwise just after the delete,
@@ -90,11 +79,11 @@ const TimetableTrainCard = ({
 
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
     deleteTrainSchedule({
-      body: { ids: [formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId)] },
+      body: { ids: [formatTrainScheduleIdToEditoastTrainId(train.id)] },
     })
       .unwrap()
       .then(() => {
-        removeTrains([train.id as TrainScheduleId]);
+        removeTrains([train.id]);
         dtoImport();
         dispatch(
           setSuccess({
@@ -119,7 +108,7 @@ const TimetableTrainCard = ({
     const actualTrainCount = 1;
 
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-    const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId);
+    const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(train.id);
     const trainDetail = await getTrainSchedule({
       id: editoastTrainId,
     })
@@ -162,7 +151,7 @@ const TimetableTrainCard = ({
 
   const selectPathProjection = async () => {
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-    dispatch(updateTrainIdUsedForProjection(train.id as TrainScheduleId));
+    dispatch(updateTrainIdUsedForProjection(train.id));
   };
 
   const isAfterMidnight = dayjs(train.arrivalTime).isAfter(train.startTime, 'day');
@@ -225,20 +214,24 @@ const TimetableTrainCard = ({
               <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
               {train.isValid && (
                 <div
-                  className="scenario-timetable-train-departure"
+                  className="scenario-timetable-train-times"
                   title={formatFullDate(train.startTime)}
                 >
                   {formatDateHours(train.startTime)}
                 </div>
               )}
-              <div className="status-icon not-honored-or-too-fast">
+              <div
+                className={cx('status-icon', {
+                  'not-honored-or-too-fast': train.notHonoredReason,
+                })}
+              >
                 {train.notHonoredReason &&
                   (train.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
               </div>
               {train.arrivalTime && (
                 <div
                   data-testid="train-arrival-time"
-                  className="scenario-timetable-train-arrival"
+                  className="scenario-timetable-train-times"
                   title={formatFullDate(train.arrivalTime)}
                 >
                   {formatDateHours(train.arrivalTime)}
@@ -274,41 +267,12 @@ const TimetableTrainCard = ({
           </div>
         )}
       </div>
-      <div className="action-buttons">
-        <button
-          type="button"
-          aria-label={t('timetable.choosePath')}
-          title={t('timetable.choosePath')}
-          onClick={selectPathProjection}
-        >
-          <GiPathDistance />
-        </button>
-        <button
-          type="button"
-          aria-label={t('timetable.duplicate')}
-          title={t('timetable.duplicate')}
-          onClick={duplicateTrain}
-        >
-          <Duplicate />
-        </button>
-        <button
-          type="button"
-          aria-label={t('timetable.update')}
-          title={t('timetable.update')}
-          onClick={editTrainSchedule}
-          data-testid="edit-train"
-        >
-          <Pencil />
-        </button>
-        <button
-          type="button"
-          aria-label={t('timetable.delete')}
-          title={t('timetable.delete')}
-          onClick={deleteTrain}
-        >
-          <Trash />
-        </button>
-      </div>
+      <TimetableItemActions
+        selectPathProjection={selectPathProjection}
+        duplicateTimetableItem={duplicateTrain}
+        editTimetableItem={() => selectTrainToEdit(train)}
+        deleteTimetableItem={deleteTrain}
+      />
     </div>
   );
 };

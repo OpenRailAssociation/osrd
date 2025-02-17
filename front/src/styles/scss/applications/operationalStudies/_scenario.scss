@@ -214,6 +214,7 @@
         }
       }
     }
+
     .scenario-details-electrical-profile-set {
       font-size: 0.75rem;
       font-weight: 400;
@@ -334,17 +335,10 @@
           margin-left: 8px;
           position: relative;
           line-height: 24px;
+        }
 
-          &::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: -24px;
-            width: 24px;
-            height: 22px;
-            background: linear-gradient(270deg, rgba(247, 246, 238, 0), rgba(247, 246, 238, 1));
-            z-index: 1;
-          }
+        .custom-checkbox.small {
+          margin-right: 9px;
         }
 
         .no-train {
@@ -352,7 +346,7 @@
         }
 
         .checkbox-label {
-          margin: 0 8px;
+          margin-inline: 9px 8px;
           font-size: 1rem;
           font-weight: 600;
           max-width: 160px;
@@ -364,7 +358,7 @@
             .train-projected {
               height: 20px;
               width: 20px;
-              margin-right: 6px;
+              margin-right: 7.5px;
               background-color: var(--info30);
               border-radius: 4px;
               position: relative;
@@ -479,7 +473,6 @@
 
         .scenario-timetable-train {
           width: 100%;
-          display: flex;
           position: relative;
           background-color: var(--ambiantB10);
           box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
@@ -514,6 +507,24 @@
                 align-items: center;
                 overflow: hidden;
                 height: 24px;
+                position: relative;
+
+                &:has(img) {
+                  &::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 24px;
+                    height: 22px;
+                    background: linear-gradient(
+                      270deg,
+                      rgba(247, 246, 238, 0),
+                      rgba(247, 246, 238, 1)
+                    );
+                    z-index: 1;
+                  }
+                }
 
                 .status-invalid {
                   width: 4px;
@@ -535,12 +546,8 @@
             }
             .train-time {
               display: flex;
-              flex-basis: 160px;
-              flex-grow: 0;
-              flex-shrink: 0;
               align-items: center;
               justify-content: right;
-
               .status-icon {
                 width: 24px;
                 height: 24px;
@@ -557,14 +564,9 @@
                 }
               }
 
-              .scenario-timetable-train-departure {
-                font-weight: 400;
-                font-size: 1rem;
-              }
-
-              .scenario-timetable-train-arrival {
-                font-weight: 400;
-                font-size: 1rem;
+              .scenario-timetable-train-times {
+                width: 44px;
+                text-align: right;
               }
 
               .status-dot {
@@ -605,12 +607,11 @@
           .action-buttons {
             display: none;
             position: absolute;
-            right: 0;
+            right: 8px;
             top: 4px;
             height: 40px;
             justify-content: center;
             align-items: center;
-            padding-right: 8px;
 
             button {
               padding: 3px 8px;
@@ -642,7 +643,7 @@
           &.selected:not(.invalid) {
             background-color: var(--selection20);
             box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
-            .checkbox-title::after {
+            .rolling-stock::after {
               background: linear-gradient(
                 270deg,
                 rgba(255, 242, 179, 0),
@@ -655,15 +656,11 @@
             background-image: url('data:image/svg+xml,%3Csvg version="1.1" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"%3E%3Ctitle%3EAssets/TrainList/InvalidTrain%3C/title%3E%3Cg fill-rule="evenodd"%3E%3Crect width="48" height="48" fill="%23FFEEED"/%3E%3Cpath d="m48 26v22h-22l22-22zm0-26-48 48v-22l26-26h22z" fill="%23FF6868" opacity=".1"/%3E%3C/g%3E%3C/svg%3E');
             background-repeat: repeat;
             box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
-            .checkbox-title {
-              min-width: 0;
-            }
+
             .checkbox-title::after {
               display: none;
             }
             .rolling-stock {
-              min-width: max-content;
-              white-space: nowrap;
               font-weight: 600;
               color: var(--error80);
             }
@@ -673,10 +670,11 @@
             z-index: 3;
           }
 
-          &:hover:not(.modified) {
+          &:hover:not(.modified, .paced-train) {
             .train-time {
               color: var(--grey20);
             }
+
             .action-buttons {
               display: flex;
               z-index: 1;

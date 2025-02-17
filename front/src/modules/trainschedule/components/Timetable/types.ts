@@ -5,7 +5,7 @@ import type {
   SimulationSummaryResult,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
-import type { TrainId } from 'reducers/osrdconf/types';
+import type { PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
 export type ValidityFilter = 'both' | 'valid' | 'invalid';
@@ -14,11 +14,10 @@ export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
 
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 
-export type TrainScheduleWithDetails = Omit<
+type TimetableItemWithDetails = Omit<
   TrainScheduleResult,
   'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time'
 > & {
-  id: TrainId;
   trainName: string;
   startTime: Date;
   arrivalTime: Date | null;
@@ -44,3 +43,17 @@ export type InvalidReason =
   | Extract<SimulationSummaryResult['status'], 'pathfinding_failure' | 'simulation_failed'>
   | PathfindingNotFound['error_type']
   | PathfindingInputError['error_type'];
+
+export type TrainScheduleWithDetails = TimetableItemWithDetails & {
+  id: TrainScheduleId;
+};
+
+export type PacedTrainWithResult = TimetableItemWithDetails & {
+  id: PacedTrainId;
+  paced: {
+    duration: Duration;
+    step: Duration;
+  };
+};
+
+export type TimetableItemResult = TrainScheduleWithDetails | PacedTrainWithResult;

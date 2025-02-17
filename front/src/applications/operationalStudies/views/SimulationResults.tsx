@@ -22,7 +22,7 @@ import SimulationResultExport from 'modules/simulationResult/SimulationResultExp
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
-import type { TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -118,9 +118,7 @@ const SimulationResults = ({
   const selectedTrainSummary = useMemo(
     () =>
       trainScheduleSummaries?.find(
-        (train) =>
-          formatTrainScheduleIdToEditoastTrainId(train.id as TrainScheduleId) ===
-          selectedTrainSchedule?.id
+        (train) => formatTrainScheduleIdToEditoastTrainId(train.id) === selectedTrainSchedule?.id
       ),
     [trainScheduleSummaries, selectedTrainSchedule]
   );
