@@ -2,8 +2,6 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Request;
 use axum::response::IntoResponse;
-use axum::Extension;
-use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 use tower::ServiceExt;
@@ -12,8 +10,6 @@ use tower_http::services::ServeFile;
 use crate::client::get_dynamic_assets_path;
 use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
-use crate::views::AuthenticationExt;
-use crate::views::AuthorizationError;
 
 crate::routes! {
     "/sprites" => {
@@ -41,15 +37,7 @@ enum SpriteErrors {
         (status = 200, description = "List of supported signaling systems", body = Vec<String>, example = json!(["BAL", "TVM300"])),
     ),
 )]
-async fn signaling_systems(Extension(auth): AuthenticationExt) -> Result<Json<Vec<String>>> {
-    let authorized = auth
-        .check_roles([BuiltinRole::MapRead].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
+async fn signaling_systems() -> Result<Json<Vec<String>>> {
     let sprite_configs = SpriteConfig::load();
     let signaling_systems = sprite_configs.keys().cloned().collect();
     Ok(Json(signaling_systems))
@@ -69,18 +57,9 @@ async fn signaling_systems(Extension(auth): AuthenticationExt) -> Result<Json<Ve
     ),
 )]
 async fn sprites(
-    Extension(auth): AuthenticationExt,
     Path((signaling_system, file_name)): Path<(String, String)>,
     request: Request,
 ) -> Result<impl IntoResponse> {
-    let authorized = auth
-        .check_roles([BuiltinRole::MapRead].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
     let sprite_configs = SpriteConfig::load();
     if signaling_system != "default" && !sprite_configs.contains_key(&signaling_system) {
         return Err(SpriteErrors::UnknownSignalingSystem { signaling_system }.into());
