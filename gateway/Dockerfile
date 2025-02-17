@@ -74,12 +74,13 @@ ENV VITE_OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 COPY --from=front_src package.json package-lock.json /app/
 
 # If SKIP_FRONT is set to 1, skip the front build
-RUN if [ "$SKIP_FRONT" = "1" ]; then exit 0; else npm ci; fi
+RUN --mount=type=cache,target=/root/.npm \
+    if [ "$SKIP_FRONT" = "1" ]; then exit 0; else npm ci; fi
 
 # Generate the licenses file and build
 COPY --from=front_src . /app
 ENV NODE_OPTIONS="--max_old_space_size=4096"
-RUN if [ "$SKIP_FRONT" = "1" ]; then \ 
+RUN if [ "$SKIP_FRONT" = "1" ]; then \
     mkdir -p build; \
     echo '<html><body><h1>No front, as this image was built for running it in dev mode</h1></body></html>' > build/index.html; \
     else \
