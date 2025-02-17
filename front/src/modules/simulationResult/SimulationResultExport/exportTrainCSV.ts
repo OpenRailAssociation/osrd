@@ -222,20 +222,37 @@ export default function exportTrainCSV(
     simulatedTrain.electrical_profiles
   );
 
-  const steps = speedsWithOPsAndSpeedLimits.map((speed) => ({
-    op: speed.op || '',
-    ch: speed.ch || '',
-    trackName: speed.trackName,
-    time: timestampToHHMMSS(speed.time),
-    seconds: pointToComma(+speed.time.toFixed(1)),
-    position: pointToComma(+(speed.position / 1000).toFixed(3)),
-    speed: pointToComma(+(speed.speed * 3.6).toFixed(3)),
-    speedLimit: pointToComma(getActualVmax(speed.position, formattedMrsp)),
-    lineCode: speed.lineCode,
-    electrificationType: speed.electrificationType,
-    electrificationMode: speed.electrificationMode,
-    electrificationProfile: speed.electrificationProfile,
-  }));
+  const steps: CSVData[] = [];
+  speedsWithOPsAndSpeedLimits.forEach((speed, index) => {
+    const actualVmaxs = getActualVmax(speed.position, formattedMrsp);
+    const newStep = {
+      op: speed.op || '',
+      ch: speed.ch || '',
+      trackName: speed.trackName,
+      time: timestampToHHMMSS(speed.time),
+      seconds: pointToComma(+speed.time.toFixed(1)),
+      position: pointToComma(+(speed.position / 1000).toFixed(3)),
+      speed: pointToComma(+(speed.speed * 3.6).toFixed(3)),
+      speedLimit: pointToComma(actualVmaxs[0]),
+      lineCode: speed.lineCode,
+      electrificationType: speed.electrificationType,
+      electrificationMode: speed.electrificationMode,
+      electrificationProfile: speed.electrificationProfile,
+    };
+    steps.push(newStep);
+
+    // If there's a second speed limit (meaning we are at a boundary)
+    // and it's the last step at this position, we add a copy of the step with the new limit
+    const isLastStepAtPosition =
+      index === speedsWithOPsAndSpeedLimits.length - 1 ||
+      speed.position !== speedsWithOPsAndSpeedLimits[index + 1].position;
+    if (actualVmaxs.length > 1 && isLastStepAtPosition) {
+      steps.push({
+        ...newStep,
+        speedLimit: pointToComma(actualVmaxs[1]),
+      });
+    }
+  });
 
   if (steps) createFakeLinkWithData(train.train_name, spreadDataBetweenSteps(steps));
 }

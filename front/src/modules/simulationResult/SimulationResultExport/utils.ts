@@ -24,22 +24,18 @@ export function massWithOneDecimal(number: number) {
 // to prevent a white screen when datas are computing and synchronizing when switching the selected train
 
 /**
- * Get the Vmax at a givenPosition (in meters), using vmax (MRSP in m/s)
- * Returns the current Vmax if in the middle of an interval, or
- * the min of the Vmax before and after if exactly at a bound.
+ * Get the Vmax values at a givenPosition (in meters), using vmax (MRSP in m/s)
+ * Returns a list containing only the current Vmax if in the middle of an interval,
+ * or the Vmax values before and after if exactly at a bound.
  */
-export function findActualVmax(givenPosition: number, vmax: SpeedRanges): number {
+export function findActualVmaxs(givenPosition: number, vmax: SpeedRanges): number[] {
   // givenPosition is in meters
   const vmaxUpperBoundIndex = d3.bisectRight(vmax.internalBoundaries, givenPosition);
   // Error case: vmax doesn't respect the SpeedRanges specifications on the lists' lengths
-  if (vmaxUpperBoundIndex > vmax.speeds.length - 1) return 0;
-  // If exactly on a speed-limit change, use the minimal value of both side
-  const actualVmaxMetersPerSecond =
-    vmaxUpperBoundIndex > 0 && vmax.internalBoundaries[vmaxUpperBoundIndex - 1] === givenPosition
-      ? Math.min(vmax.speeds[vmaxUpperBoundIndex], vmax.speeds[vmaxUpperBoundIndex - 1])
-      : vmax.speeds[vmaxUpperBoundIndex];
-
-  return actualVmaxMetersPerSecond;
+  if (vmaxUpperBoundIndex > vmax.speeds.length - 1) return [0];
+  if (vmaxUpperBoundIndex > 0 && vmax.internalBoundaries[vmaxUpperBoundIndex - 1] === givenPosition)
+    return [vmax.speeds[vmaxUpperBoundIndex - 1], vmax.speeds[vmaxUpperBoundIndex]];
+  return [vmax.speeds[vmaxUpperBoundIndex]];
 }
 
 /**
@@ -47,8 +43,8 @@ export function findActualVmax(givenPosition: number, vmax: SpeedRanges): number
  * return the actual vmax at the givenPosition in km/h
  */
 export function getActualVmax(givenPosition: number, vmax: SpeedRanges) {
-  const actualVMax = findActualVmax(givenPosition, vmax);
-  return msToKmhRounded(actualVMax);
+  const actualVMaxs = findActualVmaxs(givenPosition, vmax);
+  return actualVMaxs.map((actualVMax) => msToKmhRounded(actualVMax));
 }
 
 /**
