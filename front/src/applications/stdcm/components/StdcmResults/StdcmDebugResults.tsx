@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
+import { STDCM_TRAIN_TIMETABLE_ID } from 'applications/stdcm/consts';
 import useProjectedTrainsForStdcm from 'applications/stdcm/hooks/useProjectedTrainsForStdcm';
 import type { StdcmSimulationOutputs } from 'applications/stdcm/types';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
@@ -14,7 +14,6 @@ import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
@@ -75,11 +74,11 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
                 <ManchetteWithSpaceTimeChartWrapper
                   operationalPoints={pathProperties.manchetteOperationalPoints}
                   projectPathTrainResult={projectedData.spaceTimeData}
-                  selectedTrainScheduleId={formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID)}
+                  selectedTrainScheduleId={STDCM_TRAIN_TIMETABLE_ID}
                   workSchedules={workSchedules}
                   projectionLoaderData={projectedData.projectionLoaderData}
                   height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
-                  selectedProjectionId={formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID)}
+                  selectedProjectionId={STDCM_TRAIN_TIMETABLE_ID}
                 />
               </div>
             </div>

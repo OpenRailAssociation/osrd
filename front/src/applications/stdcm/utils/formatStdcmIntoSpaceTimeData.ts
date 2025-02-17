@@ -1,7 +1,6 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
-import { STDCM_TRAIN_ID } from '../consts';
+import { STDCM_TRAIN_TIMETABLE_ID } from '../consts';
 import type { StdcmSuccessResponse } from '../types';
 
 const formatStdcmTrainIntoSpaceTimeData = (
@@ -10,7 +9,7 @@ const formatStdcmTrainIntoSpaceTimeData = (
   const { simulation, departure_time } = stdcmResponse;
   // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
   return {
-    id: formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID),
+    id: STDCM_TRAIN_TIMETABLE_ID,
     name: 'stdcm',
     spaceTimeCurves: [
       {

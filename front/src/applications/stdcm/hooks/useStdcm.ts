@@ -4,7 +4,11 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 
-import { STDCM_REQUEST_STATUS, STDCM_TRAIN_ID } from 'applications/stdcm/consts';
+import {
+  STDCM_REQUEST_STATUS,
+  STDCM_TRAIN_ID,
+  STDCM_TRAIN_TIMETABLE_ID,
+} from 'applications/stdcm/consts';
 import type {
   StdcmRequestStatus,
   StdcmSuccessResponse,
@@ -24,7 +28,6 @@ import { getStdcmConf } from 'reducers/osrdconf/stdcmConf/selectors';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import useStdcmResults from './useStdcmResults';
 import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConf';
@@ -122,7 +125,7 @@ const useStdcm = ({
             train_name: 'stdcm',
           };
           setStdcmTrainResult(stdcmTrain);
-          dispatch(updateSelectedTrainId(formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID)));
+          dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
         } else if (response.status === 'conflicts') {
           setStdcmResponse({
             ...response,

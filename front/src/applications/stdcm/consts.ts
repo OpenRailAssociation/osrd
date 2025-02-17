@@ -1,3 +1,5 @@
+import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
+
 export const STDCM_REQUEST_STATUS = Object.freeze({
   idle: 'IDLE',
   pending: 'PENDING',
@@ -8,6 +10,7 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
 });
 
 export const STDCM_TRAIN_ID = -10;
+export const STDCM_TRAIN_TIMETABLE_ID = formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID);
 
 export const COMPOSITION_CODES_MAX_SPEEDS: Record<string, number | undefined> = {
   MA80: 80,
