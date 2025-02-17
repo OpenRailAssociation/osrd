@@ -62,7 +62,7 @@ fun runStandaloneSimulation(
     speedLimitTag: String?,
     powerRestrictions: DistanceRangeMap<String>,
     useElectricalProfiles: Boolean,
-    useInfraSpeedLimits: Boolean,
+    useSpeedLimits: Boolean,
     timeStep: Double,
     schedule: List<SimulationScheduleItem>,
     initialSpeed: Double,
@@ -82,7 +82,7 @@ fun runStandaloneSimulation(
             speedLimitTag,
             null,
             safetySpeedRanges,
-            useInfraSpeedLimits
+            useSpeedLimits
         )
     mrsp = driverBehaviour.applyToMRSP(mrsp, signalingRanges)
     // We don't use speed safety ranges in the MRSP displayed in the front
@@ -95,7 +95,7 @@ fun runStandaloneSimulation(
             speedLimitTag,
             null,
             null,
-            useInfraSpeedLimits,
+            useSpeedLimits,
         )
 
     // Build paths and contexts

@@ -30,8 +30,8 @@ import kotlin.math.min
  * @param addRollingStockLength whether the rolling stock length should be taken into account in the
  *   computation.
  * @param trainTag corresponding train.
- * @param useInfraSpeedLimits whether the speed limits coming from the infrastructure should be
- *   taken into account in the computation
+ * @param useSpeedLimits whether the speed limits coming from the infrastructure should be taken
+ *   into account in the computation
  * @return the corresponding MRSP as an Envelope.
  */
 fun computeMRSP(
@@ -41,7 +41,7 @@ fun computeMRSP(
     trainTag: String?,
     temporarySpeedLimitManager: TemporarySpeedLimitManager?,
     safetySpeedRanges: DistanceRangeMap<Speed>? = null,
-    useInfraSpeedLimits: Boolean = true,
+    useSpeedLimits: Boolean = true,
 ): Envelope {
     return computeMRSP(
         path,
@@ -51,7 +51,7 @@ fun computeMRSP(
         trainTag,
         temporarySpeedLimitManager,
         safetySpeedRanges,
-        useInfraSpeedLimits,
+        useSpeedLimits,
     )
 }
 
@@ -66,8 +66,8 @@ fun computeMRSP(
  * @param trainTag corresponding train.
  * @param safetySpeedRanges Extra speed ranges, used for safety speeds. Note: rolling stock length
  *   is *not* added at the end of these ranges.
- * @param useInfraSpeedLimits whether the speed limits coming from the infrastructure should be
- *   taken into account in the computation
+ * @param useSpeedLimits whether the speed limits coming from the infrastructure should be taken
+ *   into account in the computation
  * @return the corresponding MRSP as an Envelope.
  */
 fun computeMRSP(
@@ -78,14 +78,14 @@ fun computeMRSP(
     trainTag: String?,
     temporarySpeedLimitManager: TemporarySpeedLimitManager?,
     safetySpeedRanges: DistanceRangeMap<Speed>? = null,
-    useInfraSpeedLimits: Boolean = true,
+    useSpeedLimits: Boolean = true,
 ): Envelope {
     val builder = MRSPEnvelopeBuilder()
     val pathLength = toMeters(path.getLength())
 
     val offset = if (addRollingStockLength) rsLength else 0.0
     val speedLimitProperties =
-        if (useInfraSpeedLimits) path.getSpeedLimitProperties(trainTag, temporarySpeedLimitManager)
+        if (useSpeedLimits) path.getSpeedLimitProperties(trainTag, temporarySpeedLimitManager)
         else distanceRangeMapOf<SpeedLimitProperty>()
     for (speedLimitPropertyRange in speedLimitProperties) {
         // Compute where this limit is active from and to
@@ -126,7 +126,7 @@ fun computeMRSP(
     )
 
     // Add safety speeds
-    if (useInfraSpeedLimits && safetySpeedRanges != null) {
+    if (useSpeedLimits && safetySpeedRanges != null) {
         for (range in safetySpeedRanges) {
             val speed = range.value
             val newAttrs =
