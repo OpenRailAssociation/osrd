@@ -79,6 +79,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
                   workSchedules={workSchedules}
                   projectionLoaderData={projectedData.projectionLoaderData}
                   height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
+                  selectedProjectionId={formatEditoastTrainIdToTrainScheduleId(STDCM_TRAIN_ID)}
                 />
               </div>
             </div>

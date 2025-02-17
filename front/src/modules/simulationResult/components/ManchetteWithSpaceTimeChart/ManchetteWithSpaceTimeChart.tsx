@@ -64,7 +64,7 @@ type ManchetteWithSpaceTimeChartProps = {
   ) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
-  selectedProjection?: TimetableItemId;
+  selectedProjectionId: TimetableItemId;
 };
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
@@ -82,7 +82,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
   handleTrainDrag,
   onTrainClick,
-  selectedProjection,
+  selectedProjectionId,
 }: ManchetteWithSpaceTimeChartProps) => {
   const dispatch = useAppDispatch();
 
@@ -98,14 +98,21 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
 
-  const [minDepartureTime, setMinDepartureTime] = useState<number | null>(null);
+  const [originTime, setOriginTime] = useState<number | null>(null);
   useEffect(() => {
-    const projectedTrains = projectPathTrainResult.filter(
-      (train) => train.spaceTimeCurves.length > 0
+    const trainUsedForProjection = projectPathTrainResult.find(
+      (train) => train.id === selectedProjectionId
     );
-    const minTime = Math.min(...projectedTrains.map((p) => +p.departureTime));
-    setMinDepartureTime(minTime);
-  }, [selectedProjection, projectPathTrainResult.length]);
+    if (trainUsedForProjection) {
+      setOriginTime(+trainUsedForProjection.departureTime);
+    } else {
+      const projectedTrains = projectPathTrainResult.filter(
+        (train) => train.spaceTimeCurves.length > 0
+      );
+      const minTime = Math.min(...projectedTrains.map((p) => +p.departureTime));
+      setOriginTime(minTime);
+    }
+  }, [selectedProjectionId, projectPathTrainResult.length]);
 
   const [tmpSelectedTrain, setTmpSelectedTrain] = useState(selectedTrainScheduleId);
 
@@ -421,14 +428,14 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               onClose={() => setShowSettingsPanel(false)}
             />
           )}
-          {minDepartureTime !== null && (
+          {originTime !== null && (
             <SpaceTimeChart
               className="inset-0 absolute h-full"
               height={height}
               spaceOrigin={
                 (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
               }
-              timeOrigin={minDepartureTime}
+              timeOrigin={originTime}
               {...spaceTimeChartProps}
               onPan={onPanOverloaded}
               onClick={handleClick}

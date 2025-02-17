@@ -215,7 +215,7 @@ const SimulationResults = ({
                       height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
                       handleTrainDrag={handleTrainDrag}
                       onTrainClick={(trainId) => dispatch(updateSelectedTrainId(trainId))}
-                      selectedProjection={trainIdUsedForProjection}
+                      selectedProjectionId={trainIdUsedForProjection}
                     />
                   )}
                 </div>
