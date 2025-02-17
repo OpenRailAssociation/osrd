@@ -212,6 +212,15 @@ impl From<RollingStockModel> for RollingStock {
             electrical_power_startup_time: rolling_stock_model.electrical_power_startup_time,
             raise_pantograph_time: rolling_stock_model.raise_pantograph_time,
             supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
+            primary_category: rolling_stock_model.primary_category.0,
+            other_categories: editoast_schemas::rolling_stock::RollingStockCategories(
+                rolling_stock_model
+                    .other_categories
+                    .0
+                    .into_iter()
+                    .map(|x| x.0)
+                    .collect::<Vec<_>>(),
+            ),
         }
     }
 }
@@ -241,6 +250,15 @@ impl From<RollingStock> for RollingStockModelChangeset {
             .electrical_power_startup_time(rolling_stock.electrical_power_startup_time)
             .raise_pantograph_time(rolling_stock.raise_pantograph_time)
             .supported_signaling_systems(rolling_stock.supported_signaling_systems)
+            .primary_category(RollingStockCategory(rolling_stock.primary_category))
+            .other_categories(RollingStockCategories(
+                rolling_stock
+                    .other_categories
+                    .0
+                    .into_iter()
+                    .map(RollingStockCategory)
+                    .collect::<Vec<_>>(),
+            ))
     }
 }
 
@@ -327,7 +345,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn test_primary_category_is_unknown_with_other_categories_are_empty() {
+    async fn test_primary_category_with_empty_other_categories() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let created_fast_rolling_stock =
@@ -336,7 +354,7 @@ pub mod tests {
         assert_eq!(
             created_fast_rolling_stock.primary_category,
             RollingStockCategory(
-                editoast_schemas::rolling_stock::RollingStockCategory::FreightTrain
+                editoast_schemas::rolling_stock::RollingStockCategory::CommuterTrain
             )
         );
         assert_eq!(

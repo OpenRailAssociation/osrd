@@ -107,6 +107,8 @@ pub struct RollingStock {
     pub railjson_version: String,
     #[serde(default)]
     pub metadata: Option<RollingStockMetadata>,
+    pub primary_category: RollingStockCategory,
+    pub other_categories: RollingStockCategories,
 }
 
 impl<'de> Deserialize<'de> for RollingStock {
