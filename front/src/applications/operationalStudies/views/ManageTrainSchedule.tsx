@@ -85,7 +85,7 @@ const ManageTrainSchedule = () => {
     (_rollingStockId: number, comfort: Comfort) => {
       dispatch(updateRollingStockID(_rollingStockId));
       dispatch(updateRollingStockComfort(comfort));
-      launchPathfinding(pathSteps);
+      launchPathfinding(pathSteps, _rollingStockId);
     },
     [pathSteps]
   );

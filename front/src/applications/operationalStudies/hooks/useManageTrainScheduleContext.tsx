@@ -19,7 +19,11 @@ type ManageTrainScheduleContextType = {
   pathProperties?: ManageTrainSchedulePathProperties;
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
   voltageRanges: RangedValue[];
-  launchPathfinding: (pathSteps: (PathStep | null)[]) => void;
+  launchPathfinding: (
+    steps: (PathStep | null)[],
+    rollingStockId?: number,
+    options?: { isInitialization: boolean }
+  ) => void;
   pathfindingState: PathfindingState;
   infraInfo: { infra?: InfraWithState; reloadCount: number };
   /** Operational points along the path (including origin and destination) and vias added by clicking on map */

@@ -52,7 +52,7 @@ const usePathfinding = (
   const powerRestrictions = useSelector(getPowerRestrictions);
   const { infra, reloadCount, setIsInfraError } = useInfraStatus();
   const { getRollingStockID } = useOsrdConfSelectors();
-  const rollingStockId = useSelector(getRollingStockID);
+  const currentRollingStockId = useSelector(getRollingStockID);
 
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
@@ -165,7 +165,11 @@ const usePathfinding = (
   };
 
   const launchPathfinding = useCallback(
-    async (steps: (PathStep | null)[], options = { isInitialization: false }) => {
+    async (
+      steps: (PathStep | null)[],
+      rollingStockId = currentRollingStockId,
+      options = { isInitialization: false }
+    ) => {
       if (!options.isInitialization) {
         dispatch(replaceItinerary(steps));
         if (!isEmptyArray(powerRestrictions)) {
@@ -264,12 +268,12 @@ const usePathfinding = (
         }
       }
     },
-    [rollingStockId, infra]
+    [currentRollingStockId, infra]
   );
 
   useEffect(() => {
     if (infra?.state === 'CACHED') {
-      launchPathfinding(pathSteps, { isInitialization: true });
+      launchPathfinding(pathSteps, currentRollingStockId, { isInitialization: true });
     }
   }, [infra?.state]);
 
