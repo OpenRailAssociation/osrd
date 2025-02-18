@@ -11,7 +11,6 @@ import type {
   TrainScheduleResultWithTrainId,
 } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
-import { formatToIsoDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 import {
   formatEditoastTrainIdToTrainScheduleId,
@@ -263,7 +262,7 @@ const createTrainSchedulePayload = async ({
     train_name: trainrun.name,
     labels: compact(trainrunLabels),
     path: path.flat(),
-    start_time: formatToIsoDate(startDate),
+    start_time: startDate.toISOString(),
     schedule,
   };
 };

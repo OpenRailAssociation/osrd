@@ -3,7 +3,6 @@ import nextId from 'react-id-generator';
 
 import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
-import { formatToIsoDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 
 export function generateTrainSchedulesPayloads(
@@ -63,7 +62,7 @@ export function generateTrainSchedulesPayloads(
       rolling_stock_name: train.rollingStock || '',
       constraint_distribution: 'MARECO',
       schedule,
-      start_time: formatToIsoDate(train.departureTime, false),
+      start_time: departureTime.toISOString(),
     });
     return payloads;
   }, [] as TrainScheduleBase[]);
