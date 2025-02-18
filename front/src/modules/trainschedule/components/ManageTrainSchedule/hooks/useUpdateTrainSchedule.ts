@@ -18,7 +18,6 @@ import type {
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { formatToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastTrainIdToTrainScheduleId,
@@ -75,7 +74,7 @@ const useUpdateTrainSchedule = (
         dispatch(
           setSuccess({
             title: t('trainUpdated'),
-            text: `${confName}: ${formatToIsoDate(startTime, true)}`,
+            text: `${confName}: ${startTime.toLocaleString()}`,
           })
         );
         dispatch(updateSelectedTrainId(trainIdToEdit as TrainScheduleId));
