@@ -241,6 +241,10 @@
       "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée"
     },
+    "paced_train": {
+      "Database": "Erreur interne (base de données)",
+      "BatchPacedTrainNotFound": "Certaines missions sont introuvables"
+    },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"
     },

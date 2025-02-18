@@ -244,6 +244,10 @@
       "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
       "InvalidQueryParams": "Invalid query params '{{message}}'"
     },
+    "paced_train": {
+      "Database": "Internal error (database)",
+      "BatchPacedTrainNotFound": "Some Paced trains could not be found"
+    },
     "url": {
       "InvalidUrl": "Invalid url '{{url}}'"
     },

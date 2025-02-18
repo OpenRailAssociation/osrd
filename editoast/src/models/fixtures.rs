@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use std::ops::DerefMut;
 
+use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_models::DbConnection;
 
@@ -11,6 +12,8 @@ use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
+use editoast_schemas::paced_train::Paced;
+use editoast_schemas::paced_train::PacedTrainBase;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
@@ -41,6 +44,7 @@ use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::Tags;
 
+use super::paced_train::PacedTrain;
 use super::temporary_speed_limits::TemporarySpeedLimitGroup;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
@@ -90,8 +94,25 @@ pub fn simple_train_schedule_base() -> TrainScheduleBase {
         .expect("Unable to parse test train schedule")
 }
 
+pub fn simple_paced_train_base() -> PacedTrainBase {
+    let train_schedule_base =
+        serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
+            .expect("Unable to parse test train schedule");
+    PacedTrainBase {
+        train_schedule_base,
+        paced: Paced {
+            duration: ChronoDuration::hours(2).try_into().unwrap(),
+            step: ChronoDuration::minutes(15).try_into().unwrap(),
+        },
+    }
+}
+
 pub fn simple_train_schedule_changeset(timetable_id: i64) -> Changeset<TrainSchedule> {
     Changeset::<TrainSchedule>::from(simple_train_schedule_base()).timetable_id(timetable_id)
+}
+
+pub fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<PacedTrain> {
+    Changeset::<PacedTrain>::from(simple_paced_train_base()).timetable_id(timetable_id)
 }
 
 pub async fn create_simple_train_schedule(
@@ -102,6 +123,13 @@ pub async fn create_simple_train_schedule(
         .create(conn)
         .await
         .expect("Failed to create train schedule")
+}
+
+pub async fn create_simple_paced_train(conn: &mut DbConnection, timetable_id: i64) -> PacedTrain {
+    simple_paced_train_changeset(timetable_id)
+        .create(conn)
+        .await
+        .expect("Failed to create paced train")
 }
 
 pub fn scenario_changeset(

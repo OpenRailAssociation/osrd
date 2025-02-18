@@ -6,6 +6,7 @@ pub mod infra;
 mod layers;
 mod openapi;
 pub mod operational_studies;
+pub mod paced_train;
 pub mod pagination;
 pub mod params;
 pub mod path;
@@ -103,6 +104,7 @@ crate::routes! {
     &fonts,
     &infra,
     &layers,
+    &paced_train,
     &projects,
     &rolling_stock,
     &search,
@@ -134,6 +136,7 @@ editoast_common::schemas! {
     infra::schemas(),
     operation::schemas(),
     operational_studies::schemas(),
+    paced_train::schemas(),
     pagination::schemas(),
     path::schemas(),
     projects::schemas(),
@@ -146,6 +149,11 @@ editoast_common::schemas! {
     timetable::schemas(),
     work_schedules::schemas(),
     stdcm_logs::schemas(),
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+struct ListId {
+    ids: HashSet<i64>,
 }
 
 /// Represents the bundle of information about the issuer of a request

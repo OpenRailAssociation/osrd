@@ -456,6 +456,34 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    paced_train (id) {
+        id -> Int8,
+        #[max_length = 128]
+        train_name -> Varchar,
+        labels -> Array<Nullable<Text>>,
+        #[max_length = 128]
+        rolling_stock_name -> Varchar,
+        timetable_id -> Int8,
+        start_time -> Timestamptz,
+        schedule -> Jsonb,
+        margins -> Jsonb,
+        initial_speed -> Float8,
+        comfort -> Int2,
+        path -> Jsonb,
+        constraint_distribution -> Int2,
+        #[max_length = 128]
+        speed_limit_tag -> Nullable<Varchar>,
+        power_restrictions -> Jsonb,
+        options -> Jsonb,
+        duration -> Interval,
+        step -> Interval,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     project (id) {
         id -> Int8,
         #[max_length = 128]
@@ -848,6 +876,7 @@ diesel::joinable!(infra_object_speed_section -> infra (infra_id));
 diesel::joinable!(infra_object_switch -> infra (infra_id));
 diesel::joinable!(infra_object_track_section -> infra (infra_id));
 diesel::joinable!(macro_node -> scenario (scenario_id));
+diesel::joinable!(paced_train -> timetable (timetable_id));
 diesel::joinable!(project -> document (image_id));
 diesel::joinable!(rolling_stock_livery -> document (compound_image_id));
 diesel::joinable!(rolling_stock_livery -> rolling_stock (rolling_stock_id));
@@ -906,6 +935,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_switch,
     infra_object_track_section,
     macro_node,
+    paced_train,
     project,
     rolling_stock,
     rolling_stock_livery,

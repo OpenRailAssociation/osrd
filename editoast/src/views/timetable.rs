@@ -12,6 +12,8 @@ use axum::Extension;
 use derivative::Derivative;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
+
+use editoast_schemas::paced_train::PacedTrainBase;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -25,6 +27,8 @@ use crate::core::conflict_detection::TrainRequirements;
 use crate::core::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
+use crate::models::paced_train::PacedTrain;
+use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
@@ -45,6 +49,8 @@ use super::pagination::PaginatedList as _;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 
+use super::paced_train::PacedTrainResult;
+
 crate::routes! {
     "/timetable" => {
         post,
@@ -53,6 +59,7 @@ crate::routes! {
             "/train_schedules" => get,
             "/train_schedules" => train_schedule,
             "/conflicts" => conflicts,
+            "/paced_trains" => paced_train,
             &stdcm,
         },
     },
@@ -267,6 +274,47 @@ async fn train_schedule(
     // Create a batch of train_schedule
     let train_schedule: Vec<_> = TrainSchedule::create_batch(conn, changesets).await?;
     Ok(Json(train_schedule.into_iter().map_into().collect()))
+}
+
+/// Create paced trains by batch
+#[utoipa::path(
+    post, path = "",
+    tag = "timetable,paced_train",
+    params(TimetableIdParam),
+    request_body = Vec<PacedTrainBase>,
+    responses(
+        (status = 200, description = "The created paced trains", body = Vec<PacedTrainResult>)
+    )
+)]
+async fn paced_train(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(auth): AuthenticationExt,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
+    Json(paced_trains): Json<Vec<PacedTrainBase>>,
+) -> Result<Json<Vec<PacedTrainResult>>> {
+    let authorized = auth
+        .check_roles([BuiltinRole::TimetableWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    let timetable_exists = Timetable::exists(conn, timetable_id).await?;
+    if !timetable_exists {
+        return Err(TimetableError::NotFound { timetable_id }.into());
+    }
+    let changesets = paced_trains
+        .into_iter()
+        .map(PacedTrainChangeset::from)
+        .map(|cs| cs.timetable_id(timetable_id))
+        .collect::<Vec<_>>();
+
+    // Create a batch of paced trains
+    let paced_trains: Vec<_> = PacedTrain::create_batch(conn, changesets).await?;
+    Ok(Json(paced_trains.into_iter().map_into().collect()))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]

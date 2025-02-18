@@ -10,6 +10,7 @@ pub mod macro_node;
 pub mod stdcm_log;
 // We allow unused until models is moved to a separate crate
 pub mod auth;
+pub mod paced_train;
 pub mod pagination;
 #[allow(unused)]
 pub mod prelude;

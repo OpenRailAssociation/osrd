@@ -1515,6 +1515,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LightRollingStockWithLiveries'
+  /paced_train:
+    delete:
+      tags:
+      - timetable
+      - paced_train
+      summary: Delete a paced train
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+        required: true
+      responses:
+        '204':
+          description: All paced_trains have been deleted
   /projects:
     get:
       tags:
@@ -2794,6 +2818,37 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Conflict'
+  /timetable/{id}/paced_trains:
+    post:
+      tags:
+      - timetable
+      - paced_train
+      summary: Create paced trains by batch
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PacedTrainBase'
+        required: true
+      responses:
+        '200':
+          description: The created paced trains
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PacedTrainResult'
   /timetable/{id}/stdcm:
     post:
       tags:
@@ -4853,6 +4908,8 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
       - $ref: '#/components/schemas/EditoastOperationErrorModifyId'
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
+      - $ref: '#/components/schemas/EditoastPacedTrainErrorBatchPacedTrainNotFound'
+      - $ref: '#/components/schemas/EditoastPacedTrainErrorDatabase'
       - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPage'
       - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPageSize'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
@@ -5461,6 +5518,49 @@ components:
           type: string
           enum:
           - editoast:operation:ObjectNotFound
+    EditoastPacedTrainErrorBatchPacedTrainNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - count
+          properties:
+            count:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:BatchPacedTrainNotFound
+    EditoastPacedTrainErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:Database
     EditoastPaginationErrorInvalidPage:
       type: object
       required:
@@ -8298,6 +8398,41 @@ components:
       - CreationDateDesc
       - LastModifiedDesc
       - LastModifiedAsc
+    PacedTrainBase:
+      allOf:
+      - $ref: '#/components/schemas/TrainScheduleBase'
+      - type: object
+        required:
+        - paced
+        properties:
+          paced:
+            type: object
+            required:
+            - duration
+            - step
+            properties:
+              duration:
+                type: string
+                description: Duration of the paced train, an ISO 8601 format is expected
+                example: PT2H
+              step:
+                type: string
+                description: Time between two occurrences, an ISO 8601 format is expected
+                example: PT15M
+    PacedTrainResult:
+      allOf:
+      - $ref: '#/components/schemas/PacedTrainBase'
+      - type: object
+        required:
+        - id
+        - timetable_id
+        properties:
+          id:
+            type: integer
+            format: int64
+          timetable_id:
+            type: integer
+            format: int64
     PaginationStats:
       type: object
       description: |-

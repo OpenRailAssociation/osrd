@@ -59,6 +59,7 @@ use crate::views::path::pathfinding_from_train_batch;
 use crate::views::path::PathfindingError;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::ListId;
 use crate::AppState;
 use crate::RollingStockModel;
 use crate::ValkeyClient;
@@ -196,16 +197,11 @@ async fn get(
     Ok(Json(train_schedule.into()))
 }
 
-#[derive(Debug, Deserialize, ToSchema)]
-struct BatchRequest {
-    ids: HashSet<i64>,
-}
-
 /// Delete a train schedule and its result
 #[utoipa::path(
     delete, path = "",
     tag = "timetable,train_schedule",
-    request_body = inline(BatchRequest),
+    request_body = inline(ListId),
     responses(
         (status = 204, description = "All train schedules have been deleted")
     )
@@ -213,7 +209,7 @@ struct BatchRequest {
 async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
-    Json(BatchRequest { ids: train_ids }): Json<BatchRequest>,
+    Json(ListId { ids: train_ids }): Json<ListId>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())

@@ -11,6 +11,8 @@ export const addTagTypes = [
   'pathfinding',
   'routes',
   'layers',
+  'timetable',
+  'paced_train',
   'projects',
   'studies',
   'scenarios',
@@ -21,7 +23,6 @@ export const addTagTypes = [
   'stdcm_search_environment',
   'stdcm_log',
   'temporary_speed_limits',
-  'timetable',
   'stdcm',
   'train_schedule',
   'work_schedules',
@@ -477,6 +478,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.rollingStockId}` }),
         providesTags: ['rolling_stock'],
       }),
+      deletePacedTrain: build.mutation<DeletePacedTrainApiResponse, DeletePacedTrainApiArg>({
+        query: (queryArg) => ({ url: `/paced_train`, method: 'DELETE', body: queryArg.body }),
+        invalidatesTags: ['timetable', 'paced_train'],
+      }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
         query: (queryArg) => ({
           url: `/projects`,
@@ -872,6 +877,17 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['timetable'],
+      }),
+      postTimetableByIdPacedTrains: build.mutation<
+        PostTimetableByIdPacedTrainsApiResponse,
+        PostTimetableByIdPacedTrainsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/paced_trains`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['timetable', 'paced_train'],
       }),
       postTimetableByIdStdcm: build.mutation<
         PostTimetableByIdStdcmApiResponse,
@@ -1484,6 +1500,12 @@ export type GetLightRollingStockByRollingStockIdApiResponse =
 export type GetLightRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
 };
+export type DeletePacedTrainApiResponse = unknown;
+export type DeletePacedTrainApiArg = {
+  body: {
+    ids: number[];
+  };
+};
 export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
   results: ProjectWithStudies[];
 };
@@ -1759,6 +1781,13 @@ export type GetTimetableByIdConflictsApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number | null;
+};
+export type PostTimetableByIdPacedTrainsApiResponse =
+  /** status 200 The created paced trains */ PacedTrainResult[];
+export type PostTimetableByIdPacedTrainsApiArg = {
+  /** A timetable ID */
+  id: number;
+  body: PacedTrainBase[];
 };
 export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation result */
   | {
@@ -3676,19 +3705,6 @@ export type Conflict = {
   /** List of work schedule ids involved in the conflict */
   work_schedule_ids: number[];
 };
-export type PathfindingItem = {
-  /** The stop duration in milliseconds, None if the train does not stop. */
-  duration?: number | null;
-  location: PathItemLocation;
-  timing_data?: {
-    /** Time at which the train should arrive at the location */
-    arrival_time: string;
-    /** The train may arrive up to this duration after the expected arrival time */
-    arrival_time_tolerance_after: number;
-    /** The train may arrive up to this duration before the expected arrival time */
-    arrival_time_tolerance_before: number;
-  } | null;
-};
 export type Distribution = 'STANDARD' | 'MARECO';
 export type TrainScheduleBase = {
   comfort?: Comfort;
@@ -3735,6 +3751,31 @@ export type TrainScheduleBase = {
   speed_limit_tag?: string | null;
   start_time: string;
   train_name: string;
+};
+export type PacedTrainBase = TrainScheduleBase & {
+  paced: {
+    /** Duration of the paced train, an ISO 8601 format is expected */
+    duration: string;
+    /** Time between two occurrences, an ISO 8601 format is expected */
+    step: string;
+  };
+};
+export type PacedTrainResult = PacedTrainBase & {
+  id: number;
+  timetable_id: number;
+};
+export type PathfindingItem = {
+  /** The stop duration in milliseconds, None if the train does not stop. */
+  duration?: number | null;
+  location: PathItemLocation;
+  timing_data?: {
+    /** Time at which the train should arrive at the location */
+    arrival_time: string;
+    /** The train may arrive up to this duration after the expected arrival time */
+    arrival_time_tolerance_after: number;
+    /** The train may arrive up to this duration before the expected arrival time */
+    arrival_time_tolerance_before: number;
+  } | null;
 };
 export type TrainScheduleResult = TrainScheduleBase & {
   id: number;
