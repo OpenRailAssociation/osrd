@@ -209,10 +209,10 @@ export const formatDateString = (date?: Date | null) => {
   return dayjs(date).format('DD/MM/YY');
 };
 
-export const formatLocaleDate = (date: Date) => date.toLocaleString().substring(0, 10);
-
 export const isEqualDate = (searchDate: Date, startDate: Date) =>
-  formatLocaleDate(searchDate) === formatLocaleDate(startDate);
+  searchDate.getFullYear() === startDate.getFullYear() &&
+  searchDate.getMonth() === startDate.getMonth() &&
+  searchDate.getDate() === startDate.getDate();
 
 /**
  * @param start timestamp or Date object
