@@ -50,16 +50,6 @@ export const formatLocalDateTime = (date: Date) =>
   dayjs(date).local().format('YYYY-MM-DDTHH:mm:ss');
 
 /**
- * Transform a milliseconds date to an ISO 8601 date with the user timezone
- * @param msDate milliseconds date (elapsed from January 1st 1970)
- * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00)
- */
-export const formatToIsoDate = (date: number | string | Date, formatDate: boolean = false) => {
-  const format = formatDate ? 'D/MM/YYYY HH:mm:ss' : '';
-  return dayjs(date).tz(userTimeZone).format(format);
-};
-
-/**
  * Transform a locale date to an ISO 8601 date
  * @param date Date we want to transform to ISO 8601
  * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00)

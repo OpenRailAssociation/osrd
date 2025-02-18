@@ -3,7 +3,6 @@ import { describe, it, expect } from 'vitest';
 import {
   parseLocalDateTime,
   isoDateToMs,
-  formatToIsoDate,
   serializeDateTimeWithoutYear,
   extractDateAndTime,
   isArrivalDateInSearchTimeWindow,
@@ -40,14 +39,6 @@ describe('isoDateToMs', () => {
     const isoDate = '2024-04-26T20:30:15+02:00';
     const msDate = isoDateToMs(isoDate);
     expect(msDate).toEqual(1714156215000);
-  });
-});
-
-describe('formatToIsoDate', () => {
-  it('should return the date in ISO 8601', () => {
-    const msDate = 1714156215000;
-    const isoDate = formatToIsoDate(msDate);
-    expect(isoDate).toEqual('2024-04-26T18:30:15Z'); // Ends by Z because CI seems to be in UTC timezone
   });
 });
 
