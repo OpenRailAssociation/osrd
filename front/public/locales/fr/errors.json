@@ -214,8 +214,8 @@
       "TowedRollingStockNotFound": "Matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
       "TrainSimulationFail": "Échec de la simulation du train",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
-      "InvalidConsistMass": "La masse du convoi est invalide : '{{message}}'",
-      "InvalidConsistLength": "La longueur du convoi est invalide : '{{message}}'"
+      "InvalidConsistMass": "Masse du convoi invalide {{provided_consist_mass}} : elle doit être supérieure à '{{expected_min}}",
+      "InvalidConsistLength": "Longueur du convoi invalide {{provided_consist_length}} : doit être supérieure à '{{expected_min}}'"
     },
     "study": {
       "Database": "Erreur interne (base de données)",

@@ -212,8 +212,8 @@
       "TowedRollingStockNotFound": "Towed rolling stock {towed_rolling_stock_id} does not exist",
       "TrainSimulationFail": "Train simulation failed",
       "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist",
-      "InvalidConsistMass": "Invalid consist mass: '{{message}}'",
-      "InvalidConsistLength": "Invalid consist length: '{{message}}'"
+      "InvalidConsistMass": "Invalid consist mass {{provided_consist_mass}}: it should be greater than '{{expected_min}}'",
+      "InvalidConsistLength": "Invalid consist length {{provided_consist_length}}: it should be greater than '{{expected_min}}'"
     },
     "study": {
       "Database": "Internal error (database)",

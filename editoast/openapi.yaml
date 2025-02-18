@@ -6112,10 +6112,13 @@ components:
         context:
           type: object
           required:
-          - message
+          - expected_min
+          - provided_consist_length
           properties:
-            message:
-              type: string
+            expected_min:
+              type: number
+            provided_consist_length:
+              type: number
         message:
           type: string
         status:
@@ -6136,10 +6139,13 @@ components:
         context:
           type: object
           required:
-          - message
+          - expected_min
+          - provided_consist_mass
           properties:
-            message:
-              type: string
+            expected_min:
+              type: number
+            provided_consist_mass:
+              type: number
         message:
           type: string
         status:

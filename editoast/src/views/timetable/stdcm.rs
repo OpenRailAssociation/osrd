@@ -99,10 +99,18 @@ enum StdcmError {
     TrainSimulationFail,
     #[error("Path items are invalid")]
     InvalidPathItems { items: Vec<InvalidPathItem> },
-    #[error("Invalid consist mass: {message}")]
-    InvalidConsistMass { message: String },
-    #[error("Invalid consist length: {message}")]
-    InvalidConsistLength { message: String },
+    #[error(
+        "Invalid consist mass {provided_consist_mass}: it should be greater than {expected_min}"
+    )]
+    InvalidConsistMass {
+        provided_consist_mass: f64,
+        expected_min: f64,
+    },
+    #[error("Invalid consist length {provided_consist_length}: it should be greater than {expected_min}")]
+    InvalidConsistLength {
+        provided_consist_length: f64,
+        expected_min: f64,
+    },
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -964,9 +972,12 @@ mod tests {
             .json_into();
 
         assert_eq!(
-            stdcm_response.message,
-            "Invalid consist mass: The total mass must be greater than the sum of the rolling stock masses (900000 kilograms)"
-                .to_owned()
+            stdcm_response.error_type,
+            "editoast:stdcm_v2:InvalidConsistMass".to_string()
+        );
+        assert_eq!(
+            stdcm_response.context["expected_min"].as_f64(),
+            Some(900000.0)
         );
     }
 
@@ -1010,10 +1021,10 @@ mod tests {
             .json_into();
 
         assert_eq!(
-            stdcm_response.message,
-            "Invalid consist length: The total length must be greater than the sum of the rolling stock lengths (400 meters)"
-                .to_owned()
+            stdcm_response.error_type,
+            "editoast:stdcm_v2:InvalidConsistLength".to_string()
         );
+        assert_eq!(stdcm_response.context["expected_min"].as_f64(), Some(400.0));
     }
 
     #[rstest]
