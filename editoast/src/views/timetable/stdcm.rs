@@ -42,7 +42,7 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::prelude::*;
-use crate::models::stdcm_log::StdcmLog;
+use crate::models::stdcm_log::{StdcmLog, StdcmResponseOrError};
 use crate::models::timetable::Timetable;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::Infra;
@@ -284,7 +284,7 @@ async fn stdcm(
             .collect(),
     };
 
-    let stdcm_response = stdcm_request.fetch(core_client.as_ref()).await?;
+    let stdcm_response = stdcm_request.fetch(core_client.as_ref()).await;
 
     // 6. Log STDCM request and response if logging is enabled
     if config.enable_stdcm_logging {
@@ -301,6 +301,15 @@ async fn stdcm(
             },
         );
 
+        let stdcm_response = match stdcm_response.clone() {
+            Ok(response) => StdcmResponseOrError::Response(response),
+            Err(error) => {
+                StdcmResponseOrError::RequestError(serde_json::to_value(error).unwrap_or(
+                    serde_json::Value::String("Failed to serialize the error".into()),
+                ))
+            }
+        };
+
         tokio::spawn(
             // We just don't await the creation of the log entry since we want
             // the endpoint to return as soon as possible, and because failing
@@ -309,7 +318,7 @@ async fn stdcm(
                 conn,
                 trace_id.map(|trace_id| trace_id.to_string()),
                 stdcm_request,
-                stdcm_response.clone(),
+                stdcm_response,
                 user_id,
             )
             .in_current_span(),
@@ -317,7 +326,7 @@ async fn stdcm(
     }
 
     // 7. Handle STDCM Core Response
-    match stdcm_response {
+    match stdcm_response? {
         crate::core::stdcm::Response::Success {
             simulation,
             path,

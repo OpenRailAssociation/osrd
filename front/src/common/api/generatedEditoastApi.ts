@@ -3628,11 +3628,18 @@ export type StdcmResponse =
       error: SimulationResponse;
       status: 'preprocessing_simulation_error';
     };
+export type StdcmResponseOrError =
+  | {
+      response: StdcmResponse;
+    }
+  | {
+      request_error: unknown;
+    };
 export type StdcmLog = {
   created: string;
   id: number;
   request: StdcmRequest;
-  response: StdcmResponse;
+  response: StdcmResponseOrError;
   trace_id?: string | null;
   user_id?: number | null;
 };

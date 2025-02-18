@@ -11079,7 +11079,7 @@ components:
         request:
           $ref: '#/components/schemas/StdcmRequest'
         response:
-          $ref: '#/components/schemas/StdcmResponse'
+          $ref: '#/components/schemas/StdcmResponseOrError'
         trace_id:
           type: string
           nullable: true
@@ -11347,6 +11347,19 @@ components:
             type: string
             enum:
             - preprocessing_simulation_error
+    StdcmResponseOrError:
+      oneOf:
+      - type: object
+        required:
+        - response
+        properties:
+          response:
+            $ref: '#/components/schemas/StdcmResponse'
+      - type: object
+        required:
+        - request_error
+        properties:
+          request_error: {}
     StdcmSearchEnvironment:
       type: object
       required:

@@ -12,6 +12,18 @@ use crate::models::prelude::*;
 
 editoast_common::schemas! {
     StdcmLog,
+    StdcmResponseOrError,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
+// We accepted the difference of memory size taken by variants
+// Since there is only on success and others are error cases
+#[allow(clippy::large_enum_variant)]
+pub enum StdcmResponseOrError {
+    #[schema(value_type = StdcmResponse)]
+    Response(Response),
+    RequestError(serde_json::Value),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema)]
@@ -25,8 +37,7 @@ pub struct StdcmLog {
     #[schema(value_type = StdcmRequest)]
     pub request: Request,
     #[model(json)]
-    #[schema(value_type = StdcmResponse)]
-    pub response: Response,
+    pub response: StdcmResponseOrError,
     pub created: DateTime<Utc>,
     pub user_id: Option<i64>,
 }
@@ -36,7 +47,7 @@ impl StdcmLog {
         mut conn: DbConnection,
         trace_id: Option<String>,
         request: Request,
-        response: Response,
+        response: StdcmResponseOrError,
         user_id: Option<i64>,
     ) {
         let stdcm_log_changeset = StdcmLog::changeset()
