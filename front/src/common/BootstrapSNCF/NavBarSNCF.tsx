@@ -1,4 +1,4 @@
-import { type ReactElement } from 'react';
+import { useMemo, type ReactElement } from 'react';
 
 import { Gear, Info, Report, ShieldCheck, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -22,30 +22,51 @@ import { useModal } from './ModalSNCF';
 
 type Props = {
   appName?: string | ReactElement;
-  logo?: string;
+  showLogoWithName?: boolean;
 };
 
-const LegacyNavBarSNCF = ({ appName, logo }: Props) => {
+const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
   const { openModal } = useModal();
-  const { digitalTwinLogo, digitalTwinName, isCustomizedDeployment } = useDeploymentSettings();
+  const deploymentSettings = useDeploymentSettings();
   const safeWord = useSelector(getUserSafeWord);
   const { t } = useTranslation('home/navbar');
   const { logout, username } = useAuth();
+
+  const { logoUrl, name } = useMemo(() => {
+    if (!deploymentSettings)
+      return {
+        logoUrl: undefined,
+        name: 'Osrd',
+      };
+    return {
+      logoUrl: showLogoWithName
+        ? deploymentSettings.digitalTwinLogoWithName
+        : deploymentSettings.digitalTwinLogo,
+      name: deploymentSettings.digitalTwinName,
+    };
+  }, [deploymentSettings, showLogoWithName]);
 
   return (
     <div className="mastheader">
       <div
         className={cx(
-          isCustomizedDeployment && logo ? `mastheader-logo__horizon` : `mastheader-logo`,
-          `flex-grow-0`
+          'flex-grow-0',
+          deploymentSettings?.isCustomizedDeployment && showLogoWithName
+            ? 'mastheader-logo-with-name'
+            : 'mastheader-logo',
+          { 'without-image': logoUrl }
         )}
       >
         <Link to="/">
-          <img
-            src={logo ?? digitalTwinLogo}
-            data-testid={`${digitalTwinName.toLowerCase()}-logo`}
-            alt={`${digitalTwinName.toUpperCase()} Logo`}
-          />
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              data-testid={`${name.toLowerCase()}-logo`}
+              alt={`${name.toUpperCase()} Logo`}
+            />
+          ) : (
+            <div style={{ width: '24px' }} />
+          )}
         </Link>
       </div>
       <header role="banner" className="mastheader-title d-flex flex-grow-1">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import defaultLogo from 'assets/logo-color.svg';
 import defaultOsrdLogo from 'assets/logo-osrd-color-white.svg';
@@ -11,7 +11,18 @@ const MONTH_VALUES = {
   JUNE: 5,
   DECEMBER: 11,
 };
-type DeploymentSettings = {
+
+const defaultSettings = {
+  digitalTwinName: 'Osrd',
+  digitalTwinLogo: defaultLogo,
+  digitalTwinLogoWithName: defaultOsrdLogo,
+  stdcmName: 'Stdcm',
+  stdcmLogo: undefined,
+  stdcmSimulationSheetLogo: undefined,
+  isCustomizedDeployment: false,
+};
+
+export type DeploymentSettings = {
   digitalTwinName: string;
   digitalTwinLogo: string;
   digitalTwinLogoWithName: string;
@@ -21,16 +32,19 @@ type DeploymentSettings = {
   isCustomizedDeployment: boolean;
 };
 
-const useDeploymentSettings = () => {
+export type DeploymentSettingsContext = {
+  isLoading: boolean;
+  deploymentSettings?: DeploymentSettings;
+} | null;
+
+const deploymentSettingsContext = createContext<DeploymentSettingsContext>(null);
+
+type DeploymentContextProviderProps = { children: ReactNode };
+
+export const DeploymentContextProvider = ({ children }: DeploymentContextProviderProps) => {
   const [customizedDeploymentSetting, setCustomizedDeploymentSetting] =
-    useState<DeploymentSettings>({
-      digitalTwinName: 'Osrd',
-      digitalTwinLogo: defaultLogo,
-      digitalTwinLogoWithName: defaultOsrdLogo,
-      stdcmName: 'Stdcm',
-      stdcmLogo: undefined,
-      stdcmSimulationSheetLogo: undefined,
-      isCustomizedDeployment: false,
+    useState<DeploymentSettingsContext>({
+      isLoading: true,
     });
 
   useEffect(() => {
@@ -50,12 +64,14 @@ const useDeploymentSettings = () => {
             digitalTwinLogoWithName = xmasOsrdLogo;
           }
 
-          setCustomizedDeploymentSetting((prev) => ({
-            ...prev,
-            isCustomizedDeployment: false,
-            digitalTwinLogo,
-            digitalTwinLogoWithName,
-          }));
+          setCustomizedDeploymentSetting({
+            isLoading: false,
+            deploymentSettings: {
+              ...defaultSettings,
+              digitalTwinLogo,
+              digitalTwinLogoWithName,
+            },
+          });
         } else {
           const overridesData = await response.json();
           const { icons, names } = overridesData;
@@ -66,23 +82,41 @@ const useDeploymentSettings = () => {
           const horizonLogoPath = `/overrides/${icons.digital_twin.dark}_Logo_Grey40.svg`;
 
           setCustomizedDeploymentSetting({
-            digitalTwinName: names.digital_twin,
-            digitalTwinLogo: horizonLogoPath,
-            digitalTwinLogoWithName: horizonLogoWithNamePath,
-            stdcmName: names.stdcm,
-            stdcmLogo: lmrLogoPath,
-            stdcmSimulationSheetLogo: lmrPngLogoPath,
-            isCustomizedDeployment: true,
+            isLoading: false,
+            deploymentSettings: {
+              digitalTwinName: names.digital_twin,
+              digitalTwinLogo: horizonLogoPath,
+              digitalTwinLogoWithName: horizonLogoWithNamePath,
+              stdcmName: names.stdcm,
+              stdcmLogo: lmrLogoPath,
+              stdcmSimulationSheetLogo: lmrPngLogoPath,
+              isCustomizedDeployment: true,
+            },
           });
         }
       } catch (error) {
         console.error('Error fetching overrides.json', error);
       }
     };
+
     fetchInternalProd();
   }, []);
 
-  return customizedDeploymentSetting;
+  return (
+    <deploymentSettingsContext.Provider value={customizedDeploymentSetting}>
+      {children}
+    </deploymentSettingsContext.Provider>
+  );
+};
+
+const useDeploymentSettings = () => {
+  const context = useContext(deploymentSettingsContext);
+  if (!context) {
+    throw new Error(
+      'useManageTrainScheduleContext must be used within a ManageTrainScheduleContext'
+    );
+  }
+  return context.deploymentSettings;
 };
 
 export default useDeploymentSettings;

@@ -6,11 +6,22 @@ import { useSelector } from 'react-redux';
 import { getIsSuperUser } from 'reducers/user/userSelectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
-const LogoSTDCM = ({ logo }: { logo: string | undefined }) => {
-  if (logo) {
-    return <img src={logo} data-testid="lmr-logo" alt="LMR Logo" className="stdcm-header__logo" />;
+const LogoSTDCM = () => {
+  const deploymentSettings = useDeploymentSettings();
+
+  if (deploymentSettings) {
+    return deploymentSettings.stdcmLogo ? (
+      <img
+        src={deploymentSettings.stdcmLogo}
+        data-testid="lmr-logo"
+        alt="LMR Logo"
+        className="stdcm-header__logo"
+      />
+    ) : (
+      <span className="stdcm-header__title pl-5">STDCM</span>
+    );
   }
-  return <span className="stdcm-header__title pl-5">ST DCM</span>;
+  return null;
 };
 
 type StdcmHeaderProps = {
@@ -28,11 +39,10 @@ const StdcmHeader = ({
 }: StdcmHeaderProps) => {
   const { t } = useTranslation(['stdcm', 'translation']);
   const isSuperUser = useSelector(getIsSuperUser);
-  const { stdcmLogo } = useDeploymentSettings();
 
   return (
     <div className="stdcm-header d-flex">
-      <LogoSTDCM logo={stdcmLogo} />
+      <LogoSTDCM />
       <div className="flex-grow-1 d-flex justify-content-center">
         <span className="stdcm-header__notification " id="notification">
           {t('stdcm:notificationTitle')}

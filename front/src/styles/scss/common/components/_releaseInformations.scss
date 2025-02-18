@@ -9,6 +9,10 @@
     position: relative;
     height: 560px;
 
+    img {
+      min-height: 192px;
+    }
+
     .license-attributions {
       background-color: var(--coolgray1);
       padding: 8px;

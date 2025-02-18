@@ -9,7 +9,6 @@ import useAllowedUserRoles from 'common/authorization/hooks/useAllowedUserRoles'
 import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 export default function Home() {
   const { t } = useTranslation('home/home');
@@ -20,11 +19,10 @@ export default function Home() {
     rollingStockEditorAllowed,
     mapAllowed,
   } = useAllowedUserRoles();
-  const { digitalTwinLogoWithName } = useDeploymentSettings();
 
   return (
     <ModalProvider>
-      <NavBarSNCF logo={digitalTwinLogoWithName} />
+      <NavBarSNCF showLogoWithName />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="cardscontainer">
           <div className="row justify-content-center mb-2">

@@ -46,7 +46,7 @@ const StcdmResults = ({
 }: StcdmResultsProps) => {
   const infraId = useInfraID();
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
-  const { stdcmName } = useDeploymentSettings();
+  const deploymentSettings = useDeploymentSettings();
 
   const selectedSimulation = useSelector(getSelectedSimulation);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
@@ -111,9 +111,10 @@ const StcdmResults = ({
                             consist={selectedSimulation.inputs.consist}
                             simulationReportSheetNumber={simulationReportSheetNumber}
                             operationalPointsList={operationalPointsList}
+                            simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
                           />
                         }
-                        fileName={`${stdcmName}-${simulationReportSheetNumber}.pdf`}
+                        fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
                       >
                         <Button
                           data-testid="download-simulation-button"

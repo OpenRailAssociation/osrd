@@ -38,3 +38,6 @@ npm-debug.log*
 /.env
 # .env.local is up to the developer
 /.env.local
+
+# config overrides
+/overrides

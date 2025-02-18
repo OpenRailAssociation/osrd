@@ -29,6 +29,7 @@ import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import useAuth from 'utils/hooks/OsrdAuth';
+import { DeploymentContextProvider } from 'utils/hooks/useDeploymentSettings';
 
 import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
 
@@ -125,9 +126,11 @@ export default function App() {
   const { isLoading } = useAuth();
   return (
     <Suspense fallback={<Loader />}>
-      <NotificationsState />
-      {!isLoading && <RouterProvider router={router} />}
-      {isLoading && <Loader />}
+      <DeploymentContextProvider>
+        <NotificationsState />
+        {!isLoading && <RouterProvider router={router} />}
+        {isLoading && <Loader />}
+      </DeploymentContextProvider>
     </Suspense>
   );
 }

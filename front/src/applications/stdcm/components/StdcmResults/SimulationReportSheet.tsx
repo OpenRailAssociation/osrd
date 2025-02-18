@@ -8,7 +8,6 @@ import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import i18n from 'i18n';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { dateToHHMMSS, formatDateToString, formatDay } from 'utils/date';
-import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 import { msToKmh } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
 import { secToMin } from 'utils/timeManipulation';
@@ -36,9 +35,10 @@ const getArrivalTimes = (step: StdcmPathStep, t: TFunction, shouldDisplay: boole
   return '';
 };
 
-const LogoSTDCM = ({ logo, t }: { logo: string | undefined; t: TFunction }) => {
-  if (logo) {
-    return <Image src={logo} style={styles.header.lmrLogo} />;
+const LogoSTDCM = ({ logoUrl }: { logoUrl?: string }) => {
+  const { t } = useTranslation(['stdcm-simulation-report-sheet']);
+  if (logoUrl) {
+    return <Image src={logoUrl} style={styles.header.lmrLogo} />;
   }
   return (
     <>
@@ -54,8 +54,8 @@ const SimulationReportSheet = ({
   consist,
   simulationReportSheetNumber,
   operationalPointsList,
+  simulationSheetLogo,
 }: SimulationReportSheetProps) => {
-  const { stdcmSimulationSheetLogo } = useDeploymentSettings();
   const { t } = useTranslation(['stdcm-simulation-report-sheet', 'stdcm']);
   let renderedIndex = 0;
 
@@ -77,7 +77,7 @@ const SimulationReportSheet = ({
         <View style={styles.header.numberDateBanner}>
           <View style={styles.header.stdcmTitleBox}>
             <View style={styles.header.stdcm}>
-              <LogoSTDCM logo={stdcmSimulationSheetLogo} t={t} />
+              <LogoSTDCM logoUrl={simulationSheetLogo} />
             </View>
           </View>
           <View style={styles.header.numericInfo}>

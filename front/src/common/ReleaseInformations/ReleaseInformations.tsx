@@ -13,7 +13,7 @@ import LicenseAttributions from './LicenseAttributions';
 
 function ReleaseInformations() {
   const { t } = useTranslation('home/navbar');
-  const { digitalTwinLogo } = useDeploymentSettings();
+  const deploymentSettings = useDeploymentSettings();
   const { data: editoastVersion } = osrdEditoastApi.endpoints.getVersion.useQuery();
   const { data: coreVersion } = osrdEditoastApi.endpoints.getVersionCore.useQuery();
 
@@ -46,7 +46,7 @@ function ReleaseInformations() {
                   rel="noopener noreferrer"
                   onMouseEnter={motriceParty}
                 >
-                  <img src={digitalTwinLogo} alt="OSRD logo" width={192} />
+                  <img src={deploymentSettings?.digitalTwinLogo} alt="OSRD logo" width={192} />
                 </a>
                 <h2>OSRD</h2>
                 <h3>Open Source Railway Designer</h3>

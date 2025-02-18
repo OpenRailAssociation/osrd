@@ -68,9 +68,15 @@ body {
     height: 24px !important;
   }
 
-  &__horizon {
+  &-with-name {
     img {
       height: 40px;
+    }
+  }
+
+  .without-image {
+    img {
+      width: 24px;
     }
   }
 }

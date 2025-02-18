@@ -58,6 +58,7 @@ export type SimulationReportSheetProps = {
   simulationReportSheetNumber: string;
   operationalPointsList: StdcmResultsOperationalPoint[];
   userName?: string;
+  simulationSheetLogo?: string;
 };
 
 export type StdcmResultsOperationalPoint = {
