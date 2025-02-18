@@ -4,43 +4,41 @@ import CommonPage from './common-page-model';
 import { fillAndCheckInputById } from '../utils/index';
 
 class RollingstockEditorPage extends CommonPage {
-  readonly newRollingstockButton: Locator;
+  private readonly newRollingstockButton: Locator;
 
-  readonly submitRollingstockButton: Locator;
+  private readonly submitRollingstockButton: Locator;
 
-  readonly rollingstockDetailsButton: Locator;
+  private readonly rollingstockDetailsButton: Locator;
 
-  readonly speedEffortCurvesButton: Locator;
+  private readonly speedEffortCurvesButton: Locator;
 
-  readonly rollingStockSpreadsheet: Locator;
+  private readonly rollingStockSpreadsheet: Locator;
 
-  readonly rollingStockSearchInput: Locator;
+  private readonly rollingStockSearchInput: Locator;
 
-  readonly rollingStockEditorList: Locator;
+  private readonly powerRestrictionSelector: Locator;
 
-  readonly powerRestrictionSelector: Locator;
+  private readonly electricalProfileSelector: Locator;
 
-  readonly electricalProfileSelector: Locator;
+  private readonly loadingGauge: Locator;
 
-  readonly loadingGauge: Locator;
+  private readonly tractionModeSelector: Locator;
 
-  readonly tractionModeSelector: Locator;
+  private readonly confirmModalButtonYes: Locator;
 
-  readonly confirmModalButtonYes: Locator;
+  private readonly addPowerRestrictionButton: Locator;
 
-  readonly addPowerRestrictionButton: Locator;
+  private readonly powerRestrictionModalBody: Locator;
 
-  readonly powerRestrictionModalBody: Locator;
+  private readonly selectedElectricalProfileButton: Locator;
 
-  readonly selectedElectricalProfileButton: Locator;
+  private readonly deleteSelectedElectricalProfileButton: Locator;
 
-  readonly deleteSelectedElectricalProfileButton: Locator;
+  private readonly editRollingStockButton: Locator;
 
-  readonly editRollingStockButton: Locator;
+  private readonly duplicateRollingStockButton: Locator;
 
-  readonly duplicateRollingStockButton: Locator;
-
-  readonly deleteRollingStockButton: Locator;
+  private readonly deleteRollingStockButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -50,7 +48,6 @@ class RollingstockEditorPage extends CommonPage {
     this.speedEffortCurvesButton = page.getByTestId('tab-rollingstock-curves');
     this.rollingStockSpreadsheet = page.locator('.dsg-container');
     this.rollingStockSearchInput = page.locator('#searchfilter');
-    this.rollingStockEditorList = page.getByTestId('rollingstock-editor-list');
     this.powerRestrictionSelector = page.getByTestId('power-restriction-selector');
     this.electricalProfileSelector = page.getByTestId('electrical-profile-selector');
     this.loadingGauge = page.locator('#loadingGauge');

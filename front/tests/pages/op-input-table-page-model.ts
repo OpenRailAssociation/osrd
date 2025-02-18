@@ -24,9 +24,9 @@ class OperationalStudiesInputTablePage {
 
   readonly columnHeaders: Locator;
 
-  readonly activeRows: Locator;
+  private readonly activeRows: Locator;
 
-  readonly tableRows: Locator;
+  private readonly tableRows: Locator;
 
   readonly deleteButtons: Locator;
 

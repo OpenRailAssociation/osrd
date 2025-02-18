@@ -51,31 +51,31 @@ interface TableRow {
 }
 
 class STDCMPage extends HomePage {
-  readonly debugButton: Locator;
+  private readonly debugButton: Locator;
 
-  readonly notificationHeader: Locator;
+  private readonly notificationHeader: Locator;
 
-  readonly consistCard: Locator;
+  private readonly consistCard: Locator;
 
-  readonly originCard: Locator;
+  private readonly originCard: Locator;
 
-  readonly destinationCard: Locator;
+  private readonly destinationCard: Locator;
 
-  readonly mapContainer: Locator;
+  private readonly mapContainer: Locator;
 
-  readonly tractionEngineField: Locator;
+  private readonly tractionEngineField: Locator;
 
-  readonly towedRollingStockField: Locator;
+  private readonly towedRollingStockField: Locator;
 
-  readonly tonnageField: Locator;
+  private readonly tonnageField: Locator;
 
-  readonly lengthField: Locator;
+  private readonly lengthField: Locator;
 
-  readonly speedLimitTagField: Locator;
+  private readonly speedLimitTagField: Locator;
 
-  readonly maxSpeedField: Locator;
+  private readonly maxSpeedField: Locator;
 
-  readonly addViaButton: Locator;
+  private readonly addViaButton: Locator;
 
   readonly anteriorLinkedTrainContainer: Locator;
 
@@ -85,19 +85,19 @@ class STDCMPage extends HomePage {
 
   readonly posteriorAddLinkedPathButton: Locator;
 
-  readonly launchSimulationButton: Locator;
+  private readonly launchSimulationButton: Locator;
 
-  readonly originChField: Locator;
+  private readonly originChField: Locator;
 
-  readonly destinationChField: Locator;
+  private readonly destinationChField: Locator;
 
-  readonly originCiField: Locator;
+  private readonly originCiField: Locator;
 
-  readonly destinationCiField: Locator;
+  private readonly destinationCiField: Locator;
 
-  readonly viaIcon: Locator;
+  private readonly viaIcon: Locator;
 
-  readonly viaDeleteButton: Locator;
+  private readonly viaDeleteButton: Locator;
 
   readonly originArrival: Locator;
 
@@ -113,25 +113,25 @@ class STDCMPage extends HomePage {
 
   readonly timeDestinationArrival: Locator;
 
-  readonly closeTimePickerButton: Locator;
+  private readonly closeTimePickerButton: Locator;
 
   readonly toleranceDestinationArrival: Locator;
 
-  readonly closeTolerancePickerButton: Locator;
+  private readonly closeTolerancePickerButton: Locator;
 
-  readonly warningBox: Locator;
+  private readonly warningBox: Locator;
 
-  readonly suggestionList: Locator;
+  private readonly suggestionList: Locator;
 
-  readonly suggestionNS: Locator;
+  private readonly suggestionNS: Locator;
 
-  readonly suggestionNWS: Locator;
+  private readonly suggestionNWS: Locator;
 
-  readonly suggestionSS: Locator;
+  private readonly suggestionSS: Locator;
 
-  readonly suggestionMES: Locator;
+  private readonly suggestionMES: Locator;
 
-  readonly suggestionMWS: Locator;
+  private readonly suggestionMWS: Locator;
 
   readonly dynamicOriginCh: Locator;
 
@@ -141,45 +141,43 @@ class STDCMPage extends HomePage {
 
   readonly dynamicDestinationCi: Locator;
 
-  readonly suggestionItems: Locator;
+  private readonly suggestionItems: Locator;
 
-  readonly simulationStatus: Locator;
+  private readonly simulationStatus: Locator;
 
-  readonly simulationList: Locator;
+  private readonly simulationList: Locator;
 
-  readonly incrementButton: Locator;
+  private readonly incrementButton: Locator;
 
-  readonly allViasButton: Locator;
+  private readonly allViasButton: Locator;
 
-  readonly retainSimulationButton: Locator;
+  private readonly retainSimulationButton: Locator;
 
-  readonly downloadSimulationButton: Locator;
+  private readonly downloadSimulationButton: Locator;
 
-  readonly downloadLink: Locator;
+  private readonly downloadLink: Locator;
 
-  readonly startNewQueryButton: Locator;
+  private readonly startNewQueryButton: Locator;
 
-  readonly startNewQueryWithDataButton: Locator;
+  private readonly startNewQueryWithDataButton: Locator;
 
-  readonly originMarker: Locator;
+  private readonly originMarker: Locator;
 
-  readonly destinationMarker: Locator;
+  private readonly destinationMarker: Locator;
 
-  readonly viaMarker: Locator;
+  private readonly viaMarker: Locator;
 
-  readonly mapResultContainer: Locator;
+  private readonly mapResultContainer: Locator;
 
-  readonly originResultMarker: Locator;
+  private readonly originResultMarker: Locator;
 
-  readonly destinationResultMarker: Locator;
+  private readonly destinationResultMarker: Locator;
 
-  readonly viaResultMarker: Locator;
+  private readonly viaResultMarker: Locator;
 
-  readonly simulationResultTable: Locator;
+  private readonly simulationResultTable: Locator;
 
-  readonly simulationLengthAndDuration: Locator;
-
-  readonly helpButton: Locator;
+  private readonly helpButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -271,9 +269,6 @@ class STDCMPage extends HomePage {
     this.destinationResultMarker = this.mapResultContainer.locator('img[alt="destination"]');
     this.viaResultMarker = this.mapResultContainer.locator('img[alt="via"]');
     this.simulationResultTable = page.locator('.simulation-results table.table-results');
-    this.simulationLengthAndDuration = page.locator(
-      '.simulation-metadata .total-length-trip-duration'
-    );
   }
 
   // Dynamic selectors for via cards

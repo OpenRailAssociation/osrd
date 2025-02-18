@@ -57,7 +57,7 @@ test.describe('Rollingstock editor page tests', () => {
 
     // Submit and handle potential warnings
     await rollingStockEditorPage.clickOnSubmitRollingstockButton();
-    await expect(rollingStockEditorPage.toastSNCF).toBeVisible();
+    await expect(rollingStockEditorPage.toastContainer).toBeVisible();
 
     // Fill in speed effort curves for Not Specified and C1 categories
     await rollingStockEditorPage.fillSpeedEffortCurves(

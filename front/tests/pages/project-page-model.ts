@@ -14,37 +14,37 @@ type ProjectDetails = {
 };
 
 class ProjectPage extends HomePage {
-  readonly projectNameLabel: Locator;
+  private readonly projectNameLabel: Locator;
 
-  readonly updateProjectButton: Locator;
+  private readonly updateProjectButton: Locator;
 
-  readonly projectDescriptionLabel: Locator;
+  private readonly projectDescriptionLabel: Locator;
 
-  readonly projectObjectivesLabel: Locator;
+  private readonly projectObjectivesLabel: Locator;
 
-  readonly projectFinancialInfoLabel: Locator;
+  private readonly projectFinancialInfoLabel: Locator;
 
-  readonly projectFinancialAmountLabel: Locator;
+  private readonly projectFinancialAmountLabel: Locator;
 
-  readonly projectTagsLabel: Locator;
+  private readonly projectTagsLabel: Locator;
 
-  readonly addProjectButton: Locator;
+  private readonly addProjectButton: Locator;
 
-  readonly projectNameInput: Locator;
+  private readonly projectNameInput: Locator;
 
-  readonly projectDescriptionInput: Locator;
+  private readonly projectDescriptionInput: Locator;
 
-  readonly projectObjectiveInput: Locator;
+  private readonly projectObjectiveInput: Locator;
 
-  readonly projectFunderInput: Locator;
+  private readonly projectFunderInput: Locator;
 
-  readonly projectBudgetInput: Locator;
+  private readonly projectBudgetInput: Locator;
 
-  readonly updateConfirmButton: Locator;
+  private readonly updateConfirmButton: Locator;
 
-  readonly deleteConfirmButton: Locator;
+  private readonly deleteConfirmButton: Locator;
 
-  readonly createProjectButton: Locator;
+  private readonly createProjectButton: Locator;
 
   constructor(page: Page) {
     super(page);

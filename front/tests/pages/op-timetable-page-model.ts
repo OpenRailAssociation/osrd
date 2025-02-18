@@ -25,42 +25,42 @@ const frTranslations: ScenarioTranslations = readJsonFile(
 );
 
 class OperationalStudiesTimetablePage extends CommonPage {
-  readonly invalidTrainsMessage: Locator;
+  private readonly invalidTrainsMessage: Locator;
 
-  readonly timetableTrains: Locator;
+  private readonly timetableTrains: Locator;
 
-  readonly selectedTimetableTrain: Locator;
+  private readonly selectedTimetableTrain: Locator;
 
   // TODO: remove this commented code when the design of simulation bar has been changed
   // readonly simulationBar: Locator;
 
-  readonly manchetteSpaceTimeChart: Locator;
+  private readonly manchetteSpaceTimeChart: Locator;
 
-  readonly spaceTimeChart: Locator;
+  private readonly spaceTimeChart: Locator;
 
-  readonly speedSpaceChart: Locator;
+  private readonly speedSpaceChart: Locator;
 
   readonly timesStopsDataSheet: Locator;
 
-  readonly simulationMap: Locator;
+  private readonly simulationMap: Locator;
 
-  readonly timetableFilterButton: Locator;
+  private readonly timetableFilterButton: Locator;
 
-  readonly timetableFilterButtonClose: Locator;
+  private readonly timetableFilterButtonClose: Locator;
 
-  readonly editTrainButton: Locator;
+  private readonly editTrainButton: Locator;
 
-  readonly editTrainScheduleButton: Locator;
+  private readonly editTrainScheduleButton: Locator;
 
-  readonly trainArrivalTime: Locator;
+  private readonly trainArrivalTime: Locator;
 
-  readonly scenarioCollapseButton: Locator;
+  private readonly scenarioCollapseButton: Locator;
 
-  readonly timetableCollapseButton: Locator;
+  private readonly timetableCollapseButton: Locator;
 
-  readonly scenarioSideMenu: Locator;
+  private readonly scenarioSideMenu: Locator;
 
-  readonly simulationResult: Locator;
+  private readonly simulationResult: Locator;
 
   constructor(page: Page) {
     super(page);

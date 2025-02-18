@@ -19,56 +19,50 @@ const frTranslations: ManageTrainScheduleTranslations = readJsonFile(
 class RoutePage {
   readonly page: Page;
 
-  readonly pathfindingNoState: Locator;
+  private readonly noOriginChosen: Locator;
 
-  readonly noOriginChosen: Locator;
+  private readonly noDestinationChosen: Locator;
 
-  readonly noDestinationChosen: Locator;
+  private readonly searchByTrigramButton: Locator;
 
-  readonly searchByTrigramButton: Locator;
+  private readonly searchByTrigramContainer: Locator;
 
-  readonly searchByTrigramContainer: Locator;
+  private readonly searchByTrigramInput: Locator;
 
-  readonly searchByTrigramInput: Locator;
+  private readonly searchByTrigramSubmit: Locator;
 
-  readonly searchByTrigramSubmit: Locator;
+  private readonly resultPathfindingDone: Locator;
 
-  readonly resultPathfindingDone: Locator;
+  private readonly originInfo: Locator;
 
-  readonly originInfo: Locator;
+  private readonly destinationInfo: Locator;
 
-  readonly destinationInfo: Locator;
+  private readonly originDeleteButton: Locator;
 
-  readonly viaInfo: Locator;
+  private readonly destinationDeleteButton: Locator;
 
-  readonly originDeleteButton: Locator;
+  private readonly viaDeleteButton: Locator;
 
-  readonly destinationDeleteButton: Locator;
+  private readonly addWaypointsButton: Locator;
 
-  readonly viaDeleteButton: Locator;
+  private readonly reverseItineraryButton: Locator;
 
-  readonly addWaypointsButton: Locator;
-
-  readonly reverseItineraryButton: Locator;
-
-  readonly deleteItineraryButton: Locator;
+  private readonly deleteItineraryButton: Locator;
 
   readonly droppedWaypoints: Locator;
 
-  readonly waypointSuggestions: Locator;
+  private readonly waypointSuggestions: Locator;
 
-  readonly viaModal: Locator;
+  private readonly viaModal: Locator;
 
-  readonly closeViaModalButton: Locator;
+  private readonly closeViaModalButton: Locator;
 
-  readonly missingParamMessage: Locator;
+  private readonly missingParamMessage: Locator;
 
-  readonly pathfindingLoader: Locator;
+  private readonly pathfindingLoader: Locator;
 
   constructor(page: Page) {
     this.page = page;
-
-    this.pathfindingNoState = page.getByTestId('pathfinding-no-state');
     this.noOriginChosen = page.getByTestId('no-origin-chosen-text');
     this.noDestinationChosen = page.getByTestId('no-destination-chosen-text');
     this.searchByTrigramButton = page.getByTestId('rocket-button');
@@ -78,7 +72,6 @@ class RoutePage {
     this.resultPathfindingDone = page.getByTestId('result-pathfinding-done');
     this.originInfo = page.getByTestId('origin-op-info');
     this.destinationInfo = page.getByTestId('destination-op-info');
-    this.viaInfo = page.getByTestId('via-op-info');
     this.originDeleteButton = page.getByTestId('delete-origin-button');
     this.destinationDeleteButton = page.getByTestId('delete-destination-button');
     this.viaDeleteButton = page.getByTestId('delete-via-button');

@@ -10,31 +10,31 @@ const manageTrainScheduleTranslation: { trainAdded: string } = readJsonFile(
 const trainAddedTranslation = manageTrainScheduleTranslation.trainAdded;
 
 class OperationalStudiesPage extends CommonPage {
-  readonly addScenarioTrainButton: Locator;
+  private readonly addScenarioTrainButton: Locator;
 
-  readonly rollingStockTab: Locator;
+  private readonly rollingStockTab: Locator;
 
-  readonly routeTab: Locator;
+  private readonly routeTab: Locator;
 
-  readonly startTimeField: Locator;
+  private readonly startTimeField: Locator;
 
-  readonly resultPathfindingDistance: Locator;
+  private readonly resultPathfindingDistance: Locator;
 
-  readonly returnSimulationResultButton: Locator;
+  private readonly returnSimulationResultButton: Locator;
 
-  readonly deltaInput: Locator;
+  private readonly deltaInput: Locator;
 
-  readonly trainCountInput: Locator;
+  private readonly trainCountInput: Locator;
 
-  readonly trainScheduleNameInput: Locator;
+  private readonly trainScheduleNameInput: Locator;
 
-  readonly addTrainScheduleButton: Locator;
+  private readonly addTrainScheduleButton: Locator;
 
-  readonly trainTimetable: Locator;
+  private readonly trainTimetable: Locator;
 
-  readonly simulationSettingsTab: Locator;
+  private readonly simulationSettingsTab: Locator;
 
-  readonly timesAndStopsTab: Locator;
+  private readonly timesAndStopsTab: Locator;
 
   constructor(page: Page) {
     super(page);

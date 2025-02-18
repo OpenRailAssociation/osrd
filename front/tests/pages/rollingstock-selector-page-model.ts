@@ -4,27 +4,23 @@ import CommonPage from './common-page-model';
 import { extractNumberFromString } from '../utils/index';
 
 class RollingStockSelectorPage extends CommonPage {
-  readonly rollingStockSelectorButton: Locator;
+  private readonly rollingStockSelectorButton: Locator;
 
-  readonly emptyRollingStockSelector: Locator;
+  private readonly emptyRollingStockSelector: Locator;
 
   readonly rollingStockSelectorModal: Locator;
 
-  readonly resultsFound: Locator;
+  private readonly resultsFound: Locator;
 
-  readonly rollingStockListItem: Locator;
+  private readonly rollingStockModalSearch: Locator;
 
-  readonly rollingStockModalSearch: Locator;
+  private readonly rollingStockMiniCards: Locator;
 
-  readonly rollingStockMiniCards: Locator;
+  private readonly electricRollingStockFilter: Locator;
 
-  readonly rollingstockSpanNames: Locator;
+  private readonly thermalRollingStockFilter: Locator;
 
-  readonly electricRollingStockFilter: Locator;
-
-  readonly thermalRollingStockFilter: Locator;
-
-  readonly rollingStockSearchResult: Locator;
+  private readonly rollingStockSearchResult: Locator;
 
   readonly thermalRollingStockIcons: Locator;
 
@@ -40,8 +36,6 @@ class RollingStockSelectorPage extends CommonPage {
 
   readonly noRollingStockResult: Locator;
 
-  readonly comfortHeatingButton: Locator;
-
   readonly comfortACButton: Locator;
 
   readonly selectedComfortType: Locator;
@@ -52,14 +46,11 @@ class RollingStockSelectorPage extends CommonPage {
     super(page);
     this.rollingStockSelectorButton = page.getByTestId('rollingstock-selector');
     this.rollingStockSelectorModal = page.locator('.modal-dialog');
-
     this.rollingStockList = page.locator('.rollingstock-editor-list .rollingstock-title');
-    this.rollingStockListItem = page.locator('.rollingstock-container');
     this.emptyRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
     this.resultsFound = page.locator('.modal-dialog').locator('small').first();
     this.rollingStockModalSearch = this.rollingStockSelectorModal.locator('#searchfilter');
     this.rollingStockMiniCards = page.locator('.rollingstock-selector-minicard');
-    this.rollingstockSpanNames = page.locator('.rollingstock-minicard-name');
     this.electricRollingStockFilter = page.locator('label[for="elec"]');
     this.thermalRollingStockFilter = page.locator('label[for="thermal"]');
     this.rollingStockSearchResult = page.getByTestId('search-results-text');
@@ -73,7 +64,6 @@ class RollingStockSelectorPage extends CommonPage {
     this.electricRollingStockFirstIcon = this.electricRollingStockIcons.first();
     this.thermalRollingStockFirstIcon = this.thermalRollingStockIcons.first();
     this.noRollingStockResult = page.locator('.rollingstock-empty');
-    this.comfortHeatingButton = page.getByTestId('comfort-heating-button');
     this.comfortACButton = page.getByTestId('comfort-ac-button');
     this.selectedComfortType = page.getByTestId('selected-comfort-type-info');
     this.selectedRollingStockName = page.getByTestId('selected-rolling-stock-info');

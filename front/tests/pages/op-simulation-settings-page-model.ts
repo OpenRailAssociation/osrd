@@ -3,13 +3,13 @@ import { type Locator, type Page, expect } from '@playwright/test';
 class OperationalStudiesSimulationSettingsPage {
   readonly page: Page;
 
-  readonly electricalProfilesSwitch: Locator;
+  private readonly electricalProfilesSwitch: Locator;
 
-  readonly linearMarginSwitch: Locator;
+  private readonly linearMarginSwitch: Locator;
 
-  readonly marecoMarginSwitch: Locator;
+  private readonly marecoMarginSwitch: Locator;
 
-  readonly codeCompoSelector: Locator;
+  private readonly codeCompoSelector: Locator;
 
   constructor(page: Page) {
     this.page = page;

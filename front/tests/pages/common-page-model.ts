@@ -7,15 +7,13 @@ class CommonPage {
 
   readonly toastContainer: Locator;
 
-  readonly toastTitle: Locator;
+  private readonly toastTitle: Locator;
 
-  readonly tagField: Locator;
+  private readonly tagField: Locator;
 
-  readonly viteOverlay: Locator;
+  private readonly viteOverlay: Locator;
 
-  readonly toastSNCF: Locator;
-
-  readonly closeToastButton: Locator;
+  private readonly closeToastButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -23,12 +21,12 @@ class CommonPage {
     this.toastTitle = this.toastContainer.getByTestId('toast-SNCF-title');
     this.tagField = page.getByTestId('chips-input');
     this.viteOverlay = page.locator('vite-plugin-checker-error-overlay');
-    this.toastSNCF = page.getByTestId('toast-SNCF');
     this.closeToastButton = page.getByTestId('close-toast-button');
   }
 
   // Set the tag of project, study or scenario
-  async setTag(tag: string) {
+  async setTag(tag: string): Promise<void> {
+    await this.tagField.waitFor();
     await this.tagField.fill(tag);
     await this.tagField.press('Enter');
   }
@@ -38,12 +36,14 @@ class CommonPage {
     await expect(this.toastTitle.last()).toHaveText(expectedText);
   }
 
-  async removeViteOverlay() {
+  // Remove the Vite error overlay if it appears
+  async removeViteOverlay(): Promise<void> {
     if (await this.viteOverlay.count()) {
       await this.viteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
     }
   }
 
+  // Close all visible toast notifications safely
   async closeToastNotification(): Promise<void> {
     const closeToastElements = await this.closeToastButton.all();
     await Promise.all(

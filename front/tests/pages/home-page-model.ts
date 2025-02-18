@@ -3,25 +3,23 @@ import { type BrowserContext, type Locator, type Page } from '@playwright/test';
 import CommonPage from './common-page-model';
 
 class HomePage extends CommonPage {
-  readonly operationalStudiesLink: Locator;
+  private readonly operationalStudiesLink: Locator;
 
-  readonly cartoLink: Locator;
+  private readonly cartoLink: Locator;
 
-  readonly editorLink: Locator;
-
-  readonly rollingStockEditorLink: Locator;
-
-  readonly STDCMLink: Locator;
+  private readonly editorLink: Locator;
 
   readonly linksTitle: Locator;
 
-  readonly backHomeLogo: Locator;
+  private readonly rollingStockEditorLink: Locator;
 
-  readonly dropDown: Locator;
+  private readonly STDCMLink: Locator;
 
-  readonly userSettings: Locator;
+  private readonly backHomeLogo: Locator;
 
-  readonly OSRDLanguage: Locator;
+  private readonly dropDown: Locator;
+
+  private readonly OSRDLanguage: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -33,38 +31,37 @@ class HomePage extends CommonPage {
     this.linksTitle = page.getByTestId('page-title');
     this.backHomeLogo = page.getByTestId('osrd-logo');
     this.dropDown = page.getByTestId('dropdown-sncf');
-    this.userSettings = page.getByTestId('user-settings-btn');
     this.OSRDLanguage = page.getByTestId('language-info');
   }
 
   // Navigate to the Home page
-  async goToHomePage() {
+  async goToHomePage(): Promise<void> {
     await this.page.goto('/');
     await this.removeViteOverlay();
   }
 
   // Click on the logo to navigate back to the home page
-  async backToHomePage() {
+  async backToHomePage(): Promise<void> {
     await this.backHomeLogo.click();
   }
 
-  async goToOperationalStudiesPage() {
+  async goToOperationalStudiesPage(): Promise<void> {
     await this.operationalStudiesLink.click();
   }
 
-  async goToCartoPage() {
+  async goToCartoPage(): Promise<void> {
     await this.cartoLink.click();
   }
 
-  async goToEditorPage() {
+  async goToEditorPage(): Promise<void> {
     await this.editorLink.click();
   }
 
-  async goToRollingStockEditorPage() {
+  async goToRollingStockEditorPage(): Promise<void> {
     await this.rollingStockEditorLink.click();
   }
 
-  async goToSTDCMPage(context: BrowserContext) {
+  async goToSTDCMPage(context: BrowserContext): Promise<Page> {
     // Wait for the new page to be created
     const [stdcmPage] = await Promise.all([context.waitForEvent('page'), this.STDCMLink.click()]);
 

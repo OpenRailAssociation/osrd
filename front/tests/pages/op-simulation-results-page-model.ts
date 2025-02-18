@@ -9,7 +9,7 @@ class OpSimulationResultPage {
 
   readonly speedSpaceChartTabindexElement: Locator;
 
-  readonly speedSpaceChartCloseSettingsButton: Locator;
+  private readonly speedSpaceChartCloseSettingsButton: Locator;
 
   constructor(page: Page) {
     this.page = page;

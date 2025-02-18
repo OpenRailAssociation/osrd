@@ -12,35 +12,31 @@ type ScenarioDetails = {
 };
 
 class ScenarioPage extends CommonPage {
-  readonly scenarioUpdateButton: Locator;
+  private readonly scenarioUpdateButton: Locator;
 
-  readonly scenarioConfirmDeleteButton: Locator;
+  private readonly scenarioConfirmDeleteButton: Locator;
 
-  readonly trainLabels: Locator;
+  private readonly scenarioConfirmUpdateButton: Locator;
 
-  readonly scenarioConfirmUpdateButton: Locator;
+  private readonly scenarioNameInput: Locator;
 
-  readonly scenarioNameInput: Locator;
+  private readonly scenarioDescriptionInput: Locator;
 
-  readonly scenarioDescriptionInput: Locator;
+  private readonly scenarioInfraList: Locator;
 
-  readonly scenarioInfraList: Locator;
+  private readonly scenarioElectricProfileSelect: Locator;
 
-  readonly scenarioElectricProfileSelect: Locator;
+  private readonly scenarioName: Locator;
 
-  readonly scenarioName: Locator;
+  private readonly scenarioDescription: Locator;
 
-  readonly scenarioDescription: Locator;
+  private readonly scenarioInfraName: Locator;
 
-  readonly scenarioInfraName: Locator;
+  private readonly addScenarioButton: Locator;
 
-  readonly trainEditButton: Locator;
+  private readonly createScenarioButton: Locator;
 
-  readonly addScenarioButton: Locator;
-
-  readonly createScenarioButton: Locator;
-
-  readonly scenarioTagsLabel: Locator;
+  private readonly scenarioTagsLabel: Locator;
 
   constructor(readonly page: Page) {
     super(page);
@@ -49,7 +45,6 @@ class ScenarioPage extends CommonPage {
     this.scenarioConfirmDeleteButton = page
       .locator('#modal-content')
       .getByTestId('delete-scenario');
-    this.trainLabels = page.getByTestId('add-train-labels');
     this.addScenarioButton = page.getByTestId('add-scenario-button');
     this.scenarioNameInput = page.locator('#scenarioInputName');
     this.scenarioDescriptionInput = page.locator('#scenarioDescription');
@@ -58,7 +53,6 @@ class ScenarioPage extends CommonPage {
     this.scenarioName = page.locator('.scenario-details-name .scenario-name');
     this.scenarioDescription = page.locator('.scenario-details-description');
     this.scenarioInfraName = page.locator('.scenario-infra-name');
-    this.trainEditButton = page.locator('.scenario-timetable-train-buttons-update');
     this.scenarioConfirmUpdateButton = page
       .locator('#modal-content')
       .getByTestId('update-scenario');

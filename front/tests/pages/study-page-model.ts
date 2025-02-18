@@ -18,59 +18,59 @@ type StudyDetails = {
 };
 
 class StudyPage extends CommonPage {
-  readonly studyUpdateButton: Locator;
+  private readonly studyUpdateButton: Locator;
 
-  readonly studyName: Locator;
+  private readonly studyName: Locator;
 
-  readonly studyDescription: Locator;
+  private readonly studyDescription: Locator;
 
-  readonly studyState: Locator;
+  private readonly studyState: Locator;
 
-  readonly studyType: Locator;
+  private readonly studyType: Locator;
 
-  readonly studyServiceCodeInfo: Locator;
+  private readonly studyServiceCodeInfo: Locator;
 
-  readonly studyBusinessCodeInfo: Locator;
+  private readonly studyBusinessCodeInfo: Locator;
 
-  readonly studyFinancialAmount: Locator;
+  private readonly studyFinancialAmount: Locator;
 
-  readonly studyTags: Locator;
+  private readonly studyTags: Locator;
 
-  readonly addStudyButton: Locator;
+  private readonly addStudyButton: Locator;
 
-  readonly studyUpdateConfirmButton: Locator;
+  private readonly studyUpdateConfirmButton: Locator;
 
-  readonly studyInputName: Locator;
+  private readonly studyInputName: Locator;
 
-  readonly studyTypeSelect: Locator;
+  private readonly studyTypeSelect: Locator;
 
-  readonly studyStatusSelect: Locator;
+  private readonly studyStatusSelect: Locator;
 
-  readonly studyDescriptionInput: Locator;
+  private readonly studyDescriptionInput: Locator;
 
-  readonly studyStartDateInput: Locator;
+  private readonly studyStartDateInput: Locator;
 
-  readonly studyExpectedEndDateInput: Locator;
+  private readonly studyExpectedEndDateInput: Locator;
 
-  readonly studyEndDateInput: Locator;
+  private readonly studyEndDateInput: Locator;
 
-  readonly studyServiceCodeInput: Locator;
+  private readonly studyServiceCodeInput: Locator;
 
-  readonly studyBusinessCodeInput: Locator;
+  private readonly studyBusinessCodeInput: Locator;
 
-  readonly studyBudgetInput: Locator;
+  private readonly studyBudgetInput: Locator;
 
-  readonly studyDeleteConfirmButton: Locator;
+  private readonly studyDeleteConfirmButton: Locator;
 
-  readonly createStudyButton: Locator;
+  private readonly createStudyButton: Locator;
 
-  readonly studyEditionModal: Locator;
+  private readonly studyEditionModal: Locator;
 
-  readonly startDate: Locator;
+  private readonly startDate: Locator;
 
-  readonly expectedEndDate: Locator;
+  private readonly expectedEndDate: Locator;
 
-  readonly realEndDate: Locator;
+  private readonly realEndDate: Locator;
 
   constructor(page: Page) {
     super(page);

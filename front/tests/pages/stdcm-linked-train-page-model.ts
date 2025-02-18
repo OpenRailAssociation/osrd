@@ -5,25 +5,25 @@ import LINKED_TRAIN_DETAILS from '../assets/linked-train-const';
 import { DEFAULT_DETAILS } from '../assets/stdcm-const';
 
 class STDCMLinkedTrainPage extends STDCMPage {
-  readonly anteriorDeleteLinkedPathButton: Locator;
+  private readonly anteriorDeleteLinkedPathButton: Locator;
 
-  readonly anteriorLinkedTrainField: Locator;
+  private readonly anteriorLinkedTrainField: Locator;
 
-  readonly anteriorLinkedTrainDate: Locator;
+  private readonly anteriorLinkedTrainDate: Locator;
 
-  readonly anteriorLinkedTrainSearchButton: Locator;
+  private readonly anteriorLinkedTrainSearchButton: Locator;
 
-  readonly anteriorLinkedTrainResultInfosButton: Locator;
+  private readonly anteriorLinkedTrainResultInfosButton: Locator;
 
-  readonly posteriorDeleteLinkedPathButton: Locator;
+  private readonly posteriorDeleteLinkedPathButton: Locator;
 
-  readonly posteriorLinkedTrainField: Locator;
+  private readonly posteriorLinkedTrainField: Locator;
 
-  readonly posteriorLinkedTrainDate: Locator;
+  private readonly posteriorLinkedTrainDate: Locator;
 
-  readonly posteriorLinkedTrainSearchButton: Locator;
+  private readonly posteriorLinkedTrainSearchButton: Locator;
 
-  readonly posteriorLinkedTrainResultInfosButton: Locator;
+  private readonly posteriorLinkedTrainResultInfosButton: Locator;
 
   constructor(readonly page: Page) {
     super(page);

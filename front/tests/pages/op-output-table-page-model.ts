@@ -28,9 +28,9 @@ const enTranslations: TimeStopsTranslations = readJsonFile('public/locales/en/ti
 const frTranslations: TimeStopsTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
 class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage {
-  readonly columnHeaders: Locator;
+  private readonly columnHeaders: Locator;
 
-  readonly tableRows: Locator;
+  private readonly tableRows: Locator;
 
   constructor(page: Page) {
     super(page);
