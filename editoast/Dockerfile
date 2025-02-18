@@ -18,17 +18,16 @@ FROM chef AS base_builder
 RUN apk add --no-cache build-base openssl openssl-dev openssl-libs-static mold libpq-dev geos-dev
 ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 RUN cargo install diesel_cli --no-default-features --features postgres
-COPY --from=static_assets . /assets 
+COPY --from=static_assets . /assets
 
 #######################
 # Build assets        #
 #######################
-FROM ubuntu:latest AS editoast_assets
-RUN apt update && apt install --yes wget
-RUN wget https://github.com/flother/spreet/releases/download/v0.11.0/spreet-x86_64-unknown-linux-musl.tar.gz
-RUN tar xvf spreet-x86_64-unknown-linux-musl.tar.gz --directory /usr/bin
-RUN wget http://github.com/stadiamaps/sdf_font_tools/releases/download/cli-v1.4.2/build_pbf_glyphs.x86_64-unknown-linux-gnu -O /usr/bin/build_pbf_glyphs
-RUN chmod +x /usr/bin/build_pbf_glyphs
+FROM chef AS editoast_assets
+# build_pbf_glyphs requires a c++ compiler
+RUN apk --no-cache add build-base
+RUN cargo install spreet
+RUN cargo install build_pbf_glyphs
 COPY ./assets /assets
 RUN /assets/sprites/generate-atlas.sh
 RUN /assets/fonts/generate-glyphs.sh
