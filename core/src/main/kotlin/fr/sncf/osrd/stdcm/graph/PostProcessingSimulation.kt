@@ -118,13 +118,12 @@ fun buildFinalEnvelope(
                     isMareco,
                 )
             }
-            postProcessingLogger.info(
-                "Conflict when running final stdcm simulation at offset {}, adding a fixed time point",
-                conflictOffset
-            )
-            fixedPoints.add(
+            val newPoint =
                 makeFixedPoint(fixedPoints, edges, conflictOffset, pathLength, updatedTimeData)
+            postProcessingLogger.info(
+                "Conflict when running final stdcm simulation at offset $conflictOffset, adding a fixed time point: $newPoint",
             )
+            fixedPoints.add(newPoint)
         } catch (e: OSRDError) {
             if (e.osrdErrorType == ErrorType.AllowanceConvergenceTooMuchTime) {
                 // Mareco allowances must have a non-zero capacity speed limit,
@@ -184,6 +183,8 @@ private fun initFixedPoints(
     updatedTimeData: TimeData,
 ): TreeSet<FixedTimePoint> {
     val res = TreeSet<FixedTimePoint>()
+
+    // Add all the stops, with the right stop duration
     var prevStopTime = 0.0
     for (stop in stops) {
         res.add(
@@ -198,11 +199,28 @@ private fun initFixedPoints(
         )
         prevStopTime += stop.duration
     }
+
+    // Add one point at the end to match the standard allowance (if any)
     if (hasStandardAllowance && res.none { it.offset == length })
         res.add(makeFixedPoint(res, edges, length, length, updatedTimeData, 0.0))
 
     // Add points at the end of each engineering allowance
-    fun addFixedPointAvoidingDuplicates(offset: Distance) {
+    var edgeStartOffset = 0.meters
+    val allowanceEndOffsets = mutableSetOf<Distance>()
+    for (edge in edges) {
+        val engineeringAllowanceLength = edge.engineeringAllowance?.length
+        if (engineeringAllowanceLength != null) {
+            val engineeringAllowanceBegin = edgeStartOffset - engineeringAllowanceLength
+            val engineeringAllowanceEnd = edgeStartOffset
+
+            // Edges can have overlapping engineering allowance, only the last one is relevant.
+            // So we remove any point in the current allowance range.
+            allowanceEndOffsets.removeIf { it > engineeringAllowanceBegin }
+            allowanceEndOffsets.add(engineeringAllowanceEnd)
+        }
+        edgeStartOffset += edge.length.distance
+    }
+    for (offset in allowanceEndOffsets) {
         if (res.none { it.offset.distance == offset }) {
             res.add(
                 makeFixedPoint(
@@ -215,20 +233,8 @@ private fun initFixedPoints(
             )
         }
     }
-    var prevEdgeLength = 0.meters
-    for (edge in edges) {
-        val engineeringAllowanceLength = edge.engineeringAllowance?.length
-        if (engineeringAllowanceLength != null) {
-            val engineeringAllowanceStart = prevEdgeLength - engineeringAllowanceLength
-            // Edges can have overlapping engineering allowance, only the last one is relevant.
-            // So we remove any point in the current allowance range.
-            res.removeIf { it.offset.distance > engineeringAllowanceStart && it.stopTime == null }
-
-            addFixedPointAvoidingDuplicates(prevEdgeLength)
-            addFixedPointAvoidingDuplicates(engineeringAllowanceStart)
-        }
-        prevEdgeLength += edge.length.distance
-    }
+    logger.info("initial fixed time points:")
+    for (p in res) logger.info("    $p")
     return res
 }
 
