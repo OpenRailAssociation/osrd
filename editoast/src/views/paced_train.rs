@@ -5,12 +5,14 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
-use axum::{response::IntoResponse, Extension};
+use axum::response::IntoResponse;
+use axum::Extension;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::paced_train::PacedTrainBase;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -109,7 +111,7 @@ async fn get_by_id(
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -145,7 +147,7 @@ async fn delete(
     }): Json<ListId>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::TimetableWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

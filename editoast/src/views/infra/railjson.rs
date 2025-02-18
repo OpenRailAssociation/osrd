@@ -59,7 +59,7 @@ async fn get_railjson(
     Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -178,7 +178,7 @@ async fn post_railjson(
     Json(railjson): Json<RailJson>,
 ) -> Result<Json<PostRailjsonResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

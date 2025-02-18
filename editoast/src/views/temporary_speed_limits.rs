@@ -151,7 +151,7 @@ async fn create_temporary_speed_limit_group(
     }): Json<TemporarySpeedLimitCreateForm>,
 ) -> Result<Json<TemporarySpeedLimitCreateResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

@@ -1,4 +1,5 @@
-use std::{collections::HashSet, future::Future};
+use std::collections::HashSet;
+use std::future::Future;
 
 use tracing::debug;
 use tracing::Level;
@@ -116,18 +117,14 @@ impl<S: StorageDriver> Authorizer<S> {
             .map(|x| x.is_some())
     }
 
-    /// Check that the user has all the required builting roles
-    #[tracing::instrument(skip_all, fields(user = %self.user, user_roles = ?self.user_roles, ?required_roles), ret(level = Level::DEBUG), err)]
-    pub async fn check_roles(
-        &self,
-        required_roles: HashSet<S::BuiltinRole>,
-    ) -> Result<bool, S::Error> {
+    /// Check that the user has at least one of the provided `roles`
+    #[tracing::instrument(skip_all, fields(user = %self.user, user_roles = ?self.user_roles, ?roles), ret(level = Level::DEBUG), err)]
+    pub async fn check_roles(&self, roles: HashSet<S::BuiltinRole>) -> Result<bool, S::Error> {
         if self.is_superuser() {
             tracing::debug!("role checking skipped for superuser");
             return Ok(true);
         }
-
-        Ok(required_roles.is_subset(&self.user_roles))
+        Ok(!roles.is_disjoint(&self.user_roles) || roles.is_empty())
     }
 
     #[tracing::instrument(skip_all, fields(user_id, auth_user = %self.user, user_roles = ?self.user_roles), ret(level = Level::DEBUG), err)]
@@ -194,11 +191,10 @@ mod tests {
     use super::*;
     use crate::fixtures::*;
     use pretty_assertions::assert_eq;
-    use std::{
-        collections::HashMap,
-        convert::Infallible,
-        sync::{Arc, Mutex},
-    };
+    use std::collections::HashMap;
+    use std::convert::Infallible;
+    use std::sync::Arc;
+    use std::sync::Mutex;
 
     #[derive(Debug, Clone, Default)]
     struct MockStorageDriver {
@@ -211,7 +207,7 @@ mod tests {
         let storage = MockStorageDriver::default();
         let authorizer = Authorizer::new_superuser(storage);
         assert!(authorizer.is_superuser());
-        // Check that the superuser has any role even if not explicitely granted
+        // Check that the superuser has any role even if not explicitly granted
         assert_eq!(
             authorizer
                 .check_roles(HashSet::from([TestBuiltinRole::UserBan]))
@@ -280,7 +276,7 @@ mod tests {
             .check_roles(HashSet::from([TestBuiltinRole::DocEdit]))
             .await
             .unwrap());
-        assert!(!authorizer
+        assert!(authorizer
             .check_roles(HashSet::from([
                 TestBuiltinRole::DocRead,
                 TestBuiltinRole::DocDelete,

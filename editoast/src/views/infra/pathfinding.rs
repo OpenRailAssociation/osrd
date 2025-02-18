@@ -107,7 +107,7 @@ async fn pathfinding_view(
     Json(input): Json<InfraPathfindingInput>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

@@ -120,7 +120,7 @@ async fn layer_view(
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<Json<ViewMetadata>> {
     let authorized = auth
-        .check_roles([BuiltinRole::MapRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -188,7 +188,7 @@ async fn cache_and_get_mvt_tile(
     Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::MapRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

@@ -75,7 +75,7 @@ async fn list_stdcm_logs(
     Query(pagination_params): Query<PaginationQueryParams>,
 ) -> Result<Json<StdcmLogListResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::Superuser].into())
+        .check_roles([BuiltinRole::Admin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -120,7 +120,7 @@ async fn stdcm_log_by_id_or_trace_id(
     Query(StdcmLogParams { id, trace_id }): Query<StdcmLogParams>,
 ) -> Result<Json<StdcmLog>> {
     let authorized = auth
-        .check_roles([BuiltinRole::Superuser].into())
+        .check_roles([BuiltinRole::Admin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -338,10 +338,10 @@ mod tests {
             name: "superuser_name".to_owned(),
         };
 
-        let mut roles = HashSet::from([BuiltinRole::Stdcm, BuiltinRole::Superuser]);
+        let mut roles = HashSet::from([BuiltinRole::Stdcm, BuiltinRole::Admin]);
 
         if config.disable_superuser {
-            roles.remove(&BuiltinRole::Superuser);
+            roles.remove(&BuiltinRole::Admin);
         }
 
         let app = TestAppBuilder::new()

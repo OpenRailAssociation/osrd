@@ -138,7 +138,7 @@ async fn delimited_area(
     // TODO in case of a missing exit, return an empty list of track ranges instead of returning all
     // the track ranges explored until the stopping condition ?
     let authorized = auth
-        .check_roles([BuiltinRole::InfraWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

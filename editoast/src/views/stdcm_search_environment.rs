@@ -127,7 +127,7 @@ async fn create(
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::StdcmAdmin].into())
+        .check_roles([BuiltinRole::Admin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

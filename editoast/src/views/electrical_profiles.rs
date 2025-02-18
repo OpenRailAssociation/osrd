@@ -62,7 +62,7 @@ async fn list(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -88,7 +88,7 @@ async fn get(
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -127,7 +127,7 @@ async fn get_level_order(
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -159,7 +159,7 @@ async fn delete(
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -197,7 +197,7 @@ async fn post_electrical_profile(
     Json(ep_data): Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

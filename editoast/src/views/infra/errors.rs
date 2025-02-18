@@ -82,7 +82,7 @@ async fn list_errors(
     }): Query<ErrorListQueryParams>,
 ) -> Result<Json<ErrorListResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

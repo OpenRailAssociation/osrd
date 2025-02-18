@@ -187,7 +187,7 @@ async fn get(
     }): Path<TrainScheduleIdParam>,
 ) -> Result<Json<TrainScheduleResult>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -217,7 +217,7 @@ async fn delete(
     Json(ListId { ids: train_ids }): Json<ListId>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -253,7 +253,7 @@ async fn put(
     Json(train_schedule_form): Json<TrainScheduleForm>,
 ) -> Result<Json<TrainScheduleResult>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -304,7 +304,7 @@ async fn simulation(
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<SimulationResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -661,7 +661,7 @@ async fn simulation_summary(
     }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -764,7 +764,7 @@ async fn get_path(
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -817,14 +817,7 @@ async fn project_path(
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
     let authorized = auth
-        .check_roles(
-            [
-                BuiltinRole::InfraRead,
-                BuiltinRole::TimetableRead,
-                BuiltinRole::RollingStockCollectionRead,
-            ]
-            .into(),
-        )
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

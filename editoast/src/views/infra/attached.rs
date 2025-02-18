@@ -73,7 +73,7 @@ async fn attached(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

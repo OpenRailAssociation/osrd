@@ -151,7 +151,7 @@ async fn get_train_schedules(
     Query(pagination_params): Query<PaginationQueryParams>,
 ) -> Result<Json<ListTrainSchedulesResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::TimetableRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -189,7 +189,7 @@ async fn post(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<TimetableResult>> {
     let authorized = auth
-        .check_roles([BuiltinRole::TimetableWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -219,7 +219,7 @@ async fn delete(
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::TimetableWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -251,7 +251,7 @@ async fn post_train_schedule(
     Json(train_schedules): Json<Vec<TrainScheduleBase>>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::TimetableWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -296,7 +296,7 @@ async fn post_paced_train(
     Json(paced_trains): Json<Vec<PacedTrainBase>>,
 ) -> Result<Json<Vec<PacedTrainResult>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::TimetableWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -347,7 +347,7 @@ async fn get_paced_trains(
     Query(pagination_params): Query<PaginationQueryParams>,
 ) -> Result<Json<ListPacedTrainsResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::TimetableRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -409,7 +409,7 @@ async fn conflicts(
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

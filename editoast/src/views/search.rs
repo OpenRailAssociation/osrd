@@ -351,9 +351,9 @@ async fn search(
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
     let roles: HashSet<BuiltinRole> = match object.as_str() {
-        "track" | "operationalpoint" | "signal" => HashSet::from([BuiltinRole::InfraRead]),
-        "trainschedule" => HashSet::from([BuiltinRole::TimetableRead]),
-        "project" | "study" | "scenario" => HashSet::from([BuiltinRole::OpsRead]),
+        "track" | "operationalpoint" | "signal" => HashSet::from([BuiltinRole::OperationalStudies]),
+        "trainschedule" => HashSet::from([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm]),
+        "project" | "study" | "scenario" => HashSet::from([BuiltinRole::OperationalStudies]),
         _ => {
             return Err(SearchApiError::ObjectType {
                 object_type: object.to_owned(),
@@ -400,7 +400,7 @@ async fn search(
 // NOTE: every structure deriving `Search` here might have to `#[allow(unused)]`
 // because while the name and type information of the fields are read by the macro,
 // they might not be explicitly used in the code. (Their JSON representation extracted
-// from the DB query is direcly forwarded into the endpoint response, so these
+// from the DB query is directly forwarded into the endpoint response, so these
 // structs are never deserialized, hence their "non-usage".)
 //
 // These structs also derive Serialize because utoipa reads some `#[serde(...)]`
@@ -769,7 +769,8 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::models::fixtures::{create_simple_train_schedule, create_timetable};
+    use crate::models::fixtures::create_simple_train_schedule;
+    use crate::models::fixtures::create_timetable;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]

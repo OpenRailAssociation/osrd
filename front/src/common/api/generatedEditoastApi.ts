@@ -2136,27 +2136,7 @@ export type PostWorkSchedulesProjectPathApiArg = {
     work_schedule_group_id: number;
   };
 };
-export type BuiltinRole =
-  | 'Superuser'
-  | 'OpsWrite'
-  | 'OpsRead'
-  | 'InfraRead'
-  | 'InfraWrite'
-  | 'RollingStockCollectionRead'
-  | 'RollingStockCollectionWrite'
-  | 'WorkScheduleWrite'
-  | 'WorkScheduleRead'
-  | 'MapRead'
-  | 'Stdcm'
-  | 'StdcmAdmin'
-  | 'TimetableRead'
-  | 'TimetableWrite'
-  | 'DocumentRead'
-  | 'DocumentWrite'
-  | 'SubjectRead'
-  | 'SubjectWrite'
-  | 'RoleRead'
-  | 'RoleWrite';
+export type BuiltinRole = 'Admin' | 'Stdcm' | 'OperationalStudies';
 export type NewDocumentResponse = {
   document_key: number;
 };

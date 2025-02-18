@@ -29,40 +29,13 @@ pub enum BuiltinRole {
     /// Alternatively, especially for development, the `EDITOAST_ENABLE_AUTHORIZATION` environment variable can be set to `false`
     /// when no user identity header is present. (This is the case when editoast is queried directly and
     /// not through the gateway.)
-    Superuser,
-
-    OpsWrite,
-    OpsRead,
-
-    InfraRead,
-    InfraWrite,
-
-    RollingStockCollectionRead,
-    RollingStockCollectionWrite,
-
-    WorkScheduleWrite,
-    WorkScheduleRead,
-
-    MapRead,
-
+    Admin,
     Stdcm,
-    StdcmAdmin,
-
-    TimetableRead,
-    TimetableWrite,
-
-    DocumentRead,
-    DocumentWrite,
-
-    SubjectRead,
-    SubjectWrite,
-
-    RoleRead,
-    RoleWrite,
+    OperationalStudies,
 }
 
 impl BuiltinRoleSet for BuiltinRole {
     fn superuser() -> Self {
-        Self::Superuser
+        Self::Admin
     }
 }

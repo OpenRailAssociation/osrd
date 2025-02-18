@@ -14,7 +14,7 @@ export const getLoginError = makeUserSelector('loginError');
 export const getUserSafeWord = makeUserPreferencesSelector('safeWord');
 export const getUsername = makeUserSelector('username');
 export const getUserRoles = makeUserSelector('userRoles');
-export const getIsSuperUser = (state: RootState) => getUserRoles(state).includes('Superuser');
+export const getIsSuperUser = (state: RootState) => getUserRoles(state).includes('Admin');
 
 // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
 export const getShowPacedTrains = makeUserPreferencesSelector('showPacedTrains');

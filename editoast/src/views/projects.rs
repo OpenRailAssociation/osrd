@@ -152,7 +152,7 @@ async fn create(
     Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -194,7 +194,7 @@ async fn list(
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -246,7 +246,7 @@ async fn get(
     Path(project_id): Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -275,7 +275,7 @@ async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -347,7 +347,7 @@ async fn patch(
     Json(form): Json<ProjectPatchForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -418,7 +418,7 @@ pub mod tests {
             .core_client(CoreClient::Mocked(MockingClient::default()))
             .enable_authorization(true)
             .user(user.clone())
-            .roles(HashSet::from([BuiltinRole::OpsRead]))
+            .roles(HashSet::from([BuiltinRole::Stdcm]))
             .build();
 
         let request = app.post("/projects").by_user(user).json(&json!({

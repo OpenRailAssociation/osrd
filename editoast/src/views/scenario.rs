@@ -201,7 +201,7 @@ async fn create(
     Json(data): Json<ScenarioCreateForm>,
 ) -> Result<Json<ScenarioResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -282,7 +282,7 @@ async fn delete(
     }): Path<ScenarioPathParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -370,7 +370,7 @@ async fn patch(
     Json(form): Json<ScenarioPatchForm>,
 ) -> Result<Json<ScenarioResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -445,7 +445,7 @@ async fn get(
     }): Path<ScenarioPathParam>,
 ) -> Result<Json<ScenarioResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -497,7 +497,7 @@ async fn list(
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ListScenariosResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

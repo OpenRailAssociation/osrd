@@ -214,19 +214,17 @@ pub enum Authentication {
 }
 
 impl Authentication {
-    /// Checks if the issuer of the request has the required roles. Always returns `false` if the
+    /// Checks if the issuer of the request has at least one of the provided `roles`. Always returns `false` if the
     /// request is unauthenticated.
     pub async fn check_roles(
         &self,
-        required_roles: HashSet<BuiltinRole>,
+        roles: HashSet<BuiltinRole>,
     ) -> Result<bool, <PgAuthDriver<BuiltinRole> as editoast_authz::authorizer::StorageDriver>::Error>
     {
         match self {
             Authentication::SkipAuthorization => Ok(true),
             Authentication::Unauthenticated => Ok(false),
-            Authentication::Authenticated(authorizer) => {
-                authorizer.check_roles(required_roles).await
-            }
+            Authentication::Authenticated(authorizer) => authorizer.check_roles(roles).await,
         }
     }
 

@@ -28,7 +28,7 @@ async fn speed_limit_tags(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<SpeedLimitTagIds>> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

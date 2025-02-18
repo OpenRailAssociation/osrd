@@ -1,7 +1,8 @@
 use axum::body::Bytes;
 use axum::extract::Path;
 use axum::extract::State;
-use axum::http::header::{CACHE_CONTROL, CONTENT_TYPE};
+use axum::http::header::CACHE_CONTROL;
+use axum::http::header::CONTENT_TYPE;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Extension;
@@ -62,7 +63,7 @@ async fn get(
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::DocumentRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -107,7 +108,7 @@ async fn post(
     bytes: Bytes,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::DocumentWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -150,7 +151,7 @@ async fn delete(
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::DocumentWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

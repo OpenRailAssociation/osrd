@@ -144,7 +144,7 @@ async fn create(
     Json(data): Json<StudyCreateForm>,
 ) -> Result<Json<StudyResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -209,7 +209,7 @@ async fn delete(
     Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -246,7 +246,7 @@ async fn get(
     Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<Json<StudyResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -338,7 +338,7 @@ async fn patch(
     Json(data): Json<StudyPatchForm>,
 ) -> Result<Json<StudyResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -421,7 +421,7 @@ async fn list(
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<StudyListResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

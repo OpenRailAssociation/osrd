@@ -256,7 +256,7 @@ async fn project_path(
     }): Json<WorkScheduleProjectForm>,
 ) -> Result<Json<Vec<WorkScheduleProjection>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::WorkScheduleRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -330,7 +330,7 @@ async fn create_group(
     }): Json<WorkScheduleGroupCreateForm>,
 ) -> Result<Json<WorkScheduleGroupCreateResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::WorkScheduleWrite].into())
+        .check_roles([BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -368,7 +368,7 @@ async fn delete_group(
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::WorkScheduleWrite].into())
+        .check_roles([BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -396,7 +396,7 @@ async fn list_groups(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<i64>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::WorkScheduleRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -432,7 +432,7 @@ async fn put_in_group(
     Json(work_schedules): Json<Vec<WorkScheduleItemForm>>,
 ) -> Result<Json<Vec<WorkSchedule>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::WorkScheduleWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -498,7 +498,7 @@ async fn get_group(
     Query(ordering_params): Query<WorkScheduleOrderingParam>,
 ) -> Result<Json<GroupContentResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::WorkScheduleRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -537,9 +537,8 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::{
-        models::fixtures::create_work_schedules_fixture_set, views::test_app::TestAppBuilder,
-    };
+    use crate::models::fixtures::create_work_schedules_fixture_set;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
     async fn work_schedule_create() {

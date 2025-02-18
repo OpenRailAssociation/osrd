@@ -16,9 +16,12 @@ use axum::Json;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_authz::BuiltinRole;
 use editoast_common::units;
-use editoast_common::units::quantities::{
-    Acceleration, Deceleration, Length, Mass, Ratio, Velocity,
-};
+use editoast_common::units::quantities::Acceleration;
+use editoast_common::units::quantities::Deceleration;
+use editoast_common::units::quantities::Length;
+use editoast_common::units::quantities::Mass;
+use editoast_common::units::quantities::Ratio;
+use editoast_common::units::quantities::Velocity;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::rolling_stock::RollingResistancePerWeight;
@@ -164,7 +167,7 @@ async fn post(
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -202,7 +205,7 @@ async fn get_list(
     Query(page_settings): Query<PaginationQueryParams>,
 ) -> Result<Json<TowedRollingStockCountList>> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -245,7 +248,7 @@ async fn get_by_id(
     }): Path<TowedRollingStockIdParam>,
 ) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -281,7 +284,7 @@ async fn patch_by_id(
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -353,7 +356,7 @@ async fn patch_by_id_locked(
     Json(TowedRollingStockLockedForm { locked }): Json<TowedRollingStockLockedForm>,
 ) -> Result<StatusCode> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

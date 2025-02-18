@@ -4051,26 +4051,9 @@ components:
     BuiltinRole:
       type: string
       enum:
-      - Superuser
-      - OpsWrite
-      - OpsRead
-      - InfraRead
-      - InfraWrite
-      - RollingStockCollectionRead
-      - RollingStockCollectionWrite
-      - WorkScheduleWrite
-      - WorkScheduleRead
-      - MapRead
+      - Admin
       - Stdcm
-      - StdcmAdmin
-      - TimetableRead
-      - TimetableWrite
-      - DocumentRead
-      - DocumentWrite
-      - SubjectRead
-      - SubjectWrite
-      - RoleRead
-      - RoleWrite
+      - OperationalStudies
     Comfort:
       type: string
       enum:

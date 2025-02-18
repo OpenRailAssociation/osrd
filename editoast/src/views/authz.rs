@@ -100,7 +100,7 @@ async fn list_user_roles(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Roles>> {
     if !auth
-        .check_roles([BuiltinRole::SubjectRead, BuiltinRole::RoleRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::from)?
     {
@@ -138,7 +138,7 @@ async fn grant_roles(
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
     if !auth
-        .check_roles([BuiltinRole::SubjectRead, BuiltinRole::RoleWrite].into())
+        .check_roles([BuiltinRole::Admin].into())
         .await
         .map_err(AuthorizationError::from)?
     {
@@ -170,7 +170,7 @@ async fn strip_roles(
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
     if !auth
-        .check_roles([BuiltinRole::SubjectRead, BuiltinRole::RoleWrite].into())
+        .check_roles([BuiltinRole::Admin].into())
         .await
         .map_err(AuthorizationError::from)?
     {

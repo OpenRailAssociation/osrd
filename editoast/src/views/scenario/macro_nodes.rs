@@ -144,7 +144,7 @@ async fn list(
 ) -> Result<Json<MacroNodeListResponse>> {
     // Checking role
     let authorized = auth
-        .check_roles([BuiltinRole::OpsRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -190,7 +190,7 @@ async fn create(
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -244,7 +244,7 @@ async fn get(
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
     let authorized = auth
-        .check_roles([BuiltinRole::OpsRead].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -278,7 +278,7 @@ async fn update(
     Json(data): Json<MacroNodeForm>,
 ) -> Result<Json<MacroNodeResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -332,7 +332,7 @@ async fn delete(
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OpsWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

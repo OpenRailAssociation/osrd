@@ -181,7 +181,7 @@ async fn post(
     Json(path_input): Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

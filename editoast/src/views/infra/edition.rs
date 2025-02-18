@@ -81,7 +81,7 @@ async fn edit(
     Json(operations): Json<Vec<Operation>>,
 ) -> Result<Json<Vec<InfraObject>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -136,7 +136,7 @@ pub async fn split_track_section(
     Json(payload): Json<TrackOffset>,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraWrite].into())
+        .check_roles([BuiltinRole::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

@@ -5,9 +5,13 @@ use axum::extract::State;
 use axum::Extension;
 use editoast_authz::BuiltinRole;
 use editoast_common::units;
-use editoast_common::units::quantities::{
-    Acceleration, Deceleration, Length, Mass, Ratio, Time, Velocity,
-};
+use editoast_common::units::quantities::Acceleration;
+use editoast_common::units::quantities::Deceleration;
+use editoast_common::units::quantities::Length;
+use editoast_common::units::quantities::Mass;
+use editoast_common::units::quantities::Ratio;
+use editoast_common::units::quantities::Time;
+use editoast_common::units::quantities::Velocity;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::rolling_stock::EffortCurves;
@@ -114,7 +118,7 @@ async fn list(
     Query(page_settings): Query<PaginationQueryParams>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -157,7 +161,7 @@ async fn get(
     Path(light_rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -191,7 +195,7 @@ async fn get_by_name(
     Path(light_rolling_stock_name): Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
     let authorized = auth
-        .check_roles([BuiltinRole::RollingStockCollectionRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -350,7 +354,8 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::*;
 
-    use super::{LightRollingStockWithLiveries, LightRollingStockWithLiveriesCountList};
+    use super::LightRollingStockWithLiveries;
+    use super::LightRollingStockWithLiveriesCountList;
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_rolling_stock_livery_fixture;

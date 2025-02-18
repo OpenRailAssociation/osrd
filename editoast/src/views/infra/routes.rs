@@ -71,7 +71,7 @@ async fn get_routes_from_waypoint(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<RoutesResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -155,7 +155,7 @@ async fn get_routes_track_ranges(
     Query(params): Query<RouteTrackRangesParams>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -220,7 +220,7 @@ async fn get_routes_nodes(
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

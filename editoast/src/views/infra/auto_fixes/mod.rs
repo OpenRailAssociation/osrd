@@ -93,7 +93,7 @@ async fn list_auto_fixes(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<Operation>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::InfraRead].into())
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
