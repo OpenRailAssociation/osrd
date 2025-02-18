@@ -42,7 +42,7 @@ impl StdcmLog {
         let stdcm_log_changeset = StdcmLog::changeset()
             .trace_id(trace_id)
             .request(request)
-            .response(response.clone())
+            .response(response)
             .user_id(user_id);
         if let Err(e) = stdcm_log_changeset.create(&mut conn).await {
             tracing::error!("Failed during log operation: {e}");
