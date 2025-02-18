@@ -15,7 +15,7 @@ import { dateToHHMMSS } from 'utils/date';
 import { msToS } from 'utils/physics';
 import { calculateTimeDifferenceInSeconds } from 'utils/timeManipulation';
 
-import { ARRIVAL_TIME_ACCEPTABLE_ERROR_MS } from '../consts';
+import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from '../consts';
 import { computeInputDatetimes } from '../helpers/arrivalTime';
 import computeMargins, { getTheoreticalMargins } from '../helpers/computeMargins';
 import { formatSchedule } from '../helpers/scheduleData';
@@ -81,7 +81,7 @@ const useOutputTableData = (
 
       const isOnTime = theoreticalArrival
         ? Math.abs(calculateTimeDifferenceInSeconds(theoreticalArrival, computedArrival)) <=
-          msToS(ARRIVAL_TIME_ACCEPTABLE_ERROR_MS)
+          msToS(ARRIVAL_TIME_ACCEPTABLE_ERROR.ms)
         : false;
 
       return {

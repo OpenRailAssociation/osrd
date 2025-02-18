@@ -8,7 +8,7 @@ import type {
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
-import { ARRIVAL_TIME_ACCEPTABLE_ERROR_MS } from 'modules/timesStops/consts';
+import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
 import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
 import { Duration } from 'utils/duration';
@@ -245,7 +245,7 @@ export const isScheduledPointsNotHonored = (
     const arrival = Duration.parse(schedule.arrival);
     return (
       Math.abs(arrival.ms - trainSummary.path_item_times_final[matchindIndex]) >=
-      ARRIVAL_TIME_ACCEPTABLE_ERROR_MS
+      ARRIVAL_TIME_ACCEPTABLE_ERROR.ms
     );
   });
 };
@@ -289,7 +289,7 @@ export const isTooFast = (
     const pathItemTimeFinal = trainSummary.path_item_times_final[pathItemIndex];
     const pathItemTimeProvisional = trainSummary.path_item_times_provisional[pathItemIndex];
 
-    if (pathItemTimeProvisional > pathItemTimeFinal + ARRIVAL_TIME_ACCEPTABLE_ERROR_MS) return true;
+    if (pathItemTimeProvisional > pathItemTimeFinal + ARRIVAL_TIME_ACCEPTABLE_ERROR.ms) return true;
   }
   return false;
 };
