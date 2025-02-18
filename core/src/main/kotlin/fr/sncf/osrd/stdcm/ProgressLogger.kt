@@ -29,6 +29,11 @@ data class ProgressLogger(
         seenSteps++
         val progress =
             (graph.bestPossibleTime - node.remainingTimeEstimation) / graph.bestPossibleTime
+        if (progress.isInfinite()) {
+            // Sometimes happens when departure and destination have some overlapping points.
+            // Would cause infinite loops if we process normally.
+            return
+        }
         if (progress >= thresholdDistance * nSamplesReached) {
             val block = node.infraExplorer.getCurrentBlock()
             val geo = makePathProps(graph.blockInfra, graph.rawInfra, block).getGeo().points[0]
