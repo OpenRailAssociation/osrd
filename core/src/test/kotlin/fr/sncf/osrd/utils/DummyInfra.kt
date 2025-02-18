@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
+import fr.sncf.osrd.signaling.bal.BAL
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
@@ -43,7 +44,7 @@ class DummyInfra : RawInfra, BlockInfra {
         exit: String,
         length: Distance = 100.meters,
         allowedSpeed: Double = Double.POSITIVE_INFINITY,
-        signalingSystemName: String = "BAL"
+        signalingSystemName: String = BAL.id
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
         val entryId = getOrCreateDetectorId(entry)
@@ -367,7 +368,7 @@ class DummyInfra : RawInfra, BlockInfra {
         get() = TODO("Not yet implemented")
 
     override fun getTrackSectionName(trackSection: TrackSectionId): String {
-        TODO("Not yet implemented")
+        return getRouteName(RouteId(trackSection.index))
     }
 
     override fun getTrackSectionFromName(name: String): TrackSectionId {
@@ -497,11 +498,11 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun blockStartAtBufferStop(block: BlockId): Boolean {
-        TODO("Not yet implemented")
+        return !exitMap.containsKey(blockPool[block.index].entry)
     }
 
     override fun blockStopAtBufferStop(block: BlockId): Boolean {
-        TODO("Not yet implemented")
+        return !entryMap.containsKey(blockPool[block.index].exit)
     }
 
     override fun getBlockSignalingSystem(block: BlockId): SignalingSystemId {
@@ -532,6 +533,8 @@ class DummyInfra : RawInfra, BlockInfra {
         trackChunk: TrackChunkId,
         direction: Direction
     ): MutableStaticIdxArraySet<Block> {
+        if (direction == Direction.DECREASING)
+            return mutableStaticIdxArraySetOf() // TODO: to implement eventually
         return mutableStaticIdxArraySetOf(StaticIdx(trackChunk.index))
     }
 

@@ -1,20 +1,21 @@
 package fr.sncf.osrd.pathfinding
 
-import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
-import fr.sncf.osrd.api.pathfinding.runPathfinding
-import fr.sncf.osrd.graph.Pathfinding
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
-import fr.sncf.osrd.reporting.exceptions.ErrorType
-import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.findSignalingSystemOrThrow
+import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
+import fr.sncf.osrd.api.api_v2.TrackLocation
+import fr.sncf.osrd.api.api_v2.pathfinding.IncompatibleConstraintsPathResponse
+import fr.sncf.osrd.api.api_v2.pathfinding.NoPathFoundException
+import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockRequest
+import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockSuccess
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
+import fr.sncf.osrd.signaling.tvm300.TVM300
+import fr.sncf.osrd.signaling.tvm430.TVM430
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import org.assertj.core.api.Assertions as assertjAssertions
-import org.assertj.core.api.AssertionsForClassTypes
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -23,100 +24,126 @@ import org.junit.jupiter.api.TestInstance
 class PathfindingSignalingTest {
     private var infra: DummyInfra = DummyInfra()
 
-    private fun setSigSystemIds(list: List<BlockId>, signalingSystemName: String) {
+    private fun setSigSystemIds(blocks: List<String>, signaling: String) {
         val id =
-            infra
-                .fullInfra()
-                .signalingSimulator
-                .sigModuleManager
-                .findSignalingSystemOrThrow(signalingSystemName)
-        list.forEach { infra.blockPool[it.index.toInt()].signalingSystemId = id }
+            infra.fullInfra().signalingSimulator.sigModuleManager.findSignalingSystem(signaling)
+        infra.blockPool.forEach { if (blocks.contains(it.name)) it.signalingSystemId = id!! }
+    }
+
+    private fun getPathfindingBlockRequest(
+        rs: RollingStock,
+        pathItems: List<Collection<TrackLocation>>
+    ): PathfindingBlockRequest {
+        return PathfindingBlockRequest(
+            rs.loadingGaugeType,
+            rs.isThermal,
+            rs.modeNames.filterNot { it == "thermal" }.toList(),
+            rs.supportedSignalingSystems.toList(),
+            rs.maxSpeed,
+            rs.length,
+            null,
+            "unused_name",
+            "unused_version",
+            pathItems
+        )
     }
 
     @BeforeEach
     fun setUp() {
-        /*       c1
+        /*        N
                 ^  \
                /    v
         a --> b     d --> e
                \    ^
                 v  /
-                 c2
+                 S
          */
         infra = DummyInfra()
         infra.addBlock("a", "b")
-        infra.addBlock("b", "c1")
-        infra.addBlock("b", "c2")
-        infra.addBlock("c1", "d")
-        infra.addBlock("c2", "d")
+        infra.addBlock("b", "N")
+        infra.addBlock("b", "S")
+        infra.addBlock("N", "d")
+        infra.addBlock("S", "d")
         infra.addBlock("d", "e")
     }
 
     @Test
     fun balTrainOnTVMBlockShouldThrow() {
-        setSigSystemIds(listOf(1U, 2U, 3U, 4U).map { BlockId(it) }, "TVM300")
-        val waypointStart = PathfindingWaypoint("a->b", 0.0, EdgeDirection.START_TO_STOP)
-        val waypointEnd = PathfindingWaypoint("d->e", 100.0, EdgeDirection.START_TO_STOP)
-        val waypoints = Array(2) { Array(1) { waypointStart } }
-        waypoints[1][0] = waypointEnd
+        setSigSystemIds(listOf("b->N", "b->S", "N->d", "S->d"), TVM300.id)
+        val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
+        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
         // Run a pathfinding with a non TVM train, expecting not to find any path
-        AssertionsForClassTypes.assertThatThrownBy {
-                runPathfinding(
+        assertThatThrownBy {
+                fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
                     infra.fullInfra(),
-                    waypoints,
-                    listOf(TestTrains.TRAIN_WITHOUT_TVM),
-                    null
+                    getPathfindingBlockRequest(
+                        TestTrains.TRAIN_WITHOUT_TVM,
+                        listOf(waypointsStart, waypointsEnd)
+                    )
                 )
             }
-            .isExactlyInstanceOf(OSRDError::class.java)
-            .satisfies({ exception: Throwable? ->
-                assertjAssertions
-                    .assertThat((exception as OSRDError?)!!.osrdErrorType)
-                    .isEqualTo(ErrorType.PathfindingSignalisationSystemError)
+            .isExactlyInstanceOf(NoPathFoundException::class.java)
+            .satisfies({ exception: Throwable ->
+                val resp =
+                    (exception as NoPathFoundException).response
+                        as IncompatibleConstraintsPathResponse
+                assert(resp.relaxedConstraintsPath.length.distance == 400.meters)
+                assert(
+                    resp.incompatibleConstraints.incompatibleSignalingSystemRanges.first().value ==
+                        TVM300.id
+                )
             })
     }
 
     @Test
-    fun shouldFindTopPathOnBalBlocksForBalTrain() {
-        setSigSystemIds(listOf(2U, 4U).map { BlockId(it) }, "TVM300")
-        val waypointStart = PathfindingWaypoint("a->b", 0.0, EdgeDirection.START_TO_STOP)
-        val waypointEnd = PathfindingWaypoint("d->e", 100.0, EdgeDirection.START_TO_STOP)
-        val waypoints = Array(2) { Array(1) { waypointStart } }
-        waypoints[1][0] = waypointEnd
+    fun shouldFindNorthPathOnBalBlocksForBalTrain() {
+        setSigSystemIds(listOf("b->S", "S->d"), TVM300.id)
+        val waypointsStart = listOf(TrackLocation("a->b", Offset(0.meters)))
+        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
-        val pathfindingResult =
-            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.TRAIN_WITHOUT_TVM), null)
-
-        AssertionsForClassTypes.assertThat(pathfindingResult.ranges)
+        val pathfindingResp =
+            fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
+                infra.fullInfra(),
+                getPathfindingBlockRequest(
+                    TestTrains.TRAIN_WITHOUT_TVM,
+                    listOf(waypointsStart, waypointsEnd)
+                )
+            )
+        assertThat(pathfindingResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        assertThat((pathfindingResp as PathfindingBlockSuccess).trackSectionRanges)
             .isEqualTo(
                 arrayListOf(
-                    Pathfinding.EdgeRange(BlockId(0U), Offset<Block>(0.meters), Offset(100.meters)),
-                    Pathfinding.EdgeRange(BlockId(1U), Offset(0.meters), Offset(100.meters)),
-                    Pathfinding.EdgeRange(BlockId(3U), Offset(0.meters), Offset(100.meters)),
-                    Pathfinding.EdgeRange(BlockId(5U), Offset(0.meters), Offset(100.meters))
+                    DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange("b->N", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange("N->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
                 )
             )
     }
 
     @Test
-    fun shouldFindBottomPathOnBalBlocksForBalTrain() {
-        setSigSystemIds(listOf(1U, 3U).map { BlockId(it) }, "TVM430")
-        val waypointStart = PathfindingWaypoint("a->b", 0.0, EdgeDirection.START_TO_STOP)
-        val waypointEnd = PathfindingWaypoint("d->e", 100.0, EdgeDirection.START_TO_STOP)
-        val waypoints = Array(2) { Array(1) { waypointStart } }
-        waypoints[1][0] = waypointEnd
+    fun shouldFindSouthPathOnBalBlocksForBalTrain() {
+        setSigSystemIds(listOf("b->N", "N->d"), TVM430.id)
+        val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
+        val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
-        val pathfindingResult =
-            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.TRAIN_WITHOUT_TVM), null)
-
-        AssertionsForClassTypes.assertThat(pathfindingResult.ranges)
+        val pathfindingResp =
+            fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
+                infra.fullInfra(),
+                getPathfindingBlockRequest(
+                    TestTrains.TRAIN_WITHOUT_TVM,
+                    listOf(waypointsStart, waypointsEnd)
+                )
+            )
+        assertThat(pathfindingResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        assertThat((pathfindingResp as PathfindingBlockSuccess).trackSectionRanges)
             .isEqualTo(
                 arrayListOf(
-                    Pathfinding.EdgeRange(BlockId(0U), Offset<Block>(0.meters), Offset(100.meters)),
-                    Pathfinding.EdgeRange(BlockId(2U), Offset(0.meters), Offset(100.meters)),
-                    Pathfinding.EdgeRange(BlockId(4U), Offset(0.meters), Offset(100.meters)),
-                    Pathfinding.EdgeRange(BlockId(5U), Offset(0.meters), Offset(100.meters))
+                    DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange("b->S", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange("S->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
                 )
             )
     }
