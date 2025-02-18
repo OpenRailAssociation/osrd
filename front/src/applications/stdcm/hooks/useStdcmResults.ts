@@ -11,10 +11,10 @@ import {
   type PostInfraByInfraIdPathPropertiesApiArg,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import { getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { TrainScheduleId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -27,7 +27,7 @@ const useStdcmResults = (
   stdcmTrainResult: TrainScheduleResult | undefined,
   setPathProperties: (pathProperties?: StdcmPathProperties) => void
 ) => {
-  const infraId = useInfraID()!;
+  const infraId = useSelector(getStdcmInfraID);
   const selectedTrainId = useSelector(getSelectedTrainId);
   const editoastSelectedTrainId = selectedTrainId
     ? formatTrainScheduleIdToEditoastTrainId(selectedTrainId as TrainScheduleId)

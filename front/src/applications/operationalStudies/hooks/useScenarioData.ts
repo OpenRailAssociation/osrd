@@ -9,8 +9,8 @@ import {
   type ScenarioResponse,
   type SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
+import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   TimetableItemId,
   TrainId,
@@ -30,8 +30,7 @@ import usePathProjection from './usePathProjection';
 import formatTrainScheduleSummaries from '../helpers/formatTrainScheduleSummaries';
 
 const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
-  const { getElectricalProfileSetId } = useOsrdConfSelectors();
-  const electricalProfileSetId = useSelector(getElectricalProfileSetId);
+  const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const [trainSchedules, setTrainSchedules] = useState<TrainScheduleResultWithTrainId[]>();
@@ -57,6 +56,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const { trainScheduleSummariesById, setTrainScheduleSummariesById, allTrainsLoaded } =
     useLazyLoadTrains({
       infraId: scenario.infra_id,
+      electricalProfileSetId,
       trainIdsToFetch,
       trainSchedules,
       setTrainIdsToProject,

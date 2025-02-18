@@ -10,8 +10,11 @@ import type {
   SearchResultItemTrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
-import { getSearchDatetimeWindow } from 'reducers/osrdconf/stdcmConf/selectors';
+import {
+  getSearchDatetimeWindow,
+  getStdcmInfraID,
+  getStdcmTimetableID,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import { isArrivalDateInSearchTimeWindow, isEqualDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 
@@ -23,11 +26,9 @@ const useLinkedTrainSearch = () => {
   const [postTrainScheduleSimulationSummary] =
     osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.useLazyQuery();
 
-  const { getTimetableID } = useOsrdConfSelectors();
-
-  const infraId = useInfraID()!;
-  const timetableId = useSelector(getTimetableID)!;
-  const searchDatetimeWindow = useSelector(getSearchDatetimeWindow)!;
+  const infraId = useSelector(getStdcmInfraID);
+  const timetableId = useSelector(getStdcmTimetableID);
+  const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 
   const selectableSlot = useMemo(() => {
     const startDate = new Date(searchDatetimeWindow.begin);

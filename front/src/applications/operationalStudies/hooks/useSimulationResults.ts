@@ -1,8 +1,9 @@
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
+import { useInfraID } from 'common/osrdContext';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
+import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TrainScheduleId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
@@ -14,8 +15,7 @@ import type { SimulationResultsData } from '../types';
  */
 const useSimulationResults = (): SimulationResultsData => {
   const infraId = useInfraID();
-  const { getElectricalProfileSetId } = useOsrdConfSelectors();
-  const electricalProfileSetId = useSelector(getElectricalProfileSetId);
+  const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615

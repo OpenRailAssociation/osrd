@@ -1,10 +1,7 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop */
 import { useEffect, useState, type Dispatch, type SetStateAction, useMemo } from 'react';
 
-import { useSelector } from 'react-redux';
-
 import { osrdEditoastApi, type SimulationSummaryResult } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type {
   TrainId,
@@ -24,6 +21,7 @@ const BATCH_SIZE = 10;
 
 type UseLazyLoadTrainsProps = {
   infraId?: number;
+  electricalProfileSetId?: number;
   trainIdsToFetch?: TrainId[];
   trainSchedules?: TrainScheduleResultWithTrainId[];
   setTrainIdsToFetch?: Dispatch<SetStateAction<TrainId[] | undefined>>;
@@ -39,13 +37,11 @@ type UseLazyLoadTrainsProps = {
  */
 const useLazyLoadTrains = ({
   infraId,
+  electricalProfileSetId,
   trainIdsToFetch,
   trainSchedules,
   setTrainIdsToProject,
 }: UseLazyLoadTrainsProps) => {
-  const { getElectricalProfileSetId } = useOsrdConfSelectors();
-  const electricalProfileSetId = useSelector(getElectricalProfileSetId);
-
   const [trainScheduleSummariesById, setTrainScheduleSummariesById] = useState<
     Map<TrainId, TrainScheduleWithDetails>
   >(new Map());

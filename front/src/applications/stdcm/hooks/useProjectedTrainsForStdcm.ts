@@ -6,9 +6,13 @@ import useLazyLoadTrains from 'applications/operationalStudies/hooks/useLazyLoad
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import {
+  getStdcmElectricalProfileSetId,
+  getStdcmInfraID,
+  getStdcmTimetableID,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import type { TrainId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
@@ -55,9 +59,9 @@ const keepTrainsRunningDuringStdcm = (
 };
 
 const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
-  const { getTimetableID } = useOsrdConfSelectors();
-  const infraId = useInfraID()!;
-  const timetableId = useSelector(getTimetableID)!;
+  const infraId = useSelector(getStdcmInfraID);
+  const timetableId = useSelector(getStdcmTimetableID);
+  const electricalProfileSetId = useSelector(getStdcmElectricalProfileSetId);
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
   const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TrainId>>(new Set());
@@ -85,6 +89,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   // Progressive loading of the trains
   const { trainScheduleSummariesById } = useLazyLoadTrains({
     infraId,
+    electricalProfileSetId,
     trainIdsToFetch: formattedTrainIds,
     trainSchedules: formattedTrainSchedules,
   });

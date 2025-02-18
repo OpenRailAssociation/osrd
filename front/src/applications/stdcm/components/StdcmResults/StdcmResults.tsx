@@ -13,10 +13,10 @@ import {
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
-import { useInfraID } from 'common/osrdContext';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
+  getStdcmInfraID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
@@ -44,7 +44,7 @@ const StcdmResults = ({
   buttonsVisible,
   showStatusBanner,
 }: StcdmResultsProps) => {
-  const infraId = useInfraID()!;
+  const infraId = useSelector(getStdcmInfraID);
 
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();

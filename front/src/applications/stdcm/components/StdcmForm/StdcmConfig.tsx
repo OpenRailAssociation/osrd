@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux';
 import useStdcmForm from 'applications/stdcm/hooks/useStdcmForm';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import {
   resetMargins,
@@ -20,6 +19,9 @@ import {
   getStdcmDestination,
   getStdcmOrigin,
   getStdcmPathSteps,
+  getStdcmProjectID,
+  getStdcmScenarioID,
+  getStdcmStudyID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -74,13 +76,12 @@ const StdcmConfig = ({
   const { infra } = useInfraStatus();
   const dispatch = useAppDispatch();
 
-  const { getProjectID, getScenarioID, getStudyID } = useOsrdConfSelectors();
   const origin = useSelector(getStdcmOrigin);
   const pathSteps = useSelector(getStdcmPathSteps);
   const destination = useSelector(getStdcmDestination);
-  const projectID = useSelector(getProjectID);
-  const studyID = useSelector(getStudyID);
-  const scenarioID = useSelector(getScenarioID);
+  const projectID = useSelector(getStdcmProjectID);
+  const studyID = useSelector(getStdcmStudyID);
+  const scenarioID = useSelector(getStdcmScenarioID);
 
   const [showMessage, setShowMessage] = useState(false);
 

@@ -21,10 +21,9 @@ import {
   type Conflict,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { setFailure } from 'reducers/main';
-import { getStdcmConf } from 'reducers/osrdconf/stdcmConf/selectors';
+import { getStdcmConf, getStdcmTimetableID } from 'reducers/osrdconf/stdcmConf/selectors';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -53,9 +52,8 @@ const useStdcm = ({
 
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['translation', 'stdcm']);
-  const { getTimetableID } = useOsrdConfSelectors();
   const osrdconf = useSelector(getStdcmConf);
-  const timetableId = useSelector(getTimetableID)!;
+  const timetableId = useSelector(getStdcmTimetableID);
   const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>>();
 
   const stdcmResults = useStdcmResults(stdcmResponse, stdcmTrainResult, setPathProperties);

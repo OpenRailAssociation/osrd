@@ -8,8 +8,6 @@ import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { makeSubSelector } from 'utils/selectors';
 
 const buildStdcmConfSelectors = () => {
-  const commonConfSelectors = buildCommonConfSelectors(stdcmConfSlice);
-
   const getStdcmConf = (state: RootState) => state[stdcmConfSlice.name];
   const makeOsrdConfSelector = makeSubSelector<OsrdStdcmConfState>(getStdcmConf);
 
@@ -37,7 +35,8 @@ const buildStdcmConfSelectors = () => {
   );
 
   return {
-    ...commonConfSelectors,
+    ...buildCommonConfSelectors(stdcmConfSlice),
+
     getStdcmConf,
 
     getMargins: makeOsrdConfSelector('margins'),
@@ -83,9 +82,18 @@ const buildStdcmConfSelectors = () => {
 const selectors = buildStdcmConfSelectors();
 
 export const {
-  getStdcmConf,
-  getMargins,
+  getInfraID: getStdcmInfraID,
+  getProjectID: getStdcmProjectID,
+  getStudyID: getStdcmStudyID,
+  getScenarioID: getStdcmScenarioID,
+  getTimetableID: getStdcmTimetableID,
+  getElectricalProfileSetId: getStdcmElectricalProfileSetId,
+  getRollingStockID: getStdcmRollingStockID,
+  getSpeedLimitByTag: getStdcmSpeedLimitByTag,
 
+  getStdcmConf,
+
+  getMargins,
   getTotalMass,
   getTotalLength,
   getMaxSpeed,

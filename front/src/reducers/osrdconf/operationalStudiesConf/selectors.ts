@@ -10,8 +10,6 @@ import buildCommonConfSelectors from 'reducers/osrdconf/osrdConfCommon/selectors
 import { makeSubSelector } from 'utils/selectors';
 
 const buildOperationalStudiesConfSelectors = () => {
-  const commonConfSelectors = buildCommonConfSelectors(operationalStudiesConfSlice);
-
   const getOperationalStudiesConf = (state: RootState) => state[operationalStudiesConfSlice.name];
   const makeOsrdConfSelector =
     makeSubSelector<OperationalStudiesConfState>(getOperationalStudiesConf);
@@ -27,7 +25,8 @@ const buildOperationalStudiesConfSelectors = () => {
   );
 
   return {
-    ...commonConfSelectors,
+    ...buildCommonConfSelectors(operationalStudiesConfSlice),
+
     getOperationalStudiesConf,
 
     getName: makeOsrdConfSelector('name'),
@@ -62,6 +61,15 @@ const buildOperationalStudiesConfSelectors = () => {
 const selectors = buildOperationalStudiesConfSelectors();
 
 export const {
+  getInfraID: getOperationalStudiesInfraID,
+  getProjectID: getOperationalStudiesProjectID,
+  getStudyID: getOperationalStudiesStudyID,
+  getScenarioID: getOperationalStudiesScenarioID,
+  getTimetableID: getOperationalStudiesTimetableID,
+  getElectricalProfileSetId: getOperationalStudiesElectricalProfileSetId,
+  getRollingStockID: getOperationalStudiesRollingStockID,
+  getSpeedLimitByTag: getOperationalStudiesSpeedLimitByTag,
+
   getOperationalStudiesConf,
   getName,
   getStartTime,
