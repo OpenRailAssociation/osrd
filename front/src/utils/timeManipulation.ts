@@ -62,12 +62,6 @@ export function durationInSeconds(start: number, end: number) {
   return end > start ? end - start : end + SECONDS_IN_A_DAY - start;
 }
 
-export function calculateTimeDifferenceInSeconds(time1: string | Date, time2: string | Date) {
-  const date1 = new Date(time1);
-  const date2 = new Date(time2);
-  return (date2.getTime() - date1.getTime()) / 1000;
-}
-
 export function calculateTimeDifferenceInDays(datetime1?: Date, datetime2?: Date) {
   if (!datetime1 || !datetime2) {
     return undefined;
