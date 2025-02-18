@@ -4,8 +4,8 @@ import { DatePicker, Select, TimePicker, TolerancePicker } from '@osrd-project/u
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
+import { getSearchDatetimeWindow } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatDateString } from 'utils/date';
@@ -24,7 +24,6 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const { getSearchDatetimeWindow } = useOsrdConfSelectors();
   const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
 
   const { arrivalTimeHours, arrivalTimeMinutes } = useMemo(() => {
@@ -49,13 +48,10 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
   );
 
   const selectableSlot = useMemo(
-    () =>
-      searchDatetimeWindow
-        ? {
-            start: searchDatetimeWindow.begin,
-            end: searchDatetimeWindow.end,
-          }
-        : undefined,
+    () => ({
+      start: searchDatetimeWindow.begin,
+      end: searchDatetimeWindow.end,
+    }),
     [searchDatetimeWindow]
   );
 
@@ -63,8 +59,8 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
     () => ({
       invalidInput: t('form.datePickerErrors.invalidInput'),
       invalidDate: t('form.datePickerErrors.invalidDate', {
-        startDate: formatDateString(searchDatetimeWindow?.begin),
-        endDate: formatDateString(searchDatetimeWindow?.end),
+        startDate: formatDateString(searchDatetimeWindow.begin),
+        endDate: formatDateString(searchDatetimeWindow.end),
       }),
     }),
     [t, searchDatetimeWindow]
@@ -134,7 +130,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             minutes={arrivalTimeMinutes}
             onTimeChange={({ hours, minutes }) => {
               onArrivalChange({
-                date: pathStep.arrival || searchDatetimeWindow!.begin,
+                date: pathStep.arrival || searchDatetimeWindow.begin,
                 hours,
                 minutes,
               });

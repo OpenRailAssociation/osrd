@@ -70,6 +70,13 @@ const buildStdcmConfSelectors = () => {
     getSelectedSimulationIndex,
     getSelectedSimulation,
     getRetainedSimulationIndex: makeOsrdConfSelector('retainedSimulationIndex'),
+    getWorkScheduleGroupId: makeOsrdConfSelector('workScheduleGroupId'),
+
+    // For some selectors, if data were missing, errors would have been thrown earlier, at startup.
+    // The useStdcmEnv hook ensures that.
+    getSearchDatetimeWindow: makeOsrdConfSelector('searchDatetimeWindow', { nonNullable: true }),
+    getTimetableID: makeOsrdConfSelector('timetableID', { nonNullable: true }),
+    getInfraID: makeOsrdConfSelector('infraID', { nonNullable: true }),
   };
 };
 
@@ -92,6 +99,8 @@ export const {
   getSelectedSimulationIndex,
   getSelectedSimulation,
   getRetainedSimulationIndex,
+  getWorkScheduleGroupId,
+  getSearchDatetimeWindow,
 } = selectors;
 
 export type StdcmConfSelectors = typeof selectors;

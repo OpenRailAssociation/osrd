@@ -27,7 +27,7 @@ const useStdcmResults = (
   stdcmTrainResult: TrainScheduleResult | undefined,
   setPathProperties: (pathProperties?: StdcmPathProperties) => void
 ) => {
-  const infraId = useInfraID();
+  const infraId = useInfraID()!;
   const selectedTrainId = useSelector(getSelectedTrainId);
   const editoastSelectedTrainId = selectedTrainId
     ? formatTrainScheduleIdToEditoastTrainId(selectedTrainId as TrainScheduleId)
@@ -64,9 +64,9 @@ const useStdcmResults = (
   );
 
   useEffect(() => {
-    const getPathProperties = async (_infraId: number, path: PathfindingResultSuccess) => {
+    const getPathProperties = async (path: PathfindingResultSuccess) => {
       const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
-        infraId: _infraId,
+        infraId,
         props: ['geometry', 'operational_points', 'zones'],
         pathPropertiesInput: {
           track_section_ranges: path.track_section_ranges,
@@ -122,8 +122,8 @@ const useStdcmResults = (
       });
     };
 
-    if (infraId && stdcmResponse && stdcmResponse?.path) {
-      getPathProperties(infraId, stdcmResponse.path);
+    if (stdcmResponse?.path) {
+      getPathProperties(stdcmResponse.path);
     }
   }, [stdcmResponse]);
 

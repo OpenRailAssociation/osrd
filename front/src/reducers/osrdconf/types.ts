@@ -23,9 +23,6 @@ export type OsrdConfState = InfraState & {
   scenarioID?: number;
   timetableID?: number;
   electricalProfileSetId?: number;
-  workScheduleGroupId?: number;
-  temporarySpeedLimitGroupId?: number;
-  searchDatetimeWindow?: StdcmSearchDatetimeWindow;
   rollingStockID?: number;
   speedLimitByTag?: string;
 };
@@ -50,6 +47,9 @@ export type OsrdStdcmConfState = OsrdConfState & {
   simulations: StdcmSimulation[];
   selectedSimulationIndex?: number;
   retainedSimulationIndex?: number;
+  workScheduleGroupId?: number;
+  temporarySpeedLimitGroupId?: number;
+  searchDatetimeWindow?: StdcmSearchDatetimeWindow;
 };
 
 export type PathStep = PathItemLocation & {

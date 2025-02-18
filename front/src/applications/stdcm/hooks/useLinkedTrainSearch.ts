@@ -11,6 +11,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
+import { getSearchDatetimeWindow } from 'reducers/osrdconf/stdcmConf/selectors';
 import { isArrivalDateInSearchTimeWindow, isEqualDate } from 'utils/date';
 import { Duration } from 'utils/duration';
 
@@ -22,17 +23,17 @@ const useLinkedTrainSearch = () => {
   const [postTrainScheduleSimulationSummary] =
     osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.useLazyQuery();
 
-  const { getTimetableID, getSearchDatetimeWindow } = useOsrdConfSelectors();
+  const { getTimetableID } = useOsrdConfSelectors();
 
-  const infraId = useInfraID();
-  const timetableId = useSelector(getTimetableID);
-  const searchDatetimeWindow = useSelector(getSearchDatetimeWindow);
+  const infraId = useInfraID()!;
+  const timetableId = useSelector(getTimetableID)!;
+  const searchDatetimeWindow = useSelector(getSearchDatetimeWindow)!;
 
   const selectableSlot = useMemo(() => {
-    const startDate = searchDatetimeWindow ? new Date(searchDatetimeWindow.begin) : new Date();
+    const startDate = new Date(searchDatetimeWindow.begin);
     return {
       start: startDate,
-      end: searchDatetimeWindow?.end || startDate,
+      end: searchDatetimeWindow.end,
     };
   }, [searchDatetimeWindow]);
 
@@ -74,7 +75,6 @@ const useLinkedTrainSearch = () => {
 
   const getTrainsSummaries = useCallback(
     async (trainsIds: number[]) => {
-      if (!infraId) return undefined;
       const trainsSummaries = await postTrainScheduleSimulationSummary({
         body: {
           infra_id: infraId,
@@ -98,7 +98,7 @@ const useLinkedTrainSearch = () => {
           query: [
             'and',
             ['search', ['train_name'], trainNameInput],
-            ['=', ['timetable_id'], timetableId!],
+            ['=', ['timetable_id'], timetableId],
           ],
         },
         pageSize: 25,

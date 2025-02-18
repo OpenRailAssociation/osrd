@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useLayoutEffect,
+  type Dispatch,
+  type SetStateAction,
+  useMemo,
+} from 'react';
 
 import { isEqual, isNil } from 'lodash';
 import { useSelector } from 'react-redux';
@@ -13,6 +21,7 @@ import {
   getStdcmConf,
   getStdcmSimulations,
 } from 'reducers/osrdconf/stdcmConf/selectors';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import StdcmEmptyConfigError from '../components/StdcmEmptyConfigError';
@@ -25,10 +34,21 @@ import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';
 import useStdcmForm from '../hooks/useStdcmForm';
 import type { StdcmSimulation } from '../types';
 
-const StdcmView = () => {
+const StdcmViewContent = ({
+  loading,
+  error,
+  isDebugMode,
+  onIsDebugModeToggle,
+  stdcmConf,
+}: {
+  stdcmConf: OsrdStdcmConfState;
+  loading?: boolean;
+  error?: Error | null;
+  isDebugMode: boolean;
+  onIsDebugModeToggle: Dispatch<SetStateAction<boolean>>;
+}) => {
   // TODO : refacto. state useStdcm. Maybe we can merge some state together in order to reduce the number of refresh
   const currentSimulationInputs = useStdcmForm();
-  const stdcmConf = useSelector(getStdcmConf);
   const simulationsList = useSelector(getStdcmSimulations);
   const completedSimulations = useSelector(getStdcmCompletedSimulations);
   const selectedSimulationIndex = useSelector(getSelectedSimulationIndex);
@@ -36,7 +56,6 @@ const StdcmView = () => {
 
   const [showStatusBanner, setShowStatusBanner] = useState(false);
   const [showBtnToLaunchSimulation, setShowBtnToLaunchSimulation] = useState(false);
-  const [isDebugMode, setIsDebugMode] = useState(false);
   const [showHelpModule, setShowHelpModule] = useState(false);
   const [buttonsVisible, setButtonsVisible] = useState(true);
   const [skipPathfindingStatusMessage, setSkipPathfindingStatusMessage] = useState(false);
@@ -57,8 +76,6 @@ const StdcmView = () => {
     hasConflicts,
     isCalculationFailed,
   } = useStdcm({ showFailureNotification: false });
-
-  const { loading, error, loadStdcmEnvironment } = useStdcmEnvironment();
 
   const dispatch = useAppDispatch();
 
@@ -124,12 +141,6 @@ const StdcmView = () => {
   }, [isCanceled]);
 
   useEffect(() => {
-    if (!isDebugMode) {
-      loadStdcmEnvironment();
-    }
-  }, [isDebugMode]);
-
-  useEffect(() => {
     /*
      * Due to frequent re-renders and the fact that "speedSpaceChartData" is initially null before
      * "formattedPathProperties" is computed, we need to check if the current simulation is already
@@ -186,15 +197,11 @@ const StdcmView = () => {
     }
   }, [selectedSimulationIndex]);
 
-  // If we've got an error during the loading of the stdcm env which is not the "no config error" message,
-  // we let the error boundary manage it
-  if (error && error.message !== NO_CONFIG_FOUND_MSG) throw error;
-
   return (
     <div role="button" tabIndex={0} className="stdcm" onClick={() => setShowStatusBanner(false)}>
       <StdcmHeader
         isDebugMode={isDebugMode}
-        onDebugModeToggle={setIsDebugMode}
+        onDebugModeToggle={onIsDebugModeToggle}
         toggleHelpModule={toggleHelpModule}
         showHelpModule={showHelpModule}
       />
@@ -234,6 +241,45 @@ const StdcmView = () => {
       )}
       {loading && <LoaderFill />}
     </div>
+  );
+};
+
+const StdcmView = () => {
+  const [isDebugMode, setIsDebugMode] = useState(false);
+  const { loading, error, loadStdcmEnvironment } = useStdcmEnvironment();
+  const stdcmConf = useSelector(getStdcmConf);
+
+  const isStdcmConfValid = useMemo(
+    () => !!stdcmConf.searchDatetimeWindow && !!stdcmConf.timetableID && !!stdcmConf.infraID,
+    [stdcmConf]
+  );
+
+  useEffect(() => {
+    if (!isDebugMode) {
+      loadStdcmEnvironment();
+    }
+  }, [isDebugMode]);
+
+  // If we've got an error during the loading of the stdcm env which is not the "no config error" message,
+  // we let the error boundary manage it
+  if (error && error.message !== NO_CONFIG_FOUND_MSG) throw error;
+
+  // When the STDCM environment is being loaded and the conf is not valid, we do not mount the actual STDCM
+  // view content yet:
+  if (loading && !isStdcmConfValid) return null;
+
+  if (!isStdcmConfValid) {
+    throw new Error('STDCM conf is not valid.');
+  }
+
+  return (
+    <StdcmViewContent
+      loading={loading}
+      error={error}
+      isDebugMode={isDebugMode}
+      onIsDebugModeToggle={setIsDebugMode}
+      stdcmConf={stdcmConf}
+    />
   );
 };
 

@@ -55,19 +55,16 @@ const keepTrainsRunningDuringStdcm = (
 };
 
 const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
-  const infraId = useInfraID();
   const { getTimetableID } = useOsrdConfSelectors();
-  const timetableId = useSelector(getTimetableID);
+  const infraId = useInfraID()!;
+  const timetableId = useSelector(getTimetableID)!;
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
   const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TrainId>>(new Set());
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery(
-    { timetableId: timetableId! },
-    {
-      skip: !timetableId,
-    }
-  );
+  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery({
+    timetableId,
+  });
 
   const trainIds = useMemo(() => timetable?.map((t) => t.id) || [], [timetable]);
 
@@ -132,7 +129,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
     setSpaceTimeData(newSpaceTimeData);
   }, [projectedTrainsById]);
 
-  if (!infraId || !stdcmResponse) return null;
+  if (!stdcmResponse) return null;
 
   return {
     spaceTimeData,

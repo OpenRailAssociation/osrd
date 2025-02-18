@@ -55,7 +55,7 @@ const useStdcm = ({
   const { t } = useTranslation(['translation', 'stdcm']);
   const { getTimetableID } = useOsrdConfSelectors();
   const osrdconf = useSelector(getStdcmConf);
-  const timetableId = useSelector(getTimetableID);
+  const timetableId = useSelector(getTimetableID)!;
   const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>>();
 
   const stdcmResults = useStdcmResults(stdcmResponse, stdcmTrainResult, setPathProperties);
@@ -116,7 +116,7 @@ const useStdcm = ({
 
           const stdcmTrain: TrainScheduleResult = {
             id: STDCM_TRAIN_ID,
-            timetable_id: timetableId!,
+            timetable_id: timetableId,
             comfort: payload.body.comfort,
             constraint_distribution: 'MARECO',
             path: payload.body.steps.map((step) => ({ ...step.location, id: nextId() })),

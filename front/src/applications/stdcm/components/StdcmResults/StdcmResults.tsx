@@ -44,7 +44,8 @@ const StcdmResults = ({
   buttonsVisible,
   showStatusBanner,
 }: StcdmResultsProps) => {
-  const infraId = useInfraID();
+  const infraId = useInfraID()!;
+
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();
 

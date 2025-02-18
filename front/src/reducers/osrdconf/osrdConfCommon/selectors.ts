@@ -14,8 +14,6 @@ const buildCommonConfSelectors = (slice: OperationalStudiesConfSlice | StdcmConf
     getScenarioID: makeOsrdConfSelector('scenarioID'),
     getTimetableID: makeOsrdConfSelector('timetableID'),
     getElectricalProfileSetId: makeOsrdConfSelector('electricalProfileSetId'),
-    getWorkScheduleGroupId: makeOsrdConfSelector('workScheduleGroupId'),
-    getSearchDatetimeWindow: makeOsrdConfSelector('searchDatetimeWindow'),
     getRollingStockID: makeOsrdConfSelector('rollingStockID'),
     getSpeedLimitByTag: makeOsrdConfSelector('speedLimitByTag'),
   };

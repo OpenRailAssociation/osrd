@@ -7,13 +7,13 @@ import useProjectedTrainsForStdcm from 'applications/stdcm/hooks/useProjectedTra
 import type { StdcmSimulationOutputs } from 'applications/stdcm/types';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import ResizableSection from 'common/ResizableSection';
 import i18n from 'i18n';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
+import { getWorkScheduleGroupId } from 'reducers/osrdconf/stdcmConf/selectors';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
@@ -24,7 +24,6 @@ type StdcmDebugResultsProps = {
 };
 
 const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
-  const { getWorkScheduleGroupId } = useOsrdConfSelectors();
   const workScheduleGroupId = useSelector(getWorkScheduleGroupId);
   const successfulSimulation = hasResults(simulationOutputs) ? simulationOutputs : undefined;
 
