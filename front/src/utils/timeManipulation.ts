@@ -20,11 +20,6 @@ export function minToMs(min: number) {
   return min * 60 * 1000;
 }
 
-export function datetime2string(ts: string | number | Date): TimeString {
-  const datetime = new Date(ts);
-  return datetime.toLocaleString();
-}
-
 export function datetime2time(datetime: Date) {
   const formatTime = d3.timeFormat('%H:%M:%S');
   return formatTime(datetime);
