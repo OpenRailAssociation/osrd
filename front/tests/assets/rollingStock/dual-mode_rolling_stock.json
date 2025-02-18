@@ -1,5 +1,5 @@
 {
-  "railjson_version": "3.2",
+  "railjson_version": "3.3",
   "name": "DUAL-MODE_RS_E2Ee",
   "effort_curves": {
     "modes": {
@@ -440,5 +440,7 @@
   "raise_pantograph_time": 16.0,
   "version": 1,
   "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
-  "liveries": []
+  "liveries": [],
+  "primary_category": "FREIGHT_TRAIN",
+  "other_categories": []
 }

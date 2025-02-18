@@ -1,6 +1,6 @@
 {
   "id": 479,
-  "railjson_version": "3.2",
+  "railjson_version": "3.3",
   "name": "slow_rolling_stock",
   "effort_curves": {
     "modes": {
@@ -75,5 +75,7 @@
   "raise_pantograph_time": null,
   "version": 1,
   "supported_signaling_systems": ["BAL", "BAPR"],
-  "liveries": []
+  "liveries": [],
+  "primary_category": "FREIGHT_TRAIN",
+  "other_categories": []
 }

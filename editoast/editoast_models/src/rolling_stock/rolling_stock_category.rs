@@ -1,4 +1,5 @@
 use std::io::Write;
+use std::ops::Deref;
 use std::str::FromStr;
 
 use diesel::deserialize::FromSql;
@@ -32,6 +33,14 @@ impl ToSql<crate::tables::sql_types::RollingStockCategory, Pg> for RollingStockC
     }
 }
 
+impl Deref for RollingStockCategory {
+    type Target = editoast_schemas::rolling_stock::RollingStockCategory;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct RollingStockCategories(pub Vec<RollingStockCategory>);
 
@@ -44,5 +53,13 @@ impl From<Vec<Option<RollingStockCategory>>> for RollingStockCategories {
 impl From<RollingStockCategories> for Vec<Option<RollingStockCategory>> {
     fn from(categories: RollingStockCategories) -> Self {
         categories.0.into_iter().map(Some).collect()
+    }
+}
+
+impl Deref for RollingStockCategories {
+    type Target = Vec<RollingStockCategory>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

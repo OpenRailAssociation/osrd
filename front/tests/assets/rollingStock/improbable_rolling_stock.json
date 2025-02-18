@@ -1,6 +1,6 @@
 {
   "id": 789,
-  "railjson_version": "3.2",
+  "railjson_version": "3.3",
   "name": "IMPROBABLE_RS_E2E",
   "effort_curves": {
     "modes": {
@@ -938,5 +938,7 @@
   "raise_pantograph_time": 15.0,
   "version": 0,
   "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
-  "liveries": []
+  "liveries": [],
+  "primary_category": "FREIGHT_TRAIN",
+  "other_categories": []
 }

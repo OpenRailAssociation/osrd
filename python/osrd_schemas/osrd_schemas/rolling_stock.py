@@ -21,16 +21,16 @@ class RollingStockCategory(str, Enum):
     The list of categories that can be assigned to a rolling stock.
     """
 
-    HIGH_SPEED_TRAIN = "High Speed Train"
-    INTERCITY_TRAIN = "Intercity Train"
-    REGIONAL_TRAIN = "Regional Train"
-    NIGHT_TRAIN = "Night Train"
-    COMMUTER_TRAIN = "Commuter Train"
-    FREIGHT_TRAIN = "Freight Train"
-    FAST_FREIGHT_TRAIN = "Fast Freight Train"
-    TRAM_TRAIN = "Tram Train"
-    TOURISTIC_TRAIN = "Touristic Train"
-    WORK_TRAIN = "Work Train"
+    HIGH_SPEED_TRAIN = "HIGH_SPEED_TRAIN"
+    INTERCITY_TRAIN = "INTERCITY_TRAIN"
+    REGIONAL_TRAIN = "REGIONAL_TRAIN"
+    NIGHT_TRAIN = "NIGHT_TRAIN"
+    COMMUTER_TRAIN = "COMMUTER_TRAIN"
+    FREIGHT_TRAIN = "FREIGHT_TRAIN"
+    FAST_FREIGHT_TRAIN = "FAST_FREIGHT_TRAIN"
+    TRAM_TRAIN = "TRAM_TRAIN"
+    TOURISTIC_TRAIN = "TOURISTIC_TRAIN"
+    WORK_TRAIN = "WORK_TRAIN"
 
 
 class ComfortType(str, Enum):

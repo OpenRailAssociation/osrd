@@ -1,6 +1,7 @@
 mod power_restrictions;
 
 use std::collections::HashMap;
+use std::ops::Deref;
 
 use editoast_common::units;
 use editoast_common::units::quantities::{
@@ -195,11 +196,10 @@ impl RollingStockModelChangeset {
                 if other_categories
                     .iter()
                     .flatten()
-                    .collect::<Vec<_>>()
-                    .contains(&primary_category)
+                    .any(|category| category == primary_category)
                 {
                     let mut error = ValidationError::new("primary_category");
-                    error.message = Some("The primary_category cannot be listed in other_categories for rolling stocks.".into(),);
+                    error.message = Some("The primary_category cannot be listed in other_categories for rolling stocks.".into());
                     validation_errors.add("primary_category", error);
                 }
             }
@@ -237,13 +237,12 @@ impl From<RollingStockModel> for RollingStock {
             electrical_power_startup_time: rolling_stock_model.electrical_power_startup_time,
             raise_pantograph_time: rolling_stock_model.raise_pantograph_time,
             supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
-            primary_category: rolling_stock_model.primary_category.0,
+            primary_category: rolling_stock_model.primary_category.deref().clone(),
             other_categories: editoast_schemas::rolling_stock::RollingStockCategories(
                 rolling_stock_model
                     .other_categories
-                    .0
-                    .into_iter()
-                    .map(|x| x.0)
+                    .iter()
+                    .map(|c| c.deref().clone())
                     .collect::<Vec<_>>(),
             ),
         }
