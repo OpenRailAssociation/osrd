@@ -42,6 +42,10 @@ export class Duration {
   add(other: Duration) {
     return new Duration(this.ms + other.ms);
   }
+
+  abs() {
+    return new Duration(Math.abs(this.ms));
+  }
 }
 
 export const addDurationToDate = (date: Date, dur: Duration) => new Date(date.getTime() + dur.ms);
