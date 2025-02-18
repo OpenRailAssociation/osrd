@@ -20,7 +20,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { formatToIsoDate, isoDateToMs } from 'utils/date';
+import { Duration, addDurationToDate } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastTrainIdToTrainScheduleId,
@@ -121,11 +121,11 @@ const TrainScheduleItem = ({
       });
 
     if (trainDetail) {
-      const formattedStartTimeMs = isoDateToMs(trainDetail.start_time);
-      const newStartTimeString = formatToIsoDate(formattedStartTimeMs + 1000 * 60 * trainDelta);
+      const startTime = new Date(trainDetail.start_time);
+      const newStartTime = addDurationToDate(startTime, new Duration({ minutes: trainDelta }));
       const newTrain: TrainScheduleBase = {
         ...omit(trainDetail, ['id', 'timetable_id']),
-        start_time: newStartTimeString,
+        start_time: newStartTime.toISOString(),
         train_name: trainNameWithNum(trainName, actualTrainCount, trainCount),
       };
 
