@@ -9,13 +9,17 @@ import fr.sncf.osrd.utils.indexing.StaticPool
 class SigSystemManagerImpl : SigSystemManager {
     private val sigSystemMap = mutableMapOf<String, SignalingSystemId>()
     private val sigSystemPool = StaticPool<SignalingSystem, SignalingSystemDriver>()
+    private val sigSystemCost = mutableMapOf<SignalingSystemId, Double>()
     private val driverMap =
         mutableMapOf<Pair<SignalingSystemId, SignalingSystemId>, SignalDriverId>()
     private val driverPool = StaticPool<SignalDriver, fr.sncf.osrd.signaling.SignalDriver>()
 
-    fun addSignalingSystem(sigSystem: SignalingSystemDriver): SignalingSystemId {
+    // cost must be in [0; 1] (used to choose block when everything else is equal)
+    fun addSignalingSystem(sigSystem: SignalingSystemDriver, cost: Double): SignalingSystemId {
         val res = sigSystemPool.add(sigSystem)
         sigSystemMap[sigSystem.id] = res
+        assert(cost in 0.0..1.0) { "Signaling system costs must be normalized in [0; 1]" }
+        sigSystemCost[res] = cost
         return res
     }
 
@@ -71,6 +75,11 @@ class SigSystemManagerImpl : SigSystemManager {
 
     override fun getName(sigSystem: SignalingSystemId): String {
         return sigSystemPool[sigSystem].id
+    }
+
+    override fun getCost(sigSystem: SignalingSystemId): Double {
+        return sigSystemCost[sigSystem]
+            ?: throw RuntimeException("signaling system does not have an assigned cost")
     }
 
     override val drivers

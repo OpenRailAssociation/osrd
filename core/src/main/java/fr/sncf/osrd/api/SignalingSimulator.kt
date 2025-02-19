@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api
 
 import fr.sncf.osrd.signaling.SignalingSimulator
+import fr.sncf.osrd.signaling.SignalingSystemDriver
 import fr.sncf.osrd.signaling.bal.*
 import fr.sncf.osrd.signaling.bapr.*
 import fr.sncf.osrd.signaling.etcs_level2.*
@@ -9,17 +10,27 @@ import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.signaling.tvm300.*
 import fr.sncf.osrd.signaling.tvm430.*
 
+val signalingSystemCost =
+    mapOf(BAPR to 0.50, BAL to 0.40, TVM300 to 0.30, TVM430 to 0.20, ETCS_LEVEL2 to 0.10)
+
+fun addSignalingSystem(sigSystemManager: SigSystemManagerImpl, sigSystem: SignalingSystemDriver) {
+    assert(signalingSystemCost.containsKey(sigSystem)) {
+        "Trying to add a signaling system without cost"
+    }
+    sigSystemManager.addSignalingSystem(sigSystem, signalingSystemCost[sigSystem]!!)
+}
+
 /**
  * Configure the signaling simulator for all the supported signaling systems Mainly useful because
  * we can't do it directly from java due to compiler issues
  */
 fun makeSignalingSimulator(): SignalingSimulator {
     val sigSystemManager = SigSystemManagerImpl()
-    sigSystemManager.addSignalingSystem(BAL)
-    sigSystemManager.addSignalingSystem(BAPR)
-    sigSystemManager.addSignalingSystem(TVM300)
-    sigSystemManager.addSignalingSystem(TVM430)
-    sigSystemManager.addSignalingSystem(ETCS_LEVEL2)
+    addSignalingSystem(sigSystemManager, BAL)
+    addSignalingSystem(sigSystemManager, BAPR)
+    addSignalingSystem(sigSystemManager, TVM300)
+    addSignalingSystem(sigSystemManager, TVM430)
+    addSignalingSystem(sigSystemManager, ETCS_LEVEL2)
 
     sigSystemManager.addSignalDriver(BALtoBAL)
     sigSystemManager.addSignalDriver(BALtoBAPR)

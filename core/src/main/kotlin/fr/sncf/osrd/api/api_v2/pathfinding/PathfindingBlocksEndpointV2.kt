@@ -165,14 +165,12 @@ private fun computePaths(
             initialRequest.rollingStockLength
         )
     val constraintCombiner = ConstraintCombiner(constraints.toMutableList())
+
     val pathFound =
         Pathfinding(PathfindingGraph())
             .setTimeout(timeout)
-            .setEdgeToLength { edge -> Offset(edge.length.distance) }
-            .setRangeCost { range ->
-                mrspBuilder.getBlockTime(range.edge.block, Offset(range.end.distance)) -
-                    mrspBuilder.getBlockTime(range.edge.block, Offset(range.start.distance))
-            }
+            .setEdgeToLength { Offset(it.length.distance) }
+            .setRangeCost { getRangeCost(it, mrspBuilder, infra) }
             .setRemainingDistanceEstimator(remainingDistanceEstimators)
             .runPathfinding(
                 getStartLocations(
@@ -202,6 +200,24 @@ private fun computePaths(
         initialRequest,
         timeout?.minus(elapsedSeconds)
     )
+}
+
+const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-2
+
+private fun getRangeCost(
+    range: EdgeRange<PathfindingEdge, Block>,
+    mrspBuilder: CachedBlockMRSPBuilder,
+    infra: FullInfra
+): Double {
+    val edgeDuration =
+        mrspBuilder.getBlockTime(range.edge.block, Offset(range.end.distance)) -
+            mrspBuilder.getBlockTime(range.edge.block, Offset(range.start.distance))
+    val signalingSystemPenaltyFactor =
+        SIGNALING_SYSTEM_COST_WEIGHTING *
+            infra.signalingSimulator.sigModuleManager.getCost(
+                infra.blockInfra.getBlockSignalingSystem(range.edge.block)
+            )
+    return (edgeDuration) * (1 + signalingSystemPenaltyFactor)
 }
 
 private fun getStartLocations(

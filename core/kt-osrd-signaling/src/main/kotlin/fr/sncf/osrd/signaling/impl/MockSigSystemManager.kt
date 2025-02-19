@@ -66,6 +66,10 @@ class MockSigSystemManager(
         return this.sigSystem
     }
 
+    override fun getCost(sigSystem: SignalingSystemId): Double {
+        TODO("Implement this")
+    }
+
     override val drivers: StaticIdxSpace<SignalDriver>
         get() = StaticIdxSpace(1u)
 

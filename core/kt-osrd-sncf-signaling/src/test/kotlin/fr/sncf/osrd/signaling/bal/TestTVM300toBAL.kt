@@ -8,7 +8,10 @@ import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.signaling.tvm300.TVM300
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.LogicalSignalId
+import fr.sncf.osrd.sim_infra.api.SigState
+import fr.sncf.osrd.sim_infra.api.increasing
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -59,8 +62,8 @@ class TestTVM300toBAL {
         val signalN = signals["N"]!!
 
         val sigSystemManager = SigSystemManagerImpl()
-        sigSystemManager.addSignalingSystem(BAL)
-        sigSystemManager.addSignalingSystem(TVM300)
+        sigSystemManager.addSignalingSystem(BAL, 0.40)
+        sigSystemManager.addSignalingSystem(TVM300, 0.30)
         sigSystemManager.addSignalDriver(BALtoTVM300)
         sigSystemManager.addSignalDriver(BALtoBAL)
         val simulator = SignalingSimulatorImpl(sigSystemManager)

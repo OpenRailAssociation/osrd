@@ -10,7 +10,10 @@ import fr.sncf.osrd.signaling.bapr.BAPRtoBAL
 import fr.sncf.osrd.signaling.bapr.BAPRtoBAPR
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.LogicalSignalId
+import fr.sncf.osrd.sim_infra.api.SigState
+import fr.sncf.osrd.sim_infra.api.increasing
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -77,8 +80,8 @@ class TestBAPRtoBAL {
         val signalN = signals["N"]!!
 
         val sigSystemManager = SigSystemManagerImpl()
-        sigSystemManager.addSignalingSystem(BAL)
-        sigSystemManager.addSignalingSystem(BAPR)
+        sigSystemManager.addSignalingSystem(BAPR, 0.50)
+        sigSystemManager.addSignalingSystem(BAL, 0.40)
         sigSystemManager.addSignalDriver(BALtoBAL)
         sigSystemManager.addSignalDriver(BAPRtoBAPR)
         sigSystemManager.addSignalDriver(BAPRtoBAL)

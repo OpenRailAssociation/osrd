@@ -63,6 +63,31 @@ public class RJSEtcsBrakeParams {
     @Json(name = "t_be")
     public double tBe;
 
+    public RJSEtcsBrakeParams(
+            RJSSpeedIntervalValueCurve gammaEmergency,
+            RJSSpeedIntervalValueCurve gammaService,
+            RJSSpeedIntervalValueCurve gammaNormalService,
+            RJSSpeedIntervalValueCurve kDry,
+            RJSSpeedIntervalValueCurve kWet,
+            RJSSpeedIntervalValueCurve kNPos,
+            RJSSpeedIntervalValueCurve kNNeg,
+            double tTractionCutOff,
+            double tBs1,
+            double tBs2,
+            double tBe) {
+        this.gammaEmergency = gammaEmergency;
+        this.gammaService = gammaService;
+        this.gammaNormalService = gammaNormalService;
+        this.kDry = kDry;
+        this.kWet = kWet;
+        this.kNPos = kNPos;
+        this.kNNeg = kNNeg;
+        this.tTractionCutOff = tTractionCutOff;
+        this.tBs1 = tBs1;
+        this.tBs2 = tBs2;
+        this.tBe = tBe;
+    }
+
     /** See Subset §3.13.6.2.1.4. */
     public double getSafeBrakingAcceleration(double speed) {
         var aBrakeEmergency = getEmergencyBrakingDeceleration(speed);
@@ -113,6 +138,11 @@ public class RJSEtcsBrakeParams {
         // Interval values (unit to be made explicit at use)
         // There must be one more value than boundaries
         public double[] values;
+
+        public RJSSpeedIntervalValueCurve(double[] boundaries, double[] values) {
+            this.boundaries = boundaries;
+            this.values = values;
+        }
 
         public double getValue(double speed) {
             assert (boundaries != null);

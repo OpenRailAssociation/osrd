@@ -7,7 +7,6 @@ import fr.sncf.osrd.api.api_v2.pathfinding.NoPathFoundException
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockRequest
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
-import fr.sncf.osrd.signaling.bapr.BAPR
 import fr.sncf.osrd.signaling.tvm300.TVM300
 import fr.sncf.osrd.signaling.tvm430.TVM430
 import fr.sncf.osrd.train.RollingStock
@@ -20,6 +19,8 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PathfindingSignalingTest {
@@ -149,30 +150,56 @@ class PathfindingSignalingTest {
             )
     }
 
-    @Test
-    fun shouldPriorUseBalPathForBaprBalTrain() {
-        setSigSystemIds(listOf("b->N", "N->d"), BAPR.id) // Other blocks are BAL
+    @ParameterizedTest
+    @CsvSource(
+        "ETCS_LEVEL2, TVM430, N",
+        "TVM430, TVM300, N",
+        "TVM300, BAL, N",
+        "BAL, BAPR, N",
+        "TVM430, ETCS_LEVEL2, S",
+        "TVM300, TVM430, S",
+        "BAL, TVM300, S",
+        "BAPR, BAL, S"
+    )
+    fun shouldPriorEtcsThenTvm430ThenTvm300ThenBalThenBaprForPathfinding(
+        northSigSystem: String,
+        southSigSystem: String,
+        intermediateWaypoint: String
+    ) {
+        // Other blocks are BAL
+        setSigSystemIds(listOf("b->N", "N->d"), northSigSystem)
+        setSigSystemIds(listOf("b->S", "S->d"), southSigSystem)
+
         val waypointsStart = listOf(TrackLocation("a->b", Offset.zero()))
         val waypointsInter =
             listOf(TrackLocation("S->d", Offset.zero()), TrackLocation("N->d", Offset.zero()))
         val waypointsEnd = listOf(TrackLocation("d->e", Offset(100.meters)))
 
-        val pathfindingResp =
+        val pathfindingSouthResp =
             fr.sncf.osrd.api.api_v2.pathfinding.runPathfinding(
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
-                    TestTrains.REALISTIC_FAST_TRAIN,
+                    TestTrains.REALISTIC_ETCS_FAST_TRAIN,
                     listOf(waypointsStart, waypointsInter, waypointsEnd)
                 )
             )
-        assertThat(pathfindingResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
-        assertThat((pathfindingResp as PathfindingBlockSuccess).trackSectionRanges)
+        assertThat(pathfindingSouthResp).isExactlyInstanceOf(PathfindingBlockSuccess::class.java)
+        assertThat((pathfindingSouthResp as PathfindingBlockSuccess).trackSectionRanges)
             .isEqualTo(
                 arrayListOf(
                     DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    // xfail: Should go South here to prioritize BAL over BAPR
-                    DirectionalTrackRange("b->N", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("N->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    DirectionalTrackRange(
+                        "b->$intermediateWaypoint",
+                        Offset.zero(),
+                        Offset(100.meters),
+                        START_TO_STOP
+                    ),
+                    DirectionalTrackRange(
+                        "$intermediateWaypoint->d",
+                        Offset.zero(),
+                        Offset(100.meters),
+                        START_TO_STOP
+                    ),
                     DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
                 )
             )

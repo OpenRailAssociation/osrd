@@ -7,7 +7,8 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -71,7 +72,7 @@ class TestBALtoBAL {
         val signalV = signals["V"]!!
 
         val sigSystemManager = SigSystemManagerImpl()
-        sigSystemManager.addSignalingSystem(BAL)
+        sigSystemManager.addSignalingSystem(BAL, 0.40)
         sigSystemManager.addSignalDriver(BALtoBAL)
         val simulator = SignalingSimulatorImpl(sigSystemManager)
         val loadedSignalInfra = simulator.loadSignals(infra)

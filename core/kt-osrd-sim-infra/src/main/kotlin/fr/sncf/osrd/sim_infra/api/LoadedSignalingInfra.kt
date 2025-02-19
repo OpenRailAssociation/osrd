@@ -48,6 +48,8 @@ interface InfraSigSystemManager {
 
     fun getName(sigSystem: SignalingSystemId): String
 
+    fun getCost(sigSystem: SignalingSystemId): Double
+
     val drivers: StaticIdxSpace<SignalDriver>
 
     fun findDriver(outputSig: SignalingSystemId, inputSig: SignalingSystemId): SignalDriverId
