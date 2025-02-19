@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 
-import { isEmpty } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import DPY_TO_MAS_OPERATIONAL_POINTS from 'assets/operationStudies/DPYToMASOperationalPoints';
@@ -174,10 +173,6 @@ export default function useSearchOperationalPoint({
       setSearchResults([]);
     }
   }, [debouncedSearchTerm]);
-
-  useEffect(() => {
-    if (isEmpty(searchResults)) setChCodeFilter(undefined);
-  }, [searchResults]);
 
   return {
     searchTerm,
