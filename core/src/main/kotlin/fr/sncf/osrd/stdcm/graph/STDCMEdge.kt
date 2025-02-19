@@ -35,7 +35,7 @@ data class STDCMEdge(
     // How long it takes to go from the beginning to the end of the block, taking the
     // standard allowance into account
     val totalTime: Double,
-    // If this edges starts after the end of an engineering allowance, this contains
+    // If this edge starts at the end of an engineering allowance, this contains
     // some data like its length and extra time. Null if there's no engineering allowance
     // ending here. Overrides any allowance spanning part of the range from previous edges.
     val engineeringAllowance: EngineeringAllowanceData?,

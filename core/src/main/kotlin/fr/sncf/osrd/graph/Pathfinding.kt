@@ -162,8 +162,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         targets: List<Collection<EdgeLocation<EdgeT, OffsetType>>>
     ): Result<EdgeT, OffsetType>? {
         // We convert the targets of each step into functions, to call the more generic overload of
-        // this
-        // method below
+        // this method below
         val starts = targets[0]
         val targetsOnEdges = ArrayList<TargetsOnEdge<EdgeT, OffsetType>>()
         for (i in 1 until targets.size) {
