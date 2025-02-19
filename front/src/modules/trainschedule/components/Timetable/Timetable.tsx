@@ -10,6 +10,7 @@ import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/con
 import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
+import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   PacedTrainId,
   TimetableItemId,
@@ -40,9 +41,9 @@ type TimetableProps = {
   infraState: InfraState;
   conflicts?: Conflict[];
   upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
-  setTrainIdToEdit: (trainId?: TimetableItemId) => void;
+  setItemIdToEdit: (trainId?: TimetableItemId) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
-  trainIdToEdit?: TimetableItemId;
+  itemIdToEdit?: TimetableItemId;
   trainSchedules?: TrainScheduleResultWithTrainId[];
   trainSchedulesWithDetails: TrainScheduleWithDetails[];
   dtoImport: () => void;
@@ -56,8 +57,8 @@ const Timetable = ({
   conflicts,
   upsertTrainSchedules,
   removeTrains,
-  setTrainIdToEdit,
-  trainIdToEdit,
+  setItemIdToEdit,
+  itemIdToEdit,
   trainSchedules = [],
   trainSchedulesWithDetails,
   dtoImport,
@@ -137,10 +138,17 @@ const Timetable = ({
     });
   }, [currentDepartureDates]);
 
+  const selectTimeTableItemToEdit = (itemToEdit: TimetableItemResult) => {
+    dispatch(selectTrainToEdit(itemToEdit));
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    setItemIdToEdit(itemToEdit.id);
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+  };
+
   // TODO PACED TRAIN : Remove this after adapting the code to handle paced trains in issue
   useEffect(() => {
     setTimetableItems(
-      showPacedTrains
+      showPacedTrains && trainSchedulesWithDetails.length > 0
         ? [
             ...trainSchedulesWithDetails,
             {
@@ -154,7 +162,7 @@ const Timetable = ({
           ]
         : trainSchedulesWithDetails
     );
-  }, [showPacedTrains]);
+  }, [showPacedTrains, trainSchedulesWithDetails]);
 
   return (
     <div className="scenario-timetable">
@@ -217,11 +225,10 @@ const Timetable = ({
                   handleSelectTrain={handleSelectTimetableItem}
                   train={timetableItem as TrainScheduleWithDetails}
                   isSelected={infraState === 'CACHED' && selectedTrainId === timetableItem.id}
-                  isModified={timetableItem.id === trainIdToEdit}
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                  isModified={timetableItem.id === itemIdToEdit}
                   upsertTrainSchedules={upsertTrainSchedules}
-                  setTrainIdToEdit={setTrainIdToEdit}
                   removeTrains={removeAndUnselectTrains}
+                  selectTrainToEdit={selectTimeTableItemToEdit}
                   projectionPathIsUsed={
                     infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
                   }
@@ -231,10 +238,9 @@ const Timetable = ({
                 <PacedTrainItem
                   pacedTrain={timetableItem as PacedTrainWithResult}
                   isInSelection={selectedTimetableItemIds.pacedTrainIds.includes(timetableItem.id)}
-                  setPacedTrainIdToEdit={setTrainIdToEdit}
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                  selectPacedTrainToEdit={selectTimeTableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}
-                  isOnEdit={timetableItem.id === trainIdToEdit}
+                  isOnEdit={timetableItem.id === itemIdToEdit}
                   isProjectionPathUsed={false}
                 />
               )}

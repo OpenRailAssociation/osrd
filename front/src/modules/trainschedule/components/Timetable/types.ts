@@ -14,11 +14,10 @@ export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
 
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 
-export type TrainScheduleWithDetails = Omit<
+export type TimetableItemWithDetails = Omit<
   TrainScheduleResult,
   'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time'
 > & {
-  id: TrainScheduleId;
   trainName: string;
   startTime: Date;
   arrivalTime: Date | null;
@@ -45,7 +44,11 @@ export type InvalidReason =
   | PathfindingNotFound['error_type']
   | PathfindingInputError['error_type'];
 
-export type PacedTrainWithResult = Omit<TrainScheduleWithDetails, 'id'> & {
+export type TrainScheduleWithDetails = TimetableItemWithDetails & {
+  id: TrainScheduleId;
+};
+
+export type PacedTrainWithResult = TimetableItemWithDetails & {
   id: PacedTrainId;
   paced: {
     duration: Duration;

@@ -14,11 +14,11 @@ import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
 
 type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
-  trainIdToEdit?: TimetableItemId;
+  itemIdToEdit?: TimetableItemId;
   setDisplayTrainScheduleManagement: (type: string) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
   infraState?: InfraState;
-  setTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void;
+  setItemIdToEdit: (itemIdToEdit?: TimetableItemId) => void;
   dtoImport: () => void;
 };
 
@@ -27,8 +27,8 @@ const TimetableManageTrainSchedule = ({
   setDisplayTrainScheduleManagement,
   upsertTrainSchedules,
   infraState,
-  trainIdToEdit,
-  setTrainIdToEdit,
+  itemIdToEdit,
+  setItemIdToEdit,
   dtoImport,
 }: TimetableManageTrainScheduleProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
@@ -36,16 +36,16 @@ const TimetableManageTrainSchedule = ({
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    setTrainIdToEdit(undefined);
+    setItemIdToEdit(undefined);
   };
 
   const updateTrainSchedule = useUpdateTrainSchedule(
     setIsWorking,
     setDisplayTrainScheduleManagement,
     upsertTrainSchedules,
-    setTrainIdToEdit,
+    setItemIdToEdit,
     dtoImport,
-    trainIdToEdit
+    itemIdToEdit
   );
   return (
     <div className="scenario-timetable-managetrainschedule">

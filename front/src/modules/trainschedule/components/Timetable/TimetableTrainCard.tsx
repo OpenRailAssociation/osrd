@@ -7,13 +7,11 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
-import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   TimetableItemId,
   TrainId,
@@ -38,12 +36,11 @@ type TimetableTrainCardProps = {
   isSelected: boolean;
   isModified?: boolean;
   handleSelectTrain: (trainId: TrainScheduleId) => void;
-  setDisplayTrainScheduleManagement: (arg0: string) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
-  setTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
   dtoImport: () => void;
+  selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
 };
 
 const formatFullDate = (d: Date) => dayjs(d).format('D/MM/YYYY HH:mm:ss');
@@ -54,13 +51,12 @@ const TimetableTrainCard = ({
   train,
   isSelected,
   isModified,
-  setDisplayTrainScheduleManagement,
   handleSelectTrain,
   upsertTrainSchedules,
-  setTrainIdToEdit,
   removeTrains,
   projectionPathIsUsed,
   dtoImport,
+  selectTrainToEdit,
 }: TimetableTrainCardProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
@@ -72,13 +68,6 @@ const TimetableTrainCard = ({
 
   const changeSelectedTrainId = (trainId: TrainId) => {
     dispatch(updateSelectedTrainId(trainId));
-  };
-
-  const editTrainSchedule = () => {
-    dispatch(selectTrainToEdit(train));
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-    setTrainIdToEdit(train.id);
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   };
 
   const deleteTrain = async () => {
@@ -282,7 +271,7 @@ const TimetableTrainCard = ({
       <TimetableItemActions
         selectPathProjection={selectPathProjection}
         duplicateTimetableItem={duplicateTrain}
-        editTimetableItem={editTrainSchedule}
+        editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}
       />
     </div>

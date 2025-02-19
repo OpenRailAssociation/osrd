@@ -6,10 +6,7 @@ import cx from 'classnames';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
-import type { PacedTrainId, TimetableItemId } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
+import type { PacedTrainId } from 'reducers/osrdconf/types';
 import { ms2min } from 'utils/timeManipulation';
 
 import TimetableItemActions from '../TimetableItemActions';
@@ -18,36 +15,27 @@ import type { PacedTrainWithResult } from '../types';
 type PacedTrainItemProps = {
   isInSelection: boolean;
   handleSelectPacedTrain: (pacedTrainId: PacedTrainId) => void;
-  setPacedTrainIdToEdit: (trainIdToEdit?: TimetableItemId) => void;
-  setDisplayTrainScheduleManagement: (arg0: string) => void;
   pacedTrain: PacedTrainWithResult;
   isOnEdit: boolean;
   isProjectionPathUsed: boolean;
+  selectPacedTrainToEdit: (pacedTrain: PacedTrainWithResult) => void;
 };
 
 const PacedTrainItem = ({
   isInSelection,
   handleSelectPacedTrain,
-  setPacedTrainIdToEdit,
-  setDisplayTrainScheduleManagement,
   pacedTrain,
   isOnEdit,
   isProjectionPathUsed,
+  selectPacedTrainToEdit,
 }: PacedTrainItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
-  const dispatch = useAppDispatch();
 
   const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
 
   const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
   const selectPathProjection = async () => {};
   const duplicatePacedTrain = async () => {};
-  const editPacedTrain = () => {
-    dispatch(selectTrainToEdit(pacedTrain));
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-    setPacedTrainIdToEdit(pacedTrain.id);
-    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
-  };
   const deletePacedTrain = async () => {};
 
   const pacedTrainCadence = pacedTrain.paced.step;
@@ -123,7 +111,7 @@ const PacedTrainItem = ({
       <TimetableItemActions
         selectPathProjection={selectPathProjection}
         duplicateTimetableItem={duplicatePacedTrain}
-        editTimetableItem={editPacedTrain}
+        editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
         deleteTimetableItem={deletePacedTrain}
       />
       <div className="occurrences" />
