@@ -46,7 +46,7 @@ impl From<model::Error> for WsGroupError {
 }
 
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, PartialEq)]
-#[serde(rename_all = "UPPERCASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum WorkScheduleType {
     #[default]
     Catenary,

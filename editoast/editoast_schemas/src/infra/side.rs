@@ -9,7 +9,7 @@ editoast_common::schemas! {
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[derivative(Default)]
-#[serde(rename_all = "UPPERCASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Side {
     Left,
     Right,
