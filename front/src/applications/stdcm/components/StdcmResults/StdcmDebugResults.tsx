@@ -52,7 +52,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
   const { pathProperties, results, speedSpaceChartData } = successfulSimulation;
 
   return (
-    <>
+    <div className="stdcm-debug-results">
       {projectedData &&
         projectedData?.spaceTimeData.length > 0 &&
         pathProperties.manchetteOperationalPoints && (
@@ -102,7 +102,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
