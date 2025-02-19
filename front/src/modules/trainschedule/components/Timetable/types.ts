@@ -52,3 +52,5 @@ export type PacedTrainWithResult = Omit<TrainScheduleWithDetails, 'id'> & {
     step: Duration;
   };
 };
+
+export type TimetableItemResult = TrainScheduleWithDetails | PacedTrainWithResult;

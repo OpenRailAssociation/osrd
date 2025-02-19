@@ -2,11 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { uniq } from 'lodash';
 
-import type {
-  ScheduledPointsHonoredFilter,
-  TrainScheduleWithDetails,
-  ValidityFilter,
-} from './types';
+import type { ScheduledPointsHonoredFilter, TimetableItemResult, ValidityFilter } from './types';
 import { extractTagCode, keepTrain } from './utils';
 
 /**
@@ -20,17 +16,17 @@ import { extractTagCode, keepTrain } from './utils';
  * @returns trainschedules unique speedlimit tags
  */
 const useFilterTrainSchedules = (
-  trainSchedulesWithDetails: TrainScheduleWithDetails[],
+  timetableItems: TimetableItemResult[],
   debouncedFilter: string,
   debouncedRollingstockFilter: string,
   validityFilter: ValidityFilter,
   scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter,
   selectedTags: Set<string | null>,
-  setDisplayedTrainSchedules: (trainSchedulesDetails: TrainScheduleWithDetails[]) => void
+  setDisplayedTimetableItems: (trainSchedulesDetails: TimetableItemResult[]) => void
 ) => {
   const [uniqueTags, setUniqueTags] = useState<string[]>([]);
 
-  const filterTrainSchedules = (trainSchedules: TrainScheduleWithDetails[]) =>
+  const filterTrainSchedules = (trainSchedules: TimetableItemResult[]) =>
     trainSchedules.filter((trainSchedule) => {
       if (!keepTrain(trainSchedule, debouncedFilter)) return false;
 
@@ -87,16 +83,14 @@ const useFilterTrainSchedules = (
       selectedTags.size > 0 ||
       debouncedRollingstockFilter ||
       debouncedFilter
-        ? filterTrainSchedules(trainSchedulesWithDetails)
-        : trainSchedulesWithDetails;
+        ? filterTrainSchedules(timetableItems)
+        : timetableItems;
 
-    setDisplayedTrainSchedules(filtereredTrainSchedules);
+    setDisplayedTimetableItems(filtereredTrainSchedules);
 
-    setUniqueTags(
-      uniq(trainSchedulesWithDetails.map((train) => extractTagCode(train.speedLimitTag)))
-    );
+    setUniqueTags(uniq(timetableItems.map((train) => extractTagCode(train.speedLimitTag))));
   }, [
-    trainSchedulesWithDetails,
+    timetableItems,
     debouncedFilter,
     debouncedRollingstockFilter,
     validityFilter,
@@ -104,7 +98,7 @@ const useFilterTrainSchedules = (
     selectedTags,
   ]);
 
-  return { uniqueTags, trainSchedules: trainSchedulesWithDetails };
+  return { uniqueTags, trainSchedules: timetableItems };
 };
 
 export default useFilterTrainSchedules;

@@ -1,8 +1,8 @@
 import specialCodeDictionary from './consts';
-import type { TrainScheduleWithDetails } from './types';
+import type { TimetableItemResult } from './types';
 
 /** Filter train schedules by their names and labels */
-export const keepTrain = (train: TrainScheduleWithDetails, searchString: string): boolean => {
+export const keepTrain = (train: TimetableItemResult, searchString: string): boolean => {
   if (searchString) {
     const searchStringInName = train.trainName.toLowerCase().includes(searchString.toLowerCase());
     const searchStringInTags = train.labels
@@ -25,5 +25,5 @@ export const extractTagCode = (tag?: string | null) => {
   return matches ? matches[0] : tag;
 };
 
-export const timetableHasInvalidTrain = (trains: TrainScheduleWithDetails[]) =>
+export const timetableHasInvalidTrain = (trains: TimetableItemResult[]) =>
   trains.some((train) => train.invalidReason);
