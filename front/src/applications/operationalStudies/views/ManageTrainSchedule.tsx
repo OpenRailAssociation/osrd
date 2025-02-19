@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +27,10 @@ import {
 } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 import SimulationSettings from 'modules/trainschedule/components/ManageTrainSchedule/SimulationSettings';
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
-import { updateRollingStockComfort } from 'reducers/osrdconf/operationalStudiesConf';
+import {
+  resetUsingSpeedLimits,
+  updateRollingStockComfort,
+} from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getConstraintDistribution,
   getDestination,
@@ -197,6 +200,15 @@ const ManageTrainSchedule = () => {
       </div>
     ),
   };
+
+  // reset usingSpeedLimits when unmounting, to prevent user from being able to create a train
+  // without speed limits
+  useEffect(
+    () => () => {
+      dispatch(resetUsingSpeedLimits());
+    },
+    []
+  );
 
   return (
     <>

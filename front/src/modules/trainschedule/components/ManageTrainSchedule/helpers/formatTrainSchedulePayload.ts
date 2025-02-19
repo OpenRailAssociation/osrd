@@ -16,6 +16,7 @@ export default function formatTrainSchedulePayload(
     speedLimitByTag,
     initialSpeed,
     usingElectricalProfiles,
+    usingSpeedLimits,
     rollingStockComfort,
     margins,
     powerRestrictions,
@@ -29,6 +30,7 @@ export default function formatTrainSchedulePayload(
     margins,
     options: {
       use_electrical_profiles: usingElectricalProfiles,
+      use_speed_limits_for_simulation: usingSpeedLimits,
     },
     path,
     power_restrictions: powerRestrictions,

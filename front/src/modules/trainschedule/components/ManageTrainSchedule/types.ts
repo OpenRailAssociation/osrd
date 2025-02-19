@@ -57,6 +57,7 @@ export type ValidConfig = {
   rollingStockComfort: TrainScheduleBase['comfort'];
   initialSpeed: number;
   usingElectricalProfiles: boolean;
+  usingSpeedLimits: boolean;
   path: TrainScheduleBase['path'];
   margins: TrainScheduleBase['margins'];
   schedule: TrainScheduleBase['schedule'];

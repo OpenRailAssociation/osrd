@@ -23,6 +23,7 @@ export type OperationalStudiesConfState = OsrdConfState & {
   pathSteps: (PathStep | null)[];
   constraintDistribution: Distribution;
   usingElectricalProfiles: boolean;
+  usingSpeedLimits: boolean;
   powerRestriction: PowerRestriction[];
   trainCount: number;
   trainStep: number;
@@ -40,6 +41,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   pathSteps: [null, null],
   constraintDistribution: 'MARECO',
   usingElectricalProfiles: true,
+  usingSpeedLimits: true,
   powerRestriction: [],
   trainCount: 1,
   trainDelta: 15,
@@ -79,6 +81,7 @@ export const operationalStudiesConfSlice = createSlice({
       state.initialSpeed = initial_speed ? Math.floor(msToKmh(initial_speed) * 10) / 10 : 0;
 
       state.usingElectricalProfiles = options?.use_electrical_profiles ?? true;
+      state.usingSpeedLimits = options?.use_speed_limits_for_simulation ?? true;
       state.labels = labels;
       state.speedLimitByTag = speedLimitTag || undefined;
       state.powerRestriction = power_restrictions || [];
@@ -100,6 +103,9 @@ export const operationalStudiesConfSlice = createSlice({
         upsertPathStep(state.pathSteps, suggestedOp);
       });
     },
+    resetUsingSpeedLimits(state: Draft<OperationalStudiesConfState>) {
+      state.usingSpeedLimits = true;
+    },
   },
 });
 
@@ -107,6 +113,7 @@ export const operationalStudiesConfSliceActions = operationalStudiesConfSlice.ac
 
 export const {
   selectTrainToEdit,
+  resetUsingSpeedLimits,
 
   // train settings reducer
   updateName,

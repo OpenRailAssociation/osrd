@@ -91,6 +91,7 @@ const buildOsrdConfPersistConfig = <T extends OperationalStudiesConfState | Osrd
   key: slice.name,
   storage,
   transforms: [operationalStudiesDateTransform, pathStepsTransform],
+  blacklist: ['usingSpeedLimits'],
 });
 
 export const persistConfig = {
