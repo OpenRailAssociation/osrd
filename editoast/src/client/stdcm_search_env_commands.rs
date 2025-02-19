@@ -2,6 +2,7 @@ use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::models::timetable::Timetable;
 use crate::models::work_schedules::WorkScheduleGroup;
+use crate::models::Create;
 use crate::models::Infra;
 use crate::models::Scenario;
 use crate::CliError;
@@ -103,7 +104,9 @@ async fn set_stdcm_search_env_from_scenario(
         .timetable_id(scenario.timetable_id)
         .search_window_begin(begin)
         .search_window_end(end)
-        .overwrite(conn)
+        .enabled_from(Utc::now())
+        .enabled_until(Utc::now() + Duration::days(1000))
+        .create(conn)
         .await?;
 
     println!("✅ STDCM search environment set up successfully");
@@ -170,7 +173,9 @@ async fn set_stdcm_search_env_from_scratch(
         .timetable_id(args.timetable_id)
         .search_window_begin(begin)
         .search_window_end(end)
-        .overwrite(conn)
+        .enabled_from(Utc::now())
+        .enabled_until(Utc::now() + Duration::days(1000))
+        .create(conn)
         .await?;
 
     println!("✅ STDCM search environment set up successfully");
@@ -213,7 +218,7 @@ async fn resolve_search_window(
 async fn show_stdcm_search_env(
     conn: &mut DbConnection,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let search_env = StdcmSearchEnvironment::retrieve_latest(conn).await;
+    let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
     if let Some(search_env) = search_env {
         println!("{search_env:#?}");
 
@@ -389,7 +394,7 @@ mod tests {
         let result = set_stdcm_search_env_from_scenario(args, conn).await;
         assert!(result.is_ok());
 
-        let search_env = StdcmSearchEnvironment::retrieve_latest(conn).await;
+        let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
 
         assert!(search_env.is_some());
         let search_env = search_env.unwrap();
@@ -433,7 +438,7 @@ mod tests {
         let result = set_stdcm_search_env_from_scratch(args, conn).await;
         assert!(result.is_ok());
 
-        let search_env = StdcmSearchEnvironment::retrieve_latest(conn).await;
+        let search_env = StdcmSearchEnvironment::retrieve_latest_enabled(conn).await;
 
         assert!(search_env.is_some());
         let search_env = search_env.unwrap();

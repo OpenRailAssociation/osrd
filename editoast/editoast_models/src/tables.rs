@@ -671,6 +671,8 @@ diesel::table! {
         search_window_begin -> Timestamptz,
         search_window_end -> Timestamptz,
         temporary_speed_limit_group_id -> Nullable<Int8>,
+        enabled_from -> Timestamptz,
+        enabled_until -> Timestamptz,
     }
 }
 

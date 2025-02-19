@@ -11372,10 +11372,22 @@ components:
       - timetable_id
       - search_window_begin
       - search_window_end
+      - enabled_from
+      - enabled_until
       properties:
         electrical_profile_set_id:
           type: integer
           format: int64
+        enabled_from:
+          type: string
+          format: date-time
+          description: The time window start point where the environment is enabled.
+        enabled_until:
+          type: string
+          format: date-time
+          description: |-
+            The time window end point where the environment is enabled.
+            This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
         id:
           type: integer
           format: int64
@@ -11385,9 +11397,13 @@ components:
         search_window_begin:
           type: string
           format: date-time
+          description: |-
+            The start of the search time window.
+            Usually, trains schedules from the `timetable_id` runs within this window.
         search_window_end:
           type: string
           format: date-time
+          description: The end of the search time window.
         temporary_speed_limit_group_id:
           type: integer
           format: int64
@@ -11404,11 +11420,19 @@ components:
       - timetable_id
       - search_window_begin
       - search_window_end
+      - enabled_from
+      - enabled_until
       properties:
         electrical_profile_set_id:
           type: integer
           format: int64
           nullable: true
+        enabled_from:
+          type: string
+          format: date-time
+        enabled_until:
+          type: string
+          format: date-time
         infra_id:
           type: integer
           format: int64

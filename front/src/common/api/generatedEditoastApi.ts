@@ -3401,9 +3401,17 @@ export type SearchPayload = {
 };
 export type StdcmSearchEnvironment = {
   electrical_profile_set_id?: number;
+  /** The time window start point where the environment is enabled. */
+  enabled_from: string;
+  /** The time window end point where the environment is enabled.
+    This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls. */
+  enabled_until: string;
   id: number;
   infra_id: number;
+  /** The start of the search time window.
+    Usually, trains schedules from the `timetable_id` runs within this window. */
   search_window_begin: string;
+  /** The end of the search time window. */
   search_window_end: string;
   temporary_speed_limit_group_id?: number;
   timetable_id: number;
@@ -3411,6 +3419,8 @@ export type StdcmSearchEnvironment = {
 };
 export type StdcmSearchEnvironmentCreateForm = {
   electrical_profile_set_id?: number | null;
+  enabled_from: string;
+  enabled_until: string;
   infra_id: number;
   search_window_begin: string;
   search_window_end: string;
