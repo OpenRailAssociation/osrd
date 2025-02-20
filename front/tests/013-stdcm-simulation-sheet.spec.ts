@@ -2,10 +2,15 @@ import fs from 'fs';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
 
-import { electricRollingStockName } from './assets/project-const';
-import simulationSheetDetails from './assets/simulation-sheet-const';
+import { electricRollingStockName } from './assets/constants/project-const';
+import simulationSheetDetails from './assets/constants/simulation-sheet-const';
 import test from './logging-fixture';
-import STDCMPage from './pages/stdcm-page-model';
+import ConsistSection from './pages/stdcm/consist-section';
+import DestinationSection from './pages/stdcm/destination-section';
+import OriginSection from './pages/stdcm/origin-section';
+import SimulationResultPage from './pages/stdcm/simulation-results-page';
+import STDCMPage from './pages/stdcm/stdcm-page';
+import ViaSection from './pages/stdcm/via-section';
 import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-utils';
 import { findFirstPdf, parsePdfText, verifySimulationContent } from './utils/pdf-parser';
@@ -17,6 +22,12 @@ test.describe('Verify stdcm simulation page', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let stdcmPage: STDCMPage;
+  let consistSection: ConsistSection;
+  let originSection: OriginSection;
+  let viaSection: ViaSection;
+  let destinationSection: DestinationSection;
+  let simulationResultPage: SimulationResultPage;
+
   let infra: Infra;
 
   const consistDetails: ConsistFields = {
@@ -37,7 +48,21 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    stdcmPage = new STDCMPage(page);
+    [
+      stdcmPage,
+      consistSection,
+      originSection,
+      viaSection,
+      destinationSection,
+      simulationResultPage,
+    ] = [
+      new STDCMPage(page),
+      new ConsistSection(page),
+      new OriginSection(page),
+      new ViaSection(page),
+      new DestinationSection(page),
+      new SimulationResultPage(page),
+    ];
     await page.goto('/stdcm');
     await page.waitForLoadState('networkidle');
     await stdcmPage.removeViteOverlay();
@@ -51,15 +76,15 @@ test.describe('Verify stdcm simulation page', () => {
   /** *************** Test 1 **************** */
   test('Verify STDCM stops and simulation sheet', async ({ browserName, context }, testInfo) => {
     // Populate STDCM page with origin, destination, and via details
-    await stdcmPage.fillAndVerifyConsistDetails(
+    await consistSection.fillAndVerifyConsistDetails(
       consistDetails,
       tractionEnginePrefilledValues.tonnage,
       tractionEnginePrefilledValues.length,
       tractionEnginePrefilledValues.maxSpeed
     );
-    await stdcmPage.fillOriginDetailsLight();
-    await stdcmPage.fillDestinationDetailsLight();
-    await stdcmPage.fillAndVerifyViaDetails({
+    await originSection.fillOriginDetailsLight();
+    await destinationSection.fillDestinationDetailsLight();
+    await viaSection.fillAndVerifyViaDetails({
       viaNumber: 1,
       ciSearchText: 'mid_west',
     });
@@ -71,19 +96,28 @@ test.describe('Verify stdcm simulation page', () => {
     await stdcmPage.launchSimulation();
     // Verify map results markers in Chromium
     if (browserName === 'chromium') {
-      await stdcmPage.mapMarkerResultVisibility();
+      await simulationResultPage.mapMarkerResultVisibility();
     }
     await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-without-all-via.json');
     await simulationResultPage.displayAllOperationalPoints();
     await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-with-all-via.json');
     await simulationResultPage.retainSimulation();
     downloadDir = testInfo.outputDir;
-    await stdcmPage.downloadSimulation(downloadDir);
+    await simulationResultPage.downloadSimulation(downloadDir);
     // Reset and verify empty fields
-    const [newPage] = await Promise.all([context.waitForEvent('page'), stdcmPage.startNewQuery()]);
+    const [newPage] = await Promise.all([
+      context.waitForEvent('page'),
+      simulationResultPage.startNewQuery(),
+    ]);
     await newPage.waitForLoadState();
-    const newStdcmPage = new STDCMPage(newPage);
-    await newStdcmPage.verifyAllDefaultPageFields();
+    const [newConsistSection, newOriginSection, newDestinationSection] = [
+      new ConsistSection(newPage),
+      new OriginSection(newPage),
+      new DestinationSection(newPage),
+    ];
+    await newConsistSection.verifyDefaultConsistFields();
+    await newOriginSection.verifyDefaultOriginFields();
+    await newDestinationSection.verifyDefaultDestinationFields();
   });
 
   /** *************** Test 2 *************** */

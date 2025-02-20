@@ -1,9 +1,14 @@
 import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
-import { fastRollingStockName } from './assets/project-const';
+import { fastRollingStockName } from './assets/constants/project-const';
 import test from './logging-fixture';
-import STDCMLinkedTrainPage from './pages/stdcm-linked-train-page-model';
-import STDCMPage from './pages/stdcm-page-model';
+import ConsistSection from './pages/stdcm/consist-section';
+import DestinationSection from './pages/stdcm/destination-section';
+import LinkedTrainSection from './pages/stdcm/linked-train-section';
+import OriginSection from './pages/stdcm/origin-section';
+import SimulationResultPage from './pages/stdcm/simulation-results-page';
+import STDCMPage from './pages/stdcm/stdcm-page';
+import ViaSection from './pages/stdcm/via-section';
 import { waitForInfraStateToBeCached } from './utils';
 import { getInfra, setTowedRollingStock } from './utils/api-setup';
 import type { ConsistFields } from './utils/types';
@@ -13,7 +18,12 @@ test.describe('Verify stdcm simulation page', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let stdcmPage: STDCMPage;
-  let stdcmLinkedTrainPage: STDCMLinkedTrainPage;
+  let consistSection: ConsistSection;
+  let originSection: OriginSection;
+  let viaSection: ViaSection;
+  let destinationSection: DestinationSection;
+  let simulationResultPage: SimulationResultPage;
+  let linkedTrainSection: LinkedTrainSection;
 
   let infra: Infra;
   let createdTowedRollingStock: TowedRollingStock;
@@ -40,7 +50,23 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   test.beforeEach('Navigate to the STDCM page', async ({ page }) => {
-    [stdcmPage, stdcmLinkedTrainPage] = [new STDCMPage(page), new STDCMLinkedTrainPage(page)];
+    [
+      stdcmPage,
+      consistSection,
+      originSection,
+      viaSection,
+      destinationSection,
+      simulationResultPage,
+      linkedTrainSection,
+    ] = [
+      new STDCMPage(page),
+      new ConsistSection(page),
+      new OriginSection(page),
+      new ViaSection(page),
+      new DestinationSection(page),
+      new SimulationResultPage(page),
+      new LinkedTrainSection(page),
+    ];
     // Navigate to STDCM page
     await page.goto('/stdcm');
     await page.waitForLoadState('networkidle');
@@ -52,47 +78,47 @@ test.describe('Verify stdcm simulation page', () => {
 
   /** *************** Test 1 **************** */
   test('Verify STDCM anterior linked train', async ({ page: _ }, testInfo) => {
-    await stdcmPage.fillAndVerifyConsistDetails(
+    await consistSection.fillAndVerifyConsistDetails(
       towedConsistDetails,
       fastRollingStockPrefilledValues.tonnage,
       fastRollingStockPrefilledValues.length,
       towedRollingStockPrefilledValues.tonnage,
       towedRollingStockPrefilledValues.length
     );
-    await stdcmLinkedTrainPage.anteriorLinkedPathDetails();
-    await stdcmPage.fillAndVerifyViaDetails({
+    await linkedTrainSection.anteriorLinkedPathDetails();
+    await viaSection.fillAndVerifyViaDetails({
       viaNumber: 1,
       ciSearchText: 'nS',
     });
-    await stdcmPage.fillDestinationDetailsLight();
+    await destinationSection.fillDestinationDetailsLight();
     await stdcmPage.launchSimulation();
     await simulationResultPage.verifyTableData(
       './tests/assets/stdcm/linked-train/anterior-linked-train-table.json'
     );
-    await stdcmPage.retainSimulation();
-    await stdcmPage.downloadSimulation(testInfo.outputDir);
+    await simulationResultPage.retainSimulation();
+    await simulationResultPage.downloadSimulation(testInfo.outputDir);
   });
 
   /** *************** Test 2 **************** */
   test('Verify STDCM posterior linked train', async ({ page: _ }, testInfo) => {
-    await stdcmPage.fillAndVerifyConsistDetails(
+    await consistSection.fillAndVerifyConsistDetails(
       towedConsistDetails,
       fastRollingStockPrefilledValues.tonnage,
       fastRollingStockPrefilledValues.length,
       towedRollingStockPrefilledValues.tonnage,
       towedRollingStockPrefilledValues.length
     );
-    await stdcmLinkedTrainPage.posteriorLinkedPathDetails();
-    await stdcmPage.fillAndVerifyViaDetails({
+    await linkedTrainSection.posteriorLinkedPathDetails();
+    await viaSection.fillAndVerifyViaDetails({
       viaNumber: 1,
       ciSearchText: 'mid_east',
     });
-    await stdcmPage.fillOriginDetailsLight('respectDestinationSchedule', true);
+    await originSection.fillOriginDetailsLight('respectDestinationSchedule', true);
     await stdcmPage.launchSimulation();
     await simulationResultPage.verifyTableData(
       './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'
     );
-    await stdcmPage.retainSimulation();
-    await stdcmPage.downloadSimulation(testInfo.outputDir);
+    await simulationResultPage.retainSimulation();
+    await simulationResultPage.downloadSimulation(testInfo.outputDir);
   });
 });

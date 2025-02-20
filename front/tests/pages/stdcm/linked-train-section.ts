@@ -1,10 +1,16 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import STDCMPage from './stdcm-page-model';
-import LINKED_TRAIN_DETAILS from '../assets/linked-train-const';
-import { DEFAULT_DETAILS } from '../assets/stdcm-const';
+import DestinationSection from './destination-section';
+import OriginSection from './origin-section';
+import STDCMPage from './stdcm-page';
+import LINKED_TRAIN_DETAILS from '../../assets/constants/linked-train-const';
+import { DEFAULT_DETAILS } from '../../assets/constants/stdcm-const';
 
-class STDCMLinkedTrainPage extends STDCMPage {
+class LinkedTrainSection extends STDCMPage {
+  readonly originPage: OriginSection;
+
+  readonly destinationPage: DestinationSection;
+
   private readonly anteriorDeleteLinkedPathButton: Locator;
 
   private readonly anteriorLinkedTrainField: Locator;
@@ -25,8 +31,11 @@ class STDCMLinkedTrainPage extends STDCMPage {
 
   private readonly posteriorLinkedTrainResultInfosButton: Locator;
 
-  constructor(readonly page: Page) {
+  constructor(page: Page) {
     super(page);
+    this.originPage = new OriginSection(page);
+    this.destinationPage = new DestinationSection(page);
+
     this.anteriorDeleteLinkedPathButton = this.anteriorLinkedTrainContainer.getByTestId(
       'linked-train-delete-button'
     );
@@ -115,16 +124,16 @@ class STDCMLinkedTrainPage extends STDCMPage {
     await this.anteriorLinkedTrainResultInfosButton.click();
     const actualTrainDetails = await this.getLinkedTrainDetails();
     expect(actualTrainDetails).toEqual(trainDetails);
-    await expect(this.dynamicOriginCi).toHaveValue(dynamicOriginCi);
-    await expect(this.dynamicOriginCh).toHaveValue(dynamicOriginCh);
-    await expect(this.originArrival).toHaveValue(originArrival);
-    await expect(this.dateOriginArrival).toHaveValue(dateOriginArrival);
-    await expect(this.timeOriginArrival).toHaveValue(timeOriginArrival);
-    await expect(this.toleranceOriginArrival).toHaveValue(toleranceOriginArrival);
+    await expect(this.originPage.dynamicOriginCi).toHaveValue(dynamicOriginCi);
+    await expect(this.originPage.dynamicOriginCh).toHaveValue(dynamicOriginCh);
+    await expect(this.originPage.originArrival).toHaveValue(originArrival);
+    await expect(this.originPage.dateOriginArrival).toHaveValue(dateOriginArrival);
+    await expect(this.originPage.timeOriginArrival).toHaveValue(timeOriginArrival);
+    await expect(this.originPage.toleranceOriginArrival).toHaveValue(toleranceOriginArrival);
     await this.fillToleranceField(
+      this.originPage.toleranceOriginArrival,
       toleranceFields.min,
-      toleranceFields.max,
-      toleranceFields.isAnterior
+      toleranceFields.max
     );
   }
 
@@ -149,17 +158,19 @@ class STDCMLinkedTrainPage extends STDCMPage {
     await this.posteriorLinkedTrainResultInfosButton.click();
     const actualTrainDetails = await this.getLinkedTrainDetails(true);
     expect(actualTrainDetails).toEqual(trainDetails);
-    await expect(this.dynamicDestinationCi).toHaveValue(dynamicDestinationCi);
-    await expect(this.dynamicDestinationCh).toHaveValue(dynamicDestinationCh);
-    await expect(this.destinationArrival).toHaveValue(destinationArrival);
-    await expect(this.dateDestinationArrival).toHaveValue(dateDestinationArrival);
-    await expect(this.timeDestinationArrival).toHaveValue(timeDestinationArrival);
-    await expect(this.toleranceDestinationArrival).toHaveValue(toleranceDestinationArrival);
+    await expect(this.destinationPage.dynamicDestinationCi).toHaveValue(dynamicDestinationCi);
+    await expect(this.destinationPage.dynamicDestinationCh).toHaveValue(dynamicDestinationCh);
+    await expect(this.destinationPage.destinationArrival).toHaveValue(destinationArrival);
+    await expect(this.destinationPage.dateDestinationArrival).toHaveValue(dateDestinationArrival);
+    await expect(this.destinationPage.timeDestinationArrival).toHaveValue(timeDestinationArrival);
+    await expect(this.destinationPage.toleranceDestinationArrival).toHaveValue(
+      toleranceDestinationArrival
+    );
     await this.fillToleranceField(
+      this.destinationPage.toleranceDestinationArrival,
       toleranceFields.min,
-      toleranceFields.max,
-      toleranceFields.isAnterior
+      toleranceFields.max
     );
   }
 }
-export default STDCMLinkedTrainPage;
+export default LinkedTrainSection;
