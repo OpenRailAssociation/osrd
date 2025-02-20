@@ -4,8 +4,8 @@ import type { Distribution, TrainScheduleBase } from 'common/api/osrdEditoastApi
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
-  type OperationalStudiesConfState,
 } from 'reducers/osrdconf/operationalStudiesConf';
+import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = (extraInitialState?: Partial<OperationalStudiesConfState>) =>

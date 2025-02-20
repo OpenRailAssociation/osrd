@@ -6,11 +6,14 @@ import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
-  type OperationalStudiesConfState,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 import testCommonConfReducers from 'reducers/osrdconf/osrdConfCommon/__tests__/utils';
-import type { PathStep, TrainScheduleId } from 'reducers/osrdconf/types';
+import type {
+  OperationalStudiesConfState,
+  PathStep,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 import { Duration } from 'utils/duration';
 

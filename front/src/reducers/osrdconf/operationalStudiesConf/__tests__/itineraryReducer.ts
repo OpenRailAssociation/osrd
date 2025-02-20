@@ -3,9 +3,9 @@ import { beforeEach, it, expect } from 'vitest';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
-  type OperationalStudiesConfState,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
+import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = (extraInitialState?: Partial<OperationalStudiesConfState>) =>

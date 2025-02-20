@@ -1,5 +1,6 @@
 import type { Position } from 'geojson';
 
+import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type {
   AllowanceValue,
   ArrivalTimeTypes,
@@ -9,6 +10,8 @@ import type {
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type {
+  Comfort,
+  Distribution,
   OperationalPointReference,
   PathItemLocation,
   ReceptionSignal,
@@ -31,6 +34,22 @@ export interface StandardAllowance {
   type: AllowanceValue['value_type'];
   value?: number;
 }
+
+export type OperationalStudiesConfState = OsrdConfState & {
+  name: string;
+  startTime: Date;
+  initialSpeed?: number;
+  labels: string[];
+  rollingStockComfort: Comfort;
+  pathSteps: (PathStep | null)[];
+  constraintDistribution: Distribution;
+  usingElectricalProfiles: boolean;
+  usingSpeedLimits: boolean;
+  powerRestriction: PowerRestriction[];
+  trainCount: number;
+  trainStep: number;
+  trainDelta: number;
+};
 
 export type OsrdStdcmConfState = OsrdConfState & {
   stdcmPathSteps: StdcmPathStep[];

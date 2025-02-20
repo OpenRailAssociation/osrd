@@ -18,13 +18,12 @@ import mapViewerReducer, { mapViewerInitialState, mapViewerSlice } from 'reducer
 import operationalStudiesConfReducer, {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
-  type OperationalStudiesConfState,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import stdcmConfReducer, {
   stdcmConfInitialState,
   stdcmConfSlice,
 } from 'reducers/osrdconf/stdcmConf';
-import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
+import type { OperationalStudiesConfState, OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import simulationReducer, {
   simulationResultsInitialState,
   simulationResultsSlice,

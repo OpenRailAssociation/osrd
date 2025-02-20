@@ -1,7 +1,5 @@
 import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 
-import type { PowerRestriction } from 'applications/operationalStudies/types';
-import type { Comfort, Distribution } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type {
   PacedTrainWithResult,
@@ -9,29 +7,13 @@ import type {
 } from 'modules/trainschedule/components/Timetable/types';
 import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
-import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
+import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { msToKmh } from 'utils/physics';
 
 import powerRestrictionReducer from './powerRestrictionReducer';
 import trainSettingsReducer from './trainSettingsReducer';
 import { upsertPathStep } from '../helpers';
 import itineraryReducer from './itineraryReducer';
-
-export type OperationalStudiesConfState = OsrdConfState & {
-  name: string;
-  startTime: Date;
-  initialSpeed?: number;
-  labels: string[];
-  rollingStockComfort: Comfort;
-  pathSteps: (PathStep | null)[];
-  constraintDistribution: Distribution;
-  usingElectricalProfiles: boolean;
-  usingSpeedLimits: boolean;
-  powerRestriction: PowerRestriction[];
-  trainCount: number;
-  trainStep: number;
-  trainDelta: number;
-};
 
 export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   ...defaultCommonConf,

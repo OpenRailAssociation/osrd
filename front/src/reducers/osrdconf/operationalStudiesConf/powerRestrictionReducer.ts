@@ -4,10 +4,9 @@ import { compact, isEqual, keyBy, sortBy } from 'lodash';
 
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
-import type { PathStep } from 'reducers/osrdconf/types';
+import type { OperationalStudiesConfState, PathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 
-import type { OperationalStudiesConfState } from '.';
 import { addPathStep, cleanPathSteps, isRangeCovered, updateRestrictions } from './utils';
 
 const powerRestrictionReducer = {

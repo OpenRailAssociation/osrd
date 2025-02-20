@@ -2,12 +2,11 @@ import { compact } from 'lodash';
 import { createSelector } from 'reselect';
 
 import type { RootState } from 'reducers';
-import {
-  operationalStudiesConfSlice,
-  type OperationalStudiesConfState,
-} from 'reducers/osrdconf/operationalStudiesConf';
+import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import buildCommonConfSelectors from 'reducers/osrdconf/osrdConfCommon/selectors';
 import { makeSubSelector } from 'utils/selectors';
+
+import type { OperationalStudiesConfState } from '../types';
 
 const buildOperationalStudiesConfSelectors = () => {
   const getOperationalStudiesConf = (state: RootState) => state[operationalStudiesConfSlice.name];

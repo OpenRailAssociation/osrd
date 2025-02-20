@@ -4,7 +4,7 @@ import type { Dispatch } from 'redux';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import type { ValidConfig } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure } from 'reducers/main';
-import type { OperationalStudiesConfState } from 'reducers/osrdconf/operationalStudiesConf';
+import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { isInvalidFloatNumber } from 'utils/numbers';
 import { kmhToMs } from 'utils/physics';
 

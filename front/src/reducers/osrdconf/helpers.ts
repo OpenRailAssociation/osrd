@@ -8,8 +8,7 @@ import { pathStepMatchesOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { addElementAtIndex } from 'utils/array';
 
-import type { OperationalStudiesConfState } from './operationalStudiesConf';
-import type { PathStep } from './types';
+import type { OperationalStudiesConfState, PathStep } from './types';
 
 export const insertViaFromMap = (
   pathSteps: OperationalStudiesConfState['pathSteps'],

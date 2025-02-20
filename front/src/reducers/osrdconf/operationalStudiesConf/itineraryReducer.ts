@@ -1,7 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
-import type { OperationalStudiesConfState } from '.';
+import type { OperationalStudiesConfState } from '../types';
 
 const itineraryReducer = {
   // update path steps without changing the itinerary (only add vias on the existing pathfinding,
