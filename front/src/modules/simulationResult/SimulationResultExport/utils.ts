@@ -5,16 +5,14 @@ import type {
   PathPropertiesFormatted,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import {
   type ReportTrain,
   type TrackSection,
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { SpeedRanges } from 'reducers/simulationResults/types';
-import { Duration } from 'utils/duration';
+import { Duration, addDurationToDate } from 'utils/duration';
 import { mmToM, msToKmhRounded } from 'utils/physics';
-import { ms2sec } from 'utils/timeManipulation';
 
 export function massWithOneDecimal(number: number) {
   return Math.round(number / 100) / 10;
@@ -148,7 +146,10 @@ export const formatOperationalPoints = (
     };
 
     formattedStops.push({
-      time: convertDepartureTimeIntoSec(train.start_time) + ms2sec(finalOutputTime),
+      time: addDurationToDate(
+        new Date(train.start_time),
+        new Duration({ milliseconds: finalOutputTime })
+      ),
       speed: finalOutputSpeed,
       ...opCommonProp,
     });

@@ -7,9 +7,8 @@ import styles from 'applications/stdcm/components/StdcmResults/SimulationReportS
 import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
-import { formatDateToString } from 'utils/date';
-import { Duration } from 'utils/duration';
-import { secToHoursString, ms2sec } from 'utils/timeManipulation';
+import { formatDateToString, dateToHHMMSS } from 'utils/date';
+import { Duration, addDurationToDate } from 'utils/duration';
 
 import type { SimulationSheetData } from './types';
 
@@ -143,12 +142,12 @@ const SimulationReportSheetScenario = ({
                         </View>
                         <View style={styles.convoyAndRoute.stopTableEndWidth}>
                           <TD style={styles.convoyAndRoute.stopTableStartColumn}>
-                            {isLastStep ? secToHoursString(step.time) : ''}
+                            {isLastStep ? dateToHHMMSS(step.time, { withoutSeconds: true }) : ''}
                           </TD>
                         </View>
                         <View style={styles.convoyAndRoute.stopTableStartWidth}>
                           <TD style={styles.convoyAndRoute.stopTableStartColumn}>
-                            {isFirstStep ? secToHoursString(step.time) : ''}
+                            {isFirstStep ? dateToHHMMSS(step.time, { withoutSeconds: true }) : ''}
                           </TD>
                         </View>
                       </TR>
@@ -271,7 +270,9 @@ const SimulationReportSheetScenario = ({
                     </View>
                     <View style={styles.simulation.endWidth}>
                       <TD style={styles.simulation.stopColumn}>
-                        {isLastStep || step.duration.ms !== 0 ? secToHoursString(step.time) : ''}
+                        {isLastStep || step.duration.ms !== 0
+                          ? dateToHHMMSS(step.time, { withoutSeconds: true })
+                          : ''}
                       </TD>
                     </View>
                     <View style={styles.simulation.passageWidth}>
@@ -293,7 +294,7 @@ const SimulationReportSheetScenario = ({
                           isNotExtremity
                             ? step.duration.ms !== 0
                               ? getStopDurationTime(step.duration)
-                              : secToHoursString(step.time)
+                              : dateToHHMMSS(step.time, { withoutSeconds: true })
                             : ''
                         }
                       </TD>
@@ -301,7 +302,9 @@ const SimulationReportSheetScenario = ({
                     <View style={styles.simulation.startWidth}>
                       <TD style={styles.simulation.stopColumn}>
                         {isFirstStep || step.duration.ms !== 0
-                          ? secToHoursString(step.time + ms2sec(step.duration.ms))
+                          ? dateToHHMMSS(addDurationToDate(step.time, step.duration), {
+                              withoutSeconds: true,
+                            })
                           : ''}
                       </TD>
                     </View>

@@ -65,7 +65,7 @@ const overloadSteps = (
   const speedsAtOps = operationalPoints.map((op) => ({
     position: op.position,
     speed: op.speed,
-    time: op.time,
+    time: convertDepartureTimeIntoSec(op.time.toISOString()),
     op: op.name,
     ch: op.ch,
     lineCode: op.line_code,
