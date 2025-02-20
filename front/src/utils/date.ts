@@ -14,11 +14,6 @@ dayjs.extend(customParseFormat);
 
 const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
 
-export function timestampToHHMMSS(timestamp: number) {
-  const date = new Date(timestamp * 1000);
-  return dayjs(date).format('HH:mm:ss');
-}
-
 export function formatIsoDate(date: Date) {
   return date.toISOString().substring(0, 10);
 }

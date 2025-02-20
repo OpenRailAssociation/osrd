@@ -3,10 +3,9 @@ import type {
   OperationalPointWithTimeAndSpeed,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
-import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import type { ReportTrain, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
-import { timestampToHHMMSS } from 'utils/date';
+import { dateToHHMMSS } from 'utils/date';
 import { mmToM, mToMm } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
 
@@ -65,7 +64,7 @@ const overloadSteps = (
   const speedsAtOps = operationalPoints.map((op) => ({
     position: op.position,
     speed: op.speed,
-    time: convertDepartureTimeIntoSec(op.time.toISOString()),
+    time: op.time.getTime(),
     op: op.name,
     ch: op.ch,
     lineCode: op.line_code,
@@ -205,7 +204,7 @@ export default function exportTrainCSV(
   const trainRegimeWithAccurateTime: ReportTrain = {
     ...simulatedTrain.final_output,
     times: simulatedTrain.final_output.times.map(
-      (time) => convertDepartureTimeIntoSec(train.start_time) + ms2sec(time)
+      (time) => new Date(train.start_time).getTime() + time
     ),
   };
 
@@ -229,8 +228,8 @@ export default function exportTrainCSV(
       op: speed.op || '',
       ch: speed.ch || '',
       trackName: speed.trackName,
-      time: timestampToHHMMSS(speed.time),
-      seconds: pointToComma(+speed.time.toFixed(1)),
+      time: dateToHHMMSS(new Date(speed.time)),
+      seconds: pointToComma(+ms2sec(speed.time).toFixed(1)),
       position: pointToComma(+(speed.position / 1000).toFixed(3)),
       speed: pointToComma(+(speed.speed * 3.6).toFixed(3)),
       speedLimit: pointToComma(actualVmaxs[0]),
