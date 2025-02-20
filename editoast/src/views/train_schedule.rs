@@ -791,7 +791,6 @@ pub mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use serde_json::json;
 
     use super::*;
@@ -805,7 +804,7 @@ pub mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn train_schedule_get() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -829,7 +828,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn train_schedule_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -847,7 +846,7 @@ pub mod tests {
         assert_eq!(response.len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn train_schedule_delete() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -868,7 +867,7 @@ pub mod tests {
         assert!(!exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn train_schedule_put() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -924,7 +923,7 @@ pub mod tests {
         (app, small_infra.id, train_schedule.id)
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn train_schedule_simulation() {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_train_schedule_id_for_simulation_tests().await;
@@ -938,7 +937,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn train_schedule_simulation_summary() {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_train_schedule_id_for_simulation_tests().await;
@@ -949,7 +948,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn train_schedule_project_path() {
         // SETUP
         let db_pool = DbConnectionPoolV2::for_tests();

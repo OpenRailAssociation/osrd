@@ -367,7 +367,6 @@ pub mod tests {
 
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use serde_json::json;
 
     use super::*;
@@ -377,7 +376,7 @@ pub mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestRequestExt;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn project_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -402,7 +401,7 @@ pub mod tests {
         assert_eq!(project.name, project_name);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn project_post_should_fail_when_authorization_is_enabled() {
         let app = test_app!().enable_authorization(true).build();
         let user = app.user("bob", "Bob").with_roles([Role::Stdcm]).create();
@@ -418,7 +417,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::FORBIDDEN);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn project_list() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -439,7 +438,7 @@ pub mod tests {
         assert_eq!(created_project, project_retrieved.project);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn project_get() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -454,7 +453,7 @@ pub mod tests {
         assert_eq!(response.project, created_project);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn project_delete() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -472,7 +471,7 @@ pub mod tests {
         assert!(!exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn project_patch() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

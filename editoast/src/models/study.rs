@@ -75,14 +75,13 @@ fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) ->
 #[cfg(test)]
 pub mod tests {
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::fixtures::create_project;
     use crate::models::fixtures::create_study;
     use editoast_models::DbConnectionPoolV2;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn study_retrieve() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -100,7 +99,7 @@ pub mod tests {
         assert_eq!(&created_study, &study);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn sort_study() {
         let db_pool = DbConnectionPoolV2::for_tests();
 

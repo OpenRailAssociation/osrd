@@ -130,7 +130,6 @@ mod tests {
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::Switch;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use serde_json::from_str;
     use std::ops::DerefMut;
 
@@ -156,7 +155,7 @@ mod tests {
         label: String,
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn valid_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -188,7 +187,7 @@ mod tests {
         assert_eq!(updated_length.val, 80.0);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn invalid_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -213,7 +212,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn valid_update_signal() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -244,7 +243,7 @@ mod tests {
         assert_eq!(updated_length.val, 15.0);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn valid_update_switch_extension() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -275,7 +274,7 @@ mod tests {
         assert_eq!(updated_comment.label, "Switch Label");
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn valid_update_speed() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -307,7 +306,7 @@ mod tests {
         assert_eq!(updated_speed.val, 80.0);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn wrong_id_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;

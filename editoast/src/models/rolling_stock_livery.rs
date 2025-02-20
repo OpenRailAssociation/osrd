@@ -57,15 +57,13 @@ impl RollingStockLiveryModel {
 
 #[cfg(test)]
 pub mod tests {
-    use rstest::*;
-
     use super::RollingStockLiveryModel;
     use crate::models::fixtures::create_rolling_stock_livery_fixture;
     use crate::models::prelude::*;
     use crate::models::Document;
     use editoast_models::DbConnectionPoolV2;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn create_delete_rolling_stock_livery() {
         let db_pool = DbConnectionPoolV2::for_tests();
 

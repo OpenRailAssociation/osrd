@@ -195,7 +195,6 @@ mod tests {
     use chrono::Utc;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::DirectionalTrackRange;
-    use rstest::rstest;
     use serde_json::json;
     use uuid::Uuid;
 
@@ -291,7 +290,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn create_temporary_speed_limits_succeeds() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -330,7 +329,7 @@ mod tests {
         assert_eq!(obj_id, &request_obj_id);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn create_temporary_speed_limit_groups_with_identical_name_fails() {
         let app = TestAppBuilder::default_app();
 
@@ -349,7 +348,7 @@ mod tests {
         let _ = app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn create_ltv_with_invalid_invalid_time_period_fails() {
         let app = TestAppBuilder::default_app();
 
@@ -367,7 +366,7 @@ mod tests {
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     #[ignore] // TODO is this something we want to enforce ?
     async fn create_ltv_with_no_tracks_fails() {
         let app = TestAppBuilder::default_app();

@@ -884,7 +884,6 @@ pub mod tests {
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Waypoint;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use std::collections::HashMap;
 
     use super::OperationalPointCache;
@@ -917,7 +916,7 @@ pub mod tests {
     use editoast_schemas::primitives::NonBlankString;
     use editoast_schemas::primitives::OSRDIdentified;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_track_section() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -931,7 +930,7 @@ pub mod tests {
         assert!(infra_cache.track_sections().contains_key(track.get_id()));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_signal() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -945,7 +944,7 @@ pub mod tests {
         assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_speed_section() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -967,7 +966,7 @@ pub mod tests {
         assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_route() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -979,7 +978,7 @@ pub mod tests {
         assert!(infra_cache.routes().contains_key(route.get_id()));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_operational_point() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1002,7 +1001,7 @@ pub mod tests {
         assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_switch() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1022,7 +1021,7 @@ pub mod tests {
         assert!(infra_cache.switches().contains_key(switch.get_id()));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_switch_type() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1035,7 +1034,7 @@ pub mod tests {
         assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_detector() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1050,7 +1049,7 @@ pub mod tests {
         assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_buffer_stop() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1064,7 +1063,7 @@ pub mod tests {
         assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_electrification() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1369,7 +1368,7 @@ pub mod tests {
         infra_cache
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_infra_cache() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -1384,7 +1383,7 @@ pub mod tests {
         assert_eq!(infra_caches.len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn load_infra_cache_mut() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;

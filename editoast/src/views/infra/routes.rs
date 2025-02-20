@@ -297,7 +297,6 @@ async fn get_routes_nodes(
 mod tests {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use serde_json::json;
     use std::collections::HashMap;
     use std::collections::HashSet;
@@ -315,7 +314,7 @@ mod tests {
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::Waypoint;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_routes_nodes() {
         let tests = vec![
             (json!({}), (vec![], vec![])),
@@ -432,7 +431,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_routes_should_return_routes_from_buffer_stop_and_detector() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -517,7 +516,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_routes_should_return_empty_response() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

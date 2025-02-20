@@ -51,7 +51,7 @@ pub mod tests {
     macro_rules! test_create_object {
         ($obj:ident) => {
             paste::paste! {
-                #[rstest::rstest]
+                #[tokio::test(flavor = "multi_thread")]
                 async fn [<test_create_ $obj:snake>]() {
                     let db_pool = editoast_models::DbConnectionPoolV2::for_tests();
                     let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;

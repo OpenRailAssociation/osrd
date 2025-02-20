@@ -477,7 +477,6 @@ pub mod tests {
     use editoast_schemas::train_schedule::PathItemLocation;
     use editoast_schemas::train_schedule::TrackReference;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use serde_json::json;
 
     use crate::core::mocking::MockingClient;
@@ -489,7 +488,7 @@ pub mod tests {
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn pathfinding_fails_when_core_responds_with_zero_length_path() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
@@ -536,7 +535,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn pathfinding_with_invalid_path_items_returns_invalid_path_items() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -582,7 +581,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn pathfinding_with_invalid_path_items_due_to_track_reference() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -628,7 +627,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn pathfinding_with_valid_path_items_returns_successful_result() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();

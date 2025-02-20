@@ -333,6 +333,7 @@ mod tests {
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::BufferStopExtension;
     use pretty_assertions::assert_eq;
+    use rstest::rstest;
 
     use super::*;
     use crate::generated_data::infra_error::InfraErrorType;
@@ -373,7 +374,7 @@ mod tests {
         }
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_no_fix() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -388,7 +389,7 @@ mod tests {
         assert!(operations.is_empty());
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_fix_invalid_ref_puntual_objects() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -461,7 +462,7 @@ mod tests {
         })));
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_fix_invalid_ref_route_entry_exit() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -515,7 +516,7 @@ mod tests {
         assert!(!infra_cache.signals().contains_key(signal.get_id()));
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_wrong_invalid_ref_signal_fix() {
         let signal = SignalCache::new("SA0".to_string(), "TA1".to_string(), 0.0, vec![]);
         let error = InfraError::new_invalid_reference(
@@ -694,7 +695,7 @@ mod tests {
         assert!(operations.is_empty());
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn invalid_switch_ports() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -731,7 +732,7 @@ mod tests {
         })));
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn odd_buffer_stop_location() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -783,7 +784,7 @@ mod tests {
         })));
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn empty_object() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -813,7 +814,7 @@ mod tests {
         }
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn out_of_range_must_be_ignored() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -883,9 +884,10 @@ mod tests {
         }
     }
 
-    #[rstest::rstest]
+    #[rstest]
     #[case(250., 1)]
     #[case(1250., 5)]
+    #[tokio::test(flavor = "multi_thread")]
     async fn out_of_range_must_be_deleted(#[case] pos: f64, #[case] error_count: usize) {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -947,7 +949,7 @@ mod tests {
         }
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn missing_track_extremity_buffer_stop_fix() {
         // GIVEN
         let app = TestAppBuilder::default_app();

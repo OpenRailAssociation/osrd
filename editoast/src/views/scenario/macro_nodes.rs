@@ -420,7 +420,6 @@ pub mod test {
     use rand::distr::Alphanumeric;
     use rand::rng;
     use rand::Rng;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::fixtures::create_scenario_fixtures_set;
@@ -451,7 +450,7 @@ pub mod test {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn create() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -490,7 +489,7 @@ pub mod test {
         assert_eq!(node, response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn update() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -526,7 +525,7 @@ pub mod test {
         assert_eq!(node, response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -542,7 +541,7 @@ pub mod test {
         assert!(fixtures.nodes[0] == response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn list() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -559,7 +558,7 @@ pub mod test {
         assert_eq!(5, response.results.len());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn delete() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -577,7 +576,7 @@ pub mod test {
         assert_eq!(false, found)
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn retrieve_with_bad_scenario() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

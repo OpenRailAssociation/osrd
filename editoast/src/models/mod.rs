@@ -60,7 +60,6 @@ mod tests {
     use editoast_models::DbConnectionPoolV2;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::prelude::*;
 
@@ -77,7 +76,7 @@ mod tests {
     #[error("oh no {0}")]
     struct DocError(#[from] editoast_models::model::Error);
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_batch() {
         let pool = DbConnectionPoolV2::for_tests();
 
@@ -148,7 +147,7 @@ mod tests {
         assert!(exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_remote() {
         #[derive(Debug, Clone, PartialEq)]
         enum Data {
@@ -222,7 +221,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_list() {
         // GIVEN
         let pool = DbConnectionPoolV2::for_tests();

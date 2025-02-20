@@ -540,7 +540,7 @@ pub mod tests {
     use crate::models::fixtures::create_work_schedules_fixture_set;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn work_schedule_create() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -573,7 +573,7 @@ pub mod tests {
         assert!(created_group.is_some());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn work_schedule_create_fail_start_date_after_end_date() {
         let app = TestAppBuilder::default_app();
 
@@ -592,7 +592,7 @@ pub mod tests {
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn work_schedule_create_fail_name_already_used() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -671,6 +671,7 @@ pub mod tests {
             vec![(350000, 400000)]
         ],
     )]
+    #[tokio::test(flavor = "multi_thread")]
     async fn work_schedule_project_path_on_ws_group(
         #[case] work_schedule_track_ranges: Vec<Vec<TrackRange>>,
         #[case] expected_path_position_ranges: Vec<Vec<(u64, u64)>>,
@@ -763,7 +764,7 @@ pub mod tests {
         assert_eq!(work_schedule_project_response, expected);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn work_schedule_endpoints_workflow() {
         let app = TestAppBuilder::default_app();
 

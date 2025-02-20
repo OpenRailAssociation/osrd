@@ -484,7 +484,6 @@ mod tests {
     use editoast_schemas::paced_train::PacedTrain;
     use editoast_schemas::train_schedule::TrainScheduleBase;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use serde_json::json;
 
     use crate::core::mocking::MockingClient;
@@ -512,7 +511,7 @@ mod tests {
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::SimulationSummaryResult;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn paced_train_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -529,7 +528,7 @@ mod tests {
         assert_eq!(response.len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn update_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -555,7 +554,7 @@ mod tests {
         assert_eq!(paced_train_base, updated_paced_train.into());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn paced_train_delete() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -576,7 +575,7 @@ mod tests {
         assert!(!exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_not_found_paced_train() {
         let app = TestAppBuilder::default_app();
         let request = app.get(&format!("/paced_train/{}", 0));
@@ -589,7 +588,7 @@ mod tests {
         assert_eq!(&response.error_type, "editoast:paced_train:NotFound")
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -638,7 +637,7 @@ mod tests {
         (app, small_infra.id, paced_train.id)
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn paced_train_simulation() {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
@@ -694,7 +693,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn paced_train_simulation_not_found() {
         let (app, infra_id, _paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
@@ -709,7 +708,7 @@ mod tests {
         assert_eq!(&response.error_type, "editoast:paced_train:NotFound")
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn paced_train_simulation_summary() {
         let (app, infra_id, paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
@@ -733,7 +732,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn paced_train_simulation_summary_not_found() {
         let (app, infra_id, _paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
@@ -749,7 +748,7 @@ mod tests {
         assert_eq!(&response.error_type, "editoast:paced_train:BatchNotFound")
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_paced_train_path_infra_not_found() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -769,7 +768,7 @@ mod tests {
         assert_eq!(&response.error_type, "editoast:paced_train:InfraNotFound")
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_paced_train_path_not_found() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -788,7 +787,7 @@ mod tests {
         assert_eq!(&response.error_type, "editoast:paced_train:NotFound");
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_paced_train_path() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
@@ -837,7 +836,7 @@ mod tests {
         )
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn paced_train_project_path() {
         // SETUP
         let db_pool = DbConnectionPoolV2::for_tests();

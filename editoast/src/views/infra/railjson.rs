@@ -212,7 +212,6 @@ async fn post_railjson(
 mod tests {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::infra_cache::operation::create::apply_create_operation;
@@ -220,7 +219,7 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::SwitchType;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     #[serial_test::serial]
     async fn test_get_railjson() {
@@ -244,7 +243,7 @@ mod tests {
         assert_eq!(railjson.extended_switch_types.len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     #[serial_test::serial]
     async fn test_post_railjson() {

@@ -172,7 +172,7 @@ impl HTTPClient {
 mod tests {
     use super::*;
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_mock_default_is_ready() {
         let client = OsrdyneClient::default_mock();
         let worker_key = "worker_key";
@@ -180,7 +180,7 @@ mod tests {
         assert_eq!(status, WorkerStatus::Ready);
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_mock_get_worker_status() {
         let client = OsrdyneClient::mock()
             .with_status("started_key", WorkerStatus::Started)
@@ -194,7 +194,7 @@ mod tests {
         assert_eq!(status, WorkerStatus::Ready);
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_mock_get_worker_statuses() {
         let client = OsrdyneClient::mock()
             .with_status("started_key", WorkerStatus::Started)

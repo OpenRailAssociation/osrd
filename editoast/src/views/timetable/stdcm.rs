@@ -910,7 +910,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn stdcm_return_success() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
@@ -956,7 +956,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn stdcm_request_mass_validation() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
@@ -1000,7 +1000,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn stdcm_request_length_validation() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
@@ -1046,7 +1046,7 @@ mod tests {
         assert_eq!(stdcm_response.context["expected_min"].as_f64(), Some(400.0));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn stdcm_request_validation_success() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
@@ -1099,7 +1099,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn stdcm_return_conflicts() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
@@ -1144,7 +1144,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn stdcm_return_work_schedule_conflicts() {
         let db_pool = DbConnectionPoolV2::for_tests();
 

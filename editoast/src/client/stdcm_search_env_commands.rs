@@ -289,6 +289,7 @@ mod tests {
         make_datetime("2000-02-01 08:00:00Z"),
         make_datetime("2000-05-22 09:00:50Z")
     )]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_resolve_search_window(
         #[case] search_window_begin: Option<DateTime<Utc>>,
         #[case] search_window_end: Option<DateTime<Utc>>,
@@ -320,7 +321,7 @@ mod tests {
         assert_eq!(end, expected_end);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn fail_resolve_search_window_on_empty_timetable() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
@@ -339,6 +340,7 @@ mod tests {
     )]
     #[case::end_none(Some(make_datetime("2000-03-01 00:00:00Z")), None)]
     #[case::begin_none(None, Some(make_datetime("2000-01-01 08:00:00Z")))]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_resolve_search_window_incompatible_dates(
         #[case] search_window_begin: Option<DateTime<Utc>>,
         #[case] search_window_end: Option<DateTime<Utc>>,
@@ -362,7 +364,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_stdcm_set_search_env_from_scenario() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
@@ -409,7 +411,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_set_stdcm_search_env_from_scratch() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();

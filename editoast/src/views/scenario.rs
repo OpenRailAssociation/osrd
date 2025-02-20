@@ -535,7 +535,6 @@ async fn list(
 mod tests {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use serde_json::json;
 
     use super::*;
@@ -555,7 +554,7 @@ mod tests {
         )
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_scenario() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -575,7 +574,7 @@ mod tests {
         assert_eq!(response.scenario, fixtures.scenario);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_scenarios() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -599,7 +598,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_scenarios_with_wrong_study() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -613,7 +612,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn post_scenario() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -661,7 +660,7 @@ mod tests {
         assert_eq!(created_scenario.tags, study_tags);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn patch_scenario() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -693,7 +692,7 @@ mod tests {
         assert!(response.scenario.last_modification > fixtures.scenario.last_modification);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn patch_scenario_with_unavailable_infra() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -714,7 +713,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn patch_infra_id_scenario() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -745,7 +744,7 @@ mod tests {
         assert_eq!(response.scenario.name, study_name);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn delete_scenario() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();

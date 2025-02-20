@@ -799,7 +799,7 @@ mod tests {
         };
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_try_init_not_found() {
         setup_tracing();
         let result =
@@ -814,7 +814,7 @@ mod tests {
         }
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn create_store_with_reset() {
         setup_tracing();
         let client = test_client!();
@@ -824,7 +824,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn is_healthy() {
         setup_tracing();
         let client = test_client!();

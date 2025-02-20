@@ -234,7 +234,6 @@ mod tests {
     use std::collections::HashMap;
 
     use axum::http::StatusCode;
-    use rstest::rstest;
     use serde::de::DeserializeOwned;
     use serde_json::to_value;
 
@@ -278,7 +277,7 @@ mod tests {
         .await;
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn layer_view_ko() {
         let map_layers = MapLayers::default();
         let error: InternalError =
@@ -292,7 +291,7 @@ mod tests {
         .await;
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn layer_view_ok() {
         // We can't use #[case] here, for these cases can't run in parallel.
         for (root_url, expected_root_url) in [

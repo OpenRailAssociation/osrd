@@ -162,15 +162,13 @@ pub async fn update_all(
 
 #[cfg(test)]
 pub mod tests {
-    use rstest::rstest;
-
     use crate::generated_data::clear_all;
     use crate::generated_data::refresh_all;
     use crate::generated_data::update_all;
     use crate::models::fixtures::create_empty_infra;
     use editoast_models::DbConnectionPoolV2;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     // Slow test
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     #[serial_test::serial]
@@ -182,7 +180,7 @@ pub mod tests {
             .is_ok());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn update_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -193,7 +191,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn clear_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;

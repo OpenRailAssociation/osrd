@@ -640,7 +640,6 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::Duration;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::error::InternalError;
@@ -648,7 +647,7 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_base;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_timetable() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -662,14 +661,14 @@ mod tests {
         assert_eq!(timetable_from_response.results.len(), 0);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_unexisting_timetable() {
         let app = TestAppBuilder::default_app();
         let request = app.get(&format!("/timetable/{}/train_schedules", 0));
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn timetable_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -689,7 +688,7 @@ mod tests {
         assert_eq!(created_timetable, retrieved_timetable.into());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn timetable_delete() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -707,7 +706,7 @@ mod tests {
         assert!(!exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn create_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -744,7 +743,7 @@ mod tests {
         assert!(list_result.0.len() == 2);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_timetable_paced_trains() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -777,7 +776,7 @@ mod tests {
         assert_eq!(list.results.len(), 2);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_not_found_timetable_paced_trains() {
         let app = TestAppBuilder::default_app();
         let request = app.get(format!("/timetable/{}/paced_trains", 0).as_str());

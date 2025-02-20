@@ -352,7 +352,6 @@ mod tests {
 
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::*;
 
     use super::LightRollingStockWithLiveries;
     use super::LightRollingStockWithLiveriesCountList;
@@ -370,14 +369,14 @@ mod tests {
         true
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn list_light_rolling_stock() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/light_rolling_stock");
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_light_rolling_stock() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -396,7 +395,7 @@ mod tests {
         assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_light_rolling_stock_by_name() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -416,7 +415,7 @@ mod tests {
         assert_eq!(response.rolling_stock.name, fast_rolling_stock.name);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_unexisting_light_rolling_stock() {
         let app = TestAppBuilder::default_app();
 
@@ -425,7 +424,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn list_light_rolling_stock_increasing_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -473,7 +472,7 @@ mod tests {
         assert!(expected_rs_ids.is_subset(&ids));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn light_rolling_stock_max_page_size() {
         let app = TestAppBuilder::default_app();
 

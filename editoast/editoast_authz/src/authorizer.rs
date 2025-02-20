@@ -91,7 +91,7 @@ mod tests {
         groups: Arc<Mutex<HashMap<GroupName, i64>>>,
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn check_user_roles() {
         let user_identity = || "toto".to_owned();
         let user = || UserInfo {
@@ -196,7 +196,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn check_group_roles() {
         editoast_common::setup_tracing_for_test();
         let alice_identity = || "alice".to_owned();

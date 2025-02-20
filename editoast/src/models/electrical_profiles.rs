@@ -43,13 +43,11 @@ pub struct LightElectricalProfileSet {
 
 #[cfg(test)]
 mod tests {
-    use rstest::rstest;
-
     use super::*;
     use crate::models::fixtures::create_electrical_profile_set;
     use editoast_models::DbConnectionPoolV2;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_list_light() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let set_1 = create_electrical_profile_set(&mut db_pool.get_ok()).await;

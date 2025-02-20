@@ -24,14 +24,13 @@ pub struct MacroNode {
 #[cfg(test)]
 pub mod test {
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::fixtures::create_scenario_fixtures_set;
     use crate::models::prelude::*;
     use editoast_models::DbConnectionPoolV2;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn macro_node_create_and_get() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let fixtures =

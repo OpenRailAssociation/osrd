@@ -137,7 +137,7 @@ mod tests {
         include_str!("../tests/train_schedules/simple_array.json")
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn import_export_timetable_schedule() {
         let db_pool = DbConnectionPoolV2::for_tests();
 

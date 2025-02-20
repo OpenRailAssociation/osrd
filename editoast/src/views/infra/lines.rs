@@ -88,7 +88,6 @@ mod tests {
     use editoast_schemas::primitives::Identifier;
     use geos::geojson::Geometry;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use serde_json::json;
     use std::str::FromStr;
 
@@ -99,7 +98,7 @@ mod tests {
     use editoast_schemas::infra::TrackSectionExtensions;
     use editoast_schemas::primitives::BoundingBox;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn returns_correct_bbox_for_existing_line_code() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -135,7 +134,7 @@ mod tests {
         assert_eq!(bounding_box, BoundingBox((1., 2.), (3., 4.)));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn returns_bad_request_when_line_code_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

@@ -324,7 +324,6 @@ pub mod tests {
     use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::primitives::OSRDIdentified;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use uuid::Uuid;
 
     use super::Infra;
@@ -336,7 +335,7 @@ pub mod tests {
     use crate::models::railjson::RailJsonError;
     use editoast_models::DbConnectionPoolV2;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn create_infra() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -348,7 +347,7 @@ pub mod tests {
         assert!(!infra.locked);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     #[serial_test::serial]
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
@@ -369,7 +368,7 @@ pub mod tests {
         assert!(old_modification_date < result.modified);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     #[serial_test::serial]
     async fn persists_railjson_ko_version() {
         let db_pool = DbConnectionPoolV2::for_tests();
@@ -390,7 +389,7 @@ pub mod tests {
         assert_eq!(res.unwrap_err().get_type(), expected_error.get_type());
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_change_updates_modification_date() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -404,7 +403,7 @@ pub mod tests {
         assert!(infra.modified > old);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     // The fixture leaks the persisted infra because we explicitly opened a
     // connection. This should be fixed by the testing utils rework. The ignore
     // should be removed after.

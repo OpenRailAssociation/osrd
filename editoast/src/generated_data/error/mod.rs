@@ -428,7 +428,6 @@ impl GeneratedData for ErrorLayer {
 
 #[cfg(test)]
 mod tests {
-    use rstest::rstest;
 
     use super::buffer_stops;
     use super::detectors;
@@ -446,7 +445,7 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use editoast_schemas::primitives::ObjectType;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn small_infra_cache_validation() {
         let small_infra_cache = create_small_infra_cache();
 
@@ -545,7 +544,7 @@ mod tests {
         .is_empty());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn error_priority_check() {
         let mut small_infra_cache = create_small_infra_cache();
         let bf = create_buffer_stop_cache("BF_error", "E", 530.0);

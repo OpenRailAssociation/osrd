@@ -795,7 +795,6 @@ mod tests {
 
     use axum::http::StatusCode;
     use editoast_models::DbConnectionPoolV2;
-    use rstest::rstest;
     use serde_json::json;
 
     use super::test_app::TestAppBuilder;
@@ -866,14 +865,14 @@ mod tests {
         core
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn health() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/health");
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn version() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/version");
@@ -881,7 +880,7 @@ mod tests {
         assert!(response.contains_key("git_describe"));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn core_version() {
         let mut core = MockingClient::new();
         core.stub("/version")

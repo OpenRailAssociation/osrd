@@ -264,7 +264,7 @@ mod tests {
 
     use super::*;
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn import_railjson_ko_file_not_found() {
         // GIVEN
         let railjson_path = "non/existing/railjson/file/location";
@@ -289,7 +289,7 @@ mod tests {
         );
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn import_railjson_ok() {
         // GIVEN
         let railjson = Default::default();

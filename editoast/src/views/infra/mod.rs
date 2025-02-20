@@ -822,7 +822,7 @@ pub mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     #[serial_test::serial]
     async fn infra_clone_empty() {
         let app = TestAppBuilder::default_app();
@@ -846,7 +846,7 @@ pub mod tests {
         nb: i64,
     }
 
-    #[rstest] // Slow test
+    #[tokio::test(flavor = "multi_thread")]
     #[serial_test::serial]
     async fn infra_clone() {
         let app = TestAppBuilder::default_app();
@@ -921,7 +921,7 @@ pub mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_delete() {
         let pool = DbConnectionPoolV2::for_tests_no_transaction();
         let app = TestAppBuilder::new()
@@ -938,14 +938,14 @@ pub mod tests {
             .assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_list() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/infra/");
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn default_infra_create() {
         let app = TestAppBuilder::default_app();
 
@@ -964,7 +964,7 @@ pub mod tests {
         assert!(!infra.locked);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_get() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let core_client = CoreClient::Mocked(MockingClient::default());
@@ -986,7 +986,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_rename() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1006,7 +1006,7 @@ pub mod tests {
         infra_refreshed: Vec<i64>,
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_refresh() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1019,7 +1019,7 @@ pub mod tests {
         assert_eq!(refreshed_infras.infra_refreshed, vec![empty_infra.id]);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     // Slow test
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     #[serial_test::serial]
@@ -1035,7 +1035,7 @@ pub mod tests {
         assert!(refreshed_infras.infra_refreshed.contains(&empty_infra.id));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_get_speed_limit_tags() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1058,7 +1058,7 @@ pub mod tests {
         assert_eq!(speed_limit_tags, vec!["test_tag"]);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_get_all_voltages() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1106,6 +1106,7 @@ pub mod tests {
     #[rstest]
     #[case(true)]
     #[case(false)]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_get_voltages(#[case] include_rolling_stock_modes: bool) {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1148,7 +1149,7 @@ pub mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_get_switch_types() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1162,7 +1163,7 @@ pub mod tests {
         assert_eq!(switch_types.len(), 5);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_lock() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let core_client = CoreClient::Mocked(MockingClient::default());
@@ -1198,7 +1199,7 @@ pub mod tests {
         assert!(!infra.locked);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_load_core() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
@@ -1219,7 +1220,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn infra_status() {
         let db_pool: DbConnectionPoolV2 = DbConnectionPoolV2::for_tests();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;

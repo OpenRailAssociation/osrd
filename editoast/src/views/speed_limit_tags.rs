@@ -41,11 +41,10 @@ async fn speed_limit_tags(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
-    use rstest::rstest;
 
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_speed_limit_list() {
         let app = TestAppBuilder::default_app();
 

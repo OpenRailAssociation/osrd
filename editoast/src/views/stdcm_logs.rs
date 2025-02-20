@@ -162,7 +162,6 @@ mod tests {
     use editoast_schemas::train_schedule::OperationalPointReference;
     use editoast_schemas::train_schedule::PathItemLocation;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use tracing_subscriber::filter::Directive;
     use uuid::Uuid;
 
@@ -342,7 +341,7 @@ mod tests {
         "otel::tracing=info".parse().unwrap()
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn list_stdcm_logs_return_success() {
         let app = test_app!()
             .core_client(core_mocking_client())
@@ -361,7 +360,7 @@ mod tests {
         assert_eq!(stdcm_logs_response.results[0].trace_id, Some(trace_id));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_stdcm_log_by_trace_id_return_success() {
         let app = test_app!()
             .core_client(core_mocking_client())
@@ -379,7 +378,7 @@ mod tests {
         assert_eq!(stdcm_log.trace_id, Some(trace_id));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_stdcm_log_by_trace_id_return_not_found() {
         let app = test_app!()
             .core_client(core_mocking_client())
@@ -396,7 +395,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_stdcm_log_by_id_return_not_found() {
         let app = test_app!()
             .core_client(core_mocking_client())
@@ -411,7 +410,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_stdcm_log_return_missing_id_and_trace_id() {
         let app = test_app!()
             .core_client(core_mocking_client())
@@ -426,7 +425,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_stdcm_log_by_trace_id_return_unauthorized() {
         let app = test_app!()
             .core_client(core_mocking_client())
@@ -446,7 +445,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::FORBIDDEN);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn get_stdcm_log_by_trace_id_return_empty_used_id() {
         let app = test_app!()
             .core_client(core_mocking_client())
@@ -461,7 +460,7 @@ mod tests {
         assert_eq!(stdcm_log.user_id, None);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn list_stdcm_logs_return_empty_trace_id() {
         let app = test_app!()
             .core_client(core_mocking_client())

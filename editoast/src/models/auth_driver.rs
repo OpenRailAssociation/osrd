@@ -242,7 +242,7 @@ mod tests {
     use super::*;
     use editoast_models::DbConnectionPoolV2;
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread")]
     async fn test_auth_driver() {
         let pool = DbConnectionPoolV2::for_tests();
         let driver = PgAuthDriver::new(pool.into());

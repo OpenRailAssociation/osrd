@@ -277,14 +277,13 @@ fn path_properties_input_hash(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
-    use rstest::rstest;
     use serde_json::json;
 
     use super::PathProperties;
     use crate::models::fixtures::create_small_infra;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread")]
     #[ignore] // TODO: Need to mock the core response to fix this test
     async fn path_properties_small_infra() {
         let app = TestAppBuilder::default_app();
