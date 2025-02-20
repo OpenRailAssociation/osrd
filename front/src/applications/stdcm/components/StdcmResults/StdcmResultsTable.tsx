@@ -62,7 +62,8 @@ const StcdmResultsTable = ({
               ({ location }) =>
                 location && location.name === step.name && location.secondary_code === step.ch
             );
-            const shouldRenderRow = isFirstStep || isRequestedPathStep || isLastStep;
+            const shouldRenderRow =
+              isFirstStep || isRequestedPathStep || isLastStep || step.duration;
             const isPathStep =
               isFirstStep || isLastStep || (isRequestedPathStep && step.duration === 0);
             const isNotExtremity = !isFirstStep && !isLastStep;

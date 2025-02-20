@@ -105,6 +105,40 @@ export function getStopDurationBetweenTwoPositions(
   return null;
 }
 
+// TODO : Remove this function as soon as fake takeover tracks cease to be used
+// It serves to consolidate steps of the form OVERTAKE_n_A;X, OVERTAKE_n_B;X in a single step X
+export function consolidateOvertakesToSingleSteps(
+  steps: StdcmResultsOperationalPoint[]
+): StdcmResultsOperationalPoint[] {
+  function convertHHMMTimeToSeconds(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 3600 + minutes * 60;
+  }
+  const consolidatedSteps: StdcmResultsOperationalPoint[] = [];
+  for (let i = 0; i < steps.length - 1; i += 1) {
+    const [step, nextStep] = [steps[i], steps[i + 1]];
+    const overtakenStepMatch = step.name?.match(/^OVERTAKE.*;(.*)$/);
+    if (overtakenStepMatch) {
+      const stopDuration =
+        convertHHMMTimeToSeconds(nextStep.time!) - convertHHMMTimeToSeconds(step.time!);
+      const consolidatedStep = {
+        ...step,
+        name: overtakenStepMatch[1],
+        duration: stopDuration,
+        stopEndTime: nextStep.time!,
+        stopType: 'overtake',
+        stopFor: stopDuration / 60,
+      };
+      consolidatedSteps.push(consolidatedStep);
+      i += 1; // to skip the next step, as we consolidated two overtake steps in one
+    } else {
+      consolidatedSteps.push(step);
+    }
+  }
+  consolidatedSteps.push(steps[steps.length - 1]);
+  return consolidatedSteps;
+}
+
 export function getOperationalPointsWithTimes(
   operationalPoints: SuggestedOP[],
   simulation: Extract<SimulationResponse, { status: 'success' }>,
@@ -160,5 +194,5 @@ export function getOperationalPointsWithTimes(
     };
   });
 
-  return opResults;
+  return consolidateOvertakesToSingleSteps(opResults);
 }

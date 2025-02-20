@@ -202,6 +202,7 @@ export enum StdcmStopTypes {
   PASSAGE_TIME = 'passageTime',
   DRIVER_SWITCH = 'driverSwitch',
   SERVICE_STOP = 'serviceStop',
+  OVERTAKE = 'overtake',
 }
 
 export type StdcmLinkedTrainExtremity = {

@@ -142,6 +142,7 @@
     "stopType": {
       "driverSwitch": "relève conducteur",
       "passageTime": "passage",
+      "overtake": "dépassement",
       "serviceStop": "arrêt de service"
     },
     "time": "Heure",

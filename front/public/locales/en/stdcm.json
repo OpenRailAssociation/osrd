@@ -142,6 +142,7 @@
     "stopType": {
       "driverSwitch": "driver switch",
       "passageTime": "passage time",
+      "overtake": "overtake",
       "serviceStop": "service stop"
     },
     "time": "Time",
