@@ -40,6 +40,16 @@ RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
     rustup component add clippy && \
     cargo install grcov
+
+# install `fga` binary used in `crate fga` unit tests
+RUN mkdir install \
+    && cd install \
+    && wget https://github.com/openfga/cli/releases/download/v0.6.4/fga_0.6.4_linux_amd64.tar.gz \
+    && tar xf fga_0.6.4_linux_amd64.tar.gz \
+    && mv fga /usr/local/bin \
+    && cd .. \
+    && rm -rf install
+
 COPY --from=planner /editoast/recipe.json recipe.json
 COPY --from=planner /editoast/editoast_derive/ editoast_derive
 COPY --from=test_data . /tests/data
