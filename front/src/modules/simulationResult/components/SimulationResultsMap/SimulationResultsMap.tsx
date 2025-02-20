@@ -1,26 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import bbox from '@turf/bbox';
-import { lineString, point } from '@turf/helpers';
-import lineLength from '@turf/length';
-import lineSlice from '@turf/line-slice';
-import type { MapLayerMouseEvent } from 'maplibre-gl';
+import { lineString } from '@turf/helpers';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type {
-  PathPropertiesFormatted,
-  SimulationResponseSuccess,
-} from 'applications/operationalStudies/types';
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapMarkers, { type MapMarker } from 'common/Map/components/MapMarkers';
-import TrainOnMap, {
-  type TimetableItemCurrentInfo,
-} from 'common/Map/components/TrainOnMap/TrainOnMap';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
@@ -30,33 +21,21 @@ import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLe
 import { MARKER_TYPE } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
-import { getIsPlaying } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { isoDateWithTimezoneToSec } from 'utils/date';
-import { kmToM, mmToM, msToKmh } from 'utils/physics';
 
-import getSelectedTrainHoverPositions from './getSelectedTrainHoverPositions';
-import { useChartSynchronizer } from '../ChartSynchronizer';
 import Itinerary from './RenderItinerary';
-import { interpolateOnPosition } from '../ChartHelpers/ChartHelpers';
 
 const MAP_ID = 'simulation-result-map';
 
 type SimulationResultMapProps = {
   pathfindingResult?: PathfindingResultSuccess;
   geometry?: PathPropertiesFormatted['geometry'];
-  timetableItemSimulation?: SimulationResponseSuccess & {
-    timetableItemId: TimetableItemId;
-    startTime: string;
-  };
   setMapCanvas?: (mapCanvas: string) => void;
 };
 
 const SimulationResultMap = ({
   pathfindingResult,
   geometry,
-  timetableItemSimulation,
   setMapCanvas,
 }: SimulationResultMapProps) => {
   const dispatch = useAppDispatch();
@@ -65,11 +44,8 @@ const SimulationResultMap = ({
   const { getTrackSectionsByIds } = useScenarioContext();
   const { viewport, mapSearchMarker, mapStyle, showOSM, terrain3DExaggeration, layersSettings } =
     useSelector(getMap);
-  const isPlaying = useSelector(getIsPlaying);
 
   const mapRef = React.useRef<MapRef>(null);
-  const [selectedTrainHoverPosition, setSelectedTrainHoverPosition] =
-    useState<TimetableItemCurrentInfo>();
 
   const geojsonPath = useMemo(() => geometry && lineString(geometry.coordinates), [geometry]);
 
@@ -113,21 +89,6 @@ const SimulationResultMap = ({
     [geojsonPath]
   );
 
-  const { updateTimePosition } = useChartSynchronizer(
-    (_, positionValues) => {
-      if (timetableItemSimulation && geojsonPath) {
-        const selectedTrainPosition = getSelectedTrainHoverPositions(
-          geojsonPath,
-          positionValues,
-          timetableItemSimulation.timetableItemId
-        );
-        setSelectedTrainHoverPosition(selectedTrainPosition);
-      }
-    },
-    'simulation-result-map',
-    [geojsonPath, timetableItemSimulation]
-  );
-
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
     [dispatch]
@@ -138,36 +99,6 @@ const SimulationResultMap = ({
       bearing: 0,
       pitch: 0,
     });
-  };
-
-  const onPathHover = (e: MapLayerMouseEvent) => {
-    if (!isPlaying && e && geojsonPath && timetableItemSimulation) {
-      const line = lineString(geojsonPath.geometry.coordinates);
-      const cursorPoint = point(e.lngLat.toArray());
-
-      const startCoordinates = geojsonPath.geometry.coordinates[0];
-
-      const start = point(startCoordinates);
-      const sliced = lineSlice(start, cursorPoint, line);
-      const positionLocal = kmToM(lineLength(sliced, { units: 'kilometers' }));
-
-      const baseSpeedData = timetableItemSimulation.base.speeds.map((speed, i) => ({
-        speed: msToKmh(speed),
-        position: mmToM(timetableItemSimulation.base.positions[i]),
-        time: timetableItemSimulation.base.times[i],
-      }));
-      const timePositionLocal = interpolateOnPosition(
-        { speed: baseSpeedData },
-        positionLocal,
-        isoDateWithTimezoneToSec(timetableItemSimulation.startTime)
-      );
-
-      if (timePositionLocal instanceof Date) {
-        updateTimePosition(timePositionLocal);
-      } else {
-        throw new Error('Map onFeatureHover, try to update TimePositionValue with incorrect imput');
-      }
-    }
   };
 
   useEffect(() => {
@@ -201,7 +132,6 @@ const SimulationResultMap = ({
         onIdle={() => {
           captureMap(viewport, MAP_ID, setMapCanvas, geometry);
         }}
-        onMouseEnter={onPathHover}
         showOSM={showOSM}
         viewPort={viewport}
         updatePartialViewPort={updateViewportChange}
@@ -213,15 +143,6 @@ const SimulationResultMap = ({
         )}
 
         <MapMarkers markers={mapMarkers} />
-
-        {geojsonPath && selectedTrainHoverPosition && timetableItemSimulation && (
-          <TrainOnMap
-            trainInfo={selectedTrainHoverPosition}
-            geojsonPath={geojsonPath}
-            viewport={viewport}
-            timetableItemSimulation={timetableItemSimulation}
-          />
-        )}
       </BaseMap>
     </>
   );

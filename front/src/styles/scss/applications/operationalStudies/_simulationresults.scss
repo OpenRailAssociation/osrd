@@ -1,43 +1,6 @@
 .simulation-results {
   position: relative;
 
-  .osrd-simulation-sticky-bar {
-    // TODO: remove the `display none` when the design has been changed
-    display: none;
-    position: sticky;
-    border-radius: 4px;
-    width: 100%;
-    background: var(--secondary);
-    z-index: 10;
-    top: 0;
-    left: 0;
-    padding: 8px;
-    margin-bottom: 8px;
-    overflow: hidden;
-    input {
-      padding: 2px 8px;
-    }
-    .train-detail {
-      min-width: 72px;
-      max-height: 32px;
-      padding: 1.6px;
-      line-height: 12.8px;
-    }
-    .rounded,
-    .form-control,
-    .btn {
-      border-radius: 4px !important;
-    }
-    .rounded,
-    .form-control,
-    .btn {
-      border-radius: 4px !important;
-    }
-    &.with-collapsed-timetable {
-      top: 48px;
-    }
-  }
-
   .osrd-simulation-container {
     position: relative;
     padding: 16px;

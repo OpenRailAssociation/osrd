@@ -7,6 +7,5 @@ export const getSimulationResults = (state: RootState) => state.simulation;
 
 const makeOsrdSimulationSelector = makeSubSelector<SimulationResultsState>(getSimulationResults);
 
-export const getIsPlaying = makeOsrdSimulationSelector('isPlaying');
 export const getSelectedTrainId = makeOsrdSimulationSelector('selectedTrainId');
 export const getTrainIdUsedForProjection = makeOsrdSimulationSelector('trainIdUsedForProjection');
