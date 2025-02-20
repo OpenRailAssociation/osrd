@@ -33,7 +33,7 @@ import {
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
-import TimetableTrainCard from './TimetableTrainCard';
+import TrainScheduleItem from './TrainScheduleItem';
 import type { PacedTrainWithResult, TimetableItemResult, TrainScheduleWithDetails } from './types';
 
 type TimetableProps = {
@@ -95,9 +95,7 @@ const Timetable = ({
   const handleSelectTimetableItem = useCallback(
     (id: TimetableItemId) => {
       const itemType = isTrainSchedule(id) ? 'trainScheduleIds' : 'pacedTrainIds';
-
-      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
-      const currentSelectedTrainIds = [...selectedTimetableItemIds[itemType]];
+      const currentSelectedTrainIds: TimetableItemId[] = selectedTimetableItemIds[itemType];
       const index = currentSelectedTrainIds.indexOf(id as TrainScheduleId);
 
       if (index === -1) {
@@ -218,7 +216,7 @@ const Timetable = ({
               {/* TODO Paced train : Adapt this to handle paced trains in issue
             https://github.com/OpenRailAssociation/osrd/issues/10615 */}
               {isTrainSchedule(timetableItem.id) ? (
-                <TimetableTrainCard
+                <TrainScheduleItem
                   isInSelection={selectedTimetableItemIds.trainScheduleIds.includes(
                     timetableItem.id
                   )}

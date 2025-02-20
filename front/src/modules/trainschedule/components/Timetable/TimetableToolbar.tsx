@@ -102,7 +102,6 @@ const TimetableToolbar = ({
     if (displayedTimetableItems.length === [...trainScheduleIds, ...pacedTrainIds].length) {
       setSelectedTimetableItemIds({ trainScheduleIds: [], pacedTrainIds: [] });
     } else {
-      // TODO Paced train : Adapt this to handle delete paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
       const timetableItemsDisplayed = displayedTimetableItems.reduce(
         (acc, { id }) => {
           if (isTrainSchedule(id)) {
@@ -241,6 +240,7 @@ const TimetableToolbar = ({
               label={t('timetable.export')}
               title={t('timetable.exportSelection')}
               type="button"
+              // TODO PACED TRAIN: https://github.com/OpenRailAssociation/osrd/issues/10614
               onClick={() => exportTrainSchedules(trainScheduleIds)}
             />
           </div>
