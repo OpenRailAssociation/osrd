@@ -83,6 +83,7 @@
       {
         "devDependencies": [
           "**/*.spec.ts",
+          "front/tests/**",
           "**/__tests__/**",
           "tests/**",
           "scripts/**",
