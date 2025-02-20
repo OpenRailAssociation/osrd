@@ -2,6 +2,7 @@ import { Plus } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraState, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
@@ -9,6 +10,7 @@ import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedu
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { isoDateToMs, isoDateWithTimezoneToSec } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
@@ -23,6 +25,9 @@ type AddTrainScheduleButtonProps = {
   setIsWorking: (isWorking: boolean) => void;
   upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
   dtoImport: () => void;
+  isPacedTrainMode: boolean;
+  // TODO Paced train : remove this when connectiing the back to add a paced train
+  setDisplayTrainScheduleManagement: (type: string) => void;
 };
 
 const AddTrainScheduleButton = ({
@@ -30,6 +35,8 @@ const AddTrainScheduleButton = ({
   setIsWorking,
   upsertTrainSchedules,
   dtoImport,
+  isPacedTrainMode,
+  setDisplayTrainScheduleManagement,
 }: AddTrainScheduleButtonProps) => {
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
@@ -37,12 +44,21 @@ const AddTrainScheduleButton = ({
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const simulationConf = useSelector(getOperationalStudiesConf);
+  const { showPacedTrains } = useSelector(getUserPreferences);
 
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   const { rollingStock } = useStoreDataForRollingStockSelector();
 
   const createTrainSchedules = async () => {
     const validTrainConfig = checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name);
+
+    // TODO Paced train : remove this when connectiing the back to add a paced train
+    if (isPacedTrainMode) {
+      if (validTrainConfig) {
+        setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
+      }
+      return;
+    }
 
     if (validTrainConfig) {
       const { timetableId, firstStartTime, trainCount, trainDelta, trainStep, baseTrainName } =
@@ -103,7 +119,8 @@ const AddTrainScheduleButton = ({
       <span className="mr-2">
         <Plus size="lg" />
       </span>
-      {t('addTrainSchedule')}
+      {!showPacedTrains && t('addTrainSchedules')}
+      {showPacedTrains && (isPacedTrainMode ? t('addPacedTrain') : t('addTrainSchedule'))}
     </button>
   );
 };

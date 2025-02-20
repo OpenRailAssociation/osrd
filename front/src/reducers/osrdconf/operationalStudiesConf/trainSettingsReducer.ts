@@ -61,6 +61,18 @@ const trainSettingsReducer = {
   ) {
     state.rollingStockComfort = action.payload;
   },
+  updateTimeRangeDuration(
+    state: Draft<OperationalStudiesConfState>,
+    action: PayloadAction<OperationalStudiesConfState['timeRangeDuration']>
+  ) {
+    state.timeRangeDuration = action.payload;
+  },
+  updateCadence(
+    state: Draft<OperationalStudiesConfState>,
+    action: PayloadAction<OperationalStudiesConfState['cadence']>
+  ) {
+    state.cadence = action.payload;
+  },
 };
 
 export default trainSettingsReducer;

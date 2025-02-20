@@ -160,7 +160,7 @@ const Timetable = ({
             setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
           }}
         >
-          {t('timetable.addTrainSchedule')}
+          {t('timetable.addTrainScheduleOrPacedTrain')}
         </button>
         <button
           type="button"

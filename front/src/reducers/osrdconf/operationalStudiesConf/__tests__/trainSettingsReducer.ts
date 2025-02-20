@@ -30,6 +30,8 @@ const testTrainSettingsReducer = () => {
     updateInitialSpeed,
     updateRollingStockComfort,
     updateStartTime,
+    updateTimeRangeDuration,
+    updateCadence,
   } = slice.actions;
 
   const getState = () => defaultStore.getState()[operationalStudiesConfSlice.name];
@@ -115,6 +117,20 @@ const testTrainSettingsReducer = () => {
     defaultStore.dispatch(updateStartTime(newStartTime));
     const state = getState();
     expect(state.startTime).toBe(newStartTime);
+  });
+
+  it('should handle updateTimeRangeDuration', () => {
+    const newTimeRangeDuration = 60;
+    defaultStore.dispatch(updateTimeRangeDuration(newTimeRangeDuration));
+    const state = getState();
+    expect(state.timeRangeDuration).toBe(newTimeRangeDuration);
+  });
+
+  it('should handle updateCadence', () => {
+    const newCadence = 30;
+    defaultStore.dispatch(updateCadence(newCadence));
+    const state = getState();
+    expect(state.cadence).toBe(newCadence);
   });
 };
 

@@ -2,15 +2,19 @@ import { useState } from 'react';
 
 import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState } from 'common/api/osrdEditoastApi';
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
 import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import { getUserPreferences } from 'reducers/user/userSelectors';
 
 import AddTrainScheduleButton from './AddTrainScheduleButton';
 import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
+import PacedTrainSettings from './PacedTrainSettings';
 
 type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
@@ -32,7 +36,10 @@ const TimetableManageTrainSchedule = ({
   dtoImport,
 }: TimetableManageTrainScheduleProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const { showPacedTrains } = useSelector(getUserPreferences);
+
   const [isWorking, setIsWorking] = useState(false);
+  const [isPacedTrainMode, setIsPacedTrainMode] = useState(false);
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
@@ -81,9 +88,26 @@ const TimetableManageTrainSchedule = ({
                 setIsWorking={setIsWorking}
                 upsertTrainSchedules={upsertTrainSchedules}
                 dtoImport={dtoImport}
+                isPacedTrainMode={isPacedTrainMode}
+                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               />
             )}
-            <TrainAddingSettings />
+            {showPacedTrains ? (
+              <div className="osrd-config-item-container">
+                <CheckboxRadioSNCF
+                  type="checkbox"
+                  label={t('pacedTrains.defineService')}
+                  id="define-paced-train"
+                  name="define-paced-train"
+                  containerClassName="mb-0"
+                  checked={isPacedTrainMode}
+                  onChange={() => setIsPacedTrainMode(!isPacedTrainMode)}
+                />
+                {isPacedTrainMode && <PacedTrainSettings />}
+              </div>
+            ) : (
+              <TrainAddingSettings />
+            )}
           </>
         )}
       </div>

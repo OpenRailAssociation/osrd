@@ -52,7 +52,7 @@
   "scenarioUpdated": "Mise à jour réussie !",
   "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
   "timetable": {
-    "addTrainSchedule": "Ajouter",
+    "addTrainScheduleOrPacedTrain": "Ajouter",
     "advancedFilterLabel": "Engin moteur",
     "choosePath": "Utiliser ce chemin",
     "closeFilter": "Fermer le filtre",

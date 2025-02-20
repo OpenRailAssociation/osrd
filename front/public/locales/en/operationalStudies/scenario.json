@@ -53,7 +53,7 @@
   "scenarioUpdated": "Successful update!",
   "scenarioUpdatedDetails": "Scenario {{ name }} has been updated.",
   "timetable": {
-    "addTrainSchedule": "Add",
+    "addTrainScheduleOrPacedTrain": "Add",
     "advancedFilterLabel": "Rolling stock",
     "choosePath": "Use this path",
     "closeFilter": "Close filter",

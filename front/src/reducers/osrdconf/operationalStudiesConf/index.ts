@@ -31,6 +31,8 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   trainCount: 1,
   trainDelta: 15,
   trainStep: 2,
+  timeRangeDuration: 120,
+  cadence: 60,
 };
 
 export const operationalStudiesConfSlice = createSlice({
@@ -113,6 +115,8 @@ export const {
   updateTrainStep,
   upsertViaFromSuggestedOP,
   upsertSeveralViasFromSuggestedOP,
+  updateTimeRangeDuration,
+  updateCadence,
 
   // itinerary reducer
   updatePathSteps,

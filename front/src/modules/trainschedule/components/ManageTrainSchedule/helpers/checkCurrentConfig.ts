@@ -35,6 +35,8 @@ const checkCurrentConfig = (
     rollingStockComfort,
     powerRestriction,
     startTime,
+    cadence,
+    timeRangeDuration,
   } = osrdconf;
   let error = false;
   if (pathSteps[0] === null) {
@@ -128,6 +130,24 @@ const checkCurrentConfig = (
         setFailure({
           name: t('errorMessages.trainScheduleTitle'),
           message: t('errorMessages.noTrainStep'),
+        })
+      );
+    }
+    if (cadence < 1) {
+      error = true;
+      dispatch(
+        setFailure({
+          name: t('errorMessages.trainScheduleTitle'),
+          message: t('errorMessages.noCadence'),
+        })
+      );
+    }
+    if (timeRangeDuration < 1) {
+      error = true;
+      dispatch(
+        setFailure({
+          name: t('errorMessages.trainScheduleTitle'),
+          message: t('errorMessages.noTimeRangeDuration'),
         })
       );
     }

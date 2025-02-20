@@ -49,6 +49,8 @@ export type OperationalStudiesConfState = OsrdConfState & {
   trainCount: number;
   trainStep: number;
   trainDelta: number;
+  timeRangeDuration: number;
+  cadence: number;
 };
 
 export type OsrdStdcmConfState = OsrdConfState & {
