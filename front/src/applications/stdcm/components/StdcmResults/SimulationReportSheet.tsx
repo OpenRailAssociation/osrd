@@ -8,6 +8,7 @@ import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import i18n from 'i18n';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { dateToHHMMSS, formatDateToString, formatDay } from 'utils/date';
+import { Duration } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
 import { secToMin } from 'utils/timeManipulation';
@@ -398,7 +399,7 @@ const SimulationReportSheet = ({
                           // eslint-disable-next-line no-nested-ternary
                           isNotExtremity
                             ? step.duration !== 0
-                              ? getStopDurationTime(step.duration)
+                              ? getStopDurationTime(new Duration({ seconds: step.duration }))
                               : step.time
                             : ''
                         }

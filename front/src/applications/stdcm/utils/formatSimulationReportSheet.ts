@@ -3,6 +3,7 @@ import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import type { Duration } from 'utils/duration';
 
 import type { StdcmResultsOperationalPoint } from '../types';
 
@@ -22,8 +23,8 @@ export function generateCodeNumber(): string {
   return `${month}${year}-${randomPart1}-${randomPart2}`;
 }
 
-export function getStopDurationTime(sec: number) {
-  return `${Math.round(sec / 60)} min`;
+export function getStopDurationTime(duration: Duration) {
+  return `${Math.round(duration.total('minute'))} min`;
 }
 
 function secondsToTimeString(duration: number): string {

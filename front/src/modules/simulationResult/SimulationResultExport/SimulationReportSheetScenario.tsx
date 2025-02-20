@@ -8,6 +8,7 @@ import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationRe
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { formatDateToString } from 'utils/date';
+import { Duration } from 'utils/duration';
 import { secToHoursString } from 'utils/timeManipulation';
 
 import type { SimulationSheetData } from './types';
@@ -290,7 +291,7 @@ const SimulationReportSheetScenario = ({
                           // eslint-disable-next-line no-nested-ternary
                           isNotExtremity
                             ? step.duration !== 0
-                              ? getStopDurationTime(step.duration)
+                              ? getStopDurationTime(new Duration({ seconds: step.duration }))
                               : secToHoursString(step.time)
                             : ''
                         }

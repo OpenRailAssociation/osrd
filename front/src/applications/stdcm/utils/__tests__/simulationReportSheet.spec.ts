@@ -7,6 +7,7 @@ import {
   addMinutesToTime,
   getStopDurationBetweenTwoPositions,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
+import { Duration } from 'utils/duration';
 
 describe('generateCodeNumber', () => {
   it('should return a formatted string', () => {
@@ -17,7 +18,7 @@ describe('generateCodeNumber', () => {
 
 describe('getStopDurationTime', () => {
   it('should return correct time format', () => {
-    expect(getStopDurationTime(120)).toBe('2 min');
+    expect(getStopDurationTime(new Duration({ seconds: 120 }))).toBe('2 min');
   });
 });
 
