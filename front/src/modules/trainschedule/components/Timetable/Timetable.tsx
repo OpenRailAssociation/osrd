@@ -36,6 +36,11 @@ import TimetableToolbar from './TimetableToolbar';
 import TrainScheduleItem from './TrainScheduleItem';
 import type { PacedTrainWithResult, TimetableItemResult, TrainScheduleWithDetails } from './types';
 
+export type SelectedTimetableIdsByType = {
+  trainScheduleIds: TrainScheduleId[];
+  pacedTrainIds: PacedTrainId[];
+};
+
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   infraState: InfraState;
@@ -68,10 +73,8 @@ const Timetable = ({
 
   const [displayedTimetableItems, setDisplayedTimetableItems] = useState<TimetableItemResult[]>([]);
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
-  const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<{
-    trainScheduleIds: TrainScheduleId[];
-    pacedTrainIds: PacedTrainId[];
-  }>({ trainScheduleIds: [], pacedTrainIds: [] });
+  const [selectedTimetableItemIdsByType, setSelectedTimetableItemIdsByType] =
+    useState<SelectedTimetableIdsByType>({ trainScheduleIds: [], pacedTrainIds: [] });
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [timetableItems, setTimetableItems] = useState<TimetableItemResult[]>([]);
   const selectedTrainId = useSelector(getSelectedTrainId);
@@ -84,7 +87,7 @@ const Timetable = ({
 
   const removeAndUnselectTrains = useCallback((trainIds: TimetableItemId[]) => {
     removeTrains(trainIds);
-    setSelectedTimetableItemIds({ trainScheduleIds: [], pacedTrainIds: [] });
+    setSelectedTimetableItemIdsByType({ trainScheduleIds: [], pacedTrainIds: [] });
     dtoImport();
   }, []);
 
@@ -95,7 +98,7 @@ const Timetable = ({
   const handleSelectTimetableItem = useCallback(
     (id: TimetableItemId) => {
       const itemType = isTrainSchedule(id) ? 'trainScheduleIds' : 'pacedTrainIds';
-      const currentSelectedTrainIds: TimetableItemId[] = selectedTimetableItemIds[itemType];
+      const currentSelectedTrainIds: TimetableItemId[] = selectedTimetableItemIdsByType[itemType];
       const index = currentSelectedTrainIds.indexOf(id as TrainScheduleId);
 
       if (index === -1) {
@@ -104,12 +107,12 @@ const Timetable = ({
         currentSelectedTrainIds.splice(index, 1);
       }
 
-      setSelectedTimetableItemIds({
-        ...selectedTimetableItemIds,
+      setSelectedTimetableItemIdsByType({
+        ...selectedTimetableItemIdsByType,
         [itemType]: currentSelectedTrainIds,
       });
     },
-    [selectedTimetableItemIds]
+    [selectedTimetableItemIdsByType]
   );
 
   const handleConflictClick = (conflict: Conflict) => {
@@ -194,14 +197,14 @@ const Timetable = ({
           timetableItems={timetableItems}
           displayedTimetableItems={displayedTimetableItems}
           setDisplayedTimetableItems={setDisplayedTimetableItems}
-          selectedTimetableItemIds={selectedTimetableItemIds}
-          setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+          selectedTimetableItemIdsByType={selectedTimetableItemIdsByType}
+          setSelectedTimetableItemIdsByType={setSelectedTimetableItemIdsByType}
           removeTrains={removeAndUnselectTrains}
           trainSchedules={trainSchedules}
           isInSelection={
             [
-              ...selectedTimetableItemIds.pacedTrainIds,
-              ...selectedTimetableItemIds.trainScheduleIds,
+              ...selectedTimetableItemIdsByType.pacedTrainIds,
+              ...selectedTimetableItemIdsByType.trainScheduleIds,
             ].length > 0
           }
         />
@@ -217,7 +220,7 @@ const Timetable = ({
             https://github.com/OpenRailAssociation/osrd/issues/10615 */}
               {isTrainSchedule(timetableItem.id) ? (
                 <TrainScheduleItem
-                  isInSelection={selectedTimetableItemIds.trainScheduleIds.includes(
+                  isInSelection={selectedTimetableItemIdsByType.trainScheduleIds.includes(
                     timetableItem.id
                   )}
                   handleSelectTrain={handleSelectTimetableItem}
@@ -235,7 +238,9 @@ const Timetable = ({
               ) : (
                 <PacedTrainItem
                   pacedTrain={timetableItem as PacedTrainWithResult}
-                  isInSelection={selectedTimetableItemIds.pacedTrainIds.includes(timetableItem.id)}
+                  isInSelection={selectedTimetableItemIdsByType.pacedTrainIds.includes(
+                    timetableItem.id
+                  )}
                   selectPacedTrainToEdit={selectTimeTableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}
                   isOnEdit={timetableItem.id === itemIdToEdit}

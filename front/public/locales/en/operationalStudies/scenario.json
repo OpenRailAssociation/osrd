@@ -29,6 +29,12 @@
   "pacedTrain": {
     "pacedTrain": "Paced train"
   },
+  "pacedTrain_one": "1 mission",
+  "pacedTrain_other": "{{count}} missions",
+  "pacedTrain_zero": "0 mission",
+  "pacedTrainCount_one": "1 out of $t(pacedTrain, { 'count': {{totalCount}} }) selected",
+  "pacedTrainCount_other": "{{count}} out of $t(pacedTrain, { 'count': {{totalCount}} }) selected",
+  "pacedTrainCount_zero": "$t(pacedTrain, { 'count': {{totalCount}} })",
   "scenarioCancel": "Cancel",
   "scenarioCreateButton": "Create a scenario",
   "scenarioCreationTitle": "Create a scenario",

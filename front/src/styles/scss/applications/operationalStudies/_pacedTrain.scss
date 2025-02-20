@@ -20,7 +20,7 @@
     }
   }
 
-  &:has(.paced-train-right-zone:hover, .action-buttons:hover):not(.modified) {
+  &:hover:not(.modified) {
     .action-buttons {
       display: flex !important;
       z-index: 1;
@@ -33,12 +33,6 @@
 
   &.modified {
     z-index: 3;
-  }
-
-  &.invalid {
-    .checkbox-title {
-      min-width: auto !important;
-    }
   }
 
   .paced-train-main-info {
@@ -143,5 +137,17 @@
     .occurrences {
       height: 0;
     }
+  }
+
+  .invalid-reason {
+    margin-right: 18px;
+    font-size: 16px;
+    color: var(--error80);
+    font-weight: 600;
+    min-width: 155px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 24px;
   }
 }

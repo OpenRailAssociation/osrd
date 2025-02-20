@@ -90,7 +90,7 @@ const PacedTrainItem = ({
           </div>
         </div>
 
-        {!pacedTrain.invalidReason && (
+        {!pacedTrain.invalidReason ? (
           <div className="paced-train-right-zone">
             {pacedTrain.isValid && <div>&mdash;{` ${ms2min(pacedTrainCadence.ms)}min`}</div>}
             <div
@@ -105,6 +105,12 @@ const PacedTrainItem = ({
                   <Flame className="center-icon" />
                 ))}
             </div>
+          </div>
+        ) : (
+          <div className="invalid-reason">
+            <span title={t(`timetable.invalid.${pacedTrain.invalidReason}`)}>
+              {t(`timetable.invalid.${pacedTrain.invalidReason}`)}
+            </span>
           </div>
         )}
       </div>
