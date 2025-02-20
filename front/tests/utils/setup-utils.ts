@@ -33,13 +33,13 @@ import {
   trainScheduleProjectName,
   trainScheduleScenarioName,
   trainScheduleStudyName,
-} from '../assets/project-const';
+} from '../assets/constants/project-const';
 import { logger } from '../logging-fixture';
 import { createDateInSpecialTimeZone } from './date';
 import type { ProjectData, StudyData } from './types';
 
-const projectData: ProjectData = readJsonFile('tests/assets/operationStudies/project.json');
-const studyData: StudyData = readJsonFile('tests/assets/operationStudies/study.json');
+const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
+const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
 
 /**
  * Helper function to create infrastructure using RailJson.
@@ -48,7 +48,7 @@ const studyData: StudyData = readJsonFile('tests/assets/operationStudies/study.j
  * @returns {Promise<Infra>} - The created infrastructure object.
  */
 async function createInfrastructure(infraName = infrastructureName): Promise<Infra> {
-  const smallInfraRailjson: RailJson = readJsonFile('./tests/assets/infra/infra.json');
+  const smallInfraRailjson: RailJson = readJsonFile('./tests/assets/infrastructure/infra.json');
 
   const createdInfra: PostInfraRailjsonApiResponse = await postApiRequest(
     `/api/infra/railjson`,
@@ -76,19 +76,19 @@ async function createRollingStocks(): Promise<void> {
       name: electricRollingStockName,
     },
     {
-      json: readJsonFile('./tests/assets/rollingStock/slow_rolling_stock.json'),
+      json: readJsonFile('./tests/assets/rolling-stock/slow_rolling_stock.json'),
       name: slowRollingStockName,
     },
     {
-      json: readJsonFile('./tests/assets/rollingStock/dual-mode_rolling_stock.json'),
+      json: readJsonFile('./tests/assets/rolling-stock/dual-mode_rolling_stock.json'),
       name: dualModeRollingStockName,
     },
     {
-      json: readJsonFile('./tests/assets/rollingStock/fast_rolling_stock.json'),
+      json: readJsonFile('./tests/assets/rolling-stock/fast_rolling_stock.json'),
       name: fastRollingStockName,
     },
     {
-      json: readJsonFile('./tests/assets/rollingStock/improbable_rolling_stock.json'),
+      json: readJsonFile('./tests/assets/rolling-stock/improbable_rolling_stock.json'),
       name: improbableRollingStockName,
     },
   ];
@@ -191,7 +191,7 @@ async function saveFormerStdcmEnvironment(testInfraId: number) {
  */
 export async function createDataForTests(): Promise<void> {
   const trainSchedulesJson: JSON = readJsonFile(
-    './tests/assets/trainSchedule/train_schedules.json'
+    './tests/assets/train-schedule/train_schedules.json'
   );
   try {
     // Step 1: Create infrastructure

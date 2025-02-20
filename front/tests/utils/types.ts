@@ -1,7 +1,6 @@
 import type { Tags } from 'common/api/osrdEditoastApi';
 
-// STDCM simulation pdf content type
-export type Simulation = {
+export type PdfSimulationContent = {
   header: {
     toolDescription: string;
     documentTitle: string;
@@ -174,6 +173,15 @@ export type ProjectData = {
   tags: Tags;
 };
 
+export type ProjectDetails = {
+  name: string;
+  description: string;
+  objectives: string;
+  funders: string;
+  budget: string;
+  tags: string[];
+};
+
 export type StudyData = {
   actual_end_date: string;
   budget: string;
@@ -188,10 +196,59 @@ export type StudyData = {
   tags: Tags;
 };
 
+export type StudyDetails = {
+  name: string;
+  description: string;
+  type: string;
+  status: string;
+  startDate: string;
+  expectedEndDate: string;
+  endDate: string;
+  serviceCode: string;
+  businessCode: string;
+  budget: string;
+  tags: string[];
+};
+
 export type ScenarioData = {
   name: string;
   description: string;
   tags: Tags;
+};
+
+export type ScenarioDetails = {
+  name: string;
+  description: string;
+  tags: string[];
+  infraName?: string;
+  electricProfileName?: string;
+};
+
+export type STDCMResultTableRow = {
+  index: number;
+  operationalPoint: string;
+  code: string;
+  endStop: string | null;
+  passageStop: string | null;
+  startStop: string | null;
+  weight: string | null;
+  refEngine: string | null;
+};
+
+export type StdcmTranslations = {
+  stdcmErrors: {
+    noScheduledPoint: string;
+  };
+  trainPath: {
+    warningMinStopTime: string;
+  };
+  simulation: {
+    results: {
+      simulationName: {
+        withoutOutputs: string;
+      };
+    };
+  };
 };
 
 export type FlatTranslations = Record<string, string>;

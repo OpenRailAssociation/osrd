@@ -1,15 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import CommonPage from './common-page-model';
-
-// Define the type for scenario details
-type ScenarioDetails = {
-  name: string;
-  description: string;
-  tags: string[];
-  infraName?: string;
-  electricProfileName?: string;
-};
+import type { ScenarioDetails } from '../../utils/types';
+import CommonPage from '../common-page';
 
 class ScenarioPage extends CommonPage {
   private readonly scenarioUpdateButton: Locator;

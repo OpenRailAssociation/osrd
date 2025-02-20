@@ -1,7 +1,7 @@
-import { getTranslations } from '../utils';
-import { getLocalizedDateString } from '../utils/date';
-import readJsonFile from '../utils/file-utils';
-import type { FlatTranslations, Simulation } from '../utils/types';
+import { getTranslations } from '../../utils';
+import { getLocalizedDateString } from '../../utils/date';
+import readJsonFile from '../../utils/file-utils';
+import type { FlatTranslations, PdfSimulationContent } from '../../utils/types';
 
 const enTranslations: FlatTranslations = readJsonFile(
   'public/locales/en/stdcm-simulation-report-sheet.json'
@@ -10,7 +10,7 @@ const frTranslations: FlatTranslations = readJsonFile(
   'public/locales/fr/stdcm-simulation-report-sheet.json'
 );
 
-const simulationSheetDetails = (): Simulation => {
+const simulationSheetDetails = (): PdfSimulationContent => {
   const translations = getTranslations({
     en: enTranslations,
     fr: frTranslations,

@@ -1,12 +1,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import CommonPage from './common-page-model';
 import {
   DEFAULT_PACED_TRAIN_SETTINGS,
   PACED_TRAIN_SETTINGS_TEST,
-} from '../assets/operational-studies-const';
-import readJsonFile from '../utils/file-utils';
-import type { ManageTrainScheduleTranslations, PacedTrainSettings } from '../utils/types';
+} from '../../assets/constants/operational-studies-const';
+import readJsonFile from '../../utils/file-utils';
+import type { ManageTrainScheduleTranslations, PacedTrainSettings } from '../../utils/types';
+import CommonPage from '../common-page';
 
 const manageTrainScheduleTranslation: { trainAdded: string } = readJsonFile(
   'public/locales/fr/operationalStudies/manageTrainSchedule.json'

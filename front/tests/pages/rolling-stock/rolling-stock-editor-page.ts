@@ -3,10 +3,10 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import type { RollingStockCategory } from 'common/api/osrdEditoastApi';
 import { RollingStockCategoryDict } from 'modules/rollingStock/consts';
 
-import CommonPage from './common-page-model';
-import readJsonFile from '../utils/file-utils';
-import { fillAndCheckInputById, getTranslations } from '../utils/index';
-import type { FlatTranslations } from '../utils/types';
+import { fillAndCheckInputById, getTranslations } from '../../utils';
+import readJsonFile from '../../utils/file-utils';
+import type { FlatTranslations } from '../../utils/types';
+import CommonPage from '../common-page';
 
 type RollingStockTranslations = FlatTranslations & { categoriesOptions: FlatTranslations };
 

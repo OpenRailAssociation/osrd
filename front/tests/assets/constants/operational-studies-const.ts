@@ -1,4 +1,4 @@
-import type { PacedTrainSettings } from '../utils/types';
+import type { PacedTrainSettings } from '../../utils/types';
 
 export const DEFAULT_PACED_TRAIN_SETTINGS: Pick<
   PacedTrainSettings,

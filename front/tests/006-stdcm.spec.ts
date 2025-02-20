@@ -84,7 +84,7 @@ test.describe('Verify stdcm simulation page', () => {
     }
     // Launch simulation and verify output data matches expected results
     await stdcmPage.launchSimulation();
-    await stdcmPage.verifyTableData('./tests/assets/stdcm/stdcmAllStops.json');
+    await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-all-stops.json');
   });
 
   /** *************** Test 3 **************** */
@@ -119,8 +119,8 @@ test.describe('Verify stdcm simulation page', () => {
       simulationNumber: 2,
       simulationLengthAndDuration: '51 km — 2h 35min',
     });
-    await stdcmPage.verifyTableData(
-      './tests/assets/stdcm/towedRollingStock/towedRollingStockTableResult.json'
+    await simulationResultPage.verifyTableData(
+      './tests/assets/stdcm/towed-rolling-stock/towed-rolling-stock-table-result.json'
     );
   });
 });

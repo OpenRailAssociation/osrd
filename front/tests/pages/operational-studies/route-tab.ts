@@ -1,8 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { getTranslations } from '../utils';
-import readJsonFile from '../utils/file-utils';
-import type { FlatTranslations } from '../utils/types';
+import { getTranslations } from '../../utils';
+import readJsonFile from '../../utils/file-utils';
+import type { FlatTranslations } from '../../utils/types';
 
 const enTranslations: FlatTranslations = readJsonFile(
   'public/locales/en/operationalStudies/manageTrainSchedule.json'
@@ -11,7 +11,7 @@ const frTranslations: FlatTranslations = readJsonFile(
   'public/locales/fr/operationalStudies/manageTrainSchedule.json'
 );
 
-class RoutePage {
+class RouteTab {
   readonly page: Page;
 
   private readonly noOriginChosen: Locator;
@@ -260,16 +260,16 @@ class RoutePage {
     expectedUic: string,
     expectedKm: string
   ) {
-    await expect(RoutePage.getWaypointSuggestionNameLocator(waypointSuggestion)).toHaveText(
+    await expect(RouteTab.getWaypointSuggestionNameLocator(waypointSuggestion)).toHaveText(
       expectedName
     );
-    await expect(RoutePage.getWaypointSuggestionChLocator(waypointSuggestion)).toHaveText(
+    await expect(RouteTab.getWaypointSuggestionChLocator(waypointSuggestion)).toHaveText(
       expectedCh
     );
-    await expect(RoutePage.getWaypointSuggestionUicLocator(waypointSuggestion)).toHaveText(
+    await expect(RouteTab.getWaypointSuggestionUicLocator(waypointSuggestion)).toHaveText(
       expectedUic
     );
-    await expect(RoutePage.getWaypointSuggestionDistanceLocator(waypointSuggestion)).toHaveText(
+    await expect(RouteTab.getWaypointSuggestionDistanceLocator(waypointSuggestion)).toHaveText(
       expectedKm
     );
   }
@@ -281,9 +281,9 @@ class RoutePage {
     expectedCh: string,
     expectedUic: string
   ) {
-    await expect(RoutePage.getWaypointDroppedNameLocator(droppedWaypoint)).toHaveText(expectedName);
-    await expect(RoutePage.getWaypointDroppedChLocator(droppedWaypoint)).toHaveText(expectedCh);
-    await expect(RoutePage.getWaypointDroppedUicLocator(droppedWaypoint)).toHaveText(expectedUic);
+    await expect(RouteTab.getWaypointDroppedNameLocator(droppedWaypoint)).toHaveText(expectedName);
+    await expect(RouteTab.getWaypointDroppedChLocator(droppedWaypoint)).toHaveText(expectedCh);
+    await expect(RouteTab.getWaypointDroppedUicLocator(droppedWaypoint)).toHaveText(expectedUic);
   }
 
   // Add new waypoints by clicking the add button for suggested waypoints and verifying the added waypoints.
@@ -302,7 +302,7 @@ class RoutePage {
       const waypointSuggestion = this.waypointSuggestions.nth(waypointSuggestionCount);
       const expectedValue = expectedValues[waypointSuggestionCount];
 
-      await RoutePage.validateWaypointSuggestions(
+      await RouteTab.validateWaypointSuggestions(
         waypointSuggestion,
         expectedValue.name,
         expectedValue.ch,
@@ -322,7 +322,7 @@ class RoutePage {
       const droppedWaypoint = this.droppedWaypoints.nth(droppedWaypointCount);
       const expectedValue = expectedValues[droppedWaypointCount];
 
-      await RoutePage.validateAddedWaypoint(
+      await RouteTab.validateAddedWaypoint(
         droppedWaypoint,
         expectedValue.name,
         expectedValue.ch,
@@ -333,4 +333,4 @@ class RoutePage {
     }
   }
 }
-export default RoutePage;
+export default RouteTab;

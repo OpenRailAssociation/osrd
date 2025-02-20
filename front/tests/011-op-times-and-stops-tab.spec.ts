@@ -2,13 +2,13 @@ import { expect } from '@playwright/test';
 
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
-import { dualModeRollingStockName } from './assets/project-const';
+import { dualModeRollingStockName } from './assets/constants/project-const';
 import test from './logging-fixture';
-import OperationalStudiesInputTablePage from './pages/op-input-table-page-model';
-import OperationalStudiesOutputTablePage from './pages/op-output-table-page-model';
-import RoutePage from './pages/op-route-page-model';
-import OperationalStudiesPage from './pages/operational-studies-page-model';
-import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
+import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
+import RouteTab from './pages/operational-studies/route-tab';
+import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
+import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
+import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-setup';
 import { cleanWhitespace, cleanWhitespaceInArray } from './utils/dataNormalizer';
@@ -22,14 +22,14 @@ const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesSt
 const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
 test.describe('Times and Stops Tab Verification', () => {
-  test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let operationalStudiesPage: OperationalStudiesPage;
-  let rollingStockPage: RollingStockSelectorPage;
-  let routePage: RoutePage;
-  let opInputTablePage: OperationalStudiesInputTablePage;
-  let opOutputTablePage: OperationalStudiesOutputTablePage;
+  let rollingStockSelector: RollingStockSelector;
+  let routeTab: RouteTab;
+  let timesAndStopsTab: TimesAndStopsTab;
+  let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
+
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -38,19 +38,19 @@ test.describe('Times and Stops Tab Verification', () => {
 
   // Load test data for table inputs and expected results
   const initialInputsData: CellData[] = readJsonFile(
-    './tests/assets/operationStudies/timesAndStops/initialInputs.json'
+    './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
   );
   const updatedInputsData: CellData[] = readJsonFile(
-    './tests/assets/operationStudies/timesAndStops/updatedInputs.json'
+    './tests/assets/operation-studies/times-and-stops/updated-inputs.json'
   );
   const outputExpectedCellData: StationData[] = readJsonFile(
-    './tests/assets/operationStudies/timesAndStops/expectedOutputsCellsData.json'
+    './tests/assets/operation-studies/times-and-stops/expected-outputs-cells-data.json'
   );
   const inputExpectedData: JSON = readJsonFile(
-    './tests/assets/operationStudies/timesAndStops/expectedInputsCellsData.json'
+    './tests/assets/operation-studies/times-and-stops/expected-inputs-cells-data.json'
   );
   const updatedCellData: JSON = readJsonFile(
-    './tests/assets/operationStudies/timesAndStops/updatedInputsCellsData.json'
+    './tests/assets/operation-studies/times-and-stops/updated-inputs-cells-data.json'
   );
 
   // Waypoints data for route verification
@@ -78,12 +78,18 @@ test.describe('Times and Stops Tab Verification', () => {
   test.beforeEach(
     'Navigate to Times and Stops tab with rolling stock and route set',
     async ({ page }) => {
-      [operationalStudiesPage, routePage, rollingStockPage, opInputTablePage, opOutputTablePage] = [
+      [
+        operationalStudiesPage,
+        routeTab,
+        rollingStockSelector,
+        timesAndStopsTab,
+        timeAndStopSimulationOutputs,
+      ] = [
         new OperationalStudiesPage(page),
-        new RoutePage(page),
-        new RollingStockSelectorPage(page),
-        new OperationalStudiesInputTablePage(page),
-        new OperationalStudiesOutputTablePage(page),
+        new RouteTab(page),
+        new RollingStockSelector(page),
+        new TimesAndStopsTab(page),
+        new TimeAndStopSimulationOutputs(page),
       ];
 
       // Set up scenario for operational study
@@ -100,12 +106,12 @@ test.describe('Times and Stops Tab Verification', () => {
       // Setup train configuration and schedule
       await operationalStudiesPage.clickOnAddTrainButton();
       await operationalStudiesPage.setTrainStartTime('11:22:40');
-      await rollingStockPage.selectRollingStock(dualModeRollingStockName);
+      await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
       await operationalStudiesPage.setTrainScheduleName('Train-name-e2e-test');
 
       // Perform route pathfinding
       await operationalStudiesPage.clickOnRouteTab();
-      await routePage.performPathfindingByTrigram('WS', 'NES');
+      await routeTab.performPathfindingByTrigram('WS', 'NES');
 
       // Navigate to the Times and Stops tab and scroll to the data sheet
       await operationalStudiesPage.clickOnTimesAndStopsTab();
@@ -132,15 +138,15 @@ test.describe('Times and Stops Tab Verification', () => {
 
     // Verify table headers match the expected headers
     const actualColumnHeaders = cleanWhitespaceInArray(
-      await opInputTablePage.columnHeaders.allInnerTexts()
+      await timesAndStopsTab.columnHeaders.allInnerTexts()
     );
     expect(actualColumnHeaders).toEqual(expectedColumnNames);
 
     // Verify initial row count and fill table with input data
-    await opInputTablePage.verifyActiveRowsCount(2);
+    await timesAndStopsTab.verifyActiveRowsCount(2);
     for (const cell of initialInputsData) {
       const translatedHeader = cleanWhitespace(translations[cell.header]);
-      await opInputTablePage.fillTableCellByStationAndHeader(
+      await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,
         cell.value,
@@ -149,15 +155,15 @@ test.describe('Times and Stops Tab Verification', () => {
     }
 
     // Verify changes to the input table and additional rows
-    await opInputTablePage.verifyActiveRowsCount(4);
-    await opInputTablePage.verifyDeleteButtons(2);
-    await opInputTablePage.verifyInputTableData(inputExpectedData);
+    await timesAndStopsTab.verifyActiveRowsCount(4);
+    await timesAndStopsTab.verifyDeleteButtons(2);
+    await timesAndStopsTab.verifyInputTableData(inputExpectedData);
 
     // Validate waypoints after switching to the Route tab
     await operationalStudiesPage.clickOnRouteTab();
     for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
-      const droppedWaypoint = routePage.droppedWaypoints.nth(viaIndex);
-      await RoutePage.validateAddedWaypoint(
+      const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
+      await RouteTab.validateAddedWaypoint(
         droppedWaypoint,
         expectedValue.name,
         expectedValue.ch,
@@ -168,18 +174,18 @@ test.describe('Times and Stops Tab Verification', () => {
     // Add train schedule, verify results and output table data
     await operationalStudiesPage.addTrainSchedule();
     await operationalStudiesPage.returnSimulationResult();
-    await opOutputTablePage.verifyTimesStopsDataSheetVisibility();
+    await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
 
     // Scroll and extract output table data for verification
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
-    await opOutputTablePage.getOutputTableData(outputExpectedCellData);
+    await timeAndStopSimulationOutputs.getOutputTableData(outputExpectedCellData);
   });
 
   test('should correctly update and clear input table row', async () => {
     // Fill table cells with initial input data
     for (const cell of initialInputsData) {
       const translatedHeader = cleanWhitespace(translations[cell.header]);
-      await opInputTablePage.fillTableCellByStationAndHeader(
+      await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,
         cell.value,
@@ -187,13 +193,13 @@ test.describe('Times and Stops Tab Verification', () => {
       );
     }
 
-    await opInputTablePage.verifyInputTableData(inputExpectedData);
+    await timesAndStopsTab.verifyInputTableData(inputExpectedData);
 
     // Update table inputs with new data
-    await opInputTablePage.verifyActiveRowsCount(4);
+    await timesAndStopsTab.verifyActiveRowsCount(4);
     for (const cell of updatedInputsData) {
       const translatedHeader = cleanWhitespace(translations[cell.header]);
-      await opInputTablePage.fillTableCellByStationAndHeader(
+      await timesAndStopsTab.fillTableCellByStationAndHeader(
         cell.stationName,
         translatedHeader,
         cell.value,
@@ -202,17 +208,17 @@ test.describe('Times and Stops Tab Verification', () => {
     }
 
     // Delete a row and verify changes
-    await opInputTablePage.verifyDeleteButtons(2);
-    await opInputTablePage.deleteButtons.nth(0).click();
-    await opInputTablePage.verifyActiveRowsCount(4); // No reduction in rows after deletion
-    await opInputTablePage.verifyDeleteButtons(1);
-    await opInputTablePage.verifyInputTableData(updatedCellData);
+    await timesAndStopsTab.verifyDeleteButtons(2);
+    await timesAndStopsTab.deleteButtons.nth(0).click();
+    await timesAndStopsTab.verifyActiveRowsCount(4); // No reduction in rows after deletion
+    await timesAndStopsTab.verifyDeleteButtons(1);
+    await timesAndStopsTab.verifyInputTableData(updatedCellData);
 
     // Verify waypoints after switching to the Route tab
     await operationalStudiesPage.clickOnRouteTab();
     for (const [viaIndex, expectedValue] of expectedViaValues.entries()) {
-      const droppedWaypoint = routePage.droppedWaypoints.nth(viaIndex);
-      await RoutePage.validateAddedWaypoint(
+      const droppedWaypoint = routeTab.droppedWaypoints.nth(viaIndex);
+      await RouteTab.validateAddedWaypoint(
         droppedWaypoint,
         expectedValue.name,
         expectedValue.ch,

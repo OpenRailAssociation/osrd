@@ -1,17 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import HomePage from './home-page-model';
-import { cleanText } from '../utils/dataNormalizer';
-
-// Define the type for project details
-type ProjectDetails = {
-  name: string;
-  description: string;
-  objectives: string;
-  funders: string;
-  budget: string;
-  tags: string[];
-};
+import { cleanText } from '../../utils/dataNormalizer';
+import type { ProjectDetails } from '../../utils/types';
+import HomePage from '../home-page';
 
 class ProjectPage extends HomePage {
   private readonly projectNameLabel: Locator;

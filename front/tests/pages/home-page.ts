@@ -1,6 +1,6 @@
 import { type BrowserContext, type Locator, type Page } from '@playwright/test';
 
-import CommonPage from './common-page-model';
+import CommonPage from './common-page';
 
 class HomePage extends CommonPage {
   private readonly operationalStudiesLink: Locator;
@@ -75,7 +75,6 @@ class HomePage extends CommonPage {
   async getOSRDLanguage(): Promise<string> {
     await this.dropDown.click();
     const selectedLanguage = await this.OSRDLanguage.innerText();
-    await this.dropDown.click();
     return selectedLanguage;
   }
 }

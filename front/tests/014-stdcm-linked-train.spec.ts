@@ -66,8 +66,8 @@ test.describe('Verify stdcm simulation page', () => {
     });
     await stdcmPage.fillDestinationDetailsLight();
     await stdcmPage.launchSimulation();
-    await stdcmPage.verifyTableData(
-      './tests/assets/stdcm/linkedTrain/anteriorLinkedTrainTable.json'
+    await simulationResultPage.verifyTableData(
+      './tests/assets/stdcm/linked-train/anterior-linked-train-table.json'
     );
     await stdcmPage.retainSimulation();
     await stdcmPage.downloadSimulation(testInfo.outputDir);
@@ -89,8 +89,8 @@ test.describe('Verify stdcm simulation page', () => {
     });
     await stdcmPage.fillOriginDetailsLight('respectDestinationSchedule', true);
     await stdcmPage.launchSimulation();
-    await stdcmPage.verifyTableData(
-      './tests/assets/stdcm/linkedTrain/posteriorLinkedTrainTable.json'
+    await simulationResultPage.verifyTableData(
+      './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'
     );
     await stdcmPage.retainSimulation();
     await stdcmPage.downloadSimulation(testInfo.outputDir);

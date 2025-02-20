@@ -8,12 +8,15 @@ import type {
   Study,
 } from 'common/api/osrdEditoastApi';
 
-import { NEW_PACED_TRAIN_SETTINGS } from './assets/operational-studies-const';
-import { dualModeRollingStockName, electricRollingStockName } from './assets/project-const';
+import { NEW_PACED_TRAIN_SETTINGS } from './assets/constants/operational-studies-const';
+import {
+  dualModeRollingStockName,
+  electricRollingStockName,
+} from './assets/constants/project-const';
 import test from './logging-fixture';
-import RoutePage from './pages/op-route-page-model';
-import OperationalStudiesPage from './pages/operational-studies-page-model';
-import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
+import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
+import RouteTab from './pages/operational-studies/route-tab';
+import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getRollingStock } from './utils/api-setup';
 import readJsonFile from './utils/file-utils';
@@ -31,9 +34,10 @@ const frTranslations: ManageTrainScheduleTranslations = readJsonFile(
 test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
   test.slow();
 
-  let rollingstockPage: RollingStockSelectorPage;
+  let rollingstockSelector: RollingStockSelector;
   let operationalStudiesPage: OperationalStudiesPage;
-  let routePage: RoutePage;
+  let routeTab: RouteTab;
+
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -51,10 +55,10 @@ test.describe('Verify simulation configuration in operational studies for train 
   });
 
   test.beforeEach('Set up the project, study, and scenario', async ({ page }) => {
-    [rollingstockPage, operationalStudiesPage, routePage] = [
-      new RollingStockSelectorPage(page),
+    [rollingstockSelector, operationalStudiesPage, routeTab] = [
+      new RollingStockSelector(page),
       new OperationalStudiesPage(page),
-      new RoutePage(page),
+      new RouteTab(page),
     ];
 
     ({ project, study, scenario } = await createScenario());
@@ -95,11 +99,11 @@ test.describe('Verify simulation configuration in operational studies for train 
     await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
 
     // Select a rolling stock
-    await rollingstockPage.selectRollingStock(dualModeRollingStockName);
+    await rollingstockSelector.selectRollingStock(dualModeRollingStockName);
 
     // Select an itinerary
     await operationalStudiesPage.clickOnRouteTab();
-    await routePage.performPathfindingByTrigram('MWS', 'NES');
+    await routeTab.performPathfindingByTrigram('MWS', 'NES');
     await operationalStudiesPage.checkPathfindingDistance('33.950 km');
 
     // TODO : update this part when paced train endpoints are delivered to find a fine configuration for it
@@ -132,14 +136,14 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Open the rolling stock modal
 
-    await rollingstockPage.openRollingstockModal();
-    await expect(rollingstockPage.rollingStockSelectorModal).toBeVisible();
+    await rollingstockSelector.openRollingstockModal();
+    await expect(rollingstockSelector.rollingStockSelectorModal).toBeVisible();
 
     // Test rolling stock search with normalization (spaces and capital letters)
-    await rollingstockPage.searchRollingstock(' electric_Rs_E2e ');
+    await rollingstockSelector.searchRollingstock(' electric_Rs_E2e ');
 
     // Select the rolling stock card based on the test ID
-    const rollingstockCard = rollingstockPage.getRollingstockCardByTestID(
+    const rollingstockCard = rollingstockSelector.getRollingstockCardByTestID(
       `rollingstock-${rollingStock.name}`
     );
 
@@ -154,16 +158,16 @@ test.describe('Verify simulation configuration in operational studies for train 
     await rollingstockCard.locator('button').click();
 
     // Validate that the rolling stock's name and comfort class are displayed correctly
-    expect(await rollingstockPage.getRollingStockMiniCardInfo().first().textContent()).toMatch(
+    expect(await rollingstockSelector.getRollingStockMiniCardInfo().first().textContent()).toMatch(
       rollingStock.name
     );
-    expect(await rollingstockPage.getRollingStockInfoComfort().textContent()).toMatch(
+    expect(await rollingstockSelector.getRollingStockInfoComfort().textContent()).toMatch(
       /ConfortSStandard/i
     );
 
     // Perform Pathfinding and verify the distance
     await operationalStudiesPage.clickOnRouteTab();
-    await routePage.performPathfindingByTrigram('MWS', 'NES');
+    await routeTab.performPathfindingByTrigram('MWS', 'NES');
     await operationalStudiesPage.checkPathfindingDistance('33.950 km');
 
     // Adding Train Schedule

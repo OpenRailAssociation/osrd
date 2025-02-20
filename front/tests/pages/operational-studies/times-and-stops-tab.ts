@@ -1,14 +1,14 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import { getTranslations } from '../utils';
-import { cleanWhitespace } from '../utils/dataNormalizer';
-import readJsonFile from '../utils/file-utils';
-import type { FlatTranslations } from '../utils/types';
+import { getTranslations } from '../../utils';
+import { cleanWhitespace } from '../../utils/dataNormalizer';
+import readJsonFile from '../../utils/file-utils';
+import type { FlatTranslations } from '../../utils/types';
 
 const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
 const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
-class OperationalStudiesInputTablePage {
+class TimesAndStopsTab {
   readonly page: Page;
 
   readonly columnHeaders: Locator;
@@ -125,4 +125,4 @@ class OperationalStudiesInputTablePage {
   }
 }
 
-export default OperationalStudiesInputTablePage;
+export default TimesAndStopsTab;

@@ -1,18 +1,19 @@
 import type { Project } from 'common/api/osrdEditoastApi';
 
 import test from './logging-fixture';
-import ProjectPage from './pages/project-page-model';
+import ProjectPage from './pages/operational-studies/project-page';
 import { generateUniqueName } from './utils';
 import readJsonFile from './utils/file-utils';
 import { createProject } from './utils/setup-utils';
 import { deleteProject } from './utils/teardown-utils';
 import type { ProjectData } from './utils/types';
 
-const projectData: ProjectData = readJsonFile('tests/assets/operationStudies/project.json');
+const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
 
 test.describe('Validate the Operational Study Project workflow', () => {
-  let project: Project;
   let projectPage: ProjectPage;
+
+  let project: Project;
 
   test.beforeEach(async ({ page }) => {
     projectPage = new ProjectPage(page);

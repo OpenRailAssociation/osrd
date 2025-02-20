@@ -1,10 +1,13 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import CommonPage from './common-page-model';
-import { EXPLICIT_UI_STABILITY_TIMEOUT, SIMULATION_RESULT_TIMEOUT } from '../assets/timeout-const';
-import { getTranslations } from '../utils';
-import readJsonFile from '../utils/file-utils';
-import type { FlatTranslations } from '../utils/types';
+import {
+  EXPLICIT_UI_STABILITY_TIMEOUT,
+  SIMULATION_RESULT_TIMEOUT,
+} from '../../assets/constants/timeout-const';
+import { getTranslations } from '../../utils';
+import readJsonFile from '../../utils/file-utils';
+import type { FlatTranslations } from '../../utils/types';
+import CommonPage from '../common-page';
 
 type ScenarioTranslations = {
   timetable: FlatTranslations;
@@ -17,7 +20,7 @@ const frTranslations: ScenarioTranslations = readJsonFile(
   'public/locales/fr/operationalStudies/scenario.json'
 );
 
-class OperationalStudiesTimetablePage extends CommonPage {
+class ScenarioTimetableSection extends CommonPage {
   private readonly invalidTrainsMessage: Locator;
 
   private readonly timetableTrains: Locator;
@@ -215,7 +218,7 @@ class OperationalStudiesTimetablePage extends CommonPage {
     for (let currentTrainIndex = 0; currentTrainIndex < trainCount; currentTrainIndex += 1) {
       await this.page.waitForLoadState();
       await this.simulationResult.waitFor();
-      const trainButton = OperationalStudiesTimetablePage.getTrainButton(
+      const trainButton = ScenarioTimetableSection.getTrainButton(
         this.timetableTrains.nth(currentTrainIndex)
       );
       await trainButton.click({ position: { x: 5, y: 5 } });
@@ -258,4 +261,4 @@ class OperationalStudiesTimetablePage extends CommonPage {
   }
 }
 
-export default OperationalStudiesTimetablePage;
+export default ScenarioTimetableSection;

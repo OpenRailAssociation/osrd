@@ -4,7 +4,7 @@ import path from 'path';
 import { expect } from '@playwright/test';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-import type { Simulation } from './types';
+import type { PdfSimulationContent } from './types';
 import { logger } from '../logging-fixture';
 
 /**
@@ -55,7 +55,7 @@ export async function parsePdfText(buffer: Buffer) {
  * @param pdfText The text extracted from the PDF.
  * @param expectedSimulation The expected simulation data.
  */
-export function verifySimulationContent(pdfText: string, expectedSimulation: Simulation) {
+export function verifySimulationContent(pdfText: string, expectedSimulation: PdfSimulationContent) {
   const textChecks = [
     expectedSimulation.header.toolDescription,
     expectedSimulation.header.documentTitle,

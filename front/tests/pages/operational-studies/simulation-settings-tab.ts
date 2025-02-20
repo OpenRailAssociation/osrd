@@ -1,6 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-class OperationalStudiesSimulationSettingsPage {
+class SimulationSettingsTab {
   readonly page: Page;
 
   private readonly electricalProfilesSwitch: Locator;
@@ -50,4 +50,4 @@ class OperationalStudiesSimulationSettingsPage {
     await expect(this.codeCompoSelector).toHaveValue(codeCompo);
   }
 }
-export default OperationalStudiesSimulationSettingsPage;
+export default SimulationSettingsTab;

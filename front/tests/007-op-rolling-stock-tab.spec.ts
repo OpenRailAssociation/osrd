@@ -8,10 +8,13 @@ import type {
   Study,
 } from 'common/api/osrdEditoastApi';
 
-import { dualModeRollingStockName, electricRollingStockName } from './assets/project-const';
+import {
+  dualModeRollingStockName,
+  electricRollingStockName,
+} from './assets/constants/project-const';
 import test from './logging-fixture';
-import OperationalStudiesPage from './pages/operational-studies-page-model';
-import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
+import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
+import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { waitForInfraStateToBeCached } from './utils';
 import { getInfra, getRollingStock } from './utils/api-setup';
 import createScenario from './utils/scenario';
@@ -19,7 +22,8 @@ import { deleteScenario } from './utils/teardown-utils';
 
 test.describe('Rolling stock Tab Verification', () => {
   let operationalStudiesPage: OperationalStudiesPage;
-  let rollingStockSelector: RollingStockSelectorPage;
+  let rollingStockSelector: RollingStockSelector;
+
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -39,7 +43,7 @@ test.describe('Rolling stock Tab Verification', () => {
   test.beforeEach('Navigate to the scenario page', async ({ page }) => {
     [operationalStudiesPage, rollingStockSelector] = [
       new OperationalStudiesPage(page),
-      new RollingStockSelectorPage(page),
+      new RollingStockSelector(page),
     ];
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`

@@ -1,16 +1,16 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import OperationalStudiesTimetablePage from './op-timetable-page-model';
-import { LOAD_PAGE_TIMEOUT } from '../assets/timeout-const';
-import { getTranslations } from '../utils';
-import { normalizeStationData } from '../utils/dataNormalizer';
-import readJsonFile from '../utils/file-utils';
-import type { FlatTranslations, StationData } from '../utils/types';
+import ScenarioTimetableSection from './scenario-timetable-section';
+import { LOAD_PAGE_TIMEOUT } from '../../assets/constants/timeout-const';
+import { getTranslations } from '../../utils';
+import { normalizeStationData } from '../../utils/dataNormalizer';
+import readJsonFile from '../../utils/file-utils';
+import type { FlatTranslations, StationData } from '../../utils/types';
 
 const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
 const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
-class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage {
+class TimeAndStopSimulationOutputs extends ScenarioTimetableSection {
   private readonly columnHeaders: Locator;
 
   private readonly tableRows: Locator;
@@ -74,26 +74,24 @@ class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage 
         calculatedArrival,
         calculatedDeparture,
       ] = await Promise.all([
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.name]),
           false
         ),
-        OperationalStudiesOutputTablePage.getCellValue(cells.nth(headerIndexMap[translations.ch])),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(cells.nth(headerIndexMap[translations.ch])),
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.trackName]),
           false
         ),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.arrivalTime]),
           false
         ),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.departureTime]),
           false
         ),
-        OperationalStudiesOutputTablePage.getCellValue(
-          cells.nth(headerIndexMap[translations.stopTime])
-        ),
+        TimeAndStopSimulationOutputs.getCellValue(cells.nth(headerIndexMap[translations.stopTime])),
         cells
           .nth(headerIndexMap[translations.receptionOnClosedSignal])
           .locator('input.dsg-checkbox')
@@ -102,23 +100,23 @@ class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage 
           .nth(headerIndexMap[translations.shortSlipDistance])
           .locator('input.dsg-checkbox')
           .isChecked(),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.theoreticalMargin]),
           false
         ),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.theoreticalMarginSeconds])
         ),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.realMargin])
         ),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.diffMargins])
         ),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.calculatedArrivalTime])
         ),
-        OperationalStudiesOutputTablePage.getCellValue(
+        TimeAndStopSimulationOutputs.getCellValue(
           cells.nth(headerIndexMap[translations.calculatedDepartureTime])
         ),
       ]);
@@ -157,4 +155,4 @@ class OperationalStudiesOutputTablePage extends OperationalStudiesTimetablePage 
   }
 }
 
-export default OperationalStudiesOutputTablePage;
+export default TimeAndStopSimulationOutputs;

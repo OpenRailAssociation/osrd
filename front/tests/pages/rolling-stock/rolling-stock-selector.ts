@@ -1,9 +1,9 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import CommonPage from './common-page-model';
-import { extractNumberFromString } from '../utils/index';
+import { extractNumberFromString } from '../../utils/index';
+import CommonPage from '../common-page';
 
-class RollingStockSelectorPage extends CommonPage {
+class RollingStockSelector extends CommonPage {
   private readonly rollingStockSelectorButton: Locator;
 
   private readonly emptyRollingStockSelector: Locator;
@@ -128,4 +128,4 @@ class RollingStockSelectorPage extends CommonPage {
     expect(await this.selectedRollingStockName.first().innerText()).toEqual(rollingStockName);
   }
 }
-export default RollingStockSelectorPage;
+export default RollingStockSelector;

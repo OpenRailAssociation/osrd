@@ -3,9 +3,9 @@ import { test as setup } from '@playwright/test';
 import ROLLING_STOCK_NAMES, {
   globalProjectName,
   trainScheduleProjectName,
-} from './assets/project-const';
+} from './assets/constants/project-const';
 import { logger } from './logging-fixture';
-import HomePage from './pages/home-page-model';
+import HomePage from './pages/home-page';
 import { createDataForTests } from './utils/setup-utils';
 import { deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 

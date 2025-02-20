@@ -1,0 +1,215 @@
+import { expect, type Locator, type Page } from '@playwright/test';
+
+import type { StudyDetails } from '../../utils/types';
+import CommonPage from '../common-page';
+
+class StudyPage extends CommonPage {
+  private readonly studyUpdateButton: Locator;
+
+  private readonly studyName: Locator;
+
+  private readonly studyDescription: Locator;
+
+  private readonly studyState: Locator;
+
+  private readonly studyType: Locator;
+
+  private readonly studyServiceCodeInfo: Locator;
+
+  private readonly studyBusinessCodeInfo: Locator;
+
+  private readonly studyFinancialAmount: Locator;
+
+  private readonly studyTags: Locator;
+
+  private readonly addStudyButton: Locator;
+
+  private readonly studyUpdateConfirmButton: Locator;
+
+  private readonly studyInputName: Locator;
+
+  private readonly studyTypeSelect: Locator;
+
+  private readonly studyStatusSelect: Locator;
+
+  private readonly studyDescriptionInput: Locator;
+
+  private readonly studyStartDateInput: Locator;
+
+  private readonly studyExpectedEndDateInput: Locator;
+
+  private readonly studyEndDateInput: Locator;
+
+  private readonly studyServiceCodeInput: Locator;
+
+  private readonly studyBusinessCodeInput: Locator;
+
+  private readonly studyBudgetInput: Locator;
+
+  private readonly studyDeleteConfirmButton: Locator;
+
+  private readonly createStudyButton: Locator;
+
+  private readonly studyEditionModal: Locator;
+
+  private readonly startDate: Locator;
+
+  private readonly expectedEndDate: Locator;
+
+  private readonly realEndDate: Locator;
+
+  constructor(page: Page) {
+    super(page);
+    this.studyName = page.getByTestId('study-name-info');
+    this.studyType = page.locator('.study-details-type');
+    this.studyState = page.getByTestId('study-state-step-label');
+    this.studyDescription = page.locator('.study-details-description');
+    this.studyFinancialAmount = page.locator('.study-details-financials-amount');
+    this.studyServiceCodeInfo = page.getByTestId('study-service-code-info');
+    this.studyBusinessCodeInfo = page.getByTestId('study-business-code-info');
+    this.studyTags = page.locator('.study-details-tags');
+    this.addStudyButton = page.getByTestId('add-study-button');
+    this.studyUpdateButton = page.getByTestId('study-modify-button');
+    this.studyInputName = page.locator('#studyInputName');
+    this.studyTypeSelect = page.locator('.input-group').first();
+    this.studyStatusSelect = page.locator(
+      '.study-edition-modal-state > div > .select-improved > .select-control > .input-group'
+    );
+    this.studyDescriptionInput = page.locator('#studyDescription');
+    this.studyStartDateInput = page.locator('#studyInputStartDate');
+    this.studyExpectedEndDateInput = page.locator('#studyInputExpectedEndDate');
+    this.studyEndDateInput = page.locator('#studyInputRealEndDate');
+    this.studyServiceCodeInput = page.locator('#studyInputServiceCode');
+    this.studyBusinessCodeInput = page.locator('#studyInputBusinessCode');
+    this.studyBudgetInput = page.locator('#studyInputBudget');
+    this.studyUpdateConfirmButton = page.locator('#modal-content').getByTestId('update-study');
+    this.studyDeleteConfirmButton = page.locator('#modal-content').getByTestId('delete-study');
+    this.createStudyButton = page.getByTestId('create-study');
+    this.studyEditionModal = page.getByTestId('study-edition-modal');
+    this.startDate = page.locator(
+      '.study-details-dates-date.start .study-details-dates-date-value'
+    );
+    this.expectedEndDate = page.locator(
+      '.study-details-dates-date.expected-end .study-details-dates-date-value'
+    );
+    this.realEndDate = page.locator(
+      '.study-details-dates-date.real-end .study-details-dates-date-value'
+    );
+  }
+
+  // Fill the study details in the form inputs.
+  private async fillStudyDetails(details: StudyDetails) {
+    const {
+      name,
+      description,
+      type,
+      status,
+      startDate,
+      expectedEndDate,
+      endDate,
+      serviceCode,
+      businessCode,
+      budget,
+      tags,
+    } = details;
+    await this.studyInputName.fill(name);
+    await this.studyDescriptionInput.fill(description);
+    await this.setStudyTypeByText(type);
+    await this.setStudyStatusByText(status);
+    await this.studyStartDateInput.fill(startDate);
+    await this.studyExpectedEndDateInput.fill(expectedEndDate);
+    await this.studyEndDateInput.fill(endDate);
+    await this.studyServiceCodeInput.fill(serviceCode);
+    await this.studyBusinessCodeInput.fill(businessCode);
+    await this.studyBudgetInput.fill(budget);
+    for (const tag of tags) await this.setTag(tag);
+  }
+
+  // Create a study based on the provided details.
+  async createStudy(details: StudyDetails) {
+    await expect(this.addStudyButton).toBeVisible();
+    await this.addStudyButton.click();
+    await this.fillStudyDetails(details);
+    await this.createStudyButton.click();
+    await this.page.waitForURL('**/studies/*');
+  }
+
+  // Update a study based on the provided details.
+  async updateStudy(details: StudyDetails) {
+    await this.studyUpdateButton.click();
+    await this.fillStudyDetails(details);
+    await this.studyUpdateConfirmButton.click();
+    await this.page.waitForURL('**/studies/*');
+  }
+
+  // Validate that the study details match the expected values.
+  async validateStudyData(details: StudyDetails & { isUpdate?: boolean }) {
+    const {
+      name,
+      description,
+      type,
+      status,
+      startDate,
+      expectedEndDate,
+      endDate,
+      serviceCode,
+      businessCode,
+      budget,
+      tags,
+      isUpdate = false,
+    } = details;
+
+    await expect(this.studyEditionModal).not.toBeVisible();
+    await expect(this.studyName).toHaveText(name);
+    await expect(this.startDate).toHaveText(startDate);
+    await expect(this.expectedEndDate).toHaveText(expectedEndDate);
+    await expect(this.realEndDate).toHaveText(endDate);
+    await expect(this.studyDescription).toHaveText(description);
+    await expect(this.studyType).toHaveText(type);
+
+    // Verify study state based on whether it's an update or a new creation.
+    const stateLocator = isUpdate ? this.studyState.nth(1) : this.studyState.first();
+    await expect(stateLocator).toHaveText(status);
+
+    await expect(this.studyServiceCodeInfo).toHaveText(serviceCode);
+    await expect(this.studyBusinessCodeInfo).toHaveText(businessCode);
+    await this.validateNumericBudget(budget);
+    expect(await this.studyTags.textContent()).toContain(tags.join(''));
+  }
+
+  getStudyByName(name: string) {
+    return this.page.locator(`.study-card .study-card-name-text:has-text("${name}")`);
+  }
+
+  // Open a study by its test ID (The Test ID is the same as the Name).
+  async openStudyByTestId(studyTestId: string | RegExp) {
+    await this.page.getByTestId(studyTestId).first().hover();
+    await this.page.getByTestId(studyTestId).getByTestId('openStudy').click();
+  }
+
+  async setStudyTypeByText(type: string) {
+    await this.studyTypeSelect.click();
+    await this.page.locator('#modal-body').getByText(type).click();
+  }
+
+  async setStudyStatusByText(status: string) {
+    await this.studyStatusSelect.click();
+    await this.page.locator('#select-toggle').getByText(status).click();
+  }
+
+  // Validate if the study's financial budget matches the expected value.
+  async validateNumericBudget(expectedBudget: string) {
+    const budgetText = await this.studyFinancialAmount.textContent();
+    expect(budgetText?.replace(/[^0-9]/g, '')).toEqual(expectedBudget);
+  }
+
+  // Delete a study by its name.
+  async deleteStudy(name: string) {
+    await this.openStudyByTestId(name);
+    await this.studyUpdateButton.click();
+    await this.studyDeleteConfirmButton.click();
+    await expect(this.studyDeleteConfirmButton).not.toBeVisible();
+    await expect(this.getStudyByName(name)).not.toBeVisible();
+  }
+}
+export default StudyPage;

@@ -7,9 +7,9 @@ import simulationSheetDetails from './assets/simulation-sheet-const';
 import test from './logging-fixture';
 import STDCMPage from './pages/stdcm-page-model';
 import { waitForInfraStateToBeCached } from './utils';
-import { getInfra } from './utils/api-setup';
-import { findFirstPdf, parsePdfText, verifySimulationContent } from './utils/simulationSheet';
-import type { ConsistFields, Simulation } from './utils/types';
+import { getInfra } from './utils/api-utils';
+import { findFirstPdf, parsePdfText, verifySimulationContent } from './utils/pdf-parser';
+import type { ConsistFields, PdfSimulationContent } from './utils/types';
 
 test.describe('Verify stdcm simulation page', () => {
   test.describe.configure({ mode: 'serial' }); // Configure this block to run serially
@@ -73,10 +73,10 @@ test.describe('Verify stdcm simulation page', () => {
     if (browserName === 'chromium') {
       await stdcmPage.mapMarkerResultVisibility();
     }
-    await stdcmPage.verifyTableData('./tests/assets/stdcm/stdcmWithoutAllVia.json');
-    await stdcmPage.displayAllOperationalPoints();
-    await stdcmPage.verifyTableData('./tests/assets/stdcm/stdcmWithAllVia.json');
-    await stdcmPage.retainSimulation();
+    await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-without-all-via.json');
+    await simulationResultPage.displayAllOperationalPoints();
+    await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-with-all-via.json');
+    await simulationResultPage.retainSimulation();
     downloadDir = testInfo.outputDir;
     await stdcmPage.downloadSimulation(downloadDir);
     // Reset and verify empty fields
@@ -86,7 +86,7 @@ test.describe('Verify stdcm simulation page', () => {
     await newStdcmPage.verifyAllDefaultPageFields();
   });
 
-  /** *************** Test 2 **************** */
+  /** *************** Test 2 *************** */
   test('Verify simulation sheet content', async () => {
     const pdfFilePath = findFirstPdf(downloadDir!);
 
@@ -95,8 +95,8 @@ test.describe('Verify stdcm simulation page', () => {
     }
     // Read and parse the PDF
     const pdfBuffer = fs.readFileSync(pdfFilePath);
-    const pdfText = await parsePdfText(pdfBuffer);
-    const expectedSimulation: Simulation = simulationSheetDetails();
-    verifySimulationContent(pdfText, expectedSimulation);
+    const actualPdfSimulationContent = await parsePdfText(pdfBuffer);
+    const expectedPdfSimulationContent: PdfSimulationContent = simulationSheetDetails();
+    verifySimulationContent(actualPdfSimulationContent, expectedPdfSimulationContent);
   });
 });

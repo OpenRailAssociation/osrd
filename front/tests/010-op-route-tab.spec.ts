@@ -1,21 +1,20 @@
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
-import { electricRollingStockName } from './assets/project-const';
+import { electricRollingStockName } from './assets/constants/project-const';
 import test from './logging-fixture';
-import RoutePage from './pages/op-route-page-model';
-import OperationalStudiesPage from './pages/operational-studies-page-model';
-import RollingStockSelectorPage from './pages/rollingstock-selector-page-model';
+import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
+import RouteTab from './pages/operational-studies/route-tab';
+import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-setup';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
 test.describe('Route Tab Verification', () => {
-  test.slow();
-
   let operationalStudiesPage: OperationalStudiesPage;
-  let rollingstockSelectorPage: RollingStockSelectorPage;
-  let routePage: RoutePage;
+  let rollingstockSelector: RollingStockSelector;
+  let routeTab: RouteTab;
+
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -33,10 +32,10 @@ test.describe('Route Tab Verification', () => {
   test.beforeEach(
     'Navigate to the scenario page and select the rolling stock before each test',
     async ({ page }) => {
-      [operationalStudiesPage, rollingstockSelectorPage, routePage] = [
+      [operationalStudiesPage, rollingstockSelector, routeTab] = [
         new OperationalStudiesPage(page),
-        new RollingStockSelectorPage(page),
-        new RoutePage(page),
+        new RollingStockSelector(page),
+        new RouteTab(page),
       ];
 
       await page.goto(
@@ -51,7 +50,7 @@ test.describe('Route Tab Verification', () => {
       await operationalStudiesPage.verifyTabWarningPresence();
 
       // Select electric rolling stock and navigate to the Route Tab
-      await rollingstockSelectorPage.selectRollingStock(electricRollingStockName);
+      await rollingstockSelector.selectRollingStock(electricRollingStockName);
       await operationalStudiesPage.clickOnRouteTab();
     }
   );
@@ -59,13 +58,13 @@ test.describe('Route Tab Verification', () => {
   /** *************** Test 1 **************** */
   test('Select a route for operational study', async ({ browserName }) => {
     // Verify that no route is initially selected
-    await routePage.verifyNoSelectedRoute();
+    await routeTab.verifyNoSelectedRoute();
 
     // Perform pathfinding by station trigrams and verify map markers in Chromium
-    await routePage.performPathfindingByTrigram('WS', 'NES', 'MES');
+    await routeTab.performPathfindingByTrigram('WS', 'NES', 'MES');
     if (browserName === 'chromium') {
       const expectedMapMarkersValues = ['West_station', 'North_East_station', 'Mid_East_station'];
-      await routePage.verifyMapMarkers(...expectedMapMarkersValues);
+      await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
     // Verify that tab warnings are absent
@@ -75,14 +74,14 @@ test.describe('Route Tab Verification', () => {
   /** *************** Test 2 **************** */
   test('Adding waypoints to a route for operational study', async ({ browserName }) => {
     // Perform pathfinding by station trigrams
-    await routePage.performPathfindingByTrigram('WS', 'NES');
+    await routeTab.performPathfindingByTrigram('WS', 'NES');
 
     // Define waypoints and add them to the route
     const expectedViaValues = [
       { name: 'Mid_West_station', ch: 'BV', uic: '3', km: 'KM 12.050' },
       { name: 'Mid_East_station', ch: 'BV', uic: '4', km: 'KM 26.500' },
     ];
-    await routePage.addNewWaypoints(2, ['Mid_West_station', 'Mid_East_station'], expectedViaValues);
+    await routeTab.addNewWaypoints(2, ['Mid_West_station', 'Mid_East_station'], expectedViaValues);
 
     // Verify map markers in Chromium
     if (browserName === 'chromium') {
@@ -92,7 +91,7 @@ test.describe('Route Tab Verification', () => {
         'Mid_East_station',
         'North_East_station',
       ];
-      await routePage.verifyMapMarkers(...expectedMapMarkersValues);
+      await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
     // Verify that tab warnings are absent
@@ -104,31 +103,31 @@ test.describe('Route Tab Verification', () => {
     browserName,
   }) => {
     // Perform pathfinding by station trigrams and verify map markers in Chromium
-    await routePage.performPathfindingByTrigram('WS', 'SES', 'MWS');
+    await routeTab.performPathfindingByTrigram('WS', 'SES', 'MWS');
     const expectedMapMarkersValues = ['West_station', 'South_East_station', 'Mid_West_station'];
     if (browserName === 'chromium') {
-      await routePage.verifyMapMarkers(...expectedMapMarkersValues);
+      await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
     // Reverse the itinerary and verify the map markers
-    await routePage.clickOnReverseItinerary();
+    await routeTab.clickOnReverseItinerary();
     if (browserName === 'chromium') {
       const reversedMapMarkersValues = [...expectedMapMarkersValues].reverse();
-      await routePage.verifyMapMarkers(...reversedMapMarkersValues);
+      await routeTab.verifyMapMarkers(...reversedMapMarkersValues);
     }
 
     // Delete operational points and verify no selected route
-    await routePage.clickOnDeleteOPButtons();
-    await routePage.verifyNoSelectedRoute();
+    await routeTab.clickOnDeleteOPButtons();
+    await routeTab.verifyNoSelectedRoute();
 
     // Perform pathfinding again and verify map markers in Chromium
-    await routePage.performPathfindingByTrigram('WS', 'SES', 'MWS');
+    await routeTab.performPathfindingByTrigram('WS', 'SES', 'MWS');
     if (browserName === 'chromium') {
-      await routePage.verifyMapMarkers(...expectedMapMarkersValues);
+      await routeTab.verifyMapMarkers(...expectedMapMarkersValues);
     }
 
     // Delete the itinerary and verify no selected route
-    await routePage.clickDeleteItineraryButton();
-    await routePage.verifyNoSelectedRoute();
+    await routeTab.clickDeleteItineraryButton();
+    await routeTab.verifyNoSelectedRoute();
   });
 });

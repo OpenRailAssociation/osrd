@@ -6,7 +6,7 @@ import ROLLING_STOCK_NAMES, {
   globalProjectName,
   infrastructureName,
   trainScheduleProjectName,
-} from './assets/project-const';
+} from './assets/constants/project-const';
 import { logger } from './logging-fixture';
 import { setStdcmEnvironment } from './utils/api-setup';
 import { deleteInfra, deleteProject, deleteRollingStocks } from './utils/teardown-utils';

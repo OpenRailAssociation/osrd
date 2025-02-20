@@ -6,7 +6,7 @@ import { getInfra, getProject, getStudy, postApiRequest } from './api-setup';
 import readJsonFile from './file-utils';
 import type { ScenarioData } from './types';
 
-const scenarioData: ScenarioData = readJsonFile('tests/assets/operationStudies/scenario.json');
+const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/scenario.json');
 
 // Define the SetupResult interface to structure the returned setup data.
 interface SetupResult {

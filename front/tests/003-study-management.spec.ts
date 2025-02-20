@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Project, Study } from 'common/api/osrdEditoastApi';
 
 import test from './logging-fixture';
-import StudyPage from './pages/study-page-model';
+import StudyPage from './pages/operational-studies/study-page';
 import { generateUniqueName, getTranslations } from './utils';
 import { getProject } from './utils/api-setup';
 import { formatDateToDayMonthYear } from './utils/date';
@@ -17,7 +17,7 @@ type StudyTranslations = {
   studyStates: FlatTranslations;
 };
 
-const studyData: StudyData = readJsonFile('tests/assets/operationStudies/study.json');
+const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
 const enTranslations: StudyTranslations = readJsonFile(
   'public/locales/en/operationalStudies/study.json'
 );
@@ -27,9 +27,11 @@ const frTranslations: StudyTranslations = readJsonFile(
 
 test.describe('Validate the Study creation workflow', () => {
   let studyPage: StudyPage;
+
   let project: Project;
   let study: Study;
   let translations: typeof enTranslations | typeof frTranslations;
+
   test.beforeAll(' Retrieve a project and the translation', async () => {
     project = await getProject();
     translations = getTranslations({

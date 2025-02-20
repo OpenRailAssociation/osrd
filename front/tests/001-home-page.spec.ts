@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 
 import test from './logging-fixture';
-import HomePage from './pages/home-page-model';
+import HomePage from './pages/home-page';
 import { getTranslations } from './utils';
 import readJsonFile from './utils/file-utils';
 import type { FlatTranslations } from './utils/types';

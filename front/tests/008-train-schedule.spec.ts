@@ -4,9 +4,9 @@ import {
   trainScheduleProjectName,
   trainScheduleScenarioName,
   trainScheduleStudyName,
-} from './assets/project-const';
+} from './assets/constants/project-const';
 import test from './logging-fixture';
-import OperationalStudiesTimetablePage from './pages/op-timetable-page-model';
+import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import { waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getScenario, getStudy } from './utils/api-setup';
 
@@ -14,7 +14,8 @@ test.describe('Verify train schedule elements and filters', () => {
   test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 
-  let opTimetablePage: OperationalStudiesTimetablePage;
+  let scenarioTimetableSection: ScenarioTimetableSection;
+
   let project: Project;
   let study: Study;
   let scenario: Scenario;
@@ -37,7 +38,7 @@ test.describe('Verify train schedule elements and filters', () => {
   });
 
   test.beforeEach('Navigate to scenario page before each test', async ({ page }) => {
-    opTimetablePage = new OperationalStudiesTimetablePage(page);
+    scenarioTimetableSection = new ScenarioTimetableSection(page);
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );
@@ -48,28 +49,34 @@ test.describe('Verify train schedule elements and filters', () => {
   /** *************** Test 1 **************** */
   test('Loading trains and verifying simulation result', async () => {
     // Verify train count, invalid train messages, and train simulation results
-    await opTimetablePage.verifyTrainCount(TOTAL_TRAINS);
-    await opTimetablePage.verifyInvalidTrainsMessageVisibility();
-    await opTimetablePage.checkSelectedTimetableTrain();
-    await opTimetablePage.filterValidityAndVerifyTrainCount('Valid', VALID_TRAINS);
-    await opTimetablePage.verifyEachTrainSimulation();
+    await scenarioTimetableSection.verifyTrainCount(TOTAL_TRAINS);
+    await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
+    await scenarioTimetableSection.checkSelectedTimetableTrain();
+    await scenarioTimetableSection.filterValidityAndVerifyTrainCount('Valid', VALID_TRAINS);
+    await scenarioTimetableSection.verifyEachTrainSimulation();
   });
 
   /** *************** Test 2 **************** */
   test('Filtering imported trains', async () => {
     // Verify train count and apply different filters for validity and honored status
-    await opTimetablePage.verifyTrainCount(TOTAL_TRAINS);
-    await opTimetablePage.filterValidityAndVerifyTrainCount('Invalid', INVALID_TRAINS);
-    await opTimetablePage.filterValidityAndVerifyTrainCount('All', TOTAL_TRAINS);
-    await opTimetablePage.filterHonoredAndVerifyTrainCount('Honored', HONORED_TRAINS);
-    await opTimetablePage.filterValidityAndVerifyTrainCount('Valid', VALID_AND_HONORED_TRAINS);
-    await opTimetablePage.filterHonoredAndVerifyTrainCount('Not honored', NOT_HONORED_TRAINS);
-    await opTimetablePage.filterValidityAndVerifyTrainCount(
+    await scenarioTimetableSection.verifyTrainCount(TOTAL_TRAINS);
+    await scenarioTimetableSection.filterValidityAndVerifyTrainCount('Invalid', INVALID_TRAINS);
+    await scenarioTimetableSection.filterValidityAndVerifyTrainCount('All', TOTAL_TRAINS);
+    await scenarioTimetableSection.filterHonoredAndVerifyTrainCount('Honored', HONORED_TRAINS);
+    await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
+      'Valid',
+      VALID_AND_HONORED_TRAINS
+    );
+    await scenarioTimetableSection.filterHonoredAndVerifyTrainCount(
+      'Not honored',
+      NOT_HONORED_TRAINS
+    );
+    await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
       'Invalid',
       INVALID_AND_NOT_HONORED_TRAINS
     );
-    await opTimetablePage.filterHonoredAndVerifyTrainCount('All', INVALID_TRAINS);
-    await opTimetablePage.filterValidityAndVerifyTrainCount('All', TOTAL_TRAINS);
+    await scenarioTimetableSection.filterHonoredAndVerifyTrainCount('All', INVALID_TRAINS);
+    await scenarioTimetableSection.filterValidityAndVerifyTrainCount('All', TOTAL_TRAINS);
 
     // Verify train composition filters with predefined filter codes and expected counts
     const compositionFilters = [
@@ -80,7 +87,7 @@ test.describe('Verify train schedule elements and filters', () => {
     ];
 
     for (const filter of compositionFilters) {
-      await opTimetablePage.clickCodeCompoTrainFilterButton(filter.code, filter.count);
+      await scenarioTimetableSection.clickCodeCompoTrainFilterButton(filter.code, filter.count);
     }
   });
 });
