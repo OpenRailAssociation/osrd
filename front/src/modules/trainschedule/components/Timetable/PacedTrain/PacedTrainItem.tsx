@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
@@ -11,15 +11,8 @@ import { ms2min } from 'utils/timeManipulation';
 
 import TimetableItemActions from '../TimetableItemActions';
 import type { PacedTrainWithResult } from '../types';
-import OccurenceItem, { type Occurence } from './OccurenceItem';
-import useOccurences from './hooks/useOccurences';
-
-export type PacedTrain = TrainScheduleWithDetails & {
-  paced: {
-    duration: string;
-    step: string;
-  };
-};
+import useOccurrences from './hooks/useOccurrences';
+import OccurrenceItem from './OccurrenceItem';
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
@@ -40,9 +33,9 @@ const PacedTrainItem = ({
 }: PacedTrainItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
 
-const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
-const pacedTrainCadence = pacedTrain.paced.step;
-  const { occurences, occurencesCount } = useOccurences(pacedTrain, pacedTrainCadence);
+  const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
+  const pacedTrainCadence = pacedTrain.paced.step;
+  const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, pacedTrainCadence);
 
   const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
   const selectPathProjection = async () => {};
@@ -128,9 +121,11 @@ const pacedTrainCadence = pacedTrain.paced.step;
         editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
         deleteTimetableItem={deletePacedTrain}
       />
-      <div className="occurences">
+      <div className="occurrences">
         {isOccurrencesListOpen &&
-          occurences.map((occurence, index) => <OccurenceItem occurence={occurence} key={index} />)}
+          occurrences.map((occurrence, index) => (
+            <OccurrenceItem occurrence={occurrence} key={index} />
+          ))}
       </div>
       {pacedTrain.isValid && (
         <div className="more-info">

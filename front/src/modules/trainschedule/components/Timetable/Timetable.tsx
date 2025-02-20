@@ -249,24 +249,6 @@ const Timetable = ({
               )}
             </div>
           ))}
-          {showPacedTrains && displayedTrainSchedules.length > 0 && (
-            <PacedTrainItem
-              pacedTrain={
-                {
-                  ...displayedTrainSchedules[0],
-                  id: 12345,
-                  paced: {
-                    duration: 'PT2H',
-                    step: 'PT20M',
-                  },
-                } as PacedTrain
-              }
-              isInSelection={selectedTrainIds.includes(12345)}
-              handleSelectPacedTrain={handleSelectTrain}
-              isOnEdit={false}
-              isProjectionPathUsed={false}
-            />
-          )}
         </Virtualizer>
         <div
           className={cx('bottom-timetables-trains', {

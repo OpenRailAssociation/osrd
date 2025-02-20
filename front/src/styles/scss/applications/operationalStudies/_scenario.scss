@@ -518,11 +518,6 @@
               margin-bottom: 0;
             }
 
-            .toggle-icon {
-              transition: all 0.3s;
-              margin-right: 7.5px;
-            }
-
             .base-info {
               align-items: center;
               position: relative;
@@ -550,7 +545,7 @@
               }
             }
 
-            .occurences-count {
+            .occurrences-count {
               height: 20px;
               border: 0.5px solid var(--grey90);
               font-size: 14px;
@@ -564,18 +559,18 @@
               align-self: center;
               margin-right: 8px;
             }
-            .occurences {
+            .occurrences {
               width: 100%;
-              //TODO PACED TRAIN: set the height to auto when integrating the OccurenceItem component
+              //TODO PACED TRAIN: set the height to auto when integrating the OccurrenceItem component
               height: auto;
               padding-left:26px;
 
-              .occurence-item {
+              .occurrence-item {
                 display: flex;
                 width: 100%;
                 flex-wrap: nowrap;
                 padding-left:4px;
-                .occurence-item-dot {
+                .occurrence-item-dot {
                   color: var(--grey40);
                 }
 
@@ -643,16 +638,6 @@
                     margin-left: 32px;
                   }
                 }
-              }
-            }
-
-            &.closed {
-              .toggle-icon {
-                transform: rotate(-90deg);
-                transition: all 0.3s;
-              }
-              .occurences {
-                height: 0;
               }
             }
           }

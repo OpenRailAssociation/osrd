@@ -5,23 +5,23 @@ import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 
 const formatDateHours = (d: Date) => dayjs(d).format('HH:mm');
-export type Occurence = {
+export type Occurrence = {
   id: string;
   trainName: string;
   rollingStock?: LightRollingStockWithLiveries;
   startTime: Date;
   arrivalTime: Date;
 };
-type OccurenceItemProps = { occurence: Occurence };
-const OccurenceItem = ({ occurence }: OccurenceItemProps) => {
-  const { id, trainName, rollingStock, startTime, arrivalTime } = occurence;
+type OccurrenceItemProps = { occurrence: Occurrence };
+const OccurrenceItem = ({ occurrence }: OccurrenceItemProps) => {
+  const { id, trainName, rollingStock, startTime, arrivalTime } = occurrence;
 
   return (
-    <div className="occurence-item">
-      <div className="occurence-item-dot">
+    <div className="occurrence-item">
+      <div className="occurrence-item-dot">
         <Dot variant="fill" />
       </div>
-      <div className="occurence-item-label">{trainName}</div>
+      <div className="occurrence-item-label">{trainName}</div>
       <div className="rolling-stock">
         {rollingStock && (
           <div className="rolling-stock-img">
@@ -29,12 +29,12 @@ const OccurenceItem = ({ occurence }: OccurenceItemProps) => {
           </div>
         )}
       </div>
-      <div className="occurence-item-times">
-        <div className="occurence-item-time">{formatDateHours(startTime)}</div>
-        <div className="occurence-item-time arrival-time">{formatDateHours(arrivalTime)}</div>
+      <div className="occurrence-item-times">
+        <div className="occurrence-item-time">{formatDateHours(startTime)}</div>
+        <div className="occurrence-item-time arrival-time">{formatDateHours(arrivalTime)}</div>
       </div>
     </div>
   );
 };
 
-export default OccurenceItem;
+export default OccurrenceItem;
