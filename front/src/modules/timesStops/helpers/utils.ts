@@ -19,7 +19,6 @@ import {
   SECONDS_IN_A_DAY,
   secToHoursString,
   time2sec,
-  ms2sec,
 } from 'utils/timeManipulation';
 
 import { marginRegExValidation, MarginUnit } from '../consts';
@@ -79,7 +78,7 @@ export const formatSuggestedViasToRowVias = (
 
     const { arrival, receptionSignal, stopFor, theoreticalMargin } = objectToUse || {};
 
-    const stopForSeconds = stopFor ? ms2sec(stopFor.ms) : undefined;
+    const stopForSeconds = stopFor ? stopFor.total('second') : undefined;
 
     const isMarginValid = theoreticalMargin ? marginRegExValidation.test(theoreticalMargin) : true;
     const arrivalDuration = i === 0 ? Duration.zero : arrival;
