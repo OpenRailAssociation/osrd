@@ -9,7 +9,7 @@ import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { formatDateToString } from 'utils/date';
 import { Duration } from 'utils/duration';
-import { secToHoursString } from 'utils/timeManipulation';
+import { secToHoursString, ms2sec } from 'utils/timeManipulation';
 
 import type { SimulationSheetData } from './types';
 
@@ -122,7 +122,8 @@ const SimulationReportSheetScenario = ({
                 {operationalPointsList.map((step, index) => {
                   const isFirstStep = index === 0;
                   const isLastStep = index === operationalPointsList.length - 1;
-                  const shouldRenderRow = isFirstStep || step.duration > 0 || isLastStep;
+                  const shouldRenderRow =
+                    isFirstStep || step.duration > Duration.zero || isLastStep;
                   if (shouldRenderRow) {
                     renderedIndex += 1;
                     return (
@@ -219,8 +220,8 @@ const SimulationReportSheetScenario = ({
                 const isWaypoint = path.path_item_positions
                   .slice(1, -1)
                   .some((pos) => pos / 1000 === step.position);
-                const isViaWithoutStop = isWaypoint && step.duration === 0;
-                const isStepWithDuration = step.duration !== 0 && !isLastStep;
+                const isViaWithoutStop = isWaypoint && step.duration.ms === 0;
+                const isStepWithDuration = step.duration.ms !== 0 && !isLastStep;
                 const tdPassageStopStyle = !isViaWithoutStop
                   ? styles.simulation.td
                   : { ...styles.simulation.td, paddingLeft: '' };
@@ -244,7 +245,7 @@ const SimulationReportSheetScenario = ({
                           // eslint-disable-next-line no-nested-ternary
                           isViaWithoutStop
                             ? styles.simulation.opColumnPassageStop
-                            : isNotExtremity && step.duration !== 0
+                            : isNotExtremity && step.duration.ms !== 0
                               ? styles.simulation.opStop
                               : styles.simulation.td
                         }
@@ -270,7 +271,7 @@ const SimulationReportSheetScenario = ({
                     </View>
                     <View style={styles.simulation.endWidth}>
                       <TD style={styles.simulation.stopColumn}>
-                        {isLastStep || step.duration !== 0 ? secToHoursString(step.time) : ''}
+                        {isLastStep || step.duration.ms !== 0 ? secToHoursString(step.time) : ''}
                       </TD>
                     </View>
                     <View style={styles.simulation.passageWidth}>
@@ -279,7 +280,7 @@ const SimulationReportSheetScenario = ({
                           // eslint-disable-next-line no-nested-ternary
                           ...(isStepWithDuration
                             ? {
-                                width: `${step.duration < 600 && step.duration >= 60 ? 60 : 70}px`,
+                                width: `${step.duration < new Duration({ seconds: 600 }) && step.duration >= new Duration({ seconds: 60 }) ? 60 : 70}px`,
                                 ...styles.simulation.blueStop,
                               }
                             : !isViaWithoutStop
@@ -290,8 +291,8 @@ const SimulationReportSheetScenario = ({
                         {
                           // eslint-disable-next-line no-nested-ternary
                           isNotExtremity
-                            ? step.duration !== 0
-                              ? getStopDurationTime(new Duration({ seconds: step.duration }))
+                            ? step.duration.ms !== 0
+                              ? getStopDurationTime(step.duration)
                               : secToHoursString(step.time)
                             : ''
                         }
@@ -299,8 +300,8 @@ const SimulationReportSheetScenario = ({
                     </View>
                     <View style={styles.simulation.startWidth}>
                       <TD style={styles.simulation.stopColumn}>
-                        {isFirstStep || step.duration !== 0
-                          ? secToHoursString(step.time + step.duration)
+                        {isFirstStep || step.duration.ms !== 0
+                          ? secToHoursString(step.time + ms2sec(step.duration.ms))
                           : ''}
                       </TD>
                     </View>

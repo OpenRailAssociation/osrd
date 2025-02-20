@@ -112,7 +112,7 @@ export const formatOperationalPoints = (
     const { time: finalOutputTime, speed: finalOutputSpeed } = getTimeAndSpeed(final_output, op);
 
     // Get duration
-    let stepDuration = 0;
+    let stepDuration = Duration.zero;
     const correspondingStep = train.path.find(
       (step) =>
         'uic' in step &&
@@ -124,7 +124,7 @@ export const formatOperationalPoints = (
         (step) => step.at === correspondingStep.id
       );
       if (correspondingSchedule && correspondingSchedule.stop_for) {
-        stepDuration = ms2sec(Duration.parse(correspondingSchedule.stop_for).ms);
+        stepDuration = Duration.parse(correspondingSchedule.stop_for);
       }
     }
 

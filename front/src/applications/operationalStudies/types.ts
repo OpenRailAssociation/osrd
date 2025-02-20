@@ -16,6 +16,7 @@ import type {
 import type { RangedValue } from 'common/types';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { TrainId } from 'reducers/osrdconf/types';
+import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
 export interface Step {
@@ -173,7 +174,7 @@ export type OperationalPointWithTimeAndSpeed = {
   position: number;
   speed: number;
   time: number;
-  duration: number;
+  duration: Duration;
   line_code: number | null;
   track_number: number | null;
   line_name: string | null;
