@@ -334,6 +334,17 @@
           margin-left: 8px;
           position: relative;
           line-height: 24px;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -24px;
+            width: 24px;
+            height: 22px;
+            background: linear-gradient(270deg, rgba(247, 246, 238, 0), rgba(247, 246, 238, 1));
+            z-index: 1;
+          }
         }
 
         .no-train {
@@ -497,12 +508,12 @@
               display: flex;
               flex-grow: 1;
               overflow: hidden;
-              justify-content: space-between;
 
               .rolling-stock {
                 display: flex;
                 align-items: center;
                 overflow: hidden;
+                height: 24px;
 
                 .status-invalid {
                   width: 4px;
@@ -513,33 +524,12 @@
                 }
 
                 /* Trick to hide the image if too narrow */
-                .rolling-stock-img {
-                  overflow: hidden;
-                  height: 24px;
-                  position: relative;
-
-                  &::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 24px;
-                    height: 22px;
-                    background: linear-gradient(
-                      270deg,
-                      rgba(247, 246, 238, 0),
-                      rgba(247, 246, 238, 1)
-                    );
-                    z-index: 1;
-                  }
-
-                  img {
-                    min-width: 40px;
-                    height: 16px;
-                    object-fit: cover;
-                    object-position: left;
-                    transform: scaleX(-1);
-                  }
+                img {
+                  min-width: 40px;
+                  height: 16px;
+                  object-fit: cover;
+                  object-position: left;
+                  transform: scaleX(-1);
                 }
               }
             }
@@ -652,7 +642,7 @@
           &.selected:not(.invalid) {
             background-color: var(--selection20);
             box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
-            .rolling-stock-img::before {
+            .checkbox-title::after {
               background: linear-gradient(
                 270deg,
                 rgba(255, 242, 179, 0),

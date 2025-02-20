@@ -210,9 +210,7 @@ const TimetableTrainCard = ({
             </div>
             <div className="rolling-stock">
               {train.rollingStock && !train.invalidReason && (
-                <div className="rolling-stock-img">
-                  <RollingStock2Img rollingStock={train.rollingStock} />
-                </div>
+                <RollingStock2Img rollingStock={train.rollingStock} />
               )}
               {train.invalidReason && (
                 <div className="flex items-center">
