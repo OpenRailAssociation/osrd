@@ -45,7 +45,7 @@ const RollingStockEditor = () => {
     <div className="rollingstock-editor-list pr-1" data-testid="rollingstock-editor-list">
       {filteredRollingStockList.map((data) => (
         <div key={data.id}>
-          <div className="d-flex">
+          <div className="rolling-stock-card-container">
             <div
               role="button"
               tabIndex={-1}
@@ -66,16 +66,14 @@ const RollingStockEditor = () => {
               />
             </div>
             {data.id === openedRollingStockCardId && selectedRollingStock && (
-              <div className="align-self-start">
-                <RollingStockEditorButtons
-                  setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-                  isCondensed
-                  rollingStock={selectedRollingStock}
-                  setIsEditing={setIsEditing}
-                  resetFilters={resetFilters}
-                  isRollingStockLocked={selectedRollingStock.locked}
-                />
-              </div>
+              <RollingStockEditorButtons
+                setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+                isCondensed
+                rollingStock={selectedRollingStock}
+                setIsEditing={setIsEditing}
+                resetFilters={resetFilters}
+                isRollingStockLocked={selectedRollingStock.locked}
+              />
             )}
           </div>
           {openedRollingStockCardId === data.id && (

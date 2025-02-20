@@ -104,8 +104,8 @@ const RollingStockEditorButtons = ({
 
   return (
     <div
-      className={cx('rollingstock-editor-buttons d-flex p-1', {
-        'condensed flex-column align-items-center rounded-right': isCondensed,
+      className={cx('rollingstock-editor-buttons', {
+        'condensed flex-column align-items-center': isCondensed,
       })}
     >
       <button

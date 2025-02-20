@@ -15,8 +15,40 @@
         .rollingstock-card-header,
         .rollingstock-footer {
           cursor: default;
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0;
+        }
+      }
+    }
+
+    .rolling-stock-card-container {
+      position: relative;
+
+      .rollingstock-editor-buttons {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        padding: 4px;
+        justify-content: center;
+        background-color: var(--blue);
+        color: var(--white);
+        border-radius: 0 8px 8px 0;
+
+        svg {
+          margin: 0 30px;
+        }
+
+        &-group {
+          width: 6%;
+        }
+
+        &.condensed {
+          height: 100px;
+          justify-content: space-between;
+
+          svg {
+            justify-self: center;
+            margin: 0;
+          }
         }
       }
     }
@@ -146,32 +178,6 @@
   &borders {
     border: 3.2px solid #d7d7d7;
     border-radius: 8px;
-  }
-
-  &-buttons {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    background-color: var(--blue);
-    color: var(--white);
-
-    svg {
-      margin: 0 30px;
-    }
-
-    &-group {
-      width: 6%;
-    }
-
-    &.condensed {
-      height: 100px;
-      justify-content: space-between;
-
-      svg {
-        justify-self: center;
-        margin: 0;
-      }
-    }
   }
 
   &-left-container {
