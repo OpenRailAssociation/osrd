@@ -5,12 +5,22 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
+const SECOND_IN_MS = 1000;
+const MINUTE_IN_MS = 60 * SECOND_IN_MS;
+const HOUR_IN_MS = 60 * MINUTE_IN_MS;
+
+const UNIT_IN_MS = {
+  second: SECOND_IN_MS,
+  minute: MINUTE_IN_MS,
+  hour: HOUR_IN_MS,
+};
+
 export class Duration {
   /** Number of milliseconds */
   readonly ms: number;
 
   constructor({ hours = 0, minutes = 0, seconds = 0, milliseconds = 0 }) {
-    this.ms = ((hours * 60 + minutes) * 60 + seconds) * 1000 + milliseconds;
+    this.ms = hours * HOUR_IN_MS + minutes * MINUTE_IN_MS + seconds * SECOND_IN_MS + milliseconds;
   }
 
   static zero = new Duration({});
@@ -45,6 +55,13 @@ export class Duration {
 
   abs() {
     return new Duration({ milliseconds: Math.abs(this.ms) });
+  }
+
+  /**
+   * Computes the number of units of time that a duration represents.
+   */
+  total(unit: 'second' | 'minute' | 'hour'): number {
+    return this.ms / UNIT_IN_MS[unit];
   }
 }
 
