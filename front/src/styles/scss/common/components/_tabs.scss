@@ -7,12 +7,13 @@
     width: 100%;
 
     .tabs.pills {
-      overflow: auto;
       justify-content: space-between;
       min-height: 37.6px;
 
       .tab {
         flex-grow: 1;
+        // 4 pills to display in ManageTrainSchedule, with 3 gaps of 16px
+        width: calc((100% - 3 * 16px) / 4);
       }
     }
   }

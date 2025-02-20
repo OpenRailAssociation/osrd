@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 
 import { useTranslation } from 'react-i18next';
+import { BiLockAlt } from 'react-icons/bi';
 
 import icon from 'assets/pictures/components/train.svg';
 import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
@@ -91,11 +92,14 @@ const RollingStockSelector = ({
                       {t(`comfortTypes.${rollingStockComfort}`)}
                     </span>
                   </span>
-                  <RollingStockInfo
-                    rollingStock={rollingStockSelected}
-                    showMiddle={false}
-                    showSeries={false}
-                  />
+                  {rollingStockSelected.locked && (
+                    <span>
+                      <BiLockAlt />
+                    </span>
+                  )}
+                  <span className="rollingstock-info-end" data-testid="selected-rolling-stock-info">
+                    {rollingStockSelected.name}
+                  </span>
                 </div>
               </>
             )}

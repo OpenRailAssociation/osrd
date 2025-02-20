@@ -15,6 +15,9 @@
       .rollingstock-info-series {
         position: relative;
         font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
       .rollingstock-info-unit {
         position: relative;
@@ -34,6 +37,9 @@
         text-transform: uppercase;
         vertical-align: text-bottom;
         font-size: 0.7rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
   }
@@ -59,6 +65,7 @@
     justify-content: space-between;
     margin-top: 8px;
     gap: 8px;
+
     .rollingstock-info-comfort {
       display: flex;
       align-items: center;
@@ -72,16 +79,18 @@
     .comfort-HEATING {
       display: flex;
     }
+
     .rollingstock-info-end {
-      display: flex;
-      align-items: center;
       height: 24px;
-      position: relative;
       border: 1px solid var(--coolgray3);
       color: var(--coolgray9);
       border-radius: 4px;
       padding: 0 8px;
+      line-height: 1.25rem;
       font-size: 0.8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 }

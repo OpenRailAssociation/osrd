@@ -94,15 +94,15 @@ const ManageTrainSchedule = () => {
     id: 'rollingstock',
     title: rollingStock ? (
       <div className="managetrainschedule-tab">
-        <span className="rolling-stock">
+        <span className="rolling-stock-img">
           <RollingStock2Img rollingStock={rollingStock} />
         </span>
-        <span className="ml-2">{rollingStock.name}</span>
+        <span className="rolling-stock-name">{rollingStock.name}</span>
       </div>
     ) : (
       <div className="managetrainschedule-tab">
         <img src={rollingStockPic} alt="rolling stock" />
-        <span className="ml-2">{t('tabs.rollingStock')}</span>
+        <span className="rolling-stock-name">{t('tabs.rollingStock')}</span>
       </div>
     ),
     withWarning: rollingStockId === undefined,

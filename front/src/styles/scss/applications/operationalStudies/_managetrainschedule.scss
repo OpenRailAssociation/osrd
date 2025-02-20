@@ -3,19 +3,29 @@
     display: flex;
     align-items: center;
     width: 100%;
-    .rolling-stock {
+
+    .rolling-stock-img {
       width: 48px;
-      overflow: hidden;
       padding-bottom: 4px;
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, black 90%, rgba(0, 0, 0, 0));
+      -webkit-mask-image: linear-gradient(90deg, black 90%, rgba(0, 0, 0, 0));
+
       img {
         height: 16px;
         object-fit: cover;
         object-position: left;
-        transform: scaleX(-1);
-        mask-image: linear-gradient(90deg, black 80%, rgba(0, 0, 0, 0));
-        -webkit-mask-image: linear-gradient(90deg, black 80%, rgba(0, 0, 0, 0));
       }
     }
+
+    .rolling-stock-name {
+      margin-left: 8px;
+      width: calc(100% - 48px - 8px); // 48px for the rs image width, 8px for the left margin
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     img {
       height: 24px;
     }

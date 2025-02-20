@@ -120,6 +120,7 @@
           font-weight: bold;
           overflow: hidden;
           text-overflow: ellipsis;
+          white-space: nowrap;
         }
         .rollingstock-info-unit {
           &.UM2 {
@@ -138,6 +139,7 @@
           font-size: 0.7rem;
           overflow: hidden;
           text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
       .rollingstock-info-middle {
@@ -157,6 +159,7 @@
         font-size: 0.8rem;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
   }
