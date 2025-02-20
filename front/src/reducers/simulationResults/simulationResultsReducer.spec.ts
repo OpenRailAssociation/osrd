@@ -6,7 +6,6 @@ import { createStoreWithoutMiddleware } from 'store';
 import {
   simulationResultsInitialState,
   simulationResultsSlice,
-  updateIsPlaying,
   updateSelectedTrainId,
   updateTrainIdUsedForProjection,
 } from '.';
@@ -25,14 +24,6 @@ describe('simulationResultsReducer', () => {
     const store = createStore();
     const state = store.getState()[simulationResultsSlice.name];
     expect(state).toEqual(simulationResultsInitialState);
-  });
-
-  it('should handle updateIsPlaying', () => {
-    const store = createStore();
-    store.dispatch(updateIsPlaying(true));
-
-    const state = store.getState()[simulationResultsSlice.name];
-    expect(state.isPlaying).toBe(true);
   });
 
   it('should handle updateSelectedTrainId with a train schedule', () => {

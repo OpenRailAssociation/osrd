@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
-import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -15,8 +14,6 @@ import SimulationResultsMap from 'modules/simulationResult/components/Simulation
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChart/useProjectedConflicts';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
-import TimeButtons from 'modules/simulationResult/components/TimeButtons';
-import TrainDetails from 'modules/simulationResult/components/TrainDetails';
 import { useFormattedOperationalPoints } from 'modules/simulationResult/hooks/useFormattedOperationalPoints';
 import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
@@ -38,7 +35,6 @@ const MANCHETTE_HEIGHT_DIFF = 76;
 
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
-  collapsedTimetable: boolean;
   infraId?: number;
   projectionData?: ProjectionData;
   timetableItemsWithDetails: TimetableItemWithDetails[];
@@ -49,7 +45,6 @@ type SimulationResultsProps = {
 
 const SimulationResults = ({
   scenarioData,
-  collapsedTimetable,
   infraId,
   projectionData,
   timetableItemsWithDetails,
@@ -107,14 +102,6 @@ const SimulationResults = ({
     timetableId,
   });
 
-  const trainUsedForProjectionSpaceTimeData = useMemo(
-    () =>
-      projectionData?.projectedTrains.find(
-        (_train) => _train.id === projectionData.trainSchedule.id
-      ),
-    [projectionData]
-  );
-
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
   const selectedTrainSummary = useMemo(
@@ -151,24 +138,6 @@ const SimulationResults = ({
 
   return (
     <div className="simulation-results">
-      {/* SIMULATION : STICKY BAR */}
-      {selectedTimetableItem && (
-        <div
-          className={cx('osrd-simulation-sticky-bar', {
-            'with-collapsed-timetable': collapsedTimetable,
-          })}
-        >
-          <div className="row">
-            <div className="col-xl-4">
-              <TimeButtons departureTime={selectedTimetableItem.start_time} />
-            </div>
-            {trainUsedForProjectionSpaceTimeData && (
-              <TrainDetails projectedTrain={trainUsedForProjectionSpaceTimeData} />
-            )}
-          </div>
-        </div>
-      )}
-
       {/* SIMULATION : SPACE TIME CHART */}
       <ResizableSection
         height={manchetteWithSpaceTimeChartHeight}
@@ -255,11 +224,6 @@ const SimulationResults = ({
           <div data-testid="simulation-map" className="simulation-map">
             <SimulationResultsMap
               geometry={pathProperties?.geometry}
-              timetableItemSimulation={{
-                ...timetableItemSimulation,
-                timetableItemId: selectedTimetableItem.id,
-                startTime: selectedTimetableItem.start_time,
-              }}
               setMapCanvas={setMapCanvas}
               pathfindingResult={path}
             />

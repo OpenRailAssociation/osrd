@@ -141,7 +141,6 @@ export type PositionsSpeedTimes<Time = number> = Record<AllListValues, PositionS
 
 export interface SimulationResultsState {
   chart?: Chart;
-  isPlaying: boolean;
   selectedTrainId?: TrainId;
   trainIdUsedForProjection?: TimetableItemId;
 }

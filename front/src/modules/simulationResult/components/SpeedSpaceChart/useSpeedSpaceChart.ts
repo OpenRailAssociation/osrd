@@ -16,8 +16,6 @@ import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/he
 import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
 import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 
-import { updateChartSynchronizerTrainData } from '../ChartSynchronizer/utils';
-
 /** Prepare data needed for speedSpaceChart */
 const useSpeedSpaceChart = (
   timetableItem?: TimetableItemWithTimetableId,
@@ -86,13 +84,6 @@ const useSpeedSpaceChart = (
       setFormattedPowerRestrictions(powerRestrictions);
     }
   }, [formattedPathProperties, timetableItem]);
-
-  // setup chart synchronizer
-  useEffect(() => {
-    if (simulation?.status === 'success' && timetableItem && rollingStock && departureTime) {
-      updateChartSynchronizerTrainData(simulation, rollingStock, departureTime);
-    }
-  }, [simulation, timetableItem, rollingStock, departureTime]);
 
   return timetableItem &&
     rollingStock &&
