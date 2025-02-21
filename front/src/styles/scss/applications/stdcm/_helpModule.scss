@@ -13,6 +13,7 @@
   padding: 72px 48px 72px 56px;
   display: flex;
   flex-direction: column;
+  overflow: auto;
   &.active {
     right: 0;
   }
