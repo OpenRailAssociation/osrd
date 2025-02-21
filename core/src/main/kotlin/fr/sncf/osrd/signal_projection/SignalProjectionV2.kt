@@ -13,8 +13,8 @@ import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.PathOffsetBuilder
 import fr.sncf.osrd.standalone_sim.PathSignal
 import fr.sncf.osrd.standalone_sim.pathSignalsInRange
-import fr.sncf.osrd.standalone_sim.trainPathBlockOffset
 import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.TimeDelta
@@ -75,6 +75,7 @@ fun projectSignals(
     // Compute signal updates
     val startOffset =
         trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, chunkPath)
+            .distance
     // Compute path signals on path
     val pathOffsetBuilder = PathOffsetBuilder(startOffset)
     val pathSignals =

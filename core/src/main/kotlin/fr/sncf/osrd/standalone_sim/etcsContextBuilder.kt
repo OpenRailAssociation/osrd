@@ -9,6 +9,7 @@ import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.getRoutePathStartOffset
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.mapToRangeSet
@@ -49,7 +50,7 @@ fun buildETCSDangerPoints(
     routePath: StaticIdxList<Route>
 ): List<Offset<TravelledPath>> {
     val zonePaths = routePath.flatMap { infra.getRoutePath(it) }
-    var currentZonePathStartOffset = -getRoutePathStartOffset(infra, chunkPath, zonePaths).distance
+    var currentZonePathStartOffset = -getRoutePathStartOffset(infra, chunkPath, routePath).distance
 
     val res = mutableSetOf<Offset<TravelledPath>>()
     for (zonePath in zonePaths) {

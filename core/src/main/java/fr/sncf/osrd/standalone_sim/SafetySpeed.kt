@@ -7,6 +7,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.getRoutePathStartOffset
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Offset
@@ -36,7 +37,7 @@ fun makeSafetySpeedRanges(
 ): DistanceRangeMap<Speed> {
     val rawInfra = infra.rawInfra
     val zonePaths = routes.flatMap { rawInfra.getRoutePath(it) }
-    val zonePathStartOffset = getRoutePathStartOffset(rawInfra, chunkPath, zonePaths)
+    val zonePathStartOffset = getRoutePathStartOffset(rawInfra, chunkPath, routes)
     val signalOffsets = getSignalOffsets(infra, zonePaths, zonePathStartOffset)
 
     val stopsWithSafetySpeed =
@@ -115,31 +116,4 @@ fun getSignalOffsets(
     // There must be either a signal or a buffer stop, on which we may end safety speed ranges.
     res.add(Offset(prevZonePathsLength - pathStartOffset.distance))
     return res.filter { it.distance >= 0.meters }
-}
-
-/** Returns the offset where the train actually starts, compared to the start of the first route. */
-fun getRoutePathStartOffset(
-    infra: RawInfra,
-    chunkPath: ChunkPath,
-    zonePaths: List<ZonePathId>
-): Offset<Path> {
-    var prevChunksLength = Offset<Path>(0.meters)
-    val routeChunks = zonePaths.flatMap { infra.getZonePathChunks(it) }
-
-    var firstChunk = chunkPath.chunks[0]
-    var firstChunkLength = infra.getTrackChunkLength(firstChunk.value)
-    if (firstChunkLength == chunkPath.beginOffset && chunkPath.chunks.size > 1) {
-        // If the path starts precisely at the end of the first chunk, it may not be present in the
-        // route path. We can look for the next chunk instead.
-        firstChunk = chunkPath.chunks[1]
-        prevChunksLength += firstChunkLength.distance
-    }
-
-    for (chunk in routeChunks) {
-        if (chunk == firstChunk) {
-            return prevChunksLength + chunkPath.beginOffset.distance
-        }
-        prevChunksLength += infra.getTrackChunkLength(chunk.value).distance
-    }
-    throw RuntimeException("Unreachable (couldn't find first chunk in route list)")
 }

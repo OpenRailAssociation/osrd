@@ -39,6 +39,7 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -201,7 +202,8 @@ fun buildSignalingRanges(
     val blockInfra = infra.blockInfra
     var blockStartOffset =
         Offset<TravelledPath>(
-            trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath) * -1.0
+            trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath).distance *
+                -1.0
         )
     val res = distanceRangeMapOf<String>()
     for (blockId in blockPath) {

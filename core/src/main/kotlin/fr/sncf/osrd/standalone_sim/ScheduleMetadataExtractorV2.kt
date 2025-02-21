@@ -19,6 +19,7 @@ import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.*
 import kotlin.math.abs
 
@@ -72,7 +73,7 @@ fun runScheduleMetadataExtractor(
     }
 
     // Compute signal updates
-    val startOffset = trainPathBlockOffset(rawInfra, blockInfra, blockPath, chunkPath)
+    val startOffset = trainPathBlockOffset(rawInfra, blockInfra, blockPath, chunkPath).distance
     val pathOffsetBuilder = PathOffsetBuilder(startOffset)
     var blockPathLength = 0.meters
     for (block in blockPath) blockPathLength += blockInfra.getBlockLength(block).distance

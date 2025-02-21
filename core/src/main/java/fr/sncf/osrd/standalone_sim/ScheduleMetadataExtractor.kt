@@ -9,8 +9,6 @@ import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.reporting.exceptions.ErrorType
-import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
@@ -33,6 +31,7 @@ import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.*
 import kotlin.collections.set
 import kotlin.math.abs
@@ -126,7 +125,7 @@ fun run(
     }
 
     // Compute signal updates
-    val startOffset = trainPathBlockOffset(rawInfra, blockInfra, blockPath, chunkPath)
+    val startOffset = trainPathBlockOffset(rawInfra, blockInfra, blockPath, chunkPath).distance
     val pathOffsetBuilder = PathOffsetBuilder(startOffset)
     var blockPathLength = 0.meters
     for (block in blockPath) blockPathLength += blockInfra.getBlockLength(block).distance
@@ -633,35 +632,6 @@ fun pathSignalsInRange(
     return pathSignals(pathOffsetBuilder, blockPath, blockInfra).filter { signal ->
         signal.pathOffset.distance in rangeStart..rangeEnd
     }
-}
-
-/**
- * Computes the offset between the beginning of the first block and the beginning of the train
- * path - and thus of the envelope
- */
-fun trainPathBlockOffset(
-    infra: RawInfra,
-    blockInfra: BlockInfra,
-    blockPath: StaticIdxList<Block>,
-    chunkPath: ChunkPath
-): Distance {
-    var firstChunk = chunkPath.chunks[0]
-    var prevChunksLength = 0.meters
-    if (infra.getTrackChunkLength(firstChunk.value) == chunkPath.beginOffset) {
-        firstChunk = chunkPath.chunks[1]
-        prevChunksLength = -chunkPath.beginOffset.distance
-    }
-    for (block in blockPath) {
-        for (zonePath in blockInfra.getBlockPath(block)) {
-            for (dirChunk in infra.getZonePathChunks(zonePath)) {
-                if (dirChunk == firstChunk) return prevChunksLength + chunkPath.beginOffset.distance
-                prevChunksLength += infra.getTrackChunkLength(dirChunk.value).distance
-            }
-        }
-    }
-    val error = OSRDError(ErrorType.ScheduleMetadataExtractionFailed)
-    error.context["reason"] = "Couldn't find first chunk on the block path"
-    throw error
 }
 
 fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<ResultPosition> {

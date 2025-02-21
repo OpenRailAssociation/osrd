@@ -12,6 +12,7 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.ZoneUpdate
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.trainPathBlockOffset
 import java.awt.Color
 import kotlin.math.abs
 
@@ -72,6 +73,7 @@ fun project(
     // Compute signal updates
     val startOffset =
         trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, chunkPath)
+            .distance
     val pathSignals = pathSignals(PathOffsetBuilder(startOffset), blockPath, blockInfra)
     if (pathSignals.isEmpty()) return SignalProjectionResult(listOf())
 
