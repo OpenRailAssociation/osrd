@@ -4,17 +4,10 @@ import CommonPage from './common-page-model';
 import { EXPLICIT_UI_STABILITY_TIMEOUT, SIMULATION_RESULT_TIMEOUT } from '../assets/timeout-const';
 import { getTranslations } from '../utils';
 import readJsonFile from '../utils/file-utils';
+import type { FlatTranslations } from '../utils/types';
 
 type ScenarioTranslations = {
-  timetable: {
-    invalidTrains: string;
-    noSpeedLimitTagsShort: string;
-    showValidTrains: string;
-    showInvalidTrains: string;
-    showAllTrains: string;
-    showHonoredTrains: string;
-    showNotHonoredTrains: string;
-  };
+  timetable: FlatTranslations;
 };
 
 const enTranslations: ScenarioTranslations = readJsonFile(

@@ -16,22 +16,10 @@ import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import scrollContainer from './utils/scrollHelper';
 import { deleteScenario } from './utils/teardown-utils';
-import type { StationData } from './utils/types';
+import type { FlatTranslations, StationData } from './utils/types';
 
-type TimeStopsTranslation = {
-  name: string;
-  ch: string;
-  trackName: string;
-  arrivalTime: string;
-  stopTime: string;
-  departureTime: string;
-  receptionOnClosedSignal: string;
-  shortSlipDistance: string;
-  theoreticalMargin: string;
-};
-
-const enTranslations: TimeStopsTranslation = readJsonFile('public/locales/en/timesStops.json');
-const frTranslations: TimeStopsTranslation = readJsonFile('public/locales/fr/timesStops.json');
+const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
+const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
 test.describe('Times and Stops Tab Verification', () => {
   test.slow();
@@ -46,7 +34,7 @@ test.describe('Times and Stops Tab Verification', () => {
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
-  let translations: TimeStopsTranslation;
+  let translations: FlatTranslations;
 
   // Load test data for table inputs and expected results
   const initialInputsData: CellData[] = readJsonFile(
@@ -74,12 +62,10 @@ test.describe('Times and Stops Tab Verification', () => {
   // Define interface for table cell data
   interface CellData {
     stationName: string;
-    header: TranslationKeys;
+    header: string;
     value: string;
     marginForm?: string;
   }
-
-  type TranslationKeys = keyof TimeStopsTranslation;
 
   test.beforeAll('Fetch infrastructure and get translation', async () => {
     infra = await getInfra();

@@ -191,3 +191,5 @@ export type ScenarioData = {
   description: string;
   tags: Tags;
 };
+
+export type FlatTranslations = Record<string, string>;

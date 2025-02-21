@@ -3,21 +3,10 @@ import { type Locator, type Page, expect } from '@playwright/test';
 import { getTranslations } from '../utils';
 import { cleanWhitespace } from '../utils/dataNormalizer';
 import readJsonFile from '../utils/file-utils';
+import type { FlatTranslations } from '../utils/types';
 
-type TimeStopsTranslations = {
-  name: string;
-  ch: string;
-  trackName: string;
-  arrivalTime: string;
-  stopTime: string;
-  departureTime: string;
-  receptionOnClosedSignal: string;
-  shortSlipDistance: string;
-  theoreticalMargin: string;
-};
-
-const enTranslations: TimeStopsTranslations = readJsonFile('public/locales/en/timesStops.json');
-const frTranslations: TimeStopsTranslations = readJsonFile('public/locales/fr/timesStops.json');
+const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
+const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
 
 class OperationalStudiesInputTablePage {
   readonly page: Page;

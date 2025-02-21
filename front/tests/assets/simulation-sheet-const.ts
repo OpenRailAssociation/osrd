@@ -1,28 +1,12 @@
 import { getTranslations } from '../utils';
 import { getLocalizedDateString } from '../utils/date';
 import readJsonFile from '../utils/file-utils';
-import type { Simulation } from '../utils/types';
+import type { FlatTranslations, Simulation } from '../utils/types';
 
-type SimSheetTranslations = {
-  warningMessage: string;
-  stdcm: string;
-  applicationDate: string;
-  speedLimitByTag: string;
-  towedMaterial: string;
-  maxSpeed: string;
-  maxWeight: string;
-  referenceEngine: string;
-  maxLength: string;
-  serviceStop: string;
-  passageStop: string;
-  asap: string;
-  withoutWarranty: string;
-};
-
-const enTranslations: SimSheetTranslations = readJsonFile(
+const enTranslations: FlatTranslations = readJsonFile(
   'public/locales/en/stdcm-simulation-report-sheet.json'
 );
-const frTranslations: SimSheetTranslations = readJsonFile(
+const frTranslations: FlatTranslations = readJsonFile(
   'public/locales/fr/stdcm-simulation-report-sheet.json'
 );
 

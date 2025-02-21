@@ -4,17 +4,10 @@ import test from './logging-fixture';
 import HomePage from './pages/home-page-model';
 import { getTranslations } from './utils';
 import readJsonFile from './utils/file-utils';
+import type { FlatTranslations } from './utils/types';
 
-type HomeTranslations = {
-  operationalStudies: string;
-  stdcm: string;
-  editor: string;
-  rollingStockEditor: string;
-  map: string;
-};
-
-const enTranslations: HomeTranslations = readJsonFile('public/locales/en/home/home.json');
-const frTranslations: HomeTranslations = readJsonFile('public/locales/fr/home/home.json');
+const enTranslations: FlatTranslations = readJsonFile('public/locales/en/home/home.json');
+const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/home/home.json');
 
 test.describe('Home page OSRD', () => {
   let homePage: HomePage;

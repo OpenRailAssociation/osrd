@@ -10,17 +10,11 @@ import { formatDateToDayMonthYear } from './utils/date';
 import readJsonFile from './utils/file-utils';
 import { createStudy } from './utils/setup-utils';
 import { deleteStudy } from './utils/teardown-utils';
-import type { StudyData } from './utils/types';
+import type { FlatTranslations, StudyData } from './utils/types';
 
 type StudyTranslations = {
-  studyCategories: {
-    flowRate: string;
-    operability: string;
-  };
-  studyStates: {
-    started: string;
-    inProgress: string;
-  };
+  studyCategories: FlatTranslations;
+  studyStates: FlatTranslations;
 };
 
 const studyData: StudyData = readJsonFile('tests/assets/operationStudies/study.json');

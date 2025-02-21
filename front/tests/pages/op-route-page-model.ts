@@ -2,17 +2,12 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import { getTranslations } from '../utils';
 import readJsonFile from '../utils/file-utils';
+import type { FlatTranslations } from '../utils/types';
 
-type ManageTrainScheduleTranslations = {
-  noOriginChosen: string;
-  noDestinationChosen: string;
-  pathfindingMissingParams: string;
-};
-
-const enTranslations: ManageTrainScheduleTranslations = readJsonFile(
+const enTranslations: FlatTranslations = readJsonFile(
   'public/locales/en/operationalStudies/manageTrainSchedule.json'
 );
-const frTranslations: ManageTrainScheduleTranslations = readJsonFile(
+const frTranslations: FlatTranslations = readJsonFile(
   'public/locales/fr/operationalStudies/manageTrainSchedule.json'
 );
 
