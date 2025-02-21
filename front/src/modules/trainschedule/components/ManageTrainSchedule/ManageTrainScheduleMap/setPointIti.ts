@@ -21,10 +21,16 @@ export function setPointIti(
       newPathSteps = replaceElementAtIndex(pathSteps, 0, pathStep);
       break;
     case 'destination':
-      newPathSteps = replaceElementAtIndex(pathSteps, -1, pathStep);
+      if (pathSteps.length === 1) {
+        newPathSteps = addElementAtIndex(pathSteps, pathSteps.length, pathStep);
+      } else {
+        newPathSteps = replaceElementAtIndex(pathSteps, pathSteps.length - 1, pathStep);
+      }
       break;
     default:
-      if (pathProperties) {
+      if (pathSteps.length === 1) {
+        newPathSteps = addElementAtIndex(pathSteps, pathSteps.length, pathStep);
+      } else if (pathProperties) {
         newPathSteps = insertViaFromMap(pathSteps, pathStep, pathProperties);
       } else {
         newPathSteps = addElementAtIndex(pathSteps, pathSteps.length - 1, pathStep);
