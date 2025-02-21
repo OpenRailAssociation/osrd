@@ -1,5 +1,6 @@
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::IntoResponse;
+use axum::response::Response;
 use axum::Json;
 use colored::Colorize;
 use deadpool_redis::redis::RedisError;
@@ -10,17 +11,18 @@ use editoast_models::db_connection_pool::DatabasePoolError;
 use editoast_models::DatabaseError;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::json;
+use serde_json::Value;
 use std::backtrace::Backtrace;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fmt::Display;
+use std::fmt::Formatter;
 use std::result::Result as StdResult;
-use std::{
-    error::Error,
-    fmt::{Display, Formatter},
-};
 use tracing::error;
 use utoipa::ToSchema;
-use validator::{ValidationErrors, ValidationErrorsKind};
+use validator::ValidationErrors;
+use validator::ValidationErrorsKind;
 
 editoast_common::schemas! {
     InternalError,

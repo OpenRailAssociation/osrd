@@ -902,7 +902,7 @@ jobs:
           services='editoast osrdyne core'
           composes='-f docker-compose.yml'
           docker compose $composes pull --policy missing $services
-          docker compose $composes up --no-build -d $services jaeger
+          docker compose $composes up --no-build -d $services jaeger openfga
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
@@ -1013,7 +1013,7 @@ jobs:
           services='editoast osrdyne core gateway'
           composes='-f docker-compose.yml'
           docker compose $composes pull --policy missing $services
-          docker compose $composes up --no-build -d $services jaeger
+          docker compose $composes up --no-build -d $services jaeger openfga
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1

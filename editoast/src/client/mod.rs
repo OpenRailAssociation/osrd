@@ -3,6 +3,7 @@ pub mod group;
 pub mod healthcheck;
 pub mod import_rolling_stock;
 pub mod infra_commands;
+mod openfga_config;
 mod postgres_config;
 pub mod roles;
 pub mod runserver;
@@ -24,6 +25,7 @@ use editoast_derive::EditoastError;
 use group::GroupCommand;
 use import_rolling_stock::ImportRollingStockArgs;
 use infra_commands::InfraCommands;
+use openfga_config::OpenfgaConfig;
 pub use postgres_config::PostgresConfig;
 use roles::RolesCommand;
 use runserver::CoreArgs;
@@ -50,6 +52,8 @@ pub struct Client {
     pub valkey_config: ValkeyConfig,
     #[command(flatten)]
     pub telemetry_config: TelemetryConfig,
+    #[command(flatten)]
+    pub openfga_config: OpenfgaConfig,
     #[arg(long, env, value_enum, default_value_t = Color::Auto)]
     pub color: Color,
     #[command(subcommand)]

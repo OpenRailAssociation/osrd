@@ -321,9 +321,11 @@ pub enum AppHealthError {
     #[error(transparent)]
     Database(#[from] editoast_models::db_connection_pool::PingError),
     #[error(transparent)]
-    Valkey(#[from] anyhow::Error),
+    Valkey(anyhow::Error),
     #[error(transparent)]
     Core(#[from] CoreError),
+    #[error(transparent)]
+    Openfga(anyhow::Error),
 }
 
 #[utoipa::path(
@@ -338,6 +340,7 @@ async fn health(
         valkey,
         health_check_timeout,
         core_client,
+        openfga,
         ..
     }): State<AppState>,
 ) -> Result<&'static str> {
@@ -345,7 +348,7 @@ async fn health(
         health_check_timeout
             .to_std()
             .expect("timeout should be valid at this point"),
-        check_health(db_pool, valkey, core_client),
+        check_health(db_pool, valkey, core_client, openfga),
     )
     .await
     .map_err(|_| AppHealthError::Timeout)??;
@@ -356,12 +359,31 @@ pub async fn check_health(
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_client: Arc<ValkeyClient>,
     core_client: Arc<CoreClient>,
+    openfga: fga::Client,
 ) -> Result<()> {
     let mut db_connection = db_pool.clone().get().await?;
+    let openfga_ping = async move {
+        openfga
+            .is_healthy()
+            .await
+            .map_err(|err| {
+                AppHealthError::Openfga(anyhow::anyhow!("OpenFGA health request failure: {err}"))
+            })
+            .and_then(|healthy| {
+                if !healthy {
+                    Err(AppHealthError::Openfga(anyhow::anyhow!(
+                        "OpenFGA is not healthy"
+                    )))
+                } else {
+                    Ok(())
+                }
+            })
+    };
     tokio::try_join!(
         ping_database(&mut db_connection).map_err(AppHealthError::Database),
         valkey_client.ping_valkey().map_err(AppHealthError::Valkey),
         core_client.ping().map_err(AppHealthError::Core),
+        openfga_ping
     )?;
     Ok(())
 }
@@ -409,6 +431,11 @@ pub struct OsrdyneConfig {
     pub core: CoreConfig,
 }
 
+pub struct OpenfgaConfig {
+    pub url: Url,
+    pub store: String,
+}
+
 #[derive(Clone)]
 pub struct PostgresConfig {
     pub database_url: Url,
@@ -425,6 +452,7 @@ pub struct ServerConfig {
     pub postgres_config: PostgresConfig,
     pub osrdyne_config: OsrdyneConfig,
     pub valkey_config: ValkeyConfig,
+    pub openfga_config: OpenfgaConfig,
 }
 
 pub struct Server {
@@ -446,6 +474,7 @@ pub struct AppState {
     pub core_client: Arc<CoreClient>,
     pub osrdyne_client: Arc<OsrdyneClient>,
     pub health_check_timeout: Duration,
+    pub openfga: fga::Client,
 }
 
 impl FromRef<AppState> for DbConnectionPoolV2 {
@@ -461,7 +490,7 @@ impl FromRef<AppState> for Arc<CoreClient> {
 }
 
 impl AppState {
-    async fn init(config: ServerConfig) -> Result<Self> {
+    async fn init(config: ServerConfig) -> anyhow::Result<Self> {
         info!("Building application state...");
 
         // Config database
@@ -504,12 +533,31 @@ impl AppState {
             config.osrdyne_config.osrdyne_api_url.clone(),
         ));
 
+        let openfga = {
+            tracing::info!(url = %config.openfga_config.url, "connecting to OpenFGA");
+            match fga::Client::try_with_store(
+                config.openfga_config.store.clone(),
+                config.openfga_config.try_as_settings()?,
+            )
+            .await
+            {
+                Err(fga::client::InitializationError::NotFound(store)) => {
+                    tracing::info!(store, "store not found, creating it");
+                    fga::Client::try_new_store(store, config.openfga_config.try_as_settings()?)
+                        .await?
+                }
+                result => result?,
+            }
+        };
+        tracing::info!(url = %config.openfga_config.url, "connected to OpenFGA");
+
         Ok(Self {
             valkey,
             db_pool,
             infra_caches,
             core_client,
             osrdyne_client,
+            openfga,
             map_layers: Arc::new(MapLayers::default()),
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
@@ -519,7 +567,7 @@ impl AppState {
 }
 
 impl Server {
-    pub async fn new(config: ServerConfig) -> Result<Self> {
+    pub async fn new(config: ServerConfig) -> anyhow::Result<Self> {
         info!("Building server...");
         let app_state = AppState::init(config).await?;
 
@@ -583,6 +631,23 @@ impl Server {
         let service = ServiceExt::<axum::extract::Request>::into_make_service(router);
         let listener = tokio::net::TcpListener::bind((address.as_str(), *port)).await?;
         axum::serve(listener, service).await
+    }
+}
+
+impl OpenfgaConfig {
+    pub fn try_as_settings(&self) -> anyhow::Result<fga::client::ConnectionSettings> {
+        let address = self
+            .url
+            .host_str()
+            .ok_or_else(|| anyhow::anyhow!("Configured OpenFGA URL doesn't have a host part"))?;
+        let port = self
+            .url
+            .port()
+            .ok_or_else(|| anyhow::anyhow!("Configured OpenFGA URL doesn't have a port part"))?;
+        Ok(fga::client::ConnectionSettings::new(
+            address.to_owned(),
+            port,
+        ))
     }
 }
 

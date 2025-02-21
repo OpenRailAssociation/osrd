@@ -3,18 +3,20 @@ use std::sync::Arc;
 use anyhow::anyhow;
 use editoast_models::DbConnectionPoolV2;
 
-use crate::{
-    core::{mq_client, CoreClient},
-    views::check_health,
-    ValkeyClient,
-};
+use crate::core::mq_client;
+use crate::core::CoreClient;
+use crate::views;
+use crate::ValkeyClient;
 
-use super::{runserver::CoreArgs, ValkeyConfig};
+use super::openfga_config::OpenfgaConfig;
+use super::runserver::CoreArgs;
+use super::ValkeyConfig;
 
 pub async fn healthcheck_cmd(
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_config: ValkeyConfig,
     core_config: CoreArgs,
+    openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let valkey = ValkeyClient::new(valkey_config.into()).unwrap();
     let core_client = CoreClient::new_mq(mq_client::Options {
@@ -25,9 +27,17 @@ pub async fn healthcheck_cmd(
         num_channels: core_config.core_client_channels_size,
     })
     .await?;
-    check_health(db_pool, valkey.into(), core_client.into())
+    let openfga = {
+        let config = views::OpenfgaConfig::from(openfga_config);
+        tracing::info!(url = %config.url, "connecting to OpenFGA");
+        let client =
+            fga::Client::try_with_store(config.store.clone(), config.try_as_settings()?).await?;
+        tracing::info!(url = %config.url, "connected to OpenFGA");
+        client
+    };
+    views::check_health(db_pool, valkey.into(), core_client.into(), openfga)
         .await
         .map_err(|e| anyhow!("❌ healthcheck failed: {e}"))?;
-    println!("✅ Healthcheck passed");
+    tracing::info!("✅ Healthcheck passed");
     Ok(())
 }

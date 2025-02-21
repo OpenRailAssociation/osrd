@@ -27,19 +27,24 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::filter::Directive;
 use url::Url;
 
-use crate::{
-    core::{mocking::MockingClient, CoreClient},
-    generated_data::speed_limit_tags_config::SpeedLimitTagIds,
-    infra_cache::InfraCache,
-    map::MapLayers,
-    models::auth::PgAuthDriver,
-    valkey_utils::ValkeyConfig,
-    AppState, ValkeyClient,
-};
+use crate::core::mocking::MockingClient;
+use crate::core::CoreClient;
+use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
+use crate::infra_cache::InfraCache;
+use crate::map::MapLayers;
+use crate::models::auth::PgAuthDriver;
+use crate::valkey_utils::ValkeyConfig;
+use crate::AppState;
+use crate::ValkeyClient;
 use axum_test::TestRequest;
 use axum_test::TestServer;
 
-use super::{authentication_middleware, CoreConfig, OsrdyneConfig, PostgresConfig, ServerConfig};
+use super::authentication_middleware;
+use super::CoreConfig;
+use super::OpenfgaConfig;
+use super::OsrdyneConfig;
+use super::PostgresConfig;
+use super::ServerConfig;
 
 #[derive(Debug)]
 pub struct NoopSpanExporter;
@@ -171,6 +176,10 @@ impl TestAppBuilder {
                 no_cache: false,
                 valkey_url: Url::parse("redis://localhost:6379").unwrap(),
             },
+            openfga_config: OpenfgaConfig {
+                url: Url::parse("http://localhost:8091").unwrap(),
+                store: "osrd-editoast-test".to_owned(),
+            },
         };
 
         // Setup tracing
@@ -221,11 +230,18 @@ impl TestAppBuilder {
             .unwrap_or_else(OsrdyneClient::default_mock);
         let osrdyne_client = Arc::new(osrdyne_client);
 
+        let openfga = block_on(fga::Client::try_new_store(
+            "osrd-editoast-test".to_owned(),
+            fga::client::ConnectionSettings::new("localhost".to_owned(), 8091).reset_store(),
+        ))
+        .expect("OpenFGA should be setup properly for testing");
+
         let app_state = AppState {
             db_pool: db_pool_v2.clone(),
             core_client: core_client.clone(),
             osrdyne_client,
             valkey,
+            openfga,
             infra_caches,
             map_layers: Arc::new(MapLayers::default()),
             speed_limit_tag_ids,

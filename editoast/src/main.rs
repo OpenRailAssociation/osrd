@@ -130,6 +130,8 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     let valkey_config = client.valkey_config;
 
+    let openfga_config = client.openfga_config;
+
     match client.color {
         Color::Never => colored::control::set_override(false),
         Color::Always => colored::control::set_override(true),
@@ -137,7 +139,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 
     match client.command {
-        Commands::Runserver(args) => runserver(args, pg_config, valkey_config)
+        Commands::Runserver(args) => runserver(args, pg_config, valkey_config, openfga_config)
             .await
             .map_err(Into::into),
         Commands::ImportRollingStock(args) => import_rolling_stock(args, db_pool.into()).await,
@@ -230,7 +232,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .map_err(Into::into),
         },
         Commands::Healthcheck(core_config) => {
-            healthcheck_cmd(db_pool.into(), valkey_config, core_config)
+            healthcheck_cmd(db_pool.into(), valkey_config, core_config, openfga_config)
                 .await
                 .map_err(Into::into)
         }

@@ -226,6 +226,8 @@
 pub mod client;
 pub mod model;
 
+pub use client::Client;
+
 pub use fga_derive::Object;
 pub use fga_derive::Type;
 pub use fga_derive::User;

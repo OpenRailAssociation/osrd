@@ -1,4 +1,5 @@
 mod authorization_models;
+mod healthz;
 mod queries;
 mod stores;
 mod tuples;
@@ -160,6 +161,13 @@ impl Client {
         }
         client.store = client.post_stores(&store_name).await?;
         Ok(client)
+    }
+
+    pub async fn is_healthy(&self) -> Result<bool, RequestFailure> {
+        Ok(matches!(
+            self.get_healthz().await?,
+            healthz::Health::Serving
+        ))
     }
 
     pub fn stores(&self) -> impl stream::TryStream<Ok = Store, Error = RequestFailure> + '_ {
@@ -433,7 +441,7 @@ impl Client {
     /// # use fga::fga;
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let mut client = fga::client::Client::try_new_store("doctest_list_usersets".to_owned(), settings()).await.unwrap();
+    /// # let mut client = fga::Client::try_new_store("doctest_list_usersets".to_owned(), settings()).await.unwrap();
     /// # client.update_authorization_model(&fga::compile_model(include_str!("../tests/doctest.fga"))).await.unwrap();
     /// // define can_read: reader or writer
     /// client.prepare_writes()
@@ -806,6 +814,13 @@ mod tests {
             client.store.name,
             "fga-client-tests-create_store_with_reset"
         );
+    }
+
+    #[tokio::test]
+    async fn is_healthy() {
+        setup_tracing();
+        let client = test_client!();
+        assert!(client.is_healthy().await.unwrap());
     }
 
     impl Client {

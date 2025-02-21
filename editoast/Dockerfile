@@ -82,8 +82,9 @@ FROM alpine:3.20 AS running_env
 RUN apk add --no-cache jemalloc curl ca-certificates geos libpq openssl postgresql16-client
 
 COPY --from=run_builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
-COPY --from=run_builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
 COPY --from=run_builder /editoast/migrations /migrations
+COPY --from=base_builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
+COPY --from=base_builder /usr/local/bin/fga /usr/local/bin/fga
 COPY --from=editoast_assets /assets /assets
 
 ARG OSRD_GIT_DESCRIBE

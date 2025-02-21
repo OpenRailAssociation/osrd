@@ -128,6 +128,7 @@ services:
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4319"
       OSRD_MQ_URL: "amqp://osrd:password@osrd-rabbitmq-pr-tests:5673/%2f"
+      EDITOAST_OPENFGA_URL: "http://openfga:8191"
       OSRDYNE_API_URL: "http://osrd-osrdyne-pr-tests:4243/"
     command:
       - /bin/sh

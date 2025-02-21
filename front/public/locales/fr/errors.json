@@ -257,7 +257,8 @@
       "Timeout": "Le serveur n'a pas répondu à temps",
       "Database": "Erreur de base de données",
       "Valkey": "Erreur de Valkey",
-      "Core": "Erreur de core"
+      "Core": "Erreur de core",
+      "Openfga": "Erreur d'OpenFGA"
     }
   }
 }

@@ -1324,6 +1324,7 @@ dependencies = [
  "editoast_search",
  "enum-map",
  "enumset",
+ "fga",
  "futures 0.3.31",
  "futures-util",
  "geos",

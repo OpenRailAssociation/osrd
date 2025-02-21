@@ -4423,6 +4423,25 @@ components:
           type: string
           enum:
           - editoast:app_health:Database
+    EditoastAppHealthErrorOpenfga:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:app_health:Openfga
     EditoastAppHealthErrorTimeout:
       type: object
       required:
@@ -5088,6 +5107,7 @@ components:
       oneOf:
       - $ref: '#/components/schemas/EditoastAppHealthErrorCore'
       - $ref: '#/components/schemas/EditoastAppHealthErrorDatabase'
+      - $ref: '#/components/schemas/EditoastAppHealthErrorOpenfga'
       - $ref: '#/components/schemas/EditoastAppHealthErrorTimeout'
       - $ref: '#/components/schemas/EditoastAppHealthErrorValkey'
       - $ref: '#/components/schemas/EditoastAttachedErrorTrackNotFound'

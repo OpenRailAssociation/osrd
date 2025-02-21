@@ -4,7 +4,9 @@ use url::Url;
 
 use crate::views;
 
-use super::{PostgresConfig, ValkeyConfig};
+use super::openfga_config::OpenfgaConfig;
+use super::PostgresConfig;
+use super::ValkeyConfig;
 
 #[derive(Args, Debug, Clone)]
 struct MapLayersConfig {
@@ -13,7 +15,6 @@ struct MapLayersConfig {
 }
 
 #[derive(Args, Debug)]
-#[command(about, long_about = "Launch the server")]
 pub struct CoreArgs {
     #[clap(long, env = "OSRD_MQ_URL", default_value_t = Url::parse("amqp://osrd:password@127.0.0.1:5672/%2f").unwrap())]
     pub(super) mq_url: Url,
@@ -74,6 +75,7 @@ pub async fn runserver(
     }: RunserverArgs,
     postgres: PostgresConfig,
     valkey: ValkeyConfig,
+    openfga: OpenfgaConfig,
 ) -> anyhow::Result<()> {
     let config = views::ServerConfig {
         port,
@@ -93,6 +95,7 @@ pub async fn runserver(
             },
         },
         valkey_config: valkey.into(),
+        openfga_config: openfga.into(),
     };
 
     let server = views::Server::new(config).await?;

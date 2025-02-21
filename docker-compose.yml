@@ -118,6 +118,7 @@ services:
       postgres: { condition: service_healthy }
       valkey: { condition: service_healthy }
       rabbitmq: { condition: service_healthy }
+      openfga: { condition: service_started }
     build:
       context: editoast
       dockerfile: Dockerfile
@@ -137,6 +138,7 @@ services:
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
       OSRD_MQ_URL: "amqp://osrd:password@osrd-rabbitmq:5672/%2f"
+      EDITOAST_OPENFGA_URL: "http://openfga:8091"
     command:
       - /bin/sh
       - -c
