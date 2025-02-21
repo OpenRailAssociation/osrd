@@ -78,7 +78,7 @@ export default function ImportTrainScheduleTrainDetail({
         </span>
         <span
           className={`import-train-schedule-traindetail-stepnb ${
-            trainData.steps.length <= 2 ? 'import-invalid-step-nb' : 'bg-primary'
+            trainData.steps.length < 2 ? 'import-invalid-step-nb' : 'bg-primary'
           }`}
         >
           {trainData.steps.length - 2}
