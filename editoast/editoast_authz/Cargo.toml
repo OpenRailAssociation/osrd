@@ -8,6 +8,8 @@ edition.workspace = true
 fixtures = []
 
 [dependencies]
+fga.workspace = true
+futures.workspace = true
 itertools.workspace = true
 serde = { workspace = true, features = ["derive"] }
 strum.workspace = true

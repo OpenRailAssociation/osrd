@@ -1,0 +1,33 @@
+model
+  schema 1.1
+
+type role # 3 roles in DB: role:OperationalStudies, role:Stdcm, role:Admin
+
+type user
+  relations
+    define role: [role] or role from group
+    define group: [group]
+    define manager: manager from group
+
+type group
+  relations
+    define role: [role]
+    define manager: [user]
+    define member: [user]
+
+type infra
+  relations
+    # attributions (grants)
+    define reader: [user, group#member, group#manager, user#manager]
+    define writer: [user, group#member, group#manager, user#manager]
+    define owner: [user, group#member, group#manager, user#manager]
+
+    # privilèges
+    define can_read: reader or can_write
+    define can_write: writer or can_delete
+    define can_delete: owner
+
+    # partage
+    define can_share_read: can_read
+    define can_share_write: can_write
+    define can_share_ownership: owner

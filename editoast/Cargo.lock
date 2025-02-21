@@ -1381,6 +1381,8 @@ dependencies = [
 name = "editoast_authz"
 version = "0.1.0"
 dependencies = [
+ "fga",
+ "futures 0.3.31",
  "itertools",
  "pretty_assertions",
  "serde",

@@ -533,7 +533,7 @@ impl AppState {
             config.osrdyne_config.osrdyne_api_url.clone(),
         ));
 
-        let openfga = {
+        let mut openfga = {
             tracing::info!(url = %config.openfga_config.url, "connecting to OpenFGA");
             match fga::Client::try_with_store(
                 config.openfga_config.store.clone(),
@@ -550,6 +550,7 @@ impl AppState {
             }
         };
         tracing::info!(url = %config.openfga_config.url, "connected to OpenFGA");
+        editoast_authz::ensure_latest_authorization_model(&mut openfga).await?;
 
         Ok(Self {
             valkey,
