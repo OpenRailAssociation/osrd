@@ -53,7 +53,6 @@ function transformDataStatePayload(
 const SimulationWarpedMap = ({
   collapsed,
   pathGeometry,
-  // TODO: fix warped map - pass the selected train simulation results (SimulationResponseSuccess) in props
 }: {
   collapsed?: boolean;
   pathGeometry?: PathProperties['geometry'];
@@ -76,19 +75,6 @@ const SimulationWarpedMap = ({
   const layers = useMemo(() => new Set<Layer>(['track_sections']), []);
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const { chart } = useSelector(getSimulationResults);
-  // TODO: fix warped map - uncomment the next commented lines
-  // const [localTimePosition, setLocalTimePosition] = useState<Date>(new Date());
-  // const [localPositionValues, setLocalPositionValues] = useState<PositionsSpeedTimes<Date>>(
-  //   {} as PositionsSpeedTimes<Date>
-  // );
-  // useChartSynchronizer(
-  //   debounce((timePosition, positionValues) => {
-  //     setLocalTimePosition(timePosition);
-  //     setLocalPositionValues(positionValues);
-  //   }, 1),
-  //   'warped-map',
-  //   []
-  // );
 
   // Boundaries handling (ie zoom sync):
   const syncedBoundingBox: LngLatBoundsLike = useMemo(() => {
@@ -178,44 +164,6 @@ const SimulationWarpedMap = ({
     return undefined;
   }, [itineraryState, state]);
 
-  // Trains handling:
-  // TODO: fix warped map - adapt this part with simulations results
-  // const trainsIndex = useMemo(() => keyBy(simulation.trains as Train[], 'id'), [simulation.trains]);
-  // const trainsPositionsState: AsyncMemoState<
-  //   (TrainPosition & { train: Train; isSelected?: boolean })[]
-  // > = useAsyncMemo(async () => {
-  //   if (!itineraryState || !warpedItinerary || state.type !== 'dataLoaded') return [];
-
-  //   const pathLength = length(itineraryState);
-  //   const transformedPathLength = length(warpedItinerary);
-
-  //   return getSimulationHoverPositions(
-  //     path,
-  //     simulation,
-  //     localTimePosition,
-  //     localPositionValues,
-  //     selectedTrain?.id
-  //   ).map((position) => {
-  //     const transformedTrain = { ...position };
-
-  //     // Transform positions:
-  //     transformedTrain.headPosition = state.transform(
-  //       position.headPosition
-  //     ) as TrainPosition['headPosition'];
-  //     transformedTrain.tailPosition = state.transform(
-  //       position.tailPosition
-  //     ) as TrainPosition['tailPosition'];
-
-  //     // Interpolate positions:
-  //     transformedTrain.headDistanceAlong =
-  //       (position.headDistanceAlong / pathLength) * transformedPathLength;
-  //     transformedTrain.tailDistanceAlong =
-  //       (position.tailDistanceAlong / pathLength) * transformedPathLength;
-
-  //     return { ...transformedTrain, train: trainsIndex[position.trainId] };
-  //   });
-  // }, [itineraryState, simulation, localTimePosition, localPositionValues, selectedTrain, state]);
-
   const updateWarpedMapState = (coordinates: GeoJsonLineStringValue) => {
     const path = lineString(coordinates);
     const pathBBox = bbox(path) as BBox2d;
@@ -291,8 +239,6 @@ const SimulationWarpedMap = ({
             osrdData={state.osrd}
             osmData={state.osm}
             itinerary={warpedItinerary}
-            // TODO: fix warped map - adapt this part with simulations results
-            // trainsPositions={getAsyncMemoData(trainsPositionsState) || undefined}
             boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
           />
           <div className="buttons">
