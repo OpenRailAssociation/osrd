@@ -83,7 +83,7 @@
     "react-modal": "^3.16.3",
     "react-redux": "^9.2.0",
     "react-rnd": "^10.4.14",
-    "react-router-dom": "^7.1.5",
+    "react-router-dom": "^7.2.0",
     "react-select": "^5.10.0",
     "react-tether": "^3.0.3",
     "redux": "^5.0.1",
