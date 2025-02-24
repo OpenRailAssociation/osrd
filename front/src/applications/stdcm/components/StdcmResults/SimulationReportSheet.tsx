@@ -201,13 +201,13 @@ const SimulationReportSheet = ({
                           {isLastStep && !step.isVia && step.arrivalType === 'preciseTime' && (
                             <View style={styles.convoyAndRoute.tolerancesWidth}>
                               <Text style={styles.convoyAndRoute.tolerancesText}>
-                                {step.tolerances?.before
-                                  ? `+${step.tolerances.before.total('minute')}`
+                                {step.tolerances?.after
+                                  ? `+${step.tolerances.after.total('minute')}`
                                   : ''}
                               </Text>
                               <Text style={styles.convoyAndRoute.tolerancesText}>
-                                {step.tolerances?.after
-                                  ? `-${step.tolerances.after.total('minute')}`
+                                {step.tolerances?.before
+                                  ? `-${step.tolerances.before.total('minute')}`
                                   : ''}
                               </Text>
                             </View>
@@ -236,10 +236,10 @@ const SimulationReportSheet = ({
                             step.arrivalType === 'preciseTime' && (
                               <View style={styles.convoyAndRoute.tolerancesWidth}>
                                 <Text style={styles.convoyAndRoute.tolerancesText}>
-                                  {`+${step.tolerances.before.total('minute')}`}
+                                  {`+${step.tolerances.after.total('minute')}`}
                                 </Text>
                                 <Text style={styles.convoyAndRoute.tolerancesText}>
-                                  {`-${step.tolerances.after.total('minute')}`}
+                                  {`-${step.tolerances.before.total('minute')}`}
                                 </Text>
                               </View>
                             )}

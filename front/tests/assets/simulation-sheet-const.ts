@@ -42,8 +42,8 @@ const simulationSheetDetails = (): Simulation => {
       station1: {
         name: '1 North_West_station',
         ch: 'BV',
-        plusTolerance: '+60',
-        minusTolerance: '-15',
+        minusTolerance: '-60',
+        plusTolerance: '+15',
         departureTime: '20:21',
         reason: translations.serviceStop,
       },
