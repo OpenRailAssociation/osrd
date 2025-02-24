@@ -29,10 +29,6 @@ export function datetime2time(datetime: Date) {
   return formatTime(datetime);
 }
 
-export function time2datetime(time: TimeString) {
-  return d3.timeParse('%H:%M:%S')(time);
-}
-
 export function sec2time(sec: number) {
   return new Date(sec * 1000).toISOString().substr(11, 8);
 }
