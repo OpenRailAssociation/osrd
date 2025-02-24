@@ -3,19 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 import { EyeClosed } from '@osrd-project/ui-icons';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 const useWaypointMenu = (waypointsPanelData?: WaypointsPanelData) => {
-  const { filteredWaypoints, setFilteredWaypoints, projectionPath } = waypointsPanelData || {};
+  const { filteredWaypoints, setFilteredWaypoints, projectionPath, timetableId } =
+    waypointsPanelData || {};
   const { t } = useTranslation('simulation');
-
-  const { getTimetableID } = useOsrdConfSelectors();
-  const timetableId = useSelector(getTimetableID);
 
   const [activeWaypointId, setActiveWaypointId] = useState<string>();
 
@@ -59,7 +55,7 @@ const useWaypointMenu = (waypointsPanelData?: WaypointsPanelData) => {
             (waypoint) => waypoint.id !== activeWaypointId
           );
 
-          // We need to removed the id because it can change for waypoints added by map click
+          // We need to remove the id because it can change for waypoints added by map click
           const simplifiedPath = projectionPath?.map((waypoint) =>
             omit(waypoint, ['id', 'deleted'])
           );

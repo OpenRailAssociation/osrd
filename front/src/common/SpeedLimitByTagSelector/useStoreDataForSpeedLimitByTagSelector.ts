@@ -2,21 +2,24 @@ import { useEffect, useMemo } from 'react';
 
 import { compact, concat, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { COMPOSITION_CODES, DEFAULT_COMPOSITION_CODE } from 'applications/stdcm/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors, useOsrdConfActions, useInfraID } from 'common/osrdContext';
+import { useOsrdConfActions, useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-export const useStoreDataForSpeedLimitByTagSelector = ({ isStdcm } = { isStdcm: false }) => {
+export const useStoreDataForSpeedLimitByTagSelector = ({
+  isStdcm,
+  speedLimitByTag,
+}: {
+  isStdcm?: boolean;
+  speedLimitByTag: string | undefined;
+}) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
-  const { getSpeedLimitByTag } = useOsrdConfSelectors();
-  const speedLimitByTag = useSelector(getSpeedLimitByTag);
   const infraID = useInfraID();
 
   const { updateSpeedLimitByTag } = useOsrdConfActions();
@@ -57,7 +60,6 @@ export const useStoreDataForSpeedLimitByTagSelector = ({ isStdcm } = { isStdcm: 
   const speedLimitsByTagsOrdered = useMemo(() => speedLimitsByTags.sort(), [speedLimitsByTags]);
 
   return {
-    speedLimitByTag,
     speedLimitsByTags: speedLimitsByTagsOrdered,
     dispatchUpdateSpeedLimitByTag,
   };

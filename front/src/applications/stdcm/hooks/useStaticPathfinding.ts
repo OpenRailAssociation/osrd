@@ -11,7 +11,7 @@ import {
 import usePathProperties from 'modules/pathfinding/hooks/usePathProperties';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { getStdcmPathSteps } from 'reducers/osrdconf/stdcmConf/selectors';
+import { getStdcmPathSteps, getStdcmRollingStockID } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 /**
@@ -26,7 +26,9 @@ function pathStepsToLocations(
 const useStaticPathfinding = (infra?: InfraWithState) => {
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
-  const { rollingStock } = useStoreDataForRollingStockSelector();
+
+  const rollingStockId = useSelector(getStdcmRollingStockID);
+  const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
 
   const [pathfinding, setPathfinding] = useState<PathfindingResult>();
 

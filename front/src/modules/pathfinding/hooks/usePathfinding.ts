@@ -13,7 +13,6 @@ import type {
   PostInfraByInfraIdPathPropertiesApiArg,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import {
   formatSuggestedOperationalPoints,
   getPathfindingQuery,
@@ -43,16 +42,19 @@ const initialPathfindingState = {
   isMissingParam: false,
 };
 
-const usePathfinding = (
-  setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void
-) => {
+const usePathfinding = ({
+  rollingStockId: currentRollingStockId,
+  setPathProperties,
+}: {
+  rollingStockId: number | undefined;
+  setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
+}) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getPathSteps);
   const powerRestrictions = useSelector(getPowerRestrictions);
-  const { infra, reloadCount, setIsInfraError } = useInfraStatus();
-  const { getRollingStockID } = useOsrdConfSelectors();
-  const currentRollingStockId = useSelector(getRollingStockID);
+  const { infraId, getTrackSectionsByIds } = useScenarioContext();
+  const { infra, reloadCount, setIsInfraError } = useInfraStatus({ infraId });
 
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
@@ -63,8 +65,6 @@ const usePathfinding = (
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
-
-  const { infraId, getTrackSectionsByIds } = useScenarioContext();
 
   const setIsMissingParam = () =>
     setPathfindingState({ ...initialPathfindingState, isMissingParam: true });

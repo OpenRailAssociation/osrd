@@ -68,7 +68,10 @@ const useStdcm = ({
       { skip: !osrdconf.rollingStockID }
     );
 
-  const { speedLimitByTag } = useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
+  useStoreDataForSpeedLimitByTagSelector({
+    isStdcm: true,
+    speedLimitByTag: osrdconf.speedLimitByTag,
+  });
 
   const resetStdcmState = () => {
     setStdcmTrainResult(undefined);
@@ -108,7 +111,7 @@ const useStdcm = ({
             ...response,
             rollingStock: stdcmRollingStock,
             creationDate: new Date(),
-            speedLimitByTag,
+            speedLimitByTag: osrdconf.speedLimitByTag,
             simulationPathSteps: osrdconf.stdcmPathSteps,
           } as StdcmSuccessResponse);
 
@@ -129,7 +132,7 @@ const useStdcm = ({
             ...response,
             rollingStock: stdcmRollingStock,
             creationDate: new Date(),
-            speedLimitByTag,
+            speedLimitByTag: osrdconf.speedLimitByTag,
             simulationPathSteps: osrdconf.stdcmPathSteps,
             path: response.pathfinding_result,
           } as StdcmConflictsResponse);

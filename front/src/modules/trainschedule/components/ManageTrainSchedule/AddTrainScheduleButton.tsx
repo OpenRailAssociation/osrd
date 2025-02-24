@@ -47,7 +47,9 @@ const AddTrainScheduleButton = ({
   const { showPacedTrains } = useSelector(getUserPreferences);
 
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
-  const { rollingStock } = useStoreDataForRollingStockSelector();
+  const { rollingStock } = useStoreDataForRollingStockSelector({
+    rollingStockId: simulationConf.rollingStockID,
+  });
 
   const createTrainSchedules = async () => {
     const validTrainConfig = checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name);

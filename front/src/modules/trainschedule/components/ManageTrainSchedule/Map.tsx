@@ -213,6 +213,7 @@ const Map = ({
       >
         {!showStdcmAssets && featureInfoClick && (
           <AddPathStepPopup
+            infraId={infraID}
             pathProperties={pathProperties}
             featureInfoClick={featureInfoClick}
             resetFeatureInfoClick={resetFeatureInfoClick}

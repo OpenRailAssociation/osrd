@@ -14,6 +14,7 @@ import {
 import RollingStockModal from 'modules/rollingStock/components/RollingStockSelector/RollingStockModal';
 
 type RollingStockProps = {
+  rollingStockId: number | undefined;
   condensed?: boolean;
   rollingStockSelected?: RollingStockWithLiveries;
   rollingStockComfort: Comfort;
@@ -22,6 +23,7 @@ type RollingStockProps = {
 };
 
 const RollingStockSelector = ({
+  rollingStockId,
   condensed,
   rollingStockSelected,
   rollingStockComfort,
@@ -33,8 +35,8 @@ const RollingStockSelector = ({
   const ref2scroll = useRef<HTMLDivElement>(null);
 
   const selectRollingStock = useCallback(
-    (rollingStockId: number, comfort: Comfort) => {
-      onSelectRollingStock(rollingStockId, comfort);
+    (newRollingStockId: number, comfort: Comfort) => {
+      onSelectRollingStock(newRollingStockId, comfort);
       closeModal();
     },
     [onSelectRollingStock]
@@ -49,7 +51,11 @@ const RollingStockSelector = ({
         data-testid="rollingstock-selector"
         onClick={() => {
           openModal(
-            <RollingStockModal ref2scroll={ref2scroll} onSelectRollingStock={selectRollingStock} />,
+            <RollingStockModal
+              rollingStockId={rollingStockId}
+              ref2scroll={ref2scroll}
+              onSelectRollingStock={selectRollingStock}
+            />,
             'lg'
           );
         }}

@@ -42,6 +42,7 @@ export type ProjectionData = {
 };
 
 export type WaypointsPanelData = {
+  timetableId: number | undefined;
   filteredWaypoints: OperationalPoint[];
   setFilteredWaypoints: Dispatch<SetStateAction<OperationalPoint[]>>;
   projectionPath: TrainScheduleBase['path'];

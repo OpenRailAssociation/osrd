@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
+import { getStdcmTimetableID } from 'reducers/osrdconf/stdcmConf/selectors';
 
 import StdcmCard from './StdcmForm/StdcmCard';
 
@@ -19,6 +21,9 @@ const StdcmSimulationParams = ({
   scenarioID,
 }: StdcmSimulationParamsProps) => {
   const { t } = useTranslation('stdcm');
+
+  const timetableId = useSelector(getStdcmTimetableID);
+
   return (
     <StdcmCard name={t('debug.simulationSettings')} disabled={disabled}>
       <div className="d-flex stdcm-simulation-params">
@@ -28,6 +33,7 @@ const StdcmSimulationParams = ({
             globalStudyId={studyID}
             globalScenarioId={scenarioID}
             displayImgProject={false}
+            timetableId={timetableId}
           />
         </div>
         <div className="stdcm-allowances ml-2">

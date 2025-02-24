@@ -1,8 +1,6 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop */
 import { useEffect, useState, type Dispatch, type SetStateAction, useMemo, useRef } from 'react';
 
-import { useSelector } from 'react-redux';
-
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import {
@@ -10,7 +8,6 @@ import {
   type PathfindingResultSuccess,
   type ProjectPathTrainResult,
 } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
 import type {
   TrainId,
@@ -30,6 +27,7 @@ const BATCH_SIZE = 5;
 
 type useLazyLoadTrainsProp = {
   infraId?: number;
+  electricalProfileSetId: number | undefined;
   trainIdsToProject: Set<TrainId>;
   path?: PathfindingResultSuccess;
   trainSchedules?: TrainScheduleResultWithTrainId[];
@@ -46,6 +44,7 @@ type useLazyLoadTrainsProp = {
  */
 const useLazyProjectTrains = ({
   infraId,
+  electricalProfileSetId,
   trainIdsToProject,
   path,
   trainSchedules,
@@ -53,8 +52,6 @@ const useLazyProjectTrains = ({
   setTrainIdsToProject,
 }: useLazyLoadTrainsProp) => {
   const dispatch = useAppDispatch();
-  const { getElectricalProfileSetId } = useOsrdConfSelectors();
-  const electricalProfileSetId = useSelector(getElectricalProfileSetId);
 
   const [projectedTrainsById, setProjectedTrainsById] = useState<Map<TrainId, TrainSpaceTimeData>>(
     new Map()

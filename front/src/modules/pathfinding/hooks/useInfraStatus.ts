@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react';
 
-import { isEqual } from 'lodash';
-import { useSelector } from 'react-redux';
-
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 
-export default function useInfraStatus() {
-  const { getInfraID } = useOsrdConfSelectors();
-  const infraId = useSelector(getInfraID, isEqual);
-
+export default function useInfraStatus({ infraId }: { infraId: number | undefined }) {
   const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLoad.useMutation();
 
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);

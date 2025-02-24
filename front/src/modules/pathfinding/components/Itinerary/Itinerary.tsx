@@ -30,7 +30,7 @@ import Origin from './DisplayItinerary/Origin';
 import Vias from './DisplayItinerary/Vias';
 import ModalSuggestedVias from './ModalSuggestedVias';
 
-const Itinerary = () => {
+const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) => {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
@@ -95,7 +95,7 @@ const Itinerary = () => {
   return (
     <div className="osrd-config-item">
       <div className="mb-2 d-flex">
-        <Pathfinding />
+        <Pathfinding rollingStockId={rollingStockId} />
         <button
           type="button"
           className="btn btn-sm btn-only-icon btn-white px-3 ml-2"
@@ -109,7 +109,10 @@ const Itinerary = () => {
       </div>
       {displayTypeAndPath && (
         <div className="mb-2">
-          <TypeAndPath setDisplayTypeAndPath={setDisplayTypeAndPath} />
+          <TypeAndPath
+            setDisplayTypeAndPath={setDisplayTypeAndPath}
+            rollingStockId={rollingStockId}
+          />
         </div>
       )}
       {origin && destination && (

@@ -9,6 +9,7 @@ import {
   getMaxSpeed,
   getStdcmOrigin,
   getStdcmPathSteps,
+  getStdcmRollingStockID,
   getStdcmSpeedLimitByTag,
   getTotalLength,
   getTotalMass,
@@ -25,7 +26,8 @@ const useStdcmForm = (): StdcmSimulationInputs => {
   const maxSpeed = useSelector(getMaxSpeed);
   const linkedTrains = useSelector(getLinkedTrains);
   const origin = useSelector(getStdcmOrigin);
-  const { rollingStock } = useStoreDataForRollingStockSelector();
+  const rollingStockId = useSelector(getStdcmRollingStockID);
+  const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
   const towedRollingStock = useStdcmTowedRollingStock();
 
   const currentSimulationInputs = useMemo(() => {

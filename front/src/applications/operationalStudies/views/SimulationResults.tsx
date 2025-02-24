@@ -22,6 +22,7 @@ import SimulationResultExport from 'modules/simulationResult/SimulationResultExp
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
@@ -59,6 +60,8 @@ const SimulationResults = ({
 }: SimulationResultsProps) => {
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
+
+  const timetableId = useSelector(getOperationalStudiesTimetableID);
 
   const {
     selectedTrainSchedule,
@@ -99,11 +102,12 @@ const SimulationResults = ({
     operationalPoints: projectedOperationalPoints,
     filteredOperationalPoints,
     setFilteredOperationalPoints,
-  } = useGetProjectedTrainOperationalPoints(
-    projectionData?.trainSchedule,
-    projectionData?.trainSchedule.id,
-    infraId
-  );
+  } = useGetProjectedTrainOperationalPoints({
+    trainScheduleUsedForProjection: projectionData?.trainSchedule,
+    trainIdUsedForProjection: projectionData?.trainSchedule.id,
+    infraId,
+    timetableId,
+  });
 
   const trainUsedForProjectionSpaceTimeData = useMemo(
     () =>
@@ -207,6 +211,7 @@ const SimulationResults = ({
                         filteredWaypoints: filteredOperationalPoints,
                         setFilteredWaypoints: setFilteredOperationalPoints,
                         projectionPath: projectionData.trainSchedule.path,
+                        timetableId,
                       }}
                       conflicts={conflictZones}
                       projectionLoaderData={projectionData.projectionLoaderData}

@@ -75,6 +75,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   const { projectedTrainsById, allTrainsProjected, setProjectedTrainsById } = useLazyProjectTrains({
     infraId: scenario.infra_id,
+    electricalProfileSetId,
     trainIdsToProject,
     path: projectionPath?.path,
     trainSchedules,

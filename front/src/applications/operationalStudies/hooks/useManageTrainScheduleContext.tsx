@@ -10,7 +10,10 @@ import usePathfinding from 'modules/pathfinding/hooks/usePathfinding';
 import type { PathfindingState } from 'modules/pathfinding/types';
 import { upsertPathStepsInOPs } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import {
+  getOperationalStudiesRollingStockID,
+  getPathSteps,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 
 import type { ManageTrainSchedulePathProperties } from '../types';
@@ -41,7 +44,11 @@ export const ManageTrainScheduleContextProvider = ({
 
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
 
-  const { launchPathfinding, pathfindingState, infraInfo } = usePathfinding(setPathProperties);
+  const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
+  const { launchPathfinding, pathfindingState, infraInfo } = usePathfinding({
+    setPathProperties,
+    rollingStockId,
+  });
 
   const voltageRanges = useMemo(
     () => getPathVoltages(pathProperties?.electrifications, pathProperties?.length),

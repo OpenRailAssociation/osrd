@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
-import { useSelector } from 'react-redux';
 
 import infraIcon from 'assets/pictures/components/tracks.svg';
 import scenarioIcon from 'assets/pictures/home/operationalStudies.svg';
@@ -13,7 +12,6 @@ import { getDocument } from 'common/api/documentApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderFill } from 'common/Loaders';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { getScenarioDatetimeWindow } from 'modules/scenario/helpers/utils';
 import { updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
@@ -25,14 +23,14 @@ const ScenarioExplorer = ({
   globalStudyId,
   globalScenarioId,
   displayImgProject = true,
+  timetableId,
 }: ScenarioExplorerProps & {
   displayImgProject?: boolean;
+  timetableId: number | undefined;
 }) => {
   const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useAppDispatch();
   const { openModal } = useModal();
-  const { getTimetableID } = useOsrdConfSelectors();
-  const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
 
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
@@ -60,9 +58,9 @@ const ScenarioExplorer = ({
     );
 
   const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery(
-    { timetableId: timetableID! },
+    { timetableId: timetableId! },
     {
-      skip: !timetableID,
+      skip: !timetableId,
     }
   );
 

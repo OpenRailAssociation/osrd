@@ -1,27 +1,28 @@
 import React, { useState, useEffect, useContext, useMemo, type MutableRefObject } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import type { Comfort } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Loader } from 'common/Loaders';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
 import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 
 type RollingStockModal = {
+  rollingStockId: number | undefined;
   ref2scroll: MutableRefObject<HTMLDivElement | null>;
   onSelectRollingStock: (rollingStockId: number, comfort: Comfort) => void;
 };
 
-function RollingStockModal({ ref2scroll, onSelectRollingStock }: RollingStockModal) {
-  const { getRollingStockID } = useOsrdConfSelectors();
-  const rollingStockID = useSelector(getRollingStockID);
+function RollingStockModal({
+  rollingStockId,
+  ref2scroll,
+  onSelectRollingStock,
+}: RollingStockModal) {
   const { t } = useTranslation(['translation', 'rollingstock']);
-  const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockID);
+  const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockId);
   const { closeModal } = useContext(ModalContext);
 
   const { filteredRollingStockList, filters, searchRollingStock, toggleFilter, searchIsLoading } =

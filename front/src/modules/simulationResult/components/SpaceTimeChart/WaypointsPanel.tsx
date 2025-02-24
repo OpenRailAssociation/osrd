@@ -5,10 +5,8 @@ import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import type { OperationalPoint } from 'applications/operationalStudies/types';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import type { WaypointsPanelData } from 'modules/simulationResult/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mmToKm } from 'utils/physics';
@@ -24,11 +22,9 @@ const WaypointsPanel = ({
   waypointsPanelIsOpen,
   setWaypointsPanelIsOpen,
   waypoints,
-  waypointsPanelData: { filteredWaypoints, setFilteredWaypoints, projectionPath },
+  waypointsPanelData: { filteredWaypoints, setFilteredWaypoints, projectionPath, timetableId },
 }: WaypointsPanelProps) => {
   const { t } = useTranslation();
-  const { getTimetableID } = useOsrdConfSelectors();
-  const timetableId = useSelector(getTimetableID);
 
   const modalRef = useRef<HTMLDialogElement>(null);
 

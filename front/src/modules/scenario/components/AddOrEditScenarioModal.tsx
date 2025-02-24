@@ -7,10 +7,13 @@ import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
-import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { osrdEditoastApi, type ScenarioPatchForm } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type ScenarioPatchForm,
+  type ScenarioResponse,
+} from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -20,7 +23,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -41,7 +44,7 @@ export type ScenarioForm = ScenarioPatchForm & {
 
 type AddOrEditScenarioModalProps = {
   editionMode?: boolean;
-  scenario?: ScenarioForm;
+  scenario?: ScenarioResponse;
 };
 
 type createScenarioParams = {
@@ -64,8 +67,6 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const infraID = useInfraID();
-  const { getTimetableID } = useOsrdConfSelectors();
-  const timetableId = useSelector(getTimetableID);
   const { updateScenarioID } = useOsrdConfActions();
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
@@ -222,7 +223,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
         .unwrap()
         .then(() => {
           dispatch(updateScenarioID(undefined));
-          cleanScenarioLocalStorage(timetableId!);
+          cleanScenarioLocalStorage(scenario.timetable_id);
           navigate(`projects/${projectId}/studies/${studyId}`);
           closeModal();
           dispatch(

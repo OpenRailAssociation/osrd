@@ -17,6 +17,7 @@ import {
 } from 'reducers/osrdconf/stdcmConf';
 import {
   getStdcmDestination,
+  getStdcmInfraID,
   getStdcmOrigin,
   getStdcmPathSteps,
   getStdcmProjectID,
@@ -73,7 +74,9 @@ const StdcmConfig = ({
   const { t } = useTranslation('stdcm');
   const launchButtonRef = useRef<HTMLDivElement>(null);
 
-  const { infra } = useInfraStatus();
+  const infraId = useSelector(getStdcmInfraID);
+  const { infra } = useInfraStatus({ infraId });
+
   const dispatch = useAppDispatch();
 
   const origin = useSelector(getStdcmOrigin);

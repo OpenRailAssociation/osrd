@@ -55,15 +55,6 @@ export const useOsrdConfActions = () => {
   return slice.actions as ConfSliceActions;
 };
 
-export const useOsrdConfSelectors = () => {
-  const { selectors } = useOsrdContext();
-  if (!selectors) {
-    throw new Error('OsrdContext selectors are not available');
-  }
-
-  return selectors as ConfSelectors;
-};
-
 export const useInfraID = () => {
   const { selectors } = useOsrdContext();
   if (!selectors) {

@@ -8,7 +8,6 @@ import InfraLoadingState from 'applications/operationalStudies/components/Scenar
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { Spinner } from 'common/Loaders';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
 import {
   getPathSteps,
@@ -19,16 +18,13 @@ import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 
 import { InfraHardError, InfraSoftError } from './InfraError';
 
-const Pathfinding = () => {
+const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined }) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const pathSteps = useSelector(getPathSteps);
   const hasInvalidPathStep = pathSteps.some((pathStep) => isPathStepInvalid(pathStep));
   const origin = useSelector(getOrigin, isEqual);
   const destination = useSelector(getDestination, isEqual);
-
-  const { getRollingStockID } = useOsrdConfSelectors();
-  const rollingStockId = useSelector(getRollingStockID);
 
   const {
     pathProperties,

@@ -1,12 +1,13 @@
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { getRollingStockComfort } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
-export const useStoreDataForRollingStockSelector = () => {
-  const { getRollingStockID } = useOsrdConfSelectors();
-  const rollingStockId = useSelector(getRollingStockID);
+export const useStoreDataForRollingStockSelector = ({
+  rollingStockId,
+}: {
+  rollingStockId: number | undefined;
+}) => {
   const rollingStockComfort = useSelector(getRollingStockComfort);
 
   const { currentData: rollingStock } =

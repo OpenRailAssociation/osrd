@@ -5,7 +5,6 @@ import { Alert, TriangleRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import { useSelector } from 'react-redux';
 
 import { useManageTrainScheduleContext } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import type {
@@ -14,7 +13,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { MAIN_OP_CH_CODES } from 'common/Map/Search/useSearchOperationalPoint';
-import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
+import { useInfraID } from 'common/osrdContext';
 import { useDebounce } from 'utils/helpers';
 import {
   isCursorSurroundedBySpace,
@@ -56,9 +55,10 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
 }
 type TypeAndPathProps = {
   setDisplayTypeAndPath: React.Dispatch<React.SetStateAction<boolean>>;
+  rollingStockId: number | undefined;
 };
 
-const TypeAndPath = ({ setDisplayTypeAndPath }: TypeAndPathProps) => {
+const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps) => {
   const { launchPathfinding } = useManageTrainScheduleContext();
 
   const [inputText, setInputText] = useState('');
@@ -68,9 +68,6 @@ const TypeAndPath = ({ setDisplayTypeAndPath }: TypeAndPathProps) => {
 
   const { t: tManageTrainSchedule } = useTranslation('operationalStudies/manageTrainSchedule');
   const { t: tTypeAndPath } = useTranslation('common/typeAndPath');
-
-  const { getRollingStockID } = useOsrdConfSelectors();
-  const rollingStockId = useSelector(getRollingStockID);
 
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [searchState, setSearch] = useState('');

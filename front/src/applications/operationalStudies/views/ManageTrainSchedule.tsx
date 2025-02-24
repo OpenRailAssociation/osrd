@@ -34,6 +34,8 @@ import {
 import {
   getConstraintDistribution,
   getDestination,
+  getOperationalStudiesRollingStockID,
+  getOperationalStudiesSpeedLimitByTag,
   getOrigin,
   getPathSteps,
   getStartTime,
@@ -53,6 +55,8 @@ const ManageTrainSchedule = () => {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const pathSteps = useSelector(getPathSteps);
+  const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
+  const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
 
   const markersInformation = useMemo(
     () =>
@@ -79,10 +83,11 @@ const ManageTrainSchedule = () => {
   const constraintDistribution = useSelector(getConstraintDistribution);
   const startTime = useSelector(getStartTime);
 
-  const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
-    useStoreDataForSpeedLimitByTagSelector();
-  const { rollingStockId, rollingStockComfort, rollingStock } =
-    useStoreDataForRollingStockSelector();
+  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
+    useStoreDataForSpeedLimitByTagSelector({ speedLimitByTag });
+  const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector({
+    rollingStockId,
+  });
 
   const onSelectRollingStock = useCallback(
     (_rollingStockId: number, comfort: Comfort) => {
@@ -112,6 +117,7 @@ const ManageTrainSchedule = () => {
     label: t('tabs.rollingStock'),
     content: (
       <RollingStockSelector
+        rollingStockId={rollingStockId}
         rollingStockSelected={rollingStock}
         rollingStockComfort={rollingStockComfort}
         onSelectRollingStock={onSelectRollingStock}
@@ -139,7 +145,7 @@ const ManageTrainSchedule = () => {
     content: (
       <div className="osrd-config-item-container-map" data-testid="map">
         <div className="floating-itinerary">
-          <Itinerary />
+          <Itinerary rollingStockId={rollingStockId} />
         </div>
 
         <Map

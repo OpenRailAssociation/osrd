@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Input, ComboBox, useDefaultComboBox } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import useConsistFieldStatus from 'applications/stdcm/hooks/useConsistFieldStatus';
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
@@ -21,6 +22,10 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import useFilterTowedRollingStock from 'modules/towedRollingStock/hooks/useFilterTowedRollingStock';
 import { updateMaxSpeed, updateTowedRollingStockID } from 'reducers/osrdconf/stdcmConf';
+import {
+  getStdcmRollingStockID,
+  getStdcmSpeedLimitByTag,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 
 import StdcmCard from './StdcmCard';
@@ -48,13 +53,15 @@ export type StdcmConsistProps = {
 const StdcmConsist = ({ isDebugMode, disabled = false }: StdcmConsistProps) => {
   const { t } = useTranslation('stdcm');
 
-  const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
-    useStoreDataForSpeedLimitByTagSelector({ isStdcm: true });
+  const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
+  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
+    useStoreDataForSpeedLimitByTagSelector({ isStdcm: true, speedLimitByTag });
 
   const { updateRollingStockID } = useOsrdConfActions();
   const dispatch = useAppDispatch();
 
-  const { rollingStock } = useStoreDataForRollingStockSelector();
+  const rollingStockId = useSelector(getStdcmRollingStockID);
+  const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
   const towedRollingStock = useStdcmTowedRollingStock();
 
   const [statusMessagesVisible, setStatusMessagesVisible] = useState({

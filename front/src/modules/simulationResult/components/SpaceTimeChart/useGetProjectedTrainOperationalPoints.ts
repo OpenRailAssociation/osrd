@@ -2,25 +2,27 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
 import type { OperationalPoint } from 'applications/operationalStudies/types';
 import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import { osrdEditoastApi, type PathProperties } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { isStation } from 'modules/pathfinding/utils';
 import type { TrainScheduleId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
 
-const useGetProjectedTrainOperationalPoints = (
-  trainScheduleUsedForProjection?: TrainScheduleResultWithTrainId,
-  trainIdUsedForProjection?: TrainScheduleId,
-  infraId?: number
-) => {
+const useGetProjectedTrainOperationalPoints = ({
+  infraId,
+  timetableId,
+  trainScheduleUsedForProjection,
+  trainIdUsedForProjection,
+}: {
+  infraId: number | undefined;
+  timetableId: number | undefined;
+  trainScheduleUsedForProjection?: TrainScheduleResultWithTrainId;
+  trainIdUsedForProjection?: TrainScheduleId;
+}) => {
   const { t } = useTranslation('simulation');
-  const { getTimetableID } = useOsrdConfSelectors();
-  const timetableId = useSelector(getTimetableID);
 
   const [operationalPoints, setOperationalPoints] = useState<OperationalPoint[]>([]);
   const [filteredOperationalPoints, setFilteredOperationalPoints] =

@@ -41,7 +41,9 @@ const useUpdateTrainSchedule = (
   const confName = useSelector(getName);
   const simulationConf = useSelector(getOperationalStudiesConf);
   const startTime = useSelector(getStartTime);
-  const { rollingStock } = useStoreDataForRollingStockSelector();
+  const { rollingStock } = useStoreDataForRollingStockSelector({
+    rollingStockId: simulationConf.rollingStockID,
+  });
 
   return async function submitConfUpdateTrainSchedules() {
     const formattedSimulationConf = checkCurrentConfig(
