@@ -44,6 +44,13 @@ pub enum MetricType {
 pub struct Trigger {
     pub type_: String,
     pub metadata: HashMap<String, String>,
+    pub authentication_ref: Option<AuthenticationRef>,
     pub use_cached_metrics: Option<bool>,
     pub metric_type: MetricType,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthenticationRef {
+    pub name: String,
 }

@@ -59,8 +59,11 @@ pub struct KedaOptions {
     /// Max Replicas for the HPA of the ScaledObject
     pub max_replicas: i32,
 
-    /// Amqp Host
+    /// Amqp Host, without authentication ref
     pub amqp_host: String,
+
+    /// Amqp Host, with authentication ref
+    pub authentication_ref: Option<String>,
 
     /// Mode
     pub mode: String,
@@ -298,9 +301,18 @@ impl KubernetesDriver {
                     type_: "rabbitmq".to_string(),
                     use_cached_metrics: Some(keda.use_cached_metrics),
                     metric_type: keda.metric_type.clone(),
+                    authentication_ref: keda
+                        .authentication_ref
+                        .clone()
+                        .map(|auth_ref| keda::AuthenticationRef { name: auth_ref }),
                     metadata: {
                         let mut metadata = HashMap::new();
-                        metadata.insert("host".to_string(), keda.amqp_host.clone());
+
+                        // If there is no authentication reference, we use the amqp host from the KEDA configuration.
+                        if keda.authentication_ref.is_none() {
+                            metadata.insert("host".to_string(), keda.amqp_host.clone());
+                        }
+
                         metadata.insert("protocol".to_string(), "auto".to_string());
                         metadata.insert("mode".to_string(), keda.mode.clone());
                         metadata.insert("value".to_string(), keda.value.clone());
