@@ -58,7 +58,7 @@ export default function TrainAddingSettings() {
           value={trainStep}
           noMargin
           isInvalid={trainStep < 1}
-          errorMsg={trainStep < 1 ? t('errorMessages.noTrainStepInput') : undefined}
+          errorMsg={trainStep < 1 ? t('errorMessages.tooLowInput') : undefined}
           min={1}
           sm
         />
@@ -77,7 +77,7 @@ export default function TrainAddingSettings() {
           value={trainCount}
           noMargin
           isInvalid={trainCount < 1}
-          errorMsg={trainCount < 1 ? t('errorMessages.noTrainCountInput') : undefined}
+          errorMsg={trainCount < 1 ? t('errorMessages.tooLowInput') : undefined}
           min={1}
           sm
         />
@@ -97,7 +97,7 @@ export default function TrainAddingSettings() {
           unit="min"
           noMargin
           isInvalid={trainDelta < 1}
-          errorMsg={trainDelta < 1 ? t('errorMessages.noDeltaInput') : undefined}
+          errorMsg={trainDelta < 1 ? t('errorMessages.tooLowInput') : undefined}
           min={1}
           sm
           textRight

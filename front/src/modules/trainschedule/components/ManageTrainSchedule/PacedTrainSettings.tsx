@@ -34,7 +34,7 @@ const PacedTrainSettings = () => {
           value={timeRangeDuration}
           noMargin
           isInvalid={timeRangeDuration < 1}
-          errorMsg={timeRangeDuration < 1 ? t('errorMessages.noTimeRangeDurationInput') : undefined}
+          errorMsg={timeRangeDuration < 1 ? t('errorMessages.tooLowInput') : undefined}
           min={1}
           unit="min"
           textRight
@@ -57,7 +57,7 @@ const PacedTrainSettings = () => {
           value={cadence}
           noMargin
           isInvalid={cadence < 1}
-          errorMsg={cadence < 1 ? t('errorMessages.noCadenceInput') : undefined}
+          errorMsg={cadence < 1 ? t('errorMessages.tooLowInput') : undefined}
           min={1}
           unit="min"
           textRight

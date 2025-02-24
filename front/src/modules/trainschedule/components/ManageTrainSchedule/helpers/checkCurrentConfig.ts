@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { compact } from 'lodash';
 import type { Dispatch } from 'redux';
 
@@ -13,7 +14,7 @@ import formatSchedule from './formatSchedule';
 
 const checkCurrentConfig = (
   osrdconf: OperationalStudiesConfState,
-  t: (arg0: string) => string,
+  t: TFunction,
   dispatch: Dispatch,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName?: string,
@@ -138,7 +139,9 @@ const checkCurrentConfig = (
       dispatch(
         setFailure({
           name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.noCadence'),
+          message: t('errorMessages.tooLowValue', {
+            value: t('pacedTrains.cadence').toLowerCase(),
+          }),
         })
       );
     }
@@ -147,7 +150,9 @@ const checkCurrentConfig = (
       dispatch(
         setFailure({
           name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.noTimeRangeDuration'),
+          message: t('errorMessages.tooLowValue', {
+            value: t('pacedTrains.timeRangeDuration').toLowerCase(),
+          }),
         })
       );
     }
