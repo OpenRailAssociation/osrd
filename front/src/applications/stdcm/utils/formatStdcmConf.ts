@@ -7,8 +7,9 @@ import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
 import { dateTimeFormatting } from 'utils/date';
+import { Duration } from 'utils/duration';
 import { kmhToMs, tToKg } from 'utils/physics';
-import { minToMs, sec2ms } from 'utils/timeManipulation';
+import { minToMs } from 'utils/timeManipulation';
 
 import createMargin from './createMargin';
 import { StdcmStopTypes } from '../types';
@@ -24,8 +25,8 @@ type ValidStdcmConfig = {
   totalLength?: number;
   maxSpeed?: number;
   margin?: StandardAllowance;
-  gridMarginBefore?: number;
-  gridMarginAfter?: number;
+  gridMarginBefore?: Duration;
+  gridMarginAfter?: Duration;
   workScheduleGroupId?: number;
   temporarySpeedLimitGroupId?: number;
   electricalProfileSetId?: number;
@@ -189,16 +190,13 @@ export const checkStdcmConf = (
     maxSpeed,
     towedRollingStockID,
     margin: standardAllowance,
-    gridMarginBefore,
-    gridMarginAfter,
+    gridMarginBefore: new Duration({ seconds: gridMarginBefore }),
+    gridMarginAfter: new Duration({ seconds: gridMarginAfter }),
     workScheduleGroupId,
     temporarySpeedLimitGroupId,
     electricalProfileSetId,
   };
 };
-
-const toMsOrUndefined = (value: number | undefined): number | undefined =>
-  value ? sec2ms(value) : undefined;
 
 export const formatStdcmPayload = (
   validConfig: ValidStdcmConfig
@@ -215,8 +213,8 @@ export const formatStdcmPayload = (
     max_speed: validConfig.maxSpeed ? kmhToMs(validConfig.maxSpeed) : undefined,
     total_length: validConfig.totalLength,
     steps: validConfig.path,
-    time_gap_after: toMsOrUndefined(validConfig.gridMarginBefore),
-    time_gap_before: toMsOrUndefined(validConfig.gridMarginAfter),
+    time_gap_after: validConfig.gridMarginBefore?.ms,
+    time_gap_before: validConfig.gridMarginAfter?.ms,
     work_schedule_group_id: validConfig.workScheduleGroupId,
     temporary_speed_limit_group_id: validConfig.temporarySpeedLimitGroupId,
     electrical_profile_set_id: validConfig.electricalProfileSetId,
