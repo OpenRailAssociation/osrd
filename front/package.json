@@ -129,7 +129,7 @@
     "glob": "^11.0.1",
     "happy-dom": "^17.1.0",
     "i18next-fs-backend": "^2.6.0",
-    "i18next-parser": "^9.1.0",
+    "i18next-parser": "^9.3.0",
     "json-key-path-list": "^2.0.3",
     "license-checker-rseidelsohn": "^4.4.2",
     "openapi-types": "^12.1.3",
