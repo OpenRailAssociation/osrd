@@ -16,7 +16,7 @@ import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { waitForInfraStateToBeCached } from './utils';
-import { getInfra, getRollingStock } from './utils/api-setup';
+import { getInfra, getRollingStock } from './utils/api-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 

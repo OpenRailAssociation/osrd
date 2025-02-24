@@ -10,7 +10,7 @@ import {
   getStudy,
   getScenario,
   getProject,
-} from './api-setup';
+} from './api-utils';
 import { logger } from '../logging-fixture';
 
 /**

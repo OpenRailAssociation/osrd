@@ -6,7 +6,7 @@ import { infrastructureName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import ScenarioPage from './pages/operational-studies/scenario-page';
 import { generateUniqueName } from './utils';
-import { deleteApiRequest, getProject, getStudy, setElectricalProfile } from './utils/api-setup';
+import { deleteApiRequest, getProject, getStudy, setElectricalProfile } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';

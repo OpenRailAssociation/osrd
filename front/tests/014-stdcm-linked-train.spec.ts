@@ -10,7 +10,7 @@ import SimulationResultPage from './pages/stdcm/simulation-results-page';
 import STDCMPage from './pages/stdcm/stdcm-page';
 import ViaSection from './pages/stdcm/via-section';
 import { waitForInfraStateToBeCached } from './utils';
-import { getInfra, setTowedRollingStock } from './utils/api-setup';
+import { getInfra, setTowedRollingStock } from './utils/api-utils';
 import type { ConsistFields } from './utils/types';
 
 test.describe('Verify stdcm simulation page', () => {

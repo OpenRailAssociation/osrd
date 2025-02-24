@@ -1,7 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import { getTranslations } from '../../utils';
-import { cleanWhitespace } from '../../utils/dataNormalizer';
+import { cleanWhitespace } from '../../utils/data-normalizer';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
 

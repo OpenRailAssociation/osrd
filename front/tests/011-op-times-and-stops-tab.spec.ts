@@ -10,11 +10,11 @@ import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
-import { getInfra } from './utils/api-setup';
-import { cleanWhitespace, cleanWhitespaceInArray } from './utils/dataNormalizer';
+import { getInfra } from './utils/api-utils';
+import { cleanWhitespace, cleanWhitespaceInArray } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
-import scrollContainer from './utils/scrollHelper';
+import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { FlatTranslations, StationData } from './utils/types';
 

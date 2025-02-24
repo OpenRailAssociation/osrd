@@ -1,5 +1,5 @@
 import { getTranslations } from '../../utils';
-import { getLocalizedDateString } from '../../utils/date';
+import { getLocalizedDateString } from '../../utils/date-utils';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations, PdfSimulationContent } from '../../utils/types';
 

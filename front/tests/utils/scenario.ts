@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { Infra, Project, Scenario, Study, TimetableResult } from 'common/api/osrdEditoastApi';
 
-import { getInfra, getProject, getStudy, postApiRequest } from './api-setup';
+import { getInfra, getProject, getStudy, postApiRequest } from './api-utils';
 import readJsonFile from './file-utils';
 import type { ScenarioData } from './types';
 

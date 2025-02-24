@@ -17,10 +17,10 @@ import {
   getStdcmEnvironment,
   postApiRequest,
   setStdcmEnvironment,
-} from './api-setup';
+} from './api-utils';
 import readJsonFile from './file-utils';
 import createScenario from './scenario';
-import { sendTrainSchedules } from './trainSchedule';
+import sendTrainSchedules from './train-schedule';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
@@ -35,7 +35,7 @@ import {
   trainScheduleStudyName,
 } from '../assets/constants/project-const';
 import { logger } from '../logging-fixture';
-import { createDateInSpecialTimeZone } from './date';
+import { createDateInSpecialTimeZone } from './date-utils';
 import type { ProjectData, StudyData } from './types';
 
 const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');

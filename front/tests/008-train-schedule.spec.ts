@@ -8,7 +8,7 @@ import {
 import test from './logging-fixture';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import { waitForInfraStateToBeCached } from './utils';
-import { getInfra, getProject, getScenario, getStudy } from './utils/api-setup';
+import { getInfra, getProject, getScenario, getStudy } from './utils/api-utils';
 
 test.describe('Verify train schedule elements and filters', () => {
   test.slow();

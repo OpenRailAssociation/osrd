@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import { cleanText } from '../../utils/dataNormalizer';
+import { cleanText } from '../../utils/data-normalizer';
 import type { ProjectDetails } from '../../utils/types';
 import HomePage from '../home-page';
 

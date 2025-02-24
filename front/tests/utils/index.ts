@@ -1,7 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import { getInfraById } from './api-setup';
+import { getInfraById } from './api-utils';
 import { logger } from '../logging-fixture';
 
 /**
@@ -115,42 +115,6 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
 
   throw new Error("Infrastructure state did not reach 'CACHED' within the allotted 3 minutes.");
 };
-
-/**
- * Perform an action only on a specified OS or a specific browser.
- * @param action - The action to perform.
- * @param options - Configuration options:
- *                  - `currentBrowser`: The name of the current browser.
- *                  - `os`: The target OS to run the action on (default: 'linux').
- *                  - `browser`: The browser to use (default: 'chromium' and 'firefox').
- *                  - `skipMessage`: Message to log if the action is skipped.
- */
-export async function performOnSpecificOSAndBrowser(
-  action: () => Promise<void>,
-  options: {
-    currentBrowser?: string;
-    os?: NodeJS.Platform;
-    browsers?: string[];
-    actionName?: string;
-    skipMessage?: string;
-  }
-) {
-  const {
-    currentBrowser,
-    os = 'linux',
-    browsers = ['chromium', 'firefox'],
-    actionName = 'action',
-    skipMessage = `Skipping ${actionName} as the platform is not ${os} or the browser${browsers.length > 1 ? 's are not' : ' is not'} ${browsers.join(', ')}.`,
-  } = options;
-
-  const currentOS = process.platform;
-
-  if (currentOS === os && currentBrowser && browsers.includes(currentBrowser)) {
-    await action();
-  } else {
-    console.info(skipMessage);
-  }
-}
 
 /**
  * Utility function to get translations based on the project language.

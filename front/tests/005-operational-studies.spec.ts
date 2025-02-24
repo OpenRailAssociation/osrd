@@ -18,7 +18,7 @@ import OperationalStudiesPage from './pages/operational-studies/operational-stud
 import RouteTab from './pages/operational-studies/route-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
-import { getInfra, getRollingStock } from './utils/api-setup';
+import { getInfra, getRollingStock } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';

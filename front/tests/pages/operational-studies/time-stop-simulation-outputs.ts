@@ -3,7 +3,7 @@ import { type Locator, type Page, expect } from '@playwright/test';
 import ScenarioTimetableSection from './scenario-timetable-section';
 import { LOAD_PAGE_TIMEOUT } from '../../assets/constants/timeout-const';
 import { getTranslations } from '../../utils';
-import { normalizeStationData } from '../../utils/dataNormalizer';
+import { normalizeStationData } from '../../utils/data-normalizer';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations, StationData } from '../../utils/types';
 

@@ -23,7 +23,7 @@ import { deleteApiRequest, getInfra, setElectricalProfile } from './utils/api-ut
 import { cleanWhitespace } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
-import scrollContainer from './utils/scrollHelper';
+import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { FlatTranslations, StationData } from './utils/types';
 
@@ -155,7 +155,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await deleteScenario(project.id, study.id, scenario.name);
   });
 
-  test('Activate electrical profiles', async ({ page, browserName }) => {
+  test('Activate electrical profiles', async ({ page }) => {
     const cell: CellData = {
       stationName: 'Mid_East_station',
       header: 'stopTime',
@@ -179,17 +179,9 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.getTrainArrivalTime('11:53');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-    await performOnSpecificOSAndBrowser(
-      async () => {
-        await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-        await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-          'SpeedSpaceChart-ElectricalProfileActivated.png'
-        );
-      },
-      {
-        currentBrowser: browserName,
-        actionName: 'visual assertion',
-      }
+    await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      'SpeedSpaceChart-ElectricalProfileActivated.png'
     );
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileON);
@@ -202,21 +194,13 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.getTrainArrivalTime('11:52');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-    await performOnSpecificOSAndBrowser(
-      async () => {
-        await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-        await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-          'SpeedSpaceChart-ElectricalProfileDisabled.png'
-        );
-      },
-      {
-        currentBrowser: browserName,
-        actionName: 'visual assertion',
-      }
+    await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      'SpeedSpaceChart-ElectricalProfileDisabled.png'
     );
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileOFF);
   });
-  test('Activate composition code', async ({ page, browserName }) => {
+  test('Activate composition code', async ({ page }) => {
     const cell: CellData = {
       stationName: 'Mid_East_station',
       header: 'stopTime',
@@ -240,17 +224,9 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.getTrainArrivalTime('12:03');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-    await performOnSpecificOSAndBrowser(
-      async () => {
-        await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-        await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-          'SpeedSpaceChart-SpeedLimitTagActivated.png'
-        );
-      },
-      {
-        currentBrowser: browserName,
-        actionName: 'visual assertion',
-      }
+    await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      'SpeedSpaceChart-SpeedLimitTagActivated.png'
     );
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoON);
@@ -263,21 +239,13 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.getTrainArrivalTime('11:52');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-    await performOnSpecificOSAndBrowser(
-      async () => {
-        await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-        await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-          'SpeedSpaceChart-SpeedLimitTagDisabled.png'
-        );
-      },
-      {
-        currentBrowser: browserName,
-        actionName: 'visual assertion',
-      }
+    await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      'SpeedSpaceChart-SpeedLimitTagDisabled.png'
     );
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoOFF);
   });
-  test('Activate linear and mareco margin', async ({ page, browserName }) => {
+  test('Activate linear and mareco margin', async ({ page }) => {
     const inputTableData: CellData[] = [
       {
         stationName: 'Mid_East_station',
@@ -311,18 +279,11 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.getTrainArrivalTime('11:55');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-    await performOnSpecificOSAndBrowser(
-      async () => {
-        await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-        await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-          'SpeedSpaceChart-LinearMargin.png'
-        );
-      },
-      {
-        currentBrowser: browserName,
-        actionName: 'visual assertion',
-      }
+    await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      'SpeedSpaceChart-LinearMargin.png'
     );
+
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataLinearMargin);
     await scenarioTimetableSection.clickOnTimetableCollapseButton();
@@ -334,21 +295,13 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.getTrainArrivalTime('11:55');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-    await performOnSpecificOSAndBrowser(
-      async () => {
-        await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-        await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-          'SpeedSpaceChart-MarecoMargin.png'
-        );
-      },
-      {
-        currentBrowser: browserName,
-        actionName: 'visual assertion',
-      }
+    await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      'SpeedSpaceChart-MarecoMargin.png'
     );
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataMarecoMargin);
   });
-  test('Add all the simulation settings', async ({ page, browserName }) => {
+  test('Add all the simulation settings', async ({ page }) => {
     const inputTableData: CellData[] = [
       {
         stationName: 'Mid_East_station',
@@ -383,18 +336,9 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioTimetableSection.getTrainArrivalTime('12:06');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-
-    await performOnSpecificOSAndBrowser(
-      async () => {
-        await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-        await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-          'SpeedSpaceChart-AllSettingsEnabled.png'
-        );
-      },
-      {
-        currentBrowser: browserName,
-        actionName: 'visual assertion',
-      }
+    await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
+    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      'SpeedSpaceChart-AllSettingsEnabled.png'
     );
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);

@@ -8,7 +8,7 @@ import ROLLING_STOCK_NAMES, {
   trainScheduleProjectName,
 } from './assets/constants/project-const';
 import { logger } from './logging-fixture';
-import { setStdcmEnvironment } from './utils/api-setup';
+import { setStdcmEnvironment } from './utils/api-utils';
 import { deleteInfra, deleteProject, deleteRollingStocks } from './utils/teardown-utils';
 
 teardown('teardown', async ({ browser }) => {
