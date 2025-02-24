@@ -163,7 +163,7 @@ opentelemetry-otlp = { version = "0.27.0", default-features = false, features = 
 ] }
 opentelemetry-semantic-conventions.workspace = true
 opentelemetry_sdk.workspace = true
-ordered-float = { version = "4.6.0", features = ["serde"] }
+ordered-float = { version = "5.0.0", features = ["serde"] }
 paste.workspace = true
 pathfinding = "4.14.0"
 postgis_diesel.workspace = true
