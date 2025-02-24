@@ -68,6 +68,7 @@ export const createMacroNode = async (
     console.error(e);
   }
 };
+
 export const updateMacroNode = async (
   state: MacroEditorState,
   dispatch: AppDispatch,

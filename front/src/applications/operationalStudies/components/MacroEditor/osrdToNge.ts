@@ -180,8 +180,8 @@ export const loadAndIndexNge = async (
   // Enhance nodes by calling the search API
   const searchResults = await executeSearch(state, dispatch);
   searchResults.forEach((searchResult) => {
-    const macroNode = {
-      fullName: searchResult.name,
+    const macroNode: Pick<NodeIndexed, 'full_name' | 'trigram' | 'geocoord'> = {
+      full_name: searchResult.name,
       trigram: searchResult.trigram + (searchResult.ch ? `/${searchResult.ch}` : ''),
       geocoord: {
         lng: searchResult.geographic.coordinates[0],
