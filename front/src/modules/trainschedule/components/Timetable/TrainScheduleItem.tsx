@@ -30,7 +30,7 @@ import {
 import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
 
-type TimetableTrainCardProps = {
+type TrainScheduleItemProps = {
   isInSelection: boolean;
   train: TrainScheduleWithDetails;
   isSelected: boolean;
@@ -46,7 +46,7 @@ type TimetableTrainCardProps = {
 const formatFullDate = (d: Date) => dayjs(d).format('D/MM/YYYY HH:mm:ss');
 const formatDateHours = (d: Date) => dayjs(d).format('HH:mm');
 
-const TimetableTrainCard = ({
+const TrainScheduleItem = ({
   isInSelection,
   train,
   isSelected,
@@ -57,7 +57,7 @@ const TimetableTrainCard = ({
   projectionPathIsUsed,
   dtoImport,
   selectTrainToEdit,
-}: TimetableTrainCardProps) => {
+}: TrainScheduleItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
 
@@ -277,4 +277,4 @@ const TimetableTrainCard = ({
   );
 };
 
-export default React.memo(TimetableTrainCard);
+export default React.memo(TrainScheduleItem);
