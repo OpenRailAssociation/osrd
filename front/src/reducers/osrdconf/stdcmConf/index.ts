@@ -37,8 +37,8 @@ export const stdcmConfInitialState: OsrdStdcmConfState = {
   ],
   margins: {
     standardAllowance: { type: 'time_per_distance', value: 4.5 },
-    gridMarginBefore: 15,
-    gridMarginAfter: 15,
+    gridMarginBefore: new Duration({ seconds: 15 }),
+    gridMarginAfter: new Duration({ seconds: 15 }),
   },
   totalMass: undefined,
   totalLength: undefined,
@@ -113,8 +113,8 @@ export const stdcmConfSlice = createSlice({
     resetMargins(state: Draft<OsrdStdcmConfState>) {
       state.margins = {
         standardAllowance: { type: 'time_per_distance', value: 4.5 },
-        gridMarginBefore: 15,
-        gridMarginAfter: 15,
+        gridMarginBefore: new Duration({ seconds: 15 }),
+        gridMarginAfter: new Duration({ seconds: 15 }),
       };
     },
     updateStandardAllowance(

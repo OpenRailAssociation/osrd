@@ -57,8 +57,8 @@ export type OsrdStdcmConfState = OsrdConfState & {
   stdcmPathSteps: StdcmPathStep[];
   margins: {
     standardAllowance?: StandardAllowance;
-    gridMarginBefore?: number;
-    gridMarginAfter?: number;
+    gridMarginBefore?: Duration;
+    gridMarginAfter?: Duration;
   };
   totalMass?: number;
   totalLength?: number;

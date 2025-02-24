@@ -7,7 +7,7 @@ import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
 import { dateTimeFormatting } from 'utils/date';
-import { Duration } from 'utils/duration';
+import type { Duration } from 'utils/duration';
 import { kmhToMs, tToKg } from 'utils/physics';
 import { minToMs } from 'utils/timeManipulation';
 
@@ -190,8 +190,8 @@ export const checkStdcmConf = (
     maxSpeed,
     towedRollingStockID,
     margin: standardAllowance,
-    gridMarginBefore: new Duration({ seconds: gridMarginBefore }),
-    gridMarginAfter: new Duration({ seconds: gridMarginAfter }),
+    gridMarginBefore,
+    gridMarginAfter,
     workScheduleGroupId,
     temporarySpeedLimitGroupId,
     electricalProfileSetId,

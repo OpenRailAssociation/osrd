@@ -14,6 +14,7 @@ import {
 import { getMargins } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StandardAllowance } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 import { convertInputStringToNumber } from 'utils/strings';
 
 const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
@@ -49,11 +50,13 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
             <InputSNCF
               id="standardAllowanceTypeGridMarginBefore"
               type="number"
-              value={gridMarginBefore || ''}
+              value={gridMarginBefore?.total('second') || ''}
               unit={ALLOWANCE_UNITS_KEYS.time}
               onChange={(e) =>
                 dispatch(
-                  updateGridMarginBefore(Math.abs(convertInputStringToNumber(e.target.value)))
+                  updateGridMarginBefore(
+                    new Duration({ seconds: Math.abs(convertInputStringToNumber(e.target.value)) })
+                  )
                 )
               }
               disabled={disabled}
@@ -67,11 +70,13 @@ const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
             <InputSNCF
               id="standardAllowanceTypeGridMarginAfter"
               type="number"
-              value={gridMarginAfter || ''}
+              value={gridMarginAfter?.total('second') || ''}
               unit={ALLOWANCE_UNITS_KEYS.time}
               onChange={(e) =>
                 dispatch(
-                  updateGridMarginAfter(Math.abs(convertInputStringToNumber(e.target.value)))
+                  updateGridMarginAfter(
+                    new Duration({ seconds: Math.abs(convertInputStringToNumber(e.target.value)) })
+                  )
                 )
               }
               disabled={disabled}

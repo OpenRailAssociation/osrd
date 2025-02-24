@@ -120,7 +120,7 @@ describe('stdcmConfReducers', () => {
     });
 
     it('should handle updateGridMarginBefore', () => {
-      const newGridMarginBefore = 5;
+      const newGridMarginBefore = new Duration({ seconds: 5 });
       const store = createStore(initialStateSTDCMConfig);
       store.dispatch(updateGridMarginBefore(newGridMarginBefore));
       const state = store.getState()[stdcmConfSlice.name];
@@ -128,7 +128,7 @@ describe('stdcmConfReducers', () => {
     });
 
     it('should handle updateGridMarginAfter', () => {
-      const newGridMarginAfter = 5;
+      const newGridMarginAfter = new Duration({ seconds: 5 });
       const store = createStore(initialStateSTDCMConfig);
       store.dispatch(updateGridMarginAfter(newGridMarginAfter));
       const state = store.getState()[stdcmConfSlice.name];
