@@ -9,6 +9,7 @@ import { getSearchDatetimeWindow } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { formatDateString } from 'utils/date';
+import { Duration } from 'utils/duration';
 import { createStringSelectOptions } from 'utils/uiCoreHelpers';
 
 import type { ArrivalTimeTypes, ScheduleConstraint } from '../../types';
@@ -41,8 +42,8 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
 
   const tolerances = useMemo(
     () => ({
-      minusTolerance: pathStep.tolerances.before,
-      plusTolerance: pathStep.tolerances.after,
+      minusTolerance: pathStep.tolerances.before.total('second'),
+      plusTolerance: pathStep.tolerances.after.total('second'),
     }),
     [pathStep.tolerances]
   );
@@ -148,7 +149,12 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
                 dispatch(
                   updateStdcmPathStep({
                     id: pathStep.id,
-                    updates: { tolerances: { before: minusTolerance, after: plusTolerance } },
+                    updates: {
+                      tolerances: {
+                        before: new Duration({ seconds: minusTolerance }),
+                        after: new Duration({ seconds: plusTolerance }),
+                      },
+                    },
                   })
                 );
               }}

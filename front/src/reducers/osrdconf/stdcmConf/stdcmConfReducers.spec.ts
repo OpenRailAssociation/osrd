@@ -25,6 +25,7 @@ import {
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
+import { Duration } from 'utils/duration';
 
 import commonConfBuilder from '../osrdConfCommon/__tests__/commonConfBuilder';
 import testCommonConfReducers from '../osrdConfCommon/__tests__/utils';
@@ -180,8 +181,8 @@ describe('stdcmConfReducers', () => {
         arrivalType: ArrivalTimeTypes.ASAP,
         arrival: new Date('2024-08-12T15:45:00.000+02:00'),
         tolerances: {
-          before: 60,
-          after: 60,
+          before: new Duration({ seconds: 60 }),
+          after: new Duration({ seconds: 60 }),
         },
       };
 
@@ -210,8 +211,8 @@ describe('stdcmConfReducers', () => {
         arrivalType: ArrivalTimeTypes.ASAP,
         arrival: new Date('2024-08-12T15:45:00.000+02:00'),
         tolerances: {
-          before: 60,
-          after: 60,
+          before: new Duration({ seconds: 60 }),
+          after: new Duration({ seconds: 60 }),
         },
       };
 

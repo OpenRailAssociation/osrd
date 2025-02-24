@@ -14,9 +14,10 @@ import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/os
 import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { isArrivalDateInSearchTimeWindow } from 'utils/date';
+import { Duration } from 'utils/duration';
 import type { ArrayElement, PickAndNonNullableFields } from 'utils/types';
 
-const DEFAULT_TOLERANCE = 1800; // 30min
+const DEFAULT_TOLERANCE = new Duration({ minutes: 30 });
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   ...defaultCommonConf,

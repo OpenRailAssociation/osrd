@@ -11,7 +11,6 @@ import { dateToHHMMSS, formatDateToString, formatDay } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
-import { secToMin } from 'utils/timeManipulation';
 
 import styles from './SimulationReportStyleSheet';
 import type { SimulationReportSheetProps } from '../../types';
@@ -203,12 +202,12 @@ const SimulationReportSheet = ({
                             <View style={styles.convoyAndRoute.tolerancesWidth}>
                               <Text style={styles.convoyAndRoute.tolerancesText}>
                                 {step.tolerances?.before
-                                  ? `+${secToMin(step.tolerances?.before)}`
+                                  ? `+${step.tolerances.before.total('minute')}`
                                   : ''}
                               </Text>
                               <Text style={styles.convoyAndRoute.tolerancesText}>
                                 {step.tolerances?.after
-                                  ? `-${secToMin(step.tolerances?.after)}`
+                                  ? `-${step.tolerances.after.total('minute')}`
                                   : ''}
                               </Text>
                             </View>
@@ -237,10 +236,10 @@ const SimulationReportSheet = ({
                             step.arrivalType === 'preciseTime' && (
                               <View style={styles.convoyAndRoute.tolerancesWidth}>
                                 <Text style={styles.convoyAndRoute.tolerancesText}>
-                                  {`+${secToMin(step.tolerances.before)}`}
+                                  {`+${step.tolerances.before.total('minute')}`}
                                 </Text>
                                 <Text style={styles.convoyAndRoute.tolerancesText}>
-                                  {`-${secToMin(step.tolerances.after)}`}
+                                  {`-${step.tolerances.after.total('minute')}`}
                                 </Text>
                               </View>
                             )}

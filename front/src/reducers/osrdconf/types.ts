@@ -123,7 +123,7 @@ export type StdcmPathStep = {
       arrivalType: ArrivalTimeTypes;
       // TODO: make arrival non nullable (/!\ store migration)
       arrival?: Date;
-      tolerances: { before: number; after: number };
+      tolerances: { before: Duration; after: Duration };
     }
 );
 
