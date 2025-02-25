@@ -3,40 +3,29 @@ import { X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { ValidityFilter, ScheduledPointsHonoredFilter } from './types';
+import type { ValidityFilter, ScheduledPointsHonoredFilter, TimetableFilters } from './types';
 
 type FilterPanelProps = {
   toggleFilterPanel: () => void;
-  filter: string;
-  setFilter: (filter: string) => void;
-  rollingStockFilter: string;
-  setRollingStockFilter: (rollingStockFilter: string) => void;
-  validityFilter: ValidityFilter;
-  setValidityFilter: (validityFilter: ValidityFilter) => void;
-  scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter;
-  setScheduledPointsHonoredFilter: (
-    scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter
-  ) => void;
-  uniqueTags: string[];
-  selectedTags: Set<string | null>;
-  setSelectedTags: React.Dispatch<React.SetStateAction<Set<string | null>>>;
+  timetableFilters: TimetableFilters;
 };
 
-const FilterPanel = ({
-  toggleFilterPanel,
-  filter,
-  setFilter,
-  rollingStockFilter,
-  setRollingStockFilter,
-  validityFilter,
-  setValidityFilter,
-  scheduledPointsHonoredFilter,
-  setScheduledPointsHonoredFilter,
-  uniqueTags,
-  selectedTags,
-  setSelectedTags,
-}: FilterPanelProps) => {
+const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) => {
   const { t } = useTranslation('operationalStudies/scenario');
+
+  const {
+    nameLabelFilter,
+    setNameLabelFilter,
+    rollingStockFilter,
+    setRollingStockFilter,
+    validityFilter,
+    setValidityFilter,
+    scheduledPointsHonoredFilter,
+    setScheduledPointsHonoredFilter,
+    uniqueTags,
+    selectedTags,
+    setSelectedTags,
+  } = timetableFilters;
 
   const validityOptions: { value: ValidityFilter; label: string }[] = [
     { value: 'both', label: t('timetable.showAllTrains') },
@@ -80,8 +69,8 @@ const FilterPanel = ({
             id="timetable-label-filter"
             name="timetable-label-filter"
             label={t('timetable.filterLabel')}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            value={nameLabelFilter}
+            onChange={(e) => setNameLabelFilter(e.target.value)}
             placeholder={t('filterPlaceholder')}
             data-testid="timetable-label-filter"
             title={t('filterPlaceholder')}

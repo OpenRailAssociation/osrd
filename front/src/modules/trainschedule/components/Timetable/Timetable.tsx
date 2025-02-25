@@ -30,6 +30,7 @@ import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
 import TrainScheduleItem from './TrainScheduleItem';
 import type { PacedTrainWithResult, TimetableItemResult, TrainScheduleWithDetails } from './types';
+import useFilterTimetableItems from './useFilterTimetableItems';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
@@ -61,7 +62,6 @@ const Timetable = ({
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
   const showPacedTrains = useSelector(getShowPacedTrains);
 
-  const [displayedTimetableItems, setDisplayedTimetableItems] = useState<TimetableItemResult[]>([]);
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const [showTrainDetails, setShowTrainDetails] = useState(false);
@@ -79,6 +79,8 @@ const Timetable = ({
     setSelectedTimetableItemIds([]);
     dtoImport();
   }, []);
+
+  const { filteredTimetableItems, ...timetableFilters } = useFilterTimetableItems(timetableItems);
 
   const toggleConflictsListExpanded = () => {
     setConflictsListExpanded(!conflictsListExpanded);
@@ -111,8 +113,8 @@ const Timetable = ({
   };
 
   const currentDepartureDates = useMemo(
-    () => displayedTimetableItems.map((train) => formatDepartureDate(train.startTime)),
-    [displayedTimetableItems]
+    () => filteredTimetableItems.map((train) => formatDepartureDate(train.startTime)),
+    [filteredTimetableItems]
   );
 
   const showDepartureDates = useMemo(() => {
@@ -180,8 +182,8 @@ const Timetable = ({
           showTrainDetails={showTrainDetails}
           toggleShowTrainDetails={toggleShowTrainDetails}
           timetableItems={timetableItems}
-          displayedTimetableItems={displayedTimetableItems}
-          setDisplayedTimetableItems={setDisplayedTimetableItems}
+          filteredTimetableItems={filteredTimetableItems}
+          timetableFilters={timetableFilters}
           selectedTimetableItemIds={selectedTimetableItemIds}
           setSelectedTimetableItemIds={setSelectedTimetableItemIds}
           removeTrains={removeAndUnselectTrains}
@@ -189,7 +191,7 @@ const Timetable = ({
           isInSelection={selectedTimetableItemIds.length > 0}
         />
         <Virtualizer overscan={15}>
-          {displayedTimetableItems.map((timetableItem, index) => (
+          {filteredTimetableItems.map((timetableItem, index) => (
             <div key={`timetable-train-card-${timetableItem.id}`}>
               {showDepartureDates[index] && (
                 <div className="scenario-timetable-departure-date">
@@ -239,8 +241,8 @@ const Timetable = ({
           toggleConflictsList={toggleConflictsListExpanded}
           // TODO PACED TRAIN : Adapt this props to handle paced trains in issue
           trainSchedulesDetails={
-            displayedTimetableItems.filter((train) =>
-              isTrainSchedule(train.id)
+            filteredTimetableItems.filter((timetableItem) =>
+              isTrainSchedule(timetableItem.id)
             ) as TrainScheduleWithDetails[]
           }
           onConflictClick={handleConflictClick}

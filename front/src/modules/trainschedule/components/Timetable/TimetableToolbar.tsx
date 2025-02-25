@@ -20,20 +20,18 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { useDebounce } from 'utils/helpers';
 import { formatTrainScheduleIdToEditoastTrainId, isTrainSchedule } from 'utils/trainId';
 
 import FilterPanel from './FilterPanel';
-import type { ScheduledPointsHonoredFilter, TimetableItemResult, ValidityFilter } from './types';
-import useFilterTrainSchedules from './useFilterTrainSchedules';
-import { timetableHasInvalidTrain } from './utils';
+import type { TimetableFilters, TimetableItemResult } from './types';
+import { timetableHasInvalidItem } from './utils';
 
 type TimetableToolbarProps = {
   showTrainDetails: boolean;
   toggleShowTrainDetails: () => void;
   timetableItems: TimetableItemResult[];
-  displayedTimetableItems: TimetableItemResult[];
-  setDisplayedTimetableItems: (trainSchedulesDetails: TimetableItemResult[]) => void;
+  filteredTimetableItems: TimetableItemResult[];
+  timetableFilters: TimetableFilters;
   selectedTimetableItemIds: TimetableItemId[];
   setSelectedTimetableItemIds: (selectedTimetableIds: TimetableItemId[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
@@ -45,8 +43,8 @@ const TimetableToolbar = ({
   showTrainDetails,
   toggleShowTrainDetails,
   timetableItems,
-  displayedTimetableItems,
-  setDisplayedTimetableItems,
+  filteredTimetableItems,
+  timetableFilters,
   selectedTimetableItemIds,
   setSelectedTimetableItemIds,
   removeTrains,
@@ -60,13 +58,6 @@ const TimetableToolbar = ({
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-
-  const [filter, setFilter] = useState('');
-  const [rollingStockFilter, setRollingStockFilter] = useState('');
-  const [validityFilter, setValidityFilter] = useState<ValidityFilter>('both');
-  const [scheduledPointsHonoredFilter, setScheduledPointsHonoredFilter] =
-    useState<ScheduledPointsHonoredFilter>('both');
-  const [selectedTags, setSelectedTags] = useState<Set<string | null>>(new Set());
 
   const { selectedTrainScheduleIds, selectedPacedTrainIds } = useMemo(
     () =>
@@ -103,32 +94,17 @@ const TimetableToolbar = ({
     [timetableItems]
   );
 
-  const debouncedFilter = useDebounce(filter, 500);
-
-  const debouncedRollingstockFilter = useDebounce(rollingStockFilter, 500);
-
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
-
-  // TODO: move this hook in Timetable
-  const { uniqueTags } = useFilterTrainSchedules(
-    timetableItems,
-    debouncedFilter,
-    debouncedRollingstockFilter,
-    validityFilter,
-    scheduledPointsHonoredFilter,
-    selectedTags,
-    setDisplayedTimetableItems
-  );
 
   const toggleFilterPanel = () => {
     setIsFilterPanelOpen(!isFilterPanelOpen);
   };
 
   const toggleAllTrainsSelecton = () => {
-    if (displayedTimetableItems.length === selectedTimetableItemIds.length) {
+    if (filteredTimetableItems.length === selectedTimetableItemIds.length) {
       setSelectedTimetableItemIds([]);
     } else {
-      const timetableItemsDisplayed = displayedTimetableItems.map(({ id }) => id);
+      const timetableItemsDisplayed = filteredTimetableItems.map(({ id }) => id);
       setSelectedTimetableItemIds(timetableItemsDisplayed);
     }
   };
@@ -303,7 +279,7 @@ const TimetableToolbar = ({
           </div>
         )}
       </div>
-      {timetableHasInvalidTrain(displayedTimetableItems) && (
+      {timetableHasInvalidItem(filteredTimetableItems) && (
         <div className="invalid-trains">
           <Alert size="sm" variant="fill" />
           <span data-testid="invalid-trains-message" className="invalid-trains-message">
@@ -332,17 +308,7 @@ const TimetableToolbar = ({
           ) : (
             <FilterPanel
               toggleFilterPanel={toggleFilterPanel}
-              filter={filter}
-              setFilter={setFilter}
-              rollingStockFilter={rollingStockFilter}
-              setRollingStockFilter={setRollingStockFilter}
-              validityFilter={validityFilter}
-              setValidityFilter={setValidityFilter}
-              scheduledPointsHonoredFilter={scheduledPointsHonoredFilter}
-              setScheduledPointsHonoredFilter={setScheduledPointsHonoredFilter}
-              uniqueTags={uniqueTags}
-              selectedTags={selectedTags}
-              setSelectedTags={setSelectedTags}
+              timetableFilters={timetableFilters}
             />
           )}
         </div>

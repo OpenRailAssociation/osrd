@@ -57,3 +57,19 @@ export type PacedTrainWithResult = TimetableItemWithDetails & {
 };
 
 export type TimetableItemResult = TrainScheduleWithDetails | PacedTrainWithResult;
+
+export type TimetableFilters = {
+  uniqueTags: string[];
+  nameLabelFilter: string;
+  setNameLabelFilter: (nameLabelFilter: string) => void;
+  rollingStockFilter: string;
+  setRollingStockFilter: (rollingStockFilter: string) => void;
+  validityFilter: ValidityFilter;
+  setValidityFilter: (validityFilter: ValidityFilter) => void;
+  scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter;
+  setScheduledPointsHonoredFilter: (
+    scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter
+  ) => void;
+  selectedTags: Set<string | null>;
+  setSelectedTags: React.Dispatch<React.SetStateAction<Set<string | null>>>;
+};
