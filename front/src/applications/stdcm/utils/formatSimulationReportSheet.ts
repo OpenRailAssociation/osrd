@@ -1,4 +1,4 @@
-import type { SimulationResponse } from 'common/api/osrdEditoastApi';
+import type { ReportTrain, SimulationResponse } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -74,6 +74,123 @@ export function getStopDurationAtPosition(
   return null;
 }
 
+function formatOperationalPointWithTimes(
+  op: SuggestedOP,
+  trainPositions: number[],
+  trainTimes: number[],
+  trainDepartureHour: number,
+  trainDepartureMinute: number,
+  simulationPathSteps: StdcmPathStep[]
+): StdcmResultsOperationalPoint {
+  const stopBegin = getTimeAtPosition(
+    op.positionOnPath,
+    trainPositions,
+    trainTimes,
+    trainDepartureHour,
+    trainDepartureMinute
+  );
+
+  const duration = getStopDurationAtPosition(op.positionOnPath, trainPositions, trainTimes);
+  const durationInSeconds = duration !== null ? duration.total('second') : 0;
+  const stopEnd = stopBegin.add(duration || Duration.zero);
+  // Find the corresponding stopType from pathSteps
+  const correspondingStep = simulationPathSteps.find(
+    (step) => step.location && matchPathStepAndOp(step.location, op)
+  );
+  let stopType;
+  if (correspondingStep) {
+    stopType = correspondingStep.isVia ? correspondingStep.stopType : StdcmStopTypes.SERVICE_STOP;
+  }
+  const stopFor = correspondingStep?.isVia ? correspondingStep.stopFor : undefined;
+
+  return {
+    opId: op.opId!,
+    positionOnPath: op.positionOnPath,
+    time: durationToHHMM(stopBegin),
+    name: op.name,
+    ch: op.ch,
+    duration: durationInSeconds,
+    stopEndTime: durationToHHMM(stopEnd),
+    trackName: op.metadata?.trackName,
+    stopType,
+    stopFor,
+  };
+}
+
+/**
+ * @param finalOutput Final simulation report containing lists of positions and times of all simulated points
+ * @returns A list of all positions at which the trains stops
+ */
+function findAllStops(positions: number[]): number[] {
+  return positions.filter(
+    (position, index) =>
+      index !== positions.length - 1 &&
+      position === positions[index + 1] &&
+      (!index || position !== positions[index - 1])
+  );
+}
+
+/**
+ * @param formatedOps List of operational points with times
+ * @param stopPositions List of all detected stop positions
+ * @param train Object containing simulated train positions, times, and departure time
+ * @param simulationPathSteps List of simulation path steps
+ * @returns A list of operational points including detected missing stops
+ */
+export function insertMissingStopsInOperationalPointsWithTimes(
+  formatedOps: StdcmResultsOperationalPoint[],
+  stopPositions: number[],
+  trainPositions: number[],
+  trainTimes: number[],
+  trainDepartureHour: number,
+  trainDepartureMinute: number,
+  simulationPathSteps: StdcmPathStep[]
+): StdcmResultsOperationalPoint[] {
+  const formatedOpsWithAllStops: StdcmResultsOperationalPoint[] = [];
+  let opIndex = 0;
+
+  stopPositions.forEach((stopPosition) => {
+    // Add operational points until we reach the stop position
+    while (opIndex < formatedOps.length && formatedOps[opIndex].positionOnPath < stopPosition) {
+      formatedOpsWithAllStops.push({ ...formatedOps[opIndex] });
+      opIndex += 1;
+    }
+
+    // If there is already an operational point at the stop position, skip
+    if (opIndex < formatedOps.length && formatedOps[opIndex].positionOnPath === stopPosition)
+      return;
+
+    // At least the departure with pos 0 should have been added, so updatedOperationalPointsWT.length > 1
+    const lastAddedOp = formatedOpsWithAllStops.at(-1)!;
+    const formattedStop = formatOperationalPointWithTimes(
+      {
+        positionOnPath: stopPosition,
+        offsetOnTrack: NaN,
+        track: '',
+      },
+      trainPositions,
+      trainTimes,
+      trainDepartureHour,
+      trainDepartureMinute,
+      simulationPathSteps
+    );
+    if (lastAddedOp.stopFor && !lastAddedOp.duration) {
+      // If a stop was requested at the last op and no stop was performed,
+      // we assume the current stop actually corresponds to the last op
+      lastAddedOp.duration = formattedStop.duration;
+      lastAddedOp.stopEndTime = formattedStop.stopEndTime;
+    } else {
+      // Otherwise we create a new op at the current stop, with unknown name and minimal informations
+      formatedOpsWithAllStops.push(formattedStop);
+    }
+  });
+
+  // Add all remaining operational points
+  formatedOpsWithAllStops.push(...formatedOps.slice(opIndex));
+
+  return formatedOpsWithAllStops;
+}
+
 // TODO : Remove this function as soon as fake takeover tracks cease to be used
 // It serves to consolidate steps of the form OVERTAKE_n_A;X, OVERTAKE_n_B;X in a single step X
 export function consolidateOvertakesToSingleSteps(
@@ -120,48 +237,26 @@ export function getOperationalPointsWithTimes(
   const departureMinute = departureTime.getMinutes();
 
   // Map operational points with their positions, times, and stop durations
-  const opResults = operationalPoints.map((op) => {
-    const stopBegin = getTimeAtPosition(
-      op.positionOnPath,
+  const formattedOps = operationalPoints.map((op) =>
+    formatOperationalPointWithTimes(
+      op,
       positions,
       times,
       departureHour,
-      departureMinute
-    );
+      departureMinute,
+      simulationPathSteps
+    )
+  );
 
-    const isRequestedOp = simulationPathSteps.some(
-      (step) => step.location?.name === op.name && step.location?.secondary_code === op.ch
-    );
-
-    const duration = getStopDurationBetweenTwoPositions(op.positionOnPath, positions, times);
-    const durationInSeconds = isRequestedOp && duration !== null ? duration.total('second') : 0;
-    const stopEnd = stopBegin.add(duration || Duration.zero);
-
-    // Find the corresponding stopType from pathSteps
-    const correspondingStep = simulationPathSteps.find(
-      (step) => step.location && matchPathStepAndOp(step.location, op)
-    );
-    let stopType;
-    if (correspondingStep) {
-      stopType = !correspondingStep.isVia
-        ? StdcmStopTypes.SERVICE_STOP
-        : correspondingStep.stopType;
-    }
-    const stopFor = correspondingStep?.isVia ? correspondingStep.stopFor : undefined;
-
-    return {
-      opId: op.opId!,
-      positionOnPath: op.positionOnPath,
-      time: durationToHHMM(stopBegin),
-      name: op.name,
-      ch: op.ch,
-      duration: durationInSeconds,
-      stopEndTime: durationToHHMM(stopEnd),
-      trackName: op.metadata?.trackName,
-      stopType,
-      stopFor,
-    };
-  });
-
-  return consolidateOvertakesToSingleSteps(opResults);
+  const stopPositions = findAllStops(simulation.final_output.positions);
+  const formattedOpsWithAllStops = insertMissingStopsInOperationalPointsWithTimes(
+    formattedOps,
+    stopPositions,
+    positions,
+    times,
+    departureHour,
+    departureMinute,
+    simulationPathSteps
+  );
+  return consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
 }
