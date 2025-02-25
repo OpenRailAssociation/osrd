@@ -23,10 +23,18 @@ export function generateCodeNumber(): string {
   return `${month}${year}-${randomPart1}-${randomPart2}`;
 }
 
-export function getStopDurationTime(duration: Duration) {
+/**
+ * @param duration Duration object representing the total duration
+ * @returns The duration formatted as a string in "X min" format
+ */
+export function getStopDurationTime(duration: Duration): string {
   return `${Math.round(duration.total('minute'))} min`;
 }
 
+/**
+ * @param duration Duration object
+ * @returns The duration formatted as a string in "HH:MM" format
+ */
 function durationToHHMM(duration: Duration): string {
   const totalMinutes = Math.round(duration.total('minute'));
   const hours = Math.floor(totalMinutes / 60) % 24;
@@ -34,31 +42,46 @@ function durationToHHMM(duration: Duration): string {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
-function getTimeAtPosition(
-  trainPosition: number,
-  trainPositions: number[],
-  trainTimes: number[],
-  trainDepartureHour: number,
-  trainDepartureMinute: number
-): Duration {
+/**
+ * @property positions List of positions of a train in mm
+ * @property times List of times in milliseconds corresponding to the train positions
+ * @property departureHour Hour of the train departure (24h format)
+ * @property departureMinute Minute of the train departure
+ */
+type TrainSimulation = {
+  positions: number[];
+  times: number[];
+  departureHour: number;
+  departureMinute: number;
+};
+
+/**
+ * @param position Distance from the beginning of the path in mm
+ * @param train Object containing simulated train positions, times, and departure time
+ * @returns The estimated time of passage at the given position in format hh:mm
+ */
+function getTimeAtPosition(position: number, train: TrainSimulation): Duration {
   const milliseconds = interpolateValue(
     {
-      positions: trainPositions,
+      positions: train.positions,
       speeds: [],
-      times: trainTimes,
+      times: train.times,
     },
-    trainPosition,
+    position,
     'times'
   );
   const duration = new Duration({ milliseconds });
-  const trainDeparture = new Duration({ hours: trainDepartureHour, minutes: trainDepartureMinute });
+  const trainDeparture = new Duration({
+    hours: train.departureHour,
+    minutes: train.departureMinute,
+  });
   return trainDeparture.add(duration);
 }
 
 /**
- * @param position format: Distance from the beginning of the path in mm
- * @param positionsList format: List of positions of a train in mm.
- * @param timesList format: List of times in milliseconds corresponding to the positions in trainPositions.
+ * @param position Distance from the beginning of the path in mm
+ * @param positionsList List of positions of a train in mm.
+ * @param timesList List of times in milliseconds corresponding to the positions in trainPositions.
  * @returns The duration in milliseconds between the first and last occurrence of the position in the trainPositions array
  */
 export function getStopDurationAtPosition(
@@ -74,23 +97,20 @@ export function getStopDurationAtPosition(
   return null;
 }
 
+/**
+ * @param op Operational point to format
+ * @param train Object containing simulated train positions, times, and departure time
+ * @param simulationPathSteps List of simulation path steps
+ * @returns A formatted operational point with calculated stop duration and departure time
+ */
 function formatOperationalPointWithTimes(
   op: SuggestedOP,
-  trainPositions: number[],
-  trainTimes: number[],
-  trainDepartureHour: number,
-  trainDepartureMinute: number,
+  train: TrainSimulation,
   simulationPathSteps: StdcmPathStep[]
 ): StdcmResultsOperationalPoint {
-  const stopBegin = getTimeAtPosition(
-    op.positionOnPath,
-    trainPositions,
-    trainTimes,
-    trainDepartureHour,
-    trainDepartureMinute
-  );
+  const stopBegin = getTimeAtPosition(op.positionOnPath, train);
 
-  const duration = getStopDurationAtPosition(op.positionOnPath, trainPositions, trainTimes);
+  const duration = getStopDurationAtPosition(op.positionOnPath, train.positions, train.times);
   const durationInSeconds = duration !== null ? duration.total('second') : 0;
   const stopEnd = stopBegin.add(duration || Duration.zero);
   // Find the corresponding stopType from pathSteps
@@ -118,8 +138,8 @@ function formatOperationalPointWithTimes(
 }
 
 /**
- * @param finalOutput Final simulation report containing lists of positions and times of all simulated points
- * @returns A list of all positions at which the trains stops
+ * @param positions Lists of all positions of simulated points of a train simulation report
+ * @returns A list of all positions at which the train stops
  */
 function findAllStops(positions: number[]): number[] {
   return positions.filter(
@@ -140,10 +160,7 @@ function findAllStops(positions: number[]): number[] {
 export function insertMissingStopsInOperationalPointsWithTimes(
   formatedOps: StdcmResultsOperationalPoint[],
   stopPositions: number[],
-  trainPositions: number[],
-  trainTimes: number[],
-  trainDepartureHour: number,
-  trainDepartureMinute: number,
+  train: TrainSimulation,
   simulationPathSteps: StdcmPathStep[]
 ): StdcmResultsOperationalPoint[] {
   const formatedOpsWithAllStops: StdcmResultsOperationalPoint[] = [];
@@ -168,10 +185,7 @@ export function insertMissingStopsInOperationalPointsWithTimes(
         offsetOnTrack: NaN,
         track: '',
       },
-      trainPositions,
-      trainTimes,
-      trainDepartureHour,
-      trainDepartureMinute,
+      train,
       simulationPathSteps
     );
     if (lastAddedOp.stopFor && !lastAddedOp.duration) {
@@ -225,6 +239,13 @@ export function consolidateOvertakesToSingleSteps(
   return consolidatedSteps;
 }
 
+/**
+ * @param operationalPoints List of operational points to be formated and enriched
+ * @param simulation Simulation response containing final output positions and times
+ * @param simulationPathSteps List of simulation path steps
+ * @param departureTime Departure time in hh:mm format
+ * @returns A list of formated operational points with times and stop durations
+ */
 export function getOperationalPointsWithTimes(
   operationalPoints: SuggestedOP[],
   simulation: Extract<SimulationResponse, { status: 'success' }>,
@@ -240,10 +261,7 @@ export function getOperationalPointsWithTimes(
   const formattedOps = operationalPoints.map((op) =>
     formatOperationalPointWithTimes(
       op,
-      positions,
-      times,
-      departureHour,
-      departureMinute,
+      { positions, times, departureHour, departureMinute },
       simulationPathSteps
     )
   );
@@ -252,10 +270,7 @@ export function getOperationalPointsWithTimes(
   const formattedOpsWithAllStops = insertMissingStopsInOperationalPointsWithTimes(
     formattedOps,
     stopPositions,
-    positions,
-    times,
-    departureHour,
-    departureMinute,
+    { positions, times, departureHour, departureMinute },
     simulationPathSteps
   );
   return consolidateOvertakesToSingleSteps(formattedOpsWithAllStops);
