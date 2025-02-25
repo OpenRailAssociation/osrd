@@ -4,6 +4,7 @@
   "cancelRequest": "Annuler la requête",
   "consist": {
     "consist": "Convoi",
+    "compositionCode": "Composition code",
     "length": "Longueur",
     "tonnage": "Tonnage",
     "maxSpeed": "Vitesse max.",
@@ -48,6 +49,14 @@
   "linkedTrainDefaultCard": {
     "anterior": "Indiquer le sillon antérieur",
     "posterior": "Indiquer le sillon postérieur"
+  },
+  "mailFeedback": {
+    "body": "%0A********%0A%0ANous%20vous%20invitons%20à%20nous%20envoyer%20un%20message.%0ADès%20que%20vous%20avez%20un%20gêne%20ou%20une%20remarque,%0Amême%20si%20vous%20n’y%20mettez%20pas%20la%20forme.%0A%0AMerci%20à%20vous%20par%20avance,%0AL’équipe%20du%20projet%20LMR%0A%0A(vous%20pouvez%20effacer%20ce%20message)%0A%0A********",
+    "description": "Aidez-nous à améliorer ST DCM en transmettant vos critiques et propositions à l’équipe.",
+    "simulationDetails": "Détails de la simulation",
+    "subject": "LMR - remarques, suggestions",
+    "title": "Une remarque, une suggestion ?",
+    "writeButton": "Écrire"
   },
   "noConfigurationFound": {
     "title": "Un problème de configuration vous empêche de faire une recherche",

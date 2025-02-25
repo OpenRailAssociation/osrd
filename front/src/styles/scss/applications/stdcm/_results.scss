@@ -380,3 +380,43 @@
     position: relative;
   }
 }
+
+.feedback-card {
+  margin-bottom: 8px;
+  .feedback-card-header {
+    h3 {
+      color: var(--black100);
+      font-size: 600;
+      line-height: 24px;
+      margin-bottom: 0;
+    }
+    .feedback-card-header-icon {
+      color: var(--grey30);
+      padding-left: 8px;
+    }
+  }
+  .feedback-separator {
+    color: var(--grey20);
+    width: 804px;
+    margin: 56px 0 30px;
+    border-bottom: 5px solid var(--grey20);
+  }
+  .feedback-card-text {
+    color: var(--black100);
+  }
+  .feedback-card-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--white100);
+    border-radius: 5px;
+    color: var(--grey70);
+    font-size: 16px;
+    font-weight: 500;
+    width: 67px;
+    height: 32px;
+    padding: 12px 24px;
+    margin-right: 16px;
+    border: 1.5px solid var(--grey50);
+  }
+}

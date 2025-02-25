@@ -39,6 +39,14 @@ class SimulationResultPage extends STDCMPage {
 
   private readonly startNewQueryWithDataButton: Locator;
 
+  private readonly feedbackCardContainer: Locator;
+
+  private readonly feedbackTitle: Locator;
+
+  private readonly feedbackDescription: Locator;
+
+  private readonly feedbackButton: Locator;
+
   constructor(page: Page) {
     super(page);
     this.mapResultContainer = page.locator('#stdcm-map-result');
@@ -55,6 +63,10 @@ class SimulationResultPage extends STDCMPage {
     this.startNewQueryButton = page.getByTestId('start-new-query-button');
     this.startNewQueryWithDataButton = page.getByTestId('start-new-query-with-data-button');
     this.simulationList = page.locator('.stdcm-results .simulation-list');
+    this.feedbackCardContainer = page.locator('.feedback-card');
+    this.feedbackTitle = page.getByTestId('feedback-title');
+    this.feedbackDescription = this.feedbackCardContainer.locator('.feedback-card-text');
+    this.feedbackButton = page.getByTestId('feedback-button');
   }
 
   private getSimulationLengthAndDurationLocator(simulationNumber: number): Locator {
@@ -194,6 +206,25 @@ class SimulationResultPage extends STDCMPage {
 
     // Validate length and duration
     expect(actualLengthAndDuration).toEqual(expectedLengthAndDuration);
+  }
+
+  async verifyFeedbackCardVisibility() {
+    await this.launchSimulation();
+    await expect(this.simulationResultTable).toBeVisible();
+    await expect(this.feedbackCardContainer).toBeVisible();
+    await expect(this.feedbackTitle).toBeVisible();
+    await expect(this.feedbackDescription).toBeVisible();
+    await expect(this.feedbackButton).toBeVisible();
+  }
+  async clickFeedbackButton() {
+    await expect(this.feedbackButton).toBeEnabled();
+    await this.feedbackButton.click();
+  }
+  async verifyMailRedirection(expectedSubject: string, expectedBody: string) {
+    await this.clickFeedbackButton();
+    const mailtoUrl = await this.page.evaluate(() => window.location.href);
+    const expectedMailto = `mailto:support_LMR@reseau.sncf.fr?subject=${encodeURIComponent(expectedSubject)}&body=${encodeURIComponent(expectedBody)}`;
+    expect(mailtoUrl).toContain(expectedMailto);
   }
 }
 export default SimulationResultPage;
