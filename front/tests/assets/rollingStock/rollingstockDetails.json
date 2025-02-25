@@ -69,5 +69,35 @@
   "additionalDetails": {
     "electricalPowerStartupTime": 1,
     "raisePantographTime": 20
-  }
+  },
+  "expectedValues": [
+    { "id": "startupTime", "value": "5s" },
+    { "id": "startupAcceleration", "value": "0.1m/s²" },
+    { "id": "comfortAcceleration", "value": "1m/s²" },
+    { "id": "inertiaCoefficient", "value": "1" },
+    { "id": "constGamma", "value": "1m/s²" },
+    { "id": "basePowerClass", "value": "7" },
+    { "id": "rollingResistanceA", "value": "15kN" },
+    { "id": "rollingResistanceB", "value": "0.3kN/(km/h)" },
+    { "id": "rollingResistanceC", "value": "0.005kN/(km/h)²" },
+    { "id": "loadingGauge", "value": "GA" },
+    { "id": "rollingResistance", "value": "R(v) = a + bv + cv²" },
+    { "id": "primaryCategory", "value": "NIGHT_TRAIN", "isTranslated": true },
+    { "id": "otherCategories", "value": ["FREIGHT_TRAIN", "WORK_TRAIN"], "isTranslated": true }
+  ],
+  "updatedExpectedValues": [
+    { "id": "startupTime", "value": "4s" },
+    { "id": "startupAcceleration", "value": "0.11m/s²" },
+    { "id": "comfortAcceleration", "value": "0.99m/s²" },
+    { "id": "inertiaCoefficient", "value": "1.3000000000000005" },
+    { "id": "constGamma", "value": "1.1m/s²" },
+    { "id": "basePowerClass", "value": "6" },
+    { "id": "rollingResistanceA", "value": "13kN" },
+    { "id": "rollingResistanceB", "value": "0.23kN/(km/h)" },
+    { "id": "rollingResistanceC", "value": "0.002kN/(km/h)²" },
+    { "id": "loadingGauge", "value": "G1" },
+    { "id": "rollingResistance", "value": "R(v) = a + bv + cv²" },
+    { "id": "primaryCategory", "value": "WORK_TRAIN", "isTranslated": true },
+    { "id": "otherCategories", "value": ["HIGH_SPEED_TRAIN"], "isTranslated": true }
+  ]
 }

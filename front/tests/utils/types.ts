@@ -161,6 +161,8 @@ export type RollingStockDetails = {
   speedEffortDataC1: { velocity: string; effort: string }[];
   speedEffortDataUpdated: { velocity: string; effort: string }[];
   additionalDetails: { electricalPowerStartupTime: number; raisePantographTime: number };
+  expectedValues: { id: string; value: string | string[]; isTranslated?: boolean }[];
+  updatedExpectedValues: { id: string; value: string | string[]; isTranslated?: boolean }[];
 };
 
 export type ProjectData = {

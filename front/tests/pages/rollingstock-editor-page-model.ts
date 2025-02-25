@@ -348,5 +348,36 @@ class RollingstockEditorPage extends CommonPage {
     await this.deleteRollingStockButton.click();
     await this.confirmModalButtonYes.click();
   }
+
+  // Verify rolling stock details table
+  async verifyRollingStockDetailsTable(
+    expectedValues: { id: string; value: string | string[]; isTranslated?: boolean }[]
+  ) {
+    for (const { id, value, isTranslated } of expectedValues) {
+      let expectedValue = value;
+      // Convert translated fields
+      if (isTranslated) {
+        if (Array.isArray(value)) {
+          expectedValue = value.map(
+            (v) => this.translations.categoriesOptions[v] || this.translations[v]
+          );
+        } else {
+          expectedValue = this.translations.categoriesOptions[value] || this.translations[value];
+        }
+      }
+
+      // Locate and verify values
+      const row = this.page.getByRole('row', { name: this.translations[id] }).first();
+      await expect(row).toBeVisible();
+
+      const valueCell = row.getByRole('cell').nth(1);
+      await expect(valueCell).toBeVisible();
+
+      const actualValue = await valueCell.textContent();
+      expect(actualValue?.trim()).toBe(
+        Array.isArray(expectedValue) ? expectedValue.join(', ') : expectedValue.toString()
+      );
+    }
+  }
 }
 export default RollingstockEditorPage;

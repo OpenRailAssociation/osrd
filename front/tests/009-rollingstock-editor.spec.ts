@@ -94,6 +94,7 @@ test.describe('Rollingstock editor page tests', () => {
 
     // Verify rolling stock details
     await rollingStockEditorPage.searchRollingStock(uniqueRollingStockName);
+    await rollingStockEditorPage.verifyRollingStockDetailsTable(rollingstockDetails.expectedValues);
     await rollingStockEditorPage.editRollingStock(uniqueRollingStockName);
     for (const input of rollingstockDetails.inputs) {
       const value = input.id === 'name' ? uniqueRollingStockName : input.value;
@@ -145,6 +146,9 @@ test.describe('Rollingstock editor page tests', () => {
     // Submit and verify modification
     await rollingStockEditorPage.submitRollingStock();
     await rollingStockEditorPage.searchRollingStock(uniqueUpdatedRollingStockName);
+    await rollingStockEditorPage.verifyRollingStockDetailsTable(
+      rollingstockDetails.updatedExpectedValues
+    );
     await rollingStockEditorPage.editRollingStock(uniqueUpdatedRollingStockName);
     await deleteRollingStocks([uniqueUpdatedRollingStockName]);
   });
