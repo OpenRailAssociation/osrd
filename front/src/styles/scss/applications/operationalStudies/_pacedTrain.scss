@@ -1,5 +1,16 @@
 .paced-train {
-  padding: 12px 0px;
+  padding: 12px 0px 12px 6px;
+
+  &:not(.closed) {
+    padding-bottom: 16px;
+  }
+
+  &.with-detail {
+    padding-bottom: 18px;
+    .occurrences {
+      margin-bottom: 16px;
+    }
+  }
 
   .paced-train-right-zone {
     display: flex;
@@ -37,7 +48,7 @@
 
   .paced-train-main-info {
     display: flex;
-    margin-inline: 9px 24px;
+    margin-inline: 10.5px 24px;
     font-size: 1rem;
     font-weight: 600;
     width: calc(100% - 196px);
@@ -76,6 +87,7 @@
 
   .custom-checkbox.small {
     margin-bottom: 0;
+    padding-left: 21px;
   }
 
   .base-info {
@@ -121,8 +133,137 @@
   }
   .occurrences {
     width: 100%;
-    //TODO PACED TRAIN: set the height to auto when integrating the OccurenceItem component
-    height: 20px;
+    height: auto;
+    padding-left: 28px;
+    margin-top: 12px;
+
+    .occurrence-item {
+      position: relative;
+      display: flex;
+      width: 100%;
+      flex-wrap: nowrap;
+      padding-left: 4px;
+      height: 32px;
+      align-items: center;
+      border-top: 1px solid var(--white100);
+      border-bottom: 1px solid var(--black10);
+      &.selected {
+        background-color: var(--selection20);
+      }
+      &.next-after-midnight {
+        border-bottom: 1px solid var(--black50);
+      }
+      &-name {
+        white-space: nowrap;
+        overflow: hidden;
+        /* "overflow" value must be different from "visible" */
+        text-overflow: ellipsis;
+        width: 56px;
+        direction: rtl;
+        text-align: left;
+        height: 24px;
+        line-height: 24px;
+        min-width: 56px;
+        margin-inline: 8px;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+      &:first-child {
+        border-top: none;
+      }
+      .occurrence-item-dot {
+        height: 24px;
+        color: var(--grey40);
+      }
+      .status-icon {
+        margin-left: 8px;
+        min-width: 16px;
+        height: 24px;
+      }
+
+      .rolling-stock {
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        height: 24px;
+        position: relative;
+
+        .status-invalid {
+          width: 4px;
+          height: 16px;
+          background-color: var(--error60);
+          border-radius: 5px;
+          margin: 0 7px 0 5px;
+        }
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 24px;
+          height: 22px;
+          background: linear-gradient(270deg, rgba(247, 246, 238, 0), rgba(247, 246, 238, 1));
+          z-index: 1;
+        }
+
+        img {
+          min-width: 40px;
+          height: 16px;
+          object-fit: cover;
+          object-position: left;
+          transform: scaleX(-1);
+        }
+      }
+
+      &-horaries {
+        display: flex;
+        margin-left: auto;
+        margin-right: 16px;
+      }
+
+      &-time {
+        width: 44px;
+        text-align: right;
+        &.departure-time {
+          margin-left: 8px;
+        }
+        &.arrival-time {
+          margin-left: 32px;
+        }
+      }
+      .consecutive-day-display {
+        color: var(--black50);
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        transform: translate(-100%, 50%);
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        margin-right: 1px;
+        .date-display {
+          height: 16px;
+          line-height: 16px;
+          &.before-midnight {
+            transform: translateY(3px);
+          }
+          &.after-midnight {
+            transform: translateY(-3px);
+          }
+        }
+      }
+      &.selected {
+        .rolling-stock::after {
+          background: linear-gradient(
+            270deg,
+            rgba(255, 242, 179, 0),
+            rgba(255, 242, 179, 1)
+          ) !important;
+        }
+      }
+    }
   }
 
   .center-icon {
@@ -136,7 +277,12 @@
 
   &.closed {
     .occurrences {
+      margin-top: 0;
+      margin-bottom: 0;
       height: 0;
+      .occurrence-item {
+        display: none;
+      }
     }
   }
 

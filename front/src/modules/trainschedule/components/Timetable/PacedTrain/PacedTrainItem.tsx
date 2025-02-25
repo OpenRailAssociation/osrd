@@ -6,11 +6,13 @@ import cx from 'classnames';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
-import type { PacedTrainId } from 'reducers/osrdconf/types';
+import type { PacedTrainId, TrainId } from 'reducers/osrdconf/types';
 import { ms2min } from 'utils/timeManipulation';
 
 import TimetableItemActions from '../TimetableItemActions';
 import type { PacedTrainWithResult } from '../types';
+import useOccurrences from './hooks/useOccurrences';
+import OccurrenceItem from './OccurrenceItem';
 
 type PacedTrainItemProps = {
   isInSelection: boolean;
@@ -19,6 +21,7 @@ type PacedTrainItemProps = {
   isOnEdit: boolean;
   isProjectionPathUsed: boolean;
   selectPacedTrainToEdit: (pacedTrain: PacedTrainWithResult) => void;
+  selectedTimeTableItemId: TrainId | undefined;
 };
 
 const PacedTrainItem = ({
@@ -28,19 +31,18 @@ const PacedTrainItem = ({
   isOnEdit,
   isProjectionPathUsed,
   selectPacedTrainToEdit,
+  selectedTimeTableItemId,
 }: PacedTrainItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
 
   const [isOccurrencesListOpen, setIsOccurrencesListOpen] = useState(false);
+  const { occurrences, occurrencesCount } = useOccurrences(pacedTrain);
 
   const toggleOccurrencesList = () => setIsOccurrencesListOpen((open) => !open);
   const selectPathProjection = async () => {};
   const duplicatePacedTrain = async () => {};
   const deletePacedTrain = async () => {};
 
-  const pacedTrainCadence = pacedTrain.paced.step;
-
-  const occurrencesCount = Math.ceil(pacedTrain.paced.duration.ms / pacedTrain.paced.step.ms);
   return (
     <div
       data-testid="scenario-timetable-train"
@@ -92,7 +94,9 @@ const PacedTrainItem = ({
 
         {!pacedTrain.invalidReason ? (
           <div className="paced-train-right-zone">
-            {pacedTrain.isValid && <div>&mdash;&nbsp;{`${ms2min(pacedTrainCadence.ms)}min`}</div>}
+            {pacedTrain.isValid && (
+              <div>&mdash;&nbsp;{`${ms2min(pacedTrain.paced.step.ms)}min`}</div>
+            )}
             <div
               className={cx('status-icon', {
                 'not-honored-or-too-fast': pacedTrain.notHonoredReason,
@@ -120,7 +124,16 @@ const PacedTrainItem = ({
         editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
         deleteTimetableItem={deletePacedTrain}
       />
-      <div className="occurrences" />
+      <div className="occurrences">
+        {occurrences.map((occurrence, index) => (
+          <OccurrenceItem
+            occurrence={occurrence}
+            key={occurrence.id}
+            isSelected={selectedTimeTableItemId === occurrence.id}
+            nextOccurrence={occurrences[index + 1]}
+          />
+        ))}
+      </div>
       {pacedTrain.isValid && (
         <div className="more-info">
           <div className="more-info-left">

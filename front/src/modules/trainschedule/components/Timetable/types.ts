@@ -5,7 +5,7 @@ import type {
   SimulationSummaryResult,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
 export type ValidityFilter = 'both' | 'valid' | 'invalid';
@@ -76,4 +76,12 @@ export type TimetableFilters = {
   setTrainTypeFilter: (trainType: TrainTypeFilter) => void;
   selectedTags: Set<string | null>;
   setSelectedTags: React.Dispatch<React.SetStateAction<Set<string | null>>>;
+};
+
+export type Occurrence = {
+  id: OccurrenceId;
+  trainName: string;
+  rollingStock?: LightRollingStockWithLiveries;
+  startTime: Date;
+  arrivalTime: Date;
 };

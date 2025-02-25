@@ -145,8 +145,8 @@ const Timetable = ({
               trainName: 'Paced train 1',
               labels: ['Paced-Train-Tag-1'],
               paced: {
-                duration: Duration.parse('PT2H'),
-                step: Duration.parse('PT30M'),
+                duration: Duration.parse('PT72H'),
+                step: Duration.parse('PT7H'),
               },
             },
             {
@@ -249,6 +249,7 @@ const Timetable = ({
                   handleSelectPacedTrain={handleSelectTimetableItem}
                   isOnEdit={timetableItem.id === itemIdToEdit}
                   isProjectionPathUsed={false}
+                  selectedTimeTableItemId={selectedTrainId}
                 />
               )}
             </div>
