@@ -1,0 +1,28 @@
+model
+  schema 1.1
+
+type role
+
+type user
+  relations
+    define group: [group]
+    define manager: manager from group
+    define role: [role] or role from group
+
+type group
+  relations
+    define role: [role]
+    define manager: [user]
+    define member: [user]
+
+type infra
+  relations
+    define can_delete: owner
+    define can_read: reader or can_write
+    define can_share_ownership: owner
+    define can_share_read: can_read
+    define can_share_write: can_write
+    define can_write: writer or can_delete
+    define owner: [user, group#member, group#manager, user#manager]
+    define reader: [user, user:*, group#member, group#manager, user#manager]
+    define writer: [user, group#member, group#manager, user#manager]

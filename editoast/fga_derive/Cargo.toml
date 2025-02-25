@@ -1,0 +1,16 @@
+[package]
+name = "fga_derive"
+edition = "2021"
+version.workspace = true
+license.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+darling.workspace = true
+quote.workspace = true
+syn.workspace = true
+
+[lints]
+workspace = true

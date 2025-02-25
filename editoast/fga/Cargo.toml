@@ -1,0 +1,24 @@
+[package]
+name = "fga"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+fga_derive = { path = "../fga_derive" }
+futures.workspace = true
+futures-util.workspace = true
+itertools.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+url.workspace = true
+
+[dev-dependencies]
+derive_more = { version = "2.0.1", features = ["from"] }
+stdext = "0.3.3"
+tracing-subscriber.workspace = true

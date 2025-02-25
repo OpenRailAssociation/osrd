@@ -54,6 +54,31 @@ services:
     networks:
       - pr-tests
 
+  openfga-migrate:
+    image: openfga/openfga:latest
+    container_name: osrd-openfga-migrate-pr-tests
+    command: migrate
+    environment:
+      OPENFGA_DATASTORE_ENGINE: "postgres"
+      OPENFGA_DATASTORE_URI: "postgres://osrd:password@postgres:5433/osrd?search_path=openfga"
+    networks:
+      - pr-tests
+
+  openfga:
+    image: openfga/openfga:latest
+    container_name: osrd-openfga-pr-tests
+    environment:
+      OPENFGA_DATASTORE_ENGINE: "postgres"
+      OPENFGA_DATASTORE_URI: "postgres://osrd:password@postgres:5433/osrd?search_path=openfga"
+      OPENFGA_HTTP_ADDR: "0.0.0.0:8191"
+      OPENFGA_PLAYGROUND_PORT: 8192
+    command: run
+    ports:
+      - "8191:8191" # http
+      - "8192:8192" # playground
+    networks:
+      - pr-tests
+
   rabbitmq:
     image: rabbitmq:4-management
     container_name: osrd-rabbitmq-pr-tests

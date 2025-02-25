@@ -1,0 +1,15 @@
+model
+  schema 1.1
+
+type person
+
+type group
+  relations
+    define member: [person]
+
+type document
+    relations
+        define reader: [person, group#member]
+        define can_read: reader or can_write
+        define writer: [person, group#member]
+        define can_write: writer

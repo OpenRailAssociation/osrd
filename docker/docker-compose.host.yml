@@ -9,6 +9,18 @@ services:
     ports: !reset []
     network_mode: host
 
+  openfga-migrate:
+    ports: !reset []
+    network_mode: host
+    environment:
+      OPENFGA_DATASTORE_URI: "postgres://osrd:password@localhost:5432/osrd?search_path=openfga"
+
+  openfga:
+    ports: !reset []
+    network_mode: host
+    environment:
+      OPENFGA_DATASTORE_URI: "postgres://osrd:password@localhost:5432/osrd?search_path=openfga"
+
   editoast:
     ports: !reset []
     network_mode: host

@@ -39,6 +39,32 @@ services:
       interval: 5s
       retries: 20
 
+  openfga-migrate:
+    depends_on:
+      postgres: { condition: service_healthy }
+    image: openfga/openfga:latest
+    container_name: osrd-openfga-migrate
+    command: migrate
+    environment:
+      OPENFGA_DATASTORE_ENGINE: "postgres"
+      OPENFGA_DATASTORE_URI: "postgres://osrd:password@postgres:5432/osrd?search_path=openfga"
+
+  openfga:
+    depends_on:
+      openfga-migrate:
+        condition: service_completed_successfully
+    image: openfga/openfga:latest
+    container_name: osrd-openfga
+    environment:
+      OPENFGA_DATASTORE_ENGINE: "postgres"
+      OPENFGA_DATASTORE_URI: "postgres://osrd:password@postgres:5432/osrd?search_path=openfga"
+      OPENFGA_HTTP_ADDR: "0.0.0.0:8091"
+      OPENFGA_PLAYGROUND_PORT: 8092
+    command: run
+    ports:
+      - "8091:8091" # http
+      - "8092:8092" # playground
+
   rabbitmq:
     image: rabbitmq:4-management
     container_name: osrd-rabbitmq
