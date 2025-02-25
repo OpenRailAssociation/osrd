@@ -9,9 +9,12 @@ const database: MockedDB = {
       roles: ['admin'],
       resourcesGranted: {
         infra: [
-          { id: 1, grant: 'OWNER' },
-          { id: 2, grant: 'OWNER' },
+          { id: 1, grant: 'READER' },
+          { id: 2, grant: 'WRITER' },
           { id: 3, grant: 'OWNER' },
+          { id: 4, grant: 'READER' },
+          { id: 9, grant: 'WRITER' },
+          { id: 10, grant: 'OWNER' },
         ],
         timetable: [{ id: 4, grant: 'OWNER' }],
       },
@@ -52,7 +55,7 @@ const database: MockedDB = {
       resourcesGranted: {
         infra: [
           { id: 1, grant: 'READER' },
-          { id: 3, grant: 'OWNER' },
+          { id: 2, grant: 'OWNER' },
           { id: 5, grant: 'WRITER' },
         ],
         timetable: [

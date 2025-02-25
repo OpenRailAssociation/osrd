@@ -13,10 +13,10 @@ type InfraSelectorEditionActionsBarDeleteProps = {
   setRunningDelete: (runningDelete: boolean) => void;
 };
 
-export default function InfraSelectorEditionActionsBarDelete({
+const InfraSelectorEditionActionsBarDelete = ({
   infra,
   setRunningDelete,
-}: InfraSelectorEditionActionsBarDeleteProps) {
+}: InfraSelectorEditionActionsBarDeleteProps) => {
   const { t } = useTranslation('infraManagement');
   const dispatch = useAppDispatch();
   const currentInfraID = useInfraID();
@@ -90,4 +90,6 @@ export default function InfraSelectorEditionActionsBarDelete({
       </div>
     </div>
   );
-}
+};
+
+export default InfraSelectorEditionActionsBarDelete;

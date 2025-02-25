@@ -1,6 +1,6 @@
 .scenario {
   height: 100vh;
-  background-color: var(--ambiantB10);
+  background-color: var(--ambientB10);
   font-family: 'IBM Plex Sans';
 
   @keyframes fadein {
@@ -47,7 +47,7 @@
     letter-spacing: 1.6px;
     line-height: 18px;
     margin-block: 29px 33px;
-    background-color: var(--ambiantB10);
+    background-color: var(--ambientB10);
     border-radius: 6px;
     padding: 4px 16px;
     box-shadow:
@@ -194,7 +194,7 @@
         height: 34px;
         width: 24px;
         color: var(--grey40);
-        background-color: var(--ambiantB10);
+        background-color: var(--ambientB10);
         border-radius: 5px 0 0 5px;
         top: 0;
         transform: translateX(24px);
@@ -214,7 +214,7 @@
         width: 32px;
         border-radius: 4px;
         box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 1) inset;
-        background-color: var(--ambiantB10);
+        background-color: var(--ambientB10);
         color: var(--primary60);
         &:hover {
           background-color: var(--white100);
@@ -328,7 +328,7 @@
 
       .scenario-timetable-trains {
         font-family: 'IBM Plex Sans';
-        background: var(--ambiantB15);
+        background: var(--ambientB15);
         overflow: auto;
         min-height: 0;
         margin-bottom: 24px;
@@ -390,7 +390,7 @@
           position: sticky;
           top: 0;
           z-index: 2;
-          background-color: var(--ambiantB15);
+          background-color: var(--ambientB15);
           border-top-left-radius: 10px;
           border-top-right-radius: 10px;
           box-shadow: inset 0 1px 0 var(--white100);
@@ -467,7 +467,7 @@
         }
 
         .filter {
-          background-color: var(--ambiantB5);
+          background-color: var(--ambientB5);
           height: 31px;
           border-top: 1px solid var(--white100);
           border-bottom: solid 1px rgba(0, 0, 0, 0.25);
@@ -493,7 +493,7 @@
         .scenario-timetable-train {
           width: 100%;
           position: relative;
-          background-color: var(--ambiantB10);
+          background-color: var(--ambientB10);
           box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
 
           &:not(.paced-train) {
@@ -660,7 +660,7 @@
               width: 32px;
               border-radius: 4px;
               box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 1) inset;
-              background-color: var(--ambiantB10);
+              background-color: var(--ambientB10);
               color: var(--primary60);
               margin-left: 8px;
 
@@ -676,7 +676,7 @@
           }
 
           &:not(.selected) {
-            background-color: var(--ambiantB10);
+            background-color: var(--ambientB10);
             box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
           }
 
@@ -722,7 +722,7 @@
           }
 
           &:hover:not(.selected, .modified, .invalid) {
-            background-color: var(--ambiantB15);
+            background-color: var(--ambientB15);
           }
         }
 
@@ -750,7 +750,7 @@
           flex-direction: column;
           position: relative;
           padding: 17px 39px 23px 24px;
-          background-color: var(--ambiantB5);
+          background-color: var(--ambientB5);
           border-top: solid 1px var(--black25);
           box-shadow: inset 0 1px 0 0 var(--white100);
           border-bottom: solid 1px rgba(0, 0, 0, 0.25);
@@ -812,7 +812,7 @@
               button {
                 border-radius: 4px;
                 border: 1px solid var(--grey30);
-                background-color: var(--ambiantB5);
+                background-color: var(--ambientB5);
                 color: var(--grey80);
                 font-size: 0.875rem;
                 font-weight: 400;
@@ -834,7 +834,7 @@
           }
         }
         .bottom-timetables-trains {
-          background-color: var(--ambiantB15);
+          background-color: var(--ambientB15);
           padding-bottom: 16px;
           box-shadow: inset 0 1px rgba(0, 0, 0, 0.25);
           position: sticky;

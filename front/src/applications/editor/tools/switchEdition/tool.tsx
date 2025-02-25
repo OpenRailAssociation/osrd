@@ -63,10 +63,12 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
             false
           );
         },
-        async onClick({ setIsFormSubmited }) {
-          if (setIsFormSubmited) {
-            setIsFormSubmited(true);
-          }
+        onClick({ setIsFormSubmited, protectedAction }) {
+          protectedAction?.(() => {
+            if (setIsFormSubmited) {
+              setIsFormSubmited(true);
+            }
+          });
         },
       },
     ],
@@ -108,24 +110,27 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
           switchTypes,
           dispatch,
           t,
+          protectedAction,
         }) {
-          openModal(
-            <ConfirmModal
-              title={t(`Editor.tools.switch-edition.actions.delete-switch`)}
-              onConfirm={async () => {
-                await dispatch(
-                  // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
-                  // The cast is required because of the Partial<SwitchEntity> returned by getNewSwitch which doesnt fit with EditorEntity
-                  save(infraID, { delete: [state.initialEntity as SwitchEntity] })
-                );
-                setState(getInitialState({ switchTypes }));
-                closeModal();
-                forceRender();
-              }}
-            >
-              <p>{t('Editor.tools.switch-edition.actions.confirm-delete-switch').toString()}</p>
-            </ConfirmModal>
-          );
+          protectedAction?.(() => {
+            openModal(
+              <ConfirmModal
+                title={t(`Editor.tools.switch-edition.actions.delete-switch`)}
+                onConfirm={async () => {
+                  await dispatch(
+                    // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
+                    // The cast is required because of the Partial<SwitchEntity> returned by getNewSwitch which doesnt fit with EditorEntity
+                    save(infraID, { delete: [state.initialEntity as SwitchEntity] })
+                  );
+                  setState(getInitialState({ switchTypes }));
+                  closeModal();
+                  forceRender();
+                }}
+              >
+                <p>{t('Editor.tools.switch-edition.actions.confirm-delete-switch').toString()}</p>
+              </ConfirmModal>
+            );
+          });
         },
       },
     ],

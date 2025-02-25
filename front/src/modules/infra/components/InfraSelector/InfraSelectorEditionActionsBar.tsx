@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import InfraLockState from 'modules/infra/consts';
+import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -18,7 +18,7 @@ type ActionBarProps = {
   inputValue: string;
 };
 
-export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue }: ActionBarProps) {
+const ActionsBar = ({ infra, isFocused, setIsFocused, inputValue }: ActionBarProps) => {
   const { t } = useTranslation('infraManagement');
   const [isWaiting, setIsWaiting] = useState(false);
   const dispatch = useAppDispatch();
@@ -29,15 +29,26 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
   const [cloneInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdClone.useMutation();
   const [updateInfra] = osrdEditoastApi.endpoints.putInfraByInfraId.useMutation();
 
-  async function handleLockedState(action: InfraLockState) {
+  const protectWithWritePrivilege = useProtectedAction({
+    resourceType: 'infra',
+    resourceId: infra.id,
+    requiredPrivileges: ['can_write'],
+  });
+
+  const protectWithOwnerGrant = useProtectedAction({
+    resourceType: 'infra',
+    resourceId: infra.id,
+    requiredGrant: 'OWNER',
+  });
+
+  async function toggleLockedState() {
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        if (action === InfraLockState.LOCK) {
-          await lockInfra({ infraId: infra.id }).unwrap();
-        }
-        if (action === InfraLockState.UNLOCK) {
+        if (infra.locked) {
           await unlockInfra({ infraId: infra.id }).unwrap();
+        } else {
+          await lockInfra({ infraId: infra.id }).unwrap();
         }
       } catch (e) {
         dispatch(setFailure(castErrorToFailure(e)));
@@ -126,33 +137,21 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
   }
   return (
     <>
-      {infra.locked ? (
-        <button
-          className="infraslist-item-action unlock"
-          type="button"
-          aria-label={t('actions.unlock')}
-          title={t('actions.unlock')}
-          onClick={() => handleLockedState(InfraLockState.UNLOCK)}
-        >
-          <Unlock />
-        </button>
-      ) : (
-        <button
-          className="infraslist-item-action lock"
-          type="button"
-          aria-label={t('actions.lock')}
-          title={t('actions.lock')}
-          onClick={() => handleLockedState(InfraLockState.LOCK)}
-        >
-          <Lock />
-        </button>
-      )}
+      <button
+        className="infraslist-item-action unlock"
+        type="button"
+        aria-label={t('actions.unlock')}
+        title={infra.locked ? t('actions.unlock') : t('actions.lock')}
+        onClick={() => protectWithOwnerGrant(toggleLockedState)}
+      >
+        {infra.locked ? <Unlock /> : <Lock />}
+      </button>
       <button
         className="infraslist-item-action rename"
         type="button"
         aria-label={t('actions.rename')}
         title={t('actions.rename')}
-        onClick={() => setIsFocused(infra.id)}
+        onClick={() => protectWithWritePrivilege(() => setIsFocused(infra.id))}
       >
         <Pencil />
       </button>
@@ -176,4 +175,6 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
       </button>
     </>
   );
-}
+};
+
+export default ActionsBar;

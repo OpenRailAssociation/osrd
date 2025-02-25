@@ -19,5 +19,9 @@
   },
   "begin": "Start",
   "end": "End",
-  "value": "value"
+  "value": "value",
+  "authorization": {
+    "permission": "Permission",
+    "permissionDenied": "You don't have permission to perform this action"
+  }
 }

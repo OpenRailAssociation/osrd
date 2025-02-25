@@ -79,10 +79,12 @@ function getPointEditionTool<T extends EditorPoint>({
               false
             );
           },
-          async onClick({ setIsFormSubmited }) {
-            if (setIsFormSubmited) {
-              setIsFormSubmited(true);
-            }
+          onClick({ setIsFormSubmited, protectedAction }) {
+            protectedAction?.(() => {
+              if (setIsFormSubmited) {
+                setIsFormSubmited(true);
+              }
+            });
           },
         },
         {
@@ -121,23 +123,35 @@ function getPointEditionTool<T extends EditorPoint>({
           isDisabled({ state }) {
             return state.initialEntity.properties.id === NEW_ENTITY_ID;
           },
-          onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
-            openModal(
-              <ConfirmModal
-                title={t(`Editor.tools.${id}-edition.actions.delete-entity`)}
-                onConfirm={async () => {
-                  await dispatch(
-                    // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
-                    save(infraID, { delete: [state.initialEntity] })
-                  );
-                  setState(getInitialState());
-                  closeModal();
-                  forceRender();
-                }}
-              >
-                <p>{t(`Editor.tools.${id}-edition.actions.confirm-delete-entity`).toString()}</p>
-              </ConfirmModal>
-            );
+          onClick({
+            infraID,
+            openModal,
+            closeModal,
+            forceRender,
+            state,
+            setState,
+            dispatch,
+            t,
+            protectedAction,
+          }) {
+            protectedAction?.(() => {
+              openModal(
+                <ConfirmModal
+                  title={t(`Editor.tools.${id}-edition.actions.delete-entity`)}
+                  onConfirm={async () => {
+                    await dispatch(
+                      // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
+                      save(infraID, { delete: [state.initialEntity] })
+                    );
+                    setState(getInitialState());
+                    closeModal();
+                    forceRender();
+                  }}
+                >
+                  <p>{t(`Editor.tools.${id}-edition.actions.confirm-delete-entity`).toString()}</p>
+                </ConfirmModal>
+              );
+            });
           },
         },
       ],
