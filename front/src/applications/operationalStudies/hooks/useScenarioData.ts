@@ -45,13 +45,18 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   const projectionPath = usePathProjection(infra);
 
-  const { data: trainSchedulesResults = [] } =
+  const { data: fetchedTrainSchedulesResults } =
     osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery(
       { timetableId: scenario?.timetable_id },
       {
         skip: !scenario,
       }
     );
+
+  const trainSchedulesResults = useMemo(
+    () => fetchedTrainSchedulesResults || [],
+    [fetchedTrainSchedulesResults]
+  );
 
   const { trainScheduleSummariesById, setTrainScheduleSummariesById, allTrainsLoaded } =
     useLazyLoadTrains({
