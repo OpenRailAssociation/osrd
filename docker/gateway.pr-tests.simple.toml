@@ -20,7 +20,7 @@ redirect_404_to_index = true
 [[targets]]
 tracing_name = "editoast"
 prefix = "/api"
-upstream = "http://osrd-editoast-pr-tests:8091"
+upstream = "http://editoast:8089"
 require_auth = true
 
 [[targets]]
