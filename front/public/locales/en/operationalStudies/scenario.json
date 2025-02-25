@@ -17,7 +17,6 @@
     "unableToDuplicateATrain": "Unable to duplicate the train"
   },
   "filterPlaceholder": "Filter, tags",
-  "advancedFiltersPlaceholder": "Filter by family, serie, detail",
   "infraLoadingState": "{{step}}/3",
   "infrastructure": "Infrastructure",
   "lessDetails": "less details",
