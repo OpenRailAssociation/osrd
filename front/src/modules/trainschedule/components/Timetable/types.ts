@@ -12,6 +12,8 @@ export type ValidityFilter = 'both' | 'valid' | 'invalid';
 
 export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
 
+export type TrainTypeFilter = 'both' | 'pacedTrain' | 'trainSchedule';
+
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 
 type TimetableItemWithDetails = Omit<
@@ -70,6 +72,8 @@ export type TimetableFilters = {
   setScheduledPointsHonoredFilter: (
     scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter
   ) => void;
+  trainTypeFilter: TrainTypeFilter;
+  setTrainTypeFilter: (trainType: TrainTypeFilter) => void;
   selectedTags: Set<string | null>;
   setSelectedTags: React.Dispatch<React.SetStateAction<Set<string | null>>>;
 };

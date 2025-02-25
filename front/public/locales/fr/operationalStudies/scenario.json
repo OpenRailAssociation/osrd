@@ -25,9 +25,6 @@
   "modifyScenario": "Modifier le scénario",
   "moreDetails": "plus de détails",
   "noElectricalProfileSet": "Pas de profil électrique",
-  "pacedTrain": {
-    "pacedTrain": "Mission"
-  },
   "pacedTrain_one": "1 mission",
   "pacedTrain_other": "{{count}} missions",
   "pacedTrain_zero": "0 mission",
@@ -82,6 +79,7 @@
     "noSpeedLimitTags": "Sans code",
     "noSpeedLimitTagsShort": "Aucun",
     "noTrain": "Aucun train",
+    "pacedTrain": "Mission",
     "punctuality": "Ponctualité",
     "rollingStockFilterPlaceholder": "Famille, détail, série",
     "scheduledPointsHonoredFilter": "Points horaires honorés",
@@ -96,8 +94,10 @@
     "toggleMultiSelection": "Basculer le mode multisélection",
     "trainAdded": "Train ajouté",
     "trainDeleted": "Le train {{name}} a bien été supprimé.",
+    "trainSchedule": "Train unique",
     "trainsSelectionDeletedCount_one": "Le train a bien été supprimé.",
     "trainsSelectionDeletedCount_other": "Les {{count}} trains ont bien été supprimés.",
+    "trainType": "Missions, trains",
     "update": "Modifier",
     "validityFilter": "Validité des trains"
   },

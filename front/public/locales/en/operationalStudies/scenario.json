@@ -25,9 +25,6 @@
   "modifyScenario": "Modify scenario",
   "moreDetails": "more details",
   "noElectricalProfileSet": "No electrical profile",
-  "pacedTrain": {
-    "pacedTrain": "Paced train"
-  },
   "pacedTrain_one": "1 service",
   "pacedTrain_other": "{{count}} services",
   "pacedTrain_zero": "0 service",
@@ -82,6 +79,7 @@
     "noSpeedLimitTags": "Without code",
     "noSpeedLimitTagsShort": "None",
     "noTrain": "No train",
+    "pacedTrain": "Service",
     "punctuality": "Punctuality",
     "rollingStockFilterPlaceholder": "Family, detail, serie",
     "scheduledPointsHonoredFilter": "Scheduled points honored",
@@ -96,8 +94,11 @@
     "toggleMultiSelection": "Toggle multiselection",
     "trainAdded": "Train added",
     "trainDeleted": "{{ name }} train has been deleted.",
+    "trainSchedule": "Unique train",
+
     "trainsSelectionDeletedCount_one": "The train has been deleted.",
     "trainsSelectionDeletedCount_other": "The {{count}} trains have been deleted.",
+    "trainType": "Services, trains",
     "update": "Edit",
     "validityFilter": "Trains validity"
   },

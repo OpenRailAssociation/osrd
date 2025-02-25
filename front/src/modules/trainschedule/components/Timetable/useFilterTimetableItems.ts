@@ -3,11 +3,13 @@ import { useMemo, useState } from 'react';
 import { uniq } from 'lodash';
 
 import { useDebounce } from 'utils/helpers';
+import { isPacedTrain, isTrainSchedule } from 'utils/trainId';
 
 import type {
   ScheduledPointsHonoredFilter,
   TimetableFilters,
   TimetableItemResult,
+  TrainTypeFilter,
   ValidityFilter,
 } from './types';
 import { extractTagCode, keepItem } from './utils';
@@ -25,6 +27,7 @@ const useFilterTimetableItems = (
   const [validityFilter, setValidityFilter] = useState<ValidityFilter>('both');
   const [scheduledPointsHonoredFilter, setScheduledPointsHonoredFilter] =
     useState<ScheduledPointsHonoredFilter>('both');
+  const [trainTypeFilter, setTrainTypeFilter] = useState<TrainTypeFilter>('both');
   const [selectedTags, setSelectedTags] = useState<Set<string | null>>(new Set());
 
   const debouncedNameLabelFilter = useDebounce(nameLabelFilter, 500);
@@ -60,6 +63,12 @@ const useFilterTimetableItems = (
           }
         }
 
+        // Apply train type filter
+        if (trainTypeFilter !== 'both') {
+          if (trainTypeFilter === 'pacedTrain' && isTrainSchedule(timetableItem.id)) return false;
+          if (trainTypeFilter === 'trainSchedule' && isPacedTrain(timetableItem.id)) return false;
+        }
+
         // Apply tag filter
         if (
           selectedTags.size > 0 &&
@@ -93,6 +102,7 @@ const useFilterTimetableItems = (
       debouncedRollingstockFilter,
       validityFilter,
       scheduledPointsHonoredFilter,
+      trainTypeFilter,
       selectedTags,
     ]
   );
@@ -108,6 +118,8 @@ const useFilterTimetableItems = (
     setValidityFilter,
     scheduledPointsHonoredFilter,
     setScheduledPointsHonoredFilter,
+    trainTypeFilter,
+    setTrainTypeFilter,
     selectedTags,
     setSelectedTags,
   };

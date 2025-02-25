@@ -76,7 +76,7 @@ const UserSettings = () => {
                   )
                 }
               />
-              <div className="ml-2">{t('operationalStudies/scenario:pacedTrain.pacedTrain')}</div>
+              <div className="ml-2">{t('operationalStudies/scenario:timetable.pacedTrain')}</div>
             </div>
           )
         }

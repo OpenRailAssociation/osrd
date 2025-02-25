@@ -3,7 +3,12 @@ import { X } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { ValidityFilter, ScheduledPointsHonoredFilter, TimetableFilters } from './types';
+import type {
+  ValidityFilter,
+  ScheduledPointsHonoredFilter,
+  TimetableFilters,
+  TrainTypeFilter,
+} from './types';
 
 type FilterPanelProps = {
   toggleFilterPanel: () => void;
@@ -22,6 +27,8 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
     setValidityFilter,
     scheduledPointsHonoredFilter,
     setScheduledPointsHonoredFilter,
+    trainTypeFilter,
+    setTrainTypeFilter,
     uniqueTags,
     selectedTags,
     setSelectedTags,
@@ -37,6 +44,12 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
     { value: 'both', label: t('timetable.showAllTrains') },
     { value: 'honored', label: t('timetable.showHonoredTrains') },
     { value: 'notHonored', label: t('timetable.showNotHonoredTrains') },
+  ];
+
+  const trainTypeOptions: { value: TrainTypeFilter; label: string }[] = [
+    { value: 'both', label: t('timetable.showAllTrains') },
+    { value: 'pacedTrain', label: t('timetable.pacedTrain') },
+    { value: 'trainSchedule', label: t('timetable.trainSchedule') },
   ];
 
   const toggleTagSelection = (tag: string | null) => {
@@ -92,8 +105,23 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
               validityOptions[0]
             }
           />
+          <Select
+            getOptionLabel={(option) => option.label}
+            getOptionValue={(option) => option.value}
+            id="train-type"
+            label={t('timetable.trainType')}
+            onChange={(selectedOption) => {
+              if (selectedOption) {
+                setTrainTypeFilter(selectedOption.value);
+              }
+            }}
+            options={trainTypeOptions}
+            value={
+              trainTypeOptions.find((option) => option.value === trainTypeFilter) ||
+              trainTypeOptions[0]
+            }
+          />
         </div>
-
         <div id="schedule-point-honored-and-rollingstock">
           <Input
             type="text"
