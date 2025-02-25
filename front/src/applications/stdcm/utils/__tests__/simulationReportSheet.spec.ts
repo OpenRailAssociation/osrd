@@ -4,6 +4,8 @@ import {
   generateCodeNumber,
   getStopDurationTime,
   getStopDurationAtPosition,
+  findAllStops,
+  insertMissingStopsInOperationalPointsWithTimes,
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { Duration } from 'utils/duration';
 
@@ -28,5 +30,132 @@ describe('getStopDurationBetweenTwoPositions', () => {
       new Duration({ milliseconds: 60000 })
     );
     expect(getStopDurationAtPosition(1, trainPositions, trainTimes)).toBeNull();
+  });
+});
+
+describe('findAllStops', () => {
+  it('should return all stop positions', () => {
+    const trainPositions = [1, 1, 2, 3, 3, 3, 3, 4, 4, 5];
+    expect(findAllStops(trainPositions)).toStrictEqual([1, 3, 4]);
+    const trainPositions2 = [1, 2, 3, 5, 5];
+    expect(findAllStops(trainPositions2)).toStrictEqual([5]);
+  });
+});
+
+describe('insertsMissingStopsInOperationalPointsWithTimes', () => {
+  const opA = {
+    opId: 'A',
+    positionOnPath: 0,
+    time: '10:00',
+    duration: 0,
+    stopEndTime: '10:00',
+    stopRequested: false,
+  };
+  const opB = {
+    opId: 'B',
+    positionOnPath: 50,
+    time: '10:10',
+    duration: 0,
+    stopEndTime: '10:10',
+    stopRequested: false,
+  };
+  const opC = {
+    opId: 'C',
+    positionOnPath: 100,
+    time: '10:20',
+    duration: 0,
+    stopEndTime: '10:20',
+    stopRequested: false,
+  };
+  const opD = {
+    opId: 'D',
+    positionOnPath: 150,
+    time: '10:30',
+    duration: 0,
+    stopEndTime: '10:30',
+    stopRequested: false,
+  };
+  const opAwStop = { ...opA, stopRequested: true, duration: 60, stopEndTime: '10:01' };
+  const opCwStop = { ...opC, stopRequested: true, duration: 180, stopEndTime: '10:23' };
+  const opDwStop = { ...opD, stopRequested: true, duration: 120, stopEndTime: '10:32' };
+  const opAwStopNotDone = { ...opA, stopRequested: true };
+  const opCwStopNotDone = { ...opC, stopRequested: true };
+  const opDwStopNotDone = { ...opD, stopRequested: true };
+  // We don't define a path step array, as it is currently only used in the function in the case where
+  // a path step is not present in the arrays of ops, which should never happen in practice and currently does not warrant testing.
+
+  it('should ignore stops already present in ops', () => {
+    const stopPositions = [0, 100, 150];
+    const train = {
+      positions: [0, 0, 50, 100, 100, 150, 150],
+      times: [0, 60000, 600000, 1200000, 1380000, 1800000, 1920000],
+      departureHour: 10,
+      departureMinute: 0,
+    };
+    const result = insertMissingStopsInOperationalPointsWithTimes(
+      [opAwStop, opB, opCwStop, opDwStop],
+      stopPositions,
+      train,
+      []
+    );
+    expect(result).toEqual([opAwStop, opB, opCwStop, opDwStop]);
+  });
+
+  it('should edit stop duration of ops when their planned stop actually occurs between it and the next op', () => {
+    const stopPositions = [2, 101, 154];
+    const train = {
+      positions: [0, 2, 2, 50, 100, 101, 101, 150, 154, 154],
+      times: [0, 2000, 62000, 600000, 1200000, 1202000, 1382000, 1800000, 1840000, 2140000],
+      departureHour: 10,
+      departureMinute: 0,
+    };
+    const result = insertMissingStopsInOperationalPointsWithTimes(
+      [opAwStopNotDone, opB, opCwStopNotDone, opDwStopNotDone],
+      stopPositions,
+      train,
+      []
+    );
+    expect(result).toEqual([
+      opAwStop,
+      opB,
+      opCwStop,
+      { ...opDwStop, duration: 300, stopEndTime: '10:36' },
+    ]);
+  });
+
+  it('should create and insert unplanned stops as new ops', () => {
+    const stopPositions = [75, 100, 125];
+    const train = {
+      positions: [0, 50, 75, 75, 100, 125, 125, 150],
+      times: [0, 600000, 900000, 960000, 1200000, 1500000, 1560000, 1800000],
+      departureHour: 10,
+      departureMinute: 0,
+    };
+    const result = insertMissingStopsInOperationalPointsWithTimes(
+      [opA, opB, opCwStop, opD],
+      stopPositions,
+      train,
+      []
+    );
+    expect(result).toEqual([
+      opA,
+      opB,
+      {
+        positionOnPath: 75,
+        duration: 60,
+        time: '10:15',
+        stopEndTime: '10:16',
+        stopRequested: false,
+      },
+      opCwStop,
+      {
+        positionOnPath: 125,
+        duration: 60,
+        time: '10:25',
+        stopEndTime: '10:26',
+        stopRequested: false,
+      },
+      opD,
+    ]);
   });
 });
