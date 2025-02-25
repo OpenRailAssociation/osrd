@@ -421,8 +421,9 @@ export const RollingStockEditorCategoryForm = ({
       <div className="d-flex align-items-center justify-content-between col rollingstock-editor-select mb-4">
         <SelectSNCF
           sm
-          id="primary_category"
-          name="primary_category"
+          id="primary-category-selector"
+          data-testid="primary-category-selector"
+          name="primary-category-selector"
           label={t('primaryCategory')}
           value={
             rollingStockValues.primaryCategory
@@ -447,8 +448,9 @@ export const RollingStockEditorCategoryForm = ({
             <div key={category} className={cx('col-12', 'col-sm-6', 'col-lg-4', 'mb-2')}>
               <CheckboxRadioSNCF
                 type="checkbox"
-                id={`other_category_${category}`}
-                name="other_categories"
+                id={`category-checkbox-${category}`}
+                data-testid={`category-checkbox-${category}`}
+                name={`category-checkbox-${category}`}
                 label={t(`categoriesOptions.${category}`)}
                 checked={rollingStockValues.categories.has(category)}
                 onChange={handleOtherCategoryChange(category)}

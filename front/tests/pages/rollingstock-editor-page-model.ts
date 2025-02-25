@@ -1,16 +1,25 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { RollingStockCategory } from 'common/api/osrdEditoastApi';
+import { RollingStockCategoryDict } from 'modules/rollingStock/consts';
 
 import CommonPage from './common-page-model';
 import readJsonFile from '../utils/file-utils';
 import { fillAndCheckInputById, getTranslations } from '../utils/index';
 import type { FlatTranslations } from '../utils/types';
 
-const enTranslations: FlatTranslations = readJsonFile('public/locales/en/rollingstock.json');
-const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/rollingstock.json');
+type RollingStockTranslations = FlatTranslations & { categoriesOptions: FlatTranslations };
+
+const enTranslations: RollingStockTranslations = readJsonFile(
+  'public/locales/en/rollingstock.json'
+);
+const frTranslations: RollingStockTranslations = readJsonFile(
+  'public/locales/fr/rollingstock.json'
+);
 
 class RollingstockEditorPage extends CommonPage {
+  private readonly translations: RollingStockTranslations;
+
   private readonly newRollingstockButton: Locator;
 
   private readonly submitRollingstockButton: Locator;
@@ -30,6 +39,8 @@ class RollingstockEditorPage extends CommonPage {
   private readonly loadingGauge: Locator;
 
   private readonly primaryCategorySelector: Locator;
+
+  private readonly categoriesCheckboxes: Record<RollingStockCategory, Locator>;
 
   private readonly tractionModeSelector: Locator;
 
@@ -51,7 +62,7 @@ class RollingstockEditorPage extends CommonPage {
 
   constructor(page: Page) {
     super(page);
-    const translations = getTranslations({
+    this.translations = getTranslations({
       en: enTranslations,
       fr: frTranslations,
     });
@@ -64,9 +75,13 @@ class RollingstockEditorPage extends CommonPage {
     this.powerRestrictionSelector = page.getByTestId('power-restriction-selector');
     this.electricalProfileSelector = page.getByTestId('electrical-profile-selector');
     this.loadingGauge = page.locator('#loadingGauge');
-    this.primaryCategorySelector = page.getByRole('combobox', {
-      name: translations.primaryCategory,
-    });
+    this.primaryCategorySelector = page.getByTestId('primary-category-selector');
+    this.categoriesCheckboxes = Object.fromEntries(
+      Object.keys(RollingStockCategoryDict).map((category) => [
+        category,
+        page.getByTestId(`category-checkbox-${category}`),
+      ])
+    ) as Record<RollingStockCategory, Locator>;
     this.tractionModeSelector = page.getByTestId('traction-mode-selector');
     this.confirmModalButtonYes = page.getByTestId('confirm-modal-button-yes');
     this.addPowerRestrictionButton = this.powerRestrictionSelector.getByRole('button').nth(1);
@@ -196,6 +211,24 @@ class RollingstockEditorPage extends CommonPage {
   async selectPrimaryCategory(value: RollingStockCategory) {
     await this.primaryCategorySelector.selectOption(value);
     await expect(this.primaryCategorySelector).toHaveValue(value);
+    await expect(this.categoriesCheckboxes[value]).toBeChecked();
+    await expect(this.categoriesCheckboxes[value]).toBeDisabled();
+  }
+
+  // Select an unselected category in the category checkbox list
+  async checkCategoryCheckbox(category: RollingStockCategory) {
+    const checkbox = this.categoriesCheckboxes[category];
+    await expect(checkbox).not.toBeChecked();
+    await checkbox.locator('..').locator('label').click();
+    await expect(checkbox).toBeChecked();
+  }
+
+  // Deselect a selected category in the category checkbox list
+  async uncheckCategoryCheckbox(category: RollingStockCategory) {
+    const checkbox = this.categoriesCheckboxes[category];
+    await expect(checkbox).toBeChecked();
+    await checkbox.locator('..').locator('label').click();
+    await expect(checkbox).not.toBeChecked();
   }
 
   // Fill speed effort curves with or without power restriction

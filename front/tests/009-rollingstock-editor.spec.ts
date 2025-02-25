@@ -54,7 +54,16 @@ test.describe('Rollingstock editor page tests', () => {
       await fillAndCheckInputById(page, input.id, value, input.isNumeric);
     }
     await rollingStockEditorPage.selectLoadingGauge('GA'); // Select loading gauge
-    await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN'); // Select primary category
+
+    // Select a primary category and other categories, checking each time the state of selector and checkboxes are correct
+    await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN');
+    await rollingStockEditorPage.selectPrimaryCategory('NIGHT_TRAIN');
+    await rollingStockEditorPage.uncheckCategoryCheckbox('WORK_TRAIN');
+    await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN');
+    await rollingStockEditorPage.selectPrimaryCategory('NIGHT_TRAIN');
+    await rollingStockEditorPage.checkCategoryCheckbox('FREIGHT_TRAIN');
+    await rollingStockEditorPage.checkCategoryCheckbox('FAST_FREIGHT_TRAIN');
+    await rollingStockEditorPage.uncheckCategoryCheckbox('FAST_FREIGHT_TRAIN');
 
     // Submit and handle potential warnings
     await rollingStockEditorPage.clickOnSubmitRollingstockButton();
@@ -117,6 +126,11 @@ test.describe('Rollingstock editor page tests', () => {
       const value = input.id === 'name' ? uniqueUpdatedRollingStockName : input.value;
       await fillAndCheckInputById(page, input.id, value, input.isNumeric);
     }
+
+    // Select new categories
+    await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN');
+    await rollingStockEditorPage.checkCategoryCheckbox('HIGH_SPEED_TRAIN');
+    await rollingStockEditorPage.uncheckCategoryCheckbox('FREIGHT_TRAIN');
 
     // Modify and verify speed effort curves
     await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();

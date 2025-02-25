@@ -19,6 +19,7 @@ interface SelectProps<T> {
   id: string;
   label?: ReactNode;
   name?: string;
+  'data-testid'?: string;
   value?: T;
   options: Array<T>;
   onChange: (e?: T) => void;
@@ -31,6 +32,7 @@ function SelectSNCF<T extends string | SelectOptionObject>({
   id,
   label,
   name,
+  'data-testid': data_testid,
   options,
   onChange,
   className,
@@ -44,6 +46,7 @@ function SelectSNCF<T extends string | SelectOptionObject>({
       <select
         id={id}
         name={name}
+        data-testid={data_testid}
         onChange={(e) => {
           const selected = e.target.value;
           const item = options.find((o) => selected === (isString(o) ? o : o.id));
