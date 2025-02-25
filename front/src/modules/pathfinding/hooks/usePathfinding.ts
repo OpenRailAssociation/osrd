@@ -11,8 +11,10 @@ import type {
   PathfindingInputError,
   PathfindingResultSuccess,
   PostInfraByInfraIdPathPropertiesApiArg,
+  SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
 import {
   formatSuggestedOperationalPoints,
   getPathfindingQuery,
@@ -55,7 +57,6 @@ const usePathfinding = ({
   const powerRestrictions = useSelector(getPowerRestrictions);
   const { infraId, getTrackSectionsByIds } = useScenarioContext();
   const { infra, reloadCount, setIsInfraError } = useInfraStatus({ infraId });
-
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
 
@@ -65,6 +66,53 @@ const usePathfinding = ({
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
+
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+
+  const fetchOperationalPoints = useCallback(
+    async (steps: PathStep[]) => {
+      if (!infraId || !steps.length) return;
+
+      const searchPayload = buildOpSearchQuery(infraId, steps);
+
+      if (!searchPayload) return;
+      let results: SearchResultItemOperationalPoint[];
+      try {
+        results = (await postSearch({
+          searchPayload,
+          pageSize: 101,
+        }).unwrap()) as SearchResultItemOperationalPoint[];
+      } catch (error) {
+        console.error('Error fetching operational points:', error);
+        return;
+      }
+
+      const updatedSteps = steps.map((step) => {
+        let matchedOp: SearchResultItemOperationalPoint | undefined;
+        // TODO we should handle the case where the step is missing a secondary_code, as a path step who doesn't specify a secondary_code matches any ch.
+        if ('uic' in step && step.uic) {
+          matchedOp = results.find(
+            (op) => op.uic === step.uic && (!step.secondary_code || op.ch === step.secondary_code)
+          );
+        } else if ('trigram' in step && step.trigram) {
+          matchedOp = results.find(
+            (op) =>
+              op.trigram === step.trigram && (!step.secondary_code || op.ch === step.secondary_code)
+          );
+        } else if ('operational_point' in step && step.operational_point) {
+          matchedOp = results.find((op) => op.obj_id === step.operational_point);
+        }
+
+        return {
+          ...step,
+          name: matchedOp?.name,
+        };
+      });
+
+      dispatch(updatePathSteps(updatedSteps));
+    },
+    [infraId]
+  );
 
   const setIsMissingParam = () =>
     setPathfindingState({ ...initialPathfindingState, isMissingParam: true });
@@ -205,6 +253,7 @@ const usePathfinding = ({
 
       if (!pathfindingInput) {
         setIsMissingParam();
+        await fetchOperationalPoints(pathSteps.filter((step) => step !== null));
         return;
       }
 

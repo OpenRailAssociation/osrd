@@ -37,7 +37,8 @@ const executeSearch = async (
   state: MacroEditorState,
   dispatch: AppDispatch
 ): Promise<SearchResultItemOperationalPoint[]> => {
-  const searchPayload = buildOpSearchQuery(state.scenario.infra_id, state.trainSchedules);
+  const pathSteps = state.trainSchedules.flatMap((ts) => ts.path);
+  const searchPayload = buildOpSearchQuery(state.scenario.infra_id, pathSteps);
   if (!searchPayload) {
     return [];
   }

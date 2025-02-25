@@ -1,18 +1,15 @@
-import type { SearchPayload, SearchQuery, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { SearchPayload, SearchQuery } from 'common/api/osrdEditoastApi';
+import type { PathStep } from 'reducers/osrdconf/types';
 
 /**
  * Build a search query to fetch all operational points from their UICs,
  * trigrams and IDs.
  */
-const buildOpSearchQuery = (
-  infraId: number,
-  trainSchedules: TrainScheduleResult[]
-): SearchPayload | null => {
-  const pathItems = trainSchedules.map((schedule) => schedule.path).flat();
+const buildOpSearchQuery = (infraId: number, pathSteps: PathStep[]): SearchPayload | null => {
   const pathItemQueries = [];
   const pathItemSet = new Set<string>();
 
-  for (const item of pathItems) {
+  for (const item of pathSteps) {
     let query: SearchQuery;
     if ('uic' in item) {
       query = ['=', ['uic'], item.uic];
