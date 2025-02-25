@@ -165,8 +165,8 @@ export const checkStdcmConf = (
       if (arrivalType === 'preciseTime' && arrival) {
         timingData = {
           arrival_time: arrival.toISOString(),
-          arrival_time_tolerance_before: tolerances?.before?.ms ?? 0,
-          arrival_time_tolerance_after: tolerances?.after?.ms ?? 0,
+          arrival_time_tolerance_before: tolerances.before.ms,
+          arrival_time_tolerance_after: tolerances.after.ms,
         };
       }
     }
