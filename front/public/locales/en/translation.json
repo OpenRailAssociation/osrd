@@ -162,6 +162,7 @@
         }
       },
       "infra-locked": "Please note that you will not be able to save any changes.",
+      "infra-readonly": "Please note that you are in read-only mode on this infra",
       "list": {
         "error": "An error occurred while loading the data",
         "filter-level": "Error level",

@@ -15,8 +15,11 @@ const mockedEditoastApi = api.injectEndpoints({
         })),
       }),
     }),
-    getGrantsByResourceType: build.query<GetGrantsByResourceTypeResponse, void>({
-      // url: /authz/grants/${queryArg.resource_type} (to keep it simple, we don't provide a resource_type in the mock)
+    getGrantsByResourceType: build.query<
+      GetGrantsByResourceTypeResponse,
+      GetGrantsByResourceTypeArg
+    >({
+      // url: /authz/grants/${queryArg.resource_type}
       queryFn: () => ({
         data: database.GRANTS,
       }),
@@ -31,6 +34,7 @@ const mockedEditoastApi = api.injectEndpoints({
         },
       }),
     }),
+    // TODO: invalidate the cache when infra liste changed after (creation/deletion) ?
     /** Returns the user's grants for a given list of resources */
     postUserResourcesGrants: build.mutation<
       PostUserResourcesGrantsResponse,
@@ -89,9 +93,9 @@ const mockedEditoastApi = api.injectEndpoints({
 
 // ------------------ TYPES --------------------
 
-type ResourceType = 'infra' | 'timetable';
+export type ResourceType = 'infra' | 'timetable';
 
-type Grant = 'NONE' | 'READER' | 'WRITER' | 'OWNER';
+export type Grant = 'NONE' | 'READER' | 'WRITER' | 'OWNER';
 
 export type MockedDB = {
   SUBJECTS: {
@@ -108,7 +112,9 @@ export type MockedDB = {
   };
 };
 
-type GetSubjectsResponse = { type: string; id: number; name: string }[];
+export type GetSubjectsResponse = { type: string; id: number; name: string }[];
+
+type GetGrantsByResourceTypeArg = ResourceType;
 
 type GetGrantsByResourceTypeResponse = {
   [grant: string]: string[];
@@ -116,7 +122,7 @@ type GetGrantsByResourceTypeResponse = {
 
 type GetUserResponse = { id: number; name: string; roles: string[] };
 
-type PostUserResourcesGrantsArg = { [resource_type: string]: number[] };
+type PostUserResourcesGrantsArg = Partial<Record<ResourceType, number[]>>;
 type PostUserResourcesGrantsResponse = {
   [resource_type: string]: {
     id: number;
@@ -129,7 +135,7 @@ type PostUsersGrantsByResourceIdArg = {
   resource_type: ResourceType;
   resource_id: number;
 };
-type PostUsersGrantsByResourceIdResponse = {
+export type PostUsersGrantsByResourceIdResponse = {
   id: number;
   type: string;
   grant: Grant;

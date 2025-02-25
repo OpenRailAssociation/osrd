@@ -43,10 +43,12 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         isDisabled({ isLoading, isInfraLocked, state }) {
           return isLoading || state.track.geometry.coordinates.length < 2 || isInfraLocked || false;
         },
-        async onClick({ setIsFormSubmited }) {
-          if (setIsFormSubmited) {
-            setIsFormSubmited(true);
-          }
+        onClick({ setIsFormSubmited, protectedAction }) {
+          protectedAction?.(() => {
+            if (setIsFormSubmited) {
+              setIsFormSubmited(true);
+            }
+          });
         },
       },
       {
@@ -184,23 +186,35 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         isDisabled({ state }) {
           return state.initialTrack.properties.id === NEW_ENTITY_ID;
         },
-        onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
-          openModal(
-            <ConfirmModal
-              title={t('Editor.tools.track-edition.actions.delete-line')}
-              onConfirm={async () => {
-                await dispatch(
-                  // We have to put state.initialTrack in array because delete initially works with selection which can get multiple elements
-                  save(infraID, { delete: [state.initialTrack] })
-                );
-                setState(getInitialState());
-                closeModal();
-                forceRender();
-              }}
-            >
-              <p>{t('Editor.tools.track-edition.actions.confirm-delete-line').toString()}</p>
-            </ConfirmModal>
-          );
+        onClick({
+          infraID,
+          openModal,
+          closeModal,
+          forceRender,
+          state,
+          setState,
+          dispatch,
+          t,
+          protectedAction,
+        }) {
+          protectedAction?.(() => {
+            openModal(
+              <ConfirmModal
+                title={t('Editor.tools.track-edition.actions.delete-line')}
+                onConfirm={async () => {
+                  await dispatch(
+                    // We have to put state.initialTrack in array because delete initially works with selection which can get multiple elements
+                    save(infraID, { delete: [state.initialTrack] })
+                  );
+                  setState(getInitialState());
+                  closeModal();
+                  forceRender();
+                }}
+              >
+                <p>{t('Editor.tools.track-edition.actions.confirm-delete-line').toString()}</p>
+              </ConfirmModal>
+            );
+          });
         },
       },
     ],

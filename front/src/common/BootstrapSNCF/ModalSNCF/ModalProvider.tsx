@@ -61,7 +61,7 @@ export const ModalSNCF = () => {
       style={{ display: 'block' }}
       tabIndex={-1}
       role="dialog"
-      aria-hidden="true"
+      {...(!isOpen && { inert: '' })}
     >
       <div
         ref={modalRef}

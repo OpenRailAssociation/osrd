@@ -20,6 +20,8 @@ import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
+import useCheckPrivileges from 'common/authorization/hooks/useCheckPrivileges';
+import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -119,6 +121,23 @@ const Editor = () => {
     });
   };
 
+  const protectedActionHook = useProtectedAction({
+    resourceType: 'infra',
+    resourceId: infraID,
+    requiredPrivileges: ['can_write'],
+  });
+
+  const protectedAction = useCallback(
+    (...args: Parameters<typeof protectedActionHook>) => protectedActionHook(...args),
+    [protectedActionHook]
+  );
+
+  const userCanEditInfra = useCheckPrivileges({
+    resourceType: 'infra',
+    resourceId: infraID,
+    requiredPrivileges: ['can_write'],
+  });
+
   const context = useMemo<EditorContextType<CommonToolState>>(
     () => ({
       t,
@@ -157,6 +176,7 @@ const Editor = () => {
         viewport,
         mapStyle,
       },
+      protectedAction,
     }),
     [
       context,
@@ -170,6 +190,7 @@ const Editor = () => {
       isLocked,
       isFormSubmited,
       setIsFormSubmited,
+      protectedAction,
     ]
   );
 
@@ -399,8 +420,15 @@ const Editor = () => {
             })}
           </div>
           <div className="panel-container">
-            {isLocked && (
-              <div className="infra-locked bg-yellow">{t('Editor.infra-errors.infra-locked')}</div>
+            {!userCanEditInfra && (
+              <div className="infra-editor-warning-banner bg-yellow">
+                {t('Editor.infra-errors.infra-readonly')}
+              </div>
+            )}
+            {isLocked && userCanEditInfra && (
+              <div className="infra-editor-warning-banner bg-yellow">
+                {t('Editor.infra-errors.infra-locked')}
+              </div>
             )}
             {toolAndState.tool.leftPanelComponent && (
               <div className="panel-box">
@@ -448,7 +476,7 @@ const Editor = () => {
                 editorState.issues.total > 0 && (
                   <div className="error-box">
                     <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
-                    <InfraErrorCorrector />
+                    <InfraErrorCorrector protectedAction={protectedAction} />
                   </div>
                 )}
             </div>

@@ -107,39 +107,41 @@ function getRangeEditionTool<T extends EditorRange>({
             if (canSave) return !canSave(state);
             return false;
           },
-          async onClick({ state, setState, dispatch, infraID }) {
-            const { initialEntity, entity } = state;
-            if (!isEqual(entity, initialEntity)) {
-              const res = await dispatch(
-                save(
-                  infraID,
-                  !isNew(entity)
-                    ? {
-                        update: [
-                          {
-                            source: initialEntity,
-                            target: entity,
-                          },
-                        ],
-                      }
-                    : { create: [entity] }
-                )
-              );
-              const { railjson } = res[0];
-              const { id: entityId } = railjson;
+          onClick({ state, setState, dispatch, infraID, protectedAction }) {
+            protectedAction?.(async () => {
+              const { initialEntity, entity } = state;
+              if (!isEqual(entity, initialEntity)) {
+                const res = await dispatch(
+                  save(
+                    infraID,
+                    !isNew(entity)
+                      ? {
+                          update: [
+                            {
+                              source: initialEntity,
+                              target: entity,
+                            },
+                          ],
+                        }
+                      : { create: [entity] }
+                  )
+                );
+                const { railjson } = res[0];
+                const { id: entityId } = railjson;
 
-              const savedEntity =
-                entityId && entityId !== entity.properties.id
-                  ? {
-                      ...entity,
-                      properties: { ...entity.properties, id: `${entityId}` },
-                    }
-                  : entity;
-              setState({
-                entity: cloneDeep(savedEntity),
-                initialEntity: cloneDeep(savedEntity),
-              });
-            }
+                const savedEntity =
+                  entityId && entityId !== entity.properties.id
+                    ? {
+                        ...entity,
+                        properties: { ...entity.properties, id: `${entityId}` },
+                      }
+                    : entity;
+                setState({
+                  entity: cloneDeep(savedEntity),
+                  initialEntity: cloneDeep(savedEntity),
+                });
+              }
+            });
           },
         },
         {
@@ -175,29 +177,41 @@ function getRangeEditionTool<T extends EditorRange>({
           isDisabled({ state }) {
             return state.initialEntity.properties.id === NEW_ENTITY_ID;
           },
-          onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
-            openModal(
-              <ConfirmModal
-                title={t(
-                  `Editor.tools.${objectTypeEdition}-edition.actions.delete-${objectTypeAction}`
-                )}
-                onConfirm={async () => {
-                  await dispatch(
-                    // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
-                    save(infraID, { delete: [state.initialEntity] })
-                  );
-                  setState(getInitialState());
-                  closeModal();
-                  forceRender();
-                }}
-              >
-                <p>
-                  {t(
-                    `Editor.tools.${objectTypeEdition}-edition.actions.confirm-delete-${objectTypeAction}`
-                  ).toString()}
-                </p>
-              </ConfirmModal>
-            );
+          onClick({
+            infraID,
+            openModal,
+            closeModal,
+            forceRender,
+            state,
+            setState,
+            dispatch,
+            t,
+            protectedAction,
+          }) {
+            protectedAction?.(() => {
+              openModal(
+                <ConfirmModal
+                  title={t(
+                    `Editor.tools.${objectTypeEdition}-edition.actions.delete-${objectTypeAction}`
+                  )}
+                  onConfirm={async () => {
+                    await dispatch(
+                      // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
+                      save(infraID, { delete: [state.initialEntity] })
+                    );
+                    setState(getInitialState());
+                    closeModal();
+                    forceRender();
+                  }}
+                >
+                  <p>
+                    {t(
+                      `Editor.tools.${objectTypeEdition}-edition.actions.confirm-delete-${objectTypeAction}`
+                    ).toString()}
+                  </p>
+                </ConfirmModal>
+              );
+            });
           },
         },
       ],
