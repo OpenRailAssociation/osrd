@@ -1,0 +1,94 @@
+{
+  "railjson_version": "3.3",
+  "name": "Touristic train",
+  "effort_curves": {
+    "modes": {
+      "thermal": {
+        "curves": [
+          {
+            "cond": {
+              "comfort": "STANDARD",
+              "electrical_profile_level": null,
+              "power_restriction_code": null
+            },
+            "curve": {
+              "speeds": [
+                0.0, 2.7777777777777777, 5.555555555555555, 8.333333333333334,
+                11.11111111111111, 13.88888888888889, 16.666666666666668,
+                19.444444444444443, 22.22222222222222, 25.0, 27.77777777777778
+              ],
+              "max_efforts": [
+                170000.0, 155000.0, 140000.0, 108000.0, 81000.0, 64000.0,
+                54000.0, 46000.0, 40000.0, 36000.0, 32000.0
+              ]
+            }
+          },
+          {
+            "cond": {
+              "comfort": "AIR_CONDITIONING",
+              "electrical_profile_level": null,
+              "power_restriction_code": null
+            },
+            "curve": {
+              "speeds": [
+                0.0, 2.7777777777777777, 5.555555555555555, 8.333333333333334,
+                11.11111111111111, 13.88888888888889, 16.666666666666668,
+                19.444444444444443, 22.22222222222222, 25.0, 27.77777777777778
+              ],
+              "max_efforts": [
+                170000.0, 155000.0, 140000.0, 108000.0, 81000.0, 64000.0,
+                54000.0, 46000.0, 40000.0, 36000.0, 32000.0
+              ]
+            }
+          }
+        ],
+        "default_curve": {
+          "speeds": [
+            0.0, 2.7777777777777777, 5.555555555555555, 8.333333333333334,
+            11.11111111111111, 13.88888888888889, 16.666666666666668,
+            19.444444444444443, 22.22222222222222, 25.0, 27.77777777777778
+          ],
+          "max_efforts": [
+            170000.0, 155000.0, 140000.0, 108000.0, 81000.0, 64000.0, 54000.0,
+            46000.0, 40000.0, 36000.0, 32000.0
+          ]
+        },
+        "is_electric": false
+      }
+    },
+    "default_mode": "thermal"
+  },
+  "metadata": {
+    "detail": "",
+    "family": "",
+    "type": "",
+    "grouping": "",
+    "series": "",
+    "subseries": "",
+    "unit": "",
+    "number": "",
+    "reference": "Touristic train"
+  },
+  "length": 20.0,
+  "max_speed": 27.77777777777778,
+  "startup_time": 25.0,
+  "startup_acceleration": 0.03,
+  "comfort_acceleration": 0.08,
+  "const_gamma": 0.3,
+  "etcs_brake_params": null,
+  "inertia_coefficient": 1.2,
+  "base_power_class": "9",
+  "mass": 180000.0,
+  "rolling_resistance": { "type": "davis", "A": 0.0, "B": 0.0, "C": 0.0 },
+  "loading_gauge": "G1",
+  "power_restrictions": {},
+  "energy_sources": [],
+  "locked": false,
+  "electrical_power_startup_time": null,
+  "raise_pantograph_time": null,
+  "version": 0,
+  "supported_signaling_systems": ["BAL", "BAPR"],
+  "primary_category": "TOURISTIC_TRAIN",
+  "other_categories": [],
+  "liveries": []
+}

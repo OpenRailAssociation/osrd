@@ -1,0 +1,102 @@
+{
+  "railjson_version": "3.3",
+  "name": "Light freight train",
+  "effort_curves": {
+    "modes": {
+      "thermal": {
+        "curves": [
+          {
+            "cond": {
+              "comfort": "STANDARD",
+              "electrical_profile_level": null,
+              "power_restriction_code": null
+            },
+            "curve": {
+              "speeds": [
+                0.0, 2.7777777777777777, 5.555555555555555, 8.333333333333334,
+                11.11111111111111, 13.88888888888889, 16.666666666666668,
+                19.444444444444443, 22.22222222222222, 25.0, 27.77777777777778,
+                30.555555555555554, 33.333333333333336
+              ],
+              "max_efforts": [
+                258000.0, 237000.0, 216000.0, 180000.0, 135000.0, 108000.0,
+                90000.0, 77000.0, 67000.0, 60000.0, 54000.0, 49000.0, 45000.0
+              ]
+            }
+          },
+          {
+            "cond": {
+              "comfort": "AIR_CONDITIONING",
+              "electrical_profile_level": null,
+              "power_restriction_code": null
+            },
+            "curve": {
+              "speeds": [
+                0.0, 2.7777777777777777, 5.555555555555555, 8.333333333333334,
+                11.11111111111111, 13.88888888888889, 16.666666666666668,
+                19.444444444444443, 22.22222222222222, 25.0, 27.77777777777778,
+                30.555555555555554, 33.333333333333336
+              ],
+              "max_efforts": [
+                258000.0, 237000.0, 216000.0, 180000.0, 135000.0, 108000.0,
+                90000.0, 77000.0, 67000.0, 60000.0, 54000.0, 49000.0, 45000.0
+              ]
+            }
+          }
+        ],
+        "default_curve": {
+          "speeds": [
+            0.0, 2.7777777777777777, 5.555555555555555, 8.333333333333334,
+            11.11111111111111, 13.88888888888889, 16.666666666666668,
+            19.444444444444443, 22.22222222222222, 25.0, 27.77777777777778,
+            30.555555555555554, 33.333333333333336
+          ],
+          "max_efforts": [
+            258000.0, 237000.0, 216000.0, 180000.0, 135000.0, 108000.0, 90000.0,
+            77000.0, 67000.0, 60000.0, 54000.0, 49000.0, 45000.0
+          ]
+        },
+        "is_electric": false
+      }
+    },
+    "default_mode": "thermal"
+  },
+  "metadata": {
+    "detail": "",
+    "family": "",
+    "type": "",
+    "grouping": "",
+    "series": "",
+    "subseries": "",
+    "unit": "",
+    "number": "",
+    "reference": "Light freight train"
+  },
+  "length": 750.0,
+  "max_speed": 33.333333333333336,
+  "startup_time": 25.0,
+  "startup_acceleration": 0.03,
+  "comfort_acceleration": 0.08,
+  "const_gamma": 0.3,
+  "etcs_brake_params": null,
+  "inertia_coefficient": 1.05,
+  "base_power_class": "4",
+  "mass": 1080000.0,
+  "rolling_resistance": {
+    "type": "davis",
+    "A": 1296.0,
+    "B": 34.992,
+    "C": 5.598719999999999
+  },
+  "loading_gauge": "G1",
+  "power_restrictions": {},
+  "energy_sources": [],
+  "locked": false,
+  "electrical_power_startup_time": null,
+  "raise_pantograph_time": null,
+  "version": 0,
+  "supported_signaling_systems": ["BAL", "BAPR"],
+  "primary_category": "FREIGHT_TRAIN",
+  "other_categories": [],
+  "liveries": []
+}

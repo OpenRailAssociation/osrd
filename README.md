@@ -43,7 +43,13 @@ To compile and run the application with an example infrastructure:
 # build and run the entire stack
 docker compose up -d --build
 
+# import an small example infrastructure ("small_infra")
 ./scripts/load-railjson-infra.sh small_infra tests/data/infras/small_infra/infra.json
+
+# import rolling stocks with realistic characterics, representative of the industry
+./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/realistic/*.json
+
+# import more rolling stocks
 ./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/*.json
 
 # open the web app
