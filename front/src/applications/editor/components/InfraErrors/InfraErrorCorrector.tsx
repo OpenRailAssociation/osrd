@@ -7,7 +7,11 @@ import { getEditorState } from 'reducers/editor/selectors';
 
 import InfraErrorCorrectorModal from './InfraErrorCorrectorModal';
 
-const InfraErrorCorrector = () => {
+const InfraErrorCorrector = ({
+  protectedAction,
+}: {
+  protectedAction: (action: () => void) => void;
+}) => {
   const { t } = useTranslation();
   const { openModal } = useModal();
   const editorState = useSelector(getEditorState);
@@ -18,9 +22,11 @@ const InfraErrorCorrector = () => {
       type="button"
       title={t('Editor.nav.infra-error-corrector')}
       className="btn btn-sm py-1 px-2 shadow d-flex align-items-center justify-content-center"
-      onClick={() => {
-        openModal(<InfraErrorCorrectorModal />);
-      }}
+      onClick={() =>
+        protectedAction(() => {
+          openModal(<InfraErrorCorrectorModal />);
+        })
+      }
       disabled={total === 0}
       aria-label="Magic Wand"
     >

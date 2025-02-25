@@ -4,6 +4,7 @@ import { Lock, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
+import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 import ActionsBar from './InfraSelectorEditionActionsBar';
@@ -16,14 +17,20 @@ type InfraSelectorEditionItemProps = {
   setIsFocused: (infraId?: number) => void;
 };
 
-export default function InfraSelectorEditionItem({
+const InfraSelectorEditionItem = ({
   infra,
   isFocused,
   setIsFocused,
-}: InfraSelectorEditionItemProps) {
+}: InfraSelectorEditionItemProps) => {
   const [value, setValue] = useState(infra.name);
   const [runningDelete, setRunningDelete] = useState(false);
   const { t } = useTranslation('infraManagement');
+
+  const protectWithOwnerGrant = useProtectedAction({
+    resourceType: 'infra',
+    resourceId: infra.id,
+    requiredGrant: 'OWNER',
+  });
 
   return (
     <div className="infraslist-item-edition">
@@ -37,7 +44,7 @@ export default function InfraSelectorEditionItem({
               type="button"
               aria-label={t('infraManagement:actions.delete')}
               title={t('infraManagement:actions.delete')}
-              onClick={() => setRunningDelete(true)}
+              onClick={() => protectWithOwnerGrant(() => setRunningDelete(true))}
             >
               <Trash />
             </button>
@@ -90,4 +97,6 @@ export default function InfraSelectorEditionItem({
       )}
     </div>
   );
-}
+};
+
+export default InfraSelectorEditionItem;

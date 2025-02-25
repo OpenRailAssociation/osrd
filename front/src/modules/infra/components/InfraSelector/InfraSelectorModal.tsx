@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { MdEditNote, MdList } from 'react-icons/md';
@@ -39,10 +39,15 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
     error,
   } = osrdEditoastApi.endpoints.getInfra.useQuery({ pageSize: 1000 });
 
+  const infraIdsList = useMemo(
+    () => infrasList?.results.map((infra) => infra.id) ?? [],
+    [infrasList]
+  );
+
   const debouncedFilter = useDebounce(filter, 250);
 
   function filterInfras(infrasListLocal: Infra[]) {
-    if (debouncedFilter && debouncedFilter !== '') {
+    if (debouncedFilter) {
       infrasListLocal = infrasListLocal.filter((infra) =>
         infra.name.toLowerCase().includes(debouncedFilter.toLowerCase())
       );
@@ -127,6 +132,7 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
             infrasList={filteredInfrasList}
             setFilter={setFilter}
             filter={filter}
+            infraIdsList={infraIdsList}
             onlySelectionMode={onlySelectionMode}
             isInEditor={isInEditor}
           />

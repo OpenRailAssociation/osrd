@@ -62,6 +62,7 @@ export type ExtendedEditorContextType<S> = EditorContextType<S> & {
   isFormSubmited?: boolean;
   isInfraLocked?: boolean;
   setIsFormSubmited?: (isSubmit: boolean) => void;
+  protectedAction?: (action: () => void) => void;
 };
 
 export type ReadOnlyEditorContextType<S> = Omit<

@@ -148,20 +148,32 @@ const SelectionTool: Tool<SelectionState> = {
             NON_EDITABLE_OBJECT_TYPES.includes(entity.objType)
           );
         },
-        onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
-          openModal(
-            <ConfirmModal
-              title={t('Editor.tools.select-items.actions.delete-selection')}
-              onConfirm={async () => {
-                await dispatch(save(infraID, { delete: state.selection }));
-                setState({ ...state, selection: [] });
-                closeModal();
-                forceRender();
-              }}
-            >
-              <p>{t('Editor.tools.select-items.actions.confirm-delete-selection').toString()}</p>
-            </ConfirmModal>
-          );
+        onClick({
+          infraID,
+          openModal,
+          closeModal,
+          forceRender,
+          state,
+          setState,
+          dispatch,
+          t,
+          protectedAction,
+        }) {
+          protectedAction?.(() => {
+            openModal(
+              <ConfirmModal
+                title={t('Editor.tools.select-items.actions.delete-selection')}
+                onConfirm={async () => {
+                  await dispatch(save(infraID, { delete: state.selection }));
+                  setState({ ...state, selection: [] });
+                  closeModal();
+                  forceRender();
+                }}
+              >
+                <p>{t('Editor.tools.select-items.actions.confirm-delete-selection').toString()}</p>
+              </ConfirmModal>
+            );
+          });
         },
       },
     ],
