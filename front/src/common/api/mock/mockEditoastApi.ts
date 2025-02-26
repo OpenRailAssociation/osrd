@@ -108,7 +108,7 @@ export type MockedDB = {
   };
 };
 
-type GetSubjectsResponse = { type: string; id: number; name: string }[];
+export type GetSubjectsResponse = { type: string; id: number; name: string }[];
 
 type GetGrantsByResourceTypeResponse = {
   [grant: string]: string[];

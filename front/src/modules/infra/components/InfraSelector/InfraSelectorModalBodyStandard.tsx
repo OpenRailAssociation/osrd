@@ -1,11 +1,13 @@
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useEffect, useMemo } from 'react';
 
 import { Lock, Search } from '@osrd-project/ui-icons';
 import cx from 'classnames';
+import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { useNavigate } from 'react-router-dom';
 
+import { mockedEditoastApi } from 'common/api/mock/mockEditoastApi';
 import type { Infra } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -13,6 +15,8 @@ import { useInfraActions, useInfraID, useOsrdContext } from 'common/osrdContext'
 import { MODES } from 'main/consts';
 import { deleteItinerary } from 'reducers/osrdconf/operationalStudiesConf';
 import { useAppDispatch } from 'store';
+
+import InfraSelectorGrantsManager from './InfraSelectorGrantsManager';
 
 type InfraSelectorModalBodyStandardProps = {
   filter: string;
@@ -48,6 +52,30 @@ export default function InfraSelectorModalBodyStandard({
   const infraID = useInfraID();
   const { closeModal } = useContext(ModalContext);
   const navigate = useNavigate();
+
+  const { data: subjectsList } = mockedEditoastApi.endpoints.getSubjects.useQuery();
+
+  const [postUserResourcesGrants, { data: userResourcesGrants }] =
+    mockedEditoastApi.endpoints.postUserResourcesGrants.useMutation();
+
+  useEffect(() => {
+    const getUserResourcesGrants = async () => {
+      const infraIds = infrasList.map((infra) => infra.id);
+      try {
+        await postUserResourcesGrants({
+          infra: infraIds,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    getUserResourcesGrants();
+  }, [infrasList]);
+
+  const userGrantByInfra = useMemo(
+    () => keyBy(userResourcesGrants?.infra, 'id'),
+    [userResourcesGrants]
+  );
 
   const setInfraID = useCallback(
     (id: number) => {
@@ -103,6 +131,11 @@ export default function InfraSelectorModalBodyStandard({
                 </span>
               )}
             </div>
+            <InfraSelectorGrantsManager
+              infraId={infra.id}
+              userInfraGrant={userGrantByInfra[infra.id]?.grant}
+              subjectList={subjectsList}
+            />
             <div className="infraslist-item-choice-footer">
               <span>ID {infra.id}</span>
               <span>RAILJSON V{infra.railjson_version}</span>

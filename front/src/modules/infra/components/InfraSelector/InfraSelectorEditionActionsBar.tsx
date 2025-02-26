@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import InfraLockState from 'modules/infra/consts';
+import { InfraLockState } from 'modules/infra/consts';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
