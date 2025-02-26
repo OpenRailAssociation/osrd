@@ -57,7 +57,7 @@ geos = { version = "8.3.1", features = ["json"] }
 hostname = "0.4.0"
 itertools = "0.13.0"
 mvt = "0.9.5"
-openssl = "0.10.70"
+openssl = "0.10.71"
 opentelemetry = { version = "0.27.1", default-features = false, features = [
   "trace",
 ] }
