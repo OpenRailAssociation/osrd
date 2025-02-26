@@ -79,4 +79,4 @@ docker exec "$OSRD_VALKEY" valkey-cli -p "$OSRD_VALKEY_PORT" FLUSHALL > /dev/nul
 
 echo 'Cleanup done!'
 echo "You may want to apply migrations if you don't load a backup:"
-echo "'diesel migration run --migration-dir \"$root_path/editoast/migrations\"'  # 'docker compose up editoast' does it automatically"
+echo "'diesel migration run --locked-schema --migration-dir \"$root_path/editoast/migrations\"'  # 'docker compose up editoast' does it automatically"

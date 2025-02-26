@@ -20,7 +20,7 @@ For both tests or run:
 ```sh
 # apply database migration
 $ cargo install diesel_cli --no-default-features --features postgres
-$ diesel migration run
+$ diesel migration run --locked-schema  # avoids bumping modification date (then rebuild)
 # build the assets
 $ cargo install spreet
 $ ./assets/sprites/generate-atlas.sh
@@ -97,6 +97,13 @@ in a significant slowdown. Define this variable in your environment or in a `.en
 
 ```sh
 export OSRD_POSTGIS_IMAGE='nickblah/postgis:16-postgis-3'
+```
+
+## Editoast diesel tables model update
+
+After creating a new migration, one should update `editoast_models/src/tables.rs` with
+```sh
+$ diesel migration run  # without locking schema
 ```
 
 ## OpenApi generation

@@ -105,8 +105,8 @@ pub fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Erro
     println!(
         "✅ Migration {} generated!\n🚨 Don't forget to run {} or {} to apply it",
         migration.to_str().unwrap_or("<unprintable path>"),
-        "diesel migration run".bold(),
-        "diesel migration redo".bold(),
+        "diesel migration run --locked-schema".bold(),
+        "diesel migration redo --locked-schema".bold(),
     );
     Ok(())
 }
