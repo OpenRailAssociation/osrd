@@ -16,11 +16,11 @@ export type TrainTypeFilter = 'both' | 'pacedTrain' | 'trainSchedule';
 
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 
-type TimetableItemWithDetails = Omit<
+type TimetableItemWithSummaries = Omit<
   TrainScheduleResult,
   'id' | 'train_name' | 'rolling_stock_name' | 'timetable_id' | 'start_time'
 > & {
-  trainName: string;
+  name: string;
   startTime: Date;
   arrivalTime: Date | null;
   duration: Duration | null;
@@ -46,11 +46,11 @@ export type InvalidReason =
   | PathfindingNotFound['error_type']
   | PathfindingInputError['error_type'];
 
-export type TrainScheduleWithDetails = TimetableItemWithDetails & {
+export type TrainScheduleWithDetails = TimetableItemWithSummaries & {
   id: TrainScheduleId;
 };
 
-export type PacedTrainWithResult = TimetableItemWithDetails & {
+export type PacedTrainWithDetails = TimetableItemWithSummaries & {
   id: PacedTrainId;
   paced: {
     duration: Duration;
@@ -58,7 +58,7 @@ export type PacedTrainWithResult = TimetableItemWithDetails & {
   };
 };
 
-export type TimetableItemResult = TrainScheduleWithDetails | PacedTrainWithResult;
+export type TimetableItemWithDetails = TrainScheduleWithDetails | PacedTrainWithDetails;
 
 export type TimetableFilters = {
   uniqueTags: string[];

@@ -80,7 +80,6 @@ const TrainScheduleItem = ({
       dispatch(updateSelectedTrainId(undefined));
     }
 
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
     deleteTrainSchedule({
       body: { ids: [formatTrainScheduleIdToEditoastTrainId(train.id)] },
     })
@@ -90,7 +89,7 @@ const TrainScheduleItem = ({
         dtoImport();
         dispatch(
           setSuccess({
-            title: t('timetable.trainDeleted', { name: train.trainName }),
+            title: t('timetable.trainDeleted', { name: train.name }),
             text: '',
           })
         );
@@ -105,12 +104,11 @@ const TrainScheduleItem = ({
 
   const duplicateTrain = async () => {
     // Static for now, will be dynamic when UI will be ready
-    const trainName = `${train.trainName} (${t('timetable.copy')})`;
+    const trainName = `${train.name} (${t('timetable.copy')})`;
     const trainDelta = 5;
     const trainCount = 1;
     const actualTrainCount = 1;
 
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
     const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(train.id);
     const trainDetail = await getTrainSchedule({
       id: editoastTrainId,
@@ -153,7 +151,7 @@ const TrainScheduleItem = ({
   };
 
   const selectPathProjection = async () => {
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
     dispatch(updateTrainIdUsedForProjection(train.id));
   };
 
@@ -189,14 +187,14 @@ const TrainScheduleItem = ({
                   small
                 />
               </div>
-              <div title={train.trainName} className="checkbox-label">
+              <div title={train.name} className="checkbox-label">
                 <div className="train-info">
                   {projectionPathIsUsed && (
                     <div className="train-projected">
                       <Manchette iconColor="var(--white100)" />
                     </div>
                   )}
-                  <span className="train-name">{train.trainName}</span>
+                  <span className="train-name">{train.name}</span>
                 </div>
               </div>
             </div>

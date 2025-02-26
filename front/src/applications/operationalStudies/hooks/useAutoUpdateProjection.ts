@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import type { InfraWithState } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -24,7 +24,7 @@ import { formatEditoastTrainIdToTrainScheduleId, isTrainSchedule } from 'utils/t
 const useAutoUpdateProjection = (
   infra: InfraWithState,
   editoastTrainIds: number[],
-  trainScheduleSummaries: TrainScheduleWithDetails[]
+  timetableItemsWithDetails: TimetableItemWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
   const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
@@ -63,12 +63,14 @@ const useAutoUpdateProjection = (
     }
 
     // by default, use the first valid train
-    const firstValidTrain = trainScheduleSummaries.find((train) => train.isValid);
+    const firstValidTrain = timetableItemsWithDetails.find(
+      (train) => train.isValid && isTrainSchedule(train.id)
+    );
     if (firstValidTrain && isTrainSchedule(firstValidTrain.id)) {
       dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
       dispatch(updateSelectedTrainId(firstValidTrain.id));
     }
-  }, [editoastTrainIds, infra, trainScheduleSummaries]);
+  }, [editoastTrainIds, infra, timetableItemsWithDetails]);
 };
 
 export default useAutoUpdateProjection;

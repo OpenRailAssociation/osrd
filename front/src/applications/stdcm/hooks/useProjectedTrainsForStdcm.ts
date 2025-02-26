@@ -2,18 +2,18 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import useLazyLoadTrains from 'applications/operationalStudies/hooks/useLazyLoadTrains';
+import useLazyLoadTimetableItems from 'applications/operationalStudies/hooks/useLazyLoadTimetableItems';
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import {
   getStdcmElectricalProfileSetId,
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { TrainId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
@@ -25,9 +25,9 @@ import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTime
  */
 const keepTrainsRunningDuringStdcm = (
   stdcmResult: StdcmSuccessResponse,
-  trainSchedules: Map<TrainId, TrainScheduleWithDetails>
+  trainSchedules: Map<TimetableItemId, TimetableItemWithDetails>
 ) => {
-  const relevantTrainScheduleIds = new Set<TrainId>();
+  const relevantTrainScheduleIds = new Set<TimetableItemId>();
 
   const stdcmDepartureTime = new Date(stdcmResult.departure_time);
   const stdcmArrivalTime = addDurationToDate(
@@ -64,7 +64,9 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const electricalProfileSetId = useSelector(getStdcmElectricalProfileSetId);
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
-  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TrainId>>(new Set());
+  const [timetableItemIdsToProject, setTimetableItemIdsToProject] = useState<Set<TimetableItemId>>(
+    new Set()
+  );
 
   const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery({
     timetableId,
@@ -87,32 +89,33 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   );
 
   // Progressive loading of the trains
-  const { trainScheduleSummariesById } = useLazyLoadTrains({
+  const { timetableItemSummariesById } = useLazyLoadTimetableItems({
     infraId,
     electricalProfileSetId,
-    trainIdsToFetch: formattedTrainIds,
-    trainSchedules: formattedTrainSchedules,
+    timetableItemIdsToFetch: formattedTrainIds,
+    timetableItems: formattedTrainSchedules,
   });
 
+  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10613
   // Progressive projection of the trains
   const { projectedTrainsById, allTrainsProjected } = useLazyProjectTrains({
     infraId,
     electricalProfileSetId,
-    trainIdsToProject,
+    timetableItemIdsToProject,
     path: stdcmResponse?.path,
-    trainSchedules: formattedTrainSchedules,
-    setTrainIdsToProject,
+    timetableItems: formattedTrainSchedules,
+    setTimetableItemIdsToProject,
   });
 
   useEffect(() => {
     if (stdcmResponse) {
       const relevantTrainScheduleIds = keepTrainsRunningDuringStdcm(
         stdcmResponse,
-        trainScheduleSummariesById
+        timetableItemSummariesById
       );
-      setTrainIdsToProject((prev) => new Set([...prev, ...relevantTrainScheduleIds]));
+      setTimetableItemIdsToProject((prev) => new Set([...prev, ...relevantTrainScheduleIds]));
     }
-  }, [trainScheduleSummariesById]);
+  }, [timetableItemSummariesById]);
 
   useEffect(() => {
     if (stdcmResponse) {
@@ -120,9 +123,9 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
       setSpaceTimeData([]);
       const relevantTrainScheduleIds = keepTrainsRunningDuringStdcm(
         stdcmResponse,
-        trainScheduleSummariesById
+        timetableItemSummariesById
       );
-      setTrainIdsToProject(new Set(relevantTrainScheduleIds));
+      setTimetableItemIdsToProject(new Set(relevantTrainScheduleIds));
     }
   }, [stdcmResponse]);
 

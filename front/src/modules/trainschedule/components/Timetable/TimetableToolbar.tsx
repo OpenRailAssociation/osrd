@@ -13,49 +13,56 @@ import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
   TimetableItemId,
+  TimetableItemWithTimetableId,
   TrainScheduleId,
-  TrainScheduleResultWithTrainId,
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { getShowPacedTrains } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { formatTrainScheduleIdToEditoastTrainId, isTrainSchedule } from 'utils/trainId';
+import {
+  formatPacedTrainIdToEditoastTrainId,
+  formatTrainScheduleIdToEditoastTrainId,
+  isTrainSchedule,
+} from 'utils/trainId';
 
 import FilterPanel from './FilterPanel';
-import type { TimetableFilters, TimetableItemResult } from './types';
+import type { TimetableFilters, TimetableItemWithDetails } from './types';
 import { timetableHasInvalidItem } from './utils';
 
 type TimetableToolbarProps = {
   showTrainDetails: boolean;
   toggleShowTrainDetails: () => void;
-  timetableItems: TimetableItemResult[];
-  filteredTimetableItems: TimetableItemResult[];
+  timetableItemsWithDetails: TimetableItemWithDetails[];
+  filteredTimetableItems: TimetableItemWithDetails[];
   timetableFilters: TimetableFilters;
   selectedTimetableItemIds: TimetableItemId[];
   setSelectedTimetableItemIds: (selectedTimetableIds: TimetableItemId[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
-  trainSchedules: TrainScheduleResultWithTrainId[];
+  timetableItems: TimetableItemWithTimetableId[];
+
   isInSelection: boolean;
 };
 
 const TimetableToolbar = ({
   showTrainDetails,
   toggleShowTrainDetails,
-  timetableItems,
+  timetableItemsWithDetails,
   filteredTimetableItems,
   timetableFilters,
   selectedTimetableItemIds,
   setSelectedTimetableItemIds,
   removeTrains,
-  trainSchedules,
+  timetableItems,
   isInSelection,
 }: TimetableToolbarProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes', 'translation']);
+  const { t } = useTranslation(['operationalStudies/scenario', 'common/common', 'translation']);
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
 
   const selectedTrainId = useSelector(getSelectedTrainId);
+  const showPacedTrains = useSelector(getShowPacedTrains);
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
@@ -80,7 +87,7 @@ const TimetableToolbar = ({
 
   const { totalPacedTrainCount, totalTrainScheduleCount } = useMemo(
     () =>
-      timetableItems.reduce(
+      timetableItemsWithDetails.reduce(
         (acc, { id }) => {
           if (isTrainSchedule(id)) {
             acc.totalTrainScheduleCount += 1;
@@ -91,10 +98,11 @@ const TimetableToolbar = ({
         },
         { totalPacedTrainCount: 0, totalTrainScheduleCount: 0 }
       ),
-    [timetableItems]
+    [timetableItemsWithDetails]
   );
 
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
+  const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
 
   const toggleFilterPanel = () => {
     setIsFilterPanelOpen(!isFilterPanelOpen);
@@ -112,31 +120,45 @@ const TimetableToolbar = ({
   const handleTrainsDelete = async () => {
     const itemsCount = selectedTimetableItemIds.length;
 
-    // TODO Paced train : Adapt this to handle delete paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    // TODO Paced train : Adapt this to handle paced trains selection in issue https://github.com/OpenRailAssociation/osrd/issues/11054
     if (selectedTrainId && selectedTimetableItemIds.includes(selectedTrainId as TrainScheduleId)) {
       // we need to set selectedTrainId to undefined, otherwise just after the delete,
       // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
       dispatch(updateSelectedTrainId(undefined));
     }
 
-    // TODO Paced train : Adapt this to handle delete paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
     const editoastSelectedTrainScheduleIds = selectedTrainScheduleIds.map((id) =>
       formatTrainScheduleIdToEditoastTrainId(id)
     );
+    const editoastSelectedPacedTrainIds = selectedPacedTrainIds.map((id) =>
+      formatPacedTrainIdToEditoastTrainId(id)
+    );
 
-    await deleteTrainSchedules({ body: { ids: editoastSelectedTrainScheduleIds } })
-      .unwrap()
-      .then(() => {
-        removeTrains(selectedTrainScheduleIds);
+    if (showPacedTrains) {
+      try {
+        let deletingTrainSchedulesPromise;
+        let deletingPacedTrainsPromise;
+        if (editoastSelectedPacedTrainIds.length > 0) {
+          deletingPacedTrainsPromise = deleteTrainSchedules({
+            body: { ids: editoastSelectedTrainScheduleIds },
+          }).unwrap();
+        }
+        if (editoastSelectedPacedTrainIds.length > 0) {
+          deletingTrainSchedulesPromise = deletePacedTrains({
+            body: { ids: editoastSelectedPacedTrainIds },
+          }).unwrap();
+        }
+        await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
+
+        removeTrains(selectedTimetableItemIds);
         dispatch(
           setSuccess({
-            title: t('timetable.trainsSelectionDeletedCount', { count: itemsCount }),
+            title: t('timetable.itemsSelectionDeletedCount', { count: itemsCount }),
             text: '',
           })
         );
-      })
-      .catch((e) => {
-        // TODO Paced train : Adapt this to handle delete paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+      } catch (e) {
+        // TODO Paced train : Adapt this to handle paced trains selection in issue https://github.com/OpenRailAssociation/osrd/issues/11054
         if (
           selectedTrainId &&
           selectedTimetableItemIds.includes(selectedTrainId as TrainScheduleId)
@@ -145,15 +167,39 @@ const TimetableToolbar = ({
         } else {
           dispatch(setFailure(castErrorToFailure(e)));
         }
-      });
+      }
+      // TODO Paced trains : remove the else in https://github.com/OpenRailAssociation/osrd/issues/10791
+    } else {
+      await deleteTrainSchedules({ body: { ids: editoastSelectedTrainScheduleIds } })
+        .unwrap()
+        .then(() => {
+          removeTrains(selectedTimetableItemIds);
+          dispatch(
+            setSuccess({
+              title: t('timetable.trainsSelectionDeletedCount', { count: itemsCount }),
+              text: '',
+            })
+          );
+        })
+        .catch((e) => {
+          if (
+            selectedTrainId &&
+            selectedTimetableItemIds.includes(selectedTrainId as TrainScheduleId)
+          ) {
+            dispatch(updateSelectedTrainId(selectedTrainId));
+          } else {
+            dispatch(setFailure(castErrorToFailure(e)));
+          }
+        });
+    }
   };
 
+  // TODO Paced train : Adapt this to handle export paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10614
   const exportTrainSchedules = (selectedTrainIdsFromClick: TimetableItemId[]) => {
-    if (!trainSchedules) return;
+    if (!timetableItems) return;
 
-    // TODO Paced train : Adapt this to handle export paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10614
-    const formattedTrainSchedules = trainSchedules
-      .filter(({ id }) => selectedTrainIdsFromClick.includes(id))
+    const formattedTrainSchedules = timetableItems
+      .filter(({ id }) => isTrainSchedule(id) && selectedTrainIdsFromClick.includes(id))
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .map(({ id, timetable_id, ...trainSchedule }) => trainSchedule);
 
@@ -166,8 +212,8 @@ const TimetableToolbar = ({
     a.click();
   };
 
-  const computedItemLabel = (trainSchedulesCount: number, pacedTrainCount: number) => {
-    if (trainSchedulesCount === 0 && pacedTrainCount === 0) return t('timetable.noItem');
+  const computedItemLabel = () => {
+    if (totalTrainScheduleCount === 0 && totalPacedTrainCount === 0) return t('timetable.noItem');
 
     const pacedTrainLabel = t('pacedTrainCount', {
       count: selectedPacedTrainIds.length,
@@ -180,14 +226,14 @@ const TimetableToolbar = ({
     });
 
     if (
-      trainSchedulesCount === 0 ||
+      totalTrainScheduleCount === 0 ||
       (selectedPacedTrainIds.length > 0 && selectedTrainScheduleIds.length === 0)
     ) {
       return pacedTrainLabel;
     }
 
     if (
-      pacedTrainCount === 0 ||
+      totalPacedTrainCount === 0 ||
       (selectedTrainScheduleIds.length > 0 && selectedPacedTrainIds.length === 0)
     ) {
       return trainScheduleLabel;
@@ -209,7 +255,7 @@ const TimetableToolbar = ({
     <>
       <div
         className={cx('scenario-timetable-toolbar', {
-          centered: trainSchedules.length === 0,
+          centered: timetableItems.length === 0,
         })}
       >
         <div
@@ -217,21 +263,21 @@ const TimetableToolbar = ({
             'with-details': isInSelection,
           })}
         >
-          {trainSchedules.length === 0 ? (
+          {timetableItems.length === 0 ? (
             <div className="train-count">
               <Checkbox small readOnly label={t('timetable.noTrain')} />
             </div>
           ) : (
             <div className="train-count">
               <Checkbox
-                label={computedItemLabel(totalTrainScheduleCount, totalPacedTrainCount)}
+                label={computedItemLabel()}
                 small
                 checked={
-                  selectedTimetableItemIds.length === timetableItems.length &&
+                  selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
                   selectedTimetableItemIds.length > 0
                 }
                 isIndeterminate={
-                  selectedTimetableItemIds.length !== timetableItems.length &&
+                  selectedTimetableItemIds.length !== timetableItemsWithDetails.length &&
                   selectedTimetableItemIds.length > 0
                 }
                 onChange={() => toggleAllTrainsSelecton()}
@@ -239,7 +285,7 @@ const TimetableToolbar = ({
             </div>
           )}
 
-          {trainSchedules.length > 0 && (
+          {timetableItems.length > 0 && (
             <div>
               <button
                 type="button"
@@ -256,6 +302,7 @@ const TimetableToolbar = ({
         {selectedTimetableItemIds.length > 0 && (
           <div className="action-buttons">
             <Button
+              data-testid="delete-all-items-button"
               size="small"
               variant="Destructive"
               label={t('timetable.delete')}
@@ -264,7 +311,8 @@ const TimetableToolbar = ({
                 openModal(
                   <DeleteModal
                     handleDelete={handleTrainsDelete}
-                    items={t('common/itemTypes:trains', { count: selectedTimetableItemIds.length })}
+                    selectedPacedTrainIds={selectedPacedTrainIds}
+                    selectedTrainScheduleIds={selectedTrainScheduleIds}
                   />,
                   'sm'
                 )
@@ -289,7 +337,7 @@ const TimetableToolbar = ({
           </span>
         </div>
       )}
-      {trainSchedules.length > 0 && (
+      {timetableItems.length > 0 && (
         <div
           className={cx('sticky-filter', {
             'selection-mode-open': isInSelection,

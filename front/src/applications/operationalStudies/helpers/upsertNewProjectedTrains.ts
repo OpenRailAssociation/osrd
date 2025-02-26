@@ -1,15 +1,15 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import { type ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 import type {
-  TrainId,
+  TimetableItemId,
+  TimetableItemWithTimetableId,
   TrainScheduleId,
-  TrainScheduleResultWithTrainId,
 } from 'reducers/osrdconf/types';
 
 const upsertNewProjectedTrains = (
-  projectedTrains: Map<TrainId, TrainSpaceTimeData>,
+  projectedTrains: Map<TimetableItemId, TrainSpaceTimeData>,
   projectedTrainsToUpsert: Map<TrainScheduleId, ProjectPathTrainResult>,
-  trainSchedulesById: Map<TrainScheduleId, TrainScheduleResultWithTrainId>
+  trainSchedulesById: Map<TimetableItemId, TimetableItemWithTimetableId>
 ) => {
   const newProjectedTrains = new Map(projectedTrains);
 

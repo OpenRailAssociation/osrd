@@ -50,12 +50,12 @@ const ScenarioContent = ({
   const [itemIdToEdit, setItemIdToEdit] = useState<TimetableItemId>();
   const [isMacro, setIsMacro] = useState(false);
   const {
-    trainScheduleSummaries,
-    trainSchedules,
+    timetableItemsWithDetails,
+    timetableItems,
     projectionData,
     conflicts,
-    upsertTrainSchedules,
-    removeTrains,
+    upsertTimetableItems,
+    removeTimetableItems,
     updateTrainDepartureTime,
   } = useScenarioData(scenario, infra);
   const macroEditorState = useRef<MacroEditorState>();
@@ -103,10 +103,10 @@ const ScenarioContent = ({
       timeTableId: scenario.timetable_id,
       netzgrafikDto,
       addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResultWithTrainId[]) => {
-        upsertTrainSchedules(upsertedTrainSchedules);
+        upsertTimetableItems(upsertedTrainSchedules);
       },
       addDeletedTrainIds: (trainIds: TimetableItemId[]) => {
-        removeTrains(trainIds);
+        removeTimetableItems(trainIds);
       },
     });
   };
@@ -137,7 +137,7 @@ const ScenarioContent = ({
                   <TimetableManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    upsertTrainSchedules={upsertTrainSchedules}
+                    upsertTimetableItems={upsertTimetableItems}
                     itemIdToEdit={itemIdToEdit}
                     setItemIdToEdit={setItemIdToEdit}
                     infraState={infra.state}
@@ -148,12 +148,12 @@ const ScenarioContent = ({
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   infraState={infra.state}
                   conflicts={conflicts}
-                  upsertTrainSchedules={upsertTrainSchedules}
-                  removeTrains={removeTrains}
+                  upsertTimetableItems={upsertTimetableItems}
+                  removeTimetableItems={removeTimetableItems}
                   setItemIdToEdit={setItemIdToEdit}
                   itemIdToEdit={itemIdToEdit}
-                  trainSchedules={trainSchedules}
-                  trainSchedulesWithDetails={trainScheduleSummaries}
+                  timetableItems={timetableItems}
+                  timetableItemsWithDetails={timetableItemsWithDetails}
                   dtoImport={dtoImport}
                 />
               </>
@@ -194,9 +194,11 @@ const ScenarioContent = ({
           )}
           {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
             <div className="scenario-managetrainschedule">
+              {/* TODO Paced trains : update this to handle import paced trains in
+              https://github.com/OpenRailAssociation/osrd/issues/10614 */}
               <ImportTrainSchedule
                 timetableId={scenario.timetable_id}
-                upsertTrainSchedules={upsertTrainSchedules}
+                upsertTrainSchedules={upsertTimetableItems}
                 dtoImport={dtoImport}
               />
             </div>
@@ -215,7 +217,7 @@ const ScenarioContent = ({
                   projectionData={projectionData}
                   infraId={infra.id}
                   conflicts={conflicts}
-                  trainScheduleSummaries={trainScheduleSummaries}
+                  trainScheduleSummaries={timetableItemsWithDetails}
                   updateTrainDepartureTime={updateTrainDepartureTime}
                 />
               )

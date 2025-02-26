@@ -5,7 +5,7 @@ import type {
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
 import useOutputTableData from './hooks/useOutputTableData';
@@ -14,7 +14,7 @@ import { TableType, type TimesStopsRow } from './types';
 
 type TimesStopsOutputProps = {
   simulatedTrain?: SimulationResponseSuccess;
-  trainSummary?: TrainScheduleWithDetails;
+  trainSummary?: TimetableItemWithDetails;
   operationalPoints?: PathPropertiesFormatted['operationalPoints'];
   selectedTrainSchedule?: TrainScheduleResult;
   path?: PathfindingResultSuccess;

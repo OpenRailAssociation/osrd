@@ -10,7 +10,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { dateToHHMMSS } from 'utils/date';
 import { Duration } from 'utils/duration';
 
@@ -22,7 +22,7 @@ import { type ScheduleEntry, type TimesStopsRow } from '../types';
 
 const useOutputTableData = (
   simulatedTrain?: SimulationResponseSuccess['final_output'],
-  trainSummary?: TrainScheduleWithDetails,
+  trainSummary?: TimetableItemWithDetails,
   operationalPoints?: PathPropertiesFormatted['operationalPoints'],
   selectedTrainSchedule?: TrainScheduleResult,
   path?: PathfindingResultSuccess

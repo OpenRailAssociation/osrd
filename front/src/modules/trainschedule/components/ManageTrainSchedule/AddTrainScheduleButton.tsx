@@ -2,44 +2,46 @@ import { Plus } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraState, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { InfraState, PacedTrainBase, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import type {
+  PacedTrainResultWithPacedTrainId,
+  TimetableItemWithTimetableId,
+  TrainScheduleResultWithTrainId,
+} from 'reducers/osrdconf/types';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { isoDateToMs, isoDateWithTimezoneToSec } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
+import {
+  formatEditoastTrainIdToPacedTrainId,
+  formatEditoastTrainIdToTrainScheduleId,
+} from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
+import formatTimetableItemPayload from './helpers/formatTimetableItemPayload';
 import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
 
 type AddTrainScheduleButtonProps = {
   infraState?: InfraState;
   setIsWorking: (isWorking: boolean) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   dtoImport: () => void;
   isPacedTrainMode: boolean;
-  // TODO Paced train : remove this when connectiing the back to add a paced train
-  setDisplayTrainScheduleManagement: (type: string) => void;
 };
 
 const AddTrainScheduleButton = ({
   infraState,
   setIsWorking,
-  upsertTrainSchedules,
+  upsertTimetableItems,
   dtoImport,
   isPacedTrainMode,
-  setDisplayTrainScheduleManagement,
 }: AddTrainScheduleButtonProps) => {
-  const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
@@ -51,22 +53,82 @@ const AddTrainScheduleButton = ({
     rollingStockId: simulationConf.rollingStockID,
   });
 
+  const [postTrainSchedule] =
+    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
+  const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+
   const createTrainSchedules = async () => {
-    const validTrainConfig = checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name);
+    const validTimetableItemConfig = checkCurrentConfig(
+      simulationConf,
+      t,
+      dispatch,
+      rollingStock?.name
+    );
 
-    // TODO Paced train : remove this when connectiing the back to add a paced train
-    if (isPacedTrainMode) {
-      if (validTrainConfig) {
-        setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
+    if (!validTimetableItemConfig) return;
+
+    const { timetableId, firstStartTime, trainCount, trainDelta, trainStep, baseTrainName } =
+      validTimetableItemConfig;
+
+    setIsWorking(true);
+
+    if (showPacedTrains) {
+      try {
+        if (isPacedTrainMode) {
+          const basePacedTrainPayload = formatTimetableItemPayload(validTimetableItemConfig);
+          const pacedTrainPayload: PacedTrainBase = {
+            ...basePacedTrainPayload,
+            paced: {
+              duration: validTimetableItemConfig.timeRangeDuration,
+              step: validTimetableItemConfig.cadence,
+            },
+          };
+          const newPacedTrain = await postPacedTrain({
+            id: timetableId,
+            body: [pacedTrainPayload],
+          }).unwrap();
+
+          // We can only add one paced train at a time
+          const formattedNewPacedTrain: PacedTrainResultWithPacedTrainId = {
+            ...newPacedTrain.at(0)!,
+            id: formatEditoastTrainIdToPacedTrainId(newPacedTrain.at(0)!.id),
+          };
+
+          dispatch(
+            setSuccess({
+              title: t('pacedTrains.added'),
+              text: `${baseTrainName}: ${sec2time(isoDateWithTimezoneToSec(firstStartTime))}`,
+            })
+          );
+          upsertTimetableItems([formattedNewPacedTrain]);
+        } else {
+          const trainSchedulePayload = formatTimetableItemPayload(validTimetableItemConfig);
+          const newTrainSchedule = await postTrainSchedule({
+            id: timetableId,
+            body: [trainSchedulePayload],
+          }).unwrap();
+
+          // We can only add one train schedule at a time
+          const formattedNewTrainSchedule: TrainScheduleResultWithTrainId = {
+            ...newTrainSchedule.at(0)!,
+            id: formatEditoastTrainIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
+          };
+
+          dispatch(
+            setSuccess({
+              title: t('trainAdded'),
+              text: `${baseTrainName}: ${sec2time(isoDateWithTimezoneToSec(firstStartTime))}`,
+            })
+          );
+          upsertTimetableItems([formattedNewTrainSchedule]);
+        }
+      } catch (e) {
+        dispatch(setFailure(castErrorToFailure(e)));
+      } finally {
+        setIsWorking(false);
       }
-      return;
-    }
-
-    if (validTrainConfig) {
-      const { timetableId, firstStartTime, trainCount, trainDelta, trainStep, baseTrainName } =
-        validTrainConfig;
-
-      setIsWorking(true);
+      // TODO Paced trains : remove the else in https://github.com/OpenRailAssociation/osrd/issues/10791
+    } else {
       const formattedStartTimeMs = isoDateToMs(firstStartTime);
 
       const trainScheduleParams: TrainScheduleBase[] = [];
@@ -76,7 +138,11 @@ const AddTrainScheduleButton = ({
         const newStartTime = new Date(formattedStartTimeMs + 1000 * 60 * trainDelta * (nb - 1));
         const trainName = trainNameWithNum(baseTrainName, actualTrainCount, trainCount);
 
-        const trainSchedule = formatTrainSchedulePayload(validTrainConfig, trainName, newStartTime);
+        const trainSchedule = formatTrainSchedulePayload(
+          validTimetableItemConfig,
+          trainName,
+          newStartTime
+        );
         trainScheduleParams.push({ ...trainSchedule });
         actualTrainCount += trainStep;
       }
@@ -101,13 +167,13 @@ const AddTrainScheduleButton = ({
           })
         );
         setIsWorking(false);
-        dtoImport();
-        upsertTrainSchedules(formattedNewTrainSchedule);
+        upsertTimetableItems(formattedNewTrainSchedule);
       } catch (e) {
         setIsWorking(false);
         dispatch(setFailure(castErrorToFailure(e)));
       }
     }
+    dtoImport();
   };
 
   return (

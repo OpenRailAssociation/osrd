@@ -25,6 +25,7 @@ const TimetableItemActions = ({
         aria-label={t('timetable.choosePath')}
         title={t('timetable.choosePath')}
         onClick={selectPathProjection}
+        data-testid="project-item"
       >
         <GiPathDistance />
       </button>
@@ -33,6 +34,7 @@ const TimetableItemActions = ({
         aria-label={t('timetable.duplicate')}
         title={t('timetable.duplicate')}
         onClick={duplicateTimetableItem}
+        data-testid="duplicate-item"
       >
         <Duplicate />
       </button>
@@ -41,7 +43,7 @@ const TimetableItemActions = ({
         aria-label={t('timetable.update')}
         title={t('timetable.update')}
         onClick={editTimetableItem}
-        data-testid="edit-train"
+        data-testid="edit-item"
       >
         <Pencil />
       </button>
@@ -50,6 +52,7 @@ const TimetableItemActions = ({
         aria-label={t('timetable.delete')}
         title={t('timetable.delete')}
         onClick={deleteTimetableItem}
+        data-testid="delete-item"
       >
         <Trash />
       </button>

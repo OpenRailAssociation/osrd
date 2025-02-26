@@ -16,7 +16,7 @@ import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
-import type { FlatTranslations, StationData } from './utils/types';
+import type { CellData, FlatTranslations, StationData } from './utils/types';
 
 const enTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
 const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
@@ -58,14 +58,6 @@ test.describe('Times and Stops Tab Verification', () => {
     { name: 'Mid_West_station', ch: 'BV', uic: '3', km: 'KM 12.050' },
     { name: 'Mid_East_station', ch: 'BV', uic: '4', km: 'KM 26.500' },
   ];
-
-  // Define interface for table cell data
-  interface CellData {
-    stationName: string;
-    header: string;
-    value: string;
-    marginForm?: string;
-  }
 
   test.beforeAll('Fetch infrastructure and get translation', async () => {
     infra = await getInfra();
@@ -172,7 +164,7 @@ test.describe('Times and Stops Tab Verification', () => {
     }
 
     // Add train schedule, verify results and output table data
-    await operationalStudiesPage.addTrainSchedule();
+    await operationalStudiesPage.addTimetableItem();
     await operationalStudiesPage.returnSimulationResult();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
 

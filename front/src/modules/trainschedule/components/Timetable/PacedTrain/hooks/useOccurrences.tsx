@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 
-import type { Occurrence, PacedTrainWithResult } from '../../types';
+import type { Occurrence, PacedTrainWithDetails } from '../../types';
 
 export const computeOccurrenceName = (pacedTrainName: string, index: number): string => {
   const endByNumber = /\b\w+\s\d+$/;
@@ -29,9 +29,9 @@ const useOccurrences = ({
   paced,
   startTime,
   arrivalTime,
-  trainName,
+  name,
   rollingStock,
-}: PacedTrainWithResult) => {
+}: PacedTrainWithDetails) => {
   const occurrencesState = useMemo<OccurrencesState>(() => {
     const occurrencesCount = Math.ceil(paced.duration.ms / paced.step.ms);
     const computedOccurrences: Occurrence[] = [];
@@ -45,14 +45,14 @@ const useOccurrences = ({
         .toDate();
       computedOccurrences.push({
         id: `occurrence-${i}-${id}` as OccurrenceId,
-        trainName: computeOccurrenceName(trainName, i),
+        trainName: computeOccurrenceName(name, i),
         rollingStock,
         startTime: occurrenceStartTime,
         arrivalTime: occurrenceArrivalTime,
       });
     }
     return { occurrencesCount, occurrences: computedOccurrences };
-  }, [paced.duration, paced.step, startTime, arrivalTime, trainName, id, rollingStock]);
+  }, [paced.duration, paced.step, startTime, arrivalTime, name, id, rollingStock]);
 
   return occurrencesState;
 };

@@ -62,9 +62,20 @@ const saveMainFilter = createFilter('main', mainWhiteList);
 // Deserialize date strings coming from local storage
 const operationalStudiesDateTransform = createTransform(
   null,
-  ({ startTime, ...outboundState }: { startTime: string }) => ({
+  ({
+    startTime,
+    cadence,
+    timeRangeDuration,
+    ...outboundState
+  }: {
+    startTime: string;
+    cadence: string;
+    timeRangeDuration: string;
+  }) => ({
     ...outboundState,
     startTime: new Date(startTime),
+    cadence: Duration.parse(cadence),
+    timeRangeDuration: Duration.parse(timeRangeDuration),
   }),
   { whitelist: ['operationalStudiesConf'] }
 );

@@ -48,11 +48,14 @@ export type Margin = {
 export type ValidConfig = {
   constraintDistribution: TrainScheduleBase['constraint_distribution'];
   rollingStockName: string;
+  // TODO Paced train : rename this and firstStartTime to trainName and startTime in https://github.com/OpenRailAssociation/osrd/issues/10791
   baseTrainName: string;
   timetableId: number;
   trainCount: number;
   trainStep: number;
   trainDelta: number;
+  cadence: string;
+  timeRangeDuration: string;
   labels: string[];
   rollingStockComfort: TrainScheduleBase['comfort'];
   initialSpeed: number;

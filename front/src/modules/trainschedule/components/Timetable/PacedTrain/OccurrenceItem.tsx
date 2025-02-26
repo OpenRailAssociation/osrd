@@ -43,6 +43,7 @@ const OccurrenceItem = ({
 
   return (
     <div
+      data-testid="occurrence-item"
       className={cx('occurrence-item', {
         'after-midnight': isAfterMidnight,
         'next-after-midnight': isNextAfterMidnight,

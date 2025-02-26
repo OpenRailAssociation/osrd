@@ -1,5 +1,9 @@
-import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, PacedTrainBase } from 'common/api/osrdEditoastApi';
 
+import {
+  IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS,
+  IMPORTED_PACED_TRAIN_DETAILS,
+} from './assets/constants/operational-studies-const';
 import {
   trainScheduleProjectName,
   trainScheduleScenarioName,
@@ -28,6 +32,7 @@ import {
 } from './assets/constants/timetable-items-count';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
+import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getScenario, getStudy } from './utils/api-utils';
@@ -49,6 +54,7 @@ test.describe('Verify train schedule elements and filters', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let scenarioTimetableSection: ScenarioTimetableSection;
+  let pacedTrainSection: PacedTrainSection;
   let operationalStudiesPage: OperationalStudiesPage;
 
   let project: Project;
@@ -70,12 +76,15 @@ test.describe('Verify train schedule elements and filters', () => {
 
   test.beforeEach('Navigate to scenario page before each test', async ({ page }) => {
     scenarioTimetableSection = new ScenarioTimetableSection(page);
+    pacedTrainSection = new PacedTrainSection(page);
     operationalStudiesPage = new OperationalStudiesPage(page);
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );
     // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
+
+    await page.waitForLoadState('networkidle');
   });
 
   /** *************** Test 1 **************** */
@@ -156,14 +165,10 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.verifyTrainCount(TOTAL_TRAINS);
   });
 
-  // TODO Paced train : update this test with real data in https://github.com/OpenRailAssociation/osrd/issues/10615
   /** *************** Test 3 **************** */
   test('Filtering imported trains and paced trains', async () => {
     await operationalStudiesPage.checkPacedTrainSwitch();
 
-    // While the back end for paced trains isn't ready, 3 paced trains are hardcoded and
-    // added to the list of train schedules for testing purposes.
-    // These 3 paced trains are copy of the first train schedule in the list (1 valid, 1 not invalid, 1 not honored).
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: TOTAL_TRAINS,
@@ -176,11 +181,11 @@ test.describe('Verify train schedule elements and filters', () => {
 
     // Name and label filter
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
-      'Paced Train 1',
+      'Paced Train 2',
       NAME_FILTERED_ITEMS
     );
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
-      'Paced-Train-Tag-1',
+      'Paced-Train-Tag-2',
       LABEL_FILTERED_ITEMS
     );
 
@@ -241,5 +246,24 @@ test.describe('Verify train schedule elements and filters', () => {
       translations
     );
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
+  });
+
+  /** *************** Test 4 **************** */
+  test('Loading timetable items and verifying paced trains display', async () => {
+    await operationalStudiesPage.checkPacedTrainSwitch();
+
+    // Paced train data used in global setup
+    const pacedTrainsData: PacedTrainBase[] = readJsonFile(
+      './tests/assets/paced-train/paced_trains.json'
+    );
+
+    // Verify paced train item
+    for (let paceTrainIndex = 0; paceTrainIndex < pacedTrainsData.length; paceTrainIndex += 1) {
+      await pacedTrainSection.verifyPacedTrainItemDetails(
+        IMPORTED_PACED_TRAIN_DETAILS[paceTrainIndex],
+        paceTrainIndex,
+        IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS[paceTrainIndex]
+      );
+    }
   });
 });

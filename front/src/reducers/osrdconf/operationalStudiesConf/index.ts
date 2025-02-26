@@ -2,7 +2,7 @@ import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type {
-  PacedTrainWithResult,
+  PacedTrainWithDetails,
   TrainScheduleWithDetails,
 } from 'modules/trainschedule/components/Timetable/types';
 import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
@@ -46,11 +46,11 @@ export const operationalStudiesConfSlice = createSlice({
     ...itineraryReducer,
     selectTrainToEdit(
       state: Draft<OperationalStudiesConfState>,
-      action: PayloadAction<TrainScheduleWithDetails | PacedTrainWithResult>
+      action: PayloadAction<TrainScheduleWithDetails | PacedTrainWithDetails>
     ) {
       const {
         rollingStock,
-        trainName,
+        name,
         initial_speed,
         startTime,
         options,
@@ -65,7 +65,7 @@ export const operationalStudiesConfSlice = createSlice({
       state.pathSteps = path.map((_, index) => computeBasePathStep(action.payload, index));
       state.startTime = startTime;
 
-      state.name = trainName;
+      state.name = name;
       state.initialSpeed = initial_speed ? Math.floor(msToKmh(initial_speed) * 10) / 10 : 0;
 
       state.usingElectricalProfiles = options?.use_electrical_profiles ?? true;

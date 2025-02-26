@@ -19,6 +19,7 @@ import {
   setStdcmEnvironment,
 } from './api-utils';
 import readJsonFile from './file-utils';
+import { sendPacedTrains } from './paced-train';
 import createScenario from './scenario';
 import sendTrainSchedules from './train-schedule';
 import {
@@ -193,6 +194,8 @@ export async function createDataForTests(): Promise<void> {
   const trainSchedulesJson: JSON = readJsonFile(
     './tests/assets/train-schedule/train_schedules.json'
   );
+  const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
+
   try {
     // Step 1: Create infrastructure
     let smallInfra = await getInfra();
@@ -211,7 +214,7 @@ export async function createDataForTests(): Promise<void> {
     // Step 5: Create a scenario for the study
     await createScenario(undefined, project.id, study.id, smallInfra.id);
 
-    // Step 6: Create a project, study, scenario and import train schedule
+    // Step 6: Create a project, study, scenario and import train schedule and paced train data
     const projectTrainSchedule = await createProject(trainScheduleProjectName);
     const studyTrainSchedule = await createStudy(projectTrainSchedule.id, trainScheduleStudyName);
     const scenarioTrainSchedule = (
@@ -223,6 +226,7 @@ export async function createDataForTests(): Promise<void> {
       )
     ).scenario;
     await sendTrainSchedules(scenarioTrainSchedule.timetable_id, trainSchedulesJson);
+    await sendPacedTrains(scenarioTrainSchedule.timetable_id, pacedTrainsJson);
 
     // Step 7: Configure STDCM search environment for the tests
     await saveFormerStdcmEnvironment(smallInfra.id);

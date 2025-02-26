@@ -235,6 +235,28 @@ export type STDCMResultTableRow = {
   refEngine: string | null;
 };
 
+// Define interface for table cell data
+export interface CellData {
+  stationName: string;
+  header: string;
+  value: string;
+  marginForm?: string;
+}
+
+export type PacedTrainDetails = {
+  name: string;
+  startTime: string;
+  labels: string[];
+  duration: string;
+  step: string;
+};
+
+export type OccurrenceDetails = {
+  name: string;
+  startTime: string;
+  arrivalTime: string;
+};
+
 export type StdcmTranslations = {
   consist: {
     tractionEngine: string;
@@ -280,11 +302,4 @@ export type TimetableFilterTranslations = FlatTranslations & {
 
 export type CommonTranslations = FlatTranslations & {
   common: FlatTranslations;
-};
-
-export type PacedTrainSettings = {
-  name: string;
-  startTime: string;
-  timeRangeDuration: string;
-  cadence: string;
 };

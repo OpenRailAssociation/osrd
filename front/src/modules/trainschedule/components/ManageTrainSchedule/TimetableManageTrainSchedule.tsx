@@ -9,7 +9,7 @@ import type { InfraState } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import DotsLoader from 'common/DotsLoader';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
-import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 
 import AddTrainScheduleButton from './AddTrainScheduleButton';
@@ -20,7 +20,7 @@ type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
   itemIdToEdit?: TimetableItemId;
   setDisplayTrainScheduleManagement: (type: string) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   infraState?: InfraState;
   setItemIdToEdit: (itemIdToEdit?: TimetableItemId) => void;
   dtoImport: () => void;
@@ -29,7 +29,7 @@ type TimetableManageTrainScheduleProps = {
 const TimetableManageTrainSchedule = ({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
-  upsertTrainSchedules,
+  upsertTimetableItems,
   infraState,
   itemIdToEdit,
   setItemIdToEdit,
@@ -46,10 +46,11 @@ const TimetableManageTrainSchedule = ({
     setItemIdToEdit(undefined);
   };
 
+  // TODO Paced trains : update this to handle edit paced trains
   const updateTrainSchedule = useUpdateTrainSchedule(
     setIsWorking,
     setDisplayTrainScheduleManagement,
-    upsertTrainSchedules,
+    upsertTimetableItems,
     setItemIdToEdit,
     dtoImport,
     itemIdToEdit
@@ -86,10 +87,9 @@ const TimetableManageTrainSchedule = ({
               <AddTrainScheduleButton
                 infraState={infraState}
                 setIsWorking={setIsWorking}
-                upsertTrainSchedules={upsertTrainSchedules}
+                upsertTimetableItems={upsertTimetableItems}
                 dtoImport={dtoImport}
                 isPacedTrainMode={isPacedTrainMode}
-                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               />
             )}
             {showPacedTrains ? (

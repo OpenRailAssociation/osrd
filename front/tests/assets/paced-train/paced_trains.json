@@ -1,0 +1,119 @@
+[
+  {
+    "train_name": "8608",
+    "labels": ["Paced-Train-Tag-1", "SS-NS", "Valid"],
+    "rolling_stock_name": "SLOW_RS_E2E",
+    "start_time": "2024-10-15T03:00:00Z",
+    "path": [
+      { "id": "id227", "deleted": false, "uic": 6, "secondary_code": "BV" },
+      { "id": "id228", "deleted": false, "uic": 5, "secondary_code": "BV" }
+    ],
+    "schedule": [
+      {
+        "at": "id228",
+        "arrival": null,
+        "stop_for": "P0D",
+        "reception_signal": "OPEN",
+        "locked": false
+      }
+    ],
+    "margins": { "boundaries": [], "values": ["0%"] },
+    "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": null,
+    "power_restrictions": [],
+    "options": { "use_electrical_profiles": true },
+    "paced": { "duration": "PT2H", "step": "PT1H" }
+  },
+  {
+    "train_name": "Paced Train 2",
+    "labels": ["Paced-Train-Tag-2", "SS-NS", "Valid"],
+    "rolling_stock_name": "SLOW_RS_E2E",
+    "start_time": "2024-10-15T04:00:00Z",
+    "path": [
+      { "id": "id227", "deleted": false, "uic": 6, "secondary_code": "BV" },
+      { "id": "id228", "deleted": false, "uic": 5, "secondary_code": "BV" }
+    ],
+    "schedule": [
+      {
+        "at": "id228",
+        "arrival": null,
+        "stop_for": "P0D",
+        "reception_signal": "OPEN",
+        "locked": false
+      }
+    ],
+    "margins": { "boundaries": [], "values": ["0%"] },
+    "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": null,
+    "power_restrictions": [],
+    "options": { "use_electrical_profiles": true },
+    "paced": { "duration": "PT2H", "step": "PT30M" }
+  },
+  {
+    "train_name": "PacedTrain3",
+    "labels": ["Paced-Train-Tag-2", "MWS-NES", "Not-honored"],
+    "rolling_stock_name": "DUAL-MODE_RS_E2E",
+    "start_time": "2024-10-15T05:00:00Z",
+    "path": [
+      { "id": "id744", "deleted": false, "uic": 3, "secondary_code": "BV" },
+      { "id": "id765", "deleted": false, "uic": 4, "secondary_code": "BV" },
+      { "id": "id745", "deleted": false, "uic": 7, "secondary_code": "BV" }
+    ],
+    "schedule": [
+      {
+        "at": "id765",
+        "arrival": "PT123S",
+        "stop_for": "PT120S",
+        "reception_signal": "SHORT_SLIP_STOP",
+        "locked": false
+      },
+      {
+        "at": "id745",
+        "arrival": null,
+        "stop_for": "P0D",
+        "reception_signal": "OPEN",
+        "locked": false
+      }
+    ],
+    "margins": { "boundaries": [], "values": ["0%"] },
+    "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": "HLP",
+    "power_restrictions": [],
+    "options": { "use_electrical_profiles": false },
+    "paced": { "duration": "PT2H", "step": "PT50M" }
+  },
+  {
+    "train_name": "PacedTrain4",
+    "labels": ["Invalid"],
+    "rolling_stock_name": "",
+    "start_time": "2024-10-15T09:45:43Z",
+    "path": [
+      { "id": "id3807", "deleted": false, "track": "TA6", "offset": 8058000 },
+      { "id": "id3822", "deleted": false, "track": "TD0", "offset": 10809000 },
+      { "id": "id3855", "deleted": false, "track": "TG2", "offset": 1686000 }
+    ],
+    "schedule": [
+      {
+        "at": "id3855",
+        "arrival": null,
+        "stop_for": "P0D",
+        "reception_signal": "OPEN",
+        "locked": false
+      }
+    ],
+    "margins": { "boundaries": [], "values": ["0%"] },
+    "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": "MA100",
+    "power_restrictions": [],
+    "options": { "use_electrical_profiles": true },
+    "paced": { "duration": "PT2H", "step": "PT1H" }
+  }
+]

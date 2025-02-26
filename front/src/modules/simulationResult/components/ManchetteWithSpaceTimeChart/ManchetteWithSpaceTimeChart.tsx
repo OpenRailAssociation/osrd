@@ -60,7 +60,7 @@ type ManchetteWithSpaceTimeChartProps = {
     allTrainsProjected: boolean;
   };
   handleTrainDrag?: (
-    draggedTrainId: TrainId,
+    draggedTrainId: TimetableItemId,
     newDepartureTime: Date,
     { stopPanning }: { stopPanning: boolean }
   ) => Promise<void>;
@@ -261,6 +261,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }));
   });
 
+  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10781
   const onPanOverloaded: SpaceTimeChartProps['onPan'] = async (payload) => {
     const { isPanning } = payload;
 
@@ -278,7 +279,9 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       const timeDiff = payload.data.time - payload.initialData.time;
       const newDeparture = new Date(initialDepartureTime.getTime() + timeDiff);
 
-      await handleTrainDrag(draggedTrain.id, newDeparture, { stopPanning: !isPanning });
+      await handleTrainDrag(draggedTrain.id as TrainScheduleId, newDeparture, {
+        stopPanning: !isPanning,
+      });
 
       // stop dragging if necessary
       if (!isPanning) {

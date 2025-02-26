@@ -21,15 +21,16 @@ import { useFormattedOperationalPoints } from 'modules/simulationResult/hooks/us
 import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { TrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   formatEditoastTrainIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
+  isTrainSchedule,
 } from 'utils/trainId';
 
 import useSimulationResults from '../hooks/useSimulationResults';
@@ -44,9 +45,12 @@ type SimulationResultsProps = {
   collapsedTimetable: boolean;
   infraId?: number;
   projectionData?: ProjectionData;
-  trainScheduleSummaries?: TrainScheduleWithDetails[];
+  trainScheduleSummaries?: TimetableItemWithDetails[];
+  // TODO Paced trains : uncomment this to have a `selectedTimetableItem` and replace the trainScheduleSummaries prop in https://github.com/OpenRailAssociation/osrd/issues/11054
+  // timetableItemsWithDetails: TimetableItemWithDetails[];
+
   conflicts?: Conflict[];
-  updateTrainDepartureTime: (trainId: TrainId, newDepartureTime: Date) => void;
+  updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => void;
 };
 
 const SimulationResults = ({
@@ -119,22 +123,26 @@ const SimulationResults = ({
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
 
+  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/11054
   const selectedTrainSummary = useMemo(
     () =>
       trainScheduleSummaries?.find(
-        (train) => formatTrainScheduleIdToEditoastTrainId(train.id) === selectedTrainSchedule?.id
+        (train) =>
+          isTrainSchedule(train.id) &&
+          formatTrainScheduleIdToEditoastTrainId(train.id) === selectedTrainSchedule?.id
       ),
     [trainScheduleSummaries, selectedTrainSchedule]
   );
 
+  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10781
   const handleTrainDrag = async (
-    draggedTrainId: TrainId,
+    draggedTrainId: TimetableItemId,
     newDepartureTime: Date,
     { stopPanning }: { stopPanning: boolean }
   ) => {
     if (stopPanning) {
       // update in the database
-      dispatch(updateSelectedTrainId(draggedTrainId));
+      dispatch(updateSelectedTrainId(draggedTrainId as TrainScheduleId));
       updateTrainDepartureTime(draggedTrainId, newDepartureTime);
     } else {
       // update in the state

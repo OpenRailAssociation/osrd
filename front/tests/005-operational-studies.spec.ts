@@ -8,80 +8,147 @@ import type {
   Study,
 } from 'common/api/osrdEditoastApi';
 
-import { NEW_PACED_TRAIN_SETTINGS } from './assets/constants/operational-studies-const';
+import {
+  ADD_PACED_TRAIN_OCCURRENCES_DETAILS,
+  DUPLICATED_PACED_TRAIN_DETAILS,
+  DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
+  NEW_PACED_TRAIN_SETTINGS,
+} from './assets/constants/operational-studies-const';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
 } from './assets/constants/project-const';
+import {
+  DUPLICATED_PACED_TRAIN_INDEX,
+  TOTAL_PACED_TRAINS,
+  TOTAL_PACED_TRAINS_WITH_DUPLICATE,
+} from './assets/constants/timetable-items-count';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
+import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import RouteTab from './pages/operational-studies/route-tab';
+import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
+import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getRollingStock } from './utils/api-utils';
+import { cleanWhitespace } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
+import { sendPacedTrains } from './utils/paced-train';
 import createScenario from './utils/scenario';
+import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
-import type { ManageTrainScheduleTranslations } from './utils/types';
+import type {
+  CellData,
+  CommonTranslations,
+  FlatTranslations,
+  ManageTrainScheduleTranslations,
+  TimetableFilterTranslations,
+} from './utils/types';
 
-const enTranslations: ManageTrainScheduleTranslations = readJsonFile(
+const enManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile(
   'public/locales/en/operationalStudies/manageTrainSchedule.json'
 );
-const frTranslations: ManageTrainScheduleTranslations = readJsonFile(
+const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile(
   'public/locales/fr/operationalStudies/manageTrainSchedule.json'
 );
+
+const enTimeStopsTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
+const frTimeStopsTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
+
+const enScenarioTranslations: TimetableFilterTranslations = readJsonFile(
+  'public/locales/en/operationalStudies/scenario.json'
+);
+const frScenarioTranslations: TimetableFilterTranslations = readJsonFile(
+  'public/locales/fr/operationalStudies/scenario.json'
+);
+
+const enCommonTranslations: CommonTranslations = readJsonFile('public/locales/en/translation.json');
+const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
+
+const initialInputsData: CellData[] = readJsonFile(
+  './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
+);
+
+const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
   test.slow();
 
   let rollingstockSelector: RollingStockSelector;
   let operationalStudiesPage: OperationalStudiesPage;
+  let scenarioTimetableSection: ScenarioTimetableSection;
   let routeTab: RouteTab;
+  let pacedTrainSection: PacedTrainSection;
+  let timesAndStopsTab: TimesAndStopsTab;
 
   let project: Project;
   let study: Study;
   let scenario: Scenario;
   let infra: Infra;
   let rollingStock: LightRollingStock;
-  let translations: ManageTrainScheduleTranslations;
+  let translations: ManageTrainScheduleTranslations &
+    TimetableFilterTranslations &
+    CommonTranslations;
 
   test.beforeAll('Fetch infrastructure and get translations', async () => {
     rollingStock = await getRollingStock(electricRollingStockName);
     infra = await getInfra();
     translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
+      en: {
+        ...enManageTrainScheduleTranslations,
+        ...enTimeStopsTranslations,
+        ...enScenarioTranslations,
+        ...enCommonTranslations,
+      },
+      fr: {
+        ...frManageTrainScheduleTranslations,
+        ...frTimeStopsTranslations,
+        ...frScenarioTranslations,
+        ...frCommonTranslations,
+      },
     });
   });
 
   test.beforeEach('Set up the project, study, and scenario', async ({ page }) => {
-    [rollingstockSelector, operationalStudiesPage, routeTab] = [
+    [
+      rollingstockSelector,
+      operationalStudiesPage,
+      scenarioTimetableSection,
+      routeTab,
+      pacedTrainSection,
+      timesAndStopsTab,
+    ] = [
       new RollingStockSelector(page),
       new OperationalStudiesPage(page),
+      new ScenarioTimetableSection(page),
       new RouteTab(page),
+      new PacedTrainSection(page),
+      new TimesAndStopsTab(page),
     ];
 
     ({ project, study, scenario } = await createScenario());
+
+    // Navigate to the scenario page for the given project and study
+    await page.goto(
+      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+    );
+
+    // Wait for infra to be in 'CACHED' state before proceeding
+    await waitForInfraStateToBeCached(infra.id);
+
+    await page.waitForLoadState('networkidle');
   });
 
   test.afterEach('Delete the created scenario', async () => {
     await deleteScenario(project.id, study.id, scenario.name);
   });
 
-  /** *************** Test **************** */
-  test('Add a paced train', async ({ page }) => {
-    // Navigate to the scenario page for the given project and study
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-    );
+  /** *************** Test 1 **************** */
+  test('Verify default behaviors with paced train mode', async () => {
+    await operationalStudiesPage.clickOnAddTrainButton();
 
     await operationalStudiesPage.checkPacedTrainSwitch();
-
-    // Wait for infra to be in 'CACHED' state before proceeding
-    await waitForInfraStateToBeCached(infra.id);
-
-    // Click the button to add a train schedule or paced train
-    await operationalStudiesPage.clickOnAddTrainButton();
 
     // Verify that all configuration buttons and inputs are visible and have their proper default values
     await operationalStudiesPage.checkInputsAndButtons(translations, scenario.creation_date);
@@ -94,6 +161,13 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Test the paced train mode behavior
     await operationalStudiesPage.testPacedTrainMode(translations);
+  });
+
+  /** *************** Test 2 **************** */
+  test('Add a paced train and verify its timetable details', async ({ page }) => {
+    await operationalStudiesPage.clickOnAddTrainButton();
+
+    await operationalStudiesPage.checkPacedTrainSwitch();
 
     // Set the paced train inputs
     await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
@@ -103,30 +177,106 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Select an itinerary
     await operationalStudiesPage.clickOnRouteTab();
-    await routeTab.performPathfindingByTrigram('MWS', 'NES');
-    await operationalStudiesPage.checkPathfindingDistance('33.950 km');
+    await routeTab.performPathfindingByTrigram('WS', 'NES');
+    await operationalStudiesPage.checkPathfindingDistance('46.000 km');
 
-    // TODO : update this part when paced train endpoints are delivered to find a fine configuration for it
-    // Change some time and stops
+    // Verify initial row count and fill table with input data
+    await operationalStudiesPage.clickOnTimesAndStopsTab();
+    await scrollContainer(page, '.time-stops-datasheet .dsg-container');
 
-    // Adding Train Schedule
-    await operationalStudiesPage.addTrainSchedule();
+    await timesAndStopsTab.verifyActiveRowsCount(2);
+    for (const cell of initialInputsData) {
+      const translatedHeader = cleanWhitespace(translations[cell.header]);
+      await timesAndStopsTab.fillTableCellByStationAndHeader(
+        cell.stationName,
+        translatedHeader,
+        cell.value,
+        cell.marginForm
+      );
+    }
 
-    // TODO : update the test to verify the newly added paced train (for now nothing happens when clicking on the button)
+    // Add paced train
+    await operationalStudiesPage.addTimetableItem();
+
+    // Verify the paced train has been added and return to the simulation results and timetable
+    await operationalStudiesPage.checkTimetableItemHasBeenAdded(translations.pacedTrains.added);
+    await operationalStudiesPage.returnSimulationResult();
+
+    // Confirm that the number of paced trains added matches the expected number
+    await operationalStudiesPage.checkNumberOfTrains(1); // Only one paced train can be added at a time
+
+    await pacedTrainSection.verifyPacedTrainItemDetails(
+      NEW_PACED_TRAIN_SETTINGS,
+      0,
+      ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0]
+    );
+
+    // TODO : verify occurrence selection, projection, simulation results
+  });
+
+  /** *************** Test 3 **************** */
+  test('Duplicate and delete a paced train', async () => {
+    await sendPacedTrains(scenario.timetable_id, pacedTrainsJson);
+
+    await operationalStudiesPage.checkPacedTrainSwitch();
+
+    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS,
+      totalTrainScheduleCount: 0,
+    });
+
+    // Duplicate the first paced train
+    await pacedTrainSection.duplicatePacedTrain();
+
+    // Verify that a toast is displayed
+    await operationalStudiesPage.checkTimetableItemHasBeenAdded(
+      translations.timetable.pacedTrainAdded
+    );
+
+    // Verify that there is one more paced train in the list
+    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS + 1,
+      totalTrainScheduleCount: 0,
+    });
+
+    // Verify that the duplicated paced train has the proper details
+    await pacedTrainSection.verifyPacedTrainItemDetails(
+      DUPLICATED_PACED_TRAIN_DETAILS,
+      1,
+      DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
+      { copyTranslation: translations.timetable.copy }
+    );
+
+    // Verify global item counter has one more paced train
+    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS_WITH_DUPLICATE,
+      totalTrainScheduleCount: 0,
+    });
+
+    // Delete the duplicated paced train
+    await pacedTrainSection.deletePacedTrain(
+      DUPLICATED_PACED_TRAIN_DETAILS,
+      DUPLICATED_PACED_TRAIN_INDEX,
+      translations
+    );
+
+    // As in other tests, checking the last notification needs to be done in a different method
+    // otherwise the received message of the last notification is empty
+    // await pacedTrainSection.verifyPacedTrainHasBeenDeleted(
+    //   DUPLICATED_PACED_TRAIN_DETAILS.name,
+    //   translations
+    // );
+
+    // Verify global item counter has one less paced train
+    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS,
+      totalTrainScheduleCount: 0,
+    });
   });
 
   // TODO Paced train : Remove this test in https://github.com/OpenRailAssociation/osrd/issues/10791
-  test('Pathfinding with rolling stock and composition code', async ({ page }) => {
-    // Page models
-
-    // Navigate to the scenario page for the given project and study
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-    );
-
-    // Wait for infra to be in 'CACHED' state before proceeding
-    await waitForInfraStateToBeCached(infra.id);
-
+  /** *************** Test 4 **************** */
+  test('Pathfinding with rolling stock and composition code', async () => {
     // Click the button to add a train schedule
     await operationalStudiesPage.clickOnAddTrainButton();
 
@@ -171,10 +321,10 @@ test.describe('Verify simulation configuration in operational studies for train 
     await operationalStudiesPage.checkPathfindingDistance('33.950 km');
 
     // Adding Train Schedule
-    await operationalStudiesPage.addTrainSchedule();
+    await operationalStudiesPage.addTimetableItem();
 
     // Verify the train has been added and the simulation results
-    await operationalStudiesPage.checkTrainHasBeenAdded();
+    await operationalStudiesPage.checkTimetableItemHasBeenAdded(translations.trainAdded);
     await operationalStudiesPage.returnSimulationResult();
 
     // Confirm the number of trains added matches the expected number

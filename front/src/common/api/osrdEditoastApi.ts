@@ -6,6 +6,7 @@ import {
   generatedEditoastApi,
   type Property,
   type TrainScheduleResult,
+  type PacedTrainResult,
 } from './generatedEditoastApi';
 
 const formatPathPropertiesProps = (props: Property[]) =>
@@ -34,7 +35,32 @@ const osrdEditoastApi = generatedEditoastApi
                 { forceRefetch: true, subscribe: false }
               )
             );
-            // need to unsubscribe on get call to avoid cache issue
+            const { data } = await promise;
+            if (data) result.push(...data.results);
+            reachEnd = isNil(data?.next);
+            page += 1;
+          }
+          return { data: result };
+        },
+        providesTags: ['timetable'],
+      }),
+      getAllTimetableByIdPacedTrains: builder.query<PacedTrainResult[], { timetableId: number }>({
+        queryFn: async ({ timetableId }, { dispatch }) => {
+          const pageSize = 25;
+          let page = 1;
+          let reachEnd = false;
+          const result: PacedTrainResult[] = [];
+          while (!reachEnd) {
+            const promise = dispatch(
+              osrdEditoastApi.endpoints.getTimetableByIdPacedTrains.initiate(
+                {
+                  id: timetableId,
+                  pageSize,
+                  page,
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            );
             const { data } = await promise;
             if (data) result.push(...data.results);
             reachEnd = isNil(data?.next);
@@ -71,6 +97,11 @@ const osrdEditoastApi = generatedEditoastApi
       deleteTrainSchedule: {
         // As we always use all get trainschedule endpoints after updating the timetable,
         // we don't want to invalidate the trainschedule tag here to prevent multiple calls
+        invalidatesTags: ['timetable', 'scenarios'],
+      },
+      deletePacedTrain: {
+        // As we always use all get paced train endpoints after updating the timetable,
+        // we don't want to invalidate the paced train tag here to prevent multiple calls
         invalidatesTags: ['timetable', 'scenarios'],
       },
       postTimetableByIdTrainSchedules: {

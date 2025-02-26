@@ -4,15 +4,8 @@ import {
   DEFAULT_PACED_TRAIN_SETTINGS,
   PACED_TRAIN_SETTINGS_TEST,
 } from '../../assets/constants/operational-studies-const';
-import readJsonFile from '../../utils/file-utils';
-import type { ManageTrainScheduleTranslations, PacedTrainSettings } from '../../utils/types';
+import type { ManageTrainScheduleTranslations, PacedTrainDetails } from '../../utils/types';
 import CommonPage from '../common-page';
-
-const manageTrainScheduleTranslation: { trainAdded: string } = readJsonFile(
-  'public/locales/fr/operationalStudies/manageTrainSchedule.json'
-);
-
-const trainAddedTranslation = manageTrainScheduleTranslation.trainAdded;
 
 class OperationalStudiesPage extends CommonPage {
   private readonly addScenarioTrainButton: Locator;
@@ -135,8 +128,15 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.startTimeField).toHaveValue(startTime);
   }
 
-  async checkTrainHasBeenAdded() {
-    await this.checkLastToastTitle(trainAddedTranslation);
+  // startTime is already in format ISO 8601
+  async setFormattedStartTime(startTime: string) {
+    await this.startTimeField.fill(startTime);
+    await expect(this.startTimeField).toHaveValue(startTime);
+  }
+
+  async checkTimetableItemHasBeenAdded(translation: string) {
+    await this.checkToastTitle(translation);
+    await this.closeToastNotification();
   }
 
   async returnSimulationResult() {
@@ -208,17 +208,19 @@ class OperationalStudiesPage extends CommonPage {
   async checkPacedTrainModeAndVerifyInputs(translations: ManageTrainScheduleTranslations) {
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
+
     await expect(this.pacedTrainTimeRangeDurationInput).toBeVisible();
     await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(
-      DEFAULT_PACED_TRAIN_SETTINGS.timeRangeDuration
+      DEFAULT_PACED_TRAIN_SETTINGS.duration
     );
+
     await expect(this.pacedTrainCadenceInput).toBeVisible();
-    await expect(this.pacedTrainCadenceInput).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.cadence);
+    await expect(this.pacedTrainCadenceInput).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.step);
   }
 
   async testPacedTrainMode(translations: ManageTrainScheduleTranslations) {
-    await this.setTimeRangeDuration(PACED_TRAIN_SETTINGS_TEST.timeRangeDuration);
-    await this.setCadence(PACED_TRAIN_SETTINGS_TEST.cadence);
+    await this.setTimeRangeDuration(PACED_TRAIN_SETTINGS_TEST.duration);
+    await this.setCadence(PACED_TRAIN_SETTINGS_TEST.step);
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
     await expect(this.pacedTrainTimeRangeDurationInput).not.toBeVisible();
@@ -226,24 +228,27 @@ class OperationalStudiesPage extends CommonPage {
 
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
+
     await expect(this.pacedTrainTimeRangeDurationInput).toBeVisible();
     await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(
-      PACED_TRAIN_SETTINGS_TEST.timeRangeDuration
+      PACED_TRAIN_SETTINGS_TEST.duration
     );
+
     await expect(this.pacedTrainCadenceInput).toBeVisible();
-    await expect(this.pacedTrainCadenceInput).toHaveValue(PACED_TRAIN_SETTINGS_TEST.cadence);
+    await expect(this.pacedTrainCadenceInput).toHaveValue(PACED_TRAIN_SETTINGS_TEST.step);
   }
 
   async fillPacedTrainSettings({
     name,
     startTime,
-    timeRangeDuration,
-    cadence,
-  }: PacedTrainSettings) {
+    duration: pacedTrainDuration,
+    step,
+  }: PacedTrainDetails) {
+    await this.definePacedTrainCheckboxLabel.click();
+    await this.setTimeRangeDuration(pacedTrainDuration);
+    await this.setCadence(step);
     await this.setTrainScheduleName(name);
-    await this.setTrainStartTime(startTime);
-    await this.setTimeRangeDuration(timeRangeDuration);
-    await this.setCadence(cadence);
+    await this.setFormattedStartTime(startTime);
   }
 
   async setTimeRangeDuration(timeRangeDuration: string) {
@@ -256,9 +261,8 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.pacedTrainCadenceInput).toHaveValue(cadence);
   }
 
-  async addTrainSchedule() {
+  async addTimetableItem() {
     await this.addTrainButton.click();
-    await this.closeToastNotification();
   }
 
   async setTrainScheduleName(name: string) {

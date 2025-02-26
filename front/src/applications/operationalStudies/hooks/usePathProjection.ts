@@ -11,7 +11,7 @@ import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
 const usePathProjection = (infra: InfraWithState) => {
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
-  // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+  // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10791
   const editoastTrainId = trainIdUsedForProjection
     ? formatTrainScheduleIdToEditoastTrainId(trainIdUsedForProjection as TrainScheduleId)
     : undefined;

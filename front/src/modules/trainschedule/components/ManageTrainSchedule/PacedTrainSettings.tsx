@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import { ArrowBoth } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -14,18 +12,10 @@ import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
 const PacedTrainSettings = () => {
-  const timeRangeDurationStore = useSelector(getTimeRangeDuration);
-  const cadenceStore = useSelector(getCadence);
+  const timeRangeDuration = useSelector(getTimeRangeDuration).total('minute');
+  const cadence = useSelector(getCadence).total('minute');
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
-
-  const { timeRangeDuration, cadence } = useMemo(
-    () => ({
-      timeRangeDuration: timeRangeDurationStore.total('minute'),
-      cadence: cadenceStore.total('minute'),
-    }),
-    [timeRangeDurationStore, cadenceStore]
-  );
 
   return (
     <div className="d-flex px-3 mt-2">

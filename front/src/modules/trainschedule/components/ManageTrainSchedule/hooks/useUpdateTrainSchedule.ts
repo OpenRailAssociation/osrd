@@ -59,7 +59,7 @@ const useUpdateTrainSchedule = (
         confName,
         startTime
       );
-      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+      // TODO Paced train : Adapt this to handle paced trains in edit issue of https://github.com/OpenRailAssociation/osrd/issues/10615
       try {
         const trainScheduleResult = await putTrainScheduleById({
           id: formatTrainScheduleIdToEditoastTrainId(trainIdToEdit as TrainScheduleId),

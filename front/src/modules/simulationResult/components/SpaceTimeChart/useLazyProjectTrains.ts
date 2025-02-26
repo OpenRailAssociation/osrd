@@ -10,9 +10,9 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import type {
-  TrainId,
+  TimetableItemId,
+  TimetableItemWithTimetableId,
   TrainScheduleId,
-  TrainScheduleResultWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getBatchPackage } from 'utils/batch';
@@ -25,14 +25,14 @@ import { mapBy } from 'utils/types';
 
 const BATCH_SIZE = 5;
 
-type useLazyLoadTrainsProp = {
+type useLazyLoadTrainsParams = {
   infraId?: number;
   electricalProfileSetId: number | undefined;
-  trainIdsToProject: Set<TrainId>;
+  timetableItemIdsToProject: Set<TimetableItemId>;
   path?: PathfindingResultSuccess;
-  trainSchedules?: TrainScheduleResultWithTrainId[];
+  timetableItems?: TimetableItemWithTimetableId[];
   moreTrainsToCome?: boolean;
-  setTrainIdsToProject: Dispatch<SetStateAction<Set<TrainId>>>;
+  setTimetableItemIdsToProject: Dispatch<SetStateAction<Set<TimetableItemId>>>;
 };
 
 /**
@@ -45,33 +45,36 @@ type useLazyLoadTrainsProp = {
 const useLazyProjectTrains = ({
   infraId,
   electricalProfileSetId,
-  trainIdsToProject,
+  timetableItemIdsToProject,
   path,
-  trainSchedules,
+  timetableItems,
   moreTrainsToCome = false,
-  setTrainIdsToProject,
-}: useLazyLoadTrainsProp) => {
+  setTimetableItemIdsToProject,
+}: useLazyLoadTrainsParams) => {
   const dispatch = useAppDispatch();
 
-  const [projectedTrainsById, setProjectedTrainsById] = useState<Map<TrainId, TrainSpaceTimeData>>(
-    new Map()
+  const [projectedTrainsById, setProjectedTrainsById] = useState<
+    Map<TimetableItemId, TrainSpaceTimeData>
+  >(new Map());
+
+  const allTrainsProjected = useMemo(
+    () => timetableItemIdsToProject.size === 0,
+    [timetableItemIdsToProject]
   );
 
-  const allTrainsProjected = useMemo(() => trainIdsToProject.size === 0, [trainIdsToProject]);
-
-  const requestedProjectedTrainIds = useRef<Set<TrainId>>(new Set());
+  const requestedProjectedTrainIds = useRef<Set<TimetableItemId>>(new Set());
   const projectionSeqNum = useRef(0);
 
   const [postTrainScheduleProjectPath] =
     osrdEditoastApi.endpoints.postTrainScheduleProjectPath.useLazyQuery();
 
-  const trainSchedulesById = useMemo(() => mapBy(trainSchedules, 'id'), [trainSchedules]);
+  const trainSchedulesById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
 
   // gradually project the trains on the selected path
   useEffect(() => {
     const projectNextPackage = async (
       _path: PathfindingResultSuccess,
-      packageToProject: TrainId[]
+      packageToProject: TimetableItemId[]
     ) => {
       packageToProject.forEach((trainId) => requestedProjectedTrainIds.current.add(trainId));
 
@@ -110,7 +113,7 @@ const useLazyProjectTrains = ({
     const projectTrains = async (
       seqNum: number,
       _path: PathfindingResultSuccess,
-      _trainToProjectIds: Set<TrainId>
+      _trainToProjectIds: Set<TimetableItemId>
     ) => {
       const shouldProjectIds = Array.from(_trainToProjectIds).filter(
         (trainId) => !requestedProjectedTrainIds.current.has(trainId)
@@ -132,24 +135,24 @@ const useLazyProjectTrains = ({
 
     if (infraId && path) {
       projectionSeqNum.current += 1;
-      projectTrains(projectionSeqNum.current, path, trainIdsToProject);
+      projectTrains(projectionSeqNum.current, path, timetableItemIdsToProject);
     }
-  }, [trainIdsToProject]);
+  }, [timetableItemIdsToProject]);
 
   useEffect(() => {
     // reset the state when all the trains have been projected
     if (
       !moreTrainsToCome &&
-      trainIdsToProject.size > 0 &&
-      requestedProjectedTrainIds.current.size === trainIdsToProject.size
+      timetableItemIdsToProject.size > 0 &&
+      requestedProjectedTrainIds.current.size === timetableItemIdsToProject.size
     ) {
-      setTrainIdsToProject(new Set());
+      setTimetableItemIdsToProject(new Set());
       requestedProjectedTrainIds.current = new Set();
     }
   }, [moreTrainsToCome, projectedTrainsById]);
 
   useEffect(() => {
-    if (!moreTrainsToCome && trainSchedules && path) {
+    if (!moreTrainsToCome && timetableItems && path) {
       // project all the trains again
       projectionSeqNum.current += 1;
       requestedProjectedTrainIds.current = new Set();

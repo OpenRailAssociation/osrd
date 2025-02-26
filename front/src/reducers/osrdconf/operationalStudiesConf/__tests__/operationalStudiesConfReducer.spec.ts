@@ -35,10 +35,10 @@ describe('simulationConfReducer', () => {
   });
 
   it('selectTrainToEdit', () => {
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/11054
     const trainSchedule: TrainScheduleWithDetails = {
       id: 'trainschedule-1' as TrainScheduleId,
-      trainName: 'train1',
+      name: 'train1',
       constraint_distribution: 'MARECO',
       rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
       path: [

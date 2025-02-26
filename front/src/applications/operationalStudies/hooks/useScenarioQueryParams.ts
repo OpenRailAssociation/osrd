@@ -60,7 +60,7 @@ const useScenarioQueryParams = () => {
   useEffect(() => {
     const selectedTrainFromUrl = getParamFromUrlOrStorage('selected_train');
     const projectionFromUrl = getParamFromUrlOrStorage('projection');
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
 
     if (selectedTrainFromUrl && isTrainSchedule(selectedTrainFromUrl)) {
       dispatch(updateSelectedTrainId(selectedTrainFromUrl));
