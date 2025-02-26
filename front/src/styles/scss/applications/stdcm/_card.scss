@@ -79,7 +79,7 @@
       display: flex;
 
       .ci-input {
-        padding-inline: 0 10px;
+        padding-inline: 0 16px;
       }
     }
 
@@ -101,13 +101,13 @@
 
     .date-picker {
       .feed-back {
-        padding-inline: 16px 10px;
+        padding-inline: 16px;
       }
     }
 
     .time-picker {
       .feed-back {
-        padding-right: 10px;
+        padding-right: 16px;
         width: 120px;
       }
     }
@@ -129,17 +129,16 @@
     // cards styles
     &.consist {
       padding-left: 24px;
-      padding-bottom: 15px;
 
       .towed-rolling-stock {
-        margin-top: 11px;
+        margin-top: 14px;
       }
 
       .stdcm-consist__properties {
         display: grid;
-        grid-template-columns: 119px 127px;
+        grid-template-columns: 113px 121px;
         justify-content: space-between;
-        padding-block: 8px;
+        margin-top: 14px;
 
         .osrd-config-item {
           padding-right: 3px;
@@ -166,13 +165,13 @@
       padding-bottom: 24px;
 
       .arrival-type-select {
-        padding: 34px 0 0 16px;
+        padding: 40px 0 0 16px;
       }
 
       .schedule {
         display: flex;
         flex-direction: row;
-        padding-top: 16px;
+        padding-top: 14px;
       }
     }
 
@@ -185,7 +184,7 @@
       }
 
       .stop-type-selector {
-        padding: 13px 16px;
+        padding: 14px 16px;
       }
 
       .stop-time {
