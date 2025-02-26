@@ -76,7 +76,14 @@ const useSpeedSpaceChart = (
     };
 
     getPathProperties();
-  }, [pathProperties, infraId, rollingStock]);
+  }, [
+    infraId,
+    trainScheduleResult,
+    rollingStock,
+    pathfindingResult,
+    simulation?.status,
+    pathProperties,
+  ]);
 
   useEffect(() => {
     if (trainScheduleResult && rollingStock && pathfindingResult && formattedPathProperties) {
