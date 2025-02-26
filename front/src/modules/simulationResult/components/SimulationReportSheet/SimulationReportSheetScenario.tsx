@@ -1,24 +1,14 @@
 import { Page, Document, View, Image, Text } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
-import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
-import styles from 'applications/stdcm/components/SimulationReportSheet/SimulationReportStyleSheet';
-import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+import type { SimulationReportSheetScenarioProps } from 'modules/simulationResult/types';
 import { formatDateToString } from 'utils/date';
 
 import Consist from './Consist';
 import Header from './Header';
 import Route from './Route';
 import Simulation from './Simulation';
-import type { SimulationSheetData } from '../SimulationResultExport/types';
-
-type SimulationReportSheetScenarioProps = {
-  path: PathfindingResultSuccess;
-  scenarioData: { name: string; infraName: string };
-  trainData: SimulationSheetData;
-  mapCanvas?: string;
-  operationalPointsList: OperationalPointWithTimeAndSpeed[];
-};
+import styles from './style/SimulationReportStyleSheet';
 
 const SimulationReportSheetScenario = ({
   path,

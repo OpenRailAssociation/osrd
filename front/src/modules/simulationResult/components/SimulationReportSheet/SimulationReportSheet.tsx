@@ -8,8 +8,8 @@ import Header from './Header';
 import RcInfo from './RcInfo';
 import Route from './Route';
 import Simulation from './Simulation';
-import styles from './SimulationReportStyleSheet';
 import type { SimulationReportSheetProps } from '../../types';
+import styles from './style/SimulationReportStyleSheet';
 
 const SimulationReportSheet = ({
   stdcmLinkedTrains,

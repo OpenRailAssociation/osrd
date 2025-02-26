@@ -7,10 +7,17 @@ import type {
 
 import type {
   OperationalPoint,
+  OperationalPointWithTimeAndSpeed,
   PathPropertiesFormatted,
   SimulationResponseSuccess,
   TrainSpaceTimeData,
 } from 'applications/operationalStudies/types';
+import type {
+  LinkedTrains,
+  StdcmResultsOperationalPoint,
+  StdcmSimulationInputs,
+  StdcmSuccessResponse,
+} from 'applications/stdcm/types';
 import type {
   PathProperties,
   PathfindingResultSuccess,
@@ -19,6 +26,8 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
+
+import type { SimulationSheetData } from './components/SimulationResultExport/types';
 
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
 
@@ -69,3 +78,21 @@ export type AspectLabel =
   | '160A'
   | '080A'
   | '000';
+
+export type SimulationReportSheetScenarioProps = {
+  path: PathfindingResultSuccess;
+  scenarioData: { name: string; infraName: string };
+  trainData: SimulationSheetData;
+  mapCanvas?: string;
+  operationalPointsList: OperationalPointWithTimeAndSpeed[];
+};
+
+export type SimulationReportSheetProps = {
+  stdcmLinkedTrains: LinkedTrains;
+  stdcmData: StdcmSuccessResponse;
+  consist: StdcmSimulationInputs['consist'];
+  simulationReportSheetNumber: string;
+  operationalPointsList: StdcmResultsOperationalPoint[];
+  userName?: string;
+  simulationSheetLogo?: string;
+};

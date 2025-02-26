@@ -51,16 +51,6 @@ export type StdcmPathProperties = {
   zones: NonNullable<PathProperties['zones']>;
 };
 
-export type SimulationReportSheetProps = {
-  stdcmLinkedTrains: LinkedTrains;
-  stdcmData: StdcmSuccessResponse;
-  consist: StdcmSimulationInputs['consist'];
-  simulationReportSheetNumber: string;
-  operationalPointsList: StdcmResultsOperationalPoint[];
-  userName?: string;
-  simulationSheetLogo?: string;
-};
-
 export type StdcmResultsOperationalPoint = {
   opId: string;
   positionOnPath: number;

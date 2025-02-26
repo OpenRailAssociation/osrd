@@ -5,15 +5,15 @@ import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import i18n from 'i18n';
 import { formatDay } from 'utils/date';
 
-import styles from './SimulationReportStyleSheet';
+import styles from './style/SimulationReportStyleSheet';
 
 interface RcInfoProps {
-  stdcmData: StdcmSuccessResponse;
+  stdcmData?: StdcmSuccessResponse;
 }
 
 const RcInfo = ({ stdcmData }: RcInfoProps) => {
   const { t } = useTranslation(['stdcm-simulation-report-sheet', 'stdcm']);
-  const { departure_time: departureTime } = stdcmData;
+  const departureTime = stdcmData!.departure_time;
 
   return (
     <View style={styles.rcInfo.rcInfo}>

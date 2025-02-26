@@ -3,10 +3,9 @@ import { Text, View } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
-import { secToMin } from 'utils/timeManipulation';
 
 import { getArrivalTimes, getSecondaryCode, getStopType } from './helpers';
-import styles from './SimulationReportStyleSheet';
+import styles from './style/SimulationReportStyleSheet';
 
 interface RouteTableProps {
   stdcmData: StdcmSuccessResponse;
@@ -72,10 +71,12 @@ const RouteTable = ({ stdcmData }: RouteTableProps) => {
                   {isLastStep && !step.isVia && step.arrivalType === 'preciseTime' && (
                     <View style={styles.consistAndRoute.tolerancesWidth}>
                       <Text style={styles.consistAndRoute.tolerancesText}>
-                        {step.tolerances?.before ? `+${secToMin(step.tolerances?.before)}` : ''}
+                        {step.tolerances?.after ? `+${step.tolerances.after.total('minute')}` : ''}
                       </Text>
                       <Text style={styles.consistAndRoute.tolerancesText}>
-                        {step.tolerances?.after ? `-${secToMin(step.tolerances?.after)}` : ''}
+                        {step.tolerances?.before
+                          ? `-${step.tolerances.before.total('minute')}`
+                          : ''}
                       </Text>
                     </View>
                   )}
@@ -103,10 +104,14 @@ const RouteTable = ({ stdcmData }: RouteTableProps) => {
                     step.arrivalType === 'preciseTime' && (
                       <View style={styles.consistAndRoute.tolerancesWidth}>
                         <Text style={styles.consistAndRoute.tolerancesText}>
-                          {`+${secToMin(step.tolerances.before)}`}
+                          {step.tolerances?.after
+                            ? `+${step.tolerances.after.total('minute')}`
+                            : ''}
                         </Text>
                         <Text style={styles.consistAndRoute.tolerancesText}>
-                          {`-${secToMin(step.tolerances.after)}`}
+                          {step.tolerances?.before
+                            ? `-${step.tolerances.before.total('minute')}`
+                            : ''}
                         </Text>
                       </View>
                     )}

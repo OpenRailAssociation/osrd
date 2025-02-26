@@ -18,7 +18,7 @@ import type {
 
 import exportTrainCSV from './exportTrainCSV';
 import type { SimulationSheetData } from './types';
-import SimulationReportSheetScenario from '../SimulationReportSheetScenario/SimulationReportSheetScenario';
+import SimulationReportSheetScenario from '../SimulationReportSheet/SimulationReportSheetScenario';
 
 type SimulationResultExportProps = {
   path: PathfindingResultSuccess;

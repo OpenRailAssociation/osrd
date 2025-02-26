@@ -13,6 +13,7 @@ import {
 } from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
+import SimulationReportSheet from 'modules/simulationResult/components/SimulationReportSheet';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
@@ -23,7 +24,6 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 import StdcmDebugResults from './StdcmDebugResults';
 import StcdmResultsTable from './StdcmResultsTable';
 import StdcmSimulationNavigator from './StdcmSimulationNavigator';
-import SimulationReportSheet from '../SimulationReportSheet';
 
 type StcdmResultsProps = {
   isCalculationFailed: boolean;
