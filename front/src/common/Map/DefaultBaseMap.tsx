@@ -109,7 +109,7 @@ const DefaultBaseMap = ({
         showOSM
       >
         <ItineraryLayer
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
           geometry={geometry}
           isFeasible={isFeasible}
           showStdcmAssets

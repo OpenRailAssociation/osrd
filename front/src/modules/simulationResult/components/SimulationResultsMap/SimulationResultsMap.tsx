@@ -201,10 +201,7 @@ const SimulationResultMap = ({
         terrain3DExaggeration={terrain3DExaggeration}
       >
         {geojsonPath && (
-          <Itinerary
-            geojsonPath={geojsonPath}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
-          />
+          <Itinerary geojsonPath={geojsonPath} layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]} />
         )}
 
         <MapMarkers markers={mapMarkers} />

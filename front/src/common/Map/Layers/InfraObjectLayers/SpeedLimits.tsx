@@ -13,7 +13,8 @@ import type { Theme, OmitLayer } from 'types';
 interface SpeedLimitsProps {
   colors: Theme;
   layerOrder: number;
-  infraID: number | undefined;
+  punctualLayerOrder: number;
+  infraID?: number;
 }
 
 export function getSpeedSectionsTag({ speedlimittag }: MapState['layersSettings']): string {
@@ -167,7 +168,12 @@ export function getSpeedSectionsTextLayerProps({
   return res;
 }
 
-export default function SpeedLimits({ colors, layerOrder, infraID }: SpeedLimitsProps) {
+export default function SpeedLimits({
+  colors,
+  layerOrder,
+  punctualLayerOrder,
+  infraID,
+}: SpeedLimitsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
   const filter = getFilterBySpeedSectionsTag(layersSettings);
@@ -211,7 +217,7 @@ export default function SpeedLimits({ colors, layerOrder, infraID }: SpeedLimits
       <OrderedLayer
         {...pointProps}
         id="chartis/osrd_speed_limit_points/geo"
-        layerOrder={layerOrder}
+        layerOrder={punctualLayerOrder}
       />
       <OrderedLayer
         {...textProps}

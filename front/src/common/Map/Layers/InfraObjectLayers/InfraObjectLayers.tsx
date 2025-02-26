@@ -28,7 +28,7 @@ const InfraObjectLayers = ({
   <>
     <TracksGeographic
       colors={colors[mapStyle]}
-      layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
+      layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS.GROUP]}
       infraID={infraId}
     />
 
@@ -78,12 +78,14 @@ const InfraObjectLayers = ({
     <SpeedLimits
       colors={colors[mapStyle]}
       layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+      punctualLayerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS_PUNCTUAL.GROUP]}
       infraID={infraId}
     />
 
     <SNCF_PSL
       colors={colors[mapStyle]}
       layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+      punctualLayerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS_PUNCTUAL.GROUP]}
       infraID={infraId}
     />
 

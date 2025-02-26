@@ -1,7 +1,9 @@
 import { range } from 'lodash';
 import { Layer } from 'react-map-gl/maplibre';
 
-export const VIRTUAL_LAYERS = 8;
+import { LAYER_GROUPS_ORDER } from 'config/layerOrder';
+
+export const VIRTUAL_LAYERS = Object.getOwnPropertySymbols(LAYER_GROUPS_ORDER).length;
 
 export default function VirtualLayers() {
   const layers = range(0, VIRTUAL_LAYERS)

@@ -20,8 +20,9 @@ import SNCF_PSL_Signs from './PSLSigns';
 
 interface SNCF_PSLProps {
   colors: Theme;
-  layerOrder?: number;
-  infraID?: number | undefined;
+  layerOrder: number;
+  punctualLayerOrder: number;
+  infraID?: number;
 }
 
 export function getPSLSpeedValueLayerProps({
@@ -153,7 +154,7 @@ export function getPSLSpeedLineLayerProps({
   return res;
 }
 
-const SNCF_PSL = ({ colors, layerOrder, infraID }: SNCF_PSLProps) => {
+const SNCF_PSL = ({ colors, layerOrder, punctualLayerOrder, infraID }: SNCF_PSLProps) => {
   const { t } = useTranslation('map-settings');
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
@@ -211,7 +212,7 @@ const SNCF_PSL = ({ colors, layerOrder, infraID }: SNCF_PSLProps) => {
           layerOrder={layerOrder}
         />
       </Source>
-      <SNCF_PSL_Signs colors={colors} layerOrder={layerOrder} filter={speedSectionFilter} />
+      <SNCF_PSL_Signs colors={colors} layerOrder={punctualLayerOrder} filter={speedSectionFilter} />
     </>
   );
 };

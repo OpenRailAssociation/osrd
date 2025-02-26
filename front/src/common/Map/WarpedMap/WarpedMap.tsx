@@ -173,7 +173,7 @@ const WarpedMap = ({
       {itinerary && (
         <RenderItinerary
           geojsonPath={itinerary}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
         />
       )}
       {itinerary &&

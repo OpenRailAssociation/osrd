@@ -220,7 +220,7 @@ const Map = ({
         )}
 
         <ItineraryLayer
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
           geometry={pathGeometry}
           hideItineraryLine={hideItinerary}
           showStdcmAssets={showStdcmAssets}
