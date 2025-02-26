@@ -12,6 +12,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHO
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import fr.sncf.osrd.stdcm.graph.StopTimeData
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.TrainStop
@@ -29,6 +30,7 @@ data class InfraExplorerWithEnvelopeImpl(
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
     private val rollingStock: PhysicsRollingStock,
     private var stops: MutableList<TrainStop> = mutableListOf(),
+    private var stopTimeData: List<StopTimeData>,
 
     // Soft references tell the JVM that the values may be cleared when running out of memory
     private var spacingRequirementsCache: SoftReference<List<SpacingRequirement>>? = null,
@@ -117,7 +119,7 @@ data class InfraExplorerWithEnvelopeImpl(
         return stops
     }
 
-    override fun updateStopDurations(updatedTimeData: TimeData): InfraExplorerWithEnvelope {
+    override fun updateTimeData(updatedTimeData: TimeData): InfraExplorerWithEnvelope {
         for ((i, stop) in stops.withIndex()) {
             assert(i < updatedTimeData.stopTimeData.size)
             val updatedStop = updatedTimeData.stopTimeData[i]

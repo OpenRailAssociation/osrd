@@ -368,7 +368,7 @@ private fun getUpdatedExplorer(
         .withReplacedEnvelope(
             envelope,
         )
-        .updateStopDurations(updatedTimeData)
+        .updateTimeData(updatedTimeData)
 }
 
 /**

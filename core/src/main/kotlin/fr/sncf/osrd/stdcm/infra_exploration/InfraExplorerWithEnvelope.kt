@@ -12,7 +12,6 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.stdcm.graph.TimeData
-import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -49,14 +48,8 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
      */
     fun withReplacedEnvelope(envelope: Envelope): InfraExplorerWithEnvelope
 
-    /** Add a stop to the end of the last simulated envelope */
-    fun addStop(stopDuration: Double)
-
-    /** Just for debugging purposes. */
-    fun getStops(): List<TrainStop>
-
     /** Update the stop durations, following the updated time data */
-    fun updateStopDurations(updatedTimeData: TimeData): InfraExplorerWithEnvelope
+    fun updateTimeData(updatedTimeData: TimeData): InfraExplorerWithEnvelope
 
     /**
      * Calls `InterpolateDepartureFromClamp` on the underlying envelope, taking the travelled path
@@ -88,14 +81,14 @@ fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
     location: PathfindingEdgeLocationId<Block>,
     rollingStock: PhysicsRollingStock,
-    stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(setOf()),
+    stopProvider: StopProvider = emptyStopProvider(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorer(
             fullInfra.rawInfra,
             fullInfra.blockInfra,
             location,
-            stops = stops,
+            stopProvider = stopProvider,
             constraints,
         )
         .map { explorer ->

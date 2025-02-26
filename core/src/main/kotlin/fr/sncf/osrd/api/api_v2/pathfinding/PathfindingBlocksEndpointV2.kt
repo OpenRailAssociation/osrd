@@ -16,6 +16,7 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.graph.extendLookaheadUntil
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.stopProviderFromArrival
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
@@ -228,14 +229,13 @@ private fun getStartLocations(
 ): Collection<EdgeLocation<PathfindingEdge, Block>> {
     val res = mutableListOf<EdgeLocation<PathfindingEdge, Block>>()
     val firstStep = waypoints[0]
-    val stops = listOf(waypoints.last())
     for (location in firstStep) {
         val infraExplorers =
             initInfraExplorer(
                 rawInfra,
                 blockInfra,
                 location,
-                stops = stops,
+                stopProvider = stopProviderFromArrival(waypoints.last()),
                 constraints = constraints
             )
         val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 1) }

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm
 
+import com.google.common.collect.HashMultimap
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.DriverBehaviour
 import fr.sncf.osrd.api.FullInfra
@@ -18,7 +19,9 @@ import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.standalone_sim.StandaloneSim
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations
+import fr.sncf.osrd.stdcm.infra_exploration.ExplorerStopInput
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
+import fr.sncf.osrd.stdcm.infra_exploration.StopProvider
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.RollingStock
@@ -201,4 +204,21 @@ fun infraExplorerFromBlock(
             PathfindingEdgeLocationId(block, Offset(0.meters))
         )
         .elementAt(0)
+}
+
+fun stopProviderFromLocations(vararg locations: PathfindingEdgeLocationId<Block>): StopProvider {
+    val map = HashMultimap.create<BlockId, ExplorerStopInput>()
+    for (location in locations) {
+        map.put(
+            location.edge,
+            ExplorerStopInput(
+                location.edge,
+                location.offset,
+                SHORT_SLIP_STOP,
+                optional = false,
+                isLastArrival = true,
+            )
+        )
+    }
+    return StopProvider { block: BlockId -> map.get(block) }
 }

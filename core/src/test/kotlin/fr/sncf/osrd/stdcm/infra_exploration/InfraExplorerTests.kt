@@ -5,6 +5,7 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
+import fr.sncf.osrd.stdcm.stopProviderFromLocations
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DummyInfra
@@ -33,7 +34,9 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 PathfindingEdgeLocationId(block, Offset(0.meters)),
-                listOf(setOf(PathfindingEdgeLocationId(block, infra.getBlockLength(block))))
+                stopProviderFromLocations(
+                    PathfindingEdgeLocationId(block, infra.getBlockLength(block))
+                )
             )
         assertEquals(1, explorers.size)
         val explorer = explorers.first()
@@ -61,13 +64,8 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
-                listOf(
-                    setOf(
-                        PathfindingEdgeLocationId(
-                            blocks.last(),
-                            infra.getBlockLength(blocks.last())
-                        )
-                    )
+                stopProviderFromLocations(
+                    PathfindingEdgeLocationId(blocks.last(), infra.getBlockLength(blocks.last()))
                 )
             )
         assertEquals(1, firstExplorers.size)

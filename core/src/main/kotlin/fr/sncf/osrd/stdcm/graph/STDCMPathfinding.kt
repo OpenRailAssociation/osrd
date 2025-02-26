@@ -6,7 +6,6 @@ import fr.sncf.osrd.api.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -16,7 +15,9 @@ import fr.sncf.osrd.stdcm.ProgressLogger
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.infra_exploration.StopProvider
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.infra_exploration.stopProviderFromSteps
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
@@ -118,9 +119,7 @@ class STDCMPathfinding(
             ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
-        val stops = steps.filter { it.stop }.map { it.locations }
-        assert(stops.isNotEmpty())
-        starts = getStartNodes(stops, listOf(constraints))
+        starts = getStartNodes(stopProviderFromSteps(steps), listOf(constraints))
         val path = findPathImpl()
         graph.stdcmSimulations.logWarnings()
         if (path == null) {
@@ -250,7 +249,7 @@ class STDCMPathfinding(
 
     /** Converts start locations into starting nodes. */
     private fun getStartNodes(
-        stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(),
+        stopProvider: StopProvider,
         constraints: List<PathfindingConstraint<Block>>
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
@@ -262,7 +261,7 @@ class STDCMPathfinding(
                     fullInfra,
                     location,
                     rollingStock,
-                    stops,
+                    stopProvider,
                     constraints,
                 )
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }
