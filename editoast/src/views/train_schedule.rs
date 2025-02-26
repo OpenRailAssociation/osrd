@@ -1,5 +1,3 @@
-mod projection;
-
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -15,10 +13,13 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::Extension;
 use editoast_authz::BuiltinRole;
+use editoast_common::units;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::train_schedule::TrainScheduleBase;
+use futures::join;
+use itertools::izip;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
@@ -29,24 +30,19 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
-use crate::core::pathfinding::PathfindingInputError;
-use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::CompleteReportTrain;
 use crate::core::simulation::PhysicsConsist;
 use crate::core::simulation::PhysicsConsistParameters;
 use crate::core::simulation::ReportTrain;
-use crate::core::simulation::SignalCriticalPosition;
 use crate::core::simulation::SimulationMargins;
 use crate::core::simulation::SimulationPath;
 use crate::core::simulation::SimulationPowerRestrictionItem;
 use crate::core::simulation::SimulationRequest;
 use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::SimulationScheduleItem;
-use crate::core::simulation::ZoneUpdate;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
-use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::infra::Infra;
 use crate::models::prelude::*;
@@ -56,19 +52,31 @@ use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding_from_train_batch;
+use crate::views::path::projection::PathProjection;
 use crate::views::path::PathfindingError;
+use crate::views::projection::compute_batch_signal_updates;
+use crate::views::projection::compute_batch_space_time_curves;
+use crate::views::projection::train_projection_input_hash;
+use crate::views::projection::CachedProjectPathTrainResult;
+use crate::views::projection::ProjectPathInput;
+use crate::views::projection::ProjectPathTrainResult;
+use crate::views::projection::TrainSimulationDetails;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::InfraIdQueryParam;
 use crate::views::ListId;
 use crate::AppState;
 use crate::RollingStockModel;
 use crate::ValkeyClient;
 
+use super::projection::ProjectPathForm;
+use super::SimulationSummaryResult;
+
 crate::routes! {
     "/train_schedule" => {
         delete,
+        "/project_path" => project_path,
         "/simulation_summary" => simulation_summary,
-        &projection,
         "/{id}" => {
             get,
             put,
@@ -82,10 +90,7 @@ editoast_common::schemas! {
     TrainScheduleBase,
     TrainScheduleForm,
     TrainScheduleResult,
-    SimulationSummaryResult,
-    InfraIdQueryParam,
     ElectricalProfileSetIdQueryParam,
-    projection::schemas(),
 }
 
 pub const TRAIN_SIZE_BATCH: usize = 100;
@@ -266,11 +271,6 @@ async fn put(
     Ok(Json(ts_result.into()))
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-#[into_params(parameter_in = Query)]
-pub struct InfraIdQueryParam {
-    infra_id: i64,
-}
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub struct ElectricalProfileSetIdQueryParam {
@@ -636,37 +636,6 @@ struct SimulationBatchForm {
     ids: HashSet<i64>,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
-#[serde(tag = "status", rename_all = "snake_case")]
-enum SimulationSummaryResult {
-    /// Minimal information on a simulation's result
-    Success {
-        /// Length of a path in mm
-        length: u64,
-        /// Travel time in ms
-        time: u64,
-        /// Total energy consumption of a train in kWh
-        energy_consumption: f64,
-        /// Final simulation time for each train schedule path item.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_final: Vec<u64>,
-        /// Provisional simulation time for each train schedule path item.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_provisional: Vec<u64>,
-        /// Base simulation time for each train schedule path item.
-        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        path_item_times_base: Vec<u64>,
-    },
-    /// Pathfinding not found
-    PathfindingNotFound(PathfindingNotFound),
-    /// An error has occurred during pathfinding
-    PathfindingFailure { core_error: InternalError },
-    /// An error has occurred during computing
-    SimulationFailed { error_type: String },
-    /// InputError
-    PathfindingInputError(PathfindingInputError),
-}
-
 /// Associate each train id with its simulation summary response
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 #[utoipa::path(
@@ -816,6 +785,221 @@ async fn get_path(
     Ok(Json(
         pathfinding_from_train(conn, &mut valkey_conn, core, &infra, train_schedule).await?,
     ))
+}
+
+/// Projects the space time curves and paths of a number of train schedules onto a given path
+///
+/// - Returns 404 if the infra or any of the train schedules are not found
+/// - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
+///
+/// Train schedules that are invalid (pathfinding or simulation failed) are not included in the result
+#[utoipa::path(
+    post, path = "",
+    tag = "train_schedule",
+    request_body = ProjectPathForm,
+    responses(
+        (status = 200, description = "Project Path Output", body = HashMap<i64, ProjectPathTrainResult>),
+    ),
+)]
+async fn project_path(
+    State(AppState {
+        db_pool,
+        valkey: valkey_client,
+        core_client,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(ProjectPathForm {
+        infra_id,
+        ids: train_ids,
+        path,
+        electrical_profile_set_id,
+    }): Json<ProjectPathForm>,
+) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
+    let authorized = auth
+        .check_roles(
+            [
+                BuiltinRole::InfraRead,
+                BuiltinRole::TimetableRead,
+                BuiltinRole::RollingStockCollectionRead,
+            ]
+            .into(),
+        )
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let ProjectPathInput {
+        track_section_ranges: path_track_ranges,
+        routes: path_routes,
+        blocks: path_blocks,
+    } = path;
+    let path_projection = PathProjection::new(&path_track_ranges);
+    let mut valkey_conn = valkey_client.get_connection().await?;
+
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+        TrainScheduleError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    let trains: Vec<TrainSchedule> =
+        TrainSchedule::retrieve_batch_or_fail(&mut db_pool.get().await?, train_ids, |missing| {
+            TrainScheduleError::BatchTrainScheduleNotFound {
+                number: missing.len(),
+            }
+        })
+        .await?;
+
+    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
+        &mut db_pool.get().await?,
+        trains
+            .iter()
+            .map::<String, _>(|t| t.rolling_stock_name.clone()),
+    )
+    .await?;
+
+    let simulations = train_simulation_batch(
+        &mut db_pool.get().await?,
+        valkey_client.clone(),
+        core_client.clone(),
+        &trains,
+        &infra,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    // 1. Retrieve cached projection
+    let mut trains_hash_values = vec![];
+    let mut trains_details = vec![];
+
+    for (train, (sim, pathfinding_result)) in izip!(&trains, simulations) {
+        let track_ranges = match pathfinding_result {
+            PathfindingResult::Success(PathfindingResultSuccess {
+                track_section_ranges,
+                ..
+            }) => track_section_ranges,
+            _ => continue,
+        };
+
+        let CompleteReportTrain {
+            report_train,
+            signal_critical_positions,
+            zone_updates,
+            ..
+        } = match sim {
+            SimulationResponse::Success { final_output, .. } => final_output,
+            _ => continue,
+        };
+        let ReportTrain {
+            times, positions, ..
+        } = report_train;
+
+        let train_details = TrainSimulationDetails {
+            train_id: train.id,
+            positions,
+            times,
+            signal_critical_positions,
+            zone_updates,
+            train_path: track_ranges,
+        };
+
+        let hash = train_projection_input_hash(
+            infra.id,
+            &infra.version,
+            &train_details,
+            &path_track_ranges,
+            &path_routes,
+            &path_blocks,
+        );
+        trains_hash_values.push(hash);
+        trains_details.push(train_details);
+    }
+    let cached_projections: Vec<Option<CachedProjectPathTrainResult>> =
+        valkey_conn.json_get_bulk(&trains_hash_values).await?;
+
+    let mut hit_cache = vec![];
+    let mut miss_cache = vec![];
+    for (train_details, projection) in izip!(&trains_details, cached_projections) {
+        if let Some(cached) = projection {
+            hit_cache.push((cached, train_details.train_id));
+        } else {
+            miss_cache.push(train_details.clone());
+        }
+    }
+
+    info!(
+        nb_hit = hit_cache.len(),
+        nb_miss = miss_cache.len(),
+        "Hit cache",
+    );
+
+    // 2 Compute space time curves and signal updates for all miss cache
+    let (space_time_curves, signal_updates) = join!(
+        compute_batch_space_time_curves(&miss_cache, &path_projection),
+        compute_batch_signal_updates(
+            core_client.clone(),
+            &infra,
+            &path_track_ranges,
+            &path_routes,
+            &path_blocks,
+            &miss_cache
+        )
+    );
+    let signal_updates = signal_updates?;
+
+    // 3. Store the projection in the cache (using pipeline)
+    let trains_hash_values: HashMap<_, _> = trains_details
+        .iter()
+        .map(|t| t.train_id)
+        .zip(trains_hash_values)
+        .collect();
+    let mut new_items = vec![];
+    for train_id in miss_cache.iter().map(|t| t.train_id) {
+        let hash = &trains_hash_values[&train_id];
+        let cached_value: CachedProjectPathTrainResult = CachedProjectPathTrainResult {
+            space_time_curves: space_time_curves
+                .get(&train_id)
+                .expect("Space time curves not available for train")
+                .clone(),
+            signal_updates: signal_updates
+                .get(&train_id)
+                .expect("Signal update not available for train")
+                .clone(),
+        };
+        hit_cache.push((cached_value.clone(), train_id));
+        new_items.push((hash, cached_value));
+    }
+    valkey_conn.json_set_bulk(&new_items).await?;
+
+    let train_map: HashMap<i64, TrainSchedule> = trains.into_iter().map(|ts| (ts.id, ts)).collect();
+
+    // 4.1 Fetch rolling stock length
+    let rolling_stock_length: HashMap<_, _> = rolling_stocks
+        .into_iter()
+        .map(|rs| (rs.name, rs.length))
+        .collect();
+
+    // 4.2 Build the projection response
+    let mut project_path_result = HashMap::new();
+    for (cached, train_id) in hit_cache {
+        let train = train_map.get(&train_id).expect("Train not found");
+        let length = rolling_stock_length
+            .get(&train.rolling_stock_name)
+            .expect("Rolling stock length not found");
+
+        project_path_result.insert(
+            train_id,
+            ProjectPathTrainResult {
+                departure_time: train.start_time,
+                rolling_stock_length: units::millimeter::from(*length) as u64,
+                cached,
+            },
+        );
+    }
+
+    Ok(Json(project_path_result))
 }
 
 #[cfg(test)]

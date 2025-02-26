@@ -1539,6 +1539,173 @@ paths:
       responses:
         '204':
           description: All paced_trains have been deleted
+  /paced_train/project_path:
+    post:
+      tags:
+      - paced_train
+      summary: Projects the space time curves and paths of a number of paced trains onto a given path
+      description: |-
+        - Returns 404 if the infra or any of the paced trains are not found
+        - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
+
+        Paced trains that are invalid (pathfinding or simulation failed) are not included in the result
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectPathForm'
+        required: true
+      responses:
+        '200':
+          description: Project Path Output
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ProjectPathTrainResult'
+  /paced_train/simulation_summary:
+    post:
+      tags:
+      - paced_train
+      summary: Associate each paced train id with its simulation summaries response
+      description: 'If the simulation fails, it associates the reason: pathfinding failed or running time failed'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - infra_id
+              - ids
+              properties:
+                electrical_profile_set_id:
+                  type: integer
+                  format: int64
+                  nullable: true
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+                infra_id:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        '200':
+          description: Associate each paced train id with its simulation summaries
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/SimulationSummaryResult'
+  /paced_train/{id}:
+    get:
+      tags:
+      - timetable
+      - paced_train
+      summary: Get a paced train by its ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The requested paced train
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PacedTrainResult'
+    put:
+      tags:
+      - timetable
+      - paced_train
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PacedTrainForm'
+        required: true
+      responses:
+        '200':
+          description: Paced train have been updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PacedTrainResult'
+  /paced_train/{id}/path:
+    get:
+      tags:
+      - paced_train
+      - pathfinding
+      summary: Get a path from a paced train given an infrastructure id and a paced train id
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathfindingResult'
+        '404':
+          description: Infrastructure or Train schedule not found
+  /paced_train/{id}/simulation:
+    get:
+      tags:
+      - train_schedule
+      summary: Retrieve the space, speed and time curve of a given train
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: electrical_profile_set_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      responses:
+        '200':
+          description: Simulation Output
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationResponse'
   /projects:
     get:
       tags:
@@ -2763,6 +2930,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TimetableResult'
+        '404':
+          description: Timetable not found
+  /timetable/paced_trains:
+    get:
+      tags:
+      - timetable
+      summary: Return a specific timetable with its associated paced trains
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 25
+          nullable: true
+          minimum: 1
+      responses:
+        '200':
+          description: Timetable with paced train ids
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/PacedTrainResult'
         '404':
           description: Timetable not found
   /timetable/{id}:
@@ -8419,6 +8634,16 @@ components:
                 type: string
                 description: Time between two occurrences, an ISO 8601 format is expected
                 example: PT15M
+    PacedTrainForm:
+      allOf:
+      - $ref: '#/components/schemas/PacedTrainBase'
+      - type: object
+        properties:
+          timetable_id:
+            type: integer
+            format: int64
+            description: Timetable attached to the train schedule
+            nullable: true
     PacedTrainResult:
       allOf:
       - $ref: '#/components/schemas/PacedTrainBase'

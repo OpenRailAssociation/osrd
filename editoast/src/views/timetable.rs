@@ -54,6 +54,7 @@ use super::paced_train::PacedTrainResult;
 crate::routes! {
     "/timetable" => {
         post,
+        "/paced_trains" => get_paced_trains,
         "/{id}" => {
             delete,
             "/train_schedules" => get,
@@ -315,6 +316,34 @@ async fn paced_train(
     // Create a batch of paced trains
     let paced_trains: Vec<_> = PacedTrain::create_batch(conn, changesets).await?;
     Ok(Json(paced_trains.into_iter().map_into().collect()))
+}
+
+#[derive(Serialize, ToSchema, Debug)]
+#[cfg_attr(test, derive(Deserialize))]
+struct ListPacedTrainsResponse {
+    #[schema(value_type = Vec<PacedTrainResult>)]
+    results: Vec<PacedTrainResult>,
+    #[serde(flatten)]
+    stats: PaginationStats,
+}
+
+/// Return a specific timetable with its associated paced trains
+#[utoipa::path(
+    get, path = "",
+    tag = "timetable",
+    params(TimetableIdParam, PaginationQueryParams),
+    responses(
+        (status = 200, description = "Timetable with paced train ids", body = inline(ListPacedTrainsResponse)),
+        (status = 404, description = "Timetable not found"),
+    ),
+)]
+async fn get_paced_trains(
+    State(_db_pool): State<DbConnectionPoolV2>,
+    Extension(_auth): AuthenticationExt,
+    Path(TimetableIdParam { id: _timetable_id }): Path<TimetableIdParam>,
+    Query(_pagination_params): Query<PaginationQueryParams>,
+) -> Result<Json<ListPacedTrainsResponse>> {
+    todo!();
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
