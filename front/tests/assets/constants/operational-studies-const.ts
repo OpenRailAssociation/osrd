@@ -1,22 +1,28 @@
-import type { PacedTrainSettings } from '../../utils/types';
+import type { PacedTrainBase } from 'common/api/osrdEditoastApi';
 
-export const DEFAULT_PACED_TRAIN_SETTINGS: Pick<
-  PacedTrainSettings,
-  'timeRangeDuration' | 'cadence'
-> = {
-  timeRangeDuration: '120',
-  cadence: '60',
+export const DEFAULT_PACED_TRAIN_SETTINGS: Pick<PacedTrainBase, 'paced'> = {
+  paced: {
+    duration: 'PT2H',
+    step: 'PT1H',
+  },
 };
 
-export const PACED_TRAIN_SETTINGS_TEST: Pick<PacedTrainSettings, 'timeRangeDuration' | 'cadence'> =
-  {
-    timeRangeDuration: '180',
-    cadence: '30',
-  };
+export const PACED_TRAIN_SETTINGS_TEST: Pick<PacedTrainBase, 'paced'> = {
+  paced: {
+    duration: 'PT3H',
+    step: 'PT30M',
+  },
+};
 
-export const NEW_PACED_TRAIN_SETTINGS: PacedTrainSettings = {
-  name: 'Paced train test',
-  startTime: '08:35:40',
-  timeRangeDuration: '150',
-  cadence: '20',
+export const NEW_PACED_TRAIN_SETTINGS: Pick<
+  PacedTrainBase,
+  'train_name' | 'start_time' | 'labels' | 'paced'
+> = {
+  train_name: 'Paced train test',
+  start_time: '2025-03-15T08:35:40',
+  labels: ['Valid'],
+  paced: {
+    duration: 'PT90M',
+    step: 'PT20M',
+  },
 };

@@ -74,11 +74,15 @@
       "simulation_failed": "Simulation failed"
     },
     "invalidTrains": "Some trains are invalid",
+    "itemsSelectionDeletedCount_one": "The item has been deleted.",
+    "itemsSelectionDeletedCount_other": "The {{count}} items have been deleted.",
     "noItem": "No item",
     "noSpeedLimitTags": "Without code",
     "noSpeedLimitTagsShort": "None",
     "noTrain": "No train",
     "pacedTrain": "Service",
+    "pacedTrainAdded": "Service added",
+    "pacedTrainDeleted": "{{name}} service has been deleted",
     "punctuality": "Punctuality",
     "rollingStockFilterPlaceholder": "Family, detail, serie",
     "scheduledPointsHonoredFilter": "Scheduled points honored",
@@ -95,7 +99,6 @@
     "trainAdded": "Train added",
     "trainDeleted": "{{ name }} train has been deleted.",
     "trainSchedule": "Unique train",
-
     "trainsSelectionDeletedCount_one": "The train has been deleted.",
     "trainsSelectionDeletedCount_other": "The {{count}} trains have been deleted.",
     "trainType": "Services, trains",

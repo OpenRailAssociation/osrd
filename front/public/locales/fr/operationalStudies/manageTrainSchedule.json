@@ -96,6 +96,7 @@
   "pacedTrains": {
     "cadence": "Cadence de la mission",
     "defineService": "Définir une mission",
+    "added": "Mission ajoutée",
     "timeRangeDuration": "Durée de la plage de répétition"
   },
   "pathfinding": "Recherche d’itinéraire",

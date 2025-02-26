@@ -1,4 +1,9 @@
 import { type Locator, type Page, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+// eslint-disable-next-line import/extensions
+import duration from 'dayjs/plugin/duration.js';
+
+import type { PacedTrainBase } from 'common/api/osrdEditoastApi';
 
 import {
   EXPLICIT_UI_STABILITY_TIMEOUT,
@@ -6,12 +11,16 @@ import {
 } from '../../assets/constants/timeout-const';
 import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
+import { getOccurrenceName } from '../../utils/paced-train';
 import type {
   CommonTranslations,
   FlatTranslations,
   TimetableFilterTranslations,
 } from '../../utils/types';
 import CommonPage from '../common-page';
+import { DUPLICATED_PACED_TRAIN_DELTA } from '../../assets/constants/timetable-items-count';
+
+dayjs.extend(duration);
 
 type ScenarioTranslations = {
   timetable: FlatTranslations;
@@ -72,11 +81,29 @@ class ScenarioTimetableSection extends CommonPage {
 
   private readonly timetableSpeedLimitTagFilterLabel: Locator;
 
-  private readonly editTrainButton: Locator;
+  private readonly projectItemButton: Locator;
+
+  private readonly duplicateItemButton: Locator;
+
+  private readonly editItemButton: Locator;
+
+  private readonly deleteItemButton: Locator;
 
   private readonly editTrainScheduleButton: Locator;
 
+  private readonly occurrencesCount: Locator;
+
+  private readonly hideOccurrencesButton: Locator;
+
+  private readonly showOccurrencesButton: Locator;
+
+  private readonly pacedTrainName: Locator;
+
+  private readonly pacedTrainCadence: Locator;
+
   private readonly trainArrivalTime: Locator;
+
+  private readonly occurrenceItem: Locator;
 
   private readonly scenarioCollapseButton: Locator;
 
@@ -122,9 +149,18 @@ class ScenarioTimetableSection extends CommonPage {
     this.timetableSpeedLimitTagFilterLabel = page.locator(
       'label[for="timetable-speed-limit-tag-filter"]'
     );
-    this.editTrainButton = page.getByTestId('edit-train');
+    this.projectItemButton = page.getByTestId('project-item');
+    this.duplicateItemButton = page.getByTestId('duplicate-item');
+    this.editItemButton = page.getByTestId('edit-item');
+    this.deleteItemButton = page.getByTestId('delete-item');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
+    this.occurrencesCount = page.getByTestId('occurrences-count');
+    this.hideOccurrencesButton = page.getByTestId('hide-occurrences-button');
+    this.showOccurrencesButton = page.getByTestId('show-occurrences-button');
+    this.pacedTrainName = page.getByTestId('paced-train-name');
+    this.pacedTrainCadence = page.getByTestId('paced-train-cadence');
     this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
+    this.occurrenceItem = page.getByTestId('occurrence-item');
     this.scenarioCollapseButton = page.getByTestId('scenario-collapse-button');
     this.timetableCollapseButton = page.getByTestId('timetable-collapse-button');
     this.scenarioSideMenu = page.getByTestId('scenario-sidemenu');
@@ -371,12 +407,146 @@ class ScenarioTimetableSection extends CommonPage {
 
   async clickOnEditTrain() {
     await this.timetableTrains.first().hover();
-    await this.editTrainButton.click();
+    await this.editItemButton.click();
   }
 
   async clickOnEditTrainSchedule() {
     await this.editTrainScheduleButton.click();
     await this.closeToastNotification();
+  }
+
+  async verifyPacedTrainItemDetails(
+    pacedTrainData: Pick<PacedTrainBase, 'train_name' | 'start_time' | 'labels' | 'paced'>,
+    index: number
+  ) {
+    const {
+      train_name,
+      labels,
+      paced: { duration: pacedTrainDuration, step },
+    } = pacedTrainData;
+
+    const pacedTrainItem = this.timetableTrains.nth(index);
+
+    // In paced_trains.json, invalid paced trains are marked with an `Invalid` label
+    // An invalid paced train won't have any details
+    if (labels?.includes('Invalid')) return;
+
+    const formattedDuration = dayjs.duration(pacedTrainDuration).asMinutes();
+    const formattedStep = dayjs.duration(step).asMinutes();
+    const totalOccurrences = Math.ceil(formattedDuration / formattedStep);
+    await this.verifyOccurrencesCount(totalOccurrences, index);
+
+    await expect(this.hideOccurrencesButton.nth(index)).not.toBeVisible();
+    await expect(pacedTrainItem.locator('.toggle-icon')).toBeVisible();
+    await expect(this.occurrenceItem.first()).not.toBeVisible();
+
+    const pacedTrainNameLocator = pacedTrainItem.getByTestId('paced-train-name');
+    await expect(pacedTrainNameLocator).toBeVisible();
+    await expect(pacedTrainNameLocator).toHaveText(train_name);
+
+    const pacedTrainCadenceLocator = pacedTrainItem.getByTestId('paced-train-cadence');
+    await expect(pacedTrainCadenceLocator).toBeVisible();
+    await expect(pacedTrainCadenceLocator).toHaveText(
+      `${String.fromCodePoint(0x2014)} ${formattedStep}min`
+    ); // UI format: "- 20min"
+
+    // Verify that the pace train item does not display the rolling stock
+    await expect(pacedTrainItem.locator('> .rolling-stock')).not.toBeVisible();
+
+    // Verify all action buttons are displayed when hovering the paced train item
+    await pacedTrainItem.hover();
+    await expect(pacedTrainItem.getByTestId('project-item')).toBeVisible();
+    await expect(pacedTrainItem.getByTestId('duplicate-item')).toBeVisible();
+    await expect(pacedTrainItem.getByTestId('edit-item')).toBeVisible();
+    await expect(pacedTrainItem.getByTestId('delete-item')).toBeVisible();
+
+    await pacedTrainItem.locator('.toggle-icon').click();
+    await expect(pacedTrainItem.getByTestId('occurrence-item')).toHaveCount(totalOccurrences);
+
+    for (let i = 0; i < totalOccurrences; i += 1) {
+      await this.verifyOccurrenceDetails(pacedTrainData, i, index);
+    }
+
+    // Close back the occurrences list
+    await pacedTrainItem.locator('.toggle-icon').click();
+  }
+
+  async verifyOccurrencesCount(expectedOccurrencesCount: number, index: number) {
+    const pacedTrainOccurrencesCount = this.occurrencesCount.nth(index);
+    await expect(pacedTrainOccurrencesCount).toBeVisible();
+    const occurrencesCount = await pacedTrainOccurrencesCount.textContent();
+    expect(+occurrencesCount!).toEqual(expectedOccurrencesCount);
+  }
+
+  async verifyOccurrenceDetails(
+    pacedTrainData: Pick<PacedTrainBase, 'train_name' | 'start_time' | 'labels' | 'paced'>,
+    occurrenceIndex: number,
+    pacedTrainIndex: number
+  ) {
+    const {
+      train_name,
+      start_time,
+      paced: { step },
+    } = pacedTrainData;
+
+    const pacedTrainItem = this.timetableTrains.nth(pacedTrainIndex);
+    const occurrenceItem = pacedTrainItem.getByTestId('occurrence-item').nth(occurrenceIndex);
+
+    const formattedStep = dayjs.duration(step).asMinutes();
+
+    const computedName = getOccurrenceName(train_name, occurrenceIndex);
+    await expect(occurrenceItem.locator('.occurrence-item-name')).toHaveText(computedName);
+
+    const occurrenceStartTime = dayjs(start_time)
+      .add(occurrenceIndex * formattedStep, 'minutes')
+      .format('HH:mm');
+    await expect(occurrenceItem.locator('.departure-time')).toHaveText(occurrenceStartTime);
+
+    await expect(occurrenceItem.locator('.rolling-stock img')).toBeVisible();
+
+    await occurrenceItem.hover();
+    await expect(occurrenceItem.getByTestId('project-item')).not.toBeVisible();
+    await expect(occurrenceItem.getByTestId('duplicate-item')).not.toBeVisible();
+    await expect(occurrenceItem.getByTestId('edit-item')).not.toBeVisible();
+    await expect(occurrenceItem.getByTestId('delete-item')).not.toBeVisible();
+  }
+
+  async duplicatePacedTrain() {
+    const pacedTrainItem = this.timetableTrains.first();
+    await pacedTrainItem.hover();
+    await pacedTrainItem.getByTestId('duplicate-item').click();
+
+    await this.closeToastNotification();
+  }
+
+  async verifyDuplicatedPacedTrain(
+    originPacedTrainData: Pick<PacedTrainBase, 'train_name' | 'start_time' | 'labels' | 'paced'>,
+    copyTranslation: string
+  ) {
+    const {
+      train_name,
+      start_time,
+      // paced: { duration: pacedTrainDuration, step },
+    } = originPacedTrainData;
+
+    const duplicatedPacedTrainItem = this.timetableTrains.nth(1);
+
+    const pacedTrainNameLocator = duplicatedPacedTrainItem.getByTestId('paced-train-name');
+    await expect(pacedTrainNameLocator).toBeVisible();
+    await expect(pacedTrainNameLocator).toHaveText(`${train_name} (${copyTranslation})`); // duplicated train name format : "name (copy)"
+
+    await duplicatedPacedTrainItem.locator('.toggle-icon').click();
+    const firstOccurrenceItem = duplicatedPacedTrainItem.getByTestId('occurrence-item').first();
+
+    const occurrenceStartTime = dayjs(start_time)
+      .add(DUPLICATED_PACED_TRAIN_DELTA, 'minutes')
+      .format('HH:mm');
+    await expect(firstOccurrenceItem.locator('.departure-time')).toHaveText(occurrenceStartTime);
+
+    // const formattedDuration = dayjs.duration(pacedTrainDuration).asMinutes();
+    // const formattedStep = dayjs.duration(step).asMinutes();
+    // const totalOccurrences = Math.ceil(formattedDuration / formattedStep);
+    // await this.verifyOccurrencesCount(totalOccurrences, index);
   }
 
   async getTrainArrivalTime(expectedArrivalTime: string) {

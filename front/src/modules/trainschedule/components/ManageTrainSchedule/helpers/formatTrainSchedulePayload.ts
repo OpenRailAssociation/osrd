@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 
 import type { ValidConfig } from '../types';

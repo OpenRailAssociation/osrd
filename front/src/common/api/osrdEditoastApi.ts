@@ -6,6 +6,7 @@ import {
   generatedEditoastApi,
   type Property,
   type TrainScheduleResult,
+  type PacedTrainResult,
 } from './generatedEditoastApi';
 
 const formatPathPropertiesProps = (props: Property[]) =>
@@ -26,6 +27,34 @@ const osrdEditoastApi = generatedEditoastApi
           while (!reachEnd) {
             const promise = dispatch(
               osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules.initiate(
+                {
+                  id: timetableId,
+                  pageSize,
+                  page,
+                },
+                { forceRefetch: true, subscribe: false }
+              )
+            );
+            // need to unsubscribe on get call to avoid cache issue
+            const { data } = await promise;
+            if (data) result.push(...data.results);
+            reachEnd = isNil(data?.next);
+            page += 1;
+          }
+          return { data: result };
+        },
+        providesTags: ['timetable'],
+      }),
+      getAllTimetableByIdPacedTrains: builder.query<PacedTrainResult[], { timetableId: number }>({
+        queryFn: async ({ timetableId }, { dispatch }) => {
+          const pageSize = 25;
+          let page = 1;
+          let reachEnd = false;
+          const result: PacedTrainResult[] = [];
+          while (!reachEnd) {
+            const promise = dispatch(
+              // TODO : update the endpoint with the proper one when back is ready
+              osrdEditoastApi.endpoints.getTimetableByIdPacedTrains.initiate(
                 {
                   id: timetableId,
                   pageSize,

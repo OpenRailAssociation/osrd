@@ -16,19 +16,30 @@ import {
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import RouteTab from './pages/operational-studies/route-tab';
+import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
+import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getRollingStock } from './utils/api-utils';
+import { cleanWhitespace } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
+import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
-import type { ManageTrainScheduleTranslations } from './utils/types';
+import type { CellData, FlatTranslations, ManageTrainScheduleTranslations } from './utils/types';
 
-const enTranslations: ManageTrainScheduleTranslations = readJsonFile(
+const enManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile(
   'public/locales/en/operationalStudies/manageTrainSchedule.json'
 );
-const frTranslations: ManageTrainScheduleTranslations = readJsonFile(
+const frManageTrainScheduleTranslations: ManageTrainScheduleTranslations = readJsonFile(
   'public/locales/fr/operationalStudies/manageTrainSchedule.json'
+);
+
+const enTimeStopsTranslations: FlatTranslations = readJsonFile('public/locales/en/timesStops.json');
+const frTimeStopsTranslations: FlatTranslations = readJsonFile('public/locales/fr/timesStops.json');
+
+const initialInputsData: CellData[] = readJsonFile(
+  './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
 );
 
 test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
@@ -37,6 +48,8 @@ test.describe('Verify simulation configuration in operational studies for train 
   let rollingstockSelector: RollingStockSelector;
   let operationalStudiesPage: OperationalStudiesPage;
   let routeTab: RouteTab;
+  let scenarioTimetableSection: ScenarioTimetableSection;
+  let timesAndStopsTab: TimesAndStopsTab;
 
   let project: Project;
   let study: Study;
@@ -49,39 +62,47 @@ test.describe('Verify simulation configuration in operational studies for train 
     rollingStock = await getRollingStock(electricRollingStockName);
     infra = await getInfra();
     translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
+      en: { ...enManageTrainScheduleTranslations, ...enTimeStopsTranslations },
+      fr: { ...frManageTrainScheduleTranslations, ...frTimeStopsTranslations },
     });
   });
 
   test.beforeEach('Set up the project, study, and scenario', async ({ page }) => {
-    [rollingstockSelector, operationalStudiesPage, routeTab] = [
+    [
+      rollingstockSelector,
+      operationalStudiesPage,
+      routeTab,
+      scenarioTimetableSection,
+      timesAndStopsTab,
+    ] = [
       new RollingStockSelector(page),
       new OperationalStudiesPage(page),
       new RouteTab(page),
+      new ScenarioTimetableSection(page),
+      new TimesAndStopsTab(page),
     ];
 
     ({ project, study, scenario } = await createScenario());
-  });
 
-  test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenario.name);
-  });
-
-  /** *************** Test **************** */
-  test('Add a paced train', async ({ page }) => {
     // Navigate to the scenario page for the given project and study
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );
-
-    await operationalStudiesPage.checkPacedTrainSwitch();
 
     // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
 
     // Click the button to add a train schedule or paced train
     await operationalStudiesPage.clickOnAddTrainButton();
+  });
+
+  test.afterEach('Delete the created scenario', async () => {
+    await deleteScenario(project.id, study.id, scenario.name);
+  });
+
+  /** *************** Test 1 **************** */
+  test('Verify default behaviors with paced train mode', async () => {
+    await operationalStudiesPage.checkPacedTrainSwitch();
 
     // Verify that all configuration buttons and inputs are visible and have their proper default values
     await operationalStudiesPage.checkInputsAndButtons(translations, scenario.creation_date);
@@ -94,6 +115,11 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Test the paced train mode behavior
     await operationalStudiesPage.testPacedTrainMode(translations);
+  });
+
+  /** *************** Test 2 **************** */
+  test('Add a paced train and verify its timetable details', async ({ page }) => {
+    await operationalStudiesPage.checkPacedTrainSwitch();
 
     // Set the paced train inputs
     await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
@@ -103,19 +129,41 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     // Select an itinerary
     await operationalStudiesPage.clickOnRouteTab();
-    await routeTab.performPathfindingByTrigram('MWS', 'NES');
-    await operationalStudiesPage.checkPathfindingDistance('33.950 km');
+    await routeTab.performPathfindingByTrigram('WS', 'NES');
+    await operationalStudiesPage.checkPathfindingDistance('46.000 km');
 
-    // TODO : update this part when paced train endpoints are delivered to find a fine configuration for it
-    // Change some time and stops
+    // Verify initial row count and fill table with input data
+    await operationalStudiesPage.clickOnTimesAndStopsTab();
+    await scrollContainer(page, '.time-stops-datasheet .dsg-container');
 
-    // Adding Train Schedule
-    await operationalStudiesPage.addTrainSchedule();
+    await timesAndStopsTab.verifyActiveRowsCount(2);
+    for (const cell of initialInputsData) {
+      const translatedHeader = cleanWhitespace(translations[cell.header]);
+      await timesAndStopsTab.fillTableCellByStationAndHeader(
+        cell.stationName,
+        translatedHeader,
+        cell.value,
+        cell.marginForm
+      );
+    }
 
-    // TODO : update the test to verify the newly added paced train (for now nothing happens when clicking on the button)
+    // Add paced train
+    await operationalStudiesPage.addTimetableItem();
+
+    // Verify the paced train has been added and return to the simulation results and timetable
+    await operationalStudiesPage.checkTimetableItemHasBeenAdded(translations.pacedTrains.added);
+    await operationalStudiesPage.returnSimulationResult();
+
+    // Confirm that the number of paced trains added matches the expected number
+    await operationalStudiesPage.checkNumberOfTrains(1); // Only one paced train can be added at a time
+
+    await scenarioTimetableSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0);
+
+    // TODO : verify occurrence selection, projection, simulation results
   });
 
   // TODO Paced train : Remove this test in https://github.com/OpenRailAssociation/osrd/issues/10791
+  /** *************** Test 3 **************** */
   test('Pathfinding with rolling stock and composition code', async ({ page }) => {
     // Page models
 
@@ -171,10 +219,10 @@ test.describe('Verify simulation configuration in operational studies for train 
     await operationalStudiesPage.checkPathfindingDistance('33.950 km');
 
     // Adding Train Schedule
-    await operationalStudiesPage.addTrainSchedule();
+    await operationalStudiesPage.addTimetableItem();
 
     // Verify the train has been added and the simulation results
-    await operationalStudiesPage.checkTrainHasBeenAdded();
+    await operationalStudiesPage.checkTimetableItemHasBeenAdded(translations.trainAdded);
     await operationalStudiesPage.returnSimulationResult();
 
     // Confirm the number of trains added matches the expected number

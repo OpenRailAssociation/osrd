@@ -8,8 +8,8 @@ import type { OperationalPoint } from 'applications/operationalStudies/types';
 import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import { osrdEditoastApi, type PathProperties } from 'common/api/osrdEditoastApi';
 import { isStation } from 'modules/pathfinding/utils';
-import type { TrainScheduleId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
-import { formatTrainScheduleIdToEditoastTrainId } from 'utils/trainId';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+import { formatTrainScheduleIdToEditoastTrainId, isTrainSchedule } from 'utils/trainId';
 
 const useGetProjectedTrainOperationalPoints = ({
   infraId,
@@ -19,8 +19,8 @@ const useGetProjectedTrainOperationalPoints = ({
 }: {
   infraId: number | undefined;
   timetableId: number | undefined;
-  trainScheduleUsedForProjection?: TrainScheduleResultWithTrainId;
-  trainIdUsedForProjection?: TrainScheduleId;
+  trainScheduleUsedForProjection?: TimetableItemWithTimetableId;
+  trainIdUsedForProjection?: TimetableItemId;
 }) => {
   const { t } = useTranslation('simulation');
 
@@ -28,9 +28,10 @@ const useGetProjectedTrainOperationalPoints = ({
   const [filteredOperationalPoints, setFilteredOperationalPoints] =
     useState<OperationalPoint[]>(operationalPoints);
 
+  // TODO Paced train : update this in https://github.com/OpenRailAssociation/osrd/issues/10613
   const editoastTrainIdUsedForProjection = useMemo(
     () =>
-      trainIdUsedForProjection
+      trainIdUsedForProjection && isTrainSchedule(trainIdUsedForProjection)
         ? formatTrainScheduleIdToEditoastTrainId(trainIdUsedForProjection)
         : undefined,
     [trainIdUsedForProjection]

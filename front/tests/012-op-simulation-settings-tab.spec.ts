@@ -174,7 +174,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.checkElectricalProfile();
     await simulationSettingsTab.checkMarecoMargin();
     // Add the train schedule and verify output results
-    await operationalStudiesPage.addTrainSchedule();
+    await operationalStudiesPage.addTimetableItem();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('11:53');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
@@ -219,7 +219,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.checkMarecoMargin();
     await simulationSettingsTab.selectCodeCompoOption('HLP');
     // Add the train schedule and verify output results
-    await operationalStudiesPage.addTrainSchedule();
+    await operationalStudiesPage.addTimetableItem();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('12:03');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
@@ -274,7 +274,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.deactivateElectricalProfile();
     await simulationSettingsTab.activateLinearMargin();
     // Add the train schedule and verify output results
-    await operationalStudiesPage.addTrainSchedule();
+    await operationalStudiesPage.addTimetableItem();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('11:55');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();
@@ -331,7 +331,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await simulationSettingsTab.activateLinearMargin();
     await simulationSettingsTab.selectCodeCompoOption('HLP');
     // Add the train schedule and verify output results
-    await operationalStudiesPage.addTrainSchedule();
+    await operationalStudiesPage.addTimetableItem();
     await operationalStudiesPage.returnSimulationResult();
     await scenarioTimetableSection.getTrainArrivalTime('12:06');
     await scenarioTimetableSection.clickOnScenarioCollapseButton();

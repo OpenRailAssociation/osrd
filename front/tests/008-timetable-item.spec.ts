@@ -1,4 +1,4 @@
-import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, PacedTrainBase } from 'common/api/osrdEditoastApi';
 
 import {
   trainScheduleProjectName,
@@ -156,14 +156,10 @@ test.describe('Verify train schedule elements and filters', () => {
     await scenarioTimetableSection.verifyTrainCount(TOTAL_TRAINS);
   });
 
-  // TODO Paced train : update this test with real data in https://github.com/OpenRailAssociation/osrd/issues/10615
   /** *************** Test 3 **************** */
   test('Filtering imported trains and paced trains', async () => {
     await operationalStudiesPage.checkPacedTrainSwitch();
 
-    // While the back end for paced trains isn't ready, 3 paced trains are hardcoded and
-    // added to the list of train schedules for testing purposes.
-    // These 3 paced trains are copy of the first train schedule in the list (1 valid, 1 not invalid, 1 not honored).
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: TOTAL_TRAINS,
@@ -176,11 +172,11 @@ test.describe('Verify train schedule elements and filters', () => {
 
     // Name and label filter
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
-      'Paced Train 1',
+      'Paced Train 2',
       NAME_FILTERED_ITEMS
     );
     await scenarioTimetableSection.filterNameAndVerifyTrainCount(
-      'Paced-Train-Tag-1',
+      'Paced-Train-Tag-2',
       LABEL_FILTERED_ITEMS
     );
 
@@ -241,5 +237,55 @@ test.describe('Verify train schedule elements and filters', () => {
       translations
     );
     await scenarioTimetableSection.verifyTrainCount(TOTAL_ITEMS);
+  });
+
+  /** *************** Test 4 **************** */
+  test('Loading timetable items and verifying paced trains display', async () => {
+    await operationalStudiesPage.checkPacedTrainSwitch();
+
+    // Paced train data used in global setup
+    const pacedTrainsData: PacedTrainBase[] = readJsonFile(
+      './tests/assets/paced-train/paced_trains.json'
+    );
+
+    // Verify paced train item
+    for (let i = 0; i < pacedTrainsData.length; i += 1) {
+      await scenarioTimetableSection.verifyPacedTrainItemDetails(pacedTrainsData[i], i);
+    }
+  });
+
+  /** *************** Test 5 **************** */
+  test('Duplicate and delete a paced train', async () => {
+    await operationalStudiesPage.checkPacedTrainSwitch();
+
+    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS,
+      totalTrainScheduleCount: TOTAL_TRAINS,
+    });
+
+    // Paced train data used in global setup
+    const pacedTrainsData: PacedTrainBase[] = readJsonFile(
+      './tests/assets/paced-train/paced_trains.json'
+    );
+
+    // Duplicate the first paced train
+    await scenarioTimetableSection.duplicatePacedTrain();
+
+    // Verify that a toast is displayed
+    await operationalStudiesPage.checkTimetableItemHasBeenAdded(
+      translations.timetable.pacedTrainAdded
+    );
+
+    // Verify that there is one more paced train in the list
+    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS + 1,
+      totalTrainScheduleCount: TOTAL_TRAINS,
+    });
+
+    // Verify that the duplicated paced train has the proper details
+    await scenarioTimetableSection.verifyDuplicatedPacedTrain(
+      pacedTrainsData[0],
+      translations.timetable.copy
+    );
   });
 });

@@ -8,8 +8,8 @@ import { isPacedTrain, isTrainSchedule } from 'utils/trainId';
 import type {
   ScheduledPointsHonoredFilter,
   TimetableFilters,
-  TimetableItemResult,
   TrainTypeFilter,
+  TimetableItemWithDetails,
   ValidityFilter,
 } from './types';
 import { extractTagCode, keepItem } from './utils';
@@ -20,8 +20,8 @@ import { extractTagCode, keepItem } from './utils';
  * @returns all filters, their setters, the unique speed limit tags among all items and the filtered timetable items
  */
 const useFilterTimetableItems = (
-  timetableItems: TimetableItemResult[]
-): TimetableFilters & { filteredTimetableItems: TimetableItemResult[] } => {
+  timetableItems: TimetableItemWithDetails[]
+): TimetableFilters & { filteredTimetableItems: TimetableItemWithDetails[] } => {
   const [nameLabelFilter, setNameLabelFilter] = useState('');
   const [rollingStockFilter, setRollingStockFilter] = useState('');
   const [validityFilter, setValidityFilter] = useState<ValidityFilter>('both');
@@ -38,7 +38,7 @@ const useFilterTimetableItems = (
     [timetableItems]
   );
 
-  const filteredTimetableItems: TimetableItemResult[] = useMemo(
+  const filteredTimetableItems: TimetableItemWithDetails[] = useMemo(
     () =>
       timetableItems.filter((timetableItem) => {
         if (!keepItem(timetableItem, debouncedNameLabelFilter)) return false;

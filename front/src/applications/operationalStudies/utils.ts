@@ -9,7 +9,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
-import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
@@ -212,82 +212,83 @@ export const isInvalidName = (name?: string | null) =>
   !name || name.length > SMALL_INPUT_MAX_LENGTH;
 
 /**
- * Check if the scheduled points are honored with a trainSchedule and a trainSummary
- * @param trainResult
- * @param trainSummary
+ * Check if the scheduled points are honored with a timetable item and a timetable item summary
+ * @param timetableItem
+ * @param timetableItemSummary
  * @returns true if the scheduled points are not honored
  */
 export const isScheduledPointsNotHonored = (
-  trainSchedule: TrainScheduleResultWithTrainId,
-  trainSummary: Extract<SimulationSummaryResult, { status: 'success' }>
+  timetableItem: TimetableItemWithTimetableId,
+  timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): boolean => {
-  if (trainSummary.path_item_times_final.length !== trainSchedule.path.length) {
+  if (timetableItemSummary.path_item_times_final.length !== timetableItem.path.length) {
     console.error(
       'The number of path_item_times_final does not match the number of paths in the schedule'
     );
     throw new Error('Assertion failed');
   }
 
-  if (!trainSchedule.schedule) return false;
+  if (!timetableItem.schedule) return false;
 
   const pathItemIndexById = new Map<string, number>();
-  trainSchedule.path.forEach((pathItem, index) => {
+  timetableItem.path.forEach((pathItem, index) => {
     pathItemIndexById.set(pathItem.id, index);
   });
-  return trainSchedule.schedule.some((schedule) => {
+  return timetableItem.schedule.some((schedule) => {
     if (!schedule.arrival) return false;
     const matchindIndex = pathItemIndexById.get(schedule.at);
     if (!matchindIndex) {
       throw new Error(
-        `No matching index found for schedule ${schedule} on trainSchedule ${trainSchedule}`
+        `No matching index found for schedule ${schedule} on timetableItem ${timetableItem}`
       );
     }
     const arrival = Duration.parse(schedule.arrival);
     return (
-      Math.abs(arrival.ms - trainSummary.path_item_times_final[matchindIndex]) >=
+      Math.abs(arrival.ms - timetableItemSummary.path_item_times_final[matchindIndex]) >=
       ARRIVAL_TIME_ACCEPTABLE_ERROR.ms
     );
   });
 };
 
-export const getPathItemByIndexDict = (trainResult: TrainScheduleResultWithTrainId) =>
-  trainResult.path.reduce((acc, pathItem, index) => {
+export const getPathItemByIndexDict = (timetableItemResult: TimetableItemWithTimetableId) =>
+  timetableItemResult.path.reduce((acc, pathItem, index) => {
     acc[pathItem.id] = index;
     return acc;
   }, {} as Dictionary<number>);
 
 /**
- * Check if the train is too fast with a trainSchedule and a trainSummary
- * @param trainResult
- * @param trainSummary
+ * Check if the item is too fast with a timetable item and a timetable item summary
+ * @param timetableItem
+ * @param timetableItemSummary
  * @returns true if the train is too fast
  */
 export const isTooFast = (
-  trainSchedule: TrainScheduleResultWithTrainId,
-  trainSummary: Extract<SimulationSummaryResult, { status: 'success' }>
+  timetableItem: TimetableItemWithTimetableId,
+  timetableItemSummary: Extract<SimulationSummaryResult, { status: 'success' }>
 ): boolean => {
   if (
-    trainSummary.path_item_times_final.length !== trainSummary.path_item_times_provisional.length
+    timetableItemSummary.path_item_times_final.length !==
+    timetableItemSummary.path_item_times_provisional.length
   ) {
     throw new Error('Assertion failed');
   }
 
-  const toCheckPathItemIds = new Set(trainSchedule.margins?.boundaries);
-  trainSchedule.schedule?.forEach((schedule) => {
+  const toCheckPathItemIds = new Set(timetableItem.margins?.boundaries);
+  timetableItem.schedule?.forEach((schedule) => {
     if (schedule.arrival || schedule.stop_for) {
       toCheckPathItemIds.add(schedule.at);
     }
   });
-  toCheckPathItemIds.add(trainSchedule.path[trainSchedule.path.length - 1].id);
+  toCheckPathItemIds.add(timetableItem.path[timetableItem.path.length - 1].id);
 
   if (toCheckPathItemIds.size === 0) return false;
 
-  const pathItemMap = getPathItemByIndexDict(trainSchedule);
+  const pathItemMap = getPathItemByIndexDict(timetableItem);
 
   for (const pathItemId of toCheckPathItemIds) {
     const pathItemIndex = pathItemMap[pathItemId];
-    const pathItemTimeFinal = trainSummary.path_item_times_final[pathItemIndex];
-    const pathItemTimeProvisional = trainSummary.path_item_times_provisional[pathItemIndex];
+    const pathItemTimeFinal = timetableItemSummary.path_item_times_final[pathItemIndex];
+    const pathItemTimeProvisional = timetableItemSummary.path_item_times_provisional[pathItemIndex];
 
     if (pathItemTimeProvisional > pathItemTimeFinal + ARRIVAL_TIME_ACCEPTABLE_ERROR.ms) return true;
   }

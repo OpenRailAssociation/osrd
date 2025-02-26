@@ -1,10 +1,10 @@
 import specialCodeDictionary from './consts';
-import type { TimetableItemResult } from './types';
+import type { TimetableItemWithDetails } from './types';
 
 /** Filter timetable items by their names and labels */
-export const keepItem = (item: TimetableItemResult, searchString: string): boolean => {
+export const keepItem = (item: TimetableItemWithDetails, searchString: string): boolean => {
   if (searchString) {
-    const searchStringInName = item.trainName.toLowerCase().includes(searchString.toLowerCase());
+    const searchStringInName = item.name.toLowerCase().includes(searchString.toLowerCase());
     const searchStringInTags = item.labels
       ? item.labels.join('').toLowerCase().includes(searchString.toLowerCase())
       : false;
@@ -25,5 +25,5 @@ export const extractTagCode = (tag?: string | null) => {
   return matches ? matches[0] : tag;
 };
 
-export const timetableHasInvalidItem = (timetableItems: TimetableItemResult[]) =>
+export const timetableHasInvalidItem = (timetableItems: TimetableItemWithDetails[]) =>
   timetableItems.some((timetableItem) => timetableItem.invalidReason);

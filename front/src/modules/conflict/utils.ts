@@ -10,10 +10,10 @@ export default function addTrainNamesToConflicts(
 ): ConflictWithTrainNames[] {
   const trainNameMap: { [id: number]: string } = {};
 
-  trainSchedulesDetails.forEach(({ id, trainName }) => {
+  trainSchedulesDetails.forEach(({ id, name }) => {
     // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
     const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(id);
-    trainNameMap[editoastTrainId] = trainName;
+    trainNameMap[editoastTrainId] = name;
   });
 
   return conflicts.map((conflict) => ({

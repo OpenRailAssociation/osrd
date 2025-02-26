@@ -18,7 +18,10 @@ const checkCurrentConfig = (
   dispatch: Dispatch,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName?: string,
-  ignoreTrainAddSettings = false
+  {
+    isPacedTrainMode = false,
+    showPacedTrains = false,
+  }: { isPacedTrainMode?: boolean; showPacedTrains?: boolean } = {}
 ): ValidConfig | null => {
   const {
     constraintDistribution,
@@ -105,8 +108,8 @@ const checkCurrentConfig = (
     );
   }
 
-  // TrainAddSettings tests
-  if (!ignoreTrainAddSettings) {
+  // TODO Paced trains : remove this in https://github.com/OpenRailAssociation/osrd/issues/10791
+  if (!showPacedTrains) {
     if (trainCount < 1) {
       error = true;
       dispatch(
@@ -134,27 +137,34 @@ const checkCurrentConfig = (
         })
       );
     }
-    if (cadence.total('minute') < 1) {
-      error = true;
-      dispatch(
-        setFailure({
-          name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.tooLowValue', {
-            value: t('pacedTrains.cadence').toLowerCase(),
-          }),
-        })
-      );
-    }
-    if (timeRangeDuration.total('minute') < 1) {
-      error = true;
-      dispatch(
-        setFailure({
-          name: t('errorMessages.trainScheduleTitle'),
-          message: t('errorMessages.tooLowValue', {
-            value: t('pacedTrains.timeRangeDuration').toLowerCase(),
-          }),
-        })
-      );
+  }
+
+  // TODO Paced trains : remove the next if in https://github.com/OpenRailAssociation/osrd/issues/10791
+  if (showPacedTrains) {
+    // Prevent to block the train creation if a paced train field is invalid but we want to add a train schedule
+    if (isPacedTrainMode) {
+      if (cadence.total('minute') < 1) {
+        error = true;
+        dispatch(
+          setFailure({
+            name: t('errorMessages.trainScheduleTitle'),
+            message: t('errorMessages.tooLowValue', {
+              value: t('pacedTrains.cadence').toLowerCase(),
+            }),
+          })
+        );
+      }
+      if (timeRangeDuration.total('minute') < 1) {
+        error = true;
+        dispatch(
+          setFailure({
+            name: t('errorMessages.trainScheduleTitle'),
+            message: t('errorMessages.tooLowValue', {
+              value: t('pacedTrains.timeRangeDuration').toLowerCase(),
+            }),
+          })
+        );
+      }
     }
   }
 
@@ -167,6 +177,8 @@ const checkCurrentConfig = (
     trainCount,
     trainStep,
     trainDelta,
+    cadence: cadence.toISOString(),
+    timeRangeDuration: timeRangeDuration.toISOString(),
     labels,
     rollingStockComfort,
     initialSpeed: initialSpeed ? kmhToMs(initialSpeed) : 0,
