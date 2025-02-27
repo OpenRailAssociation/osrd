@@ -127,6 +127,59 @@
       line-height: 20px;
       font-weight: 500;
     }
+
+    .infra-selector-grants-manager {
+      margin: 0 16px 8px;
+      padding: 5px 0 7px;
+      border-bottom: 1px solid var(--grey20);
+      button:focus {
+        outline: none;
+      }
+    }
+    .infra-selector-grants-header {
+      display: flex;
+      justify-content: space-between;
+      .user-infra-grant {
+        font-size: 0.875rem;
+        color: var(--info60);
+      }
+    }
+    .infra-selector-subject {
+      &-list {
+        display: flex;
+        flex-direction: column;
+        border-radius: 6px;
+        margin: 15px 8px 8px;
+        background-color: var(--ambientC10);
+      }
+      &-card {
+        display: flex;
+        justify-content: space-between;
+        height: 47px;
+        margin: 0 8px;
+        padding-left: 7px;
+        &:not(:last-child) {
+          border-bottom: 1px solid var(--grey20);
+        }
+      }
+      &-name {
+        display: flex;
+        align-items: center;
+        color: black;
+      }
+      &-grant {
+        .feed-back {
+          padding-top: 7px;
+          padding-bottom: 8px;
+        }
+        * > .osrd-ui-custom-select {
+          background-color: white;
+          margin: 0;
+          width: 136px;
+          height: 32px;
+        }
+      }
+    }
   }
 
   /* EDITION MODE */
