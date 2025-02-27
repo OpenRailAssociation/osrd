@@ -6,6 +6,7 @@ import {
   type Dispatch,
   type SetStateAction,
   useMemo,
+  useCallback,
 } from 'react';
 
 import { isEqual, isNil } from 'lodash';
@@ -35,17 +36,15 @@ import useStdcmForm from '../hooks/useStdcmForm';
 import type { StdcmSimulation } from '../types';
 
 const StdcmViewContent = ({
-  loading,
-  error,
   isDebugMode,
-  onIsDebugModeToggle,
   stdcmConf,
+  showStatusBanner,
+  setShowStatusBanner,
 }: {
   stdcmConf: OsrdStdcmConfState;
-  loading?: boolean;
-  error?: Error | null;
   isDebugMode: boolean;
-  onIsDebugModeToggle: Dispatch<SetStateAction<boolean>>;
+  showStatusBanner: boolean;
+  setShowStatusBanner: Dispatch<SetStateAction<boolean>>;
 }) => {
   // TODO : refacto. state useStdcm. Maybe we can merge some state together in order to reduce the number of refresh
   const currentSimulationInputs = useStdcmForm();
@@ -54,9 +53,7 @@ const StdcmViewContent = ({
   const selectedSimulationIndex = useSelector(getSelectedSimulationIndex);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
-  const [showStatusBanner, setShowStatusBanner] = useState(false);
   const [showBtnToLaunchSimulation, setShowBtnToLaunchSimulation] = useState(false);
-  const [showHelpModule, setShowHelpModule] = useState(false);
   const [buttonsVisible, setButtonsVisible] = useState(true);
   const [skipPathfindingStatusMessage, setSkipPathfindingStatusMessage] = useState(false);
 
@@ -118,8 +115,6 @@ const StdcmViewContent = ({
     setButtonsVisible(false);
     openNewWindow(true);
   };
-
-  const toggleHelpModule = () => setShowHelpModule((show) => !show);
 
   useEffect(() => {
     setShowBtnToLaunchSimulation(
@@ -198,60 +193,53 @@ const StdcmViewContent = ({
   }, [selectedSimulationIndex]);
 
   return (
-    <div role="button" tabIndex={0} className="stdcm" onClick={() => setShowStatusBanner(false)}>
-      <StdcmHeader
+    <div>
+      <StdcmConfig
+        isPending={isPending}
         isDebugMode={isDebugMode}
-        onDebugModeToggle={onIsDebugModeToggle}
-        toggleHelpModule={toggleHelpModule}
-        showHelpModule={showHelpModule}
+        showBtnToLaunchSimulation={showBtnToLaunchSimulation}
+        retainedSimulationIndex={retainedSimulationIndex}
+        skipPathfindingStatusMessage={skipPathfindingStatusMessage}
+        setSkipPathfindingStatusMessage={setSkipPathfindingStatusMessage}
+        launchStdcmRequest={launchStdcmRequest}
+        cancelStdcmRequest={cancelStdcmRequest}
       />
 
-      {!isNil(error) ? (
-        <StdcmEmptyConfigError />
-      ) : (
-        <div>
-          <StdcmConfig
-            isPending={isPending}
+      {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
+
+      {completedSimulations.length > 0 && (
+        <div ref={resultSectionRef} className="stdcm-results">
+          <StdcmResults
+            isCalculationFailed={isCalculationFailed}
             isDebugMode={isDebugMode}
-            showBtnToLaunchSimulation={showBtnToLaunchSimulation}
-            retainedSimulationIndex={retainedSimulationIndex}
-            skipPathfindingStatusMessage={skipPathfindingStatusMessage}
-            setSkipPathfindingStatusMessage={setSkipPathfindingStatusMessage}
-            launchStdcmRequest={launchStdcmRequest}
-            cancelStdcmRequest={cancelStdcmRequest}
+            onSelectSimulation={handleSelectSimulation}
+            onStartNewQuery={handleStartNewQuery}
+            onStartNewQueryWithData={handleStartNewQueryWithData}
+            buttonsVisible={buttonsVisible}
+            showStatusBanner={showStatusBanner}
           />
-
-          {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
-
-          {completedSimulations.length > 0 && (
-            <div ref={resultSectionRef} className="stdcm-results">
-              <StdcmResults
-                isCalculationFailed={isCalculationFailed}
-                isDebugMode={isDebugMode}
-                onSelectSimulation={handleSelectSimulation}
-                onStartNewQuery={handleStartNewQuery}
-                onStartNewQueryWithData={handleStartNewQueryWithData}
-                buttonsVisible={buttonsVisible}
-                showStatusBanner={showStatusBanner}
-              />
-            </div>
-          )}
-          <StdcmHelpModule showHelpModule={showHelpModule} toggleHelpModule={toggleHelpModule} />
         </div>
       )}
-      {loading && <LoaderFill />}
     </div>
   );
 };
 
 const StdcmView = () => {
-  const [isDebugMode, setIsDebugMode] = useState(false);
   const { loading, error, loadStdcmEnvironment } = useStdcmEnvironment();
   const stdcmConf = useSelector(getStdcmConf);
+
+  const [isDebugMode, setIsDebugMode] = useState(false);
+  const [showStatusBanner, setShowStatusBanner] = useState(false);
+  const [showHelpModule, setShowHelpModule] = useState(false);
 
   const isStdcmConfValid = useMemo(
     () => !!stdcmConf.searchDatetimeWindow && !!stdcmConf.timetableID && !!stdcmConf.infraID,
     [stdcmConf]
+  );
+
+  const toggleHelpModule = useCallback(
+    () => setShowHelpModule((show) => !show),
+    [setShowHelpModule]
   );
 
   useEffect(() => {
@@ -266,20 +254,41 @@ const StdcmView = () => {
 
   // When the STDCM environment is being loaded and the conf is not valid, we do not mount the actual STDCM
   // view content yet:
-  if (loading && !isStdcmConfValid) return null;
-
-  if (!isStdcmConfValid) {
-    throw new Error('STDCM conf is not valid.');
-  }
+  if (loading)
+    return (
+      <div role="button" tabIndex={0} className="stdcm" onClick={() => setShowStatusBanner(false)}>
+        <StdcmHeader
+          isDebugMode={isDebugMode}
+          onDebugModeToggle={setIsDebugMode}
+          toggleHelpModule={toggleHelpModule}
+          showHelpModule={showHelpModule}
+        />
+        <LoaderFill />
+        <StdcmHelpModule showHelpModule={showHelpModule} toggleHelpModule={toggleHelpModule} />
+      </div>
+    );
 
   return (
-    <StdcmViewContent
-      loading={loading}
-      error={error}
-      isDebugMode={isDebugMode}
-      onIsDebugModeToggle={setIsDebugMode}
-      stdcmConf={stdcmConf}
-    />
+    <div role="button" tabIndex={0} className="stdcm" onClick={() => setShowStatusBanner(false)}>
+      <StdcmHeader
+        isDebugMode={isDebugMode}
+        onDebugModeToggle={setIsDebugMode}
+        toggleHelpModule={toggleHelpModule}
+        showHelpModule={showHelpModule}
+      />
+
+      {!isNil(error) || !isStdcmConfValid ? (
+        <StdcmEmptyConfigError />
+      ) : (
+        <StdcmViewContent
+          isDebugMode={isDebugMode}
+          stdcmConf={stdcmConf}
+          showStatusBanner={showStatusBanner}
+          setShowStatusBanner={setShowStatusBanner}
+        />
+      )}
+      <StdcmHelpModule showHelpModule={showHelpModule} toggleHelpModule={toggleHelpModule} />
+    </div>
   );
 };
 
