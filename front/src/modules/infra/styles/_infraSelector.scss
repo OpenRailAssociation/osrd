@@ -213,12 +213,17 @@
         input {
           background: none;
         }
-        span {
-          display: flex;
+        .infra-name {
+          width: 100px;
+          overflow: hidden;
+          position: relative;
+          display: inline-block;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
         .infra-lock {
           display: flex;
-          align-items: center;
+          justify-content: end;
           color: var(--coolgray7);
           padding: 0 4px 0 4px;
           text-transform: uppercase;

@@ -59,7 +59,7 @@ export default function InfraSelectorEditionItem({
                 </span>
               ) : (
                 <>
-                  <span className="flex-grow-1">{infra.name}</span>
+                  <span className="flex-grow-1 infra-name">{infra.name}</span>
                   {infra.locked && (
                     <span className="infra-lock">
                       <small>{t('infraManagement:locked')}</small>
