@@ -73,6 +73,7 @@
     "calculatingSimulation": "Calculation in progress...",
     "getSimulation": "Get the simulation",
     "infoMessage": "This simulation doesn't ensure the availability of the path.",
+    "additionalResults": "No results were found for your request; alternative options are being computed",
     "modifySearchCriteria": "You can modify your search criteria to find a solution.",
     "pendingSimulation": "Simulation in progress",
     "results": {
@@ -80,6 +81,9 @@
       "displayAll": "Display all operational points",
       "displayMain": "Display main operational points",
       "downloadSimulationSheet": "Download simulation report sheet",
+      "simulationDownstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>before</underline> departure time was increased.",
+      "simulationUpstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>after</underline> departure time was increased.",
+      "simulationsWithConflicts": "Two\u00A0other\u00A0simulations were\u00A0automatically\u00A0computed based\u00A0on this\u00A0configuration.",
       "formatCreationDate": "{{month}}/{{day}}/{{year}} {{hours}}:{{minutes}}",
       "gesicoRequest": "and attach this document to your GESICO request.",
       "notFound": "No path was found for this configuration",

@@ -73,6 +73,7 @@
     "calculatingSimulation": "Calcul en cours...",
     "getSimulation": "Obtenir la simulation",
     "infoMessage": "Cette simulation n'offre pas la garantie de disponibilité du sillon.",
+    "additionalResults": "Pas de résultat pour votre demande, d’autres possibilités sont en cours de calcul.",
     "modifySearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
     "pendingSimulation": "simulation en cours",
     "results": {
@@ -80,6 +81,9 @@
       "displayAll": "Afficher tous les jalons",
       "displayMain": "Afficher les jalons principaux",
       "downloadSimulationSheet": "Télécharger la fiche de simulation",
+      "simulationDownstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>avant</underline> l’heure de départ a été augmentée.",
+      "simulationUpstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>après</underline> l’heure de départ a été augmentée.",
+      "simulationsWithConflicts": "Deux\u00A0autres\u00A0simulations ont\u00A0été\u00A0calculées automatiquement sur\u00A0la\u00A0base de\u00A0cette\u00A0configuration.",
       "formatCreationDate": "{{day}}/{{month}}/{{year}} {{hours}}:{{minutes}}",
       "gesicoRequest": "et joignez ce document à votre demande GESICO.",
       "notFound": "Aucun passage n'a été trouvé pour cette configuration",

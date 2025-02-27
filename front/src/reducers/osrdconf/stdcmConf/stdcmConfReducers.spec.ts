@@ -9,7 +9,6 @@ import {
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
-  updateLastStdcmResult,
   resetStdcmConfig,
   updateGridMarginAfter,
   updateGridMarginBefore,
@@ -21,7 +20,7 @@ import {
   updateTowedRollingStockID,
   retainSimulation,
   selectSimulation,
-  addStdcmSimulation,
+  addStdcmSimulations,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OsrdStdcmConfState, StandardAllowance, StdcmPathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
@@ -241,17 +240,6 @@ describe('stdcmConfReducers', () => {
     };
 
     it('should add a new simulation', () => {
-      const store = createStore();
-      const { simulations } = store.getState()[stdcmConfSlice.name];
-      expect(simulations.length).toBe(0);
-
-      store.dispatch(addStdcmSimulation(simulationInputs));
-      const state = store.getState()[stdcmConfSlice.name];
-      expect(state.simulations.length).toEqual(1);
-      expect(state.simulations.at(0)!.inputs).toEqual(simulationInputs);
-    });
-
-    it('should handle updating last simulation', () => {
       const store = createStore({ simulations: [simulation] });
       const { simulations } = store.getState()[stdcmConfSlice.name];
       expect(simulations.length).toBe(1);
@@ -269,16 +257,11 @@ describe('stdcmConfReducers', () => {
         },
       };
 
-      store.dispatch(updateLastStdcmResult(newSimulation));
+      store.dispatch(addStdcmSimulations([newSimulation]));
       const state = store.getState()[stdcmConfSlice.name];
-      expect(state.simulations.length).toEqual(1);
-      expect(state.simulations.at(0)).toEqual(newSimulation);
-      expect(state.selectedSimulationIndex).toEqual(0);
-      expect(state.totalLength).toEqual(newSimulation.inputs.consist!.totalLength);
-      expect(state.totalMass).toEqual(newSimulation.inputs.consist!.totalMass);
-      expect(state.maxSpeed).toEqual(newSimulation.inputs.consist!.maxSpeed);
-      expect(state.speedLimitByTag).toEqual(newSimulation.inputs.consist!.speedLimitByTag);
-      expect(state.stdcmPathSteps).toEqual(newSimulation.inputs.pathSteps);
+      expect(state.simulations.length).toEqual(2);
+      expect(state.simulations[1].inputs).toEqual(newSimulation.inputs);
+      expect(state.simulations[1].index).toEqual(1);
     });
 
     it('should handle selecting a simulation', () => {

@@ -7,6 +7,7 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
   rejected: 'REJECTED',
   canceled: 'CANCELED',
   noresults: 'NORESULTS',
+  pending_additional: 'PENDING_ADDITIONAL',
 });
 
 export const STDCM_TRAIN_ID = -10;

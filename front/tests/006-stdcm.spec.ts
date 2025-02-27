@@ -1,6 +1,7 @@
 import type { Infra, TowedRollingStock } from 'common/api/osrdEditoastApi';
 
 import { electricRollingStockName, fastRollingStockName } from './assets/constants/project-const';
+import { CONFLICT_ARRIVAL_TIME } from './assets/constants/stdcm-const';
 import test from './logging-fixture';
 import ConsistSection from './pages/stdcm/consist-section';
 import DestinationSection from './pages/stdcm/destination-section';
@@ -9,7 +10,7 @@ import OriginSection from './pages/stdcm/origin-section';
 import SimulationResultPage from './pages/stdcm/simulation-results-page';
 import STDCMPage from './pages/stdcm/stdcm-page';
 import ViaSection from './pages/stdcm/via-section';
-import { handleAndVerifyInput, waitForInfraStateToBeCached } from './utils';
+import { waitForInfraStateToBeCached } from './utils';
 import { getInfra, setTowedRollingStock } from './utils/api-utils';
 import type { ConsistFields } from './utils/types';
 
@@ -28,7 +29,6 @@ test.describe('Verify stdcm simulation page', () => {
   let infra: Infra;
   let createdTowedRollingStock: TowedRollingStock;
 
-  const UPDATED_ORIGIN_ARRIVAL_DATE = '18/10/24';
   const consistDetails: ConsistFields = {
     tractionEngine: electricRollingStockName,
     tonnage: '950',
@@ -130,7 +130,7 @@ test.describe('Verify stdcm simulation page', () => {
       towedRollingStockPrefilledValues.tonnage,
       towedRollingStockPrefilledValues.length
     );
-    await originSection.fillOriginDetailsLight();
+    await originSection.fillOriginDetailsLight(CONFLICT_ARRIVAL_TIME);
     await destinationSection.fillDestinationDetailsLight();
     await viaSection.fillAndVerifyViaDetails({
       viaNumber: 1,
@@ -141,11 +141,11 @@ test.describe('Verify stdcm simulation page', () => {
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 0,
     });
-    // Update tonnage and launch a second simulation with capacity
-    await handleAndVerifyInput(originSection.dateOriginArrival, UPDATED_ORIGIN_ARRIVAL_DATE);
-    await stdcmPage.launchSimulation();
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 1,
+    });
+    await simulationResultPage.verifySimulationDetails({
+      simulationIndex: 2,
       simulationLengthAndDuration: '51 km — 2h 35min',
       validSimulationNumber: 1,
     });

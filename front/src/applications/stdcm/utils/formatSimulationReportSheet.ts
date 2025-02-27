@@ -111,8 +111,6 @@ export function getStopDurationBetweenTwoPositions(
 export function consolidateOvertakesToSingleSteps(
   steps: StdcmResultsOperationalPoint[]
 ): StdcmResultsOperationalPoint[] {
-  if (steps.length === 0) return [];
-
   function convertHHMMTimeToSeconds(time: string): number {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 3600 + minutes * 60;

@@ -1,4 +1,4 @@
-import { CheckCircle, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import { CheckCircle, ChevronLeft, ChevronRight, Sparkle } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -59,7 +59,7 @@ const StdcmSimulationNavigator = ({
               </div>
             )}
             <div className="simulation-list" ref={scrollableRef}>
-              {completedSimulations.map(({ index, creationDate, outputs }) => {
+              {completedSimulations.map(({ index, creationDate, outputs, alternativePath }) => {
                 let formatedTotalLength = '';
                 let formatedTripDuration = '';
                 const hasValidResults = hasResults(outputs);
@@ -84,6 +84,7 @@ const StdcmSimulationNavigator = ({
                     role="button"
                     tabIndex={0}
                     key={index}
+                    data-testid="simulation-item-button"
                     className={cx(SIMULATION_ITEM_CLASSNAME, {
                       retained: retainedSimulationIndex === index,
                       selected: selectedSimulationIndex === index,
@@ -91,7 +92,7 @@ const StdcmSimulationNavigator = ({
                     })}
                     onClick={() => onSelectSimulation(index)}
                   >
-                    <div className="simulation-name">
+                    <div data-testid="simulation-name" className="simulation-name">
                       <span>
                         {hasValidResults && !hasConflicts(outputs)
                           ? t('simulation.results.simulationName.withOutputs', {
@@ -105,6 +106,9 @@ const StdcmSimulationNavigator = ({
                       {retainedSimulationIndex === index && (
                         <CheckCircle className="check-circle" variant="fill" />
                       )}
+                      {alternativePath && (
+                        <Sparkle className="alternative-simulation" variant="fill" />
+                      )}
                     </div>
                     <div className="simulation-metadata" key={index}>
                       <span className="creation-date">
@@ -113,7 +117,10 @@ const StdcmSimulationNavigator = ({
                           ns: 'stdcm',
                         })}
                       </span>
-                      <span className="total-length-trip-duration">{`${formatedTotalLength}— ${formatedTripDuration}`}</span>
+                      <span
+                        data-testid="total-length-trip-duration"
+                        className="total-length-trip-duration"
+                      >{`${formatedTotalLength}— ${formatedTripDuration}`}</span>
                     </div>
                     {selectedSimulationIndex === index && (
                       <div className="selected-simulation-indicator" />

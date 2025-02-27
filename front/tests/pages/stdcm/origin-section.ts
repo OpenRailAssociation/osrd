@@ -95,7 +95,11 @@ class OriginSection extends STDCMPage {
   }
 
   // Fill origin section
-  async fillOriginDetailsLight(arrivalTypeOverride: string = '', isPrecise: boolean = false) {
+  async fillOriginDetailsLight(
+    arrivalTimeOverride?: string,
+    arrivalTypeOverride: string = '',
+    isPrecise: boolean = false
+  ) {
     const { input, chValue, arrivalDate, arrivalTime, tolerance, arrivalType } =
       LIGHT_ORIGIN_DETAILS;
     await this.dynamicOriginCi.fill(input);
@@ -106,7 +110,7 @@ class OriginSection extends STDCMPage {
       await expect(this.dynamicOriginCh).toHaveValue(chValue);
       await expect(this.originArrival).toHaveValue(arrivalType);
       await this.dateOriginArrival.fill(arrivalDate);
-      await this.timeOriginArrival.fill(arrivalTime);
+      await this.timeOriginArrival.fill(arrivalTimeOverride || arrivalTime);
       await this.fillToleranceField(
         this.toleranceOriginArrival,
         tolerance.negative,

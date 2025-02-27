@@ -41,7 +41,7 @@ const StcdmResultsTable = ({
 
   return (
     <div className="table-container">
-      <table className="table-results">
+      <table data-testid="table-results" className="table-results">
         <thead>
           <tr>
             <th aria-label="line-count" />

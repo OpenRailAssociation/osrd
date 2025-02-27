@@ -5,16 +5,10 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import useStdcmForm from 'applications/stdcm/hooks/useStdcmForm';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
-import {
-  resetMargins,
-  restoreStdcmConfig,
-  updateStdcmPathStep,
-  addStdcmSimulation,
-} from 'reducers/osrdconf/stdcmConf';
+import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getStdcmDestination,
   getStdcmInfraID,
@@ -54,6 +48,7 @@ declare global {
 type StdcmConfigProps = {
   isDebugMode: boolean;
   isPending: boolean;
+  isPendingAdditional: boolean;
   retainedSimulationIndex?: number;
   showBtnToLaunchSimulation: boolean;
   skipPathfindingStatusMessage: boolean;
@@ -65,6 +60,7 @@ type StdcmConfigProps = {
 const StdcmConfig = ({
   isDebugMode,
   isPending,
+  isPendingAdditional,
   retainedSimulationIndex,
   showBtnToLaunchSimulation,
   skipPathfindingStatusMessage,
@@ -97,8 +93,6 @@ const StdcmConfig = ({
 
   const [formErrors, setFormErrors] = useState<StdcmConfigErrors>();
 
-  const currentSimulationInputs = useStdcmForm();
-
   const disabled = isPending || retainedSimulationIndex !== undefined;
 
   const markersInfo = useMemo(() => extractMarkersInfo(pathSteps), [pathSteps]);
@@ -106,7 +100,6 @@ const StdcmConfig = ({
   const startSimulation = async () => {
     const formErrorsStatus = checkStdcmConfigErrors(pathSteps, t, pathfinding?.status);
     if (pathfinding?.status === 'success' && !formErrorsStatus) {
-      dispatch(addStdcmSimulation(currentSimulationInputs));
       launchStdcmRequest();
     } else {
       // The console error is only for debugging the user tests (temporary)
@@ -262,8 +255,9 @@ const StdcmConfig = ({
                   </div>
                 </div>
               )}
-              {isPending && (
+              {(isPending || isPendingAdditional) && (
                 <StdcmLoader
+                  isPendingAdditional={isPendingAdditional}
                   cancelStdcmRequest={cancelStdcmRequest}
                   launchButtonRef={launchButtonRef}
                   formRef={formRef}

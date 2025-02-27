@@ -78,3 +78,5 @@ export const VIA_STOP_TYPES = {
   SERVICE_STOP: 'serviceStop',
   DRIVER_SWITCH: 'driverSwitch',
 };
+
+export const CONFLICT_ARRIVAL_TIME = '06:05';

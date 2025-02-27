@@ -8,11 +8,10 @@ import {
   type ExtremityPathStepType,
   type StdcmLinkedTrainExtremity,
   type StdcmSimulation,
-  type StdcmSimulationInputs,
 } from 'applications/stdcm/types';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types';
-import { addElementAtIndex, replaceElementAtIndex } from 'utils/array';
+import { addElementAtIndex } from 'utils/array';
 import { isArrivalDateInSearchTimeWindow } from 'utils/date';
 import { Duration } from 'utils/duration';
 import type { ArrayElement, PickAndNonNullableFields } from 'utils/types';
@@ -275,27 +274,20 @@ export const stdcmConfSlice = createSlice({
       );
       state.stdcmPathSteps = newPathSteps;
     },
-    addStdcmSimulation(
+    addStdcmSimulations(
       state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<StdcmSimulationInputs>
+      action: PayloadAction<Omit<StdcmSimulation, 'index' | 'creationDate'>[]>
     ) {
-      state.simulations.push({
-        index: state.simulations.length,
-        inputs: action.payload,
-        creationDate: new Date(),
+      action.payload.forEach((simulation) => {
+        state.simulations.push({
+          ...simulation,
+          index: state.simulations.length,
+          creationDate: new Date(),
+        });
       });
-    },
-    updateLastStdcmResult(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<StdcmSimulation>
-    ) {
-      state.simulations = replaceElementAtIndex(
-        state.simulations,
-        state.simulations.length - 1,
-        action.payload
-      );
-      state.selectedSimulationIndex = state.simulations.length - 1;
-      updateSimulationState(state, action.payload);
+
+      // select the first simulation added
+      state.selectedSimulationIndex = state.simulations.length - action.payload.length;
     },
     selectSimulation(state: Draft<OsrdStdcmConfState>, action: PayloadAction<number>) {
       state.selectedSimulationIndex = action.payload;
@@ -324,11 +316,10 @@ export const {
   addStdcmVia,
   deleteStdcmVia,
   updateLinkedTrainExtremity,
-  updateLastStdcmResult,
   selectSimulation,
   retainSimulation,
-  addStdcmSimulation,
   updateStdcmLayers,
+  addStdcmSimulations,
 } = stdcmConfSlice.actions;
 
 export type StdcmConfSlice = typeof stdcmConfSlice;

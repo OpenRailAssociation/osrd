@@ -55,7 +55,7 @@ const StcdmResults = ({
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
   const layersSettings = useSelector(getStdcmSelectedLayers);
 
-  const { outputs } = selectedSimulation;
+  const { outputs, alternativePath } = selectedSimulation;
 
   const hasConflictResults = hasConflicts(outputs);
   const hasSimulationResults = hasResults(outputs);
@@ -94,6 +94,17 @@ const StcdmResults = ({
       />
       {outputs && (
         <>
+          {alternativePath && (
+            <div className="alternative-path-message">
+              <span className="stdcm-header__notification alternative-path">
+                {alternativePath === 'upstream' ? (
+                  <Trans components={{ underline: <u /> }}>{t('simulationUpstream')}</Trans>
+                ) : (
+                  <Trans components={{ underline: <u /> }}>{t('simulationDownstream')}</Trans>
+                )}
+              </span>
+            </div>
+          )}
           <div className="simulation-results">
             {hasSimulationResults && !hasConflictResults ? (
               <div className="results-and-sheet">
@@ -182,6 +193,11 @@ const StcdmResults = ({
                   </ul>
                 )}
                 <span>{t('changeSearchCriteria')}</span>
+                {!alternativePath && (
+                  <div className="alternative-simulations-info">
+                    {t('simulationsWithConflicts')}
+                  </div>
+                )}
               </div>
             )}
             <div className="osrd-config-item-container osrd-config-item-container-map map-results">

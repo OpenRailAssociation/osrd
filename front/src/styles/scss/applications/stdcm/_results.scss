@@ -3,6 +3,16 @@
   padding: 29px 32px 32px;
   position: relative;
 
+  .alternative-path-message {
+    .stdcm-header__notification.alternative-path {
+      max-height: unset;
+      display: block;
+      width: 804px;
+      padding: 14px 24px 18px 24px;
+      margin-bottom: 28px;
+    }
+  }
+
   .simulation-navigator {
     position: relative;
     color: rgb(0, 0, 0);
@@ -89,6 +99,13 @@
               align-items: center;
               margin-left: 8px;
               color: rgb(60, 202, 128);
+            }
+
+            .alternative-simulation {
+              display: flex;
+              align-items: center;
+              margin-left: 4px;
+              color: var(--info30);
             }
           }
 
@@ -340,6 +357,7 @@
       flex-shrink: 0;
       width: 836px;
       min-height: 168px;
+      padding-right: 32px;
       text-align: left;
       letter-spacing: 0;
       color: var(--grey80);
@@ -359,6 +377,23 @@
         font-weight: 400;
         font-style: Regular;
         line-height: 24px;
+      }
+
+      .alternative-simulations-info {
+        padding: 22px 40px 26px 40px;
+        text-align: center;
+        margin-top: 30px;
+        margin-right: 8px;
+        line-height: 24px;
+        border-radius: 8px;
+        color: var(--info60);
+        background-color: var(--info5);
+        box-shadow:
+          0 0 0 4px rgba(255, 255, 255, 1) inset,
+          0 0 0 5px rgb(112, 193, 229) inset,
+          0px 6px 21px -5px rgba(24, 68, 239, 0.26),
+          0px 16px 30px -5px rgba(0, 0, 0, 0.16),
+          0px 3px 5px -2px rgba(0, 0, 0, 0.1);
       }
     }
 

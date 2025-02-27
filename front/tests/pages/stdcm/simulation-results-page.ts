@@ -21,8 +21,6 @@ class SimulationResultPage extends STDCMPage {
 
   private readonly viaResultMarker: Locator;
 
-  private readonly simulationList: Locator;
-
   private readonly simulationResultTable: Locator;
 
   private readonly simulationTableRows: Locator;
@@ -47,22 +45,23 @@ class SimulationResultPage extends STDCMPage {
 
   private readonly feedbackButton: Locator;
 
+  readonly simulationItem: Locator;
+
   constructor(page: Page) {
     super(page);
+    this.simulationItem = page.getByTestId('simulation-item-button');
     this.mapResultContainer = page.locator('#stdcm-map-result');
     this.originResultMarker = this.mapResultContainer.locator('img[alt="origin"]');
     this.destinationResultMarker = this.mapResultContainer.locator('img[alt="destination"]');
     this.viaResultMarker = this.mapResultContainer.locator('img[alt="via"]');
-    this.simulationResultTable = page.locator('.simulation-results table.table-results');
+    this.simulationResultTable = page.getByTestId('table-results');
     this.simulationTableRows = page.locator('.table-results tbody tr');
     this.allViasButton = page.getByTestId('all-vias-button');
     this.retainSimulationButton = page.getByTestId('retain-simulation-button');
     this.downloadSimulationButton = page.locator('.download-simulation a[download]');
-    this.downloadSimulationButton = page.locator('.download-simulation a[download]');
     this.downloadLink = page.locator('.download-simulation a');
     this.startNewQueryButton = page.getByTestId('start-new-query-button');
     this.startNewQueryWithDataButton = page.getByTestId('start-new-query-with-data-button');
-    this.simulationList = page.locator('.stdcm-results .simulation-list');
     this.feedbackCardContainer = page.getByTestId('feedback-card');
     this.feedbackTitle = page.getByTestId('feedback-title');
     this.feedbackDescription = page.getByTestId('feedback-card-text');
@@ -70,13 +69,11 @@ class SimulationResultPage extends STDCMPage {
   }
 
   private getSimulationLengthAndDurationLocator(simulationIndex: number): Locator {
-    return this.simulationList
-      .locator('.simulation-metadata .total-length-trip-duration')
-      .nth(simulationIndex);
+    return this.page.getByTestId('total-length-trip-duration').nth(simulationIndex);
   }
 
-  private getSimulationNameLocator(simulationIndex: number): Locator {
-    return this.simulationList.locator('.simulation-name').nth(simulationIndex);
+  getSimulationNameLocator(simulationIndex: number): Locator {
+    return this.page.getByTestId('simulation-name').nth(simulationIndex);
   }
 
   async verifyTableData(tableDataPath: string): Promise<void> {
@@ -188,12 +185,12 @@ class SimulationResultPage extends STDCMPage {
       fr: frTranslations,
     });
     const noCapacityLengthAndDuration = '— ';
+    await this.simulationItem.nth(simulationIndex).click();
     // Determine expected simulation name
     const isResultTableVisible = await this.simulationResultTable.isVisible();
     const expectedSimulationName = isResultTableVisible
       ? `Simulation n°${validSimulationNumber}`
       : translations.simulation.results.simulationName.withoutOutputs;
-
     // Validate simulation name
     const actualSimulationName = await this.getSimulationNameLocator(simulationIndex).textContent();
     expect(actualSimulationName).toEqual(expectedSimulationName);

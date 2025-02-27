@@ -10,12 +10,18 @@ const LOADER_HEIGHT = 176;
 const LOADER_OFFSET = 32;
 
 type StdcmLoaderProps = {
+  isPendingAdditional: boolean;
   cancelStdcmRequest: () => void;
   launchButtonRef: RefObject<HTMLDivElement>;
   formRef: RefObject<HTMLDivElement>;
 };
 
-const StdcmLoader = ({ cancelStdcmRequest, launchButtonRef, formRef }: StdcmLoaderProps) => {
+const StdcmLoader = ({
+  cancelStdcmRequest,
+  launchButtonRef,
+  formRef,
+  isPendingAdditional,
+}: StdcmLoaderProps) => {
   const { t } = useTranslation('stdcm');
   const loaderRef = useRef<HTMLDivElement>(null);
 
@@ -86,7 +92,13 @@ const StdcmLoader = ({ cancelStdcmRequest, launchButtonRef, formRef }: StdcmLoad
       })}
     >
       <div className="stdcm-loader__wrapper">
-        <h2>{t('simulation.calculatingSimulation')}</h2>
+        <h2>
+          {t(
+            isPendingAdditional
+              ? 'simulation.additionalResults'
+              : 'simulation.calculatingSimulation'
+          )}
+        </h2>
         <div className="stdcm-loader__cancel-btn">
           <Button
             data-testid="cancel-simulation-button"

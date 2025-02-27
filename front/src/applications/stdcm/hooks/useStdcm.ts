@@ -11,60 +11,58 @@ import {
 } from 'applications/stdcm/consts';
 import type {
   StdcmRequestStatus,
-  StdcmSuccessResponse,
   StdcmResponse,
-  StdcmConflictsResponse,
-  StdcmPathProperties,
+  StdcmSimulation,
+  StdcmSimulationInputs,
 } from 'applications/stdcm/types';
 import {
   osrdEditoastApi,
-  type Conflict,
+  type PostTimetableByIdStdcmApiArg,
+  type PostTimetableByIdStdcmApiResponse,
+  type RollingStockWithLiveries,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { setFailure } from 'reducers/main';
-import { getStdcmConf, getStdcmTimetableID } from 'reducers/osrdconf/stdcmConf/selectors';
+import { addStdcmSimulations } from 'reducers/osrdconf/stdcmConf';
+import {
+  getStdcmConf,
+  getStdcmTimetableID,
+  getStdcmInfraID,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import useStdcmResults from './useStdcmResults';
+import useStdcmForm from './useStdcmForm';
+import { adjustInputByDirection, adjustPayloadByDirection } from '../utils/adjustSimulationInputs';
+import fetchPathProperties from '../utils/fetchPathProperties';
 import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConf';
+import computeChartData from '../utils/stdcmComputeChartData';
 
 /**
- * Hook to manage the stdcm request
- * @param showFailureNotification boolean to show or not the failure notification.
- * Sometimes we don't want to handle failure using the default behaviour by display the snackbar.
- * We want to keep the component which call the stdcm hook to handle the failure.
- *
- * @returns object with all the necessary information to manage the stdcm request/response
+ * Hook to manage the stdcm request with integrated results and chart data handling.
  */
 const useStdcm = ({
   showFailureNotification = true,
 }: { showFailureNotification?: boolean } = {}) => {
-  const [stdcmTrainResult, setStdcmTrainResult] = useState<TrainScheduleResult>();
-  const [stdcmTrainConflicts, setStdcmTrainConflicts] = useState<Conflict[]>();
-  const [stdcmResponse, setStdcmResponse] = useState<StdcmResponse>();
   const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState<StdcmRequestStatus>(
     STDCM_REQUEST_STATUS.idle
   );
-  const [pathProperties, setPathProperties] = useState<StdcmPathProperties>();
 
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['translation', 'stdcm']);
   const osrdconf = useSelector(getStdcmConf);
   const timetableId = useSelector(getStdcmTimetableID);
+  const infraId = useSelector(getStdcmInfraID);
   const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>>();
-
-  const stdcmResults = useStdcmResults(stdcmResponse, stdcmTrainResult, setPathProperties);
+  const currentSimulationInputs = useStdcmForm();
 
   const [postTimetableByIdStdcm] = osrdEditoastApi.endpoints.postTimetableByIdStdcm.useMutation();
 
   const { data: stdcmRollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
-      {
-        rollingStockId: osrdconf.rollingStockID!,
-      },
+      { rollingStockId: osrdconf.rollingStockID! },
       { skip: !osrdconf.rollingStockID }
     );
 
@@ -74,10 +72,6 @@ const useStdcm = ({
   });
 
   const resetStdcmState = () => {
-    setStdcmTrainResult(undefined);
-    setStdcmTrainConflicts(undefined);
-    setStdcmResponse(undefined);
-    setPathProperties(undefined);
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.idle);
   };
 
@@ -87,74 +81,154 @@ const useStdcm = ({
     }
   };
 
+  const createSimulation = async (
+    inputs: StdcmSimulationInputs,
+    payload: PostTimetableByIdStdcmApiArg,
+    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' | 'conflicts' }>,
+    alternativePath?: 'upstream' | 'downstream'
+  ): Promise<Omit<StdcmSimulation, 'index'>> => {
+    const formattedResponse = {
+      ...response,
+      rollingStock: stdcmRollingStock,
+      creationDate: new Date(),
+      speedLimitByTag: osrdconf.speedLimitByTag,
+      simulationPathSteps: osrdconf.stdcmPathSteps,
+      path: response.status === 'conflicts' ? response.pathfinding_result : response.path,
+    } as StdcmResponse;
+
+    const pathProperties = await fetchPathProperties(formattedResponse.path, infraId, dispatch);
+
+    // If the response is successful compute the chart data, otherwise only include conflicts.
+    let outputs;
+    if (formattedResponse.status === 'success') {
+      const stdcmTrain: TrainScheduleResult = {
+        id: STDCM_TRAIN_ID,
+        timetable_id: timetableId,
+        comfort: payload.body.comfort,
+        constraint_distribution: 'MARECO',
+        path: payload.body.steps.map((step) => ({ ...step.location, id: nextId() })),
+        rolling_stock_name: stdcmRollingStock!.name,
+        start_time: formattedResponse.departure_time,
+        train_name: 'stdcm',
+      };
+      const chartData = computeChartData(
+        formattedResponse,
+        stdcmTrain,
+        t,
+        stdcmRollingStock as RollingStockWithLiveries,
+        pathProperties
+      );
+      outputs = {
+        pathProperties,
+        results: formattedResponse,
+        speedSpaceChartData: chartData,
+      };
+    } else {
+      outputs = { pathProperties, conflicts: formattedResponse.conflicts };
+    }
+
+    return {
+      creationDate: formattedResponse.creationDate,
+      inputs,
+      outputs,
+      alternativePath,
+    };
+  };
+
+  const handleSuccess = async (
+    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' }>,
+    payload: PostTimetableByIdStdcmApiArg
+  ) => {
+    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
+    dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
+
+    const simulation = await createSimulation(currentSimulationInputs, payload, response);
+    dispatch(addStdcmSimulations([simulation]));
+  };
+
+  const handleConflicts = async (
+    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'conflicts' }>,
+    payload: PostTimetableByIdStdcmApiArg
+  ) => {
+    try {
+      setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending_additional);
+
+      const payloadUpstream = adjustPayloadByDirection(payload, 'upstream');
+      const payloadDownstream = adjustPayloadByDirection(payload, 'downstream');
+
+      // run two additional requests with different payloads for alternative simulations
+      const [resUp, resDown] = await Promise.all([
+        postTimetableByIdStdcm(payloadUpstream).unwrap(),
+        postTimetableByIdStdcm(payloadDownstream).unwrap(),
+      ]);
+
+      if (
+        resUp.status === 'preprocessing_simulation_error' ||
+        resDown.status === 'preprocessing_simulation_error'
+      ) {
+        throw new Error('Error in response');
+      }
+
+      dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
+
+      const upstreamInputs = adjustInputByDirection(currentSimulationInputs, 'upstream');
+      const downstreamInputs = adjustInputByDirection(currentSimulationInputs, 'downstream');
+
+      const [currentSimulation, downstreamSimulation, upstreamSimulation] = await Promise.all([
+        createSimulation(currentSimulationInputs, payload, response, undefined),
+        createSimulation(downstreamInputs, payloadDownstream, resDown, 'downstream'),
+        createSimulation(upstreamInputs, payloadUpstream, resUp, 'upstream'),
+      ]);
+
+      dispatch(addStdcmSimulations([currentSimulation, downstreamSimulation, upstreamSimulation]));
+
+      setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
+    } catch (error) {
+      setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
+      triggerShowFailureNotification(
+        castErrorToFailure(error, {
+          name: t('stdcm:stdcmErrors.requestFailed'),
+          message: t('translation:common.error'),
+        })
+      );
+    }
+  };
+
+  const handleRejection = (error: unknown) => {
+    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
+    triggerShowFailureNotification(
+      castErrorToFailure(error, {
+        name: t('stdcm:stdcmErrors.requestFailed'),
+        message: t('translation:common.error'),
+      })
+    );
+  };
+
   const launchStdcmRequest = async () => {
-    setStdcmResponse(undefined);
-    setStdcmTrainConflicts(undefined);
+    resetStdcmState();
 
     const validConfig = checkStdcmConf(dispatch, t, osrdconf);
-    if (validConfig) {
-      setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
-      const payload = formatStdcmPayload(validConfig);
-      try {
-        const promise = postTimetableByIdStdcm(payload);
-        requestPromise.current = promise;
+    if (!validConfig) return;
 
-        const response = await promise.unwrap();
+    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
+    const payload = formatStdcmPayload(validConfig);
 
-        if (
-          response.status === 'success' &&
-          response.simulation.status === 'success' &&
-          stdcmRollingStock
-        ) {
-          setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
-          setStdcmResponse({
-            ...response,
-            rollingStock: stdcmRollingStock,
-            creationDate: new Date(),
-            speedLimitByTag: osrdconf.speedLimitByTag,
-            simulationPathSteps: osrdconf.stdcmPathSteps,
-          } as StdcmSuccessResponse);
+    try {
+      const promise = postTimetableByIdStdcm(payload);
+      requestPromise.current = promise;
 
-          const stdcmTrain: TrainScheduleResult = {
-            id: STDCM_TRAIN_ID,
-            timetable_id: timetableId,
-            comfort: payload.body.comfort,
-            constraint_distribution: 'MARECO',
-            path: payload.body.steps.map((step) => ({ ...step.location, id: nextId() })),
-            rolling_stock_name: stdcmRollingStock.name,
-            start_time: response.departure_time,
-            train_name: 'stdcm',
-          };
-          setStdcmTrainResult(stdcmTrain);
-          dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
-        } else if (response.status === 'conflicts') {
-          setStdcmResponse({
-            ...response,
-            rollingStock: stdcmRollingStock,
-            creationDate: new Date(),
-            speedLimitByTag: osrdconf.speedLimitByTag,
-            simulationPathSteps: osrdconf.stdcmPathSteps,
-            path: response.pathfinding_result,
-          } as StdcmConflictsResponse);
-          setStdcmTrainConflicts(response.conflicts); // Set conflicts
-          setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success); // Conflicts but still success in this case
-        } else {
-          setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-          triggerShowFailureNotification({
-            name: t('stdcm:stdcmErrors.requestFailed'),
-            message: t('translation:common.error'),
-          });
-        }
-      } catch (e) {
-        if ((e as Error).name !== 'AbortError') {
-          setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-          triggerShowFailureNotification(
-            castErrorToFailure(e, {
-              name: t('stdcm:stdcmErrors.requestFailed'),
-              message: t('translation:common.error'),
-            })
-          );
-        }
+      const response = await promise.unwrap();
+
+      if (response.status === 'success') {
+        await handleSuccess(response, payload);
+      } else if (response.status === 'conflicts') {
+        await handleConflicts(response, payload);
+      } else {
+        handleRejection(new Error('Unexpected response status.'));
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        handleRejection(err);
       }
     }
   };
@@ -168,23 +242,21 @@ const useStdcm = ({
   };
 
   const isPending = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending;
+  const isPendingAdditional = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending_additional;
   const isRejected = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.rejected;
   const isCanceled = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.canceled;
-  const hasConflicts = (stdcmTrainConflicts?.length ?? 0) > 0;
+  const isCalculationCompleted = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success;
 
   return {
-    stdcmResults,
     launchStdcmRequest,
     cancelStdcmRequest,
     resetStdcmState,
-    pathProperties,
-    setPathProperties,
     isPending,
     isRejected,
     isCanceled,
-    stdcmTrainConflicts,
-    hasConflicts,
+    isPendingAdditional,
     isCalculationFailed: isRejected,
+    isCalculationCompleted,
   };
 };
 

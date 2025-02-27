@@ -27,6 +27,7 @@ export type StdcmSuccessResponse = Omit<
   creationDate: Date;
   speedLimitByTag?: string;
   simulationPathSteps: StdcmPathStep[];
+  alternativePath?: 'upstream' | 'downstream';
 };
 
 export type StdcmConflictsResponse = Extract<
@@ -38,6 +39,7 @@ export type StdcmConflictsResponse = Extract<
   speedLimitByTag?: string;
   simulationPathSteps: StdcmPathStep[];
   path: PathfindingResultSuccess;
+  alternativePath?: 'upstream' | 'downstream';
 };
 
 export type StdcmResponse = StdcmConflictsResponse | StdcmSuccessResponse;
@@ -158,6 +160,7 @@ export type StdcmSimulation = {
   creationDate: Date;
   inputs: StdcmSimulationInputs;
   outputs?: StdcmSimulationOutputs;
+  alternativePath?: 'upstream' | 'downstream';
 };
 
 /** This type is used for StdcmConsist component */

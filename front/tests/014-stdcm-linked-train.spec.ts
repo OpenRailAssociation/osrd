@@ -113,7 +113,7 @@ test.describe('Verify stdcm simulation page', () => {
       viaNumber: 1,
       ciSearchText: 'mid_east',
     });
-    await originSection.fillOriginDetailsLight('respectDestinationSchedule', true);
+    await originSection.fillOriginDetailsLight(undefined, 'respectDestinationSchedule', true);
     await stdcmPage.launchSimulation();
     await simulationResultPage.verifyTableData(
       './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'

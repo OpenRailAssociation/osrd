@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux';
 
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import { LoaderFill } from 'common/Loaders';
-import { selectSimulation, updateLastStdcmResult } from 'reducers/osrdconf/stdcmConf';
+import { selectSimulation } from 'reducers/osrdconf/stdcmConf';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulationIndex,
@@ -33,7 +33,6 @@ import StdcmResults from '../components/StdcmResults';
 import StdcmStatusBanner from '../components/StdcmStatusBanner';
 import useStdcmEnvironment, { NO_CONFIG_FOUND_MSG } from '../hooks/useStdcmEnv';
 import useStdcmForm from '../hooks/useStdcmForm';
-import type { StdcmSimulation } from '../types';
 
 const StdcmViewContent = ({
   isDebugMode,
@@ -46,7 +45,6 @@ const StdcmViewContent = ({
   showStatusBanner: boolean;
   setShowStatusBanner: Dispatch<SetStateAction<boolean>>;
 }) => {
-  // TODO : refacto. state useStdcm. Maybe we can merge some state together in order to reduce the number of refresh
   const currentSimulationInputs = useStdcmForm();
   const simulationsList = useSelector(getStdcmSimulations);
   const completedSimulations = useSelector(getStdcmCompletedSimulations);
@@ -65,13 +63,11 @@ const StdcmViewContent = ({
     cancelStdcmRequest,
     resetStdcmState,
     isPending,
+    isPendingAdditional,
     isRejected,
     isCanceled,
-    stdcmResults,
-    pathProperties,
-    stdcmTrainConflicts,
-    hasConflicts,
     isCalculationFailed,
+    isCalculationCompleted,
   } = useStdcm({ showFailureNotification: false });
 
   const dispatch = useAppDispatch();
@@ -124,10 +120,10 @@ const StdcmViewContent = ({
   }, [currentSimulationInputs, selectedSimulationIndex]);
 
   useEffect(() => {
-    if (isPending) {
+    if (isPending || isPendingAdditional) {
       setShowBtnToLaunchSimulation(false);
     }
-  }, [isPending]);
+  }, [isPending, isPendingAdditional]);
 
   useEffect(() => {
     if (isCanceled) {
@@ -136,42 +132,11 @@ const StdcmViewContent = ({
   }, [isCanceled]);
 
   useEffect(() => {
-    /*
-     * Due to frequent re-renders and the fact that "speedSpaceChartData" is initially null before
-     * "formattedPathProperties" is computed, we need to check if the current simulation is already
-     * listed in the simulations list. This helps us determine whether to add a new simulation or update
-     * the existing one.
-     */
-    const lastSimulation = simulationsList.at(-1);
-    const isSimulationOutputsComplete = stdcmResults?.stdcmResponse || hasConflicts;
-
-    if (lastSimulation && isSimulationOutputsComplete && pathProperties) {
-      dispatch(
-        updateLastStdcmResult({
-          ...lastSimulation,
-          outputs: {
-            pathProperties,
-            ...(stdcmResults?.stdcmResponse &&
-              stdcmResults?.speedSpaceChartData && {
-                results: stdcmResults.stdcmResponse,
-                speedSpaceChartData: stdcmResults.speedSpaceChartData,
-              }),
-            ...(stdcmTrainConflicts && {
-              conflicts: stdcmTrainConflicts,
-            }),
-          },
-        } as StdcmSimulation)
-      );
-
+    if (isCalculationCompleted) {
       setShowStatusBanner(true);
     }
-  }, [
-    pathProperties,
-    stdcmResults?.speedSpaceChartData?.formattedPathProperties,
-    stdcmTrainConflicts,
-  ]);
+  }, [isCalculationCompleted]);
 
-  // We have a simulation with an error.
   useEffect(() => {
     if (isRejected) {
       setShowStatusBanner(true);
@@ -196,6 +161,7 @@ const StdcmViewContent = ({
     <div>
       <StdcmConfig
         isPending={isPending}
+        isPendingAdditional={isPendingAdditional}
         isDebugMode={isDebugMode}
         showBtnToLaunchSimulation={showBtnToLaunchSimulation}
         retainedSimulationIndex={retainedSimulationIndex}
