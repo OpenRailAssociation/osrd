@@ -9,8 +9,14 @@ import type { ScenarioForm } from '../components/AddOrEditScenarioModal';
  * @param trainsDetails - An array of TrainScheduleResult objects containing train details.
  * @returns An object representing the datetime window of the scenario, with `begin` and `end` properties.
  */
-export const getScenarioDatetimeWindow = (trainsDetails: TrainScheduleResult[] = []) => {
-  if (trainsDetails.length === 0) return undefined;
+export const getScenarioDatetimeWindow = (trainsDetails: TrainScheduleResult[]) => {
+  if (trainsDetails.length === 0) {
+    return {
+      begin: new Date(new Date().setHours(0, 0, 0, 0)),
+      end: new Date(new Date().setHours(23, 59, 59, 999)),
+    };
+  }
+
   const sortedDateList = trainsDetails
     .map((train) => new Date(train.start_time))
     .sort((a, b) => a.getTime() - b.getTime());

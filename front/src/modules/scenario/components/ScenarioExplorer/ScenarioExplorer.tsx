@@ -74,7 +74,7 @@ const ScenarioExplorer = ({
   };
 
   useEffect(() => {
-    if (scenario) {
+    if (scenario && timetable) {
       const scenarioDateTimeWindow = getScenarioDatetimeWindow(timetable);
 
       // We also set the stdcm environment in case we select a scenario from the stdcm interface.
@@ -87,7 +87,7 @@ const ScenarioExplorer = ({
         })
       );
     }
-  }, [scenario, timetable]);
+  }, [timetable]);
 
   useEffect(() => {
     if (projectDetails?.image) {

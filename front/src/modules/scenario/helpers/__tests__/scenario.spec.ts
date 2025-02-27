@@ -7,7 +7,11 @@ import { getScenarioDatetimeWindow } from '../utils';
 describe('getScenarioDatetimeWindow', () => {
   it('should return undefined if trainsDetails is empty', () => {
     const result = getScenarioDatetimeWindow([]);
-    expect(result).toBeUndefined();
+    const expected = {
+      begin: new Date(new Date().setHours(0, 0, 0, 0)),
+      end: new Date(new Date().setHours(23, 59, 59, 999)),
+    };
+    expect(result).toEqual(expected);
   });
 
   it('should return the correct begin and end dates', () => {
