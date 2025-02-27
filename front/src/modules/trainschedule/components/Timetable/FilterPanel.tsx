@@ -82,6 +82,8 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             id="timetable-label-filter"
             name="timetable-label-filter"
             label={t('timetable.filterLabel')}
+            narrow
+            small
             value={nameLabelFilter}
             onChange={(e) => setNameLabelFilter(e.target.value)}
             placeholder={t('filterPlaceholder')}
@@ -94,6 +96,8 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             getOptionValue={(option) => option.value}
             id="train-validity"
             label={t('timetable.validityFilter')}
+            narrow
+            small
             onChange={(selectedOption) => {
               if (selectedOption) {
                 setValidityFilter(selectedOption.value);
@@ -110,6 +114,8 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             getOptionValue={(option) => option.value}
             id="train-type"
             label={t('timetable.trainType')}
+            narrow
+            small
             onChange={(selectedOption) => {
               if (selectedOption) {
                 setTrainTypeFilter(selectedOption.value);
@@ -128,6 +134,8 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             id="timetable-rollingstock-filter"
             name="timetable-rollingstock-filter"
             label={t('timetable.advancedFilterLabel')}
+            narrow
+            small
             value={rollingStockFilter}
             onChange={(e) => setRollingStockFilter(e.target.value)}
             placeholder={t('timetable.rollingStockFilterPlaceholder')}
@@ -140,6 +148,8 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
             getOptionValue={(option) => option.value}
             id="train-keep-timetable"
             label={t('timetable.punctuality')}
+            narrow
+            small
             onChange={(selectedOption) => {
               if (selectedOption) {
                 setScheduledPointsHonoredFilter(selectedOption.value);
