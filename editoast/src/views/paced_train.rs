@@ -1,11 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use crate::core::simulation::SimulationResponse;
-use crate::error::Result;
-use crate::models::prelude::*;
-use crate::views::projection::ProjectPathTrainResult;
-use crate::views::ListId;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -26,7 +21,13 @@ use super::AppState;
 use super::AuthenticationExt;
 use super::InfraIdQueryParam;
 use super::SimulationSummaryResult;
-use crate::{models::paced_train::PacedTrain, views::AuthorizationError};
+use crate::core::simulation::SimulationResponse;
+use crate::error::Result;
+use crate::models::paced_train::PacedTrain;
+use crate::models::prelude::*;
+use crate::views::projection::ProjectPathTrainResult;
+use crate::views::AuthorizationError;
+use crate::views::ListId;
 
 crate::routes! {
     "/paced_train" => {
@@ -54,6 +55,9 @@ enum PacedTrainError {
     #[error("{count} paced train(s) could not be found")]
     #[editoast_error(status = 404)]
     BatchPacedTrainNotFound { count: usize },
+    #[editoast_error(status = 404)]
+    #[error("Paced train {paced_train_id} does not exist")]
+    PacedTrainNotFound { paced_train_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::model::Error),
@@ -83,6 +87,45 @@ impl From<PacedTrain> for PacedTrainResult {
             paced_train: value.into(),
         }
     }
+}
+
+#[derive(Debug, IntoParams, Deserialize)]
+struct PacedTrainIdParam {
+    id: i64,
+}
+
+/// Get a paced train by its ID
+#[utoipa::path(
+    get, path = "",
+    tag = "timetable,paced_train",
+    params(PacedTrainIdParam),
+    responses(
+        (status = 204, body = PacedTrainResult, description = "The requested paced train")
+    )
+)]
+async fn get_by_id(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(auth): AuthenticationExt,
+    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([BuiltinRole::InfraRead, BuiltinRole::TimetableRead].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    let paced_train = PacedTrain::retrieve_or_fail(conn, paced_train_id, || {
+        PacedTrainError::PacedTrainNotFound { paced_train_id }
+    })
+    .await?;
+
+    let paced_train: PacedTrainResult = paced_train.into();
+
+    Ok(Json(paced_train))
 }
 
 /// Delete a paced train
@@ -116,30 +159,6 @@ async fn delete(
     .await?;
 
     Ok(axum::http::StatusCode::NO_CONTENT)
-}
-
-#[derive(Debug, IntoParams, Deserialize)]
-struct PacedTrainIdParam {
-    id: i64,
-}
-
-/// Get a paced train by its ID
-#[utoipa::path(
-    get, path = "",
-    tag = "timetable, paced_train",
-    params(PacedTrainIdParam),
-    responses(
-        (status = 204, body = PacedTrainResult, description = "The requested paced train")
-    )
-)]
-async fn get_by_id(
-    State(_db_pool): State<DbConnectionPoolV2>,
-    Extension(_auth): AuthenticationExt,
-    Path(PacedTrainIdParam {
-        id: _paced_train_id,
-    }): Path<PacedTrainIdParam>,
-) -> Result<Json<PacedTrainResult>> {
-    todo!();
 }
 
 #[utoipa::path(
@@ -294,18 +313,19 @@ async fn project_path(
 
 #[cfg(test)]
 mod tests {
+    use axum::http::StatusCode;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
 
+    use crate::error::InternalError;
+    use crate::models::fixtures::create_simple_paced_train;
+    use crate::models::fixtures::create_timetable;
+    use crate::models::fixtures::simple_paced_train_base;
+    use crate::models::paced_train::PacedTrain;
     use crate::models::prelude::*;
-    use crate::{
-        models::{
-            fixtures::{create_simple_paced_train, create_timetable, simple_paced_train_base},
-            paced_train::PacedTrain,
-        },
-        views::{paced_train::PacedTrainResult, test_app::TestAppBuilder},
-    };
-    use axum::http::StatusCode;
+    use crate::views::paced_train::PacedTrainResult;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
     async fn paced_train_post() {
@@ -343,5 +363,45 @@ mod tests {
             .expect("Failed to retrieve paced_train");
 
         assert!(!exists);
+    }
+
+    #[rstest]
+    async fn get_not_found_paced_train() {
+        let app = TestAppBuilder::default_app();
+        let request = app.get(&format!("/paced_train/{}", 0));
+
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::NOT_FOUND)
+            .json_into();
+
+        assert_eq!(
+            &response.error_type,
+            "editoast:paced_train:PacedTrainNotFound"
+        )
+    }
+
+    #[rstest]
+    async fn get_paced_train() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+
+        let request = app.get(&format!("/paced_train/{}", paced_train.id));
+
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<PacedTrainResult>();
+
+        assert_eq!(paced_train.id, response.id);
+        assert_eq!(paced_train.timetable_id, response.timetable_id);
+        assert_eq!(
+            paced_train.duration,
+            response.paced_train.paced.duration.into()
+        );
+        assert_eq!(paced_train.step, response.paced_train.paced.step.into());
     }
 }

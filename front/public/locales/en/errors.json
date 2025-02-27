@@ -241,7 +241,8 @@
     },
     "paced_train": {
       "Database": "Internal error (database)",
-      "BatchPacedTrainNotFound": "Some Paced trains could not be found"
+      "BatchPacedTrainNotFound": "Some Paced trains could not be found",
+      "PacedTrainNotFound": "Paced train '{{paced_train_id}}' not found"
     },
     "url": {
       "InvalidUrl": "Invalid url '{{url}}'"

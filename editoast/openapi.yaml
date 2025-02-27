@@ -5139,6 +5139,7 @@ components:
       - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorBatchPacedTrainNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorDatabase'
+      - $ref: '#/components/schemas/EditoastPacedTrainErrorPacedTrainNotFound'
       - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPage'
       - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPageSize'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
@@ -5676,6 +5677,30 @@ components:
           type: string
           enum:
           - editoast:paced_train:Database
+    EditoastPacedTrainErrorPacedTrainNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - paced_train_id
+          properties:
+            paced_train_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:PacedTrainNotFound
     EditoastPaginationErrorInvalidPage:
       type: object
       required:

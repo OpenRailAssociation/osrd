@@ -238,7 +238,8 @@
     },
     "paced_train": {
       "Database": "Erreur interne (base de données)",
-      "BatchPacedTrainNotFound": "Certaines missions sont introuvables"
+      "BatchPacedTrainNotFound": "Certaines missions sont introuvables",
+      "PacedTrainNotFound": "Mission '{{paced_train_id}}' non trouvée"
     },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"
