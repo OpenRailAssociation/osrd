@@ -134,7 +134,9 @@ const InfraSelectorModalBodyEdition = ({
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label className="infra-add-import-input-file with-file">
                   <VscJson />
-                  <span className="ml-2">{selectedFile.name}</span>
+                  <span className="ml-2" title={selectedFile.name}>
+                    {selectedFile.name}
+                  </span>
                   <input type="file" onChange={handleSelect} accept=".json" />
                 </label>
                 <button

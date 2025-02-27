@@ -347,6 +347,11 @@
     border: 2px dashed var(--coolgray3);
     border-radius: 4px;
     width: 100%;
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     cursor: pointer;
     transition: 0.2s;
     font-weight: 100;
