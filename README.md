@@ -16,6 +16,7 @@
   <a href="https://github.com/OpenRailAssociation/osrd/blob/dev/LICENSE"><img src="https://img.shields.io/badge/license-LGPL-blue.svg" alt="LGPL License badge" /></a>
   <a href="https://github.com/OpenRailAssociation/osrd/actions/workflows/build.yml"><img src="https://github.com/OpenRailAssociation/osrd/actions/workflows/build.yml/badge.svg" alt="Build Status" /></a>
   <a href="https://api.reuse.software/info/github.com/OpenRailAssociation/osrd"><img src="https://api.reuse.software/badge/github.com/OpenRailAssociation/osrd" alt="REUSE status" /></a>
+  <a href="https://github.com/OpenRailAssociation/technical-committee/blob/main/incubation-process.md"><img src="https://openrailassociation.org/badges/openrail-project-stage-2.svg" alt="Openrail Incubation Stage" /></a>
 </p>
 
 ## What is OSRD?
