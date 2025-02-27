@@ -1020,11 +1020,23 @@ jobs:
 
       - name: Run Playwright tests
         run: |
+          # Determine the Playwright projects to run
+          if [[ "${{ github.event_name }}" == "merge_group"  ||
+                "${{ github.ref }}" == "refs/heads/dev" ||
+                "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            TEST_PROJECT="" # Run all browsers
+            echo "Running Playwright tests on both Chromium and Firefox"
+          else
+            TEST_PROJECT="--project=chromium"
+            echo "Running Playwright tests on Chromium only"
+          fi
+              # Run Playwright tests
           docker run --init --name=playwright-test --net=host \
             -e CI=true \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
             --ipc=host \
             -v "$PWD/front/test-results:/app/front/test-results" \
-            osrd-playwright:latest npx playwright test
+            osrd-playwright:latest npx playwright test $TEST_PROJECT
           exit $(docker wait playwright-test)
 
       - uses: actions/upload-artifact@v4
