@@ -9,12 +9,24 @@
 set -e
 
 if [ "$#" = 0 ]; then
-	echo "Missing path to RailJSON rolling stock"
-	exit 1
+    echo "Missing path to RailJSON rolling stock"
+    exit 1
 fi
 
-echo "Loading $# example rolling stock(s)"
-for rolling_stock_path in "$@"; do
-	docker cp "${rolling_stock_path}" osrd-editoast:tmp/stock.json
-	docker exec osrd-editoast editoast import-rolling-stock //tmp/stock.json
+FORCE_OPTION=""
+ROLLING_STOCK_PATHS=""
+for arg in "$@"; do
+    if [ "$arg" = "--force" ]; then
+        FORCE_OPTION="--force"
+    else
+        ROLLING_STOCK_PATHS="$ROLLING_STOCK_PATHS $arg"
+    fi
+done
+
+echo "Loading $(echo "$ROLLING_STOCK_PATHS" | wc -w) example rolling stock(s)"
+for rolling_stock_path in $ROLLING_STOCK_PATHS; do
+    docker cp "$rolling_stock_path" osrd-editoast:tmp/stock.json
+    # ignore the mandatory "" around $FORCE_OPTION, since "" is interpreted as an arg
+    # shellcheck disable=SC2086
+    docker exec osrd-editoast editoast import-rolling-stock //tmp/stock.json $FORCE_OPTION
 done

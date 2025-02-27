@@ -16,11 +16,15 @@ use crate::models::towed_rolling_stock::TowedRollingStockModel;
 use crate::models::RollingStockModel;
 use crate::CliError;
 
-#[derive(Args, Debug)]
+#[derive(Args, Clone, Debug)]
 #[command(about, long_about = "Import a rolling stock given a json file")]
 pub struct ImportRollingStockArgs {
     /// Rolling stock file path
     rolling_stock_path: Vec<PathBuf>,
+
+    /// If true, force the update of the rolling stock if it already exists
+    #[clap(long, default_value_t = false)]
+    pub force: bool,
 }
 
 pub async fn import_rolling_stock(
@@ -28,9 +32,11 @@ pub async fn import_rolling_stock(
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for rolling_stock_path in args.rolling_stock_path {
+        let mut conn = db_pool.get().await?;
         let rolling_stock_file = File::open(rolling_stock_path)?;
         let rolling_stock: RollingStock =
             serde_json::from_reader(BufReader::new(rolling_stock_file))?;
+        let rolling_stock_name = rolling_stock.name.clone();
         let rolling_stock: Changeset<RollingStockModel> = rolling_stock.into();
         match rolling_stock.validate() {
             Ok(()) => {
@@ -42,16 +48,42 @@ pub async fn import_rolling_stock(
                         .unwrap_or("rolling stock without name")
                         .bold()
                 );
-                let rolling_stock = rolling_stock
-                    .locked(false)
-                    .version(0)
-                    .create(&mut db_pool.get().await?)
-                    .await?;
-                println!(
-                    "✅ Rolling stock {}[{}] saved!",
-                    &rolling_stock.name.bold(),
-                    &rolling_stock.id
-                );
+                let existing_rolling_stock =
+                    RollingStockModel::retrieve(&mut conn, rolling_stock_name.clone()).await?;
+                match (existing_rolling_stock, args.force) {
+                    (Some(_), true) => {
+                        let rolling_stock = rolling_stock
+                            .locked(false)
+                            .version(0)
+                            .update(&mut conn, rolling_stock_name.clone())
+                            .await?
+                            .unwrap();
+                        println!(
+                            "   ↳ ✅ Rolling stock {}[{}] saved! (forced update)",
+                            &rolling_stock_name.bold(),
+                            &rolling_stock.id,
+                        );
+                    }
+                    (Some(existing_rolling_stock), false) => {
+                        println!(
+                            "   ↳ ⚠️  Rolling stock {}[{}] already existing! (try use \"--force\" to update it)",
+                            &rolling_stock_name.bold(),
+                            &existing_rolling_stock.id,
+                        );
+                    }
+                    _ => {
+                        let rolling_stock = rolling_stock
+                            .locked(false)
+                            .version(0)
+                            .create(&mut conn)
+                            .await?;
+                        println!(
+                            "   ↳ ✅ Rolling stock {}[{}] saved!",
+                            &rolling_stock_name.bold(),
+                            &rolling_stock.id,
+                        );
+                    }
+                }
             }
             Err(e) => {
                 let mut error_message = "❌ Rolling stock was not created!".to_string();
@@ -116,6 +148,7 @@ mod tests {
 
         use crate::client::generate_temp_file;
 
+        use editoast_common::units;
         use editoast_models::DbConnectionPoolV2;
         use rstest::rstest;
 
@@ -133,6 +166,7 @@ mod tests {
             let db_pool = DbConnectionPoolV2::for_tests();
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec!["non/existing/railjson/file/location".into()],
+                force: false,
             };
 
             // WHEN
@@ -154,6 +188,7 @@ mod tests {
             let file = generate_temp_file(&non_electric_rs);
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec![file.path().into()],
+                force: false,
             };
 
             // WHEN
@@ -183,6 +218,7 @@ mod tests {
             let file = generate_temp_file(&non_electric_rs);
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec![file.path().into()],
+                force: false,
             };
 
             // WHEN
@@ -216,6 +252,7 @@ mod tests {
             let file = generate_temp_file(&electric_rs);
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec![file.path().into()],
+                force: false,
             };
 
             // WHEN
@@ -243,6 +280,7 @@ mod tests {
             let file = generate_temp_file(&electric_rolling_stock);
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec![file.path().into()],
+                force: false,
             };
 
             // WHEN
@@ -263,6 +301,87 @@ mod tests {
             assert!(electrical_power_startup_time.is_some());
             assert!(raise_pantograph_time.is_some());
         }
+
+        #[rstest]
+        async fn import_existing_rolling_stock_without_force() {
+            // GIVEN
+            let db_pool = DbConnectionPoolV2::for_tests();
+            let existing_rolling_stock_name = "existing_rolling_stock";
+            let existing_rolling_stock_form =
+                get_fast_rolling_stock_schema(existing_rolling_stock_name);
+
+            let existing_rolling_stock: Changeset<RollingStockModel> =
+                existing_rolling_stock_form.clone().into();
+            existing_rolling_stock
+                .locked(false)
+                .version(0)
+                .create(&mut db_pool.get_ok())
+                .await
+                .unwrap();
+
+            // second rolling stock with same values except length (100.0 instead of 400.0)
+            let mut updated_rolling_stock_form: RollingStock = existing_rolling_stock_form.clone();
+            updated_rolling_stock_form.length = units::meter::new(100.0);
+            let file = generate_temp_file(&updated_rolling_stock_form);
+            let args = ImportRollingStockArgs {
+                rolling_stock_path: vec![file.path().into()],
+                force: false,
+            };
+
+            // WHEN
+            let result = import_rolling_stock(args, db_pool.clone().into()).await;
+
+            // THEN
+            assert!(result.is_ok(), "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled");
+            let rolling_stock = RollingStockModel::retrieve(
+                &mut db_pool.get_ok(),
+                existing_rolling_stock_name.to_string(),
+            )
+            .await
+            .unwrap();
+            assert!(rolling_stock.is_some());
+            assert!(rolling_stock.unwrap().length == units::meter::new(400.0));
+        }
+
+        #[rstest]
+        async fn import_existing_rolling_stock_with_force() {
+            // GIVEN
+            let db_pool = DbConnectionPoolV2::for_tests();
+            let existing_rolling_stock_name = "existing_rolling_stock";
+            let existing_rolling_stock_form =
+                get_fast_rolling_stock_schema(existing_rolling_stock_name);
+            let existing_rolling_stock: Changeset<RollingStockModel> =
+                existing_rolling_stock_form.clone().into();
+            existing_rolling_stock
+                .locked(false)
+                .version(0)
+                .create(&mut db_pool.get_ok())
+                .await
+                .unwrap();
+
+            // second rolling stock with same values except length (100.0 instead of 400.0)
+            let mut updated_rolling_stock_form: RollingStock = existing_rolling_stock_form.clone();
+            updated_rolling_stock_form.length = units::meter::new(100.0);
+            let file = generate_temp_file(&updated_rolling_stock_form);
+            let args = ImportRollingStockArgs {
+                rolling_stock_path: vec![file.path().into()],
+                force: true,
+            };
+
+            // WHEN
+            let result = import_rolling_stock(args, db_pool.clone().into()).await;
+
+            // THEN
+            assert!(result.is_ok(), "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled");
+            let rolling_stock = RollingStockModel::retrieve(
+                &mut db_pool.get_ok(),
+                existing_rolling_stock_name.to_string(),
+            )
+            .await
+            .unwrap();
+            assert!(rolling_stock.is_some());
+            assert!(rolling_stock.unwrap().length == units::meter::new(100.0));
+        }
     }
 
     mod towed_rolling_stock {
@@ -279,6 +398,7 @@ mod tests {
             let db_pool = DbConnectionPoolV2::for_tests();
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec!["non/existing/railjson/file/location".into()],
+                force: false,
             };
 
             // WHEN
@@ -301,6 +421,7 @@ mod tests {
             let file = generate_temp_file(&towed_rolling_stock_form);
             let args = ImportRollingStockArgs {
                 rolling_stock_path: vec![file.path().into()],
+                force: false,
             };
 
             // WHEN

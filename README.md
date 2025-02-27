@@ -47,7 +47,7 @@ docker compose up -d --build
 ./scripts/load-railjson-infra.sh small_infra tests/data/infras/small_infra/infra.json
 
 # import rolling stocks with realistic characterics, representative of the industry
-./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/realistic/*.json
+./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/realistic/*.json --force
 
 # import more rolling stocks
 ./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/*.json
