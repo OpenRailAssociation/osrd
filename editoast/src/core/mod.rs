@@ -17,6 +17,7 @@ use std::marker::PhantomData;
 use async_trait::async_trait;
 use axum::http::StatusCode;
 use editoast_derive::EditoastError;
+use mq_client::MqClientError;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde::Serialize;
@@ -48,7 +49,9 @@ pub enum CoreClient {
 
 impl CoreClient {
     pub async fn new_mq(options: mq_client::Options) -> Result<Self> {
-        let client = RabbitMQClient::new(options).await?;
+        let client = RabbitMQClient::new(options)
+            .await
+            .map_err(CoreError::MqClientError)?;
 
         Ok(Self::MessageQueue(client))
     }
@@ -109,7 +112,8 @@ impl CoreClient {
 
                 let response = client
                     .call_with_response(infra_id.to_string(), path, &body, true, None)
-                    .await?;
+                    .await
+                    .map_err(CoreError::MqClientError)?;
 
                 if response.status == b"ok" {
                     return R::from_bytes(&response.payload);
@@ -285,6 +289,10 @@ pub enum CoreError {
     #[error("Core connection broken. Should retry.")]
     #[editoast_error(status = 500)]
     BrokenPipe,
+
+    #[error(transparent)]
+    #[editoast_error(status = "500")]
+    MqClientError(MqClientError),
 
     #[cfg(test)]
     #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]

@@ -4643,6 +4643,25 @@ components:
           type: string
           enum:
           - editoast:coreclient:GenericCoreError
+    EditoastCoreErrorMqClientError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:MqClientError
     EditoastCoreErrorUnparsableErrorOutput:
       type: object
       required:
@@ -4874,6 +4893,7 @@ components:
       - $ref: '#/components/schemas/EditoastCoreErrorConnectionResetByPeer'
       - $ref: '#/components/schemas/EditoastCoreErrorCoreResponseFormatError'
       - $ref: '#/components/schemas/EditoastCoreErrorGenericCoreError'
+      - $ref: '#/components/schemas/EditoastCoreErrorMqClientError'
       - $ref: '#/components/schemas/EditoastCoreErrorUnparsableErrorOutput'
       - $ref: '#/components/schemas/EditoastDatabaseAccessErrorDatabaseAccessError'
       - $ref: '#/components/schemas/EditoastDelimitedAreaErrorInvalidLocations'
@@ -4897,12 +4917,6 @@ components:
       - $ref: '#/components/schemas/EditoastListErrorsRailjsonWrongRailjsonVersionProvided'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorNotFound'
       - $ref: '#/components/schemas/EditoastModelError'
-      - $ref: '#/components/schemas/EditoastMqClientErrorConnectionDoesNotExist'
-      - $ref: '#/components/schemas/EditoastMqClientErrorLapin'
-      - $ref: '#/components/schemas/EditoastMqClientErrorPoolChannelFail'
-      - $ref: '#/components/schemas/EditoastMqClientErrorResponseTimeout'
-      - $ref: '#/components/schemas/EditoastMqClientErrorSerialization'
-      - $ref: '#/components/schemas/EditoastMqClientErrorStatusParsing'
       - $ref: '#/components/schemas/EditoastNoSuchUserErrorNoSuchUser'
       - $ref: '#/components/schemas/EditoastOperationErrorEmptyId'
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
@@ -5291,120 +5305,6 @@ components:
           type: string
           enum:
           - editoast:model:ModelError
-    EditoastMqClientErrorConnectionDoesNotExist:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:ConnectionDoesNotExist
-    EditoastMqClientErrorLapin:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:Lapin
-    EditoastMqClientErrorPoolChannelFail:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:PoolChannelFail
-    EditoastMqClientErrorResponseTimeout:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:ResponseTimeout
-    EditoastMqClientErrorSerialization:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:Serialization
-    EditoastMqClientErrorStatusParsing:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:coreclient:StatusParsing
     EditoastNoSuchUserErrorNoSuchUser:
       type: object
       required:

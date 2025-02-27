@@ -42,13 +42,8 @@
       "ConnectionResetByPeer": "Core connection reset by peer. Should retry.",
       "CoreResponseFormatError": "Cannot parse Core response: {{msg}}",
       "GenericCoreError": "Core error {{raw_error}}",
-      "Lapin": "Core: message queue: protocol error",
-      "ResponseTimeout": "Core: request timeout",
-      "Serialization": "Core: cannot serialize request",
-      "StatusParsing": "Core: cannot parse status",
       "UnparsableErrorOutput": "Core returned an error in an unknown format",
-      "ConnectionDoesNotExist": "Core: message queue: connection not established",
-      "PoolChannelFail": "Core: message queue: channel failure"
+      "MqClientError": "Core: MQ client error"
     },
     "DatabaseAccessError": "Database access fatal error",
     "delimited_area": {
