@@ -300,65 +300,6 @@ impl RabbitMQClient {
         }
     }
 
-    #[allow(dead_code)]
-    pub async fn call<T>(
-        &self,
-        routing_key: String,
-        path: &str,
-        published_payload: &T,
-        mandatory: bool,
-        correlation_id: Option<String>,
-    ) -> Result<(), MqClientError>
-    where
-        T: Serialize,
-    {
-        // Get the next channel
-        let channel_worker = self
-            .pool
-            .get()
-            .await
-            .map_err(|_| MqClientError::PoolChannelFail)?;
-        let channel = channel_worker.get_channel();
-
-        let serialized_payload_vec =
-            to_vec(published_payload).map_err(MqClientError::Serialization)?;
-        let serialized_payload = serialized_payload_vec.as_slice();
-
-        let options = BasicPublishOptions {
-            mandatory,
-            ..Default::default()
-        };
-
-        let path: ByteArray = path.bytes().collect_vec().into();
-        let mut headers = FieldTable::default();
-        headers.insert("x-rpc-path".into(), path.into());
-        attach_tracing_info(&mut headers);
-
-        let mut properties = BasicProperties::default().with_headers(headers);
-        if let Some(id) = correlation_id {
-            properties = properties.with_correlation_id(ShortString::from(id));
-        }
-
-        let properties = properties;
-
-        channel
-            .basic_publish(
-                self.exchange.as_str(),
-                if self.single_worker {
-                    SINGLE_WORKER_KEY
-                } else {
-                    routing_key.as_str()
-                },
-                options,
-                serialized_payload,
-                properties,
-            )
-            .await
-            .map_err(MqClientError::Lapin)?;
-
-        Ok(())
-    }
-
     pub async fn call_with_response<T>(
         &self,
         routing_key: String,
