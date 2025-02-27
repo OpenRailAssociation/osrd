@@ -383,33 +383,31 @@
         }
 
         .scenario-timetable-toolbar {
-          padding: 0 16px 0 10px;
           position: sticky;
           top: 0;
           z-index: 2;
           background-color: var(--ambiantB15);
+          border-radius: 10px;
+          box-shadow: inset 0 1px 0 var(--white100);
 
           .toolbar-header {
+            padding-inline: 10px 16px;
             display: flex;
-            gap: 8px;
-            padding-block: 11px 17px;
             align-items: center;
-
-            &.with-details {
-              padding-bottom: 12px;
-            }
-
-            .label {
-              margin-left: 4px;
-              color: var(--grey80);
-            }
+            height: 48px;
 
             .train-count {
               display: flex;
               align-items: center;
               flex-grow: 1;
+
+              .label {
+                font-size: 1rem;
+                margin-left: 4px;
+              }
             }
             .more-details-button {
+              font-size: 0.875rem;
               color: var(--primary60);
             }
           }
@@ -462,6 +460,7 @@
 
           .filter-button {
             width: 100%;
+            color: var(--grey40);
           }
 
           &:hover {
@@ -710,13 +709,14 @@
         }
 
         .filter-panel {
-          padding: 17px 39px 23px 24px;
-          background-color: var(--ambiantB5);
-          border-top: solid 1px var(--white100);
-          border-bottom: solid 1px rgba(0, 0, 0, 0.25);
           display: flex;
           flex-direction: column;
           position: relative;
+          padding: 17px 39px 23px 24px;
+          background-color: var(--ambiantB5);
+          border-top: solid 1px var(--black25);
+          box-shadow: inset 0 1px 0 0 var(--white100);
+          border-bottom: solid 1px rgba(0, 0, 0, 0.25);
 
           // cancel bootstrap default margin
           label {
