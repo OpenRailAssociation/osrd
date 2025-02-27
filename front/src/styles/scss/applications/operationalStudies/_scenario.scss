@@ -718,6 +718,11 @@
           flex-direction: column;
           position: relative;
 
+          // cancel bootstrap default margin
+          label {
+            margin-bottom: 0;
+          }
+
           .grid-template {
             display: grid;
             grid-template-columns: 1fr 1fr;
