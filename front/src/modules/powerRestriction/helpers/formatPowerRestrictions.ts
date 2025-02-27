@@ -44,34 +44,6 @@ const appendFinalNoPowerRestriction = (
   }
 };
 
-const reducePowerRestrictions =
-  (pathStepById: Record<string, PathStep>, electrificationChangePoints: number[]) =>
-  (acc: IntervalItem[], restriction: PowerRestriction): IntervalItem[] => {
-    const fromPathStep = pathStepById[restriction.from];
-    const toPathStep = pathStepById[restriction.to];
-
-    if (fromPathStep.positionOnPath === undefined || toPathStep.positionOnPath === undefined) {
-      throw new Error('Impossible to locate a path step');
-    }
-
-    const from = mmToM(fromPathStep.positionOnPath);
-    const to = mmToM(toPathStep.positionOnPath);
-
-    const prevEnd = isEmpty(acc) ? 0 : acc[acc.length - 1].end;
-
-    if (from > prevEnd) {
-      const gapChangePoints = electrificationChangePoints.filter((cp) => cp > prevEnd && cp < from);
-      if (gapChangePoints.length > 0) {
-        addNoPowerRestrictions(acc, prevEnd, from, gapChangePoints);
-      } else {
-        acc.push({ begin: prevEnd, end: from, value: 'NO_POWER_RESTRICTION' });
-      }
-    }
-
-    acc.push({ begin: from, end: to, value: restriction.value });
-    return acc;
-  };
-
 const formatPowerRestrictions = (
   powerRestrictionRanges: PowerRestriction[],
   changePoints: number[],
@@ -80,10 +52,38 @@ const formatPowerRestrictions = (
 ): IntervalItem[] => {
   const pathStepById = keyBy(pathSteps, 'id');
   const electrificationChangePoints = sortBy(changePoints, (position) => position);
+
   const formattedPowerRestrictionRanges = powerRestrictionRanges.reduce(
-    reducePowerRestrictions(pathStepById, electrificationChangePoints),
+    (acc: IntervalItem[], restriction: PowerRestriction): IntervalItem[] => {
+      const fromPathStep = pathStepById[restriction.from];
+      const toPathStep = pathStepById[restriction.to];
+
+      if (fromPathStep.positionOnPath === undefined || toPathStep.positionOnPath === undefined) {
+        throw new Error('Impossible to locate a path step');
+      }
+
+      const from = mmToM(fromPathStep.positionOnPath);
+      const to = mmToM(toPathStep.positionOnPath);
+
+      const prevEnd = isEmpty(acc) ? 0 : acc[acc.length - 1].end;
+
+      if (from > prevEnd) {
+        const gapChangePoints = electrificationChangePoints.filter(
+          (cp) => cp > prevEnd && cp < from
+        );
+        if (gapChangePoints.length > 0) {
+          addNoPowerRestrictions(acc, prevEnd, from, gapChangePoints);
+        } else {
+          acc.push({ begin: prevEnd, end: from, value: 'NO_POWER_RESTRICTION' });
+        }
+      }
+
+      acc.push({ begin: from, end: to, value: restriction.value });
+      return acc;
+    },
     [] as IntervalItem[]
   );
+
   appendFinalNoPowerRestriction(
     formattedPowerRestrictionRanges,
     pathLength,
