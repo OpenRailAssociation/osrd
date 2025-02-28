@@ -8,7 +8,7 @@ use std::sync::Arc;
 use axum::Router;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use dashmap::DashMap;
-use editoast_authz::authorizer::StorageDriver;
+use editoast_authz::authorizer;
 use editoast_authz::authorizer::UserInfo;
 use editoast_authz::BuiltinRole;
 use editoast_common::tracing::create_tracing_subscriber;
@@ -44,6 +44,7 @@ use super::CoreConfig;
 use super::OpenfgaConfig;
 use super::OsrdyneConfig;
 use super::PostgresConfig;
+use super::Regulator;
 use super::ServerConfig;
 
 // NoopSpanExporter exists in 'opentelemetry-sdk' but is hidden behind
@@ -74,52 +75,56 @@ impl SpanExporter for NoopSpanExporter {
 ///
 /// The `db_pool_v1` parameter is only relevant while the pool migration is ongoing.
 pub(crate) struct TestAppBuilder {
+    test_name: String,
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
     osrdyne_client: Option<OsrdyneClient>,
-    enable_authorization: bool,
+    authorization_model: Option<&'static str>,
     enable_stdcm_logging: bool,
     enable_telemetry: bool,
     telemetry_directives: Vec<Directive>,
-    user: Option<UserInfo>,
-    roles: HashSet<BuiltinRole>,
 }
 
 impl TestAppBuilder {
     pub fn new() -> Self {
         Self {
+            test_name: String::from("editoast-test"),
             db_pool: None,
             core_client: None,
             osrdyne_client: None,
-            enable_authorization: false,
+            authorization_model: None,
             enable_stdcm_logging: false,
             enable_telemetry: true,
             telemetry_directives: vec![],
-            user: None,
-            roles: HashSet::new(),
         }
     }
 
+    /// Configures the name of the test
+    ///
+    /// Used to name the OpenFGA store created for the test.
+    pub fn test_name(mut self, test_name: String) -> Self {
+        self.test_name = test_name;
+        self
+    }
+
     pub fn db_pool(mut self, db_pool: DbConnectionPoolV2) -> Self {
-        assert!(self.db_pool.is_none());
         self.db_pool = Some(db_pool);
         self
     }
 
     pub fn core_client(mut self, core_client: CoreClient) -> Self {
-        assert!(self.core_client.is_none());
         self.core_client = Some(core_client);
         self
     }
 
     pub fn osrdyne_client(mut self, osrdyne_client: OsrdyneClient) -> Self {
-        assert!(self.osrdyne_client.is_none());
         self.osrdyne_client = Some(osrdyne_client);
         self
     }
 
     pub fn enable_authorization(mut self, enable_authorization: bool) -> Self {
-        self.enable_authorization = enable_authorization;
+        self.authorization_model =
+            enable_authorization.then_some(editoast_authz::AUTHORIZATION_MODEL);
         self
     }
 
@@ -138,25 +143,8 @@ impl TestAppBuilder {
         self
     }
 
-    pub fn user(mut self, user: UserInfo) -> Self {
-        assert!(self.user.is_none());
-        self.user = Some(user);
-        self
-    }
-
-    pub fn roles(mut self, roles: HashSet<BuiltinRole>) -> Self {
-        assert!(self.roles.is_empty());
-        self.roles = roles;
-        self
-    }
-
     pub fn default_app() -> TestApp {
-        let pool = DbConnectionPoolV2::for_tests();
-        let core_client = CoreClient::Mocked(MockingClient::default());
-        TestAppBuilder::new()
-            .db_pool(pool)
-            .core_client(core_client)
-            .build()
+        TestAppBuilder::new().build()
     }
 
     pub fn build(self) -> TestApp {
@@ -165,7 +153,7 @@ impl TestAppBuilder {
             port: 0,
             address: String::default(),
             health_check_timeout: chrono::Duration::milliseconds(500),
-            enable_authorization: self.enable_authorization,
+            enable_authorization: self.authorization_model.is_some(),
             enable_stdcm_logging: self.enable_stdcm_logging,
             map_layers_max_zoom: 18,
             postgres_config: PostgresConfig {
@@ -187,7 +175,7 @@ impl TestAppBuilder {
             },
             openfga_config: OpenfgaConfig {
                 url: Url::parse("http://localhost:8091").unwrap(),
-                store: "osrd-editoast-test".to_owned(),
+                store: self.test_name.clone(),
             },
         };
 
@@ -218,9 +206,7 @@ impl TestAppBuilder {
             .into();
 
         // Create database pool
-        let db_pool_v2 = Arc::new(self.db_pool.expect(
-            "No database pool provided to TestAppBuilder, use Default or provide a database pool",
-        ));
+        let db_pool_v2 = Arc::new(self.db_pool.unwrap_or_else(DbConnectionPoolV2::for_tests));
 
         // Setup infra cache map
         let infra_caches = DashMap::<i64, InfraCache>::default().into();
@@ -229,9 +215,10 @@ impl TestAppBuilder {
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
 
         // Build Core client
-        let core_client = Arc::new(self.core_client.expect(
-            "No core client provided to TestAppBuilder, use Default or provide a core client",
-        ));
+        let core_client = Arc::new(
+            self.core_client
+                .unwrap_or_else(|| CoreClient::Mocked(MockingClient::default())),
+        );
 
         // Build Osrdyne client
         let osrdyne_client = self
@@ -239,18 +226,40 @@ impl TestAppBuilder {
             .unwrap_or_else(OsrdyneClient::default_mock);
         let osrdyne_client = Arc::new(osrdyne_client);
 
-        let openfga = block_on(fga::Client::try_new_store(
-            "osrd-editoast-test".to_owned(),
+        let store_name = {
+            const OPENFGA_STORE_NAME_MIN_LEN: usize = 3;
+            const OPENFGA_STORE_NAME_MAX_LEN: usize = 64;
+            match self.test_name.clone() {
+                name if name.len() < OPENFGA_STORE_NAME_MIN_LEN => {
+                    let suffix = "_".repeat(OPENFGA_STORE_NAME_MIN_LEN - name.len());
+                    name + suffix.as_str()
+                }
+                name if name.len() > OPENFGA_STORE_NAME_MAX_LEN => name
+                    .chars()
+                    .take(OPENFGA_STORE_NAME_MAX_LEN)
+                    .collect::<String>(),
+                name => name,
+            }
+        };
+        let mut openfga = block_on(fga::Client::try_new_store(
+            store_name,
             fga::client::ConnectionSettings::new("localhost".to_owned(), 8091).reset_store(),
         ))
         .expect("OpenFGA should be setup properly for testing");
+        if let Some(model) = self.authorization_model {
+            let model = fga::compile_model(model);
+            block_on(openfga.update_authorization_model(&model))
+                .expect("OpenFGA authorization model should be updated");
+        }
+        let driver = PgAuthDriver::new(db_pool_v2.clone());
+        let regulator = Regulator::new(openfga.clone(), driver);
 
         let app_state = AppState {
             db_pool: db_pool_v2.clone(),
             core_client: core_client.clone(),
             osrdyne_client,
             valkey,
-            openfga,
+            regulator,
             infra_caches,
             map_layers: Arc::new(MapLayers::default()),
             speed_limit_tag_ids,
@@ -267,35 +276,38 @@ impl TestAppBuilder {
             ))
             .layer(OtelAxumLayer::default())
             .layer(TraceLayer::new_for_http())
-            .with_state(app_state);
+            .with_state(app_state.clone());
 
         // Run server
         let server = TestServer::new(router).expect("test server should build properly");
 
-        // Setup user and roles
-        let driver = PgAuthDriver::<BuiltinRole>::new(db_pool_v2.clone());
-        if let Some(ref user) = self.user {
-            let uid = block_on(async {
-                driver
-                    .ensure_user(user)
-                    .await
-                    .expect("User should be created successfully")
-            });
-            block_on(async {
-                driver
-                    .ensure_subject_roles(uid, self.roles)
-                    .await
-                    .expect("Roles should be updated successfully")
-            });
-        };
-
         TestApp {
             server,
-            db_pool: db_pool_v2,
+            app_state,
+            authorization_model: self.authorization_model,
             tracing_guard,
         }
     }
 }
+
+/// Returns a default [TestAppBuilder] with the [TestAppBuilder::test_name] set to the current test name
+///
+/// This **has** to be used in the test function directly to ensure that the test name is correctly set.
+///
+/// The crate `stdext` is required.
+macro_rules! test_app {
+    () => {
+        TestAppBuilder::new().test_name(
+            stdext::function_name!()
+                .split("::")
+                .filter(|x| *x != "{{closure}}")
+                .collect::<Vec<_>>()
+                .join("-"),
+        )
+    };
+}
+
+pub(crate) use test_app;
 
 /// Wraps an underlying, fully configured, actix service
 ///
@@ -303,14 +315,25 @@ impl TestAppBuilder {
 /// which can be accessed through the [TestApp] methods.
 pub(crate) struct TestApp {
     server: TestServer,
-    db_pool: Arc<DbConnectionPoolV2>,
+    app_state: AppState,
+    authorization_model: Option<&'static str>,
     #[allow(unused)] // included here to extend its lifetime, not meant to be used in any way
     tracing_guard: tracing::subscriber::DefaultGuard,
 }
 
 impl TestApp {
     pub fn db_pool(&self) -> Arc<DbConnectionPoolV2> {
-        self.db_pool.clone()
+        self.app_state.db_pool.clone()
+    }
+
+    pub fn user(&self, identity: impl ToString, name: impl ToString) -> UserBuilder {
+        UserBuilder::new(
+            self,
+            UserInfo {
+                identity: identity.to_string(),
+                name: name.to_string(),
+            },
+        )
     }
 
     pub fn fetch(&self, req: TestRequest) -> TestResponse {
@@ -339,6 +362,48 @@ impl TestApp {
 
     pub fn delete(&self, path: &str) -> TestRequest {
         self.server.delete(&trim_path(path))
+    }
+}
+
+pub struct UserBuilder<'a> {
+    app: &'a TestApp,
+    info: UserInfo,
+    roles: HashSet<BuiltinRole>,
+}
+
+impl<'a> UserBuilder<'a> {
+    fn new(app: &'a TestApp, info: UserInfo) -> Self {
+        Self {
+            app,
+            info,
+            roles: Default::default(),
+        }
+    }
+
+    pub fn with_roles(mut self, roles: impl IntoIterator<Item = BuiltinRole>) -> Self {
+        self.roles = roles.into_iter().collect();
+        self
+    }
+
+    pub fn create(self) -> UserInfo {
+        let Self { app, info, roles } = self;
+        if !roles.is_empty()
+            && (app.authorization_model.is_none() || !app.app_state.config.enable_authorization)
+        {
+            panic!("Authorization must be enabled and a model must be provided to grant a user some roles");
+        }
+        let regulator = &app.app_state.regulator;
+        block_on(async move {
+            let authorizer =
+                authorizer::Authorizer::try_initialize(info.clone(), regulator.clone())
+                    .await
+                    .expect("User should be created successfully");
+            regulator
+                .grant_user_roles(authorizer.user_id(), roles)
+                .await
+                .expect("roles should be granted successfully");
+            info
+        })
     }
 }
 

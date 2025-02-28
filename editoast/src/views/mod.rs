@@ -27,6 +27,8 @@ pub mod work_schedules;
 
 #[cfg(test)]
 mod test_app;
+#[cfg(test)]
+pub(crate) use test_app::test_app;
 
 use ::core::str;
 use std::collections::HashSet;
@@ -43,6 +45,7 @@ use axum::ServiceExt;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use chrono::Duration;
 use dashmap::DashMap;
+use editoast_authz::authorizer;
 use editoast_authz::authorizer::Authorizer;
 use editoast_authz::authorizer::UserInfo;
 use editoast_authz::BuiltinRole;
@@ -252,30 +255,39 @@ pub enum Authentication {
     /// The issuer of the request did not provide any authentication information.
     Unauthenticated,
     /// The issuer of the request provided the 'x-remote-user-identity' header.
-    Authenticated(Authorizer<PgAuthDriver<BuiltinRole>>),
+    Authenticated(Authorizer<PgAuthDriver>),
     /// The requests comes from a trusted service (like core). All requests are considered safe.
     SkipAuthorization,
 }
 
 impl Authentication {
-    /// Checks if the issuer of the request has at least one of the provided `roles`. Always returns `false` if the
+    fn user_id(&self) -> Result<Option<i64>, AuthorizationError> {
+        match self {
+            Authentication::SkipAuthorization => Ok(None),
+            Authentication::Unauthenticated => Err(AuthorizationError::Unauthorized),
+            Authentication::Authenticated(authorizer) => Ok(Some(authorizer.user_id())),
+        }
+    }
+
+    /// Checks if the issuer of the request has the required roles. Always returns `false` if the
     /// request is unauthenticated.
     pub async fn check_roles(
         &self,
-        roles: HashSet<BuiltinRole>,
-    ) -> Result<bool, <PgAuthDriver<BuiltinRole> as editoast_authz::authorizer::StorageDriver>::Error>
-    {
+        required_roles: HashSet<BuiltinRole>,
+    ) -> Result<bool, AuthorizerError> {
         match self {
             Authentication::SkipAuthorization => Ok(true),
             Authentication::Unauthenticated => Ok(false),
-            Authentication::Authenticated(authorizer) => authorizer.check_roles(roles).await,
+            Authentication::Authenticated(authorizer) => {
+                authorizer.check_roles(required_roles).await
+            }
         }
     }
 
     /// Returns the underlying authorizer if the request is authenticated, otherwise returns an
     /// error. If the request comes from Core, this returns false as well as it makes no sense to
     /// have an Authorizer without an authenticated user.
-    pub fn authorizer(self) -> Result<Authorizer<PgAuthDriver<BuiltinRole>>, AuthorizationError> {
+    pub fn authorizer(self) -> Result<Authorizer<PgAuthDriver>, AuthorizationError> {
         match self {
             Authentication::Authenticated(authorizer) => Ok(authorizer),
             Authentication::Unauthenticated | Authentication::SkipAuthorization => {
@@ -290,12 +302,10 @@ pub type AuthenticationExt = axum::extract::Extension<Authentication>;
 async fn authenticate(
     enable_authorization: bool,
     headers: &axum::http::HeaderMap,
-    db_pool: Arc<DbConnectionPoolV2>,
+    regulator: Regulator,
 ) -> Result<Authentication, AuthorizationError> {
     if !enable_authorization {
-        return Ok(Authentication::Authenticated(Authorizer::new_superuser(
-            PgAuthDriver::<BuiltinRole>::new(db_pool),
-        )));
+        return Ok(Authentication::SkipAuthorization);
     }
     let Some(identity) = headers.get("x-remote-user-identity") else {
         if headers.contains_key("x-osrd-skip-authz") {
@@ -317,7 +327,7 @@ async fn authenticate(
             identity: identity.to_owned(),
             name: name.to_owned(),
         },
-        PgAuthDriver::<BuiltinRole>::new(db_pool),
+        regulator,
     )
     .await?;
     Ok(Authentication::Authenticated(authorizer))
@@ -325,16 +335,18 @@ async fn authenticate(
 
 async fn authentication_middleware(
     State(AppState {
-        db_pool, config, ..
+        regulator, config, ..
     }): State<AppState>,
     mut req: Request,
     next: Next,
 ) -> Result<Response> {
     let headers = req.headers();
-    let authorizer = authenticate(config.enable_authorization, headers, db_pool).await?;
+    let authorizer = authenticate(config.enable_authorization, headers, regulator).await?;
     req.extensions_mut().insert(authorizer);
     Ok(next.run(req).await)
 }
+
+type AuthorizerError = authorizer::Error<<PgAuthDriver as authorizer::StorageDriver>::Error>;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "authz")]
@@ -347,9 +359,7 @@ pub enum AuthorizationError {
     Forbidden,
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    AuthError(
-        #[from] <PgAuthDriver<BuiltinRole> as editoast_authz::authorizer::StorageDriver>::Error,
-    ),
+    AuthError(#[from] AuthorizerError),
     #[error(transparent)]
     #[editoast_error(status = 500)]
     DbError(#[from] editoast_models::db_connection_pool::DatabasePoolError),
@@ -382,7 +392,7 @@ async fn health(
         valkey,
         health_check_timeout,
         core_client,
-        openfga,
+        regulator,
         ..
     }): State<AppState>,
 ) -> Result<&'static str> {
@@ -390,7 +400,7 @@ async fn health(
         health_check_timeout
             .to_std()
             .expect("timeout should be valid at this point"),
-        check_health(db_pool, valkey, core_client, openfga),
+        check_health(db_pool, valkey, core_client, regulator.openfga()),
     )
     .await
     .map_err(|_| AppHealthError::Timeout)??;
@@ -401,7 +411,7 @@ pub async fn check_health(
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_client: Arc<ValkeyClient>,
     core_client: Arc<CoreClient>,
-    openfga: fga::Client,
+    openfga: &fga::Client,
 ) -> Result<()> {
     let mut db_connection = db_pool.clone().get().await?;
     let openfga_ping = async move {
@@ -502,6 +512,8 @@ pub struct Server {
     router: NormalizePath<Router>,
 }
 
+pub type Regulator = authorizer::Regulator<PgAuthDriver>;
+
 /// The state of the whole Editoast service, available to all handlers
 ///
 /// If only the database is needed, use `State<editoast_models::DbConnectionPoolV2>`.
@@ -516,7 +528,7 @@ pub struct AppState {
     pub core_client: Arc<CoreClient>,
     pub osrdyne_client: Arc<OsrdyneClient>,
     pub health_check_timeout: Duration,
-    pub openfga: fga::Client,
+    pub regulator: Regulator,
 }
 
 impl FromRef<AppState> for DbConnectionPoolV2 {
@@ -596,13 +608,15 @@ impl AppState {
             editoast_authz::ensure_latest_authorization_model(&mut openfga).await?;
         }
 
+        let auth_driver = PgAuthDriver::new(db_pool.clone());
+
         Ok(Self {
             valkey,
             db_pool,
             infra_caches,
             core_client,
             osrdyne_client,
-            openfga,
+            regulator: Regulator::new(openfga, auth_driver),
             map_layers: Arc::new(MapLayers::default()),
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,

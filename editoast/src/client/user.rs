@@ -1,16 +1,16 @@
 use clap::Args;
 use clap::Subcommand;
-use diesel::{ExpressionMethods, QueryDsl};
-use diesel_async::RunQueryDsl;
-use editoast_authz::authorizer::{StorageDriver, UserInfo};
-use editoast_authz::BuiltinRole;
-use editoast_models::tables::authn_group_membership;
-use editoast_models::tables::authn_user;
+use editoast_authz::authorizer::StorageDriver;
+use editoast_authz::authorizer::UserInfo;
 use editoast_models::DbConnectionPoolV2;
-use std::ops::DerefMut;
+use futures::future::try_join_all;
+use futures::TryStreamExt;
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::models::auth::PgAuthDriver;
+
+use super::openfga_config::OpenfgaConfig;
 
 #[derive(Debug, Subcommand)]
 pub enum UserCommand {
@@ -36,38 +36,48 @@ pub struct AddArgs {
 }
 
 /// List users
-pub async fn list_user(args: ListArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    let conn = pool.get().await?;
-    let users_query = authn_user::table
-        .left_join(authn_group_membership::table)
-        .select(authn_user::all_columns);
+pub async fn list_user(
+    ListArgs { without_groups }: ListArgs,
+    openfga_config: OpenfgaConfig,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let regulator = openfga_config.into_regulator(pool).await?;
+    let driver = regulator.driver();
 
-    let users = if args.without_groups {
-        users_query
-            .filter(authn_group_membership::user.is_null())
-            .load::<(i64, String, Option<String>)>(conn.write().await.deref_mut())
-            .await?
+    let (users, groups) = tokio::join!(
+        async { driver.list_users().await?.try_collect::<Vec<_>>().await },
+        async { driver.list_groups().await?.try_collect::<Vec<_>>().await }
+    );
+    let users = if without_groups {
+        let group_members = try_join_all(
+            groups?
+                .into_iter()
+                .map(|(group_id, _)| regulator.group_members(group_id)),
+        )
+        .await?
+        .into_iter()
+        .flatten()
+        .collect::<HashSet<_>>();
+        users?
+            .into_iter()
+            .filter(|(user_id, _)| !group_members.contains(user_id))
+            .collect::<Vec<_>>()
     } else {
-        users_query
-            .load::<(i64, String, Option<String>)>(conn.write().await.deref_mut())
-            .await?
+        users?
     };
-    for (id, identity, name) in &users {
-        let display = match name {
-            Some(name) => format!("{} ({})", identity, name),
-            None => identity.to_string(),
-        };
-        println!("[{}]: {}", id, display);
+
+    for (id, UserInfo { identity, name }) in &users {
+        println!("[{id}]: {identity} ({name})");
     }
     if users.is_empty() {
-        println!("No user found");
+        tracing::info!("No user found");
     }
     Ok(())
 }
 
 /// Add a user
 pub async fn add_user(args: AddArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
+    let driver = PgAuthDriver::new(pool);
 
     let user_info = UserInfo {
         identity: args.identity,

@@ -50,6 +50,7 @@ fn expand_type(input: &DeriveInput) -> darling::Result<TokenStream> {
                 .iter()
                 .position(|field| field == id_field)
                 .unwrap();
+            let index = syn::Index::from(index);
             quote::quote! { #index }
         }
     };

@@ -20,5 +20,5 @@ url.workspace = true
 
 [dev-dependencies]
 derive_more = { version = "2.0.1", features = ["from"] }
-stdext = "0.3.3"
+stdext.workspace = true
 tracing-subscriber.workspace = true

@@ -1358,6 +1358,7 @@ dependencies = [
  "serde_yaml",
  "serial_test",
  "sha1",
+ "stdext",
  "strum",
  "tempfile",
  "thiserror 2.0.12",
@@ -1379,11 +1380,14 @@ dependencies = [
 name = "editoast_authz"
 version = "0.1.0"
 dependencies = [
+ "derive_more",
+ "editoast_common",
  "fga",
  "futures 0.3.31",
  "itertools",
  "pretty_assertions",
  "serde",
+ "stdext",
  "strum",
  "thiserror 2.0.12",
  "tokio",

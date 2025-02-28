@@ -1,32 +1,22 @@
-use std::ops::DerefMut;
-use std::{collections::HashSet, sync::Arc};
+// TODO: rename this module to auth_driver
 
-use diesel::{dsl, prelude::*};
-use diesel_async::{scoped_futures::ScopedFutureExt as _, RunQueryDsl};
-use editoast_authz::{
-    authorizer::{GroupInfo, StorageDriver, UserIdentity, UserInfo},
-    roles::BuiltinRoleSet,
-};
+use std::ops::DerefMut;
+use std::sync::Arc;
+
+use diesel::dsl;
+use diesel::prelude::*;
+use diesel_async::scoped_futures::ScopedFutureExt as _;
+use diesel_async::RunQueryDsl;
+use editoast_authz::authorizer::GroupInfo;
+use editoast_authz::authorizer::GroupName;
+use editoast_authz::authorizer::StorageDriver;
+use editoast_authz::authorizer::UserIdentity;
+use editoast_authz::authorizer::UserInfo;
 use editoast_models::DbConnectionPoolV2;
 
 use editoast_models::tables::*;
-use itertools::Itertools as _;
+use futures::StreamExt;
 use tracing::Level;
-
-#[derive(Clone)]
-pub struct PgAuthDriver<B: BuiltinRoleSet + Send + Sync> {
-    pool: Arc<DbConnectionPoolV2>,
-    _role_set: std::marker::PhantomData<B>,
-}
-
-impl<B: BuiltinRoleSet + Send + Sync> PgAuthDriver<B> {
-    pub fn new(pool: Arc<DbConnectionPoolV2>) -> Self {
-        Self {
-            pool,
-            _role_set: Default::default(),
-        }
-    }
-}
 
 #[derive(Debug, thiserror::Error)]
 pub enum AuthDriverError {
@@ -34,10 +24,24 @@ pub enum AuthDriverError {
     DieselError(#[from] diesel::result::Error),
     #[error(transparent)]
     DbPoolError(#[from] editoast_models::db_connection_pool::DatabasePoolError),
+    #[error("Subject with id {subject_id} not found")]
+    SubjectNotFound { subject_id: i64 },
+    #[error(transparent)]
+    OpenFgaRequestFailure(#[from] fga::client::RequestFailure),
 }
 
-impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
-    type BuiltinRole = B;
+#[derive(Clone)]
+pub struct PgAuthDriver {
+    pool: Arc<DbConnectionPoolV2>,
+}
+
+impl PgAuthDriver {
+    pub fn new(pool: Arc<DbConnectionPoolV2>) -> Self {
+        Self { pool }
+    }
+}
+
+impl StorageDriver for PgAuthDriver {
     type Error = AuthDriverError;
 
     #[tracing::instrument(skip_all, fields(%user_identity), ret(level = Level::DEBUG), err)]
@@ -52,21 +56,28 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         Ok(id)
     }
 
+    #[tracing::instrument(skip_all, fields(%group_name), ret(level = Level::DEBUG), err)]
+    async fn get_group_id(&self, group_name: &GroupName) -> Result<Option<i64>, Self::Error> {
+        let conn = self.pool.get().await?;
+        let id = authn_group::table
+            .select(authn_group::id)
+            .filter(authn_group::name.eq(group_name))
+            .first::<i64>(conn.write().await.deref_mut())
+            .await
+            .optional()?;
+        Ok(id)
+    }
+
     #[tracing::instrument(skip_all, fields(%user_id), ret(level = Level::DEBUG), err)]
     async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
         let conn = self.pool.get().await?;
         let info = authn_user::table
             .select((authn_user::identity_id, authn_user::name))
             .filter(authn_user::id.eq(user_id))
-            .first::<(String, Option<String>)>(conn.write().await.deref_mut())
+            .first::<(String, String)>(conn.write().await.deref_mut())
             .await
             .optional()?
-            .map(|(identity, name)| {
-                UserInfo {
-                    identity,
-                    name: name.unwrap_or_default(), // FIXME: make the column non-nullable
-                }
-            });
+            .map(|(identity, name)| UserInfo { identity, name });
         Ok(info)
     }
 
@@ -91,7 +102,7 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
                 let user_id = self.get_user_id(&user.identity).await?;
                 match user_id {
                     Some(user_id) => {
-                        tracing::debug!("user already exists in db");
+                        tracing::debug!(user_id, "user already exists in db");
                         Ok(user_id)
                     }
 
@@ -122,136 +133,196 @@ impl<B: BuiltinRoleSet + Send + Sync> StorageDriver for PgAuthDriver<B> {
         .await
     }
 
-    #[tracing::instrument(skip_all, fields(%subject_id), ret(level = Level::DEBUG), err)]
-    async fn fetch_subject_roles(
-        &self,
-        subject_id: i64,
-    ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
+    #[tracing::instrument(skip_all, fields(%group), ret(level = Level::DEBUG), err)]
+    async fn ensure_group(&self, group: &GroupInfo) -> Result<i64, Self::Error> {
         let conn = self.pool.get().await?;
-        let roles = authz_role::table
-            .select(authz_role::role)
-            .left_join(
-                authn_group_membership::table.on(authn_group_membership::user.eq(subject_id)),
-            )
-            .filter(authz_role::subject.eq(subject_id))
-            .or_filter(authz_role::subject.eq(authn_group_membership::group))
-            .load::<String>(conn.write().await.deref_mut())
-            .await?
-            .into_iter()
-            .map(|role| {
-                Self::BuiltinRole::from_str(role.as_str())
-                    .ok()
-                    .expect("invalid builtin role tag")
-            })
-            .collect::<HashSet<_>>();
+        conn.transaction(|conn| {
+            async move {
+                let group_id = authn_group::table
+                    .select(authn_group::id)
+                    .filter(authn_group::name.eq(&group.name))
+                    .first::<i64>(conn.write().await.deref_mut())
+                    .await
+                    .optional()?;
+                match group_id {
+                    Some(group_id) => {
+                        tracing::debug!(group_id, "group already exists in db");
+                        Ok(group_id)
+                    }
 
-        Ok(roles)
-    }
+                    None => {
+                        tracing::info!("registering new group in db");
 
-    #[tracing::instrument(skip_all, fields(%subject_id, ?roles), err)]
-    async fn ensure_subject_roles(
-        &self,
-        subject_id: i64,
-        roles: HashSet<Self::BuiltinRole>,
-    ) -> Result<(), Self::Error> {
-        let conn = self.pool.get().await?;
-        dsl::insert_into(authz_role::table)
-            .values(
-                roles
-                    .iter()
-                    .map(|role| {
-                        (
-                            authz_role::subject.eq(subject_id),
-                            authz_role::role.eq(role.as_str()),
-                        )
-                    })
-                    .collect_vec(),
-            )
-            .on_conflict((authz_role::subject, authz_role::role))
-            .do_nothing()
-            .execute(conn.write().await.deref_mut())
-            .await?;
+                        let id: i64 = dsl::insert_into(authn_subject::table)
+                            .default_values()
+                            .returning(authn_subject::id)
+                            .get_result(&mut conn.clone().write().await)
+                            .await?;
 
-        Ok(())
-    }
+                        dsl::insert_into(authn_group::table)
+                            .values((authn_group::id.eq(id), authn_group::name.eq(&group.name)))
+                            .execute(conn.write().await.deref_mut())
+                            .await?;
 
-    #[tracing::instrument(skip_all, fields(%subject_id, ?roles), ret(level = Level::DEBUG), err)]
-    async fn remove_subject_roles(
-        &self,
-        subject_id: i64,
-        roles: HashSet<Self::BuiltinRole>,
-    ) -> Result<HashSet<Self::BuiltinRole>, Self::Error> {
-        let conn = self.pool.get().await?;
-        let deleted_roles = dsl::delete(
-            authz_role::table
-                .filter(authz_role::subject.eq(subject_id))
-                .filter(
-                    authz_role::role.eq_any(roles.iter().map(|r| r.as_str()).collect::<Vec<_>>()),
-                ),
-        )
-        .returning(authz_role::role)
-        .load::<String>(conn.write().await.deref_mut())
-        .await?
-        .into_iter()
-        .map(|role| {
-            Self::BuiltinRole::from_str(role.as_str())
-                .ok()
-                .expect("invalid builtin role tag")
+                        Ok(id)
+                    }
+                }
+            }
+            .scope_boxed()
         })
-        .collect();
+        .await
+    }
 
-        Ok(deleted_roles)
+    async fn list_users(
+        &self,
+    ) -> Result<
+        impl futures::stream::TryStream<Ok = (i64, UserInfo), Error = Self::Error>,
+        Self::Error,
+    > {
+        let conn = self.pool.get().await?;
+        let users = authn_user::table
+            .select((authn_user::id, authn_user::identity_id, authn_user::name))
+            .load_stream::<(i64, String, String)>(&mut conn.write().await)
+            .await?
+            .map(|res| match res {
+                Ok((id, identity, name)) => Ok((id, UserInfo { identity, name })),
+                Err(e) => Err(e.into()),
+            });
+        Ok(users)
+    }
+
+    async fn list_groups(
+        &self,
+    ) -> Result<
+        impl futures::stream::TryStream<Ok = (i64, GroupInfo), Error = Self::Error>,
+        Self::Error,
+    > {
+        let conn = self.pool.get().await?;
+        let groups = authn_group::table
+            .select((authn_group::id, authn_group::name))
+            .load_stream::<(i64, String)>(&mut conn.write().await)
+            .await?
+            .map(|res| match res {
+                Ok((id, name)) => Ok((id, GroupInfo { name })),
+                Err(e) => Err(e.into()),
+            });
+        Ok(groups)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use futures::TryStreamExt as _;
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use editoast_authz::fixtures::*;
     use editoast_models::DbConnectionPoolV2;
-
-    use TestBuiltinRole::*;
-
-    async fn assert_roles(
-        driver: &mut PgAuthDriver<TestBuiltinRole>,
-        uid: i64,
-        roles: &[TestBuiltinRole],
-    ) {
-        let fetched_roles = driver
-            .fetch_subject_roles(uid)
-            .await
-            .expect("roles should be fetched successfully");
-        let expected_roles = roles.iter().cloned().collect();
-        assert_eq!(fetched_roles, expected_roles);
-    }
 
     #[rstest::rstest]
     async fn test_auth_driver() {
         let pool = DbConnectionPoolV2::for_tests();
-        let mut driver = PgAuthDriver::<TestBuiltinRole>::new(pool.into());
+        let driver = PgAuthDriver::new(pool.into());
 
-        let uid = driver
-            .ensure_user(&UserInfo {
-                identity: "toto".to_owned(),
-                name: "Sir Toto, the One and Only".to_owned(),
-            })
+        // Create some users
+
+        let toto = UserInfo {
+            identity: "toto".to_owned(),
+            name: "Sir Toto, the One and Only".to_owned(),
+        };
+        let toto_id = driver
+            .ensure_user(&toto)
             .await
             .expect("toto should be created successfully");
-        assert_roles(&mut driver, uid, Default::default()).await;
 
-        driver
-            .ensure_subject_roles(uid, HashSet::from([DocRead, DocEdit]))
+        let tata = UserInfo {
+            identity: "tata".to_owned(),
+            name: "TATA".to_owned(),
+        };
+        let tata_id = driver
+            .ensure_user(&tata)
             .await
-            .expect("roles should be updated successfully");
-        assert_roles(&mut driver, uid, &[DocRead, DocEdit]).await;
+            .expect("tata should be created successfully");
 
-        let deleted = driver
-            .remove_subject_roles(uid, HashSet::from([DocEdit, UserBan]))
+        assert_ne!(toto_id, tata_id);
+
+        assert_eq!(
+            driver
+                .get_user_id(&toto.identity)
+                .await
+                .expect("toto's ID should be queried successfully"),
+            Some(toto_id)
+        );
+
+        assert_eq!(
+            driver
+                .get_user_id(&tata.identity)
+                .await
+                .expect("tata's ID should be queried successfully"),
+            Some(tata_id)
+        );
+
+        // Retrieve some information about them
+
+        let toto_db = driver
+            .get_user_info(toto_id)
             .await
-            .expect("roles should be deleted successfully");
-        assert_eq!(deleted, HashSet::from([DocEdit]));
-        assert_roles(&mut driver, uid, &[DocRead]).await;
+            .expect("toto should be queried successfully")
+            .expect("toto should be found");
+
+        assert_eq!(toto_db, toto);
+
+        let tata_db = driver
+            .get_user_info(tata_id)
+            .await
+            .expect("tata should be queried successfully")
+            .expect("tata should be found");
+
+        assert_eq!(tata_db, tata);
+
+        // Create some groups
+
+        let friends = GroupInfo {
+            name: "Friends".to_owned(),
+        };
+        let foes = GroupInfo {
+            name: "Foes".to_owned(),
+        };
+
+        let friends_id = driver
+            .ensure_group(&friends)
+            .await
+            .expect("Group 'friends' should be created successfully");
+
+        let foes_id = driver
+            .ensure_group(&foes)
+            .await
+            .expect("Group 'foes' should be created successfully");
+
+        assert_eq!(
+            driver
+                .get_group_info(friends_id)
+                .await
+                .expect("Group 'friends' should be queried successfully")
+                .expect("Group 'friends' should be found"),
+            friends
+        );
+        assert_eq!(
+            driver
+                .get_group_info(foes_id)
+                .await
+                .expect("Group 'foes' should be queried successfully")
+                .expect("Group 'foes' should be found"),
+            foes
+        );
+
+        // List groups
+        let groups = driver
+            .list_groups()
+            .await
+            .expect("Groups should be listed successfully")
+            .try_collect::<Vec<_>>()
+            .await
+            .expect("Groups should be collected successfully");
+        assert_eq!(groups, vec![(friends_id, friends), (foes_id, foes)]);
     }
 }

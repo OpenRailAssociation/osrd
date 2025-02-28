@@ -418,6 +418,11 @@ pub fn compile_model(model: &str) -> serde_json::Value {
 /// let writers = fga!(Document:secret # can_write);
 /// let tuple = fga!(Document:budget # reader @ writers);
 /// println!("{tuple:?}");
+///
+/// // Types with variables implementing ToString
+/// let user_id = 42;
+/// let user = fga!(Person:user_id);
+/// println!("{user:?}");
 /// # }
 /// ```
 #[macro_export]
@@ -427,7 +432,11 @@ macro_rules! fga {
 
     // fga!(User:"bob") => "user:bob"
     ($ty:ident : $id:literal) => {
-        $ty($id.to_string())
+        $ty::from($id.to_string())
+    };
+
+    ($ty:ident : $var:ident) => {
+        $ty::from($var.to_string())
     };
 
     // fga!(User:*) => "user:*"

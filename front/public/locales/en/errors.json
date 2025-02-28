@@ -19,6 +19,7 @@
     "authz": {
       "AuthError": "Authentication/authorization internal error, try again or contact support",
       "Authz": "Authentication/authorization internal error, try again or contact support",
+      "Authorizer": "Internal error",
       "DbError": "Database access fatal error",
       "Driver": "Authentication/authorization internal error, try again or contact support",
       "NoSuchUser": "Unknown user",

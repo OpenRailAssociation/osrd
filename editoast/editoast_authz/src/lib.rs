@@ -1,9 +1,8 @@
 pub mod authorizer;
-pub mod builtin_role;
-pub mod roles;
-
-pub use builtin_role::BuiltinRole;
+mod model;
+mod role;
 use futures::TryStreamExt;
+pub use role::BuiltinRole;
 
 pub const AUTHORIZATION_MODEL: &str = include_str!("../authorization_model.fga");
 
@@ -36,27 +35,39 @@ pub async fn ensure_latest_authorization_model(
     Ok(())
 }
 
-#[cfg(any(test, feature = "fixtures"))]
-pub mod fixtures {
-    use strum::AsRefStr;
-    use strum::EnumString;
-
-    use crate::roles::BuiltinRoleSet;
-
-    #[derive(Debug, Clone, PartialEq, Eq, Hash, AsRefStr, EnumString)]
-    #[strum(serialize_all = "snake_case")]
-    pub enum TestBuiltinRole {
-        DocRead,
-        DocEdit,
-        DocDelete,
-        UserAdd,
-        UserBan,
-        Superuser,
-    }
-
-    impl BuiltinRoleSet for TestBuiltinRole {
-        fn superuser() -> Self {
-            Self::Superuser
-        }
-    }
+#[cfg(test)]
+/// The [fga::client::ConnectionSettings] to use for unit and doc tests
+///
+/// Configurable through the `OPENFGA_HOST` and `OPENFGA_PORT` environment variables.
+/// Defaults to `localhost` and `8091`.
+fn connection_settings() -> fga::client::ConnectionSettings {
+    let address = std::env::var("OPENFGA_HOST").unwrap_or_else(|_| "localhost".to_string());
+    let port = std::env::var("OPENFGA_PORT")
+        .unwrap_or_else(|_| "8091".to_string())
+        .parse()
+        .expect("invalid port");
+    fga::client::ConnectionSettings::new(address, port).reset_store()
 }
+
+#[cfg(test)]
+macro_rules! openfga {
+    () => {{
+        let mut client = fga::Client::try_new_store(
+            stdext::function_name!()
+                .split("::")
+                .filter(|x| *x != "{{closure}}")
+                .collect::<Vec<_>>()
+                .join("-"),
+            crate::connection_settings(),
+        )
+        .await
+        .expect("Failed to initialize client");
+        crate::ensure_latest_authorization_model(&mut client)
+            .await
+            .expect("Failed to initialize/update the authorization model");
+        client
+    }};
+}
+
+#[cfg(test)]
+use openfga;

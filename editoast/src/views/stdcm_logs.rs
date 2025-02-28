@@ -150,14 +150,12 @@ async fn stdcm_log_by_id_or_trace_id(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
     use std::str::FromStr;
 
     use axum::http::StatusCode;
     use chrono::DateTime;
     use editoast_authz::authorizer::UserInfo;
     use editoast_authz::BuiltinRole;
-    use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -165,8 +163,10 @@ mod tests {
     use editoast_schemas::train_schedule::PathItemLocation;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use tracing_subscriber::filter::Directive;
     use uuid::Uuid;
 
+    use crate::core;
     use crate::core::mocking::MockingClient;
     use crate::core::pathfinding::PathfindingResultSuccess;
     use crate::core::simulation::CompleteReportTrain;
@@ -174,12 +174,14 @@ mod tests {
     use crate::core::simulation::ReportTrain;
     use crate::core::simulation::SimulationResponse;
     use crate::core::simulation::SpeedLimitProperties;
+    use crate::core::CoreClient;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
     use crate::models::stdcm_log::StdcmLog;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::stdcm_logs::StdcmLogListResponse;
+    use crate::views::test_app;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestRequestExt;
@@ -242,7 +244,7 @@ mod tests {
         }
     }
 
-    fn core_mocking_client() -> MockingClient {
+    fn core_mocking_client() -> CoreClient {
         let mut core = MockingClient::new();
         core.stub("/v2/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -254,7 +256,17 @@ mod tests {
             .response(StatusCode::OK)
             .json(simulation_response())
             .finish();
-        core
+        core.stub("/v2/stdcm")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(core::stdcm::Response::Success {
+                simulation: simulation_response(),
+                path: pathfinding_result_success(),
+                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
+                    .expect("Failed to parse datetime"),
+            })
+            .finish();
+        CoreClient::Mocked(core)
     }
 
     fn pathfinding_result_success() -> PathfindingResultSuccess {
@@ -307,85 +319,44 @@ mod tests {
         }
     }
 
-    struct TestContextConfig {
-        disable_superuser: bool,
-        enable_authorization: bool,
-        enable_stdcm_logging: bool,
-        enable_telemetry: bool,
-    }
-
-    struct TestContextOutput {
-        app: TestApp,
-        user: UserInfo,
-    }
-
-    fn init_app(config: TestContextConfig) -> TestContextOutput {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let mut core = core_mocking_client();
-        core.stub("/v2/stdcm")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(crate::core::stdcm::Response::Success {
-                simulation: simulation_response(),
-                path: pathfinding_result_success(),
-                departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
-                    .expect("Failed to parse datetime"),
-            })
-            .finish();
-
-        let user = UserInfo {
-            identity: "superuser_id".to_owned(),
-            name: "superuser_name".to_owned(),
-        };
-
-        let mut roles = HashSet::from([BuiltinRole::Stdcm, BuiltinRole::Admin]);
-
-        if config.disable_superuser {
-            roles.remove(&BuiltinRole::Admin);
-        }
-
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .enable_authorization(config.enable_authorization)
-            .enable_stdcm_logging(config.enable_stdcm_logging)
-            .enable_telemetry(config.enable_telemetry)
-            .with_rust_log_directive("otel::tracing=info".parse().unwrap())
-            .user(user.clone())
-            .roles(roles)
-            .build();
-
-        TestContextOutput { app, user }
-    }
-
-    async fn execute_stdcm_request(app: &TestApp, user: UserInfo) -> String {
+    async fn execute_stdcm_request(app: &TestApp, user: Option<UserInfo>) -> String {
         let small_infra = create_small_infra(&mut app.db_pool().get_ok()).await;
         let timetable = create_timetable(&mut app.db_pool().get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut app.db_pool().get_ok(), &Uuid::new_v4().to_string())
                 .await;
         let trace_id = "cd62312a1bd0df0a612ff9ade3d03635".to_string();
-        let request = app
+        let mut request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
             .json(&stdcm_payload(rolling_stock.id))
-            .add_header("traceparent", format!("00-{trace_id}-18ae0228cf2d63b0-01"))
-            .by_user(user);
+            .add_header("traceparent", format!("00-{trace_id}-18ae0228cf2d63b0-01"));
 
+        if let Some(user) = user {
+            request = request.by_user(user);
+        }
         app.fetch(request).assert_status(StatusCode::OK);
 
         trace_id
     }
 
+    fn rust_log() -> Directive {
+        "otel::tracing=info".parse().unwrap()
+    }
+
     #[rstest]
     async fn list_stdcm_logs_return_success() {
-        let config = TestContextConfig {
-            disable_superuser: false,
-            enable_authorization: true,
-            enable_stdcm_logging: true,
-            enable_telemetry: true,
-        };
-        let TestContextOutput { app, user } = init_app(config);
-        let trace_id = execute_stdcm_request(&app, user.clone()).await;
+        let app = test_app!()
+            .core_client(core_mocking_client())
+            .enable_authorization(true)
+            .enable_stdcm_logging(true)
+            .enable_telemetry(true)
+            .with_rust_log_directive(rust_log())
+            .build();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([BuiltinRole::Admin])
+            .create();
+        let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app.get("/stdcm_logs").by_user(user);
         let stdcm_logs_response: StdcmLogListResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -396,14 +367,18 @@ mod tests {
 
     #[rstest]
     async fn get_stdcm_log_by_trace_id_return_success() {
-        let config = TestContextConfig {
-            disable_superuser: false,
-            enable_authorization: true,
-            enable_stdcm_logging: true,
-            enable_telemetry: true,
-        };
-        let TestContextOutput { app, user } = init_app(config);
-        let trace_id = execute_stdcm_request(&app, user.clone()).await;
+        let app = test_app!()
+            .core_client(core_mocking_client())
+            .enable_authorization(true)
+            .enable_stdcm_logging(true)
+            .enable_telemetry(true)
+            .with_rust_log_directive(rust_log())
+            .build();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([BuiltinRole::Admin])
+            .create();
+        let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app
             .get(format!("/stdcm_log?trace_id={trace_id}").as_str())
             .by_user(user);
@@ -413,14 +388,18 @@ mod tests {
 
     #[rstest]
     async fn get_stdcm_log_by_trace_id_return_not_found() {
-        let config = TestContextConfig {
-            disable_superuser: false,
-            enable_authorization: true,
-            enable_stdcm_logging: true,
-            enable_telemetry: true,
-        };
-        let TestContextOutput { app, user } = init_app(config);
-        let _ = execute_stdcm_request(&app, user.clone()).await;
+        let app = test_app!()
+            .core_client(core_mocking_client())
+            .enable_authorization(true)
+            .enable_stdcm_logging(true)
+            .enable_telemetry(true)
+            .with_rust_log_directive(rust_log())
+            .build();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([BuiltinRole::Admin])
+            .create();
+        let _ = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app
             .get("/stdcm_log?trace_id=not_existing_trace_id")
             .by_user(user);
@@ -429,42 +408,54 @@ mod tests {
 
     #[rstest]
     async fn get_stdcm_log_by_id_return_not_found() {
-        let config = TestContextConfig {
-            disable_superuser: false,
-            enable_authorization: true,
-            enable_stdcm_logging: true,
-            enable_telemetry: true,
-        };
-        let TestContextOutput { app, user } = init_app(config);
-        let _ = execute_stdcm_request(&app, user.clone()).await;
+        let app = test_app!()
+            .core_client(core_mocking_client())
+            .enable_authorization(true)
+            .enable_stdcm_logging(true)
+            .enable_telemetry(true)
+            .with_rust_log_directive(rust_log())
+            .build();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([BuiltinRole::Admin])
+            .create();
+        let _ = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app.get("/stdcm_log?id=0").by_user(user);
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
     async fn get_stdcm_log_return_missing_id_and_trace_id() {
-        let config = TestContextConfig {
-            disable_superuser: false,
-            enable_authorization: true,
-            enable_stdcm_logging: true,
-            enable_telemetry: true,
-        };
-        let TestContextOutput { app, user } = init_app(config);
-        let _ = execute_stdcm_request(&app, user.clone()).await;
+        let app = test_app!()
+            .core_client(core_mocking_client())
+            .enable_authorization(true)
+            .enable_stdcm_logging(true)
+            .enable_telemetry(true)
+            .with_rust_log_directive(rust_log())
+            .build();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([BuiltinRole::Admin])
+            .create();
+        let _ = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app.get("/stdcm_log").by_user(user);
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[rstest]
     async fn get_stdcm_log_by_trace_id_return_unauthorized() {
-        let config = TestContextConfig {
-            disable_superuser: true,
-            enable_authorization: true,
-            enable_stdcm_logging: true,
-            enable_telemetry: true,
-        };
-        let TestContextOutput { app, user } = init_app(config);
-        let trace_id = execute_stdcm_request(&app, user.clone()).await;
+        let app = test_app!()
+            .core_client(core_mocking_client())
+            .enable_authorization(true)
+            .enable_stdcm_logging(true)
+            .enable_telemetry(true)
+            .with_rust_log_directive(rust_log())
+            .build();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([BuiltinRole::Stdcm]) // only available to admins
+            .create();
+        let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app
             .get(format!("/stdcm_log?trace_id={trace_id}").as_str())
             .by_user(user);
@@ -473,32 +464,34 @@ mod tests {
 
     #[rstest]
     async fn get_stdcm_log_by_trace_id_return_empty_used_id() {
-        let config = TestContextConfig {
-            disable_superuser: false,
-            enable_authorization: false,
-            enable_stdcm_logging: true,
-            enable_telemetry: true,
-        };
-        let TestContextOutput { app, user } = init_app(config);
-        let trace_id = execute_stdcm_request(&app, user.clone()).await;
-        let request = app
-            .get(format!("/stdcm_log?trace_id={trace_id}").as_str())
-            .by_user(user);
+        let app = test_app!()
+            .core_client(core_mocking_client())
+            .enable_authorization(false)
+            .enable_stdcm_logging(true)
+            .enable_telemetry(true)
+            .with_rust_log_directive(rust_log())
+            .build();
+        let trace_id = execute_stdcm_request(&app, None).await;
+        let request = app.get(format!("/stdcm_log?trace_id={trace_id}").as_str());
         let stdcm_log: StdcmLog = app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(stdcm_log.user_id, None);
     }
 
     #[rstest]
     async fn list_stdcm_logs_return_empty_trace_id() {
-        let config = TestContextConfig {
-            disable_superuser: false,
-            enable_authorization: true,
-            enable_stdcm_logging: true,
-            enable_telemetry: false,
-        };
-        let TestContextOutput { app, user } = init_app(config);
-        let _ = execute_stdcm_request(&app, user.clone()).await;
-        let request = app.get("/stdcm_logs?page_size=10").by_user(user);
+        let app = test_app!()
+            .core_client(core_mocking_client())
+            .enable_authorization(true)
+            .enable_stdcm_logging(true)
+            .enable_telemetry(false)
+            .with_rust_log_directive(rust_log())
+            .build();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([BuiltinRole::Admin])
+            .create();
+        let _ = execute_stdcm_request(&app, Some(user.clone())).await;
+        let request = app.get("/stdcm_logs").by_user(user);
         let stdcm_logs_response: StdcmLogListResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 

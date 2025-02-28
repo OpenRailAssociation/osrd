@@ -1,15 +1,18 @@
 use std::collections::HashSet;
 
 use crate::error::Result;
-use crate::models::auth::{AuthDriverError, PgAuthDriver};
 use axum::extract::Path;
+use axum::extract::State;
 use axum::response::Json;
 use axum::Extension;
-use editoast_authz::authorizer::Authorizer;
 use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 
-use super::{AuthenticationExt, AuthorizationError};
+use super::AppState;
+use super::AuthenticationExt;
+use super::AuthorizationError;
+use super::AuthorizerError;
+use super::Regulator;
 
 crate::routes! {
     "/authz/roles" => {
@@ -37,7 +40,7 @@ struct UserIdPathParam {
 enum AuthzError {
     #[error("Internal error")]
     #[editoast_error(status = 500, no_context)]
-    Driver(#[from] AuthDriverError),
+    Authorizer(#[from] AuthorizerError),
     #[error("Authorization error")]
     Authz(#[from] AuthorizationError),
 }
@@ -62,21 +65,31 @@ struct Roles {
         (status = 200, description = "List the roles of the issuer of the request", body = inline(Roles)),
     ),
 )]
-async fn list_current_roles(Extension(auth): AuthenticationExt) -> Result<Json<Roles>> {
+async fn list_current_roles(
+    State(AppState { config, .. }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+) -> Result<Json<Roles>> {
+    // This is especially necessary as this endpoint is always queried by the frontend
+    // when loading. Making it return 401 results in a blank page.
+    // We return `Admin` as when no authorization is enabled, we want everyone to have
+    // access to full feature set of OSRD.
+    if !config.enable_authorization {
+        return Ok(Json(Roles {
+            builtin: HashSet::from([BuiltinRole::Admin]),
+        }));
+    }
     let authorizer = auth.authorizer()?;
     Ok(Json(Roles {
         builtin: authorizer
-            .user_builtin_roles(authorizer.user_id())
+            .user_roles()
             .await
-            .map_err(AuthzError::from)?,
+            .map_err(AuthzError::Authorizer)?
+            .clone(),
     }))
 }
 
-async fn check_user_exists(
-    user_id: i64,
-    authorizer: &Authorizer<PgAuthDriver<BuiltinRole>>,
-) -> Result<()> {
-    if !authorizer
+async fn check_user_exists(user_id: i64, regulator: &Regulator) -> Result<()> {
+    if !regulator
         .user_exists(user_id)
         .await
         .map_err(AuthzError::from)?
@@ -98,6 +111,7 @@ async fn check_user_exists(
 async fn list_user_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
     Extension(auth): AuthenticationExt,
+    State(AppState { regulator, .. }): State<AppState>,
 ) -> Result<Json<Roles>> {
     if !auth
         .check_roles([BuiltinRole::OperationalStudies].into())
@@ -107,12 +121,11 @@ async fn list_user_roles(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let authorizer = auth.authorizer()?;
-    check_user_exists(user_id, &authorizer).await?;
+    check_user_exists(user_id, &regulator).await?;
 
     Ok(Json(Roles {
-        builtin: authorizer
-            .user_builtin_roles(user_id)
+        builtin: regulator
+            .user_roles(user_id)
             .await
             .map_err(AuthzError::from)?,
     }))
@@ -129,12 +142,13 @@ struct RoleListBody {
     params(UserIdPathParam),
     request_body = inline(RoleListBody),
     responses(
-        (status = 204, description = "The roles have been granted sucessfully"),
+        (status = 204, description = "The roles have been granted successfully"),
     ),
 )]
 async fn grant_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
     Extension(auth): AuthenticationExt,
+    State(AppState { regulator, .. }): State<AppState>,
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
     if !auth
@@ -145,11 +159,10 @@ async fn grant_roles(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let mut authorizer = auth.authorizer()?;
-    check_user_exists(user_id, &authorizer).await?;
+    check_user_exists(user_id, &regulator).await?;
 
-    authorizer
-        .grant_roles(user_id, HashSet::from_iter(roles))
+    regulator
+        .grant_user_roles(user_id, HashSet::from_iter(roles))
         .await
         .map_err(AuthzError::from)?;
     Ok(axum::http::StatusCode::NO_CONTENT)
@@ -161,12 +174,13 @@ async fn grant_roles(
     params(UserIdPathParam),
     request_body = inline(RoleListBody),
     responses(
-        (status = 204, description = "The roles have been removed sucessfully"),
+        (status = 204, description = "The roles have been removed successfully"),
     ),
 )]
 async fn strip_roles(
     Path(UserIdPathParam { user_id }): Path<UserIdPathParam>,
     Extension(auth): AuthenticationExt,
+    State(AppState { regulator, .. }): State<AppState>,
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
     if !auth
@@ -177,11 +191,10 @@ async fn strip_roles(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let mut authorizer = auth.authorizer()?;
-    check_user_exists(user_id, &authorizer).await?;
+    check_user_exists(user_id, &regulator).await?;
 
-    authorizer
-        .strip_roles(user_id, HashSet::from_iter(roles))
+    regulator
+        .strip_user_roles(user_id, HashSet::from_iter(roles))
         .await
         .map_err(AuthzError::from)?;
     Ok(axum::http::StatusCode::NO_CONTENT)

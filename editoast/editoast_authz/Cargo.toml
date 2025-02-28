@@ -4,10 +4,8 @@ license.workspace = true
 version.workspace = true
 edition.workspace = true
 
-[features]
-fixtures = []
-
 [dependencies]
+derive_more = { version = "2.0.1", features = ["from"] }
 fga.workspace = true
 futures.workspace = true
 itertools.workspace = true
@@ -18,7 +16,9 @@ tracing.workspace = true
 utoipa.workspace = true
 
 [dev-dependencies]
+editoast_common.workspace = true
 pretty_assertions.workspace = true
+stdext.workspace = true
 tokio.workspace = true
 
 [lints]

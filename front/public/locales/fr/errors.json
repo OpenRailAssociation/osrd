@@ -18,6 +18,7 @@
     },
     "authz": {
       "AuthError": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
+      "Authorizer": "Erreur interne",
       "Authz": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "DbError": "Erreur interne de base de données, veuillez réessayer ou contacter le support",
       "Driver": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",

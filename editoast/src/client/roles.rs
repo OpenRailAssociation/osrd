@@ -1,18 +1,23 @@
-use std::{collections::HashSet, fmt::Display, sync::Arc};
+use std::collections::HashSet;
+use std::fmt::Display;
+use std::sync::Arc;
 
-use anyhow::{anyhow, bail};
-use clap::{Args, Subcommand};
-use editoast_authz::{
-    authorizer::{GroupInfo, StorageDriver, UserInfo},
-    roles::BuiltinRoleSet,
-    BuiltinRole,
-};
+use anyhow::anyhow;
+use anyhow::bail;
+use clap::Args;
+use clap::Subcommand;
+use editoast_authz::authorizer::GroupInfo;
+use editoast_authz::authorizer::StorageDriver;
+use editoast_authz::authorizer::UserInfo;
+use editoast_authz::BuiltinRole;
 use editoast_models::DbConnectionPoolV2;
 use itertools::Itertools as _;
 use strum::IntoEnumIterator;
 use tracing::info;
 
 use crate::models::auth::PgAuthDriver;
+
+use super::openfga_config::OpenfgaConfig;
 
 #[derive(Debug, Subcommand)]
 pub enum RolesCommand {
@@ -95,13 +100,13 @@ impl Display for Subject {
 
 async fn parse_and_fetch_subject(
     subject: &String,
-    driver: &PgAuthDriver<BuiltinRole>,
+    driver: &PgAuthDriver,
 ) -> anyhow::Result<Subject> {
     let id = if let Ok(id) = subject.parse::<i64>() {
         id
     } else {
         let uid = driver.get_user_id(subject).await?;
-        uid.ok_or_else(|| anyhow!("No subject with identity '{subject}' found"))?
+        uid.ok_or_else(|| anyhow!("No user with identity '{subject}' found"))?
     };
     let subject = if let Some(info) = driver.get_user_info(id).await? {
         Subject::new_user(id, info)
@@ -117,10 +122,19 @@ async fn parse_and_fetch_subject(
 pub async fn list_subject_roles(
     ListArgs { subject }: ListArgs,
     pool: Arc<DbConnectionPoolV2>,
+    openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
-    let subject = parse_and_fetch_subject(&subject, &driver).await?;
-    let roles = driver.fetch_subject_roles(subject.id).await?;
+    let regulator = openfga_config.into_regulator(pool).await?;
+    let roles = match parse_and_fetch_subject(&subject, regulator.driver()).await? {
+        Subject {
+            id,
+            info: SubjectInfo::User(_),
+        } => regulator.user_roles(id).await?,
+        Subject {
+            id,
+            info: SubjectInfo::Group(_),
+        } => regulator.group_roles(id).await?,
+    };
     if roles.is_empty() {
         info!("{subject} has no roles assigned");
         return Ok(());
@@ -144,9 +158,9 @@ fn parse_role_case_insensitive(tag: &str) -> anyhow::Result<BuiltinRole> {
 pub async fn add_roles(
     AddArgs { subject, roles }: AddArgs,
     pool: Arc<DbConnectionPoolV2>,
+    openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
-    let subject = parse_and_fetch_subject(&subject, &driver).await?;
+    let regulator = openfga_config.into_regulator(pool).await?;
     let roles = roles
         .iter()
         .map(String::as_str)
@@ -160,16 +174,25 @@ pub async fn add_roles(
             .collect_vec()
             .join(", "),
     );
-    driver.ensure_subject_roles(subject.id, roles).await?;
+    match parse_and_fetch_subject(&subject, regulator.driver()).await? {
+        Subject {
+            id,
+            info: SubjectInfo::User(_),
+        } => regulator.grant_user_roles(id, roles).await?,
+        Subject {
+            id,
+            info: SubjectInfo::Group(_),
+        } => regulator.grant_group_roles(id, roles).await?,
+    }
     Ok(())
 }
 
 pub async fn remove_roles(
     RemoveArgs { subject, roles }: RemoveArgs,
     pool: Arc<DbConnectionPoolV2>,
+    openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
-    let subject = parse_and_fetch_subject(&subject, &driver).await?;
+    let regulator = openfga_config.into_regulator(pool).await?;
     let roles = roles
         .iter()
         .map(String::as_str)
@@ -183,6 +206,15 @@ pub async fn remove_roles(
             .collect_vec()
             .join(", "),
     );
-    driver.remove_subject_roles(subject.id, roles).await?;
+    match parse_and_fetch_subject(&subject, regulator.driver()).await? {
+        Subject {
+            id,
+            info: SubjectInfo::User(_),
+        } => regulator.strip_user_roles(id, roles).await?,
+        Subject {
+            id,
+            info: SubjectInfo::Group(_),
+        } => regulator.strip_group_roles(id, roles).await?,
+    }
     Ok(())
 }

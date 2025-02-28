@@ -190,15 +190,17 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                 Ok(())
             }
             RolesCommand::List(list_args) => {
-                roles::list_subject_roles(list_args, Arc::new(db_pool))
+                roles::list_subject_roles(list_args, Arc::new(db_pool), openfga_config)
                     .await
                     .map_err(Into::into)
             }
-            RolesCommand::Add(add_args) => roles::add_roles(add_args, Arc::new(db_pool))
-                .await
-                .map_err(Into::into),
+            RolesCommand::Add(add_args) => {
+                roles::add_roles(add_args, Arc::new(db_pool), openfga_config)
+                    .await
+                    .map_err(Into::into)
+            }
             RolesCommand::Remove(remove_args) => {
-                roles::remove_roles(remove_args, Arc::new(db_pool))
+                roles::remove_roles(remove_args, Arc::new(db_pool), openfga_config)
                     .await
                     .map_err(Into::into)
             }
@@ -213,20 +215,22 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                 .await
                 .map_err(Into::into),
             GroupCommand::Include(include_args) => {
-                group::include_group(include_args, Arc::new(db_pool))
+                group::include_group(include_args, openfga_config, Arc::new(db_pool))
                     .await
                     .map_err(Into::into)
             }
             GroupCommand::Exclude(exclude_args) => {
-                group::exclude_group(exclude_args, Arc::new(db_pool))
+                group::exclude_group(exclude_args, openfga_config, Arc::new(db_pool))
                     .await
                     .map_err(Into::into)
             }
         },
         Commands::User(user_command) => match user_command {
-            UserCommand::List(list_args) => user::list_user(list_args, Arc::new(db_pool))
-                .await
-                .map_err(Into::into),
+            UserCommand::List(list_args) => {
+                user::list_user(list_args, openfga_config, Arc::new(db_pool))
+                    .await
+                    .map_err(Into::into)
+            }
             UserCommand::Add(add_args) => user::add_user(add_args, Arc::new(db_pool))
                 .await
                 .map_err(Into::into),

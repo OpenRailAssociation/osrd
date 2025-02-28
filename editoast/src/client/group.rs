@@ -2,21 +2,18 @@ use anyhow::anyhow;
 use anyhow::bail;
 use clap::Args;
 use clap::Subcommand;
-use diesel::delete;
-use diesel::insert_into;
-use diesel::prelude::*;
-use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::RunQueryDsl;
+
+use editoast_authz::authorizer::GroupInfo;
 use editoast_authz::authorizer::StorageDriver;
-use editoast_authz::BuiltinRole;
-use editoast_models::tables::authn_group;
-use editoast_models::tables::authn_group_membership;
-use editoast_models::tables::authn_subject;
+
 use editoast_models::DbConnectionPoolV2;
-use std::ops::DerefMut;
+use futures::TryStreamExt;
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::models::auth::PgAuthDriver;
+
+use super::openfga_config::OpenfgaConfig;
 
 #[derive(Debug, Subcommand)]
 pub enum GroupCommand {
@@ -53,123 +50,87 @@ pub struct ExcludeArgs {
 }
 
 pub async fn create_group(args: CreateArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    let conn = pool.get().await?;
-
-    conn.transaction(|conn| {
-        async move {
-            let id: i64 = insert_into(authn_subject::table)
-                .default_values()
-                .returning(authn_subject::id)
-                .get_result(&mut conn.clone().write().await)
-                .await?;
-            insert_into(authn_group::table)
-                .values((authn_group::id.eq(id), authn_group::name.eq(&args.name)))
-                .execute(conn.write().await.deref_mut())
-                .await?;
-            println!(r#"Group "{}" created with id [{}]"#, &args.name, id);
-            Ok(())
-        }
-        .scope_boxed()
-    })
-    .await
+    let driver = PgAuthDriver::new(pool);
+    let group_info = GroupInfo { name: args.name };
+    let id = driver.ensure_group(&group_info).await?;
+    tracing::info!(name = group_info.name, id, "Group created");
+    println!("{id}");
+    Ok(())
 }
 
 pub async fn list_group(pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    let conn = pool.get().await?;
-
-    let groups = authn_group::table
-        .select(authn_group::all_columns)
-        .load::<(i64, String)>(conn.write().await.deref_mut())
-        .await?;
+    let driver = PgAuthDriver::new(pool);
+    let groups = driver.list_groups().await?.try_collect::<Vec<_>>().await?;
     if groups.is_empty() {
-        println!("No group found.");
+        tracing::info!("No group found.");
         return Ok(());
     }
-    for (id, name) in &groups {
+    for (id, GroupInfo { name }) in &groups {
         println!("[{}]: {}", id, name);
     }
     Ok(())
 }
 
 /// Exclude users from a group
-pub async fn exclude_group(args: ExcludeArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    if args.users.is_empty() {
+pub async fn exclude_group(
+    ExcludeArgs { group_name, users }: ExcludeArgs,
+    openfga_config: OpenfgaConfig,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    if users.is_empty() {
         bail!("No user specified");
     }
 
-    let conn = pool.get().await?;
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
+    let driver = regulator.driver();
 
-    let gid = authn_group::table
-        .select(authn_group::id)
-        .filter(authn_group::name.eq(&args.group_name))
-        .first::<i64>(conn.write().await.deref_mut())
-        .await?;
+    let Some(group_id) = driver.get_group_id(&group_name).await? else {
+        bail!("No such group: '{group_name}'");
+    };
 
-    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
-    let mut conds = vec![];
-    for user in &args.users {
+    let mut user_ids = HashSet::new();
+    for user in &users {
         let uid = if let Ok(id) = user.parse::<i64>() {
             id
         } else {
             let uid = driver.get_user_id(user).await?;
             uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
         };
-        conds.push(
-            authn_group_membership::group
-                .eq(gid)
-                .and(authn_group_membership::user.eq(uid)),
-        );
-    }
-    let mut expr = delete(authn_group_membership::table)
-        .filter(conds[0])
-        .into_boxed();
-
-    for cond in conds.iter().skip(1) {
-        expr = expr.or_filter(*cond);
+        user_ids.insert(uid);
     }
 
-    let deleted = expr.execute(conn.write().await.deref_mut()).await?;
-    println!(
-        "{} user(s) removed from group '{}'",
-        deleted, args.group_name
-    );
-
+    regulator.remove_members(group_id, user_ids).await?;
     Ok(())
 }
 
 /// Include users in a group
-pub async fn include_group(args: IncludeArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
-    if args.users.is_empty() {
+pub async fn include_group(
+    IncludeArgs { group_name, users }: IncludeArgs,
+    openfga_config: OpenfgaConfig,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    if users.is_empty() {
         bail!("No user specified");
     }
 
-    let conn = pool.get().await?;
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
+    let driver = regulator.driver();
 
-    let gid = authn_group::table
-        .select(authn_group::id)
-        .filter(authn_group::name.eq(&args.group_name))
-        .first::<i64>(conn.write().await.deref_mut())
-        .await?;
+    let Some(group_id) = driver.get_group_id(&group_name).await? else {
+        bail!("No such group: '{group_name}'");
+    };
 
-    let driver = PgAuthDriver::<BuiltinRole>::new(pool);
-    let mut values = vec![];
-    for user in &args.users {
+    let mut user_ids = HashSet::new();
+    for user in &users {
         let uid = if let Ok(id) = user.parse::<i64>() {
             id
         } else {
             let uid = driver.get_user_id(user).await?;
             uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
         };
-        values.push((
-            authn_group_membership::user.eq(uid),
-            authn_group_membership::group.eq(gid),
-        ));
+        user_ids.insert(uid);
     }
 
-    insert_into(authn_group_membership::table)
-        .values(values)
-        .execute(conn.write().await.deref_mut())
-        .await?;
-
+    regulator.add_members(group_id, user_ids).await?;
     Ok(())
 }

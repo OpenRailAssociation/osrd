@@ -27,17 +27,17 @@ pub async fn healthcheck_cmd(
         num_channels: core_config.core_client_channels_size,
     })
     .await?;
-    let openfga = {
-        let config = views::OpenfgaConfig::from(openfga_config);
-        tracing::info!(url = %config.url, "connecting to OpenFGA");
-        let client =
-            fga::Client::try_with_store(config.store.clone(), config.try_as_settings()?).await?;
-        tracing::info!(url = %config.url, "connected to OpenFGA");
-        client
-    };
-    views::check_health(db_pool, valkey.into(), core_client.into(), openfga)
-        .await
-        .map_err(|e| anyhow!("❌ healthcheck failed: {e}"))?;
+    let regulator = openfga_config.into_regulator(db_pool.clone()).await?;
+
+    views::check_health(
+        db_pool,
+        valkey.into(),
+        core_client.into(),
+        regulator.openfga(),
+    )
+    .await
+    .map_err(|e| anyhow!("❌ healthcheck failed: {e}"))?;
+
     tracing::info!("✅ Healthcheck passed");
     Ok(())
 }

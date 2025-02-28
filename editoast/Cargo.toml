@@ -83,6 +83,7 @@ reqwest = { version = "0.11.27", features = ["json"] }
 rstest = { version = "0.19.0", default-features = false }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
+stdext = "0.3.3"
 strum = { version = "0.26.3", features = ["derive"] }
 tempfile = "3.18.0"
 thiserror = "2.0.12"
@@ -221,12 +222,13 @@ axum = { version = "0.8.1", default-features = false, features = [
   "multipart",
   "tracing",
 ] }
-editoast_authz = { workspace = true, features = ["fixtures"] }
+editoast_authz = { workspace = true }
 editoast_models = { workspace = true, features = ["testing"] }
 editoast_osrdyne_client = { workspace = true, features = ["mock_client"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 serial_test = "3.2.0"
+stdext.workspace = true
 tempfile.workspace = true
 
 [lints]

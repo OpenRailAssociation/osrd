@@ -37,12 +37,15 @@ use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::PhysicsConsistParameters;
-use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
+use crate::core::simulation::RoutingRequirement;
+use crate::core::simulation::SimulationResponse;
+use crate::core::simulation::SpacingRequirement;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::prelude::*;
-use crate::models::stdcm_log::{StdcmLog, StdcmResponseOrError};
+use crate::models::stdcm_log::StdcmLog;
+use crate::models::stdcm_log::StdcmResponseOrError;
 use crate::models::timetable::Timetable;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::Infra;
@@ -296,18 +299,13 @@ async fn stdcm(
 
     // 6. Log STDCM request and response if logging is enabled
     if config.enable_stdcm_logging {
-        let user_id = auth.authorizer().map_or_else(
-            |e| {
-                tracing::error!("Authorization failed: {e}. Unable to retrieve user ID.");
-                None
-            },
-            |auth| {
-                if auth.is_superuser_stub() {
-                    return None;
-                }
-                Some(auth.user_id())
-            },
-        );
+        let user_id = auth.user_id().unwrap_or_else(|e| {
+            tracing::error!(
+                error = %e,
+                "Authorization failed. Unable to retrieve user ID."
+            );
+            None
+        });
 
         let stdcm_response = match stdcm_response.clone() {
             Ok(response) => StdcmResponseOrError::Response(response),
