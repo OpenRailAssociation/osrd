@@ -257,6 +257,14 @@ export type ManageTrainScheduleTranslations = FlatTranslations & {
   pacedTrains: FlatTranslations;
 };
 
+export type TimetableFilterTranslations = FlatTranslations & {
+  timetable: FlatTranslations;
+};
+
+export type CommonTranslations = FlatTranslations & {
+  common: FlatTranslations;
+};
+
 export type PacedTrainSettings = {
   name: string;
   startTime: string;

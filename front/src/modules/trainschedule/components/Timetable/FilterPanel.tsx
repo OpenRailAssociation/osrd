@@ -94,7 +94,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
           <Select
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.value}
-            id="train-validity"
+            id="timetable-train-validity-filter"
             label={t('timetable.validityFilter')}
             narrow
             small
@@ -112,7 +112,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
           <Select
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.value}
-            id="train-type"
+            id="timetable-train-type-filter"
             label={t('timetable.trainType')}
             narrow
             small
@@ -146,7 +146,7 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
           <Select
             getOptionLabel={(option) => option.label}
             getOptionValue={(option) => option.value}
-            id="train-keep-timetable"
+            id="timetable-train-punctuality-filter"
             label={t('timetable.punctuality')}
             narrow
             small
@@ -164,9 +164,9 @@ const FilterPanel = ({ toggleFilterPanel, timetableFilters }: FilterPanelProps) 
           />
         </div>
       </div>
-      <div className="compositions-code">
-        <label htmlFor="composition-tag-filter">{t('timetable.compositionCodes')}</label>
-        <div className="composition-tag-filter" id="composition-tag-filter">
+      <div className="speed-limit-tag">
+        <label htmlFor="timetable-speed-limit-tag-filter">{t('timetable.speedLimitTags')}</label>
+        <div className="speed-limit-tag-filter" id="timetable-speed-limit-tag-filter">
           {uniqueTags.map((tag) => {
             const displayTag = tag !== 'NO CODE' ? tag : t('timetable.noSpeedLimitTagsShort');
             return (

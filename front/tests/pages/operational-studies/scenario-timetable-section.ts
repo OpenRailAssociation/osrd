@@ -6,7 +6,11 @@ import {
 } from '../../assets/constants/timeout-const';
 import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
-import type { FlatTranslations } from '../../utils/types';
+import type {
+  CommonTranslations,
+  FlatTranslations,
+  TimetableFilterTranslations,
+} from '../../utils/types';
 import CommonPage from '../common-page';
 
 type ScenarioTranslations = {
@@ -40,9 +44,33 @@ class ScenarioTimetableSection extends CommonPage {
 
   private readonly simulationMap: Locator;
 
+  private readonly timetableTotalItemLabel: Locator;
+
   private readonly timetableFilterButton: Locator;
 
   private readonly timetableFilterButtonClose: Locator;
+
+  private readonly timetableLabelFilterInputLabel: Locator;
+
+  private readonly timetableLabelFilterInput: Locator;
+
+  private readonly timetableRollingStockFilterInputLabel: Locator;
+
+  private readonly timetableRollingStockFilterInput: Locator;
+
+  private readonly timetableValidityFilterSelectLabel: Locator;
+
+  private readonly timetableValidityFilterSelect: Locator;
+
+  private readonly timetablePunctualityFilterSelectLabel: Locator;
+
+  private readonly timetablePunctualityFilterSelect: Locator;
+
+  private readonly timetableTrainTypeFilterSelectLabel: Locator;
+
+  private readonly timetableTrainTypeFilterSelect: Locator;
+
+  private readonly timetableSpeedLimitTagFilterLabel: Locator;
 
   private readonly editTrainButton: Locator;
 
@@ -70,8 +98,30 @@ class ScenarioTimetableSection extends CommonPage {
     this.spaceTimeChart = page.locator('.space-time-chart-container');
     this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
     this.simulationMap = page.locator('.simulation-map');
+    this.timetableTotalItemLabel = page.locator('.toolbar-header .label');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
     this.timetableFilterButtonClose = page.getByTestId('timetable-filter-button-close');
+    this.timetableLabelFilterInputLabel = page.locator('label[for="timetable-label-filter"]');
+    this.timetableLabelFilterInput = page.locator('#timetable-label-filter');
+    this.timetableRollingStockFilterInputLabel = page.locator(
+      'label[for="timetable-rollingstock-filter"]'
+    );
+    this.timetableRollingStockFilterInput = page.locator('#timetable-rollingstock-filter');
+    this.timetableValidityFilterSelectLabel = page.locator(
+      'label[for="timetable-train-validity-filter"]'
+    );
+    this.timetableValidityFilterSelect = page.locator('#timetable-train-validity-filter');
+    this.timetablePunctualityFilterSelectLabel = page.locator(
+      'label[for="timetable-train-punctuality-filter"]'
+    );
+    this.timetablePunctualityFilterSelect = page.locator('#timetable-train-punctuality-filter');
+    this.timetableTrainTypeFilterSelectLabel = page.locator(
+      'label[for="timetable-train-type-filter"]'
+    );
+    this.timetableTrainTypeFilterSelect = page.locator('#timetable-train-type-filter');
+    this.timetableSpeedLimitTagFilterLabel = page.locator(
+      'label[for="timetable-speed-limit-tag-filter"]'
+    );
     this.editTrainButton = page.getByTestId('edit-train');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
     this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
@@ -122,43 +172,61 @@ class ScenarioTimetableSection extends CommonPage {
     );
   }
 
+  async checkTimetableFilterVisibilityLabelDefaultValue(
+    translation: FlatTranslations,
+    {
+      inputDefaultValue,
+      selectDefaultValue,
+    }: { inputDefaultValue: string; selectDefaultValue: string }
+  ): Promise<void> {
+    await this.timetableFilterButton.click();
+
+    await expect(this.timetableLabelFilterInputLabel).toBeVisible();
+    await expect(this.timetableLabelFilterInputLabel).toHaveText(translation.filterLabel);
+    await expect(this.timetableLabelFilterInput).toBeVisible();
+    await expect(this.timetableLabelFilterInput).toHaveValue(inputDefaultValue);
+
+    await expect(this.timetableRollingStockFilterInputLabel).toBeVisible();
+    await expect(this.timetableRollingStockFilterInputLabel).toHaveText(
+      translation.advancedFilterLabel
+    );
+    await expect(this.timetableRollingStockFilterInput).toBeVisible();
+    await expect(this.timetableRollingStockFilterInput).toHaveValue(inputDefaultValue);
+
+    await expect(this.timetableValidityFilterSelectLabel).toBeVisible();
+    await expect(this.timetableValidityFilterSelectLabel).toHaveText(translation.validityFilter);
+    await expect(this.timetableValidityFilterSelect).toBeVisible();
+    await expect(this.timetableValidityFilterSelect).toHaveValue(selectDefaultValue);
+
+    await expect(this.timetablePunctualityFilterSelectLabel).toBeVisible();
+    await expect(this.timetablePunctualityFilterSelectLabel).toHaveText(translation.punctuality);
+    await expect(this.timetablePunctualityFilterSelect).toBeVisible();
+    await expect(this.timetablePunctualityFilterSelect).toHaveValue(selectDefaultValue);
+
+    await expect(this.timetableTrainTypeFilterSelectLabel).toBeVisible();
+    await expect(this.timetableTrainTypeFilterSelectLabel).toHaveText(translation.trainType);
+    await expect(this.timetableTrainTypeFilterSelect).toBeVisible();
+    await expect(this.timetableTrainTypeFilterSelect).toHaveValue(selectDefaultValue);
+
+    await expect(this.timetableSpeedLimitTagFilterLabel).toBeVisible();
+    await expect(this.timetableSpeedLimitTagFilterLabel).toHaveText(translation.speedLimitTags);
+
+    await this.timetableFilterButtonClose.click();
+  }
+
   // Click the train validity filter button based on the provided translation
   async clickValidityTrainFilterButton(filterTranslation: string): Promise<void> {
-    // TODO: use id on the Select element
-    const filterButtonLocator = this.page.locator('#train-validity-and-label select');
-    await filterButtonLocator.selectOption({ label: filterTranslation });
+    await this.timetableValidityFilterSelect.selectOption({ label: filterTranslation });
   }
 
   // Click the train honored filter button based on the provided translation
   async clickHonoredTrainFilterButton(filterTranslation: string): Promise<void> {
-    // TODO: use id on the Select element
-    const filterButtonLocator = this.page.locator(
-      '#schedule-point-honored-and-rollingstock select'
-    );
-    await filterButtonLocator.selectOption({ label: filterTranslation });
+    await this.timetablePunctualityFilterSelect.selectOption({ label: filterTranslation });
   }
 
-  // Filter train using composition codes button based on the provided translation and verify train count
-  async clickCodeCompoTrainFilterButton(
-    filterTranslation: string | null,
-    expectedTrainCount: number
-  ): Promise<void> {
-    await this.timetableFilterButton.click();
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
-
-    const filterButtonLocator = !filterTranslation
-      ? this.page.getByRole('button', {
-          name: translations.timetable.noSpeedLimitTagsShort,
-        })
-      : this.page.getByRole('button', { name: filterTranslation });
-
-    await filterButtonLocator.click();
-    await this.verifyTrainCount(expectedTrainCount);
-    await filterButtonLocator.click();
-    await this.timetableFilterButtonClose.click();
+  // Click the train type filter button based on the provided translation
+  async clickTrainTypeFilterButton(filterTranslation: string): Promise<void> {
+    await this.timetableTrainTypeFilterSelect.selectOption({ label: filterTranslation });
   }
 
   // Verify that the imported train number is correct
@@ -167,15 +235,46 @@ class ScenarioTimetableSection extends CommonPage {
     await expect(this.timetableTrains).toHaveCount(trainCount);
   }
 
+  // Verify that the total items label matches the expected syntax (plural only)
+  async verifyTotalItemsLabel(
+    translations: TimetableFilterTranslations & CommonTranslations,
+    itemCounts: {
+      totalPacedTrainCount: number;
+      totalTrainScheduleCount: number;
+    }
+  ): Promise<void> {
+    const { totalPacedTrainCount, totalTrainScheduleCount } = itemCounts;
+    await expect(this.timetableTotalItemLabel).toBeVisible();
+
+    // Total items label has the syntax : "X services and Y trains"
+    const pacedTrainLabel = translations.pacedTrain_other.split(' ')[1]; // "services"
+    const trainScheduleLabel = translations.train_other.split(' ')[1]; // "trains"
+    const expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel} ${translations.common.and} ${totalTrainScheduleCount} ${trainScheduleLabel}`;
+    await expect(this.timetableTotalItemLabel).toHaveText(expectedComputedLabel);
+  }
+
+  async filterNameAndVerifyTrainCount(name: string, expectedTrainCount: number) {
+    await this.timetableFilterButton.click();
+    await this.timetableLabelFilterInput.fill(name);
+    await this.verifyTrainCount(expectedTrainCount);
+    await this.timetableLabelFilterInput.clear();
+    await this.timetableFilterButtonClose.click();
+  }
+
+  async filterRollingStockAndVerifyTrainCount(name: string, expectedTrainCount: number) {
+    await this.timetableFilterButton.click();
+    await this.timetableRollingStockFilterInput.fill(name);
+    await this.verifyTrainCount(expectedTrainCount);
+    await this.timetableRollingStockFilterInput.clear();
+    await this.timetableFilterButtonClose.click();
+  }
+
   // Filter trains validity and verify their count
   async filterValidityAndVerifyTrainCount(
     validityFilter: 'Valid' | 'Invalid' | 'All',
-    expectedTrainCount: number
+    expectedTrainCount: number,
+    translations: TimetableFilterTranslations
   ): Promise<void> {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     await this.timetableFilterButton.click();
 
     const validityFilters = {
@@ -192,12 +291,9 @@ class ScenarioTimetableSection extends CommonPage {
   // Filter the honored trains and verify their count
   async filterHonoredAndVerifyTrainCount(
     honoredFilter: 'Honored' | 'Not honored' | 'All',
-    expectedTrainCount: number
+    expectedTrainCount: number,
+    translations: TimetableFilterTranslations
   ): Promise<void> {
-    const translations = getTranslations({
-      en: enTranslations,
-      fr: frTranslations,
-    });
     await this.timetableFilterButton.click();
 
     const honoredFilters = {
@@ -209,6 +305,48 @@ class ScenarioTimetableSection extends CommonPage {
     await this.clickHonoredTrainFilterButton(honoredFilters[honoredFilter]);
     await this.timetableFilterButtonClose.click();
     await this.verifyTrainCount(expectedTrainCount);
+  }
+
+  // Filter the train type and verify their count
+  async filterTrainTypeAndVerifyTrainCount(
+    trainTypeFilter: 'Service' | 'Unique train' | 'All',
+    expectedTrainCount: number
+  ): Promise<void> {
+    const translations = getTranslations({
+      en: enTranslations,
+      fr: frTranslations,
+    });
+    await this.timetableFilterButton.click();
+
+    const trainTypeFilters = {
+      Service: translations.timetable.pacedTrain,
+      'Unique train': translations.timetable.trainSchedule,
+      All: translations.timetable.showAllTrains,
+    };
+
+    await this.clickTrainTypeFilterButton(trainTypeFilters[trainTypeFilter]);
+    await this.timetableFilterButtonClose.click();
+    await this.verifyTrainCount(expectedTrainCount);
+  }
+
+  // Filter train using speed limit tag button based on the provided translation and verify train count
+  async filterSpeedLimitTagAndVerifyTrainCount(
+    filterTranslation: string | null,
+    expectedTrainCount: number,
+    translations: TimetableFilterTranslations
+  ): Promise<void> {
+    await this.timetableFilterButton.click();
+
+    const filterButtonLocator = !filterTranslation
+      ? this.page.getByRole('button', {
+          name: translations.timetable.noSpeedLimitTagsShort,
+        })
+      : this.page.getByRole('button', { name: filterTranslation });
+
+    await filterButtonLocator.click();
+    await this.verifyTrainCount(expectedTrainCount);
+    await filterButtonLocator.click();
+    await this.timetableFilterButtonClose.click();
   }
 
   // Iterate over each train element and verify the visibility of simulation results

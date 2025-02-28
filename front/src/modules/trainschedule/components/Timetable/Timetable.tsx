@@ -142,9 +142,35 @@ const Timetable = ({
             {
               ...trainSchedulesWithDetails[0],
               id: formatEditoastTrainIdToPacedTrainId(12345),
+              trainName: 'Paced train 1',
+              labels: ['Paced-Train-Tag-1'],
               paced: {
                 duration: Duration.parse('PT2H'),
                 step: Duration.parse('PT30M'),
+              },
+            },
+            {
+              ...trainSchedulesWithDetails[0],
+              id: formatEditoastTrainIdToPacedTrainId(123456),
+              trainName: 'Paced train 2',
+              invalidReason: 'rolling_stock_not_found',
+              isValid: false,
+              scheduledPointsNotHonored: false,
+              paced: {
+                duration: Duration.parse('PT1H'),
+                step: Duration.parse('PT10M'),
+              },
+            },
+            {
+              ...trainSchedulesWithDetails[0],
+              id: formatEditoastTrainIdToPacedTrainId(1234567),
+              trainName: 'Paced train 3',
+              notHonoredReason: 'scheduleNotHonored',
+              isValid: true,
+              scheduledPointsNotHonored: true,
+              paced: {
+                duration: Duration.parse('PT2H'),
+                step: Duration.parse('PT5M'),
               },
             },
           ]
