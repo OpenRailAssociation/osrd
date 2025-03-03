@@ -6,7 +6,6 @@ import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import { formatDateToString } from 'utils/date';
-import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import LogoSTDCM from './LogoSTDCM';
 import styles from './style/SimulationReportStyleSheet';
@@ -17,6 +16,7 @@ interface HeaderProps {
   stdcmData?: StdcmSuccessResponse;
   trainData?: SimulationSheetData;
   scenarioData?: { name: string; infraName: string };
+  simulationSheetLogo?: string;
 }
 
 const Header = ({
@@ -24,14 +24,13 @@ const Header = ({
   stdcmData,
   trainData,
   scenarioData,
+  simulationSheetLogo,
 }: HeaderProps) => {
   const { t } = useTranslation([
     'stdcm-simulation-report-sheet',
     'stdcm',
     'operationalStudies/study',
   ]);
-  const deploymentSettings = useDeploymentSettings();
-  const stdcmSimulationSheetLogo = deploymentSettings?.stdcmSimulationSheetLogo;
 
   return (
     <>
@@ -46,7 +45,7 @@ const Header = ({
         <View style={styles.header.stdcmTitleBox}>
           <View style={styles.header.stdcm}>
             {stdcmData && simulationReportSheetNumber ? (
-              <LogoSTDCM logoUrl={stdcmSimulationSheetLogo} />
+              <LogoSTDCM logoUrl={simulationSheetLogo} />
             ) : (
               <Text style={styles.header.title}>
                 {t('operationalStudies/study:simulationSheet')}
