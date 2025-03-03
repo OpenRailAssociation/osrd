@@ -1,7 +1,7 @@
 {
-  "editor": "Infrastrukturverlag",
-  "map": "Kartografie",
-  "operationalStudies": "Eisenbahnbetriebsstudien",
-  "rollingStockEditor": "Schienenfahrzeugbearbeiter",
-  "stdcm": "Click'n ride"
+  "editor": "Betriebsnetz-Editor",
+  "map": "Karte",
+  "operationalStudies": "Betriebsstudien",
+  "rollingStockEditor": "Schienenfahrzeug-Editor",
+  "stdcm": "Schnellauftrag"
 }

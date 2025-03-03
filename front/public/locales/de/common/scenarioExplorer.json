@@ -1,0 +1,15 @@
+{
+  "errorMessages": {
+    "error": "Ein Fehler ist aufgetreten",
+    "unableToRetrieveProjectsMessage": "Projekte konnten nicht abgerufen werden"
+  },
+  "infraLegend": "Betriebsnetz",
+  "noScenarioSelected": "Hier klicken, um ein Szenario mit einem Betriebsnetz und eigenem Kursbuch auszuwählen.",
+  "projectLegend": "Projekt",
+  "projects": "Projekte",
+  "scenarioExplorator": "Szenariensuche",
+  "scenarioLegend": "Szenario",
+  "scenarios": "Szenarien",
+  "studies": "Studien",
+  "studyLegend": "Studie"
+}

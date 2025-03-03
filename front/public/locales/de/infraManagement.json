@@ -1,0 +1,40 @@
+{
+  "actions": {
+    "cancel": "Abbrechen",
+    "check": "Prüfen",
+    "copy": "Kopieren",
+    "delete": "Löschen",
+    "export": "Als RailJSON exportieren",
+    "lock": "Sperren",
+    "rename": "Umbenennen",
+    "unlock": "Entsperren",
+    "waiting": "Bitte warten"
+  },
+  "addInfra": "Betriebsnetz erstellen",
+  "addInfraJSON": "Ein Betriebsnetz aus einer RailJSON-Datei erstellen",
+  "addInfraJSONFile": "RailJSON-Datei hinzufügen",
+  "addInfraJSONFileRemove": "RailJSON-Import abbrechen",
+  "chooseInfrastructure": "Betriebsnetz auswählen",
+  "createInfra": "Erstellen",
+  "deleteConfirm": "Wollen Sie das Betriebsnetz löschen?",
+  "errorMessages": {
+    "noExistingInfra": "Kein Betriebsnetz verfügbar",
+    "unableToRetrieveInfra": "Betriebsnetz kann nicht geladen werden",
+    "unableToRetrieveInfraList": "Betriebsnetzliste kann nicht geladen werden",
+    "noEmptyName": "Bitte geben Sie einen Namen ein"
+  },
+  "goToEditionMode": "Bearbeiten",
+  "goToStandardMode": "Zurück zur Auswahl",
+  "infraChoice": "Betriebsnetze",
+  "infraDeleted": "Das Betriebsnetz „{{name}}“ wurde gelöscht.",
+  "infraManagement": "Betriebsnetzverwalter",
+  "infraName": "Betriebsnetzname",
+  "infrasFound_zero": "Kein Betriebsnetz gefunden",
+  "infrasFound_one": "Ein Betriebsnetz gefunden",
+  "infrasFound_other": "{{count}} Betriebsnetze gefunden",
+  "infrastructure": "Betriebsnetz",
+  "locked": "Gesperrt",
+  "no": "Nein",
+  "noInfra": "Bitte wählen Sie ein Betriebsnetz aus",
+  "yes": "Ja"
+}
