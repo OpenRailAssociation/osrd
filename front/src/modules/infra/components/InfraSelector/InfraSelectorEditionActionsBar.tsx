@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import InfraLockState from 'modules/infra/consts';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -29,15 +28,14 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
   const [cloneInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdClone.useMutation();
   const [updateInfra] = osrdEditoastApi.endpoints.putInfraByInfraId.useMutation();
 
-  async function handleLockedState(action: InfraLockState) {
+  async function toggleLockedState() {
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        if (action === InfraLockState.LOCK) {
-          await lockInfra({ infraId: infra.id }).unwrap();
-        }
-        if (action === InfraLockState.UNLOCK) {
+        if (infra.locked) {
           await unlockInfra({ infraId: infra.id }).unwrap();
+        } else {
+          await lockInfra({ infraId: infra.id }).unwrap();
         }
       } catch (e) {
         dispatch(setFailure(castErrorToFailure(e)));
@@ -126,27 +124,15 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
   }
   return (
     <>
-      {infra.locked ? (
-        <button
-          className="infraslist-item-action unlock"
-          type="button"
-          aria-label={t('actions.unlock')}
-          title={t('actions.unlock')}
-          onClick={() => handleLockedState(InfraLockState.UNLOCK)}
-        >
-          <Unlock />
-        </button>
-      ) : (
-        <button
-          className="infraslist-item-action lock"
-          type="button"
-          aria-label={t('actions.lock')}
-          title={t('actions.lock')}
-          onClick={() => handleLockedState(InfraLockState.LOCK)}
-        >
-          <Lock />
-        </button>
-      )}
+      <button
+        className="infraslist-item-action unlock"
+        type="button"
+        aria-label={t('actions.unlock')}
+        title={t('actions.unlock')}
+        onClick={toggleLockedState}
+      >
+        {infra.locked ? <Unlock /> : <Lock />}
+      </button>
       <button
         className="infraslist-item-action rename"
         type="button"
