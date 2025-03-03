@@ -145,7 +145,10 @@ export const stdcmConfSlice = createSlice({
           | 'electricalProfileSetId'
           | 'workScheduleGroupId'
           | 'temporarySpeedLimitGroupId'
-          | 'searchDatetimeWindow',
+          | 'searchDatetimeWindow'
+          | 'projectID'
+          | 'studyID'
+          | 'scenarioID',
           'infraID' | 'timetableID'
         >
       >
@@ -157,6 +160,10 @@ export const stdcmConfSlice = createSlice({
       state.searchDatetimeWindow = searchDatetimeWindow;
       state.workScheduleGroupId = action.payload.workScheduleGroupId;
       state.temporarySpeedLimitGroupId = action.payload.temporarySpeedLimitGroupId;
+
+      state.projectID = action.payload.projectID;
+      state.studyID = action.payload.studyID;
+      state.scenarioID = action.payload.scenarioID;
 
       // check that the arrival dates are in the search time window
       const origin = state.stdcmPathSteps.at(0) as Extract<StdcmPathStep, { isVia: false }>;

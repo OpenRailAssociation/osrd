@@ -34,9 +34,8 @@ const ScenarioExplorerModal = ({
   const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useAppDispatch();
 
-  const [projectID, setProjectID] = useState<number | undefined>(globalProjectId);
-  const [studyID, setStudyID] = useState<number | undefined>(globalStudyId);
-  const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioId);
+  const [projectID, setProjectID] = useState(globalProjectId);
+  const [studyID, setStudyID] = useState(globalStudyId);
   const [studiesList, setStudiesList] = useState<StudyWithScenarios[]>();
   const [scenariosList, setScenariosList] = useState<ScenarioWithDetails[]>();
 
@@ -173,8 +172,7 @@ const ScenarioExplorerModal = ({
                   scenariosList.map((scenario) => (
                     <ScenarioMiniCard
                       scenario={scenario}
-                      setSelectedID={setScenarioID}
-                      isSelected={scenario.id === scenarioID}
+                      isSelected={scenario.id === globalScenarioId}
                       projectID={projectID}
                       studyID={studyID}
                       key={`scenario-explorator-modal-${scenario.id}`}

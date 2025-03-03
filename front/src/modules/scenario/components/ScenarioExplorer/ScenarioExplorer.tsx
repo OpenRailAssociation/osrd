@@ -12,9 +12,6 @@ import { getDocument } from 'common/api/documentApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderFill } from 'common/Loaders';
-import { getScenarioDatetimeWindow } from 'modules/scenario/helpers/utils';
-import { updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
-import { useAppDispatch } from 'store';
 
 import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
 
@@ -23,13 +20,10 @@ const ScenarioExplorer = ({
   globalStudyId,
   globalScenarioId,
   displayImgProject = true,
-  timetableId,
 }: ScenarioExplorerProps & {
   displayImgProject?: boolean;
-  timetableId: number | undefined;
 }) => {
   const { t } = useTranslation('common/scenarioExplorer');
-  const dispatch = useAppDispatch();
   const { openModal } = useModal();
   const [imageUrl, setImageUrl] = useState<string>();
 
@@ -57,13 +51,6 @@ const ScenarioExplorer = ({
       }
     );
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery(
-    { timetableId: timetableId! },
-    {
-      skip: !timetableId,
-    }
-  );
-
   const getProjectImage = async (imageId: number) => {
     try {
       const blobImage = await getDocument(imageId);
@@ -72,22 +59,6 @@ const ScenarioExplorer = ({
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    if (scenario && timetable) {
-      const scenarioDateTimeWindow = getScenarioDatetimeWindow(timetable);
-
-      // We also set the stdcm environment in case we select a scenario from the stdcm interface.
-      dispatch(
-        updateStdcmEnvironment({
-          infraID: scenario.infra_id,
-          timetableID: scenario.timetable_id,
-          electricalProfileSetId: scenario.electrical_profile_set_id,
-          searchDatetimeWindow: scenarioDateTimeWindow,
-        })
-      );
-    }
-  }, [timetable]);
 
   useEffect(() => {
     if (projectDetails?.image) {
@@ -161,7 +132,7 @@ const ScenarioExplorer = ({
                 </span>
 
                 <span className="scenario-explorator-card-head-scenario-traincount">
-                  {timetable && timetable.length}
+                  {scenario.trains_count}
                   <MdTrain />
                 </span>
               </div>
