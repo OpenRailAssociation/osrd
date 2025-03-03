@@ -8,7 +8,6 @@ import fr.sncf.osrd.conflicts.PathFragment
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
@@ -102,7 +101,9 @@ interface InfraExplorer {
 
     /**
      * Returns the location of each stops on the path, as an offset since the train departure point.
-     * Only the actual stops are included, not just waypoints.
+     * Only the points where the train actually stops are listed, passage points are not included.
+     * This only gives data about where and how the train stops, not when or for how long. The
+     * temporal aspects of stops are instead stored in `TimeData`.
      */
     fun getStops(): List<ExplorerStop>
 }
@@ -114,9 +115,10 @@ interface EdgeIdentifier {
     override fun hashCode(): Int
 }
 
+/** Describes a stop on the path, without any time-related data. */
 data class ExplorerStop(
     val offset: Offset<TravelledPath>,
-    val reception: RJSReceptionSignal,
+    val isOnClosedSignal: Boolean,
 )
 
 /**
@@ -152,7 +154,6 @@ fun initInfraExplorer(
                 blockToPathProperties,
                 stopProvider = stopProvider,
                 constraints = constraints,
-                stops = mutableListOf(),
             )
         val infraExtended = infraExplorer.extend(it, location)
         if (infraExtended) infraExplorers.add(infraExplorer)
@@ -174,7 +175,6 @@ private class InfraExplorerImpl(
     private val stopProvider: StopProvider,
     private var predecessorLength: Length<Path> = Length(0.meters), // to avoid re-computing it
     private var constraints: List<PathfindingConstraint<Block>>,
-    private var stops: MutableList<ExplorerStop>,
 ) : InfraExplorer {
 
     override fun getIncrementalPath(): IncrementalPath {
@@ -281,7 +281,6 @@ private class InfraExplorerImpl(
             this.stopProvider,
             this.predecessorLength,
             this.constraints,
-            this.stops.toMutableList(),
         )
     }
 
@@ -290,7 +289,12 @@ private class InfraExplorerImpl(
     }
 
     override fun getStops(): List<ExplorerStop> {
-        return stops
+        return (0 ..< incrementalPath.stopCount).map {
+            ExplorerStop(
+                incrementalPath.toTravelledPath(incrementalPath.getStopOffset(it)),
+                incrementalPath.isStopOnClosedSignal(it),
+            )
+        }
     }
 
     /**

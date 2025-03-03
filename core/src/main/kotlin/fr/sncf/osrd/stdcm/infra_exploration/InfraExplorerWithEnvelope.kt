@@ -37,7 +37,11 @@ import fr.sncf.osrd.utils.units.Offset
  */
 interface InfraExplorerWithEnvelope : InfraExplorer {
 
-    /** Access the full envelope from the train start. */
+    /**
+     * Access the full envelope from the train start. Stops are included in the result: their
+     * locations are obtained from the underlying InfraExplorer, and their duration from the last
+     * given TimeData.
+     */
     fun getFullEnvelope(): EnvelopeTimeInterpolate
 
     /** Adds an envelope. This is done in-place. */
@@ -81,6 +85,7 @@ fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
     location: PathfindingEdgeLocationId<Block>,
     rollingStock: PhysicsRollingStock,
+    initialTimeData: TimeData = TimeData(),
     stopProvider: StopProvider = emptyStopProvider(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorerWithEnvelope> {
@@ -103,7 +108,8 @@ fun initInfraExplorerWithEnvelope(
                     IncrementalRequirementEnvelopeAdapter(rollingStock, null, false),
                     explorer.getIncrementalPath(),
                 ),
-                rollingStock
+                rollingStock,
+                initialTimeData.stopTimeData,
             )
         }
 }

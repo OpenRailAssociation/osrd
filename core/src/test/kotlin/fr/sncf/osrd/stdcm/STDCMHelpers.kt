@@ -208,7 +208,7 @@ fun infraExplorerFromBlock(
 
 fun stopProviderFromLocations(vararg locations: PathfindingEdgeLocationId<Block>): StopProvider {
     val map = HashMultimap.create<BlockId, ExplorerStopInput>()
-    for (location in locations) {
+    for ((i, location) in locations.withIndex()) {
         map.put(
             location.edge,
             ExplorerStopInput(
@@ -216,7 +216,7 @@ fun stopProviderFromLocations(vararg locations: PathfindingEdgeLocationId<Block>
                 location.offset,
                 SHORT_SLIP_STOP,
                 optional = false,
-                isLastArrival = true,
+                isLastArrival = i == locations.lastIndex,
             )
         )
     }

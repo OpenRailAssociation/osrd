@@ -8,6 +8,7 @@ import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
@@ -29,7 +30,6 @@ data class InfraExplorerWithEnvelopeImpl(
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelope>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
     private val rollingStock: PhysicsRollingStock,
-    private var stops: MutableList<TrainStop> = mutableListOf(),
     private var stopTimeData: List<StopTimeData>,
 
     // Soft references tell the JVM that the values may be cleared when running out of memory
@@ -44,7 +44,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 envelopes.shallowCopy(),
                 spacingRequirementAutomaton.clone(),
                 rollingStock,
-                stops.toMutableList(),
+                stopTimeData,
                 spacingRequirementsCache,
             )
         }
@@ -54,9 +54,22 @@ data class InfraExplorerWithEnvelopeImpl(
         val cached = envelopeCache?.get()
         if (cached != null) return cached
         val res = EnvelopeConcat.fromLocated(envelopes.toList())
-        val withStops = EnvelopeStopWrapper(res, stops)
+        val withStops = EnvelopeStopWrapper(res, generateTrainStops())
         envelopeCache = SoftReference(withStops)
         return withStops
+    }
+
+    private fun generateTrainStops(): List<TrainStop> {
+        val stopOffsets = getStops()
+        val stopDurations = stopTimeData
+        assert(stopDurations.size <= stopOffsets.size)
+        return (stopOffsets zip stopDurations).map {
+            TrainStop(
+                it.first.offset.distance.meters,
+                it.second.currentDuration,
+                if (it.first.isOnClosedSignal) SHORT_SLIP_STOP else OPEN,
+            )
+        }
     }
 
     override fun addEnvelope(envelope: Envelope): InfraExplorerWithEnvelope {
@@ -97,41 +110,10 @@ data class InfraExplorerWithEnvelopeImpl(
         )
     }
 
-    override fun addStop(stopDuration: Double) {
-        val position = getFullEnvelope().endPos
-        // We tolerate duplicates and filter them
-        if (stops.isEmpty() || stops.last().position != position) {
-            stops.add(
-                TrainStop(
-                    position,
-                    stopDuration,
-                    SHORT_SLIP_STOP,
-                )
-            )
-            envelopeCache = null
-            spacingRequirementsCache = null
-        } else {
-            assert(stops.last().duration == stopDuration)
-        }
-    }
-
-    override fun getStops(): List<TrainStop> {
-        return stops
-    }
-
     override fun updateTimeData(updatedTimeData: TimeData): InfraExplorerWithEnvelope {
-        for ((i, stop) in stops.withIndex()) {
-            assert(i < updatedTimeData.stopTimeData.size)
-            val updatedStop = updatedTimeData.stopTimeData[i]
-            if (updatedStop.currentDuration != stop.duration) {
-                stops[i] =
-                    TrainStop(
-                        stops[i].position,
-                        updatedStop.currentDuration,
-                        stops[i].receptionSignal,
-                    )
-            }
-        }
+        stopTimeData = updatedTimeData.stopTimeData
+        envelopeCache = null
+        spacingRequirementsCache = null
         return this
     }
 
@@ -206,7 +188,7 @@ data class InfraExplorerWithEnvelopeImpl(
             envelopes.shallowCopy(),
             spacingRequirementAutomaton.clone(),
             rollingStock,
-            stops.toMutableList(),
+            stopTimeData,
             spacingRequirementsCache
         )
     }

@@ -255,12 +255,23 @@ class STDCMPathfinding(
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
         assert(!firstStep.stop)
+        val initialTimeData =
+            TimeData(
+                earliestReachableTime = startTime,
+                maxDepartureDelayingWithoutConflict = maxDepartureDelay,
+                departureTime = startTime,
+                timeOfNextConflictAtLocation = POSITIVE_INFINITY,
+                totalRunningTime = 0.0,
+                stopTimeData = listOf(),
+                maxFirstDepartureDelaying = maxDepartureDelay,
+            )
         for (location in firstStep.locations) {
             val infraExplorers =
                 initInfraExplorerWithEnvelope(
                     fullInfra,
                     location,
                     rollingStock,
+                    initialTimeData,
                     stopProvider,
                     constraints,
                 )
@@ -268,15 +279,7 @@ class STDCMPathfinding(
             for (explorer in extended) {
                 val node =
                     STDCMNode(
-                        TimeData(
-                            earliestReachableTime = startTime,
-                            maxDepartureDelayingWithoutConflict = maxDepartureDelay,
-                            departureTime = startTime,
-                            timeOfNextConflictAtLocation = POSITIVE_INFINITY,
-                            totalRunningTime = 0.0,
-                            stopTimeData = listOf(),
-                            maxFirstDepartureDelaying = maxDepartureDelay,
-                        ),
+                        initialTimeData,
                         0.0,
                         explorer as InfraExplorerWithEnvelope,
                         null,

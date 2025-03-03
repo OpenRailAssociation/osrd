@@ -20,7 +20,7 @@ data class TimeData(
      * is *not* the time at which the train *will* reach this location: we can delay departure times
      * or add allowances further on the path.
      */
-    val earliestReachableTime: Double,
+    val earliestReachableTime: Double = 0.0,
 
     /**
      * We can delay departure time from either the train start or stops. This value represents how
@@ -29,38 +29,39 @@ data class TimeData(
      * first delay the departure time whenever possible, then lengthen stop durations if it's not
      * enough.
      */
-    val maxDepartureDelayingWithoutConflict: Double,
+    val maxDepartureDelayingWithoutConflict: Double = POSITIVE_INFINITY,
 
     /**
      * This value describes how much delay we can add to the train departure time without causing
      * any conflict (from the departure to the current point). This is the preferred method of
      * delaying when the train reaches the current point.
      */
-    val maxFirstDepartureDelaying: Double,
+    val maxFirstDepartureDelaying: Double = POSITIVE_INFINITY,
 
     /**
      * Time of the next conflict on the given location. Used both to identify edges that go through
      * the same "opening", and to figure out how much delay we can add locally (with margins).
      */
-    val timeOfNextConflictAtLocation: Double,
+    val timeOfNextConflictAtLocation: Double = POSITIVE_INFINITY,
 
     /**
      * Time the train has spent moving since its departure. Does not include stop times. Does not
      * account for engineering allowances that would be added further down the path.
      */
-    val totalRunningTime: Double,
+    val totalRunningTime: Double = 0.0,
 
     /**
      * Current estimation of the departure time, may be delayed further down the path (up to the
      * first stop).
      */
-    val departureTime: Double,
+    val departureTime: Double = 0.0,
 
     /**
      * List of stop data over the path up to the current point. The duration of the last stop may be
-     * retroactively lengthened further down the path.
+     * retroactively lengthened further down the path. This list only contains time-related data,
+     * they need to be paired with locations listed in InfraExplorers.
      */
-    val stopTimeData: List<StopTimeData>,
+    val stopTimeData: List<StopTimeData> = listOf(),
 
     /**
      * Global delay that have been added to avoid conflicts on the given element, by delaying the

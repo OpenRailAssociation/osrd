@@ -387,11 +387,11 @@ class InfraExplorerTests {
                     infra,
                     infra,
                     PathfindingEdgeLocationId(blocks[0], Offset(50.meters)),
-                    listOf(
-                        setOf(PathfindingEdgeLocationId(blocks[0], Offset(50.meters))),
-                        setOf(PathfindingEdgeLocationId(blocks[1], Offset(50.meters))),
-                        setOf(PathfindingEdgeLocationId(blocks[2], Offset(0.meters))),
-                        setOf(PathfindingEdgeLocationId(blocks[3], Offset(50.meters))),
+                    stopProviderFromLocations(
+                        PathfindingEdgeLocationId(blocks[0], Offset(50.meters)),
+                        PathfindingEdgeLocationId(blocks[1], Offset(50.meters)),
+                        PathfindingEdgeLocationId(blocks[2], Offset(0.meters)),
+                        PathfindingEdgeLocationId(blocks[3], Offset(50.meters)),
                     )
                 )
                 .single()
@@ -425,7 +425,7 @@ class InfraExplorerTests {
                     infra.rawInfra,
                     infra.blockInfra,
                     PathfindingEdgeLocationId(block, Offset(32.meters)),
-                    listOf(setOf(PathfindingEdgeLocationId(block, Offset(42.meters))))
+                    stopProviderFromLocations(PathfindingEdgeLocationId(block, Offset(42.meters)))
                 )
                 .first()
         val incrementalPath = explorers.getIncrementalPath()

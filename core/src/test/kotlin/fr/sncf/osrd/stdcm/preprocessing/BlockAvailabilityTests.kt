@@ -11,6 +11,7 @@ import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailability
@@ -115,6 +116,7 @@ class BlockAvailabilityTests {
                     infra,
                     PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
                     rollingStock,
+                    TimeData(),
                     stopProviderFromLocations(
                         PathfindingEdgeLocationId(
                             blocks.last(),
@@ -553,6 +555,7 @@ class BlockAvailabilityTests {
                     infra,
                     PathfindingEdgeLocationId(blocks[2], Offset(50.meters)),
                     REALISTIC_FAST_TRAIN,
+                    TimeData(),
                     stopProviderFromLocations(
                         PathfindingEdgeLocationId(
                             blocks.last(),
