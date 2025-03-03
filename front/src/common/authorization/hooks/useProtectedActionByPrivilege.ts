@@ -5,7 +5,7 @@ import { useAppDispatch } from 'store';
 
 import { useCheckPrivilege, type PrivilegeConfig } from './useCheckPrivilege';
 
-export const useProtectedActionByPrivilege = ({
+const useProtectedActionByPrivilege = ({
   resourceType,
   resourceId,
   requiredPrivilege,

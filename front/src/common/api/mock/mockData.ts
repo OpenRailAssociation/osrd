@@ -13,6 +13,8 @@ const database: MockedDB = {
           { id: 2, grant: 'OWNER' },
           { id: 3, grant: 'OWNER' },
           { id: 4, grant: 'READER' },
+          { id: 9, grant: 'WRITER' },
+          { id: 10, grant: 'OWNER' },
         ],
         timetable: [{ id: 4, grant: 'OWNER' }],
       },

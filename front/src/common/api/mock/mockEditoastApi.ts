@@ -34,6 +34,7 @@ const mockedEditoastApi = api.injectEndpoints({
         },
       }),
     }),
+    // TODO: invalidate the cache when infra liste changed after (creation/deletion) ? 
     /** Returns the user's grants for a given list of resources */
     postUserResourcesGrants: build.mutation<
       PostUserResourcesGrantsResponse,

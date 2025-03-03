@@ -9,6 +9,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ActionsBar from './InfraSelectorEditionActionsBar';
 import InfraSelectorEditionActionsBarDelete from './InfraSelectorEditionActionsBarDelete';
 import { editoastUpToDateIndicator } from './InfraSelectorModalBodyStandard';
+import useProtectedActionByGrant from 'common/authorization/hooks/useProtectedActionByGrant';
 
 type InfraSelectorEditionItemProps = {
   infra: Infra;
@@ -25,6 +26,12 @@ export default function InfraSelectorEditionItem({
   const [runningDelete, setRunningDelete] = useState(false);
   const { t } = useTranslation('infraManagement');
 
+  const protectWithOwnerGrant = useProtectedActionByGrant({
+    resourceType: 'infra',
+    resourceId: infra.id,
+    requiredGrant: 'OWNER',
+  });
+
   return (
     <div className="infraslist-item-edition">
       {runningDelete ? (
@@ -37,7 +44,7 @@ export default function InfraSelectorEditionItem({
               type="button"
               aria-label={t('infraManagement:actions.delete')}
               title={t('infraManagement:actions.delete')}
-              onClick={() => setRunningDelete(true)}
+              onClick={() => protectWithOwnerGrant(() => setRunningDelete(true))}
             >
               <Trash />
             </button>

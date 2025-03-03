@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import useProtectedActionByGrant from 'common/authorization/hooks/useProtectedActionByGrant';
+import useProtectedActionByPrivilege from 'common/authorization/hooks/useProtectedActionByPrivilege';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -27,6 +29,18 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
   const [getRailjson] = osrdEditoastApi.endpoints.getInfraByInfraIdRailjson.useLazyQuery();
   const [cloneInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdClone.useMutation();
   const [updateInfra] = osrdEditoastApi.endpoints.putInfraByInfraId.useMutation();
+
+  const protectWithWritePrivilege = useProtectedActionByPrivilege({
+    resourceType: 'infra',
+    resourceId: infra.id,
+    requiredPrivilege: 'can_write',
+  });
+
+  const protectWithOwnerGrant = useProtectedActionByGrant({
+    resourceType: 'infra',
+    resourceId: infra.id,
+    requiredGrant: 'OWNER',
+  });
 
   async function toggleLockedState() {
     if (!isWaiting) {
@@ -129,7 +143,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         type="button"
         aria-label={t('actions.unlock')}
         title={t('actions.unlock')}
-        onClick={toggleLockedState}
+        onClick={() => protectWithOwnerGrant(toggleLockedState)}
       >
         {infra.locked ? <Unlock /> : <Lock />}
       </button>
@@ -138,7 +152,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         type="button"
         aria-label={t('actions.rename')}
         title={t('actions.rename')}
-        onClick={() => setIsFocused(infra.id)}
+        onClick={() => protectWithWritePrivilege(() => setIsFocused(infra.id))}
       >
         <Pencil />
       </button>

@@ -20,7 +20,7 @@ import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
-import { useProtectedActionByPrivilege } from 'common/authorization/hooks/useProtectedActionByPrivilege';
+import useProtectedActionByPrivilege from 'common/authorization/hooks/useProtectedActionByPrivilege';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
