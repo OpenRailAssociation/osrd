@@ -368,6 +368,76 @@ class InfraExplorerTests {
         assertEquals(2, extended.size) // Two routes start there (a1->b1 and a1->b2)
     }
 
+    @Test
+    fun testStops() {
+        /*
+        a --> b --> c --> d --> e
+          [                  ]         path
+          ^     ^   ^        ^         stops
+         */
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d"),
+                infra.addBlock("d", "e"),
+            )
+
+        var explorer =
+            initInfraExplorer(
+                    infra,
+                    infra,
+                    PathfindingEdgeLocationId(blocks[0], Offset(50.meters)),
+                    listOf(
+                        setOf(PathfindingEdgeLocationId(blocks[0], Offset(50.meters))),
+                        setOf(PathfindingEdgeLocationId(blocks[1], Offset(50.meters))),
+                        setOf(PathfindingEdgeLocationId(blocks[2], Offset(0.meters))),
+                        setOf(PathfindingEdgeLocationId(blocks[3], Offset(50.meters))),
+                    )
+                )
+                .single()
+        while (true) explorer = explorer.cloneAndExtendLookahead().firstOrNull() ?: break
+
+        val incrementalPath = explorer.getIncrementalPath()
+        assertEquals(4, incrementalPath.stopCount)
+        assertEquals(Offset(50.meters), incrementalPath.getStopOffset(0))
+        assertEquals(Offset(150.meters), incrementalPath.getStopOffset(1))
+        assertEquals(Offset(200.meters), incrementalPath.getStopOffset(2))
+        assertEquals(Offset(350.meters), incrementalPath.getStopOffset(3))
+    }
+
+    /** Similar test to the one above, but not starting on the first block on the route */
+    @Test
+    fun testStopsLongerRoute() {
+        val infra =
+            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val detector =
+            infra.rawInfra.detectors.first { det ->
+                infra.rawInfra.getDetectorName(det) == "det.center.2"
+            }
+        val block =
+            infra.blockInfra
+                .getBlocksStartingAtDetector(DirDetectorId(detector, Direction.INCREASING))
+                .single()
+
+        // block 1->2, lookahead 2->3->bx
+        var explorers =
+            initInfraExplorer(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    PathfindingEdgeLocationId(block, Offset(32.meters)),
+                    listOf(setOf(PathfindingEdgeLocationId(block, Offset(42.meters))))
+                )
+                .first()
+        val incrementalPath = explorers.getIncrementalPath()
+        assertEquals(1, incrementalPath.stopCount)
+        assertEquals(
+            Offset(10.meters),
+            incrementalPath.toTravelledPath(incrementalPath.getStopOffset(0))
+        )
+    }
+
     private fun <T> allEqual(list: List<T>): Boolean {
         for (i in 1 ..< list.size) {
             if (list[0] != list[i]) return false

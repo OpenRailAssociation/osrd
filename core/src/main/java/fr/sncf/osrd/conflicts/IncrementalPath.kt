@@ -13,10 +13,18 @@ import fr.sncf.osrd.utils.units.meters
 
 data class PathStop(val pathOffset: Offset<Path>, val receptionSignal: RJSReceptionSignal)
 
+// Used to type offsets that use as reference the start of the first block on a given path fragment
+sealed interface FragmentBlocks
+
+data class FragmentStop(
+    val fragmentOffset: Offset<FragmentBlocks>,
+    val receptionSignal: RJSReceptionSignal
+)
+
 class PathFragment(
     val routes: StaticIdxList<Route>,
     val blocks: StaticIdxList<Block>,
-    val stops: List<PathStop>,
+    val stops: List<FragmentStop>,
     val containsStart: Boolean,
     val containsEnd: Boolean,
 
@@ -212,7 +220,7 @@ private class IncrementalPathImpl(
         }
 
         for (stop in fragment.stops) {
-            val offset = fragmentStartOffset + stop.pathOffset.distance
+            val offset = fragmentStartOffset + stop.fragmentOffset.distance
             stops.add(IncrementalStop(offset, stop.receptionSignal))
         }
 

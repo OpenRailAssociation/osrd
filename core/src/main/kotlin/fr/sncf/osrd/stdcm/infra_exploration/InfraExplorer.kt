@@ -1,9 +1,10 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.api.pathfinding.makePathProps
+import fr.sncf.osrd.conflicts.FragmentBlocks
+import fr.sncf.osrd.conflicts.FragmentStop
 import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
-import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
@@ -377,8 +378,8 @@ private class InfraExplorerImpl(
         block: StaticIdx<Block>,
         travelledPathBeginBlockOffset: Offset<Block>,
         travelledPathEndBlockOffset: Offset<Block>
-    ): List<PathStop> {
-        val pathStops = mutableListOf<PathStop>()
+    ): List<FragmentStop> {
+        val blockStops = mutableListOf<FragmentStop>()
         for (stop in stops) {
             for (location in stop) {
                 val isIncluded =
@@ -386,11 +387,14 @@ private class InfraExplorerImpl(
                         location.offset in
                             travelledPathBeginBlockOffset..travelledPathEndBlockOffset
                 if (isIncluded) {
-                    pathStops.add(PathStop(location.offset.cast(), SHORT_SLIP_STOP))
+                    // There's only one block in the fragment, Offset<FragmentBlocks> ==
+                    // Offset<Block> here
+                    val fragmentOffset = location.offset.cast<FragmentBlocks>()
+                    blockStops.add(FragmentStop(fragmentOffset, SHORT_SLIP_STOP))
                 }
             }
         }
-        return pathStops
+        return blockStops
     }
 
     override fun toString(): String {

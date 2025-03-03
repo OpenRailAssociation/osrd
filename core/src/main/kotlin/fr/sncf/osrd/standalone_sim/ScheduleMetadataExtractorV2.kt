@@ -100,6 +100,12 @@ fun runScheduleMetadataExtractor(
         schedule.map {
             PathStop(pathOffsetBuilder.fromTravelledPath(it.pathOffset), it.receptionSignal)
         }
+    val fragmentStops =
+        pathStops.map {
+            // All blocks are in the fragment, Offset<Path> == Offset<FragmentBlocks> here
+            val fragmentOffset = it.pathOffset.cast<FragmentBlocks>()
+            FragmentStop(fragmentOffset, it.receptionSignal)
+        }
     val closedSignalStops = pathStops.filter { it.receptionSignal.isStopOnClosedSignal }
 
     val signalCriticalPositions = mutableListOf<SignalCriticalPosition>()
@@ -186,7 +192,7 @@ fun runScheduleMetadataExtractor(
         PathFragment(
             routePath,
             blockPath,
-            pathStops,
+            fragmentStops,
             containsStart = true,
             containsEnd = true,
             startOffset,

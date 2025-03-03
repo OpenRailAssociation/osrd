@@ -201,11 +201,17 @@ fun run(
                 it.receptionSignal
             )
         }
+    val fragmentStops =
+        pathStops.map {
+            // All blocks are in the fragment, Offset<Path> == Offset<FragmentBlocks> here
+            val fragmentOffset = it.pathOffset.cast<FragmentBlocks>()
+            FragmentStop(fragmentOffset, it.receptionSignal)
+        }
     incrementalPath.extend(
         PathFragment(
             routePath,
             blockPath,
-            pathStops,
+            fragmentStops,
             containsStart = true,
             containsEnd = true,
             startOffset,
