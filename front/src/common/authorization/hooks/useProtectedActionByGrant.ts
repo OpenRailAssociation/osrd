@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
-import { useCheckGrant, type GrantConfig } from './useCheckGrant';
+import useCheckGrant, { type GrantConfig } from './useCheckGrant';
 
 const useProtectedActionByGrant = ({ resourceType, resourceId, requiredGrant }: GrantConfig) => {
   const { t } = useTranslation('common');

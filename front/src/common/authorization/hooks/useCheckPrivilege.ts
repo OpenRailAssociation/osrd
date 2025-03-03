@@ -8,11 +8,7 @@ export type PrivilegeConfig = {
   requiredPrivilege: Privilege;
 };
 
-export const useCheckPrivilege = ({
-  resourceType,
-  resourceId,
-  requiredPrivilege,
-}: PrivilegeConfig) => {
+const useCheckPrivilege = ({ resourceType, resourceId, requiredPrivilege }: PrivilegeConfig) => {
   const { userGrant, resourceGrants } = useResourcePermissions(resourceType, resourceId);
   if (userGrant === 'NONE' || !resourceGrants) {
     return false;

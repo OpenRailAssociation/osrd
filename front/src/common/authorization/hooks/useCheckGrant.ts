@@ -15,7 +15,7 @@ export type GrantConfig = {
   requiredGrant: Grant;
 };
 
-export const useCheckGrant = ({ resourceType, resourceId, requiredGrant }: GrantConfig) => {
+const useCheckGrant = ({ resourceType, resourceId, requiredGrant }: GrantConfig) => {
   const { userGrant } = useResourcePermissions(resourceType, resourceId);
   return grantHierarchy[userGrant] >= grantHierarchy[requiredGrant];
 };

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
-import { useCheckPrivilege, type PrivilegeConfig } from './useCheckPrivilege';
+import useCheckPrivilege, { type PrivilegeConfig } from './useCheckPrivilege';
 
 const useProtectedActionByPrivilege = ({
   resourceType,
