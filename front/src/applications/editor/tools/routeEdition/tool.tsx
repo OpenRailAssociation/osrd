@@ -29,10 +29,12 @@ const RouteEditionTool: Tool<RouteEditionState> = {
         isDisabled({ state: { isComplete } }) {
           return !isComplete;
         },
-        async onClick({ setIsFormSubmited }) {
-          if (setIsFormSubmited) {
-            setIsFormSubmited(true);
-          }
+        onClick({ setIsFormSubmited, protectedAction }) {
+          protectedAction?.(() => {
+            if (setIsFormSubmited) {
+              setIsFormSubmited(true);
+            }
+          });
         },
       },
       {
@@ -66,22 +68,34 @@ const RouteEditionTool: Tool<RouteEditionState> = {
         isDisabled({ state: { entity } }) {
           return entity.properties.id === NEW_ENTITY_ID;
         },
-        onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
-          openModal(
-            <ConfirmModal
-              title={t('Editor.tools.routes-edition.delete-route')}
-              onConfirm={async () => {
-                if (state.entity) {
-                  await dispatch(save(infraID, { delete: [state.entity] }));
-                  setState(getRouteEditionState());
-                  closeModal();
-                  forceRender();
-                }
-              }}
-            >
-              <p>{t('Editor.tools.routes-edition.confirm-delete-route').toString()}</p>
-            </ConfirmModal>
-          );
+        onClick({
+          infraID,
+          openModal,
+          closeModal,
+          forceRender,
+          state,
+          setState,
+          dispatch,
+          t,
+          protectedAction,
+        }) {
+          protectedAction?.(() => {
+            openModal(
+              <ConfirmModal
+                title={t('Editor.tools.routes-edition.delete-route')}
+                onConfirm={async () => {
+                  if (state.entity) {
+                    await dispatch(save(infraID, { delete: [state.entity] }));
+                    setState(getRouteEditionState());
+                    closeModal();
+                    forceRender();
+                  }
+                }}
+              >
+                <p>{t('Editor.tools.routes-edition.confirm-delete-route').toString()}</p>
+              </ConfirmModal>
+            );
+          });
         },
       },
     ],
