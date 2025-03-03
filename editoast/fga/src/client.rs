@@ -187,7 +187,7 @@ impl Client {
             .stores()
             .try_filter(|Store { name, .. }| future::ready(name == store_name));
         futures::pin_mut!(stream);
-        let store = stream.try_next().await?.into_iter().last();
+        let store = stream.try_next().await?.into_iter().next_back();
         Ok(store)
     }
 
@@ -257,9 +257,9 @@ impl Client {
     ///
     /// Warning: just like OpenFGA's Write API, this function is **not** idempotent.
     /// If a tuple is written twice, the second write will fail.
-    pub async fn write_tuples<'a, R: Relation, U: AsUser<User = R::User>>(
+    pub async fn write_tuples<R: Relation, U: AsUser<User = R::User>>(
         &self,
-        tuples: &[Tuple<'a, R, U>],
+        tuples: &[Tuple<'_, R, U>],
     ) -> Result<(), Either<RequestFailure, TooManyTuples>> {
         if tuples.len() > OPENFGA_WRITES_MAX_TUPLES {
             return Err(Either::Right(TooManyTuples {
@@ -269,7 +269,7 @@ impl Client {
         }
         self.post_stores_write(
             &self.store.id,
-            &tuples.into_iter().map_into().collect::<Vec<_>>(),
+            &tuples.iter().map_into().collect::<Vec<_>>(),
             &[],
             self.authorization_model_id.clone(),
         )
@@ -306,9 +306,9 @@ impl Client {
     ///
     /// Warning: just like OpenFGA's Write API, this function is **not** idempotent.
     /// If a tuple is deleted twice, the second delete will fail.
-    pub async fn delete_tuples<'a, R: Relation, U: AsUser<User = R::User>>(
+    pub async fn delete_tuples<R: Relation, U: AsUser<User = R::User>>(
         &self,
-        tuples: &[Tuple<'a, R, U>],
+        tuples: &[Tuple<'_, R, U>],
     ) -> Result<(), Either<RequestFailure, TooManyTuples>> {
         if tuples.len() > OPENFGA_WRITES_MAX_TUPLES {
             return Err(Either::Right(TooManyTuples {
@@ -319,7 +319,7 @@ impl Client {
         self.post_stores_write(
             &self.store.id,
             &[],
-            &tuples.into_iter().map_into().collect::<Vec<_>>(),
+            &tuples.iter().map_into().collect::<Vec<_>>(),
             self.authorization_model_id.clone(),
         )
         .await
@@ -347,9 +347,9 @@ impl Client {
         }
     }
 
-    pub async fn check<'a, R: Relation>(
+    pub async fn check<R: Relation>(
         &self,
-        Check { user, object }: Check<'a, R>,
+        Check { user, object }: Check<'_, R>,
     ) -> Result<bool, RequestFailure> {
         self.post_stores_check(
             &self.store.id,
@@ -364,9 +364,9 @@ impl Client {
         .await
     }
 
-    pub async fn list_objects<'a, R: Relation, U: AsUser<User = R::User>>(
+    pub async fn list_objects<R: Relation, U: AsUser<User = R::User>>(
         &self,
-        QueryObjects(user, _): QueryObjects<'a, R, U>,
+        QueryObjects(user, _): QueryObjects<'_, R, U>,
     ) -> Result<Vec<R::Object>, QueryError> {
         let objects = self
             .post_stores_list_objects(
@@ -391,9 +391,9 @@ impl Client {
     /// will also be returned.
     ///
     /// If you want to query the usersets related to the object instead, use `Client::query_usersets`.
-    pub async fn list_users<'a, R: Relation>(
+    pub async fn list_users<R: Relation>(
         &self,
-        QueryUsers(object): QueryUsers<'a, R>,
+        QueryUsers(object): QueryUsers<'_, R>,
     ) -> Result<UserList<R::User>, RequestFailure> {
         let raw_users = self
             .post_stores_list_users(
@@ -404,7 +404,7 @@ impl Client {
                     r#type: <R::User as crate::model::Type>::NAMESPACE,
                 },
                 None,
-                self.authorization_model_id.as_ref().map(String::as_str),
+                self.authorization_model_id.as_deref(),
                 None,
             )
             .await?;
@@ -459,9 +459,9 @@ impl Client {
     /// assert!(groups.contains(&fga!(Group:"friends")));
     /// assert!(groups.contains(&fga!(Group:"bosses")));
     /// # }
-    pub async fn list_usersets<'a, R: Relation, S: Relation>(
+    pub async fn list_usersets<R: Relation, S: Relation>(
         &self,
-        QueryUsersets(object, _): QueryUsersets<'a, R, S>,
+        QueryUsersets(object, _): QueryUsersets<'_, R, S>,
     ) -> Result<Vec<S::Object>, RequestFailure> {
         let users = self
             .post_stores_list_users(
@@ -473,7 +473,7 @@ impl Client {
                     relation: S::NAME,
                 },
                 None,
-                self.authorization_model_id.as_ref().map(String::as_str),
+                self.authorization_model_id.as_deref(),
                 None,
             )
             .await?;
@@ -507,10 +507,7 @@ pub struct PreparedWrites<'a> {
 }
 
 impl PreparedWrites<'_> {
-    pub fn push<'a, R: Relation, U: AsUser<User = R::User>>(
-        mut self,
-        tuple: &Tuple<'_, R, U>,
-    ) -> Self {
+    pub fn push<R: Relation, U: AsUser<User = R::User>>(mut self, tuple: &Tuple<'_, R, U>) -> Self {
         self.writes.push(RawTuple::from(tuple));
         self
     }
@@ -547,10 +544,7 @@ pub struct PreparedDeletes<'a> {
 }
 
 impl PreparedDeletes<'_> {
-    pub fn push<'a, R: Relation, U: AsUser<User = R::User>>(
-        mut self,
-        tuple: &Tuple<'_, R, U>,
-    ) -> Self {
+    pub fn push<R: Relation, U: AsUser<User = R::User>>(mut self, tuple: &Tuple<'_, R, U>) -> Self {
         self.deletes.push(RawTuple::from(tuple));
         self
     }
@@ -746,7 +740,7 @@ impl Continuation {
                     return Ok::<_, RequestFailure>(None);
                 }
                 let (items, continuation) = f(continuation).await?;
-                Ok(Some((items, Continuation::from(continuation))))
+                Ok(Some((items, continuation)))
             })
         });
 
@@ -826,7 +820,7 @@ mod tests {
     impl Client {
         // TODO: comment about tokio::test
         #[track_caller]
-        fn assert_check<'a, R: Relation>(&self, check: Check<'a, R>) -> &Self {
+        fn assert_check<R: Relation>(&self, check: Check<'_, R>) -> &Self {
             let error = format!("{check:?} doesn't hold, WWWHHHHYYYYY???");
             let ok = futures::executor::block_on(check.fetch(self)).unwrap();
             assert!(ok, "{error}");
@@ -834,7 +828,7 @@ mod tests {
         }
 
         #[track_caller]
-        fn assert_check_not<'a, R: Relation>(&self, check: Check<'a, R>) -> &Self {
+        fn assert_check_not<R: Relation>(&self, check: Check<'_, R>) -> &Self {
             let error = format!("{check:?} does hold, it shouldn't tho");
             let ok = futures::executor::block_on(check.fetch(self)).unwrap();
             assert!(!ok, "{error}");
@@ -842,7 +836,7 @@ mod tests {
         }
     }
 
-    const MODEL: &'static str = include_str!("../tests/model.fga");
+    const MODEL: &str = include_str!("../tests/model.fga");
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn persisted_auth_model_id_in_client() {

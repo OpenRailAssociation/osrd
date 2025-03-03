@@ -135,6 +135,7 @@ impl Client {
         Ok(objects)
     }
 
+    #[expect(clippy::too_many_arguments)] // by design of the function: 1 to 1 mapping of the API
     #[tracing::instrument(skip(self), err)]
     pub(super) async fn post_stores_list_users(
         &self,

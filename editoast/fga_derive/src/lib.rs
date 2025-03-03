@@ -27,7 +27,7 @@ struct TypeFieldArgs {
 }
 
 fn expand_type(input: &DeriveInput) -> darling::Result<TokenStream> {
-    let TypeArgs { name, ident, data } = TypeArgs::from_derive_input(&input)?;
+    let TypeArgs { name, ident, data } = TypeArgs::from_derive_input(input)?;
 
     let name = name.unwrap_or_else(|| ident.to_string().to_lowercase());
 

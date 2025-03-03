@@ -50,7 +50,7 @@ impl Client {
             tuple_keys: &'a [RawTuple],
         }
 
-        impl<'a> Writes<'a> {
+        impl Writes<'_> {
             fn is_empty(&self) -> bool {
                 self.tuple_keys.is_empty()
             }
@@ -61,16 +61,16 @@ impl Client {
             tuple_keys: &'a [RawTuple],
         }
 
-        impl<'a> Deletes<'a> {
+        impl Deletes<'_> {
             fn is_empty(&self) -> bool {
                 self.tuple_keys.is_empty()
             }
         }
 
-        if writes.len() > 0 {
+        if !writes.is_empty() {
             tracing::debug!(writes = writes.len(), "writing tuples");
         }
-        if deletes.len() > 0 {
+        if !deletes.is_empty() {
             tracing::debug!(deletes = deletes.len(), "deleting tuples");
         }
 

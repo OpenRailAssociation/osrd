@@ -395,7 +395,7 @@ impl<U: User> AsUser for U {
     type User = U;
 
     fn fga_user(&self) -> String {
-        Self::User::fga_user(&self)
+        Self::User::fga_user(self)
     }
 }
 
@@ -462,7 +462,7 @@ where
     pub(crate) object: &'a R::Object,
 }
 
-impl<'a, R: Relation, U: AsUser<User = R::User>> PartialEq for Tuple<'a, R, U>
+impl<R: Relation, U: AsUser<User = R::User>> PartialEq for Tuple<'_, R, U>
 where
     U: PartialEq,
     R::Object: PartialEq,
@@ -480,7 +480,7 @@ where
 #[derive(Debug)]
 pub struct UserSet<'a, R: Relation + 'static>(&'a R::Object);
 
-impl<'a, R: Relation> AsUser for UserSet<'a, R> {
+impl<R: Relation> AsUser for UserSet<'_, R> {
     type User = R::User;
 
     fn fga_user(&self) -> String {
@@ -488,7 +488,7 @@ impl<'a, R: Relation> AsUser for UserSet<'a, R> {
     }
 }
 
-impl<'a, R: Relation> PartialEq for UserSet<'a, R>
+impl<R: Relation> PartialEq for UserSet<'_, R>
 where
     R::Object: PartialEq,
 {
@@ -497,7 +497,7 @@ where
     }
 }
 
-impl<'a, R: Relation> Eq for UserSet<'a, R> where R::Object: Eq {}
+impl<R: Relation> Eq for UserSet<'_, R> where R::Object: Eq {}
 
 /// Type-bound public access: `user:*`, `document:*`, etc.
 ///
