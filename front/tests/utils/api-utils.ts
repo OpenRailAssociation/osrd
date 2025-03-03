@@ -25,6 +25,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import {
+  BASE_URL,
   globalProjectName,
   globalStudyName,
   infrastructureName,
@@ -39,7 +40,7 @@ import readJsonFile from './file-utils';
  */
 export const getApiContext = async (): Promise<APIRequestContext> =>
   request.newContext({
-    baseURL: 'http://localhost:4000',
+    baseURL: BASE_URL,
   });
 
 /**
@@ -98,16 +99,19 @@ export const postApiRequest = async <T, U>(
  * Send a DELETE request to the specified API endpoint.
  *
  * @param url - The API endpoint URL.
- * @returns {Promise<APIResponse>} - The response from the API.
+ * @returns {Promise<Response>} - The API response.
  */
-export const deleteApiRequest = async (
-  url: string,
-  errorMessage?: string
-): Promise<APIResponse> => {
-  const apiContext = await getApiContext();
-  const response = await apiContext.delete(url);
-  handleErrorResponse(response, errorMessage);
-  return response;
+export const deleteApiRequest = async (urlExtend: string): Promise<Response> => {
+  // TODO: Reuse playwright apiContext when issue #11184 is resolved
+  const fullUrl = `${BASE_URL}${urlExtend}`;
+
+  return fetch(fullUrl, {
+    method: 'DELETE',
+    headers: {
+      Accept: '*/*',
+      'Content-Type': 'application/json',
+    },
+  });
 };
 
 /**

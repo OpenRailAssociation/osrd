@@ -1,3 +1,4 @@
+export const BASE_URL = 'http://localhost:4000';
 export const electricRollingStockName = 'ELECTRIC_RS_E2E';
 export const dualModeRollingStockName = 'DUAL-MODE_RS_E2E';
 export const slowRollingStockName = 'SLOW_RS_E2E';
