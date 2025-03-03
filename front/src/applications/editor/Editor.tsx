@@ -456,7 +456,7 @@ const Editor = () => {
                 editorState.issues.total > 0 && (
                   <div className="error-box">
                     <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
-                    <InfraErrorCorrector />
+                    <InfraErrorCorrector protectedAction={protectedAction} />
                   </div>
                 )}
             </div>
