@@ -224,8 +224,8 @@ export default class MacroEditorState {
   static getPathKeys(item: SearchResultItemOperationalPoint): string[] {
     const result = [];
     result.push(`op_id:${item.obj_id}`);
-    result.push(`trigram:${item.trigram}/${item.ch}`);
-    result.push(`uic:${item.uic}/${item.ch}`);
+    result.push(`trigram:${item.trigram}${item.ch ? `/${item.ch}` : ''}`);
+    result.push(`uic:${item.uic}${item.ch ? `/${item.ch}` : ''}`);
     item.track_sections.forEach((ts) => {
       result.push(`track_offset:${ts.track}+${ts.position}`);
     });
