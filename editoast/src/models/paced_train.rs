@@ -19,7 +19,7 @@ use super::Tags;
 
 #[derive(Debug, Clone, Model)]
 #[model(table = editoast_models::tables::paced_train)]
-#[model(gen(ops = crud, batch_ops = crd))]
+#[model(gen(ops = crud, batch_ops = crd, list))]
 pub struct PacedTrain {
     pub id: i64,
     pub train_name: String,

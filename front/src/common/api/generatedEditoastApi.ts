@@ -917,19 +917,6 @@ const injectedRtkApi = api
         query: () => ({ url: `/timetable`, method: 'POST' }),
         invalidatesTags: ['timetable'],
       }),
-      getTimetablePacedTrains: build.query<
-        GetTimetablePacedTrainsApiResponse,
-        GetTimetablePacedTrainsApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/timetable/paced_trains`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-          },
-        }),
-        providesTags: ['timetable'],
-      }),
       deleteTimetableById: build.mutation<
         DeleteTimetableByIdApiResponse,
         DeleteTimetableByIdApiArg
@@ -949,6 +936,19 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['timetable'],
+      }),
+      getTimetableByIdPacedTrains: build.query<
+        GetTimetableByIdPacedTrainsApiResponse,
+        GetTimetableByIdPacedTrainsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/paced_trains`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['timetable', 'paced_train'],
       }),
       postTimetableByIdPacedTrains: build.mutation<
         PostTimetableByIdPacedTrainsApiResponse,
@@ -1882,16 +1882,6 @@ export type PostTemporarySpeedLimitGroupApiArg = {
 export type PostTimetableApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableResult;
 export type PostTimetableApiArg = void;
-export type GetTimetablePacedTrainsApiResponse =
-  /** status 200 Timetable with paced train ids */ PaginationStats & {
-    results: PacedTrainResult[];
-  };
-export type GetTimetablePacedTrainsApiArg = {
-  /** A timetable ID */
-  id: number;
-  page?: number;
-  pageSize?: number | null;
-};
 export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
@@ -1903,6 +1893,16 @@ export type GetTimetableByIdConflictsApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number | null;
+};
+export type GetTimetableByIdPacedTrainsApiResponse =
+  /** status 200 Timetable with paced train ids */ PaginationStats & {
+    results: PacedTrainResult[];
+  };
+export type GetTimetableByIdPacedTrainsApiArg = {
+  /** A timetable ID */
+  id: number;
+  page?: number;
+  pageSize?: number | null;
 };
 export type PostTimetableByIdPacedTrainsApiResponse =
   /** status 200 The created paced trains */ PacedTrainResult[];

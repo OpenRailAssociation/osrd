@@ -2932,54 +2932,6 @@ paths:
                 $ref: '#/components/schemas/TimetableResult'
         '404':
           description: Timetable not found
-  /timetable/paced_trains:
-    get:
-      tags:
-      - timetable
-      summary: Return a specific timetable with its associated paced trains
-      parameters:
-      - name: id
-        in: path
-        description: A timetable ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 1
-          minimum: 1
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 25
-          nullable: true
-          minimum: 1
-      responses:
-        '200':
-          description: Timetable with paced train ids
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/PaginationStats'
-                - type: object
-                  required:
-                  - results
-                  properties:
-                    results:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/PacedTrainResult'
-        '404':
-          description: Timetable not found
   /timetable/{id}:
     delete:
       tags:
@@ -3034,6 +2986,54 @@ paths:
                 items:
                   $ref: '#/components/schemas/Conflict'
   /timetable/{id}/paced_trains:
+    get:
+      tags:
+      - timetable
+      - paced_train
+      summary: Return a specific timetable with its associated paced trains
+      parameters:
+      - name: id
+        in: path
+        description: A timetable ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 25
+          nullable: true
+          minimum: 1
+      responses:
+        '200':
+          description: Timetable with paced train ids
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/PacedTrainResult'
+        '404':
+          description: Timetable not found
     post:
       tags:
       - timetable
