@@ -133,7 +133,7 @@ export const getInfraById = async (infraId: number): Promise<InfraWithState> => 
     const response = await getApiRequest(`/api/infra/${infraId}`);
     return response as InfraWithState;
   } catch (error) {
-    throw new Error(`Failed to retrieve infrastructure with ID ${infraId}: ${error}`);
+    throw new Error(`Failed to retrieve infrastructure with ID ${infraId}`, { cause: error });
   }
 };
 

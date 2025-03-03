@@ -250,6 +250,6 @@ export async function createDataForTests(): Promise<void> {
 
     await setStdcmEnvironment(stdcmEnvironment);
   } catch (error) {
-    logger.error('Error during test data setup:', error);
+    throw new Error('Error during test data setup', { cause: error });
   }
 }

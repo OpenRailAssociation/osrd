@@ -51,6 +51,6 @@ teardown('teardown', async ({ browser }) => {
 
     logger.info('Test data teardown completed successfully.');
   } catch (error) {
-    logger.error('Error during test data teardown:', error);
+    throw new Error('Error during test data teardown', { cause: error });
   }
 });
