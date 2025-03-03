@@ -27,7 +27,7 @@ edition = "2021"
 license = "LGPL-3.0"
 
 [workspace.dependencies]
-chrono = { version = "0.4.39", default-features = false, features = ["serde"] }
+chrono = { version = "0.4.40", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 darling = "0.20"
 derivative = "2.2.0"
