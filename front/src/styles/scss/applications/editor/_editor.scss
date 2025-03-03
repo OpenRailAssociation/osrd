@@ -51,7 +51,7 @@
 
   .tool-box,
   .actions-box,
-  .infra-locked,
+  .infra-editor-warning-banner,
   .panel-box {
     padding: 16px;
 
@@ -86,7 +86,7 @@
     }
   }
 
-  .infra-locked {
+  .infra-editor-warning-banner {
     flex-shrink: 0;
   }
 

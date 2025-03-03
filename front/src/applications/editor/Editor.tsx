@@ -20,6 +20,7 @@ import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
+import useCheckPrivilege from 'common/authorization/hooks/useCheckPrivilege';
 import useProtectedActionByPrivilege from 'common/authorization/hooks/useProtectedActionByPrivilege';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loaders';
@@ -120,7 +121,16 @@ const Editor = () => {
     });
   };
 
-  const protectedAction = useProtectedActionByPrivilege({
+  const protectedAction = useCallback(
+    useProtectedActionByPrivilege({
+      resourceType: 'infra',
+      resourceId: infraID,
+      requiredPrivilege: 'can_write',
+    }),
+    [infraID]
+  );
+
+  const userCanEditInfra = useCheckPrivilege({
     resourceType: 'infra',
     resourceId: infraID,
     requiredPrivilege: 'can_write',
@@ -407,8 +417,15 @@ const Editor = () => {
             })}
           </div>
           <div className="panel-container">
-            {isLocked && (
-              <div className="infra-locked bg-yellow">{t('Editor.infra-errors.infra-locked')}</div>
+            {!userCanEditInfra && (
+              <div className="infra-editor-warning-banner bg-yellow">
+                {t('Editor.infra-errors.infra-readonly')}
+              </div>
+            )}
+            {isLocked && userCanEditInfra && (
+              <div className="infra-editor-warning-banner bg-yellow">
+                {t('Editor.infra-errors.infra-locked')}
+              </div>
             )}
             {toolAndState.tool.leftPanelComponent && (
               <div className="panel-box">

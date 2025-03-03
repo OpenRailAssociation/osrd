@@ -157,6 +157,7 @@
         }
       },
       "infra-locked": "Attention, vous ne pourrez pas sauvegarder de modification.",
+      "infra-readonly": "Attention, vous ête en lecture seule sur cette infra",
       "list": {
         "filter-type": "Type d'anomalie",
         "total-all": "{{count}} erreurs et avertissements trouvés",
