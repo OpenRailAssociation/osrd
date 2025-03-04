@@ -31,8 +31,6 @@ class SimulationResultPage extends STDCMPage {
 
   private readonly downloadSimulationButton: Locator;
 
-  private readonly downloadLink: Locator;
-
   private readonly startNewQueryButton: Locator;
 
   private readonly startNewQueryWithDataButton: Locator;
@@ -59,7 +57,6 @@ class SimulationResultPage extends STDCMPage {
     this.allViasButton = page.getByTestId('all-vias-button');
     this.retainSimulationButton = page.getByTestId('retain-simulation-button');
     this.downloadSimulationButton = page.locator('.download-simulation a[download]');
-    this.downloadLink = page.locator('.download-simulation a');
     this.startNewQueryButton = page.getByTestId('start-new-query-button');
     this.startNewQueryWithDataButton = page.getByTestId('start-new-query-with-data-button');
     this.feedbackCardContainer = page.getByTestId('feedback-card');
@@ -132,35 +129,20 @@ class SimulationResultPage extends STDCMPage {
     // Wait until there are no network requests for stability
     await this.page.waitForLoadState('networkidle');
 
-    // Get the download link element and suggested filename
-    const suggestedFilename = await this.downloadLink.getAttribute('download');
-    expect(suggestedFilename).toMatch(/^Stdcm.*\.pdf$/);
-
-    const downloadPath = path.join(downloadDir, suggestedFilename!);
-
     await fs.promises.mkdir(downloadDir, { recursive: true });
 
     // react-pdf will create an <a> element without an href attribute while
     // it's generating the PDF file
     await expect(this.downloadSimulationButton).toHaveAttribute('href');
 
-    // Get the file content from the `blob:` URL
-    const fileContent = await this.downloadSimulationButton.evaluate(async (el) => {
-      if (!(el instanceof HTMLAnchorElement)) {
-        throw new Error('Element is not an anchor tag');
-      }
+    const downloadPromise = this.page.waitForEvent('download');
+    await this.downloadSimulationButton.click();
+    const download = await downloadPromise;
 
-      const response = await fetch(el.href);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch the blob: ${response.status} ${response.statusText}`);
-      }
+    expect(download.suggestedFilename()).toMatch(/^Stdcm.*\.pdf$/);
 
-      const buffer = await response.arrayBuffer();
-      return Array.from(new Uint8Array(buffer));
-    });
-
-    // Write the file to the local file system
-    await fs.promises.writeFile(downloadPath, Buffer.from(fileContent));
+    const downloadPath = path.join(downloadDir, download.suggestedFilename());
+    await download.saveAs(downloadPath);
 
     logger.info(`The PDF was successfully downloaded to: ${downloadPath}`);
   }
