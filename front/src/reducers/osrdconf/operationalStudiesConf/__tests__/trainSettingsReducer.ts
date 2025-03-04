@@ -7,6 +7,7 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
+import { Duration } from 'utils/duration';
 
 const createStore = (extraInitialState?: Partial<OperationalStudiesConfState>) =>
   createStoreWithoutMiddleware({
@@ -120,14 +121,14 @@ const testTrainSettingsReducer = () => {
   });
 
   it('should handle updateTimeRangeDuration', () => {
-    const newTimeRangeDuration = 60;
+    const newTimeRangeDuration = new Duration({ minutes: 60 });
     defaultStore.dispatch(updateTimeRangeDuration(newTimeRangeDuration));
     const state = getState();
     expect(state.timeRangeDuration).toBe(newTimeRangeDuration);
   });
 
   it('should handle updateCadence', () => {
-    const newCadence = 30;
+    const newCadence = new Duration({ minutes: 30 });
     defaultStore.dispatch(updateCadence(newCadence));
     const state = getState();
     expect(state.cadence).toBe(newCadence);
