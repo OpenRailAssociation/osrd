@@ -20,12 +20,8 @@ import type { LayerContext } from 'common/Map/Layers/types';
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
-import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
-import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
-import type { AllowancesSettings, Train } from 'reducers/simulationResults/types';
 
 type WarpedMapProps = {
   bbox: BBox2d;
@@ -34,10 +30,7 @@ type WarpedMapProps = {
   // Data to display on the map (must be transformed already):
   osrdData: Partial<Record<LayerType, FeatureCollection>>;
   osmData: Record<string, FeatureCollection>;
-  trainsPositions?: (TrainPosition & { train: Train; isSelected?: boolean })[];
   itinerary?: Feature<LineString>;
-  // TODO: fix warped map - probably remove this from props
-  allowancesSettings?: AllowancesSettings;
 };
 
 /**
@@ -49,17 +42,14 @@ const WarpedMap = ({
   osrdLayers,
   osrdData,
   osmData,
-  trainsPositions,
   itinerary,
   boundingBox,
-  allowancesSettings,
 }: WarpedMapProps) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const prefix = 'warped/';
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
-  const [viewport, setViewport] = useState<Viewport | null>(null);
 
   // Main OSM and OSRD data:
   const layerContext: LayerContext = useMemo(
@@ -134,13 +124,6 @@ const WarpedMap = ({
       ref={setMapRef}
       mapStyle={mapBlankStyle}
       style={{ width: '100%', height: '100%' }}
-      onMove={(e) => {
-        setViewport({
-          ...e.viewState,
-          width: e.target.getContainer().offsetWidth,
-          height: e.target.getContainer().offsetHeight,
-        });
-      }}
       // Viewport specifics:
       dragPan={!boundingBox}
       doubleClickZoom={!boundingBox}
@@ -176,20 +159,6 @@ const WarpedMap = ({
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
         />
       )}
-      {itinerary &&
-        viewport &&
-        trainsPositions?.map((position) => (
-          <TrainHoverPosition
-            key={position.id}
-            point={position}
-            train={position.train}
-            geojsonPath={itinerary}
-            isSelectedTrain={position.isSelected}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
-            allowancesSettings={allowancesSettings}
-            viewport={viewport}
-          />
-        ))}
     </ReactMapGL>
   );
 };
