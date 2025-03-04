@@ -134,7 +134,7 @@ const checkCurrentConfig = (
         })
       );
     }
-    if (cadence < 1) {
+    if (cadence.total('minute') < 1) {
       error = true;
       dispatch(
         setFailure({
@@ -145,7 +145,7 @@ const checkCurrentConfig = (
         })
       );
     }
-    if (timeRangeDuration < 1) {
+    if (timeRangeDuration.total('minute') < 1) {
       error = true;
       dispatch(
         setFailure({

@@ -8,6 +8,7 @@ import type {
 import computeBasePathStep from 'modules/trainschedule/helpers/computeBasePathStep';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
+import { Duration } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 
 import powerRestrictionReducer from './powerRestrictionReducer';
@@ -31,8 +32,8 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   trainCount: 1,
   trainDelta: 15,
   trainStep: 2,
-  timeRangeDuration: 120,
-  cadence: 60,
+  timeRangeDuration: new Duration({ minutes: 120 }),
+  cadence: new Duration({ minutes: 60 }),
 };
 
 export const operationalStudiesConfSlice = createSlice({

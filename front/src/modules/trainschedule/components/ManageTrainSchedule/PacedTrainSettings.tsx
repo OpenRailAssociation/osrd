@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { ArrowBoth } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -9,12 +11,21 @@ import {
   getCadence,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';
+import { Duration } from 'utils/duration';
 
 const PacedTrainSettings = () => {
-  const timeRangeDuration = useSelector(getTimeRangeDuration);
-  const cadence = useSelector(getCadence);
+  const timeRangeDurationStore = useSelector(getTimeRangeDuration);
+  const cadenceStore = useSelector(getCadence);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
+
+  const { timeRangeDuration, cadence } = useMemo(
+    () => ({
+      timeRangeDuration: timeRangeDurationStore.total('minute'),
+      cadence: cadenceStore.total('minute'),
+    }),
+    [timeRangeDurationStore, cadenceStore]
+  );
 
   return (
     <div className="d-flex px-3 mt-2">
@@ -29,7 +40,7 @@ const PacedTrainSettings = () => {
           }
           id="paced-train-time-range-duration"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            dispatch(updateTimeRangeDuration(+e.target.value));
+            dispatch(updateTimeRangeDuration(new Duration({ minutes: +e.target.value })));
           }}
           value={timeRangeDuration}
           noMargin
@@ -52,7 +63,7 @@ const PacedTrainSettings = () => {
           }
           id="paced-train-cadence"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            dispatch(updateCadence(+e.target.value));
+            dispatch(updateCadence(new Duration({ minutes: +e.target.value })));
           }}
           value={cadence}
           noMargin
