@@ -49,7 +49,6 @@ use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::path::pathfinding::pathfinding_from_train;
-use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::path::projection::PathProjection;
@@ -696,44 +695,7 @@ async fn simulation_summary(
     let mut simulation_summaries = HashMap::new();
     for (train_schedule, sim) in train_schedules.iter().zip(simulations) {
         let (sim, _) = sim;
-        let simulation_summary_result = match sim {
-            SimulationResponse::Success {
-                final_output,
-                provisional,
-                base,
-                ..
-            } => {
-                let report = final_output.report_train;
-                SimulationSummaryResult::Success {
-                    length: *report.positions.last().unwrap(),
-                    time: *report.times.last().unwrap(),
-                    energy_consumption: report.energy_consumption,
-                    path_item_times_final: report.path_item_times.clone(),
-                    path_item_times_provisional: provisional.path_item_times.clone(),
-                    path_item_times_base: base.path_item_times.clone(),
-                }
-            }
-            SimulationResponse::PathfindingFailed { pathfinding_failed } => {
-                match pathfinding_failed {
-                    PathfindingFailure::InternalError { core_error } => {
-                        SimulationSummaryResult::PathfindingFailure { core_error }
-                    }
-
-                    PathfindingFailure::PathfindingInputError(input_error) => {
-                        SimulationSummaryResult::PathfindingInputError(input_error)
-                    }
-
-                    PathfindingFailure::PathfindingNotFound(not_found) => {
-                        SimulationSummaryResult::PathfindingNotFound(not_found)
-                    }
-                }
-            }
-            SimulationResponse::SimulationFailed { core_error } => {
-                SimulationSummaryResult::SimulationFailed {
-                    error_type: core_error.get_type().into(),
-                }
-            }
-        };
+        let simulation_summary_result = SimulationSummaryResult::from(sim);
         simulation_summaries.insert(train_schedule.id, simulation_summary_result);
     }
 
@@ -996,7 +958,7 @@ async fn project_path(
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
     use chrono::Utc;
@@ -1005,7 +967,6 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::core::mocking::MockingClient;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_simple_train_schedule;
     use crate::models::fixtures::create_small_infra;
@@ -1013,6 +974,7 @@ mod tests {
     use crate::models::fixtures::simple_train_schedule_base;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
 
     #[rstest]
     async fn train_schedule_get() {
@@ -1103,70 +1065,6 @@ mod tests {
             response.train_schedule.rolling_stock_name,
             update_train_schedule_form.train_schedule.rolling_stock_name
         )
-    }
-
-    fn mocked_core_pathfinding_sim_and_proj(train_id: i64) -> MockingClient {
-        let mut core = MockingClient::new();
-        core.stub("/v2/pathfinding/blocks")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(json!({
-                "blocks":[],
-                "routes": [],
-                "track_section_ranges": [],
-                "path_item_positions": [0,1,2,3],
-                "length": 1,
-                "status": "success"
-            }))
-            .finish();
-        core.stub("/v2/standalone_simulation")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(json!({
-                "status": "success",
-                "base": {
-                    "positions": [],
-                    "times": [],
-                    "speeds": [],
-                    "energy_consumption": 0.0,
-                    "path_item_times": [0, 1000, 2000, 3000]
-                },
-                "provisional": {
-                    "positions": [],
-                    "times": [],
-                    "speeds": [],
-                    "energy_consumption": 0.0,
-                    "path_item_times": [0, 1000, 2000, 3000]
-                },
-                "final_output": {
-                    "positions": [0],
-                    "times": [0],
-                    "speeds": [],
-                    "energy_consumption": 0.0,
-                    "path_item_times": [0, 1000, 2000, 3000],
-                    "signal_critical_positions": [],
-                    "zone_updates": [],
-                    "spacing_requirements": [],
-                    "routing_requirements": []
-                },
-                "mrsp": {
-                    "boundaries": [],
-                    "values": []
-                },
-                "electrical_profiles": {
-                    "boundaries": [],
-                    "values": []
-                }
-            }))
-            .finish();
-        core.stub("/v2/signal_projection")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(json!({
-                "signal_updates": {train_id.to_string(): [] },
-            }))
-            .finish();
-        core
     }
 
     async fn app_infra_id_train_schedule_id_for_simulation_tests() -> (TestApp, i64, i64) {

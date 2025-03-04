@@ -77,6 +77,7 @@ use crate::client::get_app_version;
 use crate::core::mq_client;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
+use crate::core::simulation::SimulationResponse;
 use crate::core::version::CoreVersionRequest;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
@@ -93,6 +94,7 @@ use crate::map::MapLayers;
 use crate::models;
 use crate::models::auth::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
+use crate::views::path::pathfinding::PathfindingFailure;
 use crate::ValkeyClient;
 
 crate::routes! {
@@ -171,6 +173,7 @@ pub struct InfraIdQueryParam {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(PartialEq, Deserialize))]
 #[serde(tag = "status", rename_all = "snake_case")]
 enum SimulationSummaryResult {
     /// Minimal information on a simulation's result
@@ -199,6 +202,47 @@ enum SimulationSummaryResult {
     SimulationFailed { error_type: String },
     /// InputError
     PathfindingInputError(PathfindingInputError),
+}
+
+impl From<core::simulation::SimulationResponse> for SimulationSummaryResult {
+    fn from(sim: SimulationResponse) -> Self {
+        match sim {
+            SimulationResponse::Success {
+                final_output,
+                provisional,
+                base,
+                ..
+            } => {
+                let report = final_output.report_train;
+                Self::Success {
+                    length: *report.positions.last().unwrap(),
+                    time: *report.times.last().unwrap(),
+                    energy_consumption: report.energy_consumption,
+                    path_item_times_final: report.path_item_times.clone(),
+                    path_item_times_provisional: provisional.path_item_times.clone(),
+                    path_item_times_base: base.path_item_times.clone(),
+                }
+            }
+            SimulationResponse::PathfindingFailed { pathfinding_failed } => {
+                match pathfinding_failed {
+                    PathfindingFailure::InternalError { core_error } => {
+                        Self::PathfindingFailure { core_error }
+                    }
+
+                    PathfindingFailure::PathfindingInputError(input_error) => {
+                        Self::PathfindingInputError(input_error)
+                    }
+
+                    PathfindingFailure::PathfindingNotFound(not_found) => {
+                        Self::PathfindingNotFound(not_found)
+                    }
+                }
+            }
+            SimulationResponse::SimulationFailed { core_error } => Self::SimulationFailed {
+                error_type: core_error.get_type().into(),
+            },
+        }
+    }
 }
 
 /// Represents the bundle of information about the issuer of a request
@@ -661,6 +705,71 @@ mod tests {
 
     use super::test_app::TestAppBuilder;
     use crate::core::mocking::MockingClient;
+
+    #[cfg(test)]
+    pub fn mocked_core_pathfinding_sim_and_proj(train_id: i64) -> MockingClient {
+        let mut core = MockingClient::new();
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "blocks":[],
+                "routes": [],
+                "track_section_ranges": [],
+                "path_item_positions": [0,1,2,3],
+                "length": 1,
+                "status": "success"
+            }))
+            .finish();
+        core.stub("/v2/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "status": "success",
+                "base": {
+                    "positions": [],
+                    "times": [],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000]
+                },
+                "provisional": {
+                    "positions": [],
+                    "times": [],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000]
+                },
+                "final_output": {
+                    "positions": [0],
+                    "times": [0],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000],
+                    "signal_critical_positions": [],
+                    "zone_updates": [],
+                    "spacing_requirements": [],
+                    "routing_requirements": []
+                },
+                "mrsp": {
+                    "boundaries": [],
+                    "values": []
+                },
+                "electrical_profiles": {
+                    "boundaries": [],
+                    "values": []
+                }
+            }))
+            .finish();
+        core.stub("/v2/signal_projection")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "signal_updates": {train_id.to_string(): [] },
+            }))
+            .finish();
+        core
+    }
 
     #[rstest]
     async fn health() {

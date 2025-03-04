@@ -15,7 +15,7 @@ const config: ConfigFile = {
         'postInfraByInfraIdPathfinding',
         'postInfraByInfraIdPathfindingBlocks',
         'postInfraByInfraIdPathProperties',
-        'postTrainSchedule',
+        'postPacedTrainSimulationSummary',
         'postTrainScheduleSimulationSummary',
         'postTrainScheduleProjectPath',
         'postWorkSchedulesProjectPath',

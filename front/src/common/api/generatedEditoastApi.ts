@@ -493,7 +493,7 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['paced_train'],
       }),
-      postPacedTrainSimulationSummary: build.mutation<
+      postPacedTrainSimulationSummary: build.query<
         PostPacedTrainSimulationSummaryApiResponse,
         PostPacedTrainSimulationSummaryApiArg
       >({
@@ -502,7 +502,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['paced_train'],
+        providesTags: ['paced_train'],
       }),
       getPacedTrainById: build.query<GetPacedTrainByIdApiResponse, GetPacedTrainByIdApiArg>({
         query: (queryArg) => ({ url: `/paced_train/${queryArg.id}` }),
@@ -3250,7 +3250,7 @@ export type PacedTrainResult = PacedTrainBase & {
   timetable_id: number;
 };
 export type PacedTrainForm = PacedTrainBase & {
-  /** Timetable attached to the train schedule */
+  /** Timetable attached to the paced train */
   timetable_id?: number | null;
 };
 export type ReportTrain = {

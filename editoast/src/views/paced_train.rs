@@ -1,6 +1,13 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use crate::core::simulation::SimulationResponse;
+use crate::error::Result;
+use crate::models::prelude::*;
+use crate::models::train_schedule::TrainSchedule;
+use crate::models::Infra;
+use crate::views::projection::ProjectPathTrainResult;
+use crate::views::ListId;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -11,6 +18,7 @@ use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::paced_train::PacedTrainBase;
+
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -19,17 +27,13 @@ use utoipa::ToSchema;
 
 use super::path::pathfinding::PathfindingResult;
 use super::projection::ProjectPathForm;
+use super::train_schedule::train_simulation_batch;
 use super::AppState;
 use super::AuthenticationExt;
 use super::InfraIdQueryParam;
 use super::SimulationSummaryResult;
-use crate::core::simulation::SimulationResponse;
-use crate::error::Result;
 use crate::models::paced_train::PacedTrain;
-use crate::models::prelude::*;
-use crate::views::projection::ProjectPathTrainResult;
 use crate::views::AuthorizationError;
-use crate::views::ListId;
 
 crate::routes! {
     "/paced_train" => {
@@ -56,10 +60,13 @@ editoast_common::schemas! {
 enum PacedTrainError {
     #[error("{count} paced train(s) could not be found")]
     #[editoast_error(status = 404)]
-    BatchPacedTrainNotFound { count: usize },
+    BatchNotFound { count: usize },
+    #[error("Paced train '{paced_train_id}', could not be found")]
     #[editoast_error(status = 404)]
-    #[error("Paced train {paced_train_id} does not exist")]
-    PacedTrainNotFound { paced_train_id: i64 },
+    NotFound { paced_train_id: i64 },
+    #[error("Infra '{infra_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    InfraNotFound { infra_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::model::Error),
@@ -67,7 +74,7 @@ enum PacedTrainError {
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct PacedTrainForm {
-    /// Timetable attached to the train schedule
+    /// Timetable attached to the paced train
     pub timetable_id: Option<i64>,
     #[serde(flatten)]
     pub paced_train_base: PacedTrainBase,
@@ -121,7 +128,7 @@ async fn get_by_id(
     let conn = &mut db_pool.get().await?;
 
     let paced_train = PacedTrain::retrieve_or_fail(conn, paced_train_id, || {
-        PacedTrainError::PacedTrainNotFound { paced_train_id }
+        PacedTrainError::NotFound { paced_train_id }
     })
     .await?;
 
@@ -156,7 +163,7 @@ async fn delete(
 
     let conn = &mut db_pool.get().await?;
     PacedTrain::delete_batch_or_fail(conn, paced_train_ids, |count| {
-        PacedTrainError::BatchPacedTrainNotFound { count }
+        PacedTrainError::BatchNotFound { count }
     })
     .await?;
 
@@ -202,19 +209,64 @@ struct SimulationBatchForm {
 )]
 async fn simulation_summary(
     State(AppState {
-        db_pool: _db_pool,
-        valkey: _valkey_client,
-        core_client: _core,
+        db_pool,
+        valkey: valkey_client,
+        core_client,
         ..
     }): State<AppState>,
-    Extension(_auth): AuthenticationExt,
+    Extension(auth): AuthenticationExt,
     Json(SimulationBatchForm {
-        infra_id: _infra_id,
-        electrical_profile_set_id: _electrical_profile_set_id,
-        ids: _paced_train_ids,
+        infra_id,
+        electrical_profile_set_id,
+        ids: paced_train_ids,
     }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
-    todo!();
+    let authorized = auth
+        .check_roles([BuiltinRole::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || PacedTrainError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+
+    let paced_trains: Vec<PacedTrain> =
+        PacedTrain::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+            PacedTrainError::BatchNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
+    let paced_trains_to_ts: Vec<TrainSchedule> = paced_trains
+        .iter()
+        .cloned()
+        .map(PacedTrain::into_first_occurrence)
+        .collect();
+
+    let simulations = train_simulation_batch(
+        conn,
+        valkey_client,
+        core_client,
+        &paced_trains_to_ts,
+        &infra,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    // Transform simulations to simulation summary
+    let simulation_summaries = paced_trains
+        .into_iter()
+        .zip(simulations)
+        .map(|(paced_train, (sim, _))| (paced_train.id, SimulationSummaryResult::from(sim)))
+        .collect();
+
+    Ok(Json(simulation_summaries))
 }
 
 /// Get a path from a paced train given an infrastructure id and a paced train id
@@ -231,7 +283,7 @@ async fn get_path(
     State(AppState {
         db_pool: _db_pool,
         valkey: _valkey_client,
-        core_client: _core,
+        core_client: _core_client,
         ..
     }): State<AppState>,
     Extension(_auth): AuthenticationExt,
@@ -262,23 +314,53 @@ pub struct ElectricalProfileSetIdQueryParam {
 )]
 async fn simulation(
     State(AppState {
-        valkey: _valkey_client,
-        core_client: _core_client,
-        db_pool: _db_pool,
+        valkey: valkey_client,
+        core_client,
+        db_pool,
         ..
     }): State<AppState>,
-    Extension(_auth): AuthenticationExt,
-    Path(PacedTrainIdParam {
-        id: _paced_train_id,
-    }): Path<PacedTrainIdParam>,
-    Query(InfraIdQueryParam {
-        infra_id: _infra_id,
-    }): Query<InfraIdQueryParam>,
+    Extension(auth): AuthenticationExt,
+    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+    Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
     Query(ElectricalProfileSetIdQueryParam {
-        electrical_profile_set_id: _electrical_profile_set_id,
+        electrical_profile_set_id,
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<SimulationResponse>> {
-    todo!();
+    let authorized = auth
+        .check_roles([BuiltinRole::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // Retrieve infra or fail
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    // Retrieve paced_train or fail
+    let paced_train =
+        PacedTrain::retrieve_or_fail(&mut db_pool.get().await?, paced_train_id, || {
+            PacedTrainError::NotFound { paced_train_id }
+        })
+        .await?;
+
+    // Compute simulation of a paced_train
+    let (simulation, _) = train_simulation_batch(
+        &mut db_pool.get().await?,
+        valkey_client,
+        core_client,
+        &[paced_train.into_first_occurrence()],
+        &infra,
+        electrical_profile_set_id,
+    )
+    .await?
+    .pop()
+    .unwrap();
+
+    Ok(Json(simulation))
 }
 
 /// Projects the space time curves and paths of a number of paced trains onto a given path
@@ -315,19 +397,37 @@ async fn project_path(
 
 #[cfg(test)]
 mod tests {
-    use axum::http::StatusCode;
-    use pretty_assertions::assert_eq;
+    use std::collections::HashMap;
+
+    use chrono::Duration;
+    use editoast_models::DbConnectionPoolV2;
+    use editoast_schemas::paced_train::Paced;
+    use editoast_schemas::paced_train::PacedTrainBase;
+    use editoast_schemas::train_schedule::TrainScheduleBase;
     use rstest::rstest;
     use serde_json::json;
 
-    use crate::error::InternalError;
+    use crate::core::simulation::CompleteReportTrain;
+    use crate::core::simulation::ElectricalProfiles;
+    use crate::core::simulation::ReportTrain;
+    use crate::core::simulation::SimulationResponse;
+    use crate::core::simulation::SpeedLimitProperties;
+    use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_simple_paced_train;
+    use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::paced_train::PacedTrain;
+    use crate::models::paced_train::PacedTrainChangeset;
     use crate::models::prelude::*;
     use crate::views::paced_train::PacedTrainResult;
+    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
+    use crate::views::InternalError;
+    use crate::views::SimulationSummaryResult;
+    use axum::http::StatusCode;
+    use pretty_assertions::assert_eq;
 
     #[rstest]
     async fn paced_train_post() {
@@ -377,12 +477,8 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
-        assert_eq!(
-            &response.error_type,
-            "editoast:paced_train:PacedTrainNotFound"
-        )
+        assert_eq!(&response.error_type, "editoast:paced_train:NotFound")
     }
-
     #[rstest]
     async fn get_paced_train() {
         let app = TestAppBuilder::default_app();
@@ -405,5 +501,147 @@ mod tests {
             response.paced_train.paced.duration.into()
         );
         assert_eq!(paced_train.step, response.paced_train.paced.step.into());
+    }
+
+    async fn app_infra_id_paced_train_id_for_simulation_tests() -> (TestApp, i64, i64) {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
+        let paced_train_base: PacedTrainBase = PacedTrainBase {
+            train_schedule_base: TrainScheduleBase {
+                rolling_stock_name: rolling_stock.name.clone(),
+                ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
+                    .expect("Unable to parse")
+            },
+            paced: Paced {
+                duration: Duration::hours(1).try_into().unwrap(),
+                step: Duration::minutes(15).try_into().unwrap(),
+            },
+        };
+        let paced_train: PacedTrainChangeset = paced_train_base.into();
+        let paced_train = paced_train
+            .timetable_id(timetable.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create paced train");
+        let core = mocked_core_pathfinding_sim_and_proj(paced_train.id);
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        (app, small_infra.id, paced_train.id)
+    }
+
+    #[rstest]
+    async fn paced_train_simulation() {
+        let (app, infra_id, train_schedule_id) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let request = app.get(
+            format!(
+                "/paced_train/{}/simulation/?infra_id={}",
+                train_schedule_id, infra_id
+            )
+            .as_str(),
+        );
+        let response: SimulationResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(
+            response,
+            SimulationResponse::Success {
+                base: ReportTrain {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 1000, 2000, 3000]
+                },
+                provisional: ReportTrain {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 1000, 2000, 3000]
+                },
+                final_output: CompleteReportTrain {
+                    report_train: ReportTrain {
+                        positions: vec![0],
+                        times: vec![0],
+                        speeds: vec![],
+                        energy_consumption: 0.0,
+                        path_item_times: vec![0, 1000, 2000, 3000]
+                    },
+                    signal_critical_positions: vec![],
+                    zone_updates: vec![],
+                    spacing_requirements: vec![],
+                    routing_requirements: vec![]
+                },
+                mrsp: SpeedLimitProperties {
+                    boundaries: vec![],
+                    values: vec![]
+                },
+                electrical_profiles: ElectricalProfiles {
+                    boundaries: vec![],
+                    values: vec![]
+                }
+            }
+        );
+    }
+
+    #[rstest]
+    async fn paced_train_simulation_not_found() {
+        let (app, infra_id, _paced_train_id) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let request =
+            app.get(format!("/paced_train/{}/simulation/?infra_id={}", 0, infra_id).as_str());
+
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::NOT_FOUND)
+            .json_into();
+
+        assert_eq!(&response.error_type, "editoast:paced_train:NotFound")
+    }
+
+    #[rstest]
+    async fn paced_train_simulation_summary() {
+        let (app, infra_id, paced_train_id) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let request = app.post("/paced_train/simulation_summary").json(&json!({
+            "infra_id": infra_id,
+            "ids": vec![paced_train_id],
+        }));
+        let response: HashMap<i64, SimulationSummaryResult> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert_eq!(response.len(), 1);
+        assert_eq!(
+            *response.get(&paced_train_id).unwrap(),
+            SimulationSummaryResult::Success {
+                length: 0,
+                time: 0,
+                energy_consumption: 0.0,
+                path_item_times_final: vec![0, 1000, 2000, 3000],
+                path_item_times_provisional: vec![0, 1000, 2000, 3000],
+                path_item_times_base: vec![0, 1000, 2000, 3000]
+            }
+        );
+    }
+
+    #[rstest]
+    async fn paced_train_simulation_summary_not_found() {
+        let (app, infra_id, _paced_train_id) =
+            app_infra_id_paced_train_id_for_simulation_tests().await;
+        let request = app.post("/paced_train/simulation_summary").json(&json!({
+            "infra_id": infra_id,
+            "ids": vec![0],
+        }));
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::NOT_FOUND)
+            .json_into();
+
+        assert_eq!(&response.error_type, "editoast:paced_train:BatchNotFound")
     }
 }
