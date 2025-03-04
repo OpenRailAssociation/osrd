@@ -1,4 +1,4 @@
-import type { Scenario, Project, Study, Infra, PacedTrainBase } from 'common/api/osrdEditoastApi';
+import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
 
 import {
   IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS,
@@ -253,7 +253,7 @@ test.describe('Verify train schedule elements and filters', () => {
     await operationalStudiesPage.checkPacedTrainSwitch();
 
     // Paced train data used in global setup
-    const pacedTrainsData: PacedTrainBase[] = readJsonFile(
+    const pacedTrainsData: PacedTrain[] = readJsonFile(
       './tests/assets/paced-train/paced_trains.json'
     );
 

@@ -9,7 +9,7 @@ import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osr
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
-import { isPacedTrainResultWithPacedTrainId } from 'utils/trainId';
+import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import { isScheduledPointsNotHonored, isTooFast } from '../utils';
@@ -88,7 +88,7 @@ const formatTimetableItemSummaries = (
       ...otherProps,
     };
 
-    if (isPacedTrainResultWithPacedTrainId(formattedItem)) {
+    if (isPacedTrainResponseWithPacedTrainId(formattedItem)) {
       return {
         ...formattedItem,
         paced: {

@@ -12,7 +12,7 @@ import {
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
 import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
-  PacedTrainResultWithPacedTrainId,
+  PacedTrainResponseWithPacedTrainId,
   TimetableItemId,
   TimetableItemWithTimetableId,
   TrainScheduleId,
@@ -78,7 +78,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [fetchedTrainSchedulesResults]
   );
 
-  const formattedRawPacedTrains: PacedTrainResultWithPacedTrainId[] = useMemo(
+  const formattedRawPacedTrains: PacedTrainResponseWithPacedTrainId[] = useMemo(
     () =>
       showPacedTrains
         ? (fetchedPacedTrains || []).map((pacedTrain) => ({

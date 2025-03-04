@@ -2,8 +2,8 @@ use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_derive::Model;
+use editoast_schemas::paced_train;
 use editoast_schemas::paced_train::Paced;
-use editoast_schemas::paced_train::PacedTrainBase;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::Margins;
@@ -18,6 +18,7 @@ use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 
 #[derive(Debug, Clone, Model)]
+#[cfg_attr(test, derive(PartialEq))]
 #[model(table = editoast_models::tables::paced_train)]
 #[model(gen(ops = crud, batch_ops = crd, list))]
 pub struct PacedTrain {
@@ -72,12 +73,12 @@ impl PacedTrain {
     }
 }
 
-impl From<PacedTrainBase> for PacedTrainChangeset {
+impl From<paced_train::PacedTrain> for PacedTrainChangeset {
     fn from(
-        PacedTrainBase {
+        paced_train::PacedTrain {
             train_schedule_base,
             paced,
-        }: PacedTrainBase,
+        }: paced_train::PacedTrain,
     ) -> Self {
         PacedTrain::changeset()
             .comfort(train_schedule_base.comfort)
@@ -98,7 +99,7 @@ impl From<PacedTrainBase> for PacedTrainChangeset {
     }
 }
 
-impl From<PacedTrain> for PacedTrainBase {
+impl From<PacedTrain> for paced_train::PacedTrain {
     fn from(paced_train: PacedTrain) -> Self {
         Self {
             train_schedule_base: TrainScheduleBase {

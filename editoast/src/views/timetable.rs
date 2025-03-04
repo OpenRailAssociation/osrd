@@ -15,7 +15,7 @@ use derivative::Derivative;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
-use editoast_schemas::paced_train::PacedTrainBase;
+use editoast_schemas::paced_train::PacedTrain;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -24,7 +24,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::paced_train::PacedTrainResult;
+use super::paced_train::PacedTrainResponse;
 use super::pagination::PaginatedList as _;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
@@ -39,7 +39,7 @@ use crate::core::conflict_detection::TrainRequirements;
 use crate::core::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
-use crate::models::paced_train::PacedTrain;
+use crate::models;
 use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
@@ -277,17 +277,17 @@ async fn post_train_schedule(
     post, path = "",
     tag = "timetable,paced_train",
     params(TimetableIdParam),
-    request_body = Vec<PacedTrainBase>,
+    request_body = Vec<PacedTrain>,
     responses(
-        (status = 200, description = "The created paced trains", body = Vec<PacedTrainResult>)
+        (status = 200, description = "The created paced trains", body = Vec<PacedTrainResponse>)
     )
 )]
 async fn post_paced_train(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Json(paced_trains): Json<Vec<PacedTrainBase>>,
-) -> Result<Json<Vec<PacedTrainResult>>> {
+    Json(paced_trains): Json<Vec<PacedTrain>>,
+) -> Result<Json<Vec<PacedTrainResponse>>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -310,15 +310,15 @@ async fn post_paced_train(
         .collect::<Vec<_>>();
 
     // Create a batch of paced trains
-    let paced_trains: Vec<_> = PacedTrain::create_batch(conn, changesets).await?;
+    let paced_trains: Vec<_> = models::PacedTrain::create_batch(conn, changesets).await?;
     Ok(Json(paced_trains.into_iter().map_into().collect()))
 }
 
 #[derive(Serialize, ToSchema, Debug)]
 #[cfg_attr(test, derive(Deserialize))]
 struct ListPacedTrainsResponse {
-    #[schema(value_type = Vec<PacedTrainResult>)]
-    results: Vec<PacedTrainResult>,
+    #[schema(value_type = Vec<PacedTrainResponse>)]
+    results: Vec<PacedTrainResponse>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
@@ -357,9 +357,9 @@ async fn get_paced_trains(
     let settings = pagination_params
         .validate(25)?
         .into_selection_settings()
-        .filter(move || PacedTrain::TIMETABLE_ID.eq(timetable_id));
+        .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id));
 
-    let (paced_trains, stats) = PacedTrain::list_paginated(conn, settings).await?;
+    let (paced_trains, stats) = models::PacedTrain::list_paginated(conn, settings).await?;
 
     let results = paced_trains.into_iter().map_into().collect();
 
@@ -499,9 +499,11 @@ async fn conflicts(
         TrainSchedule::retrieve_batch(&mut db_pool.get().await?, timetable_trains.train_ids)
             .await?;
 
-    let (paced_trains, _): (Vec<_>, _) =
-        PacedTrain::retrieve_batch(&mut db_pool.get().await?, timetable_trains.paced_train_ids)
-            .await?;
+    let (paced_trains, _): (Vec<_>, _) = models::PacedTrain::retrieve_batch(
+        &mut db_pool.get().await?,
+        timetable_trains.paced_train_ids,
+    )
+    .await?;
 
     let train_simulations = train_simulation_batch(
         &mut db_pool.get().await?,
@@ -722,7 +724,7 @@ mod tests {
             .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
             .json(&paced_trains);
 
-        let response: Vec<PacedTrainResult> =
+        let response: Vec<PacedTrainResponse> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert!(response.len() == 2);
@@ -734,9 +736,9 @@ mod tests {
         .validate(25)
         .expect("Invalid pagination parameters")
         .into_selection_settings()
-        .filter(move || PacedTrain::TIMETABLE_ID.eq(timetable.id));
+        .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable.id));
 
-        let list_result = PacedTrain::list_paginated(&mut pool.get_ok(), settings)
+        let list_result = models::PacedTrain::list_paginated(&mut pool.get_ok(), settings)
             .await
             .expect("Failed to fetch paced trains");
         assert!(list_result.0.len() == 2);
@@ -763,9 +765,10 @@ mod tests {
             .map(|cs| cs.timetable_id(timetable.id))
             .collect::<Vec<_>>();
 
-        let _paced_trains: Vec<_> = PacedTrain::create_batch(&mut pool.get_ok(), changesets)
-            .await
-            .expect("Failed to create paced trains");
+        let _paced_trains: Vec<_> =
+            models::PacedTrain::create_batch(&mut pool.get_ok(), changesets)
+                .await
+                .expect("Failed to create paced trains");
 
         let request = app.get(format!("/timetable/{}/paced_trains", timetable.id).as_str());
         let list: ListPacedTrainsResponse =

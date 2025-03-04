@@ -21,7 +21,7 @@ pub enum ReceptionSignal {
     ShortSlipStop,
 }
 
-#[derive(Debug, Default, Clone, Serialize, ToSchema)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ScheduleItem {
     /// Position on the path of the schedule item.

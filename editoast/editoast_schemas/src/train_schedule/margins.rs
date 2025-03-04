@@ -10,7 +10,7 @@ editoast_common::schemas! {
     Margins,
 }
 
-#[derive(Debug, Clone, Serialize, Derivative, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Derivative, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct Margins {

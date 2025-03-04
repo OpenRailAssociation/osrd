@@ -1,6 +1,6 @@
 import type { APIRequestContext, APIResponse } from '@playwright/test';
 
-import type { PacedTrainResult } from 'common/api/osrdEditoastApi';
+import type { PacedTrainResponse } from 'common/api/osrdEditoastApi';
 
 import { getApiContext, handleErrorResponse } from './api-utils';
 
@@ -9,12 +9,12 @@ import { getApiContext, handleErrorResponse } from './api-utils';
  *
  * @param timetableId - The ID of the timetable for which the paced trains are being sent.
  * @param body - The request payload containing paced train data.
- * @returns {Promise<PacedTrainResult[]>} - The API response containing the train schedule results.
+ * @returns {Promise<PacedTrainResponse[]>} - The API response containing the paced train response.
  */
 export async function sendPacedTrains(
   timetableId: number,
   body: JSON
-): Promise<PacedTrainResult[]> {
+): Promise<PacedTrainResponse[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const pacedTrainsResponse: APIResponse = await apiContext.post(
     `/api/timetable/${timetableId}/paced_trains/`,
@@ -26,7 +26,7 @@ export async function sendPacedTrains(
     }
   );
   handleErrorResponse(pacedTrainsResponse, 'Failed to send paced train');
-  const responseData = (await pacedTrainsResponse.json()) as PacedTrainResult[];
+  const responseData = (await pacedTrainsResponse.json()) as PacedTrainResponse[];
 
   return responseData;
 }

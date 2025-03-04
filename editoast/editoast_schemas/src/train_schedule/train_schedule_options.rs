@@ -7,7 +7,7 @@ editoast_common::schemas! {
     TrainScheduleOptions,
 }
 
-#[derive(Debug, Derivative, Clone, Serialize, Deserialize, ToSchema, Hash)]
+#[derive(Debug, Derivative, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrainScheduleOptions {

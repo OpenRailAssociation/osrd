@@ -6,7 +6,7 @@ editoast_common::schemas! {
     Tags,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default, ToSchema, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ToSchema)]
 pub struct Tags(Vec<String>);
 
 impl Tags {

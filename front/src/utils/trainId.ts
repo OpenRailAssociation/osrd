@@ -1,7 +1,7 @@
 import type {
   OccurrenceId,
   PacedTrainId,
-  PacedTrainResultWithPacedTrainId,
+  PacedTrainResponseWithPacedTrainId,
   TimetableItemWithTimetableId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
@@ -17,9 +17,9 @@ export const isOccurrence = (id: string): id is OccurrenceId => {
 export const isTrainSchedule = (id: string): id is TrainScheduleId =>
   id.startsWith('trainschedule-');
 
-export const isPacedTrainResultWithPacedTrainId = (
+export const isPacedTrainResponseWithPacedTrainId = (
   timetableItem: TimetableItemWithTimetableId
-): timetableItem is PacedTrainResultWithPacedTrainId => isPacedTrain(timetableItem.id);
+): timetableItem is PacedTrainResponseWithPacedTrainId => isPacedTrain(timetableItem.id);
 
 /**
  * Given a train id in the Editoast format (used for api),

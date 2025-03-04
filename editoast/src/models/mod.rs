@@ -36,6 +36,7 @@ pub use prelude::*;
 pub use documents::Document;
 pub use infra::Infra;
 pub use infra_objects::*;
+pub use paced_train::PacedTrain;
 pub use projects::Project;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use rolling_stock_model::RollingStockModel;

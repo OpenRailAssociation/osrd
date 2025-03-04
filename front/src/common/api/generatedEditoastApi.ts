@@ -521,7 +521,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/paced_train/${queryArg.id}`,
           method: 'PUT',
-          body: queryArg.pacedTrainForm,
+          body: queryArg.body,
         }),
         invalidatesTags: ['timetable', 'paced_train'],
       }),
@@ -1614,15 +1614,21 @@ export type PostPacedTrainSimulationSummaryApiArg = {
   };
 };
 export type GetPacedTrainByIdApiResponse =
-  /** status 204 The requested paced train */ PacedTrainResult;
+  /** status 204 The requested paced train */ PacedTrainResponse;
 export type GetPacedTrainByIdApiArg = {
   id: number;
 };
-export type PutPacedTrainByIdApiResponse =
-  /** status 200 Paced train have been updated */ PacedTrainResult;
+export type PutPacedTrainByIdApiResponse = unknown;
 export type PutPacedTrainByIdApiArg = {
   id: number;
-  pacedTrainForm: PacedTrainForm;
+  body: TrainScheduleBase & {
+    paced: {
+      /** Duration of the paced train, an ISO 8601 format is expected */
+      duration: string;
+      /** Time between two occurrences, an ISO 8601 format is expected */
+      step: string;
+    };
+  };
 };
 export type GetPacedTrainByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
 export type GetPacedTrainByIdPathApiArg = {
@@ -1914,7 +1920,7 @@ export type GetTimetableByIdConflictsApiArg = {
 };
 export type GetTimetableByIdPacedTrainsApiResponse =
   /** status 200 Timetable with paced train ids */ PaginationStats & {
-    results: PacedTrainResult[];
+    results: PacedTrainResponse[];
   };
 export type GetTimetableByIdPacedTrainsApiArg = {
   /** A timetable ID */
@@ -1923,11 +1929,11 @@ export type GetTimetableByIdPacedTrainsApiArg = {
   pageSize?: number | null;
 };
 export type PostTimetableByIdPacedTrainsApiResponse =
-  /** status 200 The created paced trains */ PacedTrainResult[];
+  /** status 200 The created paced trains */ PacedTrainResponse[];
 export type PostTimetableByIdPacedTrainsApiArg = {
   /** A timetable ID */
   id: number;
-  body: PacedTrainBase[];
+  body: PacedTrain[];
 };
 export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation result */
   | {
@@ -3255,7 +3261,7 @@ export type TrainScheduleBase = {
   start_time: string;
   train_name: string;
 };
-export type PacedTrainBase = TrainScheduleBase & {
+export type PacedTrain = TrainScheduleBase & {
   paced: {
     /** Duration of the paced train, an ISO 8601 format is expected */
     duration: string;
@@ -3263,13 +3269,9 @@ export type PacedTrainBase = TrainScheduleBase & {
     step: string;
   };
 };
-export type PacedTrainResult = PacedTrainBase & {
+export type PacedTrainResponse = PacedTrain & {
   id: number;
   timetable_id: number;
-};
-export type PacedTrainForm = PacedTrainBase & {
-  /** Timetable attached to the paced train */
-  timetable_id?: number | null;
 };
 export type ReportTrain = {
   /** Total energy consumption */

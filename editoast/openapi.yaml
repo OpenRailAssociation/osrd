@@ -1655,11 +1655,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PacedTrainResult'
+                $ref: '#/components/schemas/PacedTrainResponse'
     put:
       tags:
       - timetable
       - paced_train
+      summary: Update a paced train
       parameters:
       - name: id
         in: path
@@ -1671,15 +1672,30 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PacedTrainForm'
+              allOf:
+              - $ref: '#/components/schemas/TrainScheduleBase'
+              - type: object
+                required:
+                - paced
+                properties:
+                  paced:
+                    type: object
+                    required:
+                    - duration
+                    - step
+                    properties:
+                      duration:
+                        type: string
+                        description: Duration of the paced train, an ISO 8601 format is expected
+                        example: PT2H
+                      step:
+                        type: string
+                        description: Time between two occurrences, an ISO 8601 format is expected
+                        example: PT15M
         required: true
       responses:
-        '200':
-          description: Paced train have been updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PacedTrainResult'
+        '204':
+          description: The paced train has been updated
   /paced_train/{id}/path:
     get:
       tags:
@@ -3064,7 +3080,7 @@ paths:
                     results:
                       type: array
                       items:
-                        $ref: '#/components/schemas/PacedTrainResult'
+                        $ref: '#/components/schemas/PacedTrainResponse'
         '404':
           description: Timetable not found
     post:
@@ -3086,7 +3102,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/PacedTrainBase'
+                $ref: '#/components/schemas/PacedTrain'
         required: true
       responses:
         '200':
@@ -3096,7 +3112,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PacedTrainResult'
+                  $ref: '#/components/schemas/PacedTrainResponse'
   /timetable/{id}/stdcm:
     post:
       tags:
@@ -8530,7 +8546,7 @@ components:
       - CreationDateDesc
       - LastModifiedDesc
       - LastModifiedAsc
-    PacedTrainBase:
+    PacedTrain:
       allOf:
       - $ref: '#/components/schemas/TrainScheduleBase'
       - type: object
@@ -8553,7 +8569,7 @@ components:
                 example: PT15M
     PacedTrainForm:
       allOf:
-      - $ref: '#/components/schemas/PacedTrainBase'
+      - $ref: '#/components/schemas/PacedTrain'
       - type: object
         properties:
           timetable_id:
@@ -8561,9 +8577,9 @@ components:
             format: int64
             description: Timetable attached to the paced train
             nullable: true
-    PacedTrainResult:
+    PacedTrainResponse:
       allOf:
-      - $ref: '#/components/schemas/PacedTrainBase'
+      - $ref: '#/components/schemas/PacedTrain'
       - type: object
         required:
         - id

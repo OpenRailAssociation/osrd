@@ -6,7 +6,7 @@ import {
   generatedEditoastApi,
   type Property,
   type TrainScheduleResult,
-  type PacedTrainResult,
+  type PacedTrainResponse,
 } from './generatedEditoastApi';
 
 const formatPathPropertiesProps = (props: Property[]) =>
@@ -44,12 +44,12 @@ const osrdEditoastApi = generatedEditoastApi
         },
         providesTags: ['timetable'],
       }),
-      getAllTimetableByIdPacedTrains: builder.query<PacedTrainResult[], { timetableId: number }>({
+      getAllTimetableByIdPacedTrains: builder.query<PacedTrainResponse[], { timetableId: number }>({
         queryFn: async ({ timetableId }, { dispatch }) => {
           const pageSize = 25;
           let page = 1;
           let reachEnd = false;
-          const result: PacedTrainResult[] = [];
+          const result: PacedTrainResponse[] = [];
           while (!reachEnd) {
             const promise = dispatch(
               osrdEditoastApi.endpoints.getTimetableByIdPacedTrains.initiate(

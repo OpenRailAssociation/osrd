@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraState, PacedTrainBase, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { InfraState, PacedTrain, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
-  PacedTrainResultWithPacedTrainId,
+  PacedTrainResponseWithPacedTrainId,
   TimetableItemWithTimetableId,
   TrainScheduleResultWithTrainId,
 } from 'reducers/osrdconf/types';
@@ -76,7 +76,7 @@ const AddTrainScheduleButton = ({
       try {
         if (isPacedTrainMode) {
           const basePacedTrainPayload = formatTimetableItemPayload(validTimetableItemConfig);
-          const pacedTrainPayload: PacedTrainBase = {
+          const pacedTrainPayload: PacedTrain = {
             ...basePacedTrainPayload,
             paced: {
               duration: validTimetableItemConfig.timeRangeDuration,
@@ -89,7 +89,7 @@ const AddTrainScheduleButton = ({
           }).unwrap();
 
           // We can only add one paced train at a time
-          const formattedNewPacedTrain: PacedTrainResultWithPacedTrainId = {
+          const formattedNewPacedTrain: PacedTrainResponseWithPacedTrainId = {
             ...newPacedTrain.at(0)!,
             id: formatEditoastTrainIdToPacedTrainId(newPacedTrain.at(0)!.id),
           };

@@ -21,7 +21,7 @@ editoast_common::schemas! {
     TrainScheduleBase,
 }
 
-#[derive(Debug, Default, Clone, Serialize, ToSchema)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, ToSchema)]
 pub struct TrainScheduleBase {
     pub train_name: String,
     #[serde(default)]

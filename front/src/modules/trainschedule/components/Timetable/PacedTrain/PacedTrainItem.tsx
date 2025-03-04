@@ -9,13 +9,13 @@ import { useTranslation } from 'react-i18next';
 
 import {
   osrdEditoastApi,
-  type PacedTrainBase,
-  type PacedTrainResult,
+  type PacedTrain,
+  type PacedTrainResponse,
 } from 'common/api/osrdEditoastApi';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
-  PacedTrainResultWithPacedTrainId,
+  PacedTrainResponseWithPacedTrainId,
   TimetableItemId,
   TimetableItemWithTimetableId,
   TrainId,
@@ -108,7 +108,7 @@ const PacedTrainItem = ({
 
     const editoastTrainId = formatPacedTrainIdToEditoastTrainId(pacedTrain.id);
 
-    let pacedTrainDetail: PacedTrainResult;
+    let pacedTrainDetail: PacedTrainResponse;
     try {
       const pacedTrainDetailPromise = getPacedTrainById({
         id: editoastTrainId,
@@ -125,7 +125,7 @@ const PacedTrainItem = ({
       startTime,
       new Duration({ minutes: pacedTrainDelta })
     );
-    const newPacedTrain: PacedTrainBase = {
+    const newPacedTrain: PacedTrain = {
       ...omit(pacedTrainDetail, ['id', 'timetable_id']),
       start_time: newStartTimeString.toISOString(),
       train_name: pacedTrainName,
@@ -142,11 +142,11 @@ const PacedTrainItem = ({
       return;
     }
 
-    const formattedTrainScheduleResult: PacedTrainResultWithPacedTrainId = {
+    const formattedPacedTrainResponse: PacedTrainResponseWithPacedTrainId = {
       ...pacedTrainResult,
       id: formatEditoastTrainIdToPacedTrainId(pacedTrainResult.id),
     };
-    upsertTimetableItems([formattedTrainScheduleResult]);
+    upsertTimetableItems([formattedPacedTrainResponse]);
     // dtoImport();
     dispatch(
       setSuccess({

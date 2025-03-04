@@ -5,10 +5,10 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 editoast_common::schemas! {
-    PacedTrainBase,
+    PacedTrain,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct Paced {
     /// Duration of the paced train, an ISO 8601 format is expected
     #[schema(value_type = chrono::Duration, example = "PT2H")]
@@ -18,8 +18,8 @@ pub struct Paced {
     pub step: PositiveDuration,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-pub struct PacedTrainBase {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct PacedTrain {
     #[serde(flatten)]
     pub train_schedule_base: TrainScheduleBase,
     #[schema(inline)]

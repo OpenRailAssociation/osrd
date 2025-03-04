@@ -13,7 +13,7 @@ import type {
   Comfort,
   Distribution,
   OperationalPointReference,
-  PacedTrainResult,
+  PacedTrainResponse,
   PathItemLocation,
   ReceptionSignal,
   TrainScheduleResult,
@@ -152,10 +152,10 @@ export type TrainScheduleResultWithTrainId = Omit<TrainScheduleResult, 'id'> & {
   id: TrainScheduleId;
 };
 
-export type PacedTrainResultWithPacedTrainId = Omit<PacedTrainResult, 'id'> & {
+export type PacedTrainResponseWithPacedTrainId = Omit<PacedTrainResponse, 'id'> & {
   id: PacedTrainId;
 };
 
 export type TimetableItemWithTimetableId =
   | TrainScheduleResultWithTrainId
-  | PacedTrainResultWithPacedTrainId;
+  | PacedTrainResponseWithPacedTrainId;
