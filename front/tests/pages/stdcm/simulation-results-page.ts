@@ -216,10 +216,12 @@ class SimulationResultPage extends STDCMPage {
     await expect(this.feedbackDescription).toBeVisible();
     await expect(this.feedbackButton).toBeVisible();
   }
+
   async clickFeedbackButton() {
     await expect(this.feedbackButton).toBeEnabled();
     await this.feedbackButton.click();
   }
+
   async verifyMailRedirection(expectedSubject: string, expectedBody: string) {
     await this.clickFeedbackButton();
     const mailtoUrl = await this.page.evaluate(() => window.location.href);

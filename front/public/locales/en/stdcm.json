@@ -4,6 +4,7 @@
   "cancelRequest": "Cancel request",
   "consist": {
     "consist": "Consist",
+    "compositionCode": "Composition code",
     "length": "Length",
     "tonnage": "Tonnage",
     "maxSpeed": "Max speed",
@@ -52,7 +53,7 @@
   "mailFeedback": {
     "body": "%0A%0AWe%20invite%20you%20to%20send%20us%20a%20message.%0AWhenever%20you%20have%20a%20concern%20or%20a%20remark,%0Aeven%20if%20it%20is%20not%20perfectly%20worded.%0A%0AThank%20you%20in%20advance,%0AThe%20LMR%20project%20team%0A%0A(you%20may%20delete%20this%20message)%0A%0A********",
     "description": "Help us improve ST DCM by sending us your feedback and suggestions.",
-    "SimulationDetails": "Simulation details",
+    "simulationDetails": "Simulation details",
     "subject": "LMR - feedback, suggestions",
     "title": "Any feedback or suggestions?",
     "writeButton": "Write"
