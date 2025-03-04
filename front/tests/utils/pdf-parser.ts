@@ -1,30 +1,7 @@
-import fs from 'fs';
-import path from 'path';
-
 import { expect } from '@playwright/test';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 import type { PdfSimulationContent } from './types';
-import { logger } from '../logging-fixture';
-
-/**
- * Find the first PDF file in a directory.
- * @param directory - The directory to search in.
- * @returns The absolute path to the PDF file, or `null` if no PDF file is found.
- */
-export function findFirstPdf(directory: string): string | null {
-  try {
-    const pdfFile = fs.readdirSync(directory).find((file) => file.endsWith('.pdf'));
-    if (!pdfFile) {
-      logger.error(`No PDF files found in directory: ${directory}`);
-      return null;
-    }
-    return path.resolve(directory, pdfFile);
-  } catch (error) {
-    logger.error(`Error reading directory: ${directory}`, error);
-    return null;
-  }
-}
 
 export async function parsePdfText(buffer: Buffer) {
   const doc = await getDocument(new Uint8Array(buffer.buffer)).promise;

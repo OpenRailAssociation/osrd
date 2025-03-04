@@ -13,7 +13,7 @@ import STDCMPage from './pages/stdcm/stdcm-page';
 import ViaSection from './pages/stdcm/via-section';
 import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-utils';
-import { findFirstPdf, parsePdfText, verifySimulationContent } from './utils/pdf-parser';
+import { parsePdfText, verifySimulationContent } from './utils/pdf-parser';
 import type { ConsistFields, PdfSimulationContent } from './utils/types';
 
 test.describe('Verify stdcm simulation page', () => {
@@ -71,7 +71,7 @@ test.describe('Verify stdcm simulation page', () => {
     await waitForInfraStateToBeCached(infra.id);
   });
 
-  let downloadDir: string | undefined;
+  let downloadPath: string | undefined;
 
   /** *************** Test 1 **************** */
   test('Verify STDCM stops and simulation sheet', async ({ browserName, context }, testInfo) => {
@@ -102,8 +102,7 @@ test.describe('Verify stdcm simulation page', () => {
     await simulationResultPage.displayAllOperationalPoints();
     await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-with-all-via.json');
     await simulationResultPage.retainSimulation();
-    downloadDir = testInfo.outputDir;
-    await simulationResultPage.downloadSimulation(downloadDir);
+    downloadPath = await simulationResultPage.downloadSimulation(testInfo.outputDir);
     // Reset and verify empty fields
     const [newPage] = await Promise.all([
       context.waitForEvent('page'),
@@ -122,13 +121,7 @@ test.describe('Verify stdcm simulation page', () => {
 
   /** *************** Test 2 *************** */
   test('Verify simulation sheet content', async () => {
-    const pdfFilePath = findFirstPdf(downloadDir!);
-
-    if (!pdfFilePath) {
-      throw new Error(`No PDF files found in directory: ${downloadDir}`);
-    }
-    // Read and parse the PDF
-    const pdfBuffer = fs.readFileSync(pdfFilePath);
+    const pdfBuffer = fs.readFileSync(downloadPath!);
     const actualPdfSimulationContent = await parsePdfText(pdfBuffer);
     const expectedPdfSimulationContent: PdfSimulationContent = simulationSheetDetails();
     verifySimulationContent(actualPdfSimulationContent, expectedPdfSimulationContent);

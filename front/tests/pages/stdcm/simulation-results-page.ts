@@ -125,7 +125,7 @@ class SimulationResultPage extends STDCMPage {
     await expect(this.startNewQueryWithDataButton).toBeVisible();
   }
 
-  async downloadSimulation(downloadDir: string): Promise<void> {
+  async downloadSimulation(downloadDir: string): Promise<string> {
     // Wait until there are no network requests for stability
     await this.page.waitForLoadState('networkidle');
 
@@ -145,6 +145,7 @@ class SimulationResultPage extends STDCMPage {
     await download.saveAs(downloadPath);
 
     logger.info(`The PDF was successfully downloaded to: ${downloadPath}`);
+    return downloadPath;
   }
 
   async startNewQuery() {
