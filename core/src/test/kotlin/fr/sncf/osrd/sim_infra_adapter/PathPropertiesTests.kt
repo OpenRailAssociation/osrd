@@ -134,7 +134,8 @@ class PathPropertiesTests {
                         RJSOperationalPointSncfExtension(0, "BV", "B", "0", "TRI"),
                         null,
                     ),
-                    null
+                    null,
+                    false
                 ),
                 RJSOperationalPoint(
                     "point2",
@@ -149,7 +150,8 @@ class PathPropertiesTests {
                         RJSOperationalPointPart("TA1", 1_950.0, null),
                     ),
                     null,
-                    null
+                    null,
+                    false
                 )
             )
         val infra = parseRJSInfra(rjsInfra)

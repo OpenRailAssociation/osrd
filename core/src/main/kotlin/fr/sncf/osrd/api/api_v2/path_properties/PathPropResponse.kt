@@ -33,7 +33,8 @@ data class OperationalPointResponse(
     val part: OperationalPointPartResponse,
     val extensions: OperationalPointExtensions?,
     val position: Offset<Path>,
-    val weight: Long?
+    val weight: Long?,
+    @Json(name = "is_station") val isStation: Boolean
 )
 
 data class OperationalPointPartResponse(

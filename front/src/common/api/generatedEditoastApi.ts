@@ -2789,6 +2789,8 @@ export type PathProperties = {
     | {
         extensions?: OperationalPointExtensions;
         id: string;
+        /** Whether this operational point represents a station */
+        is_station?: boolean;
         part: OperationalPointPart;
         /** Distance from the beginning of the path in mm */
         position: number;

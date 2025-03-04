@@ -8846,6 +8846,9 @@ components:
                 type: string
                 maxLength: 255
                 minLength: 1
+              is_station:
+                type: boolean
+                description: Whether this operational point represents a station
               part:
                 $ref: '#/components/schemas/OperationalPointPart'
               position:

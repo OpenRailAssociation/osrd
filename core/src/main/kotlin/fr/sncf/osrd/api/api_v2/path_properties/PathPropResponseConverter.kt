@@ -102,8 +102,16 @@ private fun makeOperationalPoints(
             if (opSncfExtension == null && opIdExtension == null) null
             else OperationalPointExtensions(opSncfExtension, opIdExtension)
         val weight = if (opPartProps["weight"] == null) null else opPartProps["weight"]!!.toLong()
+        val isStation = opPartProps["isStation"]?.toBoolean() ?: false
         val opResult =
-            OperationalPointResponse(operationalPointId, opPartResult, opExtensions, offset, weight)
+            OperationalPointResponse(
+                operationalPointId,
+                opPartResult,
+                opExtensions,
+                offset,
+                weight,
+                isStation
+            )
         res.add(opResult)
     }
     return res

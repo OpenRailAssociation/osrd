@@ -718,7 +718,8 @@ class PathfindingTest : ApiTest() {
                 "new_op_1",
                 listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, null)),
                 null,
-                null
+                null,
+                false
             )
         )
         rjsInfra.operationalPoints.add(
@@ -726,7 +727,8 @@ class PathfindingTest : ApiTest() {
                 "new_op_2",
                 listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, null)),
                 null,
-                null
+                null,
+                false
             )
         )
         val infra = Helpers.fullInfraFromRJS(rjsInfra)

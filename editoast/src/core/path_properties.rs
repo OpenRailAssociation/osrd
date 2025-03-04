@@ -81,6 +81,9 @@ pub struct OperationalPointOnPath {
     /// Importance of the operational point
     #[schema(required, minimum = 0, maximum = 100)]
     weight: Option<u8>,
+    /// Whether this operational point represents a station
+    #[serde(default)]
+    is_station: bool,
 }
 
 /// Zones along a path. Each value is associated to a range of the path.

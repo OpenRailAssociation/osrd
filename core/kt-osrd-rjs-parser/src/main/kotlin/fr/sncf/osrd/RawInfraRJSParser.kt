@@ -798,6 +798,7 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
                 props["weight"] = weight
             }
             if (opPart.extensions?.sncf != null) props["kp"] = opPart.extensions!!.sncf!!.kp
+            props["isStation"] = (operationalPoint.isStation ?: false).toString()
             val partId =
                 builder.operationalPointPart(
                     operationalPointId,
