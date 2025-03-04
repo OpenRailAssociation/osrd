@@ -32,7 +32,6 @@ impl ToTokens for UpdateImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::Update<#ty, #model> for #changeset {
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn update(

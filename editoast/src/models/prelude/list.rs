@@ -175,30 +175,28 @@ impl<M: Model + 'static> SelectionSettings<M> {
     }
 }
 
-/// Describes how a [Model](super::Model) can be listed (and counted) in a database
+/// Describes how a [Model] can be listed (and counted) in a database
 /// given some settings and constraints provided by [SelectionSettings]
 ///
 /// You can implement this type manually but it is recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
 pub trait List: Model {
     /// Lists the objects that match the provided settings
     async fn list(
-        conn: &'async_trait mut DbConnection,
+        conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<Vec<Self>>;
 }
 
-/// Describe how we can count the number of occurrences of the [Model](super::Model)
+/// Describe how we can count the number of occurrences of the [Model]
 /// that match the provided settings and constraints
 ///
 /// You can implement this type manually but it is recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
 pub trait Count: Model {
     /// Counts the number of objects that match the provided settings
     async fn count(
-        conn: &'async_trait mut DbConnection,
+        conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<u64>;
 }
@@ -206,7 +204,6 @@ pub trait Count: Model {
 /// A trait that combines [List] and [Count] into a single function [ListAndCount::list_and_count]
 ///
 /// This trait is automatically implemented for any type that implements both [List] and [Count].
-#[async_trait::async_trait]
 pub trait ListAndCount: Model {
     /// Lists and counts the objects that match the provided settings
     ///
@@ -221,15 +218,14 @@ pub trait ListAndCount: Model {
     /// 3. Fetch in OSRD's git log that function original implementation and restore it
     ///    (this is a _very last resort_ solution ofc).
     async fn list_and_count(
-        conn: &'async_trait mut DbConnection,
+        conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<(Vec<Self>, u64)>;
 }
 
-#[async_trait::async_trait]
 impl<M: Model + List + Count> ListAndCount for M {
     async fn list_and_count(
-        conn: &'async_trait mut DbConnection,
+        conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<(Vec<Self>, u64)> {
         let count = Self::count(conn, settings.clone()).await?;

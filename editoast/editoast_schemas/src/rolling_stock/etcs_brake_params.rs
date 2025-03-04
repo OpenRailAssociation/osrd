@@ -15,7 +15,7 @@ editoast_common::schemas! {
 #[serde(deny_unknown_fields)]
 /// Braking parameters for ERTMS ETCS Level 2
 /// Commented with their names in ETCS specification document `SUBSET-026-3 v400.pdf` from the
-/// file at https://www.era.europa.eu/system/files/2023-09/index004_-_SUBSET-026_v400.zip
+/// file at <https://www.era.europa.eu/system/files/2023-09/index004_-_SUBSET-026_v400.zip>
 pub struct EtcsBrakeParams {
     /// A_brake_emergency: the emergency deceleration curve (values > 0 m/s²)
     pub gamma_emergency: SpeedIntervalValueCurve,

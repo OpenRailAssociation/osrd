@@ -26,7 +26,6 @@ impl ToTokens for ExistsImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::Exists<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn exists(

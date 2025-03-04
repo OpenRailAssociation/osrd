@@ -10,7 +10,7 @@ use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PathItemLocation;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;

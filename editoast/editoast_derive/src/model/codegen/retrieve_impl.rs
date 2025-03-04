@@ -30,7 +30,6 @@ impl ToTokens for RetrieveImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::Retrieve<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn retrieve(

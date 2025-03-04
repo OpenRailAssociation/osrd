@@ -11,7 +11,7 @@ editoast_common::schemas! {
 }
 
 /// State of the signal where the train is received for its stop.
-/// For (important) details, see https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields.
+/// For (important) details, see <https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields>.
 #[derive(Default, Debug, Hash, Copy, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ReceptionSignal {

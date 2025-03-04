@@ -1,6 +1,5 @@
 use std::ops::DerefMut;
 
-use async_trait::async_trait;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel_async::RunQueryDsl;
@@ -13,7 +12,6 @@ use crate::infra_cache::InfraCache;
 
 pub struct NeutralSectionLayer;
 
-#[async_trait]
 impl GeneratedData for NeutralSectionLayer {
     fn table_name() -> &'static str {
         "infra_layer_neutral_section"

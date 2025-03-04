@@ -19,6 +19,7 @@ members = [
 ]
 
 [workspace.lints.rust]
+async_fn_in_trait = "allow" # all of our public traits are only used inside the project
 dependency_on_unit_never_type_fallback = "allow" # this is caused by tracing, we can't do anything about it
 
 [workspace.package]
@@ -104,7 +105,6 @@ uuid = { version = "1.15.1", features = ["serde", "v4"] }
 [dependencies]
 anyhow = "1.0"
 approx = "0.5.1"
-async-trait = "0.1.86"
 axum = { version = "0.8.1", default-features = false, features = [
   "multipart",
   "tracing",

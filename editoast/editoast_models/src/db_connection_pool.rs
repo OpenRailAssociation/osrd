@@ -107,7 +107,7 @@ impl DerefMut for WriteHandle {
 ///
 /// # Testing pool
 ///
-/// In test mode, the [Pool::<AsyncPgConnection>::get] function will always return the same connection that has
+/// In test mode, the [Pool::get](Pool::<AsyncPgConnection>::get) function will always return the same connection that has
 /// been setup to drop all modification once the test ends.
 /// Since this connection will not commit any changes to the database, we ensure the isolation of each test.
 ///

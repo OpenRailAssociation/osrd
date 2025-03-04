@@ -65,10 +65,9 @@ impl<M: Model> Patch<'_, M> {
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
 pub trait Update<K, Row>: Sized
 where
-    for<'async_trait> K: Send + 'async_trait,
+    K: Send,
     Row: Send,
 {
     /// Updates the row #`id` with the changeset values and returns the updated model
@@ -77,7 +76,7 @@ where
     /// Just like [Update::update] but returns `Err(fail())` if the row was not found
     async fn update_or_fail<E: EditoastError, F: FnOnce() -> E + Send>(
         self,
-        conn: &'async_trait mut DbConnection,
+        conn: &mut DbConnection,
         id: K,
         fail: F,
     ) -> Result<Row> {
@@ -93,7 +92,6 @@ where
 ///
 /// This trait is automatically implemented for all models that implement
 /// [Update].
-#[async_trait::async_trait]
 pub trait Save<K: Send>: Sized {
     /// Persists the model instance to the database
     ///
@@ -108,10 +106,9 @@ pub trait Save<K: Send>: Sized {
     async fn save(&mut self, conn: &mut DbConnection) -> Result<()>;
 }
 
-#[async_trait::async_trait]
 impl<K, M> Save<K> for M
 where
-    for<'async_trait> K: Send + Clone + 'async_trait,
+    K: Send + Clone,
     M: Model + PreferredId<K> + Clone + Send,
     <M as Model>::Changeset: Update<K, M> + Send,
 {
@@ -130,7 +127,6 @@ where
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
 pub trait UpdateBatchUnchecked<M, K>: Sized
 where
     M: Send,
@@ -144,7 +140,7 @@ where
     /// if you want to fail if some rows were not found.
     /// Unless you know what you're doing, you should use these functions instead.
     async fn update_batch_unchecked<
-        I: IntoIterator<Item = K> + Send + 'async_trait,
+        I: IntoIterator<Item = K> + Send,
         C: Default + std::iter::Extend<M> + Send + Debug,
     >(
         self,
@@ -160,7 +156,7 @@ where
     /// if you want to fail if some rows were not found.
     /// Unless you know what you're doing, you should use these functions instead.
     async fn update_batch_with_key_unchecked<
-        I: IntoIterator<Item = K> + Send + 'async_trait,
+        I: IntoIterator<Item = K> + Send,
         C: Default + std::iter::Extend<(K, M)> + Send,
     >(
         self,
@@ -177,11 +173,10 @@ where
 ///
 /// 99% of the time you should use this trait instead of [UpdateBatchUnchecked].
 /// This won't be possible however if the model's key is not `Eq` or `Hash`.
-#[async_trait::async_trait]
 pub trait UpdateBatch<M, K>: UpdateBatchUnchecked<M, K>
 where
     M: Send,
-    for<'async_trait> K: Eq + std::hash::Hash + Clone + Send + 'async_trait,
+    K: Eq + std::hash::Hash + Clone + Send,
 {
     /// Applies the changeset to a batch of rows in the database given an iterator of keys
     ///
@@ -206,7 +201,7 @@ where
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
         C: Send
             + Default
             + std::iter::Extend<M>
@@ -243,7 +238,7 @@ where
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
         C: Send
             + Default
             + std::iter::Extend<(K, M)>
@@ -283,14 +278,14 @@ where
         fail: F,
     ) -> Result<C>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
         C: Send
             + Default
             + std::iter::Extend<M>
             + std::iter::FromIterator<M>
             + std::iter::IntoIterator<Item = M>,
         E: EditoastError,
-        F: FnOnce(std::collections::HashSet<K>) -> E + Send + 'async_trait,
+        F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = self.update_batch::<_, C>(conn, ids).await?;
         if missing.is_empty() {
@@ -316,14 +311,14 @@ where
         fail: F,
     ) -> Result<C>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
         C: Send
             + Default
             + std::iter::Extend<(K, M)>
             + std::iter::FromIterator<(K, M)>
             + std::iter::IntoIterator<Item = (K, M)>,
         E: EditoastError,
-        F: FnOnce(std::collections::HashSet<K>) -> E + Send + 'async_trait,
+        F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = self.update_batch_with_key::<_, C>(conn, ids).await?;
         if missing.is_empty() {
@@ -335,11 +330,10 @@ where
 }
 
 // Auto-impl of UpdateBatch for all models that implement UpdateBatchUnchecked
-#[async_trait::async_trait]
 impl<Cs, M, K> UpdateBatch<M, K> for Cs
 where
     Cs: UpdateBatchUnchecked<M, K>,
     M: Send,
-    for<'async_trait> K: Eq + std::hash::Hash + Clone + Send + 'async_trait,
+    K: Eq + std::hash::Hash + Clone + Send,
 {
 }

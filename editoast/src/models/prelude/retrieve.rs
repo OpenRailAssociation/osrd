@@ -9,23 +9,19 @@ use crate::error::Result;
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
 pub trait Retrieve<K>: Sized
 where
-    for<'async_trait> K: Send + 'async_trait,
+    K: Send,
+    Self: Send,
 {
     /// Retrieves the row #`id` and deserializes it as a model instance
     async fn retrieve(conn: &mut DbConnection, id: K) -> Result<Option<Self>>;
 
     /// Just like [Retrieve::retrieve] but returns `Err(fail())` if the row was not found
-    async fn retrieve_or_fail<E, F>(
-        conn: &'async_trait mut DbConnection,
-        id: K,
-        fail: F,
-    ) -> Result<Self>
+    async fn retrieve_or_fail<E, F>(conn: &mut DbConnection, id: K, fail: F) -> Result<Self>
     where
         E: EditoastError,
-        F: FnOnce() -> E + Send + 'async_trait,
+        F: FnOnce() -> E + Send,
     {
         match Self::retrieve(conn, id).await {
             Ok(Some(obj)) => Ok(obj),
@@ -39,10 +35,10 @@ where
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
 pub trait Exists<K>: Sized
 where
-    for<'async_trait> K: Send + 'async_trait,
+    K: Send,
+    Self: Send,
 {
     /// Returns whether the row #`id` exists in the database
     async fn exists(conn: &mut DbConnection, id: K) -> Result<bool>;
@@ -55,10 +51,10 @@ where
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-#[async_trait::async_trait]
 pub trait RetrieveBatchUnchecked<K>: Sized + Debug
 where
-    for<'async_trait> K: Send + Debug + 'async_trait,
+    K: Send + Debug,
+    Self: Send,
 {
     /// Retrieves a batch of rows from the database given an iterator of keys
     ///
@@ -68,7 +64,7 @@ where
     /// if you want to fail if some rows were not found.
     /// Unless you know what you're doing, you should use these functions instead.
     async fn retrieve_batch_unchecked<
-        I: IntoIterator<Item = K> + Send + 'async_trait,
+        I: IntoIterator<Item = K> + Send,
         C: Default + std::iter::Extend<Self> + Send + Debug,
     >(
         conn: &mut DbConnection,
@@ -83,7 +79,7 @@ where
     /// if you want to fail if some rows were not found.
     /// Unless you know what you're doing, you should use these functions instead.
     async fn retrieve_batch_with_key_unchecked<
-        I: IntoIterator<Item = K> + Send + 'async_trait,
+        I: IntoIterator<Item = K> + Send,
         C: Default + std::iter::Extend<(K, Self)> + Send + Debug,
     >(
         conn: &mut DbConnection,
@@ -99,10 +95,10 @@ where
 ///
 /// 99% of the time you should use this trait instead of [RetrieveBatchUnchecked].
 /// This won't be possible however if the model's key is not `Eq` or `Hash`.
-#[async_trait::async_trait]
 pub trait RetrieveBatch<K>: RetrieveBatchUnchecked<K>
 where
-    for<'async_trait> K: Eq + std::hash::Hash + Clone + Send + Debug + 'async_trait,
+    K: Eq + std::hash::Hash + Clone + Send + Debug,
+    Self: Send,
 {
     /// Retrieves a batch of rows from the database given an iterator of keys
     ///
@@ -121,7 +117,7 @@ where
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
         C: Send
             + Default
             + std::iter::Extend<Self>
@@ -157,7 +153,7 @@ where
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
         C: Send
             + Default
             + std::iter::Extend<(K, Self)>
@@ -198,14 +194,14 @@ where
         fail: F,
     ) -> Result<C>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
         C: Send
             + Default
             + std::iter::Extend<Self>
             + std::iter::FromIterator<Self>
             + std::iter::IntoIterator<Item = Self>,
         E: EditoastError,
-        F: FnOnce(std::collections::HashSet<K>) -> E + Send + 'async_trait,
+        F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = Self::retrieve_batch::<_, C>(conn, ids).await?;
         if missing.is_empty() {
@@ -229,14 +225,14 @@ where
         fail: F,
     ) -> Result<C>
     where
-        I: Send + IntoIterator<Item = K> + 'async_trait,
+        I: Send + IntoIterator<Item = K>,
         C: Send
             + Default
             + std::iter::Extend<(K, Self)>
             + std::iter::FromIterator<(K, Self)>
             + std::iter::IntoIterator<Item = (K, Self)>,
         E: EditoastError,
-        F: FnOnce(std::collections::HashSet<K>) -> E + Send + 'async_trait,
+        F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = Self::retrieve_batch_with_key::<_, C>(conn, ids).await?;
         if missing.is_empty() {
@@ -248,10 +244,9 @@ where
 }
 
 // Auto-impl of RetrieveBatch for all models that implement RetrieveBatchUnchecked
-#[async_trait::async_trait]
 impl<M, K> RetrieveBatch<K> for M
 where
     M: RetrieveBatchUnchecked<K>,
-    for<'async_trait> K: Eq + std::hash::Hash + Clone + Send + Debug + 'async_trait,
+    K: Eq + std::hash::Hash + Clone + Send + Debug,
 {
 }

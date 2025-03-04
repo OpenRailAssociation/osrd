@@ -19,7 +19,7 @@ use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockLivery;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;

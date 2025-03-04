@@ -1300,7 +1300,6 @@ dependencies = [
  "anyhow",
  "approx",
  "async-std",
- "async-trait",
  "axum 0.8.1",
  "axum-extra",
  "axum-test",

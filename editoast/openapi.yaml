@@ -7232,7 +7232,7 @@ components:
       description: |-
         Braking parameters for ERTMS ETCS Level 2
         Commented with their names in ETCS specification document `SUBSET-026-3 v400.pdf` from the
-        file at https://www.era.europa.eu/system/files/2023-09/index004_-_SUBSET-026_v400.zip
+        file at <https://www.era.europa.eu/system/files/2023-09/index004_-_SUBSET-026_v400.zip>
       required:
       - gamma_emergency
       - gamma_service
@@ -9653,7 +9653,7 @@ components:
       type: string
       description: |-
         State of the signal where the train is received for its stop.
-        For (important) details, see https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields.
+        For (important) details, see <https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields>.
       enum:
       - OPEN
       - STOP

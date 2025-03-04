@@ -79,11 +79,10 @@ impl ToTokens for RetrieveBatchImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::RetrieveBatchUnchecked<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn retrieve_batch_unchecked<
-                    I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
+                    I: std::iter::IntoIterator<Item = #ty> + Send,
                     C: Default + std::iter::Extend<#model> + Send + std::fmt::Debug,
                 >(
                     conn: &mut editoast_models::DbConnection,
@@ -102,7 +101,7 @@ impl ToTokens for RetrieveBatchImpl {
 
                 #[tracing::instrument(name = #span_name_with_key, skip_all, err, fields(query_id))]
                 async fn retrieve_batch_with_key_unchecked<
-                    I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
+                    I: std::iter::IntoIterator<Item = #ty> + Send,
                     C: Default + std::iter::Extend<(#ty, #model)> + Send + std::fmt::Debug,
                 >(
                     conn: &mut editoast_models::DbConnection,

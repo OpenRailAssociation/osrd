@@ -14,7 +14,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::pin::Pin;
 
-use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Array;
@@ -399,7 +398,6 @@ async fn update_errors(
 
 pub struct ErrorLayer;
 
-#[async_trait]
 impl GeneratedData for ErrorLayer {
     fn table_name() -> &'static str {
         "infra_layer_error"

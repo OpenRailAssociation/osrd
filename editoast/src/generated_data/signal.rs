@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::ops::DerefMut;
 
-use async_trait::async_trait;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
@@ -84,7 +83,6 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a String>
     Ok(())
 }
 
-#[async_trait]
 impl GeneratedData for SignalLayer {
     fn table_name() -> &'static str {
         "infra_layer_signal"

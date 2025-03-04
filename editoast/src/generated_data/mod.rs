@@ -15,7 +15,6 @@ pub mod sprite_config;
 mod switch;
 mod track_section;
 
-use async_trait::async_trait;
 use buffer_stop::BufferStopLayer;
 use detector::DetectorLayer;
 use diesel::sql_query;
@@ -48,7 +47,6 @@ editoast_common::schemas! {
 }
 
 /// This trait define how a generated data table should be handled
-#[async_trait]
 pub trait GeneratedData {
     fn table_name() -> &'static str;
     async fn generate(conn: &mut DbConnection, infra: i64, infra_cache: &InfraCache) -> Result<()>;

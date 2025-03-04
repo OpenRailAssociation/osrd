@@ -1,6 +1,5 @@
 use std::ops::DerefMut;
 
-use async_trait::async_trait;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
@@ -21,7 +20,6 @@ use crate::infra_cache::InfraCache;
 
 pub struct BufferStopLayer;
 
-#[async_trait]
 impl GeneratedData for BufferStopLayer {
     fn table_name() -> &'static str {
         "infra_layer_buffer_stop"

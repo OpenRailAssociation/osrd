@@ -14,7 +14,6 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::marker::PhantomData;
 
-use async_trait::async_trait;
 use axum::http::StatusCode;
 use editoast_derive::EditoastError;
 use mq_client::MqClientError;
@@ -165,7 +164,6 @@ impl CoreClient {
 /// // Builds the payload, executes the request at POST /test01 and deserializes its response
 /// let response: Response = TestReq::default().fetch(&coreclient).await.unwrap();
 /// ```
-#[async_trait]
 pub trait AsCoreRequest<R>
 where
     Self: Serialize + Sized + Sync,

@@ -93,7 +93,6 @@ impl PaginationStats {
     }
 }
 
-#[async_trait::async_trait]
 pub trait PaginatedList: ListAndCount + 'static {
     /// Lists the models and compute [PaginationStats]
     ///

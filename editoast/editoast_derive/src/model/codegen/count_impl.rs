@@ -13,7 +13,6 @@ impl ToTokens for CountImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::prelude::Count for #model {
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(
                     nb_filters = settings.filters.len(),
@@ -22,7 +21,7 @@ impl ToTokens for CountImpl {
                     offset,
                 ))]
                 async fn count(
-                    conn: &'async_trait mut editoast_models::DbConnection,
+                    conn: &mut editoast_models::DbConnection,
                     settings: crate::models::prelude::SelectionSettings<Self>,
                 ) -> crate::error::Result<u64> {
                     use diesel::QueryDsl;

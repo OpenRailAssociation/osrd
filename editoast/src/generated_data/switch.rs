@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
@@ -16,7 +15,6 @@ use crate::infra_cache::InfraCache;
 
 pub struct SwitchLayer;
 
-#[async_trait]
 impl GeneratedData for SwitchLayer {
     fn table_name() -> &'static str {
         "infra_layer_switch"

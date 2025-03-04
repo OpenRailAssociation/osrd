@@ -89,7 +89,6 @@ impl From<Timetable> for TimetableChangeset {
 }
 impl TimetableChangeset {}
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::Exists<(i64)> for Timetable {
     #[tracing::instrument(
         name = "model:exists<Timetable>",
@@ -114,7 +113,6 @@ impl crate::models::Exists<(i64)> for Timetable {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::Retrieve<(i64)> for Timetable {
     #[tracing::instrument(
         name = "model:retrieve<Timetable>",
@@ -217,7 +215,6 @@ impl crate::models::Delete for Timetable {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::prelude::List for Timetable {
     #[tracing::instrument(
         name = "model:list<Timetable>",
@@ -232,7 +229,7 @@ impl crate::models::prelude::List for Timetable {
         )
     )]
     async fn list(
-        conn: &'async_trait mut editoast_models::DbConnection,
+        conn: &mut editoast_models::DbConnection,
         settings: crate::models::prelude::SelectionSettings<Self>,
     ) -> crate::error::Result<Vec<Self>> {
         use diesel::QueryDsl;
@@ -268,7 +265,6 @@ impl crate::models::prelude::List for Timetable {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::prelude::Count for Timetable {
     #[tracing::instrument(
         name = "model:count<Timetable>",
@@ -283,7 +279,7 @@ impl crate::models::prelude::Count for Timetable {
         )
     )]
     async fn count(
-        conn: &'async_trait mut editoast_models::DbConnection,
+        conn: &mut editoast_models::DbConnection,
         settings: crate::models::prelude::SelectionSettings<Self>,
     ) -> crate::error::Result<u64> {
         use diesel::QueryDsl;
@@ -311,7 +307,6 @@ impl crate::models::prelude::Count for Timetable {
     }
 }
 #[automatically_derived]
-#[async_trait::async_trait]
 impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Timetable>",
@@ -320,7 +315,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
         fields(query_id)
     )]
     async fn retrieve_batch_unchecked<
-        I: std::iter::IntoIterator<Item = (i64)> + Send + 'async_trait,
+        I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<Timetable> + Send + std::fmt::Debug,
     >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<C> {
         use crate::models::Model;
@@ -366,7 +361,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
         fields(query_id)
     )]
     async fn retrieve_batch_with_key_unchecked<
-        I: std::iter::IntoIterator<Item = (i64)> + Send + 'async_trait,
+        I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<((i64), Timetable)> + Send + std::fmt::Debug,
     >(conn: &mut editoast_models::DbConnection, ids: I) -> crate::error::Result<C> {
         use crate::models::Identifiable;

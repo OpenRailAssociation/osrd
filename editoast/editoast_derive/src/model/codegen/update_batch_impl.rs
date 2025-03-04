@@ -88,11 +88,10 @@ impl ToTokens for UpdateBatchImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            #[async_trait::async_trait]
             impl crate::models::UpdateBatchUnchecked<#model, #ty> for #changeset {
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_ids))]
                 async fn update_batch_unchecked<
-                    I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
+                    I: std::iter::IntoIterator<Item = #ty> + Send,
                     C: Default + std::iter::Extend<#model> + Send + std::fmt::Debug,
                 >(
                     self,
@@ -112,7 +111,7 @@ impl ToTokens for UpdateBatchImpl {
 
                 #[tracing::instrument(name = #span_name_with_key, skip_all, err, fields(query_ids))]
                 async fn update_batch_with_key_unchecked<
-                    I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
+                    I: std::iter::IntoIterator<Item = #ty> + Send,
                     C: Default + std::iter::Extend<(#ty, #model)> + Send,
                 >(
                     self,

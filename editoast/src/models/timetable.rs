@@ -104,7 +104,6 @@ pub struct TimetableWithTrains {
     pub train_ids: Vec<i64>,
 }
 
-#[async_trait::async_trait]
 impl Retrieve<i64> for TimetableWithTrains {
     async fn retrieve(conn: &mut DbConnection, timetable_id: i64) -> Result<Option<Self>> {
         let result = sql_query(
