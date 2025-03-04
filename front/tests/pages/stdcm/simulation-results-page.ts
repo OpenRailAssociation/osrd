@@ -140,6 +140,10 @@ class SimulationResultPage extends STDCMPage {
 
     await fs.promises.mkdir(downloadDir, { recursive: true });
 
+    // react-pdf will create an <a> element without an href attribute while
+    // it's generating the PDF file
+    await expect(this.downloadSimulationButton).toHaveAttribute('href');
+
     // Get the file content from the `blob:` URL
     const fileContent = await this.downloadSimulationButton.evaluate(async (el) => {
       if (!(el instanceof HTMLAnchorElement)) {
