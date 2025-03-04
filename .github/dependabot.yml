@@ -8,10 +8,6 @@ updates:
       opentelemetry:
         patterns:
           - "*opentelemetry*"
-      redis:
-        patterns:
-          - "redis"
-          - "deadpool-redis"
     commit-message:
       prefix: "editoast:"
     open-pull-requests-limit: 100

@@ -124,7 +124,10 @@ deadpool = { version = "0.12.2", features = [
   "rt_tokio_1",
   "unmanaged",
 ] }
-deadpool-redis = "0.19.0"
+deadpool-redis = { version = "0.20.0", features = [
+  "tokio-comp",
+  "tokio-native-tls-comp",
+] }
 derivative.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }
@@ -175,11 +178,6 @@ pathfinding = "4.14.0"
 postgis_diesel.workspace = true
 rand.workspace = true
 rangemap.workspace = true
-# Make sure to use the same version as deadpool-redis
-redis = { version = "0.28.2", default-features = false, features = [
-  "tokio-comp",
-  "tokio-native-tls-comp",
-] }
 regex.workspace = true
 reqwest.workspace = true
 serde = { workspace = true, features = ["derive"] }
