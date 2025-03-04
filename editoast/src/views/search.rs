@@ -470,6 +470,11 @@ pub(super) struct SearchResultItemTrack {
         data_type = "text",
         sql = "infra_object_operational_point.data->'extensions'->'identifier'->>'name'",
         textual_search,
+    ),
+    column(
+        name = "is_station",
+        data_type = "boolean",
+        sql = "(infra_object_operational_point.data->>'is_station')::boolean",
     )
 )]
 #[allow(unused)]
@@ -496,6 +501,9 @@ pub(super) struct SearchResultItemOperationalPoint {
     #[search(sql = "OP.data->'parts'")]
     #[schema(inline)]
     track_sections: Vec<SearchResultItemOperationalPointTrackSections>,
+    #[search(sql = "OP.data->'is_station'")]
+    #[serde(default)]
+    is_station: bool,
 }
 #[derive(Serialize, ToSchema)]
 #[allow(unused)]

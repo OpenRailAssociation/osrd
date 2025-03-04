@@ -10506,6 +10506,8 @@ components:
         infra_id:
           type: integer
           format: int64
+        is_station:
+          type: boolean
         name:
           type: string
         obj_id:

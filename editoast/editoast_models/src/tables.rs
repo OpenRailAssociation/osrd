@@ -600,6 +600,7 @@ diesel::table! {
         ci -> Nullable<Int4>,
         ch -> Nullable<Text>,
         name -> Nullable<Text>,
+        is_station -> Nullable<Bool>,
     }
 }
 

@@ -3665,6 +3665,7 @@ export type SearchResultItemOperationalPoint = {
   ci: number;
   geographic: GeoJsonPoint;
   infra_id: number;
+  is_station?: boolean;
   name: string;
   obj_id: string;
   track_sections: {
