@@ -1,3 +1,4 @@
+use crate::models::train_schedule::TrainSchedule;
 use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
@@ -48,6 +49,28 @@ pub struct PacedTrain {
     pub duration: ChronoDuration,
     /// Time between two occurrences
     pub step: ChronoDuration,
+}
+
+impl PacedTrain {
+    pub fn into_first_occurrence(self) -> TrainSchedule {
+        TrainSchedule {
+            id: self.id,
+            train_name: self.train_name,
+            labels: self.labels.into(),
+            rolling_stock_name: self.rolling_stock_name,
+            timetable_id: self.timetable_id,
+            path: self.path,
+            start_time: self.start_time,
+            schedule: self.schedule,
+            margins: self.margins,
+            initial_speed: self.initial_speed,
+            comfort: self.comfort,
+            constraint_distribution: self.constraint_distribution,
+            speed_limit_tag: self.speed_limit_tag,
+            power_restrictions: self.power_restrictions,
+            options: self.options,
+        }
+    }
 }
 
 impl From<PacedTrainBase> for PacedTrainChangeset {

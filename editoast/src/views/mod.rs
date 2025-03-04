@@ -170,9 +170,9 @@ pub struct InfraIdQueryParam {
     infra_id: i64,
 }
 
-#[derive(Debug, Serialize, ToSchema)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
-enum SimulationSummaryResult {
+pub enum SimulationSummaryResult {
     /// Minimal information on a simulation's result
     Success {
         /// Length of a path in mm
@@ -661,6 +661,71 @@ mod tests {
 
     use super::test_app::TestAppBuilder;
     use crate::core::mocking::MockingClient;
+
+    #[cfg(test)]
+    pub fn mocked_core_pathfinding_sim_and_proj(train_id: i64) -> MockingClient {
+        let mut core = MockingClient::new();
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "blocks":[],
+                "routes": [],
+                "track_section_ranges": [],
+                "path_item_positions": [0,1,2,3],
+                "length": 1,
+                "status": "success"
+            }))
+            .finish();
+        core.stub("/v2/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "status": "success",
+                "base": {
+                    "positions": [],
+                    "times": [],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000]
+                },
+                "provisional": {
+                    "positions": [],
+                    "times": [],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000]
+                },
+                "final_output": {
+                    "positions": [0],
+                    "times": [0],
+                    "speeds": [],
+                    "energy_consumption": 0.0,
+                    "path_item_times": [0, 1000, 2000, 3000],
+                    "signal_critical_positions": [],
+                    "zone_updates": [],
+                    "spacing_requirements": [],
+                    "routing_requirements": []
+                },
+                "mrsp": {
+                    "boundaries": [],
+                    "values": []
+                },
+                "electrical_profiles": {
+                    "boundaries": [],
+                    "values": []
+                }
+            }))
+            .finish();
+        core.stub("/v2/signal_projection")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "signal_updates": {train_id.to_string(): [] },
+            }))
+            .finish();
+        core
+    }
 
     #[rstest]
     async fn health() {
