@@ -72,4 +72,30 @@ impl Infra {
             .await?;
         Ok(objects)
     }
+
+    pub async fn list_objects(
+        &self,
+        conn: &mut DbConnection,
+        object_type: ObjectType,
+    ) -> Result<Vec<String>> {
+        let query = format!(
+            "SELECT obj_id FROM {} WHERE infra_id = $1",
+            get_table(&object_type)
+        );
+
+        #[derive(QueryableByName)]
+        struct ObjectId {
+            #[diesel(sql_type = Text)]
+            obj_id: String,
+        }
+
+        let objects = sql_query(query)
+            .bind::<BigInt, _>(self.id)
+            .load::<ObjectId>(conn.write().await.deref_mut())
+            .await?
+            .into_iter()
+            .map(|e| e.obj_id)
+            .collect();
+        Ok(objects)
+    }
 }

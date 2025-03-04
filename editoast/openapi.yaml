@@ -920,6 +920,37 @@ paths:
           description: Duplicate object ids provided
         '404':
           description: Object ID or infra ID invalid
+  /infra/{infra_id}/objects/{object_type}/ids:
+    get:
+      tags:
+      - infra
+      parameters:
+      - name: infra_id
+        in: path
+        description: An existing infra ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: object_type
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/ObjectType'
+      responses:
+        '200':
+          description: The list of objects
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - ids
+                properties:
+                  ids:
+                    type: array
+                    items:
+                      type: string
   /infra/{infra_id}/path_properties:
     post:
       tags:

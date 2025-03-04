@@ -305,6 +305,15 @@ const injectedRtkApi = api
         }),
         providesTags: ['infra'],
       }),
+      getInfraByInfraIdObjectsAndObjectTypeIds: build.query<
+        GetInfraByInfraIdObjectsAndObjectTypeIdsApiResponse,
+        GetInfraByInfraIdObjectsAndObjectTypeIdsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/objects/${queryArg.objectType}/ids`,
+        }),
+        providesTags: ['infra'],
+      }),
       postInfraByInfraIdPathProperties: build.query<
         PostInfraByInfraIdPathPropertiesApiResponse,
         PostInfraByInfraIdPathPropertiesApiArg
@@ -1419,6 +1428,15 @@ export type PostInfraByInfraIdObjectsAndObjectTypeApiArg = {
   infraId: number;
   objectType: ObjectType;
   body: string[];
+};
+export type GetInfraByInfraIdObjectsAndObjectTypeIdsApiResponse =
+  /** status 200 The list of objects */ {
+    ids: string[];
+  };
+export type GetInfraByInfraIdObjectsAndObjectTypeIdsApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  objectType: ObjectType;
 };
 export type PostInfraByInfraIdPathPropertiesApiResponse =
   /** status 200 Path properties */ PathProperties;

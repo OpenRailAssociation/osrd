@@ -22,6 +22,7 @@ use crate::Retrieve;
 
 crate::routes! {
     "/objects/{object_type}" => get_objects,
+    "/objects/{object_type}/ids" => list_objects_ids,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -114,9 +115,49 @@ async fn get_objects(
     Ok(Json(result))
 }
 
+#[derive(serde::Serialize, utoipa::ToSchema)]
+struct ListObjectsResponse {
+    ids: Vec<String>,
+}
+
+#[utoipa::path(
+    get, path = "",
+    tag = "infra",
+    params(InfraIdParam, ObjectTypeParam),
+    responses(
+        (status = 200, description = "The list of objects", body = inline(ListObjectsResponse)),
+    )
+)]
+async fn list_objects_ids(
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+    Path(ObjectTypeParam { object_type }): Path<ObjectTypeParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(auth): AuthenticationExt,
+) -> Result<Json<ListObjectsResponse>> {
+    let authorized = auth
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+
+    let objects = infra
+        .list_objects(&mut db_pool.get().await?, object_type)
+        .await?;
+
+    Ok(Json(ListObjectsResponse { ids: objects }))
+}
+
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
+    use editoast_schemas::primitives::Identifier;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -245,5 +286,49 @@ mod tests {
             geographic: None,
         }];
         assert_eq!(switch_type_object, expected_switch_type_object);
+    }
+
+    #[rstest]
+    async fn test_list_ids() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
+
+        // Add two switch types
+        let switch_type_a = SwitchType {
+            id: Identifier("A".to_string()),
+            ..Default::default()
+        };
+        apply_create_operation(&switch_type_a.into(), empty_infra.id, &mut db_pool.get_ok())
+            .await
+            .expect("Failed to create switch type object");
+
+        let switch_type_b = SwitchType {
+            id: Identifier("B".to_string()),
+            ..Default::default()
+        };
+        apply_create_operation(&switch_type_b.into(), empty_infra.id, &mut db_pool.get_ok())
+            .await
+            .expect("Failed to create switch type object");
+
+        let request = app.get(format!("/infra/{}/objects/SwitchType/ids", empty_infra.id).as_str());
+
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<JsonValue>();
+
+        assert!(matches!(response, JsonValue::Object(_)));
+        let mut ids = response
+            .get("ids")
+            .expect("ids isn't present in response")
+            .as_array()
+            .expect("ids isn't an array")
+            .iter()
+            .map(|id| id.as_str().expect("id isn't a string"))
+            .collect::<Vec<_>>();
+        ids.sort();
+
+        assert_eq!(ids, vec!["A", "B"]);
     }
 }
