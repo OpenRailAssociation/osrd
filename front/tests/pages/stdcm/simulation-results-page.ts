@@ -177,7 +177,7 @@ class SimulationResultPage extends STDCMPage {
     // Determine expected simulation name
     const isResultTableVisible = await this.simulationResultTable.isVisible();
     const expectedSimulationName = isResultTableVisible
-      ? `Simulation n°${simulationNumber}`
+      ? `Simulation n°${simulationNumber - 1}`
       : translations.simulation.results.simulationName.withoutOutputs;
 
     // Validate simulation name

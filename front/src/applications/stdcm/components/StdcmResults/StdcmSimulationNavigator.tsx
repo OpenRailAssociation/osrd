@@ -36,6 +36,8 @@ const StdcmSimulationNavigator = ({
     ITEM_TO_SHOW_COUNT_ON_SCROLL
   );
 
+  let displayedIndex = 0;
+
   return (
     <div
       className={cx('simulation-navigator', {
@@ -60,8 +62,9 @@ const StdcmSimulationNavigator = ({
               {completedSimulations.map(({ index, creationDate, outputs }) => {
                 let formatedTotalLength = '';
                 let formatedTripDuration = '';
+                const hasValidResults = hasResults(outputs);
 
-                if (hasResults(outputs)) {
+                if (hasValidResults) {
                   const { results } = outputs;
                   const lastPointTime = results.simulation.final_output.times.at(-1)!;
                   const departureTimeInMs = new Date(results.departure_time).getTime();
@@ -72,7 +75,10 @@ const StdcmSimulationNavigator = ({
                     lastPointTime + departureTimeInMs
                   );
                 }
-
+                if (hasValidResults) {
+                  displayedIndex += 1;
+                }
+                const simulationId = hasValidResults ? displayedIndex : '';
                 return (
                   <div
                     role="button"
@@ -87,9 +93,9 @@ const StdcmSimulationNavigator = ({
                   >
                     <div className="simulation-name">
                       <span>
-                        {outputs && !hasConflicts(outputs)
+                        {hasValidResults && !hasConflicts(outputs)
                           ? t('simulation.results.simulationName.withOutputs', {
-                              id: index + 1,
+                              id: simulationId,
                               ns: 'stdcm',
                             })
                           : t('simulation.results.simulationName.withoutOutputs', {
