@@ -3020,7 +3020,6 @@ paths:
     get:
       tags:
       - timetable
-      - paced_train
       summary: Return a specific timetable with its associated paced trains
       parameters:
       - name: id

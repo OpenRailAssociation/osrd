@@ -957,7 +957,7 @@ const injectedRtkApi = api
             page_size: queryArg.pageSize,
           },
         }),
-        providesTags: ['timetable', 'paced_train'],
+        providesTags: ['timetable'],
       }),
       postTimetableByIdPacedTrains: build.mutation<
         PostTimetableByIdPacedTrainsApiResponse,

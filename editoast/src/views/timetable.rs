@@ -333,7 +333,7 @@ struct ListPacedTrainsResponse {
 /// Return a specific timetable with its associated paced trains
 #[utoipa::path(
     get, path = "",
-    tag = "timetable,paced_train",
+    tag = "timetable",
     params(TimetableIdParam, PaginationQueryParams),
     responses(
         (status = 200, description = "Timetable with paced train ids", body = inline(ListPacedTrainsResponse)),

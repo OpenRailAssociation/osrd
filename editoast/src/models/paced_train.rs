@@ -1,4 +1,3 @@
-use crate::models::train_schedule::TrainSchedule;
 use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
@@ -14,9 +13,9 @@ use editoast_schemas::train_schedule::ScheduleItem;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 
-use crate::models::prelude::*;
-
 use super::Tags;
+use crate::models::prelude::*;
+use crate::models::train_schedule::TrainSchedule;
 
 #[derive(Debug, Clone, Model)]
 #[model(table = editoast_models::tables::paced_train)]

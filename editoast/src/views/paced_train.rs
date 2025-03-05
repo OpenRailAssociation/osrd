@@ -1,13 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use crate::core::simulation::SimulationResponse;
-use crate::error::Result;
-use crate::models::prelude::*;
-use crate::models::train_schedule::TrainSchedule;
-use crate::models::Infra;
-use crate::views::projection::ProjectPathTrainResult;
-use crate::views::ListId;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
@@ -18,13 +11,13 @@ use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::paced_train::PacedTrainBase;
-
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::path::pathfinding::pathfinding_from_train;
 use super::path::pathfinding::PathfindingResult;
 use super::projection::ProjectPathForm;
 use super::train_schedule::train_simulation_batch;
@@ -32,8 +25,15 @@ use super::AppState;
 use super::AuthenticationExt;
 use super::InfraIdQueryParam;
 use super::SimulationSummaryResult;
+use crate::core::simulation::SimulationResponse;
+use crate::error::Result;
 use crate::models::paced_train::PacedTrain;
+use crate::models::prelude::*;
+use crate::models::train_schedule::TrainSchedule;
+use crate::models::Infra;
+use crate::views::projection::ProjectPathTrainResult;
 use crate::views::AuthorizationError;
+use crate::views::ListId;
 
 crate::routes! {
     "/paced_train" => {
@@ -281,20 +281,43 @@ async fn simulation_summary(
 )]
 async fn get_path(
     State(AppState {
-        db_pool: _db_pool,
-        valkey: _valkey_client,
-        core_client: _core_client,
+        db_pool,
+        valkey: valkey_client,
+        core_client,
         ..
     }): State<AppState>,
-    Extension(_auth): AuthenticationExt,
-    Path(PacedTrainIdParam {
-        id: _paced_train_id,
-    }): Path<PacedTrainIdParam>,
-    Query(InfraIdQueryParam {
-        infra_id: _infra_id,
-    }): Query<InfraIdQueryParam>,
+    Extension(auth): AuthenticationExt,
+    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+    Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
-    todo!();
+    let authorized = auth
+        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+    let conn = &mut db_pool.get().await?;
+    let mut valkey_conn = valkey_client.get_connection().await?;
+
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || PacedTrainError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+    let paced_train = PacedTrain::retrieve_or_fail(conn, paced_train_id, || {
+        PacedTrainError::NotFound { paced_train_id }
+    })
+    .await?;
+    Ok(Json(
+        pathfinding_from_train(
+            conn,
+            &mut valkey_conn,
+            core_client,
+            &infra,
+            paced_train.into_first_occurrence(),
+        )
+        .await?,
+    ))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -399,14 +422,18 @@ async fn project_path(
 mod tests {
     use std::collections::HashMap;
 
+    use axum::http::StatusCode;
     use chrono::Duration;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::paced_train::Paced;
     use editoast_schemas::paced_train::PacedTrainBase;
     use editoast_schemas::train_schedule::TrainScheduleBase;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
 
+    use crate::core::mocking::MockingClient;
+    use crate::core::pathfinding::PathfindingResultSuccess;
     use crate::core::simulation::CompleteReportTrain;
     use crate::core::simulation::ElectricalProfiles;
     use crate::core::simulation::ReportTrain;
@@ -421,13 +448,12 @@ mod tests {
     use crate::models::paced_train::PacedTrainChangeset;
     use crate::models::prelude::*;
     use crate::views::paced_train::PacedTrainResult;
+    use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
     use crate::views::InternalError;
     use crate::views::SimulationSummaryResult;
-    use axum::http::StatusCode;
-    use pretty_assertions::assert_eq;
 
     #[rstest]
     async fn paced_train_post() {
@@ -643,5 +669,93 @@ mod tests {
             .json_into();
 
         assert_eq!(&response.error_type, "editoast:paced_train:BatchNotFound")
+    }
+
+    #[rstest]
+    async fn get_paced_train_path_infra_not_found() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+
+        let request = app.get(&format!(
+            "/paced_train/{}/path?infra_id={}",
+            paced_train.id, 0
+        ));
+
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::NOT_FOUND)
+            .json_into();
+
+        assert_eq!(&response.error_type, "editoast:paced_train:InfraNotFound")
+    }
+
+    #[rstest]
+    async fn get_paced_train_path_not_found() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+        let small_infra = create_small_infra(&mut pool.get_ok()).await;
+
+        let request = app.get(&format!(
+            "/paced_train/{}/path?infra_id={}",
+            0, small_infra.id
+        ));
+
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::NOT_FOUND)
+            .json_into();
+
+        assert_eq!(&response.error_type, "editoast:paced_train:NotFound");
+    }
+
+    #[rstest]
+    async fn get_paced_train_path() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut core = MockingClient::new();
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(json!({
+                "blocks":[],
+                "routes": [],
+                "track_section_ranges": [],
+                "path_item_positions": [],
+                "length": 1,
+                "status": "success"
+            }))
+            .finish();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let pool = app.db_pool();
+
+        create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+
+        let request = app.get(&format!(
+            "/paced_train/{}/path?infra_id={}",
+            paced_train.id, small_infra.id
+        ));
+
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<PathfindingResult>();
+
+        assert_eq!(
+            response,
+            PathfindingResult::Success(PathfindingResultSuccess {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![],
+                path_item_positions: vec![],
+                length: 1
+            })
+        )
     }
 }
