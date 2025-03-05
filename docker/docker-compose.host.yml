@@ -26,6 +26,7 @@ services:
     network_mode: host
     environment:
       EDITOAST_PORT: 8090
+      ROOT_URL: "http://localhost:4000/api"
       OSRDYNE_API_URL: "http://localhost:4242"
       VALKEY_URL: "redis://localhost"
       DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
