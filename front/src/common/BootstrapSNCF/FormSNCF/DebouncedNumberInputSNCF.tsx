@@ -6,7 +6,7 @@ import { useDebouncedFunc } from 'utils/helpers';
 type DebouncedNumberInputSNCFProps = {
   input: number;
   label: string;
-  setInput: (inputValue: number) => void;
+  onChange: (inputValue: number) => void;
   debouncedDelay?: number;
   id?: string;
   max?: number;
@@ -18,8 +18,8 @@ type DebouncedNumberInputSNCFProps = {
 const DebouncedNumberInputSNCF = ({
   input,
   label,
-  setInput,
-  debouncedDelay = 800,
+  onChange,
+  debouncedDelay = 1000,
   id = '',
   max,
   min = 0,
@@ -39,10 +39,10 @@ const DebouncedNumberInputSNCF = ({
       min <= newValue &&
       (max === undefined || newValue <= max)
     ) {
-      setInput(newValue);
+      onChange(newValue);
     } else if (value === null && input !== 0) {
       const previousValue = input;
-      setInput(previousValue);
+      onChange(previousValue);
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
@@ -31,14 +31,6 @@ const IntervalsEditorCommonForm = ({
   onInputChange,
 }: IntervalsEditorFormProps) => {
   const { t } = useTranslation('common/common');
-
-  const [begin, setBegin] = useState(Math.round(interval.begin));
-  const [end, setEnd] = useState(Math.round(interval.end));
-
-  useEffect(() => {
-    setBegin(Math.round(interval.begin));
-    setEnd(Math.round(interval.end));
-  }, [interval]);
 
   const resizeSegmentByInput = (newPosition: number, context: 'begin' | 'end') => {
     const gap = newPosition - interval[context];
@@ -80,25 +72,22 @@ const IntervalsEditorCommonForm = ({
     }
   };
 
-  useEffect(() => resizeSegmentByInput(begin, 'begin'), [begin]);
-  useEffect(() => resizeSegmentByInput(end, 'end'), [end]);
-
   return (
     <div className="intervals-editor-form-column">
       <DebouncedNumberInputSNCF
         id="item-begin-input"
-        input={begin}
+        input={Math.round(interval.begin)}
         label={t('begin')}
-        setInput={setBegin}
+        onChange={(value) => resizeSegmentByInput(value, 'begin')}
         max={interval.end}
         sm
         showFlex
       />
       <DebouncedNumberInputSNCF
         id="item-end-input"
-        input={end}
+        input={Math.round(interval.end)}
         label={t('end')}
-        setInput={setEnd}
+        onChange={(value) => resizeSegmentByInput(value, 'end')}
         min={interval.begin}
         max={Math.round(totalLength)}
         sm
