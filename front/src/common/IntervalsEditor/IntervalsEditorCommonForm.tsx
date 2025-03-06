@@ -64,12 +64,13 @@ const IntervalsEditorCommonForm = ({
       }
 
       // update the selected interval if needed
-      // corner case: if we create a new empty first segment
-      if (
-        fixedResults.length !== Object.keys(newIndexMapping).length &&
-        selectedIntervalIndex === 0
-      ) {
-        setSelectedIntervalIndex(1);
+      // corner case: if we create a new empty first segment or last segment
+      if (fixedResults.length !== Object.keys(newIndexMapping).length) {
+        if (selectedIntervalIndex === 0 && context === 'begin') {
+          setSelectedIntervalIndex(1);
+        } else {
+          setSelectedIntervalIndex(fixedResults.length - 2);
+        }
       } else {
         const newIndex = newIndexMapping[selectedIntervalIndex];
         if (newIndex !== null && newIndex !== selectedIntervalIndex) {
