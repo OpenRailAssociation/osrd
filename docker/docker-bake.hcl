@@ -34,10 +34,8 @@ target "base" {
 # Core #
 ########
 
-target "base-core-build" {}
-
 target "core-build" {
-  inherits = ["base", "base-core-build"]
+  inherits = ["base"]
   context = "core"
   dockerfile = "Dockerfile"
   target = "build_env"
@@ -47,10 +45,8 @@ target "core-build" {
   }
 }
 
-target "base-core" {}
-
 target "core" {
-  inherits = ["base", "base-core"]
+  inherits = ["base"]
   context = "core"
   dockerfile = "Dockerfile"
   target = "running_env"
@@ -64,9 +60,8 @@ target "core" {
 # Editoast #
 ############
 
-target "base-editoast-test" {}
 target "editoast-test" {
-  inherits = ["base", "base-editoast-test"]
+  inherits = ["base"]
   context = "editoast"
   dockerfile = "Dockerfile"
   target = "test_builder"
@@ -76,9 +71,8 @@ target "editoast-test" {
   }
 }
 
-target "base-editoast" {}
 target "editoast" {
-  inherits = ["base", "base-editoast"]
+  inherits = ["base"]
   context = "editoast"
   dockerfile = "Dockerfile"
   target = "running_env"
@@ -91,25 +85,22 @@ target "editoast" {
 # Gateway #
 ###########
 
-target "base-gateway-standalone" {}
 target "gateway-standalone" {
-  inherits = ["base", "base-gateway-standalone"]
+  inherits = ["base"]
   context = "gateway"
   dockerfile = "Dockerfile"
   target = "running_env"
 }
 
-target "base-gateway-test" {}
 target "gateway-test" {
-  inherits = ["base", "base-gateway-test"]
+  inherits = ["base"]
   context = "gateway"
   dockerfile = "Dockerfile"
   target = "testing_env"
 }
 
-target "base-gateway-front-build" {}
 target "gateway-front-build" {
-  inherits = ["base", "base-gateway-front-build"]
+  inherits = ["base"]
   context = "gateway"
   dockerfile = "Dockerfile"
   target = "front_build"
@@ -118,9 +109,8 @@ target "gateway-front-build" {
   }
 }
 
-target "base-gateway-front" {}
 target "gateway-front" {
-  inherits = ["base", "base-gateway-front"]
+  inherits = ["base"]
   dockerfile = "Dockerfile"
   target = "front_running_env"
   context = "gateway"
@@ -133,9 +123,8 @@ target "gateway-front" {
 # Front #
 #########
 
-target "base-front-tests" {}
 target "front-tests" {
-  inherits = ["base", "base-front-tests"]
+  inherits = ["base"]
   context = "front"
   dockerfile = "docker/Dockerfile"
   target = "tests"
@@ -149,17 +138,15 @@ target "front-tests" {
 # OSRDyne #
 ###########
 
-target "base-osrdyne" {}
 target "osrdyne" {
-  inherits = ["base", "base-osrdyne"]
+  inherits = ["base"]
   context = "osrdyne"
   dockerfile = "Dockerfile"
   target = "running_env"
 }
 
-target "base-osrdyne-test" {}
 target "osrdyne-test" {
-  inherits = ["base", "base-osrdyne-test"]
+  inherits = ["base"]
   context = "osrdyne"
   dockerfile = "Dockerfile"
   target = "testing_env"

@@ -1,0 +1,160 @@
+version: 2.1
+
+executors:
+  docker:
+    docker:
+      - image: cimg/base:2025.03
+
+commands:
+  build_docker_image:
+    description: "Build Docker image"
+    parameters:
+      targets:
+        type: string
+        description: "Targets to build"
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: 
+          name: Build target using buildx bake (<< parameters.targets >>)
+          command: |
+            docker buildx bake \
+              --progress=plain \
+              --file=docker/docker-bake.hcl \
+              --file=bake-metadata.json \
+              << parameters.targets >>
+
+  execute_in_image:
+    description: "Run a recently built image with a custom command inside, wait for it to end then return the status code"
+    parameters:
+      image:
+        type: string
+        description: "Name of the image to load"
+      command:
+        type: string
+        description: "Command to execute inside the container"
+      extra_flags:
+        type: string
+        description: "Flags to add to the docker run command"
+        default: ""
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run command inside Docker container
+          command: |
+            STABLE_TAG=$(jq -r '."<< parameters.image >>"' tags.json)
+            docker run --name runnedct << parameters.extra_flags >> $STABLE_TAG << parameters.command >>
+            exit $(docker wait runnedct)
+
+workflows:
+  build-test-publish:
+    jobs:
+      - prepare_bakefile
+      - build_core:
+          requires:
+          - prepare_bakefile
+      - build_editoast:
+          requires: 
+          - prepare_bakefile
+      - build_gateway:
+          requires:
+          - prepare_bakefile
+      - build_front:
+          requires: 
+          - prepare_bakefile
+      - build_osrdyne:
+          requires: 
+          - prepare_bakefile
+      - test_core:
+          requires: 
+            - build_core
+
+jobs:
+  prepare_bakefile:
+    machine: true
+    resource_class: open_rail_association/vm_linux_flomonster
+    steps:
+      - checkout
+      - run:
+          name: Generate bake metadata
+          command: |
+            export PIPELINE_EVENT_NAME="<< pipeline.event.name >>"
+            export PIPELINE_EVENT_ACTION="<< pipeline.event.action >>"
+
+            if [ "$CIRCLE_PR_NUMBER" ]; then
+              export IS_FORK=true
+              curl -s "https://api.github.com/repos/OpenRailAssociation/osrd/pulls/$CIRCLE_PR_NUMBER" \
+                -H "Accept: application/vnd.github.v3+json" > pull-request.json
+            elif [ "$PIPELINE_EVENT_NAME" == "pull_request" ]; then
+              export IS_FORK=false
+              curl -s "https://api.github.com/repos/OpenRailAssociation/osrd/pulls?head=openrailassociation:$CIRCLE_BRANCH" \
+                -H "Accept: application/vnd.github.v3+json" > pull-requests.json
+            else
+              export IS_FORK=false
+              echo "null" > pull-requests.json
+            fi
+
+            export PULL_REQUESTS_JSON=$(cat pull-requests.json)
+            .circleci/scripts/bake-metadata.py
+
+            echo -e "\nbake-metadata.json:"
+            cat ./bake-metadata.json
+
+            echo -e "\ntags.json:"
+            cat ./tags.json
+
+            cp $BASH_ENV bash.env
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bake-metadata.json
+            - tags.json
+            - bash.env
+
+  build_core:
+    machine: true
+    resource_class: open_rail_association/vm_linux_flomonster
+    steps:
+      - build_docker_image:
+          targets: "core-build core"
+
+  build_editoast:
+    machine: true
+    resource_class: open_rail_association/vm_linux_flomonster
+    steps:
+      - build_docker_image:
+          targets: "editoast editoast-test"
+
+  build_gateway:
+    machine: true
+    resource_class: open_rail_association/vm_linux_flomonster
+    steps:
+      - build_docker_image:
+          targets: "gateway-test gateway-standalone gateway-front"
+
+  build_front:
+    machine: true
+    resource_class: open_rail_association/vm_linux_flomonster
+    steps:
+      - build_docker_image:
+          targets: "front-tests"
+
+  build_osrdyne:
+    machine: true
+    resource_class: open_rail_association/vm_linux_flomonster
+    steps:
+      - build_docker_image:
+          targets: "osrdyne osrdyne-test"
+
+  test_core:
+    machine: true
+    resource_class: open_rail_association/vm_linux_flomonster
+    steps:
+      - execute_in_image:
+          image: "core-build"
+          extra_flags: "-v $PWD/core/build:/output"
+          command: /bin/bash -c 'gradle -Pspotbugs_report_xml --continue check; status=$?; cp -r build/* /output/; exit $status'
