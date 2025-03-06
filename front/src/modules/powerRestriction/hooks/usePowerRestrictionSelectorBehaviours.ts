@@ -100,11 +100,11 @@ const usePowerRestrictionSelectorBehaviours = ({
     }
   };
 
-  const mergePowerRestrictionRange = (
-    fromPosition: number,
-    prevToPosition: number,
-    newToPosition: number
-  ) => {
+  const mergePowerRestrictionRange = (data: IntervalItem[], selectedIntervalIndex: number) => {
+    const fromPosition = data[selectedIntervalIndex].begin;
+    const prevToPosition = data[selectedIntervalIndex].end;
+    const newToPosition = data[selectedIntervalIndex + 1].end;
+
     const from = getPathStep(pathSteps, fromPosition);
     const prevTo = getPathStep(pathSteps, prevToPosition);
     let newTo = getPathStep(pathSteps, newToPosition);
@@ -142,8 +142,19 @@ const usePowerRestrictionSelectorBehaviours = ({
     }
 
     // clean cut positions
-    setCutPositions((prev) =>
-      prev.filter((position) => position <= fromPosition || newToPosition <= position)
+    setCustomRanges((prev) =>
+      prev.reduce((acc, range, index) => {
+        if (index === selectedIntervalIndex) {
+          acc.push({ ...range, end: newToPosition });
+          return acc;
+        }
+        if (index === selectedIntervalIndex + 1) {
+          return acc;
+        }
+        acc.push(range);
+
+        return acc;
+      }, [] as IntervalItem[])
     );
   };
 

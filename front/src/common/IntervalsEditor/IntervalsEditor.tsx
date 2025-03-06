@@ -42,7 +42,7 @@ export type IntervalsEditorProps = {
   /** Function to update the data in the parent component */
   setData: (newData: IntervalItem[], selectedIntervalIndex?: number) => void;
   onCut?: (position: number) => void;
-  onMerge?: (from: number, prevEnd: number, newEnd: number) => void;
+  onMerge?: (ranges: IntervalItem[], selectedIndex: number) => void;
   onDelete?: (from: number, to: number) => void;
   /** Indicates whether the value should be displayed in the range or not */
   showValues?: boolean;
@@ -275,7 +275,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
                 setClickPrevent(true);
                 if (index !== data.length - 1) {
                   if (onMerge) {
-                    onMerge(data[index].begin, data[index].end, data[index + 1].end);
+                    onMerge(data, index);
                   } else {
                     const newData = mergeIn(data, index, 'right');
                     setData(newData);
