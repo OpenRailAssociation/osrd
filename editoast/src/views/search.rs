@@ -351,9 +351,12 @@ async fn search(
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
     let roles: HashSet<BuiltinRole> = match object.as_str() {
-        "track" | "operationalpoint" | "signal" => HashSet::from([BuiltinRole::OperationalStudies]),
-        "trainschedule" => HashSet::from([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm]),
-        "project" | "study" | "scenario" => HashSet::from([BuiltinRole::OperationalStudies]),
+        "track" | "signal" | "project" | "study" | "scenario" => {
+            HashSet::from([BuiltinRole::OperationalStudies])
+        }
+        "trainschedule" | "operationalpoint" => {
+            HashSet::from([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm])
+        }
         _ => {
             return Err(SearchApiError::ObjectType {
                 object_type: object.to_owned(),
