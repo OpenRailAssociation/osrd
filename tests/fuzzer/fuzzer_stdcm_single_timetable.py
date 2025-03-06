@@ -93,14 +93,28 @@ def run(
                     )
 
 
+def _get_train_ids(editoast_url: str, scenario: Scenario) -> List[int]:
+    """
+    Fetch all the train IDs in the scenario
+    """
+    page = 1
+    res = []
+    while page is not None:
+        r = requests.get(f"{editoast_url}/timetable/{scenario.timetable}/train_schedules/?page={page}")
+        r.raise_for_status()
+        parsed = r.json()
+        for schedule in parsed["results"]:
+            res.append(schedule["id"])
+        page = parsed.get("next")
+    return res
+
+
 def _build_timetable_range(editoast_url, scenario) -> TimetableTimeRange:
     """
     Build the (approximate) range in which the timetable contains trains
     """
     print("building timetable time range")
-    r = requests.get(f"{editoast_url}/timetable/{scenario.timetable}")
-    r.raise_for_status()
-    train_ids = r.json()["train_ids"]
+    train_ids = _get_train_ids(editoast_url, scenario)
     train_ids = random.sample(train_ids, min(100, len(train_ids)))
     train_times = list()
     for train_id in train_ids:
