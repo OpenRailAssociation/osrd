@@ -27,7 +27,11 @@ const usePowerRestrictionSelector = (
   const powerRestrictionRanges = useSelector(getPowerRestrictions);
   const pathSteps = compact(useSelector(getPathSteps));
 
-  const [cutPositions, setCutPositions] = useState<number[]>([]); // in meters
+  // custom empty interval items, which were created by the user thanks to the cut tool
+  // (with begin and end in meters)
+  // if the users sets it a value, it will be converted into a power restriction range and
+  // removed from the customRanges
+  const [customRanges, setCustomRanges] = useState<IntervalItem[]>([]);
   const [ranges, setRanges] = useState<IntervalItem[]>([]);
 
   const electrificationChangePoints = useMemo(() => {
@@ -59,12 +63,12 @@ const usePowerRestrictionSelector = (
     cutPowerRestrictionRange,
     editPowerRestrictionRanges,
   } = usePowerRestrictionSelectorBehaviours({
-    cutPositions,
+    customRanges,
     pathProperties,
     pathSteps,
     powerRestrictionRanges,
     ranges,
-    setCutPositions,
+    setCustomRanges,
   });
 
   const { warnings, warningsNb } = useMemo(
@@ -88,12 +92,13 @@ const usePowerRestrictionSelector = (
   useEffect(() => {
     const newRanges = formatPowerRestrictions(
       powerRestrictionRanges,
-      [...electrificationChangePoints.map(({ position }) => position), ...cutPositions],
-      compact(pathSteps),
+      pathSteps,
+      customRanges,
+      electrificationChangePoints.map(({ position }) => position),
       mmToM(pathProperties.length)
     );
     setRanges(newRanges);
-  }, [electrificationChangePoints, cutPositions, powerRestrictionRanges]);
+  }, [electrificationChangePoints, powerRestrictionRanges, customRanges]);
 
   return {
     ranges,

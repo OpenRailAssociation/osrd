@@ -1,3 +1,5 @@
+import { isEqual, sortBy } from 'lodash';
+
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import type { PathStep } from 'reducers/osrdconf/types';
@@ -8,96 +10,149 @@ import { NO_POWER_RESTRICTION } from '../consts';
 const getPowerRestrictionFromRange = (
   pathSteps: PathStep[],
   powerRestrictionRanges: PowerRestriction[],
-  rangeData: IntervalItem
-): PowerRestriction | null => {
+  rangeData: IntervalItem | undefined
+): PowerRestriction | undefined => {
+  if (!rangeData) return undefined;
+
   const fromPathStep = getPathStep(pathSteps, rangeData.begin);
   const toPathStep = getPathStep(pathSteps, rangeData.end);
 
-  if (!fromPathStep || !toPathStep) return null;
+  if (!fromPathStep || !toPathStep) return undefined;
 
   const powerRestrictionRange = powerRestrictionRanges.find(
     (restriction) => restriction.from === fromPathStep.id && restriction.to === toPathStep.id
   );
-  return powerRestrictionRange || null;
-};
-
-/**
- * Given the new position of the modified extremity, return the powerRestrictions to update
- */
-const getPowerRestrictionsToUpdate = (
-  pathSteps: PathStep[],
-  powerRestrictionRanges: PowerRestriction[],
-  ranges: IntervalItem[],
-  position: number,
-  selectedRangeIndex: number
-) => {
-  const selectedRange = ranges[selectedRangeIndex];
-  const selectedRestriction = getPowerRestrictionFromRange(
-    pathSteps,
-    powerRestrictionRanges,
-    selectedRange
-  );
-  if (!selectedRestriction) return null;
-
-  const otherRangeIndex = ranges.findIndex(
-    (range) => range.begin <= position && position <= range.end
-  );
-
-  const otherRange = otherRangeIndex !== selectedRangeIndex ? ranges[otherRangeIndex] : undefined;
-
-  if (!otherRange || otherRange.value === NO_POWER_RESTRICTION)
-    return { selectedRange, selectedRestriction };
-
-  const otherRestriction = getPowerRestrictionFromRange(
-    pathSteps,
-    powerRestrictionRanges,
-    otherRange
-  );
-  return { selectedRange, selectedRestriction, otherRange, otherRestriction };
+  return powerRestrictionRange;
 };
 
 const getRestrictionsToResize = (
-  ranges: IntervalItem[],
-  selectedRangeIndex: number,
-  context: 'begin' | 'end',
-  newPosition: number,
+  firstRange: IntervalItem | undefined,
+  secondRange: IntervalItem | undefined,
   pathSteps: PathStep[],
   powerRestrictionRanges: PowerRestriction[]
 ) => {
-  const result = getPowerRestrictionsToUpdate(
+  const firstRestriction = getPowerRestrictionFromRange(
     pathSteps,
     powerRestrictionRanges,
-    ranges,
-    newPosition,
-    selectedRangeIndex
+    firstRange
   );
-  if (!result) return null;
 
-  const { selectedRange, selectedRestriction, otherRange, otherRestriction } = result;
+  const secondRestriction = getPowerRestrictionFromRange(
+    pathSteps,
+    powerRestrictionRanges,
+    secondRange
+  );
 
-  let firstRestriction: PowerRestriction | undefined;
-  let secondRestriction: PowerRestriction | undefined;
+  return { firstRestriction, secondRestriction };
+};
+
+export const cleanCustomRanges = (
+  customRanges: IntervalItem[],
+  firstRange: IntervalItem | undefined,
+  secondRange: IntervalItem | undefined,
+  newPosition: number,
+  pathLength: number
+) => {
+  // handle the case where we need to add a new range at the beginning or end of the path
+  if (!firstRange || !secondRange) {
+    if (customRanges.length === 0) {
+      return [
+        { begin: 0, end: newPosition, value: NO_POWER_RESTRICTION },
+        { begin: newPosition, end: pathLength, value: NO_POWER_RESTRICTION },
+      ];
+    }
+    if (firstRange?.end === pathLength) {
+      return [
+        ...customRanges,
+        { begin: newPosition, end: pathLength, value: NO_POWER_RESTRICTION },
+      ];
+    }
+    return [{ begin: 0, end: newPosition, value: NO_POWER_RESTRICTION }, ...customRanges];
+  }
+
+  // handle the case where at least one custom range is being resized
+  let newCustomRanges = customRanges.reduce((acc, range) => {
+    if (isEqual(range, firstRange)) {
+      acc.push({
+        ...range,
+        end: newPosition,
+      });
+    } else if (isEqual(range, secondRange)) {
+      acc.push({
+        ...range,
+        begin: newPosition,
+      });
+    }
+
+    // keep the other ranges only if they are not overlapping with the resized ranges
+    else if (secondRange.end <= range.begin && range.end <= firstRange.begin) {
+      acc.push(range);
+    }
+
+    return acc;
+  }, [] as IntervalItem[]);
+
+  if (firstRange.value !== NO_POWER_RESTRICTION || secondRange.value !== NO_POWER_RESTRICTION) {
+    return newCustomRanges;
+  }
+
+  // handle the case where a empty range (not customed yet) is being resized
+  if (customRanges.every((range) => !isEqual(range, firstRange))) {
+    newCustomRanges = [
+      ...newCustomRanges,
+      {
+        begin: firstRange.begin,
+        end: newPosition,
+        value: NO_POWER_RESTRICTION,
+      },
+    ];
+  }
+  if (customRanges.every((range) => !isEqual(range, secondRange))) {
+    newCustomRanges = [
+      ...newCustomRanges,
+      {
+        begin: newPosition,
+        end: secondRange.end,
+        value: NO_POWER_RESTRICTION,
+      },
+    ];
+  }
+
+  return sortBy(newCustomRanges, 'begin');
+};
+
+export const getRangesToResize = (
+  ranges: IntervalItem[],
+  selectedRangeIndex: number,
+  newPosition: number,
+  context: 'begin' | 'end'
+) => {
+  const selectedRange = ranges[selectedRangeIndex];
+  const selectedRangeHasBeenShortened =
+    selectedRange.begin <= newPosition && newPosition <= selectedRange.end;
+
+  let firstRange: IntervalItem | undefined;
+  let secondRange: IntervalItem | undefined;
+
   if (context === 'begin') {
-    // default hypothesis: the begin was decremented
-    firstRestriction = otherRestriction || undefined;
-    secondRestriction = selectedRestriction;
-
-    if (otherRange && otherRestriction && otherRange.begin > selectedRange.begin) {
-      firstRestriction = selectedRestriction;
-      secondRestriction = otherRestriction;
+    secondRange = ranges[selectedRangeIndex];
+    if (selectedRangeHasBeenShortened) {
+      firstRange = selectedRangeIndex !== 0 ? ranges[selectedRangeIndex - 1] : undefined;
+    } else {
+      firstRange = ranges.find((range) => range.begin <= newPosition && newPosition <= range.end);
     }
   } else {
-    // default hypothesis: the end was incremented
-    firstRestriction = selectedRestriction;
-    secondRestriction = otherRestriction || undefined;
+    firstRange = ranges[selectedRangeIndex];
 
-    if (otherRange && otherRestriction && otherRange.begin < selectedRange.begin) {
-      firstRestriction = otherRestriction;
-      secondRestriction = selectedRestriction;
+    if (selectedRangeHasBeenShortened) {
+      secondRange =
+        selectedRangeIndex !== ranges.length - 1 ? ranges[selectedRangeIndex + 1] : undefined;
+    } else {
+      secondRange = ranges.find((range) => range.begin <= newPosition && newPosition <= range.end);
     }
   }
 
-  return { firstRestriction, secondRestriction };
+  return { firstRange, secondRange };
 };
 
 export default getRestrictionsToResize;

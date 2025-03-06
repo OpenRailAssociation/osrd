@@ -1,3 +1,4 @@
+import { sortBy } from 'lodash';
 import nextId from 'react-id-generator';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
@@ -10,33 +11,44 @@ import { mmToM, mToMm } from 'utils/physics';
 
 import { NO_POWER_RESTRICTION } from '../consts';
 
-export const insertCutPosition = (cutPositions: number[], newCutPosition: number) => {
-  if (!cutPositions.length) {
-    return [newCutPosition];
+/**
+ * Cut the correct range for a given position and add the new ranges to the
+ * customRanges array if needed
+ */
+export const cutRange = (
+  allRanges: IntervalItem[],
+  customRanges: IntervalItem[],
+  pathLength: number,
+  newCutPosition: number
+) => {
+  if (newCutPosition >= pathLength) {
+    throw Error('Invalid cut position: can not properly insert the new range');
   }
 
-  const newCutPositions: number[] = [];
+  if (allRanges.length === 1) {
+    return [
+      { begin: 0, end: newCutPosition, value: allRanges[0].value },
+      { begin: newCutPosition, end: pathLength, value: allRanges[0].value },
+    ];
+  }
+
   // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < cutPositions.length; i++) {
-    // if the position is already in the array, we return the original array
-    if (newCutPosition === cutPositions[i]) {
-      return cutPositions;
-    }
-
-    // if the position is smaller than the current one, we insert it before the current one
-    // and return
-    if (newCutPosition < cutPositions[i]) {
-      return [...cutPositions.slice(0, i), newCutPosition, ...cutPositions.slice(i)];
-    }
-
-    // if the position is greater than the last position in the array,
-    // we add it at the end
-    if (i === cutPositions.length - 1) {
-      return [...cutPositions, newCutPosition];
+  for (let i = 0; i < allRanges.length; i++) {
+    // if the cut position is smaller than the current range begin, we insert new ranges before the current one
+    if (allRanges[i].begin < newCutPosition && newCutPosition < allRanges[i].end) {
+      return sortBy(
+        [
+          ...customRanges.filter(
+            (range) => range.begin !== allRanges[i].begin || range.end !== allRanges[i].end
+          ),
+          { begin: allRanges[i].begin, end: newCutPosition, value: NO_POWER_RESTRICTION },
+          { begin: newCutPosition, end: allRanges[i].end, value: NO_POWER_RESTRICTION },
+        ],
+        'begin'
+      );
     }
   }
-
-  return newCutPositions;
+  throw Error('Invalid cut position: can not properly insert the new range');
 };
 
 const createPathStep = (
@@ -82,18 +94,23 @@ export const createCutAtPathStep = (
   cutAtPositionInM: number,
   pathProperties: ManageTrainSchedulePathProperties,
   rangesData: IntervalItem[],
-  cutPositions: number[],
+  customRanges: IntervalItem[],
   tracksLengthCumulativeSums: number[],
   tracksById: Record<string, TrackSection>,
-  setCutPositions: (newCutPosition: number[]) => void
+  setCustomRanges: (newRanges: IntervalItem[]) => void
 ): PathStep | null => {
   const intervalCut = rangesData.find(
     (interval) => interval.begin <= cutAtPositionInM && interval.end >= cutAtPositionInM
   );
 
   if (!intervalCut || intervalCut.value === NO_POWER_RESTRICTION) {
-    const newCutPositions = insertCutPosition(cutPositions, cutAtPositionInM);
-    setCutPositions(newCutPositions);
+    const newCutPositions = cutRange(
+      rangesData,
+      customRanges,
+      mmToM(pathProperties.length),
+      cutAtPositionInM
+    );
+    setCustomRanges(newCutPositions);
     return null;
   }
 

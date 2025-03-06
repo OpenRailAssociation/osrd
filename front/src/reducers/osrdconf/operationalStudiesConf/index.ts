@@ -144,6 +144,7 @@ export const {
   deletePowerRestrictionRanges,
   resizeSegmentEndInput,
   resizeSegmentBeginInput,
+  cleanPowerRestrictionsCoveredByANewRange,
 } = operationalStudiesConfSliceActions;
 
 export type OperationalStudiesConfSlice = typeof operationalStudiesConfSlice;
