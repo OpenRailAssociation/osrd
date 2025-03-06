@@ -77,6 +77,7 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
+use crate::core;
 use crate::core::mq_client;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
@@ -84,8 +85,6 @@ use crate::core::simulation::SimulationResponse;
 use crate::core::version::CoreVersionRequest;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
-use crate::core::CoreError;
-use crate::core::{self};
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::error::{self};
@@ -242,7 +241,7 @@ impl From<core::simulation::SimulationResponse> for SimulationSummaryResult {
                 }
             }
             SimulationResponse::SimulationFailed { core_error } => Self::SimulationFailed {
-                error_type: core_error.get_type().into(),
+                error_type: core_error.error_type,
             },
         }
     }
@@ -415,9 +414,9 @@ pub enum AppHealthError {
     #[error(transparent)]
     Valkey(anyhow::Error),
     #[error(transparent)]
-    Core(#[from] CoreError),
-    #[error(transparent)]
     Openfga(anyhow::Error),
+    #[error(transparent)]
+    Core(#[from] core::Error),
 }
 
 #[utoipa::path(

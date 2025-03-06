@@ -494,6 +494,7 @@ mod tests {
     use crate::core::simulation::ReportTrain;
     use crate::core::simulation::SimulationResponse;
     use crate::core::simulation::SpeedLimitProperties;
+    use crate::error::InternalError;
     use crate::models;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_simple_paced_train;
@@ -509,7 +510,6 @@ mod tests {
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
-    use crate::views::InternalError;
     use crate::views::SimulationSummaryResult;
 
     #[rstest]

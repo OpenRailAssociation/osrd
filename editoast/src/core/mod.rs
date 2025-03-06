@@ -15,7 +15,6 @@ use std::fmt::Display;
 use std::marker::PhantomData;
 
 use axum::http::StatusCode;
-use editoast_derive::EditoastError;
 use mq_client::MqClientError;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
@@ -27,8 +26,6 @@ use tracing::trace;
 
 #[cfg(test)]
 use crate::core::mocking::MockingError;
-use crate::error::InternalError;
-use crate::error::Result;
 
 pub use mq_client::RabbitMQClient;
 
@@ -47,38 +44,19 @@ pub enum CoreClient {
 }
 
 impl CoreClient {
-    pub async fn new_mq(options: mq_client::Options) -> Result<Self> {
+    pub async fn new_mq(options: mq_client::Options) -> Result<Self, Error> {
         let client = RabbitMQClient::new(options)
             .await
-            .map_err(CoreError::MqClientError)?;
+            .map_err(Error::MqClientError)?;
 
         Ok(Self::MessageQueue(client))
     }
 
-    fn handle_error(&self, bytes: &[u8], url: String) -> InternalError {
-        // We try to deserialize the response as an StandardCoreError in order to retain the context of the core error
-        if let Ok(mut core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
-            let status: u16 = match core_error.cause {
-                CoreErrorCause::Internal => 500,
-                CoreErrorCause::User => 400,
-            };
-            core_error.context.insert("url".to_owned(), url.into());
-            let mut internal_error: InternalError = core_error.into();
-            internal_error.set_status(StatusCode::from_u16(status).unwrap());
-            return internal_error;
-        }
-
-        let error: InternalError = CoreError::UnparsableErrorOutput.into();
-        let mut error = error.with_context("url", url);
-        error.set_status(StatusCode::INTERNAL_SERVER_ERROR);
-        error
-    }
-
     #[tracing::instrument(name = "ping_core", skip_all)]
-    pub async fn ping(&self) -> Result<bool, CoreError> {
+    pub async fn ping(&self) -> Result<bool, Error> {
         match self {
             CoreClient::MessageQueue(mq_client) => {
-                mq_client.ping().await.map_err(|_| CoreError::BrokenPipe)
+                mq_client.ping().await.map_err(|_| Error::BrokenPipe)
             }
             #[cfg(test)]
             CoreClient::Mocked(_) => Ok(true),
@@ -97,7 +75,7 @@ impl CoreClient {
         path: &str,
         body: Option<&B>,
         infra_id: Option<i64>,
-    ) -> Result<R::Response> {
+    ) -> Result<R::Response, Error> {
         trace!(
             target: "editoast::coreclient",
             body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
@@ -112,14 +90,14 @@ impl CoreClient {
                 let response = client
                     .call_with_response(infra_id.to_string(), path, &body, true, None)
                     .await
-                    .map_err(CoreError::MqClientError)?;
+                    .map_err(Error::MqClientError)?;
 
                 if response.status == b"ok" {
                     return R::from_bytes(&response.payload);
                 }
 
                 if response.status == b"core_error" {
-                    return Err(self.handle_error(&response.payload, path.to_string()));
+                    return Err(Error::parse(&response.payload, path.to_string()));
                 }
 
                 todo!("TODO: handle protocol errors")
@@ -128,12 +106,8 @@ impl CoreClient {
             CoreClient::Mocked(client) => {
                 match client.fetch_mocked::<_, B, R>(method, path, body) {
                     Ok(Some(response)) => Ok(response),
-                    Ok(None) => Err(CoreError::NoResponseContent.into()),
-                    Err(MockingError { bytes, status, url }) => Err({
-                        let mut err = self.handle_error(&bytes, url);
-                        err.set_status(status);
-                        err
-                    }),
+                    Ok(None) => Err(Error::NoResponseContent),
+                    Err(MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
                 }
             }
         }
@@ -199,12 +173,12 @@ where
 
     /// Sends this request using the given [CoreClient] and returns the response content on success
     ///
-    /// Raises a [CoreError] if the request is not a success.
+    /// Raises a [enum@Error] if the request is not a success.
     ///
     /// TODO: provide a mechanism in this trait to allow the implementer to
     /// manage itself its expected errors. Maybe a bound error type defaulting
     /// to CoreError and a trait function handle_errors would suffice?
-    async fn fetch(&self, core: &CoreClient) -> Result<R::Response> {
+    async fn fetch(&self, core: &CoreClient) -> Result<R::Response, Error> {
         core.fetch::<Self, R>(
             self.method(),
             self.url(),
@@ -221,7 +195,7 @@ pub trait CoreResponse {
     type Response;
 
     /// Reads the content of `bytes` and produces the response object
-    fn from_bytes(bytes: &[u8]) -> Result<Self::Response>;
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response, Error>;
 }
 
 /// Indicates that the response that deserializes to `T` is expected to have a Json body
@@ -233,12 +207,9 @@ pub struct Bytes;
 impl<T: DeserializeOwned> CoreResponse for Json<T> {
     type Response = T;
 
-    fn from_bytes(bytes: &[u8]) -> Result<Self::Response> {
-        serde_json::from_slice(bytes).map_err(|err| {
-            CoreError::CoreResponseFormatError {
-                msg: err.to_string(),
-            }
-            .into()
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response, Error> {
+        serde_json::from_slice(bytes).map_err(|err| Error::CoreResponseFormatError {
+            msg: err.to_string(),
         })
     }
 }
@@ -246,7 +217,7 @@ impl<T: DeserializeOwned> CoreResponse for Json<T> {
 impl CoreResponse for Bytes {
     type Response = Vec<u8>;
 
-    fn from_bytes(bytes: &[u8]) -> Result<Self::Response> {
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response, Error> {
         Ok(Vec::from_iter(bytes.iter().cloned()))
     }
 }
@@ -254,48 +225,58 @@ impl CoreResponse for Bytes {
 impl CoreResponse for () {
     type Response = ();
 
-    fn from_bytes(_: &[u8]) -> Result<Self::Response> {
+    fn from_bytes(_: &[u8]) -> Result<Self::Response, Error> {
         Ok(())
     }
 }
 
 #[allow(clippy::enum_variant_names)]
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "coreclient")]
-pub enum CoreError {
+#[derive(Debug, Error, PartialEq)]
+pub enum Error {
     #[error("Cannot parse Core response: {msg}")]
-    #[editoast_error(status = 500)]
     CoreResponseFormatError { msg: String },
 
     #[error("Core returned an error in an unknown format")]
     UnparsableErrorOutput,
 
     #[error("Core connection broken. Should retry.")]
-    #[editoast_error(status = 500)]
     BrokenPipe,
 
     #[error(transparent)]
-    #[editoast_error(status = "500")]
-    MqClientError(MqClientError),
+    MqClientError(#[from] MqClientError),
+
+    #[error(transparent)]
+    StandardCoreError(#[from] StandardCoreError),
 
     #[cfg(test)]
     #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]
     NoResponseContent,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct StandardCoreError {
-    #[serde(skip)]
-    status: StatusCode,
-    #[serde(rename = "type")]
-    error_type: String,
-    context: HashMap<String, Value>,
-    message: String,
-    #[serde(default = "CoreErrorCause::default")]
-    cause: CoreErrorCause,
+impl Error {
+    fn parse(bytes: &[u8], url: String) -> Error {
+        // We try to deserialize the response as an StandardCoreError in order to retain the context of the core error
+        if let Ok(mut core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
+            core_error.context.insert("url".to_owned(), url.into());
+            return Error::StandardCoreError(core_error);
+        }
+        Error::UnparsableErrorOutput
+    }
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, PartialEq)]
+pub struct StandardCoreError {
+    #[serde(skip)]
+    pub status: StatusCode,
+    #[serde(rename = "type")]
+    pub error_type: String,
+    pub context: HashMap<String, Value>,
+    pub message: String,
+    #[serde(default = "CoreErrorCause::default")]
+    pub cause: CoreErrorCause,
+}
+
+#[derive(Debug, Deserialize, Default, PartialEq)]
 pub enum CoreErrorCause {
     #[default]
     Internal,
@@ -326,6 +307,7 @@ impl Display for StandardCoreError {
 
 #[cfg(test)]
 mod tests {
+
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use reqwest::Method;
@@ -335,7 +317,9 @@ mod tests {
     use crate::core::mocking::MockingClient;
     use crate::core::AsCoreRequest;
     use crate::core::Bytes;
-    use crate::error::InternalError;
+    use crate::core::StandardCoreError;
+
+    use super::Error;
 
     #[rstest::rstest]
     async fn test_expected_empty_response() {
@@ -411,10 +395,9 @@ mod tests {
             .response(StatusCode::NOT_FOUND)
             .body(error.to_string())
             .finish();
-        let mut error_with_status: InternalError = serde_json::from_value(error).unwrap();
-        error_with_status.set_status(StatusCode::NOT_FOUND);
+        let expected_error: StandardCoreError = serde_json::from_value(error).unwrap();
         let result = Req.fetch(&core.into()).await;
-        let expected_err: InternalError = error_with_status;
-        assert_eq!(result, Err(expected_err));
+        let result = result.err().unwrap();
+        assert_eq!(result, Error::StandardCoreError(expected_error));
     }
 }

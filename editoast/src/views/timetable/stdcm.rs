@@ -32,6 +32,7 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::core;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResultSuccess;
@@ -41,6 +42,7 @@ use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::SpacingRequirement;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::stdcm_log::StdcmLog;
@@ -295,7 +297,10 @@ async fn stdcm(
             .collect(),
     };
 
-    let stdcm_response = stdcm_request.fetch(core_client.as_ref()).await;
+    let stdcm_response: Result<core::stdcm::Response, InternalError> = stdcm_request
+        .fetch(core_client.as_ref())
+        .await
+        .map_err(Into::into);
 
     // 6. Log STDCM request and response if logging is enabled
     if config.enable_stdcm_logging {
@@ -307,10 +312,11 @@ async fn stdcm(
             None
         });
 
-        let stdcm_response = match stdcm_response.clone() {
-            Ok(response) => StdcmResponseOrError::Response(response),
-            Err(error) => {
-                StdcmResponseOrError::RequestError(serde_json::to_value(error).unwrap_or(
+        let stdcm_response = match stdcm_response {
+            Ok(ref response) => StdcmResponseOrError::Response(response.clone()),
+            Err(ref error) => {
+                let error: InternalError = error.clone();
+                StdcmResponseOrError::RequestError(serde_json::to_value(error.clone()).unwrap_or(
                     serde_json::Value::String("Failed to serialize the error".into()),
                 ))
             }

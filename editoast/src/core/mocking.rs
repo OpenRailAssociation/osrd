@@ -24,7 +24,6 @@ impl From<MockingClient> for CoreClient {
 #[derive(Debug)]
 pub struct MockingError {
     pub bytes: Vec<u8>,
-    pub status: StatusCode,
     pub url: String,
 }
 
@@ -96,13 +95,12 @@ impl MockingClient {
                 )
                 .expect("mocked response body should deserialize faultlessly"),
             )),
-            Some(StubResponse { code, .. }) => {
+            Some(StubResponse { .. }) => {
                 let err = response
                     .expect("mocked response body should not be empty when specified")
                     .to_vec();
                 Err(MockingError {
                     bytes: err,
-                    status: code,
                     url: req_path,
                 })
             }

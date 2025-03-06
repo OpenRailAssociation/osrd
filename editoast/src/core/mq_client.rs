@@ -1,4 +1,5 @@
 use deadpool::managed::{Manager, Metrics, Pool, RecycleError, RecycleResult};
+use derivative::Derivative;
 use futures_util::StreamExt;
 use itertools::Itertools;
 use lapin::{
@@ -160,12 +161,13 @@ pub struct Options {
     pub num_channels: usize,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Derivative)]
+#[derivative(PartialEq)]
 pub enum MqClientError {
     #[error("AMQP error: {0}")]
     Lapin(#[from] lapin::Error),
     #[error("Cannot serialize request: {0}")]
-    Serialization(serde_json::Error),
+    Serialization(#[derivative(PartialEq = "ignore")] serde_json::Error),
     #[error("Cannot parse response status")]
     StatusParsing,
     #[error("Response timeout")]
