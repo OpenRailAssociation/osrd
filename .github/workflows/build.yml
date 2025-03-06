@@ -538,7 +538,7 @@ jobs:
         run: |
           set -e
 
-          services='valkey openfga'
+          services='openfga'
           composes='-f docker-compose.yml'
           docker compose $composes pull --policy missing $services
           docker compose $composes up --no-build -d $services

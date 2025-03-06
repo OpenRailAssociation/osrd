@@ -173,7 +173,7 @@ impl TestAppBuilder {
                 },
             },
             valkey_config: ValkeyConfig {
-                no_cache: false,
+                no_cache: true,
                 valkey_url: Url::parse("redis://localhost:6379").unwrap(),
             },
             openfga_config: OpenfgaConfig {
