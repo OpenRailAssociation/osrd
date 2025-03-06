@@ -1,6 +1,6 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
-import { compact, isEqual, keyBy, sortBy } from 'lodash';
+import { compact, keyBy, sortBy } from 'lodash';
 
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
@@ -162,43 +162,32 @@ const powerRestrictionReducer = {
     state: Draft<OperationalStudiesConfState>,
     action: PayloadAction<{
       firstRestriction?: PowerRestriction;
-      secondRestriction: PowerRestriction;
+      secondRestriction?: PowerRestriction;
+      endPosition: number; // in mm
       newFromPathStep: PathStep;
     }>
   ) {
-    const { firstRestriction, secondRestriction, newFromPathStep } = action.payload;
+    const { firstRestriction, secondRestriction, endPosition, newFromPathStep } = action.payload;
 
     // pathSteps should not be undefined or have null values
-    if (state.pathSteps && !state.pathSteps.some((pathStep) => !pathStep)) {
-      let newPathSteps = [...state.pathSteps].map((step) => step!);
-      let newPowerRestrictionRanges = state.powerRestriction.filter(
-        (restriction) =>
-          !isEqual(restriction, firstRestriction) || !isEqual(restriction, secondRestriction)
-      );
+    if (state.pathSteps.every((pathStep) => !!pathStep)) {
+      let newPathSteps = [...state.pathSteps];
 
       // find the covered ranges
-      const pathStepEnd = newPathSteps.find((pathStep) => pathStep.id === secondRestriction.to);
-      const coveredRanges = pathStepEnd
-        ? newPowerRestrictionRanges.filter((restriction) =>
-            isRangeCovered(
-              newPathSteps,
-              restriction,
-              newFromPathStep.positionOnPath,
-              pathStepEnd.positionOnPath
-            )
-          )
-        : [];
+      const coveredRanges = state.powerRestriction.filter((restriction) =>
+        isRangeCovered(newPathSteps, restriction, newFromPathStep.positionOnPath!, endPosition)
+      );
 
       // add the new pathStep
       newPathSteps = addPathStep(newPathSteps, newFromPathStep);
 
       // update the power restriction ranges
-      newPowerRestrictionRanges = updateRestrictions(
-        newPowerRestrictionRanges,
+      const newPowerRestrictionRanges = updateRestrictions(
+        state.powerRestriction,
+        coveredRanges,
         firstRestriction,
         secondRestriction,
-        newFromPathStep.id,
-        coveredRanges
+        newFromPathStep.id
       );
 
       // clean pathSteps
@@ -211,45 +200,62 @@ const powerRestrictionReducer = {
   resizeSegmentEndInput(
     state: Draft<OperationalStudiesConfState>,
     action: PayloadAction<{
-      firstRestriction: PowerRestriction;
+      firstRestriction?: PowerRestriction;
       secondRestriction?: PowerRestriction;
+      beginPosition: number; // in mm
       newEndPathStep: PathStep;
     }>
   ) {
-    const { firstRestriction, secondRestriction, newEndPathStep } = action.payload;
+    const { firstRestriction, secondRestriction, beginPosition, newEndPathStep } = action.payload;
 
     // pathSteps should not be undefined or have null values
-    if (state.pathSteps && !state.pathSteps.some((pathStep) => !pathStep)) {
-      let newPathSteps = [...state.pathSteps].map((step) => step!);
-      let newPowerRestrictionRanges = state.powerRestriction.filter(
-        (restriction) =>
-          !isEqual(restriction, firstRestriction) || !isEqual(restriction, secondRestriction)
-      );
-      const pathStepBegin = newPathSteps.find((pathStep) => pathStep.id === firstRestriction.from);
+    if (state.pathSteps.every((pathStep) => !!pathStep)) {
+      let newPathSteps = [...state.pathSteps];
 
       // find the covered ranges
-      const coveredRanges = pathStepBegin
-        ? newPowerRestrictionRanges.filter((restriction) =>
-            isRangeCovered(
-              newPathSteps,
-              restriction,
-              pathStepBegin.positionOnPath,
-              newEndPathStep.positionOnPath
-            )
-          )
-        : [];
+      const coveredRanges = state.powerRestriction.filter((restriction) =>
+        isRangeCovered(newPathSteps, restriction, beginPosition, newEndPathStep.positionOnPath!)
+      );
 
       // add the new pathStep
       newPathSteps = addPathStep(newPathSteps, newEndPathStep);
 
       // update the power restriction ranges
-      newPowerRestrictionRanges = updateRestrictions(
-        newPowerRestrictionRanges,
+      const newPowerRestrictionRanges = updateRestrictions(
+        state.powerRestriction,
+        coveredRanges,
         firstRestriction,
         secondRestriction,
-        newEndPathStep.id,
-        coveredRanges
+        newEndPathStep.id
       );
+
+      // clean pathSteps
+      newPathSteps = cleanPathSteps(newPathSteps, newPowerRestrictionRanges);
+
+      state.pathSteps = newPathSteps;
+      state.powerRestriction = newPowerRestrictionRanges;
+    }
+  },
+  cleanPowerRestrictionsCoveredByANewRange(
+    state: Draft<OperationalStudiesConfState>,
+    action: PayloadAction<{
+      beginPosition: number;
+      endPosition: number;
+    }>
+  ) {
+    const { beginPosition, endPosition } = action.payload;
+
+    // pathSteps should not be undefined or have null values
+    if (state.pathSteps.every((pathStep) => !!pathStep)) {
+      let newPathSteps = [...state.pathSteps];
+
+      // find the covered ranges
+      const coveredRanges = state.powerRestriction.filter((restriction) =>
+        isRangeCovered(newPathSteps, restriction, beginPosition, endPosition)
+      );
+
+      // update the power restriction ranges
+      const newPowerRestrictionRanges = updateRestrictions(state.powerRestriction, coveredRanges);
 
       // clean pathSteps
       newPathSteps = cleanPathSteps(newPathSteps, newPowerRestrictionRanges);

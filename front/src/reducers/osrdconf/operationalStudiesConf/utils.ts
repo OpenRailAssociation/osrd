@@ -1,5 +1,3 @@
-import { compact } from 'lodash';
-
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import { addElementAtIndex } from 'utils/array';
 
@@ -30,48 +28,50 @@ export const canRemovePathStep = (
 /** Remove some restrictions and update the first and second restrictions with the new path step */
 export const updateRestrictions = (
   restrictions: PowerRestriction[],
-  firstRestriction: PowerRestriction | undefined,
-  secondRestriction: PowerRestriction | undefined,
-  newPathStepId: string,
-  restrictionsToRemove: PowerRestriction[] = []
-): PowerRestriction[] =>
-  compact(
-    restrictions.map((restriction) => {
-      for (const restrictionToRemove of restrictionsToRemove) {
-        if (
-          restriction.from === restrictionToRemove.from &&
-          restriction.to === restrictionToRemove.to
-        ) {
-          return undefined;
-        }
-      }
+  restrictionsToRemove: PowerRestriction[],
+  firstRestriction?: PowerRestriction,
+  secondRestriction?: PowerRestriction,
+  newPathStepId?: string
+) => {
+  const newPowerRestrictions: PowerRestriction[] = [];
 
+  restrictions.forEach((restriction) => {
+    // remove the restriction if it is in the list of restrictions to remove
+    for (const restrictionToRemove of restrictionsToRemove) {
+      if (
+        restriction.from === restrictionToRemove.from &&
+        restriction.to === restrictionToRemove.to
+      ) {
+        return;
+      }
+    }
+
+    let newRestriction = restriction;
+    // update the restriction if it is the first or second restriction
+    if (newPathStepId) {
       if (restriction.to === firstRestriction?.to) {
-        return { ...restriction, to: newPathStepId };
+        newRestriction = { ...restriction, to: newPathStepId };
+      } else if (restriction.from === secondRestriction?.from) {
+        newRestriction = { ...restriction, from: newPathStepId };
       }
-      if (restriction.from === secondRestriction?.from) {
-        return { ...restriction, from: newPathStepId };
-      }
-      return restriction;
-    })
-  );
+    }
+    newPowerRestrictions.push(newRestriction);
+  });
+
+  return newPowerRestrictions;
+};
 
 export const isRangeCovered = (
   pathSteps: PathStep[],
   powerRestrictionRange: PowerRestriction,
-  positionMin: number | undefined,
-  positionMax: number | undefined
+  positionMin: number,
+  positionMax: number
 ): boolean => {
   const pathStepFrom = pathSteps.find((pathStep) => pathStep.id === powerRestrictionRange.from);
   const pathStepTo = pathSteps.find((pathStep) => pathStep.id === powerRestrictionRange.to);
 
-  if (
-    pathStepFrom?.positionOnPath === undefined ||
-    pathStepTo?.positionOnPath === undefined ||
-    positionMin === undefined ||
-    positionMax === undefined
-  ) {
-    return false;
+  if (pathStepFrom?.positionOnPath === undefined || pathStepTo?.positionOnPath === undefined) {
+    throw new Error('Path step has no position on path');
   }
 
   return positionMin < pathStepFrom.positionOnPath && pathStepTo.positionOnPath < positionMax;

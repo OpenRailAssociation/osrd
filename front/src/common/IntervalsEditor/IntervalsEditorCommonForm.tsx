@@ -78,7 +78,7 @@ const IntervalsEditorCommonForm = ({
         id="item-begin-input"
         input={Math.round(interval.begin)}
         label={t('begin')}
-        onChange={(value) => resizeSegmentByInput(value, 'begin')}
+        onChange={(newPosition) => resizeSegmentByInput(newPosition, 'begin')}
         max={interval.end}
         sm
         showFlex
@@ -87,7 +87,7 @@ const IntervalsEditorCommonForm = ({
         id="item-end-input"
         input={Math.round(interval.end)}
         label={t('end')}
-        onChange={(value) => resizeSegmentByInput(value, 'end')}
+        onChange={(newPosition) => resizeSegmentByInput(newPosition, 'end')}
         min={interval.begin}
         max={Math.round(totalLength)}
         sm

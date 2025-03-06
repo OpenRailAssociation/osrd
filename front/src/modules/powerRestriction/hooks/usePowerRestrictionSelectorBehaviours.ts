@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
+import { sortBy } from 'lodash';
+
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type {
   ManageTrainSchedulePathProperties,
@@ -16,12 +18,17 @@ import {
   resizeSegmentBeginInput,
   resizeSegmentEndInput,
   mergePowerRestrictionRanges,
+  cleanPowerRestrictionsCoveredByANewRange,
 } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { mmToM, mToMm } from 'utils/physics';
 
 import { NO_POWER_RESTRICTION } from '../consts';
-import getRestrictionsToResize from '../helpers/getRestrictionsToResize';
+import getRestrictionsToResize, {
+  cleanCustomRanges,
+  getRangesToResize,
+} from '../helpers/getRestrictionsToResize';
 import {
   extractPathStepsFromRange,
   getOrCreatePathStepAtPosition,
@@ -30,20 +37,20 @@ import {
 
 type UsePowerRestrictionSelectorBehavioursArgs = {
   ranges: IntervalItem[];
-  cutPositions: number[];
+  customRanges: IntervalItem[];
   pathProperties: ManageTrainSchedulePathProperties;
   pathSteps: PathStep[];
   powerRestrictionRanges: PowerRestriction[];
-  setCutPositions: Dispatch<SetStateAction<number[]>>;
+  setCustomRanges: Dispatch<SetStateAction<IntervalItem[]>>;
 };
 
 const usePowerRestrictionSelectorBehaviours = ({
-  cutPositions,
+  customRanges,
   pathProperties,
   pathSteps,
   powerRestrictionRanges,
   ranges,
-  setCutPositions,
+  setCustomRanges,
 }: UsePowerRestrictionSelectorBehavioursArgs) => {
   const dispatch = useAppDispatch();
 
@@ -80,8 +87,12 @@ const usePowerRestrictionSelectorBehaviours = ({
           code: newRange.value.toString(),
         })
       );
+      setCustomRanges((prev) =>
+        prev.filter((range) => range.begin !== newRange.begin && range.end !== newRange.end)
+      );
     } else {
       dispatch(deletePowerRestrictionRanges({ from, to }));
+      setCustomRanges((prev) => sortBy([...prev, newRange], (range) => range.begin));
     }
   };
 
@@ -90,10 +101,10 @@ const usePowerRestrictionSelectorBehaviours = ({
       cutAtPositionInM,
       pathProperties,
       ranges,
-      cutPositions,
+      customRanges,
       tracksLengthCumulativeSums,
       trackSectionsById,
-      setCutPositions
+      setCustomRanges
     );
     if (cutAt) {
       dispatch(cutPowerRestrictionRanges({ cutAt }));
@@ -128,33 +139,26 @@ const usePowerRestrictionSelectorBehaviours = ({
         mergePowerRestrictionRanges({
           from,
           prevTo,
-          newTo:
-            newTo ??
-            getOrCreatePathStepAtPosition(
-              newToPosition,
-              pathSteps,
-              tracksLengthCumulativeSums,
-              pathProperties,
-              trackSectionsById
-            ),
+          newTo,
         })
       );
     }
 
-    // clean cut positions
+    // clean custom ranges
     setCustomRanges((prev) =>
-      prev.reduce((acc, range, index) => {
-        if (index === selectedIntervalIndex) {
+      prev.reduce<IntervalItem[]>((acc, range) => {
+        // extend the first range
+        if (range.begin === fromPosition) {
           acc.push({ ...range, end: newToPosition });
           return acc;
         }
-        if (index === selectedIntervalIndex + 1) {
+        // remove the second range (it has been merged into the first one)
+        if (range.begin === newToPosition) {
           return acc;
         }
         acc.push(range);
-
         return acc;
-      }, [] as IntervalItem[])
+      }, [])
     );
   };
 
@@ -164,6 +168,21 @@ const usePowerRestrictionSelectorBehaviours = ({
 
     if (fromPathStep && toPathStep) {
       dispatch(deletePowerRestrictionRanges({ from: fromPathStep, to: toPathStep }));
+      // clean customRanges if the deleted range was the only non-empty one
+      if (
+        ranges.length === 3 &&
+        ranges.filter((range) => range.value !== NO_POWER_RESTRICTION).length === 1
+      ) {
+        setCustomRanges([]);
+      }
+      return;
+    }
+
+    // handle empty range (custom range) deletion
+    if (ranges.length === 2 && ranges.every((range) => range.value === NO_POWER_RESTRICTION)) {
+      setCustomRanges([]);
+    } else {
+      setCustomRanges((prev) => prev.filter((range) => range.begin !== from && range.end !== to));
     }
   };
 
@@ -172,17 +191,40 @@ const usePowerRestrictionSelectorBehaviours = ({
     context: 'begin' | 'end',
     newPosition: number
   ) => {
-    const result = getRestrictionsToResize(
+    const { firstRange, secondRange } = getRangesToResize(
       ranges,
       selectedRangeIndex,
-      context,
       newPosition,
-      pathSteps,
-      powerRestrictionRanges
+      context
     );
-    if (!result) return;
-    const { firstRestriction, secondRestriction } = result;
 
+    // clean customRanges
+    if (firstRange?.value === NO_POWER_RESTRICTION || secondRange?.value === NO_POWER_RESTRICTION) {
+      const newCustomRanges = cleanCustomRanges(
+        customRanges,
+        firstRange,
+        secondRange,
+        newPosition,
+        mmToM(pathProperties.length)
+      );
+      setCustomRanges(newCustomRanges);
+
+      if (
+        (!firstRange || firstRange?.value === NO_POWER_RESTRICTION) &&
+        (!secondRange || secondRange?.value === NO_POWER_RESTRICTION)
+      ) {
+        // clean the power restriction ranges which may have been covered by the new range
+        dispatch(
+          cleanPowerRestrictionsCoveredByANewRange({
+            beginPosition: firstRange ? mToMm(firstRange.begin) : 0,
+            endPosition: secondRange ? mToMm(secondRange.end) : pathProperties.length,
+          })
+        );
+        return;
+      }
+    }
+
+    // handle the store update since at least one range is stored in the store
     const newPathStep = getOrCreatePathStepAtPosition(
       newPosition,
       pathSteps,
@@ -190,22 +232,29 @@ const usePowerRestrictionSelectorBehaviours = ({
       pathProperties,
       trackSectionsById
     );
-    if (!newPathStep) return;
+
+    const { firstRestriction, secondRestriction } = getRestrictionsToResize(
+      firstRange,
+      secondRange,
+      pathSteps,
+      powerRestrictionRanges
+    );
 
     if (context === 'begin') {
-      if (secondRestriction)
-        dispatch(
-          resizeSegmentBeginInput({
-            firstRestriction,
-            secondRestriction,
-            newFromPathStep: newPathStep,
-          })
-        );
-    } else if (firstRestriction)
+      dispatch(
+        resizeSegmentBeginInput({
+          firstRestriction,
+          secondRestriction,
+          endPosition: mToMm(secondRange!.end),
+          newFromPathStep: newPathStep,
+        })
+      );
+    } else
       dispatch(
         resizeSegmentEndInput({
           firstRestriction,
           secondRestriction,
+          beginPosition: mToMm(firstRange!.begin),
           newEndPathStep: newPathStep,
         })
       );
