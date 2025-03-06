@@ -15,7 +15,10 @@ const mockedEditoastApi = api.injectEndpoints({
         })),
       }),
     }),
-    getGrantsByResourceType: build.query<GetGrantsByResourceTypeResponse, void>({
+    getGrantsByResourceType: build.query<
+      GetGrantsByResourceTypeResponse,
+      GetGrantsByResourceTypeArg
+    >({
       // url: /authz/grants/${queryArg.resource_type} (to keep it simple, we don't provide a resource_type in the mock)
       queryFn: () => ({
         data: database.GRANTS,
@@ -89,9 +92,9 @@ const mockedEditoastApi = api.injectEndpoints({
 
 // ------------------ TYPES --------------------
 
-type ResourceType = 'infra' | 'timetable';
+export type ResourceType = 'infra' | 'timetable';
 
-type Grant = 'NONE' | 'READER' | 'WRITER' | 'OWNER';
+export type Grant = 'NONE' | 'READER' | 'WRITER' | 'OWNER';
 
 export type MockedDB = {
   SUBJECTS: {
@@ -109,6 +112,8 @@ export type MockedDB = {
 };
 
 type GetSubjectsResponse = { type: string; id: number; name: string }[];
+
+type GetGrantsByResourceTypeArg = ResourceType;
 
 type GetGrantsByResourceTypeResponse = {
   [grant: string]: string[];
