@@ -641,7 +641,7 @@ impl OpenfgaConfig {
             .ok_or_else(|| anyhow::anyhow!("Configured OpenFGA URL doesn't have a host part"))?;
         let port = self
             .url
-            .port()
+            .port_or_known_default()
             .ok_or_else(|| anyhow::anyhow!("Configured OpenFGA URL doesn't have a port part"))?;
         Ok(fga::client::ConnectionSettings::new(
             address.to_owned(),
