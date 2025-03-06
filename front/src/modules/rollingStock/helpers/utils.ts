@@ -118,6 +118,7 @@ export const getRollingStockEditorDefaultValues = (
       }
     : {
         ...newRollingStockValues,
+        categories: new Set(),
       };
 
 export const rollingStockEditorQueryArg = (
