@@ -217,7 +217,8 @@
       "Database": "Internal error (database)",
       "InfraNotLoaded": "Infrastructure '{{infra_id}}' is not loaded",
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
-      "NotFound": "Timetable '{{timetable_id}}' could not be found"
+      "NotFound": "Timetable '{{timetable_id}}' could not be found",
+      "ParseError": "Failed to parse train_id: '{{train_id}}'"
     },
     "train_schedule": {
       "BatchShouldHaveSameTimetable": "Batch should have the same timetable",

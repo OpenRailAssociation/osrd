@@ -110,17 +110,17 @@ export type LinkedTrains = {
 
 export type AllowanceValue =
   | {
-      minutes: number;
-      value_type: 'time_per_distance';
-    }
+    minutes: number;
+    value_type: 'time_per_distance';
+  }
   | {
-      seconds: number;
-      value_type: 'time';
-    }
+    seconds: number;
+    value_type: 'time';
+  }
   | {
-      percentage: number;
-      value_type: 'percentage';
-    };
+    percentage: number;
+    value_type: 'percentage';
+  };
 
 export type StdcmSimulationInputs = {
   departureDate?: string;

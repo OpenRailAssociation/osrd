@@ -24,9 +24,9 @@ class ConflictDetectionResponse(
  */
 class Conflict(
     /** List of train IDs for this given conflict. Can't be empty. */
-    @Json(name = "train_schedule_ids") val trainScheduleIds: Collection<Long>,
+    @Json(name = "train_ids") val trainIds: Collection<String>,
     /** List of work schedule IDs for this given conflict, if any. */
-    @Json(name = "work_schedule_ids") val workScheduleIds: Collection<Long>,
+    @Json(name = "work_schedule_ids") val workScheduleIds: Collection<String>,
     /** Start of the conflict time range. This is the *union* of all the conflicting time ranges. */
     @Json(name = "start_time") val startTime: ZonedDateTime,
     /** End of the conflict time range. See `start_time`. */

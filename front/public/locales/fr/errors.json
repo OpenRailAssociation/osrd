@@ -219,7 +219,8 @@
       "Database": "Erreur interne (base de données)",
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
-      "NotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+      "NotFound": "Grille horaire '{{timetable_id}}' non trouvée",
+      "ParseError": "Impossible de parser train_id: '{{train_id}}'"
     },
     "train_schedule": {
       "BatchShouldHaveSameTimetable": "Le lot doit avoir une grille horaire identique",

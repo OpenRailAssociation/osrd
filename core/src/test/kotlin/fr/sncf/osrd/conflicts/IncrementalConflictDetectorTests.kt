@@ -40,7 +40,7 @@ class IncrementalConflictDetectorTests {
         return IncrementalConflictDetector(
             listOf(
                 Requirements(
-                    RequirementId(0, RequirementType.TRAIN),
+                    RequirementId("0", RequirementType.TRAIN),
                     requirements.map {
                         ResultTrain.SpacingRequirement(it.zoneId.toString(), it.start, it.end, true)
                     },

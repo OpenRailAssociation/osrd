@@ -72,10 +72,10 @@ public class ConflictDetectionEndpoint implements Take {
 
         @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
         public static class Conflict {
-            @Json(name = "train_schedule_ids")
-            public final Collection<Long> trainScheduleIds;
+            @Json(name = "train_ids")
+            public final Collection<String> trainIds;
 
-            public final transient Collection<Long> workScheduleIds;
+            public final transient Collection<String> workScheduleIds;
 
             @Json(name = "start_time")
             public final double startTime;
@@ -97,12 +97,12 @@ public class ConflictDetectionEndpoint implements Take {
             public final transient Collection<ConflictRequirement> requirements;
 
             public Conflict(
-                    Collection<Long> trainScheduleIds,
+                    Collection<String> trainIds,
                     double startTime,
                     double endTime,
                     @NotNull ConflictType conflictType,
                     Collection<ConflictRequirement> requirements) {
-                this.trainScheduleIds = trainScheduleIds;
+                this.trainIds = trainIds;
                 this.workScheduleIds = List.of();
                 this.startTime = startTime;
                 this.endTime = endTime;
@@ -111,13 +111,13 @@ public class ConflictDetectionEndpoint implements Take {
             }
 
             public Conflict(
-                    Collection<Long> trainScheduleIds,
-                    Collection<Long> workScheduleIds,
+                    Collection<String> trainIds,
+                    Collection<String> workScheduleIds,
                     double startTime,
                     double endTime,
                     @NotNull ConflictType conflictType,
                     Collection<ConflictRequirement> requirements) {
-                this.trainScheduleIds = trainScheduleIds;
+                this.trainIds = trainIds;
                 this.workScheduleIds = workScheduleIds;
                 this.startTime = startTime;
                 this.endTime = endTime;

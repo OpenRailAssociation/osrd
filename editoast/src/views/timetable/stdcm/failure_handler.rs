@@ -78,8 +78,9 @@ impl SimulationFailureHandler {
         let conflict_detection_request = ConflictDetectionRequest {
             infra: infra_id,
             expected_version: infra_version,
-            trains_requirements,
+            train_schedules_requirements: trains_requirements,
             work_schedules,
+            ..Default::default()
         };
 
         // Send the conflict detection request and await the response.

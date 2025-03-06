@@ -1,5 +1,6 @@
 use chrono::DateTime;
 use chrono::Utc;
+use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -13,18 +14,16 @@ use super::stdcm::WorkSchedule;
 
 editoast_common::schemas! {
     ConflictDetectionResponse,
-    Conflict,
     ConflictRequirement,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Derivative, Serialize)]
 pub struct ConflictDetectionRequest {
     pub infra: i64,
     /// Infrastructure expected version
     pub expected_version: String,
-
-    /// List of requirements for each train
-    pub trains_requirements: HashMap<i64, TrainRequirements>,
+    /// List of requirements for each train schedule
+    pub trains_requirements: HashMap<String, TrainRequirements>,
     /// List of work schedules
     pub work_schedules: Option<WorkSchedulesRequest>,
 }
@@ -39,7 +38,7 @@ pub struct TrainRequirements {
 #[derive(Debug, Serialize)]
 pub struct WorkSchedulesRequest {
     pub start_time: DateTime<Utc>,
-    pub work_schedule_requirements: HashMap<i64, WorkSchedule>,
+    pub work_schedule_requirements: HashMap<String, WorkSchedule>,
 }
 impl WorkSchedulesRequest {
     pub fn new(
@@ -56,7 +55,7 @@ impl WorkSchedulesRequest {
             .into_iter()
             .filter_map(|ws| {
                 ws.as_core_work_schedule(earliest_departure_time, latest_simulation_end)
-                    .map(|core_ws| (ws.id, core_ws))
+                    .map(|core_ws| (ws.id.to_string(), core_ws))
             })
             .collect();
 
@@ -77,21 +76,16 @@ pub struct ConflictDetectionResponse {
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct PacedTrainOccurrenceId {
-    paced_train_id: i64,
-    index: i64,
+    pub paced_train_id: i64,
+    pub index: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Conflict {
-    /// List of train schedule ids involved in the conflict
-    pub train_schedule_ids: Vec<i64>,
-    /// List of paced train occurrences involved in the conflict.
-    /// Each occurrence is identified by a `paced_train_id` and its `index`
-    #[serde(default)]
-    #[schema(inline)]
-    pub paced_train_occurrence_ids: Vec<PacedTrainOccurrenceId>,
+    /// List of train schedule ids and paced train generated occurrences involved in the conflict
+    pub train_ids: Vec<String>,
     /// List of work schedule ids involved in the conflict
-    pub work_schedule_ids: Vec<i64>,
+    pub work_schedule_ids: Vec<String>,
     /// Datetime of the start of the conflict
     pub start_time: DateTime<Utc>,
     /// Datetime of the end of the conflict
@@ -101,6 +95,12 @@ pub struct Conflict {
     pub conflict_type: ConflictType,
     /// List of requirements causing the conflict
     pub requirements: Vec<ConflictRequirement>,
+}
+
+#[derive(Debug, Clone)]
+pub enum TrainId {
+    TrainSchedule(i64),
+    PacedTrainOccurrence(PacedTrainOccurrenceId),
 }
 
 /// Unmet requirement causing a conflict.

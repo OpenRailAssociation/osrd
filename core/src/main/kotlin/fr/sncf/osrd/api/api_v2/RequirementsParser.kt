@@ -20,7 +20,7 @@ val requirementsParserLogger: Logger = LoggerFactory.getLogger("RequirementsPars
 
 @WithSpan(value = "Parsing train requirements", kind = SpanKind.SERVER)
 fun parseTrainsRequirements(
-    trainsRequirements: Map<Long, TrainRequirementsRequest>,
+    trainsRequirements: Map<String, TrainRequirementsRequest>,
     startTime: ZonedDateTime
 ): List<Requirements> {
     val res = mutableListOf<Requirements>()
@@ -99,7 +99,7 @@ fun parseWorkSchedulesRequest(
  */
 fun convertWorkScheduleMap(
     rawInfra: RawSignalingInfra,
-    workSchedules: Map<Long, WorkSchedule>,
+    workSchedules: Map<String, WorkSchedule>,
     timeToAdd: TimeDelta = 0.seconds
 ): Collection<Requirements> {
     val res = mutableListOf<Requirements>()

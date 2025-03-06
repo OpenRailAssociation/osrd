@@ -35,7 +35,6 @@ import fr.sncf.osrd.utils.Helpers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -137,7 +136,7 @@ public class ConflictDetectionTest {
         // if both trains runs at the same time, there should be a conflict
         {
             var conflicts = ConflictsKt.detectConflicts(List.of(
-                    convertRequirements(0L, 0.0, simResultA.train), convertRequirements(1L, 0.0, simResultB.train)));
+                    convertRequirements("0", 0.0, simResultA.train), convertRequirements("1", 0.0, simResultB.train)));
             assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
             assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
             assertFalse(conflicts.stream().anyMatch((conflict) -> !conflict.workScheduleIds.isEmpty()));
@@ -146,9 +145,9 @@ public class ConflictDetectionTest {
         // no conflicts should occur if trains don't run at the same time
         {
             var conflicts = ConflictsKt.detectConflicts(List.of(
-                    convertRequirements(0L, 0.0, simResultA.train),
+                    convertRequirements("0", 0.0, simResultA.train),
                     // give enough time for switches to move (the default move time is 5)
-                    convertRequirements(1L, simResultA.envelope.getTotalTime() + 5.1, simResultB.train)));
+                    convertRequirements("1", simResultA.envelope.getTotalTime() + 5.1, simResultB.train)));
             assertTrue(conflicts.isEmpty());
         }
     }
@@ -192,7 +191,7 @@ public class ConflictDetectionTest {
         var statusHist = new ArrayList<ConflictStatus>();
         for (int i = 0; i < 200; i += 4) {
             var conflicts = ConflictsKt.detectConflicts(List.of(
-                    convertRequirements(0L, 0, simResultA.train), convertRequirements(1L, i, simResultB.train)));
+                    convertRequirements("0", 0, simResultA.train), convertRequirements("1", i, simResultB.train)));
             var spacingConflict = false;
             var routingConflict = false;
             for (var conflict : conflicts)
@@ -248,7 +247,7 @@ public class ConflictDetectionTest {
         // if both trains runs at the same time, there should be a conflict
         {
             var conflicts = ConflictsKt.detectConflicts(List.of(
-                    convertRequirements(0L, 0.0, simResultA.train), convertRequirements(1L, 0.0, simResultB.train)));
+                    convertRequirements("0", 0.0, simResultA.train), convertRequirements("1", 0.0, simResultB.train)));
             assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
             assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
             assertFalse(conflicts.stream().anyMatch((conflict) -> !conflict.workScheduleIds.isEmpty()));
@@ -260,8 +259,8 @@ public class ConflictDetectionTest {
             var simResultAWithStop =
                     simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
 
-            var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
-            var reqB = convertRequirements(1L, 0.0, simResultB.train);
+            var reqA = convertRequirements("0", 0.0, simResultAWithStop.train);
+            var reqB = convertRequirements("1", 0.0, simResultB.train);
             var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
             assertTrue(conflicts.isEmpty());
         }
@@ -327,8 +326,8 @@ public class ConflictDetectionTest {
         var simResultAWithStop =
                 simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
 
-        var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
-        var reqB = convertRequirements(1L, 0.0, simResultB.train);
+        var reqA = convertRequirements("0", 0.0, simResultAWithStop.train);
+        var reqB = convertRequirements("1", 0.0, simResultB.train);
         var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
         assertEquals(hasRoutingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == ROUTING));
         assertEquals(hasSpacingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == SPACING));
@@ -391,8 +390,8 @@ public class ConflictDetectionTest {
         var simResultAWithStop =
                 simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
 
-        var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
-        var reqB = convertRequirements(1L, 0.0, simResultB.train);
+        var reqA = convertRequirements("0", 0.0, simResultAWithStop.train);
+        var reqB = convertRequirements("1", 0.0, simResultB.train);
         var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
         assertEquals(hasRoutingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == ROUTING));
         assertEquals(hasSpacingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == SPACING));
@@ -454,8 +453,8 @@ public class ConflictDetectionTest {
         var simResultNorthOvertaking =
                 simpleSim(fullInfra, pathPropsNorth, chunkPathNorth, 0, Double.POSITIVE_INFINITY, List.of());
 
-        var reqWithStop = convertRequirements(0L, 0.0, simResultCenterWithStop.train);
-        var reqOvertaking = convertRequirements(1L, directStartTime, simResultNorthOvertaking.train);
+        var reqWithStop = convertRequirements("0", 0.0, simResultCenterWithStop.train);
+        var reqOvertaking = convertRequirements("1", directStartTime, simResultNorthOvertaking.train);
         var conflicts = ConflictsKt.detectConflicts(List.of(reqWithStop, reqOvertaking));
         assertEquals(hasRoutingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == ROUTING));
         assertEquals(hasSpacingConflict, conflicts.stream().anyMatch(conflict -> conflict.conflictType == SPACING));
@@ -495,9 +494,9 @@ public class ConflictDetectionTest {
         var simResultNorthOvertaking =
                 simpleSim(fullInfra, pathPropsNorth, chunkPathNorth, 0, Double.POSITIVE_INFINITY, List.of());
 
-        var reqWithStop = convertRequirements(0L, 0.0, simResultCenterWithStop.train);
+        var reqWithStop = convertRequirements("0", 0.0, simResultCenterWithStop.train);
         var directStartTime = 300; // 5 min after stopping train
-        var reqOvertaking = convertRequirements(1L, directStartTime, simResultNorthOvertaking.train);
+        var reqOvertaking = convertRequirements("1", directStartTime, simResultNorthOvertaking.train);
 
         // check that requirements are all ending after they begin
         assertRequirementsPeriodsConsistency(reqOvertaking);
@@ -579,11 +578,11 @@ public class ConflictDetectionTest {
     static Stream<Arguments> workScheduleArgs() {
         // Non conflicting train requirements
         var reqTrainA = new Requirements(
-                new RequirementId(0, RequirementType.TRAIN),
+                new RequirementId("0", RequirementType.TRAIN),
                 List.of(new ResultTrain.SpacingRequirement("zone1", 0, 100, true)),
                 List.of());
         var reqTrainB = new Requirements(
-                new RequirementId(1, RequirementType.TRAIN),
+                new RequirementId("1", RequirementType.TRAIN),
                 List.of(new ResultTrain.SpacingRequirement("zone1", 100, 200, true)),
                 List.of());
         return Stream.of(
@@ -592,21 +591,21 @@ public class ConflictDetectionTest {
                         Stream.of(reqTrainA, reqTrainB),
                         Stream.of(
                                 createWorkScheduleRequirements(
-                                        0L,
+                                        "0",
                                         List.of(
                                                 new ResultTrain.SpacingRequirement("zone1", 200, 300, true),
                                                 new ResultTrain.SpacingRequirement("zone2", 200, 300, true))),
                                 createWorkScheduleRequirements(
-                                        1L, List.of(new ResultTrain.SpacingRequirement("zone1", 300, 400, true)))),
+                                        "1", List.of(new ResultTrain.SpacingRequirement("zone1", 300, 400, true)))),
                         List.of()),
                 // Work schedules conflict with trains
                 Arguments.of(
                         Stream.of(reqTrainA, reqTrainB),
                         Stream.of(createWorkScheduleRequirements(
-                                0L, List.of(new ResultTrain.SpacingRequirement("zone1", 50, 150, true)))),
+                                "0", List.of(new ResultTrain.SpacingRequirement("zone1", 50, 150, true)))),
                         List.of(new ConflictDetectionEndpoint.ConflictDetectionResult.Conflict(
-                                List.of(0L, 1L),
-                                List.of(0L),
+                                List.of("0", "1"),
+                                List.of("0"),
                                 0.0,
                                 200.0,
                                 SPACING,
@@ -617,21 +616,21 @@ public class ConflictDetectionTest {
                         Stream.of(reqTrainA, reqTrainB),
                         Stream.of(
                                 createWorkScheduleRequirements(
-                                        0L, List.of(new ResultTrain.SpacingRequirement("zone1", 200, 300, true))),
+                                        "0", List.of(new ResultTrain.SpacingRequirement("zone1", 200, 300, true))),
                                 createWorkScheduleRequirements(
-                                        1L, List.of(new ResultTrain.SpacingRequirement("zone1", 225, 325, true)))),
+                                        "1", List.of(new ResultTrain.SpacingRequirement("zone1", 225, 325, true)))),
                         List.of()),
                 // Work schedules conflict with trains and each other
                 Arguments.of(
                         Stream.of(reqTrainA, reqTrainB),
                         Stream.of(
                                 createWorkScheduleRequirements(
-                                        0L, List.of(new ResultTrain.SpacingRequirement("zone1", 150, 300, true))),
+                                        "0", List.of(new ResultTrain.SpacingRequirement("zone1", 150, 300, true))),
                                 createWorkScheduleRequirements(
-                                        1L, List.of(new ResultTrain.SpacingRequirement("zone1", 250, 350, true)))),
+                                        "1", List.of(new ResultTrain.SpacingRequirement("zone1", 250, 350, true)))),
                         List.of(new ConflictDetectionEndpoint.ConflictDetectionResult.Conflict(
-                                List.of(1L),
-                                List.of(0L, 1L),
+                                List.of("1"),
+                                List.of("0", "1"),
                                 100.0,
                                 350.0,
                                 SPACING,
@@ -646,18 +645,18 @@ public class ConflictDetectionTest {
     @Test
     public void testConflictMerge() {
         var reqs = List.of(
-                new TrainRequirements(0, List.of(new ResultTrain.SpacingRequirement("A", 10, 20, true)), List.of()),
-                new TrainRequirements(0, List.of(new ResultTrain.SpacingRequirement("B", 20, 30, true)), List.of()),
-                new TrainRequirements(0, List.of(new ResultTrain.SpacingRequirement("C", 40, 50, true)), List.of()),
-                new TrainRequirements(1, List.of(new ResultTrain.SpacingRequirement("A", 15, 25, true)), List.of()),
-                new TrainRequirements(1, List.of(new ResultTrain.SpacingRequirement("B", 25, 35, true)), List.of()),
-                new TrainRequirements(1, List.of(new ResultTrain.SpacingRequirement("C", 45, 55, true)), List.of()));
+                new TrainRequirements("0", List.of(new ResultTrain.SpacingRequirement("A", 10, 20, true)), List.of()),
+                new TrainRequirements("0", List.of(new ResultTrain.SpacingRequirement("B", 20, 30, true)), List.of()),
+                new TrainRequirements("0", List.of(new ResultTrain.SpacingRequirement("C", 40, 50, true)), List.of()),
+                new TrainRequirements("1", List.of(new ResultTrain.SpacingRequirement("A", 15, 25, true)), List.of()),
+                new TrainRequirements("1", List.of(new ResultTrain.SpacingRequirement("B", 25, 35, true)), List.of()),
+                new TrainRequirements("1", List.of(new ResultTrain.SpacingRequirement("C", 45, 55, true)), List.of()));
 
         var conflicts = ConflictsKt.detectConflicts(reqs);
 
         var expectedConflicts = List.of(
                 new ConflictDetectionEndpoint.ConflictDetectionResult.Conflict(
-                        LongStream.of(0, 1).boxed().toList(),
+                        List.of("0", "1"),
                         10,
                         35,
                         SPACING,
@@ -666,7 +665,7 @@ public class ConflictDetectionTest {
                                 new ConflictDetectionEndpoint.ConflictDetectionResult.ConflictRequirement(
                                         "B", 20, 35))),
                 new ConflictDetectionEndpoint.ConflictDetectionResult.Conflict(
-                        LongStream.of(0, 1).boxed().toList(),
+                        List.of("0", "1"),
                         40,
                         55,
                         SPACING,
@@ -675,7 +674,7 @@ public class ConflictDetectionTest {
         assertThat(conflicts).usingRecursiveComparison().isEqualTo(expectedConflicts);
     }
 
-    private static TrainRequirements convertRequirements(long trainId, double offset, ResultTrain train) {
+    private static TrainRequirements convertRequirements(String trainId, double offset, ResultTrain train) {
         var spacingRequirements = new ArrayList<ResultTrain.SpacingRequirement>();
         for (var req : train.spacingRequirements)
             spacingRequirements.add(new ResultTrain.SpacingRequirement(
@@ -736,7 +735,7 @@ public class ConflictDetectionTest {
     }
 
     private static Requirements createWorkScheduleRequirements(
-            Long id, Collection<ResultTrain.SpacingRequirement> spacingRequirements) {
+            String id, Collection<ResultTrain.SpacingRequirement> spacingRequirements) {
         return new Requirements(new RequirementId(id, RequirementType.WORK_SCHEDULE), spacingRequirements, List.of());
     }
 }

@@ -9,12 +9,12 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 
 interface SpacingTrainRequirement {
-    val trainId: Long
+    val trainId: String
     val spacingRequirements: Collection<SpacingRequirement>
 }
 
 interface RoutingTrainRequirement {
-    val trainId: Long
+    val trainId: String
     val routingRequirements: Collection<RoutingRequirement>
 }
 
@@ -26,7 +26,9 @@ interface ResourceRequirement {
 // TODO: when dropping v1, remove these structs and directly use Requirements
 class TrainRequirements(
     @Json(name = "train_id")
-    override val trainId: Long, // Not the usual RJS ids, but an actual DB id
+    override val trainId:
+        String, // Not standard RJS IDs, but either a train DB ID as a string or a generated paced
+    // train occurrence ID.
     @Json(name = "spacing_requirements")
     override val spacingRequirements: Collection<SpacingRequirement>,
     @Json(name = "routing_requirements")
@@ -41,7 +43,7 @@ class Requirements(
 
 data class RequirementId(
     // Either a train db id or a work schedule db id
-    val id: Long,
+    val id: String,
     val type: RequirementType,
 )
 
@@ -102,7 +104,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
     )
 
     data class RoutingZoneRequirement(
-        val trainId: Long,
+        val trainId: String,
         val route: String,
         override val beginTime: Double,
         override val endTime: Double,
@@ -296,7 +298,7 @@ fun mergeMap(
                     if (--eventCount > 0) continue
                     newConflicts.add(
                         Conflict(
-                            key.trainScheduleIds.toMutableList(),
+                            key.trainIds.toMutableList(),
                             key.workScheduleIds.toMutableList(),
                             eventBeginning,
                             event.time,
@@ -312,7 +314,7 @@ fun mergeMap(
     return newConflicts
 }
 
-data class ConflictingGroupKey(val trainScheduleIds: Set<Long>, val workScheduleIds: Set<Long>)
+data class ConflictingGroupKey(val trainIds: Set<String>, val workScheduleIds: Set<String>)
 
 fun mergeConflicts(conflicts: List<Conflict>): List<Conflict> {
     // group conflicts by sets of conflicting trains
@@ -321,7 +323,7 @@ fun mergeConflicts(conflicts: List<Conflict>): List<Conflict> {
 
     for (conflict in conflicts) {
         val conflictingGroupKey =
-            ConflictingGroupKey(conflict.trainScheduleIds.toSet(), conflict.workScheduleIds.toSet())
+            ConflictingGroupKey(conflict.trainIds.toSet(), conflict.workScheduleIds.toSet())
         val conflictingMap =
             when (conflict.conflictType) {
                 ConflictType.SPACING -> spacingResources

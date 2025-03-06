@@ -8,7 +8,7 @@ import java.util.TreeMap
 import kotlin.math.max
 import kotlin.math.min
 
-const val DEFAULT_WORK_SCHEDULE_ID: Long = -1
+const val DEFAULT_WORK_SCHEDULE_ID: String = "default work schedule ID"
 
 sealed interface IncrementalConflictResponse
 
