@@ -18,10 +18,7 @@ use editoast_common::tracing::TracingConfig;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
 use futures::executor::block_on;
-use futures::future::BoxFuture;
-use opentelemetry_sdk::export::trace::ExportResult;
-use opentelemetry_sdk::export::trace::SpanData;
-use opentelemetry_sdk::export::trace::SpanExporter;
+use opentelemetry_sdk::testing::trace::NoopSpanExporter;
 use serde::de::DeserializeOwned;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::filter::Directive;
@@ -45,15 +42,6 @@ use super::OpenfgaConfig;
 use super::OsrdyneConfig;
 use super::PostgresConfig;
 use super::ServerConfig;
-
-#[derive(Debug)]
-pub struct NoopSpanExporter;
-
-impl SpanExporter for NoopSpanExporter {
-    fn export(&mut self, _: Vec<SpanData>) -> BoxFuture<'static, ExportResult> {
-        Box::pin(std::future::ready(Ok(())))
-    }
-}
 
 /// A builder interface for [TestApp]
 ///
@@ -199,7 +187,7 @@ impl TestAppBuilder {
         let sub = create_tracing_subscriber(
             tracing_config,
             tracing_subscriber::filter::LevelFilter::DEBUG,
-            NoopSpanExporter,
+            NoopSpanExporter::new(),
         );
         let tracing_guard = tracing::subscriber::set_default(sub);
 

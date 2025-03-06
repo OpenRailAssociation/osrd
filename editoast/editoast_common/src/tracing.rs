@@ -1,12 +1,6 @@
-use std::time::Duration;
-
 use opentelemetry::trace::TracerProvider;
-use opentelemetry::KeyValue;
-use opentelemetry_sdk::export::trace::SpanExporter;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use opentelemetry_sdk::resource::EnvResourceDetector;
-use opentelemetry_sdk::resource::SdkProvidedResourceDetector;
-use opentelemetry_sdk::resource::TelemetryResourceDetector;
+use opentelemetry_sdk::trace::SpanExporter;
 use opentelemetry_sdk::Resource;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Layer;
@@ -59,20 +53,11 @@ pub fn create_tracing_subscriber<T: SpanExporter + 'static>(
     let telemetry_layer = match tracing_config.telemetry {
         None => None,
         Some(telemetry) => {
-            let resource = Resource::new(vec![KeyValue::new(
-                opentelemetry_semantic_conventions::resource::SERVICE_NAME,
-                telemetry.service_name.clone(),
-            )])
-            .merge(&Resource::from_detectors(
-                Duration::from_secs(10),
-                vec![
-                    Box::new(SdkProvidedResourceDetector),
-                    Box::new(TelemetryResourceDetector),
-                    Box::new(EnvResourceDetector::new()),
-                ],
-            ));
-            let otlp_tracer = opentelemetry_sdk::trace::TracerProvider::builder()
-                .with_batch_exporter(exporter, opentelemetry_sdk::runtime::Tokio)
+            let resource = Resource::builder()
+                .with_service_name(telemetry.service_name.clone())
+                .build();
+            let otlp_tracer = opentelemetry_sdk::trace::SdkTracerProvider::builder()
+                .with_batch_exporter(exporter)
                 .with_resource(resource)
                 .build()
                 .tracer("osrd-editoast");
