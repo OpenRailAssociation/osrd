@@ -49,7 +49,6 @@ use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::path::pathfinding::pathfinding_from_train;
-use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::path::projection::PathProjection;
@@ -70,6 +69,7 @@ use crate::RollingStockModel;
 use crate::ValkeyClient;
 
 use super::projection::ProjectPathForm;
+use super::simulation_response;
 use super::SimulationSummaryResult;
 
 crate::routes! {
@@ -634,45 +634,6 @@ struct SimulationBatchForm {
     infra_id: i64,
     electrical_profile_set_id: Option<i64>,
     ids: HashSet<i64>,
-}
-
-pub fn simulation_response(sim: SimulationResponse) -> SimulationSummaryResult {
-    match sim {
-        SimulationResponse::Success {
-            final_output,
-            provisional,
-            base,
-            ..
-        } => {
-            let report = final_output.report_train;
-            SimulationSummaryResult::Success {
-                length: *report.positions.last().unwrap(),
-                time: *report.times.last().unwrap(),
-                energy_consumption: report.energy_consumption,
-                path_item_times_final: report.path_item_times.clone(),
-                path_item_times_provisional: provisional.path_item_times.clone(),
-                path_item_times_base: base.path_item_times.clone(),
-            }
-        }
-        SimulationResponse::PathfindingFailed { pathfinding_failed } => match pathfinding_failed {
-            PathfindingFailure::InternalError { core_error } => {
-                SimulationSummaryResult::PathfindingFailure { core_error }
-            }
-
-            PathfindingFailure::PathfindingInputError(input_error) => {
-                SimulationSummaryResult::PathfindingInputError(input_error)
-            }
-
-            PathfindingFailure::PathfindingNotFound(not_found) => {
-                SimulationSummaryResult::PathfindingNotFound(not_found)
-            }
-        },
-        SimulationResponse::SimulationFailed { core_error } => {
-            SimulationSummaryResult::SimulationFailed {
-                error_type: core_error.get_type().into(),
-            }
-        }
-    }
 }
 
 /// Associate each train id with its simulation summary response

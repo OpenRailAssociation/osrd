@@ -27,7 +27,7 @@ use utoipa::ToSchema;
 
 use super::path::pathfinding::PathfindingResult;
 use super::projection::ProjectPathForm;
-use super::train_schedule::simulation_response;
+use super::simulation_response;
 use super::train_schedule::train_simulation_batch;
 use super::AppState;
 use super::AuthenticationExt;

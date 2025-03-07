@@ -77,6 +77,7 @@ use crate::client::get_app_version;
 use crate::core::mq_client;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
+use crate::core::simulation::SimulationResponse;
 use crate::core::version::CoreVersionRequest;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
@@ -93,6 +94,7 @@ use crate::map::MapLayers;
 use crate::models;
 use crate::models::auth::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
+use crate::views::path::pathfinding::PathfindingFailure;
 use crate::ValkeyClient;
 
 crate::routes! {
@@ -172,7 +174,7 @@ pub struct InfraIdQueryParam {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
-pub enum SimulationSummaryResult {
+enum SimulationSummaryResult {
     /// Minimal information on a simulation's result
     Success {
         /// Length of a path in mm
@@ -199,6 +201,45 @@ pub enum SimulationSummaryResult {
     SimulationFailed { error_type: String },
     /// InputError
     PathfindingInputError(PathfindingInputError),
+}
+
+fn simulation_response(sim: SimulationResponse) -> SimulationSummaryResult {
+    match sim {
+        SimulationResponse::Success {
+            final_output,
+            provisional,
+            base,
+            ..
+        } => {
+            let report = final_output.report_train;
+            SimulationSummaryResult::Success {
+                length: *report.positions.last().unwrap(),
+                time: *report.times.last().unwrap(),
+                energy_consumption: report.energy_consumption,
+                path_item_times_final: report.path_item_times.clone(),
+                path_item_times_provisional: provisional.path_item_times.clone(),
+                path_item_times_base: base.path_item_times.clone(),
+            }
+        }
+        SimulationResponse::PathfindingFailed { pathfinding_failed } => match pathfinding_failed {
+            PathfindingFailure::InternalError { core_error } => {
+                SimulationSummaryResult::PathfindingFailure { core_error }
+            }
+
+            PathfindingFailure::PathfindingInputError(input_error) => {
+                SimulationSummaryResult::PathfindingInputError(input_error)
+            }
+
+            PathfindingFailure::PathfindingNotFound(not_found) => {
+                SimulationSummaryResult::PathfindingNotFound(not_found)
+            }
+        },
+        SimulationResponse::SimulationFailed { core_error } => {
+            SimulationSummaryResult::SimulationFailed {
+                error_type: core_error.get_type().into(),
+            }
+        }
+    }
 }
 
 /// Represents the bundle of information about the issuer of a request
