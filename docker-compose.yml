@@ -86,7 +86,7 @@ services:
   core:
     # This is a dummy container to build the core image
     # and document/provide parameters to other compose files
-    image: ghcr.io/openrailassociation/osrd-edge/osrd-core:${TAG-dev}
+    image: ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-core:${TAG-dev}
     container_name: osrd-core-dummy
     depends_on:
       rabbitmq: { condition: service_healthy }
@@ -112,7 +112,7 @@ services:
     command: "true"
 
   editoast:
-    image: ghcr.io/openrailassociation/osrd-edge/osrd-editoast:${TAG-dev}
+    image: ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-editoast:${TAG-dev}
     container_name: osrd-editoast
     depends_on:
       postgres: { condition: service_healthy }
@@ -151,7 +151,7 @@ services:
       retries: 6
 
   gateway:
-    image: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:${TAG-dev}-${GATEWAY_FLAVOR-front}
+    image: ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-gateway:${TAG-dev}-${GATEWAY_FLAVOR-front}
     container_name: osrd-gateway
     build:
       context: gateway
@@ -173,7 +173,7 @@ services:
     ports: [ "8080:8080" ]
 
   osrdyne:
-    image: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:${TAG-dev}
+    image: ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-osrdyne:${TAG-dev}
     container_name: osrd-osrdyne
     depends_on:
       rabbitmq: { condition: service_healthy }
@@ -191,6 +191,7 @@ services:
     environment:
       RUST_LOG: "info"
       OSRDYNE__OPENTELEMETRY__ENDPOINT: "http://osrd-jaeger:4317"
+      OSRDYNE__WORKER_DRIVER__WORKER_IMAGE: "ghcr.io/openrailassociation/osrd-${RELEASE_CHANNEL-edge}/osrd-core:${TAG-dev}"
 
   jaeger:
     image: jaegertracing/jaeger:latest
