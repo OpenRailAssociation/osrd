@@ -224,7 +224,6 @@ axum = { version = "0.8.1", default-features = false, features = [
 editoast_authz = { workspace = true, features = ["fixtures"] }
 editoast_models = { workspace = true, features = ["testing"] }
 editoast_osrdyne_client = { workspace = true, features = ["mock_client"] }
-opentelemetry_sdk = { workspace = true, features = ["testing"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 serial_test = "3.2.0"

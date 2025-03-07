@@ -18,7 +18,10 @@ use editoast_common::tracing::TracingConfig;
 use editoast_models::DbConnectionPoolV2;
 use editoast_osrdyne_client::OsrdyneClient;
 use futures::executor::block_on;
-use opentelemetry_sdk::testing::trace::NoopSpanExporter;
+use futures::future::BoxFuture;
+use opentelemetry_sdk::error::OTelSdkResult;
+use opentelemetry_sdk::trace::SpanData;
+use opentelemetry_sdk::trace::SpanExporter;
 use serde::de::DeserializeOwned;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::filter::Directive;
@@ -42,6 +45,24 @@ use super::OpenfgaConfig;
 use super::OsrdyneConfig;
 use super::PostgresConfig;
 use super::ServerConfig;
+
+// NoopSpanExporter exists in 'opentelemetry-sdk' but is hidden behind
+// 'testing' feature which brings with it tons of unneeded dependencies
+// like 'async-std'.
+#[derive(Debug)]
+struct NoopSpanExporter;
+
+impl NoopSpanExporter {
+    fn new() -> Self {
+        Self
+    }
+}
+
+impl SpanExporter for NoopSpanExporter {
+    fn export(&mut self, _: Vec<SpanData>) -> BoxFuture<'static, OTelSdkResult> {
+        Box::pin(std::future::ready(Ok(())))
+    }
+}
 
 /// A builder interface for [TestApp]
 ///
