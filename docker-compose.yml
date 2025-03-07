@@ -132,7 +132,7 @@ services:
     ports: [ "8090:80" ]
     environment:
       EDITOAST_PORT: 80
-      ROOT_URL: "http://osrd-gateway:4000/api"
+      ROOT_URL: "http://localhost:4000/api"
       VALKEY_URL: "redis://valkey"
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
       OSRDYNE_API_URL: "http://osrd-osrdyne:4242/"

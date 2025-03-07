@@ -122,7 +122,7 @@ services:
     ports: [ "8089:8089" ]
     environment:
       EDITOAST_PORT: 8089
-      ROOT_URL: "http://osrd-gateway-pr-tests:4001/api"
+      ROOT_URL: "http://localhost:4001/api"
       VALKEY_URL: "redis://valkey:6380"
       DATABASE_URL: "postgres://osrd:password@postgres:5433/osrd"
       TELEMETRY_KIND: "opentelemetry"
