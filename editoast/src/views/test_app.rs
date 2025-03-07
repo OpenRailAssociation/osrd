@@ -271,7 +271,6 @@ impl TestAppBuilder {
         TestApp {
             server,
             db_pool: db_pool_v2,
-            core_client,
             tracing_guard,
         }
     }
@@ -284,17 +283,11 @@ impl TestAppBuilder {
 pub(crate) struct TestApp {
     server: TestServer,
     db_pool: Arc<DbConnectionPoolV2>,
-    core_client: Arc<CoreClient>,
     #[allow(unused)] // included here to extend its lifetime, not meant to be used in any way
     tracing_guard: tracing::subscriber::DefaultGuard,
 }
 
 impl TestApp {
-    #[allow(dead_code)] // while the pool migration is ongoing
-    pub fn core_client(&self) -> Arc<CoreClient> {
-        self.core_client.clone()
-    }
-
     pub fn db_pool(&self) -> Arc<DbConnectionPoolV2> {
         self.db_pool.clone()
     }
