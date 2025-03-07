@@ -71,7 +71,7 @@ test.describe('Validate the Operational Study Project workflow', () => {
     });
 
     // Navigate back to the Operational Studies page via the home page
-    await projectPage.goToHomePage();
+    await projectPage.backToHomePage();
     await projectPage.goToOperationalStudiesPage();
 
     // Reopen the updated project and validate the updated data

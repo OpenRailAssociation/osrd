@@ -28,7 +28,7 @@ class ViaSection extends STDCMPage {
   constructor(page: Page) {
     super(page);
 
-    this.viaIcon = page.locator('.stdcm-via-icons');
+    this.viaIcon = page.getByTestId('stdcm-via-icons');
     this.viaDeleteButton = page.getByTestId('delete-via-button');
     this.suggestionNS = this.suggestionList.locator('.suggestion-item', {
       hasText: 'NS North_station',
@@ -44,15 +44,17 @@ class ViaSection extends STDCMPage {
 
   // Dynamic selectors for via cards
   private getViaCard(viaNumber: number): Locator {
-    return this.page.locator(`.stdcm-card:has(.stdcm-via-icons:has-text("${viaNumber}"))`);
+    return this.page.getByTestId('stdcm-card').filter({
+      has: this.page.getByTestId('stdcm-icon-index').filter({ hasText: viaNumber.toString() }),
+    });
   }
 
   private getViaCH(viaNumber: number): Locator {
-    return this.getViaCard(viaNumber).locator('[data-testid="operational-point-ch"]');
+    return this.getViaCard(viaNumber).getByTestId('operational-point-ch');
   }
 
   private getViaCI(viaNumber: number): Locator {
-    return this.getViaCard(viaNumber).locator('[data-testid="operational-point-ci"]');
+    return this.getViaCard(viaNumber).getByTestId('operational-point-ci');
   }
 
   private getViaType(viaNumber: number): Locator {
@@ -60,7 +62,7 @@ class ViaSection extends STDCMPage {
   }
 
   private getViaStopTime(viaNumber: number): Locator {
-    return this.getViaCard(viaNumber).locator('#stdcm-via-stop-time');
+    return this.getViaCard(viaNumber).getByTestId('stdcm-via-stop-time');
   }
 
   private getViaWarning(viaNumber: number): Locator {
@@ -102,7 +104,9 @@ class ViaSection extends STDCMPage {
       expect(await this.addViaButton.count()).toBe(viaNumber + 1);
       await expect(this.getViaCI(viaNumber)).toBeVisible();
       await this.getViaCI(viaNumber).fill(ciSearchText);
+      await selectedSuggestion.waitFor();
       await selectedSuggestion.click();
+      await this.getViaCH(viaNumber).click({ trial: true });
       await expect(this.getViaCH(viaNumber)).toHaveValue(DEFAULT_DETAILS.chValue);
       await expect(this.getViaType(viaNumber)).toHaveValue(PASSAGE_TIME);
     };

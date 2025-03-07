@@ -17,7 +17,7 @@ const StdcmCard = ({
   children,
   className = '',
 }: StdcmCardProps) => (
-  <div className={cx('stdcm-card', { 'has-tip': hasTip, disabled })}>
+  <div data-testid="stdcm-card" className={cx('stdcm-card', { 'has-tip': hasTip, disabled })}>
     {name && (
       <div
         className={cx(

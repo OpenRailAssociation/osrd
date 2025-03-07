@@ -125,10 +125,12 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
             <StdcmCard
               name={t('trainPath.vias')}
               title={
-                <div className="stdcm-via-icons">
+                <div data-testid="stdcm-via-icons" className="stdcm-via-icons">
                   <div className="icon-bundle mt-1">
                     <img src={IntermediatePointIcon} alt="intermediate-point" />
-                    <span className="icon-index">{pathStepIndex}</span>
+                    <span data-testid="stdcm-icon-index" className="icon-index">
+                      {pathStepIndex}
+                    </span>
                   </div>
                   <button
                     data-testid="delete-via-button"

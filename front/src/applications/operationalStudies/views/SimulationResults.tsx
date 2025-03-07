@@ -252,7 +252,7 @@ const SimulationResults = ({
           )}
 
           {/* SIMULATION : MAP */}
-          <div className="simulation-map">
+          <div data-testid="simulation-map" className="simulation-map">
             <SimulationResultsMap
               geometry={pathProperties?.geometry}
               timetableItemSimulation={{

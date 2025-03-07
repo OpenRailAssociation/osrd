@@ -1,3 +1,5 @@
+import test from '@playwright/test';
+
 import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
 
 import {
@@ -30,7 +32,6 @@ import {
   VALID_PACED_TRAINS,
   VALID_TRAINS,
 } from './assets/constants/timetable-items-count';
-import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
@@ -81,6 +82,7 @@ test.describe('Verify train schedule elements and filters', () => {
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );
+    await operationalStudiesPage.removeViteOverlay();
     // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
 

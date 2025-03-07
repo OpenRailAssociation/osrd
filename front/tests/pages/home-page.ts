@@ -43,6 +43,7 @@ class HomePage extends CommonPage {
   // Click on the logo to navigate back to the home page
   async backToHomePage(): Promise<void> {
     await this.backHomeLogo.click();
+    await this.page.waitForLoadState();
   }
 
   async goToOperationalStudiesPage(): Promise<void> {

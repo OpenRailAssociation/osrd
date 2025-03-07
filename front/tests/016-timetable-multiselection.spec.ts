@@ -99,6 +99,7 @@ test.describe('Verify train schedule elements and filters', () => {
       TOTAL_ITEMS,
       translations
     );
+    await page.waitForLoadState('networkidle');
     // Verify timetable is empty and total label is empty
     await scenarioTimetableSection.verifyTimetableIsEmpty(translations.timetable.noTrain);
   });

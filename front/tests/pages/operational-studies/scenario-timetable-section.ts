@@ -1,9 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import {
-  EXPLICIT_UI_STABILITY_TIMEOUT,
-  SIMULATION_RESULT_TIMEOUT,
-} from '../../assets/constants/timeout-const';
+import OpSimulationResultPage from './simulation-results-page';
+import { EXPLICIT_UI_STABILITY_TIMEOUT } from '../../assets/constants/timeout-const';
 import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type {
@@ -11,7 +9,6 @@ import type {
   FlatTranslations,
   TimetableFilterTranslations,
 } from '../../utils/types';
-import CommonPage from '../common-page';
 
 type ScenarioTranslations = {
   timetable: FlatTranslations;
@@ -24,25 +21,12 @@ const frTranslations: ScenarioTranslations = readJsonFile(
   'public/locales/fr/operationalStudies/scenario.json'
 );
 
-class ScenarioTimetableSection extends CommonPage {
+class ScenarioTimetableSection extends OpSimulationResultPage {
   private readonly invalidTrainsMessage: Locator;
 
   private readonly timetableTrains: Locator;
 
   private readonly selectedTimetableTrain: Locator;
-
-  // TODO: remove this commented code when the design of simulation bar has been changed
-  // readonly simulationBar: Locator;
-
-  private readonly manchetteSpaceTimeChart: Locator;
-
-  private readonly spaceTimeChart: Locator;
-
-  private readonly speedSpaceChart: Locator;
-
-  readonly timesStopsDataSheet: Locator;
-
-  private readonly simulationMap: Locator;
 
   private readonly timetableAllItemCheckbox: Locator;
 
@@ -80,6 +64,8 @@ class ScenarioTimetableSection extends CommonPage {
 
   private readonly editItemButton: Locator;
 
+  private readonly projectItemButton: Locator;
+
   private readonly editTrainScheduleButton: Locator;
 
   private readonly trainArrivalTime: Locator;
@@ -92,20 +78,11 @@ class ScenarioTimetableSection extends CommonPage {
 
   private readonly emptyTimetable: Locator;
 
-  private readonly simulationResult: Locator;
-
   constructor(page: Page) {
     super(page);
     this.invalidTrainsMessage = page.getByTestId('invalid-trains-message');
     this.timetableTrains = page.getByTestId('scenario-timetable-train');
     this.selectedTimetableTrain = page.locator('[data-testid="scenario-timetable-train"].selected');
-    // TODO: remove this commented code when the design of simulation bar has been changed
-    // this.simulationBar = page.locator('.osrd-simulation-sticky-bar');
-    this.manchetteSpaceTimeChart = page.locator('.manchette-space-time-chart-wrapper');
-    this.speedSpaceChart = page.locator('#container-SpeedSpaceChart');
-    this.spaceTimeChart = page.locator('.space-time-chart-container');
-    this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
-    this.simulationMap = page.locator('.simulation-map');
     this.timetableAllItemCheckbox = page.locator('.train-count .checkmark');
     this.timetableTotalItemLabel = page.locator('.toolbar-header .label');
     this.deleteAllTimetableItemsButton = page.getByTestId('delete-all-items-button');
@@ -134,13 +111,13 @@ class ScenarioTimetableSection extends CommonPage {
       'label[for="timetable-speed-limit-tag-filter"]'
     );
     this.editItemButton = page.getByTestId('edit-item');
+    this.projectItemButton = this.selectedTimetableTrain.getByTestId('project-item');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
     this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
     this.scenarioCollapseButton = page.getByTestId('scenario-collapse-button');
     this.timetableCollapseButton = page.getByTestId('timetable-collapse-button');
-    this.scenarioSideMenu = page.getByTestId('scenario-sidemenu');
+    this.scenarioSideMenu = page.getByTestId('scenario-side-menu');
     this.emptyTimetable = page.locator('.empty-list');
-    this.simulationResult = page.locator('.simulation-results');
   }
 
   // Get the button locator of a train element.
@@ -162,26 +139,6 @@ class ScenarioTimetableSection extends CommonPage {
   async checkSelectedTimetableTrain(): Promise<void> {
     await this.page.waitForSelector('.selected');
     await expect(this.selectedTimetableTrain).toBeVisible();
-  }
-
-  // Verify that simulation results are displayed
-  async verifySimulationResultsVisibility(): Promise<void> {
-    await this.page.waitForLoadState('networkidle', { timeout: SIMULATION_RESULT_TIMEOUT });
-
-    const simulationResultsLocators = [
-      // TODO: remove this commented code when the design of simulation bar has been changed
-      // this.simulationBar,
-      this.manchetteSpaceTimeChart,
-      this.speedSpaceChart,
-      this.spaceTimeChart,
-      this.simulationMap,
-      this.timesStopsDataSheet,
-    ];
-    await Promise.all(
-      simulationResultsLocators.map(async (simulationResultsLocator) => {
-        await expect(simulationResultsLocator).toBeVisible();
-      })
-    );
   }
 
   async checkTimetableFilterVisibilityLabelDefaultValue(
@@ -376,24 +333,24 @@ class ScenarioTimetableSection extends CommonPage {
     const trainCount = await this.timetableTrains.count();
 
     for (let currentTrainIndex = 0; currentTrainIndex < trainCount; currentTrainIndex += 1) {
-      await this.page.waitForLoadState();
-      await this.simulationResult.waitFor();
       const trainButton = ScenarioTimetableSection.getTrainButton(
         this.timetableTrains.nth(currentTrainIndex)
       );
-      await trainButton.click({ position: { x: 5, y: 5 } });
+      await trainButton.click();
+      await this.projectTrain();
       await this.verifySimulationResultsVisibility();
     }
-  }
-
-  async verifyTimesStopsDataSheetVisibility(): Promise<void> {
-    await expect(this.timesStopsDataSheet).toBeVisible({ timeout: SIMULATION_RESULT_TIMEOUT });
-    await this.timesStopsDataSheet.scrollIntoViewIfNeeded();
   }
 
   async clickOnEditTrain(index: number = 0) {
     await this.timetableTrains.nth(index).click();
     await this.editItemButton.nth(index).click();
+  }
+
+  async projectTrain() {
+    await this.selectedTimetableTrain.hover();
+    await this.projectItemButton.waitFor();
+    await this.projectItemButton.click();
   }
 
   async clickOnEditTrainSchedule() {
@@ -463,6 +420,7 @@ class ScenarioTimetableSection extends CommonPage {
   }
 
   async verifyTimetableIsEmpty(translation: string) {
+    await expect(this.timetableTrains).toHaveCount(0);
     await expect(this.emptyTimetable).toBeVisible();
     await expect(this.timetableTotalItemLabel).toHaveText(translation);
   }

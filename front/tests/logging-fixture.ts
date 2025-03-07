@@ -16,6 +16,11 @@ const testWithLogging = baseTest.extend<{ page: Page }>({
     // Log before the test starts
     logger.info(`START: '${testInfo.title}' | Browser: ${browserName}`);
 
+    // Handle uncaught exceptions
+    page.on('pageerror', (exception) => {
+      throw new Error(`Test failed due to uncaught exception: "${exception}"`);
+    });
+
     // Run the actual test
     await use(page);
 

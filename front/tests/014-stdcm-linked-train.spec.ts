@@ -86,6 +86,7 @@ test.describe('Verify stdcm simulation page', () => {
       towedRollingStockPrefilledValues.length
     );
     await linkedTrainSection.anteriorLinkedPathDetails();
+    await destinationSection.fillDestinationDetailsLight();
     await viaSection.fillAndVerifyViaDetails({
       viaNumber: 1,
       ciSearchText: 'nS',
@@ -101,6 +102,13 @@ test.describe('Verify stdcm simulation page', () => {
 
   /** *************** Test 2 **************** */
   test('Verify STDCM posterior linked train', async ({ page: _ }, testInfo) => {
+    // Preserve the order of section filling to avoid race conditions caused by Playwright's execution speed.
+    await originSection.fillOriginDetailsLight(undefined, 'respectDestinationSchedule', true);
+    await linkedTrainSection.posteriorLinkedPathDetails();
+    await viaSection.fillAndVerifyViaDetails({
+      viaNumber: 1,
+      ciSearchText: 'mid_east',
+    });
     await consistSection.fillAndVerifyConsistDetails(
       towedConsistDetails,
       fastRollingStockPrefilledValues.tonnage,
@@ -108,12 +116,6 @@ test.describe('Verify stdcm simulation page', () => {
       towedRollingStockPrefilledValues.tonnage,
       towedRollingStockPrefilledValues.length
     );
-    await linkedTrainSection.posteriorLinkedPathDetails();
-    await viaSection.fillAndVerifyViaDetails({
-      viaNumber: 1,
-      ciSearchText: 'mid_east',
-    });
-    await originSection.fillOriginDetailsLight(undefined, 'respectDestinationSchedule', true);
     await stdcmPage.verifyValidSimulationLaunch();
     await simulationResultPage.verifyTableData(
       './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'

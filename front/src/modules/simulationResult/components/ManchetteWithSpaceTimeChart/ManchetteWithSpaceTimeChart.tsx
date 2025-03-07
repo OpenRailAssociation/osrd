@@ -368,7 +368,11 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   };
 
   return (
-    <div ref={manchetteWithSpaceTimeCharWrappertRef} className="manchette-space-time-chart-wrapper">
+    <div
+      ref={manchetteWithSpaceTimeCharWrappertRef}
+      data-testid="manchette-space-time-chart"
+      className="manchette-space-time-chart-wrapper"
+    >
       {waypointMenuData.activeWaypointId &&
         manchetteWithSpaceTimeCharWrappertRef.current &&
         createPortal(
@@ -416,6 +420,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
         <Manchette {...manchettePropsWithWaypointMenu} height={height - BOTTOM_TOOLBAR_HEIGHT} />
         <div
           ref={spaceTimeChartRef}
+          data-testid="space-time-chart-container"
           className="space-time-chart-container"
           style={{
             bottom: 0,

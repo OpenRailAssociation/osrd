@@ -43,7 +43,7 @@ export const transformBoundariesDataToPositionDataArray = <T extends 'gradient' 
   pathLength: number,
   value: T
 ): PositionData<T>[] => {
-  const formatedData = boundariesData.boundaries.reduce(
+  const formattedData = boundariesData.boundaries.reduce(
     (acc, boundary, index) => {
       const newData = {
         position: mmToM(boundary),
@@ -59,12 +59,12 @@ export const transformBoundariesDataToPositionDataArray = <T extends 'gradient' 
     [{ position: 0, [value]: 0 }] as PositionData<T>[]
   );
 
-  formatedData.push({
+  formattedData.push({
     position: mmToM(pathLength),
     [value]: boundariesData.values[boundariesData.values.length - 1],
   } as PositionData<T>);
 
-  return formatedData;
+  return formattedData;
 };
 
 /**
@@ -83,22 +83,21 @@ export const transformBoundariesDataToRangesData = <
   pathLength: number
 ): ElectricalRangesData<T>[] => {
   // TODO : remove electrical profiles
-  const formatedData = boundariesData.boundaries.map((boundary, index) => ({
-    start: index === 0 ? 0 : mmToM(boundariesData.boundaries[index - 1]),
+  const { boundaries, values } = boundariesData;
+
+  const formattedData: ElectricalRangesData<T>[] = boundaries.map((boundary, index) => ({
+    start: index === 0 ? 0 : mmToM(boundaries[index - 1]),
     stop: mmToM(boundary),
-    values: boundariesData.values[index],
+    values: values[index],
   }));
 
-  formatedData.push({
-    start:
-      boundariesData.boundaries.length === 0
-        ? 0
-        : mmToM(boundariesData.boundaries[boundariesData.boundaries.length - 1]),
+  formattedData.push({
+    start: mmToM(boundaries[boundaries.length - 1]),
     stop: mmToM(pathLength),
-    values: boundariesData.values[boundariesData.values.length - 1],
+    values: values[values.length - 1],
   });
 
-  return formatedData;
+  return formattedData;
 };
 
 export const formatElectrificationRanges = (
@@ -172,7 +171,9 @@ export const preparePathPropertiesData = (
 ): PathPropertiesFormatted => {
   const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes!, length, 'gradient');
   const formattedCurves = transformBoundariesDataToPositionDataArray(curves!, length, 'radius');
-  const electrificationsRanges = transformBoundariesDataToRangesData(electrifications!, length);
+  const electrificationsRanges = electrifications
+    ? transformBoundariesDataToRangesData(electrifications, length)
+    : [];
   const electricalProfilesRanges = transformBoundariesDataToRangesData(electricalProfiles, length);
 
   const electrificationRanges = formatElectrificationRanges(

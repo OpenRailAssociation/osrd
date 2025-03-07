@@ -63,7 +63,7 @@ class ConsistSection {
       await dropdownField.fill(selectedValue);
       await dropdownField.press('ArrowDown');
       await dropdownField.press('Enter');
-      await dropdownField.dispatchEvent('blur');
+      await dropdownField.blur();
       await expect(dropdownField).toHaveValue(selectedValue);
 
       const { expectedTonnage, expectedLength } = expectedValues;

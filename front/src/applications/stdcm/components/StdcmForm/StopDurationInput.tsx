@@ -59,6 +59,7 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
     <div className="stop-time">
       <Input
         id="stdcm-via-stop-time"
+        data-testid="stdcm-via-stop-time"
         type="text"
         label={t('trainPath.stopFor')}
         onChange={(e) => {

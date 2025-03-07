@@ -117,7 +117,7 @@ const ScenarioContent = ({
     <main className="mastcontainer mastcontainer-no-mastnav scenario">
       <div className="row no-gutters h-100">
         <div
-          data-testid="scenario-sidemenu"
+          data-testid="scenario-side-menu"
           className={cx(
             'h-100',
             collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'
