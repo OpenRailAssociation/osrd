@@ -161,7 +161,7 @@ itertools.workspace = true
 json-patch = { version = "4.0.0", default-features = false, features = [
   "utoipa",
 ] }
-lapin = "2.5.0"
+lapin = "2.5.1"
 lz4_flex = { version = "0.11.3", default-features = false, features = [
   "frame",
 ] }
