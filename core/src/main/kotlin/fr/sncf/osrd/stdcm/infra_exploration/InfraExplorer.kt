@@ -18,7 +18,7 @@ import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.AppendOnlySet
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.appendOnlyMapOf
-import fr.sncf.osrd.utils.appendOnlySetOf
+import fr.sncf.osrd.utils.createAppendOnlySet
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
@@ -119,6 +119,10 @@ fun initInfraExplorer(
     stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(setOf()),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorer> {
+    // Determined empirically on a timetable import
+    val maxExpectedTracks = 1600
+    val falsePositiveRate = 0.03
+
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
     val pathProps = makePathProps(blockInfra, rawInfra, block)
@@ -134,7 +138,7 @@ fun initInfraExplorer(
                 appendOnlyLinkedListOf(),
                 appendOnlyLinkedListOf(),
                 appendOnlyMapOf(),
-                appendOnlySetOf(),
+                createAppendOnlySet(maxExpectedTracks, falsePositiveRate),
                 null,
                 incrementalPath,
                 blockToPathProperties,
@@ -359,7 +363,6 @@ private class InfraExplorerImpl(
      * visited.
      */
     private fun hasRepeatedElements(block: StaticIdx<Block>): Boolean {
-        if (blockRoutes.containsKey(block)) return true
         val tracks =
             blockInfra
                 .getBlockPath(block)

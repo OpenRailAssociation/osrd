@@ -15,6 +15,7 @@ import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage
 import java.io.IOException
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import kotlin.time.measureTime
 import okhttp3.OkHttpClient
 import okio.buffer
 import okio.source
@@ -65,24 +66,27 @@ class ReproduceRequest : CliCommand {
                 val bufferedSource = fileSource.buffer()
                 return checkNotNull(adapter.fromJson(bufferedSource))
             }
-            if (stdcmPayloadPath != null) {
-                logger.info("running stdcm request at $stdcmPayloadPath")
-                STDCMEndpointV2(infraManager)
-                    .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter))
+
+            val time = measureTime {
+                if (stdcmPayloadPath != null) {
+                    logger.info("running stdcm request at $stdcmPayloadPath")
+                    STDCMEndpointV2(infraManager)
+                        .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter))
+                }
+                if (pathfindingPayloadPath != null) {
+                    logger.info("running pathfinding request at $pathfindingPayloadPath")
+                    PathfindingBlocksEndpointV2(infraManager)
+                        .run(loadRequest(pathfindingPayloadPath!!, pathfindingRequestAdapter))
+                }
+                if (simulationPayloadPath != null) {
+                    logger.info("running simulation request at $simulationPayloadPath")
+                    val electricalProfileSetManager =
+                        ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
+                    SimulationEndpoint(infraManager, electricalProfileSetManager)
+                        .run(loadRequest(simulationPayloadPath!!, SimulationRequest.adapter))
+                }
             }
-            if (pathfindingPayloadPath != null) {
-                logger.info("running pathfinding request at $pathfindingPayloadPath")
-                PathfindingBlocksEndpointV2(infraManager)
-                    .run(loadRequest(pathfindingPayloadPath!!, pathfindingRequestAdapter))
-            }
-            if (simulationPayloadPath != null) {
-                logger.info("running simulation request at $simulationPayloadPath")
-                val electricalProfileSetManager =
-                    ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
-                SimulationEndpoint(infraManager, electricalProfileSetManager)
-                    .run(loadRequest(simulationPayloadPath!!, SimulationRequest.adapter))
-            }
-            logger.info("done")
+            logger.info("done in ${time.inWholeMilliseconds / 1_000.0} seconds")
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
