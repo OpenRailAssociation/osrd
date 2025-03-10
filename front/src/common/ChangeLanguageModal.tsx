@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import i18n from 'i18n';
+import i18n, { supportedLngs } from 'i18n';
 
 import { useModal } from './BootstrapSNCF/ModalSNCF';
 
@@ -43,7 +43,7 @@ const SortedLanguages = () => {
     }
   };
 
-  const availablesLanguages = i18n.languages.map((lng) => ({
+  const availablesLanguages = supportedLngs.map((lng) => ({
     key: lng,
     value: t(`language.${lng}`),
   }));
