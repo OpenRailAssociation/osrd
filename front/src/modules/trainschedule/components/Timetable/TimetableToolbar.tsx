@@ -218,7 +218,9 @@ const TimetableToolbar = ({
           })}
         >
           {trainSchedules.length === 0 ? (
-            <Checkbox small readOnly label={t('timetable.noTrain')} />
+            <div className="train-count">
+              <Checkbox small readOnly label={t('timetable.noTrain')} />
+            </div>
           ) : (
             <div className="train-count">
               <Checkbox
