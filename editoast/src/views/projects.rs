@@ -433,13 +433,13 @@ pub mod tests {
         let response: ProjectWithStudyCountList =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let project_retreived = response
+        let project_retrieved = response
             .results
             .iter()
             .find(|p| p.project.id == created_project.id)
             .unwrap();
 
-        assert_eq!(created_project, project_retreived.project);
+        assert_eq!(created_project, project_retrieved.project);
     }
 
     #[rstest]
