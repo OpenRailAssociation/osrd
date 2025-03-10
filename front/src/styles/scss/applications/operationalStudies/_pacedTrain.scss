@@ -1,19 +1,10 @@
 .paced-train {
-  padding: 12px 0px 12px 6px;
-
   &:not(.closed) {
     padding-bottom: 16px;
   }
 
-  &.with-detail {
-    padding-bottom: 18px;
+  &:has(> .base-info.invalid) {
     .occurrences {
-      margin-bottom: 16px;
-    }
-  }
-
-  &.invalid{
-    .occurrences{
       opacity: 0.3;
     }
   }
@@ -97,6 +88,7 @@
   }
 
   .base-info {
+    padding: 12px 0px 12px 4px;
     position: relative;
 
     &.warning {
@@ -142,10 +134,11 @@
     align-self: center;
     margin-right: 8px;
   }
+
   .occurrences {
     width: 100%;
     height: auto;
-    padding-left: 28px;
+    padding-left: 32px;
     margin-top: 12px;
 
     .occurrence-item {
@@ -311,5 +304,22 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     line-height: 24px;
+    text-align: right;
+  }
+}
+
+.scenario-timetable-trains.with-details {
+  .paced-train:not(:has(> .base-info.invalid)) {
+    padding-bottom: 12px;
+
+    .base-info {
+      padding-bottom: 0;
+    }
+
+    &:not(.closed) {
+      .occurrences {
+        margin-bottom: 16px;
+      }
+    }
   }
 }

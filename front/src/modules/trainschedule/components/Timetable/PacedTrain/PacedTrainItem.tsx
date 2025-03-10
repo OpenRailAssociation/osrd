@@ -50,7 +50,6 @@ const PacedTrainItem = ({
         modified: isOnEdit,
         'in-selection': isInSelection,
         closed: !isOccurrencesListOpen,
-        invalid: pacedTrain.invalidReason,
       })}
     >
       <div
