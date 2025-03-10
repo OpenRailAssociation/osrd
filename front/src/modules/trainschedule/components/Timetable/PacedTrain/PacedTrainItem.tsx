@@ -131,10 +131,12 @@ const PacedTrainItem = ({
             key={occurrence.id}
             isSelected={selectedTimeTableItemId === occurrence.id}
             nextOccurrence={occurrences[index + 1]}
+            isValid={pacedTrain.isValid}
           />
         ))}
       </div>
-      {pacedTrain.isValid && (
+      {/* TODO PACED TRAIN: Remove conditon pacedTrain.duration after development paced train feature is done */}
+      {pacedTrain.isValid && pacedTrain.duration && (
         <div className="more-info">
           <div className="more-info-left">
             <span className="more-info-item">
@@ -147,7 +149,7 @@ const PacedTrainItem = ({
           </div>
           <div className="duration-time">
             <span data-testid="train-duration">
-              {dayjs.duration(pacedTrain.duration!.ms).format('HH[h]mm')}
+              {dayjs.duration(pacedTrain.duration.ms).format('HH[h]mm')}
             </span>
           </div>
         </div>

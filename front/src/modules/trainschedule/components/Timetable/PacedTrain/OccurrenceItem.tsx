@@ -26,9 +26,15 @@ type OccurrenceItemProps = {
   occurrence: Occurrence;
   isSelected: boolean;
   nextOccurrence?: Occurrence;
+  isValid?: boolean;
 };
 
-const OccurrenceItem = ({ occurrence, isSelected, nextOccurrence }: OccurrenceItemProps) => {
+const OccurrenceItem = ({
+  occurrence,
+  isSelected,
+  nextOccurrence,
+  isValid,
+}: OccurrenceItemProps) => {
   const { trainName, rollingStock, startTime, arrivalTime } = occurrence;
   const isAfterMidnight = dayjs(occurrence.arrivalTime).isAfter(occurrence.startTime, 'day');
   const isNextAfterMidnight = nextOccurrence
@@ -53,17 +59,19 @@ const OccurrenceItem = ({ occurrence, isSelected, nextOccurrence }: OccurrenceIt
         {rollingStock && <RollingStock2Img rollingStock={rollingStock} />}
       </div>
 
-      <div className="occurrence-item-horaries">
-        <div className="status-icon after-midnight">
-          {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
+      {isValid && (
+        <div className="occurrence-item-horaries">
+          <div className="status-icon after-midnight">
+            {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
+          </div>
+          <div className="occurrence-item-time departure-time">
+            {dayjs(startTime).format('HH:mm')}
+          </div>
+          <div className="occurrence-item-time arrival-time">
+            {dayjs(arrivalTime).format('HH:mm')}
+          </div>
         </div>
-        <div className="occurrence-item-time departure-time">
-          {dayjs(startTime).format('HH:mm')}
-        </div>
-        <div className="occurrence-item-time arrival-time">
-          {dayjs(arrivalTime).format('HH:mm')}
-        </div>
-      </div>
+      )}
       {nextOccurrence && isNextAfterMidnight && (
         <ConsecutiveDayDateDisplay
           departureTime={startTime}
