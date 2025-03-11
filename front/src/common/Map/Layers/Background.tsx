@@ -12,7 +12,7 @@ function Background(props: BackgroundProps) {
   const { colors, layerOrder } = props;
 
   const backgroundParams: LayerProps = {
-    id: 'background',
+    id: 'osm/background',
     type: 'background',
     layout: {
       visibility: 'visible',
@@ -23,7 +23,12 @@ function Background(props: BackgroundProps) {
   };
 
   return (
-    <Source id="background" type="vector">
+    <Source
+      id="platform"
+      type="vector"
+      url="https://osm.osrd.fr/data/v3.json"
+      source-layer="transportation"
+    >
       <OrderedLayer {...backgroundParams} layerOrder={layerOrder} />
     </Source>
   );
