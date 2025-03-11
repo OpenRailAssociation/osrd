@@ -14,6 +14,7 @@ For both tests or run:
 - [openssl](https://www.openssl.org)
 - [libgeos](https://libgeos.org/usage/install/) (may be packaged as `libgeos-dev`)
 - A properly initialized postgresql database and a valkey server: `docker compose up --no-build --detach postgres valkey`
+- the [fga CLI](https://github.com/openfga/cli) installed
 
 ## Steps
 
@@ -21,6 +22,9 @@ For both tests or run:
 # apply database migration
 $ cargo install diesel_cli --no-default-features --features postgres
 $ diesel migration run --locked-schema  # avoids bumping modification date (then rebuild)
+# prepare the database for OpenFGA
+docker exec -it osrd-postgres psql -d osrd -c "CREATE SCHEMA openfga;"
+docker exec -it osrd-postgres psql -d osrd -c "GRANT ALL PRIVILEGES ON SCHEMA openfga TO osrd;"
 # build the assets
 $ cargo install spreet
 $ ./assets/sprites/generate-atlas.sh
