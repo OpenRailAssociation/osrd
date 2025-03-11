@@ -13,6 +13,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
+import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.AppendOnlySet
@@ -116,7 +117,7 @@ fun initInfraExplorer(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     location: PathfindingEdgeLocationId<Block>,
-    stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(setOf()),
+    steps: List<STDCMStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorer> {
     // Determined empirically on a timetable import
@@ -129,7 +130,7 @@ fun initInfraExplorer(
     val blockToPathProperties = mutableMapOf(block to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
 
-    routes.forEach {
+    routes.forEach { route ->
         val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
         val infraExplorer =
             InfraExplorerImpl(
@@ -142,10 +143,10 @@ fun initInfraExplorer(
                 null,
                 incrementalPath,
                 blockToPathProperties,
-                stops = stops,
+                stepTracker = StepTracker(steps),
                 constraints = constraints,
             )
-        val infraExtended = infraExplorer.extend(it, location)
+        val infraExtended = infraExplorer.extend(route, location)
         if (infraExtended) infraExplorers.add(infraExplorer)
     }
     return infraExplorers
@@ -162,9 +163,7 @@ private class InfraExplorerImpl(
     private var incrementalPath: IncrementalPath,
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
-    // TODO: Should evolve into a List of struct that contains duration, receptionSignal and a
-    //       collection of locations
-    private val stops: List<Collection<PathfindingEdgeLocationId<Block>>>,
+    private var stepTracker: StepTracker,
     private var predecessorLength: Length<Path> = Length(0.meters), // to avoid re-computing it
     private var constraints: List<PathfindingConstraint<Block>>,
 ) : InfraExplorer {
@@ -270,7 +269,7 @@ private class InfraExplorerImpl(
             this.incrementalPath.clone(),
             this.pathPropertiesCache,
             this.currentIndex,
-            this.stops,
+            this.stepTracker.clone(),
             this.predecessorLength,
             this.constraints,
         )
@@ -282,8 +281,8 @@ private class InfraExplorerImpl(
 
     /**
      * Updates `incrementalPath`, `routes`, `blocks` and returns true if route can be explored.
-     * Otherwise, it returns false and keeps the states as is. `blockRoutes` is updated to keep
-     * track of the route used for each block.
+     * Otherwise, it returns false and the instance is supposed to be dropped. `blockRoutes` is
+     * updated to keep track of the route used for each block.
      */
     fun extend(route: RouteId, firstLocation: PathfindingEdgeLocationId<Block>? = null): Boolean {
         val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
@@ -302,28 +301,31 @@ private class InfraExplorerImpl(
             if (!seenFirstBlock) {
                 nBlocksToSkip++
             } else {
+                val startPath = !pathStarted
+                val addRoute = block == routeBlocks.first() || startPath
+                val travelledPathBeginBlockOffset =
+                    if (startPath) firstLocation!!.offset else Offset.zero()
+                val blockLength = blockInfra.getBlockLength(block)
+
+                val stepsOnBlock =
+                    stepTracker.exploreBlockRange(block, travelledPathBeginBlockOffset, blockLength)
+                val arrivalLocation =
+                    if (stepTracker.hasReachedDestination()) stepsOnBlock.lastOrNull()?.location
+                    else null
                 // If a block cannot be explored, give up
-                val endLocation = stops.last().firstOrNull { it.edge == block }
                 val isRouteBlocked =
                     constraints.any { constraint ->
                         constraint.apply(block).any {
                             if (firstLocation != null && firstLocation.edge == block)
                                 firstLocation.offset.distance < it.end.distance
-                            else if (endLocation != null)
-                                endLocation.offset.distance > it.start.distance
+                            else if (arrivalLocation != null)
+                                arrivalLocation.offset.distance > it.start.distance
                             else true
                         }
                     }
                 if (isRouteBlocked) return false
-                val endLocationsOnBlock = stops.last().filter { it.edge == block }
-                val endPath = endLocationsOnBlock.isNotEmpty()
-                val endPathBlockLocation = endLocationsOnBlock.maxByOrNull { it.offset }
-                val startPath = !pathStarted
-                val addRoute = block == routeBlocks.first() || startPath
-                val travelledPathBeginBlockOffset =
-                    if (startPath) firstLocation!!.offset else Offset.zero()
-                val travelledPathEndBlockOffset =
-                    endPathBlockLocation?.offset ?: blockInfra.getBlockLength(block)
+                val endPath = arrivalLocation != null
+                val travelledPathEndBlockOffset = arrivalLocation?.offset ?: blockLength
                 pathFragments.add(
                     PathFragment(
                         if (addRoute) mutableStaticIdxArrayListOf(route)
@@ -333,9 +335,7 @@ private class InfraExplorerImpl(
                         containsEnd = endPath,
                         stops =
                             findStopsInTravelledPathAndOnBlock(
-                                block,
-                                travelledPathBeginBlockOffset,
-                                travelledPathEndBlockOffset
+                                stepsOnBlock,
                             ),
                         travelledPathBegin = travelledPathBeginBlockOffset.distance,
                         travelledPathEnd =
@@ -378,26 +378,15 @@ private class InfraExplorerImpl(
     }
 
     private fun findStopsInTravelledPathAndOnBlock(
-        block: StaticIdx<Block>,
-        travelledPathBeginBlockOffset: Offset<Block>,
-        travelledPathEndBlockOffset: Offset<Block>
+        stepsOnBlock: List<LocatedStep>
     ): List<FragmentStop> {
-        val blockStops = mutableListOf<FragmentStop>()
-        for (stop in stops) {
-            for (location in stop) {
-                val isIncluded =
-                    location.edge == block &&
-                        location.offset in
-                            travelledPathBeginBlockOffset..travelledPathEndBlockOffset
-                if (isIncluded) {
-                    // There's only one block in the fragment, Offset<FragmentBlocks> ==
-                    // Offset<Block> here
-                    val fragmentOffset = location.offset.cast<FragmentBlocks>()
-                    blockStops.add(FragmentStop(fragmentOffset, SHORT_SLIP_STOP))
-                }
+        return stepsOnBlock
+            .filter { it.originalStep.stop }
+            .map {
+                // There's a single block in the fragment: Offset<FragmentBlocks> == Offset<Block>
+                val fragmentOffset = it.location.offset.cast<FragmentBlocks>()
+                FragmentStop(fragmentOffset, SHORT_SLIP_STOP)
             }
-        }
-        return blockStops
     }
 
     override fun toString(): String {

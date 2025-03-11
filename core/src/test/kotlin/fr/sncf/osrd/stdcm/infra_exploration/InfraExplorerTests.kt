@@ -5,6 +5,7 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
+import fr.sncf.osrd.stdcm.stepsFromLocations
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DummyInfra
@@ -33,7 +34,7 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 PathfindingEdgeLocationId(block, Offset(0.meters)),
-                listOf(setOf(PathfindingEdgeLocationId(block, infra.getBlockLength(block))))
+                stepsFromLocations(PathfindingEdgeLocationId(block, infra.getBlockLength(block)))
             )
         assertEquals(1, explorers.size)
         val explorer = explorers.first()
@@ -61,13 +62,8 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
-                listOf(
-                    setOf(
-                        PathfindingEdgeLocationId(
-                            blocks.last(),
-                            infra.getBlockLength(blocks.last())
-                        )
-                    )
+                stepsFromLocations(
+                    PathfindingEdgeLocationId(blocks.last(), infra.getBlockLength(blocks.last()))
                 )
             )
         assertEquals(1, firstExplorers.size)
@@ -389,11 +385,12 @@ class InfraExplorerTests {
                     infra,
                     infra,
                     PathfindingEdgeLocationId(blocks[0], Offset(50.meters)),
-                    listOf(
-                        setOf(PathfindingEdgeLocationId(blocks[0], Offset(50.meters))),
-                        setOf(PathfindingEdgeLocationId(blocks[1], Offset(50.meters))),
-                        setOf(PathfindingEdgeLocationId(blocks[2], Offset(0.meters))),
-                        setOf(PathfindingEdgeLocationId(blocks[3], Offset(50.meters))),
+                    stepsFromLocations(
+                        PathfindingEdgeLocationId(blocks[0], Offset(50.meters)),
+                        PathfindingEdgeLocationId(blocks[1], Offset(50.meters)),
+                        PathfindingEdgeLocationId(blocks[2], Offset(0.meters)),
+                        PathfindingEdgeLocationId(blocks[3], Offset(50.meters)),
+                        stops = true
                     )
                 )
                 .single()
@@ -427,7 +424,10 @@ class InfraExplorerTests {
                     infra.rawInfra,
                     infra.blockInfra,
                     PathfindingEdgeLocationId(block, Offset(32.meters)),
-                    listOf(setOf(PathfindingEdgeLocationId(block, Offset(42.meters))))
+                    stepsFromLocations(
+                        PathfindingEdgeLocationId(block, Offset(42.meters)),
+                        stops = true
+                    )
                 )
                 .first()
         val incrementalPath = explorers.getIncrementalPath()

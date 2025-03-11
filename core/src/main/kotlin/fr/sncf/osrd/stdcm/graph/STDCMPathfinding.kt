@@ -6,7 +6,6 @@ import fr.sncf.osrd.api.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -118,9 +117,7 @@ class STDCMPathfinding(
             ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
-        val stops = steps.filter { it.stop }.map { it.locations }
-        assert(stops.isNotEmpty())
-        starts = getStartNodes(stops, listOf(constraints))
+        starts = getStartNodes(steps, listOf(constraints))
         val path = findPathImpl()
         graph.stdcmSimulations.logWarnings()
         if (path == null) {
@@ -250,7 +247,7 @@ class STDCMPathfinding(
 
     /** Converts start locations into starting nodes. */
     private fun getStartNodes(
-        stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(),
+        stops: List<STDCMStep> = listOf(),
         constraints: List<PathfindingConstraint<Block>>
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
@@ -262,7 +259,7 @@ class STDCMPathfinding(
                     fullInfra,
                     location,
                     rollingStock,
-                    stops,
+                    steps,
                     constraints,
                 )
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }

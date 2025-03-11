@@ -16,6 +16,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailability
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
+import fr.sncf.osrd.stdcm.stepsFromLocations
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
 import fr.sncf.osrd.train.TestTrains.VERY_LONG_FAST_TRAIN
@@ -114,12 +115,10 @@ class BlockAvailabilityTests {
                     infra,
                     PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
                     rollingStock,
-                    listOf(
-                        setOf(
-                            PathfindingEdgeLocationId(
-                                blocks.last(),
-                                infra.blockInfra.getBlockLength(blocks.last())
-                            )
+                    stepsFromLocations(
+                        PathfindingEdgeLocationId(
+                            blocks.last(),
+                            infra.blockInfra.getBlockLength(blocks.last())
                         )
                     )
                 )
@@ -554,12 +553,10 @@ class BlockAvailabilityTests {
                     infra,
                     PathfindingEdgeLocationId(blocks[2], Offset(50.meters)),
                     REALISTIC_FAST_TRAIN,
-                    listOf(
-                        setOf(
-                            PathfindingEdgeLocationId(
-                                blocks.last(),
-                                infra.blockInfra.getBlockLength(blocks.last())
-                            )
+                    stepsFromLocations(
+                        PathfindingEdgeLocationId(
+                            blocks.last(),
+                            infra.blockInfra.getBlockLength(blocks.last())
                         )
                     )
                 )

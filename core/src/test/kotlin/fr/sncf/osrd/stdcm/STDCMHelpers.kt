@@ -202,3 +202,11 @@ fun infraExplorerFromBlock(
         )
         .elementAt(0)
 }
+
+fun stepsFromLocations(
+    vararg locations: PathfindingEdgeLocationId<Block>,
+    stops: Boolean = false
+): List<STDCMStep> {
+    val duration = if (stops) 0.0 else null
+    return locations.map { STDCMStep(listOf(it), duration, stops) }
+}
