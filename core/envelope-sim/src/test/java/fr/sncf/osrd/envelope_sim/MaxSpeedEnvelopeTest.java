@@ -22,7 +22,7 @@ public class MaxSpeedEnvelopeTest {
         var context = makeSimpleContext(100000, 0);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
-        var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * maxSpeedEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.1s timestep so they can be
         // considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
@@ -39,7 +39,7 @@ public class MaxSpeedEnvelopeTest {
         var context = makeSimpleContext(10000, 20);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
-        var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * maxSpeedEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.1s timestep so they can be
         // considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
@@ -70,7 +70,7 @@ public class MaxSpeedEnvelopeTest {
         var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, effortCurveMap);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
-        var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * maxSpeedEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.1s timestep so they can be
         // considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps

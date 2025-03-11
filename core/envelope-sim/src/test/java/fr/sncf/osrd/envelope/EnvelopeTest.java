@@ -39,8 +39,8 @@ public class EnvelopeTest {
         assertEquals(3, partB.getMinSpeed());
         assertEquals(4, partB.getMaxSpeed());
 
-        assertEquals(1, envelope.getMinSpeed());
-        assertEquals(4, envelope.getMaxSpeed());
+        assertEquals(1, envelope.minSpeed);
+        assertEquals(4, envelope.maxSpeed);
     }
 
     @Test

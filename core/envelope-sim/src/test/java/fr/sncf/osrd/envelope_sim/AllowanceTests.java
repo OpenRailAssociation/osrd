@@ -118,7 +118,7 @@ public class AllowanceTests {
     private void testAllowanceShapeFlat(EnvelopeSimContext context, Allowance allowance) {
         var allowanceEnvelope = makeSimpleAllowanceEnvelope(context, allowance, 44.4, true);
         check(allowanceEnvelope, INCREASING, DECREASING, DECREASING, INCREASING, DECREASING, DECREASING);
-        var delta = 2 * allowanceEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * allowanceEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.1s time step, so they can
         // be considered as
         // reference, the delta is supposed to absorb the difference for higher time steps
@@ -147,7 +147,7 @@ public class AllowanceTests {
                 CONSTANT,
                 DECREASING,
                 DECREASING);
-        var delta = 2 * allowanceEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * allowanceEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.1s time step, so they can
         // be considered as
         // reference, the delta is supposed to absorb the difference for higher time steps

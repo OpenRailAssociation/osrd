@@ -60,7 +60,7 @@ public final class MarecoAllowance extends AbstractAllowanceWithRanges {
     @Override
     @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     protected double computeInitialHighBound(Envelope envelopeSection, PhysicsRollingStock rollingStock) {
-        var sectionMaxSpeed = envelopeSection.getMaxSpeed();
+        var sectionMaxSpeed = envelopeSection.maxSpeed;
         var maxSpeed = sectionMaxSpeed;
         var vf = computeVf(maxSpeed, rollingStock);
         while (vf < sectionMaxSpeed) {
