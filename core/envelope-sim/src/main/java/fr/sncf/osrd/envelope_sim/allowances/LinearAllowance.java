@@ -25,7 +25,7 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
     /** Compute the initial high bound for the binary search */
     @Override
     protected double computeInitialHighBound(Envelope envelopeSection, PhysicsRollingStock rollingStock) {
-        return envelopeSection.getMaxSpeed();
+        return envelopeSection.maxSpeed;
     }
 
     /**
@@ -34,7 +34,7 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
      */
     @Override
     protected Envelope computeCore(Envelope coreBase, EnvelopeSimContext context, double maxSpeed) {
-        var ratio = maxSpeed / coreBase.getMaxSpeed();
+        var ratio = maxSpeed / coreBase.maxSpeed;
         return scaleEnvelope(coreBase, ratio);
     }
 

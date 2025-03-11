@@ -31,7 +31,7 @@ public class MaxEffortEnvelopeTest {
         var stops = new double[] {6000, length};
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         check(maxEffortEnvelope, INCREASING, CONSTANT, DECREASING, INCREASING, DECREASING);
-        var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * maxEffortEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be
         // considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
@@ -48,7 +48,7 @@ public class MaxEffortEnvelopeTest {
         var stops = new double[] {6000, testPath.getLength()};
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         check(maxEffortEnvelope, INCREASING, CONSTANT, DECREASING, INCREASING, CONSTANT, DECREASING);
-        var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * maxEffortEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be
         // considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
@@ -63,7 +63,7 @@ public class MaxEffortEnvelopeTest {
         var stops = new double[] {6000, length};
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         check(maxEffortEnvelope, INCREASING, DECREASING, INCREASING, DECREASING);
-        var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * maxEffortEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be
         // considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
@@ -80,7 +80,7 @@ public class MaxEffortEnvelopeTest {
         var stops = new double[] {6000, testPath.getLength()};
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         check(maxEffortEnvelope, INCREASING, DECREASING, INCREASING, DECREASING);
-        var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * maxEffortEnvelope.maxSpeed * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be
         // considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
