@@ -83,12 +83,7 @@ function OSM({ mapStyle, layerOrder, mapIsLoaded }: OSMProps) {
 
   if (reload) return null;
   return (
-    <Source
-      id="osm"
-      type="vector"
-      url={OSM_URL}
-      attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    >
+    <Source id="osm" type="vector" url={OSM_URL}>
       {genOSMLayers(mapStyle, toggledLayers, layerOrder)}
     </Source>
   );
