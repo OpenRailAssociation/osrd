@@ -21,6 +21,21 @@ const DEFAULT_TOLERANCE = new Duration({ minutes: 30 });
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   ...defaultCommonConf,
+  layersSettings: {
+    buffer_stops: false,
+    electrifications: false,
+    neutral_sections: false,
+    detectors: false,
+    operational_points: true,
+    routes: false,
+    signals: false,
+    sncf_psl: false,
+    speed_limits: false,
+    speedlimittag: null,
+    switches: false,
+    platforms: false,
+    tvds: false,
+  },
   stdcmPathSteps: [
     {
       id: uuidV4(),
@@ -69,6 +84,12 @@ export const stdcmConfSlice = createSlice({
   initialState: stdcmConfInitialState,
   reducers: {
     ...buildCommonConfReducers<OsrdStdcmConfState>(),
+    updateStdcmLayers(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<OsrdStdcmConfState['layersSettings']>
+    ) {
+      state.layersSettings = action.payload;
+    },
     resetStdcmConfig(state: Draft<OsrdStdcmConfState>) {
       state.rollingStockID = stdcmConfInitialState.rollingStockID;
       state.stdcmPathSteps = stdcmConfInitialState.stdcmPathSteps;
@@ -307,6 +328,7 @@ export const {
   selectSimulation,
   retainSimulation,
   addStdcmSimulation,
+  updateStdcmLayers,
 } = stdcmConfSlice.actions;
 
 export type StdcmConfSlice = typeof stdcmConfSlice;

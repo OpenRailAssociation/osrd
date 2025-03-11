@@ -22,6 +22,7 @@ import {
   getStdcmPathSteps,
   getStdcmProjectID,
   getStdcmScenarioID,
+  getStdcmSelectedLayers,
   getStdcmStudyID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
@@ -85,6 +86,7 @@ const StdcmConfig = ({
   const projectID = useSelector(getStdcmProjectID);
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
+  const stdcmLayers = useSelector(getStdcmSelectedLayers);
 
   const [showMessage, setShowMessage] = useState(false);
 
@@ -276,6 +278,7 @@ const StdcmConfig = ({
             mapId="stdcm-map-config"
             infraId={infra?.id}
             pathStepMarkers={markersInfo}
+            layersSettings={stdcmLayers}
           />
         </div>
       </div>

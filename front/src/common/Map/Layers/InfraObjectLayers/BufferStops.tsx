@@ -1,10 +1,8 @@
 import { isNil } from 'lodash';
 import { Source, type SymbolLayer } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getLayersSettings } from 'reducers/map/selectors';
 import type { Theme, OmitLayer } from 'types';
 
 export function getBufferStopsLayerProps(params: { sourceTable?: string }): OmitLayer<SymbolLayer> {
@@ -40,9 +38,7 @@ interface BufferStopsProps {
 }
 
 const BufferStops = ({ layerOrder, infraID }: BufferStopsProps) => {
-  const layersSettings = useSelector(getLayersSettings);
-
-  if (!layersSettings.bufferstops || isNil(infraID)) return null;
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="osrd_bufferstop_geo"

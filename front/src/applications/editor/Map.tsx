@@ -306,7 +306,6 @@ const MapUnplugged = ({
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
               infraID={infraID}
-              overrideStore
             />
           )}
 
@@ -315,7 +314,6 @@ const MapUnplugged = ({
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
               infraID={infraID}
-              overrideStore
             />
           )}
 

@@ -201,11 +201,13 @@
       "detectors": "Detectors",
       "errors": "Errors",
       "psl-psl_signs": "Permanent speed limits",
+      "sncf_psl": "Permanent speed limits",
       "routes": "Routes",
       "signals": "Signals",
       "switches": "Switches",
       "track_sections": "Track sections",
       "speed_sections": "Speed limits",
+      "speed_limits": "Speed limits",
       "platforms": "Platforms",
       "neutral_sections": "Dead sections",
       "operational_points": "Operational points"
@@ -216,7 +218,7 @@
       "layer-selected-items_other": "{{count}} items selected",
       "selection-warning_one": "An element has been deselected.",
       "selection-warning_other": "{{count}} elements have been deselected.",
-      "no-speed-limit-tag": "No composition code"
+      "noSpeedLimitByTag": "No composition code"
     },
     "linear-metadata": {
       "help": "This component allows you to view and modify a linear layout. You can zoom into the view using the provided buttons or the mouse wheel, and move around using drag'n'drop. To change the size of a segment, simply click on it and the edit form will be displayed below. You can also click on a border of a segment, and while keeping your finger pressed, move the border with the mouse.",

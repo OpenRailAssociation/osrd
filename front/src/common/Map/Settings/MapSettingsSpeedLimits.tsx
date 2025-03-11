@@ -128,7 +128,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
 export default function MapSettingsLayers() {
   return (
     <div className="row">
-      <FormatSwitch name="speedlimits" icon={IoMdSpeedometer} />
+      <FormatSwitch name="speed_limits" icon={IoMdSpeedometer} />
       <div className="col-lg-6">
         <SimpleFormatSwitch
           name="sncf_psl"

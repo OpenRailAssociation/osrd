@@ -2,12 +2,10 @@ import { isNil } from 'lodash';
 import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import { Source } from 'react-map-gl/maplibre';
 import type { SymbolLayer, LineLayer } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import type { RootState } from 'reducers';
-import type { MapState } from 'reducers/map';
+import type { LayersSettings } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
 
 interface SpeedLimitsProps {
@@ -15,9 +13,10 @@ interface SpeedLimitsProps {
   layerOrder: number;
   punctualLayerOrder: number;
   infraID?: number;
+  layersSettings: LayersSettings;
 }
 
-export function getSpeedSectionsTag({ speedlimittag }: MapState['layersSettings']): string {
+export function getSpeedSectionsTag({ speedlimittag }: LayersSettings): string {
   return speedlimittag !== null ? `speed_limit_by_tag_${speedlimittag}` : 'null';
 }
 
@@ -25,17 +24,13 @@ export function getSpeedSectionsNameString(rawSpeed: number) {
   return Math.round(rawSpeed * 3.6);
 }
 
-export function getSpeedSectionsName(
-  layersSettings: MapState['layersSettings']
-): ExpressionSpecification {
+export function getSpeedSectionsName(layersSettings: LayersSettings): ExpressionSpecification {
   const tag = getSpeedSectionsTag(layersSettings);
 
   return ['round', ['*', 3.6, ['case', ['!=', tag, 'null'], ['get', tag], ['get', 'speed_limit']]]];
 }
 
-export function getFilterBySpeedSectionsTag(
-  layersSettings: MapState['layersSettings']
-): FilterSpecification {
+export function getFilterBySpeedSectionsTag(layersSettings: LayersSettings): FilterSpecification {
   return isNil(layersSettings.speedlimittag)
     ? ['has', 'speed_limit']
     : ['has', getSpeedSectionsTag(layersSettings)];
@@ -48,7 +43,7 @@ export function getSpeedSectionsLineLayerProps({
 }: {
   colors: Theme;
   sourceTable?: string;
-  layersSettings: MapState['layersSettings'];
+  layersSettings: LayersSettings;
 }): OmitLayer<LineLayer> {
   const res: OmitLayer<LineLayer> = {
     type: 'line',
@@ -101,7 +96,7 @@ export function getSpeedSectionsPointLayerProps({
 }: {
   colors: Theme;
   sourceTable?: string;
-  layersSettings: MapState['layersSettings'];
+  layersSettings: LayersSettings;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
@@ -139,7 +134,7 @@ export function getSpeedSectionsTextLayerProps({
 }: {
   colors: Theme;
   sourceTable?: string;
-  layersSettings: MapState['layersSettings'];
+  layersSettings: LayersSettings;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
     type: 'symbol',
@@ -173,9 +168,8 @@ export default function SpeedLimits({
   layerOrder,
   punctualLayerOrder,
   infraID,
+  layersSettings,
 }: SpeedLimitsProps) {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
-
   const filter = getFilterBySpeedSectionsTag(layersSettings);
   const lineProps = {
     ...getSpeedSectionsLineLayerProps({
@@ -202,7 +196,7 @@ export default function SpeedLimits({
     filter,
   };
 
-  if (!layersSettings.speedlimits || isNil(infraID)) return null;
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="osrd_speed_limit_geo"

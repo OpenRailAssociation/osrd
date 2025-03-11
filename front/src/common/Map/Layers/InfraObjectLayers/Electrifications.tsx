@@ -1,11 +1,9 @@
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import type { RootState } from 'reducers';
 import type { Theme } from 'types';
 
 interface ElectrificationsProps {
@@ -121,7 +119,6 @@ export function getElectrificationsTextParams({
 }
 
 export default function Electrifications({ colors, layerOrder, infraID }: ElectrificationsProps) {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
   const electrificationsParams: LayerProps = getElectrificationsProps({
     colors,
     sourceTable: 'electrifications',
@@ -130,8 +127,7 @@ export default function Electrifications({ colors, layerOrder, infraID }: Electr
     colors,
     sourceTable: 'electrifications',
   });
-
-  if (!layersSettings.electrifications || isNil(infraID)) return null;
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="electrifications_geo"

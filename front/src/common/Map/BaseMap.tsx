@@ -18,7 +18,7 @@ import type { MapState, Viewport } from 'reducers/map';
 
 import { CUSTOM_ATTRIBUTION } from './const';
 
-type MapProps = Pick<MapState, 'mapSearchMarker' | 'mapStyle' | 'showOSM'> & {
+type MapProps = Pick<MapState, 'layersSettings' | 'mapSearchMarker' | 'mapStyle' | 'showOSM'> & {
   mapId: string;
   mapRef: MutableRefObject<MapRef | null>;
   interactiveLayerIds: string[];
@@ -57,6 +57,7 @@ const BaseMap = ({
   onMouseEnter,
   onMouseMove,
   onIdle,
+  layersSettings,
 }: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
 
@@ -134,10 +135,15 @@ const BaseMap = ({
           infraId={infraId}
           mapStyle={mapStyle}
           hoveredOperationalPointId={hoveredOperationalPointId}
+          layersSettings={layersSettings}
         />
       )}
 
-      <OSMLayers mapStyle={mapStyle} showOSM={showOSM && mapIsLoaded} />
+      <OSMLayers
+        hidePlatforms={!layersSettings.platforms}
+        mapStyle={mapStyle}
+        showOSM={showOSM && mapIsLoaded}
+      />
       <IGNLayers />
 
       <LineSearchLayer

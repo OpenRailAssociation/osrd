@@ -1,11 +1,9 @@
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { SymbolLayer, CircleLayer } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import type { RootState } from 'reducers';
 import type { Theme, OmitLayer } from 'types';
 
 export function getSwitchesLayerProps(params: {
@@ -63,12 +61,10 @@ interface SwitchesProps {
 }
 
 const Switches = ({ colors, layerOrder, infraID }: SwitchesProps) => {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
-
   const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
   const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });
 
-  if (!layersSettings.switches || isNil(infraID)) return null;
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="osrd_switches_geo"

@@ -42,7 +42,7 @@ const MapSettings = ({ closeMapSettingsPopUp }: MapSettingsProps) => {
         role="button"
         tabIndex={0}
       >
-        {t('map-settings:speedlimits')}
+        {t('map-settings:speed_limits')}
         <span className="ml-2">
           {showSettingsSpeedLimits ? <ChevronUp size="lg" /> : <ChevronDown size="lg" />}
         </span>

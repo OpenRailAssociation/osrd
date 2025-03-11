@@ -104,7 +104,7 @@ const Map = ({
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
         'chartis/tracks-geo/main',
-        ...(layersSettings.operationalpoints ? OPERATIONAL_POINT_LAYERS : []),
+        ...(layersSettings.operational_points ? OPERATIONAL_POINT_LAYERS : []),
       ],
     });
     if (result && result.feature.properties && result.feature.properties.id) {
@@ -124,7 +124,7 @@ const Map = ({
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
         'chartis/tracks-geo/main',
-        ...(layersSettings.operationalpoints ? OPERATIONAL_POINT_LAYERS : []),
+        ...(layersSettings.operational_points ? OPERATIONAL_POINT_LAYERS : []),
       ],
     });
     if (
@@ -156,7 +156,7 @@ const Map = ({
   const interactiveLayerIds = useMemo(() => {
     const result: Array<string> = [];
     result.push('chartis/tracks-geo/main');
-    if (layersSettings.operationalpoints) {
+    if (layersSettings.operational_points) {
       result.push('chartis/osrd_operational_point/geo');
     }
     if (layersSettings.tvds) {
@@ -210,6 +210,7 @@ const Map = ({
         viewPort={viewport}
         updatePartialViewPort={updateViewportChange}
         terrain3DExaggeration={terrain3DExaggeration}
+        layersSettings={layersSettings}
       >
         {!showStdcmAssets && featureInfoClick && (
           <AddPathStepPopup

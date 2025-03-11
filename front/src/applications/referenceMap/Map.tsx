@@ -50,6 +50,7 @@ const Map = () => {
         viewPort={viewport}
         withInfraButton
         withMapKeyButton
+        layersSettings={layersSettings}
       />
       <BaseMap
         mapId={REFERENCE_MAP_ID}
@@ -66,6 +67,7 @@ const Map = () => {
         viewPort={viewport}
         updatePartialViewPort={updateViewportChange}
         terrain3DExaggeration={terrain3DExaggeration}
+        layersSettings={layersSettings}
       />
     </main>
   );

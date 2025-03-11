@@ -1,10 +1,8 @@
 import { isNil } from 'lodash';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getLayersSettings } from 'reducers/map/selectors';
 import type { Theme } from 'types';
 
 import getKPLabelLayerProps from './getKPLabelLayerProps';
@@ -14,7 +12,6 @@ type OperationalPointsProps = {
   layerOrder: number;
   infraID: number | undefined;
   operationnalPointId?: string;
-  overrideStore?: boolean;
 };
 
 const OperationalPointsLayer = ({
@@ -22,11 +19,8 @@ const OperationalPointsLayer = ({
   layerOrder,
   infraID,
   operationnalPointId,
-  overrideStore = false,
 }: OperationalPointsProps) => {
-  const layersSettings = useSelector(getLayersSettings);
-
-  if ((!overrideStore && !layersSettings.operationalpoints) || isNil(infraID)) return null;
+  if (isNil(infraID)) return null;
 
   const point: LayerProps = {
     type: 'circle',

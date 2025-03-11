@@ -14,7 +14,7 @@ import ItineraryMarkers, {
   type MarkerInformation,
 } from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 import { mapInitialState } from 'reducers/map';
-import type { Viewport } from 'reducers/map';
+import type { Viewport, LayersSettings } from 'reducers/map';
 
 type DefaultBaseMapProps = {
   mapId: string;
@@ -22,6 +22,7 @@ type DefaultBaseMapProps = {
   geometry?: GeoJsonLineString;
   pathStepMarkers?: MarkerInformation[];
   isFeasible?: boolean;
+  layersSettings: LayersSettings;
 };
 
 const ZOOM_DEFAULT = 5;
@@ -38,10 +39,10 @@ const DefaultBaseMap = ({
   pathStepMarkers = [],
   isFeasible = true,
   children,
+  layersSettings,
 }: PropsWithChildren<DefaultBaseMapProps>) => {
   const mapRef = useRef<MapRef | null>(null);
   const [viewPort, setViewPort] = useState(mapInitialState.viewport);
-
   const updateViewportChange = useCallback(
     (partialViewPort: Partial<Viewport>) =>
       setViewPort((prev) => ({
@@ -93,9 +94,10 @@ const DefaultBaseMap = ({
         bearing={viewPort.bearing}
         withMapKeyButton={false}
         withSearchButton={false}
-        withToggleLayersButton={false}
         viewPort={viewPort}
         isNewButtons
+        compact
+        layersSettings={layersSettings}
       />
       <BaseMap
         mapId={mapId}
@@ -107,6 +109,7 @@ const DefaultBaseMap = ({
         updatePartialViewPort={updateViewportChange}
         hideAttribution
         showOSM
+        layersSettings={layersSettings}
       >
         <ItineraryLayer
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}

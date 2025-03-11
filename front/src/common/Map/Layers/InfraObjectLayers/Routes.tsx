@@ -1,11 +1,9 @@
 import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getMap } from 'reducers/map/selectors';
 import type { Theme, OmitLayer } from 'types';
 
 interface RoutesProps {
@@ -89,13 +87,11 @@ export function getRoutesTextLayerProps(params: {
 }
 
 export default function Routes({ colors, layerOrder, infraID }: RoutesProps) {
-  const { layersSettings } = useSelector(getMap);
-
   const lineProps = getRoutesLineLayerProps({ colors, sourceTable: 'routes' });
   const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes' });
   const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes' });
 
-  if (!layersSettings.routes || isNil(infraID)) return null;
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="osrd_routes_geo"

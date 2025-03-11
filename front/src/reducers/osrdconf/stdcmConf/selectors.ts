@@ -69,6 +69,7 @@ const buildStdcmConfSelectors = () => {
     getSelectedSimulationIndex,
     getSelectedSimulation,
     getRetainedSimulationIndex: makeOsrdConfSelector('retainedSimulationIndex'),
+    getStdcmSelectedLayers: makeOsrdConfSelector('layersSettings'),
     getWorkScheduleGroupId: makeOsrdConfSelector('workScheduleGroupId'),
 
     // For some selectors, if data were missing, errors would have been thrown earlier, at startup.
@@ -109,6 +110,7 @@ export const {
   getRetainedSimulationIndex,
   getWorkScheduleGroupId,
   getSearchDatetimeWindow,
+  getStdcmSelectedLayers,
 } = selectors;
 
 export type StdcmConfSelectors = typeof selectors;

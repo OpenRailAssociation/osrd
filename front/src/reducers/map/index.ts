@@ -21,6 +21,22 @@ export interface MapSearchMarker {
 
 export type MapStyle = 'normal' | 'dark' | 'minimal';
 
+export type LayersSettings = {
+  buffer_stops: boolean;
+  electrifications: boolean;
+  neutral_sections: boolean;
+  detectors: boolean;
+  operational_points: boolean;
+  routes: boolean;
+  signals: boolean;
+  sncf_psl: boolean;
+  speedlimittag: string | null;
+  speed_limits: boolean;
+  switches: boolean;
+  platforms: boolean;
+  tvds: boolean;
+};
+
 export interface MapState {
   url: typeof MAP_URL;
   mapStyle: MapStyle;
@@ -33,22 +49,7 @@ export interface MapState {
   terrain3DExaggeration: number;
   smoothTravel: boolean;
   viewport: Viewport;
-  layersSettings: {
-    bufferstops: boolean;
-    electrifications: boolean;
-    neutral_sections: boolean;
-    detectors: boolean;
-    operationalpoints: boolean;
-    routes: boolean;
-    signals: boolean;
-    signalingtype: boolean;
-    sncf_psl: boolean;
-    speedlimittag: string | null;
-    speedlimits: boolean;
-    switches: boolean;
-    tvds: boolean;
-    platforms: boolean;
-  };
+  layersSettings: LayersSettings;
   issuesSettings?: {
     types: Array<InfraErrorTypeLabel>;
   };
@@ -78,16 +79,15 @@ export const mapInitialState: MapState = {
     height: 0,
   },
   layersSettings: {
-    bufferstops: false,
+    buffer_stops: false,
     electrifications: false,
     neutral_sections: false,
     detectors: false,
-    operationalpoints: false,
+    operational_points: false,
     routes: false,
     signals: false,
-    signalingtype: true,
     sncf_psl: false,
-    speedlimits: false,
+    speed_limits: false,
     speedlimittag: null,
     switches: false,
     tvds: false,

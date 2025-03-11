@@ -17,13 +17,15 @@ import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/c
 import type { SelectionState } from 'applications/editor/tools/selection/types';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { PartialOrReducer, Tool } from 'applications/editor/types';
+import StdcmLayersModal from 'applications/stdcm/components/StdcmLayersModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
 import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
 import type { EditorState } from 'reducers/editor';
-import { updateViewport, type Viewport } from 'reducers/map';
+import { updateViewport, type LayersSettings, type Viewport } from 'reducers/map';
+import { stdcmConfInitialState, updateStdcmLayers } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
@@ -47,8 +49,10 @@ type MapButtonsProps = {
     editorState: EditorState;
     activeTool: Tool<CommonToolState>;
   };
+  compact?: boolean;
   viewPort: Viewport;
   isNewButtons?: boolean;
+  layersSettings?: LayersSettings;
 };
 
 const ZOOM_DEFAULT = 5;
@@ -69,10 +73,11 @@ export default function MapButtons({
   zoomIn: zoomInProps,
   zoomOut: zoomOutProps,
   isNewButtons = false,
+  compact,
+  layersSettings,
 }: MapButtonsProps) {
   const dispatch = useAppDispatch();
   const { isOpen, openModal } = useContext(ModalContext);
-
   const [openedPopover, setOpenedPopover] = useState<string | undefined>(undefined);
   const [viewport, setViewport] = useState(viewportProps);
 
@@ -113,10 +118,20 @@ export default function MapButtons({
         />,
         'lg'
       );
+    } else if (compact) {
+      openModal(
+        <StdcmLayersModal
+          initialLayers={layersSettings ?? stdcmConfInitialState.layersSettings}
+          onChange={(newLayers) => {
+            dispatch(updateStdcmLayers(newLayers));
+          }}
+        />,
+        'lg'
+      );
     } else {
       toggleMapModal('SETTINGS');
     }
-  }, [editorProps, openModal, toggleMapModal]);
+  }, [editorProps, openModal, toggleMapModal, dispatch, layersSettings]);
 
   const mapButtonsRef = useRef<HTMLDivElement | null>(null);
 

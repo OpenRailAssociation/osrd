@@ -57,7 +57,7 @@ const SimulationResultMap = ({
 
   const infraID = useInfraID();
   const { getTrackSectionsByIds } = useScenarioContext();
-  const { viewport, mapSearchMarker, mapStyle, showOSM, terrain3DExaggeration } =
+  const { viewport, mapSearchMarker, mapStyle, showOSM, terrain3DExaggeration, layersSettings } =
     useSelector(getMap);
   const isPlaying = useSelector(getIsPlaying);
 
@@ -199,6 +199,7 @@ const SimulationResultMap = ({
         viewPort={viewport}
         updatePartialViewPort={updateViewportChange}
         terrain3DExaggeration={terrain3DExaggeration}
+        layersSettings={layersSettings}
       >
         {geojsonPath && (
           <Itinerary geojsonPath={geojsonPath} layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]} />

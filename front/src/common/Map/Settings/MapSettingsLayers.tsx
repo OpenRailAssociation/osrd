@@ -81,7 +81,7 @@ const MapSettingsLayers = () => (
     </div>
     <div className="col-md-6">
       <FormatSwitch
-        name="operationalpoints"
+        name="operational_points"
         icon={<Icon2SVG file={OPsSVGFile} altName="Operationnal points svg" />}
       />
     </div>
@@ -93,7 +93,7 @@ const MapSettingsLayers = () => (
     </div>
     <div className="col-md-6">
       <FormatSwitch
-        name="bufferstops"
+        name="buffer_stops"
         icon={<Icon2SVG file={BufferStopSVGFile} altName="Buffer stop svg" />}
       />
     </div>

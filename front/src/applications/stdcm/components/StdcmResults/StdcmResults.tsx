@@ -17,6 +17,7 @@ import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
   getStdcmInfraID,
+  getStdcmSelectedLayers,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
@@ -52,6 +53,7 @@ const StcdmResults = ({
 
   const selectedSimulation = useSelector(getSelectedSimulation);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
+  const layersSettings = useSelector(getStdcmSelectedLayers);
 
   const { outputs } = selectedSimulation;
 
@@ -189,6 +191,7 @@ const StcdmResults = ({
                 geometry={outputs?.pathProperties?.geometry}
                 pathStepMarkers={markersInfo}
                 isFeasible={!hasConflictResults}
+                layersSettings={layersSettings}
               />
             </div>
           </div>

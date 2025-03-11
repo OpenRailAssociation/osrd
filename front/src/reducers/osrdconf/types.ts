@@ -18,6 +18,7 @@ import type {
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { InfraState } from 'reducers/infra';
+import type { LayersSettings } from 'reducers/map';
 import type { Duration } from 'utils/duration';
 
 export type OsrdConfState = InfraState & {
@@ -54,6 +55,7 @@ export type OperationalStudiesConfState = OsrdConfState & {
 };
 
 export type OsrdStdcmConfState = OsrdConfState & {
+  layersSettings: LayersSettings;
   stdcmPathSteps: StdcmPathStep[];
   margins: {
     standardAllowance?: StandardAllowance;

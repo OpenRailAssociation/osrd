@@ -1,12 +1,10 @@
 import { isNil } from 'lodash';
 import { Source, type MapRef } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { SignalContext } from 'common/Map/Layers/types';
-import { getLayersSettings } from 'reducers/map/selectors';
 import type { Theme } from 'types';
 
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
@@ -22,8 +20,6 @@ interface PlatformProps {
 }
 
 const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) => {
-  const layersSettings = useSelector(getLayersSettings);
-
   const context: SignalContext = {
     colors,
     sourceTable,
@@ -31,7 +27,7 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
     minzoom: 12,
   };
 
-  if (!layersSettings.signals || isNil(infraID)) return null;
+  if (isNil(infraID)) return null;
   return (
     <Source
       promoteId="id"

@@ -4,7 +4,6 @@ import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Source } from 'react-map-gl/maplibre';
 import type { LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import {
@@ -12,8 +11,7 @@ import {
   getFilterBySpeedSectionsTag,
 } from 'common/Map/Layers/InfraObjectLayers/SpeedLimits';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import type { RootState } from 'reducers';
-import type { MapState } from 'reducers/map';
+import type { LayersSettings } from 'reducers/map';
 import type { Theme, OmitLayer } from 'types';
 
 import SNCF_PSL_Signs from './PSLSigns';
@@ -23,6 +21,7 @@ interface SNCF_PSLProps {
   layerOrder: number;
   punctualLayerOrder: number;
   infraID?: number;
+  layersSettings: LayersSettings;
 }
 
 export function getPSLSpeedValueLayerProps({
@@ -33,7 +32,7 @@ export function getPSLSpeedValueLayerProps({
 }: {
   colors: Theme;
   sourceTable?: string;
-  layersSettings: MapState['layersSettings'];
+  layersSettings: LayersSettings;
   t?: TFunction;
 }): OmitLayer<SymbolLayer> {
   const res: OmitLayer<SymbolLayer> = {
@@ -76,7 +75,7 @@ export function getPSLSpeedLineBGLayerProps({
 }: {
   colors: Theme;
   sourceTable?: string;
-  layersSettings?: MapState['layersSettings'];
+  layersSettings: LayersSettings;
 }): OmitLayer<LineLayer> {
   const res: OmitLayer<LineLayer> = {
     type: 'line',
@@ -107,7 +106,7 @@ export function getPSLSpeedLineLayerProps({
 }: {
   colors: Theme;
   sourceTable?: string;
-  layersSettings: MapState['layersSettings'];
+  layersSettings: LayersSettings;
 }): OmitLayer<LineLayer> {
   const res: OmitLayer<LineLayer> = {
     type: 'line',
@@ -154,10 +153,14 @@ export function getPSLSpeedLineLayerProps({
   return res;
 }
 
-const SNCF_PSL = ({ colors, layerOrder, punctualLayerOrder, infraID }: SNCF_PSLProps) => {
+const SNCF_PSL = ({
+  colors,
+  layerOrder,
+  punctualLayerOrder,
+  infraID,
+  layersSettings,
+}: SNCF_PSLProps) => {
   const { t } = useTranslation('map-settings');
-  const { layersSettings } = useSelector((state: RootState) => state.map);
-
   const speedSectionFilter = getFilterBySpeedSectionsTag(layersSettings);
 
   const speedValueParams = {
@@ -188,7 +191,7 @@ const SNCF_PSL = ({ colors, layerOrder, punctualLayerOrder, infraID }: SNCF_PSLP
     filter: speedSectionFilter,
   };
 
-  if (!layersSettings.sncf_psl || isNil(infraID)) return null;
+  if (isNil(infraID)) return null;
   return (
     <>
       <Source

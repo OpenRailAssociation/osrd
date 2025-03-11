@@ -108,17 +108,16 @@ describe('mapReducer', () => {
 
   it('should handle updateLayersSettings', () => {
     const layersSettings = {
-      bufferstops: true,
+      buffer_stops: true,
       electrifications: true,
       neutral_sections: true,
       detectors: true,
-      operationalpoints: true,
+      operational_points: true,
       routes: true,
       signals: false,
-      signalingtype: true,
       sncf_psl: true,
       speedlimittag: '60',
-      speedlimits: true,
+      speed_limits: true,
       switches: true,
       tvds: true,
       errors: true,
