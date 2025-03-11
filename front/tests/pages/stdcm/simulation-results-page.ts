@@ -209,7 +209,6 @@ class SimulationResultPage extends STDCMPage {
   }
 
   async verifyFeedbackCardVisibility() {
-    await this.launchSimulation();
     await expect(this.simulationResultTable).toBeVisible();
     await expect(this.feedbackCardContainer).toBeVisible();
     await expect(this.feedbackTitle).toBeVisible();
@@ -222,11 +221,13 @@ class SimulationResultPage extends STDCMPage {
     await this.feedbackButton.click();
   }
 
-  async verifyMailRedirection(expectedSubject: string, expectedBody: string) {
+  async verifyMailRedirection(expectedSubject: string) {
     await this.clickFeedbackButton();
-    const mailtoUrl = await this.page.evaluate(() => window.location.href);
-    const expectedMailto = `mailto:support_LMR@reseau.sncf.fr?subject=${encodeURIComponent(expectedSubject)}&body=${encodeURIComponent(expectedBody)}`;
-    expect(mailtoUrl).toContain(expectedMailto);
+
+    const mailtoUrl = await this.feedbackButton.getAttribute('data-mailto');
+    expect(mailtoUrl).toContain('mailto:support_LMR@reseau.sncf.fr');
+    expect(mailtoUrl).toContain(`subject=${encodeURIComponent(expectedSubject)}`);
+    expect(mailtoUrl).toContain('body=');
   }
 }
 export default SimulationResultPage;

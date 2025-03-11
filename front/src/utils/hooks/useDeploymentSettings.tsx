@@ -30,6 +30,7 @@ export type DeploymentSettings = {
   stdcmLogo?: string;
   stdcmSimulationSheetLogo?: string;
   isCustomizedDeployment: boolean;
+  stdcmFeedbackMail?: string;
 };
 
 export type DeploymentSettingsContext = {
@@ -74,7 +75,7 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
           });
         } else {
           const overridesData = await response.json();
-          const { icons, names } = overridesData;
+          const { icons, names, stdcm_feedback_mail } = overridesData;
 
           const lmrLogoPath = `/overrides/${icons.stdcm.light}.svg`;
           const lmrPngLogoPath = `/overrides/${icons.stdcm.light}@2x.png`;
@@ -91,6 +92,7 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
               stdcmLogo: lmrLogoPath,
               stdcmSimulationSheetLogo: lmrPngLogoPath,
               isCustomizedDeployment: true,
+              stdcmFeedbackMail: stdcm_feedback_mail,
             },
           });
         }

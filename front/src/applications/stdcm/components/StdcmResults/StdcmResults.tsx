@@ -145,7 +145,7 @@ const StcdmResults = ({
                     />
                   </div>
                 )}
-                <FeedbackCard />
+                <FeedbackCard stdcmFeedbackMail={deploymentSettings?.stdcmFeedbackMail} />
               </div>
             ) : (
               <div className="simulation-failure">

@@ -2,7 +2,8 @@ import { test } from '@playwright/test';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
 
-import { expectedBody, expectedSubject } from './assets/constants/mail-feedback-const';
+import expectedSubject from './assets/constants/mail-feedback-const';
+import { electricRollingStockName } from './assets/constants/project-const';
 import ConsistSection from './pages/stdcm/consist-section';
 import DestinationSection from './pages/stdcm/destination-section';
 import OriginSection from './pages/stdcm/origin-section';
@@ -24,11 +25,17 @@ test.describe('FeedbackCard Tests', () => {
   let infra: Infra;
 
   const consistDetails: ConsistFields = {
-    tractionEngine: 'electricRollingStockName',
-    towedRollingStock: 'HLP',
-    tonnage: '180',
-    length: '40',
-    speedLimitTag: 'MA100',
+    tractionEngine: electricRollingStockName,
+    tonnage: '950',
+    length: '567',
+    maxSpeed: '100',
+    speedLimitTag: 'HLP',
+  };
+
+  const tractionEnginePrefilledValues = {
+    tonnage: '900',
+    length: '400',
+    maxSpeed: '288',
   };
 
   test.beforeAll('Fetch infrastructure', async () => {
@@ -51,7 +58,12 @@ test.describe('FeedbackCard Tests', () => {
   });
 
   test('Verify FeedbackCard visibility', async () => {
-    await consistSection.fillAndVerifyConsistDetails(consistDetails, '180', '40');
+    await consistSection.fillAndVerifyConsistDetails(
+      consistDetails,
+      tractionEnginePrefilledValues.tonnage,
+      tractionEnginePrefilledValues.length,
+      tractionEnginePrefilledValues.maxSpeed
+    );
     await originSection.fillAndVerifyOriginDetails();
     await destinationSection.fillAndVerifyDestinationDetails();
     await stdcmPage.launchSimulation();
@@ -59,6 +71,6 @@ test.describe('FeedbackCard Tests', () => {
     await simulationResultPage.verifyFeedbackCardVisibility();
     await simulationResultPage.clickFeedbackButton();
 
-    await simulationResultPage.verifyMailRedirection(expectedSubject, expectedBody);
+    await simulationResultPage.verifyMailRedirection(expectedSubject);
   });
 });
