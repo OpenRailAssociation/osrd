@@ -592,7 +592,9 @@ impl AppState {
             }
         };
         tracing::info!(url = %config.openfga_config.url, "connected to OpenFGA");
-        editoast_authz::ensure_latest_authorization_model(&mut openfga).await?;
+        if config.enable_authorization {
+            editoast_authz::ensure_latest_authorization_model(&mut openfga).await?;
+        }
 
         Ok(Self {
             valkey,
