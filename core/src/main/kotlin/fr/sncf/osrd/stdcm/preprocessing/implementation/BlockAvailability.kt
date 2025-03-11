@@ -366,7 +366,7 @@ fun makeBlockAvailability(
             it.endTime += gridMarginBeforeTrain
         }
     }
-    val trainRequirements = listOf(TrainRequirements(0L, requirements, listOf()))
+    val trainRequirements = listOf(TrainRequirements("0", requirements, listOf()))
 
     // Only keep steps with planned timing data
     val plannedSteps = steps.filter { it.plannedTimingData != null }

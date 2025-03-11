@@ -49,7 +49,7 @@ pub struct Request {
 
     // STDCM search parameters
     #[schema(inline)]
-    pub trains_requirements: HashMap<i64, TrainRequirements>,
+    pub trains_requirements: HashMap<String, TrainRequirements>,
     /// Numerical integration time step in milliseconds. Use default value if not specified.
     pub time_step: Option<u64>,
     pub start_time: DateTime<Utc>,

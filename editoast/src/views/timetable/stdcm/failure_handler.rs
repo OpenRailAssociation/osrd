@@ -12,6 +12,7 @@ use crate::error::Result;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::work_schedules::WorkSchedule;
 use crate::views::timetable::stdcm::StdcmResponse;
+use crate::views::timetable::Conflict;
 
 use super::build_train_requirements;
 use super::VirtualTrainRun;
@@ -78,9 +79,8 @@ impl SimulationFailureHandler {
         let conflict_detection_request = ConflictDetectionRequest {
             infra: infra_id,
             expected_version: infra_version,
-            train_schedules_requirements: trains_requirements,
+            trains_requirements,
             work_schedules,
-            ..Default::default()
         };
 
         // Send the conflict detection request and await the response.
@@ -88,15 +88,35 @@ impl SimulationFailureHandler {
             conflict_detection_request.fetch(&self.core_client).await?;
 
         // Filter the conflicts to find those specifically related to the virtual train.
+        let virtual_train_id_str = virtual_train_id.to_string();
+
         let conflicts: Vec<_> = conflict_detection_response
             .conflicts
             .into_iter()
-            .filter(|conflict| conflict.train_schedule_ids.contains(&virtual_train_id))
-            .map(|mut conflict| {
-                conflict
-                    .train_schedule_ids
-                    .retain(|id| id != &virtual_train_id);
-                conflict
+            .filter(|conflict| conflict.train_ids.contains(&virtual_train_id_str))
+            .map(|conflict| Conflict {
+                train_schedule_ids: conflict
+                    .train_ids
+                    .iter()
+                    .filter(|ts| *ts != &virtual_train_id_str)
+                    .map(|ts| {
+                        ts.parse::<i64>()
+                            .unwrap_or_else(|_| panic!("Failed to parse train_id '{}'", ts))
+                    })
+                    .collect(),
+                paced_train_occurrence_ids: vec![],
+                work_schedule_ids: conflict
+                    .work_schedule_ids
+                    .iter()
+                    .map(|ws| {
+                        ws.parse::<i64>()
+                            .unwrap_or_else(|_| panic!("Failed to parse work_schedule_id '{}'", ws))
+                    })
+                    .collect(),
+                start_time: conflict.start_time,
+                end_time: conflict.end_time,
+                conflict_type: conflict.conflict_type,
+                requirements: conflict.requirements,
             })
             .collect();
 

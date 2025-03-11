@@ -458,7 +458,7 @@ impl Conflict {
     tag = "timetable",
     params(TimetableIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
-        (status = 200, description = "List of conflict", body = Vec<ConflictResponse>),
+        (status = 200, description = "List of conflict", body = Vec<Conflict>),
     ),
 )]
 async fn conflicts(

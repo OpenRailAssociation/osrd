@@ -32,7 +32,6 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::core::conflict_detection::Conflict;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResultSuccess;
@@ -51,6 +50,7 @@ use crate::models::train_schedule::TrainSchedule;
 use crate::models::Infra;
 use crate::models::RollingStockModel;
 use crate::views::path::pathfinding::PathfindingResult;
+use crate::views::timetable::Conflict;
 use crate::views::train_schedule::consist_train_simulation_batch;
 use crate::views::train_schedule::train_simulation_batch;
 use crate::views::AuthenticationExt;
@@ -370,7 +370,7 @@ fn build_train_requirements(
     simulation_responses: Vec<SimulationResponse>,
     departure_time: DateTime<Utc>,
     latest_simulation_end: DateTime<Utc>,
-) -> HashMap<i64, TrainRequirements> {
+) -> HashMap<String, TrainRequirements> {
     let mut trains_requirements = HashMap::new();
     for (train, sim) in train_schedules.iter().zip(simulation_responses) {
         let final_output = match sim {
@@ -422,7 +422,7 @@ fn build_train_requirements(
             })
             .collect();
         trains_requirements.insert(
-            train.id,
+            train.id.to_string(),
             TrainRequirements {
                 start_time,
                 spacing_requirements,
@@ -551,7 +551,7 @@ mod tests {
     use uom::si::quantities::Mass;
     use uuid::Uuid;
 
-    use crate::core::conflict_detection::Conflict;
+    use crate::core::conflict_detection::Conflict as CoreConflict;
     use crate::core::conflict_detection::ConflictDetectionResponse;
     use crate::core::conflict_detection::ConflictType;
     use crate::core::mocking::MockingClient;
@@ -876,7 +876,22 @@ mod tests {
         );
     }
 
-    fn get_conflict_data(train_schedule_ids: Vec<i64>, work_schedule_ids: Vec<i64>) -> Conflict {
+    fn get_conflict_data(train_ids: Vec<String>, work_schedule_ids: Vec<String>) -> CoreConflict {
+        CoreConflict {
+            train_ids,
+            work_schedule_ids,
+            start_time: DateTime::from_str("2024-01-01T06:00:00Z")
+                .expect("Failed to parse datetime"),
+            end_time: DateTime::from_str("2024-01-01T18:00:00Z").expect("Failed to parse datetime"),
+            conflict_type: ConflictType::Spacing,
+            requirements: vec![],
+        }
+    }
+
+    fn get_conflict_response_data(
+        train_schedule_ids: Vec<i64>,
+        work_schedule_ids: Vec<i64>,
+    ) -> Conflict {
         Conflict {
             train_schedule_ids,
             paced_train_occurrence_ids: vec![],
@@ -1091,7 +1106,10 @@ mod tests {
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(ConflictDetectionResponse {
-                conflicts: vec![get_conflict_data(vec![0, 1], vec![])],
+                conflicts: vec![get_conflict_data(
+                    vec![0.to_string(), 1.to_string()],
+                    vec![],
+                )],
             })
             .finish();
 
@@ -1115,7 +1133,7 @@ mod tests {
             stdcm_response,
             StdcmResponse::Conflicts {
                 pathfinding_result: PathfindingResult::Success(pathfinding_result_success()),
-                conflicts: vec![get_conflict_data(vec![1], vec![])],
+                conflicts: vec![get_conflict_response_data(vec![1], vec![])],
             }
         );
     }
@@ -1147,7 +1165,10 @@ mod tests {
             WorkSchedule::create_batch(&mut db_pool.get_ok(), vec![work_schedule_changeset])
                 .await
                 .expect("Failed to create a new work schedule");
-        let work_schedule_ids: Vec<i64> = work_schedules.into_iter().map(|ws| ws.id).collect();
+        let work_schedule_ids: Vec<String> = work_schedules
+            .into_iter()
+            .map(|ws| ws.id.to_string())
+            .collect();
 
         let mut core = core_mocking_client();
         core.stub("/v2/stdcm")
@@ -1159,7 +1180,10 @@ mod tests {
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(ConflictDetectionResponse {
-                conflicts: vec![get_conflict_data(vec![0], work_schedule_ids.clone())],
+                conflicts: vec![get_conflict_data(
+                    vec![String::from("0")],
+                    work_schedule_ids.clone(),
+                )],
             })
             .finish();
 
@@ -1188,7 +1212,16 @@ mod tests {
             stdcm_response,
             StdcmResponse::Conflicts {
                 pathfinding_result: PathfindingResult::Success(pathfinding_result_success()),
-                conflicts: vec![get_conflict_data(vec![], work_schedule_ids)],
+                conflicts: vec![get_conflict_response_data(
+                    vec![],
+                    work_schedule_ids
+                        .iter()
+                        .map(|ws| ws.parse::<i64>().unwrap_or_else(|_| panic!(
+                            "Failed to parse work schedule id '{}'",
+                            ws
+                        )))
+                        .collect()
+                )],
             }
         );
     }

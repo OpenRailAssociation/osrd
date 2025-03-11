@@ -160,7 +160,7 @@ private fun checkForConflicts(
     simResult: ResultTrain,
     departureTime: Double
 ) {
-    val requirements = TrainRequirements(0, spacingRequirements, listOf())
+    val requirements = TrainRequirements("0", spacingRequirements, listOf())
     val conflictDetector = incrementalConflictDetectorFromTrainReq(listOf(requirements))
     val conflicts =
         conflictDetector.analyseConflicts(

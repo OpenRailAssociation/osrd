@@ -33,7 +33,8 @@ class STDCMRequestV2(
     @Json(name = "rolling_stock_loading_gauge") val rollingStockLoadingGauge: RJSLoadingGaugeType,
     @Json(name = "rolling_stock_supported_signaling_systems")
     val rollingStockSupportedSignalingSystems: List<String>,
-    @Json(name = "trains_requirements") val trainsRequirements: Map<Long, TrainRequirementsRequest>,
+    @Json(name = "trains_requirements")
+    val trainsRequirements: Map<String, TrainRequirementsRequest>,
 
     // Simulation inputs
     val comfort: Comfort,
