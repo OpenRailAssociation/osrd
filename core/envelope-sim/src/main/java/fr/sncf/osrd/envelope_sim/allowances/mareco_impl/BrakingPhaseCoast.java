@@ -43,7 +43,10 @@ public class BrakingPhaseCoast implements CoastingOpportunity {
                 continue;
             }
             // deceleration phases that cross vf
-            if (part.getMaxSpeed() > vf) res.add(new BrakingPhaseCoast(part.interpolatePosition(vf)));
+            if (part.getMaxSpeed() > vf) {
+                var endPos = part.interpolatePosition(vf);
+                res.add(new BrakingPhaseCoast(endPos));
+            }
         }
         return res;
     }

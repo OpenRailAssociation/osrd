@@ -86,7 +86,7 @@ fun computeMRSP(
     val offset = if (addRollingStockLength) rsLength else 0.0
     val speedLimitProperties =
         if (useSpeedLimits) path.getSpeedLimitProperties(trainTag, temporarySpeedLimitManager)
-        else distanceRangeMapOf<SpeedLimitProperty>()
+        else distanceRangeMapOf()
     for (speedLimitPropertyRange in speedLimitProperties) {
         // Compute where this limit is active from and to
         val start = toMeters(speedLimitPropertyRange.lower)
@@ -94,12 +94,12 @@ fun computeMRSP(
         val speedLimitProp = rangeMapEntryToSpeedLimitProperty(speedLimitPropertyRange)
         val speed = toMetersPerSecond(speedLimitProp.speed)
         val attrs =
-            mutableListOf<SelfTypeHolder?>(
+            mutableListOf<SelfTypeHolder>(
                 EnvelopeProfile.CONSTANT_SPEED,
                 MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT
             )
         if (speedLimitProp.source != null) {
-            attrs.add(speedLimitProp.source)
+            attrs.add(speedLimitProp.source!!)
         }
         if (attrs.any { it is UnknownTag }) attrs.add(HasMissingSpeedTag)
         if (speed != 0.0) {
@@ -130,7 +130,7 @@ fun computeMRSP(
         for (range in safetySpeedRanges) {
             val speed = range.value
             val newAttrs =
-                listOf<SelfTypeHolder?>(
+                listOf<SelfTypeHolder>(
                     EnvelopeProfile.CONSTANT_SPEED,
                     MRSPEnvelopeBuilder.LimitKind.SAFETY_APPROACH_SPEED,
                 )
@@ -152,7 +152,7 @@ fun addSpeedSection(
     lower: Distance,
     upper: Distance,
     speed: Speed,
-    attrs: List<SelfTypeHolder?>,
+    attrs: List<SelfTypeHolder>,
     propertyRangeMap: DistanceRangeMap<SpeedLimitProperty>,
 ) {
     val propsRanges = makeSpeedLimitAttributes(lower, upper, propertyRangeMap, attrs)
@@ -176,9 +176,9 @@ fun makeSpeedLimitAttributes(
     lower: Distance,
     upper: Distance,
     propertyRangeMap: DistanceRangeMap<SpeedLimitProperty>,
-    baseAttrs: List<SelfTypeHolder?>,
-): DistanceRangeMap<List<SelfTypeHolder?>> {
-    val result: DistanceRangeMap<List<SelfTypeHolder?>> =
+    baseAttrs: List<SelfTypeHolder>,
+): DistanceRangeMap<List<SelfTypeHolder>> {
+    val result: DistanceRangeMap<List<SelfTypeHolder>> =
         distanceRangeMapOf(
             *listOf(DistanceRangeMap.RangeMapEntry(lower, upper, baseAttrs)).toTypedArray()
         )

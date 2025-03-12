@@ -27,7 +27,7 @@ object MaxEffortEnvelope {
     /** Detects if an envelope parts is a plateau */
     @JvmStatic
     fun maxEffortPlateau(part: EnvelopePart): Boolean {
-        return part.getMinSpeed() == part.getMaxSpeed()
+        return part.minSpeed == part.maxSpeed
     }
 
     /**

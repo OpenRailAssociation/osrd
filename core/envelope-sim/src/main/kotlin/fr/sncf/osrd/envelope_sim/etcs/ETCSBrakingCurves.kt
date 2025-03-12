@@ -103,71 +103,17 @@ private fun computeMinSvlEoaIndCurve(
     ) {
         return Envelope.make(fullIndicationCurveEoa)
     }
-    val releaseSpeedPositionEoa = fullIndicationCurveEoa.interpolatePosition(NATIONAL_RELEASE_SPEED)
+
+    // Real indication curve maintains release speed until the end.
     val releaseSpeedPositionSvl = fullIndicationCurveSvl.interpolatePosition(NATIONAL_RELEASE_SPEED)
-    val lastIndicationPart =
-        fullIndicationCurveEoa.sliceWithSpeeds(
-            releaseSpeedPositionEoa,
-            NATIONAL_RELEASE_SPEED,
-            fullIndicationCurveEoa.endPos,
-            fullIndicationCurveEoa.endSpeed
-        )
-    val slicedIndicationCurveEoa =
-        fullIndicationCurveEoa.sliceWithSpeeds(
-            fullIndicationCurveEoa.beginPos,
-            fullIndicationCurveEoa.beginSpeed,
-            releaseSpeedPositionEoa,
-            NATIONAL_RELEASE_SPEED
-        )
-    val slicedIndicationCurveSvl =
-        fullIndicationCurveSvl.sliceWithSpeeds(
-            fullIndicationCurveSvl.beginPos,
-            fullIndicationCurveSvl.beginSpeed,
-            releaseSpeedPositionSvl,
-            NATIONAL_RELEASE_SPEED
-        )
-    val startIntersectingRange =
-        max(slicedIndicationCurveEoa.beginPos, slicedIndicationCurveSvl.beginPos)
-    var refCurve = slicedIndicationCurveEoa
-    var otherCurve = slicedIndicationCurveSvl
-    if (
-        slicedIndicationCurveEoa.interpolateSpeed(startIntersectingRange) >
-            slicedIndicationCurveSvl.interpolateSpeed(startIntersectingRange)
-    ) {
-        refCurve = slicedIndicationCurveSvl
-        otherCurve = slicedIndicationCurveEoa
-    }
-    val pointCount = refCurve.pointCount()
-    var indicationPositions = DoubleArray(pointCount)
-    var indicationSpeeds = DoubleArray(pointCount)
-    for (i in 0 until pointCount) {
-        val newPos = refCurve.getPointPos(i)
-        val newSpeed = refCurve.getPointSpeed(i)
-        if (newPos < otherCurve.beginPos) {
-            indicationPositions[i] = newPos
-            indicationSpeeds[i] = newSpeed
-        } else if (newPos <= otherCurve.endPos) {
-            val otherSpeed = slicedIndicationCurveSvl.interpolateSpeed(newPos)
-            indicationPositions[i] = newPos
-            // TODO: unneeded for now: interpolate to not approximate position at intersection.
-            indicationSpeeds[i] = min(otherSpeed, newSpeed)
-        } else {
-            indicationPositions[i] = otherCurve.endPos
-            indicationSpeeds[i] = otherCurve.endSpeed
-            // Clean up the last unneeded points in the arrays before exiting the loop.
-            indicationPositions = indicationPositions.dropLast(pointCount - 1 - i).toDoubleArray()
-            indicationSpeeds = indicationSpeeds.dropLast(pointCount - 1 - i).toDoubleArray()
-            break
-        }
-    }
-    val firstIndicationPart =
-        EnvelopePart.generateTimes(
-            listOf(EnvelopeProfile.BRAKING),
-            indicationPositions,
-            indicationSpeeds
-        )
-    if (releaseSpeedPositionSvl < releaseSpeedPositionEoa) {
-        val maintainReleaseSpeedPart =
+    val indCurveSvl =
+        Envelope.make(
+            fullIndicationCurveSvl.sliceWithSpeeds(
+                fullIndicationCurveSvl.beginPos,
+                fullIndicationCurveSvl.beginSpeed,
+                releaseSpeedPositionSvl,
+                NATIONAL_RELEASE_SPEED
+            )!!,
             EnvelopePart.generateTimes(
                 listOf(EnvelopeProfile.CONSTANT_SPEED),
                 doubleArrayOf(releaseSpeedPositionSvl, releaseSpeedPositionEoa),
@@ -418,7 +364,7 @@ private fun computeEbiBrakingCurveFromEbd(
         fullBrakingCurve.beginSpeed,
         intersection,
         targetSpeed
-    )
+    )!!
 }
 
 /** Compute Indication curve: EBI/SBD -> SBI -> PS -> IND. See Subset 026: figures 45 and 46. */
