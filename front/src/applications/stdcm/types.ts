@@ -73,7 +73,7 @@ export type StdcmResultsOperationalPoint = {
   stopEndTime: string;
   trackName?: string;
   stopType?: StdcmStopTypes;
-  stopFor?: number;
+  stopRequested: boolean;
 };
 
 export type ConsistErrors = {
