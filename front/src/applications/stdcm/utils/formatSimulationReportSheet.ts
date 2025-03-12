@@ -1,4 +1,4 @@
-import type { ReportTrain, SimulationResponse } from 'common/api/osrdEditoastApi';
+import type { SimulationResponse } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -141,7 +141,7 @@ function formatOperationalPointWithTimes(
  * @param positions Lists of all positions of simulated points of a train simulation report
  * @returns A list of all positions at which the train stops
  */
-function findAllStops(positions: number[]): number[] {
+export function findAllStops(positions: number[]): number[] {
   return positions.filter(
     (position, index) =>
       index !== positions.length - 1 &&
