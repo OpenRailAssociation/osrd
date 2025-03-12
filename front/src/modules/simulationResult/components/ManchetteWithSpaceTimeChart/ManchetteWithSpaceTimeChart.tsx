@@ -7,6 +7,7 @@ import {
   useManchetteWithSpaceTimeChart,
   timeScaleToZoomValue,
   DEFAULT_ZOOM_MS_PER_PX,
+  ZoomRect,
   ConflictLayer,
   PathLayer,
   SpaceTimeChart,
@@ -20,7 +21,7 @@ import {
   isPointPickingElement,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
-import { KebabHorizontal, Iterations } from '@osrd-project/ui-icons';
+import { KebabHorizontal, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { compact } from 'lodash';
 import { createPortal } from 'react-dom';
@@ -99,22 +100,6 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
-
-  const [originTime, setOriginTime] = useState<number | null>(null);
-  useEffect(() => {
-    const trainUsedForProjection = projectPathTrainResult.find(
-      (train) => train.id === selectedProjectionId
-    );
-    if (trainUsedForProjection) {
-      setOriginTime(+trainUsedForProjection.departureTime);
-    } else {
-      const projectedTrains = projectPathTrainResult.filter(
-        (train) => train.spaceTimeCurves.length > 0
-      );
-      const minTime = Math.min(...projectedTrains.map((p) => +p.departureTime));
-      setOriginTime(minTime);
-    }
-  }, [selectedProjectionId, projectPathTrainResult.length]);
 
   const [tmpSelectedTrain, setTmpSelectedTrain] = useState(selectedTrainScheduleId);
 
@@ -233,15 +218,41 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     [tmpSelectedTrain]
   );
 
-  const { manchetteProps, spaceTimeChartProps, handleScroll, handleXZoom, xZoom } =
-    useManchetteWithSpaceTimeChart(
-      manchetteWaypoints,
-      formattedCutProjectedTrains,
-      manchetteWithSpaceTimeChartRef,
-      formattedTmpSelectedTrain,
-      height,
-      spaceTimeChartRef
+  const {
+    manchetteProps,
+    spaceTimeChartProps,
+    handleScroll,
+    handleXZoom,
+    xZoom,
+    toggleZoomMode,
+    zoomMode,
+    setTimeOrigin,
+  } = useManchetteWithSpaceTimeChart({
+    waypoints: manchetteWaypoints,
+    projectPathTrainResult: formattedCutProjectedTrains,
+    manchetteWithSpaceTimeChartRef,
+    selectedTrain: formattedTmpSelectedTrain,
+    height,
+    spaceTimeChartRef,
+    defaultTimeOrigin: 0,
+    defaultSpaceOrigin:
+      (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0,
+  });
+
+  useEffect(() => {
+    const trainUsedForProjection = projectPathTrainResult.find(
+      (train) => train.id === selectedProjectionId
     );
+    if (trainUsedForProjection) {
+      setTimeOrigin(+trainUsedForProjection.departureTime);
+    } else {
+      const projectedTrains = projectPathTrainResult.filter(
+        (train) => train.spaceTimeCurves.length > 0
+      );
+      const minTime = Math.min(...projectedTrains.map((p) => +p.departureTime));
+      setTimeOrigin(minTime);
+    }
+  }, [selectedProjectionId, projectPathTrainResult.length]);
 
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [settings, setSettings] = useState({
@@ -292,6 +303,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
     // if not dragging, we check if we should start dragging
     if (
+      !zoomMode &&
       hoveredItem &&
       (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
@@ -416,10 +428,23 @@ const ManchetteWithSpaceTimeChartWrapper = ({
           <div className="toolbar">
             <button
               type="button"
-              className="reset-button"
-              onClick={() => handleXZoom(timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX))}
+              className={cx('reset-button', {
+                'reset-button-disabled': xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
+              })}
+              onClick={() => {
+                if (xZoom !== timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX)) {
+                  handleXZoom(timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX));
+                }
+              }}
             >
               <Iterations />
+            </button>
+            <button
+              type="button"
+              className={cx('zoom-button', { 'zoom-button-clicked': zoomMode })}
+              onClick={toggleZoomMode}
+            >
+              <ZoomIn className="icon" />
             </button>
             <button
               type="button"
@@ -436,43 +461,42 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               onClose={() => setShowSettingsPanel(false)}
             />
           )}
-          {originTime !== null && (
-            <SpaceTimeChart
-              className="inset-0 absolute h-full"
-              height={height}
-              spaceOrigin={
-                (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
-              }
-              timeOrigin={originTime}
-              {...spaceTimeChartProps}
-              onPan={onPanOverloaded}
-              onClick={handleClick}
-              onHoveredChildUpdate={handleHoveredChildUpdate}
-            >
-              {spaceTimeChartProps.paths.map((path) => (
-                <PathLayer
-                  key={path.id}
-                  path={path}
-                  {...getPathStyle(hoveredItem, path, !!draggingState)}
-                />
-              ))}
-              {workSchedules && (
-                <WorkScheduleLayer
-                  workSchedules={workSchedules.map((ws) => ({
-                    type: ws.type,
-                    timeStart: new Date(ws.start_date_time),
-                    timeEnd: new Date(ws.end_date_time),
-                    spaceRanges: ws.path_position_ranges.map(({ start, end }) => [start, end]),
-                  }))}
-                  imageUrl={upward}
-                />
-              )}
-              {settings.showConflicts && <ConflictLayer conflicts={cutConflicts} />}
-              {settings.showSignalsStates && (
-                <OccupancyBlockLayer occupancyBlocks={occupancyBlocks} />
-              )}
-            </SpaceTimeChart>
-          )}
+
+          <SpaceTimeChart
+            className="inset-0 absolute h-full"
+            height={height}
+            {...spaceTimeChartProps}
+            onPan={onPanOverloaded}
+            onClick={handleClick}
+            onHoveredChildUpdate={handleHoveredChildUpdate}
+            spaceOrigin={
+              (waypointsPanelData?.filteredWaypoints ?? operationalPoints).at(0)?.position || 0
+            }
+          >
+            {spaceTimeChartProps.paths.map((path) => (
+              <PathLayer
+                key={path.id}
+                path={path}
+                {...getPathStyle(hoveredItem, path, !!draggingState)}
+              />
+            ))}
+            {spaceTimeChartProps.rect && <ZoomRect {...spaceTimeChartProps.rect} />}
+            {workSchedules && (
+              <WorkScheduleLayer
+                workSchedules={workSchedules.map((ws) => ({
+                  type: ws.type,
+                  timeStart: new Date(ws.start_date_time),
+                  timeEnd: new Date(ws.end_date_time),
+                  spaceRanges: ws.path_position_ranges.map(({ start, end }) => [start, end]),
+                }))}
+                imageUrl={upward}
+              />
+            )}
+            {settings.showConflicts && <ConflictLayer conflicts={cutConflicts} />}
+            {settings.showSignalsStates && (
+              <OccupancyBlockLayer occupancyBlocks={occupancyBlocks} />
+            )}
+          </SpaceTimeChart>
         </div>
       </div>
       <Slider

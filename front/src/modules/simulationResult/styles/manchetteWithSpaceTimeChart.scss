@@ -19,20 +19,58 @@
       background: var(--white100);
       color: var(--black100);
       padding: 0 7px;
+
+      &:first-child {
+        border-radius: 5px 0 0 5px;
+      }
+
+      &:not(:last-child) {
+        border-right: 1px solid var(--black10);
+      }
+
+      &:last-child {
+        border-radius: 0 5px 5px 0;
+      }
+
+      &:hover {
+        background-color: var(--primary5);
+      }
     }
 
-    button:not(:last-child) {
-      border-radius: 5px 0 0 5px;
-      border-right: 1px solid var(--black10);
+    .zoom-button {
+      svg {
+        margin-top: -2px;
+      }
+
+      .icon {
+        display: inline-block;
+      }
     }
 
-    button:last-child {
-      border-radius: 5px;
+    .zoom-button-clicked {
+      background-color: var(--primary90);
+
+      .icon {
+        color: var(--white100);
+      }
+
+      &:hover {
+        background-color: var(--primary90);
+      }
     }
 
     .reset-button {
       svg {
         transform: rotate(180deg) translate(0, 2px);
+      }
+    }
+
+    .reset-button-disabled {
+      color: var(--black25);
+      cursor: inherit;
+
+      &:hover {
+        background: var(--white100);
       }
     }
 
