@@ -15,6 +15,7 @@ import fr.sncf.osrd.utils.units.Offset
  * Note: compared to the InfraExplorer's progress, this is meant to include the lookahead.
  */
 class StepTracker(private val inputSteps: List<STDCMStep>) {
+    val totalStepCount: Int = inputSteps.size
     private val reachedSteps: MutableList<LocatedStep> = mutableListOf()
     private val nPassedSteps: Int
         get() = reachedSteps.size
@@ -63,6 +64,14 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
         }
         currentPathOffset += (rangeEnd - rangeStart)
         return res
+    }
+
+    /** Returns the first step with a stop after the given index, if any. */
+    fun getFirstStopAfterIndex(i: Int): LocatedStep? {
+        return reachedSteps
+            .withIndex()
+            .firstOrNull { it.index > i && it.value.originalStep.stop }
+            ?.value
     }
 
     fun clone(): StepTracker {

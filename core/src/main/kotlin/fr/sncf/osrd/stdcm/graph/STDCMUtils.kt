@@ -10,28 +10,19 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import java.util.*
 
-/** Returns the offset of the stops on the given block, starting at startOffset */
+/** Returns the offset of the next stop on the given block (if any), starting at startOffset */
 fun getStopOnBlock(
-    graph: STDCMGraph,
-    block: BlockId,
+    infraExplorer: InfraExplorer,
     startOffset: Offset<Block>,
-    waypointIndex: Int
 ): Offset<Block>? {
-    var mutWaypointIndex = waypointIndex
-    val res = ArrayList<Offset<Block>>()
-    while (
-        mutWaypointIndex + 1 < graph.steps.size && !graph.steps[mutWaypointIndex + 1].stop
-    ) mutWaypointIndex++ // Only the next point where we actually stop matters here
-    if (mutWaypointIndex + 1 >= graph.steps.size) return null
-    val nextStep = graph.steps[mutWaypointIndex + 1]
-    if (!nextStep.stop) return null
-    for (endLocation in nextStep.locations) {
-        if (endLocation.edge == block) {
-            val offset = endLocation.offset
-            if (offset >= startOffset) res.add(offset)
-        }
-    }
-    return if (res.isEmpty()) null else Collections.min(res)
+    return infraExplorer
+        .getStepTracker()
+        .getAllReachedSteps()
+        .filter { it.originalStep.stop }
+        .filter { it.location.edge == infraExplorer.getCurrentBlock() }
+        .filter { it.location.offset >= startOffset }
+        .map { it.location.offset }
+        .minOrNull()
 }
 
 /** Create a TrainPath instance from a list of edge ranges */

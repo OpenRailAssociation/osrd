@@ -55,15 +55,18 @@ data class STDCMEdge(
 
     /** Returns the node at the end of this edge */
     fun getEdgeEnd(graph: STDCMGraph): STDCMNode {
+        // TODO: maybe integrate this logic to StepTracker?
         var newWaypointIndex = waypointIndex
         val previousPlannedNodeRelativeTimeDiff = getPreviousPlannedNodeRelativeTimeDiff()
-        while (newWaypointIndex + 1 < graph.steps.size) {
-            val nextStep = graph.steps[newWaypointIndex + 1]
+        val stepTracker = infraExplorer.getStepTracker()
+        while (newWaypointIndex + 1 < stepTracker.totalStepCount) {
+            val nextStep = stepTracker.getAllReachedSteps().getOrNull(newWaypointIndex + 1) ?: break
             val endOffset = envelopeStartOffset + length.distance
+            val stepOffset = nextStep.location.offset
             val pass =
-                nextStep.locations.any {
-                    it.edge == block && it.offset <= endOffset && it.offset >= envelopeStartOffset
-                }
+                nextStep.location.edge == block &&
+                    stepOffset <= endOffset &&
+                    stepOffset >= envelopeStartOffset
             if (!pass) break
             newWaypointIndex++
         }
@@ -83,8 +86,8 @@ data class STDCMEdge(
             )
         } else {
             // New edge on the same block, after a stop
-            val firstStopAfterIndex = graph.getFirstStopAfterIndex(waypointIndex)!!
-            val stopDuration = firstStopAfterIndex.duration!!
+            val firstStopAfterIndex = stepTracker.getFirstStopAfterIndex(waypointIndex)!!
+            val stopDuration = firstStopAfterIndex.originalStep.duration
             val locationOnEdge = envelopeStartOffset + length.distance
 
             STDCMNode(
@@ -102,7 +105,7 @@ data class STDCMEdge(
                 newWaypointIndex,
                 envelopeStartOffset + length.distance,
                 stopDuration,
-                firstStopAfterIndex.plannedTimingData,
+                firstStopAfterIndex.originalStep.plannedTimingData,
                 previousPlannedNodeRelativeTimeDiff,
                 graph.remainingTimeEstimator.invoke(this, locationOnEdge, newWaypointIndex),
             )

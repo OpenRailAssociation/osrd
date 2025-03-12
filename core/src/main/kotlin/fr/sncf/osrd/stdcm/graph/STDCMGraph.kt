@@ -36,7 +36,7 @@ class STDCMGraph(
     blockAvailability: BlockAvailabilityInterface,
     maxRunTime: Double,
     minScheduleTimeStart: Double,
-    val steps: List<STDCMStep>,
+    steps: List<STDCMStep>,
     val tag: String?,
     val standardAllowance: AllowanceValue?,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
@@ -168,10 +168,5 @@ class STDCMGraph(
 
             node = edge.previousNode
         }
-    }
-
-    /** Returns the first step with a stop after the given index, if any. */
-    fun getFirstStopAfterIndex(i: Int): STDCMStep? {
-        return steps.withIndex().firstOrNull { it.index > i && it.value.stop }?.value
     }
 }

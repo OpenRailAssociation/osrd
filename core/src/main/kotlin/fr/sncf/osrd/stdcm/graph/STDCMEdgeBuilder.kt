@@ -97,10 +97,8 @@ internal constructor(
                         prevNode.speed,
                         startOffset,
                         getStopOnBlock(
-                            graph,
-                            infraExplorer.getCurrentBlock(),
+                            infraExplorer,
                             startOffset,
-                            prevNode.waypointIndex
                         )
                     )
                 )
@@ -153,10 +151,8 @@ internal constructor(
     private fun getEndStopDuration(): Double? {
         val endAtStop =
             getStopOnBlock(
-                graph,
-                infraExplorer.getCurrentBlock(),
+                infraExplorer,
                 startOffset,
-                prevNode.waypointIndex
             ) != null
         if (!endAtStop) return null
         return graph.getFirstStopAfterIndex(prevNode.waypointIndex)!!.duration!!

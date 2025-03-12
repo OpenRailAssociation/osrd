@@ -65,7 +65,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                     old.infraExplorer.getCurrentBlock(),
                     old.beginSpeed,
                     old.envelopeStartOffset,
-                    getStopOnBlock(graph, old.block, old.envelopeStartOffset, old.waypointIndex)
+                    getStopOnBlock(old.infraExplorer, old.envelopeStartOffset)
                 )
             )
         val newEnvelope =
