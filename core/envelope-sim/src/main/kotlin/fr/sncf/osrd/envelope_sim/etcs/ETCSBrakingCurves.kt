@@ -103,29 +103,31 @@ private fun computeMinSvlEoaIndCurve(
     ) {
         return Envelope.make(fullIndicationCurveEoa)
     }
-    val releaseSpeedPositionEoa = fullIndicationCurveEoa.interpolatePosition(NATIONAL_RELEASE_SPEED)
-    val releaseSpeedPositionSvl = fullIndicationCurveSvl.interpolatePosition(NATIONAL_RELEASE_SPEED)
+    val releaseSpeedPositionEoa =
+        fullIndicationCurveEoa.interpolatePosition(NATIONAL_RELEASE_SPEED)!!
+    val releaseSpeedPositionSvl =
+        fullIndicationCurveSvl.interpolatePosition(NATIONAL_RELEASE_SPEED)!!
     val lastIndicationPart =
         fullIndicationCurveEoa.sliceWithSpeeds(
             releaseSpeedPositionEoa,
             NATIONAL_RELEASE_SPEED,
             fullIndicationCurveEoa.endPos,
             fullIndicationCurveEoa.endSpeed
-        )
+        )!!
     val slicedIndicationCurveEoa =
         fullIndicationCurveEoa.sliceWithSpeeds(
             fullIndicationCurveEoa.beginPos,
             fullIndicationCurveEoa.beginSpeed,
             releaseSpeedPositionEoa,
             NATIONAL_RELEASE_SPEED
-        )
+        )!!
     val slicedIndicationCurveSvl =
         fullIndicationCurveSvl.sliceWithSpeeds(
             fullIndicationCurveSvl.beginPos,
             fullIndicationCurveSvl.beginSpeed,
             releaseSpeedPositionSvl,
             NATIONAL_RELEASE_SPEED
-        )
+        )!!
     val startIntersectingRange =
         max(slicedIndicationCurveEoa.beginPos, slicedIndicationCurveSvl.beginPos)
     var refCurve = slicedIndicationCurveEoa
@@ -368,7 +370,7 @@ private fun computeBrakingCurve(
             speedAtTargetPosition <= brakingCurve.beginSpeed &&
                 speedAtTargetPosition >= brakingCurve.endSpeed
         ) {
-            val intersection = brakingCurve.interpolatePosition(targetSpeed + dvEbi)
+            val intersection = brakingCurve.interpolatePosition(targetSpeed + dvEbi)!!
             brakingCurve =
                 brakingCurve.copyAndShift(
                     targetPosition - intersection,
@@ -412,13 +414,13 @@ private fun computeEbiBrakingCurveFromEbd(
         EnvelopePart.generateTimes(listOf(EnvelopeProfile.BRAKING), newPositions, newSpeeds)
 
     // Make EBI stop at target speed.
-    val intersection = fullBrakingCurve.interpolatePosition(targetSpeed)
+    val intersection = fullBrakingCurve.interpolatePosition(targetSpeed)!!
     return fullBrakingCurve.sliceWithSpeeds(
         fullBrakingCurve.beginPos,
         fullBrakingCurve.beginSpeed,
         intersection,
         targetSpeed
-    )
+    )!!
 }
 
 /** Compute Indication curve: EBI/SBD -> SBI -> PS -> IND. See Subset 026: figures 45 and 46. */
@@ -558,7 +560,7 @@ private fun computeBecParams(
     speed: Double,
     targetSpeed: Double
 ): BecParams {
-    val position = ebd.interpolatePosition(speed)
+    val position = ebd.interpolatePosition(speed)!!
     val rollingStock = context.rollingStock
 
     val vDelta0 = vDelta0(speed)
@@ -630,7 +632,7 @@ private fun getAdjustedPermittedSpeedPosition(
 ): Double {
     val guiPosition =
         if (speed > guiCurve.maxSpeed || speed < guiCurve.minSpeed) Double.POSITIVE_INFINITY
-        else guiCurve.interpolatePosition(speed)
+        else guiCurve.interpolatePosition(speed)!!
     // Interpolating adds a position inaccuracy. If both positions are equal, keep more accurate
     // permitted speed position.
     return if (TrainPhysicsIntegrator.arePositionsEqual(permittedSpeedPosition, guiPosition))

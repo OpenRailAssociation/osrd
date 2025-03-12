@@ -151,7 +151,7 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                     val minSpeed = 1e-5
                     builder.addPart(
                         EnvelopePart.generateTimes(
-                            mutableListOf<SelfTypeHolder?>(
+                            mutableListOf<SelfTypeHolder>(
                                 EnvelopeProfile.CONSTANT_SPEED,
                             ),
                             doubleArrayOf(0.0, lastAccelerationPosition),
