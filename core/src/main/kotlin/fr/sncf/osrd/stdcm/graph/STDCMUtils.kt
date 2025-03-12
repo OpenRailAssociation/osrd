@@ -8,7 +8,6 @@ import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.meters
 import java.util.*
 
 /** Returns the offset of the stops on the given block, starting at startOffset */
@@ -28,8 +27,8 @@ fun getStopOnBlock(
     if (!nextStep.stop) return null
     for (endLocation in nextStep.locations) {
         if (endLocation.edge == block) {
-            val offset = endLocation.offset - startOffset.distance
-            if (offset >= Offset(0.meters)) res.add(offset)
+            val offset = endLocation.offset
+            if (offset >= startOffset) res.add(offset)
         }
     }
     return if (res.isEmpty()) null else Collections.min(res)

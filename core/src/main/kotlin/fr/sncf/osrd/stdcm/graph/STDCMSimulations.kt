@@ -93,15 +93,15 @@ class STDCMSimulations {
         trainTag: String?,
         temporarySpeedLimitManager: TemporarySpeedLimitManager?,
     ): Envelope? {
-        if (stopPosition != null && stopPosition == Offset<Block>(0.meters))
-            return makeSinglePointEnvelope(0.0)
+        assert(stopPosition == null || stopPosition >= start)
+        if (stopPosition != null && stopPosition == start) return makeSinglePointEnvelope(0.0)
         val blockLength = infraExplorer.getCurrentBlockLength()
         if (start >= blockLength) return makeSinglePointEnvelope(initialSpeed)
         var stops = doubleArrayOf()
         var simLength = blockLength.distance - start.distance
         if (stopPosition != null) {
-            stops = doubleArrayOf(stopPosition.distance.meters)
-            simLength = Distance.min(simLength, stopPosition.distance)
+            stops = doubleArrayOf((stopPosition - start).meters)
+            simLength = Distance.min(simLength, stops.single().meters)
         }
         val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
         val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
