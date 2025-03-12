@@ -111,7 +111,7 @@ function formatOperationalPointWithTimes(
   const stopBegin = getTimeAtPosition(op.positionOnPath, train);
 
   const duration = getStopDurationAtPosition(op.positionOnPath, train.positions, train.times);
-  const durationInSeconds = duration !== null ? duration.total('second') : 0;
+  const durationInSeconds = duration !== null ? duration.total('second') : null;
   const stopEnd = stopBegin.add(duration || Duration.zero);
   // Find the corresponding stopType from pathSteps
   const correspondingStep = simulationPathSteps.find(

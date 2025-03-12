@@ -325,9 +325,9 @@ const SimulationReportSheet = ({
                     (s) =>
                       s.location && s.location.name === step.name && getSecondaryCode(s) === step.ch
                   );
-                const isViaWithoutStop = isViaInSimulationPath && step.duration === 0;
+                const isViaWithoutStop = isViaInSimulationPath && step.duration === null;
                 const isNotExtremity = !isFirstStep && !isLastStep;
-                const isStepWithDuration = step.duration !== 0 && !isLastStep;
+                const isStepWithDuration = step.duration !== null && !isLastStep;
                 const tdPassageStopStyle = !isViaWithoutStop
                   ? styles.simulation.td
                   : { ...styles.simulation.td, paddingLeft: '' };
@@ -351,7 +351,7 @@ const SimulationReportSheet = ({
                           // eslint-disable-next-line no-nested-ternary
                           isViaWithoutStop
                             ? styles.simulation.opColumnPassageStop
-                            : isNotExtremity && step.duration !== 0
+                            : isNotExtremity && step.duration !== null
                               ? styles.simulation.opStop
                               : styles.simulation.td
                         }
@@ -377,7 +377,7 @@ const SimulationReportSheet = ({
                     </View>
                     <View style={styles.simulation.endWidth}>
                       <TD style={styles.simulation.stopColumn}>
-                        {isLastStep || step.duration !== 0 ? step.time : ''}
+                        {isLastStep || step.duration !== null ? step.time : ''}
                       </TD>
                     </View>
                     <View style={styles.simulation.passageWidth}>
@@ -386,7 +386,7 @@ const SimulationReportSheet = ({
                           // eslint-disable-next-line no-nested-ternary
                           ...(isStepWithDuration
                             ? {
-                                width: `${step.duration < 600 && step.duration >= 60 ? 60 : 70}px`,
+                                width: `${step.duration! < 600 && step.duration! >= 60 ? 60 : 70}px`,
                                 ...styles.simulation.blueStop,
                               }
                             : !isViaWithoutStop
@@ -397,7 +397,7 @@ const SimulationReportSheet = ({
                         {
                           // eslint-disable-next-line no-nested-ternary
                           isNotExtremity
-                            ? step.duration !== 0
+                            ? step.duration !== null
                               ? getStopDurationTime(new Duration({ seconds: step.duration }))
                               : step.time
                             : ''
@@ -406,7 +406,7 @@ const SimulationReportSheet = ({
                     </View>
                     <View style={styles.simulation.startWidth}>
                       <TD style={styles.simulation.stopColumn}>
-                        {isFirstStep || step.duration !== 0 ? step.stopEndTime : ''}
+                        {isFirstStep || step.duration !== null ? step.stopEndTime : ''}
                       </TD>
                     </View>
                     <View style={styles.simulation.weightWidth}>
