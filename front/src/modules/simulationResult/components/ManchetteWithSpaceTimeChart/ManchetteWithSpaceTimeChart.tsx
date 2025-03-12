@@ -9,7 +9,7 @@ import Manchette, {
 // TODO: export InteractiveWaypoint type from ui-manchette
 import type { InteractiveWaypoint } from '@osrd-project/ui-manchette/dist/types';
 import {
-  useManchettesWithSpaceTimeChart,
+  useManchetteWithSpaceTimeChart,
   timeScaleToZoomValue,
   DEFAULT_ZOOM_MS_PER_PX,
 } from '@osrd-project/ui-manchette-with-spacetimechart';
@@ -234,7 +234,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   );
 
   const { manchetteProps, spaceTimeChartProps, handleScroll, handleXZoom, xZoom } =
-    useManchettesWithSpaceTimeChart(
+    useManchetteWithSpaceTimeChart(
       manchetteWaypoints,
       formattedCutProjectedTrains,
       manchetteWithSpaceTimeChartRef,

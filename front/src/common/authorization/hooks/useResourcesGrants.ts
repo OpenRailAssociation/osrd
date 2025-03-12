@@ -8,6 +8,7 @@ import { mockedEditoastApi, type ResourceType } from 'common/api/mock/mockEditoa
  * @returns the user grants on the resources
  */
 const useResourcesGrants = (payload: Partial<Record<ResourceType, number[]>>) => {
+  const hasResources = Object.entries(payload).some(([_, ids]) => ids && ids.length > 0);
   const [fetchUserGrantByResourceId, { data: userResourcesGrants }] =
     mockedEditoastApi.endpoints.postUserResourcesGrants.useMutation();
 
@@ -19,8 +20,11 @@ const useResourcesGrants = (payload: Partial<Record<ResourceType, number[]>>) =>
         console.error(error);
       }
     };
-    getUserGrantByResourceId();
-  }, [payload, fetchUserGrantByResourceId]);
+
+    if (hasResources) {
+      getUserGrantByResourceId();
+    }
+  }, [payload, hasResources]);
 
   return userResourcesGrants;
 };

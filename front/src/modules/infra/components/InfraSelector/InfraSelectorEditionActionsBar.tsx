@@ -6,8 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import useProtectedActionByGrant from 'common/authorization/hooks/useProtectedActionByGrant';
-import useProtectedActionByPrivilege from 'common/authorization/hooks/useProtectedActionByPrivilege';
+import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -30,13 +29,13 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
   const [cloneInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdClone.useMutation();
   const [updateInfra] = osrdEditoastApi.endpoints.putInfraByInfraId.useMutation();
 
-  const protectWithWritePrivilege = useProtectedActionByPrivilege({
+  const protectWithWritePrivilege = useProtectedAction({
     resourceType: 'infra',
     resourceId: infra.id,
-    requiredPrivilege: 'can_write',
+    requiredPrivileges: ['can_write'],
   });
 
-  const protectWithOwnerGrant = useProtectedActionByGrant({
+  const protectWithOwnerGrant = useProtectedAction({
     resourceType: 'infra',
     resourceId: infra.id,
     requiredGrant: 'OWNER',

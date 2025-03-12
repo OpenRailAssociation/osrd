@@ -4,12 +4,12 @@ import { Lock, Trash } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
+import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 import ActionsBar from './InfraSelectorEditionActionsBar';
 import InfraSelectorEditionActionsBarDelete from './InfraSelectorEditionActionsBarDelete';
 import { editoastUpToDateIndicator } from './InfraSelectorModalBodyStandard';
-import useProtectedActionByGrant from 'common/authorization/hooks/useProtectedActionByGrant';
 
 type InfraSelectorEditionItemProps = {
   infra: Infra;
@@ -26,7 +26,7 @@ export default function InfraSelectorEditionItem({
   const [runningDelete, setRunningDelete] = useState(false);
   const { t } = useTranslation('infraManagement');
 
-  const protectWithOwnerGrant = useProtectedActionByGrant({
+  const protectWithOwnerGrant = useProtectedAction({
     resourceType: 'infra',
     resourceId: infra.id,
     requiredGrant: 'OWNER',

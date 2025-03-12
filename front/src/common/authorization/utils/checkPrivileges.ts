@@ -1,13 +1,4 @@
-import { type ResourceType } from 'common/api/mock/mockEditoastApi';
-
-//
-type checkPrivilegesParams = {
-  resourceGrants?: {
-    [grant: string]: string[];
-  };
-  resourceType: ResourceType;
-  userGrant: string;
-} & (
+export type authorizationRequirement =
   | {
       requiredGrant?: string;
       requiredPrivileges?: undefined;
@@ -15,8 +6,14 @@ type checkPrivilegesParams = {
   | {
       requiredGrant?: undefined;
       requiredPrivileges?: string[];
-    }
-);
+    };
+
+export type checkPrivilegesParams = {
+  resourceGrants?: {
+    [grant: string]: string[];
+  };
+  userGrant: string;
+} & authorizationRequirement;
 
 const checkPrivileges = ({
   resourceGrants = {},

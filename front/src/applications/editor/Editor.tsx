@@ -19,9 +19,10 @@ import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTyp
 import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
+import type { ResourceType } from 'common/api/mock/mockEditoastApi';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
-import useCheckPrivilege from 'common/authorization/hooks/useCheckPrivilege';
-import useProtectedActionByPrivilege from 'common/authorization/hooks/useProtectedActionByPrivilege';
+import useCheckPrivileges from 'common/authorization/hooks/useCheckPrivileges';
+import useProtectedAction from 'common/authorization/hooks/useProtectedAction';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -122,18 +123,18 @@ const Editor = () => {
   };
 
   const protectedAction = useCallback(
-    useProtectedActionByPrivilege({
-      resourceType: 'infra',
+    useProtectedAction({
+      resourceType: 'infra' as ResourceType,
       resourceId: infraID,
-      requiredPrivilege: 'can_write',
+      requiredPrivileges: ['can_write'],
     }),
     [infraID]
   );
 
-  const userCanEditInfra = useCheckPrivilege({
-    resourceType: 'infra',
+  const userCanEditInfra = useCheckPrivileges({
+    resourceType: 'infra' as ResourceType,
     resourceId: infraID,
-    requiredPrivilege: 'can_write',
+    requiredPrivileges: ['can_write'],
   });
 
   const context = useMemo<EditorContextType<CommonToolState>>(
