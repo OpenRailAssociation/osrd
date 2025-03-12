@@ -121,7 +121,10 @@ function formatOperationalPointWithTimes(
   if (correspondingStep) {
     stopType = correspondingStep.isVia ? correspondingStep.stopType : StdcmStopTypes.SERVICE_STOP;
   }
-  const stopFor = correspondingStep?.isVia ? correspondingStep.stopFor : undefined;
+  const stopRequested =
+    correspondingStep !== undefined &&
+    correspondingStep.isVia &&
+    correspondingStep.stopFor !== undefined;
 
   return {
     opId: op.opId!,
@@ -133,7 +136,7 @@ function formatOperationalPointWithTimes(
     stopEndTime: durationToHHMM(stopEnd),
     trackName: op.metadata?.trackName,
     stopType,
-    stopFor,
+    stopRequested,
   };
 }
 
@@ -188,7 +191,7 @@ export function insertMissingStopsInOperationalPointsWithTimes(
       train,
       simulationPathSteps
     );
-    if (lastAddedOp.stopFor && !lastAddedOp.duration) {
+    if (lastAddedOp.stopRequested && !lastAddedOp.duration) {
       // If a stop was requested at the last op and no stop was performed,
       // we assume the current stop actually corresponds to the last op
       lastAddedOp.duration = formattedStop.duration;
