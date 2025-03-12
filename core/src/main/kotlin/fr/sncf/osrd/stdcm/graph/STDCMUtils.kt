@@ -13,14 +13,12 @@ import java.util.*
 /** Returns the offset of the next stop on the given block (if any), starting at startOffset */
 fun getStopOnBlock(
     infraExplorer: InfraExplorer,
-    startOffset: Offset<Block>,
 ): Offset<Block>? {
     return infraExplorer
         .getStepTracker()
-        .getAllReachedSteps()
+        .getStepsInLookahead()
         .filter { it.originalStep.stop }
         .filter { it.location.edge == infraExplorer.getCurrentBlock() }
-        .filter { it.location.offset >= startOffset }
         .map { it.location.offset }
         .minOrNull()
 }

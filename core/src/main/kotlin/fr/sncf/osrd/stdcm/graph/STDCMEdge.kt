@@ -22,8 +22,6 @@ data class STDCMEdge(
     // Offset of the envelope if it doesn't start at the beginning of the edge
     // This can *not* be used to convert Path / TravelledPath (should reference start of 1st route)
     val envelopeStartOffset: Offset<Block>,
-    // Index of the last waypoint passed by this train
-    val waypointIndex: Int,
     // True if the edge end is a stop
     val endAtStop: Boolean,
     // Speed at the beginning of the edge
@@ -55,39 +53,37 @@ data class STDCMEdge(
 
     /** Returns the node at the end of this edge */
     fun getEdgeEnd(graph: STDCMGraph): STDCMNode {
-        // TODO: maybe integrate this logic to StepTracker?
-        var newWaypointIndex = waypointIndex
         val previousPlannedNodeRelativeTimeDiff = getPreviousPlannedNodeRelativeTimeDiff()
         val stepTracker = infraExplorer.getStepTracker()
-        while (newWaypointIndex + 1 < stepTracker.totalStepCount) {
-            val nextStep = stepTracker.getAllReachedSteps().getOrNull(newWaypointIndex + 1) ?: break
-            val endOffset = envelopeStartOffset + length.distance
-            val stepOffset = nextStep.location.offset
-            val pass =
-                nextStep.location.edge == block &&
-                    stepOffset <= endOffset &&
-                    stepOffset >= envelopeStartOffset
-            if (!pass) break
-            newWaypointIndex++
-        }
+        val newExplorer = infraExplorerWithNewEnvelope.clone()
+        newExplorer
+            .getStepTracker()
+            .moveForward(
+                infraExplorer.getCurrentBlock(),
+                envelopeStartOffset,
+                envelopeStartOffset + length.distance
+            )
         return if (!endAtStop) {
             // We move on to the next block
             STDCMNode(
                 timeData.withAddedTime(totalTime, null, null),
                 endSpeed,
-                infraExplorerWithNewEnvelope,
+                newExplorer,
                 this,
-                newWaypointIndex,
                 null,
                 null,
                 null,
                 previousPlannedNodeRelativeTimeDiff,
-                graph.remainingTimeEstimator.invoke(this, null, newWaypointIndex),
+                graph.remainingTimeEstimator.invoke(
+                    this,
+                    null,
+                    stepTracker.stepsExcludingLookahead
+                ),
             )
         } else {
             // New edge on the same block, after a stop
-            val firstStopAfterIndex = stepTracker.getFirstStopAfterIndex(waypointIndex)!!
-            val stopDuration = firstStopAfterIndex.originalStep.duration
+            val nextStop = stepTracker.getStepsInLookahead().first { it.originalStep.stop }
+            val stopDuration = nextStop.originalStep.duration
             val locationOnEdge = envelopeStartOffset + length.distance
 
             STDCMNode(
@@ -100,14 +96,17 @@ data class STDCMEdge(
                     )
                 ),
                 endSpeed,
-                infraExplorerWithNewEnvelope,
+                newExplorer,
                 this,
-                newWaypointIndex,
                 envelopeStartOffset + length.distance,
                 stopDuration,
-                firstStopAfterIndex.originalStep.plannedTimingData,
+                nextStop.originalStep.plannedTimingData,
                 previousPlannedNodeRelativeTimeDiff,
-                graph.remainingTimeEstimator.invoke(this, locationOnEdge, newWaypointIndex),
+                graph.remainingTimeEstimator.invoke(
+                    this,
+                    locationOnEdge,
+                    stepTracker.stepsExcludingLookahead
+                ),
             )
         }
     }

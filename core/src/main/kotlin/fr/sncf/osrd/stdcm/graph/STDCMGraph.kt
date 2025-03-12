@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.graph
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
@@ -27,7 +26,6 @@ import kotlin.math.min
  * to fix speed discontinuities, DelayManager handles how much delay we can and need to add to avoid
  * conflicts, STDCMEdgeBuilder handles the creation of new STDCMEdge instances
  */
-@SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
 class STDCMGraph(
     val fullInfra: FullInfra,
     val rollingStock: RollingStock,
@@ -111,7 +109,7 @@ class STDCMGraph(
             visitedNodesParameters.fingerprint =
                 VisitedNodes.Fingerprint(
                     explorer.getLastEdgeIdentifier(),
-                    node.waypointIndex,
+                    node.infraExplorer.getStepTracker().stepsExcludingLookahead,
                     node.locationOnEdge.distance
                 )
             if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()
@@ -125,7 +123,7 @@ class STDCMGraph(
                 visitedNodesParameters.fingerprint =
                     VisitedNodes.Fingerprint(
                         newPath.getLastEdgeIdentifier(),
-                        node.waypointIndex,
+                        node.infraExplorer.getStepTracker().stepsExcludingLookahead,
                         0.meters
                     )
                 if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()

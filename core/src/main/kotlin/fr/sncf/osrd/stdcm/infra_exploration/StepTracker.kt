@@ -12,14 +12,21 @@ import fr.sncf.osrd.utils.units.Offset
  * It keeps tracks of which steps we've passed and where, how many steps have been reached
  * (specifically when we've reached the destination), and which steps are present in a block range.
  *
- * Note: compared to the InfraExplorer's progress, this is meant to include the lookahead.
+ * The tricky part is that we need to keep track of which steps are seen on the path as a whole
+ * (including lookahead), and which have actually been reached by the simulations (excluding
+ * lookahead). Unless specified otherwise, fields and methods refer to the whole path.
  */
 class StepTracker(private val inputSteps: List<STDCMStep>) {
-    val totalStepCount: Int = inputSteps.size
+    // If copying this is too expensive, it may be changed to an AppendOnlyLinkedList.
+    // But the list should be small.
     private val reachedSteps: MutableList<LocatedStep> = mutableListOf()
-    private val nPassedSteps: Int
+    private val stepsIncludingLookahead: Int
         get() = reachedSteps.size
 
+    var stepsExcludingLookahead: Int = 0
+        private set
+
+    // Used to compute path offsets
     private var currentPathOffset: Offset<TravelledPath> = Offset.zero()
 
     /** Returns all the steps that have been passed on the path, in order. */
@@ -27,9 +34,14 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
         return reachedSteps
     }
 
-    /** True if the last step has been reached. */
+    /** True if the last step has been reached (including lookahead). */
     fun hasReachedDestination(): Boolean {
-        return nPassedSteps == inputSteps.size
+        return stepsIncludingLookahead == inputSteps.size
+    }
+
+    /** True if the last step has been reached, with full simulation and no lookahead. */
+    fun hasReachedDestinationExcludingLookahead(): Boolean {
+        return hasReachedDestination() && stepsIncludingLookahead == stepsExcludingLookahead
     }
 
     /**
@@ -39,39 +51,49 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
      */
     fun exploreBlockRange(
         block: BlockId,
-        from: Offset<Block>,
+        rangeStart: Offset<Block>,
         rangeEnd: Offset<Block>, // No default value as we need the infra to know the block len
     ): List<LocatedStep> {
         val res = mutableListOf<LocatedStep>()
-        var rangeStart = from
+        var mutRangeStart = rangeStart
         while (true) {
-            val step = inputSteps.getOrNull(nPassedSteps) ?: break
+            val step = inputSteps.getOrNull(stepsIncludingLookahead) ?: break
             val location =
                 step.locations
                     .filter { it.edge == block }
-                    .filter { it.offset in rangeStart..rangeEnd }
+                    .filter { it.offset in mutRangeStart..rangeEnd }
                     .minByOrNull { it.offset } ?: break
             val newStep =
                 LocatedStep(
-                    currentPathOffset + (location.offset - rangeStart),
+                    currentPathOffset + (location.offset - mutRangeStart),
                     location,
                     step,
                 )
             res.add(newStep)
             reachedSteps.add(newStep)
-            currentPathOffset += (location.offset - rangeStart)
-            rangeStart = location.offset
+            currentPathOffset += (location.offset - mutRangeStart)
+            mutRangeStart = location.offset
         }
-        currentPathOffset += (rangeEnd - rangeStart)
+        currentPathOffset += (rangeEnd - mutRangeStart)
         return res
     }
 
-    /** Returns the first step with a stop after the given index, if any. */
-    fun getFirstStopAfterIndex(i: Int): LocatedStep? {
-        return reachedSteps
-            .withIndex()
-            .firstOrNull { it.index > i && it.value.originalStep.stop }
-            ?.value
+    /** Integrate a part of the lookahead into the "actually visited" steps. */
+    fun moveForward(block: BlockId, start: Offset<Block>, end: Offset<Block>) {
+        while (true) {
+            val nextStepLoc = reachedSteps.getOrNull(stepsExcludingLookahead)?.location ?: return
+            if (nextStepLoc.edge == block && nextStepLoc.offset in start..end)
+                stepsExcludingLookahead++
+            else break
+        }
+    }
+
+    /**
+     * Returns the steps that are present in the lookahead (not "reached" yet by the simulation, but
+     * we know their path offset)
+     */
+    fun getStepsInLookahead(): List<LocatedStep> {
+        return reachedSteps.subList(stepsExcludingLookahead, reachedSteps.size)
     }
 
     fun clone(): StepTracker {
@@ -80,6 +102,7 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
         val res = StepTracker(inputSteps)
         res.reachedSteps.addAll(reachedSteps)
         res.currentPathOffset = currentPathOffset
+        res.stepsExcludingLookahead = stepsExcludingLookahead
         return res
     }
 }
@@ -88,4 +111,8 @@ data class LocatedStep(
     val pathOffset: Offset<TravelledPath>,
     val location: PathfindingEdgeLocationId<Block>,
     val originalStep: STDCMStep,
-)
+) {
+    init {
+        assert(originalStep.locations.contains(location))
+    }
+}

@@ -15,8 +15,6 @@ data class STDCMNode(
     val infraExplorer: InfraExplorerWithEnvelope,
     // Edge that lead to this node, null if this is the first node
     val previousEdge: STDCMEdge?,
-    // Index of the last waypoint passed by the train
-    val waypointIndex: Int,
     // Position on a block, if this node isn't on the transition between blocks (stop)
     val locationOnEdge: Offset<Block>?,
     // When the node is a stop, how long the train remains here
@@ -83,7 +81,9 @@ data class STDCMNode(
         // In the end, prioritize the highest number of reached targets.
         // This doesn't define the priority between different paths,
         // it just minimizes the chance of evaluating redundant nodes
-        else other.waypointIndex - waypointIndex
+        else
+            other.infraExplorer.getStepTracker().stepsExcludingLookahead -
+                infraExplorer.getStepTracker().stepsExcludingLookahead
     }
 
     override fun toString(): String {
@@ -93,7 +93,7 @@ data class STDCMNode(
             timeData.earliestReachableTime,
             speed,
             infraExplorer.getCurrentBlock(),
-            waypointIndex
+            infraExplorer.getStepTracker().stepsExcludingLookahead,
         )
     }
 

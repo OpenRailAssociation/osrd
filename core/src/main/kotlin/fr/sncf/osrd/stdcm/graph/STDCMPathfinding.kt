@@ -193,9 +193,7 @@ class STDCMPathfinding(
             progressLogger.processNode(endNode)
             if (endNode.timeData.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
                 return null
-            if (
-                endNode.waypointIndex >= endNode.infraExplorer.getStepTracker().totalStepCount - 1
-            ) {
+            if (endNode.infraExplorer.getStepTracker().hasReachedDestinationExcludingLookahead()) {
                 return buildResult(endNode)
             }
             queue += getAdjacentNodes(endNode)
@@ -280,7 +278,6 @@ class STDCMPathfinding(
                         0.0,
                         explorer as InfraExplorerWithEnvelope,
                         null,
-                        0,
                         location.offset,
                         null,
                         firstStep.plannedTimingData,

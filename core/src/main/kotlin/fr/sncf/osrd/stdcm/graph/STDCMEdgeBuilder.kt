@@ -98,7 +98,6 @@ internal constructor(
                         startOffset,
                         getStopOnBlock(
                             infraExplorer,
-                            startOffset,
                         )
                     )
                 )
@@ -149,13 +148,13 @@ internal constructor(
 
     /** Returns the stop duration at the end of the edge being built, or null if there's no stop */
     private fun getEndStopDuration(): Double? {
-        val endAtStop =
-            getStopOnBlock(
-                infraExplorer,
-                startOffset,
-            ) != null
-        if (!endAtStop) return null
-        return graph.getFirstStopAfterIndex(prevNode.waypointIndex)!!.duration!!
+        return prevNode.infraExplorer
+            .getStepTracker()
+            .getStepsInLookahead()
+            .filter { it.location.edge == infraExplorer.getCurrentBlock() }
+            .firstOrNull { it.originalStep.stop }
+            ?.originalStep
+            ?.duration
     }
 
     /** Creates a single STDCM edge, adding the given amount of delay */
@@ -219,7 +218,6 @@ internal constructor(
                 getExplorerWithNewEnvelope()!!,
                 prevNode,
                 startOffset,
-                prevNode.waypointIndex,
                 endAtStop,
                 envelope!!.beginSpeed,
                 envelope!!.endSpeed,
