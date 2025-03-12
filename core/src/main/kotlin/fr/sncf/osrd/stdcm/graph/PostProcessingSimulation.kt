@@ -368,7 +368,7 @@ private fun getUpdatedExplorer(
         .withReplacedEnvelope(
             envelope,
         )
-        .updateStopDurations(updatedTimeData)
+        .updateTimeData(updatedTimeData)
 }
 
 /**
@@ -473,12 +473,6 @@ private fun handlePostProcessingConflict(
             postProcessingLogger.info("        offset $remainingDistance/${edge.length}")
             postProcessingLogger.info("        original time data: ${edge.timeData}")
             postProcessingLogger.info("        updated time data: $updatedTimeData")
-            postProcessingLogger.info(
-                "        original explorer stops: ${edge.infraExplorerWithNewEnvelope.getStops()}"
-            )
-            postProcessingLogger.info(
-                "        updated explorer stops: ${updatedExplorer.getStops()}"
-            )
             postProcessingLogger.info(
                 "        updated start time: ${edge.timeData.getUpdatedEarliestReachableTime(updatedTimeData)}"
             )

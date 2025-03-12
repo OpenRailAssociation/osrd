@@ -120,7 +120,18 @@ internal constructor(
                 else LinearAllowance.scaleEnvelope(envelope, speedRatio)
             val stopDuration = getEndStopDuration()
             explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(scaledEnvelope)
-            if (stopDuration != null) explorerWithNewEnvelope!!.addStop(stopDuration)
+            if (stopDuration != null) {
+                val timeData = prevNode.timeData
+                val stopData = timeData.stopTimeData.toMutableList()
+                stopData.add(
+                    StopTimeData(
+                        stopDuration,
+                        stopDuration,
+                        timeData.maxDepartureDelayingWithoutConflict
+                    )
+                )
+                explorerWithNewEnvelope!!.updateTimeData(timeData.copy(stopTimeData = stopData))
+            }
         }
         return explorerWithNewEnvelope
     }

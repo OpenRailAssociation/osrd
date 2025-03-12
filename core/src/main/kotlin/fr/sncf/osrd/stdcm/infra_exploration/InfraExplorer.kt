@@ -99,6 +99,9 @@ interface InfraExplorer {
 
     /** Returns the list of routes that are the current exploration follows. */
     fun getExploredRoutes(): List<RouteId>
+
+    /** Returns the step tracker, giving data about the steps on the path (including lookahead) */
+    fun getStepTracker(): StepTracker
 }
 
 /** Used to identify an edge */
@@ -277,6 +280,10 @@ private class InfraExplorerImpl(
 
     override fun getExploredRoutes(): List<RouteId> {
         return routes.toList()
+    }
+
+    override fun getStepTracker(): StepTracker {
+        return stepTracker
     }
 
     /**
