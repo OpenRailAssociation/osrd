@@ -184,9 +184,8 @@ impl<S: StorageDriver> Regulator<S> {
                 return Err(Error::UnknownSubject(*user_id));
             }
             let user = fga!(User:user_id);
-            writes = writes
-                .push(&Group::member().tuple(&user, &group))
-                .push(&User::group().tuple(&group, &user));
+            writes.push(&Group::member().tuple(&user, &group));
+            writes.push(&User::group().tuple(&group, &user));
         }
         writes.execute().await?;
         Ok(())
@@ -205,9 +204,8 @@ impl<S: StorageDriver> Regulator<S> {
         let mut deletes = self.openfga.prepare_deletes();
         for user_id in members {
             let user = fga!(User:user_id);
-            deletes = deletes
-                .push(&Group::member().tuple(&user, &group))
-                .push(&User::group().tuple(&group, &user));
+            deletes.push(&Group::member().tuple(&user, &group));
+            deletes.push(&User::group().tuple(&group, &user));
         }
         deletes.execute().await?;
         Ok(())
@@ -245,7 +243,7 @@ impl<S: StorageDriver> Regulator<S> {
         let mut writes = self.openfga.prepare_writes();
         let existing_roles = self.user_roles(user_id).await?;
         for role in roles.difference(&existing_roles) {
-            writes = writes.push(&User::role().tuple(&Role::from(*role), &user));
+            writes.push(&User::role().tuple(&Role::from(*role), &user));
         }
         writes.execute().await?;
         Ok(())
@@ -265,7 +263,7 @@ impl<S: StorageDriver> Regulator<S> {
         let mut deletes = self.openfga.prepare_deletes();
         let existing_roles = self.user_roles(user_id).await?;
         for role in roles.intersection(&existing_roles) {
-            deletes = deletes.push(&User::role().tuple(&Role::from(*role), &user));
+            deletes.push(&User::role().tuple(&Role::from(*role), &user));
         }
         deletes.execute().await?;
         Ok(())
@@ -284,7 +282,7 @@ impl<S: StorageDriver> Regulator<S> {
         let mut writes = self.openfga.prepare_writes();
         let existing_roles = self.group_roles(group_id).await?;
         for role in roles.difference(&existing_roles) {
-            writes = writes.push(&Group::role().tuple(&Role::from(*role), &group));
+            writes.push(&Group::role().tuple(&Role::from(*role), &group));
         }
         writes.execute().await?;
         Ok(())
@@ -303,7 +301,7 @@ impl<S: StorageDriver> Regulator<S> {
         let mut deletes = self.openfga.prepare_deletes();
         let existing_roles = self.group_roles(group_id).await?;
         for role in roles.intersection(&existing_roles) {
-            deletes = deletes.push(&Group::role().tuple(&Role::from(*role), &group));
+            deletes.push(&Group::role().tuple(&Role::from(*role), &group));
         }
         deletes.execute().await?;
         Ok(())

@@ -445,8 +445,8 @@ impl Client {
     /// # client.update_authorization_model(&fga::compile_model(include_str!("../tests/doctest.fga"))).await.unwrap();
     /// // define can_read: reader or writer
     /// client.prepare_writes()
-    ///     .push(&fga!(Document:"budget"#reader@Group:"friends"#member))
-    ///     .push(&fga!(Document:"budget"#writer@Group:"bosses"#member))
+    ///     .write(&fga!(Document:"budget"#reader@Group:"friends"#member))
+    ///     .write(&fga!(Document:"budget"#writer@Group:"bosses"#member))
     ///     .execute()
     ///     .await
     ///     .unwrap();
@@ -507,8 +507,15 @@ pub struct PreparedWrites<'a> {
 }
 
 impl PreparedWrites<'_> {
-    pub fn push<R: Relation, U: AsUser<User = R::User>>(mut self, tuple: &Tuple<'_, R, U>) -> Self {
+    pub fn push<R: Relation, U: AsUser<User = R::User>>(&mut self, tuple: &Tuple<'_, R, U>) {
         self.writes.push(RawTuple::from(tuple));
+    }
+
+    pub fn write<R: Relation, U: AsUser<User = R::User>>(
+        mut self,
+        tuple: &Tuple<'_, R, U>,
+    ) -> Self {
+        self.push(tuple);
         self
     }
 
@@ -544,8 +551,15 @@ pub struct PreparedDeletes<'a> {
 }
 
 impl PreparedDeletes<'_> {
-    pub fn push<R: Relation, U: AsUser<User = R::User>>(mut self, tuple: &Tuple<'_, R, U>) -> Self {
+    pub fn push<R: Relation, U: AsUser<User = R::User>>(&mut self, tuple: &Tuple<'_, R, U>) {
         self.deletes.push(RawTuple::from(tuple));
+    }
+
+    pub fn delete<R: Relation, U: AsUser<User = R::User>>(
+        mut self,
+        tuple: &Tuple<'_, R, U>,
+    ) -> Self {
+        self.push(tuple);
         self
     }
 
@@ -873,8 +887,8 @@ mod tests {
 
         client
             .prepare_writes()
-            .push(&fga!(Infra:"france"#reader@User:"alice"))
-            .push(&fga!(Infra:"espagne"#reader@User:*))
+            .write(&fga!(Infra:"france"#reader@User:"alice"))
+            .write(&fga!(Infra:"espagne"#reader@User:*))
             .execute()
             .await
             .unwrap();
@@ -946,10 +960,10 @@ mod tests {
         client.update_authorization_model(&model).await.unwrap();
         client
             .prepare_writes()
-            .push(&fga!(Infra:"france"#reader@User:"alice"))
-            .push(&fga!(Infra:"espagne"#reader@User:*))
-            .push(&fga!(Group:"les_petits_pedestres"#member@User:"alice"))
-            .push(&fga!(Infra:"allemagne"#reader@Group:"les_petits_pedestres"#member))
+            .write(&fga!(Infra:"france"#reader@User:"alice"))
+            .write(&fga!(Infra:"espagne"#reader@User:*))
+            .write(&fga!(Group:"les_petits_pedestres"#member@User:"alice"))
+            .write(&fga!(Infra:"allemagne"#reader@Group:"les_petits_pedestres"#member))
             .execute()
             .await
             .unwrap();
@@ -991,22 +1005,22 @@ mod tests {
         client
             .prepare_writes()
             // direct accesses
-            .push(&fga!(Infra:"fr"#reader@User:"alice"))
-            .push(&fga!(Infra:"es"#writer@User:"alice"))
-            .push(&fga!(Infra:"es"#reader@User:"bob"))
-            .push(&fga!(Infra:"de"#reader@User:"alice"))
-            .push(&fga!(Infra:"de"#reader@User:*))
-            .push(&fga!(Infra:"sw"#reader@User:"patrick"))
+            .write(&fga!(Infra:"fr"#reader@User:"alice"))
+            .write(&fga!(Infra:"es"#writer@User:"alice"))
+            .write(&fga!(Infra:"es"#reader@User:"bob"))
+            .write(&fga!(Infra:"de"#reader@User:"alice"))
+            .write(&fga!(Infra:"de"#reader@User:*))
+            .write(&fga!(Infra:"sw"#reader@User:"patrick"))
             // manager accesses
-            .push(&fga!(Infra:"fr"#reader@User:"alice"#manager))
-            .push(&fga!(Infra:"es"#writer@User:"alice"#manager))
-            .push(&fga!(Infra:"es"#reader@User:"bob"#manager))
-            .push(&fga!(Infra:"de"#reader@User:"alice"#manager))
-            .push(&fga!(Infra:"sw"#reader@User:"patrick"#manager))
+            .write(&fga!(Infra:"fr"#reader@User:"alice"#manager))
+            .write(&fga!(Infra:"es"#writer@User:"alice"#manager))
+            .write(&fga!(Infra:"es"#reader@User:"bob"#manager))
+            .write(&fga!(Infra:"de"#reader@User:"alice"#manager))
+            .write(&fga!(Infra:"sw"#reader@User:"patrick"#manager))
             // group accesses
-            .push(&fga!(Group:"company"#member@User:"patrick"))
-            .push(&fga!(User:"patrick"#group@Group:"company"))
-            .push(&fga!(Group:"company"#manager@User:"alice"))
+            .write(&fga!(Group:"company"#member@User:"patrick"))
+            .write(&fga!(User:"patrick"#group@Group:"company"))
+            .write(&fga!(Group:"company"#manager@User:"alice"))
             .execute()
             .await
             .unwrap();
@@ -1062,20 +1076,20 @@ mod tests {
         client
             .prepare_writes()
             // direct accesses
-            .push(&fga!(Infra:"fr"#reader@User:"alice"))
+            .write(&fga!(Infra:"fr"#reader@User:"alice"))
             // manager accesses
-            .push(&fga!(Infra:"fr"#reader@User:"alice"#manager))
+            .write(&fga!(Infra:"fr"#reader@User:"alice"#manager))
             // groups
-            .push(&fga!(Group:"company"#member@User:"patrick"))
-            .push(&fga!(User:"patrick"#group@Group:"company"))
-            .push(&fga!(Group:"company"#manager@User:"alice"))
-            .push(&fga!(Group:"competitor"#member@User:"bob"))
-            .push(&fga!(User:"bob"#group@Group:"competitor"))
+            .write(&fga!(Group:"company"#member@User:"patrick"))
+            .write(&fga!(User:"patrick"#group@Group:"company"))
+            .write(&fga!(Group:"company"#manager@User:"alice"))
+            .write(&fga!(Group:"competitor"#member@User:"bob"))
+            .write(&fga!(User:"bob"#group@Group:"competitor"))
             // groups accesses
-            .push(&fga!(Infra:"fr"#reader@Group:"company"#member))
-            .push(&fga!(Infra:"fr"#writer@Group:"company"#manager))
-            .push(&fga!(Infra:"eu"#reader@Group:"company"#member))
-            .push(&fga!(Infra:"eu"#writer@Group:"competitor"#member))
+            .write(&fga!(Infra:"fr"#reader@Group:"company"#member))
+            .write(&fga!(Infra:"fr"#writer@Group:"company"#manager))
+            .write(&fga!(Infra:"eu"#reader@Group:"company"#member))
+            .write(&fga!(Infra:"eu"#writer@Group:"competitor"#member))
             .execute()
             .await
             .unwrap();
@@ -1149,8 +1163,8 @@ mod tests {
 
         client
             .prepare_deletes()
-            .push(&fga!(Infra:"france"#reader@User:"alice"))
-            .push(&fga!(Infra:"espagne"#reader@User:"bob"))
+            .delete(&fga!(Infra:"france"#reader@User:"alice"))
+            .delete(&fga!(Infra:"espagne"#reader@User:"bob"))
             .execute()
             .await
             .unwrap();
