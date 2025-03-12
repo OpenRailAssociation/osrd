@@ -243,6 +243,12 @@ export interface CellData {
   marginForm?: string;
 }
 
+export type OccurrenceDetails = {
+  name: string;
+  startTime: string;
+  arrivalTime: string;
+};
+
 export type StdcmTranslations = {
   consist: {
     tractionEngine: string;

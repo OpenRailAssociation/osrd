@@ -263,11 +263,11 @@ class OperationalStudiesPage extends CommonPage {
     start_time,
     paced,
   }: Pick<PacedTrainBase, 'train_name' | 'start_time' | 'paced'>) {
-    await this.setTrainScheduleName(train_name);
-    await this.setFormattedStartTime(start_time);
     await this.definePacedTrainCheckboxLabel.click();
     await this.setTimeRangeDuration(paced.duration);
     await this.setCadence(paced.step);
+    await this.setTrainScheduleName(train_name);
+    await this.setFormattedStartTime(start_time);
   }
 
   // Receives a string in ISO 8601 format

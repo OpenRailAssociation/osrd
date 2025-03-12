@@ -1,5 +1,6 @@
 import type { Scenario, Project, Study, Infra, PacedTrainBase } from 'common/api/osrdEditoastApi';
 
+import { IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS } from './assets/constants/operational-studies-const';
 import {
   trainScheduleProjectName,
   trainScheduleScenarioName,
@@ -250,7 +251,11 @@ test.describe('Verify train schedule elements and filters', () => {
 
     // Verify paced train item
     for (let i = 0; i < pacedTrainsData.length; i += 1) {
-      await scenarioTimetableSection.verifyPacedTrainItemDetails(pacedTrainsData[i], i);
+      await scenarioTimetableSection.verifyPacedTrainItemDetails(
+        pacedTrainsData[i],
+        i,
+        IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS[i]
+      );
     }
   });
 

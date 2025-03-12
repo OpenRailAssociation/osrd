@@ -53,7 +53,6 @@ const osrdEditoastApi = generatedEditoastApi
           const result: PacedTrainResult[] = [];
           while (!reachEnd) {
             const promise = dispatch(
-              // TODO : update the endpoint with the proper one when back is ready
               osrdEditoastApi.endpoints.getTimetableByIdPacedTrains.initiate(
                 {
                   id: timetableId,

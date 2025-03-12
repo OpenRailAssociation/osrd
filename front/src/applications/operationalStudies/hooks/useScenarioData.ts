@@ -160,7 +160,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   );
 
   const trainScheduleIds = useMemo(
-    () => (fetchedTrainSchedulesResults || []).map((t) => t.id),
+    () => (fetchedTrainSchedulesResults || []).map((trainSchedule) => trainSchedule.id),
     [fetchedTrainSchedulesResults]
   );
 

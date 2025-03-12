@@ -9,16 +9,16 @@ import {
   EXPLICIT_UI_STABILITY_TIMEOUT,
   SIMULATION_RESULT_TIMEOUT,
 } from '../../assets/constants/timeout-const';
+import { DUPLICATED_PACED_TRAIN_DELTA } from '../../assets/constants/timetable-items-count';
 import { getTranslations } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
-import { getOccurrenceName } from '../../utils/paced-train';
 import type {
   CommonTranslations,
   FlatTranslations,
+  OccurrenceDetails,
   TimetableFilterTranslations,
 } from '../../utils/types';
 import CommonPage from '../common-page';
-import { DUPLICATED_PACED_TRAIN_DELTA } from '../../assets/constants/timetable-items-count';
 
 dayjs.extend(duration);
 
@@ -81,25 +81,13 @@ class ScenarioTimetableSection extends CommonPage {
 
   private readonly timetableSpeedLimitTagFilterLabel: Locator;
 
-  private readonly projectItemButton: Locator;
-
-  private readonly duplicateItemButton: Locator;
-
   private readonly editItemButton: Locator;
-
-  private readonly deleteItemButton: Locator;
 
   private readonly editTrainScheduleButton: Locator;
 
   private readonly occurrencesCount: Locator;
 
   private readonly hideOccurrencesButton: Locator;
-
-  private readonly showOccurrencesButton: Locator;
-
-  private readonly pacedTrainName: Locator;
-
-  private readonly pacedTrainCadence: Locator;
 
   private readonly trainArrivalTime: Locator;
 
@@ -149,16 +137,10 @@ class ScenarioTimetableSection extends CommonPage {
     this.timetableSpeedLimitTagFilterLabel = page.locator(
       'label[for="timetable-speed-limit-tag-filter"]'
     );
-    this.projectItemButton = page.getByTestId('project-item');
-    this.duplicateItemButton = page.getByTestId('duplicate-item');
     this.editItemButton = page.getByTestId('edit-item');
-    this.deleteItemButton = page.getByTestId('delete-item');
     this.editTrainScheduleButton = page.getByTestId('submit-edit-train-schedule');
     this.occurrencesCount = page.getByTestId('occurrences-count');
     this.hideOccurrencesButton = page.getByTestId('hide-occurrences-button');
-    this.showOccurrencesButton = page.getByTestId('show-occurrences-button');
-    this.pacedTrainName = page.getByTestId('paced-train-name');
-    this.pacedTrainCadence = page.getByTestId('paced-train-cadence');
     this.trainArrivalTime = page.locator('.train-time').getByTestId('train-arrival-time');
     this.occurrenceItem = page.getByTestId('occurrence-item');
     this.scenarioCollapseButton = page.getByTestId('scenario-collapse-button');
@@ -417,7 +399,8 @@ class ScenarioTimetableSection extends CommonPage {
 
   async verifyPacedTrainItemDetails(
     pacedTrainData: Pick<PacedTrainBase, 'train_name' | 'start_time' | 'labels' | 'paced'>,
-    index: number
+    index: number,
+    occurrenceData: OccurrenceDetails[]
   ) {
     const {
       train_name,
@@ -464,7 +447,7 @@ class ScenarioTimetableSection extends CommonPage {
     await expect(pacedTrainItem.getByTestId('occurrence-item')).toHaveCount(totalOccurrences);
 
     for (let i = 0; i < totalOccurrences; i += 1) {
-      await this.verifyOccurrenceDetails(pacedTrainData, i, index);
+      await this.verifyOccurrenceDetails(occurrenceData[i], i, index);
     }
 
     // Close back the occurrences list
@@ -479,28 +462,17 @@ class ScenarioTimetableSection extends CommonPage {
   }
 
   async verifyOccurrenceDetails(
-    pacedTrainData: Pick<PacedTrainBase, 'train_name' | 'start_time' | 'labels' | 'paced'>,
+    occurrenceData: OccurrenceDetails,
     occurrenceIndex: number,
     pacedTrainIndex: number
   ) {
-    const {
-      train_name,
-      start_time,
-      paced: { step },
-    } = pacedTrainData;
-
     const pacedTrainItem = this.timetableTrains.nth(pacedTrainIndex);
     const occurrenceItem = pacedTrainItem.getByTestId('occurrence-item').nth(occurrenceIndex);
 
-    const formattedStep = dayjs.duration(step).asMinutes();
+    await expect(occurrenceItem.locator('.occurrence-item-name')).toHaveText(occurrenceData.name);
 
-    const computedName = getOccurrenceName(train_name, occurrenceIndex);
-    await expect(occurrenceItem.locator('.occurrence-item-name')).toHaveText(computedName);
-
-    const occurrenceStartTime = dayjs(start_time)
-      .add(occurrenceIndex * formattedStep, 'minutes')
-      .format('HH:mm');
-    await expect(occurrenceItem.locator('.departure-time')).toHaveText(occurrenceStartTime);
+    await expect(occurrenceItem.locator('.departure-time')).toHaveText(occurrenceData.startTime);
+    await expect(occurrenceItem.locator('.arrival-time')).toHaveText(occurrenceData.arrivalTime);
 
     await expect(occurrenceItem.locator('.rolling-stock img')).toBeVisible();
 

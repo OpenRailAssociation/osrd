@@ -8,7 +8,10 @@ import type {
   Study,
 } from 'common/api/osrdEditoastApi';
 
-import { NEW_PACED_TRAIN_SETTINGS } from './assets/constants/operational-studies-const';
+import {
+  ADD_PACED_TRAIN_OCCURRENCES_DETAILS,
+  NEW_PACED_TRAIN_SETTINGS,
+} from './assets/constants/operational-studies-const';
 import {
   dualModeRollingStockName,
   electricRollingStockName,
@@ -157,7 +160,11 @@ test.describe('Verify simulation configuration in operational studies for train 
     // Confirm that the number of paced trains added matches the expected number
     await operationalStudiesPage.checkNumberOfTrains(1); // Only one paced train can be added at a time
 
-    await scenarioTimetableSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0);
+    await scenarioTimetableSection.verifyPacedTrainItemDetails(
+      NEW_PACED_TRAIN_SETTINGS,
+      0,
+      ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0]
+    );
 
     // TODO : verify occurrence selection, projection, simulation results
   });

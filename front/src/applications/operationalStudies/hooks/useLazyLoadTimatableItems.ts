@@ -1,7 +1,12 @@
 /* eslint-disable no-restricted-syntax, no-await-in-loop */
 import { useEffect, useState, type Dispatch, type SetStateAction, useMemo } from 'react';
 
-import { osrdEditoastApi, type SimulationSummaryResult } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PostPacedTrainSimulationSummaryApiResponse,
+  type PostTrainScheduleSimulationSummaryApiResponse,
+  type SimulationSummaryResult,
+} from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/trainschedule/components/Timetable/types';
 import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { getBatchPackage } from 'utils/batch';
@@ -83,21 +88,30 @@ const useLazyLoadTimetableItems = ({
           [[], []]
         );
 
-        const rawTrainScheduleSummaries = await postTrainScheduleSimulationSummary({
-          body: {
-            infra_id: _infraId,
-            ids: editoastTrainScheduleIds,
-            electrical_profile_set_id: electricalProfileSetId,
-          },
-        }).unwrap();
+        const trainScheduleSummariesPromise =
+          editoastTrainScheduleIds.length > 0
+            ? postTrainScheduleSimulationSummary({
+                body: {
+                  infra_id: _infraId,
+                  ids: editoastTrainScheduleIds,
+                  electrical_profile_set_id: electricalProfileSetId,
+                },
+              }).unwrap()
+            : ({} as Promise<PostTrainScheduleSimulationSummaryApiResponse>);
 
-        const rawPacedTrainSummaries = await postPacedTrainSimulationSummary({
-          body: {
-            infra_id: _infraId,
-            ids: editoastPacedTrainIds,
-            electrical_profile_set_id: electricalProfileSetId,
-          },
-        }).unwrap();
+        const pacedTrainSummariesPromise =
+          editoastPacedTrainIds.length > 0
+            ? postPacedTrainSimulationSummary({
+                body: {
+                  infra_id: _infraId,
+                  ids: editoastPacedTrainIds,
+                  electrical_profile_set_id: electricalProfileSetId,
+                },
+              }).unwrap()
+            : ({} as Promise<PostPacedTrainSimulationSummaryApiResponse>);
+
+        const rawTrainScheduleSummaries = await trainScheduleSummariesPromise;
+        const rawPacedTrainSummaries = await pacedTrainSummariesPromise;
 
         const formattedRawSummaries: Map<TimetableItemId, SimulationSummaryResult> = new Map();
         for (const [editoastTrainScheduleId, trainScheduleSummary] of Object.entries(

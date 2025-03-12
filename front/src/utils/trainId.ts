@@ -18,8 +18,8 @@ export const isTrainSchedule = (id: string): id is TrainScheduleId =>
   id.startsWith('trainschedule-');
 
 export const isPacedTrainResultWithPacedTrainId = (
-  timetableITem: TimetableItemWithTimetableId
-): timetableITem is PacedTrainResultWithPacedTrainId => 'paced' in timetableITem;
+  timetableItem: TimetableItemWithTimetableId
+): timetableItem is PacedTrainResultWithPacedTrainId => isPacedTrain(timetableItem.id);
 
 /**
  * Given a train id in the Editoast format (used for api),
