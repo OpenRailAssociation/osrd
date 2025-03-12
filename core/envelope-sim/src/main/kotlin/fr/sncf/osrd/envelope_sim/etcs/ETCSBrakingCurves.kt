@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope_sim.etcs
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder
+import fr.sncf.osrd.envelope.minEnvelopes
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder
@@ -67,11 +68,7 @@ fun addBrakingCurvesAtEOAs(
                     maxSpeedEnvelope
                 )
             fullIndicationCurveStop =
-                computeMinSvlEoaIndCurve(
-                    fullIndicationCurveEoa,
-                    fullIndicationCurveSvl,
-                    targetPosition
-                )
+                computeMinSvlEoaIndCurve(fullIndicationCurveEoa, fullIndicationCurveSvl)
         }
 
         val indicationCurve =
@@ -92,9 +89,9 @@ fun addBrakingCurvesAtEOAs(
 
 private fun computeMinSvlEoaIndCurve(
     fullIndicationCurveEoa: EnvelopePart,
-    fullIndicationCurveSvl: EnvelopePart,
-    targetPosition: Double
+    fullIndicationCurveSvl: EnvelopePart
 ): Envelope {
+    val targetPosition = fullIndicationCurveEoa.endPos
     // SvL indication curve should have positions before target position, and speeds above the
     // release speed. Otherwise, follow EoA indication curve.
     if (
@@ -104,25 +101,54 @@ private fun computeMinSvlEoaIndCurve(
         return Envelope.make(fullIndicationCurveEoa)
     }
 
-    // Real indication curve maintains release speed until the end.
+    // Real SvL indication curve maintains release speed until the end.
     val releaseSpeedPositionSvl = fullIndicationCurveSvl.interpolatePosition(NATIONAL_RELEASE_SPEED)
-    val indCurveSvl =
-        Envelope.make(
-            fullIndicationCurveSvl.sliceWithSpeeds(
-                fullIndicationCurveSvl.beginPos,
-                fullIndicationCurveSvl.beginSpeed,
-                releaseSpeedPositionSvl,
-                NATIONAL_RELEASE_SPEED
-            )!!,
-            EnvelopePart.generateTimes(
-                listOf(EnvelopeProfile.CONSTANT_SPEED),
-                doubleArrayOf(releaseSpeedPositionSvl, releaseSpeedPositionEoa),
-                doubleArrayOf(NATIONAL_RELEASE_SPEED, NATIONAL_RELEASE_SPEED)
+    val indCurveSvlParts: MutableList<EnvelopePart>
+    if (releaseSpeedPositionSvl < targetPosition) {
+        indCurveSvlParts =
+            mutableListOf(
+                fullIndicationCurveSvl.sliceWithSpeeds(
+                    fullIndicationCurveSvl.beginPos,
+                    fullIndicationCurveSvl.beginSpeed,
+                    releaseSpeedPositionSvl,
+                    NATIONAL_RELEASE_SPEED
+                )!!,
+                EnvelopePart.generateTimes(
+                    listOf(EnvelopeProfile.CONSTANT_SPEED),
+                    doubleArrayOf(releaseSpeedPositionSvl, targetPosition),
+                    doubleArrayOf(NATIONAL_RELEASE_SPEED, NATIONAL_RELEASE_SPEED)
+                )
             )
-        return Envelope.make(firstIndicationPart, maintainReleaseSpeedPart, lastIndicationPart)
     } else {
-        return Envelope.make(firstIndicationPart, lastIndicationPart)
+        indCurveSvlParts =
+            mutableListOf(
+                fullIndicationCurveSvl.slice(fullIndicationCurveSvl.beginPos, targetPosition)!!
+            )
     }
+
+    val minBeginPos = min(fullIndicationCurveEoa.beginPos, fullIndicationCurveSvl.beginPos)
+    val indCurveEoaParts = mutableListOf(fullIndicationCurveEoa)
+    for (curveParts in arrayOf(indCurveEoaParts, indCurveSvlParts)) {
+        val beginPart = curveParts.first()
+        if (beginPart.beginPos > minBeginPos) {
+            // Extend curve to min begin position.
+            curveParts.add(
+                0,
+                EnvelopePart.generateTimes(
+                    listOf(EnvelopeProfile.CONSTANT_SPEED),
+                    doubleArrayOf(minBeginPos, beginPart.beginPos),
+                    doubleArrayOf(beginPart.beginSpeed, beginPart.beginSpeed)
+                )
+            )
+        }
+    }
+    val indCurveEoa = Envelope.make(*indCurveEoaParts.toList().toTypedArray())
+    val indCurveSvl = Envelope.make(*indCurveSvlParts.toList().toTypedArray())
+
+    // The indication curve is the minimum of the SvL curve maintaining release speed and the EoA
+    // curve, between [minBeginPos, targetPosition]. We need the 2 envelopes to have the exact same
+    // position-range.
+    return minEnvelopes(indCurveEoa, indCurveSvl)
 }
 
 /** Compute braking curves at every limit of authority. */

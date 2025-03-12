@@ -386,11 +386,11 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(etcs_scenar
         _get_current_or_next_speed_at(simulation_final_output, offset_start_first_brake + 1) < speed_before_first_brake
     )
     # Check a bending point for the first stop's braking curve (where the Guidance curve's influence stops).
-    offset_bending_guidance_point = 37_210_507
+    offset_bending_guidance_point = 37_210_260
     speed_at_bending_guidance_point = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_guidance_point
     )
-    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(218.919_495_5))
+    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(224.447_943_6))
     # Check that the release part (where the speed stays at 40km/h) starts and ends at the expected offsets.
     offset_start_release_speed = 40_827_882
     speed_at_start_release_speed = _get_current_or_next_speed_at(simulation_final_output, offset_start_release_speed)
@@ -495,18 +495,18 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(219.751_941_6))
     # Check the second bending point for the first stop's braking curve, where the indication curve followed switches
     # from the EoA indication curve to the SvL indication curve.
-    offset_bending_point_eoa_to_svl = 39_101_733
-    speed_at_start_release_speed = _get_current_or_next_speed_at(
+    offset_bending_point_eoa_to_svl = 39_122_786
+    speed_at_bending_point_eoa_to_svl = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_point_eoa_to_svl
     )
-    _assert_equal_speeds(speed_at_start_release_speed, kph2ms(155.175_955_2))
+    _assert_equal_speeds(speed_at_bending_point_eoa_to_svl, kph2ms(154.238_039_8))
     # Check the third bending point for the first stop's braking curve, where the indication curve followed switches
     # back from the SvL indication curve to the EoA indication curve.
-    offset_bending_point_svl_to_eoa = 40_589_456
-    speed_at_start_release_speed = _get_current_or_next_speed_at(
+    offset_bending_point_svl_to_eoa = 40_626_547
+    speed_at_bending_point_svl_to_eoa = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_point_svl_to_eoa
     )
-    _assert_equal_speeds(speed_at_start_release_speed, kph2ms(62.492_266_11))
+    _assert_equal_speeds(speed_at_bending_point_svl_to_eoa, kph2ms(59.212_766_74))
 
 
 def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_stock: int):
