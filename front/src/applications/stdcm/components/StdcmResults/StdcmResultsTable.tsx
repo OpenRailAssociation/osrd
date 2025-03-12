@@ -64,9 +64,9 @@ const StcdmResultsTable = ({
                 location && location.name === step.name && location.secondary_code === step.ch
             );
             const shouldRenderRow =
-              isFirstStep || isRequestedPathStep || isLastStep || step.duration;
+              isFirstStep || isRequestedPathStep || isLastStep || step.duration !== null;
             const isPathStep =
-              isFirstStep || isLastStep || (isRequestedPathStep && step.duration === 0);
+              isFirstStep || isLastStep || (isRequestedPathStep && step.duration === null);
             const isNotExtremity = !isFirstStep && !isLastStep;
 
             const mass = consist?.totalMass ?? stdcmData.rollingStock.mass / 1000;
@@ -88,22 +88,22 @@ const StcdmResultsTable = ({
                     !isRequestedPathStep &&
                     step.name === prevStep.name &&
                     !isRequestedPathStep &&
-                    step.duration === 0
+                    step.duration === null
                       ? '='
                       : step.name || 'Unknown'}
                   </td>
                   <td className="ch">{step.ch}</td>
-                  <td className="stop">{isLastStep || step.duration > 0 ? step.time : ''}</td>
+                  <td className="stop">{isLastStep || step.duration !== null ? step.time : ''}</td>
                   <td className="stop">
                     <div
                       className={
-                        step.duration !== 0 && !isLastStep ? 'stop-with-duration ml-n2' : 'stop'
+                        step.duration !== null && !isLastStep ? 'stop-with-duration ml-n2' : 'stop'
                       }
                     >
                       {
                         // eslint-disable-next-line no-nested-ternary
                         isNotExtremity || !isRequestedPathStep
-                          ? step.duration !== 0
+                          ? step.duration !== null
                             ? getStopDurationTime(new Duration({ seconds: step.duration }))
                             : step.time
                           : ''
@@ -111,7 +111,7 @@ const StcdmResultsTable = ({
                     </div>
                   </td>
                   <td className="stop">
-                    {isFirstStep || step.duration > 0 ? step.stopEndTime : ''}
+                    {isFirstStep || step.duration !== null ? step.stopEndTime : ''}
                   </td>
                   <td className="weight" style={{ color: !isFirstStep ? '#797671' : '#312E2B' }}>
                     {isNotExtremity ? '=' : `${Math.floor(mass)}t`}
