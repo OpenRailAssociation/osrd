@@ -41,6 +41,9 @@ dependencies {
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly libs.junit.jupiter.engine
 
+    // Use AssertJ for testing
+    testImplementation libs.assertj
+
     // for linter annotations
     testFixturesCompileOnly libs.jcip.annotations
     testFixturesCompileOnly libs.spotbugs.annotations

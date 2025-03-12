@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.envelope.part.EnvelopePart
+import fr.sncf.osrd.envelope.part.minEnvelopeParts
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_utils.DoubleUtils
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -10,7 +11,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-class Envelope private constructor(parts: Array<EnvelopePart>) :
+class Envelope(parts: Array<EnvelopePart>) :
     Iterable<EnvelopePart>, SearchableEnvelope, EnvelopeInterpolate {
     private val parts: Array<EnvelopePart>
     @JvmField val continuous: Boolean
@@ -98,6 +99,10 @@ class Envelope private constructor(parts: Array<EnvelopePart>) :
 
     val endSpeed: Double
         get() = parts.last().endSpeed
+
+    fun getPartPositions(): List<Double> {
+        return partPositions.asList()
+    }
 
     // endregion
     // region SEARCH
@@ -381,4 +386,25 @@ class Envelope private constructor(parts: Array<EnvelopePart>) :
             return Envelope(arrayOf(*parts))
         }
     }
+}
+
+/** Build the min envelopes between 2 envelopes starting and ending at the exact same positions. */
+fun minEnvelopes(envelopeA: Envelope, envelopeB: Envelope): Envelope {
+    val minParts = mutableListOf<EnvelopePart>()
+    assert(envelopeA.beginPos == envelopeB.beginPos)
+    assert(envelopeA.endPos == envelopeB.endPos)
+
+    val keyPositions = TreeSet(envelopeA.getPartPositions())
+    keyPositions.addAll(envelopeB.getPartPositions())
+    val keyPosList = ArrayList(keyPositions)
+    for (i in 0 until keyPosList.size - 1) {
+        val beginPos = keyPosList[i]
+        val endPos = keyPosList[i + 1]
+        val slicedEnvelopeA = envelopeA.get(envelopeA.findRight(beginPos)).slice(beginPos, endPos)!!
+        val slicedEnvelopeB = envelopeB.get(envelopeB.findRight(beginPos)).slice(beginPos, endPos)!!
+        minParts.add(
+            minEnvelopeParts(slicedEnvelopeA, slicedEnvelopeB, slicedEnvelopeA.getAttrs().values)
+        )
+    }
+    return Envelope(minParts.toTypedArray())
 }

@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope.part
 import com.carrotsearch.hppc.DoubleArrayList
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.SearchableEnvelope
+import fr.sncf.osrd.envelope.part.EnvelopePart.Companion.generateTimes
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_utils.ExcludeFromGeneratedCodeCoverage
 import fr.sncf.osrd.utils.SelfTypeHolder
@@ -198,6 +199,10 @@ class EnvelopePart(
 
     fun getStepTime(stepIndex: Int): Double {
         return timeDeltas[stepIndex]
+    }
+
+    fun getPositions(): List<Double> {
+        return positions.asList()
     }
 
     // endregion
@@ -668,4 +673,58 @@ class EnvelopePart(
             return a in min..max
         }
     }
+}
+
+/**
+ * Compute the minimum EnvelopePart between 2 envelope parts starting and ending at the exact same
+ * positions.
+ */
+fun minEnvelopeParts(
+    envelopePartA: EnvelopePart,
+    envelopePartB: EnvelopePart,
+    attrs: Iterable<SelfTypeHolder>
+): EnvelopePart {
+    assert(envelopePartA.beginPos == envelopePartB.beginPos)
+    assert(envelopePartA.endPos == envelopePartB.endPos)
+
+    val keyPositions = TreeSet(envelopePartA.getPositions())
+    keyPositions.addAll(envelopePartB.getPositions())
+    val keyPosList = ArrayList(keyPositions)
+
+    val newPositions = DoubleArrayList()
+    val newSpeeds = DoubleArrayList()
+    var prevPos: Double? = null
+    var prevSpeedA: Double? = null
+    var prevSpeedB: Double? = null
+    for (i in keyPosList.indices) {
+        val pos = keyPosList[i]
+        val speedA = envelopePartA.interpolateSpeed(pos)
+        val speedB = envelopePartB.interpolateSpeed(pos)
+        val minSpeedAtPos = min(speedA, speedB)
+
+        if (prevPos != null && prevSpeedA != null && prevSpeedB != null) {
+            if ((prevSpeedA - prevSpeedB) * (speedA - speedB) < 0) {
+                val intersection =
+                    EnvelopePhysics.intersectSteps(
+                        prevPos,
+                        prevSpeedA,
+                        pos,
+                        speedA,
+                        prevPos,
+                        prevSpeedB,
+                        pos,
+                        speedB
+                    )
+                // Add intersection point
+                newPositions.add(intersection.position)
+                newSpeeds.add(intersection.speed)
+            }
+        }
+        newPositions.add(pos)
+        newSpeeds.add(minSpeedAtPos)
+        prevPos = pos
+        prevSpeedA = speedA
+        prevSpeedB = speedB
+    }
+    return generateTimes(attrs, newPositions.toArray(), newSpeeds.toArray())
 }
