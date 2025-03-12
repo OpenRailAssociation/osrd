@@ -90,9 +90,11 @@ const StdcmOperationalPoint = ({
       searchResults
         .filter(
           (op) =>
-            normalized(op.name).startsWith(normalized(searchTerm)) ||
-            normalized(op.name).includes(normalized(searchTerm)) ||
-            op.trigram === searchTerm.toUpperCase()
+            (normalized(op.name).startsWith(normalized(searchTerm)) ||
+              normalized(op.name).includes(normalized(searchTerm)) ||
+              op.trigram === searchTerm.toUpperCase()) &&
+            // TODO: Replace this temporary implementation with a permanent solution
+            !normalized(op.name).startsWith(normalized('OVERTAKE'))
         )
         .reduce<CIOption[]>((acc, p) => {
           const newObject = {
