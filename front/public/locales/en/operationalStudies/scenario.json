@@ -64,7 +64,7 @@
     "exportSelection": "Export selected trains",
     "duplicate": "Clone",
     "filterLabel": "Name, label",
-    "importTrainSchedule": "Import",
+    "importTimetableItem": "Import",
     "invalid": {
       "incompatible_constraints": "Incompatible constraints",
       "invalid_path_items": "Invalid path items",

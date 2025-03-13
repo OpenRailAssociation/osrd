@@ -2,6 +2,7 @@ import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts'
 
 import type {
   IncompatibleConstraints,
+  PacedTrain,
   PathProperties,
   PathfindingResultSuccess,
   ProjectPathTrainResult,
@@ -49,6 +50,11 @@ export type ImportStation = {
   linename?: string;
   pk?: string;
   linecode?: string;
+};
+
+export type TimetableJsonPayload = {
+  train_schedules: TrainScheduleBase[];
+  paced_trains: PacedTrain[];
 };
 
 export type TrainScheduleImportConfig = {

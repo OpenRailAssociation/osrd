@@ -2,30 +2,39 @@ import { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
+import type {
+  ImportedTrainSchedule,
+  TimetableJsonPayload,
+} from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
-import { ImportTrainScheduleConfig } from 'modules/trainschedule/components/ImportTrainSchedule';
-import ImportTrainScheduleTrainsList from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleTrainsList';
+import {
+  ImportTimetableItemConfig,
+  ImportTimetableItemTrainsList,
+} from 'modules/trainschedule/components/ImportTimetableItem';
 import { setFailure } from 'reducers/main';
-import type { TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
-const ImportTrainSchedule = ({
-  timetableId,
-  upsertTrainSchedules,
-  dtoImport,
-}: {
+type ImportTimetableItemProps = {
   timetableId: number;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   dtoImport: () => void;
-}) => {
+};
+
+const ImportTimetableItem = ({
+  timetableId,
+  upsertTimetableItems,
+  dtoImport,
+}: ImportTimetableItemProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock']);
   const [trainsList, setTrainsList] = useState<ImportedTrainSchedule[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [trainsJsonData, setTrainsJsonData] = useState<TrainScheduleBase[]>([]);
+  const [trainsJsonData, setTrainsJsonData] = useState<TimetableJsonPayload>({
+    train_schedules: [],
+    paced_trains: [],
+  });
   const [trainsXmlData, setTrainsXmlData] = useState<ImportedTrainSchedule[]>([]);
 
   const { data: { results: rollingStocks } = { results: [] }, isError } =
@@ -45,20 +54,20 @@ const ImportTrainSchedule = ({
   }, [isError]);
 
   return rollingStocks ? (
-    <main className="import-train-schedule">
-      <ImportTrainScheduleConfig
+    <main className="import-timetable-item">
+      <ImportTimetableItemConfig
         setIsLoading={setIsLoading}
         setTrainsList={setTrainsList}
         setTrainsJsonData={setTrainsJsonData}
         setTrainsXmlData={setTrainsXmlData}
       />
-      <ImportTrainScheduleTrainsList
+      <ImportTimetableItemTrainsList
         isLoading={isLoading}
         timetableId={timetableId}
         trainsList={trainsList}
         trainsJsonData={trainsJsonData}
         trainsXmlData={trainsXmlData}
-        upsertTrainSchedules={upsertTrainSchedules}
+        upsertTimetableItems={upsertTimetableItems}
         dtoImport={dtoImport}
       />
     </main>
@@ -67,4 +76,4 @@ const ImportTrainSchedule = ({
   );
 };
 
-export default ImportTrainSchedule;
+export default ImportTimetableItem;

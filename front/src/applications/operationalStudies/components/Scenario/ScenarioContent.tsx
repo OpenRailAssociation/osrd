@@ -13,7 +13,7 @@ import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/co
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { ManageTrainScheduleContextProvider } from 'applications/operationalStudies/hooks/useManageTrainScheduleContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
-import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTrainSchedule';
+import ImportTimetableItem from 'applications/operationalStudies/views/ImportTimetableItem';
 import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
 import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -203,11 +203,9 @@ const ScenarioContent = ({
           )}
           {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
             <div className="scenario-managetrainschedule">
-              {/* TODO Paced trains : update this to handle import paced trains in
-              https://github.com/OpenRailAssociation/osrd/issues/10614 */}
-              <ImportTrainSchedule
+              <ImportTimetableItem
                 timetableId={scenario.timetable_id}
-                upsertTrainSchedules={upsertTimetableItems}
+                upsertTimetableItems={upsertTimetableItems}
                 dtoImport={dtoImport}
               />
             </div>

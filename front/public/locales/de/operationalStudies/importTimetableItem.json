@@ -36,6 +36,5 @@
     "successfulImport": "Alle Züge wurden importiert."
   },
   "success": "Operation erfolgreich",
-  "to": "Ziel",
-  "trainsFound": "Züge gefunden"
+  "to": "Ziel"
 }

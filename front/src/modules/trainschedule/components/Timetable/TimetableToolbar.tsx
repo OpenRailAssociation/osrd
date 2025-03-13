@@ -3,10 +3,15 @@ import { useContext, useMemo, useState } from 'react';
 import { Button, Checkbox } from '@osrd-project/ui-core';
 import { Alert, Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
+import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PacedTrain,
+  type TrainScheduleBase,
+} from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -25,6 +30,7 @@ import { castErrorToFailure } from 'utils/error';
 import {
   formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
+  isPacedTrainResponseWithPacedTrainId,
   isTrainSchedule,
 } from 'utils/trainId';
 
@@ -198,21 +204,33 @@ const TimetableToolbar = ({
     }
   };
 
-  // TODO Paced train : Adapt this to handle export paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10614
-  const exportTrainSchedules = (selectedTrainIdsFromClick: TimetableItemId[]) => {
+  const exportTimetableItems = (selectedTimeTableIdsFromClick: TimetableItemId[]) => {
     if (!timetableItems) return;
 
-    const formattedTrainSchedules = timetableItems
-      .filter(({ id }) => isTrainSchedule(id) && selectedTrainIdsFromClick.includes(id))
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .map(({ id, timetable_id, ...trainSchedule }) => trainSchedule);
+    const formattedTimetableItems = timetableItems
+      .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
+      .reduce<{
+        train_schedules: TrainScheduleBase[];
+        paced_trains: PacedTrain[];
+      }>(
+        (acc, timetableItem) => {
+          const omittedFields = ['id', 'timetable_id'] as const;
+          if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+            acc.paced_trains.push(omit(timetableItem, omittedFields));
+          } else {
+            acc.train_schedules.push(omit(timetableItem, omittedFields));
+          }
+          return acc;
+        },
+        { train_schedules: [], paced_trains: [] }
+      );
 
-    const jsonString = JSON.stringify(formattedTrainSchedules);
+    const jsonString = JSON.stringify(formattedTimetableItems);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'train_schedules.json';
+    a.download = 'timetable.json';
     a.click();
   };
 
@@ -327,8 +345,7 @@ const TimetableToolbar = ({
               label={t('timetable.export')}
               title={t('timetable.exportSelection')}
               type="button"
-              // TODO PACED TRAIN: https://github.com/OpenRailAssociation/osrd/issues/10614
-              onClick={() => exportTrainSchedules(selectedTrainScheduleIds)}
+              onClick={() => exportTimetableItems(selectedTimetableItemIds)}
             />
           </div>
         )}

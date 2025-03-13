@@ -24,18 +24,28 @@
   "import": "Import",
   "importTimetable": "Import a timetable",
   "inputPlaceholder": "Name, trigram",
+  "itemsFound_one": "$t(pacedTrainCount, {'count': {{pacedTrainsFound}}}) {{and}} $t(trainCount, {'count': {{trainsFound}}}) found",
+  "itemsFound_other": "$t(pacedTrainCount, {'count': {{pacedTrainsFound}}}) $t(trainCount, {'count': {{trainsFound}}}) found",
+  "itemsFound_zero": "No items found",
   "launchImport": "Start import",
   "noResults": "No results",
+  "pacedTrainsFound_one": "1 service found",
+  "pacedTrainsFound_other": "$t(pacedTrainCount, {'count': {{pacedTrainsFound}}}) found",
+  "pacedTrainCount_one": "1 service",
+  "pacedTrainCount_other": "{{count}} services",
+  "pacedTrainCount_zero": "",
   "searchTimetable": "Search timetable",
   "selectStation": "Select this station",
   "startTime": "START",
   "status": {
     "invalidTrainSchedules_one": "Invalid train schedule.",
     "invalidTrainSchedules": "Invalid train schedules.",
-    "successfulImport_one": "A train is imported.",
-    "successfulImport": "All trains are imported."
+    "successfulImport_one": "An item is imported.",
+    "successfulImport": "All items are imported."
   },
   "success": "Operation successful",
   "to": "Destination",
-  "trainsFound": "train(s) found"
+  "trainCount_one": "1 train",
+  "trainCount_other": "{{count}} trains",
+  "trainsCount_zero": ""
 }

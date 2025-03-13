@@ -58,7 +58,6 @@
   },
   "failedRequest": "Anfrage fehlgeschlagen",
   "gare": "Station, Standort",
-  "importTrainSchedule": "Import",
   "infraLoading": "Betriebsnetz wird geladen…",
   "inputOPTrigrams": "Geben Sie die Dreierkürzel der zu durchfahrenen Betriebsstellen ein, getrennt nach Leerzeichen.",
   "inputOPTrigramsExample": "Bsp: HHA HGÖ FKS",

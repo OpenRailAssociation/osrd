@@ -1,7 +1,10 @@
 import type { TFunction } from 'i18next';
 import type { Dispatch } from 'redux';
 
-import type { ImportedTrainSchedule } from 'applications/operationalStudies/types';
+import type {
+  ImportedTrainSchedule,
+  TimetableJsonPayload,
+} from 'applications/operationalStudies/types';
 import { type TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 
@@ -17,9 +20,10 @@ const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainScheduleBase)[] = [
   'train_name',
 ];
 
-const validateTrainSchedules = (
-  importedTrainSchedules: Partial<TrainScheduleBase>[]
-): TrainScheduleBase[] => {
+const validateTrainSchedules = (importedItems: TimetableJsonPayload): TimetableJsonPayload => {
+  const { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains } =
+    importedItems;
+
   const isInvalidTrainSchedules = importedTrainSchedules.some((trainSchedule) => {
     if (
       TRAIN_SCHEDULE_COMPULSORY_KEYS.some((key) => !(key in trainSchedule)) ||
@@ -31,16 +35,31 @@ const validateTrainSchedules = (
     return hasInvalidSteps;
   });
 
+  const isInvalidPacedTrains = importedPacedTrains.some((pacedTrain) => {
+    if (
+      [...TRAIN_SCHEDULE_COMPULSORY_KEYS, 'paced'].some((key) => !(key in pacedTrain)) ||
+      !Array.isArray(pacedTrain.path)
+    ) {
+      return true;
+    }
+    const hasInvalidSteps = pacedTrain.path.some((step) => !('id' in step));
+    return hasInvalidSteps;
+  });
+
   if (isInvalidTrainSchedules) {
     throw new Error('Invalid train schedules: some compulsory keys are missing');
   }
-  return importedTrainSchedules as TrainScheduleBase[];
+
+  if (isInvalidPacedTrains) {
+    throw new Error('Invalid paced trains: some compulsory keys are missing');
+  }
+  return { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains };
 };
 
 export const processJsonFile = (
   fileContent: string,
   fileExtension: string,
-  setTrainsJsonData: (data: TrainScheduleBase[]) => void,
+  setTrainsJsonData: (data: TimetableJsonPayload) => void,
   dispatch: Dispatch,
   t: TFunction
 ) => {
@@ -65,7 +84,10 @@ export const processJsonFile = (
   // validate the trainSchedules
   try {
     const importedTrainSchedules = validateTrainSchedules(rawContent);
-    if (importedTrainSchedules.length > 0) {
+    if (
+      importedTrainSchedules.train_schedules.length > 0 ||
+      importedTrainSchedules.paced_trains.length > 0
+    ) {
       setTrainsJsonData(importedTrainSchedules);
     } else {
       dispatch(

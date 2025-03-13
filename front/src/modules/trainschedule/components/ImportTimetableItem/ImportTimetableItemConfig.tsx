@@ -11,14 +11,14 @@ import type {
   TrainScheduleImportConfig,
   Step,
   CichDictValue,
+  TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
-import { type TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard from 'common/StationCard';
 import UploadFileModal from 'common/uploadFileModal';
-import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
+import StationSelector from 'modules/trainschedule/components/ImportTimetableItem/ImportTimetableItemStationSelector';
 import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatIsoDate } from 'utils/date';
@@ -29,20 +29,20 @@ import {
   processXmlFile,
 } from '../ManageTrainSchedule/helpers/handleParseFiles';
 
-interface ImportTrainScheduleConfigProps {
+interface ImportTimetableItemConfigProps {
   setTrainsList: (trainsList: ImportedTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
-  setTrainsJsonData: (trainsJsonData: TrainScheduleBase[]) => void;
+  setTrainsJsonData: (trainsJsonData: TimetableJsonPayload) => void;
   setTrainsXmlData: (trainsXmlData: ImportedTrainSchedule[]) => void;
 }
 
-const ImportTrainScheduleConfig = ({
+const ImportTimetableItemConfig = ({
   setTrainsList,
   setIsLoading,
   setTrainsJsonData,
   setTrainsXmlData,
-}: ImportTrainScheduleConfigProps) => {
-  const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
+}: ImportTimetableItemConfigProps) => {
+  const { t } = useTranslation(['operationalStudies/importTimetableItem']);
   const [from, setFrom] = useState<ImportStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState<ImportStation | undefined>();
@@ -142,7 +142,7 @@ const ImportTrainScheduleConfig = ({
   async function getTrainsFromOpenData(config: TrainScheduleImportConfig) {
     setTrainsList([]);
     setIsLoading(true);
-    setTrainsJsonData([]);
+    setTrainsJsonData({ train_schedules: [], paced_trains: [] });
     setTrainsXmlData([]);
 
     const result = await getGraouTrainSchedules(config);
@@ -514,4 +514,4 @@ const ImportTrainScheduleConfig = ({
   );
 };
 
-export default ImportTrainScheduleConfig;
+export default ImportTimetableItemConfig;

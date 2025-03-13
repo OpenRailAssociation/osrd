@@ -3,6 +3,6 @@ src/assets/mapstyles/*.json
 src/common/ReleaseInformations/json/licenses.json
 src/common/api/generatedEditoastApi.ts
 src/common/api/osrdGatewayApi.ts
-src/modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json
+src/modules/trainschedule/components/ImportTimetableItem/rollingstock_opendata2osrd.json
 src/reducers/osrdconf/infra_schema.json
 src/utils/__tests__/assets/*.json

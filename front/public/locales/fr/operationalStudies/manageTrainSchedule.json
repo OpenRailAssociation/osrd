@@ -58,7 +58,6 @@
   },
   "failedRequest": "La requête a échoué",
   "gare": "Gare, poste",
-  "importTrainSchedule": "Importation",
   "infraLoading": "Infra en cours de chargement…",
   "inputOPTrigrams": "Entrez la liste des trigrammes des points remarquables composant l'itinéraire souhaité.",
   "inputOPTrigramsExample": "Ex : LSN CIG CCS",

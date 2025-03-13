@@ -24,18 +24,28 @@
   "import": "Importation",
   "importTimetable": "Importer une grille horaire",
   "inputPlaceholder": "Nom, trigramme",
+  "itemsFound_one": "$t(pacedTrainCount, {'count': {{pacedTrainsFound}}}) $t(trainCount, {'count': {{trainsFound}}}) trouvé",
+  "itemsFound_other": "$t(pacedTrainCount, {'count': {{pacedTrainsFound}}}) {{and}} $t(trainCount, {'count': {{trainsFound}}}) trouvés",
+  "itemsFound_zero": "Aucun items trouvés",
   "launchImport": "Démarrer l'importation",
   "noResults": "Aucun résultat",
+  "pacedTrainsFound_one": "1 mission trouvée",
+  "pacedTrainsFound_other": "$t(pacedTrainCount, {'count': {{pacedTrainsFound}}}) trouvées",
+  "pacedTrainCount_one": "1 mission",
+  "pacedTrainCount_other": "{{count}} missions",
+  "pacedTrainCount_zero": "",
   "searchTimetable": "Rechercher la grille horaire",
   "selectStation": "Sélectionner cette station",
   "startTime": "DÉBUT",
   "status": {
     "invalidTrainSchedules_one": "La circulation à importer n'est pas au bon format.",
     "invalidTrainSchedules": "Les circulations à importer ne sont pas au bon format.",
-    "successfulImport_one": "Le train a été importé.",
-    "successfulImport": "Tous les trains ont été importés."
+    "successfulImport_one": "L' item a été importé.",
+    "successfulImport": "Tous les items ont été importés."
   },
   "success": "Opération réussie",
   "to": "Destination",
-  "trainsFound": "train(s) trouvé(s)"
+  "trainCount_one": "1 train",
+  "trainCount_other": "{{count}} trains",
+  "trainsCount_zero": ""
 }

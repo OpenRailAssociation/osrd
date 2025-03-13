@@ -144,10 +144,10 @@ const Timetable = ({
         </button>
         <button
           type="button"
-          data-testid="scenarios-import-train-schedule-button"
+          data-testid="scenarios-import-timetable-item-button"
           onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.import)}
         >
-          {t('timetable.importTrainSchedule')}
+          {t('timetable.importTimetableItem')}
         </button>
       </div>
       <div

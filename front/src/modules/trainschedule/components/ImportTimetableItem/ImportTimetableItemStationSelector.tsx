@@ -10,20 +10,20 @@ import { Loader } from 'common/Loaders';
 import StationCard from 'common/StationCard';
 import { useDebounce } from 'utils/helpers';
 
-interface ImportTrainScheduleStationSelectorProps {
+interface ImportTimetableItemStationSelectorProps {
   id: string;
   term?: string;
   onSelect: (stationName?: ImportStation) => void;
   setTerm: (searchString: string) => void;
 }
 
-const ImportTrainScheduleStationSelector = ({
+const ImportTimetableItemStationSelector = ({
   id,
   onSelect,
   term = '',
   setTerm,
-}: ImportTrainScheduleStationSelectorProps) => {
-  const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
+}: ImportTimetableItemStationSelectorProps) => {
+  const { t } = useTranslation(['operationalStudies/importTimetableItem']);
   const [stationsList, setStationsList] = useState<ImportStation[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const debouncedTerm = useDebounce(term, 500);
@@ -78,4 +78,4 @@ const ImportTrainScheduleStationSelector = ({
   );
 };
 
-export default React.memo(ImportTrainScheduleStationSelector);
+export default React.memo(ImportTimetableItemStationSelector);
