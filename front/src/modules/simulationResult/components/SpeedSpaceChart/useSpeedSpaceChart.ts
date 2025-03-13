@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type {
   LayerData,
   PowerRestrictionValues,
-} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+} from '@osrd-project/ui-charts/dist/speedSpaceChart/types/chartTypes';
 import { useTranslation } from 'react-i18next';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';

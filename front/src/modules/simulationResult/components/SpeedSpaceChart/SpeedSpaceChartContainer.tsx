@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { SpeedSpaceChart } from '@osrd-project/ui-speedspacechart';
+import { SpeedSpaceChart } from '@osrd-project/ui-charts';
 import type {
   LayerData,
   PowerRestrictionValues,
-} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+} from '@osrd-project/ui-charts/dist/speedSpaceChart/types/chartTypes';
 import { useTranslation } from 'react-i18next';
 import { CgLoadbar } from 'react-icons/cg';
 import { Rnd } from 'react-rnd';

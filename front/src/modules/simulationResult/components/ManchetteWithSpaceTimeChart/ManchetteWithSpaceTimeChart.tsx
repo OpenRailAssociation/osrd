@@ -1,26 +1,26 @@
 import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
 
-import { Slider } from '@osrd-project/ui-core';
-import { KebabHorizontal, Iterations } from '@osrd-project/ui-icons';
-import Manchette, {
-  type ProjectPathTrainResult,
-  type WaypointMenuData,
-} from '@osrd-project/ui-manchette';
-// TODO: export InteractiveWaypoint type from ui-manchette
-import type { InteractiveWaypoint } from '@osrd-project/ui-manchette/dist/types';
 import {
+  type Conflict,
+  type HoveredItem,
+  type SpaceTimeChartProps,
   useManchetteWithSpaceTimeChart,
   timeScaleToZoomValue,
   DEFAULT_ZOOM_MS_PER_PX,
-} from '@osrd-project/ui-manchette-with-spacetimechart';
-import {
   ConflictLayer,
   PathLayer,
   SpaceTimeChart,
   WorkScheduleLayer,
   OccupancyBlockLayer,
-} from '@osrd-project/ui-spacetimechart';
-import type { Conflict, HoveredItem, SpaceTimeChartProps } from '@osrd-project/ui-spacetimechart';
+  Manchette,
+  type InteractiveWaypoint,
+  type ProjectPathTrainResult,
+  type WaypointMenuData,
+  isSegmentPickingElement,
+  isPointPickingElement,
+} from '@osrd-project/ui-charts';
+import { Slider } from '@osrd-project/ui-core';
+import { KebabHorizontal, Iterations } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { compact } from 'lodash';
 import { createPortal } from 'react-dom';
@@ -288,7 +288,10 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     }
 
     // if not dragging, we check if we should start dragging
-    if (hoveredItem && 'pathId' in hoveredItem.element) {
+    if (
+      hoveredItem &&
+      (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
+    ) {
       const hoveredTrainId = getIdFromTrainPath(hoveredItem.element.pathId);
       const train = projectPathTrainResult.find(
         (projectedTrain) => projectedTrain.id === hoveredTrainId
@@ -313,7 +316,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
       ...manchetteProps,
-      waypoints: manchetteProps.waypoints.map((waypoint: InteractiveWaypoint) => ({
+      waypoints: manchetteProps.contents.map((waypoint: InteractiveWaypoint) => ({
         ...waypoint,
         onClick: waypointMenuData.handleWaypointClick,
       })),
@@ -338,7 +341,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       !draggingState &&
       selectedTrainScheduleId &&
       hoveredItem &&
-      'pathId' in hoveredItem.element
+      (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
     ) {
       const editoastSelectedTrainId = formatTrainScheduleIdToEditoastTrainId(
         selectedTrainScheduleId as TrainScheduleId

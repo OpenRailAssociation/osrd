@@ -1,5 +1,4 @@
-import type { PathLevel } from '@osrd-project/ui-spacetimechart';
-import type { HoveredItem } from '@osrd-project/ui-spacetimechart/dist/lib/types';
+import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
 import { PATH_COLORS } from 'modules/simulationResult/consts';
 import type { TrainId } from 'reducers/osrdconf/types';

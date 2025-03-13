@@ -6,7 +6,7 @@ import type {
   LayerData,
   PowerRestrictionValues,
   SpeedLimitTagValues,
-} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+} from '@osrd-project/ui-charts/dist/speedSpaceChart/types/chartTypes';
 
 import type {
   PathPropertiesFormatted,

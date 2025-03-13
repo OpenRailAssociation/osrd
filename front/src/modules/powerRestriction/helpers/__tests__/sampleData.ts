@@ -1,7 +1,7 @@
 import type {
   LayerData,
   PowerRestrictionValues,
-} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+} from '@osrd-project/ui-charts/dist/speedSpaceChart/types/chartTypes';
 
 import type { EffortCurves, RollingStock, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
