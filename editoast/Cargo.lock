@@ -1395,6 +1395,7 @@ dependencies = [
 name = "editoast_common"
 version = "0.1.0"
 dependencies = [
+ "http 1.2.0",
  "opentelemetry",
  "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",

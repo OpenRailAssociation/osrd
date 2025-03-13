@@ -6,6 +6,8 @@ use colored::Colorize;
 use deadpool_redis::redis::RedisError;
 use deadpool_redis::PoolError;
 use diesel::result::Error as DieselError;
+use editoast_common::default_status_code;
+use editoast_common::StatusCodeRemoteDef;
 use editoast_models::db_connection_pool::DatabasePoolBuildError;
 use editoast_models::db_connection_pool::DatabasePoolError;
 use editoast_models::DatabaseError;
@@ -39,20 +41,6 @@ pub trait EditoastError: Error + Send + Sync {
     fn context(&self) -> HashMap<String, Value> {
         Default::default()
     }
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(remote = "StatusCode")]
-struct StatusCodeRemoteDef(#[serde(getter = "StatusCode::as_u16")] u16);
-
-impl From<StatusCodeRemoteDef> for StatusCode {
-    fn from(def: StatusCodeRemoteDef) -> Self {
-        StatusCode::from_u16(def.0).unwrap()
-    }
-}
-
-fn default_status_code() -> StatusCode {
-    StatusCode::INTERNAL_SERVER_ERROR
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, PartialEq)]
