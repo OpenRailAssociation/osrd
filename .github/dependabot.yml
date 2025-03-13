@@ -28,6 +28,20 @@ updates:
     labels:
       - "dependencies"
       - "area:gateway"
+  - package-ecosystem: "cargo"
+    directory: "/osrdyne/"
+    schedule:
+      interval: "daily"
+    groups:
+      opentelemetry:
+        patterns:
+          - "*opentelemetry*"
+    commit-message:
+      prefix: "osrdyne:"
+    open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:osrdyne"
   - package-ecosystem: "npm"
     directory: "/front/"
     schedule:
