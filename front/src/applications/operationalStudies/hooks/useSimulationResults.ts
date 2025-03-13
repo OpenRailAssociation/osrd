@@ -18,7 +18,7 @@ const useSimulationResults = (): SimulationResultsData => {
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
-  // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+  // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/11054
   const editoastSelectedTrainId = selectedTrainId
     ? formatTrainScheduleIdToEditoastTrainId(selectedTrainId as TrainScheduleId)
     : undefined;

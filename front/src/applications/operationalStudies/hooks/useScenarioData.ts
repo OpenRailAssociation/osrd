@@ -25,11 +25,12 @@ import {
   formatEditoastTrainIdToTrainScheduleId,
   formatTrainScheduleIdToEditoastTrainId,
   isPacedTrain,
+  isTrainSchedule,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import useAutoUpdateProjection from './useAutoUpdateProjection';
-import useLazyLoadTimetableItems from './useLazyLoadTimatableItems';
+import useLazyLoadTimetableItems from './useLazyLoadTimetableItems';
 import usePathProjection from './usePathProjection';
 import formatTimetableItemSummaries from '../helpers/formatTimetableItemSummaries';
 
@@ -38,11 +39,11 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const showPacedTrains = useSelector(getShowPacedTrains);
 
-  // TODO Paced trains : remove these 3 states in https://github.com/OpenRailAssociation/osrd/issues/10791
-  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TimetableItemId>>(new Set());
-
   const [timetableItems, setTimetableItems] = useState<TimetableItemWithTimetableId[]>();
   const [timetableItemIdsToFetch, setTimetableItemIdsToFetch] = useState<TimetableItemId[]>();
+  const [timetableItemIdsToProject, setTimetableItemIdsToProject] = useState<Set<TimetableItemId>>(
+    new Set()
+  );
 
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const [postTrainScheduleSimulationSummary] =
@@ -88,13 +89,13 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     [showPacedTrains, fetchedPacedTrains]
   );
 
-  // TODO Paced trains : pass setTimetableItemIdsToProject in https://github.com/OpenRailAssociation/osrd/issues/10613
   const { timetableItemSummariesById, setTimetableItemSummariesById, allTimetableItemsLoaded } =
     useLazyLoadTimetableItems({
       infraId: scenario.infra_id,
       electricalProfileSetId,
       timetableItemIdsToFetch,
       timetableItems,
+      setTimetableItemIdsToProject,
     });
 
   useEffect(() => {
@@ -103,24 +104,24 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     }
   }, [allTimetableItemsLoaded]);
 
-  // TODO Paced trains : remove this hook in https://github.com/OpenRailAssociation/osrd/issues/10791
+  // TODO Paced trains : adapt this hook in https://github.com/OpenRailAssociation/osrd/issues/10791
   const { projectedTrainsById, allTrainsProjected, setProjectedTrainsById } = useLazyProjectTrains({
     infraId: scenario.infra_id,
     electricalProfileSetId,
-    trainIdsToProject,
+    timetableItemIdsToProject,
     path: projectionPath?.path,
     timetableItems,
     moreTrainsToCome: !allTimetableItemsLoaded,
-    setTrainIdsToProject,
+    setTimetableItemIdsToProject,
   });
-
-  // TODO Paced trains : create a new useLazyProjectTimetableItems in https://github.com/OpenRailAssociation/osrd/issues/10613
 
   useEffect(() => {
     if (timetableItems && projectionPath?.path && allTimetableItemsLoaded) {
       // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
-      const trainIds = timetableItems.map((timetableItem) => timetableItem.id);
-      setTrainIdsToProject(new Set(trainIds));
+      const trainIds = timetableItems
+        .filter((timetableItem) => isTrainSchedule(timetableItem.id))
+        .map((timetableItem) => timetableItem.id);
+      setTimetableItemIdsToProject(new Set(trainIds));
     }
   }, [projectionPath?.path]);
 
@@ -136,7 +137,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       }
     );
 
-  const timetableItemWithDetails = useMemo(() => {
+  const timetableItemsWithDetails = useMemo(() => {
     let filteredTimetableItemsSummaries = Array.from(timetableItemSummariesById.values());
     // Allow to hide or show paced trains in the timetable when toggling the paced train mode in the settings
     if (!showPacedTrains) {
@@ -147,32 +148,32 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     return sortBy(filteredTimetableItemsSummaries, 'startTime');
   }, [timetableItemSummariesById, showPacedTrains]);
 
-  // TODO Paced trains : remove this in https://github.com/OpenRailAssociation/osrd/issues/10791
+  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10791
   const projectedTrains = useMemo(
     () => Array.from(projectedTrainsById.values()),
     [projectedTrainsById]
   );
 
-  // TODO Paced trains : remove this in https://github.com/OpenRailAssociation/osrd/issues/10791
+  // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10791
   const trainScheduleUsedForProjection = useMemo(
     () => timetableItems?.find((timetableItem) => timetableItem.id === trainIdUsedForProjection),
     [trainIdUsedForProjection, timetableItems]
   );
 
-  const trainScheduleIds = useMemo(
+  const trainScheduleEditoastIds = useMemo(
     () => (fetchedTrainSchedulesResults || []).map((trainSchedule) => trainSchedule.id),
     [fetchedTrainSchedulesResults]
   );
 
   // TODO Paced train : Adapt this to accept paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10613
-  useAutoUpdateProjection(infra, trainScheduleIds, timetableItemWithDetails);
+  useAutoUpdateProjection(infra, trainScheduleEditoastIds, timetableItemsWithDetails);
 
   useEffect(() => {
-    const sortedTimatableItems = sortBy(
-      [...formattedRawTrainSchedules, ...formattedRawPacedTrains],
-      'start_time'
-    );
-    setTimetableItems(sortedTimatableItems);
+    const sortedTimetableItems = [
+      ...sortBy(formattedRawTrainSchedules, 'start_time'),
+      ...sortBy(formattedRawPacedTrains, 'start_time'),
+    ];
+    setTimetableItems(sortedTimetableItems);
   }, [formattedRawTrainSchedules, formattedRawPacedTrains]);
 
   // first load of the summaries
@@ -180,13 +181,13 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     // TODO Paced trains : remove the if and extra depth in https://github.com/OpenRailAssociation/osrd/issues/10791
     // We also want to update timetableItemIdsToFetch if it's the first time we activate the paced train mode
     // pacedTrainWithDetails.length will be equal to 0 at that point
-    const pacedTrainWithDetails = timetableItemWithDetails.filter((timetableItem) =>
+    const pacedTrainWithDetails = timetableItemsWithDetails.filter((timetableItem) =>
       isPacedTrain(timetableItem.id)
     );
     if (
       timetableItems &&
       infra.state === 'CACHED' &&
-      (timetableItemWithDetails.length === 0 || pacedTrainWithDetails.length === 0)
+      (timetableItemsWithDetails.length === 0 || pacedTrainWithDetails.length === 0)
     ) {
       const timetableItemIds = timetableItems.map((timetableItem) => timetableItem.id);
       setTimetableItemIdsToFetch(timetableItemIds);
@@ -206,9 +207,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
       setTimetableItems((prev) => sortBy([...prev!, ...timetableItemsToUpsert], 'start_time'));
 
-      const sortedTimatableItemsToUpsert = sortBy(timetableItemsToUpsert, 'start_time');
+      const sortedTimetableItemsToUpsert = sortBy(timetableItemsToUpsert, 'start_time');
       setTimetableItemIdsToFetch(
-        sortedTimatableItemsToUpsert.map((timetableItem) => timetableItem.id)
+        sortedTimetableItemsToUpsert.map((timetableItem) => timetableItem.id)
       );
     },
     []
@@ -318,7 +319,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   const results = useMemo(
     () => ({
-      timetableItemWithDetails,
+      timetableItemsWithDetails,
       timetableItems,
       projectionData:
         trainScheduleUsedForProjection && projectionPath
@@ -338,7 +339,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
       updateTrainDepartureTime,
     }),
     [
-      timetableItemWithDetails,
+      timetableItemsWithDetails,
       timetableItems,
       trainScheduleUsedForProjection,
       projectionPath,

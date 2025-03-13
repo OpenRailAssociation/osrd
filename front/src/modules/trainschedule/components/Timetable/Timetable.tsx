@@ -101,7 +101,7 @@ const Timetable = ({
 
   const handleConflictClick = (conflict: Conflict) => {
     if (conflict.train_schedule_ids.length > 0) {
-      // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+      // TODO Paced train : Adapt this to handle paced trains in conflict issue
       const formattedFirstTrainId = formatEditoastTrainIdToTrainScheduleId(
         conflict.train_schedule_ids[0]
       );
@@ -125,7 +125,7 @@ const Timetable = ({
 
   const selectTimetableItemToEdit = useCallback((itemToEdit: TimetableItemWithDetails) => {
     dispatch(selectTrainToEdit(itemToEdit));
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    // TODO Paced train : Adapt this to handle paced trains in edit issue of https://github.com/OpenRailAssociation/osrd/issues/10615
     setItemIdToEdit(itemToEdit.id);
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   }, []);
@@ -176,8 +176,6 @@ const Timetable = ({
                   {currentDepartureDates[index]}
                 </div>
               )}
-              {/* TODO Paced train : Adapt this to handle paced trains in issue
-            https://github.com/OpenRailAssociation/osrd/issues/10615 */}
               {isTrainSchedule(timetableItem.id) ? (
                 <TrainScheduleItem
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}

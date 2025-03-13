@@ -50,7 +50,7 @@ const ScenarioContent = ({
   const [itemIdToEdit, setItemIdToEdit] = useState<TimetableItemId>();
   const [isMacro, setIsMacro] = useState(false);
   const {
-    timetableItemWithDetails,
+    timetableItemsWithDetails,
     timetableItems,
     projectionData,
     conflicts,
@@ -155,7 +155,7 @@ const ScenarioContent = ({
                   setItemIdToEdit={setItemIdToEdit}
                   itemIdToEdit={itemIdToEdit}
                   timetableItems={timetableItems}
-                  timetableItemsWithDetails={timetableItemWithDetails}
+                  timetableItemsWithDetails={timetableItemsWithDetails}
                   dtoImport={dtoImport}
                 />
               </>
@@ -219,7 +219,7 @@ const ScenarioContent = ({
                   projectionData={projectionData}
                   infraId={infra.id}
                   conflicts={conflicts}
-                  trainScheduleSummaries={timetableItemWithDetails}
+                  trainScheduleSummaries={timetableItemsWithDetails}
                   updateTrainDepartureTime={updateTrainDepartureTime}
                 />
               )

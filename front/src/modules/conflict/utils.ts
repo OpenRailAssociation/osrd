@@ -11,7 +11,7 @@ export default function addTrainNamesToConflicts(
   const trainNameMap: { [id: number]: string } = {};
 
   trainSchedulesDetails.forEach(({ id, name }) => {
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10615
+    // TODO Paced train : Adapt this to handle paced trains in conflict issue
     const editoastTrainId = formatTrainScheduleIdToEditoastTrainId(id);
     trainNameMap[editoastTrainId] = name;
   });

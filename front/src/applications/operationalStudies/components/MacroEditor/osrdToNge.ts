@@ -228,7 +228,7 @@ const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
   state.trainSchedules
     .filter((trainSchedule) => trainSchedule.path.length >= 2)
     .map((trainSchedule) => {
-      // TODO Paced train : Adapt this for the add paced train issue https://github.com/OpenRailAssociation/osrd/issues/10615
+      // TODO Paced train : Adapt this for the add paced train issue https://github.com/OpenRailAssociation/osrd/issues/10612
       const formattedTrainId = formatEditoastTrainIdToTrainScheduleId(trainSchedule.id);
       state.trainScheduleIdByNgeId.set(trainSchedule.id, formattedTrainId);
       return {

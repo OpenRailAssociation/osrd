@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import useLazyLoadTimetableItems from 'applications/operationalStudies/hooks/useLazyLoadTimatableItems';
+import useLazyLoadTimetableItems from 'applications/operationalStudies/hooks/useLazyLoadTimetableItems';
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -64,7 +64,9 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const electricalProfileSetId = useSelector(getStdcmElectricalProfileSetId);
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
-  const [trainIdsToProject, setTrainIdsToProject] = useState<Set<TimetableItemId>>(new Set());
+  const [timetableItemIdsToProject, setTimetableItemIdsToProject] = useState<Set<TimetableItemId>>(
+    new Set()
+  );
 
   const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery({
     timetableId,
@@ -99,10 +101,10 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const { projectedTrainsById, allTrainsProjected } = useLazyProjectTrains({
     infraId,
     electricalProfileSetId,
-    trainIdsToProject,
+    timetableItemIdsToProject,
     path: stdcmResponse?.path,
     timetableItems: formattedTrainSchedules,
-    setTrainIdsToProject,
+    setTimetableItemIdsToProject,
   });
 
   useEffect(() => {
@@ -111,7 +113,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
         stdcmResponse,
         timetableItemSummariesById
       );
-      setTrainIdsToProject((prev) => new Set([...prev, ...relevantTrainScheduleIds]));
+      setTimetableItemIdsToProject((prev) => new Set([...prev, ...relevantTrainScheduleIds]));
     }
   }, [timetableItemSummariesById]);
 
@@ -123,7 +125,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
         stdcmResponse,
         timetableItemSummariesById
       );
-      setTrainIdsToProject(new Set(relevantTrainScheduleIds));
+      setTimetableItemIdsToProject(new Set(relevantTrainScheduleIds));
     }
   }, [stdcmResponse]);
 

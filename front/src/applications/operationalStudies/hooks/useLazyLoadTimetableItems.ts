@@ -28,7 +28,6 @@ type useLazyLoadTimetableItemsParams = {
   electricalProfileSetId?: number;
   timetableItemIdsToFetch?: TimetableItemId[];
   timetableItems?: TimetableItemWithTimetableId[];
-  setTimetableItemIdsToFetch?: Dispatch<SetStateAction<TimetableItemId[] | undefined>>;
   setTimetableItemIdsToProject?: Dispatch<SetStateAction<Set<TimetableItemId>>>;
 };
 
@@ -36,7 +35,7 @@ type useLazyLoadTimetableItemsParams = {
  * This hook gradually fetches and projects items of the timetable.
  *
  * It first fetches the simulation of 10 items at a time, then projects them on the path.
- * This optimizes the performance of the application and allow us to display the items as
+ * This optimizes the performance of the application and allows us to display the items as
  * soon as they are ready.
  */
 const useLazyLoadTimetableItems = ({
@@ -60,7 +59,7 @@ const useLazyLoadTimetableItems = ({
   const { data: { results: rollingStocks } = { results: null } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const timetalbeItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
+  const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
 
   // gradually fetch the simulation of the timetable items
   useEffect(() => {
@@ -74,18 +73,19 @@ const useLazyLoadTimetableItems = ({
         const packageToFetch = getBatchPackage(i, _timetableItemIdsToFetch, BATCH_SIZE);
 
         // Format timetable item ids back to editoast format
-        const [editoastTrainScheduleIds, editoastPacedTrainIds] = packageToFetch.reduce<
-          [number[], number[]]
-        >(
+        const { editoastTrainScheduleIds, editoastPacedTrainIds } = packageToFetch.reduce<{
+          editoastTrainScheduleIds: number[];
+          editoastPacedTrainIds: number[];
+        }>(
           (acc, id) => {
             if (isTrainSchedule(id)) {
-              acc[0].push(formatTrainScheduleIdToEditoastTrainId(id));
+              acc.editoastTrainScheduleIds.push(formatTrainScheduleIdToEditoastTrainId(id));
             } else {
-              acc[1].push(formatPacedTrainIdToEditoastTrainId(id));
+              acc.editoastPacedTrainIds.push(formatPacedTrainIdToEditoastTrainId(id));
             }
             return acc;
           },
-          [[], []]
+          { editoastTrainScheduleIds: [], editoastPacedTrainIds: [] }
         );
 
         const trainScheduleSummariesPromise =
@@ -133,7 +133,7 @@ const useLazyLoadTimetableItems = ({
         // do not happen during the same react cycle.
         // if we update a train, one is going to re-fetch first and the 2 are out of sync during a few cycles.
         // these cycles do not make sense to render.
-        const outOfSync = [...timetalbeItemsById.values()].some((timetableItem) => {
+        const outOfSync = [...timetableItemsById.values()].some((timetableItem) => {
           const summary = formattedRawSummaries.get(timetableItem.id);
           if (summary?.status === 'success') {
             return timetableItem.path.length !== summary.path_item_times_final.length;
@@ -146,7 +146,7 @@ const useLazyLoadTimetableItems = ({
           const newFormattedSummaries = formatTimetableItemSummaries(
             packageToFetch,
             formattedRawSummaries,
-            timetalbeItemsById,
+            timetableItemsById,
             rollingStocks!
           );
 

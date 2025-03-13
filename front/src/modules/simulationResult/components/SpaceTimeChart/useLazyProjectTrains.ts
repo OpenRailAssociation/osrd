@@ -25,14 +25,14 @@ import { mapBy } from 'utils/types';
 
 const BATCH_SIZE = 5;
 
-type useLazyLoadTrainsProp = {
+type useLazyLoadTrainsParams = {
   infraId?: number;
   electricalProfileSetId: number | undefined;
-  trainIdsToProject: Set<TimetableItemId>;
+  timetableItemIdsToProject: Set<TimetableItemId>;
   path?: PathfindingResultSuccess;
   timetableItems?: TimetableItemWithTimetableId[];
   moreTrainsToCome?: boolean;
-  setTrainIdsToProject: Dispatch<SetStateAction<Set<TimetableItemId>>>;
+  setTimetableItemIdsToProject: Dispatch<SetStateAction<Set<TimetableItemId>>>;
 };
 
 /**
@@ -45,19 +45,22 @@ type useLazyLoadTrainsProp = {
 const useLazyProjectTrains = ({
   infraId,
   electricalProfileSetId,
-  trainIdsToProject,
+  timetableItemIdsToProject,
   path,
   timetableItems,
   moreTrainsToCome = false,
-  setTrainIdsToProject,
-}: useLazyLoadTrainsProp) => {
+  setTimetableItemIdsToProject,
+}: useLazyLoadTrainsParams) => {
   const dispatch = useAppDispatch();
 
   const [projectedTrainsById, setProjectedTrainsById] = useState<
     Map<TimetableItemId, TrainSpaceTimeData>
   >(new Map());
 
-  const allTrainsProjected = useMemo(() => trainIdsToProject.size === 0, [trainIdsToProject]);
+  const allTrainsProjected = useMemo(
+    () => timetableItemIdsToProject.size === 0,
+    [timetableItemIdsToProject]
+  );
 
   const requestedProjectedTrainIds = useRef<Set<TimetableItemId>>(new Set());
   const projectionSeqNum = useRef(0);
@@ -132,18 +135,18 @@ const useLazyProjectTrains = ({
 
     if (infraId && path) {
       projectionSeqNum.current += 1;
-      projectTrains(projectionSeqNum.current, path, trainIdsToProject);
+      projectTrains(projectionSeqNum.current, path, timetableItemIdsToProject);
     }
-  }, [trainIdsToProject]);
+  }, [timetableItemIdsToProject]);
 
   useEffect(() => {
     // reset the state when all the trains have been projected
     if (
       !moreTrainsToCome &&
-      trainIdsToProject.size > 0 &&
-      requestedProjectedTrainIds.current.size === trainIdsToProject.size
+      timetableItemIdsToProject.size > 0 &&
+      requestedProjectedTrainIds.current.size === timetableItemIdsToProject.size
     ) {
-      setTrainIdsToProject(new Set());
+      setTimetableItemIdsToProject(new Set());
       requestedProjectedTrainIds.current = new Set();
     }
   }, [moreTrainsToCome, projectedTrainsById]);
