@@ -28,7 +28,6 @@ use tracing::trace;
 #[cfg(test)]
 use crate::core::mocking::MockingError;
 use crate::error::InternalError;
-use crate::error::Result;
 
 pub use mq_client::RabbitMQClient;
 
@@ -47,7 +46,7 @@ pub enum CoreClient {
 }
 
 impl CoreClient {
-    pub async fn new_mq(options: mq_client::Options) -> Result<Self> {
+    pub async fn new_mq(options: mq_client::Options) -> Result<Self, InternalError> {
         let client = RabbitMQClient::new(options)
             .await
             .map_err(CoreError::MqClientError)?;
@@ -97,7 +96,7 @@ impl CoreClient {
         path: &str,
         body: Option<&B>,
         infra_id: Option<i64>,
-    ) -> Result<R::Response> {
+    ) -> Result<R::Response, InternalError> {
         trace!(
             target: "editoast::coreclient",
             body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
@@ -204,7 +203,7 @@ where
     /// TODO: provide a mechanism in this trait to allow the implementer to
     /// manage itself its expected errors. Maybe a bound error type defaulting
     /// to CoreError and a trait function handle_errors would suffice?
-    async fn fetch(&self, core: &CoreClient) -> Result<R::Response> {
+    async fn fetch(&self, core: &CoreClient) -> Result<R::Response, InternalError> {
         core.fetch::<Self, R>(
             self.method(),
             self.url(),
@@ -221,7 +220,7 @@ pub trait CoreResponse {
     type Response;
 
     /// Reads the content of `bytes` and produces the response object
-    fn from_bytes(bytes: &[u8]) -> Result<Self::Response>;
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response, InternalError>;
 }
 
 /// Indicates that the response that deserializes to `T` is expected to have a Json body
@@ -233,7 +232,7 @@ pub struct Bytes;
 impl<T: DeserializeOwned> CoreResponse for Json<T> {
     type Response = T;
 
-    fn from_bytes(bytes: &[u8]) -> Result<Self::Response> {
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response, InternalError> {
         serde_json::from_slice(bytes).map_err(|err| {
             CoreError::CoreResponseFormatError {
                 msg: err.to_string(),
@@ -246,7 +245,7 @@ impl<T: DeserializeOwned> CoreResponse for Json<T> {
 impl CoreResponse for Bytes {
     type Response = Vec<u8>;
 
-    fn from_bytes(bytes: &[u8]) -> Result<Self::Response> {
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response, InternalError> {
         Ok(Vec::from_iter(bytes.iter().cloned()))
     }
 }
@@ -254,7 +253,7 @@ impl CoreResponse for Bytes {
 impl CoreResponse for () {
     type Response = ();
 
-    fn from_bytes(_: &[u8]) -> Result<Self::Response> {
+    fn from_bytes(_: &[u8]) -> Result<Self::Response, InternalError> {
         Ok(())
     }
 }
