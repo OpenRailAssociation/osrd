@@ -1574,12 +1574,15 @@ paths:
     post:
       tags:
       - paced_train
-      summary: Projects the space time curves and paths of a number of paced trains onto a given path
+      summary: Projects the space-time curves and paths of a number of paced trains onto a given path.
       description: |-
         - Returns 404 if the infra or any of the paced trains are not found
         - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
 
-        Paced trains that are invalid (pathfinding or simulation failed) are not included in the result
+        ## Important:
+        - **Only one train schedule per paced train is projected**.
+        - The train schedule selected is the first occurrence of the paced train.
+        - Paced trains that are **invalid** (e.g., due to pathfinding or simulation failure) are **excluded** from the result.
       requestBody:
         content:
           application/json:

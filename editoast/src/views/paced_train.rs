@@ -19,6 +19,7 @@ use utoipa::ToSchema;
 
 use super::path::pathfinding::pathfinding_from_train;
 use super::path::pathfinding::PathfindingResult;
+use super::projection::compute_projected_train_paths;
 use super::projection::ProjectPathForm;
 use super::train_schedule::train_simulation_batch;
 use super::AppState;
@@ -386,12 +387,15 @@ async fn simulation(
     Ok(Json(simulation))
 }
 
-/// Projects the space time curves and paths of a number of paced trains onto a given path
+/// Projects the space-time curves and paths of a number of paced trains onto a given path.
 ///
 /// - Returns 404 if the infra or any of the paced trains are not found
 /// - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
 ///
-/// Paced trains that are invalid (pathfinding or simulation failed) are not included in the result
+/// ## Important:
+/// - **Only one train schedule per paced train is projected**.
+/// - The train schedule selected is the first occurrence of the paced train.
+/// - Paced trains that are **invalid** (e.g., due to pathfinding or simulation failure) are **excluded** from the result.
 #[utoipa::path(
     post, path = "",
     tag = "paced_train",
@@ -402,20 +406,54 @@ async fn simulation(
 )]
 async fn project_path(
     State(AppState {
-        db_pool: _db_pool,
-        valkey: _valkey_client,
-        core_client: _core_client,
+        db_pool,
+        valkey: valkey_client,
+        core_client,
         ..
     }): State<AppState>,
-    Extension(_auth): AuthenticationExt,
+    Extension(auth): AuthenticationExt,
     Json(ProjectPathForm {
-        infra_id: _infra_id,
-        ids: _paced_train_ids,
-        path: _path,
-        electrical_profile_set_id: _electrical_profile_set_id,
+        infra_id,
+        ids: paced_train_ids,
+        path,
+        electrical_profile_set_id,
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
-    todo!();
+    let authorized = auth
+        .check_roles([Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    let paced_trains: Vec<PacedTrain> =
+        PacedTrain::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+            PacedTrainError::BatchNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
+
+    let first_occurrences: Vec<TrainSchedule> = paced_trains
+        .into_iter()
+        .map(|p| p.into_first_occurrence())
+        .collect();
+
+    let project_path_result = compute_projected_train_paths(
+        conn,
+        core_client,
+        valkey_client,
+        path,
+        infra_id,
+        first_occurrences,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    Ok(Json(project_path_result))
 }
 
 #[cfg(test)]
@@ -423,6 +461,7 @@ mod tests {
     use std::collections::HashMap;
 
     use axum::http::StatusCode;
+    use chrono::DateTime;
     use chrono::Duration;
     use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::paced_train::Paced;
@@ -444,6 +483,8 @@ mod tests {
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_base;
+    use crate::models::fixtures::simple_paced_train_changeset;
+    use crate::models::fixtures::PartialProjectPathTrainResult;
     use crate::models::paced_train::PacedTrain;
     use crate::models::paced_train::PacedTrainChangeset;
     use crate::models::prelude::*;
@@ -757,5 +798,57 @@ mod tests {
                 length: 1
             })
         )
+    }
+
+    #[rstest]
+    async fn paced_train_project_path() {
+        // SETUP
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let rolling_stock = create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let train_schedule_base = TrainScheduleBase {
+            rolling_stock_name: rolling_stock.name.clone(),
+            ..serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
+                .expect("Unable to parse")
+        };
+        let paced_train_valid =
+            create_simple_paced_train(&mut db_pool.get_ok(), timetable.id).await;
+        let paced_train_fail = simple_paced_train_changeset(timetable.id)
+            .rolling_stock_name("fail".to_string())
+            .start_time(DateTime::from_timestamp(0, 0).unwrap())
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create paced train");
+
+        let core = mocked_core_pathfinding_sim_and_proj(paced_train_valid.id);
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+
+        // TEST
+        let request = app.post("/paced_train/project_path").json(&json!({
+            "infra_id": small_infra.id,
+            "electrical_profile_set_id": null,
+            "ids": vec![paced_train_fail.id, paced_train_valid.id],
+            "path": {
+                "track_section_ranges": [
+                    {"track_section": "TA1", "begin": 0, "end": 100, "direction": "START_TO_STOP"}
+                ],
+                "routes": [],
+                "blocks": []
+            }
+        }));
+        let response: HashMap<i64, PartialProjectPathTrainResult> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        // EXPECT
+        assert_eq!(response.len(), 1);
+        assert_eq!(
+            response[&paced_train_valid.id].departure_time,
+            train_schedule_base.start_time
+        );
     }
 }

@@ -1,6 +1,10 @@
 use chrono::DateTime;
 use chrono::Utc;
+use editoast_common::units;
+use editoast_models::DbConnection;
 use editoast_schemas::primitives::Identifier;
+use futures::join;
+use itertools::izip;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::hash_map::DefaultHasher;
@@ -9,21 +13,34 @@ use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
 use std::sync::Arc;
+use tracing::info;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
+use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::pathfinding::TrackRange;
 use crate::core::signal_projection::SignalUpdate;
 use crate::core::signal_projection::SignalUpdatesRequest;
 use crate::core::signal_projection::TrainSimulation;
+use crate::core::simulation::CompleteReportTrain;
+use crate::core::simulation::ReportTrain;
 use crate::core::simulation::SignalCriticalPosition;
+use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::ZoneUpdate;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::infra::Infra;
+use crate::models::prelude::*;
+use crate::models::train_schedule::TrainSchedule;
+use crate::models::RollingStockModel;
+use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
 use crate::views::path::projection::TrackLocationFromPath;
+use crate::views::train_schedule::train_simulation_batch;
+use crate::views::train_schedule::TrainScheduleError;
+use crate::ValkeyClient;
+use crate::ValkeyConnection;
 
 editoast_common::schemas! {
     ProjectPathTrainResult,
@@ -299,6 +316,209 @@ pub fn train_projection_input_hash(
     path_blocks.hash(&mut hasher);
     let hash_simulation_input = hasher.finish();
     format!("projection_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+}
+
+pub async fn compute_projected_train_paths(
+    conn: &mut DbConnection,
+    core_client: Arc<CoreClient>,
+    valkey_client: Arc<ValkeyClient>,
+    path: ProjectPathInput,
+    infra_id: i64,
+    trains_schedules: Vec<TrainSchedule>,
+    electrical_profile_set_id: Option<i64>,
+) -> Result<HashMap<i64, ProjectPathTrainResult>> {
+    let path_projection = PathProjection::new(&path.track_section_ranges);
+    let mut valkey_conn = valkey_client.get_connection().await?;
+
+    // 1. Retrieve infra and rolling stock data
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+
+    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
+        conn,
+        trains_schedules
+            .iter()
+            .map::<String, _>(|t| t.rolling_stock_name.clone()),
+    )
+    .await?;
+
+    let rolling_stock_length: HashMap<_, _> = rolling_stocks
+        .into_iter()
+        .map(|rs| (rs.name, rs.length))
+        .collect();
+
+    // 2. Get train simulations
+    let simulations = train_simulation_batch(
+        conn,
+        valkey_client.clone(),
+        core_client.clone(),
+        &trains_schedules,
+        &infra,
+        electrical_profile_set_id,
+    )
+    .await?;
+
+    // 3. Extracts train simulation details and computes unique hashes for projected train paths.
+    let (trains_hash_values, trains_details) =
+        extract_train_details(&infra, &trains_schedules, simulations, &path).await?;
+
+    // 4. Retrieve cached projection
+    let (miss_cache, mut hit_cache) =
+        retrieve_cached_projection(&mut valkey_conn, &trains_hash_values, &trains_details).await?;
+
+    // 5. Compute space time curves and signal updates for all miss cache
+    let (space_time_curves, signal_updates) = join!(
+        compute_batch_space_time_curves(&miss_cache, &path_projection),
+        compute_batch_signal_updates(
+            core_client.clone(),
+            &infra,
+            &path.track_section_ranges,
+            &path.routes,
+            &path.blocks,
+            &miss_cache
+        )
+    );
+    let signal_updates = signal_updates?;
+
+    // 6. Store the projection in the cache (using pipeline)
+    let trains_hash_values: HashMap<_, _> = trains_details
+        .iter()
+        .map(|t| t.train_id)
+        .zip(trains_hash_values)
+        .collect();
+    let mut new_items = vec![];
+    for train_id in miss_cache.iter().map(|t| t.train_id) {
+        let hash = &trains_hash_values[&train_id];
+        let cached_value: CachedProjectPathTrainResult = CachedProjectPathTrainResult {
+            space_time_curves: space_time_curves
+                .get(&train_id)
+                .expect("Space time curves not available for train")
+                .clone(),
+            signal_updates: signal_updates
+                .get(&train_id)
+                .expect("Signal update not available for train")
+                .clone(),
+        };
+        hit_cache.push((cached_value.clone(), train_id));
+        new_items.push((hash, cached_value));
+    }
+    valkey_conn.json_set_bulk(&new_items).await?;
+
+    let train_map: HashMap<i64, TrainSchedule> =
+        trains_schedules.into_iter().map(|ts| (ts.id, ts)).collect();
+
+    // 7. Build the projection response
+    let mut project_path_result = HashMap::new();
+    for (cached, train_id) in hit_cache {
+        let train = train_map.get(&train_id).expect("Train not found");
+        let length = rolling_stock_length
+            .get(&train.rolling_stock_name)
+            .expect("Rolling stock length not found");
+
+        project_path_result.insert(
+            train_id,
+            ProjectPathTrainResult {
+                departure_time: train.start_time,
+                rolling_stock_length: units::millimeter::from(*length) as u64,
+                cached,
+            },
+        );
+    }
+
+    Ok(project_path_result)
+}
+
+async fn retrieve_cached_projection(
+    valkey_conn: &mut ValkeyConnection,
+    trains_hash_values: &[String],
+    trains_details: &[TrainSimulationDetails],
+) -> Result<(
+    Vec<TrainSimulationDetails>,
+    Vec<(CachedProjectPathTrainResult, i64)>,
+)> {
+    let cached_projections: Vec<Option<CachedProjectPathTrainResult>> =
+        valkey_conn.json_get_bulk(trains_hash_values).await?;
+
+    let mut hit_cache = vec![];
+    let mut miss_cache = vec![];
+
+    for (train_details, projection) in izip!(trains_details, cached_projections) {
+        if let Some(cached) = projection {
+            hit_cache.push((cached, train_details.train_id));
+        } else {
+            miss_cache.push(train_details.clone());
+        }
+    }
+
+    info!(
+        nb_hit = hit_cache.len(),
+        nb_miss = miss_cache.len(),
+        "Hit cache",
+    );
+
+    Ok((miss_cache, hit_cache))
+}
+
+async fn extract_train_details(
+    infra: &Infra,
+    trains_schedules: &[TrainSchedule],
+    simulations: Vec<(SimulationResponse, PathfindingResult)>,
+    path: &ProjectPathInput,
+) -> Result<(Vec<String>, Vec<TrainSimulationDetails>)> {
+    let ProjectPathInput {
+        track_section_ranges: path_track_ranges,
+        routes: path_routes,
+        blocks: path_blocks,
+    } = path;
+
+    let mut trains_hash_values = vec![];
+    let mut trains_details = vec![];
+
+    for (train, (sim, pathfinding_result)) in izip!(trains_schedules, simulations) {
+        let track_ranges = match pathfinding_result {
+            PathfindingResult::Success(PathfindingResultSuccess {
+                track_section_ranges,
+                ..
+            }) => track_section_ranges,
+            _ => continue,
+        };
+
+        let CompleteReportTrain {
+            report_train,
+            signal_critical_positions,
+            zone_updates,
+            ..
+        } = match sim {
+            SimulationResponse::Success { final_output, .. } => final_output,
+            _ => continue,
+        };
+        let ReportTrain {
+            times, positions, ..
+        } = report_train;
+
+        let train_details = TrainSimulationDetails {
+            train_id: train.id,
+            positions,
+            times,
+            signal_critical_positions,
+            zone_updates,
+            train_path: track_ranges,
+        };
+
+        let hash = train_projection_input_hash(
+            infra.id,
+            &infra.version,
+            &train_details,
+            path_track_ranges,
+            path_routes,
+            path_blocks,
+        );
+        trains_hash_values.push(hash);
+        trains_details.push(train_details);
+    }
+    Ok((trains_hash_values, trains_details))
 }
 
 #[cfg(test)]

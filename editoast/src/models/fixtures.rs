@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::io::Cursor;
 use std::ops::DerefMut;
 
+use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_models::DbConnection;
@@ -26,6 +27,7 @@ use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use editoast_schemas::rolling_stock::TowedRollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use postgis_diesel::types::LineString;
+use serde::Deserialize;
 use serde_json::Value;
 
 use crate::infra_cache::operation::create::apply_create_operation;
@@ -421,4 +423,10 @@ pub async fn create_work_schedules_fixture_set(
         .expect("Failed to create work test schedules");
 
     (work_schedule_group, work_schedules)
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PartialProjectPathTrainResult {
+    pub departure_time: DateTime<Utc>,
+    // Ignore the rest of the payload
 }
