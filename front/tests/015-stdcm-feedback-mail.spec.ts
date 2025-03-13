@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 
 import type { Infra } from 'common/api/osrdEditoastApi';
 
-import expectedSubject from './assets/constants/mail-feedback-const';
+import getMailFeedbackData from './assets/constants/mail-feedback-const';
 import { electricRollingStockName } from './assets/constants/project-const';
 import ConsistSection from './pages/stdcm/consist-section';
 import DestinationSection from './pages/stdcm/destination-section';
@@ -57,20 +57,24 @@ test.describe('FeedbackCard Tests', () => {
     await waitForInfraStateToBeCached(infra.id);
   });
 
-  test('Verify FeedbackCard visibility', async () => {
+  test('Verify FeedbackCard visibility and mail redirection', async () => {
     await consistSection.fillAndVerifyConsistDetails(
       consistDetails,
       tractionEnginePrefilledValues.tonnage,
       tractionEnginePrefilledValues.length,
       tractionEnginePrefilledValues.maxSpeed
     );
-    await originSection.fillAndVerifyOriginDetails();
-    await destinationSection.fillAndVerifyDestinationDetails();
+    await originSection.fillOriginDetailsLight();
+    await destinationSection.fillDestinationDetailsLight();
     await stdcmPage.launchSimulation();
-
+    await simulationResultPage.verifySimulationDetails({
+      simulationIndex: 0,
+      simulationLengthAndDuration: '51 km — 45min',
+      validSimulationNumber: 1,
+    });
     await simulationResultPage.verifyFeedbackCardVisibility();
-    await simulationResultPage.clickFeedbackButton();
 
-    await simulationResultPage.verifyMailRedirection(expectedSubject);
+    const { expectedSubject, expectedBody, expectedMail } = getMailFeedbackData();
+    await simulationResultPage.verifyMailRedirection(expectedSubject, expectedBody, expectedMail);
   });
 });

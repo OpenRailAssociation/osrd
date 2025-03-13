@@ -236,18 +236,35 @@ export type STDCMResultTableRow = {
 };
 
 export type StdcmTranslations = {
-  stdcmErrors: {
-    noScheduledPoint: string;
+  consist: {
+    tractionEngine: string;
+    compositionCode: string;
+    tonnage: string;
+    length: string;
+    maxSpeed: string;
+  };
+  mailFeedback: {
+    subject: string;
+    simulationDetails: string;
+    body: string;
+    title?: string;
+    description?: string;
   };
   trainPath: {
-    warningMinStopTime: string;
+    origin: string;
+    destination: string;
+    warningMinStopTime?: string;
   };
+  departureTime: string;
   simulation: {
     results: {
       simulationName: {
         withoutOutputs: string;
       };
     };
+  };
+  stdcmErrors: {
+    noScheduledPoint: string;
   };
 };
 

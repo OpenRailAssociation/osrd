@@ -139,14 +139,15 @@ test.describe('Verify stdcm simulation page', () => {
     // Run first simulation without capacity
     await stdcmPage.launchSimulation();
     await simulationResultPage.verifySimulationDetails({
-      simulationNumber: 1,
+      simulationIndex: 0,
     });
     // Update tonnage and launch a second simulation with capacity
     await handleAndVerifyInput(originSection.dateOriginArrival, UPDATED_ORIGIN_ARRIVAL_DATE);
     await stdcmPage.launchSimulation();
     await simulationResultPage.verifySimulationDetails({
-      simulationNumber: 2,
+      simulationIndex: 1,
       simulationLengthAndDuration: '51 km — 2h 35min',
+      validSimulationNumber: 1,
     });
     await simulationResultPage.verifyTableData(
       './tests/assets/stdcm/towed-rolling-stock/towed-rolling-stock-table-result.json'

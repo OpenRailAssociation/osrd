@@ -20,6 +20,7 @@ const defaultSettings = {
   stdcmLogo: undefined,
   stdcmSimulationSheetLogo: undefined,
   isCustomizedDeployment: false,
+  stdcmFeedbackMail: 'support_LMR@default.org',
 };
 
 export type DeploymentSettings = {

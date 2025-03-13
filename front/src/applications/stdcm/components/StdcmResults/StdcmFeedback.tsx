@@ -16,10 +16,6 @@ const StdcmFeedback = ({ stdcmFeedbackMail }: StdcmFeedbackProps) => {
   const { t } = useTranslation('stdcm');
   const selectedSimulation = useSelector(getSelectedSimulation);
 
-  if (!selectedSimulation) {
-    return null;
-  }
-
   const resultsOutput = selectedSimulation.outputs as StdcmResultsOutput;
   const { rollingStock, speedLimitByTag } = resultsOutput.results;
 
@@ -64,11 +60,11 @@ ${separator}
   const mailtoLink = `mailto:${stdcmFeedbackMail}?subject=${subject}&body=${body}`;
 
   const handleEmailClick = () => {
-    window.location.href = mailtoLink;
+    window.open(mailtoLink, '_blank');
   };
 
   return (
-    <div className="feedback-card">
+    <div className="feedback-card" data-testid="feedback-card">
       <div className="feedback-separator" />
       <div className="feedback-card-header">
         <h3 data-testid="feedback-title">
@@ -76,7 +72,9 @@ ${separator}
           <Comment className="feedback-card-header-icon" size="sm" />
         </h3>
       </div>
-      <p className="feedback-card-text">{t('mailFeedback.description')}</p>
+      <p className="feedback-card-text" data-testid="feedback-card-text">
+        {t('mailFeedback.description')}
+      </p>
       <Button
         data-testid="feedback-button"
         label={t('mailFeedback.writeButton')}

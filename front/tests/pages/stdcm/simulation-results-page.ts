@@ -63,20 +63,20 @@ class SimulationResultPage extends STDCMPage {
     this.startNewQueryButton = page.getByTestId('start-new-query-button');
     this.startNewQueryWithDataButton = page.getByTestId('start-new-query-with-data-button');
     this.simulationList = page.locator('.stdcm-results .simulation-list');
-    this.feedbackCardContainer = page.locator('.feedback-card');
+    this.feedbackCardContainer = page.getByTestId('feedback-card');
     this.feedbackTitle = page.getByTestId('feedback-title');
-    this.feedbackDescription = this.feedbackCardContainer.locator('.feedback-card-text');
+    this.feedbackDescription = page.getByTestId('feedback-card-text');
     this.feedbackButton = page.getByTestId('feedback-button');
   }
 
-  private getSimulationLengthAndDurationLocator(simulationNumber: number): Locator {
+  private getSimulationLengthAndDurationLocator(simulationIndex: number): Locator {
     return this.simulationList
       .locator('.simulation-metadata .total-length-trip-duration')
-      .nth(simulationNumber - 1);
+      .nth(simulationIndex);
   }
 
-  private getSimulationNameLocator(simulationNumber: number): Locator {
-    return this.simulationList.locator('.simulation-name').nth(simulationNumber - 1);
+  private getSimulationNameLocator(simulationIndex: number): Locator {
+    return this.simulationList.locator('.simulation-name').nth(simulationIndex);
   }
 
   async verifyTableData(tableDataPath: string): Promise<void> {
@@ -175,11 +175,13 @@ class SimulationResultPage extends STDCMPage {
   }
 
   async verifySimulationDetails({
-    simulationNumber,
+    simulationIndex,
     simulationLengthAndDuration,
+    validSimulationNumber,
   }: {
-    simulationNumber: number;
+    simulationIndex: number;
     simulationLengthAndDuration?: string | null;
+    validSimulationNumber?: number;
   }): Promise<void> {
     const translations = getTranslations({
       en: enTranslations,
@@ -189,12 +191,11 @@ class SimulationResultPage extends STDCMPage {
     // Determine expected simulation name
     const isResultTableVisible = await this.simulationResultTable.isVisible();
     const expectedSimulationName = isResultTableVisible
-      ? `Simulation n°${simulationNumber - 1}`
+      ? `Simulation n°${validSimulationNumber}`
       : translations.simulation.results.simulationName.withoutOutputs;
 
     // Validate simulation name
-    const actualSimulationName =
-      await this.getSimulationNameLocator(simulationNumber).textContent();
+    const actualSimulationName = await this.getSimulationNameLocator(simulationIndex).textContent();
     expect(actualSimulationName).toEqual(expectedSimulationName);
 
     // Determine expected length and duration
@@ -202,7 +203,7 @@ class SimulationResultPage extends STDCMPage {
       ? simulationLengthAndDuration
       : noCapacityLengthAndDuration;
     const actualLengthAndDuration =
-      await this.getSimulationLengthAndDurationLocator(simulationNumber).textContent();
+      await this.getSimulationLengthAndDurationLocator(simulationIndex).textContent();
 
     // Validate length and duration
     expect(actualLengthAndDuration).toEqual(expectedLengthAndDuration);
@@ -221,13 +222,18 @@ class SimulationResultPage extends STDCMPage {
     await this.feedbackButton.click();
   }
 
-  async verifyMailRedirection(expectedSubject: string) {
-    await this.clickFeedbackButton();
-
+  async verifyMailRedirection(
+    expectedSubject: string,
+    expectedBody: string,
+    expectedEmail: string
+  ) {
     const mailtoUrl = await this.feedbackButton.getAttribute('data-mailto');
-    expect(mailtoUrl).toContain('mailto:support_LMR@reseau.sncf.fr');
-    expect(mailtoUrl).toContain(`subject=${encodeURIComponent(expectedSubject)}`);
-    expect(mailtoUrl).toContain('body=');
+
+    const decodedUrl = decodeURIComponent(mailtoUrl!);
+
+    expect(decodedUrl).toContain(`${expectedEmail}`);
+    expect(decodedUrl).toContain(`${expectedSubject}`);
+    expect(decodedUrl).toContain(`${expectedBody}`);
   }
 }
 export default SimulationResultPage;
