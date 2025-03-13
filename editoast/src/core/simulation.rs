@@ -22,8 +22,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use super::client::AsCoreRequest;
+use super::client::Json;
 use super::pathfinding::TrackRange;
-use crate::core::{AsCoreRequest, Json};
 use crate::error::InternalError;
 use crate::views::path::pathfinding::PathfindingFailure;
 

@@ -30,6 +30,7 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
+use crate::core::client::AsCoreRequest;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::CompleteReportTrain;
 use crate::core::simulation::PhysicsConsist;
@@ -41,7 +42,6 @@ use crate::core::simulation::SimulationPowerRestrictionItem;
 use crate::core::simulation::SimulationRequest;
 use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::SimulationScheduleItem;
-use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::infra::Infra;

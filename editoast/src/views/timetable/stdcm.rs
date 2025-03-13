@@ -32,13 +32,13 @@ use tracing_opentelemetry::OpenTelemetrySpanExt;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::core::client::AsCoreRequest;
 use crate::core::conflict_detection::Conflict;
 use crate::core::conflict_detection::TrainRequirements;
 use crate::core::pathfinding::InvalidPathItem;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::PhysicsConsistParameters;
 use crate::core::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
-use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::prelude::*;

@@ -6,8 +6,9 @@ use utoipa::ToSchema;
 
 use crate::core::simulation::SignalCriticalPosition;
 use crate::core::simulation::ZoneUpdate;
-use crate::core::{AsCoreRequest, Json};
 
+use super::client::AsCoreRequest;
+use super::client::Json;
 use super::pathfinding::TrackRange;
 
 #[derive(Debug, Serialize)]

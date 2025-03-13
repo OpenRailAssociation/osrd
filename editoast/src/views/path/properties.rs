@@ -21,13 +21,13 @@ use tracing::info;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
+use crate::core::client::AsCoreRequest;
 use crate::core::path_properties::OperationalPointOnPath;
 use crate::core::path_properties::PathPropertiesRequest;
 use crate::core::path_properties::PropertyElectrificationValues;
 use crate::core::path_properties::PropertyValuesF64;
 use crate::core::path_properties::PropertyZoneValues;
 use crate::core::pathfinding::TrackRange;
-use crate::core::AsCoreRequest;
 use crate::error::Result;
 use crate::views::path::retrieve_infra_version;
 use crate::AppState;

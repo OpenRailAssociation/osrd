@@ -22,12 +22,12 @@ use tracing::debug;
 use tracing::info;
 use utoipa::ToSchema;
 
+use crate::core::client::AsCoreRequest;
 use crate::core::pathfinding::PathfindingCoreResult;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::pathfinding::PathfindingRequest;
 use crate::core::pathfinding::PathfindingResultSuccess;
-use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::error::Result;

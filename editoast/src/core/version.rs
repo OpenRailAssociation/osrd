@@ -1,8 +1,8 @@
 use derivative::Derivative;
 use serde::Serialize;
 
-use super::AsCoreRequest;
-use super::Json;
+use super::client::AsCoreRequest;
+use super::client::Json;
 use crate::views::Version;
 
 /// A Core infra load request

@@ -11,13 +11,13 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use super::client::AsCoreRequest;
+use super::client::Json;
 use super::conflict_detection::TrainRequirements;
 use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsConsist;
 use super::simulation::SimulationResponse;
-use crate::core::AsCoreRequest;
-use crate::core::Json;
 
 editoast_common::schemas! {
     Request,

@@ -4,8 +4,7 @@ use axum::http::StatusCode;
 use reqwest::Body;
 use serde::Serialize;
 
-use super::CoreClient;
-use super::CoreResponse;
+use super::client::{CoreClient, CoreResponse};
 
 /// A mocking core client maintaining a list of stub requests to simulate
 ///

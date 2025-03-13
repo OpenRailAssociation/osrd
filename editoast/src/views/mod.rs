@@ -74,12 +74,12 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
+use crate::core::client::AsCoreRequest;
 use crate::core::mq_client;
 use crate::core::pathfinding::PathfindingInputError;
 use crate::core::pathfinding::PathfindingNotFound;
 use crate::core::simulation::SimulationResponse;
 use crate::core::version::CoreVersionRequest;
-use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::core::CoreError;
 use crate::core::{self};

@@ -3,10 +3,10 @@ use std::sync::Arc;
 use chrono::DateTime;
 use chrono::Utc;
 
+use crate::core::client::AsCoreRequest;
 use crate::core::conflict_detection::ConflictDetectionRequest;
 use crate::core::conflict_detection::WorkSchedulesRequest;
 use crate::core::simulation::SimulationResponse;
-use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::train_schedule::TrainSchedule;
