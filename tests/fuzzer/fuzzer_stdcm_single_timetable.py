@@ -31,7 +31,7 @@ testing. May not always be up-to-date.
 
 Note: on an imported infra and timetables, tests take a while.
 
-Usage: `poetry run python -m fuzzer.fuzzer_stdcm_single_timetable`
+Usage: `uv run python -m fuzzer.fuzzer_stdcm_single_timetable`
 """
 
 

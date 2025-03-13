@@ -2,9 +2,9 @@
 
 ### Run the tests
 
-To run tests `poetry run pytest` after starting docker containers (`docker compose up` at the root of the project) and installing dependencies (`poetry sync`, see [poetry doc](https://python-poetry.org/docs/)).
+To run tests `uv run pytest` after starting docker containers (`docker compose up` at the root of the project) and installing dependencies (`uv sync`, see [uv doc](https://docs.astral.sh/uv/)).
 
-To run a list of specific tests, run `poetry run pytest -k test_name_1 test_name_2 ...`.
+To run a list of specific tests, run `uv run pytest -k test_name_1 test_name_2 ...`.
 
 To setup end-to-end (e2e) tests, please see [front readme](../front/README.md#npm-run-e2e-tests).
 
@@ -30,7 +30,7 @@ Available fixtures are defined in `conftest.py`.
 # Fuzzer
 
 The fuzzer is a script that generates random tests and logs any error that occurred.
-Run `poetry run python3 fuzzer/fuzzer.py`, any error will be reported in `fuzzer/errors` in a json.
+Run `uv run python3 fuzzer/fuzzer.py`, any error will be reported in `fuzzer/errors` in a json.
 
 Note: you need a docker running locally _with at least one infra imported_.
 It can be a generated infra, or it can be imported from some other DB.

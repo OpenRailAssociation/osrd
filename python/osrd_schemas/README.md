@@ -15,4 +15,4 @@ To add a primitive to the existing switch_types, you need to modify these 3 file
 
 If you want to contribute to this service you need:
 
-- [Poetry](https://python-poetry.org/) a python package manager.
+- [`uv`](https://docs.astral.sh/uv/).
