@@ -9,21 +9,21 @@ run:
 
 # Install required dependencies
 install:
-    poetry sync --all-extras
+    uv sync --all-extras
 
 # Run the tests
 test:
     @echo "There are no test in this component"
-    poetry run pytestx
+    uv run pytestx
 
 # Format the source code
 format:
-    poetry run ruff format
+    uv run ruff format
 
 # Verify code lints without applying any fix
 lint:
-    poetry run ruff check
-    poetry run pyright .
+    uv run ruff check
+    uv run pyright .
 
 # Fix all the lints that can be automatically applied
 fix-lint:

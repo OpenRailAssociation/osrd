@@ -210,24 +210,20 @@ jobs:
     name: Check generated railjson sync
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up 'uv'
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
-          cache: "poetry"
+          enable-cache: true
 
       - name: Install railjson_generator dependencies
         run: |
-          poetry -C python/railjson_generator install
+          uv --directory python/railjson_generator/ sync
 
       - name: Generate railjson
         run: |
           mkdir /tmp/generated_infras
-          cd python/railjson_generator
-          poetry run python -m railjson_generator /tmp/generated_infras ../../tests/infra-scripts/*.py
+          uv --directory python/railjson_generator/ run python -m railjson_generator /tmp/generated_infras $(pwd)/tests/infra-scripts/*.py
 
       - name: Ensure generated infrastructures are up to date
         run: diff -r -u tests/data/infras /tmp/generated_infras
@@ -237,35 +233,28 @@ jobs:
     name: Check railjson generator
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up 'uv'
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
-          cache: "poetry"
+          enable-cache: true
 
       - name: Install railjson_generator dependencies
         run: |
-          cd python/railjson_generator
-          poetry sync --extras=check --no-interaction
+          uv --directory python/railjson_generator/ sync --extra check
 
       - name: Ruff
         run: |
-          cd python/railjson_generator
-          poetry run ruff check --output-format github
-          poetry run ruff format --check
+          uv --directory python/railjson_generator/ run ruff check --output-format github
+          uv --directory python/railjson_generator/ run ruff format --check
 
       - name: Pyright
         run: |
-          cd python/railjson_generator
-          poetry run pyright
+          uv --directory python/railjson_generator/ run pyright
 
       - name: Pytest
         run: |
-          cd python/railjson_generator
-          poetry run pytest
+          uv --directory python/railjson_generator/ run pytest
 
   check_commits:
     runs-on: ubuntu-latest
@@ -326,52 +315,42 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up 'uv'
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
-          cache: "poetry"
+          enable-cache: true
       - name: Install dependencies
         run: |
-          cd tests
-          poetry sync --extras=check --no-interaction
+          uv --directory tests/ sync --extra check
       - name: Ruff
         run: |
-          cd tests
-          poetry run ruff check
-          poetry run ruff format --check
+          uv --directory tests/ run ruff check
+          uv --directory tests/ run ruff format --check
       - name: Pyright
         run: |
-          cd tests
-          poetry run pyright
+          uv --directory tests/ run pyright
 
   check_osrd_schema:
     runs-on: ubuntu-latest
     name: Check osrd schema
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up 'uv'
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
-          cache: "poetry"
+          enable-cache: true
       - name: Install dependencies
         run: |
-          cd python/osrd_schemas
-          poetry sync --extras=check --no-interaction
+          uv --directory python/osrd_schemas/ sync --extra check
       - name: Ruff
         run: |
-          cd python/osrd_schemas
-          poetry run ruff check --output-format github
-          poetry run ruff format --check
+          uv --directory python/osrd_schemas/ run ruff check --output-format github
+          uv --directory python/osrd_schemas/ run ruff format --check
       - name: Pyright
         run: |
-          cd python/osrd_schemas
-          poetry run pyright
+          uv --directory python/osrd_schemas/ run pyright
 
   check_toml:
     runs-on: ubuntu-latest
@@ -393,18 +372,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v5
+      - name: Set up 'uv'
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
-          cache: "poetry"
+          enable-cache: true
       - name: Check infra_schema.json sync
         run: |
-          cd python/osrd_schemas
-          poetry sync --no-interaction
-          poetry run python -m osrd_schemas.infra_editor > current_infra_schema.json
-          diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json
+          uv --directory python/osrd_schemas/ sync
+          uv --directory python/osrd_schemas/ run python -m osrd_schemas.infra_editor > current_infra_schema.json
+          diff current_infra_schema.json front/src/reducers/osrdconf/infra_schema.json
 
   check_front_rtk_sync:
     runs-on: ubuntu-latest
@@ -811,17 +788,14 @@ jobs:
           docker load --input ./osrd-editoast.tar
           docker load --input ./osrd-core.tar
           docker load --input ./osrd-osrdyne.tar
-      - name: Install poetry
-        run: pipx install poetry
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up 'uv'
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
-          cache: "poetry"
+          enable-cache: true
       - name: Install dependencies
         run: |
-          cd tests
-          poetry sync --no-interaction
+          uv --directory tests/ sync
 
       - name: Startup the test infrastructure
         id: start_integration_worker
@@ -843,7 +817,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          poetry -C tests run pytest
+          uv --directory tests/ run pytest
 
       - name: Save container logs
         run: docker compose logs > container-logs

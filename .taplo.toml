@@ -18,7 +18,7 @@ reorder_keys = true
 
 [[rule]]
 include = ["**/pyproject.toml"]
-keys = ["tool.poetry.dependencies", "tool.poetry.group.dev.dependencies"]
+keys = ["dependencies", "project.optional-dependencies", "tool.uv.sources"]
 
 [rule.formatting]
 reorder_keys = true

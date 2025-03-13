@@ -2,6 +2,6 @@
 
 Run the following commands at the root of the project:
 ```sh
-poetry -C python/railjson_generator install
-poetry -C python/railjson_generator run python -m railjson_generator tests/data/infras tests/infra-scripts/*.py
+uv --directory python/railjson_generator install
+uv --directory python/railjson_generator run python -m railjson_generator tests/data/infras tests/infra-scripts/*.py
 ```

@@ -7,24 +7,24 @@ help:
 # Generate small infra
 run:
     mkdir -p small_infra_out
-    poetry run scripts/small_infra.py small_infra_out
+    uv run scripts/small_infra.py small_infra_out
 
 # Install required dependencies
 install:
-    poetry sync --all-extras
+    uv sync --all-extras
 
 # Run the tests
 test:
-    poetry run pytest
+    uv run pytest
 
 # Format the source code
 format:
-    poetry run ruff format
+    uv run ruff format
 
 # Verify code lints without applying any fix
 lint:
-    poetry run ruff check
-    poetry run pyright .
+    uv run ruff check
+    uv run pyright .
 
 # Fix all the lints that can be automatically applied
 fix-lint:

@@ -56,7 +56,9 @@ class OutOfRange(InfraErrorTrait):
 
 
 class ObjectOutOfPath(InfraErrorTrait):
-    error_type: Literal["object_out_of_path"] = Field(default="object_outside_of_path")
+    error_type: Literal["object_outside_of_path"] = Field(
+        default="object_outside_of_path"
+    )
     reference: ObjectReference
 
 

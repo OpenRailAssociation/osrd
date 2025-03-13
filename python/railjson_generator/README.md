@@ -1,9 +1,9 @@
 # RAILJSON GENERATOR
 
-Use poetry to install dependencies:
+Use uv to install dependencies:
 
 ```sh
-poetry install
+uv sync
 ```
 
 ## Running generation scripts
@@ -12,13 +12,13 @@ To run a generation script, pass its output directory as its first argument:
 
 ```sh
 mkdir small_infra_out
-poetry run scripts/small_infra.py small_infra_out
+uv run scripts/small_infra.py small_infra_out
 ```
 
 This library provides an helper to generate multiple infrastructures at once:
 
 ```sh
-poetry run python3 -m railjson_generator /tmp/all_infras scripts/*.py
+uv run python3 -m railjson_generator /tmp/all_infras scripts/*.py
 ```
 
 ## API
@@ -92,7 +92,7 @@ You can find a complete example here: [small_infra.py](railjson_generator/schema
 ## Testing
 
 ```sh
-poetry run pytest
+uv run pytest
 ```
 
 ## Linting
@@ -100,12 +100,12 @@ poetry run pytest
 Use ruff and pyright to check for style issues and potential errors.
 
 ```sh
-$ poetry run ruff check
-$ poetry run pyright
+$ uv run ruff check
+$ uv run pyright
 ```
 
 Use ruff to fix formatting.
 
 ```sh
-$ poetry run ruff format
+$ uv run ruff format
 ```
