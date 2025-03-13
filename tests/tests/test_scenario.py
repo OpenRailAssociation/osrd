@@ -50,6 +50,7 @@ class _ScenarioResponse:
     infra_id: int
     electrical_profile_set_id: Optional[int]
     trains_count: int
+    paced_trains_count: int
     creation_date: str
     last_modification: str
     tags: list[str]

@@ -69,7 +69,6 @@ crate::routes! {
 
 editoast_common::schemas! {
     TimetableResult,
-    TimetableDetailedResult,
     stdcm::schemas(),
 }
 
@@ -98,23 +97,6 @@ impl From<Timetable> for TimetableResult {
     fn from(timetable: Timetable) -> Self {
         Self {
             timetable_id: timetable.id,
-        }
-    }
-}
-
-/// Creation result for a Timetable
-#[derive(Debug, Default, Serialize, Deserialize, Derivative, ToSchema)]
-#[cfg_attr(test, derive(PartialEq))]
-struct TimetableDetailedResult {
-    pub timetable_id: i64,
-    pub train_ids: Vec<i64>,
-}
-
-impl From<TimetableWithTrains> for TimetableDetailedResult {
-    fn from(val: TimetableWithTrains) -> Self {
-        Self {
-            timetable_id: val.id,
-            train_ids: val.train_ids,
         }
     }
 }

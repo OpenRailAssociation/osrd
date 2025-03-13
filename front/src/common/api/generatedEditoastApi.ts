@@ -3488,10 +3488,12 @@ export type Scenario = {
 };
 export type ScenarioWithDetails = Scenario & {
   infra_name: string;
+  paced_trains_count: number;
   trains_count: number;
 };
 export type ScenarioResponse = Scenario & {
   infra_name: string;
+  paced_trains_count: number;
   project: Project;
   study: Study;
   trains_count: number;

@@ -42,6 +42,17 @@ impl Timetable {
             .map_err(Into::into)
     }
 
+    pub async fn paced_trains_count(timetable_id: i64, conn: &mut DbConnection) -> Result<i64> {
+        use editoast_models::tables::paced_train::dsl;
+
+        dsl::paced_train
+            .filter(dsl::timetable_id.eq(timetable_id))
+            .count()
+            .get_result(conn.write().await.deref_mut())
+            .await
+            .map_err(Into::into)
+    }
+
     pub async fn gather_start_times(
         timetable_id: i64,
         conn: &mut DbConnection,
@@ -102,15 +113,19 @@ pub struct TimetableWithTrains {
     pub id: i64,
     #[diesel(sql_type = Array<BigInt>)]
     pub train_ids: Vec<i64>,
+    #[diesel(sql_type = Array<BigInt>)]
+    pub paced_train_ids: Vec<i64>,
 }
 
 impl Retrieve<i64> for TimetableWithTrains {
     async fn retrieve(conn: &mut DbConnection, timetable_id: i64) -> Result<Option<Self>> {
         let result = sql_query(
             "SELECT timetable.*,
-        array_remove(array_agg(train_schedule.id), NULL) as train_ids
+        array_remove(array_agg(train_schedule.id), NULL) as train_ids,
+        array_remove(array_agg(paced_train.id), NULL) as paced_train_ids
         FROM timetable
         LEFT JOIN train_schedule ON timetable.id = train_schedule.timetable_id
+        LEFT JOIN paced_train ON timetable.id = paced_train.timetable_id
         WHERE timetable.id = $1
         GROUP BY timetable.id",
         )

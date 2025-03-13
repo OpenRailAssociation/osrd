@@ -10417,11 +10417,15 @@ components:
         required:
         - infra_name
         - trains_count
+        - paced_trains_count
         - project
         - study
         properties:
           infra_name:
             type: string
+          paced_trains_count:
+            type: integer
+            format: int64
           project:
             $ref: '#/components/schemas/Project'
           study:
@@ -10436,9 +10440,13 @@ components:
         required:
         - infra_name
         - trains_count
+        - paced_trains_count
         properties:
           infra_name:
             type: string
+          paced_trains_count:
+            type: integer
+            format: int64
           trains_count:
             type: integer
             format: int64
@@ -12070,21 +12078,6 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to test against.
-    TimetableDetailedResult:
-      type: object
-      description: Creation result for a Timetable
-      required:
-      - timetable_id
-      - train_ids
-      properties:
-        timetable_id:
-          type: integer
-          format: int64
-        train_ids:
-          type: array
-          items:
-            type: integer
-            format: int64
     TimetableResult:
       type: object
       description: Creation result for a Timetable
