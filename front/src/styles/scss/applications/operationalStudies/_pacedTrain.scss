@@ -92,30 +92,11 @@
     position: relative;
 
     &.warning {
-      &:before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        right: 7px;
-        width: 4px;
-        height: 16px;
-        transform: translate(0, -50%);
-        border-radius: 5px;
-      }
-      &.not-honored {
-        &:before {
-          background-color: var(--warning30);
-        }
-      }
       &.invalid {
         background-image: url('data:image/svg+xml,%3Csvg version="1.1" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"%3E%3Ctitle%3EAssets/TrainList/InvalidTrain%3C/title%3E%3Cg fill-rule="evenodd"%3E%3Crect width="48" height="48" fill="%23FFEEED"/%3E%3Cpath d="m48 26v22h-22l22-22zm0-26-48 48v-22l26-26h22z" fill="%23FF6868" opacity=".1"/%3E%3C/g%3E%3C/svg%3E');
         background-repeat: repeat;
 
         box-shadow: inset 0 -1px 0 0 var(--black10);
-
-        &:before {
-          background-color: var(--error60);
-        }
       }
     }
   }
@@ -194,13 +175,6 @@
         height: 24px;
         position: relative;
 
-        .status-invalid {
-          width: 4px;
-          height: 16px;
-          background-color: var(--error60);
-          border-radius: 5px;
-          margin: 0 7px 0 5px;
-        }
         &::after {
           content: '';
           position: absolute;
@@ -292,19 +266,6 @@
     .base-info.invalid {
       box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
     }
-  }
-
-  .invalid-reason {
-    margin-right: 18px;
-    font-size: 16px;
-    color: var(--error80);
-    font-weight: 600;
-    min-width: 155px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 24px;
-    text-align: right;
   }
 }
 

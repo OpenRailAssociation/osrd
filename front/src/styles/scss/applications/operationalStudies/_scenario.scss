@@ -520,6 +520,29 @@
             display: flex;
             flex-wrap: nowrap;
 
+            &.warning {
+              &:before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                right: 7px;
+                width: 4px;
+                height: 16px;
+                transform: translate(0, -50%);
+                border-radius: 5px;
+              }
+              &.not-honored {
+                &:before {
+                  background-color: var(--warning30);
+                }
+              }
+              &.invalid {
+                &:before {
+                  background-color: var(--error60);
+                }
+              }
+            }
+
             .title-img {
               display: flex;
               flex-grow: 1;
@@ -549,14 +572,6 @@
                   }
                 }
 
-                .status-invalid {
-                  width: 4px;
-                  height: 16px;
-                  background-color: var(--error60);
-                  border-radius: 5px;
-                  margin: 0 7px 0 5px;
-                }
-
                 /* Trick to hide the image if too narrow */
                 img {
                   min-width: 40px;
@@ -571,6 +586,7 @@
               display: flex;
               align-items: center;
               justify-content: right;
+              padding-right: 16px;
               .status-icon {
                 width: 24px;
                 height: 24px;
@@ -591,18 +607,19 @@
                 width: 44px;
                 text-align: right;
               }
+            }
 
-              .status-dot {
-                width: 4px;
-                height: 16px;
-                background-color: transparent;
-                border-radius: 5px;
-                margin: 0 7px 0 5px;
-
-                &.not-honored-or-too-fast {
-                  background-color: var(--warning30);
-                }
-              }
+            .invalid-reason {
+              margin-right: 18px;
+              font-size: 16px;
+              color: var(--error80);
+              font-weight: 600;
+              min-width: 155px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              line-height: 24px;
+              text-align: right;
             }
           }
 

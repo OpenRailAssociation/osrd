@@ -176,7 +176,13 @@ const TrainScheduleItem = ({
         onClick={() => changeSelectedTrainId(train.id)}
         className="w-full clickable-button"
       >
-        <div className="base-info">
+        <div
+          className={cx('base-info', {
+            warning: train.invalidReason || train.notHonoredReason,
+            invalid: train.invalidReason,
+            'not-honored': train.notHonoredReason,
+          })}
+        >
           <div className="title-img">
             <div className="checkbox-title">
               {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
@@ -204,15 +210,9 @@ const TrainScheduleItem = ({
               {train.rollingStock && !train.invalidReason && (
                 <RollingStock2Img rollingStock={train.rollingStock} />
               )}
-              {train.invalidReason && (
-                <div className="flex items-center">
-                  <span>{t(`timetable.invalid.${train.invalidReason}`)}</span>
-                  <div className="status-invalid" />
-                </div>
-              )}
             </div>
           </div>
-          {!train.invalidReason && (
+          {!train.invalidReason ? (
             <div className="train-time">
               <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
               {train.isValid && (
@@ -247,6 +247,10 @@ const TrainScheduleItem = ({
                     train.notHonoredReason === 'trainTooFast',
                 })}
               />
+            </div>
+          ) : (
+            <div className="invalid-reason" title={t(`timetable.invalid.${train.invalidReason}`)}>
+              <span>{t(`timetable.invalid.${train.invalidReason}`)}</span>
             </div>
           )}
         </div>
