@@ -8,13 +8,13 @@ use serde::Serialize;
 use crate::core::mocking::MockingError;
 use crate::error::InternalError;
 
+use super::error::CoreErrorCause;
+use super::error::StandardCoreError;
 #[cfg(test)]
 use super::mocking;
 use super::mq_client;
 use super::CoreError;
-use super::CoreErrorCause;
 use super::RabbitMQClient;
-use super::StandardCoreError;
 
 #[derive(Debug, Clone)]
 pub enum CoreClient {
