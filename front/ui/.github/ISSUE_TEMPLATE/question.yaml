@@ -1,0 +1,10 @@
+name: "🤔 Question"
+description: Ask for help with using, understanding, or anything related to OSRD-UI
+labels: kind:question
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: How can we help?
+    validations:
+      required: true

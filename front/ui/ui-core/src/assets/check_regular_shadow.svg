@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Artboard</title>
+    <defs>
+        <path d="M12.0514013,4.62286244 C12.4888409,4.08878579 13.2764105,4.01044601 13.8104872,4.44788566 C14.3445638,4.88532531 14.4229036,5.67289489 13.9854639,6.20697154 L8.55870613,12.8325819 C8.10976036,13.3807065 7.2954557,13.4464958 6.76433906,12.9775522 L3.89092598,10.4405039 C3.37342144,9.98357894 3.32431195,9.1936478 3.78123687,8.67614326 C4.23816178,8.15863873 5.02809292,8.10952924 5.54559746,8.56645415 L7.44626172,10.244917 L12.0514013,4.62286244 Z" id="path-1"></path>
+        <filter x="-18.5%" y="-11.0%" width="137.0%" height="143.8%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="0.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.50467111 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Artboard" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Check" fill-rule="nonzero">
+            <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+            <use fill="#FFFFFF" xlink:href="#path-1"></use>
+        </g>
+    </g>
+</svg>

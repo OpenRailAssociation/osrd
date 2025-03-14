@@ -1,0 +1,40 @@
+{
+  "name": "@osrd-project/ui-icons",
+  "version": "0.0.1-dev",
+  "license": "LGPL-3.0-or-later",
+  "bugs": "https://github.com/osrd-project/osrd-ui/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/osrd-project/osrd-ui.git",
+    "directory": "ui-icons"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.esm.js",
+  "files": [
+    "/dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.esm.js"
+    }
+  },
+  "scripts": {
+    "svgo": "svgo icons --config svgo.config.cjs",
+    "clean": "rimraf dist",
+    "build": "node ./scripts/build.js && rollup -c --failAfterWarnings",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=18.0"
+  },
+  "devDependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "svgo": "3.3.2"
+  }
+}

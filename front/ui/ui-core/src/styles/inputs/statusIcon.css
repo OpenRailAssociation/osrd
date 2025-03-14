@@ -1,0 +1,26 @@
+.status-icon {
+  &.loading {
+    animation: spin 3s linear infinite;
+    @apply text-info-30;
+  }
+
+  &.info {
+    @apply text-info-30;
+  }
+
+  &.success {
+    @apply text-success-30;
+  }
+
+  &.warning {
+    @apply text-warning-30;
+  }
+
+  &.error {
+    @apply text-error-60;
+  }
+
+  &.small {
+    margin: 0.313rem 0 0.313rem 0.5rem;
+  }
+}

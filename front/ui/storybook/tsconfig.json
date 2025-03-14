@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": [".storybook/**/*", "stories/**/*"],
+  "compilerOptions": {
+    "rootDir": "../",
+    "outDir": "./dist",
+    "declarationDir": "./dist"
+  }
+}

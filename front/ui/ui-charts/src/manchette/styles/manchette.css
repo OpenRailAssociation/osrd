@@ -1,0 +1,98 @@
+.manchette-container {
+  .menu-wrapper {
+    position: absolute;
+    z-index: 12;
+    left: 8px;
+    margin-top: 28px;
+  }
+
+  .manchette-actions {
+    align-items: center;
+    background-color: rgba(250, 249, 245, 0.6);
+    border-top: solid 1px;
+    border-right: solid 1px;
+    border-radius: 0 0 0 10px;
+    @apply border-black-25;
+    display: flex;
+    height: 2.5rem;
+    width: inherit;
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    .zoom-buttons {
+      display: flex;
+      align-items: center;
+      height: 100%;
+
+      button {
+        border-right: solid 1px theme('colors.grey.20');
+        border-top: solid 1px white;
+        height: 100%;
+        padding-inline: 12px;
+
+        &.zoom-reset {
+          padding-bottom: 2px;
+        }
+      }
+
+      button:disabled {
+        @apply text-grey-30;
+      }
+
+      .zoom-reset {
+        @apply text-grey-50;
+        font-weight: 600;
+        font-size: 14px;
+      }
+    }
+
+    .toggle-mode {
+      font-size: 0.875rem;
+      line-height: 14px;
+    }
+  }
+
+  .waypoints-list {
+    width: 349px;
+    border-bottom-left-radius: 0.25rem;
+    padding-inline: 0.5rem 1.625rem;
+
+    @apply bg-white-100;
+
+    .waypoint-wrapper:last-child {
+      .waypoint {
+        &::after {
+          bottom: 16px;
+        }
+      }
+    }
+  }
+}
+
+.manchette-space-time-chart-wrapper {
+  border-radius: 10px;
+  box-shadow:
+    0px 4px 9px rgba(0, 0, 0, 0.06),
+    0px 1px 2px rgba(0, 0, 0, 0.19);
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 1);
+  width: 100%;
+  position: relative;
+
+  .manchette {
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &.no-scroll {
+      overflow-y: clip;
+    }
+  }
+
+  .space-time-chart-container {
+    inset: 0;
+  }
+}

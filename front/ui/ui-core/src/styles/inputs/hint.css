@@ -1,0 +1,11 @@
+.base-hint {
+  height: 1.25rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  @apply text-grey-50;
+
+  &.small {
+    margin-bottom: 0.188rem;
+  }
+}

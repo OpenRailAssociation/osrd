@@ -1,0 +1,37 @@
+name: Publish @osrd-project on Release
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '23'
+
+      - name: Authenticate with Registry
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Publish
+        run: |
+          VERSION=${GITHUB_REF/refs\/tags\//}
+          npm ci
+          npm run lerna -- publish ${VERSION} --yes --no-push --no-git-tag-version
