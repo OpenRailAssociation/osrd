@@ -15,7 +15,7 @@ use super::Model;
 pub trait Create<M: Model>: Sized {
     /// Creates a new row in the database with the values of the changeset and
     /// returns the created model instance
-    async fn create(self, conn: &mut DbConnection) -> std::result::Result<M, M::Error>;
+    async fn create(self, conn: &mut DbConnection) -> Result<M, M::Error>;
 
     /// Just like [Create::create] but discards the error if any and returns `Err(fail())` instead
     async fn create_or_fail<E: From<M::Error>, F: FnOnce() -> E + Send>(

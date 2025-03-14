@@ -1,6 +1,7 @@
 use std::result::Result;
 
-use editoast_models::{model, DbConnection};
+use editoast_models::model;
+use editoast_models::DbConnection;
 
 use crate::error::EditoastError;
 
@@ -14,7 +15,7 @@ pub trait Delete: Model {
     /// Deletes the row corresponding to this model instance
     ///
     /// Returns `true` if the row was deleted, `false` if it didn't exist
-    async fn delete(&self, conn: &mut DbConnection) -> std::result::Result<bool, Self::Error>;
+    async fn delete(&self, conn: &mut DbConnection) -> Result<bool, Self::Error>;
 
     /// Just like [Delete::delete] but returns `Err(fail())` if the row didn't exist
     async fn delete_or_fail<E, F>(&self, conn: &mut DbConnection, fail: F) -> Result<(), E>
