@@ -11,9 +11,8 @@ use strum::EnumIter;
 use strum::EnumString;
 use utoipa::ToSchema;
 
-use crate::model::Role;
+use crate::model;
 
-// TODO: rename to Role
 #[derive(
     Debug,
     Clone,
@@ -29,7 +28,7 @@ use crate::model::Role;
     Display,
     ToSchema,
 )]
-pub enum BuiltinRole {
+pub enum Role {
     /// A user with this role short-circuits all role and permission checks
     ///
     /// Alternatively, especially for development, the `EDITOAST_ENABLE_AUTHORIZATION` environment variable can be set to `false`
@@ -40,13 +39,13 @@ pub enum BuiltinRole {
     OperationalStudies,
 }
 
-impl BuiltinRole {
+impl Role {
     pub fn as_str(&self) -> &str {
         self.as_ref()
     }
 
     // TODO: try to make BuiltinRole an OpenFGA Type with a custom parsing step
-    pub(crate) async fn list_roles<O: Object, R: Relation<User = Role, Object = O>>(
+    pub(crate) async fn list_roles<O: Object, R: Relation<User = model::Role, Object = O>>(
         openfga: &fga::Client,
         relation: R,
         object: &R::Object,
@@ -59,7 +58,7 @@ impl BuiltinRole {
         let roles = roles
             .users
             .into_iter()
-            .filter_map(|Role(role)| match Self::from_str(&role) {
+            .filter_map(|model::Role(role)| match Self::from_str(&role) {
                 Ok(role) => Some(role),
                 Err(_) => {
                     tracing::error!(role, "unknown role found — skipping it");
@@ -71,8 +70,8 @@ impl BuiltinRole {
     }
 }
 
-impl From<BuiltinRole> for Role {
-    fn from(value: BuiltinRole) -> Self {
-        Role::from(value.as_ref().to_string())
+impl From<Role> for model::Role {
+    fn from(value: Role) -> Self {
+        model::Role::from(value.as_ref().to_string())
     }
 }

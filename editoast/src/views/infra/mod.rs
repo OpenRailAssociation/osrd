@@ -16,7 +16,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_osrdyne_client::OsrdyneClient;
 use itertools::Itertools;
@@ -134,7 +134,7 @@ async fn refresh(
     Query(query_params): Query<RefreshQueryParams>,
 ) -> Result<Json<RefreshResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -210,7 +210,7 @@ async fn list(
     Query(pagination_params): Query<PaginationQueryParams>,
 ) -> Result<Json<InfraListResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -306,7 +306,7 @@ async fn get(
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<InfraWithState>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -352,7 +352,7 @@ async fn create(
     Json(infra_form): Json<InfraCreateForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -388,7 +388,7 @@ async fn clone(
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -433,7 +433,7 @@ async fn delete(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -478,7 +478,7 @@ async fn put(
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -514,7 +514,7 @@ async fn get_switch_types(
     Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -555,7 +555,7 @@ async fn get_speed_limit_tags(
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -599,7 +599,7 @@ async fn get_voltages(
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -633,7 +633,7 @@ async fn get_all_voltages(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -669,7 +669,7 @@ async fn lock(
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -696,7 +696,7 @@ async fn unlock(
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -727,7 +727,7 @@ async fn load(
     Path(path): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

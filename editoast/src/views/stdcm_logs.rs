@@ -2,7 +2,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::Extension;
 use axum::Json;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
@@ -75,7 +75,7 @@ async fn list_stdcm_logs(
     Query(pagination_params): Query<PaginationQueryParams>,
 ) -> Result<Json<StdcmLogListResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::Admin].into())
+        .check_roles([Role::Admin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -120,7 +120,7 @@ async fn stdcm_log_by_id_or_trace_id(
     Query(StdcmLogParams { id, trace_id }): Query<StdcmLogParams>,
 ) -> Result<Json<StdcmLog>> {
     let authorized = auth
-        .check_roles([BuiltinRole::Admin].into())
+        .check_roles([Role::Admin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -155,7 +155,7 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
     use editoast_authz::subject::UserInfo;
-    use editoast_authz::BuiltinRole;
+    use editoast_authz::Role;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::OperationalPointIdentifier;
@@ -352,10 +352,7 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([BuiltinRole::Admin])
-            .create();
+        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
         let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app.get("/stdcm_logs").by_user(user);
         let stdcm_logs_response: StdcmLogListResponse =
@@ -374,10 +371,7 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([BuiltinRole::Admin])
-            .create();
+        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
         let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app
             .get(format!("/stdcm_log?trace_id={trace_id}").as_str())
@@ -395,10 +389,7 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([BuiltinRole::Admin])
-            .create();
+        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
         let _ = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app
             .get("/stdcm_log?trace_id=not_existing_trace_id")
@@ -415,10 +406,7 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([BuiltinRole::Admin])
-            .create();
+        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
         let _ = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app.get("/stdcm_log?id=0").by_user(user);
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
@@ -433,10 +421,7 @@ mod tests {
             .enable_telemetry(true)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([BuiltinRole::Admin])
-            .create();
+        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
         let _ = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app.get("/stdcm_log").by_user(user);
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
@@ -453,7 +438,7 @@ mod tests {
             .build();
         let user = app
             .user("bob", "Bob")
-            .with_roles([BuiltinRole::Stdcm]) // only available to admins
+            .with_roles([Role::Stdcm]) // only available to admins
             .create();
         let trace_id = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app
@@ -486,10 +471,7 @@ mod tests {
             .enable_telemetry(false)
             .with_rust_log_directive(rust_log())
             .build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([BuiltinRole::Admin])
-            .create();
+        let user = app.user("bob", "Bob").with_roles([Role::Admin]).create();
         let _ = execute_stdcm_request(&app, Some(user.clone())).await;
         let request = app.get("/stdcm_logs").by_user(user);
         let stdcm_logs_response: StdcmLogListResponse =

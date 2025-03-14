@@ -212,7 +212,7 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_common::geometry::GeoJsonPoint;
 use editoast_derive::EditoastError;
 use editoast_derive::Search;
@@ -350,12 +350,12 @@ async fn search(
     Query(query_params): Query<PaginationQueryParams>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
 ) -> Result<Json<serde_json::Value>> {
-    let roles: HashSet<BuiltinRole> = match object.as_str() {
+    let roles: HashSet<Role> = match object.as_str() {
         "track" | "signal" | "project" | "study" | "scenario" => {
-            HashSet::from([BuiltinRole::OperationalStudies])
+            HashSet::from([Role::OperationalStudies])
         }
         "trainschedule" | "operationalpoint" => {
-            HashSet::from([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm])
+            HashSet::from([Role::OperationalStudies, Role::Stdcm])
         }
         _ => {
             return Err(SearchApiError::ObjectType {

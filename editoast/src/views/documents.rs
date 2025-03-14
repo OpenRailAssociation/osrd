@@ -7,7 +7,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Extension;
 use axum::Json;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use serde::Serialize;
 use thiserror::Error;
@@ -63,7 +63,7 @@ async fn get(
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -108,7 +108,7 @@ async fn post(
     bytes: Bytes,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -151,7 +151,7 @@ async fn delete(
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

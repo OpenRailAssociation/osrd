@@ -6,7 +6,7 @@ use axum::http::header;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
@@ -59,7 +59,7 @@ async fn get_railjson(
     Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -178,7 +178,7 @@ async fn post_railjson(
     Json(railjson): Json<RailJson>,
 ) -> Result<Json<PostRailjsonResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

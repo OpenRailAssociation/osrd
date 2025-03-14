@@ -10,7 +10,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Extension;
 use derivative::Derivative;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::paced_train::PacedTrainBase;
@@ -133,7 +133,7 @@ async fn get_train_schedules(
     Query(pagination_params): Query<PaginationQueryParams>,
 ) -> Result<Json<ListTrainSchedulesResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -171,7 +171,7 @@ async fn post(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<TimetableResult>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -201,7 +201,7 @@ async fn delete(
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -233,7 +233,7 @@ async fn post_train_schedule(
     Json(train_schedules): Json<Vec<TrainScheduleBase>>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -278,7 +278,7 @@ async fn post_paced_train(
     Json(paced_trains): Json<Vec<PacedTrainBase>>,
 ) -> Result<Json<Vec<PacedTrainResult>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -329,7 +329,7 @@ async fn get_paced_trains(
     Query(pagination_params): Query<PaginationQueryParams>,
 ) -> Result<Json<ListPacedTrainsResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -391,7 +391,7 @@ async fn conflicts(
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

@@ -8,7 +8,7 @@ use clap::Args;
 use clap::Subcommand;
 use editoast_authz::subject::GroupInfo;
 use editoast_authz::subject::UserInfo;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_authz::StorageDriver;
 use editoast_models::DbConnectionPoolV2;
 use itertools::Itertools as _;
@@ -54,7 +54,7 @@ pub struct RemoveArgs {
 }
 
 pub fn list_roles() {
-    BuiltinRole::iter().for_each(|role| println!("{role}"));
+    Role::iter().for_each(|role| println!("{role}"));
 }
 
 #[derive(Debug)]
@@ -145,9 +145,9 @@ pub async fn list_subject_roles(
     Ok(())
 }
 
-fn parse_role_case_insensitive(tag: &str) -> anyhow::Result<BuiltinRole> {
+fn parse_role_case_insensitive(tag: &str) -> anyhow::Result<Role> {
     let tag = tag.to_lowercase();
-    for role in BuiltinRole::iter() {
+    for role in Role::iter() {
         if role.as_str().to_lowercase() == tag {
             return Ok(role);
         }

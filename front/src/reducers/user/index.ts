@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { ApiError } from 'common/api/baseGeneratedApis';
-import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+import type { Role } from 'common/api/osrdEditoastApi';
 
 export interface UserState {
   isLogged: boolean;
@@ -9,7 +9,7 @@ export interface UserState {
   username: string;
   // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
   userPreferences: { safeWord: string; showPacedTrains?: boolean };
-  userRoles: BuiltinRole[];
+  userRoles: Role[];
   account: Record<string, string>;
 }
 
@@ -44,7 +44,7 @@ export const userSlice = createSlice({
     logoutSuccess() {
       return userInitialState;
     },
-    setUserRoles(state, action: PayloadAction<BuiltinRole[] | undefined>) {
+    setUserRoles(state, action: PayloadAction<Role[] | undefined>) {
       state.userRoles = action.payload || [];
     },
     updateUserPreferences(

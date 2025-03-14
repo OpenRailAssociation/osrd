@@ -24,7 +24,7 @@ paths:
                   builtin:
                     type: array
                     items:
-                      $ref: '#/components/schemas/BuiltinRole'
+                      $ref: '#/components/schemas/Role'
                     uniqueItems: true
   /authz/roles/{user_id}:
     get:
@@ -51,7 +51,7 @@ paths:
                   builtin:
                     type: array
                     items:
-                      $ref: '#/components/schemas/BuiltinRole'
+                      $ref: '#/components/schemas/Role'
                     uniqueItems: true
     post:
       tags:
@@ -75,7 +75,7 @@ paths:
                 roles:
                   type: array
                   items:
-                    $ref: '#/components/schemas/BuiltinRole'
+                    $ref: '#/components/schemas/Role'
         required: true
       responses:
         '204':
@@ -102,7 +102,7 @@ paths:
                 roles:
                   type: array
                   items:
-                    $ref: '#/components/schemas/BuiltinRole'
+                    $ref: '#/components/schemas/Role'
         required: true
       responses:
         '204':
@@ -4078,12 +4078,6 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
-    BuiltinRole:
-      type: string
-      enum:
-      - Admin
-      - Stdcm
-      - OperationalStudies
     Comfort:
       type: string
       enum:
@@ -9804,6 +9798,12 @@ components:
         begin_position: 0.0
         end_position: 1000.0
         power_restriction_code: C1US
+    Role:
+      type: string
+      enum:
+      - Admin
+      - Stdcm
+      - OperationalStudies
     RollingResistance:
       type: object
       required:

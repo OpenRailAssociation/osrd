@@ -2,7 +2,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::DirectionalTrackRange;
@@ -16,7 +16,11 @@ use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 use itertools::Itertools;
-use json_patch::{AddOperation, Patch, PatchOperation, RemoveOperation, ReplaceOperation};
+use json_patch::AddOperation;
+use json_patch::Patch;
+use json_patch::PatchOperation;
+use json_patch::RemoveOperation;
+use json_patch::ReplaceOperation;
 use serde_json::json;
 use std::collections::HashMap;
 use thiserror::Error;
@@ -81,7 +85,7 @@ async fn edit(
     Json(operations): Json<Vec<Operation>>,
 ) -> Result<Json<Vec<InfraObject>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -136,7 +140,7 @@ pub async fn split_track_section(
     Json(payload): Json<TrackOffset>,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

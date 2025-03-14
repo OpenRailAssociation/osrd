@@ -6,7 +6,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Extension;
 use diesel_async::scoped_futures::ScopedFutureExt;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
@@ -144,7 +144,7 @@ async fn list(
 ) -> Result<Json<MacroNodeListResponse>> {
     // Checking role
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -190,7 +190,7 @@ async fn create(
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -244,7 +244,7 @@ async fn get(
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -278,7 +278,7 @@ async fn update(
     Json(data): Json<MacroNodeForm>,
 ) -> Result<Json<MacroNodeResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -332,7 +332,7 @@ async fn delete(
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -418,7 +418,8 @@ pub mod test {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rand::distr::Alphanumeric;
-    use rand::{rng, Rng};
+    use rand::rng;
+    use rand::Rng;
     use rstest::rstest;
 
     use super::*;

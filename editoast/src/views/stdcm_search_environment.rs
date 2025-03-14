@@ -6,7 +6,7 @@ use axum::response::Response;
 use axum::Extension;
 use chrono::DateTime;
 use chrono::Utc;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_models::DbConnectionPoolV2;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
@@ -127,7 +127,7 @@ async fn create(
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::Admin].into())
+        .check_roles([Role::Admin].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -152,7 +152,7 @@ async fn retrieve_latest(
     Extension(auth): AuthenticationExt,
 ) -> Result<Response> {
     let authorized = auth
-        .check_roles([BuiltinRole::Stdcm].into())
+        .check_roles([Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -182,7 +182,8 @@ pub mod tests {
     use super::*;
     use crate::models::stdcm_search_environment::tests::stdcm_search_env_fixtures;
     use crate::views::test_app::TestAppBuilder;
-    use crate::{Create, Retrieve};
+    use crate::Create;
+    use crate::Retrieve;
 
     #[rstest]
     async fn create_stdcm_search_env() {

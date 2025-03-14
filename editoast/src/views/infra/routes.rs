@@ -3,7 +3,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::RoutePath;
 use serde::Deserialize;
@@ -71,7 +71,7 @@ async fn get_routes_from_waypoint(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<RoutesResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -155,7 +155,7 @@ async fn get_routes_track_ranges(
     Query(params): Query<RouteTrackRangesParams>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -220,7 +220,7 @@ async fn get_routes_nodes(
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

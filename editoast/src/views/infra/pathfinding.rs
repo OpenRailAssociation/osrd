@@ -6,7 +6,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::Extension;
 use derivative::Derivative;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use pathfinding::prelude::yen;
 use serde::Deserialize;
@@ -107,7 +107,7 @@ async fn pathfinding_view(
     Json(input): Json<InfraPathfindingInput>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

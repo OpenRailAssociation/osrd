@@ -14,7 +14,7 @@ use axum::http::StatusCode;
 use axum::Extension;
 use axum::Json;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_common::units;
 use editoast_common::units::quantities::Acceleration;
 use editoast_common::units::quantities::Deceleration;
@@ -167,7 +167,7 @@ async fn post(
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -205,7 +205,7 @@ async fn get_list(
     Query(page_settings): Query<PaginationQueryParams>,
 ) -> Result<Json<TowedRollingStockCountList>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -248,7 +248,7 @@ async fn get_by_id(
     }): Path<TowedRollingStockIdParam>,
 ) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -284,7 +284,7 @@ async fn patch_by_id(
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -356,7 +356,7 @@ async fn patch_by_id_locked(
     Json(TowedRollingStockLockedForm { locked }): Json<TowedRollingStockLockedForm>,
 ) -> Result<StatusCode> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

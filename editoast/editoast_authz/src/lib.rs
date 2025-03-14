@@ -7,7 +7,7 @@ pub mod subject;
 pub use authorizer::Authorizer;
 pub use regulator::Regulator;
 pub use regulator::StorageDriver;
-pub use role::BuiltinRole;
+pub use role::Role;
 
 use futures::TryStreamExt;
 

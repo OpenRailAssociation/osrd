@@ -1,25 +1,33 @@
 use crate::error::Result;
-use crate::infra_cache::{Graph, InfraCache};
+use crate::infra_cache::Graph;
+use crate::infra_cache::InfraCache;
 use crate::models::Infra;
-use crate::views::infra::{InfraApiError, InfraIdParam};
-use crate::views::{AuthenticationExt, AuthorizationError};
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
+use crate::views::AuthenticationExt;
+use crate::views::AuthorizationError;
 use crate::AppState;
 use crate::Retrieve;
-use axum::extract::{Path, State};
-use axum::{Extension, Json};
-use editoast_authz::BuiltinRole;
+use axum::extract::Path;
+use axum::extract::State;
+use axum::Extension;
+use axum::Json;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
-use editoast_schemas::{
-    infra::{Direction, DirectionalTrackRange, Endpoint, Sign, TrackEndpoint},
-    primitives::Identifier,
-};
-use itertools::{Either, Itertools};
-use serde::{Deserialize, Serialize};
-use std::{
-    cmp::Ordering,
-    collections::{HashMap, HashSet},
-    result::Result as StdResult,
-};
+use editoast_schemas::infra::Direction;
+use editoast_schemas::infra::DirectionalTrackRange;
+use editoast_schemas::infra::Endpoint;
+use editoast_schemas::infra::Sign;
+use editoast_schemas::infra::TrackEndpoint;
+use editoast_schemas::primitives::Identifier;
+use itertools::Either;
+use itertools::Itertools;
+use serde::Deserialize;
+use serde::Serialize;
+use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::result::Result as StdResult;
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -138,7 +146,7 @@ async fn delimited_area(
     // TODO in case of a missing exit, return an empty list of track ranges instead of returning all
     // the track ranges explored until the stopping condition ?
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -508,7 +516,8 @@ mod tests {
     use crate::views::infra::delimited_area::DelimitedAreaResponse;
     use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;
-    use editoast_schemas::infra::{Direction, DirectionalTrackRange};
+    use editoast_schemas::infra::Direction;
+    use editoast_schemas::infra::DirectionalTrackRange;
     use rstest::rstest;
     use serde_json::json;
 

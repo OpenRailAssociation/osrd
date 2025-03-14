@@ -10,7 +10,7 @@ use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use dashmap::DashMap;
 use editoast_authz::subject::UserInfo;
 use editoast_authz::Authorizer;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_common::tracing::create_tracing_subscriber;
 use editoast_common::tracing::Stream;
 use editoast_common::tracing::Telemetry;
@@ -368,7 +368,7 @@ impl TestApp {
 pub struct UserBuilder<'a> {
     app: &'a TestApp,
     info: UserInfo,
-    roles: HashSet<BuiltinRole>,
+    roles: HashSet<Role>,
 }
 
 impl<'a> UserBuilder<'a> {
@@ -380,7 +380,7 @@ impl<'a> UserBuilder<'a> {
         }
     }
 
-    pub fn with_roles(mut self, roles: impl IntoIterator<Item = BuiltinRole>) -> Self {
+    pub fn with_roles(mut self, roles: impl IntoIterator<Item = Role>) -> Self {
         self.roles = roles.into_iter().collect();
         self
     }

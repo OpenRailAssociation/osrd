@@ -9,7 +9,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::Extension;
 use derivative::Derivative;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_common::units;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingStock;
@@ -181,7 +181,7 @@ async fn post(
     Json(path_input): Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

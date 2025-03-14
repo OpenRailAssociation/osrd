@@ -1,7 +1,7 @@
 use axum::extract::State;
 use axum::Extension;
 use axum::Json;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
@@ -28,7 +28,7 @@ async fn speed_limit_tags(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<SpeedLimitTagIds>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

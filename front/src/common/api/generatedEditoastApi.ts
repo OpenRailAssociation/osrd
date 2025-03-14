@@ -1210,11 +1210,11 @@ const injectedRtkApi = api
 export { injectedRtkApi as generatedEditoastApi };
 export type GetAuthzRolesMeApiResponse =
   /** status 200 List the roles of the issuer of the request */ {
-    builtin: BuiltinRole[];
+    builtin: Role[];
   };
 export type GetAuthzRolesMeApiArg = void;
 export type GetAuthzRolesByUserIdApiResponse = /** status 200 List the roles of a user */ {
-  builtin: BuiltinRole[];
+  builtin: Role[];
 };
 export type GetAuthzRolesByUserIdApiArg = {
   /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
@@ -1225,7 +1225,7 @@ export type PostAuthzRolesByUserIdApiArg = {
   /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
   userId: number;
   body: {
-    roles: BuiltinRole[];
+    roles: Role[];
   };
 };
 export type DeleteAuthzRolesByUserIdApiResponse = unknown;
@@ -1233,7 +1233,7 @@ export type DeleteAuthzRolesByUserIdApiArg = {
   /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
   userId: number;
   body: {
-    roles: BuiltinRole[];
+    roles: Role[];
   };
 };
 export type PostDocumentsApiResponse =
@@ -2154,7 +2154,7 @@ export type PostWorkSchedulesProjectPathApiArg = {
     work_schedule_group_id: number;
   };
 };
-export type BuiltinRole = 'Admin' | 'Stdcm' | 'OperationalStudies';
+export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
 export type NewDocumentResponse = {
   document_key: number;
 };

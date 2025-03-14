@@ -6,7 +6,7 @@ use axum::response::IntoResponse;
 use axum::Extension;
 use chrono::Utc;
 use derivative::Derivative;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
@@ -152,7 +152,7 @@ async fn create(
     Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -194,7 +194,7 @@ async fn list(
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -246,7 +246,7 @@ async fn get(
     Path(project_id): Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -275,7 +275,7 @@ async fn delete(
     State(db_pool): State<DbConnectionPoolV2>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -347,7 +347,7 @@ async fn patch(
     Json(form): Json<ProjectPatchForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -405,10 +405,7 @@ pub mod tests {
     #[rstest]
     async fn project_post_should_fail_when_authorization_is_enabled() {
         let app = test_app!().enable_authorization(true).build();
-        let user = app
-            .user("bob", "Bob")
-            .with_roles([BuiltinRole::Stdcm])
-            .create();
+        let user = app.user("bob", "Bob").with_roles([Role::Stdcm]).create();
 
         let request = app.post("/projects").by_user(user).json(&json!({
             "name": "test_project_failed",

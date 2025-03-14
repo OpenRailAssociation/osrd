@@ -1,9 +1,9 @@
 import { useSelector } from 'react-redux';
 
-import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+import type { Role } from 'common/api/osrdEditoastApi';
 import { getIsSuperUser, getUserRoles } from 'reducers/user/userSelectors';
 
-const useUserRoleCheck = (allowedRoles: BuiltinRole[]) => {
+const useUserRoleCheck = (allowedRoles: Role[]) => {
   const isSuperUser = useSelector(getIsSuperUser);
   const userRoles = useSelector(getUserRoles);
 

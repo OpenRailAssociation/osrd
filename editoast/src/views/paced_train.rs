@@ -7,7 +7,7 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::paced_train::PacedTrainBase;
@@ -118,7 +118,7 @@ async fn get_by_id(
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -154,7 +154,7 @@ async fn delete(
     }): Json<ListId>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -222,7 +222,7 @@ async fn simulation_summary(
     }): Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -291,7 +291,7 @@ async fn get_path(
     Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
@@ -350,7 +350,7 @@ async fn simulation(
     }): Query<ElectricalProfileSetIdQueryParam>,
 ) -> Result<Json<SimulationResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

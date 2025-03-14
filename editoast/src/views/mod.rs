@@ -47,7 +47,7 @@ use chrono::Duration;
 use dashmap::DashMap;
 use editoast_authz::subject::UserInfo;
 use editoast_authz::Authorizer;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 
 use editoast_osrdyne_client::OsrdyneClient;
 use futures::TryFutureExt;
@@ -272,7 +272,7 @@ impl Authentication {
     /// request is unauthenticated.
     pub async fn check_roles(
         &self,
-        required_roles: HashSet<BuiltinRole>,
+        required_roles: HashSet<Role>,
     ) -> Result<bool, AuthorizerError> {
         match self {
             Authentication::SkipAuthorization => Ok(true),

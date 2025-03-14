@@ -5,7 +5,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
@@ -82,7 +82,7 @@ async fn list_errors(
     }): Query<ErrorListQueryParams>,
 ) -> Result<Json<ErrorListResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

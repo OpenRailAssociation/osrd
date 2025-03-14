@@ -6,13 +6,14 @@ use fga::model::Relation;
 use futures::stream;
 use tracing::Level;
 
+use crate::model;
 use crate::model::*;
 use crate::subject::GroupInfo;
 use crate::subject::GroupName;
 use crate::subject::UserIdentity;
 use crate::subject::UserInfo;
-use crate::BuiltinRole;
 use crate::Error;
+use crate::Role;
 
 /// Entry point for managing authorizations (roles and grants)
 ///
@@ -181,21 +182,16 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn user_roles(&self, user_id: i64) -> Result<HashSet<BuiltinRole>, Error<S::Error>> {
+    pub async fn user_roles(&self, user_id: i64) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for user inexistence, an empty set will be returned in this case
-        let roles =
-            BuiltinRole::list_roles(&self.openfga, User::role(), &fga!(User:user_id)).await?;
+        let roles = Role::list_roles(&self.openfga, User::role(), &fga!(User:user_id)).await?;
         Ok(roles.into_iter().collect())
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn group_roles(
-        &self,
-        group_id: i64,
-    ) -> Result<HashSet<BuiltinRole>, Error<S::Error>> {
+    pub async fn group_roles(&self, group_id: i64) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for group inexistence, an empty set will be returned in this case
-        let roles =
-            BuiltinRole::list_roles(&self.openfga, Group::role(), &fga!(Group:group_id)).await?;
+        let roles = Role::list_roles(&self.openfga, Group::role(), &fga!(Group:group_id)).await?;
         Ok(roles.into_iter().collect())
     }
 
@@ -203,7 +199,7 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn grant_user_roles(
         &self,
         user_id: i64,
-        roles: HashSet<BuiltinRole>,
+        roles: HashSet<Role>,
     ) -> Result<(), Error<S::Error>> {
         if !self.user_exists(user_id).await? {
             return Err(Error::UnknownSubject(user_id));
@@ -212,7 +208,7 @@ impl<S: StorageDriver> Regulator<S> {
         let mut writes = self.openfga.prepare_writes();
         let existing_roles = self.user_roles(user_id).await?;
         for role in roles.difference(&existing_roles) {
-            writes.push(&User::role().tuple(&Role::from(*role), &user));
+            writes.push(&User::role().tuple(&model::Role::from(*role), &user));
         }
         writes.execute().await?;
         Ok(())
@@ -222,7 +218,7 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn revoke_user_roles(
         &self,
         user_id: i64,
-        roles: HashSet<BuiltinRole>,
+        roles: HashSet<Role>,
     ) -> Result<(), Error<S::Error>> {
         if !self.user_exists(user_id).await? {
             return Err(Error::UnknownSubject(user_id));
@@ -231,7 +227,7 @@ impl<S: StorageDriver> Regulator<S> {
         let mut deletes = self.openfga.prepare_deletes();
         let existing_roles = self.user_roles(user_id).await?;
         for role in roles.intersection(&existing_roles) {
-            deletes.push(&User::role().tuple(&Role::from(*role), &user));
+            deletes.push(&User::role().tuple(&model::Role::from(*role), &user));
         }
         deletes.execute().await?;
         Ok(())
@@ -241,7 +237,7 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn grant_group_roles(
         &self,
         group_id: i64,
-        roles: HashSet<BuiltinRole>,
+        roles: HashSet<Role>,
     ) -> Result<(), Error<S::Error>> {
         if !self.group_exists(group_id).await? {
             return Err(Error::UnknownSubject(group_id));
@@ -250,7 +246,7 @@ impl<S: StorageDriver> Regulator<S> {
         let mut writes = self.openfga.prepare_writes();
         let existing_roles = self.group_roles(group_id).await?;
         for role in roles.difference(&existing_roles) {
-            writes.push(&Group::role().tuple(&Role::from(*role), &group));
+            writes.push(&Group::role().tuple(&model::Role::from(*role), &group));
         }
         writes.execute().await?;
         Ok(())
@@ -260,7 +256,7 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn revoke_group_roles(
         &self,
         group_id: i64,
-        roles: HashSet<BuiltinRole>,
+        roles: HashSet<Role>,
     ) -> Result<(), Error<S::Error>> {
         if !self.group_exists(group_id).await? {
             return Err(Error::UnknownSubject(group_id));
@@ -269,7 +265,7 @@ impl<S: StorageDriver> Regulator<S> {
         let mut deletes = self.openfga.prepare_deletes();
         let existing_roles = self.group_roles(group_id).await?;
         for role in roles.intersection(&existing_roles) {
-            deletes.push(&Group::role().tuple(&Role::from(*role), &group));
+            deletes.push(&Group::role().tuple(&model::Role::from(*role), &group));
         }
         deletes.execute().await?;
         Ok(())
@@ -279,7 +275,7 @@ impl<S: StorageDriver> Regulator<S> {
     pub async fn check_roles(
         &self,
         user_id: i64,
-        roles: HashSet<BuiltinRole>,
+        roles: HashSet<Role>,
     ) -> Result<bool, Error<S::Error>> {
         // checks will fail if the user doesn't exist, so no need to query the DB
         if roles.is_empty() {
@@ -289,7 +285,7 @@ impl<S: StorageDriver> Regulator<S> {
         if !roles.is_disjoint(&user_roles) {
             return Ok(true);
         }
-        if user_roles.contains(&BuiltinRole::Admin) {
+        if user_roles.contains(&Role::Admin) {
             tracing::info!(user_id, "role check bypassed for admin");
             return Ok(true);
         }

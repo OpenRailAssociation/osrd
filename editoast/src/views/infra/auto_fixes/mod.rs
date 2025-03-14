@@ -5,7 +5,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use thiserror::Error;
@@ -93,7 +93,7 @@ async fn list_auto_fixes(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<Operation>>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

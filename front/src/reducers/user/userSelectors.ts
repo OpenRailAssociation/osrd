@@ -1,4 +1,4 @@
-import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+import type { Role } from 'common/api/osrdEditoastApi';
 import { REQUIRED_USER_ROLES_FOR } from 'common/authorization/roleBaseAccessControl';
 import type { RootState } from 'reducers';
 import type { UserState } from 'reducers/user';
@@ -19,11 +19,10 @@ export const getIsSuperUser = (state: RootState) => getUserRoles(state).includes
 // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
 export const getShowPacedTrains = makeUserPreferencesSelector('showPacedTrains');
 
-const makeUserHasAllRequiredRolesSelector =
-  (requiredRoles: BuiltinRole[]) => (state: RootState) => {
-    const userRoles = getUserRoles(state);
-    return requiredRoles.every((role) => userRoles.includes(role));
-  };
+const makeUserHasAllRequiredRolesSelector = (requiredRoles: Role[]) => (state: RootState) => {
+  const userRoles = getUserRoles(state);
+  return requiredRoles.every((role) => userRoles.includes(role));
+};
 export const userHasOnlyStdcmRoles = (state: RootState) => {
   const userRoles = getUserRoles(state);
   return (

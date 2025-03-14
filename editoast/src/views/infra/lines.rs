@@ -2,7 +2,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::BoundingBox;
 use thiserror::Error;
@@ -51,7 +51,7 @@ async fn get_line_bbox(
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<BoundingBox>> {
     let authorized = auth
-        .check_roles([BuiltinRole::OperationalStudies, BuiltinRole::Stdcm].into())
+        .check_roles([Role::OperationalStudies, Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {

@@ -1,20 +1,20 @@
-import type { BuiltinRole } from 'common/api/osrdEditoastApi';
+import type { Role } from 'common/api/osrdEditoastApi';
 
 export type RequiredUserRolesFor = {
   VIEWS: {
-    OPERATIONAL_STUDIES: BuiltinRole[];
-    STDCM: BuiltinRole[];
-    INFRA_EDITOR: BuiltinRole[];
-    MAP: BuiltinRole[];
-    ROLLING_STOCK_EDITOR: BuiltinRole[];
+    OPERATIONAL_STUDIES: Role[];
+    STDCM: Role[];
+    INFRA_EDITOR: Role[];
+    MAP: Role[];
+    ROLLING_STOCK_EDITOR: Role[];
   };
   USER_PROFILE: {
-    STDCM: BuiltinRole[];
-    OPERATIONAL_STUDIES: BuiltinRole[];
+    STDCM: Role[];
+    OPERATIONAL_STUDIES: Role[];
   };
   FEATURES: {
-    ACCESS_STDCM_DEBUG: BuiltinRole[];
-    CREATE_NEW_PROJECT_STUDY_SCENARIO: BuiltinRole[];
+    ACCESS_STDCM_DEBUG: Role[];
+    CREATE_NEW_PROJECT_STUDY_SCENARIO: Role[];
   };
 };
 

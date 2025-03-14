@@ -5,7 +5,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use axum::response::Json;
 use axum::Extension;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 
 use super::AppState;
@@ -26,7 +26,7 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    BuiltinRole,
+    Role,
 }
 
 #[derive(serde::Deserialize, utoipa::IntoParams)]
@@ -55,7 +55,7 @@ enum NoSuchUserError {
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
 struct Roles {
-    builtin: HashSet<BuiltinRole>,
+    builtin: HashSet<Role>,
 }
 
 #[utoipa::path(
@@ -75,7 +75,7 @@ async fn list_current_roles(
     // access to full feature set of OSRD.
     if !config.enable_authorization {
         return Ok(Json(Roles {
-            builtin: HashSet::from([BuiltinRole::Admin]),
+            builtin: HashSet::from([Role::Admin]),
         }));
     }
     let authorizer = auth.authorizer()?;
@@ -114,7 +114,7 @@ async fn list_user_roles(
     State(AppState { regulator, .. }): State<AppState>,
 ) -> Result<Json<Roles>> {
     if !auth
-        .check_roles([BuiltinRole::OperationalStudies].into())
+        .check_roles([Role::OperationalStudies].into())
         .await
         .map_err(AuthorizationError::from)?
     {
@@ -133,7 +133,7 @@ async fn list_user_roles(
 
 #[derive(serde::Deserialize, utoipa::ToSchema)]
 struct RoleListBody {
-    roles: Vec<BuiltinRole>,
+    roles: Vec<Role>,
 }
 
 #[utoipa::path(
@@ -152,7 +152,7 @@ async fn grant_roles(
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
     if !auth
-        .check_roles([BuiltinRole::Admin].into())
+        .check_roles([Role::Admin].into())
         .await
         .map_err(AuthorizationError::from)?
     {
@@ -184,7 +184,7 @@ async fn strip_roles(
     Json(RoleListBody { roles }): Json<RoleListBody>,
 ) -> Result<impl axum::response::IntoResponse> {
     if !auth
-        .check_roles([BuiltinRole::Admin].into())
+        .check_roles([Role::Admin].into())
         .await
         .map_err(AuthorizationError::from)?
     {

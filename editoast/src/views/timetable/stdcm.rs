@@ -9,7 +9,7 @@ use axum::Extension;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
-use editoast_authz::BuiltinRole;
+use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::PositiveDuration;
@@ -155,7 +155,7 @@ async fn stdcm(
     Json(stdcm_request): Json<Request>,
 ) -> Result<Json<StdcmResponse>> {
     let authorized = auth
-        .check_roles([BuiltinRole::Stdcm].into())
+        .check_roles([Role::Stdcm].into())
         .await
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
