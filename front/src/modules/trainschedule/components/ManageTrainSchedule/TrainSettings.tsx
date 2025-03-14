@@ -68,12 +68,6 @@ export default function TrainSettings() {
     dispatch(updateInitialSpeed(debouncedInitialSpeed));
   }, [debouncedInitialSpeed]);
 
-  useEffect(() => {
-    setName(nameFromStore);
-    setInitialSpeed(initialSpeedFromStore);
-    setStartTime(formatLocalDateTime(startTimeFromStore));
-  }, [nameFromStore, initialSpeedFromStore, startTimeFromStore]);
-
   const isInvalidTrainScheduleName = isInvalidName(name);
 
   return (
