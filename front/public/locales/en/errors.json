@@ -39,10 +39,7 @@
     "coreclient": {
       "BrokenPipe": "Core connection broken pipe. Should retry.",
       "CannotExtractResponseBody": "Cannot extract Core response body: {{msg}}",
-      "ConnectionClosedBeforeMessageCompleted": "Core connection closed before message completed. Should retry.",
-      "ConnectionResetByPeer": "Core connection reset by peer. Should retry.",
       "CoreResponseFormatError": "Cannot parse Core response: {{msg}}",
-      "GenericCoreError": "Core error {{raw_error}}",
       "UnparsableErrorOutput": "Core returned an error in an unknown format",
       "MqClientError": "Core: MQ client error"
     },

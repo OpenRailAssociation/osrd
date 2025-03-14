@@ -39,10 +39,7 @@
     "coreclient": {
       "BrokenPipe": "Core: connexion interrompue. Nouvelle tentative.",
       "CannotExtractResponseBody": "Core: Impossible d'extraire le corps de la réponse : {{msg}}",
-      "ConnectionClosedBeforeMessageCompleted": "Core: connexion fermée avant la fin du message. Nouvelle tentative.",
-      "ConnectionResetByPeer": "Core: réinitialisation de la connexion. Nouvelle tentative.",
       "CoreResponseFormatError": "Core: impossible d'analyser la réponse '{{msg}}'",
-      "GenericCoreError": "Core: erreur {{raw_error}}",
       "UnparsableErrorOutput": "Core: a renvoyé une erreur dans un format inconnu",
       "MqClientError": "Core: erreur du client MQ"
     },

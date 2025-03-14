@@ -266,24 +266,10 @@ pub enum CoreError {
     #[error("Cannot parse Core response: {msg}")]
     #[editoast_error(status = 500)]
     CoreResponseFormatError { msg: String },
-    /// A fallback error variant for when no meaningful error could be parsed
-    /// from core's output.
-    #[error("Core error {}: {raw_error}", status.unwrap_or(500))]
-    #[editoast_error(status = status.unwrap_or(500))]
-    GenericCoreError {
-        status: Option<u16>,
-        url: String,
-        raw_error: String,
-    },
+
     #[error("Core returned an error in an unknown format")]
     UnparsableErrorOutput,
 
-    #[error("Core connection closed before message completed. Should retry.")]
-    #[editoast_error(status = 500)]
-    ConnectionClosedBeforeMessageCompleted,
-    #[error("Core connection reset by peer. Should retry.")]
-    #[editoast_error(status = 500)]
-    ConnectionResetByPeer,
     #[error("Core connection broken. Should retry.")]
     #[editoast_error(status = 500)]
     BrokenPipe,
@@ -335,37 +321,6 @@ impl std::error::Error for StandardCoreError {}
 impl Display for StandardCoreError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.message)
-    }
-}
-
-impl From<reqwest::Error> for CoreError {
-    fn from(value: reqwest::Error) -> Self {
-        // Since we should retry the request it's useful to have its own kind of error.
-        if value
-            .to_string()
-            .contains("connection closed before message completed")
-        {
-            return Self::ConnectionClosedBeforeMessageCompleted;
-        }
-        if value.to_string().contains("Connection reset by peer") {
-            return Self::ConnectionResetByPeer;
-        }
-        if value
-            .to_string()
-            .contains("error writing a body to connection: Broken pipe")
-        {
-            return Self::BrokenPipe;
-        }
-
-        // Convert the reqwest error
-        Self::GenericCoreError {
-            status: value.status().map(|st| st.as_u16()),
-            url: value
-                .url()
-                .map_or("<NO URL>", |url| url.as_str())
-                .to_owned(),
-            raw_error: value.to_string(),
-        }
     }
 }
 
