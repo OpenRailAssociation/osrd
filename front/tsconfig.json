@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "include": ["."],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", "ui"],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,

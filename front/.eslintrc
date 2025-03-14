@@ -7,7 +7,8 @@
     "src/common/api/osrdGatewayApi.ts",
     "public",
     "build",
-    "playwright-report"
+    "playwright-report",
+    "ui"
   ],
   "extends": [
     "plugin:vitest/recommended",
