@@ -150,8 +150,13 @@ const useLazyLoadTimetableItems = ({
             rollingStocks!
           );
 
+          // TODO Paced trains : remove this filter when paced trains are handled in projection
+          const filteredPackageToFetch = packageToFetch.filter((timetableItemId) =>
+            isTrainSchedule(timetableItemId)
+          );
+
           // launch the projection of the trains if needed
-          setTimetableItemIdsToProject?.((prev) => new Set([...prev, ...packageToFetch]));
+          setTimetableItemIdsToProject?.((prev) => new Set([...prev, ...filteredPackageToFetch]));
 
           // as formattedSummaries is a dictionary, we replace the previous values with the new ones
           setTimetableItemSummariesById((prev) => concatMap(prev, newFormattedSummaries));
