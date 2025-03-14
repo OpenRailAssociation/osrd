@@ -5,11 +5,11 @@ use diesel::dsl;
 use diesel::prelude::*;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use diesel_async::RunQueryDsl;
-use editoast_authz::authorizer::GroupInfo;
-use editoast_authz::authorizer::GroupName;
-use editoast_authz::authorizer::StorageDriver;
-use editoast_authz::authorizer::UserIdentity;
-use editoast_authz::authorizer::UserInfo;
+use editoast_authz::subject::GroupInfo;
+use editoast_authz::subject::GroupName;
+use editoast_authz::subject::UserIdentity;
+use editoast_authz::subject::UserInfo;
+use editoast_authz::StorageDriver;
 use editoast_models::DbConnectionPoolV2;
 
 use editoast_models::tables::*;

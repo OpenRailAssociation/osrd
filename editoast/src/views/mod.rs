@@ -45,9 +45,8 @@ use axum::ServiceExt;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use chrono::Duration;
 use dashmap::DashMap;
-use editoast_authz::authorizer;
 use editoast_authz::authorizer::Authorizer;
-use editoast_authz::authorizer::UserInfo;
+use editoast_authz::subject::UserInfo;
 use editoast_authz::BuiltinRole;
 
 use editoast_osrdyne_client::OsrdyneClient;
@@ -346,7 +345,8 @@ async fn authentication_middleware(
     Ok(next.run(req).await)
 }
 
-type AuthorizerError = authorizer::Error<<PgAuthDriver as authorizer::StorageDriver>::Error>;
+type AuthorizerError =
+    editoast_authz::Error<<PgAuthDriver as editoast_authz::StorageDriver>::Error>;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "authz")]
@@ -512,7 +512,7 @@ pub struct Server {
     router: NormalizePath<Router>,
 }
 
-pub type Regulator = authorizer::Regulator<PgAuthDriver>;
+pub type Regulator = editoast_authz::Regulator<PgAuthDriver>;
 
 /// The state of the whole Editoast service, available to all handlers
 ///

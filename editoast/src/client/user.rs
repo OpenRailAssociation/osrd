@@ -1,7 +1,7 @@
 use clap::Args;
 use clap::Subcommand;
-use editoast_authz::authorizer::StorageDriver;
-use editoast_authz::authorizer::UserInfo;
+use editoast_authz::subject::UserInfo;
+use editoast_authz::StorageDriver;
 use editoast_models::DbConnectionPoolV2;
 use futures::future::try_join_all;
 use futures::TryStreamExt;

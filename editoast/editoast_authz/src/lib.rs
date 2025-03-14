@@ -1,8 +1,14 @@
 pub mod authorizer;
 mod model;
+mod regulator;
 mod role;
-use futures::TryStreamExt;
+pub mod subject;
+
+pub use regulator::Regulator;
+pub use regulator::StorageDriver;
 pub use role::BuiltinRole;
+
+use futures::TryStreamExt;
 
 pub const AUTHORIZATION_MODEL: &str = include_str!("../authorization_model.fga");
 
@@ -33,6 +39,17 @@ pub async fn ensure_latest_authorization_model(
         }
     }
     Ok(())
+}
+
+/// An authorization error that can originate from either the OpenFGA client or the storage driver
+#[derive(Debug, thiserror::Error)]
+pub enum Error<StorageError: std::error::Error> {
+    #[error("unknown subject {0}")]
+    UnknownSubject(i64),
+    #[error(transparent)]
+    OpenFga(#[from] fga::client::RequestFailure),
+    #[error(transparent)]
+    Storage(StorageError),
 }
 
 #[cfg(test)]

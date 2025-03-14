@@ -8,8 +8,8 @@ use std::sync::Arc;
 use axum::Router;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
 use dashmap::DashMap;
-use editoast_authz::authorizer;
-use editoast_authz::authorizer::UserInfo;
+use editoast_authz::authorizer::Authorizer;
+use editoast_authz::subject::UserInfo;
 use editoast_authz::BuiltinRole;
 use editoast_common::tracing::create_tracing_subscriber;
 use editoast_common::tracing::Stream;
@@ -394,10 +394,9 @@ impl<'a> UserBuilder<'a> {
         }
         let regulator = &app.app_state.regulator;
         block_on(async move {
-            let authorizer =
-                authorizer::Authorizer::try_initialize(info.clone(), regulator.clone())
-                    .await
-                    .expect("User should be created successfully");
+            let authorizer = Authorizer::try_initialize(info.clone(), regulator.clone())
+                .await
+                .expect("User should be created successfully");
             regulator
                 .grant_user_roles(authorizer.user_id(), roles)
                 .await

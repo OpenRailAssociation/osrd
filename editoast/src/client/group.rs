@@ -3,8 +3,8 @@ use anyhow::bail;
 use clap::Args;
 use clap::Subcommand;
 
-use editoast_authz::authorizer::GroupInfo;
-use editoast_authz::authorizer::StorageDriver;
+use editoast_authz::subject::GroupInfo;
+use editoast_authz::StorageDriver;
 
 use editoast_models::DbConnectionPoolV2;
 use futures::TryStreamExt;

@@ -154,7 +154,7 @@ mod tests {
 
     use axum::http::StatusCode;
     use chrono::DateTime;
-    use editoast_authz::authorizer::UserInfo;
+    use editoast_authz::subject::UserInfo;
     use editoast_authz::BuiltinRole;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::MarginValue;
