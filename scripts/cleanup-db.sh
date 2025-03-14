@@ -19,6 +19,7 @@ root_path=$(realpath "$(dirname "$0")/..")
 # These variables are necessary to load the infra on the correct instance (the pr-infra or the dev one)
 OSRD_POSTGRES="osrd-postgres"
 OSRD_EDITOAST="osrd-editoast"
+OSRD_OPENFGA="osrd-openfga"
 OSRD_VALKEY="osrd-valkey"
 OSRD_VALKEY_VOLUME="osrd_valkey_data"
 OSRD_POSTGRES_PORT=5432
@@ -26,6 +27,7 @@ OSRD_VALKEY_PORT=6379
 if [ "$PR_TEST" = 1 ]; then
   OSRD_POSTGRES="osrd-postgres-pr-tests"
   OSRD_EDITOAST="osrd-editoast-pr-tests"
+  OSRD_OPENFGA="osrd-openfga-pr-tests"
   OSRD_VALKEY="osrd-valkey-pr-tests"
   OSRD_VALKEY_VOLUME="osrd-pr-tests_valkey_data"
   OSRD_POSTGRES_PORT=5433
@@ -51,6 +53,12 @@ if [ "$DB_EXISTS" = 't' ]; then
   if [ "$(docker ps -q -f name=$OSRD_EDITOAST)" ]; then
     echo "Stopping $OSRD_EDITOAST..."
     docker stop "$OSRD_EDITOAST"
+  fi
+
+  # if openfga is running, shut it down.
+  if [ "$(docker ps -q -f name=$OSRD_OPENFGA)" ]; then
+    echo "Stopping $OSRD_OPENFGA..."
+    docker stop "$OSRD_OPENFGA"
   fi
 
   DB_CONN="$(docker exec "$OSRD_POSTGRES" psql -p "$OSRD_POSTGRES_PORT" -c "SELECT numbackends FROM pg_stat_database WHERE datname = 'osrd';")"

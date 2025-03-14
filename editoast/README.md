@@ -14,6 +14,7 @@ For both tests or run:
 - [openssl](https://www.openssl.org)
 - [libgeos](https://libgeos.org/usage/install/) (may be packaged as `libgeos-dev`)
 - A properly initialized postgresql database and a valkey server: `docker compose up --no-build --detach postgres valkey`
+- [fga CLI](https://github.com/openfga/cli)
 
 ## Steps
 
@@ -43,7 +44,7 @@ To avoid thread conflicts while accessing the database, use serial_test
 ```
 
 ```sh
-cargo test -- --test-threads=4
+cargo test --workspace -- --test-threads=4
 ```
 
 # Debugging

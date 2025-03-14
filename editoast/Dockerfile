@@ -20,7 +20,7 @@ ENV RUSTFLAGS="-C target-feature=-crt-static -C link-arg=-fuse-ld=mold"
 RUN cargo install diesel_cli --no-default-features --features postgres
 COPY --from=static_assets . /assets
 
-# install `fga` binary used in `crate fga` unit tests
+# install `fga` binary used when authorization is enabled (production) and in `crate fga` unit tests
 ADD --checksum=sha256:03f3becc8a0a3279f303291b01ed5468be683f6ad7c519ed570af1df4b4bdcc3 \
     https://github.com/openfga/cli/releases/download/v0.6.4/fga_0.6.4_linux_amd64.tar.gz install/
 RUN cd install \
