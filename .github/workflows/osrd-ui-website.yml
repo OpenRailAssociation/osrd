@@ -1,4 +1,4 @@
-name: Publish @osrd-project website
+name: Publish osrd-ui website
 
 on:
   workflow_dispatch:
@@ -25,14 +25,16 @@ jobs:
 
       - name: Build
         run: |
+          cd front
           npm ci
-          npm run build
+          npm run build --workspaces --if-present
 
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v4
         with:
+          repo: OpenRailAssociation/osrd-ui
           target_branch: gh-pages
-          build_dir: storybook/storybook-static
+          build_dir: front/ui/storybook/storybook-static
           jekyll: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
