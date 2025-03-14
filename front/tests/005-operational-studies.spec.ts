@@ -18,8 +18,8 @@ import {
 } from './assets/constants/project-const';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
+import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import RouteTab from './pages/operational-studies/route-tab';
-import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import TimesAndStopsTab from './pages/operational-studies/times-and-stops-tab';
 import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
@@ -51,7 +51,7 @@ test.describe('Verify simulation configuration in operational studies for train 
   let rollingstockSelector: RollingStockSelector;
   let operationalStudiesPage: OperationalStudiesPage;
   let routeTab: RouteTab;
-  let scenarioTimetableSection: ScenarioTimetableSection;
+  let pacedTrainSection: PacedTrainSection;
   let timesAndStopsTab: TimesAndStopsTab;
 
   let project: Project;
@@ -71,19 +71,14 @@ test.describe('Verify simulation configuration in operational studies for train 
   });
 
   test.beforeEach('Set up the project, study, and scenario', async ({ page }) => {
-    [
-      rollingstockSelector,
-      operationalStudiesPage,
-      routeTab,
-      scenarioTimetableSection,
-      timesAndStopsTab,
-    ] = [
-      new RollingStockSelector(page),
-      new OperationalStudiesPage(page),
-      new RouteTab(page),
-      new ScenarioTimetableSection(page),
-      new TimesAndStopsTab(page),
-    ];
+    [rollingstockSelector, operationalStudiesPage, routeTab, pacedTrainSection, timesAndStopsTab] =
+      [
+        new RollingStockSelector(page),
+        new OperationalStudiesPage(page),
+        new RouteTab(page),
+        new PacedTrainSection(page),
+        new TimesAndStopsTab(page),
+      ];
 
     ({ project, study, scenario } = await createScenario());
 
@@ -160,7 +155,7 @@ test.describe('Verify simulation configuration in operational studies for train 
     // Confirm that the number of paced trains added matches the expected number
     await operationalStudiesPage.checkNumberOfTrains(1); // Only one paced train can be added at a time
 
-    await scenarioTimetableSection.verifyPacedTrainItemDetails(
+    await pacedTrainSection.verifyPacedTrainItemDetails(
       NEW_PACED_TRAIN_SETTINGS,
       0,
       ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0]

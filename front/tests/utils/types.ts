@@ -243,6 +243,14 @@ export interface CellData {
   marginForm?: string;
 }
 
+export type PacedTrainDetails = {
+  name: string;
+  startTime: string;
+  labels: string[];
+  duration: string;
+  step: string;
+};
+
 export type OccurrenceDetails = {
   name: string;
   startTime: string;

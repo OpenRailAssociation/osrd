@@ -1,6 +1,9 @@
 import type { Scenario, Project, Study, Infra, PacedTrainBase } from 'common/api/osrdEditoastApi';
 
-import { IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS } from './assets/constants/operational-studies-const';
+import {
+  IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS,
+  IMPORTED_PACED_TRAIN_DETAILS,
+} from './assets/constants/operational-studies-const';
 import {
   trainScheduleProjectName,
   trainScheduleScenarioName,
@@ -29,6 +32,7 @@ import {
 } from './assets/constants/timetable-items-count';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
+import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import { getTranslations, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getScenario, getStudy } from './utils/api-utils';
@@ -50,6 +54,7 @@ test.describe('Verify train schedule elements and filters', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let scenarioTimetableSection: ScenarioTimetableSection;
+  let pacedTrainSection: PacedTrainSection;
   let operationalStudiesPage: OperationalStudiesPage;
 
   let project: Project;
@@ -71,6 +76,7 @@ test.describe('Verify train schedule elements and filters', () => {
 
   test.beforeEach('Navigate to scenario page before each test', async ({ page }) => {
     scenarioTimetableSection = new ScenarioTimetableSection(page);
+    pacedTrainSection = new PacedTrainSection(page);
     operationalStudiesPage = new OperationalStudiesPage(page);
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
@@ -251,8 +257,8 @@ test.describe('Verify train schedule elements and filters', () => {
 
     // Verify paced train item
     for (let i = 0; i < pacedTrainsData.length; i += 1) {
-      await scenarioTimetableSection.verifyPacedTrainItemDetails(
-        pacedTrainsData[i],
+      await pacedTrainSection.verifyPacedTrainItemDetails(
+        IMPORTED_PACED_TRAIN_DETAILS[i],
         i,
         IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS[i]
       );
@@ -268,13 +274,8 @@ test.describe('Verify train schedule elements and filters', () => {
       totalTrainScheduleCount: TOTAL_TRAINS,
     });
 
-    // Paced train data used in global setup
-    const pacedTrainsData: PacedTrainBase[] = readJsonFile(
-      './tests/assets/paced-train/paced_trains.json'
-    );
-
     // Duplicate the first paced train
-    await scenarioTimetableSection.duplicatePacedTrain();
+    await pacedTrainSection.duplicatePacedTrain();
 
     // Verify that a toast is displayed
     await operationalStudiesPage.checkTimetableItemHasBeenAdded(
@@ -288,8 +289,8 @@ test.describe('Verify train schedule elements and filters', () => {
     });
 
     // Verify that the duplicated paced train has the proper details
-    await scenarioTimetableSection.verifyDuplicatedPacedTrain(
-      pacedTrainsData[0],
+    await pacedTrainSection.verifyDuplicatedPacedTrain(
+      IMPORTED_PACED_TRAIN_DETAILS[0],
       translations.timetable.copy
     );
   });

@@ -44,6 +44,9 @@ export function getLocalizedDateString(dateString: string): string {
 export const createDateInSpecialTimeZone = (dateString: string, timeZone: string) =>
   dayjs.tz(dateString, timeZone);
 
+export const formatDayJSDateToHHMM = (dateString: string, timeZone: string) =>
+  dayjs(dateString).tz(timeZone).format('HH:mm');
+
 /**
  * Convert a date string from YYYY-MM-DD format to "DD mmm YYYY" format.
  * @param dateString - The input date string in YYYY-MM-DD format.

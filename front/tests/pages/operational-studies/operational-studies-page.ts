@@ -1,18 +1,11 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import dayjs from 'dayjs';
-// eslint-disable-next-line import/extensions
-import duration from 'dayjs/plugin/duration.js';
-
-import type { PacedTrainBase } from 'common/api/osrdEditoastApi';
 
 import {
   DEFAULT_PACED_TRAIN_SETTINGS,
   PACED_TRAIN_SETTINGS_TEST,
 } from '../../assets/constants/operational-studies-const';
-import type { ManageTrainScheduleTranslations } from '../../utils/types';
+import type { ManageTrainScheduleTranslations, PacedTrainDetails } from '../../utils/types';
 import CommonPage from '../common-page';
-
-dayjs.extend(duration);
 
 class OperationalStudiesPage extends CommonPage {
   private readonly addScenarioTrainButton: Locator;
@@ -137,9 +130,7 @@ class OperationalStudiesPage extends CommonPage {
 
   // startTime is already in format ISO 8601
   async setFormattedStartTime(startTime: string) {
-    await this.startTimeField.waitFor();
     await this.startTimeField.fill(startTime);
-    await this.startTimeField.dispatchEvent('blur');
     await expect(this.startTimeField).toHaveValue(startTime);
   }
 
@@ -217,24 +208,18 @@ class OperationalStudiesPage extends CommonPage {
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
 
-    const formattedTimeRangeDuration = dayjs
-      .duration(DEFAULT_PACED_TRAIN_SETTINGS.paced.duration)
-      .asMinutes()
-      .toString();
     await expect(this.pacedTrainTimeRangeDurationInput).toBeVisible();
-    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(formattedTimeRangeDuration);
+    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(
+      DEFAULT_PACED_TRAIN_SETTINGS.duration
+    );
 
-    const formattedCadence = dayjs
-      .duration(DEFAULT_PACED_TRAIN_SETTINGS.paced.step)
-      .asMinutes()
-      .toString();
     await expect(this.pacedTrainCadenceInput).toBeVisible();
-    await expect(this.pacedTrainCadenceInput).toHaveValue(formattedCadence);
+    await expect(this.pacedTrainCadenceInput).toHaveValue(DEFAULT_PACED_TRAIN_SETTINGS.step);
   }
 
   async testPacedTrainMode(translations: ManageTrainScheduleTranslations) {
-    await this.setTimeRangeDuration(PACED_TRAIN_SETTINGS_TEST.paced.duration);
-    await this.setCadence(PACED_TRAIN_SETTINGS_TEST.paced.step);
+    await this.setTimeRangeDuration(PACED_TRAIN_SETTINGS_TEST.duration);
+    await this.setCadence(PACED_TRAIN_SETTINGS_TEST.step);
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addTrainSchedule);
     await expect(this.pacedTrainTimeRangeDurationInput).not.toBeVisible();
@@ -243,45 +228,36 @@ class OperationalStudiesPage extends CommonPage {
     await this.definePacedTrainCheckboxLabel.click();
     await expect(this.addTrainButton).toHaveText(translations.addPacedTrain);
 
-    const formattedTimeRangeDuration = dayjs
-      .duration(PACED_TRAIN_SETTINGS_TEST.paced.duration)
-      .asMinutes()
-      .toString();
     await expect(this.pacedTrainTimeRangeDurationInput).toBeVisible();
-    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(formattedTimeRangeDuration);
+    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(
+      PACED_TRAIN_SETTINGS_TEST.duration
+    );
 
-    const formattedCadence = dayjs
-      .duration(PACED_TRAIN_SETTINGS_TEST.paced.step)
-      .asMinutes()
-      .toString();
     await expect(this.pacedTrainCadenceInput).toBeVisible();
-    await expect(this.pacedTrainCadenceInput).toHaveValue(formattedCadence);
+    await expect(this.pacedTrainCadenceInput).toHaveValue(PACED_TRAIN_SETTINGS_TEST.step);
   }
 
   async fillPacedTrainSettings({
-    train_name,
-    start_time,
-    paced,
-  }: Pick<PacedTrainBase, 'train_name' | 'start_time' | 'paced'>) {
+    name,
+    startTime,
+    duration: pacedTrainDuration,
+    step,
+  }: PacedTrainDetails) {
     await this.definePacedTrainCheckboxLabel.click();
-    await this.setTimeRangeDuration(paced.duration);
-    await this.setCadence(paced.step);
-    await this.setTrainScheduleName(train_name);
-    await this.setFormattedStartTime(start_time);
+    await this.setTimeRangeDuration(pacedTrainDuration);
+    await this.setCadence(step);
+    await this.setTrainScheduleName(name);
+    await this.setFormattedStartTime(startTime);
   }
 
-  // Receives a string in ISO 8601 format
   async setTimeRangeDuration(timeRangeDuration: string) {
-    const formattedTimeRangeDuration = dayjs.duration(timeRangeDuration).asMinutes().toString();
-    await this.pacedTrainTimeRangeDurationInput.fill(formattedTimeRangeDuration);
-    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(formattedTimeRangeDuration);
+    await this.pacedTrainTimeRangeDurationInput.fill(timeRangeDuration);
+    await expect(this.pacedTrainTimeRangeDurationInput).toHaveValue(timeRangeDuration);
   }
 
-  // Receives a string in ISO 8601 format
   async setCadence(cadence: string) {
-    const formattedTimeRangeDuration = dayjs.duration(cadence).asMinutes().toString();
-    await this.pacedTrainCadenceInput.fill(formattedTimeRangeDuration);
-    await expect(this.pacedTrainCadenceInput).toHaveValue(formattedTimeRangeDuration);
+    await this.pacedTrainCadenceInput.fill(cadence);
+    await expect(this.pacedTrainCadenceInput).toHaveValue(cadence);
   }
 
   async addTimetableItem() {
