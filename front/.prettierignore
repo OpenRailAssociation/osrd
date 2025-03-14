@@ -6,3 +6,4 @@ src/common/api/osrdGatewayApi.ts
 src/modules/trainschedule/components/ImportTimetableItem/rollingstock_opendata2osrd.json
 src/reducers/osrdconf/infra_schema.json
 src/utils/__tests__/assets/*.json
+/ui
