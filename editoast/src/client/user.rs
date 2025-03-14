@@ -8,7 +8,7 @@ use futures::TryStreamExt;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::models::auth::PgAuthDriver;
+use crate::models::PgAuthDriver;
 
 use super::openfga_config::OpenfgaConfig;
 

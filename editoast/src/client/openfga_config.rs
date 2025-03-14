@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::models::auth::PgAuthDriver;
+use crate::models::PgAuthDriver;
 use crate::views;
 use clap::Args;
 use editoast_models::DbConnectionPoolV2;

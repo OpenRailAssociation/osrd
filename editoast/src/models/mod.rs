@@ -8,8 +8,10 @@ pub mod infra_objects;
 pub mod layers;
 pub mod macro_node;
 pub mod stdcm_log;
-// We allow unused until models is moved to a separate crate
-pub mod auth;
+
+mod auth_driver;
+pub use auth_driver::PgAuthDriver;
+
 pub mod paced_train;
 pub mod pagination;
 #[allow(unused)]

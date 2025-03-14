@@ -1,5 +1,3 @@
-// TODO: rename this module to auth_driver
-
 use std::ops::DerefMut;
 use std::sync::Arc;
 

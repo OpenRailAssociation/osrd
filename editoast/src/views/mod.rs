@@ -95,7 +95,7 @@ use crate::infra_cache::operation;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
 use crate::models;
-use crate::models::auth::PgAuthDriver;
+use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::ValkeyClient;

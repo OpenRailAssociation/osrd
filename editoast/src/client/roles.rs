@@ -15,7 +15,7 @@ use itertools::Itertools as _;
 use strum::IntoEnumIterator;
 use tracing::info;
 
-use crate::models::auth::PgAuthDriver;
+use crate::models::PgAuthDriver;
 
 use super::openfga_config::OpenfgaConfig;
 
