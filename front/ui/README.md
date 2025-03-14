@@ -10,8 +10,7 @@ Development will leverage preconstruct. **Documentation yet to come**.
 
 ## Publishing versions
 
-In a nutshell: we consider our version numbers metadata of the project. We use
-[Semantic Versioning](https://semver.org/).
+osrd-ui releases are published automatically together with OSRD releases. osrd-ui's latest version is always in sync with OSRD.
 
 ### Implications
 
@@ -28,16 +27,6 @@ of managing multiple compatible versions of the project.
 
 In summary : we consider a version number as being an indivisible release of all the subpackages of
 the repository.
-
-### Making a release
-
-1. Create a annotated git tag (let's say `0.0.30`, you would do a `git tag -a 0.0.30`) on the `dev`
-   branch and push (here it would be `git push origin tag 0.0.30`).
-   **Note: we do not tag with a V in front of the version number, on our example
-   the tag would be 0.0.30 and not v0.0.30**.
-2. Create a github release (By convention, we use the same name as the tag with the letter `v` in
-   front of it, `v0.0.30`. You can give fancy names to release if you want to :
-   `0.0.30 : Camembert`, it will only appear in the release page of GitHub).
 
 ### Adding a new package to the monorepo
 

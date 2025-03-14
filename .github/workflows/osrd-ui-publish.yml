@@ -1,4 +1,4 @@
-name: Publish @osrd-project on Release
+name: Publish osrd-ui on Release
 
 on:
   release:
@@ -32,6 +32,9 @@ jobs:
 
       - name: Publish
         run: |
-          VERSION=${GITHUB_REF/refs\/tags\//}
+          TAG=${GITHUB_REF/refs\/tags\//}
+          VERSION=${TAG/v/}
+          cd front
           npm ci
-          npm run lerna -- publish ${VERSION} --yes --no-push --no-git-tag-version
+          cd ui
+          npx lerna publish ${VERSION} --yes --no-push --no-git-tag-version
