@@ -44,5 +44,5 @@ tokio = { version = "1.37.0", features = ["full"] }
 tracing = "0.1.40"
 tracing-opentelemetry = "0.25.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-url = { version = "2.5.0", features = ["serde"] }
+url = { version = "2.5.4", features = ["serde"] }
 uuid = { version = "1.8.0", features = ["serde", "v4"] }
