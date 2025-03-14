@@ -83,6 +83,7 @@ use crate::core::version::CoreVersionRequest;
 use crate::core::CoreClient;
 use crate::core::CoreError;
 use crate::core::{self};
+use crate::error::EditoastError;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::error::{self};

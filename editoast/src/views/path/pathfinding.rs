@@ -139,7 +139,9 @@ impl From<PathfindingCoreResult> for PathfindingResult {
                 ))
             }
             PathfindingCoreResult::InternalError { core_error } => {
-                PathfindingResult::Failure(PathfindingFailure::InternalError { core_error })
+                PathfindingResult::Failure(PathfindingFailure::InternalError {
+                    core_error: core_error.into(),
+                })
             }
         }
     }
@@ -315,9 +317,9 @@ async fn pathfinding_blocks_batch(
                 path.into()
             }
             // TODO: only make HTTP status code errors non-fatal
-            Err(core_error) => {
-                PathfindingResult::Failure(PathfindingFailure::InternalError { core_error })
-            }
+            Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
+                core_error: core_error.into(),
+            }),
         };
         hash_to_path_indexes[hash]
             .iter()

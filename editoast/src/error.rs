@@ -278,6 +278,22 @@ impl EditoastError for editoast_models::model::Error {
     }
 }
 
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:coreclient:CoreResponseFormatError", "CoreResponseFormatError", "CoreError", 500u16, r#"{"msg":"String"}"#)
+}
+
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:coreclient:UnparsableErrorOutput", "UnparsableErrorOutput", "CoreError", 400u16, r#"{}"#)
+}
+
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:coreclient:BrokenPipe", "BrokenPipe", "CoreError", 500u16, r#"{}"#)
+}
+
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:coreclient:MqClientError", "MqClientError", "CoreError", 500u16, r#"{}"#)
+}
+
 // error definition : uses by the macro EditoastError to generate
 // the list of error and share it with the openAPI generator
 #[derive(Debug)]

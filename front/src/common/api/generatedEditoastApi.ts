@@ -3319,6 +3319,14 @@ export type ZoneUpdate = {
   time: number;
   zone: string;
 };
+export type StandardCoreError = {
+  context: {
+    [key: string]: unknown;
+  };
+  message: string;
+  status?: number;
+  type: string;
+};
 export type SimulationResponse =
   | {
       base: ReportTrain;
@@ -3378,7 +3386,7 @@ export type SimulationResponse =
       status: 'pathfinding_failed';
     }
   | {
-      core_error: InternalError;
+      core_error: StandardCoreError;
       status: 'simulation_failed';
     };
 export type Tags = string[];

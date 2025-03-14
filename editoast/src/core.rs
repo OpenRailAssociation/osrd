@@ -21,4 +21,5 @@ editoast_common::schemas! {
     pathfinding::schemas(),
     conflict_detection::schemas(),
     stdcm::schemas(),
+    error::schemas(),
 }

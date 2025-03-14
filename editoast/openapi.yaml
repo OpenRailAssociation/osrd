@@ -11072,7 +11072,7 @@ components:
         - status
         properties:
           core_error:
-            $ref: '#/components/schemas/InternalError'
+            $ref: '#/components/schemas/StandardCoreError'
           status:
             type: string
             enum:
@@ -11338,6 +11338,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RangeAllowance'
+    StandardCoreError:
+      type: object
+      required:
+      - type
+      - context
+      - message
+      properties:
+        context:
+          type: object
+          additionalProperties: {}
+        message:
+          type: string
+        status:
+          type: integer
+          format: int32
+          maximum: 599
+          minimum: 100
+        type:
+          type: string
     StdcmLog:
       type: object
       required:
