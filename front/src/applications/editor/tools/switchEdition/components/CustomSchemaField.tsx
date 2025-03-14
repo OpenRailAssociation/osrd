@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 
-import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
+import { getDefaultRegistry } from '@rjsf/core';
 import type { FieldProps } from '@rjsf/utils';
 
 import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
@@ -13,6 +13,10 @@ import { Loader } from 'common/Loaders';
 import TrackSectionEndpointSelector from './TrackSectionEndpointSelector';
 
 const TrackNodeTypeDiagram = lazy(() => import('./TrackNodeTypeDiagram'));
+
+const {
+  fields: { SchemaField },
+} = getDefaultRegistry();
 
 const CustomSchemaField = (props: FieldProps) => {
   const { name = '' } = props;
