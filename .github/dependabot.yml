@@ -56,9 +56,16 @@ updates:
       rjsf:
         patterns:
           - "@rjsf/*"
+      storybook:
+        patterns:
+          - "storybook"
+          - "@storybook/*"
       turf:
         patterns:
           - "@turf/*"
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
       vitest:
         patterns:
           - "vitest"
