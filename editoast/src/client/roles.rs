@@ -210,11 +210,11 @@ pub async fn remove_roles(
         Subject {
             id,
             info: SubjectInfo::User(_),
-        } => regulator.strip_user_roles(id, roles).await?,
+        } => regulator.revoke_user_roles(id, roles).await?,
         Subject {
             id,
             info: SubjectInfo::Group(_),
-        } => regulator.strip_group_roles(id, roles).await?,
+        } => regulator.revoke_group_roles(id, roles).await?,
     }
     Ok(())
 }

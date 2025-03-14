@@ -194,7 +194,7 @@ async fn strip_roles(
     check_user_exists(user_id, &regulator).await?;
 
     regulator
-        .strip_user_roles(user_id, HashSet::from_iter(roles))
+        .revoke_user_roles(user_id, HashSet::from_iter(roles))
         .await
         .map_err(AuthzError::from)?;
     Ok(axum::http::StatusCode::NO_CONTENT)

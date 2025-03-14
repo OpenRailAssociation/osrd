@@ -218,9 +218,8 @@ impl<S: StorageDriver> Regulator<S> {
         Ok(())
     }
 
-    // TODO: s/strip/revoke/
     #[tracing::instrument(skip_all, fields(user_id, ?roles), ret(level = Level::DEBUG), err)]
-    pub async fn strip_user_roles(
+    pub async fn revoke_user_roles(
         &self,
         user_id: i64,
         roles: HashSet<BuiltinRole>,
@@ -258,7 +257,7 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip_all, fields(group_id, ?roles), ret(level = Level::DEBUG), err)]
-    pub async fn strip_group_roles(
+    pub async fn revoke_group_roles(
         &self,
         group_id: i64,
         roles: HashSet<BuiltinRole>,

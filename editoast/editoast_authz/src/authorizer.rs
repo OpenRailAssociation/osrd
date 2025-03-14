@@ -146,7 +146,7 @@ mod tests {
         // remove role
         {
             regulator()
-                .strip_user_roles(user_id, HashSet::from([BuiltinRole::OperationalStudies]))
+                .revoke_user_roles(user_id, HashSet::from([BuiltinRole::OperationalStudies]))
                 .await
                 .expect("roles should be stripped");
         }
