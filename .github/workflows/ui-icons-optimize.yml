@@ -14,9 +14,9 @@ jobs:
         with:
           python-version: '3.10'
           cache: 'pip'
-      - run: pip install -r .github/helpers/ui-icons/requirements.txt
+      - run: pip install -r front/ui/ui-icons/requirements.txt
       - run: |
-          for icon in ui-icons/icons/*; do
+          for icon in front/ui/ui-icons/icons/*; do
             echo "::group::Optimizing $icon"
             picosvg $icon --output_file $icon
             echo "::endgroup::"
@@ -26,13 +26,13 @@ jobs:
         with:
           node-version: '23'
       - run: |
-          cd ui-icons
+          cd front/ui/ui-icons
           npm install
           npm run svgo
 
       - uses: EndBug/add-and-commit@v9
         with:
-          add: 'ui-icons/icons'
+          add: 'front/ui/ui-icons/icons'
           message: 'Optimize SVGs'
           author_email: actions@github.com
         env:
