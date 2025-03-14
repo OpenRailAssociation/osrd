@@ -164,7 +164,8 @@
     "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
     "e2e-tests": "playwright test",
     "i18n-api-errors": "tsx ./scripts/i18n-api-errors.ts",
-    "i18n-checker": "tsx ./scripts/i18n-checker.ts"
+    "i18n-checker": "tsx ./scripts/i18n-checker.ts",
+    "build-ui": "npm run build --workspace ui/ui-icons --workspace ui/ui-core --workspace ui/ui-charts --workspace ui/ui-warped-map"
   },
   "browserslist": {
     "production": [

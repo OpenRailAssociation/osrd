@@ -23,4 +23,4 @@ ENV VITE_OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 # Start the app
 COPY docker/dev-entrypoint.sh /
 ENTRYPOINT ["/dev-entrypoint.sh"]
-CMD ["sh", "-c", "id && npm install && exec npm run start-container"]
+CMD ["sh", "-c", "id && npm install && (npm run build-ui & npm run start-container)"]
