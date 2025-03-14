@@ -8,7 +8,7 @@ import livereload from 'rollup-plugin-livereload';
 import postcss from 'rollup-plugin-postcss';
 
 const formats = ['esm'];
-const rootDir = path.join(process.cwd(), '..');
+const rootDir = path.join(process.cwd(), '..', '..');
 const name = path.basename(process.cwd());
 
 /** @type {import("rollup").RollupOptions} */
@@ -39,7 +39,7 @@ const generateRollupBaseConfig = () => ({
     if (id.endsWith('.css')) return false;
     const rel = path.relative(rootDir, id);
     const filenames = rel.split(path.sep);
-    return filenames[0] === 'node_modules' || filenames[1] === 'dist';
+    return filenames[0] === 'node_modules' || filenames[2] === 'dist';
   },
 });
 
