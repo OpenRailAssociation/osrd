@@ -113,6 +113,17 @@ if has_flag "sw"; then
     compose_files+=("$OVERRIDE_DIR/docker-compose.single-worker.yml")
 fi
 
+# Check if DOCKER_SOCKET is already set
+if [ -z "$DOCKER_SOCKET" ]; then
+  # Check if /var/run/docker.sock exists
+  if [ -e "/var/run/docker.sock" ]; then
+    export DOCKER_SOCKET="/var/run/docker.sock"
+  # Check if $XDG_RUNTIME_DIR/podman/podman.sock exists
+  elif [ -e "$XDG_RUNTIME_DIR/podman/podman.sock" ]; then
+    export DOCKER_SOCKET="$XDG_RUNTIME_DIR/podman/podman.sock"
+  fi
+fi
+
 # Build compose command.
 cmd="docker compose"
 for file in "${compose_files[@]}"; do
