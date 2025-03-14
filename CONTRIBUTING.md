@@ -64,10 +64,6 @@ Community contributors (this means you) can freely open issues, submit pull requ
 
 [Click here](https://osrd.fr/en/about/governance/) to learn more about the project's governance.
 
-## Translate the application
-
-You can join the OSRD team on [transifex](https://explore.transifex.com/osrd/osrd/) to help translating the application.
-
 ## Contribute code
 
 To comply with the [DCO](http://developercertificate.org/), all commits must
