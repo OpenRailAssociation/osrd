@@ -1,0 +1,69 @@
+{
+  "name": "@osrd-project/ui-warped-map",
+  "description": "A React component to display MapLibre maps warped along a given path.",
+  "version": "0.0.1-dev",
+  "license": "LGPL-3.0-or-later",
+  "private": true,
+  "homepage": "https://github.com/osrd-project/osrd-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/osrd-project/osrd-ui.git",
+    "directory": "packages/ui-warped-map"
+  },
+  "bugs": {
+    "url": "https://github.com/osrd-project/osrd-ui/issues"
+  },
+  "type": "module",
+  "main": "dist/index.esm.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.esm.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "rollup -c --failAfterWarnings",
+    "watch": "rollup -c -w",
+    "prepublishOnly": "npm run clean && npm run build",
+    "lint": "eslint src --max-warnings 0",
+    "lint:fix": "eslint src --fix"
+  },
+  "dependencies": {
+    "@turf/along": "^7.1.0",
+    "@turf/bbox": "^7.1.0",
+    "@turf/bbox-clip": "^7.1.0",
+    "@turf/bearing": "^7.1.0",
+    "@turf/bezier-spline": "^7.1.0",
+    "@turf/boolean-intersects": "^7.1.0",
+    "@turf/boolean-point-in-polygon": "^7.1.0",
+    "@turf/center": "^7.1.0",
+    "@turf/combine": "^7.1.0",
+    "@turf/destination": "^7.1.0",
+    "@turf/distance": "^7.1.0",
+    "@turf/explode": "^7.1.0",
+    "@turf/helpers": "^7.1.0",
+    "@turf/intersect": "^7.1.0",
+    "@turf/length": "^7.1.0",
+    "@turf/line-intersect": "^7.1.0",
+    "@turf/line-slice": "^7.1.0",
+    "@turf/line-slice-along": "^7.1.0",
+    "@turf/line-split": "^7.1.0",
+    "@turf/nearest-point": "^7.1.0",
+    "@turf/nearest-point-on-line": "^7.1.0",
+    "@turf/simplify": "^7.1.0",
+    "@turf/transform-translate": "^7.1.0",
+    "lodash": "^4.17.21",
+    "maplibre-gl": "^4.7.1",
+    "react-map-gl": "^7.1.7"
+  },
+  "peerDependencies": {
+    "react": ">=18.0",
+    "react-dom": ">=18.0"
+  }
+}

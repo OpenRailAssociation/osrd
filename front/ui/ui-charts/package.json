@@ -1,0 +1,59 @@
+{
+  "name": "@osrd-project/ui-charts",
+  "version": "0.0.1-dev",
+  "license": "LGPL-3.0-or-later",
+  "bugs": "https://github.com/osrd-project/osrd-ui/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/osrd-project/osrd-ui.git",
+    "directory": "ui-charts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.esm.js",
+  "style": "dist/theme.css",
+  "files": [
+    "/dist"
+  ],
+  "exports": {
+    "./dist/theme.css": "./dist/theme.css",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.esm.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "rollup -c --failAfterWarnings",
+    "watch": "rollup -c -w",
+    "test": "vitest run",
+    "prepublishOnly": "npm run clean && npm run build",
+    "lint": "eslint src --max-warnings 0",
+    "lint:fix": "eslint src --fix"
+  },
+  "peerDependencies": {
+    "classnames": ">=2.5",
+    "react": ">=18.0",
+    "react-dom": ">=18.0",
+    "tailwindcss": ">=3.4"
+  },
+  "dependencies": {
+    "@osrd-project/ui-core": "0.0.1-dev",
+    "@osrd-project/ui-icons": "0.0.1-dev",
+    "chroma-js": "^3.1.1",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/chroma-js": "^3.1.0",
+    "@types/file-saver": "^2.0.7",
+    "@types/d3-selection": "^3.0.0",
+    "@types/d3-zoom": "^3.0.0",
+    "file-saver": "^2.0.5"
+  }
+}

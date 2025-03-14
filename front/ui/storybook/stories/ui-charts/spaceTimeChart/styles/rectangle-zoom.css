@@ -1,0 +1,18 @@
+.rectangle-zoom-story-wrapper {
+  .bottom-control-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+
+    .control-side {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 7px;
+      
+      h3 {
+        font-weight: 700;
+      }
+    }
+  }
+}

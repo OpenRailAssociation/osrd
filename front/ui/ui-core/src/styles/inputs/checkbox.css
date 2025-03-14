@@ -1,0 +1,300 @@
+.custom-checkbox {
+  display: block;
+  position: relative;
+  padding-left: 1.938rem;
+  margin-bottom: 0.3rem;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  opacity: 1;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-align: left;
+  width: fit-content;
+
+  .label {
+    line-height: 1.5rem;
+    padding-top: 0.188rem;
+    padding-right: 0.35rem;
+    @apply text-grey-80;
+  }
+
+  &:has(> input:disabled),
+  &:has(> input.read-only) {
+    cursor: default;
+  }
+
+  .checkmark {
+    position: absolute;
+    top: 0.313rem;
+    left: 0.313rem;
+    border-radius: 0.188rem;
+    box-sizing: content-box;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 0.125rem solid rgba(235, 235, 234, 1);
+    border: 2.5px solid rgba(211, 209, 207, 1);
+    border: 0.125rem solid rgba(255, 255, 255, 1);
+    border: 0.063rem solid rgba(148, 145, 142, 1);
+    opacity: 1;
+    background-image: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(245, 245, 245, 1) 100%
+    );
+    outline: solid 0.125rem #ebebea;
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: 0.063rem;
+      left: 0.063rem;
+      bottom: 0.063rem;
+      right: 0.063rem;
+      border: 0.031rem #d3d1cf solid;
+      border-radius: 0.063rem;
+    }
+
+    &.focused-by-tab {
+      outline: none;
+
+      &:before {
+        content: '';
+        position: absolute;
+        top: -0.188rem;
+        left: -0.188rem;
+        bottom: -0.188rem;
+        right: -0.188rem;
+        border: 0.063rem solid rgba(37, 106, 250, 1);
+      }
+    }
+  }
+
+  .hint {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    @apply text-grey-50;
+  }
+
+  &:hover {
+    &.small {
+      .checkmark {
+        outline: solid 0.094rem #98c0f5;
+      }
+    }
+    .checkmark {
+      outline: solid 0.125rem #98c0f5;
+    }
+  }
+
+  &.small {
+    font-size: 0.875rem;
+    padding-left: 1.5rem;
+    margin-bottom: 0.125rem;
+
+    .checkmark {
+      width: 0.875rem;
+      height: 0.875rem;
+      top: 0.25rem;
+      left: 0.25rem;
+      outline: solid 0.094rem #ebebea;
+    }
+    .label {
+      line-height: 1.25rem;
+      padding-top: 0.125rem;
+    }
+    input {
+      &:indeterminate ~ .checkmark,
+      &:checked ~ .checkmark {
+        &:after {
+          position: absolute;
+          border: none;
+          opacity: 1;
+          top: -0.094rem;
+          left: 0;
+        }
+      }
+
+      &.read-only {
+        &:checked ~ .checkmark {
+          &:after {
+            content: inline('../assets/check_small_readonly.svg');
+          }
+        }
+        &:indeterminate ~ .checkmark {
+          &:after {
+            content: inline('../assets/indeterminateCheckbox_small_readonly.svg');
+          }
+        }
+      }
+
+      &:disabled {
+        &:checked ~ .checkmark {
+          &:after {
+            content: inline('../assets/check_small_disabled.svg');
+          }
+        }
+        &:indeterminate ~ .checkmark {
+          &:after {
+            content: inline('../assets/indeterminateCheckbox_small_disabled.svg');
+          }
+        }
+      }
+
+      &:indeterminate ~ .checkmark {
+        &:after {
+          content: inline('../assets/indeterminateCheckbox_small_shadow.svg');
+        }
+      }
+
+      &:checked ~ .checkmark {
+        &:after {
+          content: inline('../assets/check_small_shadow.svg');
+        }
+      }
+    }
+  }
+
+  input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+
+    &:checked ~ .checkmark {
+      border-radius: 0.188rem;
+      border: 0.063rem solid #1f1b17;
+      opacity: 1;
+      background-image: linear-gradient(
+        180deg,
+        rgba(148, 145, 142, 1) 0%,
+        rgba(121, 118, 113, 1) 100%
+      );
+      &:after {
+        border: none;
+        content: inline('../assets/check_regular_shadow.svg');
+        opacity: 1;
+        top: 0;
+        left: 0;
+      }
+    }
+
+    &:indeterminate ~ .checkmark {
+      border-radius: 0.188rem;
+      border: 0.063rem solid #1f1b17;
+      opacity: 1;
+      background-image: linear-gradient(
+        180deg,
+        rgba(148, 145, 142, 1) 0%,
+        rgba(121, 118, 113, 1) 100%
+      );
+      &:after {
+        border: none;
+        content: inline('../assets/indeterminateCheckbox_regular_shadow.svg');
+        opacity: 1;
+        top: 0;
+        left: 0;
+      }
+    }
+
+    &.read-only {
+      pointer-events: none;
+      & ~ .checkmark {
+        border: 1px solid rgba(92, 89, 85, 1);
+        outline: none;
+
+        &:after {
+          border: 0;
+        }
+      }
+      & ~ .label {
+        @apply text-grey-50;
+      }
+      &:checked ~ .checkmark {
+        border: 0.063rem solid rgba(92, 89, 85, 1);
+        background-color: rgba(255, 255, 255, 1);
+        outline: none;
+        background-image: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 1) 0%,
+          rgba(245, 245, 245, 1) 100%
+        );
+
+        &:after {
+          border: none;
+          content: inline('../assets/check_readonly.svg');
+        }
+      }
+      &:indeterminate ~ .checkmark {
+        border: 0.063rem solid rgba(92, 89, 85, 1);
+        background-color: rgba(255, 255, 255, 1);
+        outline: none;
+        background-image: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 1) 0%,
+          rgba(245, 245, 245, 1) 100%
+        );
+
+        &:after {
+          border: none;
+          content: inline('../assets/indeterminateCheckbox_readonly.svg');
+        }
+      }
+    }
+
+    &:disabled {
+      & ~ .label {
+        @apply text-grey-30;
+      }
+
+      & ~ .checkmark {
+        outline: none;
+        @apply border-grey-20;
+
+        &:after {
+          border: none;
+        }
+      }
+
+      &:checked ~ .checkmark,
+      &:indeterminate ~ .checkmark {
+        outline: none;
+        @apply border-grey-30;
+        background-image: linear-gradient(
+          180deg,
+          rgba(211, 209, 207, 1) 0%,
+          rgba(211, 209, 207, 1) 100%
+        );
+      }
+
+      &:checked ~ .checkmark {
+        &:after {
+          border: none;
+          content: inline('../assets/check_regular_without_shadow.svg');
+        }
+      }
+
+      &:indeterminate ~ .checkmark {
+        &:after {
+          border: none;
+          content: inline('../assets/indeterminateCheckbox_regular_without_shadow.svg');
+        }
+      }
+    }
+  }
+}
+
+.checkbox-list ul {
+  margin-left: 1.25rem;
+  &.small {
+    margin-left: 1rem;
+  }
+}

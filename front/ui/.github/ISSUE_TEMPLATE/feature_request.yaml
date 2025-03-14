@@ -1,0 +1,41 @@
+name: "🚀 Feature request"
+description: Suggest a new feature
+labels: kind:feature-request
+body:
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Who would benefit from this feature?
+      options: ["End users", "Software developers", "Both"]
+    validations:
+      required: true
+
+  - type: textarea
+    id: abilities
+    attributes:
+      label: What is this feature about?
+      value: |
+        - adding a new API for accessing ...
+        - making ... visible on ... graph
+        - adding a spinning icon when loading ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: value
+    attributes:
+      label: Why is this feature valuable?
+      value: |
+        This feature matters because it:
+        - enables ...
+        - will make ... easier
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else people should know?
+      value: ... has to be taken into account
+    validations:
+      required: false

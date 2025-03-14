@@ -1,0 +1,48 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.spacetimechart-tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.28);
+  color: white;
+  font-size: 0.875rem;
+  line-height: 20px;
+  border-radius: 10px;
+  padding: 6px 12px 7px 12px;
+  margin: 12px;
+  width: 213px;
+
+  .time {
+    text-shadow: 0 0 6px rgba(27, 255, 122, 1);
+    color: rgba(27, 255, 122, 1);
+    text-align: center;
+    margin-bottom: 3px;
+  }
+
+  .position-range, .type-and-duration, .trains {
+    font-weight: 600;
+  }
+
+  .position-range {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    line-height: 16px;
+    margin-bottom: 15px;
+  }
+
+  .type-and-duration {
+    display: flex;
+    justify-content: space-between;
+    background-color: theme('colors.error.60');
+    padding: 1px 6px 3px 6px;
+    margin-bottom: 2px;
+  }
+
+  .trains {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

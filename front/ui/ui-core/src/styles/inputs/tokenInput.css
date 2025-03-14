@@ -1,0 +1,76 @@
+.token-input-wrapper {
+  .input-label {
+    font-size: 1rem;
+    letter-spacing: 0;
+    text-align: left;
+    line-height: 1.5rem;
+    @apply text-grey-80 font-sans font-semibold;
+  }
+
+  .tokens-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 2.5rem;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    box-shadow:
+      0 0.063rem 0.188rem rgba(0, 0, 0, 0.5) inset,
+      0 0 0 0.063rem rgba(148, 145, 142, 1) inset;
+    @apply bg-black-1;
+
+    .token-item-wrapper {
+      display: flex;
+      margin: 0.25rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.188rem;
+      box-shadow:
+        0 0 0 0.125rem rgba(255, 255, 255, 0.5) inset,
+        0 0 0 0.063rem rgba(196, 218, 245, 1) inset;
+      background-color: rgba(227, 237, 252, 1);
+
+      .token-label {
+        margin: 0.125rem 0.375rem 0.125rem 0.5rem;
+        font-size: 0.875rem;
+        letter-spacing: 0;
+        text-align: left;
+        line-height: 1.25rem;
+        @apply text-black-100;
+      }
+
+      .token-close-btn {
+        margin: 0.25rem 0.25rem 0.25rem 0;
+        @apply text-black-25;
+      }
+
+      &:hover {
+        cursor: pointer;
+        box-shadow:
+          0 0 0 0.125rem rgba(255, 255, 255, 0.5) inset,
+          0 0 0 0.063rem rgb(152, 192, 245) inset;
+        background-color: rgba(255, 255, 255, 0.75);
+
+        .token-close-btn {
+          @apply text-black-75;
+        }
+      }
+
+      &:active {
+        box-shadow: 0 0 0 0.063rem rgb(32, 30, 222) inset;
+        @apply text-white-50;
+
+        .token-close-btn {
+          @apply text-black-100;
+        }
+      }
+    }
+
+    .token-input {
+      outline: none;
+      margin: 0.25rem;
+      min-width: 6.25rem;
+      flex: 1;
+      @apply bg-transparent;
+    }
+  }
+}

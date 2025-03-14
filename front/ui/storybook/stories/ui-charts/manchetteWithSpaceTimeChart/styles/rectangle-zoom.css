@@ -1,0 +1,68 @@
+.manchette-space-time-chart-wrapper {
+  .space-time-chart-container {
+    .space-time-chart-zoom-mode {
+      cursor: crosshair;
+      user-select: none;
+    }
+  
+    .toolbar {
+      position: absolute;
+      right: 7px;
+      top: 7px;
+      z-index: 10;
+      border: 1px solid theme('colors.black.10');
+      border-radius: 5px;
+  
+      button {
+        outline: none;
+        background: theme('colors.white.100');
+        color: theme('colors.black.100');
+        padding: 5px 7px 0;
+      }
+  
+      button:not(:last-child) {
+        border-radius: 5px 0 0 5px;
+        border-right: 1px solid theme('colors.black.10');
+      }
+  
+      button:last-child {
+        border-radius: 5px;
+      }
+  
+      .zoom-button {
+        .icon {
+          display: inline-block;
+        }
+  
+        &:hover {
+          background-color: theme('colors.primary.5');
+        }
+      }
+  
+      .zoom-button-clicked {
+        background-color: theme('colors.primary.90');
+  
+        .icon {
+          color: theme('colors.white.100');
+        }
+  
+        &:hover {
+          background-color: theme('colors.primary.90');
+        }
+      }
+    }
+  }
+
+  .bottom-controls {
+    position: absolute;
+    display: flex;
+    width: 100%;
+    bottom: -60px;
+    .space-time-h-slider-container {
+      position: absolute;
+      right: 24px;
+
+      z-index: 10;
+    }
+  }
+}

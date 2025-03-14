@@ -1,0 +1,10 @@
+*                                                        @openrailassociation/OSRD-Front
+
+# --- CI - CODEOWNERS - Dependabot - Template ---
+/.github                                                 @openrailassociation/OSRD-DevOps
+/.github/CODEOWNERS                                      @openrailassociation/OSRD-Admins
+
+# --- NIX ---
+/nix                                                     @openrailassociation/OSRD-DevOps
+/flake.lock                                              @openrailassociation/OSRD-DevOps
+*.nix                                                    @openrailassociation/OSRD-DevOps

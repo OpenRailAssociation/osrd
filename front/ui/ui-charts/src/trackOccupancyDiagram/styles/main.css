@@ -1,0 +1,73 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+#track-occupancy-manchette,
+.canvas-container {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+
+  > canvas {
+    border-radius: inherit;
+  }
+}
+
+#track-occupancy-manchette {
+  padding: 10px 0;
+  @apply bg-ambientB-10;
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255),
+    inset -1px 0 0 0 rgba(0, 0, 0, 0.25);
+}
+
+.canvas-container {
+  @apply bg-white-100;
+  position: relative;
+}
+
+.track {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  &-line {
+    margin-right: 16px;
+    font-family: 'IBM Plex Sans';
+    font-weight: 400;
+    font-size: 12px;
+    @apply text-grey-50;
+  }
+
+  &-name {
+    height: 24px;
+    @apply bg-grey-70;
+    border-radius: 4px;
+    box-shadow:
+      0 0 0 2px rgb(255, 255, 255),
+      0 0 0 2.5px rgb(182, 178, 175);
+    padding: 2px 6px;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    @apply text-white-100;
+  }
+
+  &-rail {
+    align-self: center;
+    height: 9px;
+    width: 17px;
+    margin-left: 2.5px;
+    margin-right: 1px;
+    @apply bg-white-50;
+    border-top: solid 1px rgb(211, 209, 207);
+    border-bottom: solid 1px rgb(211, 209, 207);
+  }
+}
+
+#tracks-layer,
+#occupancy-zones-layer {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+}

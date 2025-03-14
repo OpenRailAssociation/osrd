@@ -1,0 +1,139 @@
+.tolerance-picker {
+  .time-tolerance {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    padding: 1.25rem;
+    border-radius: 0.313rem;
+
+    .divider {
+      border-right: 2px solid #e0e0e0;
+      height: 4rem;
+      margin: 0 2rem;
+      align-self: center;
+    }
+  }
+
+  .time-input {
+    cursor: pointer;
+  }
+
+  .modal-ui-overlay {
+    .tolerance-picker-section {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      .tolerance-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        grid-template-areas:
+          'a1 a1 a1 a1 a1 a1'
+          'a2 a3 a4 a5 a6 a7'
+          'a8 a9 a10 a11 . .'
+          'a12 a13 a14 a15 . .'
+          'a16 a17 a18 a19 . .';
+        grid-auto-rows: 40px;
+        grid-gap: 10px;
+      }
+
+      .tolerance-grid.minus-tolerance {
+        direction: rtl;
+      }
+
+      .tolerance-grid.plus-tolerance {
+        direction: ltr;
+      }
+    }
+  }
+
+  .modal-ui-content {
+    padding: 1.25rem;
+  }
+
+  .time-picker-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .time-separator {
+    align-self: center;
+    font-size: 1.5rem;
+  }
+
+  .minute-container {
+    position: relative;
+    height: 14.188rem;
+    align-content: center;
+  }
+
+  .minute-buttons {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0.625rem;
+    gap: 0.75rem;
+  }
+
+  .minute-button {
+    cursor: pointer;
+    display: block;
+    border-radius: 5px;
+    border: 0.5px solid rgba(121, 118, 113, 1);
+    box-shadow:
+      0px 1.5px 1px rgba(255, 255, 255, 0.46) inset,
+      0px -1.5px 1px rgba(148, 145, 142, 1) inset,
+      0px 1px 2px rgba(0, 0, 0, 0.25);
+    opacity: 1;
+    background-image: linear-gradient(
+      180deg,
+      rgba(226, 226, 222, 1) 0%,
+      rgba(211, 209, 207, 1) 100%
+    );
+    width: 3.313rem;
+    height: 1.5rem;
+    line-height: 0;
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  .hour,
+  .minute {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0px;
+    text-align: center;
+    line-height: 1.25rem;
+    cursor: pointer;
+    width: 3.25rem;
+    height: 2rem;
+    border-radius: 2px;
+    color: #312e2b;
+    background-color: #f5f5f5;
+    direction: ltr;
+  }
+
+  .hour:hover,
+  .minute:hover {
+    background-color: #e0e0e0;
+  }
+
+  .selected {
+    color: #fff !important;
+    background-color: #180f47 !important;
+    box-shadow:
+      0px 15px 12px -7px rgba(0, 0, 0, 0.04),
+      0px 2px 6px -3px rgba(0, 0, 0, 0.26),
+      0px 1px 1px rgba(0, 0, 0, 0.12),
+      0px 4px 10px -4px rgba(60, 138, 255, 0.5),
+      0px 8px 16px -6px rgba(114, 168, 247, 0.29);
+  }
+
+  input {
+    cursor: pointer;
+    caret-color: transparent;
+  }
+}

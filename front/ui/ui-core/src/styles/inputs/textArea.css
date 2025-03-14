@@ -1,0 +1,106 @@
+.text-area-field-wrapper {
+  .field-and-status-icon {
+    align-items: flex-start !important;
+    .status-icon {
+      margin-top: 0.688rem !important;
+    }
+  }
+  .custom-field {
+    max-width: 29.563rem;
+    .text-area-wrapper {
+      padding: 0.1875rem;
+      position: relative;
+
+      &.focused-by-tab {
+        box-shadow: 0 0 0 0.0625rem rgba(37, 106, 250, 1) inset;
+      }
+
+      .text-area {
+        height: 5.875rem;
+        width: 25.375rem;
+        line-height: 1.5rem;
+        text-align: left;
+        vertical-align: top;
+        letter-spacing: 0px;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+        box-shadow:
+          0px 0px 0px 0.0625rem rgba(148, 145, 142, 1) inset,
+          0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset;
+        @apply bg-black-1 text-black-100;
+
+        &:focus {
+          outline: none;
+        }
+
+        &:read-only {
+          box-shadow:
+            0px 0px 0px 0.0625rem rgba(211, 209, 207, 1) inset,
+            0px 0px 0px 0.1875rem rgba(255, 255, 255, 1) inset;
+          @apply text-grey-50 bg-black-2;
+        }
+
+        &:disabled {
+          box-shadow: 0px 0px 0px 0.0625rem rgba(235, 235, 234, 1) inset;
+          @apply text-grey-30 bg-black-2;
+        }
+
+        &.success {
+          box-shadow:
+            0px 0px 0px 0.0625rem rgba(11, 114, 60, 1) inset,
+            0px 0px 0px 0.25rem rgba(230, 247, 238, 1) inset;
+          background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        &.info {
+          border: 0.09375rem solid rgba(112, 193, 229, 1);
+          box-shadow:
+            0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
+            0px 0px 0px 0.0625rem rgba(0, 0, 0, 1) inset;
+          background-color: rgba(255, 255, 255, 1);
+        }
+
+        &.warning {
+          border: 0.09375rem solid rgba(234, 167, 43, 1);
+          box-shadow:
+            0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
+            0px 0px 0px 0.0625rem rgba(0, 0, 0, 1) inset;
+          background-color: rgba(255, 255, 255, 1);
+        }
+
+        &.error {
+          border: 0.09375rem solid rgba(255, 104, 104, 1);
+          box-shadow:
+            0px 0.0625rem 0.1875rem rgba(0, 0, 0, 0.5) inset,
+            0px 0px 0px 0.0625rem rgba(0, 0, 0, 1) inset;
+          background-color: rgba(255, 255, 255, 1);
+        }
+
+        &[type='number'] {
+          appearance: none;
+          -moz-appearance: textfield;
+        }
+      }
+
+      .char-count {
+        position: absolute;
+        top: -1.625rem;
+        right: 0;
+        margin-right: 0.1875rem;
+
+        @apply text-grey-30;
+        font-size: 0.75rem;
+        border-radius: 0.188rem;
+        padding: 0.25rem;
+
+        &.warning {
+          @apply bg-warning-5 text-warning-60;
+        }
+
+        &.error {
+          @apply bg-error-5 text-error-60;
+        }
+      }
+    }
+  }
+}

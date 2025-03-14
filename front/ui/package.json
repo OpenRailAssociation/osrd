@@ -1,0 +1,67 @@
+{
+  "name": "@osrd-project/root",
+  "version": "0.0.1-dev",
+  "homepage": "https://github.com/osrd-project/osrd-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/osrd-project/osrd-ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/osrd-project/osrd-ui/issues"
+  },
+  "workspaces": [
+    "ui-icons",
+    "ui-core",
+    "ui-charts",
+    "ui-warped-map",
+    "storybook"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "clean": "npm run clean --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "storybook": "npm start --workspace=@osrd-project/storybook",
+    "lerna:changed": "lerna changed",
+    "lerna:diff": "lerna diff",
+    "lerna": "lerna",
+    "lerna:publish": "lerna publish from-package --no-private --yes"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-eslint": "^9.0.5",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-typescript": "^12.1.0",
+    "@types/lodash": "^4.17.13",
+    "@types/react": "^18.2.40",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.24.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-only-warn": "^1.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-storybook": "^0.12.0",
+    "lerna": "^8.1.2",
+    "postcss": "^8.4.38",
+    "postcss-assets": "^6.0.0",
+    "postcss-import": "^16.0.0",
+    "postcss-preset-env": "^10.0.5",
+    "prettier": "^3.2.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.13.0",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-postcss": "^4.0.2",
+    "typescript": "^5.4.2",
+    "vitest": "^3.0.2"
+  }
+}
