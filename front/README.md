@@ -5,6 +5,7 @@
 - go inside `/front/` from OSRD main project
 - you'll need [`npm`](https://nodejs.org/en/download/package-manager)
 - exec `npm install` (hope you have a good connection and a good cup of tea)
+- exec `npm run build-ui`
 - exec `npm start` (perhaps you'll need `NODE_OPTIONS="--openssl-legacy-provider"` if your node
   version is too new)
 - enjoy

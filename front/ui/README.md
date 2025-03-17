@@ -52,9 +52,10 @@ package.json will also prevent the package from being published.
 
 # Build Instructions
 
-1. Run `npm install`
-2. Run `npm run build`
-3. Run `npm run storybook`
+1. Run `cd front/ui` starting from the root directory of the project
+2. Run `npm install`
+3. Run `npm run build-ui`
+4. Run `cd storybook` and `npm start`
 
 While developing on a project, you need to run the following commands to see the css modifications:
 
