@@ -293,6 +293,7 @@ const TimetableToolbar = ({
         {selectedTimetableItemIds.length > 0 && (
           <div className="action-buttons">
             <Button
+              data-testid="delete-all-items-button"
               size="small"
               variant="Destructive"
               label={t('timetable.delete')}

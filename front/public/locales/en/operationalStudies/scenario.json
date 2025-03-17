@@ -85,7 +85,7 @@
     "noTrain": "No train",
     "pacedTrain": "Service",
     "pacedTrainAdded": "Service added",
-    "pacedTrainDeleted": "{{name}} service has been deleted",
+    "pacedTrainDeleted": "The service {{name}} has been deleted",
     "punctuality": "Punctuality",
     "rollingStockFilterPlaceholder": "Family, detail, serie",
     "scheduledPointsHonoredFilter": "Scheduled points honored",

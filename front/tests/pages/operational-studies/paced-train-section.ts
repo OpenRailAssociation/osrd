@@ -1,37 +1,73 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import { DUPLICATED_PACED_TRAIN_DELTA } from '../../assets/constants/timetable-items-count';
-import type { OccurrenceDetails, PacedTrainDetails } from '../../utils/types';
+import type {
+  OccurrenceDetails,
+  PacedTrainDetails,
+  TimetableFilterTranslations,
+} from '../../utils/types';
 import CommonPage from '../common-page';
 
 class PacedTrainSection extends CommonPage {
-  private readonly timetableTrains: Locator;
+  private readonly pacedTrainItem: Locator;
+
+  private readonly testedPacedTrain: Locator;
+
+  private readonly testedPacedTrainToggleIcon: Locator;
+
+  private readonly testedPacedTrainShowOccurrencesButton: Locator;
+
+  private readonly testedPacedTrainName: Locator;
+
+  private readonly testedPacedTrainRollingStock: Locator;
+
+  private readonly testedPacedTrainCadence: Locator;
+
+  private readonly testedPacedTrainOccurrences: Locator;
+
+  private readonly testedOccurrenceName: Locator;
+
+  private readonly testedOccurrenceStartTime: Locator;
+
+  private readonly testedOccurrenceArrivalTime: Locator;
 
   readonly timesStopsDataSheet: Locator;
 
   private readonly occurrencesCount: Locator;
 
-  private readonly hideOccurrencesButton: Locator;
-
-  private readonly occurrenceItem: Locator;
-
   constructor(page: Page) {
     super(page);
-    this.timetableTrains = page.getByTestId('scenario-timetable-train');
+    this.pacedTrainItem = page.getByTestId('paced-train');
+    this.testedPacedTrain = page.locator('.paced-train:not(.closed)');
+    this.testedPacedTrainToggleIcon = this.testedPacedTrain.locator('.toggle-icon');
+    this.testedPacedTrainShowOccurrencesButton =
+      this.testedPacedTrain.getByTestId('show-occurrences-button');
+    this.testedPacedTrainName = this.testedPacedTrain.getByTestId('paced-train-name');
+    this.testedPacedTrainRollingStock = this.testedPacedTrain.locator('> .rolling-stock');
+    this.testedPacedTrainCadence = this.testedPacedTrain.getByTestId('paced-train-cadence');
+    this.testedPacedTrainOccurrences = this.testedPacedTrain.getByTestId('occurrence-item');
+    this.testedOccurrenceName = this.testedPacedTrain.locator('.occurrence-item-name');
+    this.testedOccurrenceStartTime = this.testedPacedTrain.locator('.departure-time');
+    this.testedOccurrenceArrivalTime = this.testedPacedTrain.locator('.arrival-time');
     this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
     this.occurrencesCount = page.getByTestId('occurrences-count');
-    this.hideOccurrencesButton = page.getByTestId('hide-occurrences-button');
-    this.occurrenceItem = page.getByTestId('occurrence-item');
+  }
+
+  // Only the zone with the role button opens the occurrence list
+  async getPacedTrainToClickableZone(index: number) {
+    return this.pacedTrainItem.nth(index).getByRole('button');
   }
 
   async verifyPacedTrainItemDetails(
     pacedTrainData: PacedTrainDetails,
     index: number,
-    occurrenceData: OccurrenceDetails[]
+    occurrenceData: OccurrenceDetails[],
+    duplicate?: {
+      copyTranslation?: string;
+    }
   ) {
     const { name, labels, duration: pacedTrainDuration, step } = pacedTrainData;
 
-    const pacedTrainItem = this.timetableTrains.nth(index);
+    const pacedTrainItemClickableZone = await this.getPacedTrainToClickableZone(index);
 
     // In paced_trains.json, invalid paced trains are marked with an `Invalid` label
     // An invalid paced train won't have any details
@@ -40,37 +76,41 @@ class PacedTrainSection extends CommonPage {
     const totalOccurrences = Math.ceil(+pacedTrainDuration / +step);
     await this.verifyOccurrencesCount(totalOccurrences, index);
 
-    await expect(this.hideOccurrencesButton.nth(index)).not.toBeVisible();
-    await expect(pacedTrainItem.locator('.toggle-icon')).toBeVisible();
-    await expect(this.occurrenceItem.first()).not.toBeVisible();
+    // Open the occurrences list to be able to have a unique
+    // paced train locator for the tested one
+    await expect(pacedTrainItemClickableZone).toBeVisible();
+    await pacedTrainItemClickableZone.click();
 
-    const pacedTrainNameLocator = pacedTrainItem.getByTestId('paced-train-name');
-    await expect(pacedTrainNameLocator).toBeVisible();
-    await expect(pacedTrainNameLocator).toHaveText(name);
+    await expect(this.testedPacedTrainShowOccurrencesButton).not.toBeVisible();
+    await expect(this.testedPacedTrainOccurrences.first()).toBeVisible();
+    await expect(this.testedPacedTrainOccurrences).toHaveCount(totalOccurrences);
 
-    const pacedTrainCadenceLocator = pacedTrainItem.getByTestId('paced-train-cadence');
-    await expect(pacedTrainCadenceLocator).toBeVisible();
-    await expect(pacedTrainCadenceLocator).toHaveText(`${String.fromCodePoint(0x2014)} ${step}min`); // UI format: "- Xmin"
+    let expectedName = name;
+    if (duplicate?.copyTranslation) {
+      // duplicated train name should have format : "name (copy)"
+      expectedName = `${name} (${duplicate.copyTranslation})`;
+    }
+    await expect(this.testedPacedTrainName).toBeVisible();
+    await expect(this.testedPacedTrainName).toHaveText(expectedName);
+
+    await expect(this.testedPacedTrainCadence).toBeVisible();
+    await expect(this.testedPacedTrainCadence).toHaveText(
+      `${String.fromCodePoint(0x2014)} ${step}min`
+    ); // UI format: "- Xmin"
 
     // Verify that the pace train item does not display the rolling stock
-    await expect(pacedTrainItem.locator('> .rolling-stock')).not.toBeVisible();
+    await expect(this.testedPacedTrainRollingStock).not.toBeVisible();
 
-    // Verify all action buttons are displayed when hovering the paced train item
-    await pacedTrainItem.hover();
-    await expect(pacedTrainItem.getByTestId('project-item')).toBeVisible();
-    await expect(pacedTrainItem.getByTestId('duplicate-item')).toBeVisible();
-    await expect(pacedTrainItem.getByTestId('edit-item')).toBeVisible();
-    await expect(pacedTrainItem.getByTestId('delete-item')).toBeVisible();
-
-    await pacedTrainItem.locator('.toggle-icon').click();
-    await expect(pacedTrainItem.getByTestId('occurrence-item')).toHaveCount(totalOccurrences);
+    await this.verifyItemsVisibility(index, 'paced-train');
 
     for (let i = 0; i < totalOccurrences; i += 1) {
-      await this.verifyOccurrenceDetails(occurrenceData[i], i, index);
+      await this.verifyOccurrenceDetails(occurrenceData[i], i, {
+        copyTranslation: duplicate?.copyTranslation,
+      });
     }
 
     // Close back the occurrences list
-    await pacedTrainItem.locator('.toggle-icon').click();
+    await this.testedPacedTrainToggleIcon.click();
   }
 
   async verifyOccurrencesCount(expectedOccurrencesCount: number, index: number) {
@@ -80,102 +120,122 @@ class PacedTrainSection extends CommonPage {
     expect(+occurrencesCount!).toEqual(expectedOccurrencesCount);
   }
 
-  getOccurrenceItem(occurrenceIndex: number): Locator {
-    return this.page.getByTestId('occurrence-item').nth(occurrenceIndex);
-  }
-
-  async verifyOccurrenceName(occurrenceIndex: number, expectedName: string) {
-    const occurrenceNameLocator =
-      this.getOccurrenceItem(occurrenceIndex).locator('.occurrence-item-name');
+  async verifyOccurrenceName(
+    occurrenceIndex: number,
+    expectedName: string,
+    duplicate?: { copyTranslation?: string }
+  ) {
+    const occurrenceNameLocator = this.testedOccurrenceName.nth(occurrenceIndex);
+    if (duplicate?.copyTranslation) {
+      // duplicated train name should have format : "name (copy) and start with suffix 1 then 3, 5..."
+      expectedName = `${expectedName} (${duplicate.copyTranslation}) ${occurrenceIndex * 2 + 1}`;
+    }
     await expect(occurrenceNameLocator).toHaveText(expectedName);
   }
 
   async verifyOccurrenceStartTime(occurrenceIndex: number, expectedStartTime: string) {
-    const occurrenceStartTimeLocator =
-      this.getOccurrenceItem(occurrenceIndex).locator('.departure-time');
+    const occurrenceStartTimeLocator = this.testedOccurrenceStartTime.nth(occurrenceIndex);
     await expect(occurrenceStartTimeLocator).toHaveText(expectedStartTime);
   }
 
   async verifyOccurrenceArrivalTime(occurrenceIndex: number, expectedArrivalTime: string) {
-    const occurrenceArrivalTimeLocator =
-      this.getOccurrenceItem(occurrenceIndex).locator('.arrival-time');
+    const occurrenceArrivalTimeLocator = this.testedOccurrenceArrivalTime.nth(occurrenceIndex);
     await expect(occurrenceArrivalTimeLocator).toHaveText(expectedArrivalTime);
   }
 
-  async getActionButtonsLocators(occurrenceIndex: number): Promise<Record<string, Locator>> {
-    const occurrenceItem = this.getOccurrenceItem(occurrenceIndex);
-    await occurrenceItem.hover();
+  async getActionButtonsLocators(
+    itemIndex: number,
+    itemType: 'paced-train' | 'occurrence'
+  ): Promise<Record<string, Locator>> {
+    const timetableItem =
+      itemType === 'paced-train'
+        ? this.testedPacedTrain
+        : this.testedPacedTrainOccurrences.nth(itemIndex);
+
+    if (itemType === 'paced-train') {
+      await this.pacedTrainItem.nth(itemIndex).hover();
+    } else {
+      await timetableItem.hover();
+    }
     return {
-      projectItem: occurrenceItem.getByTestId('project-item'),
-      duplicateItem: occurrenceItem.getByTestId('duplicate-item'),
-      editItem: occurrenceItem.getByTestId('edit-item'),
-      deleteItem: occurrenceItem.getByTestId('delete-item'),
+      projectItem: timetableItem.getByTestId('project-item'),
+      duplicateItem: timetableItem.getByTestId('duplicate-item'),
+      editItem: timetableItem.getByTestId('edit-item'),
+      deleteItem: timetableItem.getByTestId('delete-item'),
     };
   }
 
-  async verifyItemsNotVisible(occurrenceIndex: number): Promise<void> {
-    const actionButtonsLocators = this.getActionButtonsLocators(occurrenceIndex);
+  async verifyItemsVisibility(
+    itemIndex: number,
+    itemType: 'paced-train' | 'occurrence'
+  ): Promise<void> {
+    const actionButtonsLocators = this.getActionButtonsLocators(itemIndex, itemType);
+
+    // Actions buttons should be visible when hovering a paced train but not for an occurrence
     await Promise.all(
-      Object.values(actionButtonsLocators).map((locator) => expect(locator).not.toBeVisible())
+      Object.values(actionButtonsLocators).map((locator) =>
+        itemType === 'paced-train'
+          ? expect(locator).toBeVisible()
+          : expect(locator).not.toBeVisible()
+      )
     );
   }
 
   async verifyOccurrenceDetails(
     occurrenceData: OccurrenceDetails,
     occurrenceIndex: number,
-    pacedTrainIndex: number
+    duplicate?: {
+      copyTranslation?: string;
+    }
   ) {
-    const pacedTrainItem = this.timetableTrains.nth(pacedTrainIndex);
-    const occurrenceItem = pacedTrainItem.getByTestId('occurrence-item').nth(occurrenceIndex);
+    const occurrenceItem = this.testedPacedTrainOccurrences.nth(occurrenceIndex);
 
-    await this.verifyOccurrenceName(occurrenceIndex, occurrenceData.name);
+    await this.verifyOccurrenceName(occurrenceIndex, occurrenceData.name, {
+      copyTranslation: duplicate?.copyTranslation,
+    });
 
     await this.verifyOccurrenceStartTime(occurrenceIndex, occurrenceData.startTime);
     await this.verifyOccurrenceArrivalTime(occurrenceIndex, occurrenceData.arrivalTime);
 
     await expect(occurrenceItem.locator('.rolling-stock img')).toBeVisible();
 
-    await this.verifyItemsNotVisible(occurrenceIndex);
+    await this.verifyItemsVisibility(occurrenceIndex, 'occurrence');
   }
 
   async duplicatePacedTrain() {
-    const pacedTrainItem = this.timetableTrains.first();
-    await pacedTrainItem.hover();
-    await pacedTrainItem.getByTestId('duplicate-item').click();
+    const pacedTrainItem = this.pacedTrainItem.first();
+    await pacedTrainItem.click();
+    const actionButtons = await this.getActionButtonsLocators(0, 'paced-train');
+    await actionButtons.duplicateItem.click();
 
-    await this.closeToastNotification();
+    await pacedTrainItem.click();
   }
 
-  // Duplicate the first paced train of the list
-  async verifyDuplicatedPacedTrain(
-    originPacedTrainData: Pick<PacedTrainDetails, 'name' | 'startTime'>,
-    copyTranslation: string
+  async deletePacedTrain(pacedTrainData: PacedTrainDetails, index: number) {
+    const { name } = pacedTrainData;
+
+    const timetableItemToDelete = this.pacedTrainItem.nth(index);
+    await timetableItemToDelete.click();
+
+    const duplicatedPacedTrainActionButtons = await this.getActionButtonsLocators(
+      index,
+      'paced-train'
+    );
+    await duplicatedPacedTrainActionButtons.deleteItem.click();
+
+    await expect(timetableItemToDelete).not.toHaveText(name); // the item at this index should not be the same
+  }
+
+  async verifyPacedTrainHasBeenDeleted(
+    deletedPacedTrainName: string,
+    translations: TimetableFilterTranslations
   ) {
-    const {
-      name,
-      startTime,
-      // paced: { duration: pacedTrainDuration, step },
-    } = originPacedTrainData;
-
-    const duplicatedPacedTrainItem = this.timetableTrains.nth(1);
-
-    const pacedTrainNameLocator = duplicatedPacedTrainItem.getByTestId('paced-train-name');
-    await expect(pacedTrainNameLocator).toBeVisible();
-    // duplicated train name should have format : "name (copy)"
-    await expect(pacedTrainNameLocator).toHaveText(`${name} (${copyTranslation})`);
-
-    await duplicatedPacedTrainItem.locator('.toggle-icon').click();
-    const firstOccurrenceItem = duplicatedPacedTrainItem.getByTestId('occurrence-item').first();
-
-    const [hours, minutes] = startTime.split(':');
-    // duplicated start time should increase by 5 minutes
-    const duplicatedStartTime = `${hours}:${+minutes + DUPLICATED_PACED_TRAIN_DELTA}`;
-    await expect(firstOccurrenceItem.locator('.departure-time')).toHaveText(duplicatedStartTime);
-
-    // const formattedDuration = dayjs.duration(pacedTrainDuration).asMinutes();
-    // const formattedStep = dayjs.duration(step).asMinutes();
-    // const totalOccurrences = Math.ceil(formattedDuration / formattedStep);
-    // await this.verifyOccurrencesCount(totalOccurrences, index);
+    const duplicatedPacedTrainName = `${deletedPacedTrainName} (${translations.timetable.copy})`;
+    // translation has format 'La mission {{name}} a bien été supprimée';
+    const [firstPart, secondPart] = translations.timetable.pacedTrainDeleted.split('{{name}}');
+    const expectedDeleteToast = `${firstPart}${duplicatedPacedTrainName}${secondPart}`;
+    await this.checkLastToastTitle(expectedDeleteToast);
+    await this.closeToastNotification();
   }
 }
 

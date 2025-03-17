@@ -44,7 +44,13 @@ class ScenarioTimetableSection extends CommonPage {
 
   private readonly simulationMap: Locator;
 
+  private readonly timetableAllItemCheckbox: Locator;
+
   private readonly timetableTotalItemLabel: Locator;
+
+  private readonly deleteAllTimetableItemsButton: Locator;
+
+  private readonly confirmationModalDeleteButton: Locator;
 
   private readonly timetableFilterButton: Locator;
 
@@ -98,7 +104,10 @@ class ScenarioTimetableSection extends CommonPage {
     this.spaceTimeChart = page.locator('.space-time-chart-container');
     this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
     this.simulationMap = page.locator('.simulation-map');
+    this.timetableAllItemCheckbox = page.locator('.train-count .checkmark');
     this.timetableTotalItemLabel = page.locator('.toolbar-header .label');
+    this.deleteAllTimetableItemsButton = page.getByTestId('delete-all-items-button');
+    this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
     this.timetableFilterButtonClose = page.getByTestId('timetable-filter-button-close');
     this.timetableLabelFilterInputLabel = page.locator('label[for="timetable-label-filter"]');
@@ -396,6 +405,53 @@ class ScenarioTimetableSection extends CommonPage {
     await expect(this.timetableCollapseButton).toBeVisible();
     await this.timetableCollapseButton.click();
     await expect(this.scenarioSideMenu).toBeVisible();
+  }
+
+  async selectAllTimetableItems(
+    translations: TimetableFilterTranslations & CommonTranslations,
+    itemCounts: {
+      totalPacedTrainCount: number;
+      totalTrainScheduleCount: number;
+    }
+  ) {
+    await this.timetableAllItemCheckbox.click();
+
+    const { totalPacedTrainCount, totalTrainScheduleCount } = itemCounts;
+    await expect(this.timetableTotalItemLabel).toBeVisible();
+
+    // Rebuild the expected text for total items label which has the syntax : "X/X services and Y/Y trains selected"
+    const trainTypeTranslation = translations.timetable.trainType; // format "Services, trains"
+    const [pacedTrains, trains] = trainTypeTranslation.split(', '); // expect to return ["Services", "trains"]
+    const pacedTrainAndTrainCountTrad = translations.pacedTrainAndTrainCount; // finished by "selected"
+    const selectedTrad = pacedTrainAndTrainCountTrad.split(' ').at(-1); // expect to return "selected"
+    const expectedComputedLabel = `${totalPacedTrainCount}/${totalPacedTrainCount} ${pacedTrains.toLowerCase()} ${translations.common.and} ${totalTrainScheduleCount}/${totalTrainScheduleCount} ${trains} ${selectedTrad}`;
+    await expect(this.timetableTotalItemLabel).toHaveText(expectedComputedLabel);
+  }
+
+  async deleteAllTimetableItems() {
+    await expect(this.deleteAllTimetableItemsButton).toBeVisible();
+    await this.deleteAllTimetableItemsButton.click();
+
+    await expect(this.confirmationModalDeleteButton).toBeVisible();
+    await this.confirmationModalDeleteButton.click();
+  }
+
+  async verifyAllTimetableItemsHaveBeenDeleted(
+    itemsCount: number,
+    translations: TimetableFilterTranslations
+  ) {
+    // translation has format "The {{count}} items have been deleted.";
+    const [firstPart, secondPart] =
+      translations.timetable.itemsSelectionDeletedCount_other.split('{{count}}');
+    const expectedDeleteToast = `${firstPart}${itemsCount}${secondPart}`;
+    await this.checkLastToastTitle(expectedDeleteToast);
+
+    await this.closeToastNotification();
+  }
+
+  async verifyTimetableIsEmpty(translation: string) {
+    await expect(this.timetableTrains).not.toBeVisible();
+    await expect(this.timetableTotalItemLabel).toHaveText(translation);
   }
 }
 

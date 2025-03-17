@@ -1,6 +1,8 @@
 import type { Scenario, Project, Study, Infra, PacedTrainBase } from 'common/api/osrdEditoastApi';
 
 import {
+  DUPLICATED_PACED_TRAIN_DETAILS,
+  DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
   IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS,
   IMPORTED_PACED_TRAIN_DETAILS,
 } from './assets/constants/operational-studies-const';
@@ -10,6 +12,7 @@ import {
   trainScheduleStudyName,
 } from './assets/constants/project-const';
 import {
+  DUPLICATED_PACED_TRAIN_INDEX,
   HONORED_ITEMS,
   HONORED_TRAINS,
   INVALID_AND_NOT_HONORED_TRAINS,
@@ -24,6 +27,7 @@ import {
   ROLLING_STOCK_FILTERED_ITEMS,
   TOTAL_ITEMS,
   TOTAL_PACED_TRAINS,
+  TOTAL_PACED_TRAINS_WITH_DUPLICATE,
   TOTAL_TRAINS,
   VALID_AND_HONORED_TRAINS,
   VALID_ITEMS,
@@ -289,9 +293,55 @@ test.describe('Verify train schedule elements and filters', () => {
     });
 
     // Verify that the duplicated paced train has the proper details
-    await pacedTrainSection.verifyDuplicatedPacedTrain(
-      IMPORTED_PACED_TRAIN_DETAILS[0],
-      translations.timetable.copy
+    await pacedTrainSection.verifyPacedTrainItemDetails(
+      DUPLICATED_PACED_TRAIN_DETAILS,
+      1,
+      DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
+      { copyTranslation: translations.timetable.copy }
     );
+
+    // Verify global item counter has one more paced train
+    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS_WITH_DUPLICATE,
+      totalTrainScheduleCount: TOTAL_TRAINS,
+    });
+
+    // Delete the duplicated paced train
+    await pacedTrainSection.deletePacedTrain(
+      DUPLICATED_PACED_TRAIN_DETAILS,
+      DUPLICATED_PACED_TRAIN_INDEX
+    );
+
+    // As in other tests, checking the last notification needs to be done in a different method
+    // otherwise the received message of the last notification is empty
+    await pacedTrainSection.verifyPacedTrainHasBeenDeleted(
+      DUPLICATED_PACED_TRAIN_DETAILS.name,
+      translations
+    );
+
+    // Verify global item counter has one less paced train
+    await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS,
+      totalTrainScheduleCount: TOTAL_TRAINS,
+    });
+
+    // Select all remaining items
+    await scenarioTimetableSection.selectAllTimetableItems(translations, {
+      totalPacedTrainCount: TOTAL_PACED_TRAINS,
+      totalTrainScheduleCount: TOTAL_TRAINS,
+    });
+
+    // Delete all items
+    await scenarioTimetableSection.deleteAllTimetableItems();
+
+    // As in other tests, checking the last notification needs to be done in a different method
+    // otherwise the received message of the last notification is empty
+    await scenarioTimetableSection.verifyAllTimetableItemsHaveBeenDeleted(
+      TOTAL_ITEMS,
+      translations
+    );
+
+    // Verify timetable is empty and total label is empty
+    await scenarioTimetableSection.verifyTimetableIsEmpty(translations.timetable.noTrain);
   });
 });

@@ -136,6 +136,7 @@ class OperationalStudiesPage extends CommonPage {
 
   async checkTimetableItemHasBeenAdded(translation: string) {
     await this.checkLastToastTitle(translation);
+    await this.closeToastNotification();
   }
 
   async returnSimulationResult() {
@@ -262,7 +263,6 @@ class OperationalStudiesPage extends CommonPage {
 
   async addTimetableItem() {
     await this.addTrainButton.click();
-    await this.closeToastNotification();
   }
 
   async setTrainScheduleName(name: string) {
