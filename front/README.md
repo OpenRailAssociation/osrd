@@ -2,6 +2,22 @@
 
 ## How to launch project for development purpose?
 
+### Inside of Docker
+
+A Docker Compose override is provided in `docker/docker-compose.front.yml` to
+run the frontend in watch mode together with the rest of the OSRD stack. The
+osrd-compose script can be used to start OSRD in this mode:
+
+    ./osrd-compose dev-front build
+    ./osrd-compose up -d
+
+The first time the container starts up, the osrd-ui library will be missing.
+This will trigger some build errors, which should go away as soon as osrd-ui
+gets built. Restarting the front container helps getting rid of lingering
+ESLint errors.
+
+### Outside of Docker
+
 - go inside `/front/` from OSRD main project
 - you'll need [`npm`](https://nodejs.org/en/download/package-manager)
 - exec `npm install` (hope you have a good connection and a good cup of tea)
