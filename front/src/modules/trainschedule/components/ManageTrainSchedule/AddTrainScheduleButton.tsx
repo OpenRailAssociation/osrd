@@ -70,6 +70,8 @@ const AddTrainScheduleButton = ({
     const { timetableId, firstStartTime, trainCount, trainDelta, trainStep, baseTrainName } =
       validTimetableItemConfig;
 
+    setIsWorking(true);
+
     if (showPacedTrains) {
       try {
         if (isPacedTrainMode) {
@@ -127,7 +129,6 @@ const AddTrainScheduleButton = ({
       }
       // TODO Paced trains : remove the else in https://github.com/OpenRailAssociation/osrd/issues/10791
     } else {
-      setIsWorking(true);
       const formattedStartTimeMs = isoDateToMs(firstStartTime);
 
       const trainScheduleParams: TrainScheduleBase[] = [];

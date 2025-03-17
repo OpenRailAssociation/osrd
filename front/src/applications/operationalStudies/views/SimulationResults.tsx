@@ -46,7 +46,7 @@ type SimulationResultsProps = {
   infraId?: number;
   projectionData?: ProjectionData;
   trainScheduleSummaries?: TimetableItemWithDetails[];
-  // TODO Paced trains : uncomment this to have a `selectedTimetableItem` in https://github.com/OpenRailAssociation/osrd/issues/11054
+  // TODO Paced trains : uncomment this to have a `selectedTimetableItem` and replace the trainScheduleSummaries prop in https://github.com/OpenRailAssociation/osrd/issues/11054
   // timetableItemsWithDetails: TimetableItemWithDetails[];
 
   conflicts?: Conflict[];
@@ -59,7 +59,6 @@ const SimulationResults = ({
   infraId,
   projectionData,
   trainScheduleSummaries,
-  // timetableItemsWithDetails,
   conflicts = [],
   updateTrainDepartureTime,
 }: SimulationResultsProps) => {

@@ -103,11 +103,9 @@ const ScenarioContent = ({
       timeTableId: scenario.timetable_id,
       netzgrafikDto,
       addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResultWithTrainId[]) => {
-        // TODO Paced trains : update this in https://github.com/OpenRailAssociation/osrd/issues/10612
         upsertTimetableItems(upsertedTrainSchedules);
       },
       addDeletedTrainIds: (trainIds: TimetableItemId[]) => {
-        // TODO Paced trains : update this to handle delete paced trains in https://github.com/OpenRailAssociation/osrd/issues/10612
         removeTimetableItems(trainIds);
       },
     });
