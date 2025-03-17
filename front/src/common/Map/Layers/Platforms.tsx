@@ -1,7 +1,6 @@
-import { Source, type LayerProps } from 'react-map-gl/maplibre';
+import { type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
-import { OSM_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { RootState } from 'reducers';
 import type { Theme } from 'types';
@@ -16,6 +15,7 @@ export function Platforms(props: PlatformsProps) {
 
   const platformsParams: LayerProps = {
     type: 'fill',
+    source: 'osm',
     'source-layer': 'transportation',
     filter: ['all', ['==', ['get', 'class'], 'path'], ['==', ['get', 'subclass'], 'platform']],
     paint: {
@@ -23,11 +23,7 @@ export function Platforms(props: PlatformsProps) {
     },
   };
 
-  return (
-    <Source id="platforms" type="vector" url={OSM_URL} source-layer="transportation">
-      <OrderedLayer {...platformsParams} layerOrder={layerOrder} />
-    </Source>
-  );
+  return <OrderedLayer {...platformsParams} layerOrder={layerOrder} />;
 }
 
 function PlatformsState(props: PlatformsProps) {

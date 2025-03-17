@@ -1,4 +1,5 @@
 import colors from 'common/Map/Consts/colors';
+import OpenStreetMapSource from 'common/Map/Sources/OpenStreetMap';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapStyle } from 'reducers/map';
 
@@ -17,6 +18,7 @@ type OSMLayersProps = {
 
 const OSMLayers = ({ mapStyle, showOSM, hidePlatforms }: OSMLayersProps) => (
   <>
+    <OpenStreetMapSource />
     <Background
       colors={colors[mapStyle]}
       layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}

@@ -1,7 +1,6 @@
-import { Source, type LayerProps } from 'react-map-gl/maplibre';
+import { type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
-import { OSM_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { RootState } from 'reducers';
 import type { Theme } from 'types';
@@ -18,7 +17,7 @@ function TracksOSM(props: TracksOSMProps) {
   const railwayMinor: LayerProps = {
     id: 'railwayMinor',
     type: 'line',
-    source: 'openmaptiles',
+    source: 'osm',
     'source-layer': 'transportation',
     filter: ['all', ['==', ['get', 'class'], 'rail'], ['==', ['get', 'service'], 'yard']],
     layout: {
@@ -32,7 +31,7 @@ function TracksOSM(props: TracksOSMProps) {
   const railwayMajor: LayerProps = {
     id: 'railwayMajor',
     type: 'line',
-    source: 'openmaptiles',
+    source: 'osm',
     'source-layer': 'transportation',
     filter: ['all', ['==', ['get', 'class'], 'rail'], ['!=', ['get', 'service'], 'yard']],
     layout: {
@@ -46,10 +45,10 @@ function TracksOSM(props: TracksOSMProps) {
 
   if (!showOSMtracksections) return null;
   return (
-    <Source id="tracksOSM" type="vector" url={OSM_URL} source-layer="transportation">
+    <>
       <OrderedLayer {...railwayMinor} layerOrder={layerOrder} />
       <OrderedLayer {...railwayMajor} layerOrder={layerOrder} />
-    </Source>
+    </>
   );
 }
 

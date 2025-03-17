@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { get } from 'lodash';
-import { type LayerProps, Source } from 'react-map-gl/maplibre';
+import { type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
 import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
 import mapStyleMinimalJson from 'assets/mapstyles/OSMMinimalStyle.json';
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
-import { OSM_URL } from 'common/Map/const';
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { getShowOSM3dBuildings } from 'reducers/map/selectors';
 
@@ -57,6 +56,7 @@ export function genOSMLayerProps(
         ...layer,
         id: `osm/${layer.id}`,
         layerOrder,
+        source: 'osm',
       },
     ];
   }, []);
@@ -82,16 +82,7 @@ function OSM({ mapStyle, layerOrder, mapIsLoaded }: OSMProps) {
   const toggledLayers = { showOSM3dBuildings };
 
   if (reload) return null;
-  return (
-    <Source
-      id="osm"
-      type="vector"
-      url={OSM_URL}
-      attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    >
-      {genOSMLayers(mapStyle, toggledLayers, layerOrder)}
-    </Source>
-  );
+  return <>{genOSMLayers(mapStyle, toggledLayers, layerOrder)}</>;
 }
 
 export default OSM;
