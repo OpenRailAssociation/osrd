@@ -1,0 +1,30 @@
+#!/usr/bin/env just --justfile
+
+# Display available recipes
+help:
+    @just --list --unsorted
+
+# Run the application; does not start other services
+run:
+    cargo run
+
+# Install required dependencies
+install:
+    cargo build
+
+# Run the tests
+test:
+    cargo test --workspace
+
+# Format the source code
+format:
+    cargo fmt --all
+    taplo fmt
+
+# Verify code lints without applying any fix
+lint:
+    cargo clippy --workspace --all-features --all-targets
+
+# Fix all the lints that can be automatically applied
+fix-lint:
+    cargo clippy --workspace --all-features --all-targets --fix

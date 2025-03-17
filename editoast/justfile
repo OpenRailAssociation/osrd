@@ -1,0 +1,39 @@
+#!/usr/bin/env just --justfile
+
+# Display available recipes
+help:
+    @just --list --unsorted
+
+# Run the application; does not start other services
+run:
+    ./assets/sprites/generate-atlas.sh
+    ./assets/fonts/generate-glyphs.sh
+    diesel migration run --locked-schema
+    @echo 'Starting editoast in single worker mode. If you use osrd-compose add the `sw` flag'
+    EDITOAST_CORE_SINGLE_WORKER=true cargo run -- runserver
+
+# Install required dependencies
+install:
+    @echo 'This recipe won’t install binaries. Please use `cargo install`, `cargo binstall` or your preferred tool to install'
+    @echo " - diesel_cli"
+    @echo " - spreet"
+    @echo " - build_pbf_glyphs"
+
+# Run the tests
+test threads='4':
+    cargo test --workspace -- --test-threads={{threads}}
+
+# Format the source code
+format:
+    cargo fmt --all
+    taplo fmt
+
+# Verify code lints without applying any fix
+lint:
+    cargo clippy --workspace --all-targets --all-features
+    cargo run openapi | diff openapi.yaml - || echo "openapi.yaml is not up-to-date"
+
+# Fix all the lints that can be automatically applied
+fix-lint:
+    cargo clippy --workspace --all-features --all-targets --fix
+    ../scripts/sync-openapi.sh

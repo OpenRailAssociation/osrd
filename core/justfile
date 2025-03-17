@@ -1,0 +1,33 @@
+#!/usr/bin/env just --justfile
+
+gradle := if os() == "windows" { "gradlew.bat" } else { "./gradlew" }
+javaflags := "-ea -Xmx12g"
+
+# Display available recipes
+help:
+    @just --list --unsorted
+
+# Run the application; does not start other services
+run:
+    @echo "Starting core in single worker mode. If you use osrd-compose add the sw flag"
+    ALL_INFRA=true java {{javaflags}} -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
+
+# Install required dependencies
+install:
+    {{ gradle }} shadowJar
+
+# Run the tests
+test:
+    {{ gradle }} check
+
+# Format the source code
+format:
+    {{ gradle }} spotlessApply
+
+# Verify code lints without applying any fix
+lint:
+    {{ gradle }} check
+
+# Fix all the lints that can be automatically applied
+fix-lint:
+    @echo "There is no lint fixing in core"

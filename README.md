@@ -58,6 +58,17 @@ xdg-open http://localhost:4000/
 
 (Linux or WSL users can use `./osrd-compose host` instead of `docker compose` to enable host networking - useful to launch services in a debugger)
 
+## Working on a single component
+
+Each component has a _justfile_ to run usual developpment tasks. Install [just](https://github.com/casey/just#installation) and run it to see available recipes. All the components include:
+
+* run
+* install
+* test
+* format
+* lint
+* fix-lint
+
 ## Deployment
 
 To deploy the application on a server, check out the [deployment guide](https://osrd.fr/en/docs/guides/deploy/).

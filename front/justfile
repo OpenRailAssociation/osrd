@@ -1,0 +1,30 @@
+#!/usr/bin/env just --justfile
+
+# Display available recipes
+help:
+    @just --list --unsorted
+
+# Run the application; does not start other services
+run:
+    npm run start
+
+# Install required dependencies
+install:
+    npm install
+
+# Run the tests
+test:
+    npm run test
+
+# Format the source code
+format:
+    @echo "Formating is included with eslint"
+    @echo "run \`just fix-lint\`"
+
+# Verify code lints without applying any fix
+lint:
+    npm run lint
+
+# Fix all the lints that can be automatically applied
+fix-lint:
+    npm run lint-fix

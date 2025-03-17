@@ -1,0 +1,31 @@
+#!/usr/bin/env just --justfile
+
+# Display available recipes
+help:
+    @just --list --unsorted
+
+# Generate small infra
+run:
+    @echo "This component is a library"
+
+# Install required dependencies
+install:
+    poetry sync --all-extras
+
+# Run the tests
+test:
+    @echo "There are no test in this component"
+    poetry run pytestx
+
+# Format the source code
+format:
+    poetry run ruff format
+
+# Verify code lints without applying any fix
+lint:
+    poetry run ruff check
+    poetry run pyright .
+
+# Fix all the lints that can be automatically applied
+fix-lint:
+    @echo "No linter can automatically fix"

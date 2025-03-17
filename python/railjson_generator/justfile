@@ -1,0 +1,33 @@
+#!/usr/bin/env just --justfile
+
+# Display available recipes
+help:
+    @just --list --unsorted
+
+# Generate small infra
+run:
+    mkdir -p small_infra_out
+    poetry run scripts/small_infra.py small_infra_out
+
+# Install required dependencies
+install:
+    poetry sync --all-extras
+
+# Run the tests
+test:
+    poetry run pytest
+
+# Format the source code
+format:
+    poetry run black .
+    poetry run isort .
+
+# Verify code lints without applying any fix
+lint:
+    poetry run pflake8 --config ./pyproject.toml
+    poetry run pytype -j auto
+
+# Fix all the lints that can be automatically applied
+fix-lint:
+    poetry run black .
+    poetry run isort .
