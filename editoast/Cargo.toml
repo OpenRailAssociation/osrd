@@ -68,7 +68,7 @@ opentelemetry-semantic-conventions = { version = "0.26", features = [
 ] }
 opentelemetry_sdk = { version = "0.28.0", features = ["rt-tokio", "trace"] }
 paste = "1.0.15"
-postgis_diesel = { version = "2.4.1", features = ["serde"] }
+postgis_diesel = { version = "2.5.0", features = ["serde"] }
 postgres-openssl = "0.5.1"
 pretty_assertions = "1.4.1"
 proc-macro2 = "1.0"
