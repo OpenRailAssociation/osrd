@@ -25,8 +25,7 @@ export default defineConfig(({ mode }) => {
           buildMode: true,
         },
         eslint: {
-          lintCommand:
-            'eslint --cache --ext .ts,.tsx,.js,.jsx src scripts tests *.ts --max-warnings 0',
+          lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src scripts tests *.ts --max-warnings 0',
         },
         overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
           initialIsOpen: env.OSRD_VITE_OVERLAY_OPEN_BY_DEFAULT === 'true',
