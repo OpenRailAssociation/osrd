@@ -1,4 +1,4 @@
-import { Source, type LayerProps } from 'react-map-gl/maplibre';
+import { type LayerProps } from 'react-map-gl/maplibre';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { Theme } from 'types';
@@ -22,11 +22,7 @@ function Background(props: BackgroundProps) {
     },
   };
 
-  return (
-    <Source id="background" type="vector">
-      <OrderedLayer {...backgroundParams} layerOrder={layerOrder} />
-    </Source>
-  );
+  return <OrderedLayer {...backgroundParams} layerOrder={layerOrder} />;
 }
 
 export default Background;
