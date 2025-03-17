@@ -1,5 +1,6 @@
 import colors from 'common/Map/Consts/colors';
 import OpenStreetMapSource from 'common/Map/Sources/OpenStreetMap';
+import TerrainSource from 'common/Map/Sources/Terrain';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapStyle } from 'reducers/map';
 
@@ -7,7 +8,6 @@ import Background from '../Background';
 import Hillshade from '../Hillshade';
 import OSM from '../OSM';
 import PlatformsLayer from '../Platforms';
-import Terrain from '../Terrain';
 import TracksOSM from '../TracksOSM';
 
 type OSMLayersProps = {
@@ -19,6 +19,8 @@ type OSMLayersProps = {
 const OSMLayers = ({ mapStyle, showOSM, hidePlatforms }: OSMLayersProps) => (
   <>
     <OpenStreetMapSource />
+    <TerrainSource />
+
     <Background
       colors={colors[mapStyle]}
       layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
@@ -30,8 +32,6 @@ const OSMLayers = ({ mapStyle, showOSM, hidePlatforms }: OSMLayersProps) => (
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
       />
     )}
-
-    <Terrain />
 
     <TracksOSM colors={colors[mapStyle]} layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]} />
 

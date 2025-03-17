@@ -2,7 +2,7 @@ import { Source } from 'react-map-gl/maplibre';
 
 import { TERRAIN_URL } from 'common/Map/const';
 
-export default function Terrain() {
+function TerrainSource() {
   return (
     <Source
       id="terrain"
@@ -14,3 +14,5 @@ export default function Terrain() {
     />
   );
 }
+
+export default TerrainSource;

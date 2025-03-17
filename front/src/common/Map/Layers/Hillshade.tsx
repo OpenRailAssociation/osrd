@@ -1,7 +1,6 @@
-import { Source, type LayerProps } from 'react-map-gl/maplibre';
+import { type LayerProps } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
-import { TERRAIN_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
 
@@ -13,7 +12,7 @@ type HillshadeProps = {
 
 const hillshadeParams: LayerProps = {
   id: 'osm/hillshade',
-  source: 'hillshade',
+  source: 'terrain',
   type: 'hillshade',
   paint: {},
 };
@@ -25,18 +24,7 @@ const Hillshade = ({ mapStyle, layerOrder }: HillshadeProps) => {
     return null;
   }
 
-  return (
-    <Source
-      id="hillshade"
-      type="raster-dem"
-      encoding="terrarium"
-      url={TERRAIN_URL}
-      tileSize={256}
-      maxzoom={12}
-    >
-      <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />
-    </Source>
-  );
+  return <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />;
 };
 
 export default Hillshade;
