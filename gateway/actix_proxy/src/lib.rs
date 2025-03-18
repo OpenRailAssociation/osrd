@@ -28,6 +28,7 @@ use opentelemetry::{
     KeyValue,
 };
 use percent_encoding::{utf8_percent_encode, AsciiSet};
+use regex::RegexSet;
 
 use awc::error::{ConnectError, SendRequestError as AwcSendRequestError};
 use futures_util::StreamExt;
@@ -79,6 +80,7 @@ pub struct Proxy {
     upstream_path_prefix: String,
     timeout: Option<Duration>,
     tracing_name: Option<String>,
+    blocked_paths: RegexSet,
 }
 
 /// The set of characters that have to be percent encoded in the path.
@@ -124,6 +126,7 @@ impl Proxy {
         request_modifier: Option<Box<dyn RequestModifier + Send>>,
         timeout: Option<Duration>,
         tracing_name: Option<String>,
+        blocked_paths: Option<Vec<String>>,
     ) -> Self {
         let upstream_scheme = upstream.scheme_str().unwrap().to_owned();
         let upstream_authority = upstream
@@ -134,6 +137,9 @@ impl Proxy {
         if !upstream_path_prefix.is_empty() && !upstream_path_prefix.ends_with('/') {
             upstream_path_prefix.push('/');
         }
+
+        let regex_set =
+            RegexSet::new(blocked_paths.unwrap_or_default()).expect("regexes should parse");
 
         Self {
             tracing_name,
@@ -149,6 +155,7 @@ impl Proxy {
             blocked_headers,
             request_modifier,
             timeout,
+            blocked_paths: regex_set,
         }
     }
 
@@ -172,6 +179,10 @@ impl Proxy {
             .path_and_query(final_path)
             .build()
             .expect("failed to build uri")
+    }
+
+    pub fn is_path_blocked(&self, path: &str) -> bool {
+        self.blocked_paths.is_match(path)
     }
 }
 
@@ -503,10 +514,19 @@ impl Service<ServiceRequest> for ProxyService {
                         proxy_service.proxy.mount_path.clone(),
                     ));
 
-                    // forward request
+                    // parse request
                     let (http_request, payload) = req.parts_mut();
+
+                    // check if the path is blocked
                     let unprocessed_path = http_request.match_info().unprocessed();
+                    let matched_str =
+                        format!("{} {}", http_request.method().as_str(), unprocessed_path);
+                    if proxy_service.proxy.is_path_blocked(&matched_str) {
+                        return Ok(req.into_response(HttpResponse::NotFound().finish()));
+                    }
                     let query = http_request.query_string();
+
+                    // forward request
                     let stream = web::Payload::from_request(http_request, payload).await?;
                     match proxy_service
                         .handle(http_request, stream, unprocessed_path, query, cx)

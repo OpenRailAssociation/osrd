@@ -13,6 +13,7 @@ dyn-clone.workspace = true
 either.workspace = true
 futures-util.workspace = true
 log.workspace = true
+regex.workspace = true
 
 # common proxying infrastructure
 actix-web.workspace = true

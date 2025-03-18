@@ -98,6 +98,8 @@ pub struct ProxyTarget {
     pub timeout: Option<Duration>,
     /// The tracing name for this target
     pub tracing_name: Option<String>,
+    /// Block paths on this target
+    pub blocked_paths: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]

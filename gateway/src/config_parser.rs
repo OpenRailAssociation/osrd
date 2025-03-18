@@ -88,6 +88,7 @@ pub fn parse_targets(
             },
             target.timeout,
             target.tracing_name.clone(),
+            target.blocked_paths.clone(),
         );
 
         match &target.prefix {
