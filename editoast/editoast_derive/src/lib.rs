@@ -241,6 +241,26 @@ pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 #[cfg(test)]
+use test_utils::assert_macro_expansion;
+/// Annotates fields of a structs with documentation and value_type for a better utoipa schema
+///
+/// It must be used on structs that use #[derive(ToSchema)]
+///
+/// On every field that has an attribute such as #[serde(with="millimeter")]
+/// It will add:
+/// * #[schema(value_type = f64)]
+/// * /// Length in mm
+#[proc_macro_attribute]
+pub fn annotate_units(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    // We are using a macro attribute to modify in place the attributes of fields to annotate
+    // This requires to mutate the input
+    let mut input = parse_macro_input!(input as DeriveInput);
+    annotate_units::annotate_units(&mut input)
+        .unwrap_or_else(darling::Error::write_errors)
+        .into()
+}
+
+#[cfg(test)]
 mod test_utils {
     pub(crate) fn pretty_tokens(tokens: &proc_macro2::TokenStream) -> String {
         let file = syn::parse_file(tokens.to_string().as_str()).unwrap();
@@ -267,24 +287,4 @@ mod test_utils {
     }
 
     pub(crate) use assert_macro_expansion;
-}
-
-#[cfg(test)]
-use test_utils::assert_macro_expansion;
-/// Annotates fields of a structs with documentation and value_type for a better utoipa schema
-///
-/// It must be used on structs that use #[derive(ToSchema)]
-///
-/// On every field that has an attribute such as #[serde(with="millimeter")]
-/// It will add:
-/// * #[schema(value_type = f64)]
-/// * /// Length in mm
-#[proc_macro_attribute]
-pub fn annotate_units(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    // We are using a macro attribute to modify in place the attributes of fields to annotate
-    // This requires to mutate the input
-    let mut input = parse_macro_input!(input as DeriveInput);
-    annotate_units::annotate_units(&mut input)
-        .unwrap_or_else(darling::Error::write_errors)
-        .into()
 }

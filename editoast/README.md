@@ -64,9 +64,9 @@ cargo build --profile dev-for-debug
 
 Here a list of components to help you in your development (see CI jobs if necessary):
 
-- [rustfmt](https://github.com/rust-lang/rustfmt): Format the whole code `cargo fmt`
+- [rustfmt](https://github.com/rust-lang/rustfmt): Format the whole code `cargo fmt --all`
 - [taplo](https://taplo.tamasfe.dev/): Format the TOML files with `taplo fmt`
-- [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy --all-features --all-targets -- -D warnings`
+- [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy --workspace --all-features --all-targets -- -D warnings`
 - [grcov](https://github.com/mozilla/grcov): Check code coverage (see documentation on GitHub)
 
 To install `rustfmt` and `clippy`, simply run:

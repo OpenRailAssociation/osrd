@@ -612,7 +612,7 @@ jobs:
         run: |
           docker run --name=editoast-clippy --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
-            cargo clippy --all-features --all-targets -- -D warnings
+            cargo clippy --workspace --all-features --all-targets -- -D warnings
 
           exit $(docker wait editoast-clippy)
 
