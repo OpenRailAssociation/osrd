@@ -92,7 +92,7 @@ private fun makeEndOfPathStop(
 fun getSignalOffsets(
     infra: FullInfra,
     zonePaths: List<StaticIdx<ZonePath>>,
-    pathStartOffset: Offset<Path>,
+    pathStartOffset: Offset<BlockPath>,
 ): List<Offset<TravelledPath>> {
     val res = mutableListOf<Offset<TravelledPath>>()
     val rawInfra = infra.rawInfra

@@ -7,7 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
-import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Offset
 
@@ -32,7 +32,7 @@ data class OperationalPointResponse(
     val id: String,
     val part: OperationalPointPartResponse,
     val extensions: OperationalPointExtensions?,
-    val position: Offset<Path>,
+    val position: Offset<TravelledPath>,
     val weight: Long?
 )
 

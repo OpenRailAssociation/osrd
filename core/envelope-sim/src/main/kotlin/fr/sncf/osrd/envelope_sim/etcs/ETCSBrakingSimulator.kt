@@ -2,7 +2,6 @@ package fr.sncf.osrd.envelope_sim.etcs
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.units.Offset
 
@@ -28,7 +27,7 @@ interface ETCSBrakingSimulator {
 }
 
 data class LimitOfAuthority(
-    val offset: Offset<Path>,
+    val offset: Offset<TravelledPath>,
     val speed: Double,
 ) {
     init {

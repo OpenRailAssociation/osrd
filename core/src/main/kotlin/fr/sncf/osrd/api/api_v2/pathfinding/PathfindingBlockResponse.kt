@@ -9,7 +9,6 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.DirectionalTrackRange
 import fr.sncf.osrd.graph.Pathfinding.Range
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Length
@@ -25,10 +24,10 @@ class PathfindingBlockSuccess(
     // Route ids
     val routes: List<String>,
     @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
-    val length: Length<Path>,
+    val length: Length<TravelledPath>,
 
     /** Offsets of the waypoints given as input */
-    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<Path>>
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>
 ) : PathfindingBlockResponse {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -50,12 +49,12 @@ class PathfindingBlockSuccess(
 
 class NotFoundInBlocks(
     @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
-    val length: Length<Path>,
+    val length: Length<TravelledPath>,
 ) : PathfindingBlockResponse
 
 class NotFoundInRoutes(
     @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
-    val length: Length<Path>,
+    val length: Length<TravelledPath>,
 ) : PathfindingBlockResponse
 
 class NotFoundInTracks : PathfindingBlockResponse

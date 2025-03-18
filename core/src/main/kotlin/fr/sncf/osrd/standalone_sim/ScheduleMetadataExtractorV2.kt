@@ -32,7 +32,7 @@ fun runScheduleMetadataExtractor(
     routePath: StaticIdxList<Route>,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
-    pathItemPositions: List<Offset<Path>>,
+    pathItemPositions: List<Offset<TravelledPath>>,
 ): CompleteReportTrain {
     assert(envelope.continuous)
 
@@ -269,7 +269,7 @@ fun makeSimpleReportTrain(
     trainPath: PathProperties,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
-    pathItemPositions: List<Offset<Path>>,
+    pathItemPositions: List<Offset<TravelledPath>>,
 ): ReportTrain {
     // Compute energy consumed
     val envelopePath = EnvelopeTrainPath.from(fullInfra.rawInfra, trainPath)
@@ -286,7 +286,7 @@ fun makeSimpleReportTrain(
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
 
     val pathItemTimes =
-        pathItemPositions.map { position: Offset<Path> ->
+        pathItemPositions.map { position: Offset<TravelledPath> ->
             TimeDelta.fromSeconds(
                 envelopeStopWrapper.interpolateArrivalAt(position.distance.meters)
             )

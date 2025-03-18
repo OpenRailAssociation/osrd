@@ -32,7 +32,7 @@ fun pathFromRoutes(
     routes: List<RouteId>,
 ): ChunkPath {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
-    var length = Length<Path>(0.meters)
+    var length = Length<BlockPath>(0.meters)
     for (route in routes) {
         for (chunk in infra.getChunksOnRoute(route)) {
             chunks.add(chunk)

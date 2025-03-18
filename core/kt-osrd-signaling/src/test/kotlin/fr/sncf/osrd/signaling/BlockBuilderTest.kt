@@ -153,7 +153,9 @@ class BlockBuilderTest {
     private fun blockInfraToSet(infra: BlockInfra): MutableSet<BlockDescriptor> {
         val res: MutableSet<BlockDescriptor> = mutableSetOf()
         for (blockId in infra.blocks) {
-            res.add(BlockDescriptor(infra.getBlockPath(blockId), infra.getBlockSignals(blockId)))
+            res.add(
+                BlockDescriptor(infra.getBlockZonePaths(blockId), infra.getBlockSignals(blockId))
+            )
         }
         return res
     }

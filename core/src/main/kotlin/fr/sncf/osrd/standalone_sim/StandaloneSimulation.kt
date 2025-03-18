@@ -68,7 +68,7 @@ fun runStandaloneSimulation(
     schedule: List<SimulationScheduleItem>,
     initialSpeed: Double,
     margins: RangeValues<MarginValue>,
-    pathItemPositions: List<Offset<Path>>,
+    pathItemPositions: List<Offset<TravelledPath>>,
     driverBehaviour: DriverBehaviour = DriverBehaviour()
 ): SimulationSuccess {
     if (chunkPath.length == 0.meters) throw OSRDError(ZeroLengthPath)

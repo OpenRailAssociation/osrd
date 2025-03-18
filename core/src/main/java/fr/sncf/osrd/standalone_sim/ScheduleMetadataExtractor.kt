@@ -44,11 +44,11 @@ const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
 
 // the start offset is the distance from the start of the first block to the start location
 class PathOffsetBuilder(val startOffset: Distance) {
-    fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath> {
+    fun toTravelledPath(offset: Offset<BlockPath>): Offset<TravelledPath> {
         return Offset(offset.distance - startOffset)
     }
 
-    fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<Path> {
+    fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<BlockPath> {
         return Offset(offset.distance + startOffset)
     }
 }
@@ -254,7 +254,7 @@ fun getBlockOffsets(
     blockInfra: BlockInfra
 ): OffsetArray<TravelledPath> {
     val blockOffsets = MutableOffsetArray(blockPath.size) { Offset.zero<TravelledPath>() }
-    var curOffset = Offset.zero<Path>()
+    var curOffset = Offset.zero<BlockPath>()
     for (i in 0 until blockPath.size) {
         blockOffsets[i] = pathOffsetBuilder.toTravelledPath(curOffset)
         val blockLength = blockInfra.getBlockLength(blockPath[i])
@@ -410,7 +410,7 @@ fun routingRequirements(
     }
 
     val res = mutableListOf<RoutingRequirement>()
-    var routePathOffset = Offset.zero<Path>()
+    var routePathOffset = Offset.zero<BlockPath>()
     // for all routes, generate requirements
     for (routeIndex in 0 until routePath.size) {
         // start out by figuring out when the route needs to be set
@@ -539,7 +539,7 @@ fun zoneOccupationChangeEvents(
     var currentOffset = pathOffsetBuilder.toTravelledPath(Offset.zero())
     val zoneOccupationChangeEvents = mutableListOf<ZoneOccupationChangeEvent>()
     for ((blockIdx, block) in blockPath.withIndex()) {
-        for (zonePath in blockInfra.getBlockPath(block)) {
+        for (zonePath in blockInfra.getBlockZonePaths(block)) {
             // Compute occupation change event
             if (currentOffset.distance > envelope.endPos.meters) break
             val entryOffset = Offset.max(Offset.zero(), currentOffset)

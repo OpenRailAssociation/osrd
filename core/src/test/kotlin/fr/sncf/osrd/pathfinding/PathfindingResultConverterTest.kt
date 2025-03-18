@@ -9,7 +9,7 @@ import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
@@ -31,7 +31,7 @@ class PathfindingResultConverterTest {
         }
         val chunkPath = makeChunkPath(infra.rawInfra, infra.blockInfra, ranges)
         val expectedLength = 10000.meters + 1000.meters // length of route 1 + 2
-        Assertions.assertEquals(Offset<Path>(0.meters), chunkPath.beginOffset)
+        Assertions.assertEquals(Offset<BlockPath>(0.meters), chunkPath.beginOffset)
         Assertions.assertEquals(expectedLength, chunkPath.endOffset.distance)
         checkBlocks(
             infra,
@@ -61,7 +61,7 @@ class PathfindingResultConverterTest {
             )
         val chunkPath = makeChunkPath(infra.rawInfra, infra.blockInfra, ranges)
         val expectedBlockLength = 1050.meters + 10000.meters // length of route 1 + 2
-        Assertions.assertEquals(Offset<Path>(10.meters), chunkPath.beginOffset)
+        Assertions.assertEquals(Offset<BlockPath>(10.meters), chunkPath.beginOffset)
         Assertions.assertEquals((expectedBlockLength - 10.meters), chunkPath.endOffset.distance)
         checkBlocks(
             infra,

@@ -64,7 +64,7 @@ fun projectSignals(
     val zoneMap = mutableMapOf<String, Int>()
     var zoneCount = 0
     for (block in blockPath) {
-        for (zonePath in blockInfra.getBlockPath(block)) {
+        for (zonePath in blockInfra.getBlockZonePaths(block)) {
             val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
             val zoneName = rawInfra.getZoneName(zone)
             zoneMap[zoneName] = zoneCount
@@ -128,7 +128,7 @@ private fun computeSignalAspectChangeEvents(
     leastConstrainingStates: Map<SignalingSystemId, SigState>,
 ): Map<PathSignal, MutableList<SignalAspectChangeEventV2>> {
     val routes = routePath.toList()
-    val zoneCount = blockPath.sumOf { blockInfra.getBlockPath(it).size }
+    val zoneCount = blockPath.sumOf { blockInfra.getBlockZonePaths(it).size }
     val zoneStates = ArrayList<ZoneStatus>(zoneCount)
     for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
 

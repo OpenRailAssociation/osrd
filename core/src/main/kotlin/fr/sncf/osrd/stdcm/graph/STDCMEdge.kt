@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.BlockPath
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance
@@ -154,18 +154,18 @@ data class STDCMEdge(
     }
 
     /**
-     * Converts from Path Offset (references start of first route) to Travelled path offset
+     * Converts from BlockPath Offset (references start of first route) to Travelled path offset
      * (references train departure point)
      */
-    fun toTravelledOffset(pathOffset: Offset<Path>): Offset<TravelledPath> {
+    fun toTravelledOffset(pathOffset: Offset<BlockPath>): Offset<TravelledPath> {
         return infraExplorer.getIncrementalPath().toTravelledPath(pathOffset)
     }
 
     /**
-     * Converts from Travelled path offset (references train departure point) to Path Offset
+     * Converts from Travelled path offset (references train departure point) to BlockPath Offset
      * (references start of first route)
      */
-    fun fromTravelledOffset(travelledPathOffset: Offset<TravelledPath>): Offset<Path> {
+    fun fromTravelledOffset(travelledPathOffset: Offset<TravelledPath>): Offset<BlockPath> {
         return infraExplorer.getIncrementalPath().fromTravelledPath(travelledPathOffset)
     }
 }
