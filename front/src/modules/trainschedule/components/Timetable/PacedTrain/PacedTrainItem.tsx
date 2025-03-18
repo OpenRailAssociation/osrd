@@ -45,7 +45,6 @@ const PacedTrainItem = ({
 
   return (
     <div
-      data-testid="scenario-timetable-train"
       className={cx('scenario-timetable-train paced-train', {
         modified: isOnEdit,
         'in-selection': isInSelection,
@@ -53,6 +52,7 @@ const PacedTrainItem = ({
       })}
     >
       <div
+        data-testid="paced-train"
         className={cx('base-info', {
           warning: pacedTrain.invalidReason || pacedTrain.notHonoredReason,
           invalid: pacedTrain.invalidReason,
@@ -116,13 +116,13 @@ const PacedTrainItem = ({
             </span>
           </div>
         )}
+        <TimetableItemActions
+          selectPathProjection={selectPathProjection}
+          duplicateTimetableItem={duplicatePacedTrain}
+          editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
+          deleteTimetableItem={deletePacedTrain}
+        />
       </div>
-      <TimetableItemActions
-        selectPathProjection={selectPathProjection}
-        duplicateTimetableItem={duplicatePacedTrain}
-        editTimetableItem={() => selectPacedTrainToEdit(pacedTrain)}
-        deleteTimetableItem={deletePacedTrain}
-      />
       <div className="occurrences">
         {occurrences.map((occurrence, index) => (
           <OccurrenceItem

@@ -3,6 +3,19 @@
     padding-bottom: 16px;
   }
 
+  &:not(.modified) {
+    .base-info:hover {
+      .action-buttons {
+        display: flex !important;
+        z-index: 1;
+      }
+
+      .paced-train-right-zone {
+        color: var(--grey20);
+      }
+    }
+  }
+
   &:has(> .base-info.invalid) {
     .occurrences {
       opacity: 0.3;
@@ -25,17 +38,6 @@
       &.not-honored-or-too-fast {
         color: var(--warning60);
       }
-    }
-  }
-
-  &:hover:not(.modified) {
-    .action-buttons {
-      display: flex !important;
-      z-index: 1;
-    }
-
-    .paced-train-right-zone {
-      color: var(--grey20);
     }
   }
 
