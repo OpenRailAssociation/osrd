@@ -105,22 +105,29 @@ class BlockAvailabilityTests {
     private fun makeExplorer(
         nBlocksInPath: Int,
         nBlocksSimulated: Int,
+        originalSteps: List<STDCMStep> = listOf(),
         rollingStock: RollingStock = REALISTIC_FAST_TRAIN
     ): InfraExplorerWithEnvelope {
         assert(nBlocksInPath >= nBlocksSimulated)
         assert(nBlocksInPath <= 5)
+
+        val steps = originalSteps.toMutableList()
+        val lastStep =
+            stepsFromLocations(
+                    PathfindingEdgeLocationId(
+                        blocks.last(),
+                        infra.blockInfra.getBlockLength(blocks.last())
+                    )
+                )
+                .single()
+        if (steps.none { it.locations == lastStep.locations }) steps.add(lastStep)
 
         var infraExplorer =
             initInfraExplorerWithEnvelope(
                     infra,
                     PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
                     rollingStock,
-                    stepsFromLocations(
-                        PathfindingEdgeLocationId(
-                            blocks.last(),
-                            infra.blockInfra.getBlockLength(blocks.last())
-                        )
-                    )
+                    steps,
                 )
                 .find { filterExplorer(it) }!!
         while (infraExplorer.getLookahead().size + 1 < nBlocksInPath) infraExplorer =
@@ -468,7 +475,6 @@ class BlockAvailabilityTests {
                     SpacingRequirement(zoneNames[0], 0.0, endFirstConflict, true),
                     SpacingRequirement(zoneNames[0], startSecondConflict, POSITIVE_INFINITY, true),
                 ),
-                listOf(),
                 marginBefore,
                 marginAfter
             )
@@ -603,12 +609,13 @@ class BlockAvailabilityTests {
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds)
                 )
             )
-        val availability = makeBlockAvailability(listOf(), steps) as BlockAvailability
+        val explorerWithSteps = makeExplorer(5, 1, steps)
+        val availability = makeBlockAvailability(listOf()) as BlockAvailability
         val res =
             availability.getAvailability(
-                explorer,
+                explorerWithSteps,
                 Offset(0.meters),
-                explorer.getSimulatedLength(),
+                explorerWithSteps.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Available
         assertEquals(
@@ -619,7 +626,6 @@ class BlockAvailabilityTests {
 
     @Test
     fun testPlannedStepNotBetweenAvailabilityOffsets() {
-        val explorer = makeExplorer(5, 1)
         val outOfBoundsStepOffset = Offset<Block>(100.meters)
         val steps =
             listOf(
@@ -637,7 +643,8 @@ class BlockAvailabilityTests {
                 )
             )
 
-        val availability = makeBlockAvailability(listOf(), steps)
+        val explorer = makeExplorer(5, 1, steps)
+        val availability = makeBlockAvailability(listOf())
         val res =
             availability.getAvailability(explorer, Offset(0.meters), Offset(50.meters), 0.0)
                 as BlockAvailabilityInterface.Available
@@ -683,13 +690,14 @@ class BlockAvailabilityTests {
                 )
             )
 
-        val availability = makeBlockAvailability(requirements, steps) as BlockAvailability
+        val availability = makeBlockAvailability(requirements) as BlockAvailability
         val stepMaximumDelay = lastAvailableTime - timeAtStep + availability.internalMarginForSteps
+        val explorerWithSteps = makeExplorer(5, 1, steps)
         val res =
             availability.getAvailability(
-                explorer,
+                explorerWithSteps,
                 Offset(0.meters),
-                explorer.getSimulatedLength(),
+                explorerWithSteps.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Available
         // Availability depends on which availability has the lowest maximum delay
@@ -704,7 +712,6 @@ class BlockAvailabilityTests {
      */
     @Test
     fun testPassingAfterPlannedStepWithAvailableConflict() {
-        val explorer = makeExplorer(5, 1)
         val plannedStepOffset = Offset<Block>(100.meters)
         val steps =
             listOf(
@@ -715,13 +722,14 @@ class BlockAvailabilityTests {
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds)
                 )
             )
+        val explorer = makeExplorer(5, 1, steps)
         val timeAtZoneEnd = explorer.interpolateDepartureFromClamp(explorer.getSimulatedLength())
         val requirements =
             listOf(
                 // Requirement starting way after
                 SpacingRequirement(zoneNames[0], timeAtZoneEnd * 2, timeAtZoneEnd * 3, true),
             )
-        val availability = makeBlockAvailability(requirements, steps)
+        val availability = makeBlockAvailability(requirements)
         val res =
             availability.getAvailability(
                 explorer,
@@ -740,7 +748,6 @@ class BlockAvailabilityTests {
      */
     @Test
     fun testPassingAfterPlannedStepWithUnavailableConflict() {
-        val explorer = makeExplorer(5, 1)
         val plannedStepOffset = Offset<Block>(100.meters)
         val steps =
             listOf(
@@ -751,13 +758,14 @@ class BlockAvailabilityTests {
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds)
                 )
             )
+        val explorer = makeExplorer(5, 1, steps)
         val timeAtZoneEnd = explorer.interpolateDepartureFromClamp(explorer.getSimulatedLength())
         val requirements =
             listOf(
                 // Requirement starting at the same moment as well
                 SpacingRequirement(zoneNames[0], 0.0, timeAtZoneEnd, true),
             )
-        val availability = makeBlockAvailability(requirements, steps)
+        val availability = makeBlockAvailability(requirements)
         val res =
             availability.getAvailability(
                 explorer,
@@ -777,7 +785,6 @@ class BlockAvailabilityTests {
      */
     @Test
     fun testPassingBeforePlannedStep() {
-        val explorer = makeExplorer(5, 1)
         val plannedStepOffset = Offset<Block>(0.meters)
         val minDelay = 60.0
         val steps =
@@ -789,7 +796,8 @@ class BlockAvailabilityTests {
                     PlannedTimingData(minDelay.seconds, 0.seconds, 10.seconds)
                 )
             )
-        val availability = makeBlockAvailability(listOf(), steps) as BlockAvailability
+        val explorer = makeExplorer(5, 1, steps)
+        val availability = makeBlockAvailability(listOf()) as BlockAvailability
         val res =
             availability.getAvailability(
                 explorer,
@@ -833,13 +841,14 @@ class BlockAvailabilityTests {
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds)
                 )
             )
-        val availability = makeBlockAvailability(listOf(), steps) as BlockAvailability
+        val explorerWithSteps = makeExplorer(5, 1, steps)
+        val availability = makeBlockAvailability(listOf()) as BlockAvailability
         assertEquals(internalMarginForSteps, availability.internalMarginForSteps)
         val res =
             availability.getAvailability(
-                explorer,
+                explorerWithSteps,
                 Offset(0.meters),
-                explorer.getSimulatedLength(),
+                explorerWithSteps.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Unavailable
         // The delay added to solve the first step makes the train pass after the second step =>
@@ -887,12 +896,13 @@ class BlockAvailabilityTests {
                 )
             )
 
-        val availability = makeBlockAvailability(requirements, steps)
+        val explorerWithSteps = makeExplorer(5, 1, steps)
+        val availability = makeBlockAvailability(requirements)
         val res =
             availability.getAvailability(
-                explorer,
+                explorerWithSteps,
                 Offset(0.meters),
-                explorer.getSimulatedLength(),
+                explorerWithSteps.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Unavailable
         if (stepAvailableDuration > conflictMinDelay) {

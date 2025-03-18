@@ -232,10 +232,6 @@ class FullSTDCMTests {
         val blockAvailability =
             makeBlockAvailability(
                 listOf(),
-                listOf(
-                    STDCMStep(start, 0.0, true, startPlannedTimingData),
-                    STDCMStep(end, 0.0, true, endPlannedTimingData)
-                )
             )
         val timeStep = 2.0
         var builder =

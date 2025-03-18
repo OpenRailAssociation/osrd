@@ -122,7 +122,6 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                     steps,
                     makeBlockAvailability(
                         spacingRequirements,
-                        steps,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
                         gridMarginAfterTrain = request.timeGapAfter.seconds,
                         timeStep = request.timeStep!!.seconds

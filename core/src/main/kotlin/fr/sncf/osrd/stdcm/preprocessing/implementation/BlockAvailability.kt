@@ -5,8 +5,8 @@ import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
-import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -16,7 +16,6 @@ import kotlin.math.min
 
 data class BlockAvailability(
     val incrementalConflictDetector: IncrementalConflictDetector,
-    val plannedSteps: List<STDCMStep>,
     val gridMarginBeforeTrain: Double,
     val gridMarginAfterTrain: Double,
     val internalMarginForSteps: Double,
@@ -99,7 +98,9 @@ data class BlockAvailability(
         var maximumDelayToStayAvailable = Double.POSITIVE_INFINITY
         var timeOfNextUnavailability = Double.POSITIVE_INFINITY
 
-        for (step in plannedSteps) {
+        val steps = infraExplorer.getStepTracker().getAllReachedSteps().reversed()
+
+        for (step in steps) {
             val availabilityProperties =
                 getStepAvailabilityProperties(
                     step,
@@ -107,7 +108,7 @@ data class BlockAvailability(
                     startOffset,
                     endOffset,
                     pathStartTime
-                )
+                ) ?: continue
             if (availabilityProperties.minimumDelayToBecomeAvailable == Double.POSITIVE_INFINITY) {
                 return BlockAvailabilityInterface.Unavailable(
                     Double.POSITIVE_INFINITY,
@@ -148,88 +149,47 @@ data class BlockAvailability(
     }
 
     private fun getStepAvailabilityProperties(
-        step: STDCMStep,
+        step: LocatedStep,
         infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<Path>,
         endOffset: Offset<Path>,
         pathStartTime: Double
-    ): AvailabilityProperties {
+    ): AvailabilityProperties? {
         val incrementalPath = infraExplorer.getIncrementalPath()
-        // Iterate over all the predecessor blocks + current block
-        // Iterate backwards, as the range is generally towards the end
-        for (i in incrementalPath.blockCount - 1 downTo 0) {
-            val block = incrementalPath.getBlock(i)
+        val plannedTimingData = step.originalStep.plannedTimingData ?: return null
+        if (infraExplorer.getLookahead().contains(step.location.edge)) return null
 
-            // Discard lookahead blocks
-            if (infraExplorer.getLookahead().toList().contains(block)) {
-                continue
-            }
+        val stepPathOffset = incrementalPath.fromTravelledPath(step.pathOffset)
+        if (stepPathOffset !in startOffset..endOffset) return null
 
-            val blockStartOffset = incrementalPath.getBlockStartOffset(i)
-            val blockEndOffset = incrementalPath.getBlockEndOffset(i)
-
-            // Discard blocks fully outside the range
-            if (blockStartOffset > endOffset) {
-                // The considered range is further back in the path
-                continue
-            }
-            if (blockEndOffset < startOffset) {
-                // We're outside the considered range and can stop there
-                break
-            }
-            for (location in step.locations) {
-                if (location.edge != incrementalPath.getBlock(i)) {
-                    continue
-                }
-                // Only consider the blocks within the range formed by given offsets
-                // (including step location here)
-                if (blockStartOffset + location.offset.distance !in startOffset..endOffset) {
-                    continue
-                }
-                val stepOffsetOnPath =
-                    incrementalPath.getBlockStartOffset(i) + location.offset.distance
-                val timeAtStep =
-                    infraExplorer.interpolateDepartureFromClamp(stepOffsetOnPath) + pathStartTime
-                val plannedMinTimeAtStep =
-                    (step.plannedTimingData!!.arrivalTime -
-                            step.plannedTimingData.arrivalTimeToleranceBefore)
-                        .seconds - internalMarginForSteps
-                val plannedMaxTimeAtStep =
-                    (step.plannedTimingData.arrivalTime +
-                            step.plannedTimingData.arrivalTimeToleranceAfter)
-                        .seconds + internalMarginForSteps
-                if (plannedMinTimeAtStep > timeAtStep) {
-                    // Train passes through planned timing data before it is available
-                    return AvailabilityProperties(
-                        max(plannedMinTimeAtStep - timeAtStep, 0.0),
-                        incrementalPath.toTravelledPath(stepOffsetOnPath),
-                        0.0,
-                        0.0
-                    )
-                } else if (timeAtStep > plannedMaxTimeAtStep) {
-                    // Train passes through planned timing data after it is available:
-                    // block is forever unavailable
-                    return AvailabilityProperties(
-                        Double.POSITIVE_INFINITY,
-                        incrementalPath.toTravelledPath(stepOffsetOnPath),
-                        0.0,
-                        0.0
-                    )
-                }
-                // Planned timing data respected
-                return AvailabilityProperties(
-                    0.0,
-                    Offset(0.meters),
-                    plannedMaxTimeAtStep - timeAtStep,
-                    plannedMaxTimeAtStep
-                )
-            }
+        val stepOffsetOnPath = step.pathOffset
+        val timeAtStep =
+            infraExplorer.interpolateDepartureFromClamp(stepOffsetOnPath.cast()) + pathStartTime
+        val plannedMinTimeAtStep =
+            (plannedTimingData.arrivalTime - plannedTimingData.arrivalTimeToleranceBefore).seconds -
+                internalMarginForSteps
+        val plannedMaxTimeAtStep =
+            (plannedTimingData.arrivalTime + plannedTimingData.arrivalTimeToleranceAfter).seconds +
+                internalMarginForSteps
+        if (plannedMinTimeAtStep > timeAtStep) {
+            // Train passes through planned timing data before it is available
+            return AvailabilityProperties(
+                max(plannedMinTimeAtStep - timeAtStep, 0.0),
+                stepOffsetOnPath,
+                0.0,
+                0.0
+            )
+        } else if (timeAtStep > plannedMaxTimeAtStep) {
+            // Train passes through planned timing data after it is available:
+            // block is forever unavailable
+            return AvailabilityProperties(Double.POSITIVE_INFINITY, stepOffsetOnPath, 0.0, 0.0)
         }
+        // Planned timing data respected
         return AvailabilityProperties(
             0.0,
             Offset(0.meters),
-            Double.POSITIVE_INFINITY,
-            Double.POSITIVE_INFINITY
+            plannedMaxTimeAtStep - timeAtStep,
+            plannedMaxTimeAtStep
         )
     }
 
@@ -354,7 +314,6 @@ private data class AvailabilityProperties(
 
 fun makeBlockAvailability(
     requirements: Collection<SpacingRequirement>,
-    steps: List<STDCMStep> = listOf(),
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
     timeStep: Double = 2.0,
@@ -369,10 +328,8 @@ fun makeBlockAvailability(
     val trainRequirements = listOf(TrainRequirements("0", requirements, listOf()))
 
     // Only keep steps with planned timing data
-    val plannedSteps = steps.filter { it.plannedTimingData != null }
     return BlockAvailability(
         incrementalConflictDetectorFromTrainReq(trainRequirements),
-        plannedSteps,
         gridMarginBeforeTrain,
         gridMarginAfterTrain,
         timeStep
