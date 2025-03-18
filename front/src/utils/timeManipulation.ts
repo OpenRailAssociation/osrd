@@ -24,7 +24,7 @@ export function minToMs(min: number) {
   return min * 60 * 1000;
 }
 
-export function datetime2time(datetime: Date) {
+function datetime2time(datetime: Date) {
   const formatTime = d3.timeFormat('%H:%M:%S');
   return formatTime(datetime);
 }
