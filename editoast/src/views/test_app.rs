@@ -2,6 +2,7 @@
 //! test actix server, database connection pool, and different mocking
 //! components.
 
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -46,6 +47,7 @@ use super::PostgresConfig;
 use super::Regulator;
 use super::ServerConfig;
 use super::authentication_middleware;
+use super::authz::InfraGrant;
 
 // NoopSpanExporter exists in 'opentelemetry-sdk' but is hidden behind
 // 'testing' feature which brings with it tons of unneeded dependencies
@@ -379,6 +381,7 @@ pub struct UserBuilder<'a> {
     app: &'a TestApp,
     info: UserInfo,
     roles: HashSet<Role>,
+    infras_grant: HashMap<i64, InfraGrant>,
 }
 
 impl<'a> UserBuilder<'a> {
@@ -387,6 +390,7 @@ impl<'a> UserBuilder<'a> {
             app,
             info,
             roles: Default::default(),
+            infras_grant: HashMap::default(),
         }
     }
 
@@ -395,8 +399,18 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
+    pub fn with_infra_grant(mut self, infra_id: i64, grant: InfraGrant) -> Self {
+        self.infras_grant.insert(infra_id, grant);
+        self
+    }
+
     pub fn create(self) -> subject::User {
-        let Self { app, info, roles } = self;
+        let Self {
+            app,
+            info,
+            roles,
+            infras_grant,
+        } = self;
         let authz_disabled =
             app.authorization_model.is_none() || !app.app_state.config.enable_authorization;
         if !roles.is_empty() && authz_disabled {
@@ -405,6 +419,7 @@ impl<'a> UserBuilder<'a> {
             );
         }
         let regulator = &app.app_state.regulator;
+
         block_on(async move {
             let user = regulator
                 .driver()
@@ -416,6 +431,29 @@ impl<'a> UserBuilder<'a> {
                     .grant_user_roles(user.id, roles)
                     .await
                     .expect("roles should be granted successfully");
+
+                for (infra_id, grant) in infras_grant.into_iter() {
+                    match grant {
+                        InfraGrant::Owner => {
+                            regulator
+                                .grant_infra_owner_unchecked(user.id, infra_id)
+                                .await
+                                .expect("Infra owner should be granted successfully");
+                        }
+                        InfraGrant::Writer => {
+                            regulator
+                                .grant_infra_writer_unchecked(user.id, infra_id)
+                                .await
+                                .expect("Infra writer should be granted successfully");
+                        }
+                        InfraGrant::Reader => {
+                            regulator
+                                .grant_infra_reader_unchecked(user.id, infra_id)
+                                .await
+                                .expect("Infra reader should be granted successfully");
+                        }
+                    }
+                }
             }
             user
         })

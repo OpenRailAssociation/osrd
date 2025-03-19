@@ -33,7 +33,11 @@
       "ForbiddenImpersonation": "Impersonation denied",
       "ImpersonatedUserNotFound": "Unknown impersonated user",
       "NoSuchUser": "Unknown user",
-      "Unauthorized": "Unauthenticated user"
+      "SimultaneousGrantsAndRevokes": "Simultaneous grants and revokes are not allowed",
+      "Unauthorized": "Unauthenticated user",
+      "UnknownResource": "Unkown resource",
+      "UnknownResourceType": "Unkown resource type",
+      "UnknownSubject": "Unkown subject"
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Conflicting fixes for the same object on the same fix-iteration",

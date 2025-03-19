@@ -57,6 +57,126 @@ impl<S: StorageDriver> Authorizer<S> {
     pub async fn check_roles(&self, roles: HashSet<Role>) -> Result<bool, Error<S::Error>> {
         self.regulator.check_roles(self.user_id, roles).await
     }
+
+    pub async fn check_infra_grant_reader(&self, infra_id: i64) -> Result<bool, Error<S::Error>> {
+        self.regulator
+            .check_infra_grant_reader(self.user_id, infra_id)
+            .await
+    }
+
+    pub async fn check_infra_grant_writer(&self, infra_id: i64) -> Result<bool, Error<S::Error>> {
+        self.regulator
+            .check_infra_grant_writer(self.user_id, infra_id)
+            .await
+    }
+
+    pub async fn check_infra_grant_owner(&self, infra_id: i64) -> Result<bool, Error<S::Error>> {
+        self.regulator
+            .check_infra_grant_owner(self.user_id, infra_id)
+            .await
+    }
+
+    pub async fn check_infra_privilege_can_read(
+        &self,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        self.regulator
+            .check_infra_privilege_can_read(self.user_id, infra_id)
+            .await
+    }
+
+    pub async fn check_infra_privilege_can_share_read(
+        &self,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        self.regulator
+            .check_infra_privilege_can_share_read(self.user_id, infra_id)
+            .await
+    }
+
+    pub async fn check_infra_privilege_can_write(
+        &self,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        self.regulator
+            .check_infra_privilege_can_share_write(self.user_id, infra_id)
+            .await
+    }
+
+    pub async fn check_infra_privilege_can_share_ownership(
+        &self,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        self.regulator
+            .check_infra_privilege_can_share_ownership(self.user_id, infra_id)
+            .await
+    }
+
+    pub async fn grant_infra_reader(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        self.regulator
+            .grant_infra_reader(self.user_id, user_id, infra_id)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn grant_infra_writer(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        self.regulator
+            .grant_infra_writer(self.user_id, user_id, infra_id)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn grant_infra_owner(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        self.regulator
+            .grant_infra_owner(self.user_id, user_id, infra_id)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn revoke_infra_reader(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        self.regulator
+            .revoke_infra_reader(self.user_id, user_id, infra_id)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn revoke_infra_writer(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        self.regulator
+            .revoke_infra_writer(self.user_id, user_id, infra_id)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn revoke_infra_owner(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        self.regulator
+            .revoke_infra_owner(self.user_id, user_id, infra_id)
+            .await?;
+        Ok(())
+    }
 }
 
 impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {
@@ -89,6 +209,61 @@ mod tests {
         counter: Arc<RwLock<i64>>,
         users: Arc<Mutex<HashMap<UserIdentity, i64>>>,
         groups: Arc<Mutex<HashMap<GroupName, i64>>>,
+    }
+
+    #[tokio::test]
+    async fn check_user_grants() {
+        let user_identity = || "toto".to_owned();
+        let user = || UserInfo {
+            identity: user_identity(),
+            name: "Sir Toto, the One and Only".to_owned(),
+        };
+        let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
+        let regulator = move || regulator.clone();
+
+        let user_id = regulator()
+            .driver
+            .ensure_user(&user())
+            .await
+            .expect("toto should be created")
+            .id;
+
+        let authorizer = Authorizer::try_initialize(user_identity(), regulator())
+            .await
+            .unwrap();
+
+        authorizer
+            .regulator
+            .grant_infra_reader_unchecked(authorizer.user_id(), 1)
+            .await
+            .expect("Update grants should be successful");
+        let is_reader = authorizer
+            .check_infra_grant_reader(1)
+            .await
+            .expect("Check grants should be successful");
+        assert_eq!(is_reader, true,);
+
+        authorizer
+            .regulator
+            .grant_infra_writer_unchecked(user_id, 1)
+            .await
+            .expect("Update grants should be successful");
+        let is_writer = authorizer
+            .check_infra_grant_writer(1)
+            .await
+            .expect("Check grants should be successful");
+        assert_eq!(is_writer, true,);
+
+        authorizer
+            .regulator
+            .grant_infra_writer_unchecked(user_id, 1)
+            .await
+            .expect("Update grants should be successful");
+        let is_owner = authorizer
+            .check_infra_grant_writer(1)
+            .await
+            .expect("Check grants should be successful");
+        assert_eq!(is_owner, true,);
     }
 
     #[tokio::test]
@@ -429,6 +604,11 @@ mod tests {
                     .into_iter()
                     .map(|(name, id)| Ok((id, GroupInfo { name }))),
             ))
+        }
+
+        async fn infra_exists(&self, _infra_id: i64) -> Result<bool, Self::Error> {
+            // Mock implementation, always return true
+            Ok(true)
         }
     }
 }

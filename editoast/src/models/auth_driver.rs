@@ -1,6 +1,9 @@
 use std::ops::DerefMut;
 use std::sync::Arc;
 
+use crate::error::InternalError;
+use crate::models::Infra;
+use crate::models::prelude::Exists;
 use diesel::dsl;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
@@ -19,6 +22,8 @@ use tracing::Level;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AuthDriverError {
+    #[error(transparent)]
+    Internal(#[from] InternalError),
     #[error(transparent)]
     Database(#[from] editoast_models::DatabaseError),
     #[error(transparent)]
@@ -237,6 +242,14 @@ impl StorageDriver for PgAuthDriver {
                 Err(e) => Err(e.into()),
             });
         Ok(groups)
+    }
+
+    async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {
+        let conn = &mut self.pool.get().await?;
+        let exists = Infra::exists(conn, infra_id)
+            .await
+            .map_err(InternalError::from)?;
+        Ok(exists)
     }
 }
 

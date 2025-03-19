@@ -33,7 +33,11 @@
       "ForbiddenImpersonation": "Usurpation refusée",
       "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu",
       "NoSuchUser": "Utilisateur inconnu",
-      "Unauthorized": "Utilisateur non authentifié"
+      "SimultaneousGrantsAndRevokes": "Une unique entrée d'operation (grant ou revoke) est attendue",
+      "Unauthorized": "Utilisateur non authentifié",
+      "UnknownResource": "Resource inconnue",
+      "UnknownResourceType": "Type de ressource inconnu",
+      "UnknownSubject": "Sujet inconnu"
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",

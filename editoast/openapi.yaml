@@ -7,6 +7,94 @@ info:
     url: https://www.gnu.org/licenses/lgpl-3.0.html
   version: 0.1.0
 paths:
+  /authz/grants:
+    post:
+      tags:
+      - authz
+      requestBody:
+        description: List of new authorization to add or to remove (ie grants a resource to a person). Expect grant XOR revoke, not both
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grant:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - resource_type
+                    - resource_id
+                    - subject_id
+                    - grant
+                    properties:
+                      grant:
+                        type: string
+                        enum:
+                        - READER
+                        - WRITER
+                        - OWNER
+                      resource_id:
+                        type: integer
+                        format: int64
+                      resource_type:
+                        type: string
+                        enum:
+                        - infra
+                      subject_id:
+                        type: integer
+                        format: int64
+                  nullable: true
+                revoke:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - resource_type
+                    - resource_id
+                    - subject_id
+                    properties:
+                      resource_id:
+                        type: integer
+                        format: int64
+                      resource_type:
+                        $ref: '#/components/schemas/Resource'
+                      subject_id:
+                        type: integer
+                        format: int64
+                  nullable: true
+        required: true
+      responses:
+        '201':
+          description: Grants updated
+  /authz/grants/{resource_type}:
+    get:
+      tags:
+      - authz
+      parameters:
+      - name: resource_type
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Resource'
+      responses:
+        '200':
+          description: Get privileges for each grant associated to the resource type
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                    - can_read
+                    - can_share_read
+                    - can_write
+                    - can_share_write
+                    - can_delete
+                    - can_share_ownership
   /authz/me:
     get:
       tags:
@@ -32,106 +120,120 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Role'
-  /authz/roles/me:
-    get:
-      tags:
-      - authz
-      responses:
-        '200':
-          description: List the roles of the issuer of the request
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - builtin
-                properties:
-                  builtin:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Role'
-                    uniqueItems: true
-  /authz/roles/{user_id}:
-    get:
-      tags:
-      - authz
-      parameters:
-      - name: user_id
-        in: path
-        description: A user ID (not to be mistaken for its identity, cf. editoast user model documentation)
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        '200':
-          description: List the roles of a user
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                - builtin
-                properties:
-                  builtin:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Role'
-                    uniqueItems: true
+  /authz/me/grants:
     post:
       tags:
       - authz
-      parameters:
-      - name: user_id
-        in: path
-        description: A user ID (not to be mistaken for its identity, cf. editoast user model documentation)
-        required: true
-        schema:
-          type: integer
-          format: int64
       requestBody:
+        description: HashMap of resource type with a list of resource id to get the grants for. If a resource doesn't exist, it will be omitted.
         content:
           application/json:
             schema:
               type: object
-              required:
-              - roles
-              properties:
-                roles:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Role'
+              additionalProperties:
+                type: array
+                items:
+                  type: integer
+                  format: int64
         required: true
       responses:
-        '204':
-          description: The roles have been granted successfully
-    delete:
+        '200':
+          description: Get grants info of the current user for the given resources in body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - resource_type
+                    - resource_id
+                    - grant
+                    properties:
+                      grant:
+                        type: string
+                        enum:
+                        - READER
+                        - WRITER
+                        - OWNER
+                      resource_id:
+                        type: integer
+                        format: int64
+                      resource_type:
+                        type: string
+                        enum:
+                        - infra
+  /authz/{resource_type}/{resource_id}:
+    get:
       tags:
       - authz
       parameters:
-      - name: user_id
+      - name: resource_type
         in: path
-        description: A user ID (not to be mistaken for its identity, cf. editoast user model documentation)
+        required: true
+        schema:
+          $ref: '#/components/schemas/Resource'
+      - name: resource_id
+        in: path
         required: true
         schema:
           type: integer
           format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - roles
-              properties:
-                roles:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Role'
-        required: true
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 1
+          minimum: 1
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+          default: 25
+          nullable: true
+          minimum: 1
       responses:
-        '204':
-          description: The roles have been removed successfully
+        '200':
+          description: Get list of user that have access to the resource
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - subject
+                  - grant
+                  properties:
+                    grant:
+                      type: string
+                      enum:
+                      - READER
+                      - WRITER
+                      - OWNER
+                    subject:
+                      type: object
+                      required:
+                      - id
+                      - name
+                      - type
+                      properties:
+                        id:
+                          type: integer
+                          format: int64
+                        name:
+                          type: string
+                        type:
+                          type: string
+                          enum:
+                          - User
+                          - Group
   /documents:
     post:
       tags:
@@ -4679,6 +4781,92 @@ components:
           type: string
           enum:
           - editoast:authz:Authz
+    EditoastAuthzErrorSimultaneousGrantsAndRevokes:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:authz:SimultaneousGrantsAndRevokes
+    EditoastAuthzErrorUnauthorized:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 403
+        type:
+          type: string
+          enum:
+          - editoast:authz:Unauthorized
+    EditoastAuthzErrorUnknownResource:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - resource_id
+          properties:
+            resource_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:authz:UnknownResource
+    EditoastAuthzErrorUnknownSubject:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - subject_id
+          properties:
+            subject_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:authz:UnknownSubject
     EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject:
       type: object
       required:
@@ -5112,6 +5300,10 @@ components:
       - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthorized'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthorizer'
       - $ref: '#/components/schemas/EditoastAuthzErrorAuthz'
+      - $ref: '#/components/schemas/EditoastAuthzErrorSimultaneousGrantsAndRevokes'
+      - $ref: '#/components/schemas/EditoastAuthzErrorUnauthorized'
+      - $ref: '#/components/schemas/EditoastAuthzErrorUnknownResource'
+      - $ref: '#/components/schemas/EditoastAuthzErrorUnknownSubject'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorFixTrialFailure'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMaximumIterationReached'
@@ -5145,7 +5337,6 @@ components:
       - $ref: '#/components/schemas/EditoastMacroNodeErrorDatabase'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorNotFound'
       - $ref: '#/components/schemas/EditoastModelError'
-      - $ref: '#/components/schemas/EditoastNoSuchUserErrorNoSuchUser'
       - $ref: '#/components/schemas/EditoastOperationErrorEmptyId'
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
       - $ref: '#/components/schemas/EditoastOperationErrorModifyId'
@@ -5165,6 +5356,7 @@ components:
       - $ref: '#/components/schemas/EditoastProjectErrorImageNotFound'
       - $ref: '#/components/schemas/EditoastProjectErrorNotFound'
       - $ref: '#/components/schemas/EditoastRailJsonErrorUnsupportedVersion'
+      - $ref: '#/components/schemas/EditoastResourceErrorUnknownResourceType'
       - $ref: '#/components/schemas/EditoastRollingStockErrorBasePowerClassEmpty'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotCreateCompoundImage'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotReadImage'
@@ -5557,30 +5749,6 @@ components:
           type: string
           enum:
           - editoast:model:ModelError
-    EditoastNoSuchUserErrorNoSuchUser:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - user_id
-          properties:
-            user_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:authz:NoSuchUser
     EditoastOperationErrorEmptyId:
       type: object
       required:
@@ -6019,6 +6187,30 @@ components:
           type: string
           enum:
           - editoast:railjson:UnsupportedVersion
+    EditoastResourceErrorUnknownResourceType:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - resource_type
+          properties:
+            resource_type:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:authz:UnknownResourceType
     EditoastRollingStockErrorBasePowerClassEmpty:
       type: object
       required:
@@ -9853,6 +10045,10 @@ components:
             type: integer
             format: int64
             minimum: 0
+    Resource:
+      type: string
+      enum:
+      - infra
     RjsPowerRestrictionRange:
       type: object
       description: A range along the train path where a power restriction is applied.
