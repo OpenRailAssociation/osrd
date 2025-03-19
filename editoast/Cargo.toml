@@ -32,6 +32,7 @@ chrono = { version = "0.4.40", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 darling = "0.20"
 derivative = "2.2.0"
+derive_more = { version = "2.0.1", features = ["from"] }
 diesel = { version = "2.2", default-features = false, features = [
   "32-column-tables",
   "chrono",
@@ -131,6 +132,7 @@ deadpool-redis = { version = "0.20.0", features = [
   "tokio-native-tls-comp",
 ] }
 derivative.workspace = true
+derive_more.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }
 diesel_json = "0.2.1"

@@ -42,6 +42,19 @@ where
 {
     /// Returns whether the row #`id` exists in the database
     async fn exists(conn: &mut DbConnection, id: K) -> Result<bool>;
+
+    /// Just like [Exists::exists] but returns `Err(fail())` if the row doesn't exist
+    async fn exists_or_fail<E, F>(conn: &mut DbConnection, id: K, fail: F) -> Result<()>
+    where
+        E: EditoastError,
+        F: FnOnce() -> E + Send,
+    {
+        match Self::exists(conn, id).await {
+            Ok(true) => Ok(()),
+            Ok(false) => Err(fail().into()),
+            Err(e) => Err(e),
+        }
+    }
 }
 
 /// Unchecked batch retrieval of a [Model](super::Model) from the database

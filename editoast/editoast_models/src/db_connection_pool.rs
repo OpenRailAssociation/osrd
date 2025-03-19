@@ -27,6 +27,8 @@ use url::Url;
 use tokio::sync::OwnedRwLockWriteGuard;
 use tokio::sync::RwLock;
 
+use crate::DatabaseError;
+
 pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 
 #[derive(Clone)]
@@ -58,7 +60,7 @@ impl DbConnection {
     pub async fn transaction<'a, R, E, F>(&self, callback: F) -> std::result::Result<R, E>
     where
         F: FnOnce(Self) -> ScopedBoxFuture<'a, 'a, std::result::Result<R, E>> + Send + 'a,
-        E: From<diesel::result::Error> + Send + 'a,
+        E: From<DatabaseError> + Send + 'a,
         R: Send + 'a,
     {
         use diesel_async::TransactionManager as _;
@@ -67,13 +69,17 @@ impl DbConnection {
 
         {
             let mut handle = self.write().await;
-            TxManager::begin_transaction(handle.deref_mut()).await?;
+            TxManager::begin_transaction(handle.deref_mut())
+                .await
+                .map_err(DatabaseError)?;
         }
 
         match callback(self.clone()).await {
             Ok(result) => {
                 let mut handle = self.write().await;
-                TxManager::commit_transaction(handle.deref_mut()).await?;
+                TxManager::commit_transaction(handle.deref_mut())
+                    .await
+                    .map_err(DatabaseError)?;
                 Ok(result)
             }
             Err(callback_error) => {
@@ -82,10 +88,21 @@ impl DbConnection {
                     Ok(()) | Err(diesel::result::Error::BrokenTransactionManager) => {
                         Err(callback_error)
                     }
-                    Err(rollback_error) => Err(rollback_error.into()),
+                    Err(rollback_error) => Err(E::from(DatabaseError(rollback_error))),
                 }
             }
         }
+    }
+
+    pub async fn rollback_transaction(&self) -> Result<(), DatabaseError> {
+        use diesel_async::TransactionManager as _;
+
+        let mut handle = self.write().await;
+        <AsyncPgConnection as AsyncConnection>::TransactionManager::rollback_transaction(
+            handle.deref_mut(),
+        )
+        .await
+        .map_err(DatabaseError)
     }
 }
 

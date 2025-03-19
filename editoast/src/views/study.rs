@@ -151,31 +151,21 @@ async fn create(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let connection = db_pool.get().await?;
-
-    let (study, project) = connection
-        .transaction::<_, InternalError, _>(|conn| {
+    let (study, project) = Project::transactional_content_update(
+        db_pool.get().await?,
+        project_id,
+        |mut conn, project| {
             async move {
-                // Check if project exists
-                let mut project = Project::retrieve_or_fail(&mut conn.clone(), project_id, || {
-                    ProjectError::NotFound { project_id }
-                })
-                .await?;
-
-                // Create study
-                let study: Study = data
-                    .into_study_changeset(project_id)?
-                    .create(&mut conn.clone())
+                let study = data
+                    .into_study_changeset(project.id)?
+                    .create(&mut conn)
                     .await?;
-
-                // Update project last_modification field
-                project.update_last_modified(&mut conn.clone()).await?;
-
-                Ok((study, project))
+                Ok::<_, InternalError>(study)
             }
             .scope_boxed()
-        })
-        .await?;
+        },
+    )
+    .await?;
 
     // Return study with list of scenarios
     let study_response = StudyResponse {
@@ -215,17 +205,16 @@ async fn delete(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    // Check if project exists
-    let conn = &mut db_pool.get().await?;
-    let mut project =
-        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
-            .await?;
 
-    // Delete study
-    Study::delete_static_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
-
-    // Update project last_modification field
-    project.update_last_modified(conn).await?;
+    Project::transactional_content_update(db_pool.get().await?, project_id, |mut conn, _| {
+        async move {
+            Study::delete_static_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
+                .await?;
+            Ok::<_, StudyError>(())
+        }
+        .scope_boxed()
+    })
+    .await?;
 
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
@@ -252,23 +241,33 @@ async fn get(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    // Check if project exists
-    let conn = &mut db_pool.get().await?;
-    use crate::models::Retrieve;
-    let project =
-        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
-            .await?;
 
-    // Return the study
-    let study =
-        Study::retrieve_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
+    let (project, study_scenarios) = db_pool
+        .get()
+        .await?
+        .transaction(|mut conn| {
+            async move {
+                let project = Project::retrieve_or_fail(&mut conn, project_id, || {
+                    ProjectError::NotFound { project_id }
+                })
+                .await?;
+                let study = Study::retrieve_or_fail(&mut conn, study_id, || StudyError::NotFound {
+                    study_id,
+                })
+                .await?;
 
-    //Check if the study belongs to the project
-    if study.project_id != project_id {
-        return Err(StudyError::NotFound { study_id }.into());
-    }
+                // Check if the study belongs to the project
+                if study.project_id != project_id {
+                    return Err::<_, InternalError>(StudyError::NotFound { study_id }.into());
+                }
 
-    let study_scenarios = StudyWithScenarioCount::try_fetch(conn, study).await?;
+                let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
+                Ok((project, study_scenarios))
+            }
+            .scope_boxed()
+        })
+        .await?;
+
     let study_response = StudyResponse::new(study_scenarios, project);
     Ok(Json(study_response))
 }
@@ -344,37 +343,28 @@ async fn patch(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let connection = db_pool.get().await?;
-    let (study_scenarios, project) = connection
-        .transaction::<_, InternalError, _>(|conn| {
-            async move {
-                // Check if project exists
-                let mut project = Project::retrieve_or_fail(&mut conn.clone(), project_id, || {
-                    ProjectError::NotFound { project_id }
-                })
-                .await?;
 
-                // Update study
+    let (response, _, project) = Study::transactional_content_update(
+        db_pool.get().await?,
+        study_id,
+        move |mut conn, _, project| {
+            async move {
+                if project.id != project_id {
+                    return Err::<_, InternalError>(StudyError::NotFound { study_id }.into());
+                }
                 let study = data
                     .into_study_changeset()?
-                    .last_modification(Utc::now().naive_utc())
-                    .update_or_fail(&mut conn.clone(), study_id, || StudyError::NotFound {
-                        study_id,
-                    })
+                    .update_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
                     .await?;
-                let study_scenarios =
-                    StudyWithScenarioCount::try_fetch(&mut conn.clone(), study).await?;
-
-                // Update project last_modification field
-                project.update_last_modified(&mut conn.clone()).await?;
-
-                Ok((study_scenarios, project))
+                let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
+                Ok::<_, InternalError>(study_scenarios)
             }
             .scope_boxed()
-        })
-        .await?;
-    let study_response = StudyResponse::new(study_scenarios, project);
-    Ok(Json(study_response))
+        },
+    )
+    .await?;
+
+    Ok(Json(StudyResponse::new(response, project)))
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]

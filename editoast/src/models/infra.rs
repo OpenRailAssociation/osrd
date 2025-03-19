@@ -105,7 +105,7 @@ impl Infra {
             .collect()
     }
 
-    pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<(), ModelError<Self>> {
         let new_version = self
             .version
             .parse::<u32>()
@@ -116,7 +116,10 @@ impl Infra {
         self.save(conn).await
     }
 
-    pub async fn bump_generated_version(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn bump_generated_version(
+        &mut self,
+        conn: &mut DbConnection,
+    ) -> Result<(), ModelError<Self>> {
         self.generated_version = Some(self.version.clone());
         self.save(conn).await
     }

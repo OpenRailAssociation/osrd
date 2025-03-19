@@ -282,6 +282,7 @@ impl TestAppBuilder {
         let server = TestServer::new(router).expect("test server should build properly");
 
         TestApp {
+            test_name: self.test_name,
             server,
             app_state,
             authorization_model: self.authorization_model,
@@ -314,6 +315,7 @@ pub(crate) use test_app;
 /// It also holds a reference to the database connection pool and the core client,
 /// which can be accessed through the [TestApp] methods.
 pub(crate) struct TestApp {
+    test_name: String,
     server: TestServer,
     app_state: AppState,
     authorization_model: Option<&'static str>,
@@ -322,6 +324,10 @@ pub(crate) struct TestApp {
 }
 
 impl TestApp {
+    pub fn name(&self, resource_name: impl std::fmt::Display) -> String {
+        format!("{}_{}", self.test_name, resource_name)
+    }
+
     pub fn db_pool(&self) -> Arc<DbConnectionPoolV2> {
         self.app_state.db_pool.clone()
     }

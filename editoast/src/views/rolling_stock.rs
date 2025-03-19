@@ -179,19 +179,6 @@ pub(crate) enum LiveryMultipartError {
     },
 }
 
-// Still used to parse the error of `Update` and `Save`. Will be removed soon.
-pub fn map_diesel_error(e: InternalError, name: impl AsRef<str>) -> InternalError {
-    if e.message
-        .contains(r#"duplicate key value violates unique constraint "rolling_stock_name_key""#)
-    {
-        RollingStockError::NameAlreadyUsed { name: name.as_ref().to_string() }.into()
-    } else if e.message.contains(r#"new row for relation "rolling_stock" violates check constraint "base_power_class_null_or_non_empty""#) {
-        RollingStockError::BasePowerClassEmpty.into()
-    } else {
-        e
-    }
-}
-
 // This implementation could be generated rather trivially...
 impl From<rolling_stock_model::Error> for RollingStockError {
     fn from(e: rolling_stock_model::Error) -> Self {
@@ -376,7 +363,6 @@ async fn update(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let name = rolling_stock_form.name.clone();
     let rolling_stock_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
     rolling_stock_changeset.validate()?;
 
@@ -398,7 +384,7 @@ async fn update(
                 let mut new_rolling_stock = rolling_stock_changeset
                     .update(&mut conn.clone(), rolling_stock_id)
                     .await
-                    .map_err(|e| map_diesel_error(e, name.clone()))?
+                    .map_err(RollingStockError::from)?
                     .ok_or(RollingStockError::KeyNotFound {
                         rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
                     })?;
@@ -408,7 +394,7 @@ async fn update(
                     new_rolling_stock
                         .save(&mut conn.clone())
                         .await
-                        .map_err(|err| map_diesel_error(err, name))?;
+                        .map_err(RollingStockError::from)?
                 }
                 Ok(new_rolling_stock)
             }

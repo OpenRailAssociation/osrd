@@ -4,9 +4,13 @@ use std::collections::HashMap;
 use std::ops::Deref;
 
 use editoast_common::units;
-use editoast_common::units::quantities::{
-    Acceleration, Deceleration, Length, Mass, Ratio, Time, Velocity,
-};
+use editoast_common::units::quantities::Acceleration;
+use editoast_common::units::quantities::Deceleration;
+use editoast_common::units::quantities::Length;
+use editoast_common::units::quantities::Mass;
+use editoast_common::units::quantities::Ratio;
+use editoast_common::units::quantities::Time;
+use editoast_common::units::quantities::Velocity;
 use editoast_derive::Model;
 use editoast_models::model;
 use editoast_models::rolling_stock::RollingStockCategories;
@@ -109,6 +113,7 @@ pub struct RollingStockModel {
 }
 
 #[derive(Debug, thiserror::Error)]
+#[cfg_attr(test, derive(PartialEq))]
 pub enum Error {
     #[error("Rolling stock name already used: {name}")]
     NameAlreadyUsed { name: String },
@@ -291,17 +296,13 @@ pub mod tests {
     use editoast_models::rolling_stock::RollingStockCategories;
     use editoast_models::rolling_stock::RollingStockCategory;
     use rstest::rstest;
-    use serde_json::to_value;
 
     use super::RollingStockModel;
-    use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::fast_rolling_stock_changeset;
     use crate::models::fixtures::rolling_stock_with_energy_sources_changeset;
     use crate::models::prelude::*;
-    use crate::views::rolling_stock::map_diesel_error;
-    use crate::views::rolling_stock::RollingStockError;
     use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
@@ -336,35 +337,27 @@ pub mod tests {
 
         // GIVEN
         // Creating the first rolling stock
-        let rs_name = "fast_rolling_stock_name";
-        let created_fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+        let original_name = "micheline";
+        let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), original_name).await;
 
         // Creating the second rolling stock
-        let rs_name_with_energy_sources_name = "fast_rolling_stock_with_energy_sources_name";
-        let created_fast_rolling_stock_with_energy_sources =
-            create_rolling_stock_with_energy_sources(
-                &mut db_pool.get_ok(),
-                rs_name_with_energy_sources_name,
-            )
-            .await;
+        let new_name = "wrong name";
+        let mut other_rs =
+            create_rolling_stock_with_energy_sources(&mut db_pool.get_ok(), new_name).await;
 
         // WHEN
-        let result = created_fast_rolling_stock_with_energy_sources
-            .into_changeset()
-            .update(&mut db_pool.get_ok(), created_fast_rolling_stock.id)
+        let error = other_rs
+            .patch()
+            .name(original_name.to_owned())
+            .apply(&mut db_pool.get_ok())
             .await
-            .map_err(|e| map_diesel_error(e, rs_name));
+            .expect_err("update should fail - name already used");
 
-        let error: InternalError = RollingStockError::NameAlreadyUsed {
-            name: String::from(rs_name),
-        }
-        .into();
-
-        // THEN
         assert_eq!(
-            to_value(result.unwrap_err()).unwrap(),
-            to_value(error).unwrap()
+            error,
+            super::Error::NameAlreadyUsed {
+                name: String::from(original_name)
+            }
         );
     }
 

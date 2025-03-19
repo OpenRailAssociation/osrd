@@ -66,7 +66,8 @@
       "ObjectNotFound": "{{obj_type}} '{{obj_id}}', could not be found everywhere in the infrastructure cache"
     },
     "infra": {
-      "NotFound": "",
+      "Database": "Internal error",
+      "NotFound": "Infrastructure '{{infra_id}}' could not be found",
       "edition": {
         "InfraIsLocked": "Infrastructure is locked",
         "SplitTrackSectionBadOffset": "Distance to split track section '{{tracksection_id}}' in infrastructure '{{infra_id}}' is invalid. It must be between 0 and {{tracksection_length}} meters."
@@ -100,6 +101,7 @@
       "ViewNotFound": "View {{view_name}} not found."
     },
     "macro_node": {
+      "Database": "Internal error",
       "NotFound": "Node {{node_id}} not found."
     },
     "model": {
@@ -131,6 +133,7 @@
       "Username": "Invalid username"
     },
     "project": {
+      "Database": "Internal error",
       "ImageError": "The provided image is not valid",
       "ImageNotFound": "Image document '{{document_key}}' not found",
       "NotFound": "Project '{{project_id}}', could not be found"
@@ -153,6 +156,7 @@
       "IsUsed": "Rolling stock '{{rolling_stock_id}}' is used"
     },
     "towedrollingstocks": {
+      "Database": "Internal error",
       "IdNotFound": "Towed rolling stock '{{towed_rolling_stock_id}}' could not be found",
       "IsLocked": "Towed rolling stock '{{towed_rolling_stock_id}}' is locked"
     },

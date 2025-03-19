@@ -1,17 +1,20 @@
 use chrono::NaiveDateTime;
 use chrono::Utc;
+use diesel_async::scoped_futures::ScopedBoxFuture;
+use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::error::Result;
+use crate::error::InternalError;
 use crate::models::prelude::*;
 use crate::models::Document;
 use crate::models::Study;
 use crate::models::Tags;
 use crate::views::projects::ProjectError;
 use crate::SelectionSettings;
+use editoast_models::model;
 use editoast_models::DbConnection;
 
 editoast_common::schemas! {
@@ -21,6 +24,7 @@ editoast_common::schemas! {
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = editoast_models::tables::project)]
 #[model(gen(ops = crud, list))]
+#[model(error = Error)]
 pub struct Project {
     pub id: i64,
     pub name: String,
@@ -36,15 +40,58 @@ pub struct Project {
     pub image: Option<i64>,
 }
 
+#[derive(Debug, thiserror::Error, derive_more::From)]
+pub enum Error {
+    #[error(transparent)]
+    #[from(forward)]
+    Database(model::Error),
+    #[error(transparent)]
+    Legacy(#[from] InternalError),
+}
+
+#[tracing::instrument(skip(conn), ret, err)]
+async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), Error> {
+    let res = conn
+        .transaction(|mut conn| {
+            async move {
+                match Document::delete_static(&mut conn, doc_id).await {
+                    Ok(false) => unreachable!(
+                        "cannot happen as the Document has to be there because of the FK on `image`"
+                    ),
+                    Ok(true) => Ok(()),
+                    // We want the delete to occur in a transaction in order to rollback it if the deletion fails.
+                    // The deletion can fail if the document is still used by another project (FK violation). This
+                    // is acceptable, it's what this function does.
+                    // However, if a FK violation occurs, the transaction must rolloback otherwise each subsequent
+                    // query will fail. If the violation occurs, `e` is an `Err`, therefore we return it in order
+                    // to let `transaction` rollback. We then match on the error below in order to accept the
+                    // FK violation, which is not an error in our workflow.
+                    Err(e) => Err(e),
+                }
+            }
+            .scope_boxed()
+        })
+        .await;
+    match res {
+        Ok(_) => Ok(()),
+        Err(model::Error::ForeignKeyViolation { constraint })
+            if constraint == "project_image_id_fkey" =>
+        {
+            Ok(())
+        }
+        Err(e) => Err(self::Error::from(e)),
+    }
+}
+
 impl Project {
     /// This function takes a filled project and update to now the last_modification field
-    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<(), Error> {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
     }
 
-    pub async fn studies_count(&self, conn: &mut DbConnection) -> Result<u64> {
+    pub async fn studies_count(&self, conn: &mut DbConnection) -> Result<u64, InternalError> {
         let project_id = self.id;
         let studies_count = Study::count(
             conn,
@@ -54,44 +101,91 @@ impl Project {
         Ok(studies_count)
     }
 
+    /// Updates a project's image and deletes the old one if it is not used by another project
+    #[tracing::instrument(skip(conn), ret, err)]
     pub async fn update_and_prune_document(
+        &mut self,
         conn: &mut DbConnection,
-        project_changeset: Changeset<Self>,
-        project_id: i64,
-    ) -> Result<Project> {
-        let old_project =
-            Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
-                .await?;
-        let image_to_delete = if Some(old_project.image) != project_changeset.image {
-            old_project.image
-        } else {
-            None
-        };
-        let project = project_changeset
-            .update_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
-            .await?;
-        if let Some(image) = image_to_delete {
-            // We don't check the result. We don't want to throw an error if the image is used in another project.
-            let _ = Document::delete_static(conn, image).await;
-        }
-        Ok(project)
+        new_doc_id: Option<i64>,
+    ) -> Result<(), Error> {
+        conn.transaction(|mut conn| {
+            async move {
+                let old_doc_id = self.image;
+                self.image = new_doc_id;
+                self.save(&mut conn).await?;
+                if new_doc_id != old_doc_id {
+                    if let Some(old_doc_id) = old_doc_id {
+                        try_delete_document(&conn, old_doc_id).await?;
+                    }
+                }
+                Ok::<_, Error>(())
+            }
+            .scope_boxed()
+        })
+        .await?;
+        Ok(())
     }
 
-    pub async fn delete_and_prune_document(
-        conn: &mut DbConnection,
+    /// Deletes a project and prunes the image if it is not used by another project
+    #[tracing::instrument(skip(conn), ret, err)]
+    pub async fn delete_and_prune_document(self, conn: &mut DbConnection) -> Result<(), Error> {
+        conn.transaction(|mut conn| {
+            async move {
+                if !self.delete(&mut conn).await? {
+                    tracing::warn!(
+                        project_id = self.id,
+                        "project to delete not found, probable race condition"
+                    );
+                }
+                if let Some(doc_id) = self.image {
+                    try_delete_document(&conn, doc_id).await?;
+                }
+                Ok(())
+            }
+            .scope_boxed()
+        })
+        .await
+    }
+
+    /// Opens a transaction querying a [Project] and calls the provided function with it
+    ///
+    /// The [Project::last_modification] field is updated to the current time after the function is called.
+    #[tracing::instrument(skip(conn, f), err)]
+    pub async fn transactional_content_update<T, E, F>(
+        conn: DbConnection,
         project_id: i64,
-    ) -> Result<bool> {
-        let project_obj =
-            Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
+        f: F,
+    ) -> Result<(T, Self), InternalError>
+    where
+        T: Send,
+        E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
+        F: for<'a> FnOnce(DbConnection, &'a mut Self) -> ScopedBoxFuture<'a, 'a, Result<T, E>>
+            + Send,
+    {
+        conn.transaction(|mut conn| {
+            async move {
+                let mut project = Self::retrieve_or_fail(&mut conn, project_id, || {
+                    ProjectError::NotFound { project_id }
+                })
                 .await?;
-        let _ = Project::delete_static(conn, project_id).await?;
 
-        if let Some(image) = project_obj.image {
-            // We don't check the result. We don't want to throw an error if the image is used in another project.
-            let _ = Document::delete_static(conn, image).await;
-        }
+                let res = f(conn.clone(), &mut project).await;
 
-        Ok(true)
+                project
+                    .patch()
+                    .last_modification(Utc::now().naive_utc())
+                    .apply(&mut conn)
+                    .await
+                    .map_err(|err| match err {
+                        Error::Database(e) => e.into(),
+                        Error::Legacy(e) => e,
+                    })?;
+
+                res.map(|t| (t, project)).map_err(Into::into)
+            }
+            .scope_boxed()
+        })
+        .await
     }
 }
 
@@ -172,5 +266,129 @@ pub mod tests {
             let name_2 = p2.name.to_lowercase();
             assert!(name_1.ge(&name_2));
         }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn update_project_prune_document() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut project1 = create_project(&mut db_pool.get_ok(), "Project 1").await;
+        let mut project2 = create_project(&mut db_pool.get_ok(), "Project 2").await;
+        let image = Document::changeset()
+            .content_type("data/text".to_owned())
+            .data("wassup?".bytes().collect())
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        let image2 = Document::changeset()
+            .content_type("data/text".to_owned())
+            .data("ohno".bytes().collect())
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+
+        project1
+            .update_and_prune_document(&mut db_pool.get_ok(), Some(image.id))
+            .await
+            .expect("should work");
+        project2
+            .update_and_prune_document(&mut db_pool.get_ok(), Some(image.id))
+            .await
+            .expect("should work");
+
+        project2
+            .update_and_prune_document(&mut db_pool.get_ok(), None)
+            .await
+            .expect("should work - image is still used by project1");
+        assert!(Document::exists(&mut db_pool.get_ok(), image.id)
+            .await
+            .unwrap());
+
+        project1
+            .update_and_prune_document(&mut db_pool.get_ok(), Some(image2.id))
+            .await
+            .expect("should work");
+        assert!(
+            !Document::exists(&mut db_pool.get_ok(), image.id)
+                .await
+                .unwrap(),
+            "image should be deleted"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn delete_project_prune_document() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let mut project1 = create_project(&mut db_pool.get_ok(), "Project 1").await;
+        let mut project2 = create_project(&mut db_pool.get_ok(), "Project 2").await;
+        let mut project3 = create_project(&mut db_pool.get_ok(), "Project 3").await;
+        let project4 = create_project(&mut db_pool.get_ok(), "Project 4").await;
+        let image1 = Document::changeset()
+            .content_type("data/text".to_owned())
+            .data("image 1".bytes().collect())
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        project1.image = Some(image1.id);
+        project1.save(&mut db_pool.get_ok()).await.unwrap();
+        project2.image = Some(image1.id);
+        project2.save(&mut db_pool.get_ok()).await.unwrap();
+        let image2 = Document::changeset()
+            .content_type("data/text".to_owned())
+            .data("image 2".bytes().collect())
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+        project3.image = Some(image2.id);
+        project3.save(&mut db_pool.get_ok()).await.unwrap();
+
+        // project1 -> image1, project2 -> image1, project3 -> image2, project4 -> nothing
+
+        let p1_id = project1.id;
+        project1
+            .delete_and_prune_document(&mut db_pool.get_ok())
+            .await
+            .expect("should work");
+        assert!(
+            Document::exists(&mut db_pool.get_ok(), image1.id)
+                .await
+                .unwrap(),
+            "image should not be deleted - still used by project2"
+        );
+
+        // project2 -> image1, project3 -> image2, project4 -> nothing
+
+        let p3_id = project3.id;
+        project3
+            .delete_and_prune_document(&mut db_pool.get_ok())
+            .await
+            .expect("should work");
+        assert!(
+            !Document::exists(&mut db_pool.get_ok(), image2.id)
+                .await
+                .unwrap(),
+            "image2 should be deleted"
+        );
+
+        // project2 -> image1, project4 -> nothing
+
+        let p4_id = project4.id;
+        project4
+            .delete_and_prune_document(&mut db_pool.get_ok())
+            .await
+            .expect("should work");
+
+        // project2 -> image1
+
+        assert!(Project::exists(&mut db_pool.get_ok(), project2.id)
+            .await
+            .unwrap());
+        assert!(Document::exists(&mut db_pool.get_ok(), image1.id)
+            .await
+            .unwrap());
+
+        assert!(!Project::exists(&mut db_pool.get_ok(), p1_id).await.unwrap());
+        assert!(!Project::exists(&mut db_pool.get_ok(), p3_id).await.unwrap());
+        assert!(!Project::exists(&mut db_pool.get_ok(), p4_id).await.unwrap());
     }
 }

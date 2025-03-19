@@ -1243,6 +1243,7 @@ dependencies = [
  "deadpool",
  "deadpool-redis",
  "derivative",
+ "derive_more",
  "diesel",
  "diesel-async",
  "diesel_json",

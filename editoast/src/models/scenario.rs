@@ -4,17 +4,24 @@ use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
+use diesel_async::scoped_futures::ScopedBoxFuture;
+use diesel_async::scoped_futures::ScopedFutureExt as _;
 use diesel_async::RunQueryDsl;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::Tags;
+use crate::views::scenario::ScenarioError;
 use editoast_derive::Model;
 use editoast_models::DbConnection;
+
+use super::Project;
+use super::Study;
 
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
 #[model(table = editoast_models::tables::scenario)]
@@ -59,5 +66,60 @@ impl Scenario {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
+    }
+
+    /// Opens a transaction, retrieves the [Scenario], its [Study] and [Project] and
+    /// calls the provided closure with these objects
+    ///
+    /// The last modification field of these three objects are updated before the transaction is committed.
+    #[tracing::instrument(skip(conn, f), err)]
+    pub async fn transactional_content_update<T, E, F>(
+        conn: DbConnection,
+        scenario_id: i64,
+        f: F,
+    ) -> Result<(T, Self, Study, Project), InternalError>
+    where
+        T: Send,
+        E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
+        F: for<'a> FnOnce(
+                DbConnection,
+                &'a mut Self,
+                &'a mut Study,
+                &'a mut Project,
+            ) -> ScopedBoxFuture<'a, 'a, Result<T, E>>
+            + Send
+            + 'static,
+    {
+        conn.transaction(|mut conn| {
+            async move {
+                let mut scenario = Self::retrieve_or_fail(&mut conn, scenario_id, || {
+                    ScenarioError::NotFound { scenario_id }
+                })
+                .await?;
+
+                let ((t, mut scenario), study, project) = Study::transactional_content_update(
+                    conn.clone(),
+                    scenario.study_id,
+                    |conn, study, project| {
+                        async move {
+                            let res = f(conn.clone(), &mut scenario, study, project).await;
+                            res.map(|t| (t, scenario))
+                        }
+                        .scope_boxed()
+                    },
+                )
+                .await?;
+
+                scenario
+                    .patch()
+                    .last_modification(Utc::now().naive_utc())
+                    .apply(&mut conn)
+                    .await?;
+
+                Ok((t, scenario, study, project))
+            }
+            .scope_boxed()
+        })
+        .await
     }
 }

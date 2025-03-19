@@ -18,6 +18,7 @@ use axum::response::IntoResponse;
 use axum::Extension;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
+use editoast_models::model;
 use editoast_osrdyne_client::OsrdyneClient;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -91,6 +92,10 @@ pub enum InfraApiError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { infra_id: i64 },
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] model::Error),
 }
 
 #[derive(Debug, Deserialize, IntoParams)]
@@ -650,7 +655,8 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) ->
     })
     .await?;
     infra.locked = locked;
-    infra.save(&mut db_pool.get().await?).await
+    infra.save(&mut db_pool.get().await?).await?;
+    Ok(())
 }
 
 /// Lock an infra

@@ -2301,7 +2301,7 @@ paths:
     get:
       tags:
       - scenarios
-      summary: Get macro node list by scneario id
+      summary: Get macro node list by scenario id
       parameters:
       - name: project_id
         in: path
@@ -5150,6 +5150,7 @@ components:
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
+      - $ref: '#/components/schemas/EditoastInfraApiErrorDatabase'
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
       - $ref: '#/components/schemas/EditoastInfraCacheEditoastErrorObjectNotFound'
       - $ref: '#/components/schemas/EditoastInfraStateErrorFetchError'
@@ -5157,6 +5158,7 @@ components:
       - $ref: '#/components/schemas/EditoastLayersErrorViewNotFound'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
+      - $ref: '#/components/schemas/EditoastMacroNodeErrorDatabase'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorNotFound'
       - $ref: '#/components/schemas/EditoastModelError'
       - $ref: '#/components/schemas/EditoastNoSuchUserErrorNoSuchUser'
@@ -5174,6 +5176,7 @@ components:
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsInvalidNumberOfPaths'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsStartingTrackLocationNotFound'
+      - $ref: '#/components/schemas/EditoastProjectErrorDatabase'
       - $ref: '#/components/schemas/EditoastProjectErrorImageError'
       - $ref: '#/components/schemas/EditoastProjectErrorImageNotFound'
       - $ref: '#/components/schemas/EditoastProjectErrorNotFound'
@@ -5215,6 +5218,7 @@ components:
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorParseError'
+      - $ref: '#/components/schemas/EditoastTowedRollingStockErrorDatabase'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIdNotFound'
       - $ref: '#/components/schemas/EditoastTowedRollingStockErrorIsLocked'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
@@ -5321,6 +5325,25 @@ components:
           type: string
           enum:
           - editoast:infra:objects:ObjectIdNotFound
+    EditoastInfraApiErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:infra:Database
     EditoastInfraApiErrorNotFound:
       type: object
       required:
@@ -5488,6 +5511,25 @@ components:
           type: string
           enum:
           - editoast:infra:errors:WrongErrorTypeProvided
+    EditoastMacroNodeErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:macro_node:Database
     EditoastMacroNodeErrorNotFound:
       type: object
       required:
@@ -5875,6 +5917,25 @@ components:
           type: string
           enum:
           - editoast:infra:pathfinding:StartingTrackLocationNotFound
+    EditoastProjectErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:project:Database
     EditoastProjectErrorImageError:
       type: object
       required:
@@ -6806,6 +6867,25 @@ components:
           type: string
           enum:
           - editoast:timetable:ParseError
+    EditoastTowedRollingStockErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:towedrollingstocks:Database
     EditoastTowedRollingStockErrorIdNotFound:
       type: object
       required:

@@ -1,9 +1,12 @@
 use std::sync::LazyLock;
 
-use diesel::result::{DatabaseErrorInformation, DatabaseErrorKind};
+use diesel::result::DatabaseErrorInformation;
+use diesel::result::DatabaseErrorKind;
 use regex::Regex;
 
-#[derive(Debug, thiserror::Error)]
+use crate::DatabaseError;
+
+#[derive(Debug, thiserror::Error, PartialEq)]
 pub enum Error {
     #[error("unique constraint violation \"{constraint}\" on column \"{column}\" with value \"{value}\"")]
     UniqueViolation {
@@ -13,8 +16,10 @@ pub enum Error {
     },
     #[error("check constraint violation of \"{constraint}\"")]
     CheckViolation { constraint: String },
+    #[error("foreign key constraint violation of \"{constraint}\"")]
+    ForeignKeyViolation { constraint: String },
     #[error(transparent)]
-    DatabaseError(diesel::result::Error),
+    DatabaseError(#[from] DatabaseError),
 }
 
 fn try_parse_unique_violation(e: &(dyn DatabaseErrorInformation + Send + Sync)) -> Option<Error> {
@@ -54,6 +59,24 @@ fn try_parse_check_violation(e: &(dyn DatabaseErrorInformation + Send + Sync)) -
     }
 }
 
+fn try_parse_foreign_key_violation(
+    e: &(dyn DatabaseErrorInformation + Send + Sync),
+) -> Option<Error> {
+    static RE: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r#"update or delete on table .* violates foreign key constraint"#).unwrap()
+    });
+    if RE.is_match(e.message()) {
+        Some(Error::ForeignKeyViolation {
+            constraint: e
+                .constraint_name()
+                .expect("PostgreSQL should provide the constraint name")
+                .to_owned(),
+        })
+    } else {
+        None
+    }
+}
+
 impl From<diesel::result::Error> for Error {
     fn from(e: diesel::result::Error) -> Self {
         match &e {
@@ -64,7 +87,7 @@ impl From<diesel::result::Error> for Error {
                         error = %e,
                         "failed to parse PostgreSQL details message"
                     );
-                    Self::DatabaseError(e)
+                    Self::DatabaseError(DatabaseError(e))
                 })
             }
             diesel::result::Error::DatabaseError(DatabaseErrorKind::CheckViolation, inner) => {
@@ -74,10 +97,20 @@ impl From<diesel::result::Error> for Error {
                         error = %e,
                         "failed to parse PostgreSQL details message"
                     );
-                    Self::DatabaseError(e)
+                    Self::DatabaseError(DatabaseError(e))
                 })
             }
-            _ => Self::DatabaseError(e),
+            diesel::result::Error::DatabaseError(DatabaseErrorKind::ForeignKeyViolation, inner) => {
+                try_parse_foreign_key_violation(inner.as_ref()).unwrap_or_else(|| {
+                    // falling back to the generic error — since it's still semantically correct, logging the error is enough
+                    tracing::error!(
+                        error = %e,
+                        "failed to parse PostgreSQL details message"
+                    );
+                    Self::DatabaseError(DatabaseError(e))
+                })
+            }
+            _ => Self::DatabaseError(DatabaseError(e)),
         }
     }
 }

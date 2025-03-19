@@ -38,7 +38,7 @@ impl ToTokens for UpdateImpl {
                     self,
                     conn: &mut editoast_models::DbConnection,
                     #id_ident: #ty,
-                ) -> crate::error::Result<Option<#model>> {
+                ) -> std::result::Result<Option<#model>, <#model as crate::models::Model>::Error> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use std::ops::DerefMut;
@@ -51,7 +51,7 @@ impl ToTokens for UpdateImpl {
                         .await
                         .map(Into::into)
                         .optional()
-                        .map_err(Into::into)
+                        .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
         });

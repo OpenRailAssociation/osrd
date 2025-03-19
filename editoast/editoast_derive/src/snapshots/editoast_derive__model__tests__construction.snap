@@ -356,7 +356,10 @@ impl crate::models::Update<(String), Document> for DocumentChangeset {
         self,
         conn: &mut editoast_models::DbConnection,
         content_type: (String),
-    ) -> crate::error::Result<Option<Document>> {
+    ) -> std::result::Result<
+        Option<Document>,
+        <Document as crate::models::Model>::Error,
+    > {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -372,7 +375,9 @@ impl crate::models::Update<(String), Document> for DocumentChangeset {
             .await
             .map(Into::into)
             .optional()
-            .map_err(Into::into)
+            .map_err(|e| <Document as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]
@@ -387,7 +392,10 @@ impl crate::models::Update<(i64), Document> for DocumentChangeset {
         self,
         conn: &mut editoast_models::DbConnection,
         id_: (i64),
-    ) -> crate::error::Result<Option<Document>> {
+    ) -> std::result::Result<
+        Option<Document>,
+        <Document as crate::models::Model>::Error,
+    > {
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
         use std::ops::DerefMut;
@@ -400,7 +408,9 @@ impl crate::models::Update<(i64), Document> for DocumentChangeset {
             .await
             .map(Into::into)
             .optional()
-            .map_err(Into::into)
+            .map_err(|e| <Document as crate::models::Model>::Error::from(
+                editoast_models::model::Error::from(e),
+            ))
     }
 }
 #[automatically_derived]
