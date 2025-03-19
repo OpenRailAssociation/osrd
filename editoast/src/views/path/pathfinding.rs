@@ -77,6 +77,22 @@ struct PathfindingInput {
     rolling_stock_length: OrderedFloat<f64>,
 }
 
+impl PathfindingInput {
+    /// Generates a unique hash based on the pathfinding entries.
+    /// We need to recalculate the path if:
+    ///   - The path entry is different
+    ///   - The infrastructure has been modified
+    ///   - The application has been updated (the algorithm or payloads may have changed)
+    fn compute_path_hash_with_versioning(&self, infra: i64, infra_version: &String) -> String {
+        // Retrieve OSRD Version
+        let osrd_version = get_app_version().unwrap_or_default();
+        let mut hasher = DefaultHasher::new();
+        self.hash(&mut hasher);
+        let hash_path_input = hasher.finish();
+        format!("pathfinding_{osrd_version}.{infra}.{infra_version}.{hash_path_input}")
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum PathfindingResult {
@@ -225,7 +241,8 @@ async fn pathfinding_blocks_batch(
     let mut pathfinding_results =
         vec![PathfindingResult::Failure(PathfindingFailure::default()); pathfinding_inputs.len()];
     for (index, path_input) in pathfinding_inputs.iter().enumerate() {
-        let pathfinding_hash = path_input_hash(infra.id, &infra.version, path_input);
+        let pathfinding_hash =
+            path_input.compute_path_hash_with_versioning(infra.id, &infra.version);
         hash_to_path_indexes
             .entry(pathfinding_hash.clone())
             .or_default()
@@ -449,20 +466,6 @@ pub async fn pathfinding_from_train_batch(
         results[to_compute_index[index]] = res;
     }
     Ok(results)
-}
-
-/// Generates a unique hash based on the pathfinding entries.
-/// We need to recalculate the path if:
-///   - The path entry is different
-///   - The infrastructure has been modified
-///   - The application has been updated (the algorithm or payloads may have changed)
-fn path_input_hash(infra: i64, infra_version: &String, path_input: &PathfindingInput) -> String {
-    // Retrieve OSRD Version
-    let osrd_version = get_app_version().unwrap_or_default();
-    let mut hasher = DefaultHasher::new();
-    path_input.hash(&mut hasher);
-    let hash_path_input = hasher.finish();
-    format!("pathfinding_{osrd_version}.{infra}.{infra_version}.{hash_path_input}")
 }
 
 #[cfg(test)]
