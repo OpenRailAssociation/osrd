@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::future::Future;
 
+use fga::client::UserList;
 use fga::fga;
 use fga::model::Relation;
 use futures::stream;
@@ -91,6 +92,9 @@ pub trait StorageDriver: Clone {
             Self::Error,
         >,
     > + Send;
+
+    fn infra_exists(&self, infra_id: i64)
+    -> impl Future<Output = Result<bool, Self::Error>> + Send;
 }
 
 impl<S: StorageDriver> Regulator<S> {
@@ -161,6 +165,7 @@ impl<S: StorageDriver> Regulator<S> {
             .openfga
             .list_users(Group::member().query_users(&group))
             .await?;
+
         debug_assert!(
             members.public_access.is_none(),
             "we don't write public accesses for groups"
@@ -224,7 +229,8 @@ impl<S: StorageDriver> Regulator<S> {
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
     pub async fn user_roles(&self, user_id: i64) -> Result<HashSet<Role>, Error<S::Error>> {
         // no need to check for user inexistence, an empty set will be returned in this case
-        let roles = Role::list_roles(&self.openfga, User::role(), &fga!(User:user_id)).await?;
+        let roles =
+            Role::list_roles(&self.openfga, model::User::role(), &fga!(User:user_id)).await?;
         Ok(roles.into_iter().collect())
     }
 
@@ -330,5 +336,721 @@ impl<S: StorageDriver> Regulator<S> {
             return Ok(true);
         }
         Ok(false)
+    }
+
+    pub async fn check_infra_grant_reader(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Bypass if user is an admin
+        if self.check_roles(user_id, [Role::Admin].into()).await? {
+            return Ok(true);
+        }
+
+        // Calling openfga
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .check(model::Infra::reader().check(&user, &infra))
+            .await?;
+        Ok(result)
+    }
+
+    pub async fn check_infra_grant_writer(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Bypass if user is an admin
+        if self.check_roles(user_id, [Role::Admin].into()).await? {
+            return Ok(true);
+        }
+
+        // Calling openfga
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .check(model::Infra::writer().check(&user, &infra))
+            .await?;
+        Ok(result)
+    }
+
+    pub async fn check_infra_grant_owner(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Bypass if user is an admin
+        if self.check_roles(user_id, [Role::Admin].into()).await? {
+            return Ok(true);
+        }
+
+        // Calling openfga
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .check(model::Infra::owner().check(&user, &infra))
+            .await?;
+        Ok(result)
+    }
+
+    pub async fn check_infra_privilege_can_read(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Bypass if user is an admin
+        if self.check_roles(user_id, [Role::Admin].into()).await? {
+            return Ok(true);
+        }
+
+        // Calling openfga
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .check(model::Infra::can_read().check(&user, &infra))
+            .await?;
+        Ok(result)
+    }
+
+    pub async fn check_infra_privilege_can_share_read(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Bypass if user is an admin
+        if self.check_roles(user_id, [Role::Admin].into()).await? {
+            return Ok(true);
+        }
+
+        // Calling openfga
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .check(model::Infra::can_share_read().check(&user, &infra))
+            .await?;
+        Ok(result)
+    }
+
+    pub async fn check_infra_privilege_can_write(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Bypass if user is an admin
+        if self.check_roles(user_id, [Role::Admin].into()).await? {
+            return Ok(true);
+        }
+
+        // Calling openfga
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .check(model::Infra::can_write().check(&user, &infra))
+            .await?;
+        Ok(result)
+    }
+
+    pub async fn check_infra_privilege_can_share_write(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Bypass if user is an admin
+        if self.check_roles(user_id, [Role::Admin].into()).await? {
+            return Ok(true);
+        }
+
+        // Calling openfga
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .check(model::Infra::can_share_write().check(&user, &infra))
+            .await?;
+        Ok(result)
+    }
+
+    pub async fn check_infra_privilege_can_share_ownership(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<bool, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Bypass if user is an admin
+        if self.check_roles(user_id, [Role::Admin].into()).await? {
+            return Ok(true);
+        }
+
+        // Calling openfga
+        let user = fga!(User:user_id);
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .check(model::Infra::can_share_ownership().check(&user, &infra))
+            .await?;
+        Ok(result)
+    }
+
+    pub async fn get_infra_readers(
+        &self,
+        infra_id: i64,
+    ) -> Result<Vec<UserSubject>, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .list_users(Infra::reader().query_users(&infra))
+            .await?;
+
+        let users = self.parse_userlist(result).await?;
+        Ok(users)
+    }
+
+    pub async fn get_infra_writers(
+        &self,
+        infra_id: i64,
+    ) -> Result<Vec<UserSubject>, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .list_users(Infra::writer().query_users(&infra))
+            .await?;
+
+        let users = self.parse_userlist(result).await?;
+        Ok(users)
+    }
+
+    pub async fn get_infra_owners(
+        &self,
+        infra_id: i64,
+    ) -> Result<Vec<UserSubject>, Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        let infra = fga!(Infra:infra_id);
+        let result = self
+            .openfga
+            .list_users(Infra::owner().query_users(&infra))
+            .await?;
+
+        let users = self.parse_userlist(result).await?;
+        Ok(users)
+    }
+
+    async fn parse_userlist(
+        &self,
+        userlist: UserList<User>,
+    ) -> Result<Vec<UserSubject>, Error<S::Error>> {
+        let user_ids =
+            userlist
+                .users
+                .into_iter()
+                .filter_map(|User(user)| match user.parse::<i64>() {
+                    Ok(id) => Some(id),
+                    Err(_) => {
+                        tracing::error!(user, "unparsable user member — skipping it");
+                        None
+                    }
+                });
+
+        let mut users = Vec::new();
+        for user_id in user_ids {
+            let user_info = self
+                .driver
+                .get_user_info(user_id)
+                .await
+                .map_err(Error::Storage)?;
+
+            if let Some(user_info) = user_info {
+                users.push(UserSubject {
+                    id: user_id,
+                    info: user_info,
+                });
+            }
+        }
+        Ok(users)
+    }
+
+    pub async fn grant_infra_reader_unchecked(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        let has_grant = self.check_infra_grant_reader(user_id, infra_id).await?;
+        if !has_grant {
+            // Remove other grants before to add the new one
+            self.revoke_infra_writer_unchecked(user_id, infra_id)
+                .await?;
+            self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
+            // Grant the new one
+            let user = fga!(User:user_id);
+            let infra = fga!(Infra:infra_id);
+            self.openfga
+                .prepare_writes()
+                .write(&Infra::reader().tuple(&user, &infra))
+                .execute()
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn grant_infra_reader(
+        &self,
+        issuer_id: i64,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check that issuer has the right to add the grants
+        let can_share = self
+            .check_infra_privilege_can_share_read(issuer_id, infra_id)
+            .await?;
+        if !can_share {
+            return Err(Error::Unauthorized);
+        }
+
+        // Grant
+        self.grant_infra_reader_unchecked(user_id, infra_id).await?;
+        Ok(())
+    }
+
+    pub async fn grant_infra_writer_unchecked(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        let has_grant = self.check_infra_grant_writer(user_id, infra_id).await?;
+        if !has_grant {
+            // Remove other grants before to add the new one
+            self.revoke_infra_reader_unchecked(user_id, infra_id)
+                .await?;
+            self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
+            // Grant the new one
+            let user = fga!(User:user_id);
+            let infra = fga!(Infra:infra_id);
+            self.openfga
+                .prepare_writes()
+                .write(&Infra::writer().tuple(&user, &infra))
+                .execute()
+                .await?;
+        }
+
+        Ok(())
+    }
+    pub async fn grant_infra_writer(
+        &self,
+        issuer_id: i64,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check that issuer has the right to add the grants
+        let can_share = self
+            .check_infra_privilege_can_share_write(issuer_id, infra_id)
+            .await?;
+        if !can_share {
+            return Err(Error::Unauthorized);
+        }
+
+        // Grant
+        self.grant_infra_writer_unchecked(user_id, infra_id).await?;
+        Ok(())
+    }
+
+    pub async fn grant_infra_owner_unchecked(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        let has_grant = self.check_infra_grant_owner(user_id, infra_id).await?;
+        if !has_grant {
+            // Remove other grants before to add the new one
+            self.revoke_infra_reader_unchecked(user_id, infra_id)
+                .await?;
+            self.revoke_infra_writer_unchecked(user_id, infra_id)
+                .await?;
+            // Grant the new one
+            let user = fga!(User:user_id);
+            let infra = fga!(Infra:infra_id);
+            self.openfga
+                .prepare_writes()
+                .write(&Infra::owner().tuple(&user, &infra))
+                .execute()
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn grant_infra_owner(
+        &self,
+        issuer_id: i64,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check that issuer has the right to add the grants
+        let can_share = self
+            .check_infra_privilege_can_share_ownership(issuer_id, infra_id)
+            .await?;
+        if !can_share {
+            return Err(Error::Unauthorized);
+        }
+
+        // Grant
+        self.grant_infra_owner_unchecked(user_id, infra_id).await?;
+        Ok(())
+    }
+
+    pub async fn revoke_infra_reader_unchecked(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        // Check if the user has already the grant, if not, grant it
+        let has_grant = self.check_infra_grant_reader(user_id, infra_id).await?;
+        if has_grant {
+            let user = fga!(User:user_id);
+            let infra = fga!(Infra:infra_id);
+            self.openfga
+                .prepare_deletes()
+                .delete(&Infra::reader().tuple(&user, &infra))
+                .execute()
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn revoke_infra_reader(
+        &self,
+        issuer_id: i64,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check that the connected user has the right to remove the grants
+        let is_owner = self.check_infra_grant_owner(issuer_id, infra_id).await?;
+        if !is_owner {
+            return Err(Error::Unauthorized);
+        }
+
+        // Revoke
+        self.revoke_infra_reader_unchecked(user_id, infra_id)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn revoke_infra_writer_unchecked(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        let has_grant = self.check_infra_grant_writer(user_id, infra_id).await?;
+        if has_grant {
+            let user = fga!(User:user_id);
+            let infra = fga!(Infra:infra_id);
+            self.openfga
+                .prepare_deletes()
+                .delete(&Infra::writer().tuple(&user, &infra))
+                .execute()
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn revoke_infra_writer(
+        &self,
+        issuer_id: i64,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check that the connected user has the right to remove the grants
+        let is_owner = self.check_infra_grant_owner(issuer_id, infra_id).await?;
+        if !is_owner {
+            return Err(Error::Unauthorized);
+        }
+
+        // Revoke
+        self.revoke_infra_writer_unchecked(user_id, infra_id)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn revoke_infra_owner_unchecked(
+        &self,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check if the infra exists
+        if !self
+            .driver
+            .infra_exists(infra_id)
+            .await
+            .map_err(Error::Storage)?
+        {
+            return Err(Error::UnknownResource(infra_id));
+        }
+
+        // Check if user exists
+        if !self.user_exists(user_id).await? {
+            return Err(Error::UnknownSubject(user_id));
+        }
+
+        let has_grant = self.check_infra_grant_owner(user_id, infra_id).await?;
+        if has_grant {
+            let user = fga!(User:user_id);
+            let infra = fga!(Infra:infra_id);
+            self.openfga
+                .prepare_deletes()
+                .delete(&Infra::owner().tuple(&user, &infra))
+                .execute()
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn revoke_infra_owner(
+        &self,
+        issuer_id: i64,
+        user_id: i64,
+        infra_id: i64,
+    ) -> Result<(), Error<S::Error>> {
+        // Check that the connected user has the right to remove the grants
+        let is_owner = self.check_infra_grant_owner(issuer_id, infra_id).await?;
+        if !is_owner {
+            return Err(Error::Unauthorized);
+        }
+
+        // Revoke
+        self.revoke_infra_owner_unchecked(user_id, infra_id).await?;
+        Ok(())
     }
 }

@@ -32,42 +32,37 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      postAuthzGrants: build.mutation<PostAuthzGrantsApiResponse, PostAuthzGrantsApiArg>({
+        query: (queryArg) => ({ url: `/authz/grants`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['authz'],
+      }),
+      getAuthzGrantsByResourceType: build.query<
+        GetAuthzGrantsByResourceTypeApiResponse,
+        GetAuthzGrantsByResourceTypeApiArg
+      >({
+        query: (queryArg) => ({ url: `/authz/grants/${queryArg.resourceType}` }),
+        providesTags: ['authz'],
+      }),
       getAuthzMe: build.query<GetAuthzMeApiResponse, GetAuthzMeApiArg>({
         query: () => ({ url: `/authz/me` }),
         providesTags: ['authz'],
       }),
-      getAuthzRolesMe: build.query<GetAuthzRolesMeApiResponse, GetAuthzRolesMeApiArg>({
-        query: () => ({ url: `/authz/roles/me` }),
-        providesTags: ['authz'],
-      }),
-      getAuthzRolesByUserId: build.query<
-        GetAuthzRolesByUserIdApiResponse,
-        GetAuthzRolesByUserIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/authz/roles/${queryArg.userId}` }),
-        providesTags: ['authz'],
-      }),
-      postAuthzRolesByUserId: build.mutation<
-        PostAuthzRolesByUserIdApiResponse,
-        PostAuthzRolesByUserIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/authz/roles/${queryArg.userId}`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
+      postAuthzMeGrants: build.mutation<PostAuthzMeGrantsApiResponse, PostAuthzMeGrantsApiArg>({
+        query: (queryArg) => ({ url: `/authz/me/grants`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['authz'],
       }),
-      deleteAuthzRolesByUserId: build.mutation<
-        DeleteAuthzRolesByUserIdApiResponse,
-        DeleteAuthzRolesByUserIdApiArg
+      getAuthzByResourceTypeAndResourceId: build.query<
+        GetAuthzByResourceTypeAndResourceIdApiResponse,
+        GetAuthzByResourceTypeAndResourceIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/authz/roles/${queryArg.userId}`,
-          method: 'DELETE',
-          body: queryArg.body,
+          url: `/authz/${queryArg.resourceType}/${queryArg.resourceId}`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
         }),
-        invalidatesTags: ['authz'],
+        providesTags: ['authz'],
       }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
         query: (queryArg) => ({
@@ -1207,39 +1202,75 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as generatedEditoastApi };
+export type PostAuthzGrantsApiResponse = unknown;
+export type PostAuthzGrantsApiArg = {
+  /** List of new authorization to add or to remove (ie grants a resource to a person). Expect grant XOR revoke, not both */
+  body: {
+    grant?:
+      | {
+          grant: 'READER' | 'WRITER' | 'OWNER';
+          resource_id: number;
+          resource_type: 'infra';
+          subject_id: number;
+        }[]
+      | null;
+    revoke?:
+      | {
+          resource_id: number;
+          resource_type: Resource;
+          subject_id: number;
+        }[]
+      | null;
+  };
+};
+export type GetAuthzGrantsByResourceTypeApiResponse =
+  /** status 200 Get privileges for each grant associated to the resource type */ {
+    [key: string]: (
+      | 'can_read'
+      | 'can_share_read'
+      | 'can_write'
+      | 'can_share_write'
+      | 'can_delete'
+      | 'can_share_ownership'
+    )[];
+  };
+export type GetAuthzGrantsByResourceTypeApiArg = {
+  resourceType: Resource;
+};
 export type GetAuthzMeApiResponse = /** status 200 Get the info of the current user */ {
   id: number;
   name: string;
   roles: Role[];
 };
 export type GetAuthzMeApiArg = void;
-export type GetAuthzRolesMeApiResponse =
-  /** status 200 List the roles of the issuer of the request */ {
-    builtin: Role[];
+export type PostAuthzMeGrantsApiResponse =
+  /** status 200 Get grants info of the current user for the given resources in body */ {
+    [key: string]: {
+      grant: 'READER' | 'WRITER' | 'OWNER';
+      resource_id: number;
+      resource_type: 'infra';
+    }[];
   };
-export type GetAuthzRolesMeApiArg = void;
-export type GetAuthzRolesByUserIdApiResponse = /** status 200 List the roles of a user */ {
-  builtin: Role[];
-};
-export type GetAuthzRolesByUserIdApiArg = {
-  /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
-  userId: number;
-};
-export type PostAuthzRolesByUserIdApiResponse = unknown;
-export type PostAuthzRolesByUserIdApiArg = {
-  /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
-  userId: number;
+export type PostAuthzMeGrantsApiArg = {
+  /** HashMap of resource type with a list of resource id to get the grants for. If a resource doesn't exist, it will be omitted. */
   body: {
-    roles: Role[];
+    [key: string]: number[];
   };
 };
-export type DeleteAuthzRolesByUserIdApiResponse = unknown;
-export type DeleteAuthzRolesByUserIdApiArg = {
-  /** A user ID (not to be mistaken for its identity, cf. editoast user model documentation) */
-  userId: number;
-  body: {
-    roles: Role[];
-  };
+export type GetAuthzByResourceTypeAndResourceIdApiResponse =
+  /** status 200 Get list of user that have access to the resource */ {
+    grant: 'READER' | 'WRITER' | 'OWNER';
+    subject: {
+      id: number;
+      name: string;
+      type: 'User' | 'Group';
+    };
+  }[];
+export type GetAuthzByResourceTypeAndResourceIdApiArg = {
+  resourceType: Resource;
+  resourceId: number;
+  page?: number;
+  pageSize?: number | null;
 };
 export type PostDocumentsApiResponse =
   /** status 201 The document was created */ NewDocumentResponse;
@@ -2162,6 +2193,7 @@ export type PostWorkSchedulesProjectPathApiArg = {
     work_schedule_group_id: number;
   };
 };
+export type Resource = 'infra';
 export type Role = 'Admin' | 'Stdcm' | 'OperationalStudies';
 export type NewDocumentResponse = {
   document_key: number;

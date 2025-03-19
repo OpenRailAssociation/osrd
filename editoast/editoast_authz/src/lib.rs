@@ -49,12 +49,27 @@ pub async fn ensure_latest_authorization_model(
 pub enum Error<StorageError: std::error::Error> {
     #[error("unknown subject {0}")]
     UnknownSubject(i64),
+    #[error("unknown resource {0}")]
+    UnknownResource(i64),
     #[error("unknown user {identity}")]
     UnknownUser { identity: String },
     #[error(transparent)]
     OpenFga(#[from] fga::client::RequestFailure),
     #[error(transparent)]
+    OpenFgaParsing(#[from] fga::model::ParsingError),
+    #[error(transparent)]
     Storage(StorageError),
+    #[error("Unauthorized")]
+    Unauthorized,
+}
+
+impl<StorageError: std::error::Error> From<fga::client::QueryError> for Error<StorageError> {
+    fn from(err: fga::client::QueryError) -> Self {
+        match err {
+            fga::client::QueryError::Parsing(parsing_error) => Self::OpenFgaParsing(parsing_error),
+            fga::client::QueryError::Request(request_failure) => Self::OpenFga(request_failure),
+        }
+    }
 }
 
 #[cfg(test)]

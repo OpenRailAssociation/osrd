@@ -26,7 +26,7 @@ function useAuth(): AuthHookData {
 
   const [logout] = osrdGatewayApi.endpoints.logout.useMutation();
 
-  const { data } = osrdEditoastApi.endpoints.getAuthzRolesMe.useQuery(undefined, {
+  const { data } = osrdEditoastApi.endpoints.getAuthzMe.useQuery(undefined, {
     skip: !isUserLogged,
   });
   const user = osrdEditoastApi.endpoints.getAuthzMe.useQuery(undefined, {
@@ -41,7 +41,7 @@ function useAuth(): AuthHookData {
 
   useEffect(() => {
     if (data) {
-      dispatch(setUserRoles(data?.builtin));
+      dispatch(setUserRoles(data?.roles));
     }
   }, [isUserLogged, data]);
 
