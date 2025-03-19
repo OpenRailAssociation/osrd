@@ -967,12 +967,13 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
         self,
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C> {
+    ) -> crate::error::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::stream::TryStreamExt as _;
+        use futures_util::TryFutureExt as _;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -996,12 +997,15 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s
-                                .map_ok(<Document as Model>::from_row)
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(<Document as Model>::from_row)
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }
@@ -1021,14 +1025,15 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
         self,
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C> {
+    ) -> crate::error::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::stream::TryStreamExt as _;
+        use futures_util::TryFutureExt as _;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
         Ok({
@@ -1051,14 +1056,18 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s.map_ok(|row| {
-                                    let model = <Document as Model>::from_row(row);
-                                    (model.get_id(), model)
-                                })
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(|row| {
+                            let model = <Document as Model>::from_row(row);
+                            (model.get_id(), model)
+                        })
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }
@@ -1081,12 +1090,13 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
         self,
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C> {
+    ) -> crate::error::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::stream::TryStreamExt as _;
+        use futures_util::TryFutureExt as _;
         use std::ops::DerefMut;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -1110,12 +1120,15 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s
-                                .map_ok(<Document as Model>::from_row)
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(<Document as Model>::from_row)
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }
@@ -1135,14 +1148,15 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
         self,
         conn: &mut editoast_models::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C> {
+    ) -> crate::error::Result<C, <Document as crate::models::Model>::Error> {
         use crate::models::Identifiable;
         use crate::models::Model;
         use editoast_models::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
-        use futures_util::stream::TryStreamExt;
+        use futures_util::stream::TryStreamExt as _;
+        use futures_util::TryFutureExt as _;
         let ids = ids.into_iter().collect::<Vec<_>>();
         tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
         Ok({
@@ -1165,14 +1179,18 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map(|s| {
-                            s.map_ok(|row| {
-                                    let model = <Document as Model>::from_row(row);
-                                    (model.get_id(), model)
-                                })
-                                .try_collect::<Vec<_>>()
-                        })?
-                        .await?
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
+                        .map_ok(|row| {
+                            let model = <Document as Model>::from_row(row);
+                            (model.get_id(), model)
+                        })
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| <Document as crate::models::Model>::Error::from(
+                            editoast_models::model::Error::from(e),
+                        ))?
                 };
                 result.extend(chunk_result);
             }

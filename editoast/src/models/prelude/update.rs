@@ -3,8 +3,6 @@ use std::fmt::Debug;
 use diesel::result::Error::NotFound;
 use editoast_models::DbConnection;
 
-use crate::error::EditoastError;
-use crate::error::Result;
 use crate::models::PreferredId;
 
 use super::Model;
@@ -138,7 +136,7 @@ where
 /// derive macro instead.
 pub trait UpdateBatchUnchecked<M, K>: Sized
 where
-    M: Send,
+    M: Model,
     K: Send + Clone,
 {
     /// Updates a batch of rows in the database given an iterator of keys
@@ -155,7 +153,7 @@ where
         self,
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<C>;
+    ) -> Result<C, M::Error>;
 
     /// Just like [UpdateBatchUnchecked::update_batch_unchecked] but the returned models are paired with their key
     ///
@@ -171,7 +169,7 @@ where
         self,
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<C>;
+    ) -> Result<C, M::Error>;
 }
 
 /// Describes how a [Model] can be updated in the database given a batch of its changesets
@@ -184,7 +182,7 @@ where
 /// This won't be possible however if the model's key is not `Eq` or `Hash`.
 pub trait UpdateBatch<M, K>: UpdateBatchUnchecked<M, K>
 where
-    M: Send,
+    M: Model,
     K: Eq + std::hash::Hash + Clone + Send,
 {
     /// Applies the changeset to a batch of rows in the database given an iterator of keys
@@ -208,7 +206,7 @@ where
         self,
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<(C, std::collections::HashSet<K>)>
+    ) -> Result<(C, std::collections::HashSet<K>), M::Error>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -245,7 +243,7 @@ where
         self,
         conn: &mut DbConnection,
         ids: I,
-    ) -> Result<(C, std::collections::HashSet<K>)>
+    ) -> Result<(C, std::collections::HashSet<K>), M::Error>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -285,7 +283,7 @@ where
         conn: &mut DbConnection,
         ids: I,
         fail: F,
-    ) -> Result<C>
+    ) -> Result<C, E>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -293,14 +291,14 @@ where
             + std::iter::Extend<M>
             + std::iter::FromIterator<M>
             + std::iter::IntoIterator<Item = M>,
-        E: EditoastError,
+        E: From<M::Error>,
         F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = self.update_batch::<_, C>(conn, ids).await?;
         if missing.is_empty() {
             Ok(result)
         } else {
-            Err(fail(missing).into())
+            Err(fail(missing))
         }
     }
 
@@ -318,7 +316,7 @@ where
         conn: &mut DbConnection,
         ids: I,
         fail: F,
-    ) -> Result<C>
+    ) -> Result<C, E>
     where
         I: Send + IntoIterator<Item = K>,
         C: Send
@@ -326,14 +324,14 @@ where
             + std::iter::Extend<(K, M)>
             + std::iter::FromIterator<(K, M)>
             + std::iter::IntoIterator<Item = (K, M)>,
-        E: EditoastError,
+        E: From<M::Error>,
         F: FnOnce(std::collections::HashSet<K>) -> E + Send,
     {
         let (result, missing) = self.update_batch_with_key::<_, C>(conn, ids).await?;
         if missing.is_empty() {
             Ok(result)
         } else {
-            Err(fail(missing).into())
+            Err(fail(missing))
         }
     }
 }
@@ -342,7 +340,7 @@ where
 impl<Cs, M, K> UpdateBatch<M, K> for Cs
 where
     Cs: UpdateBatchUnchecked<M, K>,
-    M: Send,
+    M: Model,
     K: Eq + std::hash::Hash + Clone + Send,
 {
 }

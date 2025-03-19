@@ -60,8 +60,11 @@ impl ToTokens for UpdateBatchImpl {
                     .returning((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
-                    .await?
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_ok(<#model as Model>::from_row)
+                    .try_collect::<Vec<_>>()
+                    .await
+                    .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
             },
         };
 
@@ -76,14 +79,14 @@ impl ToTokens for UpdateBatchImpl {
                 .returning((#(dsl::#columns,)*))
                 .load_stream::<#row>(conn.write().await.deref_mut())
                 .await
-                .map(|s| {
-                    s.map_ok(|row| {
-                        let model = <#model as Model>::from_row(row);
-                        (model.get_id(), model)
-                    })
-                    .try_collect::<Vec<_>>()
-                })?
-                .await?
+                .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
+                .map_ok(|row| {
+                    let model = <#model as Model>::from_row(row);
+                    (model.get_id(), model)
+                })
+                .try_collect::<Vec<_>>()
+                .await
+                .map_err(|e| <#model as crate::models::Model>::Error::from(editoast_models::model::Error::from(e)))?
         });
 
         tokens.extend(quote! {
@@ -97,12 +100,13 @@ impl ToTokens for UpdateBatchImpl {
                     self,
                     conn: &mut editoast_models::DbConnection,
                     ids: I,
-                ) -> crate::error::Result<C> {
+                ) -> crate::error::Result<C, <#model as crate::models::Model>::Error> {
                     use crate::models::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt;
+                    use futures_util::stream::TryStreamExt as _;
+                    use futures_util::TryFutureExt as _;
                     use std::ops::DerefMut;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
@@ -117,14 +121,15 @@ impl ToTokens for UpdateBatchImpl {
                     self,
                     conn: &mut editoast_models::DbConnection,
                     ids: I,
-                ) -> crate::error::Result<C> {
+                ) -> crate::error::Result<C, <#model as crate::models::Model>::Error> {
                     use crate::models::Identifiable;
                     use crate::models::Model;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt;
+                    use futures_util::stream::TryStreamExt as _;
+                    use futures_util::TryFutureExt as _;
                     let ids = ids.into_iter().collect::<Vec<_>>();
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok({ #update_with_key_loop })
