@@ -6,6 +6,7 @@ use axum::response::IntoResponse;
 use axum::Extension;
 use chrono::Utc;
 use derivative::Derivative;
+use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_authz::Role;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnection;
@@ -23,6 +24,7 @@ use super::pagination::PaginationStats;
 use super::study;
 use super::AuthenticationExt;
 use crate::error::Result;
+use crate::models::projects;
 use crate::models::Changeset;
 use crate::models::Create;
 use crate::models::Document;
@@ -30,6 +32,7 @@ use crate::models::Model;
 use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Tags;
+use crate::models::Update;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::AuthorizationError;
 
@@ -53,7 +56,7 @@ editoast_common::schemas! {
     ProjectWithStudyCount,
 }
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "project")]
 pub enum ProjectError {
     /// Couldn't found the project with the given id
@@ -64,8 +67,12 @@ pub enum ProjectError {
     #[error("Image document '{document_key}' not found")]
     ImageNotFound { document_key: i64 },
     // Couldn't found the project with the given id
-    #[error("The provided image is not valid : {error}")]
+    #[error("The provided image is not valid: {error}")]
     ImageError { error: String },
+    #[error(transparent)]
+    #[from(forward)]
+    #[editoast_error(status = 500)]
+    Database(projects::Error),
 }
 
 /// Creation form for a project
@@ -163,7 +170,7 @@ async fn create(
         check_image_content(conn, image).await?;
     }
     let project: Changeset<Project> = project_create_form.into();
-    let project = project.create(conn).await?;
+    let project = project.create(conn).await.map_err(ProjectError::from)?;
     let project_with_studies = ProjectWithStudyCount::try_fetch(conn, project).await?;
 
     Ok(Json(project_with_studies))
@@ -281,12 +288,27 @@ async fn delete(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let conn = &mut db_pool.get().await?;
-    if Project::delete_and_prune_document(conn, project_id).await? {
-        Ok(axum::http::StatusCode::NO_CONTENT)
-    } else {
-        Err(ProjectError::NotFound { project_id }.into())
-    }
+
+    db_pool
+        .get()
+        .await?
+        .transaction(|mut conn| {
+            async move {
+                let project = Project::retrieve_or_fail(&mut conn, project_id, || {
+                    ProjectError::NotFound { project_id }
+                })
+                .await?;
+                project
+                    .delete_and_prune_document(&mut conn)
+                    .await
+                    .map_err(ProjectError::from)?;
+                Ok::<_, ProjectError>(())
+            }
+            .scope_boxed()
+        })
+        .await?;
+
+    Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
 /// Patch form for a project
@@ -344,7 +366,7 @@ async fn patch(
     State(db_pool): State<DbConnectionPoolV2>,
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
-    Json(form): Json<ProjectPatchForm>,
+    Json(mut form): Json<ProjectPatchForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -353,13 +375,47 @@ async fn patch(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let conn = &mut db_pool.get().await?;
-    if let Some(Some(image)) = form.image {
-        check_image_content(conn, image).await?;
-    }
+
+    let mut conn = db_pool.get().await?;
+    let update_image = match form.image {
+        // image replacement
+        Some(Some(new_image)) => {
+            check_image_content(&mut conn, new_image).await?;
+            form.image = None;
+            Some(Some(new_image))
+        }
+        // image removal
+        Some(None) => {
+            form.image = None;
+            Some(None)
+        }
+        // no image change requested, there may or may not be an image
+        None => None,
+    };
     let project_changeset: Changeset<Project> = form.into();
-    let project = Project::update_and_prune_document(conn, project_changeset, project_id).await?;
-    Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
+
+    let (project, _) =
+        Project::transactional_content_update(conn.clone(), project_id, |mut conn, project| {
+            async move {
+                let mut project = project_changeset
+                    .update_or_fail(&mut conn, project.id, || ProjectError::NotFound {
+                        project_id: project.id,
+                    })
+                    .await?;
+                if let Some(new_doc_id) = update_image {
+                    project
+                        .update_and_prune_document(&mut conn, new_doc_id)
+                        .await?;
+                }
+                Ok::<_, ProjectError>(project)
+            }
+            .scope_boxed()
+        })
+        .await?;
+
+    Ok(Json(
+        ProjectWithStudyCount::try_fetch(&mut conn, project).await?,
+    ))
 }
 
 #[cfg(test)]
@@ -492,8 +548,6 @@ pub mod tests {
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        assert_eq!(response.project, response.project);
-
         let project = Project::retrieve(&mut db_pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
@@ -502,5 +556,99 @@ pub mod tests {
         assert_eq!(project.name, updated_name);
         assert_eq!(project.budget, Some(updated_budget));
         assert!(project.last_modification > created_project.last_modification);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_update_image() {
+        let app = test_app!().build();
+        let db_pool = app.db_pool();
+
+        // no image by default
+        let project = create_project(&mut db_pool.get_ok(), &app.name("project")).await;
+
+        let check_image = |mut conn: DbConnection, image_id: Option<i64>| async move {
+            let p = Project::retrieve(&mut conn, project.id)
+                .await
+                .expect("Failed to retrieve project")
+                .expect("Project not found");
+            assert_eq!(p.image, image_id);
+        };
+
+        let data = [
+            // PNG Signature (8 bytes)
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // IHDR Chunk (Image Header)
+            0x00, 0x00, 0x00, 0x0D, // Chunk Length
+            0x49, 0x48, 0x44, 0x52, // "IHDR"
+            0x00, 0x00, 0x00, 0x02, // Width: 2 pixels
+            0x00, 0x00, 0x00, 0x02, // Height: 2 pixels
+            0x08, // Bit depth: 8
+            0x02, // Color type: Truecolor (RGB)
+            0x00, // Compression method: 0 (deflate)
+            0x00, // Filter method: 0
+            0x00, // Interlace method: 0 (no interlace)
+            0xFD, 0xD4, 0x9A, 0x73, // CRC
+            // IDAT Chunk (Image Data)
+            0x00, 0x00, 0x00, 0x13, // Chunk Length
+            0x49, 0x44, 0x41, 0x54, // "IDAT"
+            0x78, 0x01, // zlib compression header
+            0x63, 0x64, 0x60, 0xF8, 0xCF, 0xC0, 0xC0, 0xC0, 0x04, 0xC4, 0x40, 0x00, 0x00, 0x0B,
+            0x1F, 0x01, // Compressed image data
+            0x03, 0xD5, 0xA9, 0x3F, 0xA9, // CRC
+            // IEND Chunk (Image End)
+            0x00, 0x00, 0x00, 0x00, // Chunk Length
+            0x49, 0x45, 0x4E, 0x44, // "IEND"
+            0xAE, 0x42, 0x60, 0x82, // CRC
+        ];
+
+        let image = Document::changeset()
+            .content_type("image/png".to_owned())
+            .data(data.to_vec())
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create image");
+
+        // let's add one
+        let request = app
+            .patch(format!("/projects/{}", project.id).as_str())
+            .json(&json!({
+                "image": image.id
+            }));
+        app.fetch(request).assert_status(StatusCode::OK);
+
+        check_image(db_pool.get_ok(), Some(image.id)).await;
+
+        // now we update it
+        let old_image = image;
+        let new_image = Document::changeset()
+            .content_type("image/png".to_owned())
+            .data(data.to_vec())
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create new image");
+
+        let request = app
+            .patch(format!("/projects/{}", project.id).as_str())
+            .json(&json!({
+                "image": new_image.id
+            }));
+        app.fetch(request).assert_status(StatusCode::OK);
+
+        check_image(db_pool.get_ok(), Some(new_image.id)).await;
+        assert!(!Document::exists(&mut db_pool.get_ok(), old_image.id)
+            .await
+            .unwrap());
+
+        // now we remove the image
+        let request = app
+            .patch(format!("/projects/{}", project.id).as_str())
+            .json(&json!({
+                "image": null
+            }));
+        app.fetch(request).assert_status(StatusCode::OK);
+
+        check_image(db_pool.get_ok(), None).await;
+        assert!(!Document::exists(&mut db_pool.get_ok(), new_image.id)
+            .await
+            .unwrap());
     }
 }

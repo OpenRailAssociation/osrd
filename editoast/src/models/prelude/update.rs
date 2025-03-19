@@ -8,6 +8,7 @@ use crate::error::Result;
 use crate::models::PreferredId;
 
 use super::Model;
+use super::ModelError;
 
 /// A couple ([Model] mutable reference, a [Model] changeset instance)
 ///
@@ -45,14 +46,19 @@ impl<M: Model> Patch<'_, M> {
     ///
     /// If this method is not implemented for your model for whatever reason, just
     /// use [Save::save].
-    pub async fn apply<K>(self, conn: &mut DbConnection) -> Result<()>
+    pub async fn apply<K>(self, conn: &mut DbConnection) -> Result<(), M::Error>
     where
         for<'b> K: Send + Clone + 'b,
         M: Model + PreferredId<K> + Send,
         <M as Model>::Changeset: Update<K, M> + Send,
     {
         let id: K = self.model.get_id();
-        let updated: M = self.changeset.update_or_fail(conn, id, || NotFound).await?;
+        let updated: M = self
+            .changeset
+            .update_or_fail(conn, id, || {
+                M::Error::from(editoast_models::model::Error::from(NotFound))
+            })
+            .await?;
         *self.model = updated;
         Ok(())
     }
@@ -65,25 +71,24 @@ impl<M: Model> Patch<'_, M> {
 ///
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
-pub trait Update<K, Row>: Sized
+pub trait Update<K, M>: Sized
 where
     K: Send,
-    Row: Send,
+    M: Model,
 {
     /// Updates the row #`id` with the changeset values and returns the updated model
-    async fn update(self, conn: &mut DbConnection, id: K) -> Result<Option<Row>>;
+    async fn update(self, conn: &mut DbConnection, id: K) -> Result<Option<M>, M::Error>;
 
     /// Just like [Update::update] but returns `Err(fail())` if the row was not found
-    async fn update_or_fail<E: EditoastError, F: FnOnce() -> E + Send>(
-        self,
-        conn: &mut DbConnection,
-        id: K,
-        fail: F,
-    ) -> Result<Row> {
+    async fn update_or_fail<E, F>(self, conn: &mut DbConnection, id: K, fail: F) -> Result<M, E>
+    where
+        E: From<M::Error>,
+        F: FnOnce() -> E + Send,
+    {
         match self.update(conn, id).await {
             Ok(Some(obj)) => Ok(obj),
-            Ok(None) => Err(fail().into()),
-            Err(e) => Err(e),
+            Ok(None) => Err(fail()),
+            Err(e) => Err(E::from(e)),
         }
     }
 }
@@ -92,7 +97,7 @@ where
 ///
 /// This trait is automatically implemented for all models that implement
 /// [Update].
-pub trait Save<K: Send>: Sized {
+pub trait Save<K: Send>: Model {
     /// Persists the model instance to the database
     ///
     /// # Example
@@ -103,7 +108,7 @@ pub trait Save<K: Send>: Sized {
     /// doc.save(&mut conn).await?;
     /// assert_eq!(doc.title, "new title");
     /// ```
-    async fn save(&mut self, conn: &mut DbConnection) -> Result<()>;
+    async fn save(&mut self, conn: &mut DbConnection) -> Result<(), Self::Error>;
 }
 
 impl<K, M> Save<K> for M
@@ -112,10 +117,14 @@ where
     M: Model + PreferredId<K> + Clone + Send,
     <M as Model>::Changeset: Update<K, M> + Send,
 {
-    async fn save(&mut self, conn: &mut DbConnection) -> Result<()> {
+    async fn save(&mut self, conn: &mut DbConnection) -> Result<(), M::Error> {
         let id = self.get_id();
         let changeset = <M as Model>::Changeset::from(self.clone()); // FIXME: I don't like that clone, maybe a ChangesetOwned/Changeset pair would work?
-        *self = changeset.update_or_fail(conn, id, || NotFound).await?;
+        *self = changeset
+            .update_or_fail(conn, id, || {
+                M::Error::from(editoast_models::model::Error::from(NotFound))
+            })
+            .await?;
         Ok(())
     }
 }

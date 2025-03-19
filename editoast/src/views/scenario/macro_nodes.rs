@@ -54,6 +54,10 @@ enum MacroNodeError {
     #[error("Node '{node_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { node_id: i64 },
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -126,7 +130,7 @@ struct MacroNodeListResponse {
     results: Vec<MacroNodeResponse>,
 }
 
-/// Get macro node list by scneario id
+/// Get macro node list by scenario id
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
@@ -197,33 +201,32 @@ async fn create(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let created = db_pool
-        .get()
-        .await?
-        .transaction::<_, InternalError, _>(|conn| {
+    let (created, _, _, _) = Scenario::transactional_content_update(
+        db_pool.get().await?,
+        scenario_id,
+        move |mut conn, scenario, study, project| {
             async move {
-                let db_conn = &mut conn.clone();
-                // check if scneario exists
-                let (mut project, mut study, mut scenario) =
-                    check_project_study_scenario(db_conn, project_id, study_id, scenario_id)
-                        .await?;
+                if project.id != project_id {
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
+                }
+                if study.id != study_id {
+                    return Err(StudyError::NotFound { study_id }.into());
+                }
+                if scenario.id != scenario_id {
+                    return Err(ScenarioError::NotFound { scenario_id }.into());
+                }
 
-                // save the node
                 let macro_node = data
                     .into_macro_node_changeset(scenario_id)?
-                    .create(db_conn)
+                    .create(&mut conn)
                     .await?;
-
-                // Update last_modification fields
-                scenario.update_last_modified(db_conn).await?;
-                study.update_last_modified(db_conn).await?;
-                project.update_last_modified(db_conn).await?;
 
                 Ok(macro_node)
             }
             .scope_boxed()
-        })
-        .await?;
+        },
+    )
+    .await?;
 
     Ok(Json(MacroNodeResponse::from(created)))
 }
@@ -285,34 +288,40 @@ async fn update(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let updated = db_pool
-        .get()
-        .await?
-        .transaction::<_, InternalError, _>(|conn| {
+    let (updated, _, _, _) = Scenario::transactional_content_update(
+        db_pool.get().await?,
+        scenario_id,
+        move |mut conn, scenario, study, project| {
             async move {
-                let db_conn = &mut conn.clone();
+                let node = MacroNode::retrieve_or_fail(&mut conn, node_id, || {
+                    MacroNodeError::NotFound { node_id }
+                })
+                .await?;
 
-                // Get / check the node
-                let (mut project, mut study, mut scenario) =
-                    check_project_study_scenario(db_conn, project_id, study_id, scenario_id)
-                        .await?;
-                retrieve_macro_node_and_check_scenario(db_conn, scenario_id, node_id).await?;
+                if project.id != project_id {
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
+                }
+                if study.id != study_id {
+                    return Err(StudyError::NotFound { study_id }.into());
+                }
+                if scenario.id != scenario_id {
+                    return Err(ScenarioError::NotFound { scenario_id }.into());
+                }
+                if node.scenario_id != scenario_id {
+                    return Err(MacroNodeError::NotFound { node_id }.into());
+                }
 
-                let macro_node = data
+                let node = data
                     .into_macro_node_changeset(scenario_id)?
-                    .update_or_fail(db_conn, node_id, || ScenarioError::NotFound { scenario_id })
+                    .update_or_fail(&mut conn, node_id, || MacroNodeError::NotFound { node_id })
                     .await?;
 
-                // Update last_modification fields
-                scenario.update_last_modified(db_conn).await?;
-                study.update_last_modified(db_conn).await?;
-                project.update_last_modified(db_conn).await?;
-
-                Ok(macro_node)
+                Ok(node)
             }
             .scope_boxed()
-        })
-        .await?;
+        },
+    )
+    .await?;
 
     Ok(Json(MacroNodeResponse::from(updated)))
 }
@@ -339,34 +348,36 @@ async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    db_pool
-        .get()
-        .await?
-        .transaction::<_, InternalError, _>(|conn| {
+    Scenario::transactional_content_update(
+        db_pool.get().await?,
+        scenario_id,
+        move |mut conn, scenario, study, project| {
             async move {
-                let db_conn = &mut conn.clone();
+                let node = MacroNode::retrieve_or_fail(&mut conn, node_id, || {
+                    MacroNodeError::NotFound { node_id }
+                })
+                .await?;
 
-                // Get / check the node
-                let (mut project, mut study, mut scenario) =
-                    check_project_study_scenario(db_conn, project_id, study_id, scenario_id)
-                        .await?;
+                if project.id != project_id {
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
+                }
+                if study.id != study_id {
+                    return Err(StudyError::NotFound { study_id }.into());
+                }
+                if scenario.id != scenario_id {
+                    return Err(ScenarioError::NotFound { scenario_id }.into());
+                }
+                if node.scenario_id != scenario_id {
+                    return Err(MacroNodeError::NotFound { node_id }.into());
+                }
 
-                let macro_node =
-                    retrieve_macro_node_and_check_scenario(db_conn, scenario_id, node_id).await?;
-
-                // Delete
-                macro_node.delete(db_conn).await?;
-
-                // Update last_modification fields
-                scenario.update_last_modified(db_conn).await?;
-                study.update_last_modified(db_conn).await?;
-                project.update_last_modified(db_conn).await?;
-
+                node.delete(&mut conn).await?;
                 Ok(())
             }
             .scope_boxed()
-        })
-        .await?;
+        },
+    )
+    .await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

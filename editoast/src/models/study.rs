@@ -2,16 +2,22 @@ use chrono::NaiveDate;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 
+use diesel_async::scoped_futures::ScopedBoxFuture;
+use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::Model;
 use editoast_models::DbConnection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::prelude::*;
 use crate::models::Scenario;
 use crate::models::Tags;
+use crate::views::study::StudyError;
+
+use super::Project;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = editoast_models::tables::study)]
@@ -62,6 +68,59 @@ impl Study {
         }
 
         Ok(())
+    }
+
+    /// Opens a transaction, retrieves the [Study] and its [Project] and calls the provided closure with these
+    ///
+    /// The last modification field of these objects are updated before the transaction is committed.
+    #[tracing::instrument(skip(conn, f), err)]
+    pub async fn transactional_content_update<T, E, F>(
+        conn: DbConnection,
+        study_id: i64,
+        f: F,
+    ) -> Result<(T, Self, Project), InternalError>
+    where
+        T: Send,
+        E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
+        F: for<'a> FnOnce(
+                DbConnection,
+                &'a mut Self,
+                &'a mut Project,
+            ) -> ScopedBoxFuture<'a, 'a, Result<T, E>>
+            + Send
+            + 'static,
+    {
+        conn.transaction(|mut conn| {
+            async move {
+                let mut study = Self::retrieve_or_fail(&mut conn, study_id, || {
+                    StudyError::NotFound { study_id }
+                })
+                .await?;
+
+                let ((t, mut study), project) = Project::transactional_content_update(
+                    conn.clone(),
+                    study.project_id,
+                    |conn, project| {
+                        async move {
+                            let res = f(conn.clone(), &mut study, project).await;
+                            res.map(|t| (t, study))
+                        }
+                        .scope_boxed()
+                    },
+                )
+                .await?;
+
+                study
+                    .patch()
+                    .last_modification(Utc::now().naive_utc())
+                    .apply(&mut conn)
+                    .await?;
+
+                Ok((t, study, project))
+            }
+            .scope_boxed()
+        })
+        .await
     }
 }
 

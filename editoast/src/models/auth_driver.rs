@@ -20,13 +20,19 @@ use tracing::Level;
 #[derive(Debug, thiserror::Error)]
 pub enum AuthDriverError {
     #[error(transparent)]
-    DieselError(#[from] diesel::result::Error),
+    Database(#[from] editoast_models::DatabaseError),
     #[error(transparent)]
     DbPoolError(#[from] editoast_models::db_connection_pool::DatabasePoolError),
     #[error("Subject with id {subject_id} not found")]
     SubjectNotFound { subject_id: i64 },
     #[error(transparent)]
     OpenFgaRequestFailure(#[from] fga::client::RequestFailure),
+}
+
+impl From<diesel::result::Error> for AuthDriverError {
+    fn from(e: diesel::result::Error) -> Self {
+        Self::Database(e.into())
+    }
 }
 
 #[derive(Clone)]

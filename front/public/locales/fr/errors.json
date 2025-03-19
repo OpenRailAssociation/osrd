@@ -66,7 +66,8 @@
       "ObjectNotFound": "{{obj_type}} '{{obj_id}}' introuvable dans le cache de l'infrastructure"
     },
     "infra": {
-      "NotFound": "",
+      "Database": "Erreur interne",
+      "NotFound": "Infrastructure '{{infra_id}}' n'existe pas",
       "edition": {
         "InfraIsLocked": "Infrastructure verrouillée",
         "SplitTrackSectionBadOffset": "La distance pour scinder la section de voie '{{tracksection_id}}' de l'infrastructure '{{infra_id}}' est invalide. La valeur doit être comprise entre 0 et {{tracksection_length}} mètres."
@@ -100,6 +101,7 @@
       "ViewNotFound": "View {{view_name}} non trouvé."
     },
     "macro_node": {
+      "Database": "Erreur interne",
       "NotFound": "Noeud {{node_id}} non trouvé."
     },
     "model": {
@@ -131,6 +133,7 @@
       "Username": "Identifiant invalide"
     },
     "project": {
+      "Database": "Erreur interne",
       "ImageError": "L'image fournie est invalide",
       "ImageNotFound": "Image '{{document_key}}' non trouvée",
       "NotFound": "Projet '{{project_id}}' non trouvé"
@@ -153,6 +156,7 @@
       "IsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé"
     },
     "towedrollingstocks": {
+      "Database": "Erreur interne",
       "IdNotFound": "Matériel remorqué '{{towed_rolling_stock_id}}' non trouvé",
       "IsLocked": "Matériel remorqué '{{towed_rolling_stock_id}}' est verrouillé"
     },

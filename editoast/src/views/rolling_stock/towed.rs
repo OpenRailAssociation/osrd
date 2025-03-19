@@ -23,6 +23,7 @@ use editoast_common::units::quantities::Mass;
 use editoast_common::units::quantities::Ratio;
 use editoast_common::units::quantities::Velocity;
 use editoast_derive::EditoastError;
+use editoast_models::model;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::rolling_stock::RollingResistancePerWeight;
 use editoast_schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
@@ -108,6 +109,10 @@ pub enum TowedRollingStockError {
     #[error("Towed rolling stock '{towed_rolling_stock_id}' is locked")]
     #[editoast_error(status = 409)]
     IsLocked { towed_rolling_stock_id: i64 },
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] model::Error),
 }
 
 #[editoast_derive::annotate_units]
@@ -426,7 +431,10 @@ mod tests {
         let towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED);
 
         let towed_rolling_stocks: TowedRollingStockCountList = app
-            .fetch(app.get("/towed_rolling_stock"))
+            .fetch(
+                app.get("/towed_rolling_stock")
+                    .add_query_param("page_size", 50),
+            )
             .assert_status(StatusCode::OK)
             .json_into();
 

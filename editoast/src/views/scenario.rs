@@ -102,23 +102,6 @@ impl From<ScenarioCreateForm> for Changeset<Scenario> {
     }
 }
 
-pub async fn check_project_study(
-    conn: &mut DbConnection,
-    project_id: i64,
-    study_id: i64,
-) -> Result<(Project, Study)> {
-    let project =
-        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
-            .await?;
-    let study =
-        Study::retrieve_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
-
-    if study.project_id != project_id {
-        return Err(StudyError::NotFound { study_id }.into());
-    }
-    Ok((project, study))
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "scenario")]
 #[allow(clippy::enum_variant_names)]
@@ -214,56 +197,37 @@ async fn create(
 
     let timetable_id = data.timetable_id;
     let infra_id = data.infra_id;
-    let scenario: Changeset<Scenario> = data.into();
+    let scenario_cs: Changeset<Scenario> = data.into();
 
-    let scenarios_response = db_pool
-        .get()
-        .await?
-        .transaction::<_, InternalError, _>(|conn| {
+    let (details, study, project) = Study::transactional_content_update(
+        db_pool.get().await?,
+        study_id,
+        move |mut conn, study, project| {
             async move {
-                // Check if the project and the study exist
-                let (mut project, study) =
-                    check_project_study(&mut conn.clone(), project_id, study_id).await?;
+                if project.id != project_id {
+                    return Err(ProjectError::NotFound { project_id }.into());
+                }
 
-                // Check if the timetable exists
-                let _ = Timetable::retrieve_or_fail(&mut conn.clone(), timetable_id, || {
+                Timetable::exists_or_fail(&mut conn, timetable_id, || {
                     ScenarioError::TimetableNotFound { timetable_id }
                 })
                 .await?;
 
-                // Check if the infra exists
-                if !Infra::exists(&mut conn.clone(), infra_id).await? {
-                    return Err(ScenarioError::InfraNotFound { infra_id }.into());
-                }
+                Infra::exists_or_fail(&mut conn, infra_id, || ScenarioError::InfraNotFound {
+                    infra_id,
+                })
+                .await?;
 
-                // Create Scenario
-                let scenario = scenario
-                    .study_id(study_id)
-                    .create(&mut conn.clone())
-                    .await?;
+                let scenario = scenario_cs.study_id(study.id).create(&mut conn).await?;
 
-                // Update study last_modification field
-                study
-                    .clone()
-                    .update_last_modified(&mut conn.clone())
-                    .await?;
-
-                // Update project last_modification field
-                project.update_last_modified(&mut conn.clone()).await?;
-
-                let scenarios_with_details =
-                    ScenarioWithDetails::from_scenario(scenario, &mut conn.clone()).await?;
-
-                let scenarios_response =
-                    ScenarioResponse::new(scenarios_with_details, project, study);
-
-                Ok(scenarios_response)
+                ScenarioWithDetails::from_scenario(scenario, &mut conn).await
             }
             .scope_boxed()
-        })
-        .await?;
+        },
+    )
+    .await?;
 
-    Ok(Json(scenarios_response))
+    Ok(Json(ScenarioResponse::new(details, project, study)))
 }
 
 /// Delete a scenario
@@ -293,37 +257,31 @@ async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    db_pool
-        .get()
-        .await?
-        .transaction::<_, InternalError, _>(|conn| {
+    let ((), _, _) = Study::transactional_content_update(
+        db_pool.get().await?,
+        study_id,
+        move |mut conn, study, project| {
             async move {
-                // Check if the project and the study exist
-                let (mut project, study) =
-                    check_project_study(&mut conn.clone(), project_id, study_id)
-                        .await
-                        .unwrap();
+                if project.id != project_id {
+                    return Err(ProjectError::NotFound { project_id }.into());
+                }
 
-                // Delete scenario
-                Scenario::delete_static_or_fail(&mut conn.clone(), scenario_id, || {
+                let scenario = Scenario::retrieve_or_fail(&mut conn, scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
                 .await?;
 
-                // Update project last_modification field
-                project.update_last_modified(&mut conn.clone()).await?;
+                if scenario.study_id != study.id {
+                    return Err(ScenarioError::NotFound { scenario_id }.into());
+                }
 
-                // Update study last_modification field
-                study
-                    .clone()
-                    .update_last_modified(&mut conn.clone())
-                    .await?;
-
-                Ok(())
+                scenario.delete(&mut conn).await?;
+                Ok::<_, InternalError>(())
             }
             .scope_boxed()
-        })
-        .await?;
+        },
+    )
+    .await?;
 
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
@@ -381,52 +339,39 @@ async fn patch(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let scenarios_response = db_pool
-        .get()
-        .await?
-        .transaction::<_, InternalError, _>(|conn| {
+    let (details, _, study, project) = Scenario::transactional_content_update(
+        db_pool.get().await?,
+        scenario_id,
+        move |mut conn, _, study, project| {
             async move {
-                // Check if project and study exist
-                let (mut project, study) =
-                    check_project_study(&mut conn.clone(), project_id, study_id).await?;
-
-                // Check if the infra exists
+                if project.id != project_id {
+                    return Err(ProjectError::NotFound { project_id }.into());
+                }
+                if study.id != study_id {
+                    return Err(StudyError::NotFound { study_id }.into());
+                }
                 if let Some(infra_id) = form.infra_id {
-                    if !Infra::exists(&mut conn.clone(), infra_id).await? {
-                        return Err(ScenarioError::InfraNotFound { infra_id }.into());
-                    }
+                    Infra::exists_or_fail(&mut conn, infra_id, || ScenarioError::InfraNotFound {
+                        infra_id,
+                    })
+                    .await?;
                 }
 
-                // Update the scenario
-                let scenario: Changeset<Scenario> = form.into();
-                let scenario = scenario
-                    .update_or_fail(&mut conn.clone(), scenario_id, || ScenarioError::NotFound {
+                let scenario_cs: Changeset<Scenario> = form.into();
+                let scenario = scenario_cs
+                    .update_or_fail(&mut conn, scenario_id, || ScenarioError::NotFound {
                         scenario_id,
                     })
                     .await?;
 
-                // Update study last_modification field
-                study
-                    .clone()
-                    .update_last_modified(&mut conn.clone())
-                    .await?;
-
-                // Update project last_modification field
-                project.update_last_modified(&mut conn.clone()).await?;
-
-                let scenario_with_details =
-                    ScenarioWithDetails::from_scenario(scenario, &mut conn.clone()).await?;
-
-                let scenarios_response =
-                    ScenarioResponse::new(scenario_with_details, project, study);
-
-                Ok(scenarios_response)
+                ScenarioWithDetails::from_scenario(scenario, &mut conn).await
             }
             .scope_boxed()
-        })
-        .await?;
+        },
+    )
+    .await?;
 
-    Ok(Json(scenarios_response))
+    Ok(Json(ScenarioResponse::new(details, project, study)))
 }
 
 /// Return a specific scenario
@@ -456,23 +401,42 @@ async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let (details, study, project) = db_pool
+        .get()
+        .await?
+        .transaction(|mut conn| {
+            async move {
+                let project = Project::retrieve_or_fail(&mut conn, project_id, || {
+                    ProjectError::NotFound { project_id }
+                })
+                .await?;
+                let study = Study::retrieve_or_fail(&mut conn, study_id, || StudyError::NotFound {
+                    study_id,
+                })
+                .await?;
+                if study.project_id != project.id {
+                    return Err(ProjectError::NotFound { project_id }.into());
+                }
 
-    let (project, study) = check_project_study(conn, project_id, study_id).await?;
-    // Return the scenarios
-    let scenario = Scenario::retrieve_or_fail(conn, scenario_id, || ScenarioError::NotFound {
-        scenario_id,
-    })
-    .await?;
+                let scenario = Scenario::retrieve_or_fail(&mut conn, scenario_id, || {
+                    ScenarioError::NotFound { scenario_id }
+                })
+                .await?;
+                if scenario.study_id != study_id {
+                    return Err(ScenarioError::NotFound { scenario_id }.into());
+                }
 
-    // Check if the scenario belongs to the study
-    if scenario.study_id != study_id {
-        return Err(ScenarioError::NotFound { scenario_id }.into());
-    }
+                Ok::<_, InternalError>((
+                    ScenarioWithDetails::from_scenario(scenario, &mut conn).await?,
+                    study,
+                    project,
+                ))
+            }
+            .scope_boxed()
+        })
+        .await?;
 
-    let scenarios_with_details = ScenarioWithDetails::from_scenario(scenario, conn).await?;
-    let scenarios_response = ScenarioResponse::new(scenarios_with_details, project, study);
-    Ok(Json(scenarios_response))
+    Ok(Json(ScenarioResponse::new(details, project, study)))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -510,7 +474,11 @@ async fn list(
 
     let conn = &mut db_pool.get().await?;
 
-    let _ = check_project_study(conn, project_id, study_id).await?;
+    let study =
+        Study::retrieve_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
+    if study.project_id != project_id {
+        return Err(ProjectError::NotFound { project_id }.into());
+    }
 
     let settings = pagination_params
         .validate(1000)?
