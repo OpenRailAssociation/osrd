@@ -292,6 +292,51 @@ class FullSTDCMTests {
         }
     }
 
+    /**
+     * Very long stop with an occupancy that starts after the stop end. The requested arrival time
+     * may make us stay longer at the stop location, to the point of causing a conflict. Not finding
+     * a solution is valid, we're looking for crashes (specifically postprocessing assertions).
+     * Reproduces a bug.
+     */
+    @Test
+    fun testConflictAtStop() {
+        val infra =
+            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val start =
+            setOf(Helpers.convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(0.meters)))
+        val stop =
+            setOf(
+                Helpers.convertRouteLocation(
+                    infra,
+                    "rt.det.a1.nf->det.b1.nf",
+                    Offset(6_000.meters) // Within sight distance of a signal
+                )
+            )
+        val end =
+            setOf(
+                Helpers.convertRouteLocation(
+                    infra,
+                    "rt.det.a1.nf->det.b1.nf",
+                    Offset(10_000.meters)
+                )
+            )
+        val zoneAtStop = "zone.[det.center.1:INCREASING, det.center.2:DECREASING]"
+        val requirements =
+            listOf(SpacingRequirement(zoneAtStop, 7_000.0, Double.POSITIVE_INFINITY, true))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartTime(0.0)
+                .setStartLocations(start)
+                .addStep(STDCMStep(stop, 5_000.0, true))
+                .setEndLocations(end, PlannedTimingData(10_000.seconds, 0.seconds, 0.seconds))
+                .setBlockAvailability(makeBlockAvailability(requirements))
+                .setMaxRunTime(Double.POSITIVE_INFINITY)
+                .setMaxDepartureDelay(0.0)
+                .run() ?: return
+        checkNoConflict(infra, requirements, res)
+    }
+
     private fun plannedTimingDataArg(): Stream<Arguments> {
         val start =
             setOf(

@@ -236,7 +236,11 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
 
     /**
      * Identify the max possible time we can add to the previous stop, assuming we can remove some
-     * time from next stops
+     * time from next stops.
+     *
+     * For example, with a train stopping at A, having a requested timing at B and then stopping
+     * again at C: We're trying to find by how much we can "move" stop duration from C to A, to
+     * delay B passage time without affecting what's outside the [A, C] range.
      */
     private fun findMaxPossibleTimeToAdd(
         lastStopIndexBeforeNode: Int,
@@ -246,7 +250,13 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         lastTimeData: TimeData,
     ): Double {
         if (lastStopIndexBeforeNode == 0) return lastTimeData.maxFirstDepartureDelaying
-        var maxTimeDiff = Double.POSITIVE_INFINITY
+
+        // Init the result with the delay we can add without conflict between the last stop and the
+        // planned node
+        var maxTimeDiff =
+            if (node.stopDuration == null) node.timeData.maxDepartureDelayingWithoutConflict
+            else node.timeData.stopTimeData.last().maxDepartureDelayBeforeStop
+
         var nextStopIndex = lastStopIndexBeforeNode
         if (node.stopDuration != null) nextStopIndex++
         var timeRemovedFromStops = 0.0
