@@ -32,7 +32,9 @@ const formatTimetableItemSummaries = (
 
     const timetableItemSummary = rawSummaries.get(timetableItem.id);
 
-    if (!timetableItemSummary) return null;
+    if (!timetableItemSummary) {
+      throw new Error('Missing timetable item summary');
+    }
 
     let notHonoredReason: TimetableItemWithDetails['notHonoredReason'];
     if (timetableItemSummary.status === 'success') {

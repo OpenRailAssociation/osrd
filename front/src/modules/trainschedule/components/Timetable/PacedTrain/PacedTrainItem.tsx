@@ -44,7 +44,7 @@ type PacedTrainItemProps = {
   selectedTimeTableItemId: TrainId | undefined;
   selectPacedTrainToEdit: (pacedTrain: PacedTrainWithDetails) => void;
   upsertTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
-  removePaceTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
+  removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
   // dtoImport: () => void;
 };
 
@@ -58,7 +58,7 @@ const PacedTrainItem = ({
   selectPacedTrainToEdit,
   selectedTimeTableItemId,
   upsertTimetableItems,
-  removePaceTrains,
+  removePacedTrains,
   // dtoImport,
 }: PacedTrainItemProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
@@ -85,7 +85,7 @@ const PacedTrainItem = ({
       await deletePacedTrains({
         body: { ids: [formatPacedTrainIdToEditoastTrainId(pacedTrain.id)] },
       }).unwrap();
-      removePaceTrains([pacedTrain.id]);
+      removePacedTrains([pacedTrain.id]);
       // dtoImport();
       dispatch(
         setSuccess({

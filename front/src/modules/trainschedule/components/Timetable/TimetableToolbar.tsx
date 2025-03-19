@@ -57,7 +57,7 @@ const TimetableToolbar = ({
   timetableItems,
   isInSelection,
 }: TimetableToolbarProps) => {
-  const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes', 'translation']);
+  const { t } = useTranslation(['operationalStudies/scenario', 'common/common', 'translation']);
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
 
@@ -190,7 +190,7 @@ const TimetableToolbar = ({
     if (!timetableItems) return;
 
     const formattedTrainSchedules = timetableItems
-      .filter(({ id }) => selectedTrainIdsFromClick.includes(id))
+      .filter(({ id }) => isTrainSchedule(id) && selectedTrainIdsFromClick.includes(id))
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .map(({ id, timetable_id, ...trainSchedule }) => trainSchedule);
 
@@ -203,8 +203,8 @@ const TimetableToolbar = ({
     a.click();
   };
 
-  const computedItemLabel = (trainSchedulesCount: number, pacedTrainCount: number) => {
-    if (trainSchedulesCount === 0 && pacedTrainCount === 0) return t('timetable.noItem');
+  const computedItemLabel = () => {
+    if (totalTrainScheduleCount === 0 && totalPacedTrainCount === 0) return t('timetable.noItem');
 
     const pacedTrainLabel = t('pacedTrainCount', {
       count: selectedPacedTrainIds.length,
@@ -217,14 +217,14 @@ const TimetableToolbar = ({
     });
 
     if (
-      trainSchedulesCount === 0 ||
+      totalTrainScheduleCount === 0 ||
       (selectedPacedTrainIds.length > 0 && selectedTrainScheduleIds.length === 0)
     ) {
       return pacedTrainLabel;
     }
 
     if (
-      pacedTrainCount === 0 ||
+      totalPacedTrainCount === 0 ||
       (selectedTrainScheduleIds.length > 0 && selectedPacedTrainIds.length === 0)
     ) {
       return trainScheduleLabel;
@@ -261,7 +261,7 @@ const TimetableToolbar = ({
           ) : (
             <div className="train-count">
               <Checkbox
-                label={computedItemLabel(totalTrainScheduleCount, totalPacedTrainCount)}
+                label={computedItemLabel()}
                 small
                 checked={
                   selectedTimetableItemIds.length === timetableItemsWithDetails.length &&
@@ -301,7 +301,8 @@ const TimetableToolbar = ({
                 openModal(
                   <DeleteModal
                     handleDelete={handleTrainsDelete}
-                    items={t('common/itemTypes:trains', { count: selectedTimetableItemIds.length })}
+                    selectedPacedTrainIds={selectedPacedTrainIds}
+                    selectedTrainScheduleIds={selectedTrainScheduleIds}
                   />,
                   'sm'
                 )

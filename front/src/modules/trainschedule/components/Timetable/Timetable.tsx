@@ -203,7 +203,7 @@ const Timetable = ({
                   isProjectionPathUsed={false}
                   selectedTimeTableItemId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
-                  removePaceTrains={removeAndUnselectTrains}
+                  removePacedTrains={removeAndUnselectTrains}
                   // TODO Paced trains : update this to handle delete paced trains in https://github.com/OpenRailAssociation/osrd/issues/10612
                   // dtoImport={dtoImport}
                 />
