@@ -9,8 +9,7 @@
     "split": "Trennen",
     "translate": "Übersetzen",
     "zoom-in": "Reinzoomen",
-    "zoom-out": "Rauszoomen",
-    "deleteSelectionCount": "Wollen Sie wirklich {{items}} Elemente löschen?"
+    "zoom-out": "Rauszoomen"
   },
   "navigation": {
     "next": "Weiter",

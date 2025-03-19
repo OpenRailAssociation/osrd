@@ -35,7 +35,6 @@ const osrdEditoastApi = generatedEditoastApi
                 { forceRefetch: true, subscribe: false }
               )
             );
-            // need to unsubscribe on get call to avoid cache issue
             const { data } = await promise;
             if (data) result.push(...data.results);
             reachEnd = isNil(data?.next);
@@ -62,7 +61,6 @@ const osrdEditoastApi = generatedEditoastApi
                 { forceRefetch: true, subscribe: false }
               )
             );
-            // need to unsubscribe on get call to avoid cache issue
             const { data } = await promise;
             if (data) result.push(...data.results);
             reachEnd = isNil(data?.next);

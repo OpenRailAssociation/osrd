@@ -9,8 +9,7 @@
     "split": "Split",
     "translate": "Shift",
     "zoom-in": "Zoom in",
-    "zoom-out": "Zoom out",
-    "deleteSelectionCount": "Do you confirm the deletion of {{items}}?"
+    "zoom-out": "Zoom out"
   },
   "navigation": {
     "next": "Next",
