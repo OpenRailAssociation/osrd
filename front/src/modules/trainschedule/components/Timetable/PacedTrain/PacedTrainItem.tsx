@@ -7,7 +7,11 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { osrdEditoastApi, type PacedTrainBase } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PacedTrainBase,
+  type PacedTrainResult,
+} from 'common/api/osrdEditoastApi';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
@@ -77,26 +81,24 @@ const PacedTrainItem = ({
     //   dispatch(updateSelectedTrainId(undefined));
     // }
 
-    deletePacedTrains({
-      body: { ids: [formatPacedTrainIdToEditoastTrainId(pacedTrain.id)] },
-    })
-      .unwrap()
-      .then(() => {
-        removePaceTrains([pacedTrain.id]);
-        // dtoImport();
-        dispatch(
-          setSuccess({
-            title: t('timetable.pacedTrainDeleted', { name: pacedTrain.name }),
-            text: '',
-          })
-        );
-      })
-      .catch((e) => {
-        dispatch(setFailure(castErrorToFailure(e)));
-        // if (isSelected) {
-        //   dispatch(updateSelectedTrainId(train.id));
-        // }
-      });
+    try {
+      await deletePacedTrains({
+        body: { ids: [formatPacedTrainIdToEditoastTrainId(pacedTrain.id)] },
+      }).unwrap();
+      removePaceTrains([pacedTrain.id]);
+      // dtoImport();
+      dispatch(
+        setSuccess({
+          title: t('timetable.pacedTrainDeleted', { name: pacedTrain.name }),
+          text: '',
+        })
+      );
+    } catch (e) {
+      dispatch(setFailure(castErrorToFailure(e)));
+      // if (isSelected) {
+      //   dispatch(updateSelectedTrainId(train.id));
+      // }
+    }
   };
 
   const duplicatePacedTrain = async () => {
@@ -105,47 +107,53 @@ const PacedTrainItem = ({
     const pacedTrainDelta = 5;
 
     const editoastTrainId = formatPacedTrainIdToEditoastTrainId(pacedTrain.id);
-    const pacedTrainDetail = await getPacedTrainById({
-      id: editoastTrainId,
-    })
-      .unwrap()
-      .catch((e) => {
-        dispatch(setFailure(castErrorToFailure(e)));
+
+    let pacedTrainDetail: PacedTrainResult;
+    try {
+      const pacedTrainDetailPromise = getPacedTrainById({
+        id: editoastTrainId,
       });
-
-    if (pacedTrainDetail) {
-      const startTime = new Date(pacedTrainDetail.start_time);
-      const newStartTimeString = addDurationToDate(
-        startTime,
-        new Duration({ minutes: pacedTrainDelta })
-      );
-      const newPacedTrain: PacedTrainBase = {
-        ...omit(pacedTrainDetail, ['id', 'timetable_id']),
-        start_time: newStartTimeString.toISOString(),
-        train_name: pacedTrainName,
-      };
-
-      try {
-        const [pacedTrainResult] = await postPacedTrain({
-          id: pacedTrainDetail.timetable_id,
-          body: [newPacedTrain],
-        }).unwrap();
-        const formattedTrainScheduleResult: PacedTrainResultWithPacedTrainId = {
-          ...pacedTrainResult,
-          id: formatEditoastTrainIdToPacedTrainId(pacedTrainResult.id),
-        };
-        upsertTimetableItems([formattedTrainScheduleResult]);
-        // dtoImport();
-        dispatch(
-          setSuccess({
-            title: t('timetable.pacedTrainAdded'),
-            text: `${pacedTrainName}`,
-          })
-        );
-      } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
-      }
+      pacedTrainDetail = await pacedTrainDetailPromise.unwrap();
+      pacedTrainDetailPromise.unsubscribe();
+    } catch (e) {
+      dispatch(setFailure(castErrorToFailure(e)));
+      return;
     }
+
+    const startTime = new Date(pacedTrainDetail.start_time);
+    const newStartTimeString = addDurationToDate(
+      startTime,
+      new Duration({ minutes: pacedTrainDelta })
+    );
+    const newPacedTrain: PacedTrainBase = {
+      ...omit(pacedTrainDetail, ['id', 'timetable_id']),
+      start_time: newStartTimeString.toISOString(),
+      train_name: pacedTrainName,
+    };
+
+    let pacedTrainResult;
+    try {
+      [pacedTrainResult] = await postPacedTrain({
+        id: pacedTrainDetail.timetable_id,
+        body: [newPacedTrain],
+      }).unwrap();
+    } catch (e) {
+      dispatch(setFailure(castErrorToFailure(e)));
+      return;
+    }
+
+    const formattedTrainScheduleResult: PacedTrainResultWithPacedTrainId = {
+      ...pacedTrainResult,
+      id: formatEditoastTrainIdToPacedTrainId(pacedTrainResult.id),
+    };
+    upsertTimetableItems([formattedTrainScheduleResult]);
+    // dtoImport();
+    dispatch(
+      setSuccess({
+        title: t('timetable.pacedTrainAdded'),
+        text: `${pacedTrainName}`,
+      })
+    );
   };
 
   return (

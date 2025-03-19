@@ -88,7 +88,7 @@ const useLazyLoadTimetableItems = ({
           { editoastTrainScheduleIds: [], editoastPacedTrainIds: [] }
         );
 
-        const trainScheduleSummariesPromise =
+        const trainScheduleSummariesPromise: Promise<PostTrainScheduleSimulationSummaryApiResponse> =
           editoastTrainScheduleIds.length > 0
             ? postTrainScheduleSimulationSummary({
                 body: {
@@ -97,9 +97,9 @@ const useLazyLoadTimetableItems = ({
                   electrical_profile_set_id: electricalProfileSetId,
                 },
               }).unwrap()
-            : ({} as Promise<PostTrainScheduleSimulationSummaryApiResponse>);
+            : Promise.resolve({});
 
-        const pacedTrainSummariesPromise =
+        const pacedTrainSummariesPromise: Promise<PostPacedTrainSimulationSummaryApiResponse> =
           editoastPacedTrainIds.length > 0
             ? postPacedTrainSimulationSummary({
                 body: {
@@ -108,7 +108,7 @@ const useLazyLoadTimetableItems = ({
                   electrical_profile_set_id: electricalProfileSetId,
                 },
               }).unwrap()
-            : ({} as Promise<PostPacedTrainSimulationSummaryApiResponse>);
+            : Promise.resolve({});
 
         const rawTrainScheduleSummaries = await trainScheduleSummariesPromise;
         const rawPacedTrainSummaries = await pacedTrainSummariesPromise;
