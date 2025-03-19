@@ -1,13 +1,4 @@
-# Common
 dist/
 node_modules/
 *.tgz
 storybook-static
-
-# Direnv
-.envrc
-.direnv
-
-# IDE
-.vscode/
-.idea/
