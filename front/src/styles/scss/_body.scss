@@ -55,6 +55,17 @@ body {
   transition: 0.4s ease-in-out;
 }
 
+.mastheader-impersonated {
+  background-color: var(--highlight30) !important;
+}
+
+.impersonated-user {
+  color: var(--black100);
+        &:hover {
+          color: var(--primary80);
+        }
+}
+
 .mastnav.fullscreen {
   left: -112px !important;
 }

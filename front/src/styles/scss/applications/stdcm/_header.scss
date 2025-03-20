@@ -8,6 +8,10 @@
   justify-content: space-between;
   padding-right: 50px;
 
+  &__impersonated {
+    background-color: var(--highlight30);
+  }
+
   &__logo {
     padding: 10px 0 10px 10px;
   }
@@ -85,7 +89,21 @@
           color: var(--primary80);
         }
       }
+      &.impersonated {
+        width: 40px;
+        color: var(--black100);
+        background-color: var(--white100);
+        border: 1px solid var(--black100);
+        &:hover {
+          color: var(--primary80);
+          border: 1px solid var(--primary80);
+        }
+      }
     }
+  }
+
+  .impersonated-bg {
+    background-color: var(--white100);
   }
 
   .scenario-explorator-card {

@@ -12,8 +12,10 @@ const makeUserPreferencesSelector =
 export const getIsUserLogged = makeUserSelector('isLogged');
 export const getLoginError = makeUserSelector('loginError');
 export const getUserSafeWord = makeUserPreferencesSelector('safeWord');
+// TODO: vérifier si impersonated est activé
 export const getUsername = makeUserSelector('username');
 export const getUserRoles = makeUserSelector('userRoles');
+export const getImpersonatedUser = makeUserSelector('impersonatedUser');
 export const getIsSuperUser = (state: RootState) => getUserRoles(state).includes('Admin');
 
 // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
