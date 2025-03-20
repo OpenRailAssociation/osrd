@@ -10,6 +10,7 @@ import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.graph.StopTimeData
@@ -179,10 +180,14 @@ data class InfraExplorerWithEnvelopeImpl(
         return this
     }
 
-    override fun getSimulatedLength(): Length<Path> {
+    override fun getSimulatedLength(): Length<TravelledPath> {
         if (envelopes.isEmpty()) return Length(0.meters)
         val lastEnvelope = envelopes[envelopes.size - 1]
         return Length(Distance.fromMeters(lastEnvelope.startOffset + lastEnvelope.envelope.endPos))
+    }
+
+    override fun getSimulationEndPathOffset(): Offset<Path> {
+        return getIncrementalPath().fromTravelledPath(getSimulatedLength())
     }
 
     override fun clone(): InfraExplorerWithEnvelope {

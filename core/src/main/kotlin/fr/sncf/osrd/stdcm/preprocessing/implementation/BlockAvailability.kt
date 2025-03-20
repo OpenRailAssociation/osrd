@@ -291,7 +291,7 @@ data class BlockAvailability(
     ): Offset<TravelledPath> {
         if (time < 0.0) return Offset(0.meters)
         val envelope = explorer.getFullEnvelope()
-        if (time > envelope.totalTime) return explorer.getSimulatedLength().cast()
+        if (time > envelope.totalTime) return explorer.getSimulatedLength()
         val search = DoubleBinarySearch(envelope.beginPos, envelope.endPos, time, 2.0, false)
 
         // The iteration limit avoids infinite loops when accessing times when the train is stopped

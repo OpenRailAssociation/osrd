@@ -157,8 +157,8 @@ internal constructor(
         val availability =
             blockAvailability.getAvailability(
                 explorerWithNewEnvelope,
-                explorerWithNewEnvelope.getSimulatedLength() - 10.meters,
-                explorerWithNewEnvelope.getSimulatedLength(),
+                explorerWithNewEnvelope.getSimulationEndPathOffset() - 10.meters,
+                explorerWithNewEnvelope.getSimulationEndPathOffset(),
                 endTime,
             )
         if (availability is BlockAvailabilityInterface.Available) return availability.maximumDelay

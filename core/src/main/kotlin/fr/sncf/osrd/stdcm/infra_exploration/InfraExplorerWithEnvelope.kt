@@ -10,6 +10,7 @@ import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.TravelledPath
 import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.TimeData
@@ -66,7 +67,10 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun getFullSpacingRequirements(): List<ResultTrain.SpacingRequirement>
 
     /** Returns the length of the simulated section of the path */
-    fun getSimulatedLength(): Length<Path>
+    fun getSimulatedLength(): Length<TravelledPath>
+
+    /** Returns the end of the simulation as an offset on the Path */
+    fun getSimulationEndPathOffset(): Offset<Path>
 
     /**
      * Generate a list of reached train stops, mostly for debugging purposes. Lookahead isn't

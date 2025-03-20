@@ -198,6 +198,44 @@ class InfraExplorerWithEnvelopeTests {
         )
     }
 
+    @Test
+    fun testOffsets() {
+        /*
+        a --> b --> c
+         */
+        val infra = DummyInfra()
+        val fullInfra = infra.fullInfra()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+            )
+
+        // a --> b
+        val firstExplorers =
+            initInfraExplorerWithEnvelope(
+                fullInfra,
+                PathfindingEdgeLocationId(blocks[0], Offset(30.meters)),
+                rollingStock = REALISTIC_FAST_TRAIN
+            )
+        var explorer = firstExplorers.single()
+        explorer = explorer.cloneAndExtendLookahead().single()
+
+        // Move forward
+        explorer.addEnvelope(
+            Envelope.make(
+                EnvelopePart.generateTimes(
+                    listOf(EnvelopeProfile.CONSTANT_SPEED),
+                    doubleArrayOf(0.0, 70.0),
+                    doubleArrayOf(30.0, 30.0)
+                )
+            )
+        )
+        explorer.moveForward()
+        assertEquals(Offset(70.meters), explorer.getSimulatedLength())
+        assertEquals(Offset(100.meters), explorer.getSimulationEndPathOffset())
+    }
+
     /**
      * Test that the envelope bounds are equal, then iterate by an arbitrary step length to test for
      * interpolateDepartureFrom/ArrivalAt equality (respectively with/without stop duration).
