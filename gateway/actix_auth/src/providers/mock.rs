@@ -1,28 +1,21 @@
 use actix_web::HttpRequest;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
-use super::{IdentityProvider, ProviderIdentityStatus, ProviderSessionStatus, SessionProvider};
+use super::IdentityProvider;
+use super::ProviderIdentityStatus;
+use super::ProviderSessionStatus;
+use super::SessionProvider;
 
 #[derive(Clone)]
 pub struct MockProvider {
-    require_login: bool,
     username: String,
-    user_id: Option<String>,
+    user_id: String,
 }
 
 impl MockProvider {
-    pub fn new(require_login: bool, username: String, user_id: Option<String>) -> Self {
-        Self {
-            require_login,
-            username,
-            user_id,
-        }
-    }
-
-    fn get_user_id(&self) -> &str {
-        self.user_id
-            .as_deref()
-            .unwrap_or_else(|| self.username.as_ref())
+    pub fn new(username: String, user_id: String) -> Self {
+        Self { username, user_id }
     }
 }
 
@@ -46,7 +39,7 @@ impl SessionProvider for MockProvider {
         match ctx.state() {
             None => ProviderSessionStatus::LoggedOut,
             Some(MockState::LoggedIn) => ProviderSessionStatus::LoggedIn {
-                user_id: self.get_user_id().to_owned(),
+                user_id: self.user_id.clone(),
                 username: self.username.clone(),
             },
         }
@@ -75,12 +68,9 @@ impl SessionProvider for MockProvider {
 
 impl IdentityProvider for MockProvider {
     fn get_identity(&self, _: &HttpRequest) -> ProviderIdentityStatus {
-        if self.require_login {
-            ProviderIdentityStatus::Unknown
-        } else {
-            ProviderIdentityStatus::Known {
-                user_id: self.get_user_id().to_owned(),
-            }
+        ProviderIdentityStatus::Known {
+            user_id: self.user_id.clone(),
+            username: Some(self.username.clone()),
         }
     }
 }

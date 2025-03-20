@@ -222,11 +222,11 @@ impl AuthContext {
             };
 
             match id_provider.get_identity(req) {
-                ProviderIdentityStatus::Known { user_id } => {
+                ProviderIdentityStatus::Known { user_id, username } => {
                     return AuthStatus::Known {
                         provider_handler: handler,
                         user_id,
-                        username: None,
+                        username,
                     }
                 }
                 ProviderIdentityStatus::Unknown => continue,

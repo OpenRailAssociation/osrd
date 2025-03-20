@@ -16,7 +16,10 @@ pub mod oidc;
 mod provider_context;
 
 pub enum ProviderIdentityStatus {
-    Known { user_id: String },
+    Known {
+        user_id: String,
+        username: Option<String>,
+    },
     Unknown,
     Error(&'static str),
 }

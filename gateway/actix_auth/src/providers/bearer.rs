@@ -32,6 +32,7 @@ impl IdentityProvider for BearerProvider {
         if let Some(token_id) = self.allowed_tokens.get(bearer.token()) {
             ProviderIdentityStatus::Known {
                 user_id: token_id.clone(),
+                username: None,
             }
         } else {
             ProviderIdentityStatus::Error("unknown HTTP Authorization Bearer token")

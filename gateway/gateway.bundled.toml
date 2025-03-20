@@ -27,7 +27,6 @@ secure_cookies = false
 type = "Mocked"
 provider_id = "mock"
 username = "Example User"
-require_login = false
 
 # Example of OIDC auth
 # [auth]

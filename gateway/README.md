@@ -83,11 +83,6 @@ type = "Mocked"
 provider_id = "mock"
 # The username reported to the front-end
 username = "Example User"
-# The unique user id sent to the back-end
-user_id = "example-user-id"
-# Whether users actually need to log in to call targets where require_auth = true.
-# It's used for testing.
-require_login = true
 ```
 
 # Enable open telemetry
