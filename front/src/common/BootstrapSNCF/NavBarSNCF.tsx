@@ -1,6 +1,15 @@
 import { useMemo, type ReactElement } from 'react';
 
-import { Gear, Info, Report, ShieldCheck, SignOut } from '@osrd-project/ui-icons';
+import {
+  Gear,
+  Hubot,
+  Info,
+  Person,
+  Report,
+  ShieldCheck,
+  SignOut,
+  XCircle,
+} from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import i18n from 'i18next';
@@ -8,11 +17,14 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
+import { addTagTypes, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
 import ReleaseInformations from 'common/ReleaseInformations';
 import UserSettings from 'common/UserSettings';
+import { setImpersonatedUser } from 'reducers/user';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
-import useAuth from 'utils/hooks/OsrdAuth';
+import { useAppDispatch } from 'store';
+import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 import { language2flag } from 'utils/strings';
 
@@ -27,10 +39,13 @@ type Props = {
 
 const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
   const { openModal } = useModal();
+  const dispatch = useAppDispatch();
   const deploymentSettings = useDeploymentSettings();
   const safeWord = useSelector(getUserSafeWord);
   const { t } = useTranslation('home/navbar');
-  const { logout, username } = useAuth();
+
+  const { logout, username, impersonatedUser } = useAuth();
+  const tagsToInvalidate = addTagTypes.map((tag) => ({ type: tag }));
 
   const { logoUrl, name } = useMemo(() => {
     if (!deploymentSettings)
@@ -47,7 +62,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
   }, [deploymentSettings, showLogoWithName]);
 
   return (
-    <div className="mastheader">
+    <div className={cx('mastheader', impersonatedUser ? 'mastheader-impersonated' : 'mastheader')}>
       <div
         className={cx(
           'flex-grow-0',
@@ -89,13 +104,14 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
         <li className="toolbar-item separator-gray-500">
           <DropdownSNCF
             titleContent={
-              <>
-                <i
-                  className="icons-menu-account icons-size-1x25 icons-md-size-1x5 mr-xl-2"
-                  aria-hidden="true"
-                />
-                <span className="d-none d-xl-block">{username}</span>
-              </>
+              <div className={cx(impersonatedUser ? 'impersonated-user' : 'd-none d-xl-block')}>
+                {impersonatedUser ? (
+                  <Hubot size="lg" className="mr-xl-2" />
+                ) : (
+                  <Person variant="fill" size="lg" className="mr-xl-2" />
+                )}
+                <span>{username}</span>
+              </div>
             }
             type={DROPDOWN_STYLE_TYPES.transparent}
             items={[
@@ -153,6 +169,18 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
               </button>,
             ]}
           />
+          {impersonatedUser && (
+            <button
+              className="impersonated-user"
+              type="button"
+              onClick={() => {
+                dispatch(setImpersonatedUser(undefined));
+                dispatch(osrdEditoastApi.util.invalidateTags(tagsToInvalidate));
+              }}
+            >
+              <XCircle variant="fill" />
+            </button>
+          )}
         </li>
       </ul>
     </div>

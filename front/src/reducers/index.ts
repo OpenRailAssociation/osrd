@@ -49,7 +49,7 @@ const mapWhiteList = [
   'terrain3DExaggeration',
 ];
 
-const userWhiteList = ['account', 'userPreferences'];
+const userWhiteList = ['account', 'userPreferences', 'impersonatedUser'];
 
 const mainWhiteList = ['lastInterfaceVersion'];
 

@@ -28,7 +28,7 @@ import simulationConfSelectors from 'reducers/osrdconf/operationalStudiesConf/se
 import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
-import useAuth from 'utils/hooks/OsrdAuth';
+import useAuth from 'utils/hooks/useAuth';
 import { DeploymentContextProvider } from 'utils/hooks/useDeploymentSettings';
 
 import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');

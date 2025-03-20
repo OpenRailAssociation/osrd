@@ -8,6 +8,7 @@ import {
   type UserState,
   updateUserPreferences,
   setUserRoles,
+  setImpersonatedUser,
 } from 'reducers/user';
 import { createStoreWithoutMiddleware } from 'store';
 
@@ -71,6 +72,17 @@ describe('userReducer', () => {
     expect(userState).toEqual({
       ...userInitialState,
       userRoles: ['Stdcm'],
+    });
+  });
+
+  it('should handle setImpersonatedUser', () => {
+    const store = createStore(userInitialState);
+    const impersonatedUser = { id: 1, identity_id: 'user1', name: 'ImpersonatedUser' };
+    store.dispatch(setImpersonatedUser(impersonatedUser));
+    const userState = store.getState().user;
+    expect(userState).toEqual({
+      ...userInitialState,
+      impersonatedUser,
     });
   });
 
