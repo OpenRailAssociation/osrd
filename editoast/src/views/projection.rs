@@ -115,6 +115,27 @@ pub struct TrainSimulationDetails {
     pub zone_updates: Vec<ZoneUpdate>,
 }
 
+impl TrainSimulationDetails {
+    // Compute hash input of the projection of a train schedule on a path
+    pub fn compute_projection_hash_with_versioning(
+        &self,
+        infra_id: i64,
+        infra_version: &String,
+        path_projection_tracks: &[TrackRange],
+        path_routes: &[Identifier],
+        path_blocks: &[Identifier],
+    ) -> String {
+        let osrd_version = get_app_version().unwrap_or_default();
+        let mut hasher = DefaultHasher::new();
+        self.hash(&mut hasher);
+        path_projection_tracks.hash(&mut hasher);
+        path_routes.hash(&mut hasher);
+        path_blocks.hash(&mut hasher);
+        let hash_simulation_input = hasher.finish();
+        format!("projection_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+    }
+}
+
 /// Compute the signal updates of a list of train schedules
 pub async fn compute_batch_signal_updates<'a>(
     core: Arc<CoreClient>,
@@ -297,25 +318,6 @@ fn interpolate(
         start_time
             + (pos_to_interpolate - start_pos) * (end_time - start_time) / (end_pos - start_pos)
     }
-}
-
-// Compute hash input of the projection of a train schedule on a path
-pub fn train_projection_input_hash(
-    infra_id: i64,
-    infra_version: &String,
-    project_path_input: &TrainSimulationDetails,
-    path_projection_tracks: &[TrackRange],
-    path_routes: &[Identifier],
-    path_blocks: &[Identifier],
-) -> String {
-    let osrd_version = get_app_version().unwrap_or_default();
-    let mut hasher = DefaultHasher::new();
-    project_path_input.hash(&mut hasher);
-    path_projection_tracks.hash(&mut hasher);
-    path_routes.hash(&mut hasher);
-    path_blocks.hash(&mut hasher);
-    let hash_simulation_input = hasher.finish();
-    format!("projection_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
 }
 
 pub async fn compute_projected_train_paths(
@@ -507,10 +509,9 @@ async fn extract_train_details(
             train_path: track_ranges,
         };
 
-        let hash = train_projection_input_hash(
+        let hash = train_details.compute_projection_hash_with_versioning(
             infra.id,
             &infra.version,
-            &train_details,
             path_track_ranges,
             path_routes,
             path_blocks,
