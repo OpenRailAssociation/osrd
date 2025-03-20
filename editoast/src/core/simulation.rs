@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 use std::collections::HashMap;
+use std::hash::DefaultHasher;
 use std::hash::Hash;
+use std::hash::Hasher;
 
 use derivative::Derivative;
 use editoast_common::units;
@@ -23,6 +25,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::pathfinding::TrackRange;
+use crate::client::get_app_version;
 use crate::core::{AsCoreRequest, Json};
 use crate::error::InternalError;
 use crate::views::path::pathfinding::PathfindingFailure;
@@ -473,6 +476,21 @@ pub struct SimulationRequest {
     pub options: TrainScheduleOptions,
     pub physics_consist: PhysicsConsist,
     pub electrical_profile_set_id: Option<i64>,
+}
+
+impl SimulationRequest {
+    // Compute hash input of a simulation
+    pub fn compute_train_simulation_hash_with_versioning(
+        &self,
+        infra_id: i64,
+        infra_version: &String,
+    ) -> String {
+        let osrd_version = get_app_version().unwrap_or_default();
+        let mut hasher = DefaultHasher::new();
+        self.hash(&mut hasher);
+        let hash_simulation_input = hasher.finish();
+        format!("simulation_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+    }
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]

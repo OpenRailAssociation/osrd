@@ -1,8 +1,5 @@
-use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::hash::Hash;
-use std::hash::Hasher;
 use std::iter;
 use std::sync::Arc;
 
@@ -29,7 +26,6 @@ use utoipa::ToSchema;
 use super::projection::compute_projected_train_paths;
 use super::projection::ProjectPathForm;
 use super::SimulationSummaryResult;
-use crate::client::get_app_version;
 use crate::core::pathfinding::PathfindingResultSuccess;
 use crate::core::simulation::PhysicsConsist;
 use crate::core::simulation::PhysicsConsistParameters;
@@ -460,8 +456,8 @@ pub async fn consist_train_simulation_batch(
         );
 
         // Compute unique hash of the simulation input
-        let simulation_hash =
-            train_simulation_input_hash(infra.id, &infra.version, &simulation_request);
+        let simulation_hash = simulation_request
+            .compute_train_simulation_hash_with_versioning(infra.id, &infra.version);
         to_sim
             .entry(simulation_hash.clone())
             .or_default()
@@ -601,19 +597,6 @@ fn build_simulation_request(
         physics_consist,
         electrical_profile_set_id,
     }
-}
-
-// Compute hash input of a simulation
-fn train_simulation_input_hash(
-    infra_id: i64,
-    infra_version: &String,
-    simulation_input: &SimulationRequest,
-) -> String {
-    let osrd_version = get_app_version().unwrap_or_default();
-    let mut hasher = DefaultHasher::new();
-    simulation_input.hash(&mut hasher);
-    let hash_simulation_input = hasher.finish();
-    format!("simulation_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
