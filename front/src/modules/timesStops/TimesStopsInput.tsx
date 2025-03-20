@@ -7,6 +7,7 @@ import type { Operation } from 'react-datasheet-grid/dist/types';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import type { PathfindingState } from 'modules/pathfinding/types';
 import { isVia, matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import {
@@ -66,12 +67,14 @@ type TimesStopsInputProps = {
   pathStepsAndSuggestedOPs?: SuggestedOP[];
   startTime: Date;
   pathSteps: PathStep[];
+  pathfindingState: PathfindingState;
 };
 
 const TimesStopsInput = ({
   pathStepsAndSuggestedOPs,
   startTime,
   pathSteps,
+  pathfindingState,
 }: TimesStopsInputProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('timesStops');
@@ -134,6 +137,10 @@ const TimesStopsInput = ({
   );
 
   useEffect(() => {
+    if (pathfindingState.error) {
+      setRows([]);
+      return;
+    }
     const fetchAndFormatRows = async () => {
       if (pathStepsAndSuggestedOPs) {
         const trackIds = pathStepsAndSuggestedOPs.map((op) => op.track);

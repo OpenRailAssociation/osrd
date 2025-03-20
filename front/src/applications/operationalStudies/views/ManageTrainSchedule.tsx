@@ -48,8 +48,13 @@ import { useManageTrainScheduleContext } from '../hooks/useManageTrainScheduleCo
 const ManageTrainSchedule = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const { pathProperties, voltageRanges, pathStepsAndSuggestedOPs, launchPathfinding } =
-    useManageTrainScheduleContext();
+  const {
+    pathProperties,
+    voltageRanges,
+    pathStepsAndSuggestedOPs,
+    launchPathfinding,
+    pathfindingState,
+  } = useManageTrainScheduleContext();
   const { updateRollingStockID } = useOsrdConfActions();
 
   const origin = useSelector(getOrigin);
@@ -140,7 +145,7 @@ const ManageTrainSchedule = () => {
         </span>
       </div>
     ),
-    withWarning: !origin || !destination || !pathProperties,
+    withWarning: !origin || !destination || !pathProperties || pathfindingState.error,
     label: t('tabs.pathFinding'),
     content: (
       <div className="osrd-config-item-container-map" data-testid="map">
@@ -174,6 +179,7 @@ const ManageTrainSchedule = () => {
         pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
         startTime={new Date(startTime)}
         pathSteps={compact(pathSteps)}
+        pathfindingState={pathfindingState}
       />
     ),
   };
