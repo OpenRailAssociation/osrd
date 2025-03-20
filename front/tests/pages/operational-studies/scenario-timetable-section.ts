@@ -90,6 +90,8 @@ class ScenarioTimetableSection extends CommonPage {
 
   private readonly scenarioSideMenu: Locator;
 
+  private readonly emptyTimetable: Locator;
+
   private readonly simulationResult: Locator;
 
   constructor(page: Page) {
@@ -137,6 +139,7 @@ class ScenarioTimetableSection extends CommonPage {
     this.scenarioCollapseButton = page.getByTestId('scenario-collapse-button');
     this.timetableCollapseButton = page.getByTestId('timetable-collapse-button');
     this.scenarioSideMenu = page.getByTestId('scenario-sidemenu');
+    this.emptyTimetable = page.locator('.empty-list');
     this.simulationResult = page.locator('.simulation-results');
   }
 
@@ -450,7 +453,7 @@ class ScenarioTimetableSection extends CommonPage {
   }
 
   async verifyTimetableIsEmpty(translation: string) {
-    await expect(this.timetableTrains).not.toBeVisible();
+    await expect(this.emptyTimetable).toBeVisible();
     await expect(this.timetableTotalItemLabel).toHaveText(translation);
   }
 }

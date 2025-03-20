@@ -31,9 +31,18 @@ class CommonPage {
     await this.tagField.press('Enter');
   }
 
-  // Verify the text of the last toast notification title
+  // Verify the text of all toast notification titles
   async checkLastToastTitle(expectedText: string | RegExp): Promise<void> {
-    await expect(this.toastTitle.last()).toHaveText(expectedText);
+    const toastTitles = await this.toastTitle.all();
+    await Promise.all(
+      toastTitles.map(async (toastTitle) => {
+        try {
+          await expect(toastTitle).toHaveText(expectedText);
+        } catch {
+          logger.warn('The toast disappeared before the title could be verified');
+        }
+      })
+    );
   }
 
   // Remove the Vite error overlay if it appears

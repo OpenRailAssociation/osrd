@@ -153,9 +153,9 @@ class PacedTrainSection extends CommonPage {
         : this.testedPacedTrainOccurrences.nth(itemIndex);
 
     if (itemType === 'paced-train') {
-      await this.pacedTrainItem.nth(itemIndex).hover();
+      await this.pacedTrainItem.nth(itemIndex).hover({ force: true });
     } else {
-      await timetableItem.hover();
+      await timetableItem.hover({ force: true });
     }
     return {
       projectItem: timetableItem.getByTestId('project-item'),

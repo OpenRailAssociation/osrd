@@ -63,7 +63,9 @@ const useAutoUpdateProjection = (
     }
 
     // by default, use the first valid train
-    const firstValidTrain = timetableItemsWithDetails.find((train) => train.isValid);
+    const firstValidTrain = timetableItemsWithDetails.find(
+      (train) => train.isValid && isTrainSchedule(train.id)
+    );
     if (firstValidTrain && isTrainSchedule(firstValidTrain.id)) {
       dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
       dispatch(updateSelectedTrainId(firstValidTrain.id));

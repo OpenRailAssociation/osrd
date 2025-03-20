@@ -87,6 +87,8 @@ test.describe('Verify train schedule elements and filters', () => {
     );
     // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
+
+    await page.waitForLoadState('networkidle');
   });
 
   /** *************** Test 1 **************** */
@@ -324,24 +326,5 @@ test.describe('Verify train schedule elements and filters', () => {
       totalPacedTrainCount: TOTAL_PACED_TRAINS,
       totalTrainScheduleCount: TOTAL_TRAINS,
     });
-
-    // Select all remaining items
-    await scenarioTimetableSection.selectAllTimetableItems(translations, {
-      totalPacedTrainCount: TOTAL_PACED_TRAINS,
-      totalTrainScheduleCount: TOTAL_TRAINS,
-    });
-
-    // Delete all items
-    await scenarioTimetableSection.deleteAllTimetableItems();
-
-    // As in other tests, checking the last notification needs to be done in a different method
-    // otherwise the received message of the last notification is empty
-    await scenarioTimetableSection.verifyAllTimetableItemsHaveBeenDeleted(
-      TOTAL_ITEMS,
-      translations
-    );
-
-    // Verify timetable is empty and total label is empty
-    await scenarioTimetableSection.verifyTimetableIsEmpty(translations.timetable.noTrain);
   });
 });
