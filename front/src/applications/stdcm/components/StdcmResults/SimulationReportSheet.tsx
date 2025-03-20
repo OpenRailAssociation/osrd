@@ -38,7 +38,7 @@ const getArrivalTimes = (step: StdcmPathStep, t: TFunction, shouldDisplay: boole
 const LogoSTDCM = ({ logoUrl }: { logoUrl?: string }) => {
   const { t } = useTranslation(['stdcm-simulation-report-sheet']);
   if (logoUrl) {
-    return <Image src={logoUrl} style={styles.header.lmrLogo} />;
+    return <Image src={logoUrl} style={styles.header.stdcmLogo} />;
   }
   return (
     <>

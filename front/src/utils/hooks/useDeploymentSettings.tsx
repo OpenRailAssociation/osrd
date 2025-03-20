@@ -13,9 +13,9 @@ const MONTH_VALUES = {
 };
 
 const defaultSettings = {
-  digitalTwinName: 'Osrd',
-  digitalTwinLogo: defaultLogo,
-  digitalTwinLogoWithName: defaultOsrdLogo,
+  operationalStudiesName: 'Osrd',
+  operationalStudiesLogo: defaultLogo,
+  operationalStudiesLogoWithName: defaultOsrdLogo,
   stdcmName: 'Stdcm',
   stdcmLogo: undefined,
   stdcmSimulationSheetLogo: undefined,
@@ -25,9 +25,9 @@ const defaultSettings = {
 };
 
 export type DeploymentSettings = {
-  digitalTwinName: string;
-  digitalTwinLogo: string;
-  digitalTwinLogoWithName: string;
+  operationalStudiesName: string;
+  operationalStudiesLogo: string;
+  operationalStudiesLogoWithName: string;
   stdcmName: string;
   stdcmLogo?: string;
   stdcmSimulationSheetLogo?: string;
@@ -56,24 +56,24 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
       try {
         const response = await fetch('/overrides/overrides.json');
         if (!response.ok || response.headers.get('Content-Type') !== 'application/json') {
-          let digitalTwinLogo = defaultLogo;
-          let digitalTwinLogoWithName = defaultOsrdLogo;
+          let operationalStudiesLogo = defaultLogo;
+          let operationalStudiesLogoWithName = defaultOsrdLogo;
           const currentMonth = new Date().getMonth();
 
           if (currentMonth === MONTH_VALUES.JUNE) {
-            digitalTwinLogo = proudLogo;
-            digitalTwinLogoWithName = proudOsrdLogo;
+            operationalStudiesLogo = proudLogo;
+            operationalStudiesLogoWithName = proudOsrdLogo;
           } else if (currentMonth === MONTH_VALUES.DECEMBER) {
-            digitalTwinLogo = xmasLogo;
-            digitalTwinLogoWithName = xmasOsrdLogo;
+            operationalStudiesLogo = xmasLogo;
+            operationalStudiesLogoWithName = xmasOsrdLogo;
           }
 
           setCustomizedDeploymentSetting({
             isLoading: false,
             deploymentSettings: {
               ...defaultSettings,
-              digitalTwinLogo,
-              digitalTwinLogoWithName,
+              operationalStudiesLogo,
+              operationalStudiesLogoWithName,
             },
           });
         } else {
@@ -85,8 +85,8 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
           };
 
           if (names) {
-            if (names.digital_twin) {
-              deploySettings.digitalTwinName = names.digital_twin;
+            if (names.operational_studies) {
+              deploySettings.operationalStudiesName = names.operational_studies;
             }
             if (names.stdcm) {
               deploySettings.stdcmName = names.stdcm;
@@ -96,14 +96,14 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
           if (icons) {
             deploySettings.hasCustomizedLogo = true;
 
-            if (icons.digital_twin) {
-              deploySettings.digitalTwinLogo = `/overrides/${icons.digital_twin.dark}_Logo_Grey40.svg`;
-              deploySettings.digitalTwinLogoWithName = `/overrides/${icons.digital_twin.dark}_Grey10.svg`;
+            if (icons.operational_studies) {
+              deploySettings.operationalStudiesLogo = `/overrides/${icons.operational_studies.logo}`;
+              deploySettings.operationalStudiesLogoWithName = `/overrides/${icons.operational_studies.logo_with_name}`;
             }
 
             if (icons.stdcm) {
-              deploySettings.stdcmLogo = `/overrides/${icons.stdcm.light}.svg`;
-              deploySettings.stdcmSimulationSheetLogo = `/overrides/${icons.stdcm.light}@2x.png`;
+              deploySettings.stdcmLogo = `/overrides/${icons.stdcm.logo}`;
+              deploySettings.stdcmSimulationSheetLogo = `/overrides/${icons.stdcm.simulation_sheet_logo}`;
             }
           }
 

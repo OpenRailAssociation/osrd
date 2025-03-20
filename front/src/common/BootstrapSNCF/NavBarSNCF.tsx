@@ -40,9 +40,9 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
       };
     return {
       logoUrl: showLogoWithName
-        ? deploymentSettings.digitalTwinLogoWithName
-        : deploymentSettings.digitalTwinLogo,
-      name: deploymentSettings.digitalTwinName,
+        ? deploymentSettings.operationalStudiesLogoWithName
+        : deploymentSettings.operationalStudiesLogo,
+      name: deploymentSettings.operationalStudiesName,
     };
   }, [deploymentSettings, showLogoWithName]);
 

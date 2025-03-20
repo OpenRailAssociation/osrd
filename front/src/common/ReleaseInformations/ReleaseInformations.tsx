@@ -46,7 +46,11 @@ function ReleaseInformations() {
                   rel="noopener noreferrer"
                   onMouseEnter={motriceParty}
                 >
-                  <img src={deploymentSettings?.digitalTwinLogo} alt="OSRD logo" width={192} />
+                  <img
+                    src={deploymentSettings?.operationalStudiesLogo}
+                    alt="OSRD logo"
+                    width={192}
+                  />
                 </a>
                 <h2>OSRD</h2>
                 <h3>Open Source Railway Designer</h3>

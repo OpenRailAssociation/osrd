@@ -42,7 +42,7 @@ const styles = {
       height: '24',
       marginLeft: '20',
     },
-    lmrLogo: {
+    stdcmLogo: {
       width: 'auto',
       marginRight: 'auto',
     },

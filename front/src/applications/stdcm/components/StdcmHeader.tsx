@@ -11,12 +11,7 @@ const LogoSTDCM = () => {
 
   if (deploymentSettings) {
     return deploymentSettings.stdcmLogo ? (
-      <img
-        src={deploymentSettings.stdcmLogo}
-        data-testid="lmr-logo"
-        alt="LMR Logo"
-        className="stdcm-header__logo"
-      />
+      <img src={deploymentSettings.stdcmLogo} alt="STDCM Logo" className="stdcm-header__logo" />
     ) : (
       <span className="stdcm-header__title pl-5">STDCM</span>
     );
