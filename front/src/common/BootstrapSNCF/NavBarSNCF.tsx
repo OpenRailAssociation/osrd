@@ -51,7 +51,7 @@ const LegacyNavBarSNCF = ({ appName, showLogoWithName }: Props) => {
       <div
         className={cx(
           'flex-grow-0',
-          deploymentSettings?.isCustomizedDeployment && showLogoWithName
+          deploymentSettings?.hasCustomizedLogo && showLogoWithName
             ? 'mastheader-logo-with-name'
             : 'mastheader-logo',
           { 'without-image': logoUrl }

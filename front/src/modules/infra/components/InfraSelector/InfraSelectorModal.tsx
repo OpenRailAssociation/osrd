@@ -13,6 +13,7 @@ import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
+import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
@@ -24,10 +25,12 @@ type InfraSelectorModalProps = {
 
 const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSelectorModalProps) => {
   const { t } = useTranslation(['translation', 'infraManagement']);
+  const deploymentSettings = useDeploymentSettings();
   const dispatch = useAppDispatch();
   const [filter, setFilter] = useState('');
   const [filteredInfrasList, setFilteredInfrasList] = useState<Infra[]>([]);
   const [editionMode, setEditionMode] = useState(false);
+  const canEditInfra = !deploymentSettings?.noInfraEdit;
   const {
     data: infrasList,
     isSuccess,
@@ -85,7 +88,7 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
                 ? t('infraManagement:infraManagement')
                 : t('infraManagement:infraChoice')}
             </span>
-            {!onlySelectionMode && (
+            {!onlySelectionMode && canEditInfra && (
               <button
                 className="infra-switch-mode"
                 type="button"

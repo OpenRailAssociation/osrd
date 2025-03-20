@@ -19,8 +19,9 @@ const defaultSettings = {
   stdcmName: 'Stdcm',
   stdcmLogo: undefined,
   stdcmSimulationSheetLogo: undefined,
-  isCustomizedDeployment: false,
+  hasCustomizedLogo: false,
   stdcmFeedbackMail: 'support_LMR@default.org',
+  noInfraEdit: false,
 };
 
 export type DeploymentSettings = {
@@ -30,8 +31,9 @@ export type DeploymentSettings = {
   stdcmName: string;
   stdcmLogo?: string;
   stdcmSimulationSheetLogo?: string;
-  isCustomizedDeployment: boolean;
+  hasCustomizedLogo: boolean;
   stdcmFeedbackMail?: string;
+  noInfraEdit?: boolean;
 };
 
 export type DeploymentSettingsContext = {
@@ -76,25 +78,46 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
           });
         } else {
           const overridesData = await response.json();
-          const { icons, names, stdcm_feedback_mail } = overridesData;
+          const { icons, names, stdcm_feedback_mail, no_infra_edit } = overridesData;
 
-          const lmrLogoPath = `/overrides/${icons.stdcm.light}.svg`;
-          const lmrPngLogoPath = `/overrides/${icons.stdcm.light}@2x.png`;
-          const horizonLogoWithNamePath = `/overrides/${icons.digital_twin.dark}_Grey10.svg`;
-          const horizonLogoPath = `/overrides/${icons.digital_twin.dark}_Logo_Grey40.svg`;
+          const deploySettings: DeploymentSettings = {
+            ...defaultSettings,
+          };
+
+          if (names) {
+            if (names.digital_twin) {
+              deploySettings.digitalTwinName = names.digital_twin;
+            }
+            if (names.stdcm) {
+              deploySettings.stdcmName = names.stdcm;
+            }
+          }
+
+          if (icons) {
+            deploySettings.hasCustomizedLogo = true;
+
+            if (icons.digital_twin) {
+              deploySettings.digitalTwinLogo = `/overrides/${icons.digital_twin.dark}_Logo_Grey40.svg`;
+              deploySettings.digitalTwinLogoWithName = `/overrides/${icons.digital_twin.dark}_Grey10.svg`;
+            }
+
+            if (icons.stdcm) {
+              deploySettings.stdcmLogo = `/overrides/${icons.stdcm.light}.svg`;
+              deploySettings.stdcmSimulationSheetLogo = `/overrides/${icons.stdcm.light}@2x.png`;
+            }
+          }
+
+          if (stdcm_feedback_mail) {
+            deploySettings.stdcmFeedbackMail = stdcm_feedback_mail;
+          }
+
+          if (no_infra_edit) {
+            deploySettings.noInfraEdit = no_infra_edit;
+          }
 
           setCustomizedDeploymentSetting({
             isLoading: false,
-            deploymentSettings: {
-              digitalTwinName: names.digital_twin,
-              digitalTwinLogo: horizonLogoPath,
-              digitalTwinLogoWithName: horizonLogoWithNamePath,
-              stdcmName: names.stdcm,
-              stdcmLogo: lmrLogoPath,
-              stdcmSimulationSheetLogo: lmrPngLogoPath,
-              isCustomizedDeployment: true,
-              stdcmFeedbackMail: stdcm_feedback_mail,
-            },
+            deploymentSettings: deploySettings,
           });
         }
       } catch (error) {
