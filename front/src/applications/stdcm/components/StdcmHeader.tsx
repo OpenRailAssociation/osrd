@@ -1,9 +1,13 @@
-import { Bug } from '@osrd-project/ui-icons';
+import { Bug, SignOut } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
-import { getIsSuperUser } from 'reducers/user/userSelectors';
+import { addTagTypes, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { setImpersonatedUser } from 'reducers/user';
+import { getImpersonatedUser, getIsSuperUser } from 'reducers/user/userSelectors';
+import { useAppDispatch } from 'store';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 const LogoSTDCM = () => {
@@ -33,10 +37,13 @@ const StdcmHeader = ({
   showHelpModule,
 }: StdcmHeaderProps) => {
   const { t } = useTranslation(['stdcm', 'translation']);
+  const dispatch = useAppDispatch();
   const isSuperUser = useSelector(getIsSuperUser);
+  const impersonatedUser = useSelector(getImpersonatedUser);
+  const tagsToInvalidate = addTagTypes.map((tag) => ({ type: tag }));
 
   return (
-    <div className="stdcm-header d-flex">
+    <div className={cx('stdcm-header', impersonatedUser ? 'stdcm-header__impersonated' : 'd-flex')}>
       <LogoSTDCM />
       <div className="flex-grow-1 d-flex justify-content-center">
         <span className="stdcm-header__notification " id="notification">
@@ -49,21 +56,39 @@ const StdcmHeader = ({
             data-testid="stdcm-debug-button"
             type="button"
             aria-label="stdcm-debug"
-            className={cx('debug', { selected: isDebugMode })}
+            className={cx('debug', { selected: isDebugMode, 'impersonated-bg': impersonatedUser })}
             onClick={() => onDebugModeToggle(!isDebugMode)}
           >
             <Bug />
           </button>
         )}
         <button
-          type="button"
           data-testid="stdcm-help-button"
+          type="button"
           aria-label="stdcm-help"
-          className={cx('ml-4 px-3', { selected: showHelpModule })}
+          className={cx('ml-4 px-3', {
+            selected: showHelpModule,
+            'impersonated-bg': impersonatedUser,
+          })}
           onClick={() => toggleHelpModule()}
         >
           {t('translation:common.help')}
         </button>
+        {impersonatedUser && (
+          <Link to="/">
+            <button
+              type="button"
+              aria-label="stdcm-impersonated"
+              className="impersonated ml-4"
+              onClick={() => {
+                dispatch(setImpersonatedUser(undefined));
+                dispatch(osrdEditoastApi.util.invalidateTags(tagsToInvalidate));
+              }}
+            >
+              <SignOut />
+            </button>
+          </Link>
+        )}
       </div>
     </div>
   );

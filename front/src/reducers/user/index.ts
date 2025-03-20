@@ -1,10 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { ApiError } from 'common/api/baseGeneratedApis';
-import type { Role } from 'common/api/osrdEditoastApi';
+import type { Role, SearchResultItemUser } from 'common/api/osrdEditoastApi';
 
 export interface UserState {
   isLogged: boolean;
+  impersonatedUser?: SearchResultItemUser;
   loginError?: ApiError;
   username: string;
   // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
@@ -15,6 +16,7 @@ export interface UserState {
 
 export const userInitialState: UserState = {
   isLogged: false,
+  impersonatedUser: undefined,
   loginError: undefined,
   username: '',
   // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
@@ -47,6 +49,9 @@ export const userSlice = createSlice({
     setUserRoles(state, action: PayloadAction<Role[] | undefined>) {
       state.userRoles = action.payload || [];
     },
+    setImpersonatedUser(state, action: PayloadAction<SearchResultItemUser | undefined>) {
+      state.impersonatedUser = action.payload;
+    },
     updateUserPreferences(
       state,
       // TODO PACEDTRAIN: Remove pacedTrain after development pacedTrain feature
@@ -57,7 +62,13 @@ export const userSlice = createSlice({
   },
 });
 
-export const { loginSuccess, loginError, logoutSuccess, setUserRoles, updateUserPreferences } =
-  userSlice.actions;
+export const {
+  loginSuccess,
+  loginError,
+  logoutSuccess,
+  setUserRoles,
+  setImpersonatedUser,
+  updateUserPreferences,
+} = userSlice.actions;
 
 export default userSlice.reducer;
