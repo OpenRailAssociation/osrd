@@ -2,11 +2,11 @@
   "name": "@osrd-project/ui-icons",
   "version": "0.0.1-dev",
   "license": "LGPL-3.0-or-later",
-  "bugs": "https://github.com/osrd-project/osrd-ui/issues",
+  "bugs": "https://github.com/osrd-project/osrd/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/osrd-project/osrd-ui.git",
-    "directory": "ui-icons"
+    "url": "https://github.com/osrd-project/osrd.git",
+    "directory": "front/ui/ui-icons"
   },
   "publishConfig": {
     "access": "public"
