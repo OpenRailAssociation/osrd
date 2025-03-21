@@ -54,6 +54,7 @@ const StdcmViewContent = ({
   const [showBtnToLaunchSimulation, setShowBtnToLaunchSimulation] = useState(false);
   const [buttonsVisible, setButtonsVisible] = useState(true);
   const [skipPathfindingStatusMessage, setSkipPathfindingStatusMessage] = useState(false);
+  const [hasSeenInfoMessage, setHasSeenInfoMessage] = useState(false);
 
   const resultSectionRef = useRef<HTMLDivElement | null>(null);
   const previousResultSectionOffsetRef = useRef<number | null>(null);
@@ -81,6 +82,7 @@ const StdcmViewContent = ({
       dispatch(selectSimulation(index));
       setSkipPathfindingStatusMessage(true);
       setShowBtnToLaunchSimulation(false);
+      setHasSeenInfoMessage(true);
     }
   };
 
@@ -179,6 +181,7 @@ const StdcmViewContent = ({
             isCalculationFailed={isCalculationFailed}
             isDebugMode={isDebugMode}
             onSelectSimulation={handleSelectSimulation}
+            hasSeenInfoMessage={hasSeenInfoMessage}
             onStartNewQuery={handleStartNewQuery}
             onStartNewQueryWithData={handleStartNewQueryWithData}
             buttonsVisible={buttonsVisible}

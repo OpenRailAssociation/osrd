@@ -56,6 +56,8 @@ const useStdcm = ({
   const timetableId = useSelector(getStdcmTimetableID);
   const infraId = useSelector(getStdcmInfraID);
   const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>>();
+  const isCancelledRef = useRef(false);
+
   const currentSimulationInputs = useStdcmForm();
 
   const [postTimetableByIdStdcm] = osrdEditoastApi.endpoints.postTimetableByIdStdcm.useMutation();
@@ -143,6 +145,7 @@ const useStdcm = ({
     dispatch(updateSelectedTrainId(STDCM_TRAIN_TIMETABLE_ID));
 
     const simulation = await createSimulation(currentSimulationInputs, payload, response);
+    if (isCancelledRef.current) return;
     dispatch(addStdcmSimulations([simulation]));
   };
 
@@ -156,7 +159,7 @@ const useStdcm = ({
       const payloadUpstream = adjustPayloadByDirection(payload, 'upstream');
       const payloadDownstream = adjustPayloadByDirection(payload, 'downstream');
 
-      // run two additional requests with different payloads for alternative simulations
+      // Run two additional requests for alternative simulations
       const [resUp, resDown] = await Promise.all([
         postTimetableByIdStdcm(payloadUpstream).unwrap(),
         postTimetableByIdStdcm(payloadDownstream).unwrap(),
@@ -179,6 +182,8 @@ const useStdcm = ({
         createSimulation(downstreamInputs, payloadDownstream, resDown, 'downstream'),
         createSimulation(upstreamInputs, payloadUpstream, resUp, 'upstream'),
       ]);
+
+      if (isCancelledRef.current) return;
 
       dispatch(addStdcmSimulations([currentSimulation, downstreamSimulation, upstreamSimulation]));
 
@@ -206,6 +211,7 @@ const useStdcm = ({
 
   const launchStdcmRequest = async () => {
     resetStdcmState();
+    isCancelledRef.current = false;
 
     const validConfig = checkStdcmConf(dispatch, t, osrdconf);
     if (!validConfig) return;
@@ -234,6 +240,7 @@ const useStdcm = ({
   };
 
   const cancelStdcmRequest = () => {
+    isCancelledRef.current = true;
     if (typeof requestPromise.current?.abort === 'function') {
       requestPromise.current.abort();
     }
