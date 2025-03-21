@@ -3786,6 +3786,11 @@ export type SearchResultItemTrainSchedule = {
   timetable_id: number;
   train_name: string;
 };
+export type SearchResultItemUser = {
+  id: number;
+  identity_id: string;
+  name: string;
+};
 export type SearchResultItem =
   | SearchResultItemTrack
   | SearchResultItemOperationalPoint
@@ -3793,7 +3798,8 @@ export type SearchResultItem =
   | SearchResultItemProject
   | SearchResultItemStudy
   | SearchResultItemScenario
-  | SearchResultItemTrainSchedule;
+  | SearchResultItemTrainSchedule
+  | SearchResultItemUser;
 export type SearchQuery = boolean | number | number | string | (SearchQuery | null)[];
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it

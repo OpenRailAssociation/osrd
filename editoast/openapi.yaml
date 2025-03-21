@@ -10474,6 +10474,7 @@ components:
       - $ref: '#/components/schemas/SearchResultItemStudy'
       - $ref: '#/components/schemas/SearchResultItemScenario'
       - $ref: '#/components/schemas/SearchResultItemTrainSchedule'
+      - $ref: '#/components/schemas/SearchResultItemUser'
       description: A search result item that depends on the query's `object`
     SearchResultItemOperationalPoint:
       type: object
@@ -10772,6 +10773,22 @@ components:
           type: integer
           format: int64
         train_name:
+          type: string
+    SearchResultItemUser:
+      type: object
+      description: A search result item for a query with `object = "user"`
+      required:
+      - id
+      - identity_id
+      - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 0
+        identity_id:
+          type: string
+        name:
           type: string
     Side:
       type: string

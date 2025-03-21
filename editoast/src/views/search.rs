@@ -354,7 +354,7 @@ async fn search(
         "track" | "signal" | "project" | "study" | "scenario" => {
             HashSet::from([Role::OperationalStudies])
         }
-        "trainschedule" | "operationalpoint" => {
+        "trainschedule" | "operationalpoint" | "user" => {
             HashSet::from([Role::OperationalStudies, Role::Stdcm])
         }
         _ => {
@@ -617,6 +617,34 @@ pub(super) struct SearchResultItemProject {
 
 #[derive(Search, Serialize, ToSchema)]
 #[search(
+    table = "search_user",
+    migration(src_table = "authn_user"),
+    joins = "INNER JOIN authn_user ON authn_user.id = search_user.id",
+    column(
+        name = "identity_id",
+        data_type = "TEXT",
+        sql = "authn_user.identity_id"
+    ),
+    column(
+        name = "name",
+        data_type = "TEXT",
+        sql = "authn_user.name",
+        textual_search
+    )
+)]
+#[allow(unused)]
+/// A search result item for a query with `object = "user"`
+pub(super) struct SearchResultItemUser {
+    #[search(sql = "authn_user.id")]
+    id: u64,
+    #[search(sql = "authn_user.identity_id")]
+    identity_id: String,
+    #[search(sql = "authn_user.name")]
+    name: String,
+}
+
+#[derive(Search, Serialize, ToSchema)]
+#[search(
     table = "search_study",
     migration(src_table = "study"),
     joins = "INNER JOIN study ON study.id = search_study.id",
@@ -760,6 +788,7 @@ pub(super) struct SearchResultItemTrainSchedule {
     object(name = "study", config = SearchResultItemStudy),
     object(name = "scenario", config = SearchResultItemScenario),
     object(name = "trainschedule", config = SearchResultItemTrainSchedule),
+    object(name = "user", config = SearchResultItemUser),
 )]
 pub struct SearchConfigFinder;
 

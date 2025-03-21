@@ -652,6 +652,17 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    search_user (id) {
+        id -> Int8,
+        identity_id -> Nullable<Text>,
+        name -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     stdcm_logs (id) {
         id -> Int8,
         #[max_length = 32]
@@ -867,6 +878,7 @@ diesel::joinable!(search_project -> project (id));
 diesel::joinable!(search_scenario -> scenario (id));
 diesel::joinable!(search_signal -> infra_object_signal (id));
 diesel::joinable!(search_study -> study (id));
+diesel::joinable!(search_user -> authn_user (id));
 diesel::joinable!(stdcm_logs -> authn_user (user_id));
 diesel::joinable!(stdcm_search_environment -> electrical_profile_set (electrical_profile_set_id));
 diesel::joinable!(stdcm_search_environment -> infra (infra_id));
@@ -921,6 +933,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     search_signal,
     search_study,
     search_track,
+    search_user,
     stdcm_logs,
     stdcm_search_environment,
     study,
