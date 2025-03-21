@@ -3,23 +3,25 @@ import { uniqBy } from 'lodash';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
-import { formatEditoastTrainIdToTrainScheduleId } from 'utils/trainId';
 
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
   NODE_LABEL_GROUP,
   DEFAULT_TRAINRUN_FREQUENCIES,
   DEFAULT_TRAINRUN_CATEGORY,
-  DEFAULT_TRAINRUN_FREQUENCY,
+  UNIQUE_TRAIN_SCHEDULE_FREQUENCY,
   DEFAULT_TRAINRUN_TIME_CATEGORY,
   TRAINRUN_LABEL_GROUP,
   DEFAULT_TIME_LOCK,
   DEFAULT_DTO,
+  UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY,
+  DEFAULT_TRAINRUN_TIME_CATEGORIES,
 } from './consts';
 import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
-import { deleteMacroNodeByDbId, getSavedMacroNodes, trainrunFrequencyFromLabel } from './utils';
+import { deleteMacroNodeByDbId, getSavedMacroNodes } from './utils';
 import {
   type PortDto,
   type TimeLockDto,
@@ -28,6 +30,7 @@ import {
   type NetzgrafikDto,
   PortAlignment,
   type LabelDto,
+  type TrainrunTimeCategory,
 } from '../NGE/types';
 
 /**
@@ -37,7 +40,7 @@ const executeSearch = async (
   state: MacroEditorState,
   dispatch: AppDispatch
 ): Promise<SearchResultItemOperationalPoint[]> => {
-  const searchPayload = buildOpSearchQuery(state.scenario.infra_id, state.trainSchedules);
+  const searchPayload = buildOpSearchQuery(state.scenario.infra_id, state.trains);
   if (!searchPayload) {
     return [];
   }
@@ -68,7 +71,7 @@ const executeSearch = async (
  */
 const applyLayout = (state: MacroEditorState) => {
   const indexedNodes = uniqBy(
-    state.trainSchedules.flatMap((ts) => ts.path),
+    state.trains.flatMap((t) => t.path),
     MacroEditorState.getPathKey
   ).map((pathItem) => {
     const key = MacroEditorState.getPathKey(pathItem);
@@ -132,25 +135,53 @@ const castNodeToNge = (
 });
 
 /**
- * NGE trainrun frequency is stored as OSRD labels (`"frequency::30"` or `"frequency::120"`).
- * Update the current frequency if the new frequency is smaller.
+ * Create a new frequency for different frequencies than the default ones (`30min/60min/120min`).
  */
-const getFrequencyFromLabels = (labels: string[]): TrainrunFrequency | null => {
-  let currentFrequency: TrainrunFrequency | null = null;
-  labels.forEach((label) => {
-    const newFrequency = trainrunFrequencyFromLabel(label);
-    if (
-      newFrequency &&
-      (!currentFrequency || newFrequency.frequency < currentFrequency.frequency)
-    ) {
-      currentFrequency = newFrequency;
-    }
+const createTrainrunFrequencyFromPace = (paced: { step: string }): TrainrunFrequency => {
+  const stepInMinutes = Duration.parse(paced.step).total('minute');
+  const newFrequency: TrainrunFrequency = {
+    id: DEFAULT_TRAINRUN_FREQUENCIES.length + 1,
+    order: 0, // temporary order
+    frequency: stepInMinutes,
+    offset: 0,
+    name: `Step ${stepInMinutes}min`,
+    shortName: `${stepInMinutes}`,
+    linePatternRef: '60',
+  };
+  DEFAULT_TRAINRUN_FREQUENCIES.push(newFrequency);
+
+  // sort the frequencies by their value and re-order them
+  DEFAULT_TRAINRUN_FREQUENCIES.sort((a, b) => a.frequency - b.frequency);
+  DEFAULT_TRAINRUN_FREQUENCIES.forEach((frequency, index) => {
+    frequency.order = index + 1;
   });
-  return currentFrequency;
+
+  return newFrequency;
 };
 
 /**
- * Load & index the data of the train schedule for the given scenario
+ * Return the frequency of the associated train (creating it if unknown).
+ */
+const getOrCreateTrainrunFrequency = (train: TimetableItemWithTimetableId): TrainrunFrequency => {
+  if (!('paced' in train)) {
+    return UNIQUE_TRAIN_SCHEDULE_FREQUENCY;
+  }
+  const stepInMinutes = Duration.parse(train.paced.step).total('minute');
+  const trainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES.find((f) => f.frequency === stepInMinutes);
+  return trainrunFrequency || createTrainrunFrequencyFromPace(train.paced);
+};
+
+const getTrainrunTimeCategoryFromFrequency = (
+  trainrunFrequency: TrainrunFrequency
+): TrainrunTimeCategory => {
+  if (trainrunFrequency === UNIQUE_TRAIN_SCHEDULE_FREQUENCY) {
+    return UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY;
+  }
+  return DEFAULT_TRAINRUN_TIME_CATEGORY;
+};
+
+/**
+ * Load & index the data of the train schedule for the given scenario.
  */
 export const loadAndIndexNge = async (
   state: MacroEditorState,
@@ -158,7 +189,7 @@ export const loadAndIndexNge = async (
 ): Promise<void> => {
   // Load path items
   let nbNodesIndexed = 0;
-  state.trainSchedules
+  state.trains
     .flatMap((train) => train.path)
     .forEach((pathItem, index) => {
       const key = MacroEditorState.getPathKey(pathItem);
@@ -210,9 +241,9 @@ export const loadAndIndexNge = async (
   // Dedup nodes
   state.dedupNodes();
 
-  // Index trainschedule labels
-  state.trainSchedules.forEach((ts) => {
-    ts.labels?.forEach((l) => {
+  // Index trains labels
+  state.trains.forEach((t) => {
+    t.labels?.forEach((l) => {
       state.trainrunLabels.add(l);
     });
   });
@@ -222,35 +253,29 @@ export const loadAndIndexNge = async (
 };
 
 /**
- * Translate the train schedule in NGE "trainrun".
+ * Translate the `TrainSchedules` and `PacedTrains` of OSRD into NGE `Trainruns`.
  */
 const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
-  state.trainSchedules
-    .filter((trainSchedule) => trainSchedule.path.length >= 2)
-    .map((trainSchedule) => {
-      // TODO Paced train : Adapt this for the add paced train issue https://github.com/OpenRailAssociation/osrd/issues/10612
-      const formattedTrainId = formatEditoastTrainIdToTrainScheduleId(trainSchedule.id);
-      state.trainScheduleIdByNgeId.set(trainSchedule.id, formattedTrainId);
+  state.trains
+    .filter((train) => train.path.length >= 2)
+    .map((train, index) => {
+      state.trainIdByNgeId.set(index + 1, train.id);
+      const trainrunFrequency: TrainrunFrequency = getOrCreateTrainrunFrequency(train);
       return {
-        id: trainSchedule.id,
-
-        name: trainSchedule.train_name,
+        id: index + 1,
+        name: train.train_name,
         categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
-        frequencyId:
-          getFrequencyFromLabels(trainSchedule.labels || [])?.id ?? DEFAULT_TRAINRUN_FREQUENCY.id,
-        trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
-        labelIds: (trainSchedule.labels || [])
-          // we keep only not handled frequencies as labels to be not redundant
-          .filter((l) => trainrunFrequencyFromLabel(l) === null)
-          .map((l) =>
-            labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
-          ),
+        frequencyId: trainrunFrequency.id,
+        trainrunTimeCategoryId: getTrainrunTimeCategoryFromFrequency(trainrunFrequency).id,
+        labelIds: (train.labels || []).map((l) =>
+          labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
+        ),
       };
     });
 
 /**
  * Translate the train schedule in NGE "trainrunSection" & "nodes".
- * It is needed to return the nodes as well, because we add ports & transitions on them
+ * It is needed to return the nodes as well, because we add ports & transitions on them.
  */
 const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelDto[]) => {
   let portId = 1;
@@ -280,14 +305,14 @@ const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelD
   // Track nge nodes
   const ngeNodesByPathKey: Record<string, NetzgrafikDto['nodes'][0]> = {};
   let trainrunSectionId = 0;
-  const trainrunSections: TrainrunSectionDto[] = state.trainSchedules.flatMap((trainSchedule) => {
+  const trainrunSections: TrainrunSectionDto[] = state.trains.flatMap((train, index) => {
     // Figure out the primary node key for each path item
-    const pathNodeKeys = trainSchedule.path.map((pathItem) => {
+    const pathNodeKeys = train.path.map((pathItem) => {
       const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem));
       return node!.path_item_key;
     });
 
-    const startTime = new Date(trainSchedule.start_time);
+    const startTime = new Date(train.start_time);
     const createTimeLock = (time: Date): TimeLockDto => ({
       time: time.getMinutes(),
       // getTime() is in milliseconds, consecutiveTime is in minutes
@@ -330,11 +355,9 @@ const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelD
       targetNode.ports.push(targetPort);
 
       // Adding schedule
-      const sourceScheduleEntry = trainSchedule.schedule!.find(
-        (entry) => entry.at === trainSchedule.path[i].id
-      );
-      const targetScheduleEntry = trainSchedule.schedule!.find(
-        (entry) => entry.at === trainSchedule.path[i + 1].id
+      const sourceScheduleEntry = train.schedule!.find((entry) => entry.at === train.path[i].id);
+      const targetScheduleEntry = train.schedule!.find(
+        (entry) => entry.at === train.path[i + 1].id
       );
 
       // Create a transition between the previous section and the one we're creating
@@ -382,7 +405,7 @@ const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelD
         targetDeparture: { ...DEFAULT_TIME_LOCK },
         targetArrival,
         numberOfStops: 0,
-        trainrunId: trainSchedule.id,
+        trainrunId: index + 1,
         resourceId: state.ngeResource.id,
         path: {
           path: [],
@@ -419,7 +442,7 @@ const getNgeLabels = (state: MacroEditorState): LabelDto[] => [
 ];
 
 /**
- * Return a compatible object for NGE
+ * Return a compatible object for NGE.
  */
 export const getNgeDto = (state: MacroEditorState): NetzgrafikDto => {
   const labels = getNgeLabels(state);
@@ -432,7 +455,7 @@ export const getNgeDto = (state: MacroEditorState): NetzgrafikDto => {
       netzgrafikColors: [],
       trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
       trainrunFrequencies: DEFAULT_TRAINRUN_FREQUENCIES,
-      trainrunTimeCategories: [DEFAULT_TRAINRUN_TIME_CATEGORY],
+      trainrunTimeCategories: DEFAULT_TRAINRUN_TIME_CATEGORIES,
     },
     trainruns: getNgeTrainruns(state, labels),
     ...getNgeTrainrunSectionsWithNodes(state, labels),

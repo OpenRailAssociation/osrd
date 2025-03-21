@@ -17,15 +17,9 @@ import {
   formatTrainScheduleIdToEditoastTrainId,
 } from 'utils/trainId';
 
-import { DEFAULT_TRAINRUN_FREQUENCIES, DEFAULT_TRAINRUN_FREQUENCY } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
-import {
-  createMacroNode,
-  deleteMacroNodeByNgeId,
-  trainrunFrequencyFromLabel,
-  updateMacroNode,
-} from './utils';
+import { createMacroNode, deleteMacroNodeByNgeId, updateMacroNode } from './utils';
 import type {
   NetzgrafikDto,
   NGEEvent,
@@ -211,17 +205,7 @@ const createTrainSchedulePayload = async ({
     (labelId) => labels.find((label) => label.id === labelId)?.label
   );
 
-  if (trainrun.frequencyId !== DEFAULT_TRAINRUN_FREQUENCY.id) {
-    const trainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES.find(
-      (frequency) => frequency.id === trainrun.frequencyId
-    );
-    trainrunLabels.push(`frequency::${trainrunFrequency?.frequency}`);
-  }
-
-  const trainScheduleLabels =
-    trainSchedule?.labels?.filter((label) => trainrunFrequencyFromLabel(label) !== null) || [];
-
-  trainrunLabels = uniq([...trainrunLabels, ...trainScheduleLabels]);
+  trainrunLabels = uniq([...trainrunLabels]);
 
   // The departure time of the first section is guaranteed to be non-null
   const startTimeLock = trainrunSections[0].sourceDeparture;

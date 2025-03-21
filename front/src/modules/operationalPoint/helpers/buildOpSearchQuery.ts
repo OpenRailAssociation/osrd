@@ -1,4 +1,5 @@
-import type { SearchPayload, SearchQuery, TrainScheduleResult } from 'common/api/osrdEditoastApi';
+import type { SearchPayload, SearchQuery } from 'common/api/osrdEditoastApi';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 
 /**
  * Build a search query to fetch all operational points from their UICs,
@@ -6,9 +7,9 @@ import type { SearchPayload, SearchQuery, TrainScheduleResult } from 'common/api
  */
 const buildOpSearchQuery = (
   infraId: number,
-  trainSchedules: TrainScheduleResult[]
+  trains: TimetableItemWithTimetableId[]
 ): SearchPayload | null => {
-  const pathItems = trainSchedules.map((schedule) => schedule.path).flat();
+  const pathItems = trains.map((train) => train.path).flat();
   const pathItemQueries = [];
   const pathItemSet = new Set<string>();
 

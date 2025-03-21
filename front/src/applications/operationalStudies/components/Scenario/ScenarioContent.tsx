@@ -21,8 +21,12 @@ import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastAp
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
-import type { TimetableItemId, TrainScheduleResultWithTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import {
+  formatEditoastTrainIdToPacedTrainId,
+  formatEditoastTrainIdToTrainScheduleId,
+} from 'utils/trainId';
 
 import ScenarioDescription from './ScenarioDescription';
 import MacroEditorState from '../MacroEditor/MacroEditorState';
@@ -62,16 +66,31 @@ const ScenarioContent = ({
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
 
   const dtoImport = useCallback(async () => {
-    const timetablePromise = dispatch(
+    const timetableTrainSchedulesPromise = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
         { timetableId: scenario?.timetable_id },
         { forceRefetch: true, subscribe: false }
       )
     );
-    const schedules = (await timetablePromise.unwrap()).filter(
-      (trainSchedule) => trainSchedule.path.length >= 2
+    const trainSchedules = (await timetableTrainSchedulesPromise.unwrap())
+      .filter((trainSchedule) => trainSchedule.path.length >= 2)
+      .map((trainSchedule) => ({
+        ...trainSchedule,
+        id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+      }));
+    const timetablePacedTrainsPromise = dispatch(
+      osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
+        { timetableId: scenario?.timetable_id },
+        { forceRefetch: true, subscribe: false }
+      )
     );
-    const state = new MacroEditorState(scenario, schedules || []);
+    const pacedTrains = (await timetablePacedTrainsPromise.unwrap())
+      .filter((pacedTrain) => pacedTrain.path.length >= 2)
+      .map((pacedTrain) => ({
+        ...pacedTrain,
+        id: formatEditoastTrainIdToPacedTrainId(pacedTrain.id),
+      }));
+    const state = new MacroEditorState(scenario, [...trainSchedules, ...pacedTrains]);
     await loadAndIndexNge(state, dispatch);
     const dto = getNgeDto(state);
     macroEditorState.current = state;
@@ -102,11 +121,11 @@ const ScenarioContent = ({
       infraId: infra.id,
       timeTableId: scenario.timetable_id,
       netzgrafikDto,
-      addUpsertedTrainSchedules: (upsertedTrainSchedules: TrainScheduleResultWithTrainId[]) => {
-        upsertTimetableItems(upsertedTrainSchedules);
+      addUpsertedTimetableItems: (upsertedTimetableItems: TimetableItemWithTimetableId[]) => {
+        upsertTimetableItems(upsertedTimetableItems);
       },
-      addDeletedTrainIds: (trainIds: TimetableItemId[]) => {
-        removeTimetableItems(trainIds);
+      addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => {
+        removeTimetableItems(timetableItemIds);
       },
     });
   };

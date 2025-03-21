@@ -4,9 +4,8 @@ import type {
   MacroNodeResponse,
   ScenarioResponse,
   SearchResultItemOperationalPoint,
-  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
   ngeId: number;
@@ -21,9 +20,9 @@ export default class MacroEditorState {
   scenario: ScenarioResponse;
 
   /**
-   * Train schedules
+   * Trains (`TrainSchedule` or `PacedTrain`)
    */
-  trainSchedules: TrainScheduleResult[];
+  trains: TimetableItemWithTimetableId[];
 
   /**
    * Nodes storage
@@ -58,14 +57,14 @@ export default class MacroEditorState {
   ngeResource: { id: number; capacity: number };
 
   /**
-   * Given a nge train run ID, returns the osrd train schedule ID
+   * Given a NGE `Trainrun.id`, returns the OSRD `TimetableItemId`.
    */
-  trainScheduleIdByNgeId: Map<number, TimetableItemId>;
+  trainIdByNgeId: Map<number, TimetableItemId>;
 
   /**
    * Default constructor
    */
-  constructor(scenario: ScenarioResponse, trainSchedules: TrainScheduleResult[]) {
+  constructor(scenario: ScenarioResponse, trains: TimetableItemWithTimetableId[]) {
     // Empty
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
@@ -73,9 +72,9 @@ export default class MacroEditorState {
     this.indexByPathKey = {};
     this.indexByNgeId = {};
     this.scenario = scenario;
-    this.trainSchedules = trainSchedules;
-    this.ngeResource = { id: 1, capacity: this.trainSchedules.length };
-    this.trainScheduleIdByNgeId = new Map<number, TimetableItemId>();
+    this.trains = trains;
+    this.ngeResource = { id: 1, capacity: this.trains.length };
+    this.trainIdByNgeId = new Map<number, TimetableItemId>();
   }
 
   /**
@@ -208,7 +207,7 @@ export default class MacroEditorState {
   /**
    * Given an path step, returns its pathKey
    */
-  static getPathKey(item: TrainScheduleResult['path'][0]): string {
+  static getPathKey(item: TimetableItemWithTimetableId['path'][0]): string {
     if ('trigram' in item)
       return `trigram:${item.trigram}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
     if ('operational_point' in item) return `op_id:${item.operational_point}`;
