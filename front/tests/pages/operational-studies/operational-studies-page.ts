@@ -135,7 +135,7 @@ class OperationalStudiesPage extends CommonPage {
   }
 
   async checkTimetableItemHasBeenAdded(translation: string) {
-    await this.checkLastToastTitle(translation);
+    await this.checkToastTitle(translation);
     await this.closeToastNotification();
   }
 

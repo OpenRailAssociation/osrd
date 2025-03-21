@@ -32,7 +32,7 @@ class CommonPage {
   }
 
   // Verify the text of all toast notification titles
-  async checkLastToastTitle(expectedText: string | RegExp): Promise<void> {
+  async checkToastTitle(expectedText: string | RegExp): Promise<void> {
     const toastTitles = await this.toastTitle.all();
     await Promise.all(
       toastTitles.map(async (toastTitle) => {

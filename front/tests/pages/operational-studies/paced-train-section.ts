@@ -103,8 +103,8 @@ class PacedTrainSection extends CommonPage {
 
     await this.verifyItemsVisibility(index, 'paced-train');
 
-    for (let i = 0; i < totalOccurrences; i += 1) {
-      await this.verifyOccurrenceDetails(occurrenceData[i], i, {
+    for (let occurrenceIndex = 0; occurrenceIndex < totalOccurrences; occurrenceIndex += 1) {
+      await this.verifyOccurrenceDetails(occurrenceData[occurrenceIndex], occurrenceIndex, {
         copyTranslation: duplicate?.copyTranslation,
       });
     }
@@ -231,10 +231,10 @@ class PacedTrainSection extends CommonPage {
     translations: TimetableFilterTranslations
   ) {
     const duplicatedPacedTrainName = `${deletedPacedTrainName} (${translations.timetable.copy})`;
-    // translation has format 'La mission {{name}} a bien été supprimée';
+    // Translation has format 'The service {{name}} has been deleted';
     const [firstPart, secondPart] = translations.timetable.pacedTrainDeleted.split('{{name}}');
     const expectedDeleteToast = `${firstPart}${duplicatedPacedTrainName}${secondPart}`;
-    await this.checkLastToastTitle(expectedDeleteToast);
+    await this.checkToastTitle(expectedDeleteToast);
     await this.closeToastNotification();
   }
 }

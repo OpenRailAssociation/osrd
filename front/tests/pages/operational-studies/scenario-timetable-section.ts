@@ -447,7 +447,7 @@ class ScenarioTimetableSection extends CommonPage {
     const [firstPart, secondPart] =
       translations.timetable.itemsSelectionDeletedCount_other.split('{{count}}');
     const expectedDeleteToast = `${firstPart}${itemsCount}${secondPart}`;
-    await this.checkLastToastTitle(expectedDeleteToast);
+    await this.checkToastTitle(expectedDeleteToast);
 
     await this.closeToastNotification();
   }
