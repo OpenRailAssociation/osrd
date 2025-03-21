@@ -28,7 +28,7 @@ opentelemetry-otlp = "0.17.0"
 opentelemetry-semantic-conventions = "0.16.0"
 opentelemetry_sdk = { version = "0.24.1", features = ["rt-tokio"] }
 percent-encoding = "2.3.1"
-priority-queue = "2.0.3"
+priority-queue = "2.3.0"
 reqwest = { version = "0.12.9", default-features = false, features = [
   "json",
   "rustls-tls",
