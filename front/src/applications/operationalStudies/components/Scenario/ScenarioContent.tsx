@@ -119,7 +119,7 @@ const ScenarioContent = ({
       state: macroEditorState.current!,
       dispatch,
       infraId: infra.id,
-      timeTableId: scenario.timetable_id,
+      timetableId: scenario.timetable_id,
       netzgrafikDto,
       addUpsertedTimetableItems: (upsertedTimetableItems: TimetableItemWithTimetableId[]) => {
         upsertTimetableItems(upsertedTimetableItems);
