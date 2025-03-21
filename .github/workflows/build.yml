@@ -818,6 +818,20 @@ jobs:
 
           exit $(docker wait front-format)
 
+      - name: Check TypeScript
+        run: |
+          docker run --name=front-typescript --net=host \
+            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            npx tsc --noEmit
+          exit $(docker wait front-typescript)
+
+      - name: Check ESLint
+        run: |
+          docker run --name=front-eslint --net=host \
+            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            npm run lint
+          exit $(docker wait front-eslint)
+
       - name: Check for i18n missing keys
         run: |
           docker run --name=front-i18n-checker --net=host \

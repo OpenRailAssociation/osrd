@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       viteTsconfigPaths(),
-      checker({
+      mode !== 'test' && checker({
         typescript: {
           buildMode: true,
         },
