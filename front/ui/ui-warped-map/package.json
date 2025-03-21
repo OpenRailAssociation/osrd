@@ -4,15 +4,13 @@
   "version": "0.0.1-dev",
   "license": "LGPL-3.0-or-later",
   "private": true,
-  "homepage": "https://github.com/osrd-project/osrd-ui#readme",
+  "homepage": "https://github.com/OpenRailAssociation/osrd/tree/dev/front/ui/ui-warped-map#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/osrd-project/osrd-ui.git",
-    "directory": "packages/ui-warped-map"
+    "url": "https://github.com/osrd-project/osrd.git",
+    "directory": "front/ui/ui-warped-map"
   },
-  "bugs": {
-    "url": "https://github.com/osrd-project/osrd-ui/issues"
-  },
+  "bugs": "https://github.com/osrd-project/osrd/issues",
   "type": "module",
   "main": "dist/index.esm.js",
   "module": "dist/index.esm.js",
