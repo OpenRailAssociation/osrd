@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -18,6 +18,7 @@ import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTra
 import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
+import { Loader } from 'common/Loaders';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
@@ -60,6 +61,7 @@ const ScenarioContent = ({
   } = useScenarioData(scenario, infra);
   const macroEditorState = useRef<MacroEditorState>();
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
+  const [ngeIsLoading, setNGEIsLoading] = useState(true);
 
   const dtoImport = useCallback(async () => {
     const timetablePromise = dispatch(
@@ -84,15 +86,13 @@ const ScenarioContent = ({
       if (!isMacroMode && collapsedTimetable) {
         setCollapsedTimetable(false);
       }
+      if (!isMacro && isMacroMode) {
+        setNGEIsLoading(true);
+        dtoImport();
+      }
     },
-    [setIsMacro, collapsedTimetable]
+    [isMacro, setIsMacro, collapsedTimetable]
   );
-
-  useEffect(() => {
-    if (isMacro) {
-      dtoImport();
-    }
-  }, [isMacro]);
 
   const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
     handleOperation({
@@ -110,6 +110,8 @@ const ScenarioContent = ({
       },
     });
   };
+
+  const handleNGELoad = () => setNGEIsLoading(false);
 
   return (
     <main className="mastcontainer mastcontainer-no-mastnav scenario">
@@ -184,6 +186,13 @@ const ScenarioContent = ({
             displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
               <ScenarioLoaderMessage infraState={infra?.state} />
             )}
+          {isMacro && (!ngeDto || ngeIsLoading) && (
+            <Loader
+              msg={t('loadingMacroEditor')}
+              className="scenario-loader"
+              childClass="scenario-loader-msg"
+            />
+          )}
           {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
             displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
             <div className="scenario-managetrainschedule">
@@ -206,7 +215,7 @@ const ScenarioContent = ({
           <div className="scenario-results">
             {isMacro ? (
               <div className="h-100 p-1">
-                <NGE dto={ngeDto} onOperation={handleNGEOperation} />
+                <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
               </div>
             ) : (
               isInfraLoaded &&

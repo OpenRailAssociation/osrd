@@ -20,6 +20,7 @@ interface NGEElement extends HTMLElement {
 type NGEProps = {
   dto?: NetzgrafikDto;
   onOperation?: (op: NGEEvent, netzgrafikDto: NetzgrafikDto) => void;
+  onLoad?: () => void;
 };
 
 const frameSrc = `
@@ -43,7 +44,7 @@ const frameSrc = `
  * Abstracts away low-level NGE details. Doesn't contain any OSRD-specific
  * logic.
  */
-const NGE = ({ dto, onOperation }: NGEProps) => {
+const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
   const frameRef = useRef<HTMLIFrameElement>(null);
 
   const [ngeRootElement, setNgeRootElement] = useState<NGEElement | null>(null);
@@ -55,6 +56,8 @@ const NGE = ({ dto, onOperation }: NGEProps) => {
       const ngeRoot = frame.contentDocument!.createElement('sbb-root') as NGEElement;
       frame.contentDocument!.body.appendChild(ngeRoot);
       setNgeRootElement(ngeRoot);
+
+      if (onLoad) onLoad();
     };
 
     frame.addEventListener('load', handleFrameLoad);

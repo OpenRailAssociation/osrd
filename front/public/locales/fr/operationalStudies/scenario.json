@@ -17,6 +17,7 @@
     "unableToDuplicateATrain": "Impossible de dupliquer le train"
   },
   "filterPlaceholder": "Filtre, étiquettes",
+  "loadingMacroEditor": "Chargement de l'éditeur macroscopique…",
   "infraLoadingState": "{{step}}/3",
   "infrastructure": "Infrastructure",
   "lessDetails": "moins de détails",

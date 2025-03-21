@@ -18,6 +18,7 @@
   },
   "filterPlaceholder": "Filter, tags",
   "infraLoadingState": "{{step}}/3",
+  "loadingMacroEditor": "Loading macroscopic editor…",
   "infrastructure": "Infrastructure",
   "lessDetails": "less details",
   "macroscopic": "MACRO",
