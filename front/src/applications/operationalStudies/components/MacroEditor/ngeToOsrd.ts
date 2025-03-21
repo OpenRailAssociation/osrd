@@ -2,19 +2,22 @@ import { compact, uniq } from 'lodash';
 
 import {
   osrdEditoastApi,
+  type PacedTrainBase,
   type SearchResultItemOperationalPoint,
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type {
   TimetableItemId,
+  TimetableItemWithTimetableId,
   TrainScheduleId,
-  TrainScheduleResultWithTrainId,
 } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import {
   formatEditoastTrainIdToTrainScheduleId,
+  formatPacedTrainIdToEditoastTrainId,
   formatTrainScheduleIdToEditoastTrainId,
+  isPacedTrain,
 } from 'utils/trainId';
 
 import type MacroEditorState from './MacroEditorState';
@@ -163,7 +166,7 @@ const getTimeLockDate = (
 const formatDateDifferenceFrom = (start: Date, stop: Date) =>
   Duration.subtractDate(stop, start).toISOString();
 
-const createTrainSchedulePayload = async ({
+const createTrainPayload = async ({
   trainrunSections,
   nodes,
   trainrun,
@@ -171,7 +174,7 @@ const createTrainSchedulePayload = async ({
   dispatch,
   labels,
   oldStartDate,
-  trainSchedule,
+  train,
 }: {
   trainrunSections: TrainrunSectionDto[];
   nodes: NodeDto[];
@@ -180,7 +183,7 @@ const createTrainSchedulePayload = async ({
   dispatch: AppDispatch;
   labels: LabelDto[];
   oldStartDate: Date;
-  trainSchedule?: TrainScheduleBase;
+  train?: TrainScheduleBase | PacedTrainBase;
 }) => {
   const pathPromise = trainrunSections.map(async (section, index) => {
     const sourceNode = getNodeById(nodes, section.sourceNodeId);
@@ -201,11 +204,9 @@ const createTrainSchedulePayload = async ({
 
   const path = await Promise.all(pathPromise);
 
-  let trainrunLabels = trainrun.labelIds.map(
-    (labelId) => labels.find((label) => label.id === labelId)?.label
+  const trainrunLabels = uniq(
+    trainrun.labelIds.map((labelId) => labels.find((label) => label.id === labelId)?.label)
   );
-
-  trainrunLabels = uniq([...trainrunLabels]);
 
   // The departure time of the first section is guaranteed to be non-null
   const startTimeLock = trainrunSections[0].sourceDeparture;
@@ -251,26 +252,26 @@ const createTrainSchedulePayload = async ({
   };
 };
 
-const handleUpdateTrainSchedule = async ({
+const handleUpdateTimetableItem = async ({
   netzgrafikDto,
   trainrun,
   dispatch,
   infraId,
-  addUpsertedTrainSchedules,
+  addUpsertedTimetableItems,
   state,
 }: {
   netzgrafikDto: NetzgrafikDto;
   trainrun: TrainrunDto;
   dispatch: AppDispatch;
   infraId: number;
-  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   state: MacroEditorState;
 }) => {
   const { nodes, labels } = netzgrafikDto;
   const trainrunSectionsByTrainrunId = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   // TODO Paced train : Adapt to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10612
   const editoastTrainScheduleIdToUpdate = formatTrainScheduleIdToEditoastTrainId(
-    state.trainScheduleIdByNgeId.get(trainrun.id) as TrainScheduleId
+    state.trainIdByNgeId.get(trainrun.id) as TrainScheduleId
   );
   const trainSchedule = await dispatch(
     osrdEditoastApi.endpoints.getTrainScheduleById.initiate({
@@ -303,7 +304,7 @@ const handleUpdateTrainSchedule = async ({
     ...newTrainSchedule,
     id: formatEditoastTrainIdToTrainScheduleId(newTrainSchedule.id),
   };
-  addUpsertedTrainSchedules([formattedNewTrainSchedule]);
+  addUpsertedTimetableItems([formattedNewTrainSchedule]);
 };
 
 const handleTrainrunOperation = async ({
@@ -313,8 +314,8 @@ const handleTrainrunOperation = async ({
   infraId,
   timeTableId,
   netzgrafikDto,
-  addUpsertedTrainSchedules,
-  addDeletedTrainIds,
+  addUpsertedTimetableItems,
+  addDeletedTimetableItemIds,
   state,
 }: {
   type: NGEEvent['type'];
@@ -323,8 +324,8 @@ const handleTrainrunOperation = async ({
   infraId: number;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
-  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
-  addDeletedTrainIds: (trainIds: TimetableItemId[]) => void;
+  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
   state: MacroEditorState;
 }) => {
   const { nodes, labels, trainruns } = netzgrafikDto;
@@ -342,7 +343,7 @@ const handleTrainrunOperation = async ({
           body: [
             {
               ...DEFAULT_PAYLOAD,
-              ...(await createTrainSchedulePayload({
+              ...(await createTrainPayload({
                 trainrunSections: trainrunSectionsByTrainrunId,
                 nodes,
                 trainrun: trainrun!,
@@ -355,38 +356,46 @@ const handleTrainrunOperation = async ({
           ],
         })
       ).unwrap();
-      // TODO Paced train : Adapt to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10612
+
       const formattedNewTrainSchedules: TrainScheduleResultWithTrainId[] = newTrainSchedules.map(
         (trainSchedule) => ({
           ...trainSchedule,
           id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
         })
       );
-      state.trainScheduleIdByNgeId.set(trainrunId, formattedNewTrainSchedules[0].id);
-      addUpsertedTrainSchedules(formattedNewTrainSchedules);
+      state.trainIdByNgeId.set(trainrunId, formattedNewTrainSchedules[0].id);
+      addUpsertedTimetableItems(formattedNewTrainSchedules);
       break;
     }
     case 'delete': {
-      // TODO Paced train : Adapt to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/10612
-      const editoastTrainScheduleIdToDelete = formatTrainScheduleIdToEditoastTrainId(
-        state.trainScheduleIdByNgeId.get(trainrunId) as TrainScheduleId
-      );
-      await dispatch(
-        osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
-          body: { ids: [editoastTrainScheduleIdToDelete] },
-        })
-      ).unwrap();
-      addDeletedTrainIds([state.trainScheduleIdByNgeId.get(trainrunId)!]);
-      state.trainScheduleIdByNgeId.delete(trainrunId);
+      const timetableItemId: TimetableItemId = state.trainIdByNgeId.get(trainrunId)!;
+      let editoastTrainIdToDelete: number;
+      if (isPacedTrain(timetableItemId)) {
+        editoastTrainIdToDelete = formatPacedTrainIdToEditoastTrainId(timetableItemId);
+        await dispatch(
+          osrdEditoastApi.endpoints.deletePacedTrain.initiate({
+            body: { ids: [editoastTrainIdToDelete] },
+          })
+        ).unwrap();
+      } else {
+        editoastTrainIdToDelete = formatTrainScheduleIdToEditoastTrainId(timetableItemId);
+        await dispatch(
+          osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
+            body: { ids: [editoastTrainIdToDelete] },
+          })
+        ).unwrap();
+      }
+      addDeletedTimetableItemIds([state.trainIdByNgeId.get(trainrunId)!]);
+      state.trainIdByNgeId.delete(trainrunId);
       break;
     }
     case 'update': {
-      await handleUpdateTrainSchedule({
+      await handleUpdateTimetableItem({
         netzgrafikDto,
         trainrun: trainrun!,
         dispatch,
         infraId,
-        addUpsertedTrainSchedules,
+        addUpsertedTimetableItems,
         state,
       });
       break;
@@ -488,7 +497,7 @@ const handleLabelOperation = async ({
   netzgrafikDto,
   dispatch,
   infraId,
-  addUpsertedTrainSchedules,
+  addUpsertedTimetableItems,
   state,
 }: {
   type: NGEEvent['type'];
@@ -496,7 +505,7 @@ const handleLabelOperation = async ({
   netzgrafikDto: NetzgrafikDto;
   dispatch: AppDispatch;
   infraId: number;
-  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
+  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
   state: MacroEditorState;
 }) => {
   const { trainruns } = netzgrafikDto;
@@ -506,12 +515,12 @@ const handleLabelOperation = async ({
         trainrun.labelIds.includes(label.id)
       );
       trainrunUpdateLabels.forEach(async (trainrun) => {
-        await handleUpdateTrainSchedule({
+        await handleUpdateTimetableItem({
           netzgrafikDto,
           trainrun,
           dispatch,
           infraId,
-          addUpsertedTrainSchedules,
+          addUpsertedTimetableItems,
           state,
         });
       });
@@ -530,8 +539,8 @@ const handleOperation = async ({
   infraId,
   timeTableId,
   netzgrafikDto,
-  addUpsertedTrainSchedules,
-  addDeletedTrainIds,
+  addUpsertedTimetableItems,
+  addDeletedTimetableItemIds,
 }: {
   event: NGEEvent;
   dispatch: AppDispatch;
@@ -539,8 +548,8 @@ const handleOperation = async ({
   infraId: number;
   timeTableId: number;
   netzgrafikDto: NetzgrafikDto;
-  addUpsertedTrainSchedules: (trainSchedules: TrainScheduleResultWithTrainId[]) => void;
-  addDeletedTrainIds: (trainIds: TimetableItemId[]) => void;
+  addUpsertedTimetableItems: (timetableItems: TimetableItemWithTimetableId[]) => void;
+  addDeletedTimetableItemIds: (timetableItemsIds: TimetableItemId[]) => void;
 }) => {
   const { type } = event;
   switch (event.objectType) {
@@ -555,8 +564,8 @@ const handleOperation = async ({
         infraId,
         timeTableId,
         netzgrafikDto,
-        addUpsertedTrainSchedules,
-        addDeletedTrainIds,
+        addUpsertedTimetableItems,
+        addDeletedTimetableItemIds,
         state,
       });
       break;
@@ -568,7 +577,7 @@ const handleOperation = async ({
         netzgrafikDto,
         dispatch,
         infraId,
-        addUpsertedTrainSchedules,
+        addUpsertedTimetableItems,
         state,
       });
       break;
