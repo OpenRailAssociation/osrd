@@ -18,7 +18,7 @@ import { useAppDispatch } from 'store';
 import { isPacedTrain, isTrainSchedule } from 'utils/trainId';
 
 import AddTrainScheduleButton from './AddTrainScheduleButton';
-import useUpdateTimetableItem from './hooks/useUpdateTimtetableItem';
+import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
 import PacedTrainSettings from './PacedTrainSettings';
 
 type TimetableManageTrainScheduleProps = {

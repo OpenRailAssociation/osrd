@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 import { ChevronRight } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -19,11 +19,16 @@ import SimulationResults from 'applications/operationalStudies/views/SimulationR
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
+import i18n from 'i18n';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainSchedule';
 import Timetable from 'modules/trainschedule/components/Timetable';
 import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import {
+  formatEditoastTrainIdToPacedTrainId,
+  formatEditoastTrainIdToTrainScheduleId,
+} from 'utils/trainId';
 
 import ScenarioDescription from './ScenarioDescription';
 import MacroEditorState from '../MacroEditor/MacroEditorState';
@@ -64,17 +69,32 @@ const ScenarioContent = ({
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
 
   const refreshNge = useCallback(async () => {
-    const timetablePromise = dispatch(
+    const trainSchedulesPromise = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
         { timetableId: scenario?.timetable_id },
         { forceRefetch: true, subscribe: false }
       )
     );
-    const schedules = (await timetablePromise.unwrap()).filter(
-      (trainSchedule) => trainSchedule.path.length >= 2
+    const trainSchedules = (await trainSchedulesPromise.unwrap())
+      .filter((trainSchedule) => trainSchedule.path.length >= 2)
+      .map((trainSchedule) => ({
+        ...trainSchedule,
+        id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
+      }));
+    const pacedTrainsPromise = dispatch(
+      osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
+        { timetableId: scenario?.timetable_id },
+        { forceRefetch: true, subscribe: false }
+      )
     );
-    const state = new MacroEditorState(scenario, schedules || []);
-    await loadAndIndexNge(state, dispatch);
+    const pacedTrains = (await pacedTrainsPromise.unwrap())
+      .filter((pacedTrain) => pacedTrain.path.length >= 2)
+      .map((pacedTrain) => ({
+        ...pacedTrain,
+        id: formatEditoastTrainIdToPacedTrainId(pacedTrain.id),
+      }));
+    const state = new MacroEditorState(scenario, [...trainSchedules, ...pacedTrains]);
+    await loadAndIndexNge(state, dispatch, t);
     const dto = getNgeDto(state);
     macroEditorState.current = state;
     setNgeDto(dto);
@@ -100,6 +120,13 @@ const ScenarioContent = ({
     [removeTimetableItems, refreshNge, isMacro]
   );
 
+  // To update dynamic translations in NGE when language changes
+  useEffect(() => {
+    if (isMacro) {
+      refreshNge();
+    }
+  }, [i18n.language]);
+
   const toggleMicroMacroButton = useCallback(
     (isMacroMode: boolean) => {
       setIsMacro(isMacroMode);
@@ -117,13 +144,13 @@ const ScenarioContent = ({
   const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
     handleOperation({
       event,
+      netzgrafikDto,
+      timetableId: scenario.timetable_id,
+      infraId: infra.id,
       state: macroEditorState.current!,
       dispatch,
-      infraId: infra.id,
-      timeTableId: scenario.timetable_id,
-      netzgrafikDto,
-      addUpsertedTrainSchedules: upsertTimetableItems,
-      addDeletedTrainIds: removeTimetableItems,
+      addUpsertedTimetableItems: upsertTimetableItems,
+      addDeletedTimetableItemIds: removeTimetableItems,
     });
   };
 

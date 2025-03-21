@@ -23,6 +23,10 @@
   "infraLoadingState": "{{step}}/3",
   "infrastructure": "Netz",
   "lessDetails": "Weniger Details",
+  "macroEditor": {
+    "intervalXmin": "Intervall {{minutes}}min",
+    "uniqueTrainSchedule": "Einzelner Zug"
+  },
   "macroscopic": "MAKRO",
   "microscopic": "MIKRO",
   "moreDetails": "Mehr Details",

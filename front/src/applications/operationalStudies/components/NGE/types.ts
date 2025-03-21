@@ -105,25 +105,44 @@ export type TrainrunCategory = {
   sectionHeadway: number;
 };
 
+/**
+ * Mandatory attribute for any Trainrun.
+ * Used for the `linePatternRef` attribute, which changes the line style of the Trainrun.
+ * It is also used to compute the space-time diagram (Streckengrafik) of NGE.
+ */
 export type TrainrunFrequency = {
+  /** At creation of a trainrun, default NGE frequency takes id 3. */
   id: number;
+  /** Order for displaying Frequency chips in NGE. */
   order: number;
+  /** Equivalent as `paced.interval` in OSRD. Unit is in minutes. */
   frequency: number;
+  /** Offset in minutes from minute 0, to 120min duration. */
   offset: number;
+  /** Displayed on Frequency chip mouse hover. */
   name: string;
-  /** Short name, needs to be unique */
+  /** Short name, needs to be unique. */
   shortName: string;
+  /** Line style for Trainrun (dotted/single/double/triple/quadruple). Refs correspond to an enum in NGE. */
   linePatternRef: string;
 };
 
+/**
+ * Mandatory attribute for any Trainrun.
+ * Not used as its functionnality is meant to be, nor displayed, in OSRD yet.
+ * Only used for the `linePatternRef` attribute, which changes the line style of the Trainrun.
+ */
 export type TrainrunTimeCategory = {
   id: number;
+  /** Order for displaying TimeCategory chips in NGE. */
   order: number;
+  /** Displayed on TimeCategory chip mouse hover. */
   name: string;
   /** Short name, needs to be unique */
   shortName: string;
   dayTimeInterval: unknown[];
   weekday: number[];
+  /** Line style for Trainrun (plain/dotted/dashed). Refs correspond to an enum in NGE. */
   linePatternRef: string;
 };
 

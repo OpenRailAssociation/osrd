@@ -4,9 +4,10 @@ import type {
   MacroNodeResponse,
   ScenarioResponse,
   SearchResultItemOperationalPoint,
-  TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
+
+import type { TrainrunFrequency } from '../NGE/types';
 
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
   ngeId: number;
@@ -21,9 +22,9 @@ export default class MacroEditorState {
   scenario: ScenarioResponse;
 
   /**
-   * Train schedules
+   * TimetableItems (`TrainSchedule` or `PacedTrain`)
    */
-  trainSchedules: TrainScheduleResponse[];
+  timetableItems: TimetableItemWithTimetableId[];
 
   /**
    * Nodes storage
@@ -43,6 +44,11 @@ export default class MacroEditorState {
   indexByNgeId: Record<string, number>;
 
   /**
+   * Trainrun frequencies populated by the timetable data.
+   */
+  trainrunFrequencies: TrainrunFrequency[];
+
+  /**
    * Storing labels for nodes
    */
   nodeLabels: Set<string>;
@@ -58,14 +64,14 @@ export default class MacroEditorState {
   ngeResource: { id: number; capacity: number };
 
   /**
-   * Given a nge train run ID, returns the osrd train schedule ID
+   * Given a NGE `Trainrun.id`, returns the OSRD `TimetableItemId`.
    */
-  trainScheduleIdByNgeId: Map<number, TimetableItemId>;
+  timetableItemIdByNgeId: Map<number, TimetableItemId>;
 
   /**
    * Default constructor
    */
-  constructor(scenario: ScenarioResponse, trainSchedules: TrainScheduleResponse[]) {
+  constructor(scenario: ScenarioResponse, timetableItems: TimetableItemWithTimetableId[]) {
     // Empty
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
@@ -73,9 +79,10 @@ export default class MacroEditorState {
     this.indexByPathKey = {};
     this.indexByNgeId = {};
     this.scenario = scenario;
-    this.trainSchedules = trainSchedules;
-    this.ngeResource = { id: 1, capacity: this.trainSchedules.length };
-    this.trainScheduleIdByNgeId = new Map<number, TimetableItemId>();
+    this.timetableItems = timetableItems;
+    this.trainrunFrequencies = [];
+    this.ngeResource = { id: 1, capacity: this.timetableItems.length };
+    this.timetableItemIdByNgeId = new Map<number, TimetableItemId>();
   }
 
   /**
@@ -208,7 +215,7 @@ export default class MacroEditorState {
   /**
    * Given an path step, returns its pathKey
    */
-  static getPathKey(item: TrainScheduleResponse['path'][0]): string {
+  static getPathKey(item: TimetableItemWithTimetableId['path'][0]): string {
     if ('trigram' in item)
       return `trigram:${item.trigram}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
     if ('operational_point' in item) return `op_id:${item.operational_point}`;

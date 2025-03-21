@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { isNil, omit } from 'lodash';
 
 import {
@@ -6,11 +7,22 @@ import {
   type PathItemLocation,
   type SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
+import { Duration } from 'utils/duration';
+import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
-import { DEFAULT_TRAINRUN_FREQUENCIES } from './consts';
+import {
+  CUSTOM_TRAINRUN_TIME_CATEGORY,
+  DEFAULT_PACED_TRAIN_FREQUENCY_IDS,
+  DEFAULT_TRAINRUN_TIME_CATEGORY,
+  UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY,
+  TRAIN_SCHEDULE_FREQUENCY_ID,
+  DEFAULT_TRAINRUN_FREQUENCIES,
+} from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
+import type { TrainrunFrequency, TrainrunTimeCategory } from '../NGE/types';
 
 export const findOpFromPathItem = (
   pathItem: PathItemLocation,
@@ -165,11 +177,64 @@ export const getSavedMacroNodes = async (
 };
 
 /**
- * Match a frequency label to a NGE TrainrunFrequency, or `null` if not handled.
+ * Return the default TrainrunFrequencies with their translated names.
  */
-export const trainrunFrequencyFromLabel = (label: string) => {
-  if (!label.startsWith('frequency::')) return null;
-  const n = parseInt(label.split('::', 2)[1], 10);
-  const frequency = DEFAULT_TRAINRUN_FREQUENCIES.find((freq) => freq.frequency === n);
-  return frequency ?? null;
+export const getDefaultTrainrunFrequencies = (
+  t: TFunction<'operationalStudies/scenario'>
+): TrainrunFrequency[] =>
+  DEFAULT_TRAINRUN_FREQUENCIES.map((freq) => ({
+    ...freq,
+    name:
+      freq.id === TRAIN_SCHEDULE_FREQUENCY_ID
+        ? t('macroEditor.uniqueTrainSchedule')
+        : t('macroEditor.intervalXmin', { minutes: freq.frequency }),
+  }));
+
+/**
+ * TrainrunTimeCategory is not used as a feature, but for its LinePatternRef style.
+ */
+export const getTrainrunTimeCategoryFromFrequency = (
+  trainrunFrequency: TrainrunFrequency
+): TrainrunTimeCategory => {
+  if (trainrunFrequency.id === TRAIN_SCHEDULE_FREQUENCY_ID) {
+    return UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY;
+  }
+  if (!DEFAULT_PACED_TRAIN_FREQUENCY_IDS.includes(trainrunFrequency.id)) {
+    return CUSTOM_TRAINRUN_TIME_CATEGORY;
+  }
+  return DEFAULT_TRAINRUN_TIME_CATEGORY;
+};
+
+/**
+ * Get a Frequency by its id.
+ */
+export const getFrequencyFromFrequencyId = (
+  state: MacroEditorState,
+  frequencyId: number
+): TrainrunFrequency => {
+  const frequency = state.trainrunFrequencies.find((f) => f.id === frequencyId);
+  if (!frequency) {
+    throw new Error(`Frequency with ID ${frequencyId} not found.`);
+  }
+  return frequency;
+};
+
+/**
+ * Get the associated TrainrunFrequency of a TimetableItem.
+ */
+export const getTrainrunFrequencyFromTimetableItem = (
+  timetableItem: TimetableItemWithTimetableId,
+  state: MacroEditorState
+): TrainrunFrequency => {
+  if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+    return getFrequencyFromFrequencyId(state, TRAIN_SCHEDULE_FREQUENCY_ID);
+  }
+  const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
+  const trainrunFrequency = state.trainrunFrequencies.find(
+    (f) => f.frequency === intervalInMinutes
+  );
+  if (!trainrunFrequency) {
+    throw new Error(`Frequency with interval '${intervalInMinutes}' not found.`);
+  }
+  return trainrunFrequency;
 };

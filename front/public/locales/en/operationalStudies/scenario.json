@@ -23,6 +23,10 @@
   "infrastructure": "Infrastructure",
   "lessDetails": "less details",
   "loadingMacroEditor": "Loading macroscopic editor…",
+  "macroEditor": {
+    "intervalXmin": "Interval {{minutes}}min",
+    "uniqueTrainSchedule": "Unique train schedule"
+  },
   "macroscopic": "MACRO",
   "microscopic": "MICRO",
   "moreDetails": "more details",
