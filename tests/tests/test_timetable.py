@@ -18,7 +18,7 @@ def test_get_timetable(
 
 @pytest.mark.parametrize(
     ["reception_signal", "expected_conflict_types"],
-    [("OPEN", {"Spacing", "Routing"}), ("STOP", set()), ("SHORT_SLIP_STOP", set())],
+    [("OPEN", {"Spacing", "Routing"}), ("STOP", {"Spacing"}), ("SHORT_SLIP_STOP", {"Spacing"})],
 )
 def test_conflicts(
     small_infra: Infra,
@@ -56,10 +56,19 @@ def test_conflicts(
             "train_name": "with_stop",
         }
     ]
+
     stopping_train_schedule_response = requests.post(
         f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules", json=stopping_train_schedule_payload
     )
-    stopping_train_schedule_response.raise_for_status()
+
+    stopping_paced_train_payload = stopping_train_schedule_payload[0]
+    stopping_paced_train_payload["start_time"] = "2024-05-22T08:05:00.000Z"
+    stopping_paced_train_payload["paced"] = {"duration": "PT2H", "step": "PT15M"}
+
+    stopping_paced_train_response = requests.post(
+        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains", json=[stopping_paced_train_payload]
+    )
+    stopping_paced_train_response.raise_for_status()
 
     train_schedule_payload = [
         {

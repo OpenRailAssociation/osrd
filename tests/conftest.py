@@ -228,6 +228,90 @@ def west_to_south_east_simulation(
 
 
 @pytest.fixture
+def west_to_south_east_paced_train(
+    small_scenario: Scenario,
+    fast_rolling_stock: int,
+) -> Iterator[Dict]:
+
+    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    fast_rolling_stock_name = response.json()["name"]
+    response = requests.post(
+        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
+        json=[
+            {
+                "constraint_distribution": "STANDARD",
+                "path": [
+                    {"offset": 837034, "track": "TA2", "id": "a"},
+                    {"offset": 4386000, "track": "TH1", "id": "b"},
+                ],
+                "schedule": [{"at": "b", "stop_for": "PT0S"}],
+                "rolling_stock_name": fast_rolling_stock_name,
+                "train_name": "foo",
+                "speed_limit_tag": "foo",
+                "start_time": "2024-01-01T07:19:54+00:00",
+                "paced": {
+                    "duration": "PT2H",
+                    "step": "PT15M",
+                },
+            }
+        ],
+    )
+    yield response.json()
+
+
+@pytest.fixture
+def west_to_south_east_paced_trains(
+    small_scenario: Scenario,
+    fast_rolling_stock: int,
+) -> Iterator[Dict]:
+
+    response = requests.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
+    fast_rolling_stock_name = response.json()["name"]
+
+    base = {
+        "constraint_distribution": "STANDARD",
+        "path": [
+            {"offset": 837034, "track": "TA2", "id": "a"},
+            {"offset": 4386000, "track": "TH1", "id": "b"},
+        ],
+        "rolling_stock_name": fast_rolling_stock_name,
+        "train_name": "foo",
+        "speed_limit_tag": "foo",
+    }
+
+    response = requests.post(
+        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
+        json=[
+            {
+                **base,
+                "start_time": "2024-01-01T07:19:54+00:00",
+                "paced": {
+                    "duration": "PT2H",
+                    "step": "PT15M",
+                },
+            },
+            {
+                **base,
+                "start_time": "2024-01-01T10:29:54+00:00",
+                "paced": {
+                    "duration": "PT2H",
+                    "step": "PT15M",
+                },
+            },
+            {
+                **base,
+                "start_time": "2024-01-01T13:39:59+00:00",
+                "paced": {
+                    "duration": "PT2H",
+                    "step": "PT15M",
+                },
+            },
+        ],
+    )
+    yield response.json()
+
+
+@pytest.fixture
 def west_to_south_east_etcs_simulation(
     etcs_scenario: Scenario,
     etcs_rolling_stock: int,
