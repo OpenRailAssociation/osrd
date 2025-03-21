@@ -66,7 +66,7 @@ export default defineConfig(({ mode }) => {
       environment: 'happy-dom',
       coverage: {
         all: true,
-        reportsDirectory: './tests/unit/coverage',
+        reportsDirectory: 'coverage',
       },
     },
   };

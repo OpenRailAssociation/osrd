@@ -827,9 +827,9 @@ jobs:
 
       - name: Execute tests within container
         run: |
-          docker run --name=front-test --net=host -v $PWD/output:/app/tests/unit \
+          docker run --name=front-test --net=host -v $PWD/output:/output \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
-            npm run test-coverage
+            sh -c "npm run test-coverage && cp -R coverage /output"
 
           exit $(docker wait front-test)
 
@@ -841,7 +841,7 @@ jobs:
           fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./output/coverage/clover.xml
+          files: output/coverage/clover.xml
 
   integration_tests:
     runs-on: ubuntu-latest
