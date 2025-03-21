@@ -3,13 +3,11 @@ import { useState, useContext } from 'react';
 import { Download, Search } from '@osrd-project/ui-icons';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 
 import type {
   ImportStation,
   ImportedTrainSchedule,
   TrainScheduleImportConfig,
-  Step,
   CichDictValue,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
@@ -23,6 +21,7 @@ import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatIsoDate } from 'utils/date';
 
+import { buildSteps, cleanTimeFormat } from './helpers/buildStepsFromOcp';
 import {
   handleFileReadingError,
   processJsonFile,
@@ -192,67 +191,6 @@ const ImportTimetableItemConfig = ({
     const [ciCode, chCode] = code.split('/');
     return { ciCode: Number(ciCode), chCode };
   };
-
-  const cleanTimeFormat = (time: string): string => time.replace(/\.0$/, ''); // Remove the '.0' if it's at the end of the time string
-  const buildSteps = (
-    ocpTTs: Element[],
-    cichDict: Record<string, CichDictValue>,
-    startDate: string
-  ): Step[] =>
-    ocpTTs
-      .map((ocpTT): Step | null => {
-        const ocpRef = ocpTT.getAttribute('ocpRef');
-        const times = ocpTT.getElementsByTagName('times')[0];
-        const isLastOcp = ocpTT === ocpTTs.at(-1);
-        const ocpType = ocpTT.getAttribute('ocpType');
-        let departureTime = times?.getAttribute('departure') || '';
-        let arrivalTime = ocpType === 'pass' ? departureTime : times?.getAttribute('arrival') || '';
-        arrivalTime = cleanTimeFormat(arrivalTime);
-        departureTime = cleanTimeFormat(departureTime);
-
-        if (!ocpRef) {
-          console.error('ocpRef is null or undefined');
-          return null;
-        }
-
-        const operationalPoint = cichDict[ocpRef];
-
-        if (!operationalPoint) {
-          return null; // Skip step if not found in the cichDict
-        }
-        //! We add 87 to the CI code to create the UIC. It is France specific and will break if used in other countries.
-        const uic = Number(`87${operationalPoint.ciCode}`); // Add 87 to the CI code to create the UIC
-        const { chCode } = operationalPoint;
-        const formattedArrivalTime = `${startDate} ${arrivalTime}`;
-        const formattedDepartureTime = `${startDate} ${departureTime}`;
-
-        let stopFor: number | undefined;
-
-        const arrivalDate = new Date(`${startDate}T${arrivalTime}`);
-        const departureDate = new Date(`${startDate}T${departureTime}`);
-        if (ocpType === 'stop') {
-          if (arrivalTime && departureTime) {
-            stopFor = Math.round((departureDate.getTime() - arrivalDate.getTime()) / 1000);
-          } else {
-            stopFor = 0;
-          }
-        } else if (ocpType === 'pass') {
-          if (isLastOcp) {
-            stopFor = 0;
-          }
-        }
-
-        return {
-          id: nextId(),
-          uic,
-          chCode,
-          name: ocpRef,
-          arrivalTime: formattedArrivalTime,
-          departureTime: formattedDepartureTime,
-          duration: stopFor,
-        } as Step;
-      })
-      .filter((step): step is Step => step !== null);
 
   const mapTrainNames = (trainSchedules: ImportedTrainSchedule[], trains: Element[]) => {
     const trainPartToTrainMap: Record<string, string> = {};
