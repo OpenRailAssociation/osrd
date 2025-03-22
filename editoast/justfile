@@ -21,7 +21,7 @@ install:
 
 # Run the tests
 test threads='4':
-    cargo test --workspace -- --test-threads={{threads}}
+    cargo test --workspace -- --test-threads={{ threads }}
 
 # Format the source code
 format:

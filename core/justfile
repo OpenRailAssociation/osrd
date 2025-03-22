@@ -10,7 +10,7 @@ help:
 # Run the application; does not start other services
 run:
     @echo "Starting core in single worker mode. If you use osrd-compose add the sw flag"
-    ALL_INFRA=true java {{javaflags}} -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
+    ALL_INFRA=true java {{ javaflags }} -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 
 # Install required dependencies
 install:

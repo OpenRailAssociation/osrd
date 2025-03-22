@@ -6,7 +6,7 @@ help:
 
 # Run the application; does not start other services
 run *args:
-    cargo run {{args}}
+    cargo run {{ args }}
 
 # Install required dependencies
 install:
