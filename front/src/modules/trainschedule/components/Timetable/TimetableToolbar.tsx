@@ -237,27 +237,21 @@ const TimetableToolbar = ({
   const computedItemLabel = () => {
     if (totalTrainScheduleCount === 0 && totalPacedTrainCount === 0) return t('timetable.noItem');
 
-    const pacedTrainLabel = t('pacedTrainCount', {
+    const pacedTrainLabel = t('pacedTrainCountSelected', {
       count: selectedPacedTrainIds.length,
       totalCount: totalPacedTrainCount,
     });
 
-    const trainScheduleLabel = t('trainCount', {
+    const trainScheduleLabel = t('trainCountSelected', {
       count: selectedTrainScheduleIds.length,
       totalCount: totalTrainScheduleCount,
     });
 
-    if (
-      totalTrainScheduleCount === 0 ||
-      (selectedPacedTrainIds.length > 0 && selectedTrainScheduleIds.length === 0)
-    ) {
+    if (totalTrainScheduleCount === 0) {
       return pacedTrainLabel;
     }
 
-    if (
-      totalPacedTrainCount === 0 ||
-      (selectedTrainScheduleIds.length > 0 && selectedPacedTrainIds.length === 0)
-    ) {
+    if (totalPacedTrainCount === 0) {
       return trainScheduleLabel;
     }
 
