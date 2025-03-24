@@ -34,48 +34,14 @@ function durationToHHMM(duration: Duration): string {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
-function secondsToTimeString(duration: number): string {
-  const minutes = Math.floor(duration / 60);
-  const seconds = duration % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-function timeStringToSeconds(time: string): number {
-  const [minutes, seconds] = time.split(':').map(Number);
-  return minutes * 60 + seconds;
-}
-
-/**
- * @param arrivalTime format: hh:mm (24h format) of the arrival time
- * @param duration format: mm:ss of the duration of the stop
- * @returns The departure time of the stop in the format hh:mm
- */
-export function computeStopDepartureTime(arrivalTime: string, duration: string): string {
-  const [hh, mm] = arrivalTime.split(':').map(Number);
-  const totalSeconds1 = hh * 3600 + mm * 60;
-  const totalSeconds2 = timeStringToSeconds(duration);
-
-  return durationToHHMM(new Duration({ seconds: totalSeconds1 + totalSeconds2 }));
-}
-
-// Function to add minutes to the departure time
-export function addMinutesToTime(
-  baseHour: number,
-  baseMinute: number,
-  minutesToAdd: number
-): string {
-  const totalMinutes = baseHour * 60 + baseMinute + minutesToAdd;
-  return durationToHHMM(new Duration({ minutes: totalMinutes }));
-}
-
 function getTimeAtPosition(
   trainPosition: number,
   trainPositions: number[],
   trainTimes: number[],
   trainDepartureHour: number,
   trainDepartureMinute: number
-): string {
-  const timeInMillis = interpolateValue(
+): Duration {
+  const milliseconds = interpolateValue(
     {
       positions: trainPositions,
       speeds: [],
@@ -84,8 +50,9 @@ function getTimeAtPosition(
     trainPosition,
     'times'
   );
-  const timeInMinutes = Math.round(timeInMillis / 60000);
-  return addMinutesToTime(trainDepartureHour, trainDepartureMinute, timeInMinutes);
+  const duration = new Duration({ milliseconds });
+  const trainDeparture = new Duration({ hours: trainDepartureHour, minutes: trainDepartureMinute });
+  return trainDeparture.add(duration);
 }
 
 /**
@@ -155,7 +122,7 @@ export function getOperationalPointsWithTimes(
 
   // Map operational points with their positions, times, and stop durations
   const opResults = operationalPoints.map((op) => {
-    const formattedTime = getTimeAtPosition(
+    const stopBegin = getTimeAtPosition(
       op.positionOnPath,
       positions,
       times,
@@ -169,8 +136,7 @@ export function getOperationalPointsWithTimes(
 
     const duration = getStopDurationBetweenTwoPositions(op.positionOnPath, positions, times);
     const durationInSeconds = isRequestedOp && duration !== null ? duration.total('second') : 0;
-    const durationToString = secondsToTimeString(durationInSeconds);
-    const stopEndTime = computeStopDepartureTime(formattedTime, durationToString);
+    const stopEnd = stopBegin.add(duration || Duration.zero);
 
     // Find the corresponding stopType from pathSteps
     const correspondingStep = simulationPathSteps.find(
@@ -187,11 +153,11 @@ export function getOperationalPointsWithTimes(
     return {
       opId: op.opId!,
       positionOnPath: op.positionOnPath,
-      time: formattedTime,
+      time: durationToHHMM(stopBegin),
       name: op.name,
       ch: op.ch,
       duration: durationInSeconds,
-      stopEndTime,
+      stopEndTime: durationToHHMM(stopEnd),
       trackName: op.metadata?.trackName,
       stopType,
       stopFor,
