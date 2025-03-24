@@ -48,7 +48,9 @@ describe('getStopDurationBetweenTwoPositions', () => {
   it('should return stop duration correctly', () => {
     const trainPositions = [1, 2, 2, 3];
     const trainTimes = [10000, 120000, 180000];
-    expect(getStopDurationBetweenTwoPositions(2, trainPositions, trainTimes)).toBe(60000);
+    expect(getStopDurationBetweenTwoPositions(2, trainPositions, trainTimes)).toEqual(
+      new Duration({ milliseconds: 60000 })
+    );
     expect(getStopDurationBetweenTwoPositions(1, trainPositions, trainTimes)).toBeNull();
   });
 });

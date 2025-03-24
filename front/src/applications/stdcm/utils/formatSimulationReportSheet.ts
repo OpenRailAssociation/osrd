@@ -3,7 +3,7 @@ import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
-import type { Duration } from 'utils/duration';
+import { Duration } from 'utils/duration';
 
 import { type StdcmResultsOperationalPoint, StdcmStopTypes } from '../types';
 
@@ -97,11 +97,11 @@ export function getStopDurationBetweenTwoPositions(
   position: number,
   positionsList: number[],
   timesList: number[]
-): number | null {
+): Duration | null {
   const firstIndex = positionsList.indexOf(position);
   const lastIndex = positionsList.lastIndexOf(position);
   if (firstIndex !== -1 && lastIndex !== -1 && firstIndex !== lastIndex) {
-    return timesList[lastIndex] - timesList[firstIndex];
+    return new Duration({ milliseconds: timesList[lastIndex] - timesList[firstIndex] });
   }
   return null;
 }
@@ -167,7 +167,7 @@ export function getOperationalPointsWithTimes(
     );
 
     const duration = getStopDurationBetweenTwoPositions(op.positionOnPath, positions, times);
-    const durationInSeconds = isRequestedOp && duration !== null ? duration / 1000 : 0;
+    const durationInSeconds = isRequestedOp && duration !== null ? duration.total('second') : 0;
     const durationToString = secondsToTimeString(durationInSeconds);
     const stopEndTime = computeStopDepartureTime(formattedTime, durationToString);
 
