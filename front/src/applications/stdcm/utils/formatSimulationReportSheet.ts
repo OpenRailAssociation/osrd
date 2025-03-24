@@ -27,6 +27,13 @@ export function getStopDurationTime(duration: Duration) {
   return `${Math.round(duration.total('minute'))} min`;
 }
 
+function durationToHHMM(duration: Duration): string {
+  const totalMinutes = Math.round(duration.total('minute'));
+  const hours = Math.floor(totalMinutes / 60) % 24;
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
 function secondsToTimeString(duration: number): string {
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
@@ -48,11 +55,7 @@ export function computeStopDepartureTime(arrivalTime: string, duration: string):
   const totalSeconds1 = hh * 3600 + mm * 60;
   const totalSeconds2 = timeStringToSeconds(duration);
 
-  const totalSeconds = totalSeconds1 + totalSeconds2;
-  const hours = Math.floor(totalSeconds / 3600) % 24;
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  return durationToHHMM(new Duration({ seconds: totalSeconds1 + totalSeconds2 }));
 }
 
 // Function to add minutes to the departure time
@@ -62,9 +65,7 @@ export function addMinutesToTime(
   minutesToAdd: number
 ): string {
   const totalMinutes = baseHour * 60 + baseMinute + minutesToAdd;
-  const finalHour = Math.floor(totalMinutes / 60) % 24;
-  const finalMinutes = totalMinutes % 60;
-  return `${String(finalHour).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}`;
+  return durationToHHMM(new Duration({ minutes: totalMinutes }));
 }
 
 function getTimeAtPosition(
