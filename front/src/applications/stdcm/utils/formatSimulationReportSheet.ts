@@ -5,7 +5,7 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
-import type { StdcmResultsOperationalPoint } from '../types';
+import { type StdcmResultsOperationalPoint, StdcmStopTypes } from '../types';
 
 function generateRandomString(length: number): string {
   return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
@@ -127,7 +127,7 @@ export function consolidateOvertakesToSingleSteps(
         name: overtakenStepMatch[1],
         duration: stopDuration,
         stopEndTime: nextStep.time!,
-        stopType: 'overtake',
+        stopType: StdcmStopTypes.OVERTAKE,
         stopFor: stopDuration / 60,
       };
       consolidatedSteps.push(consolidatedStep);
@@ -177,7 +177,9 @@ export function getOperationalPointsWithTimes(
     );
     let stopType;
     if (correspondingStep) {
-      stopType = !correspondingStep.isVia ? 'serviceStop' : correspondingStep.stopType;
+      stopType = !correspondingStep.isVia
+        ? StdcmStopTypes.SERVICE_STOP
+        : correspondingStep.stopType;
     }
     const stopFor = correspondingStep?.isVia ? correspondingStep.stopFor : undefined;
 
