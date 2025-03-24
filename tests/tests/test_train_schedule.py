@@ -589,7 +589,7 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     # * the initial target for ETCS is the actual MRSP, not adding any anticipation from driver behavior.
 
     # First slowdown
-    offset_start_brake_288_to_142 = 35_151_929
+    offset_start_brake_288_to_142 = 35_151_922
     speed_before_brake_288_to_142 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_288_to_142
     )
@@ -599,13 +599,15 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
         < speed_before_brake_288_to_142
     )
 
-    offset_bending_guidance_point = 38_276_509
+    offset_bending_guidance_point = 38_322_611
     speed_at_bending_guidance_point = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_guidance_point
     )
-    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(235.901_491_880_851_1))
+    # Permitted Speed and Guidance intersect at speed ~65.8 m/s, testing a point of the curve close enough
+    # where speed is 65.307_740_6 m/s.
+    _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(235.107_866_2))
 
-    offset_end_brake_288_to_142 = 40_824_374
+    offset_end_brake_288_to_142 = 40_824_370
     speed_after_brake_288_to_142 = _get_current_or_next_speed_at(simulation_final_output, offset_end_brake_288_to_142)
     assert (
         _get_current_or_prev_speed_at(simulation_final_output, offset_end_brake_288_to_142 - 1)
@@ -614,7 +616,7 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     _assert_equal_speeds(speed_after_brake_288_to_142, SPEED_LIMIT_142)
 
     # Second slowdown
-    offset_start_brake_142_to_120 = 44_413_934
+    offset_start_brake_142_to_120 = 44_413_857
     speed_before_brake_142_to_120 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_142_to_120
     )
@@ -623,7 +625,7 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
         _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_142_to_120 + 1)
         < speed_before_brake_142_to_120
     )
-    offset_end_brake_142_to_120 = 44_948_053
+    offset_end_brake_142_to_120 = 44_948_022
     speed_after_brake_142_to_120 = _get_current_or_next_speed_at(simulation_final_output, offset_end_brake_142_to_120)
     assert (
         _get_current_or_prev_speed_at(simulation_final_output, offset_end_brake_142_to_120 - 1)
@@ -632,14 +634,14 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     _assert_equal_speeds(speed_after_brake_142_to_120, SPEED_LIMIT_112)
 
     # Slowdown for Safety Speed stop: should probably disappear for ETCS at some point.
-    offset_start_brake_120_to_30 = 45_636_480
+    offset_start_brake_120_to_30 = 45_635_550
     speed_before_brake_120_to_30 = _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_120_to_30)
     _assert_equal_speeds(speed_before_brake_120_to_30, SPEED_LIMIT_112)
     assert (
         _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_120_to_30 + 1)
         < speed_before_brake_120_to_30
     )
-    offset_end_brake_120_to_30 = 46_654_045
+    offset_end_brake_120_to_30 = 46_654_236
     speed_after_brake_120_to_30 = _get_current_or_next_speed_at(simulation_final_output, offset_end_brake_120_to_30)
     assert (
         _get_current_or_prev_speed_at(simulation_final_output, offset_end_brake_120_to_30 - 1)
@@ -648,14 +650,14 @@ def test_etcs_schedule_result_slowdowns(etcs_scenario: Scenario, etcs_rolling_st
     _assert_equal_speeds(speed_after_brake_120_to_30, SAFE_SPEED_30)
 
     # Slowdown for short slip stop: should probably disappear for ETCS at some point.
-    offset_start_brake_30_to_10 = 46_697_240
+    offset_start_brake_30_to_10 = 46_697_503
     speed_before_brake_30_to_10 = _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_30_to_10)
     _assert_equal_speeds(speed_before_brake_30_to_10, SAFE_SPEED_30)
     assert (
         _get_current_or_next_speed_at(simulation_final_output, offset_start_brake_30_to_10 + 1)
         < speed_before_brake_30_to_10
     )
-    offset_end_brake_30_to_10 = 46_848_388
+    offset_end_brake_30_to_10 = 46_848_695
     speed_after_brake_30_to_10 = _get_current_or_next_speed_at(simulation_final_output, offset_end_brake_30_to_10)
     assert (
         _get_current_or_prev_speed_at(simulation_final_output, offset_end_brake_30_to_10 - 1)

@@ -266,8 +266,7 @@ private fun computeEbdFullIndicationCurve(
     val ebdCurve =
         computeBrakingCurve(context, overhead, targetPosition, targetSpeed, BrakingType.ETCS_EBD)
     assert(ebdCurve.beginPos >= 0.0 && ebdCurve.endPos >= targetPosition)
-    // TODO: uncomment once ebd is not shifted anymore for an LoA
-    // assert((ebdCurve.beginSpeed == maxSpeedEbd || ebdCurve.beginPos == 0.0))
+    assert((ebdCurve.beginSpeed == maxSpeedEbd || ebdCurve.beginPos == 0.0))
 
     val guiCurve =
         computeBrakingCurve(context, overhead, targetPosition, targetSpeed, BrakingType.ETCS_GUI)
@@ -290,7 +289,7 @@ private fun computeBrakingCurve(
     targetPosition: Double,
     targetSpeed: Double,
     brakingType: BrakingType
-): EnvelopePart {
+): Envelope {
     assert(
         brakingType == BrakingType.ETCS_EBD ||
             brakingType == BrakingType.ETCS_SBD ||
@@ -317,40 +316,53 @@ private fun computeBrakingCurve(
             SpeedConstraint(targetSpeed, EnvelopePartConstraintType.FLOOR),
             EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING)
         )
-    EnvelopeDeceleration.decelerate(
-        context,
-        targetPosition,
-        targetSpeed,
-        overlayBuilder,
-        -1.0,
-        brakingType
-    )
-    var brakingCurve = partBuilder.build()
-
     if (brakingType == BrakingType.ETCS_EBD && targetSpeed != 0.0) {
-        // TODO: by doing this, there is an approximation on the gradient used. TBD at a later date.
-        // When target is an LOA, EBD reaches target position at target speed + dVEbi: shift
-        // envelope to make it so. See Subset 026: §3.13.8.3.1, figure 40.
+        // When target is an LOA, EBD reaches target position at target speed + dVEbi. See Subset
+        // 026: §3.13.8.3.1, figure 40.
         val dvEbi = dvEbi(targetSpeed)
         val speedAtTargetPosition = targetSpeed + dvEbi
-        // Simplification: if EBD does not reach this limit, do not shift it. Impacts few very
-        // specific cases (LOA/SVL close to 0.0, with an acceleration curve which would hit them
-        // differently if shifted). Manage later on if needed.
-        if (
-            speedAtTargetPosition <= brakingCurve.beginSpeed &&
-                speedAtTargetPosition >= brakingCurve.endSpeed
-        ) {
-            val intersection = brakingCurve.interpolatePosition(targetSpeed + dvEbi)
-            brakingCurve =
-                brakingCurve.copyAndShift(
-                    targetPosition - intersection,
-                    0.0,
-                    Double.POSITIVE_INFINITY
-                )
-        }
+        // Compute deceleration to the left, starting with a speed a little above the LoA point.
+        EnvelopeDeceleration.decelerate(
+            context,
+            targetPosition,
+            speedAtTargetPosition,
+            overlayBuilder,
+            -1.0,
+            brakingType
+        )
+        val leftPart = partBuilder.build()
+        // Complete the curve by computing deceleration from the same point, but to the right (reset
+        // overlayBuilder to compute intersection with targetSpeed).
+        val rightPartBuilder = EnvelopePartBuilder()
+        rightPartBuilder.setAttr(EnvelopeProfile.BRAKING)
+        val rightOverlayBuilder =
+            ConstrainedEnvelopePartBuilder(
+                rightPartBuilder,
+                PositionConstraint(0.0, Double.POSITIVE_INFINITY),
+                SpeedConstraint(targetSpeed, EnvelopePartConstraintType.FLOOR)
+            )
+        EnvelopeDeceleration.decelerate(
+            context,
+            targetPosition,
+            speedAtTargetPosition,
+            rightOverlayBuilder,
+            1.0,
+            brakingType
+        )
+        val rightPart = rightPartBuilder.build()
+        return Envelope.make(leftPart, rightPart)
+    } else {
+        // For every other case, the braking curve reaches the target position at the target speed.
+        EnvelopeDeceleration.decelerate(
+            context,
+            targetPosition,
+            targetSpeed,
+            overlayBuilder,
+            -1.0,
+            brakingType
+        )
+        return Envelope.make(partBuilder.build())
     }
-
-    return brakingCurve
 }
 
 /**
@@ -358,16 +370,19 @@ private fun computeBrakingCurve(
  */
 private fun computeEbiBrakingCurveFromEbd(
     context: EnvelopeSimContext,
-    ebdCurve: EnvelopePart,
+    ebdCurve: Envelope,
     targetSpeed: Double
-): EnvelopePart {
-    val pointCount = ebdCurve.pointCount()
+): Envelope {
+    val ebdPoints = ebdCurve.iteratePoints().distinct()
+    val pointCount = ebdPoints.size
     var newPositions = DoubleArray(pointCount)
     var newSpeeds = DoubleArray(pointCount)
     for (i in 0 until pointCount) {
-        val speed = ebdCurve.getPointSpeed(i)
-        val becParams = computeBecParams(context, ebdCurve, speed, targetSpeed)
-        val newPos = ebdCurve.getPointPos(i) - becParams.dBec
+        val ebdPoint = ebdPoints[i]
+        val position = ebdPoint.position
+        val speed = ebdPoint.speed
+        val becParams = computeBecParams(context, position, speed, targetSpeed)
+        val newPos = position - becParams.dBec
         val newSpeed = speed - becParams.deltaBecSpeed
         newPositions[i] = newPos
         // TODO: unneeded for now: interpolate to not approximate position at 0 m/s.
@@ -385,20 +400,22 @@ private fun computeEbiBrakingCurveFromEbd(
 
     // Make EBI stop at target speed.
     val intersection = fullBrakingCurve.interpolatePosition(targetSpeed)
-    return fullBrakingCurve.sliceWithSpeeds(
-        fullBrakingCurve.beginPos,
-        fullBrakingCurve.beginSpeed,
-        intersection,
-        targetSpeed
-    )!!
+    return Envelope.make(
+        fullBrakingCurve.sliceWithSpeeds(
+            fullBrakingCurve.beginPos,
+            fullBrakingCurve.beginSpeed,
+            intersection,
+            targetSpeed
+        )!!
+    )
 }
 
 /** Compute Indication curve: EBI/SBD -> SBI -> PS -> IND. See Subset 026: figures 45 and 46. */
 private fun computeIndicationBrakingCurveFromRef(
     context: EnvelopeSimContext,
-    refBrakingCurve: EnvelopePart,
+    refBrakingCurve: Envelope,
     refBrakingCurveType: BrakingCurveType,
-    guiCurve: EnvelopePart
+    guiCurve: Envelope
 ): EnvelopePart {
     val rollingStock = context.rollingStock
     val tBs =
@@ -411,12 +428,13 @@ private fun computeIndicationBrakingCurveFromRef(
                 )
         }
 
-    val pointCount = refBrakingCurve.pointCount()
+    val refBrakingPoints = refBrakingCurve.iteratePoints().distinct()
+    val pointCount = refBrakingPoints.size
     val newPositions = DoubleArray(pointCount)
     val newSpeeds = DoubleArray(pointCount)
-    for (i in 0 until refBrakingCurve.pointCount()) {
-        val speed = refBrakingCurve.getPointSpeed(i)
-        val sbiPosition = getSbiPosition(refBrakingCurve.getPointPos(i), speed, tBs)
+    for (i in 0 until pointCount) {
+        val speed = refBrakingPoints[i].speed
+        val sbiPosition = getSbiPosition(refBrakingPoints[i].position, speed, tBs)
         val permittedSpeedPosition = getPermittedSpeedPosition(sbiPosition, speed)
         val adjustedPermittedSpeedPosition =
             getAdjustedPermittedSpeedPosition(permittedSpeedPosition, speed, guiCurve)
@@ -460,21 +478,9 @@ private fun keepBrakingCurveUnderOverlay(
         return null
     }
 
-    // Remove duplicate point part transitions: the last point of the previous array is the first
-    // point of the next array. Otherwise, we would be adding two following identical points with
-    // addStep, and this would throw an exception.
-    val positions =
-        fullBrakingCurve
-            .map { it.clonePositions() }
-            .reduce { mergedArray, currentArray ->
-                mergedArray + currentArray.drop(1).toDoubleArray()
-            }
-    val speeds =
-        fullBrakingCurve
-            .map { it.cloneSpeeds() }
-            .reduce { mergedArray, currentArray ->
-                mergedArray + currentArray.drop(1).toDoubleArray()
-            }
+    val points = fullBrakingCurve.iteratePoints().distinct()
+    val positions = points.map { it.position }
+    val speeds = points.map { it.speed }
     val timeDeltas = fullBrakingCurve.flatMap { it.cloneTimes().asList() }
 
     val partBuilder = EnvelopePartBuilder()
@@ -499,8 +505,8 @@ private fun keepBrakingCurveUnderOverlay(
  * Find the index of the last point which is located beneath the overlay envelope, -1 if none exist.
  */
 private fun getIndexOfLastPointBeneathOverlay(
-    positions: DoubleArray,
-    speeds: DoubleArray,
+    positions: List<Double>,
+    speeds: List<Double>,
     overlay: Envelope
 ): Int {
     var lastIndex = positions.size - 1
@@ -526,11 +532,10 @@ private data class BecParams(val dBec: Double, val vBec: Double, val speed: Doub
  */
 private fun computeBecParams(
     context: EnvelopeSimContext,
-    ebd: EnvelopePart,
+    position: Double,
     speed: Double,
     targetSpeed: Double
 ): BecParams {
-    val position = ebd.interpolatePosition(speed)
     val rollingStock = context.rollingStock
 
     val vDelta0 = vDelta0(speed)
@@ -598,10 +603,12 @@ private fun getPermittedSpeedPosition(sbiPosition: Double, speed: Double): Doubl
 private fun getAdjustedPermittedSpeedPosition(
     permittedSpeedPosition: Double,
     speed: Double,
-    guiCurve: EnvelopePart
+    guiCurve: Envelope
 ): Double {
+    assert(guiCurve.stream().count() == 1L)
+    val guiPart = guiCurve.stream().findFirst().get()
     val guiPosition =
-        if (speed > guiCurve.maxSpeed) guiCurve.beginPos else guiCurve.interpolatePosition(speed)
+        if (speed > guiPart.maxSpeed) guiPart.beginPos else guiPart.interpolatePosition(speed)
     // Interpolating adds a position inaccuracy. If both positions are equal, keep more accurate
     // permitted speed position.
     return if (TrainPhysicsIntegrator.arePositionsEqual(permittedSpeedPosition, guiPosition))
