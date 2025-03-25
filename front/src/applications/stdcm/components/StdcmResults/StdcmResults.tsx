@@ -74,7 +74,7 @@ const StdcmResults = ({
       outputs.pathProperties?.suggestedOperationalPoints || [],
       outputs.results.simulation,
       outputs.results.simulationPathSteps,
-      outputs.results.departure_time
+      new Date(outputs.results.departure_time)
     );
   }, [outputs]);
 
