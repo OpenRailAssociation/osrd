@@ -96,7 +96,7 @@ internal constructor(
                         infraExplorer.getCurrentBlock(),
                         prevNode.speed,
                         startOffset,
-                        getStopOnBlock(
+                        getNextStopOnCurrentBlock(
                             infraExplorer,
                         )
                     )
@@ -115,7 +115,7 @@ internal constructor(
             val scaledEnvelope =
                 if (envelope.endPos == 0.0) envelope
                 else LinearAllowance.scaleEnvelope(envelope, speedRatio)
-            val stopDuration = getEndStopDuration()
+            val stopDuration = getEndOfEdgeStopDuration()
             explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(scaledEnvelope)
             if (stopDuration != null) {
                 val timeData = prevNode.timeData
@@ -146,8 +146,11 @@ internal constructor(
         )
     }
 
-    /** Returns the stop duration at the end of the edge being built, or null if there's no stop */
-    private fun getEndStopDuration(): Double? {
+    /**
+     * Returns the stop duration at the end of the edge being built, or null if there's no stop. The
+     * new edge goes up to the first encountered stop on the block that hasn't been simulated yet.
+     */
+    private fun getEndOfEdgeStopDuration(): Double? {
         return prevNode.infraExplorer
             .getStepTracker()
             .getStepsInLookahead()
@@ -189,7 +192,7 @@ internal constructor(
                     )
                 )
         }
-        val endStopDuration = getEndStopDuration()
+        val endStopDuration = getEndOfEdgeStopDuration()
         val endAtStop = endStopDuration != null
         if (endAtStop) {
             // We don't use the result, just making sure that there's enough lookahead to compute it

@@ -109,7 +109,7 @@ class STDCMGraph(
             visitedNodesParameters.fingerprint =
                 VisitedNodes.Fingerprint(
                     explorer.getLastEdgeIdentifier(),
-                    node.infraExplorer.getStepTracker().stepsExcludingLookahead,
+                    node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
                     node.locationOnEdge.distance
                 )
             if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()
@@ -123,7 +123,7 @@ class STDCMGraph(
                 visitedNodesParameters.fingerprint =
                     VisitedNodes.Fingerprint(
                         newPath.getLastEdgeIdentifier(),
-                        node.infraExplorer.getStepTracker().stepsExcludingLookahead,
+                        node.infraExplorer.getStepTracker().nStepsExcludingLookahead,
                         0.meters
                     )
                 if (visitedNodes.isVisited(visitedNodesParameters)) return listOf()

@@ -296,7 +296,7 @@ private class InfraExplorerImpl(
         var seenFirstBlock = firstLocation == null
         var nBlocksToSkip = 0
         val pathFragments = arrayListOf<PathFragment>()
-        var pathStarted = incrementalPath.pathStarted
+        var pathAlreadyStarted = incrementalPath.pathStarted
         val addedBlocks = mutableListOf<BlockId>()
 
         for (block in routeBlocks) {
@@ -308,16 +308,19 @@ private class InfraExplorerImpl(
             if (!seenFirstBlock) {
                 nBlocksToSkip++
             } else {
-                val startPath = !pathStarted
-                val addRoute = block == routeBlocks.first() || startPath
-                val travelledPathBeginBlockOffset =
-                    if (startPath) firstLocation!!.offset else Offset.zero()
+                val startsPath = !pathAlreadyStarted
+                val addsRoute = block == routeBlocks.first() || startsPath
+
+                // Simulation range start on the current block, 0m on any block that isn't the first
+                val travelledPathBegin: Offset<Block> =
+                    if (startsPath) firstLocation!!.offset else Offset.zero()
+
                 val blockLength = blockInfra.getBlockLength(block)
 
                 val stepsOnBlock =
-                    stepTracker.exploreBlockRange(block, travelledPathBeginBlockOffset, blockLength)
+                    stepTracker.exploreBlockRange(block, travelledPathBegin, blockLength)
                 val arrivalLocation =
-                    if (stepTracker.hasReachedDestination()) stepsOnBlock.lastOrNull()?.location
+                    if (stepTracker.hasSeenDestination()) stepsOnBlock.lastOrNull()?.location
                     else null
                 // If a block cannot be explored, give up
                 val isRouteBlocked =
@@ -335,21 +338,21 @@ private class InfraExplorerImpl(
                 val travelledPathEndBlockOffset = arrivalLocation?.offset ?: blockLength
                 pathFragments.add(
                     PathFragment(
-                        if (addRoute) mutableStaticIdxArrayListOf(route)
+                        if (addsRoute) mutableStaticIdxArrayListOf(route)
                         else mutableStaticIdxArrayListOf(),
                         mutableStaticIdxArrayListOf(block),
-                        containsStart = startPath,
+                        containsStart = startsPath,
                         containsEnd = endPath,
                         stops =
                             findStopsInTravelledPathAndOnBlock(
                                 stepsOnBlock,
                             ),
-                        travelledPathBegin = travelledPathBeginBlockOffset.distance,
+                        travelledPathBegin = travelledPathBegin.distance,
                         travelledPathEnd =
                             blockInfra.getBlockLength(block) - travelledPathEndBlockOffset
                     )
                 )
-                pathStarted = true
+                pathAlreadyStarted = true
                 if (endPath) break // Can't extend any further
             }
         }

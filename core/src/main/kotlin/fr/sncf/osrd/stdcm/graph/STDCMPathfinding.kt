@@ -117,7 +117,7 @@ class STDCMPathfinding(
             ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
-        starts = getStartNodes(steps, listOf(constraints))
+        starts = getStartNodes(listOf(constraints))
         val path = findPathImpl()
         graph.stdcmSimulations.logWarnings()
         if (path == null) {
@@ -193,7 +193,7 @@ class STDCMPathfinding(
             progressLogger.processNode(endNode)
             if (endNode.timeData.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
                 return null
-            if (endNode.infraExplorer.getStepTracker().hasReachedDestinationExcludingLookahead()) {
+            if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
                 return buildResult(endNode)
             }
             queue += getAdjacentNodes(endNode)
@@ -246,10 +246,7 @@ class STDCMPathfinding(
     }
 
     /** Converts start locations into starting nodes. */
-    private fun getStartNodes(
-        stops: List<STDCMStep> = listOf(),
-        constraints: List<PathfindingConstraint<Block>>
-    ): Set<STDCMNode> {
+    private fun getStartNodes(constraints: List<PathfindingConstraint<Block>>): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
         assert(!firstStep.stop)

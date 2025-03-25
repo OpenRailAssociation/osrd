@@ -474,6 +474,12 @@ private fun handlePostProcessingConflict(
             postProcessingLogger.info("        original time data: ${edge.timeData}")
             postProcessingLogger.info("        updated time data: $updatedTimeData")
             postProcessingLogger.info(
+                "        original explorer stops: ${edge.infraExplorerWithNewEnvelope.generateReachedTrainStops()}"
+            )
+            postProcessingLogger.info(
+                "        updated explorer stops: ${updatedExplorer.generateReachedTrainStops()}"
+            )
+            postProcessingLogger.info(
                 "        updated start time: ${edge.timeData.getUpdatedEarliestReachableTime(updatedTimeData)}"
             )
             postProcessingLogger.info(

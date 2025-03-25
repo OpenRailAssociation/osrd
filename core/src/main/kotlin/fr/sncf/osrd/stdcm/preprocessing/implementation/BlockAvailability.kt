@@ -98,9 +98,9 @@ data class BlockAvailability(
         var maximumDelayToStayAvailable = Double.POSITIVE_INFINITY
         var timeOfNextUnavailability = Double.POSITIVE_INFINITY
 
-        val steps = infraExplorer.getStepTracker().getAllReachedSteps().reversed()
+        val reversedSteps = infraExplorer.getStepTracker().getSeenSteps().reversed()
 
-        for (step in steps) {
+        for (step in reversedSteps) {
             val availabilityProperties =
                 getStepAvailabilityProperties(
                     step,
@@ -159,12 +159,14 @@ data class BlockAvailability(
         val plannedTimingData = step.originalStep.plannedTimingData ?: return null
         if (infraExplorer.getLookahead().contains(step.location.edge)) return null
 
-        val stepPathOffset = incrementalPath.fromTravelledPath(step.pathOffset)
+        val stepPathOffset = incrementalPath.fromTravelledPath(step.travelledPathOffset)
         if (stepPathOffset !in startOffset..endOffset) return null
 
-        val stepOffsetOnPath = step.pathOffset
+        val stepOffsetOnTravelledPath = step.travelledPathOffset
+        val stepOffsetOnPath =
+            infraExplorer.getIncrementalPath().fromTravelledPath(stepOffsetOnTravelledPath)
         val timeAtStep =
-            infraExplorer.interpolateDepartureFromClamp(stepOffsetOnPath.cast()) + pathStartTime
+            infraExplorer.interpolateDepartureFromClamp(stepOffsetOnPath) + pathStartTime
         val plannedMinTimeAtStep =
             (plannedTimingData.arrivalTime - plannedTimingData.arrivalTimeToleranceBefore).seconds -
                 internalMarginForSteps
@@ -175,14 +177,19 @@ data class BlockAvailability(
             // Train passes through planned timing data before it is available
             return AvailabilityProperties(
                 max(plannedMinTimeAtStep - timeAtStep, 0.0),
-                stepOffsetOnPath,
+                stepOffsetOnTravelledPath,
                 0.0,
                 0.0
             )
         } else if (timeAtStep > plannedMaxTimeAtStep) {
             // Train passes through planned timing data after it is available:
             // block is forever unavailable
-            return AvailabilityProperties(Double.POSITIVE_INFINITY, stepOffsetOnPath, 0.0, 0.0)
+            return AvailabilityProperties(
+                Double.POSITIVE_INFINITY,
+                stepOffsetOnTravelledPath,
+                0.0,
+                0.0
+            )
         }
         // Planned timing data respected
         return AvailabilityProperties(

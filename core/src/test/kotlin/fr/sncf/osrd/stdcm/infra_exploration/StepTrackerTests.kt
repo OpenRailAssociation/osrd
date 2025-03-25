@@ -55,17 +55,17 @@ class StepTrackerTests {
                 LocatedStep(Offset(175.meters), steps[3].locations.single(), steps[3]),
             )
         assertEquals(expectedSecond, second)
-        assertFalse { tracker.hasReachedDestination() }
+        assertFalse { tracker.hasSeenDestination() }
         val third = tracker.exploreBlockRange(blocks[2], Offset(0.meters), Offset(100.meters))
         val expectedThird =
             listOf(
                 LocatedStep(Offset(275.meters), steps[4].locations.single(), steps[4]),
             )
         assertEquals(expectedThird, third)
-        assertTrue { tracker.hasReachedDestination() }
+        assertTrue { tracker.hasSeenDestination() }
         assertEquals(
             expectedFirstSteps.plus(expectedSecond).plus(expectedThird),
-            tracker.getAllReachedSteps()
+            tracker.getSeenSteps()
         )
     }
 }

@@ -8,10 +8,9 @@ import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import java.util.*
 
-/** Returns the offset of the next stop on the given block (if any), starting at startOffset */
-fun getStopOnBlock(
+/** Returns the offset of the next stop (if any) on the current block, starting at startOffset */
+fun getNextStopOnCurrentBlock(
     infraExplorer: InfraExplorer,
 ): Offset<Block>? {
     return infraExplorer

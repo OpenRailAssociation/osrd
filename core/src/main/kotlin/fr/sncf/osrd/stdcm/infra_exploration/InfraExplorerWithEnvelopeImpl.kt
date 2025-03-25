@@ -53,20 +53,23 @@ data class InfraExplorerWithEnvelopeImpl(
         val cached = envelopeCache?.get()
         if (cached != null) return cached
         val res = EnvelopeConcat.fromLocated(envelopes.toList())
-        val withStops = EnvelopeStopWrapper(res, generateTrainStops())
+        val withStops = EnvelopeStopWrapper(res, generateReachedTrainStops())
         envelopeCache = SoftReference(withStops)
         return withStops
     }
 
-    private fun generateTrainStops(): List<TrainStop> {
-        val steps = getStepTracker().getAllReachedSteps()
-        val stopOffsets = steps.filter { it.originalStep.stop }.map { it.pathOffset }
-        val stopDurations = stopTimeData
+    override fun generateReachedTrainStops(): List<TrainStop> {
+        val steps = getStepTracker().getSeenSteps()
+        val stopOffsets = steps.filter { it.originalStep.stop }.map { it.travelledPathOffset }
+        val stopDurations = stopTimeData.map { it.currentDuration }
+
+        // Stop offsets include the lookahead while stop durations doesn't.
+        // We want the intersection, which is what `zip` does here.
         assert(stopDurations.size <= stopOffsets.size)
         return (stopOffsets zip stopDurations).map {
             TrainStop(
                 it.first.distance.meters,
-                it.second.currentDuration,
+                it.second,
                 SHORT_SLIP_STOP,
             )
         }

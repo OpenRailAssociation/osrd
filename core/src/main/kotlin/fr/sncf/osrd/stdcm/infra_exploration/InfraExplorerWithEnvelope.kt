@@ -13,6 +13,7 @@ import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.TimeData
+import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -66,6 +67,12 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 
     /** Returns the length of the simulated section of the path */
     fun getSimulatedLength(): Length<Path>
+
+    /**
+     * Generate a list of reached train stops, mostly for debugging purposes. Lookahead isn't
+     * included.
+     */
+    fun generateReachedTrainStops(): List<TrainStop>
 
     /**
      * Only shallow copies are made. Used to enable backtracking by cloning explorers at each step.

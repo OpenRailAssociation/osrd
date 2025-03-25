@@ -77,7 +77,7 @@ data class STDCMEdge(
                 graph.remainingTimeEstimator.invoke(
                     this,
                     null,
-                    stepTracker.stepsExcludingLookahead
+                    stepTracker.nStepsExcludingLookahead
                 ),
             )
         } else {
@@ -105,7 +105,7 @@ data class STDCMEdge(
                 graph.remainingTimeEstimator.invoke(
                     this,
                     locationOnEdge,
-                    stepTracker.stepsExcludingLookahead
+                    stepTracker.nStepsExcludingLookahead
                 ),
             )
         }

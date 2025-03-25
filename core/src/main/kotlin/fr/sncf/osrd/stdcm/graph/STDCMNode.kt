@@ -82,8 +82,8 @@ data class STDCMNode(
         // This doesn't define the priority between different paths,
         // it just minimizes the chance of evaluating redundant nodes
         else
-            other.infraExplorer.getStepTracker().stepsExcludingLookahead -
-                infraExplorer.getStepTracker().stepsExcludingLookahead
+            other.infraExplorer.getStepTracker().nStepsExcludingLookahead -
+                infraExplorer.getStepTracker().nStepsExcludingLookahead
     }
 
     override fun toString(): String {
@@ -93,7 +93,7 @@ data class STDCMNode(
             timeData.earliestReachableTime,
             speed,
             infraExplorer.getCurrentBlock(),
-            infraExplorer.getStepTracker().stepsExcludingLookahead,
+            infraExplorer.getStepTracker().nStepsExcludingLookahead,
         )
     }
 
