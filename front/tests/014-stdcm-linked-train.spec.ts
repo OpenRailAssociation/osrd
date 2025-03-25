@@ -91,7 +91,7 @@ test.describe('Verify stdcm simulation page', () => {
       ciSearchText: 'nS',
     });
     await destinationSection.fillDestinationDetailsLight();
-    await stdcmPage.launchSimulation();
+    await stdcmPage.verifyValidSimulationLaunch();
     await simulationResultPage.verifyTableData(
       './tests/assets/stdcm/linked-train/anterior-linked-train-table.json'
     );
@@ -114,7 +114,7 @@ test.describe('Verify stdcm simulation page', () => {
       ciSearchText: 'mid_east',
     });
     await originSection.fillOriginDetailsLight(undefined, 'respectDestinationSchedule', true);
-    await stdcmPage.launchSimulation();
+    await stdcmPage.verifyValidSimulationLaunch();
     await simulationResultPage.verifyTableData(
       './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'
     );

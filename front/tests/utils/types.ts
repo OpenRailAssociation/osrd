@@ -287,6 +287,14 @@ export type StdcmTranslations = {
   };
   stdcmErrors: {
     noScheduledPoint: string;
+    missingFields: {
+      tractionEngine: string;
+      totalMass: string;
+      totalLength: string;
+      maxSpeed: string;
+      origin: string;
+      destination: string;
+    };
   };
 };
 

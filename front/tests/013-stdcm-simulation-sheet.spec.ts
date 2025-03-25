@@ -93,7 +93,7 @@ test.describe('Verify stdcm simulation page', () => {
       await stdcmPage.mapMarkerVisibility();
     }
     // Launch simulation and verify output data matches expected results
-    await stdcmPage.launchSimulation();
+    await stdcmPage.verifyValidSimulationLaunch();
     // Verify map results markers in Chromium
     if (browserName === 'chromium') {
       await simulationResultPage.mapMarkerResultVisibility();

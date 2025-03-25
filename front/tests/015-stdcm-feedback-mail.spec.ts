@@ -66,7 +66,7 @@ test.describe('FeedbackCard Tests', () => {
     );
     await originSection.fillOriginDetailsLight();
     await destinationSection.fillDestinationDetailsLight();
-    await stdcmPage.launchSimulation();
+    await stdcmPage.verifyValidSimulationLaunch();
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 0,
       simulationLengthAndDuration: '51 km — 45min',

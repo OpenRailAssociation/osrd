@@ -215,17 +215,6 @@ const StdcmConfig = ({
       return;
     }
 
-    if (
-      rollingStockId &&
-      totalMass &&
-      totalLength &&
-      maxSpeed &&
-      origin.location &&
-      destination.location
-    ) {
-      return;
-    }
-
     const updatedMissingFields = filterMissingFields({
       missingFields: formErrors.errorDetails.missingFields,
       rollingStock,
@@ -241,15 +230,29 @@ const StdcmConfig = ({
       previousFields.length !== updatedMissingFields.length ||
       previousFields.some((field, i) => field !== updatedMissingFields[i]);
 
-    if (!hasChanged) return;
+    if (updatedMissingFields.length === 0) {
+      setFormErrors(undefined);
+      return;
+    }
 
-    setFormErrors({
-      errorType: StdcmConfigErrorTypes.MISSING_INFORMATIONS,
-      errorDetails: {
-        missingFields: updatedMissingFields,
-      },
-    });
-  }, [rollingStockId, totalMass, totalLength, maxSpeed, origin, destination]);
+    if (hasChanged) {
+      setFormErrors({
+        errorType: StdcmConfigErrorTypes.MISSING_INFORMATIONS,
+        errorDetails: {
+          missingFields: updatedMissingFields,
+        },
+      });
+    }
+  }, [
+    formErrors,
+    rollingStockId,
+    rollingStock,
+    totalMass,
+    totalLength,
+    maxSpeed,
+    origin,
+    destination,
+  ]);
 
   return (
     <div className="stdcm__body">

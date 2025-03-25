@@ -86,8 +86,6 @@ class STDCMPage extends HomePage {
     this.closeTimePickerButton = page.locator('.time-picker .close-button');
     this.warningBox = page.getByTestId('warning-box');
     this.incrementButton = page.locator('.minute-button', { hasText: '+1mn' });
-    this.simulationStatus = page.locator('[data-testid="simulation-status"]');
-    this.warningBox = page.locator(`[data-testid="warning-box"]`);
   }
 
   async verifySuggestions(expectedSuggestions: string[]) {
@@ -130,15 +128,15 @@ class STDCMPage extends HomePage {
     await this.launchSimulationButton.waitFor();
     await expect(this.launchSimulationButton).toBeEnabled();
     await this.launchSimulationButton.click({ force: true });
-    // Wait for simulation message "Calculation completed"
+  }
+
+  async verifyValidSimulationLaunch(): Promise<void> {
+    await this.launchSimulation();
     await this.simulationStatus.waitFor({ timeout: STDCM_SIMULATION_TIMEOUT });
   }
 
-  // Launch the simualtion with mandatory fields empty
-  async launchSimulationWithEmptyFields(): Promise<void> {
-    await this.launchSimulationButton.waitFor();
-    await expect(this.launchSimulationButton).toBeEnabled();
-    await this.launchSimulationButton.click({ force: true });
+  async verifyInvalidSimulationLaunch(): Promise<void> {
+    await this.launchSimulation();
     await expect(this.simulationStatus).not.toBeVisible();
   }
 
@@ -153,7 +151,7 @@ class STDCMPage extends HomePage {
   }
 
   async expectWarningBoxHidden() {
-    await expect(this.page.getByTestId('warning-box')).toBeHidden();
+    await expect(this.warningBox).toBeHidden();
   }
 
   async expectWarningBoxContains(expectedFields: string[], absentFields?: string[]) {
@@ -168,4 +166,5 @@ class STDCMPage extends HomePage {
     }
   }
 }
+
 export default STDCMPage;

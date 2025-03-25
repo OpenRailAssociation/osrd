@@ -1,6 +1,6 @@
 import type { StdcmTranslations } from '../../utils/types';
 
-export const allMissingFieldsKeys = [
+export const ALL_MISSING_FIELDS_KEY = [
   'tractionEngine',
   'totalMass',
   'totalLength',
@@ -9,14 +9,16 @@ export const allMissingFieldsKeys = [
   'destination',
 ] as const;
 
-export const partialMissingFieldsKeys = [
+export const PARTIAL_MISSING_FIELDS_KEYS = [
   'tractionEngine',
   'totalMass',
   'totalLength',
   'maxSpeed',
 ] as const;
 
-export type MissingFields = (typeof allMissingFieldsKeys)[number];
+export const REMOVED_MISSING_FIELDS_KEYS = ['origin', 'destination'] as const;
+
+export type MissingFields = (typeof ALL_MISSING_FIELDS_KEY)[number];
 
 export const getFieldsLabel = (fields: readonly MissingFields[], translations: StdcmTranslations) =>
   fields.map((field) => translations.stdcmErrors.missingFields[field]);

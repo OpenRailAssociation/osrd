@@ -112,7 +112,7 @@ test.describe('Verify stdcm simulation page', () => {
       await viaSection.fillAndVerifyViaDetails(viaDetail);
     }
     // Launch simulation and verify output data matches expected results
-    await stdcmPage.launchSimulation();
+    await stdcmPage.verifyValidSimulationLaunch();
     await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-all-stops.json');
   });
 
@@ -137,7 +137,7 @@ test.describe('Verify stdcm simulation page', () => {
       ciSearchText: 'mid_west',
     });
     // Run first simulation without capacity
-    await stdcmPage.launchSimulation();
+    await stdcmPage.verifyValidSimulationLaunch();
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 0,
     });

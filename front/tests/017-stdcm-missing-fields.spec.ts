@@ -1,9 +1,10 @@
 import type { Infra } from 'common/api/osrdEditoastApi';
 
 import {
-  allMissingFieldsKeys,
+  ALL_MISSING_FIELDS_KEY,
   getFieldsLabel,
-  partialMissingFieldsKeys,
+  PARTIAL_MISSING_FIELDS_KEYS,
+  REMOVED_MISSING_FIELDS_KEYS,
 } from './assets/constants/missing-fields';
 import { electricRollingStockName } from './assets/constants/project-const';
 import test from './logging-fixture';
@@ -56,35 +57,29 @@ test.describe('Verify stdcm missing fields', () => {
 
   /** *************** Test 1 **************** */
   test('Verify missing fields warnings when launching simulation', async () => {
-    // Step 1 — verify all missing fields
-    const allMissingLabels = getFieldsLabel(allMissingFieldsKeys, translations);
-    await stdcmPage.launchSimulationWithEmptyFields();
+    // Step 1 — Launch simulation with all fields empty and expect all missing field warnings
+    const allMissingLabels = getFieldsLabel(ALL_MISSING_FIELDS_KEY, translations);
+    await stdcmPage.verifyInvalidSimulationLaunch();
     await stdcmPage.expectWarningBoxVisible();
     await stdcmPage.expectWarningBoxContains(allMissingLabels);
 
-    // Step 2 — fill origin & destination and relaunch
+    // Step 2 — Fill origin and destination, launch again and expect only partial missing field warnings
     await originSection.fillOriginDetailsLight();
     await destinationSection.fillDestinationDetailsLight();
-    await stdcmPage.launchSimulationWithEmptyFields();
+    await stdcmPage.verifyInvalidSimulationLaunch();
     await stdcmPage.expectWarningBoxVisible();
-
-    const partialMissingLabels = getFieldsLabel(partialMissingFieldsKeys, translations);
-    const nonMissingLabels = getFieldsLabel(['origin', 'destination'], translations);
+    const partialMissingLabels = getFieldsLabel(PARTIAL_MISSING_FIELDS_KEYS, translations);
+    const nonMissingLabels = getFieldsLabel(REMOVED_MISSING_FIELDS_KEYS, translations);
     await stdcmPage.expectWarningBoxContains(partialMissingLabels, nonMissingLabels);
-  });
 
-  /** *************** Test 2 **************** */
-  test('Launch simulation with all mandatory fields filled', async () => {
-    await originSection.fillOriginDetailsLight();
-    await destinationSection.fillDestinationDetailsLight();
+    // Step 3 — Launch simulation with all mandatory fields filled
     await consistSection.fillAndVerifyConsistDetails(
       { tractionEngine: electricRollingStockName },
       '900',
       '400'
     );
-
+    await stdcmPage.verifyValidSimulationLaunch();
     await stdcmPage.expectWarningBoxHidden();
-    await stdcmPage.launchSimulation();
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 0,
       simulationLengthAndDuration: '51 km — 48min',
