@@ -1,7 +1,4 @@
-import type {
-  LayerData,
-  PowerRestrictionValues,
-} from '@osrd-project/ui-charts/dist/speedSpaceChart/types/chartTypes';
+import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts';
 import { compact } from 'lodash';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';

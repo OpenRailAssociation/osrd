@@ -1,12 +1,12 @@
 /* eslint-disable import/prefer-default-export */
 import type {
-  Data,
-  ElectricalPofilelValues,
+  SpeedSpaceChartData,
+  ElectricalProfileValues,
   ElectrificationValues,
   LayerData,
   PowerRestrictionValues,
   SpeedLimitTagValues,
-} from '@osrd-project/ui-charts/dist/speedSpaceChart/types/chartTypes';
+} from '@osrd-project/ui-charts';
 
 import type {
   PathPropertiesFormatted,
@@ -173,7 +173,7 @@ export const getProfileValue = (
 
 export const formatElectricalProfiles = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'],
-  electrifications: Data['electrifications'],
+  electrifications: SpeedSpaceChartData['electrifications'],
   pathLength: number
 ) => {
   if (electricalProfiles.values.length === 0) return undefined;
@@ -214,7 +214,7 @@ export const formatData = (
   const slopes: LayerData<number>[] = formatSlopes(pathProperties!.slopes);
   const powerRestrictions: LayerData<PowerRestrictionValues>[] | undefined =
     selectedTrainPowerRestrictions;
-  const electricalProfiles: LayerData<ElectricalPofilelValues>[] | undefined =
+  const electricalProfiles: LayerData<ElectricalProfileValues>[] | undefined =
     formatElectricalProfiles(simulation.electrical_profiles, electrifications, pathLength);
   const speedLimitTags: LayerData<SpeedLimitTagValues>[] | undefined = formatSpeedLimitTags(
     simulation.mrsp,

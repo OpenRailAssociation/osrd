@@ -1,8 +1,8 @@
 import type {
-  ElectricalPofilelValues,
+  ElectricalProfileValues,
   ElectrificationValues,
   LayerData,
-} from '@osrd-project/ui-charts/dist/speedSpaceChart/types/chartTypes';
+} from '@osrd-project/ui-charts';
 import { describe, it, expect } from 'vitest';
 
 import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
@@ -180,7 +180,7 @@ describe('formatElectricalProfiles', () => {
         },
       },
     ];
-    const expected: LayerData<ElectricalPofilelValues>[] = [
+    const expected: LayerData<ElectricalProfileValues>[] = [
       {
         position: {
           start: 0,
