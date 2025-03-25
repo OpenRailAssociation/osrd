@@ -112,13 +112,12 @@ export function getOperationalPointsWithTimes(
   operationalPoints: SuggestedOP[],
   simulation: Extract<SimulationResponse, { status: 'success' }>,
   simulationPathSteps: StdcmPathStep[],
-  departureTime: string
+  departureTime: Date
 ): StdcmResultsOperationalPoint[] {
   const { positions, times } = simulation.final_output;
-  const pathDepartureTime = new Date(departureTime).toLocaleTimeString().substring(0, 5);
 
-  // Parse departure time into hours and minutes
-  const [departureHour, departureMinute] = pathDepartureTime.split(':').map(Number);
+  const departureHour = departureTime.getHours();
+  const departureMinute = departureTime.getMinutes();
 
   // Map operational points with their positions, times, and stop durations
   const opResults = operationalPoints.map((op) => {
