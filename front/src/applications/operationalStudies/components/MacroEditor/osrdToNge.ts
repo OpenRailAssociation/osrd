@@ -1,28 +1,29 @@
+import type { TFunction } from 'i18next';
 import { uniqBy } from 'lodash';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import buildOpSearchQuery from 'modules/operationalPoint/helpers/buildOpSearchQuery';
-import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
+import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
   NODE_LABEL_GROUP,
-  DEFAULT_TRAINRUN_FREQUENCIES,
   DEFAULT_TRAINRUN_CATEGORY,
-  UNIQUE_TRAIN_SCHEDULE_FREQUENCY,
-  DEFAULT_TRAINRUN_TIME_CATEGORY,
   TRAINRUN_LABEL_GROUP,
   DEFAULT_TIME_LOCK,
-  DEFAULT_DTO,
-  UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY,
   DEFAULT_TRAINRUN_TIME_CATEGORIES,
-  CUSTOM_TRAINRUN_TIME_CATEGORY,
+  getDefaultTrainrunFrequencies,
 } from './consts';
 import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
-import { deleteMacroNodeByDbId, getSavedMacroNodes } from './utils';
+import {
+  deleteMacroNodeByDbId,
+  getSavedMacroNodes,
+  getTrainrunFrequencyFromTimetableItem,
+  getTrainrunTimeCategoryFromFrequency,
+} from './utils';
 import {
   type PortDto,
   type TimeLockDto,
@@ -31,8 +32,43 @@ import {
   type NetzgrafikDto,
   PortAlignment,
   type LabelDto,
-  type TrainrunTimeCategory,
 } from '../NGE/types';
+
+/**
+ * Get the TrainrunFrequencies from the TimetableItems.
+ * We need to add the unknown frequencies from the PacedTrains.
+ */
+const getNgeTrainrunFrequencies = (state: MacroEditorState, t: TFunction): TrainrunFrequency[] => {
+  // Get the default frequencies (TrainSchedule/30min/60min/120min)
+  const trainrunFrequencies = getDefaultTrainrunFrequencies(t);
+
+  // Add the unknown frequencies from the PacedTrains
+  state.timetableItems.forEach((timetableItem) => {
+    if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+      const stepInMinutes = Duration.parse(timetableItem.paced.step).total('minute');
+      if (!trainrunFrequencies.find((f) => f.frequency === stepInMinutes)) {
+        const newFrequency: TrainrunFrequency = {
+          id: trainrunFrequencies.length + 1,
+          order: 0, // temporary order
+          frequency: stepInMinutes,
+          offset: 0,
+          name: t('stepXmin', { minutes: stepInMinutes }),
+          shortName: `${stepInMinutes}`,
+          linePatternRef: '60',
+        };
+        trainrunFrequencies.push(newFrequency);
+      }
+    }
+  });
+
+  // Sort and re-order the frequencies
+  trainrunFrequencies.sort((a, b) => a.frequency - b.frequency);
+  trainrunFrequencies.forEach((frequency, index) => {
+    frequency.order = index + 1;
+  });
+
+  return trainrunFrequencies;
+};
 
 /**
  * Execute the search payload and collect all result pages.
@@ -41,7 +77,7 @@ const executeSearch = async (
   state: MacroEditorState,
   dispatch: AppDispatch
 ): Promise<SearchResultItemOperationalPoint[]> => {
-  const pathSteps = state.trains.flatMap((train) => train.path);
+  const pathSteps = state.timetableItems.flatMap((timetableItem) => timetableItem.path);
   const searchPayload = buildOpSearchQuery(state.scenario.infra_id, pathSteps);
   if (!searchPayload) {
     return [];
@@ -73,7 +109,7 @@ const executeSearch = async (
  */
 const applyLayout = (state: MacroEditorState) => {
   const indexedNodes = uniqBy(
-    state.trains.flatMap((t) => t.path),
+    state.timetableItems.flatMap((timetableItem) => timetableItem.path),
     MacroEditorState.getPathKey
   ).map((pathItem) => {
     const key = MacroEditorState.getPathKey(pathItem);
@@ -137,65 +173,17 @@ const castNodeToNge = (
 });
 
 /**
- * Create a new frequency for different frequencies than the default ones (`30min/60min/120min`).
- */
-const createTrainrunFrequencyFromPace = (paced: { step: string }): TrainrunFrequency => {
-  const stepInMinutes = Duration.parse(paced.step).total('minute');
-  const newFrequency: TrainrunFrequency = {
-    id: DEFAULT_TRAINRUN_FREQUENCIES.length + 1,
-    order: 0, // temporary order
-    frequency: stepInMinutes,
-    offset: 0,
-    name: `Step ${stepInMinutes}min`,
-    shortName: `${stepInMinutes}`,
-    linePatternRef: '60',
-  };
-  DEFAULT_TRAINRUN_FREQUENCIES.push(newFrequency);
-
-  // sort the frequencies by their value and re-order them
-  DEFAULT_TRAINRUN_FREQUENCIES.sort((a, b) => a.frequency - b.frequency);
-  DEFAULT_TRAINRUN_FREQUENCIES.forEach((frequency, index) => {
-    frequency.order = index + 1;
-  });
-
-  return newFrequency;
-};
-
-/**
- * Return the frequency of the associated train (creating it if unknown).
- */
-const getOrCreateTrainrunFrequency = (train: TimetableItemWithTimetableId): TrainrunFrequency => {
-  if (!('paced' in train)) {
-    return UNIQUE_TRAIN_SCHEDULE_FREQUENCY;
-  }
-  const stepInMinutes = Duration.parse(train.paced.step).total('minute');
-  const trainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES.find((f) => f.frequency === stepInMinutes);
-  return trainrunFrequency || createTrainrunFrequencyFromPace(train.paced);
-};
-
-const getTrainrunTimeCategoryFromFrequency = (
-  trainrunFrequency: TrainrunFrequency
-): TrainrunTimeCategory => {
-  if (trainrunFrequency === UNIQUE_TRAIN_SCHEDULE_FREQUENCY) {
-    return UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY;
-  }
-  if (trainrunFrequency.id > 4) {
-    return CUSTOM_TRAINRUN_TIME_CATEGORY;
-  }
-  return DEFAULT_TRAINRUN_TIME_CATEGORY;
-};
-
-/**
- * Load & index the data of the train schedule for the given scenario.
+ * Load & index the data of the timetableItem for the given scenario.
  */
 export const loadAndIndexNge = async (
   state: MacroEditorState,
-  dispatch: AppDispatch
+  dispatch: AppDispatch,
+  t: TFunction
 ): Promise<void> => {
   // Load path items
   let nbNodesIndexed = 0;
-  state.trains
-    .flatMap((train) => train.path)
+  state.timetableItems
+    .flatMap((timetableItem) => timetableItem.path)
     .forEach((pathItem, index) => {
       const key = MacroEditorState.getPathKey(pathItem);
       if (!state.getNodeByKey(key)) {
@@ -230,8 +218,8 @@ export const loadAndIndexNge = async (
   });
 
   // Load saved nodes and update the indexed nodes
-  // If a saved node is not present in the train schedule, we delete it
-  // this can happen if we delete a TS on which a node was saved
+  // If a saved node is not present in the timetableItems, we delete it.
+  // This can happen if we delete a timetableItem on which a node was saved.
   const savedNodes = await getSavedMacroNodes(state, dispatch);
   await Promise.all(
     savedNodes.map(async (n) => {
@@ -246,40 +234,43 @@ export const loadAndIndexNge = async (
   // Dedup nodes
   state.dedupNodes();
 
-  // Index trains labels
-  state.trains.forEach((t) => {
-    t.labels?.forEach((l) => {
+  // Index timetableItems labels
+  state.timetableItems.forEach((timetableItem) => {
+    timetableItem.labels?.forEach((l) => {
       state.trainrunLabels.add(l);
     });
   });
+
+  // Initialize TrainrunFrequencies
+  state.trainrunFrequencies = getNgeTrainrunFrequencies(state, t);
 
   // Now that we have all nodes, we apply a layout
   applyLayout(state);
 };
 
 /**
- * Translate the `TrainSchedules` and `PacedTrains` of OSRD into NGE `Trainruns`.
+ * Translate the TimetableItems of OSRD into NGE Trainruns.
  */
 const getNgeTrainruns = (state: MacroEditorState, labels: LabelDto[]) =>
-  state.trains
-    .filter((train) => train.path.length >= 2)
-    .map((train, index) => {
-      state.trainIdByNgeId.set(index + 1, train.id);
-      const trainrunFrequency = getOrCreateTrainrunFrequency(train);
+  state.timetableItems
+    .filter((timetableItem) => timetableItem.path.length >= 2)
+    .map((timetableItem, index) => {
+      state.timetableItemIdByNgeId.set(index + 1, timetableItem.id);
+      const trainrunFrequency = getTrainrunFrequencyFromTimetableItem(timetableItem, state);
       return {
         id: index + 1,
-        name: train.train_name,
+        name: timetableItem.train_name,
         categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
         frequencyId: trainrunFrequency.id,
         trainrunTimeCategoryId: getTrainrunTimeCategoryFromFrequency(trainrunFrequency).id,
-        labelIds: (train.labels || []).map((l) =>
+        labelIds: (timetableItem.labels || []).map((l) =>
           labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
         ),
       };
     });
 
 /**
- * Translate the train schedule in NGE "trainrunSection" & "nodes".
+ * Translate the TimetableItem in NGE "TrainrunSection" & "Nodes".
  * It is needed to return the nodes as well, because we add ports & transitions on them.
  */
 const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelDto[]) => {
@@ -310,120 +301,124 @@ const getNgeTrainrunSectionsWithNodes = (state: MacroEditorState, labels: LabelD
   // Track nge nodes
   const ngeNodesByPathKey: Record<string, NetzgrafikDto['nodes'][0]> = {};
   let trainrunSectionId = 0;
-  const trainrunSections: TrainrunSectionDto[] = state.trains.flatMap((train, index) => {
-    // Figure out the primary node key for each path item
-    const pathNodeKeys = train.path.map((pathItem) => {
-      const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem));
-      return node!.path_item_key;
-    });
+  const trainrunSections: TrainrunSectionDto[] = state.timetableItems.flatMap(
+    (timetableItem, index) => {
+      // Figure out the primary node key for each path item
+      const pathNodeKeys = timetableItem.path.map((pathItem) => {
+        const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem));
+        return node!.path_item_key;
+      });
 
-    const startTime = new Date(train.start_time);
-    const createTimeLock = (time: Date): TimeLockDto => ({
-      time: time.getMinutes(),
-      // getTime() is in milliseconds, consecutiveTime is in minutes
-      consecutiveTime: (time.getTime() - startTime.getTime()) / (60 * 1000),
-      lock: false,
-      warning: null,
-      timeFormatter: null,
-    });
+      const startTime = new Date(timetableItem.start_time);
+      const createTimeLock = (time: Date): TimeLockDto => ({
+        time: time.getMinutes(),
+        // getTime() is in milliseconds, consecutiveTime is in minutes
+        consecutiveTime: (time.getTime() - startTime.getTime()) / (60 * 1000),
+        lock: false,
+        warning: null,
+        timeFormatter: null,
+      });
 
-    // OSRD describes the path in terms of nodes, NGE describes it in terms
-    // of sections between nodes. Iterate over path items two-by-two to
-    // convert them.
-    let prevPort: PortDto | null = null;
-    return pathNodeKeys.slice(0, -1).map((sourceNodeKey, i) => {
-      // Get the source node or created it
-      if (!ngeNodesByPathKey[sourceNodeKey]) {
-        ngeNodesByPathKey[sourceNodeKey] = castNodeToNge(
-          state,
-          state.getNodeByKey(sourceNodeKey)!,
-          labels
+      // OSRD describes the path in terms of nodes, NGE describes it in terms
+      // of sections between nodes. Iterate over path items two-by-two to
+      // convert them.
+      let prevPort: PortDto | null = null;
+      return pathNodeKeys.slice(0, -1).map((sourceNodeKey, i) => {
+        // Get the source node or created it
+        if (!ngeNodesByPathKey[sourceNodeKey]) {
+          ngeNodesByPathKey[sourceNodeKey] = castNodeToNge(
+            state,
+            state.getNodeByKey(sourceNodeKey)!,
+            labels
+          );
+        }
+        const sourceNode = ngeNodesByPathKey[sourceNodeKey];
+
+        // Get the target node or created it
+        const targetNodeKey = pathNodeKeys[i + 1];
+        if (!ngeNodesByPathKey[targetNodeKey]) {
+          ngeNodesByPathKey[targetNodeKey] = castNodeToNge(
+            state,
+            state.getNodeByKey(targetNodeKey)!,
+            labels
+          );
+        }
+        const targetNode = ngeNodesByPathKey[targetNodeKey];
+
+        // Adding port
+        const sourcePort = createPort(trainrunSectionId);
+        sourceNode.ports.push(sourcePort);
+        const targetPort = createPort(trainrunSectionId);
+        targetNode.ports.push(targetPort);
+
+        // Adding schedule
+        const sourceScheduleEntry = timetableItem.schedule!.find(
+          (entry) => entry.at === timetableItem.path[i].id
         );
-      }
-      const sourceNode = ngeNodesByPathKey[sourceNodeKey];
-
-      // Get the target node or created it
-      const targetNodeKey = pathNodeKeys[i + 1];
-      if (!ngeNodesByPathKey[targetNodeKey]) {
-        ngeNodesByPathKey[targetNodeKey] = castNodeToNge(
-          state,
-          state.getNodeByKey(targetNodeKey)!,
-          labels
+        const targetScheduleEntry = timetableItem.schedule!.find(
+          (entry) => entry.at === timetableItem.path[i + 1].id
         );
-      }
-      const targetNode = ngeNodesByPathKey[targetNodeKey];
 
-      // Adding port
-      const sourcePort = createPort(trainrunSectionId);
-      sourceNode.ports.push(sourcePort);
-      const targetPort = createPort(trainrunSectionId);
-      targetNode.ports.push(targetPort);
+        // Create a transition between the previous section and the one we're creating
+        if (prevPort) {
+          const transition = createTransition(prevPort.id, sourcePort.id);
+          transition.isNonStopTransit = !sourceScheduleEntry?.stop_for;
+          sourceNode.transitions.push(transition);
+        }
+        prevPort = targetPort;
 
-      // Adding schedule
-      const sourceScheduleEntry = train.schedule!.find((entry) => entry.at === train.path[i].id);
-      const targetScheduleEntry = train.schedule!.find(
-        (entry) => entry.at === train.path[i + 1].id
-      );
+        let sourceDeparture = { ...DEFAULT_TIME_LOCK };
+        if (i === 0) {
+          sourceDeparture = createTimeLock(startTime);
+        } else if (sourceScheduleEntry && sourceScheduleEntry.arrival) {
+          const arrival = Duration.parse(sourceScheduleEntry.arrival);
+          const stopFor = sourceScheduleEntry.stop_for
+            ? Duration.parse(sourceScheduleEntry.stop_for)
+            : Duration.zero;
+          sourceDeparture = createTimeLock(
+            addDurationToDate(addDurationToDate(startTime, arrival), stopFor)
+          );
+        }
 
-      // Create a transition between the previous section and the one we're creating
-      if (prevPort) {
-        const transition = createTransition(prevPort.id, sourcePort.id);
-        transition.isNonStopTransit = !sourceScheduleEntry?.stop_for;
-        sourceNode.transitions.push(transition);
-      }
-      prevPort = targetPort;
+        let targetArrival = { ...DEFAULT_TIME_LOCK };
+        if (targetScheduleEntry && targetScheduleEntry.arrival) {
+          const arrival = Duration.parse(targetScheduleEntry.arrival);
+          targetArrival = createTimeLock(addDurationToDate(startTime, arrival));
+        }
 
-      let sourceDeparture = { ...DEFAULT_TIME_LOCK };
-      if (i === 0) {
-        sourceDeparture = createTimeLock(startTime);
-      } else if (sourceScheduleEntry && sourceScheduleEntry.arrival) {
-        const arrival = Duration.parse(sourceScheduleEntry.arrival);
-        const stopFor = sourceScheduleEntry.stop_for
-          ? Duration.parse(sourceScheduleEntry.stop_for)
-          : Duration.zero;
-        sourceDeparture = createTimeLock(
-          addDurationToDate(addDurationToDate(startTime, arrival), stopFor)
-        );
-      }
+        const travelTime = { ...DEFAULT_TIME_LOCK };
+        if (targetArrival.consecutiveTime !== null && sourceDeparture.consecutiveTime !== null) {
+          travelTime.time = targetArrival.consecutiveTime - sourceDeparture.consecutiveTime;
+          travelTime.consecutiveTime = travelTime.time;
+        }
 
-      let targetArrival = { ...DEFAULT_TIME_LOCK };
-      if (targetScheduleEntry && targetScheduleEntry.arrival) {
-        const arrival = Duration.parse(targetScheduleEntry.arrival);
-        targetArrival = createTimeLock(addDurationToDate(startTime, arrival));
-      }
+        const trainrunSection = {
+          id: trainrunSectionId,
+          sourceNodeId: sourceNode.id,
+          sourcePortId: sourcePort.id,
+          targetNodeId: targetNode.id,
+          targetPortId: targetPort.id,
+          travelTime,
+          sourceDeparture,
+          sourceArrival: { ...DEFAULT_TIME_LOCK },
+          targetDeparture: { ...DEFAULT_TIME_LOCK },
+          targetArrival,
+          numberOfStops: 0,
+          trainrunId: index + 1,
+          resourceId: state.ngeResource.id,
+          path: {
+            path: [],
+            textPositions: [],
+          },
+          specificTrainrunSectionFrequencyId: 0,
+          warnings: [],
+        };
 
-      const travelTime = { ...DEFAULT_TIME_LOCK };
-      if (targetArrival.consecutiveTime !== null && sourceDeparture.consecutiveTime !== null) {
-        travelTime.time = targetArrival.consecutiveTime - sourceDeparture.consecutiveTime;
-        travelTime.consecutiveTime = travelTime.time;
-      }
-
-      const trainrunSection = {
-        id: trainrunSectionId,
-        sourceNodeId: sourceNode.id,
-        sourcePortId: sourcePort.id,
-        targetNodeId: targetNode.id,
-        targetPortId: targetPort.id,
-        travelTime,
-        sourceDeparture,
-        sourceArrival: { ...DEFAULT_TIME_LOCK },
-        targetDeparture: { ...DEFAULT_TIME_LOCK },
-        targetArrival,
-        numberOfStops: 0,
-        trainrunId: index + 1,
-        resourceId: state.ngeResource.id,
-        path: {
-          path: [],
-          textPositions: [],
-        },
-        specificTrainrunSectionFrequencyId: 0,
-        warnings: [],
-      };
-
-      trainrunSectionId += 1;
-      return trainrunSection;
-    });
-  });
+        trainrunSectionId += 1;
+        return trainrunSection;
+      });
+    }
+  );
 
   return {
     trainrunSections,
@@ -452,17 +447,20 @@ const getNgeLabels = (state: MacroEditorState): LabelDto[] => [
 export const getNgeDto = (state: MacroEditorState): NetzgrafikDto => {
   const labels = getNgeLabels(state);
   return {
-    ...DEFAULT_DTO,
-    labels,
-    labelGroups: [NODE_LABEL_GROUP, TRAINRUN_LABEL_GROUP],
+    ...getNgeTrainrunSectionsWithNodes(state, labels),
+    trainruns: getNgeTrainruns(state, labels),
     resources: [state.ngeResource],
     metadata: {
       netzgrafikColors: [],
       trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
-      trainrunFrequencies: DEFAULT_TRAINRUN_FREQUENCIES,
+      trainrunFrequencies: state.trainrunFrequencies,
       trainrunTimeCategories: DEFAULT_TRAINRUN_TIME_CATEGORIES,
     },
-    trainruns: getNgeTrainruns(state, labels),
-    ...getNgeTrainrunSectionsWithNodes(state, labels),
+    freeFloatingTexts: [],
+    labels,
+    labelGroups: [NODE_LABEL_GROUP, TRAINRUN_LABEL_GROUP],
+    filterData: {
+      filterSettings: [],
+    },
   };
 };

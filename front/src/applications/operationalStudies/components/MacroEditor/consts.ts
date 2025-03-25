@@ -1,6 +1,7 @@
+import type { TFunction } from 'i18next';
+
 import type {
   LabelGroupDto,
-  NetzgrafikDto,
   TimeLockDto,
   TrainrunCategory,
   TrainrunFrequency,
@@ -40,13 +41,16 @@ export const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
   sectionHeadway: 0,
 };
 
-export const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
+/**
+ * Return the default TrainrunFrequencies with their translations.
+ */
+export const getDefaultTrainrunFrequencies = (t: TFunction): TrainrunFrequency[] => [
   {
     id: 1,
     order: 1,
     frequency: 1440,
     offset: 0,
-    name: 'Unique train schedule',
+    name: t('uniqueTrainSchedule'),
     shortName: '-',
     linePatternRef: '120',
   },
@@ -55,7 +59,7 @@ export const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
     order: 2,
     frequency: 30,
     offset: 0,
-    name: 'Step 30min',
+    name: t('stepXmin', { minutes: 30 }),
     shortName: '30',
     linePatternRef: '30',
   },
@@ -64,7 +68,7 @@ export const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
     order: 3,
     frequency: 60,
     offset: 0,
-    name: 'Step 60min',
+    name: t('stepXmin', { minutes: 60 }),
     shortName: '60',
     linePatternRef: '60',
   },
@@ -73,15 +77,15 @@ export const DEFAULT_TRAINRUN_FREQUENCIES: TrainrunFrequency[] = [
     order: 4,
     frequency: 120,
     offset: 0,
-    name: 'Step 120min',
+    name: t('stepXmin', { minutes: 120 }),
     shortName: '120',
     linePatternRef: '120',
   },
 ];
 
-export const UNIQUE_TRAIN_SCHEDULE_FREQUENCY: TrainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES[0];
+export const UNIQUE_TRAINRUN_FREQUENCY_ID = 1;
 
-export const DEFAULT_TRAINRUN_FREQUENCY: TrainrunFrequency = DEFAULT_TRAINRUN_FREQUENCIES[2];
+export const DEFAULT_PACED_TRAINRUN_FREQUENCY_IDS = [2, 3, 4];
 
 export const DEFAULT_TRAINRUN_TIME_CATEGORIES: TrainrunTimeCategory[] = [
   {
@@ -118,25 +122,6 @@ export const DEFAULT_TRAINRUN_TIME_CATEGORY = DEFAULT_TRAINRUN_TIME_CATEGORIES[0
 export const CUSTOM_TRAINRUN_TIME_CATEGORY = DEFAULT_TRAINRUN_TIME_CATEGORIES[1];
 
 export const UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY = DEFAULT_TRAINRUN_TIME_CATEGORIES[2];
-
-export const DEFAULT_DTO: NetzgrafikDto = {
-  resources: [],
-  nodes: [],
-  trainruns: [],
-  trainrunSections: [],
-  metadata: {
-    netzgrafikColors: [],
-    trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
-    trainrunFrequencies: DEFAULT_TRAINRUN_FREQUENCIES,
-    trainrunTimeCategories: DEFAULT_TRAINRUN_TIME_CATEGORIES,
-  },
-  freeFloatingTexts: [],
-  labels: [],
-  labelGroups: [],
-  filterData: {
-    filterSettings: [],
-  },
-};
 
 export const DEFAULT_TIME_LOCK: TimeLockDto = {
   time: null,

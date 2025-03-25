@@ -7,6 +7,8 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId, TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 
+import type { TrainrunFrequency } from '../NGE/types';
+
 export type NodeIndexed = Omit<MacroNodeResponse, 'id'> & {
   ngeId: number;
   dbId?: number;
@@ -20,9 +22,9 @@ export default class MacroEditorState {
   scenario: ScenarioResponse;
 
   /**
-   * Trains (`TrainSchedule` or `PacedTrain`)
+   * TimetableItems (`TrainSchedule` or `PacedTrain`)
    */
-  trains: TimetableItemWithTimetableId[];
+  timetableItems: TimetableItemWithTimetableId[];
 
   /**
    * Nodes storage
@@ -42,6 +44,11 @@ export default class MacroEditorState {
   indexByNgeId: Record<string, number>;
 
   /**
+   * Trainrun frequencies populated by the timetable data.
+   */
+  trainrunFrequencies: TrainrunFrequency[];
+
+  /**
    * Storing labels for nodes
    */
   nodeLabels: Set<string>;
@@ -59,12 +66,12 @@ export default class MacroEditorState {
   /**
    * Given a NGE `Trainrun.id`, returns the OSRD `TimetableItemId`.
    */
-  trainIdByNgeId: Map<number, TimetableItemId>;
+  timetableItemIdByNgeId: Map<number, TimetableItemId>;
 
   /**
    * Default constructor
    */
-  constructor(scenario: ScenarioResponse, trains: TimetableItemWithTimetableId[]) {
+  constructor(scenario: ScenarioResponse, timetableItems: TimetableItemWithTimetableId[]) {
     // Empty
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
@@ -72,9 +79,10 @@ export default class MacroEditorState {
     this.indexByPathKey = {};
     this.indexByNgeId = {};
     this.scenario = scenario;
-    this.trains = trains;
-    this.ngeResource = { id: 1, capacity: this.trains.length };
-    this.trainIdByNgeId = new Map<number, TimetableItemId>();
+    this.timetableItems = timetableItems;
+    this.trainrunFrequencies = [];
+    this.ngeResource = { id: 1, capacity: this.timetableItems.length };
+    this.timetableItemIdByNgeId = new Map<number, TimetableItemId>();
   }
 
   /**

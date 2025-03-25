@@ -112,7 +112,7 @@ export type TrainrunFrequency = {
   order: number;
   /** Equivalent as `paced.step` in OSRD. */
   frequency: number;
-  /** Offset from minute 0, to 2 hours duration. */
+  /** Offset in minutes from minute 0, to 120min duration. */
   offset: number;
   /** Displayed on Frequency chip mouse hover. */
   name: string;

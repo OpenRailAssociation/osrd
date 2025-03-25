@@ -6,10 +6,21 @@ import {
   type PathItemLocation,
   type SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
+import type { TimetableItemWithTimetableId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
+import { Duration } from 'utils/duration';
+import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
+import {
+  CUSTOM_TRAINRUN_TIME_CATEGORY,
+  DEFAULT_PACED_TRAINRUN_FREQUENCY_IDS,
+  DEFAULT_TRAINRUN_TIME_CATEGORY,
+  UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY,
+  UNIQUE_TRAINRUN_FREQUENCY_ID,
+} from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
+import type { TrainrunFrequency, TrainrunTimeCategory } from '../NGE/types';
 
 export const findOpFromPathItem = (
   pathItem: PathItemLocation,
@@ -161,4 +172,51 @@ export const getSavedMacroNodes = async (
     page += 1;
   }
   return result;
+};
+
+/**
+ * TrainrunTimeCategory is not used as a feature, but for its LinePatternRef style.
+ */
+export const getTrainrunTimeCategoryFromFrequency = (
+  trainrunFrequency: TrainrunFrequency
+): TrainrunTimeCategory => {
+  if (trainrunFrequency.id === UNIQUE_TRAINRUN_FREQUENCY_ID) {
+    return UNIQUE_TRAIN_SCHEDULE_TIME_CATEGORY;
+  }
+  if (!DEFAULT_PACED_TRAINRUN_FREQUENCY_IDS.includes(trainrunFrequency.id)) {
+    return CUSTOM_TRAINRUN_TIME_CATEGORY;
+  }
+  return DEFAULT_TRAINRUN_TIME_CATEGORY;
+};
+
+/**
+ * Get a frequency by its ID.
+ */
+export const getFrequencyFromFrequencyId = (
+  state: MacroEditorState,
+  frequencyId: number
+): TrainrunFrequency => {
+  const frequency = state.trainrunFrequencies.find((f) => f.id === frequencyId);
+  if (!frequency) {
+    throw new Error(`Frequency with ID ${frequencyId} not found.`);
+  }
+  return frequency;
+};
+
+/**
+ * Get the associated TrainrunFrequency of a timetable item.
+ */
+export const getTrainrunFrequencyFromTimetableItem = (
+  timetableItem: TimetableItemWithTimetableId,
+  state: MacroEditorState
+): TrainrunFrequency => {
+  if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+    return getFrequencyFromFrequencyId(state, UNIQUE_TRAINRUN_FREQUENCY_ID);
+  }
+  const stepInMinutes = Duration.parse(timetableItem.paced.step).total('minute');
+  const trainrunFrequency = state.trainrunFrequencies.find((f) => f.frequency === stepInMinutes);
+  if (!trainrunFrequency) {
+    throw new Error(`Frequency with step ${stepInMinutes} not found.`);
+  }
+  return trainrunFrequency;
 };

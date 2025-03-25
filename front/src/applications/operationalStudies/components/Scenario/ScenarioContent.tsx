@@ -68,32 +68,32 @@ const ScenarioContent = ({
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
 
   const dtoImport = useCallback(async () => {
-    const timetableTrainSchedulesPromise = dispatch(
+    const trainSchedulesPromise = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
         { timetableId: scenario?.timetable_id },
         { forceRefetch: true, subscribe: false }
       )
     );
-    const trainSchedules = (await timetableTrainSchedulesPromise.unwrap())
+    const trainSchedules = (await trainSchedulesPromise.unwrap())
       .filter((trainSchedule) => trainSchedule.path.length >= 2)
       .map((trainSchedule) => ({
         ...trainSchedule,
         id: formatEditoastTrainIdToTrainScheduleId(trainSchedule.id),
       }));
-    const timetablePacedTrainsPromise = dispatch(
+    const pacedTrainsPromise = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
         { timetableId: scenario?.timetable_id },
         { forceRefetch: true, subscribe: false }
       )
     );
-    const pacedTrains = (await timetablePacedTrainsPromise.unwrap())
+    const pacedTrains = (await pacedTrainsPromise.unwrap())
       .filter((pacedTrain) => pacedTrain.path.length >= 2)
       .map((pacedTrain) => ({
         ...pacedTrain,
         id: formatEditoastTrainIdToPacedTrainId(pacedTrain.id),
       }));
     const state = new MacroEditorState(scenario, [...trainSchedules, ...pacedTrains]);
-    await loadAndIndexNge(state, dispatch);
+    await loadAndIndexNge(state, dispatch, t);
     const dto = getNgeDto(state);
     macroEditorState.current = state;
     setNgeDto(dto);
