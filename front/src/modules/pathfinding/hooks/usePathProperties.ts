@@ -25,6 +25,7 @@ const usePathProperties = (
           props: properties,
           pathPropertiesInput: {
             track_section_ranges: pathfindingResult.track_section_ranges,
+            path_item_positions: pathfindingResult.path_item_positions,
           },
         };
         const pathPropertiesResult = await postPathProperties(pathPropertiesParams).unwrap();

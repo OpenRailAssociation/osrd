@@ -17,12 +17,16 @@ const useProjectedConflicts = (
 
   const [projectedZones, setProjectedZones] = useState<PathProperties['zones']>();
   useEffect(() => {
-    const fetchProjectedZones = async ({ track_section_ranges }: PathfindingResultSuccess) => {
+    const fetchProjectedZones = async ({
+      track_section_ranges,
+      path_item_positions,
+    }: PathfindingResultSuccess) => {
       const { zones } = await postPathProperties({
         infraId: infraId!,
         props: ['zones'],
         pathPropertiesInput: {
           track_section_ranges,
+          path_item_positions,
         },
       }).unwrap();
       setProjectedZones(zones);

@@ -96,9 +96,10 @@ const usePathfinding = ({
   ) => {
     const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
       infraId,
-      props: ['electrifications', 'geometry', 'operational_points'],
+      props: ['electrifications', 'geometry', 'operational_points', 'path_item_position_ratio'],
       pathPropertiesInput: {
         track_section_ranges: pathResult.track_section_ranges,
+        path_item_positions: pathResult.path_item_positions,
       },
     };
     const { electrifications, geometry, operational_points } =

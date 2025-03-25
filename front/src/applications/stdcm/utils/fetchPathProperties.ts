@@ -23,6 +23,7 @@ const fetchPathProperties = async (
     props: ['geometry', 'operational_points', 'zones', 'slopes', 'curves', 'electrifications'],
     pathPropertiesInput: {
       track_section_ranges: path.track_section_ranges,
+      path_item_positions: path.path_item_positions,
     },
   };
 

@@ -8849,6 +8849,17 @@ components:
                 minimum: 0
           description: Operational points along the path
           nullable: true
+        path_item_position_ratio:
+          type: array
+          items:
+            type: array
+            items:
+              allOf:
+              - type: string
+              - type: number
+                format: double
+          description: The path offset ratio for each path item given as input in pathfinding.
+          nullable: true
         slopes:
           allOf:
           - type: object
@@ -8900,7 +8911,17 @@ components:
       type: object
       required:
       - track_section_ranges
+      - path_item_positions
       properties:
+        path_item_positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            The path offset in mm of each path item given as input of the pathfinding
+            The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
         track_section_ranges:
           type: array
           items:
@@ -9530,6 +9551,7 @@ components:
       - geometry
       - operational_points
       - zones
+      - path_item_position_ratio
     RailJson:
       type: object
       description: An infrastructure description in the RailJson format

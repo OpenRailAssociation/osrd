@@ -60,6 +60,7 @@ const useGetProjectedTrainOperationalPoints = ({
           props: ['operational_points'],
           pathPropertiesInput: {
             track_section_ranges: pathfindingResult.track_section_ranges,
+            path_item_positions: pathfindingResult.path_item_positions,
           },
         }).unwrap();
 

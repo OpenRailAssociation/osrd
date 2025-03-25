@@ -2813,6 +2813,8 @@ export type PathProperties = {
         weight: number | null;
       }[]
     | null;
+  /** The path offset ratio for each path item given as input in pathfinding. */
+  path_item_position_ratio?: (string & number)[][] | null;
   slopes?: {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
@@ -2834,8 +2836,12 @@ export type Property =
   | 'electrifications'
   | 'geometry'
   | 'operational_points'
-  | 'zones';
+  | 'zones'
+  | 'path_item_position_ratio';
 export type PathPropertiesInput = {
+  /** The path offset in mm of each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
+  path_item_positions: number[];
   /** List of track sections */
   track_section_ranges: TrackRange[];
 };

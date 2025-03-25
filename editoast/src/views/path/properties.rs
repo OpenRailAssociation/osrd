@@ -8,6 +8,9 @@
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use editoast_schemas::infra::Direction;
+use editoast_schemas::infra::TrackSection;
+use editoast_schemas::primitives::ObjectType;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use itertools::Itertools;
@@ -15,6 +18,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_qs::axum::QsQuery;
 use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
 use std::hash::Hash;
 use std::hash::Hasher;
 use tracing::info;
@@ -29,8 +33,10 @@ use crate::core::path_properties::PropertyZoneValues;
 use crate::core::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
-use crate::views::path::retrieve_infra_version;
+use crate::models::Infra;
+use crate::views::path::PathfindingError;
 use crate::AppState;
+use crate::Retrieve;
 use crate::ValkeyConnection;
 use editoast_common::geometry::GeoJsonLineString;
 use editoast_schemas::infra::OperationalPointExtensions;
@@ -52,6 +58,57 @@ editoast_common::schemas! {
 pub struct PathPropertiesInput {
     /// List of track sections
     pub track_section_ranges: Vec<TrackRange>,
+    /// The path offset in mm of each path item given as input of the pathfinding
+    /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+    pub path_item_positions: Vec<u64>,
+}
+
+impl PathPropertiesInput {
+    fn get_track_length_cumulative_sums(&self) -> Vec<u64> {
+        let mut cumulative_sums = Vec::new();
+        let mut cumulative_sum = 0;
+
+        for track_section in self.track_section_ranges.iter() {
+            let range_length = track_section.end - track_section.begin;
+            cumulative_sum += range_length;
+            cumulative_sums.push(cumulative_sum);
+        }
+
+        cumulative_sums
+    }
+
+    pub fn find_track_section_offset(&self) -> HashMap<String, u64> {
+        let track_length_cumulative_sums = self.get_track_length_cumulative_sums();
+        let mut res = HashMap::new();
+        for path_item_position in self.path_item_positions.iter() {
+            let track_section_index = track_length_cumulative_sums
+                .iter()
+                .position(|&cumulative_sum| *path_item_position <= cumulative_sum);
+
+            if let Some(track_section_index) = track_section_index {
+                let track_range = self.track_section_ranges[track_section_index].clone();
+
+                let inferior_sum = if track_section_index > 0 {
+                    track_length_cumulative_sums[track_section_index - 1]
+                } else {
+                    0
+                };
+
+                let offset_on_track_range = path_item_position - inferior_sum;
+
+                let offset_on_track_section = match track_range.direction {
+                    Direction::StartToStop => track_range.begin + offset_on_track_range,
+                    Direction::StopToStart => track_range.end - offset_on_track_range,
+                };
+
+                res.insert(
+                    (*track_range.track_section).clone(),
+                    offset_on_track_section,
+                );
+            }
+        }
+        res
+    }
 }
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
@@ -74,6 +131,9 @@ struct PathProperties {
     /// Zones along the path
     #[schema(inline)]
     zones: Option<PropertyZoneValues>,
+    /// The path offset ratio for each path item given as input in pathfinding.
+    #[schema(inline)]
+    path_item_position_ratio: Option<Vec<(String, f64)>>,
 }
 
 impl PathProperties {
@@ -114,6 +174,7 @@ impl PathProperties {
                 Property::Geometry => self.geometry = None,
                 Property::OperationalPoints => self.operational_points = None,
                 Property::Zones => self.zones = None,
+                Property::PathItemPositionRatio => self.path_item_position_ratio = None,
             }
         }
         self
@@ -145,6 +206,7 @@ enum Property {
     Geometry,
     OperationalPoints,
     Zones,
+    PathItemPositionRatio,
 }
 
 type Properties = EnumSet<Property>;
@@ -175,15 +237,53 @@ async fn post(
 ) -> Result<Json<PathProperties>> {
     // Extract information from parameters
     let conn = &mut db_pool.get().await?;
-    let infra_version = retrieve_infra_version(conn, infra_id).await?;
     let query_props: Properties = props.into();
     let mut valkey_conn = valkey.get_connection().await?;
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+
+    // Get track section offsets.
+    let track_section_offsets = path_properties_input.find_track_section_offset();
+
+    // Get the IDs of the track sections.
+    let object_ids = path_properties_input
+        .find_track_section_offset()
+        .iter()
+        .map(|ts| ts.0.clone()) // Extract track section IDs.
+        .collect();
+
+    // Fetch the track section objects using the IDs.
+    let objects = infra
+        .get_objects(conn, ObjectType::TrackSection, &object_ids)
+        .await?;
+
+    // Prepare a vector to store position ratios.
+    let mut path_item_position_ratio = Vec::new();
+
+    for object in objects {
+        let track_section =
+            serde_json::from_str::<TrackSection>(object.railjson.to_string().as_str())?;
+
+        // Get the position of the track section from the offsets.
+        let position = track_section_offsets[track_section.id.as_ref()] as f64;
+
+        // Calculate the geographic length of the track section.
+        let geo_length = track_section.geo_bbox().diagonal_length();
+
+        // Calculate the position ratio within the track section.
+        let geo_position = position * geo_length / (track_section.length * 1000_f64);
+        let ratio = geo_position / geo_length;
+
+        path_item_position_ratio.push((track_section.id.to_string(), ratio));
+    }
 
     // 1) Try to retrieve all the informations from Valkey
     let mut path_properties = retrieve_path_properties(
         &mut valkey_conn,
         infra_id,
-        &infra_version,
+        &infra.version,
         &path_properties_input,
     )
     .await?;
@@ -196,7 +296,7 @@ async fn post(
         let request = PathPropertiesRequest {
             track_section_ranges: &path_properties_input.track_section_ranges,
             infra: infra_id,
-            expected_version: infra_version.clone(),
+            expected_version: infra.version.clone(),
         };
         let computed_path_properties = request.fetch(&core_client).await?;
 
@@ -207,13 +307,14 @@ async fn post(
             geometry: Some(computed_path_properties.geometry),
             operational_points: Some(computed_path_properties.operational_points),
             zones: Some(computed_path_properties.zones),
+            path_item_position_ratio: Some(path_item_position_ratio),
         };
 
         // Cache new properties
         cache_path_properties(
             &mut valkey_conn,
             infra_id,
-            &infra_version,
+            &infra.version,
             &path_properties_input,
             &path_properties,
         )
