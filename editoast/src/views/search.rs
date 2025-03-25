@@ -619,7 +619,6 @@ pub(super) struct SearchResultItemProject {
 #[search(
     table = "search_user",
     migration(src_table = "authn_user"),
-    joins = "INNER JOIN authn_user ON authn_user.id = search_user.id",
     column(
         name = "identity_id",
         data_type = "TEXT",
@@ -635,11 +634,11 @@ pub(super) struct SearchResultItemProject {
 #[allow(unused)]
 /// A search result item for a query with `object = "user"`
 pub(super) struct SearchResultItemUser {
-    #[search(sql = "authn_user.id")]
+    #[search(sql = "search_user.id")]
     id: u64,
-    #[search(sql = "authn_user.identity_id")]
+    #[search(sql = "search_user.identity_id")]
     identity_id: String,
-    #[search(sql = "authn_user.name")]
+    #[search(sql = "search_user.name")]
     name: String,
 }
 
