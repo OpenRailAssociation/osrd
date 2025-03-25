@@ -47,9 +47,13 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
 
     /** Scale a single part, new speed = old speed * ratio */
     private static EnvelopePart scalePart(EnvelopePart part, double ratio) {
-        var positions = part.clonePositions();
-        var speeds = part.cloneSpeeds();
-        var scaledSpeeds = Arrays.stream(speeds).map(x -> x * ratio).toArray();
+        var positions =
+                part.getPositions().stream().mapToDouble(Double::doubleValue).toArray();
+        var speeds = part.getSpeeds();
+        var scaledSpeeds = speeds.stream()
+                .mapToDouble(Double::doubleValue)
+                .map(x -> x * ratio)
+                .toArray();
         var attr = part.getAttr(EnvelopeProfile.class);
         var attrs = List.<SelfTypeHolder>of();
         if (attr != null) attrs = List.of(attr);

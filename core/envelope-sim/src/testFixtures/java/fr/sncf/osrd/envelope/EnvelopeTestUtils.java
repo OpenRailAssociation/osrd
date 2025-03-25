@@ -71,9 +71,22 @@ public class EnvelopeTestUtils {
     static void assertEquals(EnvelopePart expected, EnvelopePart actual, double delta) {
         Assertions.assertEquals(expected.getAttrs(), actual.getAttrs());
 
-        Assertions.assertArrayEquals(expected.clonePositions(), actual.clonePositions(), delta);
-        Assertions.assertArrayEquals(expected.cloneSpeeds(), actual.cloneSpeeds(), delta);
-        Assertions.assertArrayEquals(expected.cloneTimes(), actual.cloneTimes(), delta);
+        Assertions.assertArrayEquals(
+                expected.getPositions().stream()
+                        .mapToDouble(Double::doubleValue)
+                        .toArray(),
+                actual.getPositions().stream().mapToDouble(Double::doubleValue).toArray(),
+                delta);
+        Assertions.assertArrayEquals(
+                expected.getSpeeds().stream().mapToDouble(Double::doubleValue).toArray(),
+                actual.getSpeeds().stream().mapToDouble(Double::doubleValue).toArray(),
+                delta);
+        Assertions.assertArrayEquals(
+                expected.getTimeDeltas().stream()
+                        .mapToDouble(Double::doubleValue)
+                        .toArray(),
+                actual.getTimeDeltas().stream().mapToDouble(Double::doubleValue).toArray(),
+                delta);
         Assertions.assertEquals(expected.getMaxSpeed(), actual.getMaxSpeed(), delta);
         Assertions.assertEquals(expected.getMinSpeed(), actual.getMinSpeed(), delta);
     }

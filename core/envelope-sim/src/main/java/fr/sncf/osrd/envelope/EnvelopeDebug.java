@@ -12,8 +12,11 @@ public class EnvelopeDebug {
         for (int i = 0; i < envelope.size(); i++) {
             var lineName = String.format("%s.parts[%d]", envelopeName, i);
             var part = envelope.get(i);
-            var positions = part.clonePositions();
-            var speeds = part.cloneSpeeds();
+            var positions = part.getPositions().stream()
+                    .mapToDouble(Double::doubleValue)
+                    .toArray();
+            var speeds =
+                    part.getSpeeds().stream().mapToDouble(Double::doubleValue).toArray();
             plotArrays(plot, lineName, positions, speeds);
         }
     }
@@ -23,7 +26,9 @@ public class EnvelopeDebug {
         for (int i = 0; i < envelope.size(); i++) {
             var lineName = String.format("%s.parts[%d]", envelopeName, i);
             var part = envelope.get(i);
-            var positions = part.clonePositions();
+            var positions = part.getPositions().stream()
+                    .mapToDouble(Double::doubleValue)
+                    .toArray();
             var times = new double[part.pointCount()];
             for (int pointIndex = 0; pointIndex < part.pointCount(); pointIndex++)
                 times[pointIndex] = startTime + part.getTotalTimeUS(pointIndex) / 1_000_000.;

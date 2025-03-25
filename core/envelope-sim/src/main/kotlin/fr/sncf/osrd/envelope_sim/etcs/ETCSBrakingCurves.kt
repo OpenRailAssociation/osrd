@@ -481,7 +481,7 @@ private fun keepBrakingCurveUnderOverlay(
     val points = fullBrakingCurve.iteratePoints().distinct()
     val positions = points.map { it.position }
     val speeds = points.map { it.speed }
-    val timeDeltas = fullBrakingCurve.flatMap { it.cloneTimes().asList() }
+    val timeDeltas = fullBrakingCurve.flatMap { it.getTimeDeltas() }
 
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)

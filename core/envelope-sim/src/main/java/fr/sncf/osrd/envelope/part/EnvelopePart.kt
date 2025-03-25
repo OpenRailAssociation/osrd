@@ -26,19 +26,14 @@ class EnvelopePart(
      * envelope part thus cannot have two attributes of the same type
      */
     private val attrs: Map<Class<out SelfTypeHolder>, SelfTypeHolder>,
-    /** A list of N spacial offsets */
+    /** A list of N spacial offsets. Must stay private. */
     private val positions: DoubleArray,
-    /** A list of N speeds, one per position */
+    /** A list of N speeds, one per position. Must stay private. */
     private val speeds: DoubleArray,
-    /** A list of N - 1 time deltas between positions */
+    /** A list of N - 1 time deltas between positions. Must stay private. */
     private val timeDeltas: DoubleArray
 ) : SearchableEnvelope {
-    // region INTRINSIC DATA FIELDS
 
-    /* !!! These arrays must stay private, as even public final arrays are mutable !!! */
-
-    // endregion
-    // region CACHE FIELDS
     /**
      * This property is required for inverse lookups on speeds
      * https://en.wikipedia.org/wiki/Monotonic_function#Inverse_of_function
@@ -57,8 +52,6 @@ class EnvelopePart(
     /** The time from the start of the envelope, in microseconds. Only read using getTotalTimes. */
     private var cumulativeUSTimesCache: LongArray? = null
 
-    // endregion
-    // region CONSTRUCTORS
     /** Creates an EnvelopePart */
     init {
         runSanityChecks()
@@ -97,8 +90,6 @@ class EnvelopePart(
         return Collections.unmodifiableMap(attrs)
     }
 
-    // endregion
-    // region SANITY_CHECKS
     /**
      * Runs every assertion on the envelope part values. <br></br> To be called in the constructor
      * and after the values have been edited (which should be avoided when possible)
@@ -126,8 +117,6 @@ class EnvelopePart(
         return position >= getBeginPos(stepIndex) && position <= getEndPos(stepIndex)
     }
 
-    // endregion
-    // region GETTERS
     /** The number of points in the envelope part */
     fun pointCount(): Int {
         return positions.size
@@ -205,8 +194,14 @@ class EnvelopePart(
         return positions.asList()
     }
 
-    // endregion
-    // region CACHING
+    fun getSpeeds(): List<Double> {
+        return speeds.asList()
+    }
+
+    fun getTimeDeltas(): List<Double> {
+        return timeDeltas.asList()
+    }
+
     private val totalTimesUS: LongArray
         /**
          * This method must be private as it returns an array (thus mutable cache). It computes and
@@ -240,22 +235,6 @@ class EnvelopePart(
         return totalTimesUS[pointIndex]
     }
 
-    // endregion
-    // region CLONE
-    fun clonePositions(): DoubleArray {
-        return positions.clone()
-    }
-
-    fun cloneSpeeds(): DoubleArray {
-        return speeds.clone()
-    }
-
-    fun cloneTimes(): DoubleArray {
-        return timeDeltas.clone()
-    }
-
-    // endregion
-    // region FIND
     override fun binarySearchPositions(position: Double): Int {
         return Arrays.binarySearch(positions, position)
     }
@@ -264,8 +243,6 @@ class EnvelopePart(
         return positions.size
     }
 
-    // endregion
-    // region INTERPOLATION
     /** Given a position return the interpolated speed. */
     fun interpolateSpeed(position: Double): Double {
         assert(position in beginPos..endPos)
@@ -368,8 +345,6 @@ class EnvelopePart(
         throw IllegalStateException("This should be unreachable.")
     }
 
-    // endregion
-    // region SLICING
     /**
      * Makes a copy of this EnvelopePart from beginStepIndex (included) to endStepIndex (excluded)
      */
@@ -571,8 +546,6 @@ class EnvelopePart(
         )
     }
 
-    // endregion
-    // region EQUALS
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
@@ -600,7 +573,7 @@ class EnvelopePart(
                 }
                 .collect(Collectors.joining(", "))
         return String.format("EnvelopePart { %s }", attrsRepr)
-    } // endregion
+    }
 
     companion object {
         /** Creates an envelope part by generating step times from speeds and positions */
@@ -613,8 +586,6 @@ class EnvelopePart(
             return EnvelopePart(attrs, positions, speeds, computeTimes(positions, speeds))
         }
 
-        // endregion
-        // region ATTRS
         /** Create an attribute map from the given attributes */
         fun makeAttrs(
             attrs: Iterable<SelfTypeHolder>
