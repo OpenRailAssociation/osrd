@@ -24,7 +24,9 @@
       "Driver": "Authentication/authorization internal error, try again or contact support",
       "NoSuchUser": "Unknown user",
       "Unauthorized": "Unauthenticated user",
-      "Forbidden": "Access denied"
+      "Forbidden": "Access denied",
+      "ForbiddenImpersonation": "Impersonation denied",
+      "ImpersonatedUserNotFound": "Unknown impersonated user"
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Conflicting fixes for the same object on the same fix-iteration",

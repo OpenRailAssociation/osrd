@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use tracing::debug;
 use tracing::Level;
 
+use crate::subject::UserIdentity;
 use crate::subject::UserInfo;
 use crate::Error;
 use crate::Regulator;
@@ -17,20 +18,23 @@ pub struct Authorizer<S: StorageDriver> {
 }
 
 impl<S: StorageDriver> Authorizer<S> {
+    /// Initialize an authorizer for the given user.
+    /// If the user doesn't exist, an error is returned.
     #[tracing::instrument(skip_all, fields(%user), ret(level = Level::DEBUG), err)]
     pub async fn try_initialize(
-        user: UserInfo,
+        user: UserIdentity,
         regulator: Regulator<S>,
     ) -> Result<Self, Error<S::Error>> {
-        let user_id = regulator
+        let user_info = regulator
             .driver
-            .ensure_user(&user)
+            .get_user_info_by_identity(&user)
             .await
-            .map_err(Error::Storage)?;
-        debug!(%user, %user_id, "user authenticated");
+            .map_err(Error::Storage)?
+            .ok_or(Error::UnknownUser { identity: user })?;
+        debug!(%user_info, "user authenticated");
         let authorizer = Self {
-            user,
-            user_id,
+            user: user_info.info,
+            user_id: user_info.id,
             regulator,
         };
         Ok(authorizer)
@@ -65,6 +69,7 @@ mod tests {
     use super::*;
     use crate::subject::GroupInfo;
     use crate::subject::GroupName;
+    use crate::subject::User;
     use crate::subject::UserIdentity;
     use crate::Role;
     use futures::stream;
@@ -84,29 +89,29 @@ mod tests {
 
     #[tokio::test]
     async fn check_user_roles() {
+        let user_identity = || "toto".to_owned();
         let user = || UserInfo {
-            identity: "toto".to_owned(),
+            identity: user_identity(),
             name: "Sir Toto, the One and Only".to_owned(),
         };
         let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
         let regulator = move || regulator.clone();
 
-        // setup user (using the authorizer)
+        // setup user
         let user_id = {
-            let authorizer = Authorizer::try_initialize(user(), regulator())
-                .await
-                .unwrap();
-            let users = authorizer.regulator.driver.users.lock().unwrap();
+            let regulator = regulator();
+            let User { id, .. } = regulator.driver.ensure_user(&user()).await.unwrap();
+            let users = regulator.driver.users.lock().unwrap();
             assert_eq!(
                 users.iter().next(),
-                Some((&"toto".to_owned(), &0)),
+                Some((&"toto".to_owned(), &id)),
                 "new user should have been created"
             );
-            authorizer.user_id()
+            id
         };
 
         let id = {
-            let authorizer = Authorizer::try_initialize(user(), regulator())
+            let authorizer = Authorizer::try_initialize(user_identity(), regulator())
                 .await
                 .unwrap();
             authorizer.user_id()
@@ -124,19 +129,19 @@ mod tests {
                 .expect("roles should be granted");
         }
 
-        assert!(Authorizer::try_initialize(user(), regulator())
+        assert!(Authorizer::try_initialize(user_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::OperationalStudies]))
             .await
             .expect("should check roles successfully"));
-        assert!(Authorizer::try_initialize(user(), regulator())
+        assert!(Authorizer::try_initialize(user_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::Stdcm, Role::Admin]))
             .await
             .expect("should check roles successfully"));
-        assert!(!Authorizer::try_initialize(user(), regulator())
+        assert!(!Authorizer::try_initialize(user_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::Admin]))
@@ -151,13 +156,13 @@ mod tests {
                 .expect("roles should be stripped");
         }
 
-        assert!(!Authorizer::try_initialize(user(), regulator())
+        assert!(!Authorizer::try_initialize(user_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::OperationalStudies]))
             .await
             .expect("should check roles successfully"));
-        assert!(Authorizer::try_initialize(user(), regulator())
+        assert!(Authorizer::try_initialize(user_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::Stdcm]))
@@ -165,7 +170,7 @@ mod tests {
             .expect("should check roles successfully"));
 
         // no roles
-        assert!(Authorizer::try_initialize(user(), regulator())
+        assert!(Authorizer::try_initialize(user_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([]))
@@ -190,12 +195,14 @@ mod tests {
     #[tokio::test]
     async fn check_group_roles() {
         editoast_common::setup_tracing_for_test();
+        let alice_identity = || "alice".to_owned();
         let alice = || UserInfo {
-            identity: "alice".to_owned(),
+            identity: alice_identity(),
             name: "Alice".to_owned(),
         };
+        let bob_identity = || "bob".to_owned();
         let bob = || UserInfo {
-            identity: "bob".to_owned(),
+            identity: bob_identity(),
             name: "Bob".to_owned(),
         };
         let friends = || GroupInfo {
@@ -210,12 +217,14 @@ mod tests {
             .driver
             .ensure_user(&alice())
             .await
-            .expect("alice should be created");
+            .expect("alice should be created")
+            .id;
         let bob_id = regulator()
             .driver
             .ensure_user(&bob())
             .await
-            .expect("bob should be created");
+            .expect("bob should be created")
+            .id;
         let friends_id = regulator()
             .driver
             .ensure_group(&friends())
@@ -240,28 +249,28 @@ mod tests {
             .expect("bob's roles should be granted");
 
         // check roles
-        assert!(Authorizer::try_initialize(alice(), regulator())
+        assert!(Authorizer::try_initialize(alice_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::OperationalStudies]))
             .await
             .expect("should check roles successfully"));
 
-        assert!(Authorizer::try_initialize(bob(), regulator())
+        assert!(Authorizer::try_initialize(bob_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::OperationalStudies]))
             .await
             .expect("should check roles successfully"));
 
-        assert!(!Authorizer::try_initialize(alice(), regulator())
+        assert!(!Authorizer::try_initialize(alice_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::Stdcm]))
             .await
             .expect("should check roles successfully"));
 
-        assert!(Authorizer::try_initialize(bob(), regulator())
+        assert!(Authorizer::try_initialize(bob_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::Stdcm]))
@@ -274,14 +283,14 @@ mod tests {
             .await
             .expect("bob should be removed from the group");
 
-        assert!(!Authorizer::try_initialize(bob(), regulator())
+        assert!(!Authorizer::try_initialize(bob_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::OperationalStudies])) // now he doesn't have the group's roles...
             .await
             .expect("should check roles successfully"));
 
-        assert!(Authorizer::try_initialize(bob(), regulator())
+        assert!(Authorizer::try_initialize(bob_identity(), regulator())
             .await
             .unwrap()
             .check_roles(HashSet::from([Role::Stdcm])) // ...but still has its own
@@ -301,14 +310,17 @@ mod tests {
     impl StorageDriver for MockAuthDriver {
         type Error = Infallible;
 
-        async fn ensure_user(&self, user: &UserInfo) -> Result<i64, Self::Error> {
+        async fn ensure_user(&self, user: &UserInfo) -> Result<User, Self::Error> {
             let mut users = self.users.lock().unwrap();
             let user_id = {
                 let id = self.counter.read().unwrap();
                 *users.entry(user.identity.clone()).or_insert(*id)
             };
             *self.counter.write().unwrap() += 1;
-            Ok(user_id)
+            Ok(User {
+                id: user_id,
+                info: user.clone(),
+            })
         }
 
         async fn ensure_group(&self, group: &GroupInfo) -> Result<i64, Self::Error> {

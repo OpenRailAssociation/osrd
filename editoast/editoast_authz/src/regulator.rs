@@ -10,6 +10,7 @@ use crate::model;
 use crate::model::*;
 use crate::subject::GroupInfo;
 use crate::subject::GroupName;
+use crate::subject::User as UserSubject;
 use crate::subject::UserIdentity;
 use crate::subject::UserInfo;
 use crate::Error;
@@ -50,8 +51,23 @@ pub trait StorageDriver: Clone {
         group_id: i64,
     ) -> impl Future<Output = Result<Option<GroupInfo>, Self::Error>> + Send;
 
-    fn ensure_user(&self, user: &UserInfo)
-        -> impl Future<Output = Result<i64, Self::Error>> + Send;
+    async fn get_user_info_by_identity(
+        &self,
+        user_identity: &UserIdentity,
+    ) -> Result<Option<UserSubject>, Self::Error> {
+        let Some(user_id) = self.get_user_id(user_identity).await? else {
+            return Ok(None);
+        };
+        Ok(self
+            .get_user_info(user_id)
+            .await?
+            .map(|info| UserSubject { id: user_id, info }))
+    }
+
+    fn ensure_user(
+        &self,
+        user: &UserInfo,
+    ) -> impl Future<Output = Result<UserSubject, Self::Error>> + Send;
 
     fn ensure_group(
         &self,

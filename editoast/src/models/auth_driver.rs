@@ -7,6 +7,7 @@ use diesel_async::scoped_futures::ScopedFutureExt as _;
 use diesel_async::RunQueryDsl;
 use editoast_authz::subject::GroupInfo;
 use editoast_authz::subject::GroupName;
+use editoast_authz::subject::User;
 use editoast_authz::subject::UserIdentity;
 use editoast_authz::subject::UserInfo;
 use editoast_authz::StorageDriver;
@@ -41,6 +42,28 @@ impl PgAuthDriver {
 
 impl StorageDriver for PgAuthDriver {
     type Error = AuthDriverError;
+
+    #[tracing::instrument(skip_all, fields(%user_identity), ret(level = Level::DEBUG), err)]
+    async fn get_user_info_by_identity(
+        &self,
+        user_identity: &UserIdentity,
+    ) -> Result<Option<User>, Self::Error> {
+        let conn = self.pool.get().await?;
+        let info = authn_user::table
+            .select(authn_user::all_columns)
+            .filter(authn_user::identity_id.eq(&user_identity))
+            .first::<(i64, String, String)>(conn.write().await.deref_mut())
+            .await
+            .optional()?;
+        let Some((id, identity, name)) = info else {
+            return Ok(None);
+        };
+
+        Ok(Some(User {
+            id,
+            info: UserInfo { identity, name },
+        }))
+    }
 
     #[tracing::instrument(skip_all, fields(%user_identity), ret(level = Level::DEBUG), err)]
     async fn get_user_id(&self, user_identity: &UserIdentity) -> Result<Option<i64>, Self::Error> {
@@ -93,15 +116,15 @@ impl StorageDriver for PgAuthDriver {
     }
 
     #[tracing::instrument(skip_all, fields(%user), ret(level = Level::DEBUG), err)]
-    async fn ensure_user(&self, user: &UserInfo) -> Result<i64, Self::Error> {
+    async fn ensure_user(&self, user: &UserInfo) -> Result<User, Self::Error> {
         let conn = self.pool.get().await?;
         conn.transaction(|conn| {
             async move {
-                let user_id = self.get_user_id(&user.identity).await?;
-                match user_id {
-                    Some(user_id) => {
-                        tracing::debug!(user_id, "user already exists in db");
-                        Ok(user_id)
+                let user_info = self.get_user_info_by_identity(&user.identity).await?;
+                match user_info {
+                    Some(user_info) => {
+                        tracing::debug!(?user_info, "user already exists in db");
+                        Ok(user_info)
                     }
 
                     None => {
@@ -122,7 +145,10 @@ impl StorageDriver for PgAuthDriver {
                             .execute(conn.write().await.deref_mut())
                             .await?;
 
-                        Ok(id)
+                        Ok(User {
+                            id,
+                            info: user.clone(),
+                        })
                     }
                 }
             }
@@ -230,7 +256,8 @@ mod tests {
         let toto_id = driver
             .ensure_user(&toto)
             .await
-            .expect("toto should be created successfully");
+            .expect("toto should be created successfully")
+            .id;
 
         let tata = UserInfo {
             identity: "tata".to_owned(),
@@ -239,7 +266,8 @@ mod tests {
         let tata_id = driver
             .ensure_user(&tata)
             .await
-            .expect("tata should be created successfully");
+            .expect("tata should be created successfully")
+            .id;
 
         assert_ne!(toto_id, tata_id);
 

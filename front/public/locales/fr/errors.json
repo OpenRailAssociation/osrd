@@ -24,7 +24,9 @@
       "Driver": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
       "NoSuchUser": "Utilisateur inconnu",
       "Unauthorized": "Utilisateur non authentifié",
-      "Forbidden": "Accès refusé"
+      "Forbidden": "Accès refusé",
+      "ForbiddenImpersonation": "Usurpation refusée",
+      "ImpersonatedUserNotFound": "Utilisateur usurpé inconnu"
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",

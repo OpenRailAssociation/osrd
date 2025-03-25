@@ -27,6 +27,7 @@ pub mod work_schedules;
 
 #[cfg(test)]
 mod test_app;
+use editoast_authz::StorageDriver;
 #[cfg(test)]
 pub(crate) use test_app::test_app;
 
@@ -321,15 +322,48 @@ async fn authenticate(
         None => "",
     };
 
-    let authorizer = Authorizer::try_initialize(
-        UserInfo {
-            identity: identity.to_owned(),
-            name: name.to_owned(),
-        },
-        regulator,
-    )
-    .await?;
-    Ok(Authentication::Authenticated(authorizer))
+    let authorizer = match Authorizer::try_initialize(identity.to_owned(), regulator.clone()).await
+    {
+        Ok(authorizer) => authorizer,
+        Err(AuthorizerError::UnknownUser { .. }) => {
+            // The user is not in the database, let's add it
+            regulator
+                .clone()
+                .driver()
+                .ensure_user(&UserInfo {
+                    identity: identity.to_owned(),
+                    name: name.to_owned(),
+                })
+                .await
+                .map_err(AuthorizerError::Storage)?;
+            Authorizer::try_initialize(identity.to_owned(), regulator.clone()).await?
+        }
+        Err(err) => return Err(err.into()),
+    };
+
+    let Some(impersonated_identity) = headers.get("x-impersonate") else {
+        return Ok(Authentication::Authenticated(authorizer));
+    };
+
+    // The user is trying to impersonate another user
+    if !authorizer.check_roles([Role::Admin].into()).await? {
+        return Err(AuthorizationError::ForbiddenImpersonation);
+    }
+
+    let impersonated_identity = str::from_utf8(impersonated_identity.as_bytes())
+        .expect("unexpected non-utf8 characters in x-impersonate");
+
+    let impersonated_authorizer =
+        match Authorizer::try_initialize(impersonated_identity.to_owned(), regulator).await {
+            Ok(authorizer) => authorizer,
+            Err(AuthorizerError::UnknownUser { .. }) => {
+                return Err(AuthorizationError::ImpersonatedUserNotFound {
+                    identity: impersonated_identity.to_owned(),
+                })
+            }
+            err => err?,
+        };
+    Ok(Authentication::Authenticated(impersonated_authorizer))
 }
 
 async fn authentication_middleware(
@@ -357,6 +391,12 @@ pub enum AuthorizationError {
     #[error("Forbidden — user has insufficient privileges")]
     #[editoast_error(status = 403)]
     Forbidden,
+    #[error("Forbidden — user must be an admin to impersonate")]
+    #[editoast_error(status = 403)]
+    ForbiddenImpersonation,
+    #[error("Not Found — impersonated user '{identity}' not found")]
+    #[editoast_error(status = 403)]
+    ImpersonatedUserNotFound { identity: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]
     AuthError(#[from] AuthorizerError),

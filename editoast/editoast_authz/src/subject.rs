@@ -9,6 +9,12 @@ pub struct UserInfo {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct User {
+    pub info: UserInfo,
+    pub id: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GroupInfo {
     pub name: GroupName,
 }
@@ -16,6 +22,12 @@ pub struct GroupInfo {
 impl std::fmt::Display for UserInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} ({})", self.identity, self.name)
+    }
+}
+
+impl std::fmt::Display for User {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} [{}]", self.info, self.id)
     }
 }
 

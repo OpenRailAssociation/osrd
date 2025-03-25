@@ -49,6 +49,8 @@ pub async fn ensure_latest_authorization_model(
 pub enum Error<StorageError: std::error::Error> {
     #[error("unknown subject {0}")]
     UnknownSubject(i64),
+    #[error("unknown user {identity}")]
+    UnknownUser { identity: String },
     #[error(transparent)]
     OpenFga(#[from] fga::client::RequestFailure),
     #[error(transparent)]
