@@ -34,6 +34,8 @@ class PacedTrainSection extends CommonPage {
 
   private readonly occurrencesCount: Locator;
 
+  private readonly manageTrainSchedulePage: Locator;
+
   constructor(page: Page) {
     super(page);
     this.pacedTrainItem = page.getByTestId('paced-train');
@@ -50,6 +52,7 @@ class PacedTrainSection extends CommonPage {
     this.testedOccurrenceArrivalTime = this.testedPacedTrain.locator('.arrival-time');
     this.timesStopsDataSheet = page.locator('.time-stops-datasheet');
     this.occurrencesCount = page.getByTestId('occurrences-count');
+    this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
   }
 
   // Only the zone with the role button opens the occurrence list
@@ -60,10 +63,15 @@ class PacedTrainSection extends CommonPage {
   async verifyPacedTrainItemDetails(
     pacedTrainData: PacedTrainDetails,
     index: number,
-    occurrenceData: OccurrenceDetails[],
-    duplicate?: {
+    {
+      copyTranslation,
+      occurrenceData,
+      pacedTrainCardAlreadyOpen,
+    }: {
       copyTranslation?: string;
-    }
+      occurrenceData?: OccurrenceDetails[];
+      pacedTrainCardAlreadyOpen?: boolean;
+    } = {}
   ) {
     const { name, labels, duration: pacedTrainDuration, step } = pacedTrainData;
 
@@ -79,16 +87,16 @@ class PacedTrainSection extends CommonPage {
     // Open the occurrences list to be able to have a unique
     // paced train locator for the tested one
     await expect(pacedTrainItemClickableZone).toBeVisible();
-    await pacedTrainItemClickableZone.click();
+    if (!pacedTrainCardAlreadyOpen) await pacedTrainItemClickableZone.click();
 
     await expect(this.testedPacedTrainShowOccurrencesButton).not.toBeVisible();
     await expect(this.testedPacedTrainOccurrences.first()).toBeVisible();
     await expect(this.testedPacedTrainOccurrences).toHaveCount(totalOccurrences);
 
     let expectedName = name;
-    if (duplicate?.copyTranslation) {
+    if (copyTranslation) {
       // duplicated train name should have format : "name (copy)"
-      expectedName = `${name} (${duplicate.copyTranslation})`;
+      expectedName = `${name} (${copyTranslation})`;
     }
     await expect(this.testedPacedTrainName).toBeVisible();
     await expect(this.testedPacedTrainName).toHaveText(expectedName);
@@ -103,10 +111,12 @@ class PacedTrainSection extends CommonPage {
 
     await this.verifyItemsVisibility(index, 'paced-train');
 
-    for (let occurrenceIndex = 0; occurrenceIndex < totalOccurrences; occurrenceIndex += 1) {
-      await this.verifyOccurrenceDetails(occurrenceData[occurrenceIndex], occurrenceIndex, {
-        copyTranslation: duplicate?.copyTranslation,
-      });
+    if (occurrenceData) {
+      for (let occurrenceIndex = 0; occurrenceIndex < totalOccurrences; occurrenceIndex += 1) {
+        await this.verifyOccurrenceDetails(occurrenceData[occurrenceIndex], occurrenceIndex, {
+          copyTranslation,
+        });
+      }
     }
 
     // Close back the occurrences list
@@ -229,6 +239,14 @@ class PacedTrainSection extends CommonPage {
     await actionButtons.duplicateItem.click();
 
     await pacedTrainItem.click();
+  }
+
+  async editPacedTrain(index: number = 0) {
+    const pacedTrainItem = await this.getPacedTrainToClickableZone(index);
+    await pacedTrainItem.click();
+    const actionButtons = await this.getActionButtonsLocators(index, 'paced-train');
+    await actionButtons.editItem.click();
+    await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
   async deletePacedTrain(

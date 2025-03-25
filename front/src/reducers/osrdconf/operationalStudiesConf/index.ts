@@ -10,6 +10,7 @@ import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/os
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
+import { isPacedTrainWithDetails } from 'utils/trainId';
 
 import powerRestrictionReducer from './powerRestrictionReducer';
 import trainSettingsReducer from './trainSettingsReducer';
@@ -34,6 +35,7 @@ export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   trainStep: 2,
   timeRangeDuration: new Duration({ minutes: 120 }),
   cadence: new Duration({ minutes: 60 }),
+  editingTrainIsPacedTrain: false,
 };
 
 export const operationalStudiesConfSlice = createSlice({
@@ -74,6 +76,16 @@ export const operationalStudiesConfSlice = createSlice({
       state.speedLimitByTag = speedLimitTag || undefined;
       state.powerRestriction = power_restrictions || [];
       state.constraintDistribution = constraint_distribution || 'STANDARD';
+
+      if (isPacedTrainWithDetails(action.payload)) {
+        state.editingTrainIsPacedTrain = true;
+        state.timeRangeDuration = action.payload.paced.duration;
+        state.cadence = action.payload.paced.step;
+      } else {
+        state.editingTrainIsPacedTrain = false;
+        state.timeRangeDuration = new Duration({ minutes: 120 });
+        state.cadence = new Duration({ minutes: 60 });
+      }
     },
     // Use this action to transform an op to via from times and stop table or
     // from the suggested via modal
@@ -118,6 +130,7 @@ export const {
   upsertSeveralViasFromSuggestedOP,
   updateTimeRangeDuration,
   updateCadence,
+  toggleEditingTrainIsPacedTrain,
 
   // itinerary reducer
   updatePathSteps,

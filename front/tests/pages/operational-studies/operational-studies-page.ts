@@ -10,6 +10,10 @@ import CommonPage from '../common-page';
 class OperationalStudiesPage extends CommonPage {
   private readonly addScenarioTrainButton: Locator;
 
+  private readonly editTrainButton: Locator;
+
+  private readonly manageTrainSchedulePage: Locator;
+
   private readonly rollingStockTab: Locator;
 
   private readonly routeTab: Locator;
@@ -72,6 +76,8 @@ class OperationalStudiesPage extends CommonPage {
     this.pacedTrainTimeRangeDurationInput = page.locator('#paced-train-time-range-duration');
     this.pacedTrainCadenceInput = page.locator('#paced-train-cadence');
     this.addTrainButton = page.getByTestId('add-train');
+    this.editTrainButton = page.getByTestId('submit-edit-train-schedule');
+    this.manageTrainSchedulePage = page.getByTestId('manage-train-schedule');
     this.trainNameInput = page.locator('#train-name');
     this.trainInitialSpeedInput = page.locator('#train-initial-speed');
     this.trainTagsInput = page.getByTestId('chips-input');
@@ -84,6 +90,7 @@ class OperationalStudiesPage extends CommonPage {
   // Click on the button to add a scenario train.
   async clickOnAddTrainButton() {
     await this.addScenarioTrainButton.click();
+    await expect(this.manageTrainSchedulePage).toBeVisible();
   }
 
   // Open Route Tab
@@ -134,7 +141,7 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.startTimeField).toHaveValue(startTime);
   }
 
-  async checkTimetableItemHasBeenAdded(translation: string) {
+  async checkToastHasBeenLaunched(translation: string) {
     await this.checkToastTitle(translation);
     await this.closeToastNotification();
   }
@@ -193,6 +200,37 @@ class OperationalStudiesPage extends CommonPage {
     await expect(this.trainInitialSpeedInput).toHaveValue('0');
 
     await expect(this.trainTagsInput).toBeVisible();
+  }
+
+  async updateTimetableItem(expectedButtonText?: string) {
+    if (expectedButtonText) {
+      await expect(this.editTrainButton).toHaveText(expectedButtonText);
+    }
+    await this.editTrainButton.click();
+  }
+
+  async turnTrainScheduleIntoPacedTrain(translations: ManageTrainScheduleTranslations) {
+    await expect(this.definePacedTrainCheckbox).not.toBeChecked();
+    await expect(this.editTrainButton).toBeVisible();
+    await expect(this.editTrainButton).toHaveText(translations.updateTrainSchedule);
+
+    await this.definePacedTrainCheckboxLabel.click();
+    await expect(this.definePacedTrainCheckbox).toBeChecked();
+    await expect(this.editTrainButton).toHaveText(translations.turnTrainScheduleIntoPacedTrain);
+
+    await this.editTrainButton.click();
+  }
+
+  async turnPacedTrainIntoTrainSchedule(translations: ManageTrainScheduleTranslations) {
+    await expect(this.definePacedTrainCheckbox).toBeChecked();
+    await expect(this.editTrainButton).toBeVisible();
+    await expect(this.editTrainButton).toHaveText(translations.updatePacedTrain);
+
+    await this.definePacedTrainCheckboxLabel.click();
+    await expect(this.definePacedTrainCheckbox).not.toBeChecked();
+    await expect(this.editTrainButton).toHaveText(translations.turnPacedTrainIntoTrainSchedule);
+
+    await this.editTrainButton.click();
   }
 
   async checkTabs() {
@@ -268,6 +306,10 @@ class OperationalStudiesPage extends CommonPage {
   async setTrainScheduleName(name: string) {
     await this.trainNameInput.fill(name);
     await expect(this.trainNameInput).toHaveValue(name);
+
+    // we need to wait, because the input has a debounce of 500ms
+    // TODO: remove this when the debounce is removed (https://github.com/OpenRailAssociation/osrd/issues/11294)
+    await this.page.waitForTimeout(600);
   }
 
   async checkNumberOfTrains(number: number) {

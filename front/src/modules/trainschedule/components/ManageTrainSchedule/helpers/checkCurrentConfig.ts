@@ -18,10 +18,7 @@ const checkCurrentConfig = (
   dispatch: Dispatch,
   // TODO TS2 : remove this when rollingStockName will replace rollingStockId in the store
   rollingStockName?: string,
-  {
-    isPacedTrainMode = false,
-    showPacedTrains = false,
-  }: { isPacedTrainMode?: boolean; showPacedTrains?: boolean } = {}
+  { showPacedTrains = false }: { showPacedTrains?: boolean } = {}
 ): ValidConfig | null => {
   const {
     constraintDistribution,
@@ -41,6 +38,7 @@ const checkCurrentConfig = (
     startTime,
     cadence,
     timeRangeDuration,
+    editingTrainIsPacedTrain,
   } = osrdconf;
   let error = false;
   if (pathSteps[0] === null) {
@@ -142,7 +140,7 @@ const checkCurrentConfig = (
   // TODO Paced trains : remove the next if in https://github.com/OpenRailAssociation/osrd/issues/10791
   if (showPacedTrains) {
     // Prevent to block the train creation if a paced train field is invalid but we want to add a train schedule
-    if (isPacedTrainMode) {
+    if (editingTrainIsPacedTrain) {
       if (cadence.total('minute') < 1) {
         error = true;
         dispatch(
@@ -190,6 +188,7 @@ const checkCurrentConfig = (
     powerRestrictions: powerRestriction,
     firstStartTime: startTime.toISOString(),
     speedLimitByTag,
+    editingTrainIsPacedTrain,
   };
 };
 

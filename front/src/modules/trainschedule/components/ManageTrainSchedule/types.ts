@@ -67,6 +67,7 @@ export type ValidConfig = {
   powerRestrictions?: TrainScheduleBase['power_restrictions'];
   firstStartTime: string;
   speedLimitByTag?: string;
+  editingTrainIsPacedTrain: boolean;
 };
 
 export type FeatureInfoClick = {

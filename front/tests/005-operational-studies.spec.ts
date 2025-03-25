@@ -213,19 +213,16 @@ test.describe('Verify simulation configuration in operational studies for train 
     await operationalStudiesPage.addTimetableItem();
 
     // Verify the paced train has been added and return to the simulation results and timetable
-    await operationalStudiesPage.checkTimetableItemHasBeenAdded(translations.pacedTrains.added);
-
+    await operationalStudiesPage.checkToastHasBeenLaunched(translations.pacedTrains.added);
     await operationalStudiesPage.returnSimulationResult();
     await operationalStudiesPage.closeToastNotification();
 
     // Confirm that the number of paced trains added matches the expected number
     await operationalStudiesPage.checkNumberOfTrains(1); // Only one paced train can be added at a time
 
-    await pacedTrainSection.verifyPacedTrainItemDetails(
-      NEW_PACED_TRAIN_SETTINGS,
-      0,
-      ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0]
-    );
+    await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
+      occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
+    });
 
     // Click on occurrence to check its simulation results
     await pacedTrainSection.clickOnOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
@@ -254,9 +251,7 @@ test.describe('Verify simulation configuration in operational studies for train 
     await pacedTrainSection.duplicatePacedTrain();
 
     // Verify that a toast is displayed
-    await operationalStudiesPage.checkTimetableItemHasBeenAdded(
-      translations.timetable.pacedTrainAdded
-    );
+    await operationalStudiesPage.checkToastHasBeenLaunched(translations.timetable.pacedTrainAdded);
 
     // Verify that there is one more paced train in the list
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
@@ -265,12 +260,10 @@ test.describe('Verify simulation configuration in operational studies for train 
     });
 
     // Verify that the duplicated paced train has the proper details
-    await pacedTrainSection.verifyPacedTrainItemDetails(
-      DUPLICATED_PACED_TRAIN_DETAILS,
-      1,
-      DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
-      { copyTranslation: translations.timetable.copy }
-    );
+    await pacedTrainSection.verifyPacedTrainItemDetails(DUPLICATED_PACED_TRAIN_DETAILS, 1, {
+      occurrenceData: DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
+      copyTranslation: translations.timetable.copy,
+    });
 
     // Verify global item counter has one more paced train
     await scenarioTimetableSection.verifyTotalItemsLabel(translations, {
@@ -342,7 +335,7 @@ test.describe('Verify simulation configuration in operational studies for train 
     await operationalStudiesPage.addTimetableItem();
 
     // Verify the train has been added and the simulation results
-    await operationalStudiesPage.checkTimetableItemHasBeenAdded(translations.trainAdded);
+    await operationalStudiesPage.checkToastHasBeenLaunched(translations.trainAdded);
     await operationalStudiesPage.returnSimulationResult();
 
     // Confirm the number of trains added matches the expected number

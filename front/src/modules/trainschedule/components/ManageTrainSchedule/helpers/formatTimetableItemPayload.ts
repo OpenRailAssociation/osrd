@@ -1,8 +1,8 @@
-import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { PacedTrain, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 
 import type { ValidConfig } from '../types';
 
-export default function formatTimetableItemPayload(validConfig: ValidConfig): TrainScheduleBase {
+export function formatTimetableItemPayload(validConfig: ValidConfig): TrainScheduleBase {
   return {
     comfort: validConfig.rollingStockComfort,
     constraint_distribution: validConfig.constraintDistribution,
@@ -20,5 +20,16 @@ export default function formatTimetableItemPayload(validConfig: ValidConfig): Tr
     speed_limit_tag: validConfig.speedLimitByTag,
     start_time: validConfig.firstStartTime,
     train_name: validConfig.baseTrainName,
+  };
+}
+
+export function formatPacedTrainPayload(validConfig: ValidConfig): PacedTrain {
+  const baseTrain = formatTimetableItemPayload(validConfig);
+  return {
+    ...baseTrain,
+    paced: {
+      duration: validConfig.timeRangeDuration,
+      step: validConfig.cadence,
+    },
   };
 }

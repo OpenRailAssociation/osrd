@@ -140,6 +140,7 @@ const ScenarioContent = ({
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     upsertTimetableItems={upsertTimetableItems}
+                    removeTimetableItems={removeTimetableItems}
                     itemIdToEdit={itemIdToEdit}
                     setItemIdToEdit={setItemIdToEdit}
                     infraState={infra.state}
@@ -195,7 +196,7 @@ const ScenarioContent = ({
           )}
           {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
             displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
-            <div className="scenario-managetrainschedule">
+            <div className="scenario-managetrainschedule" data-testid="manage-train-schedule">
               <ManageTrainScheduleContextProvider>
                 <ManageTrainSchedule />
               </ManageTrainScheduleContextProvider>

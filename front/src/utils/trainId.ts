@@ -1,4 +1,8 @@
 import type {
+  TimetableItemWithDetails,
+  PacedTrainWithDetails,
+} from 'modules/trainschedule/components/Timetable/types';
+import type {
   OccurrenceId,
   PacedTrainId,
   PacedTrainResponseWithPacedTrainId,
@@ -20,6 +24,10 @@ export const isTrainSchedule = (id: string): id is TrainScheduleId =>
 export const isPacedTrainResponseWithPacedTrainId = (
   timetableItem: TimetableItemWithTimetableId
 ): timetableItem is PacedTrainResponseWithPacedTrainId => isPacedTrain(timetableItem.id);
+
+export const isPacedTrainWithDetails = (
+  timetableItem: TimetableItemWithDetails
+): timetableItem is PacedTrainWithDetails => isPacedTrain(timetableItem.id);
 
 /**
  * Given a train id in the Editoast format (used for api),

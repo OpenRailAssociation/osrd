@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest';
 
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import type { TrainScheduleWithDetails } from 'modules/trainschedule/components/Timetable/types';
+import type {
+  PacedTrainWithDetails,
+  TrainScheduleWithDetails,
+} from 'modules/trainschedule/components/Timetable/types';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
@@ -11,6 +14,7 @@ import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/common
 import testCommonConfReducers from 'reducers/osrdconf/osrdConfCommon/__tests__/utils';
 import type {
   OperationalStudiesConfState,
+  PacedTrainId,
   PathStep,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
@@ -34,64 +38,132 @@ describe('simulationConfReducer', () => {
     expect(state).toEqual(operationalStudiesInitialConf);
   });
 
-  it('selectTrainToEdit', () => {
-    // TODO Paced train : Adapt this to handle paced trains in issue https://github.com/OpenRailAssociation/osrd/issues/11054
-    const trainSchedule: TrainScheduleWithDetails = {
-      id: 'trainschedule-1' as TrainScheduleId,
-      name: 'train1',
-      constraint_distribution: 'MARECO',
-      rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
-      path: [
-        { id: 'id1', uic: 123 },
-        { id: 'id2', uic: 234 },
-      ],
-      margins: { boundaries: ['id2'], values: ['10%', '0%'] },
-      startTime: new Date('2021-01-01T00:00:00Z'),
-      arrivalTime: null,
-      duration: new Duration({ milliseconds: 1000 }),
-      stopsCount: 2,
-      pathLength: '100',
-      mechanicalEnergyConsumed: 100,
-      speedLimitTag: 'MA100',
-      labels: ['label1'],
-      isValid: true,
-      options: { use_electrical_profiles: false },
-    };
+  describe('selectTrainToEdit', () => {
+    it('train schedule case', () => {
+      const trainSchedule: TrainScheduleWithDetails = {
+        id: 'trainschedule-1' as TrainScheduleId,
+        name: 'train1',
+        constraint_distribution: 'MARECO',
+        rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
+        path: [
+          { id: 'id1', uic: 123 },
+          { id: 'id2', uic: 234 },
+        ],
+        margins: { boundaries: ['id2'], values: ['10%', '0%'] },
+        startTime: new Date('2021-01-01T00:00:00Z'),
+        arrivalTime: null,
+        duration: new Duration({ milliseconds: 1000 }),
+        stopsCount: 2,
+        pathLength: '100',
+        mechanicalEnergyConsumed: 100,
+        speedLimitTag: 'MA100',
+        labels: ['label1'],
+        isValid: true,
+        options: { use_electrical_profiles: false },
+      };
 
-    const store = createStore();
-    store.dispatch(operationalStudiesConfSlice.actions.selectTrainToEdit(trainSchedule));
+      const store = createStore();
+      store.dispatch(operationalStudiesConfSlice.actions.selectTrainToEdit(trainSchedule));
 
-    const state = store.getState()[operationalStudiesConfSlice.name];
-    expect(state).toEqual({
-      ...operationalStudiesInitialConf,
-      usingElectricalProfiles: false,
-      labels: ['label1'],
-      rollingStockID: 1,
-      speedLimitByTag: 'MA100',
-      name: 'train1',
-      pathSteps: [
-        {
-          id: 'id1',
-          uic: 123,
-          name: '123',
-          theoreticalMargin: '10%',
-          arrival: null,
-          stopFor: null,
-          locked: undefined,
-          receptionSignal: undefined,
+      const state = store.getState()[operationalStudiesConfSlice.name];
+      expect(state).toEqual({
+        ...operationalStudiesInitialConf,
+        usingElectricalProfiles: false,
+        labels: ['label1'],
+        rollingStockID: 1,
+        speedLimitByTag: 'MA100',
+        name: 'train1',
+        pathSteps: [
+          {
+            id: 'id1',
+            uic: 123,
+            name: '123',
+            theoreticalMargin: '10%',
+            arrival: null,
+            stopFor: null,
+            locked: undefined,
+            receptionSignal: undefined,
+          },
+          {
+            id: 'id2',
+            uic: 234,
+            name: '234',
+            theoreticalMargin: undefined,
+            arrival: null,
+            stopFor: null,
+            locked: undefined,
+            receptionSignal: undefined,
+          },
+        ],
+        startTime: new Date('2021-01-01T00:00:00+00:00'),
+      });
+    });
+
+    it('paced train case', () => {
+      const pacedTrain: PacedTrainWithDetails = {
+        id: 'paced-1' as PacedTrainId,
+        name: 'train1',
+        constraint_distribution: 'MARECO',
+        rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
+        path: [
+          { id: 'id1', uic: 123 },
+          { id: 'id2', uic: 234 },
+        ],
+        margins: { boundaries: ['id2'], values: ['10%', '0%'] },
+        startTime: new Date('2021-01-01T00:00:00Z'),
+        arrivalTime: null,
+        duration: new Duration({ milliseconds: 1000 }),
+        stopsCount: 2,
+        pathLength: '100',
+        mechanicalEnergyConsumed: 100,
+        speedLimitTag: 'MA100',
+        labels: ['label1'],
+        isValid: true,
+        options: { use_electrical_profiles: false },
+        paced: {
+          duration: new Duration({ minutes: 60 }),
+          step: new Duration({ minutes: 30 }),
         },
-        {
-          id: 'id2',
-          uic: 234,
-          name: '234',
-          theoreticalMargin: undefined,
-          arrival: null,
-          stopFor: null,
-          locked: undefined,
-          receptionSignal: undefined,
-        },
-      ],
-      startTime: new Date('2021-01-01T00:00:00+00:00'),
+      };
+
+      const store = createStore();
+      store.dispatch(operationalStudiesConfSlice.actions.selectTrainToEdit(pacedTrain));
+
+      const state = store.getState()[operationalStudiesConfSlice.name];
+      expect(state).toEqual({
+        ...operationalStudiesInitialConf,
+        usingElectricalProfiles: false,
+        labels: ['label1'],
+        rollingStockID: 1,
+        speedLimitByTag: 'MA100',
+        name: 'train1',
+        pathSteps: [
+          {
+            id: 'id1',
+            uic: 123,
+            name: '123',
+            theoreticalMargin: '10%',
+            arrival: null,
+            stopFor: null,
+            locked: undefined,
+            receptionSignal: undefined,
+          },
+          {
+            id: 'id2',
+            uic: 234,
+            name: '234',
+            theoreticalMargin: undefined,
+            arrival: null,
+            stopFor: null,
+            locked: undefined,
+            receptionSignal: undefined,
+          },
+        ],
+        startTime: new Date('2021-01-01T00:00:00+00:00'),
+        timeRangeDuration: new Duration({ minutes: 60 }),
+        cadence: new Duration({ minutes: 30 }),
+        editingTrainIsPacedTrain: true,
+      });
     });
   });
 

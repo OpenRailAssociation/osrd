@@ -125,7 +125,6 @@ const Timetable = ({
 
   const selectTimetableItemToEdit = useCallback((itemToEdit: TimetableItemWithDetails) => {
     dispatch(selectTrainToEdit(itemToEdit));
-    // TODO Paced train : Adapt this to handle paced trains in edit issue of https://github.com/OpenRailAssociation/osrd/issues/10615
     setItemIdToEdit(itemToEdit.id);
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   }, []);

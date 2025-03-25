@@ -94,19 +94,19 @@ const osrdEditoastApi = generatedEditoastApi
           body: queryArg.pathPropertiesInput,
         }),
       },
+
+      // As we always use all get trainSchedule/pacedTrain endpoints after updating the timetable,
+      // we don't want to invalidate the train_schedule/paced_train tags here to prevent multiple calls
       deleteTrainSchedule: {
-        // As we always use all get trainschedule endpoints after updating the timetable,
-        // we don't want to invalidate the trainschedule tag here to prevent multiple calls
         invalidatesTags: ['timetable', 'scenarios'],
       },
       deletePacedTrain: {
-        // As we always use all get paced train endpoints after updating the timetable,
-        // we don't want to invalidate the paced train tag here to prevent multiple calls
         invalidatesTags: ['timetable', 'scenarios'],
       },
       postTimetableByIdTrainSchedules: {
-        // As we always use all get trainschedule endpoints after updating the timetable,
-        // we don't want to invalidate the trainschedule tag here to prevent multiple calls
+        invalidatesTags: ['timetable', 'scenarios'],
+      },
+      postTimetableByIdPacedTrains: {
         invalidatesTags: ['timetable', 'scenarios'],
       },
 

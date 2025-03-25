@@ -262,7 +262,7 @@ test.describe('Verify train schedule elements and filters', () => {
       await pacedTrainSection.verifyPacedTrainItemDetails(
         IMPORTED_PACED_TRAIN_DETAILS[paceTrainIndex],
         paceTrainIndex,
-        IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS[paceTrainIndex]
+        { occurrenceData: IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS[paceTrainIndex] }
       );
     }
   });

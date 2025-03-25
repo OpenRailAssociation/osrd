@@ -54,6 +54,7 @@ const buildOperationalStudiesConfSelectors = () => {
     getTrainCount: makeOsrdConfSelector('trainCount'),
     getTrainDelta: makeOsrdConfSelector('trainDelta'),
     getTrainStep: makeOsrdConfSelector('trainStep'),
+    getEditingTrainIsPacedTrain: makeOsrdConfSelector('editingTrainIsPacedTrain'),
     getTimeRangeDuration: makeOsrdConfSelector('timeRangeDuration'),
     getCadence: makeOsrdConfSelector('cadence'),
   };
@@ -87,6 +88,8 @@ export const {
   getTrainCount,
   getTrainDelta,
   getTrainStep,
+
+  getEditingTrainIsPacedTrain,
   getTimeRangeDuration,
   getCadence,
 } = selectors;

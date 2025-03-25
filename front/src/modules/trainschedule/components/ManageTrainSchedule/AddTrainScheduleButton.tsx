@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraState, PacedTrain, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { InfraState, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -24,7 +24,10 @@ import {
 } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
-import formatTimetableItemPayload from './helpers/formatTimetableItemPayload';
+import {
+  formatPacedTrainPayload,
+  formatTimetableItemPayload,
+} from './helpers/formatTimetableItemPayload';
 import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
 
 type AddTrainScheduleButtonProps = {
@@ -75,14 +78,7 @@ const AddTrainScheduleButton = ({
     if (showPacedTrains) {
       try {
         if (isPacedTrainMode) {
-          const basePacedTrainPayload = formatTimetableItemPayload(validTimetableItemConfig);
-          const pacedTrainPayload: PacedTrain = {
-            ...basePacedTrainPayload,
-            paced: {
-              duration: validTimetableItemConfig.timeRangeDuration,
-              step: validTimetableItemConfig.cadence,
-            },
-          };
+          const pacedTrainPayload = formatPacedTrainPayload(validTimetableItemConfig);
           const newPacedTrain = await postPacedTrain({
             id: timetableId,
             body: [pacedTrainPayload],

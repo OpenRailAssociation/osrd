@@ -259,10 +259,19 @@ class ScenarioTimetableSection extends CommonPage {
     await expect(this.timetableTotalItemLabel).toBeVisible();
 
     // Total items label has the syntax : "X services and Y trains"
-    const pacedTrainLabel = translations.pacedTrain_other.split(' ')[1]; // "services"
-    const trainScheduleLabel = translations.train_other.split(' ')[1]; // "trains"
+    const pacedTrainLabel = translations.pacedTrain_other
+      .split(' ')[1]
+      .slice(0, totalPacedTrainCount > 1 ? undefined : -1); // "services"
+    const trainScheduleLabel = translations.train_other
+      .split(' ')[1]
+      .slice(0, totalTrainScheduleCount > 1 ? undefined : -1); // "trains"
 
-    const expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel}${totalTrainScheduleCount !== 0 ? ` ${translations.common.and} ${totalTrainScheduleCount} ${trainScheduleLabel}` : ''}`;
+    let expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel} ${translations.common.and} ${totalTrainScheduleCount} ${trainScheduleLabel}`;
+    if (totalPacedTrainCount === 0) {
+      expectedComputedLabel = `${totalTrainScheduleCount} ${trainScheduleLabel}`;
+    } else if (totalTrainScheduleCount === 0) {
+      expectedComputedLabel = `${totalPacedTrainCount} ${pacedTrainLabel}`;
+    }
     await expect(this.timetableTotalItemLabel).toHaveText(expectedComputedLabel);
   }
 
@@ -382,9 +391,9 @@ class ScenarioTimetableSection extends CommonPage {
     await this.timesStopsDataSheet.scrollIntoViewIfNeeded();
   }
 
-  async clickOnEditTrain() {
-    await this.timetableTrains.first().hover();
-    await this.editItemButton.click();
+  async clickOnEditTrain(index: number = 0) {
+    await this.timetableTrains.nth(index).click();
+    await this.editItemButton.nth(index).click();
   }
 
   async clickOnEditTrainSchedule() {

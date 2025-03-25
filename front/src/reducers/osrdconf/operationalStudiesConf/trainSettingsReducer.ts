@@ -73,6 +73,9 @@ const trainSettingsReducer = {
   ) {
     state.cadence = action.payload;
   },
+  toggleEditingTrainIsPacedTrain(state: Draft<OperationalStudiesConfState>) {
+    state.editingTrainIsPacedTrain = !state.editingTrainIsPacedTrain;
+  },
 };
 
 export default trainSettingsReducer;
